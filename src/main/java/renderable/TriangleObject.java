@@ -1,3 +1,5 @@
+package renderable;
+
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL20;
@@ -7,14 +9,14 @@ import renderable.RenderableObject;
 
 import java.util.ArrayList;
 
-public class RenderablePoint extends RenderableObject {
+public class TriangleObject extends RenderableObject {
     RenderableBuffer renderableBuffer;
     int[] vbos;
     boolean dirty;
 
-    public RenderablePoint(float x, float y, float z) {
+    public TriangleObject() {
         super();
-        this.setPosition(x, y, z);
+        this.setPosition(0.0f, 0.0f, -1.0f);
     }
     @Override
     public void render(int program) {
@@ -35,8 +37,8 @@ public class RenderablePoint extends RenderableObject {
             renderableBuffer.setAttribute(renderableBuffer.getPositionVbo(), aVertexPosition, 3, 0);
             renderableBuffer.setAttribute(renderableBuffer.getColorVbo(), aVertexColor, 4, 0);
 
-            //GL20.glDrawArrays(GL20.GL_POINTS, 0, 2);
-            GL20.glDrawElements(GL20.GL_POINTS, renderableBuffer.getIndicesLength(), GL20.GL_UNSIGNED_SHORT, 0);
+            //GL20.glDrawArrays(GL20.GL_TRIANGLES, 0, 3);
+            GL20.glDrawElements(GL20.GL_TRIANGLES, renderableBuffer.getIndicesLength(), GL20.GL_UNSIGNED_SHORT, 0);
         }
     }
     @Override
@@ -48,16 +50,36 @@ public class RenderablePoint extends RenderableObject {
             ArrayList<Float> positionList = new ArrayList<Float>();
             ArrayList<Float> colorList = new ArrayList<Float>();
 
-            positionList.add(0.0f);
-            positionList.add(0.0f);
+            positionList.add(-0.25f);
+            positionList.add(-0.25f);
             positionList.add(0.0f);
 
-            colorList.add(0.5f);
-            colorList.add(0.5f);
-            colorList.add(0.5f);
-            colorList.add(0.5f);
+            positionList.add(0.25f);
+            positionList.add(-0.25f);
+            positionList.add(0.0f);
+
+            positionList.add(0.0f);
+            positionList.add(0.25f);
+            positionList.add(0.0f);
+
+            colorList.add(1.0f);
+            colorList.add(0.0f);
+            colorList.add(0.0f);
+            colorList.add(1.0f);
+
+            colorList.add(0.0f);
+            colorList.add(1.0f);
+            colorList.add(0.0f);
+            colorList.add(1.0f);
+
+            colorList.add(0.0f);
+            colorList.add(0.0f);
+            colorList.add(1.0f);
+            colorList.add(1.0f);
 
             indicesList.add((short) 0);
+            indicesList.add((short) 1);
+            indicesList.add((short) 2);
 
             int indicesVbo = renderableBuffer.createIndicesBuffer(indicesList);
             int positionVbo = renderableBuffer.createBuffer(positionList);

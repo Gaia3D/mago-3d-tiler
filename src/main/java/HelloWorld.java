@@ -1,10 +1,14 @@
+import org.joml.Math;
 import org.lwjgl.*;
 
-import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 import org.joml.*;
+import renderable.CubeObject;
+import renderable.RectangleObject;
+import renderable.RenderableObject;
+import renderable.TriangleObject;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -15,6 +19,7 @@ import java.util.ArrayList;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.glfwSetKeyCallback;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
@@ -27,9 +32,18 @@ public class HelloWorld {
     private int shaderProgram;
     private ArrayList<RenderableObject> renderableObjects;
 
+    private double xpos = 0;
+    private double ypos = 0;
+    private boolean clicked = false;
+
+
     public void run() {
         System.out.println("Hello LWJGL " + Version.getVersion() + "!");
         renderableObjects = new ArrayList<RenderableObject>();
+        //renderableObjects.add(new RenderablePoint(-0.25f, 0.0f, -1.0f));
+        //renderableObjects.add(new RenderablePoint(0.25f, 0.0f, -1.0f));
+        //renderableObjects.add(new TriangleObject());
+        renderableObjects.add(new CubeObject());
 
         init();
         loop();
@@ -62,12 +76,45 @@ public class HelloWorld {
         if (window == NULL) {
             throw new RuntimeException("Failed to create the GLFW window");
         }
-
+        // 마우스 위치 콜백
+        glfwSetCursorPosCallback(window, (window, xpos, ypos) -> {
+            if (this.clicked) {
+                Vector3d pivot = new Vector3d(0.0d,0.0d,-1.0d);
+                float xoffset = (float) (this.xpos - xpos) * 0.01f;
+                float yoffset = (float) (this.ypos - ypos) * 0.01f;
+                camera.rotationOrbit(xoffset, yoffset, pivot);
+            }
+            this.xpos = xpos;
+            this.ypos = ypos;
+        });
+        // 마우스 버튼 이벤트
+        glfwSetMouseButtonCallback(window, (window, key, action, mode) -> {
+            if (key == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
+                this.clicked = true;
+            } else if (key == GLFW_MOUSE_BUTTON_1 && action == GLFW_RELEASE) {
+                this.clicked = false;
+            }
+        });
         // 키보드 콜백 이벤트를 설정합니다. 키를 눌렀을 때, 누르고 있을 때, 떼었을 때에 따라 바꿔줍니다.
         glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
             if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
                 glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
             }
+
+            /*float rotationOffset = 0.1f;
+            Vector3d pivot = new Vector3d(0.0d,0.0d,-1.0d);
+            if (key == GLFW_KEY_W) {
+                camera.rotationOrbitY(rotationOffset, pivot);
+            }
+            if (key == GLFW_KEY_A) {
+                camera.rotationOrbitX(-rotationOffset, pivot);
+            }
+            if (key == GLFW_KEY_S) {
+                camera.rotationOrbitY(-rotationOffset, pivot);
+            }
+            if (key == GLFW_KEY_D) {
+                camera.rotationOrbitX(rotationOffset, pivot);
+            }*/
         });
 
         // 스레드 스텍을 가져와서 새 프레임에 추가합니다.
@@ -87,6 +134,7 @@ public class HelloWorld {
                     (vidmode.width() - pWidth.get(0)) / 2,
                     (vidmode.height() - pHeight.get(0)) / 2
             );
+
         } // 스택 프레임이 자동으로 팝업됩니다.
         // Make the OpenGL context current
         // OpenGL 컨텍스트를 최신으로 적용합니다.
@@ -119,6 +167,7 @@ public class HelloWorld {
         GL20.glAttachShader(program, vertexShader);
         GL20.glAttachShader(program, fragmentShader);
         GL20.glLinkProgram(program);
+        GL20.glValidateProgram(program);
 
         GL20.glGetProgrami(program, GL20.GL_LINK_STATUS);
 
@@ -156,22 +205,17 @@ public class HelloWorld {
         return shaderSource;
     }
 
-    private void loop() {
-        // This line is critical for LWJGL's interoperation with GLFW's
-        // OpenGL context, or any context that is managed externally.
-        // LWJGL detects the context that is current in the current thread,
-        // creates the GLCapabilities instance and makes the OpenGL
-        // bindings available for use.
-        //GL.createCapabilities();
+    private void draw() {
+        System.out.println("position : " + camera.position);
+        System.out.println("right : " + camera.right);
+        System.out.println("up : " + camera.up);
+        System.out.println("dir : " + camera.direction);
 
-
-
-        //GL20.glUseProgram();
-
+        //camera.rotationOrbit(0.0f, 0.02f, new Vector3d(0.0d,0.0d,-1.0d));
         int[] width = new int[1];
         int[] height = new int[1];
         glfwGetWindowSize(window, width, height);
-        float fovy = 1.5708f;
+        float fovy = Math.toRadians(90);
         float aspect = width[0] / height[0];
         float near = 0.1f;
         float far = 1000f;
@@ -179,43 +223,60 @@ public class HelloWorld {
         Matrix4f projectionMatrix = new Matrix4f();
         projectionMatrix.perspective(fovy, aspect, near, far);
 
-        Matrix4f modelViewMatrix = this.camera.getTransformMatrix();
-
-        // 클리어 컬러를 적용합니다.
-        glClearColor(0.8f, 0.8f, 0.8f, 0.8f);
-
-        int aVertexPosition = GL20.glGetAttribLocation(this.shaderProgram, "aVertexPosition");
-        int aVertexColor = GL20.glGetAttribLocation(this.shaderProgram, "aVertexColor");
+        Matrix4d modelViewMatrix = this.camera.getModelViewMatrix();
 
         int uProjectionMatrix = GL20.glGetUniformLocation(this.shaderProgram, "uProjectionMatrix");
         int uModelRotationMatrix = GL20.glGetUniformLocation(this.shaderProgram, "uModelRotationMatrix");
-        int uObjectRotationMatrix = GL20.glGetUniformLocation(this.shaderProgram, "uObjectRotationMatrix");
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            FloatBuffer projectionMatrixBuffer = stack.mallocFloat(16);
+            float[] projectionMatrixBuffer = new float[16];
             projectionMatrix.get(projectionMatrixBuffer);
-            FloatBuffer modelViewMatrixBuffer = stack.mallocFloat(16);
+
+            float[] modelViewMatrixBuffer = new float[16];
             modelViewMatrix.get(modelViewMatrixBuffer);
+
+            //FloatBuffer projectionMatrixBuffer = stack.mallocFloat(16);
+            //projectionMatrix.get(projectionMatrixBuffer);
+            //FloatBuffer modelViewMatrixBuffer = stack.mallocFloat(16);
+            //modelViewMatrix.get(modelViewMatrixBuffer);
 
             GL20.glUniformMatrix4fv(uProjectionMatrix, false, projectionMatrixBuffer);
             GL20.glUniformMatrix4fv(uModelRotationMatrix, false, modelViewMatrixBuffer);
-            //GL20.glUniformMatrix4fv(uModelRotationMatrix, projectionMatrix);
-
             renderableObjects.forEach(renderableObject -> {
                 renderableObject.render(this.shaderProgram);
             });
         }
-        //System.out.println(this.shaderProgram);
-        //System.out.println(aVertexPosition);
-        //System.out.println(aVertexColor);
-        //System.out.println(uProjectionMatrix);
-        //System.out.println(uModelRotationMatrix);
-        //System.out.println(uObjectRotationMatrix);
+    }
+
+    private void loop() {
+        // This line is critical for LWJGL's interoperation with GLFW's
+        // OpenGL context, or any context that is managed externally.
+        // LWJGL detects the context that is current in the current thread,
+        // creates the GLCapabilities instance and makes the OpenGL
+        // bindings available for use.
+        //GL.createCapabilities();
+        //GL20.glUseProgram();
 
         // 사용자가 창을 닫거다 esc키를 누를 때까지 랜더링 루프를 실행합니다.
         while (!glfwWindowShouldClose(window)) {
+            int[] width = new int[1];
+            int[] height = new int[1];
+            glfwGetWindowSize(window, width, height);
+            glViewport(0, 0, width[0], height[0]);
+
+            glEnable(GL_DEPTH_TEST);
+            glPointSize(5.0f);
+            // 클리어 컬러를 적용합니다.
+            glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+            glClearDepth(1.0f);
             // 프레임 버퍼 클리어
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            //Random random = new Random();
+            //Float randomColor = random.nextFloat();
+            //glClearColor(randomColor, randomColor, randomColor, 1.0f);
+
+            draw();
             // 색상버퍼 교체
             glfwSwapBuffers(window);
             // 이벤트를 폴링상태로 둡니다. key 콜백이 실행되려면 폴링상태가 활성화 되어있어야 합니다.

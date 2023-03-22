@@ -1,15 +1,15 @@
 import org.joml.*;
 public class Camera {
-    Matrix4f transformMatrix;
-    Matrix4f modelViewMatrix;
-    Matrix4f rotationMatrix;
+    Matrix4d transformMatrix;
+    Matrix4d modelViewMatrix;
+    Matrix4d rotationMatrix;
 
-    Vector3f position;
-    Vector3f rotation;
+    Vector3d position;
+    Vector3d rotation;
 
-    Vector3f direction;
-    Vector3f up;
-    Vector3f right;
+    Vector3d direction;
+    Vector3d up;
+    Vector3d right;
 
     int[] vbo;
 
@@ -25,30 +25,84 @@ public class Camera {
         this.modelViewMatrix = null;
         this.rotationMatrix = null;
 
-        this.position = new Vector3f(0, 0, 0);
-        this.rotation = new Vector3f(0, 0, 0);
+        this.position = new Vector3d(0, 0, 0);
+        this.rotation = new Vector3d(0, 0, 0);
 
-        this.direction = new Vector3f(0, 0, -1);
-        this.up = new Vector3f(0, 1, 0);
-        this.right = new Vector3f(1, 0, 0);
+        this.direction = new Vector3d(0, 0, -1);
+        this.up = new Vector3d(0, 1, 0);
+        this.right = new Vector3d(1, 0, 0);
     }
 
-    public Matrix4f getTransformMatrix() {
+    public Matrix4d getTransformMatrix() {
         if (this.dirty || this.transformMatrix == null) {
-            this.transformMatrix = new Matrix4f(this.right.get(0), this.right.get(1), this.right.get(2), 0,
+            //this.calcRight();
+            this.transformMatrix = new Matrix4d(this.right.get(0), this.right.get(1), this.right.get(2), 0,
                     this.up.get(0), this.up.get(1), this.up.get(2), 0,
                     -this.direction.get(0), -this.direction.get(1), -this.direction.get(2), 0,
                     this.position.get(0), this.position.get(1), this.position.get(2), 1);
+            this.dirty = false;
         }
         return this.transformMatrix;
     }
-
-    public Matrix4f getModelViewMatrix() {
+    public Matrix4d getModelViewMatrix() {
         if (this.dirty || this.modelViewMatrix == null) {
-            Matrix4f transformMatrix = this.getTransformMatrix();
-            Matrix4f modelViewMatrix = transformMatrix.invert(new Matrix4f());
+            Matrix4d transformMatrix = this.getTransformMatrix();
+            Matrix4d modelViewMatrix = transformMatrix.invert(new Matrix4d());
             this.modelViewMatrix = modelViewMatrix;
         }
         return this.modelViewMatrix;
+    }
+
+    public void rotationOrbit(float xValue, float yValue, Vector3d pivotPosition) {
+        Vector3d pitchAxis = this.right;
+
+        Matrix4d headingMatrix = new Matrix4d();
+        headingMatrix.rotationZ(xValue);
+
+        Matrix4d pitchMatrix = new Matrix4d();
+        pitchMatrix.rotation(yValue, pitchAxis);
+
+        Matrix4d totalRotationMatrix = new Matrix4d(pitchMatrix);
+        totalRotationMatrix.mul(headingMatrix);
+
+        Vector3d translatedCameraPosition = new Vector3d(this.position);
+        translatedCameraPosition.sub(pivotPosition);
+
+        Vector4d translatedCameraPositionVec4 = new Vector4d(translatedCameraPosition.get(0), translatedCameraPosition.get(1), translatedCameraPosition.get(2), 1.0f);
+        Vector4d transformedCameraPosition = new Vector4d(translatedCameraPositionVec4);
+        transformedCameraPosition = transformedCameraPosition.mul(totalRotationMatrix);
+        Vector3d transformedCameraPositionVec3 = new Vector3d(transformedCameraPosition.get(0), transformedCameraPosition.get(1), transformedCameraPosition.get(2));
+
+        Vector3d returnedCameraPosition = new Vector3d(transformedCameraPositionVec3);
+        returnedCameraPosition.add(pivotPosition);
+
+        this.position = returnedCameraPosition;
+
+        Matrix3d totalRotationMatrix3 = new Matrix3d();
+        totalRotationMatrix.get3x3(totalRotationMatrix3);
+
+        Vector3d rotatedDirection = new Vector3d(this.direction);
+        rotatedDirection.mul(totalRotationMatrix3);
+        rotatedDirection.normalize();
+
+        Vector3d rotatedUp = new Vector3d(this.up);
+        rotatedUp.mul(totalRotationMatrix3);
+        rotatedUp.normalize();
+
+        Vector3d rotatedRight = new Vector3d(this.direction);
+        rotatedRight.cross(this.up);
+        rotatedRight.normalize();
+
+        this.direction = rotatedDirection;
+        this.up = rotatedUp;
+        this.right = rotatedRight;
+
+        this.dirty = true;
+    }
+
+
+    private void calcRight() {
+        Vector3d direction = new Vector3d(this.direction);
+        this.right = direction.cross(this.up);
     }
 }
