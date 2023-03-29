@@ -5,10 +5,7 @@ import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 import org.joml.*;
-import renderable.CubeObject;
-import renderable.RectangleObject;
-import renderable.RenderableObject;
-import renderable.TriangleObject;
+import renderable.*;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -36,7 +33,6 @@ public class HelloWorld {
     private double ypos = 0;
     private boolean clicked = false;
 
-
     public void run() {
         System.out.println("Hello LWJGL " + Version.getVersion() + "!");
         renderableObjects = new ArrayList<RenderableObject>();
@@ -44,6 +40,8 @@ public class HelloWorld {
         //renderableObjects.add(new RenderablePoint(0.25f, 0.0f, -1.0f));
         //renderableObjects.add(new TriangleObject());
         renderableObjects.add(new CubeObject());
+        renderableObjects.add(new BaseObject());
+        renderableObjects.add(new AssimpObject("C:\\data\\sample\\a_bd001_d.dae"));
 
         init();
         loop();
@@ -149,6 +147,7 @@ public class HelloWorld {
 
         setupShader();
         this.camera = new Camera();
+        camera.rotationOrbit(-1.0f, 1.0f, new Vector3d(0.0d,0.0d,-1.0d));
     }
 
     private void setupShader() {
@@ -169,21 +168,14 @@ public class HelloWorld {
         GL20.glLinkProgram(program);
         GL20.glValidateProgram(program);
 
-        GL20.glGetProgrami(program, GL20.GL_LINK_STATUS);
-
-        if (GL20.glGetProgrami(program, GL20.GL_LINK_STATUS) == GL_FALSE) {
+        int linkStatus = GL20.glGetProgrami(program, GL20.GL_LINK_STATUS);
+        if (linkStatus == GL_FALSE) {
             System.err.println(GL20.glGetShaderInfoLog(vertexShader, GL20.glGetShaderi(vertexShader, GL20.GL_INFO_LOG_LENGTH)));
             System.err.println(GL20.glGetShaderInfoLog(fragmentShader, GL20.glGetShaderi(fragmentShader, GL20.GL_INFO_LOG_LENGTH)));
-
             System.err.println("Program failed to link");
             System.err.println(GL20.glGetProgramInfoLog(program, GL20.glGetProgrami(program, GL20.GL_INFO_LOG_LENGTH)));
         }
-
-
-        //.gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)
-
         GL20.glUseProgram(program);
-
         this.shaderProgram = program;
     }
 
@@ -200,28 +192,25 @@ public class HelloWorld {
             System.err.println(e.getMessage());
         }
         String shaderSource = buffer.toString();
-        //System.out.println(shaderSource);
-        //System.out.println(filePath);
         return shaderSource;
     }
 
     private void draw() {
-        System.out.println("position : " + camera.position);
-        System.out.println("right : " + camera.right);
-        System.out.println("up : " + camera.up);
-        System.out.println("dir : " + camera.direction);
-
-        //camera.rotationOrbit(0.0f, 0.02f, new Vector3d(0.0d,0.0d,-1.0d));
+//        System.out.println("position : " + camera.position);
+//        System.out.println("right : " + camera.right);
+//        System.out.println("up : " + camera.up);
+//        System.out.println("dir : " + camera.direction);
+        camera.rotationOrbit(0.0002f, -0.0000f, new Vector3d(0.0d,0.0d,-1.0d));
         int[] width = new int[1];
         int[] height = new int[1];
         glfwGetWindowSize(window, width, height);
         float fovy = Math.toRadians(90);
         float aspect = width[0] / height[0];
         float near = 0.1f;
-        float far = 1000f;
+        float far = 10000.0f;
 
         Matrix4f projectionMatrix = new Matrix4f();
-        projectionMatrix.perspective(fovy, aspect, near, far);
+        projectionMatrix = projectionMatrix.perspective(fovy, aspect, near, far);
 
         Matrix4d modelViewMatrix = this.camera.getModelViewMatrix();
 
@@ -234,11 +223,6 @@ public class HelloWorld {
 
             float[] modelViewMatrixBuffer = new float[16];
             modelViewMatrix.get(modelViewMatrixBuffer);
-
-            //FloatBuffer projectionMatrixBuffer = stack.mallocFloat(16);
-            //projectionMatrix.get(projectionMatrixBuffer);
-            //FloatBuffer modelViewMatrixBuffer = stack.mallocFloat(16);
-            //modelViewMatrix.get(modelViewMatrixBuffer);
 
             GL20.glUniformMatrix4fv(uProjectionMatrix, false, projectionMatrixBuffer);
             GL20.glUniformMatrix4fv(uModelRotationMatrix, false, modelViewMatrixBuffer);
@@ -267,7 +251,7 @@ public class HelloWorld {
             glEnable(GL_DEPTH_TEST);
             glPointSize(5.0f);
             // 클리어 컬러를 적용합니다.
-            glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+            glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
             glClearDepth(1.0f);
             // 프레임 버퍼 클리어
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

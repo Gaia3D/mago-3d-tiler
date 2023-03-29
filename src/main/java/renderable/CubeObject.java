@@ -37,7 +37,6 @@ public class CubeObject extends RenderableObject {
             renderableBuffer.setAttribute(renderableBuffer.getPositionVbo(), aVertexPosition, 3, 0);
             renderableBuffer.setAttribute(renderableBuffer.getColorVbo(), aVertexColor, 4, 0);
 
-            //GL20.glDrawArrays(GL20.GL_TRIANGLES, 0, 3);
             GL20.glDrawElements(GL20.GL_TRIANGLES, renderableBuffer.getIndicesLength(), GL20.GL_UNSIGNED_SHORT, 0);
         }
     }

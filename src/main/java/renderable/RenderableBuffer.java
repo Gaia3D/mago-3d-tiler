@@ -83,4 +83,8 @@ public class RenderableBuffer {
         }
         return floatArray;
     }
+
+    public void debug() {
+
+    }
 }

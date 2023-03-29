@@ -1,4 +1,8 @@
-import org.joml.*;
+import org.joml.Matrix3d;
+import org.joml.Matrix4d;
+import org.joml.Vector3d;
+import org.joml.Vector4d;
+
 public class Camera {
     Matrix4d transformMatrix;
     Matrix4d modelViewMatrix;
@@ -25,7 +29,7 @@ public class Camera {
         this.modelViewMatrix = null;
         this.rotationMatrix = null;
 
-        this.position = new Vector3d(0, 0, 0);
+        this.position = new Vector3d(0, 0, 200);
         this.rotation = new Vector3d(0, 0, 0);
 
         this.direction = new Vector3d(0, 0, -1);
@@ -62,8 +66,8 @@ public class Camera {
         Matrix4d pitchMatrix = new Matrix4d();
         pitchMatrix.rotation(yValue, pitchAxis);
 
-        Matrix4d totalRotationMatrix = new Matrix4d(pitchMatrix);
-        totalRotationMatrix.mul(headingMatrix);
+        Matrix4d totalRotationMatrix = new Matrix4d(headingMatrix);
+        totalRotationMatrix.mul(pitchMatrix);
 
         Vector3d translatedCameraPosition = new Vector3d(this.position);
         translatedCameraPosition.sub(pivotPosition);
@@ -76,8 +80,6 @@ public class Camera {
         Vector3d returnedCameraPosition = new Vector3d(transformedCameraPositionVec3);
         returnedCameraPosition.add(pivotPosition);
 
-        this.position = returnedCameraPosition;
-
         Matrix3d totalRotationMatrix3 = new Matrix3d();
         totalRotationMatrix.get3x3(totalRotationMatrix3);
 
@@ -85,17 +87,35 @@ public class Camera {
         rotatedDirection.mul(totalRotationMatrix3);
         rotatedDirection.normalize();
 
-        Vector3d rotatedUp = new Vector3d(this.up);
-        rotatedUp.mul(totalRotationMatrix3);
-        rotatedUp.normalize();
-
-        Vector3d rotatedRight = new Vector3d(this.direction);
-        rotatedRight.cross(this.up);
+        double dotResult = Math.abs(rotatedDirection.dot(0, 0, 1));
+        Vector3d rotatedRight, rotatedUp;
+        rotatedRight = new Vector3d(new Vector3d(0, 0, 1));
+        rotatedRight.cross(rotatedDirection);
         rotatedRight.normalize();
 
-        this.direction = rotatedDirection;
-        this.up = rotatedUp;
-        this.right = rotatedRight;
+        rotatedUp = new Vector3d(rotatedDirection);
+        rotatedUp.cross(rotatedRight);
+        rotatedUp.normalize();
+
+        if (dotResult > 0.995d || Double.isNaN(rotatedRight.x)) {
+            rotatedUp = new Vector3d(this.up);
+            rotatedUp.mul(totalRotationMatrix3);
+            rotatedUp.normalize();
+
+            rotatedRight = new Vector3d(rotatedDirection);
+            rotatedRight.cross(rotatedUp);
+            rotatedRight.normalize();
+
+            this.direction = rotatedDirection;
+            this.up = rotatedUp;
+            this.right = rotatedRight;
+            this.position = returnedCameraPosition;
+        } else {
+            this.direction = rotatedDirection;
+            this.up = rotatedUp;
+            this.right = rotatedRight;
+            this.position = returnedCameraPosition;
+        }
 
         this.dirty = true;
     }
