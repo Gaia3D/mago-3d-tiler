@@ -12,5 +12,5 @@ import java.util.ArrayList;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Mesh {
-    private ArrayList<Primitive> primitives;
+    private ArrayList<Primitive> primitives = new ArrayList<>();
 }

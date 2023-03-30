@@ -39,8 +39,9 @@ public class HelloWorld {
         //renderableObjects.add(new RenderablePoint(-0.25f, 0.0f, -1.0f));
         //renderableObjects.add(new RenderablePoint(0.25f, 0.0f, -1.0f));
         //renderableObjects.add(new TriangleObject());
-        renderableObjects.add(new CubeObject());
+        //renderableObjects.add(new CubeObject());
         renderableObjects.add(new BaseObject());
+        renderableObjects.add(new OriginObject());
         renderableObjects.add(new AssimpObject("C:\\data\\sample\\a_bd001_d.dae"));
 
         init();
@@ -77,7 +78,7 @@ public class HelloWorld {
         // 마우스 위치 콜백
         glfwSetCursorPosCallback(window, (window, xpos, ypos) -> {
             if (this.clicked) {
-                Vector3d pivot = new Vector3d(0.0d,0.0d,-1.0d);
+                Vector3d pivot = new Vector3d(0.0d,0.0d,0.0d);
                 float xoffset = (float) (this.xpos - xpos) * 0.01f;
                 float yoffset = (float) (this.ypos - ypos) * 0.01f;
                 camera.rotationOrbit(xoffset, yoffset, pivot);
@@ -147,7 +148,7 @@ public class HelloWorld {
 
         setupShader();
         this.camera = new Camera();
-        camera.rotationOrbit(-1.0f, 1.0f, new Vector3d(0.0d,0.0d,-1.0d));
+        camera.rotationOrbit(-1.0f, 1.0f, new Vector3d(0.0d,0.0d,0.0d));
     }
 
     private void setupShader() {
@@ -250,6 +251,7 @@ public class HelloWorld {
 
             glEnable(GL_DEPTH_TEST);
             glPointSize(5.0f);
+            glLineWidth(2.0f);
             // 클리어 컬러를 적용합니다.
             glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
             glClearDepth(1.0f);

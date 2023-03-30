@@ -12,5 +12,5 @@ import java.util.ArrayList;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Surface {
-    private ArrayList<Face> faces;
+    private ArrayList<Face> faces = new ArrayList<>();
 }

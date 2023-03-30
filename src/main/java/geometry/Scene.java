@@ -12,5 +12,6 @@ import java.util.ArrayList;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Scene {
-    private ArrayList<Node> nodes;
+    private ArrayList<Node> nodes = new ArrayList<>();
+    private ArrayList<Material> materials = new ArrayList<>();
 }

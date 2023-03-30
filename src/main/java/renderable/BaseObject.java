@@ -12,10 +12,12 @@ public class BaseObject extends RenderableObject {
     RenderableBuffer renderableBuffer;
     int[] vbos;
     boolean dirty;
+    float size;
 
     public BaseObject() {
         super();
-        this.setPosition(0.0f, 0.0f, -3.0f);
+        this.size = 256.0f;
+        this.setPosition(0.0f, 0.0f, -size/8);
         this.setRotation(0.0f, 0.0f, 0.0f);
     }
     @Override
@@ -50,7 +52,7 @@ public class BaseObject extends RenderableObject {
             ArrayList<Float> positionList = new ArrayList<Float>();
             ArrayList<Float> colorList = new ArrayList<Float>();
             
-            float size = 64.0f;
+            float size = this.size;
             int density = 16;
             float offset = (size * 2) / density;
             int checkPattern = 0;

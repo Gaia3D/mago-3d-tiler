@@ -14,8 +14,8 @@ public class CubeObject extends RenderableObject {
 
     public CubeObject() {
         super();
-        this.size = 0.25f;
-        this.setPosition(0.0f, 0.0f, -1.0f);
+        this.size = 8.0f;
+        this.setPosition(0.0f, 0.0f, 0.0f);
         this.setRotation((float) Math.toRadians(0), 0.0f, 0.0f);
     }
     @Override

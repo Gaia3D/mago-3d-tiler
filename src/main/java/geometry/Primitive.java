@@ -12,8 +12,7 @@ import java.util.ArrayList;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Primitive {
-    private ArrayList<Integer> indices;
-    private ArrayList<Vertex> vertices;
-
-    private ArrayList<Surface> surfaces;
+    private ArrayList<Integer> indices = new ArrayList<>();
+    private ArrayList<Vertex> vertices = new ArrayList<>();
+    private ArrayList<Surface> surfaces = new ArrayList<>();
 }

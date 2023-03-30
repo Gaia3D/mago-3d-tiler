@@ -29,7 +29,7 @@ public class Camera {
         this.modelViewMatrix = null;
         this.rotationMatrix = null;
 
-        this.position = new Vector3d(0, 0, 200);
+        this.position = new Vector3d(0, 0, 150);
         this.rotation = new Vector3d(0, 0, 0);
 
         this.direction = new Vector3d(0, 0, -1);

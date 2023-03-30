@@ -5,12 +5,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.ArrayList;
-
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Face {
-    private ArrayList<Integer> indices = new ArrayList<>();
+public class Texture {
+    private String name;
+    private String path;
 }

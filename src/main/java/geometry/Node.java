@@ -12,8 +12,8 @@ import java.util.ArrayList;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Node {
-    private Node parent;
-    private ArrayList<Mesh> meshes;
-    private ArrayList<Node> children;
-    //tm double[16] or
+    private Node parent = null;
+    private ArrayList<Mesh> meshes = new ArrayList<>();
+    private ArrayList<Node> children = new ArrayList<>();
+    //tm double[16]
 }
