@@ -1,8 +1,8 @@
 package geometry;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
@@ -11,6 +11,6 @@ import java.util.ArrayList;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Mesh {
-    private ArrayList<Primitive> primitives = new ArrayList<>();
+public class GaiaFace {
+    private ArrayList<Integer> indices = new ArrayList<>();
 }

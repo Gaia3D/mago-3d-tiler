@@ -11,6 +11,6 @@ import java.util.ArrayList;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Face {
-    private ArrayList<Integer> indices = new ArrayList<>();
+public class GaiaSurface {
+    private ArrayList<GaiaFace> faces = new ArrayList<>();
 }

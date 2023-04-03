@@ -12,7 +12,7 @@ import java.util.LinkedHashMap;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Material {
+public class GaiaMaterial {
     private Vector4d ambientColor;
     private Vector4d diffuseColor;
     private Vector4d specularColor;

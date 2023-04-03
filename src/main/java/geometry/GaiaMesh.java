@@ -11,6 +11,6 @@ import java.util.ArrayList;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Surface {
-    private ArrayList<Face> faces = new ArrayList<>();
+public class GaiaMesh {
+    private ArrayList<GaiaPrimitive> primitives = new ArrayList<>();
 }

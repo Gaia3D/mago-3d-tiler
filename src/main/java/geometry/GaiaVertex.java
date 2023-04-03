@@ -12,8 +12,8 @@ import org.joml.Vector4d;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Vertex {
-    private Vector2d textureCoordinate;
+public class GaiaVertex {
+    private Vector2d textureCoordinates;
     private Vector3d position;
     private Vector3d normal;
     private Vector4d color;

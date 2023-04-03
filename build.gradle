@@ -33,6 +33,11 @@ dependencies {
     implementation "org.lwjgl:lwjgl-opengl"
     implementation "org.lwjgl:lwjgl-stb"
     implementation 'org.joml:joml:1.10.5'
+
+    implementation 'de.javagl:jgltf-obj:2.0.3'
+    implementation 'de.javagl:jgltf-model:2.0.3'
+    implementation 'de.javagl:jgltf-validator:2.0.3'
+
     runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-assimp::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"

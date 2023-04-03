@@ -11,8 +11,8 @@ import java.util.ArrayList;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Primitive {
+public class GaiaPrimitive {
     private ArrayList<Integer> indices = new ArrayList<>();
-    private ArrayList<Vertex> vertices = new ArrayList<>();
-    private ArrayList<Surface> surfaces = new ArrayList<>();
+    private ArrayList<GaiaVertex> vertices = new ArrayList<>();
+    private ArrayList<GaiaSurface> surfaces = new ArrayList<>();
 }

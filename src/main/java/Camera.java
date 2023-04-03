@@ -57,6 +57,60 @@ public class Camera {
         return this.modelViewMatrix;
     }
 
+    // move forward
+    public void moveForward(float value) {
+        this.position.add(this.direction.mul(value, new Vector3d()));
+        this.dirty = true;
+    }
+    // move right
+    public void moveRight(float value) {
+        this.position.add(this.right.mul(value, new Vector3d()));
+        this.dirty = true;
+    }
+    // move up
+    public void moveUp(float value) {
+        this.position.add(this.up.mul(value, new Vector3d()));
+        this.dirty = true;
+    }
+    // 카메라 이동 (from Copilot)
+    public void move(float xValue, float yValue, float zValue) {
+        this.position.add(xValue, yValue, zValue);
+        this.dirty = true;
+    }
+    // 카메라 위치 변경 (from Copilot)
+    public void setPosition(float xValue, float yValue, float zValue) {
+        this.position.set(xValue, yValue, zValue);
+        this.dirty = true;
+    }
+    // 회전 (from Copilot)
+    public void rotate(float xValue, float yValue) {
+        this.rotationOrbit(xValue, yValue, this.position);
+    }
+    //lookat (from Copilot)
+    public void lookAt(Vector3d target) {
+        Vector3d direction = new Vector3d(target);
+        direction.sub(this.position);
+        direction.normalize();
+
+        Vector3d right = new Vector3d(0, 0, 1);
+        right.cross(direction);
+        right.normalize();
+
+        Vector3d up = new Vector3d(direction);
+        up.cross(right);
+        up.normalize();
+
+        this.direction = direction;
+        this.right = right;
+        this.up = up;
+        this.dirty = true;
+    }
+    //lookat from x,y,z (from Copilot)
+    public void lookAt(float x, float y, float z) {
+        Vector3d target = new Vector3d(x, y, z);
+        this.lookAt(target);
+    }
+
     public void rotationOrbit(float xValue, float yValue, Vector3d pivotPosition) {
         Vector3d pitchAxis = this.right;
 
@@ -119,7 +173,6 @@ public class Camera {
 
         this.dirty = true;
     }
-
 
     private void calcRight() {
         Vector3d direction = new Vector3d(this.direction);

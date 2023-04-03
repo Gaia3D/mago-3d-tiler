@@ -29,12 +29,12 @@ public class DataLoader {
         return bytes;
     }
 
-    public static Scene load(String filePath) {
-        Scene scene = new Scene();
+    public static GaiaScene load(String filePath) {
+        GaiaScene scene = new GaiaScene();
 
         File file = new File(filePath);
         String path = file.getAbsolutePath().replace(file.getName(), "");
-        System.out.println(path);
+        //System.out.println(path);
 
         byte[] bytes = readBytes(file);
         ByteBuffer byteBuffer = MemoryUtil.memCalloc(bytes.length);
@@ -53,7 +53,7 @@ public class DataLoader {
             scene.getMaterials().add(processMaterial(aiMaterial, path));
         }
 
-        Node node = processNode(aiScene, aiNode, null);
+        GaiaNode node = processNode(aiScene, aiNode, null);
         scene.getNodes().add(node);
 
         aiNode.free();
@@ -61,16 +61,16 @@ public class DataLoader {
         return scene;
     }
 
-    private static Material processMaterial(AIMaterial aiMaterial, String path) {
+    private static GaiaMaterial processMaterial(AIMaterial aiMaterial, String path) {
         //ointerBuffer aiTextures = aiScene.mTextures();
-        Material material = new Material();
+        GaiaMaterial material = new GaiaMaterial();
 
         AIString diffPath = AIString.calloc();
         Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_DIFFUSE, 0, diffPath, (IntBuffer) null, null, null, null, null, null);
         String diffTexPath = diffPath.dataString();
-        System.out.println(diffTexPath);
+        //System.out.println(diffTexPath);
 
-        Texture texture  = null;
+        GaiaTexture texture  = null;
         if (diffTexPath != null && diffTexPath.length() > 0) {
             //TextureCache textureCache = TextureCache.getInstance();
             //diffuseTexture = new TextureImage2D(path + "/" + diffTexPath, SamplerFilter.Trilinear);
@@ -81,15 +81,15 @@ public class DataLoader {
         for (int i = 0; i < numProperties; i++) {
             AIMaterialProperty aiMaterialProperty = AIMaterialProperty.create(pointerBuffer.get(i));
             aiMaterialProperty.mData();
-            System.out.println(aiMaterialProperty.mKey().dataString());
-            System.out.println(aiMaterialProperty.mType());
+            //System.out.println(aiMaterialProperty.mKey().dataString());
+            //System.out.println(aiMaterialProperty.mType());
         }
         return material;
     }
 
-    private static Node processNode(AIScene aiScene, AINode aiNode, Node parentNode) {
+    private static GaiaNode processNode(AIScene aiScene, AINode aiNode, GaiaNode parentNode) {
         PointerBuffer aiMeshes = aiScene.mMeshes();
-        Node node = new Node();
+        GaiaNode node = new GaiaNode();
         node.setParent(parentNode);
 
         int numMeshes = aiNode.mNumMeshes();
@@ -102,28 +102,28 @@ public class DataLoader {
         PointerBuffer childrenBuffer = aiNode.mChildren();
         for (int i = 0; i < numChildren; i++) {
             AINode aiChildNode = AINode.create(childrenBuffer.get(i));
-            Node childNode = processNode(aiScene, aiChildNode, node);
+            GaiaNode childNode = processNode(aiScene, aiChildNode, node);
             node.getChildren().add(childNode);
         }
         return node;
     }
-    private static Mesh processMesh(AIMesh aiMesh) {
-        Primitive primitive = processPrimitive(aiMesh);
-        Mesh mesh = new Mesh();
+    private static GaiaMesh processMesh(AIMesh aiMesh) {
+        GaiaPrimitive primitive = processPrimitive(aiMesh);
+        GaiaMesh mesh = new GaiaMesh();
         mesh.getPrimitives().add(primitive);
         return mesh;
     }
-    private static Primitive processPrimitive(AIMesh aiMesh) {
-        Surface surface = processSurface();
+    private static GaiaPrimitive processPrimitive(AIMesh aiMesh) {
+        GaiaSurface surface = processSurface();
 
-        Primitive primitive = new Primitive();
+        GaiaPrimitive primitive = new GaiaPrimitive();
         primitive.getSurfaces().add(surface);
 
         int numFaces = aiMesh.mNumFaces();
         AIFace.Buffer facesBuffer = aiMesh.mFaces();
         for (int i = 0; i < numFaces; i++) {
             AIFace aiFace = facesBuffer.get(i);
-            Face face = processFace(aiFace);
+            GaiaFace face = processFace(aiFace);
             surface.getFaces().add(face);
             face.getIndices().stream().forEach((indices) -> {
                 primitive.getIndices().add(indices);
@@ -135,20 +135,20 @@ public class DataLoader {
         AIVector3D.Buffer verticesBuffer = aiMesh.mVertices();
         for (int i = 0; i < mNumVertices; i++) {
             AIVector3D aiVector3D = verticesBuffer.get(i);
-            Vertex vertex = new Vertex();
+            GaiaVertex vertex = new GaiaVertex();
             vertex.setPosition(new Vector3d((double) aiVector3D.x(), (double) aiVector3D.z(), (double) aiVector3D.y()));
             primitive.getVertices().add(vertex);
             //aiVector3D.free();
         }
-        System.out.println(numFaces + "::" + mNumVertices);
+        //System.out.println(numFaces + "::" + mNumVertices);
         return primitive;
     }
-    private static Surface processSurface() {
-        Surface surface = new Surface();
+    private static GaiaSurface processSurface() {
+        GaiaSurface surface = new GaiaSurface();
         return surface;
     }
-    private static Face processFace(AIFace aiFace) {
-        Face face = new Face();
+    private static GaiaFace processFace(AIFace aiFace) {
+        GaiaFace face = new GaiaFace();
         int numIndices = aiFace.mNumIndices();
         IntBuffer indicesBuffer = aiFace.mIndices();
         for (int i = 0; i < numIndices; i++) {

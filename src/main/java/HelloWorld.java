@@ -86,6 +86,12 @@ public class HelloWorld {
             this.xpos = xpos;
             this.ypos = ypos;
         });
+
+        // 마우스 휠 이벤트
+        glfwSetScrollCallback(window, (window, xoffset, yoffset) -> {
+            camera.moveForward((float) yoffset * 3.0f);
+        });
+
         // 마우스 버튼 이벤트
         glfwSetMouseButtonCallback(window, (window, key, action, mode) -> {
             if (key == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
@@ -100,20 +106,30 @@ public class HelloWorld {
                 glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
             }
 
-            /*float rotationOffset = 0.1f;
+            float rotationOffset = 2.0f;
             Vector3d pivot = new Vector3d(0.0d,0.0d,-1.0d);
             if (key == GLFW_KEY_W) {
-                camera.rotationOrbitY(rotationOffset, pivot);
+                camera.moveForward(rotationOffset);
             }
             if (key == GLFW_KEY_A) {
-                camera.rotationOrbitX(-rotationOffset, pivot);
+                camera.moveRight(-rotationOffset);
             }
             if (key == GLFW_KEY_S) {
-                camera.rotationOrbitY(-rotationOffset, pivot);
+                camera.moveForward(-rotationOffset);
             }
             if (key == GLFW_KEY_D) {
-                camera.rotationOrbitX(rotationOffset, pivot);
-            }*/
+                camera.moveRight(rotationOffset);
+            }
+            if (key == GLFW_KEY_Q) {
+                camera.moveUp(rotationOffset);
+            }
+            if (key == GLFW_KEY_E) {
+                camera.moveUp(-rotationOffset);
+            }
+
+            if (key == GLFW_KEY_SPACE) {
+                camera.lookAt(0, 0 ,0);
+            }
         });
 
         // 스레드 스텍을 가져와서 새 프레임에 추가합니다.
@@ -201,7 +217,7 @@ public class HelloWorld {
 //        System.out.println("right : " + camera.right);
 //        System.out.println("up : " + camera.up);
 //        System.out.println("dir : " + camera.direction);
-        camera.rotationOrbit(0.0002f, -0.0000f, new Vector3d(0.0d,0.0d,-1.0d));
+        camera.rotationOrbit(0.0001f, -0.0000f, new Vector3d(0.0d,0.0d,-1.0d));
         int[] width = new int[1];
         int[] height = new int[1];
         glfwGetWindowSize(window, width, height);

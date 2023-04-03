@@ -3,10 +3,8 @@ package renderable;
 import geometry.*;
 import org.joml.Matrix4f;
 import org.joml.Vector3d;
-import org.lwjgl.PointerBuffer;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.assimp.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,15 +52,15 @@ public class AssimpObject extends RenderableObject {
             ArrayList<Float> positionList = new ArrayList<Float>();
             ArrayList<Float> colorList = new ArrayList<Float>();
 
-            Scene scene = DataLoader.load(path);
-            Node rootNode = scene.getNodes().get(0);
-            ArrayList<Node> children = rootNode.getChildren();
+            GaiaScene scene = DataLoader.load(path);
+            GaiaNode rootNode = scene.getNodes().get(0);
+            ArrayList<GaiaNode> children = rootNode.getChildren();
             children.stream().forEach((node) -> {
-                ArrayList<Mesh> meshes = node.getMeshes();
+                ArrayList<GaiaMesh> meshes = node.getMeshes();
                 meshes.stream().forEach((mesh) -> {
-                    ArrayList<Primitive> primitives = mesh.getPrimitives();
+                    ArrayList<GaiaPrimitive> primitives = mesh.getPrimitives();
                     primitives.stream().forEach((primitive) -> {
-                        ArrayList<Vertex> primitiveVerticesList = primitive.getVertices();
+                        ArrayList<GaiaVertex> primitiveVerticesList = primitive.getVertices();
                         ArrayList<Integer> primitiveIndicesList = primitive.getIndices();
                         primitiveVerticesList.stream().forEach((vertices) -> {
                             Vector3d vector3d = vertices.getPosition();
