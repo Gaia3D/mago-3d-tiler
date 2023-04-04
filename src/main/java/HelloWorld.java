@@ -42,7 +42,7 @@ public class HelloWorld {
         //renderableObjects.add(new CubeObject());
         renderableObjects.add(new BaseObject());
         renderableObjects.add(new OriginObject());
-        renderableObjects.add(new AssimpObject("C:\\data\\sample\\a_bd001_d.dae"));
+        renderableObjects.add(new AssimpObject("D:\\Gaia3d\\ws2_3ds\\a_bd001.3ds"));
 
         init();
         loop();

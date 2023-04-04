@@ -14,10 +14,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * GltfWriter
+ */
 public class GltfWriter {
     public static void write(GaiaScene scene, String path) {
         GltfModel gltfModel = convert(scene);
@@ -35,18 +39,69 @@ public class GltfWriter {
         gltf = generateAsset(gltf);
         initScene(gltf, gaiaScene);
         GltfBinary binary = createBinaryBuffer(gltf, gaiaScene);
-        binary.fill();
+        if (binary != null) {
+            List<Double> areas = new ArrayList<>();
+            List<Double> volumes = new ArrayList<>();
+            int num = 0;
+            int numAll = 0;
+
+            // 원본 IFC데이터
+
+
+            convertGeometryInfo(gltf, binary, gaiaScene);
+
+            areas.sort(Double::compareTo);
+            volumes.sort(Double::compareTo);
+            //System.out.println("areas: " + areas.get(areas.size() / 2) + ", volumes: " + volumes.get(volumes.size() / 2));
+            //System.out.println("num: " + num + ", numAll: " + numAll);
+            binary.fill();
+        }
         GltfAssetV2 asset = new GltfAssetV2(gltf, binary.getBody());
         return GltfModels.create(asset);
     }
 
+    //convertGeometryInfo
+    private static void convertGeometryInfo(GlTF gltf, GltfBinary binary, GaiaScene gaiaScene) {
+        ArrayList<Short> indices = gaiaScene.getTotalIndices();
+        ArrayList<Float> vertices = gaiaScene.getTotalVertices();
+        ArrayList<Float> normals = gaiaScene.getTotalNormals();
+        ArrayList<Float> colors = gaiaScene.getTotalColors();
+        ArrayList<Float> textureCoordinates = gaiaScene.getTotalTextureCoordinates();
+
+        //System.out.println("indices: " + indices.size());
+
+
+        ByteBuffer indicesBuffer = binary.getIndicesBuffer();
+        ByteBuffer verticesBuffer = binary.getVerticesBuffer();
+        ByteBuffer normalsBuffer = binary.getNormalsBuffer();
+        ByteBuffer colorsBuffer = binary.getColorsBuffer();
+        ByteBuffer textureCoordinatesBuffer = binary.getTextureCoordinatesBuffer();
+
+        for (Short indice: indices) {
+            indicesBuffer.putShort(indice);
+        }
+        for (Float vertex: vertices) {
+            verticesBuffer.putFloat(vertex);
+        }
+        for (Float normal: normals) {
+            normalsBuffer.putFloat(normal);
+        }
+        for (Float color: colors) {
+            colorsBuffer.putFloat(color);
+        }
+        for (Float textureCoordinate: textureCoordinates) {
+            textureCoordinatesBuffer.putFloat(textureCoordinate);
+        }
+        System.out.println("good");
+    }
+
     private static GltfBinary createBinaryBuffer(GlTF gltf, GaiaScene gaiaScene) {
 
-        int totalIndicesByteLength = gaiaScene.getTotalIndices() * 4;
-        int totalVerticesByteLength = gaiaScene.getTotalVertices() * 4;
-        int totalNormalsByteLength = gaiaScene.getTotalNormals() * 4;
-        int totalColorsByteLength = gaiaScene.getTotalColors() * 4;
-        int totalTextureCoordinatesByteLength = gaiaScene.getTotalTexCoords();
+        int totalIndicesByteLength = gaiaScene.getTotalIndicesCount() * 4;
+        int totalVerticesByteLength = gaiaScene.getTotalVerticesCount() * 4 * 3;
+        int totalNormalsByteLength = gaiaScene.getTotalNormalsCount() * 4 * 3;
+        int totalColorsByteLength = gaiaScene.getTotalColorsCount() * 4 * 4;
+        int totalTextureCoordinatesByteLength = gaiaScene.getTotalTextureCoordinatesCount() * 2;
 
         System.out.println("totalIndicesByteLength: " + totalIndicesByteLength);
         System.out.println("totalVerticesByteLength: " + totalVerticesByteLength);
@@ -97,7 +152,6 @@ public class GltfWriter {
         Asset asset = new Asset();
         asset.setVersion("2.0");
         asset.setMinVersion("2.0");
-        //asset.setGenerator(Metas.properties.getProperty("project.name") + "-" + Metas.properties.getProperty("project.version") + " for " + Metas.properties.getProperty("platform.os.name") + "-" + Metas.properties.getProperty("platform.os.arch"));
         gltf.setAsset(asset);
         return gltf;
     }
@@ -111,17 +165,6 @@ public class GltfWriter {
 
         Matrix4d matrix4d = new Matrix4d();
         float[] mat = matrix4d.get(new float[16]);
-        /*double[] trueNorth = model.getTrueNorth();
-        double r = Math.sqrt(trueNorth[0] * trueNorth[0] + trueNorth[1] * trueNorth[1]);
-        float[] matTn = new float[] {
-                (float) (trueNorth[1] / r), (float) (-trueNorth[0] / r),    0.f, 0.f,
-                (float) (trueNorth[0] / r), (float) (trueNorth[1] / r),     0.f, 0.f,
-                0.f,                        0.f,                            1.f, 0.f,
-                0.f,                        0.f,                            0.f, 1.f
-        };
-
-        float[] mat = new float[16];
-        Matrix.multiplyMM(mat, 0, ROT_Z_TO_Y, 0, matTn, 0);*/
         node.setMatrix(mat);
         nodes.add(node);
         gltf.setNodes(nodes);

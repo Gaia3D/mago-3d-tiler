@@ -43,7 +43,7 @@ public class DataLoader {
 
         //Assimp.aiTextureType_SPECULAR;
         //AIScene aiScene = Assimp.aiImportFile(path, flags);
-        AIScene aiScene = Assimp.aiImportFileFromMemory(byteBuffer, DEFAULT_FLAGS, "dae");
+        AIScene aiScene = Assimp.aiImportFileFromMemory(byteBuffer, DEFAULT_FLAGS, "3ds");
         AINode aiNode = aiScene.mRootNode();
 
         int numMaterials = aiScene.mNumMaterials();

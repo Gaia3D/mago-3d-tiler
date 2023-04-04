@@ -25,6 +25,7 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.26'
     annotationProcessor 'org.projectlombok:lombok:1.18.26'
 
+
     implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
     implementation "org.lwjgl:lwjgl"
     implementation "org.lwjgl:lwjgl-assimp"
@@ -37,6 +38,8 @@ dependencies {
     implementation 'de.javagl:jgltf-obj:2.0.3'
     implementation 'de.javagl:jgltf-model:2.0.3'
     implementation 'de.javagl:jgltf-validator:2.0.3'
+
+    implementation 'org.locationtech.proj4j:proj4j:1.2.3'
 
     runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-assimp::$lwjglNatives"
