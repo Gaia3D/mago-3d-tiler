@@ -12,7 +12,8 @@ import java.util.ArrayList;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GaiaPrimitive {
-    private ArrayList<Integer> indices = new ArrayList<>();
+    private Integer AccessorIndices = -1;
+    private ArrayList<Integer> indices = new ArrayList<>(); // 3d
     private ArrayList<GaiaVertex> vertices = new ArrayList<>();
     private ArrayList<GaiaSurface> surfaces = new ArrayList<>();
 }

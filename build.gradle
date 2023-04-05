@@ -8,12 +8,15 @@ group 'com.gaia3d'
 version '1.0-SNAPSHOT'
 project.ext.lwjglVersion = "3.3.1"
 
-switch (OperatingSystem.current()) {
+switch ( OperatingSystem.current() ) {
     case OperatingSystem.WINDOWS:
-        def osArch = System.getProperty("os.arch")
-        project.ext.lwjglNatives = osArch.contains("64")
-                ? "natives-windows${osArch.startsWith("aarch64") ? "-arm64" : ""}"
-                : "natives-windows-x86"
+        project.ext.lwjglNatives = "natives-linux"
+        break
+    case OperatingSystem.LINUX:
+        project.ext.lwjglNatives = "natives-linux"
+        break
+    case OperatingSystem.MAC_OS:
+        project.ext.lwjglNatives = "natives-macos"
         break
 }
 
@@ -24,7 +27,6 @@ repositories {
 dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.26'
     annotationProcessor 'org.projectlombok:lombok:1.18.26'
-
 
     implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
     implementation "org.lwjgl:lwjgl"

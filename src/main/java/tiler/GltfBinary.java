@@ -8,11 +8,17 @@ import java.nio.ByteBuffer;
 @Getter
 @Setter
 public class GltfBinary {
-    private int indicesBufferId;
-    private int verticesBufferId;
-    private int normalsBufferId;
-    private int colorsBufferId;
-    private int textureCoordinatesBufferId;
+    private int indicesBufferViewId = -1;
+    private int verticesBufferViewId = -1;
+    private int normalsBufferViewId = -1;
+    private int colorsBufferViewId = -1;
+    private int textureCoordinatesBufferViewId = -1;
+
+    private int indicesAccessorId = -1;
+    private int verticesAccessorId = -1;
+    private int normalsAccessorId = -1;
+    private int colorsAccessorId = -1;
+    private int textureCoordinatesAccessorId = -1;
 
     private ByteBuffer body;
     private ByteBuffer indicesBuffer;
