@@ -207,7 +207,7 @@ public class DataLoader {
             vertex.setPosition(new Vector3d((double) aiVertice.x(), (double) aiVertice.z(), (double) aiVertice.y()));
             vertex.setNormal(new Vector3d((double) aiNormal.x(), (double) aiNormal.z(), (double) aiNormal.y()));
             vertex.setTextureCoordinates(new Vector2d((double) textCoord.x(), 1.0 - (double) textCoord.y()));
-            System.out.println(vertex.getTextureCoordinates().x + ", " + vertex.getTextureCoordinates().y);
+            //System.out.println(vertex.getTextureCoordinates().x + ", " + vertex.getTextureCoordinates().y);
             primitive.getVertices().add(vertex);
         }
 

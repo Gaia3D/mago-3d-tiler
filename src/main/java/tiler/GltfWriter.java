@@ -56,15 +56,11 @@ public class GltfWriter {
         if (binary != null) {
             List<Double> areas = new ArrayList<>();
             List<Double> volumes = new ArrayList<>();
-            int num = 0;
-            int numAll = 0;
 
             convertGeometryInfo(gltf, binary, gaiaScene);
 
             areas.sort(Double::compareTo);
             volumes.sort(Double::compareTo);
-            //System.out.println("areas: " + areas.get(areas.size() / 2) + ", volumes: " + volumes.get(volumes.size() / 2));
-            //System.out.println("num: " + num + ", numAll: " + numAll);
             binary.fill();
         }
         GltfAssetV2 asset = new GltfAssetV2(gltf, binary.getBody());
@@ -136,7 +132,7 @@ public class GltfWriter {
         int totalVerticesByteLength = gaiaScene.getTotalVerticesCount() * 4 * 3;
         int totalNormalsByteLength = gaiaScene.getTotalNormalsCount() * 4 * 3;
         int totalColorsByteLength = gaiaScene.getTotalColorsCount() * 4 * 4;
-        int totalTextureCoordinatesByteLength = gaiaScene.getTotalTextureCoordinatesCount() * 2;
+        int totalTextureCoordinatesByteLength = gaiaScene.getTotalTextureCoordinatesCount() * 4 * 2;
 
 //        System.out.println("totalIndicesByteLength: " + totalIndicesByteLength);
 //        System.out.println("totalVerticesByteLength: " + totalVerticesByteLength);
