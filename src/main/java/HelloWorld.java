@@ -233,6 +233,7 @@ public class HelloWorld {
 
         int uProjectionMatrix = GL20.glGetUniformLocation(this.shaderProgram, "uProjectionMatrix");
         int uModelRotationMatrix = GL20.glGetUniformLocation(this.shaderProgram, "uModelRotationMatrix");
+        int uTextureType = GL20.glGetUniformLocation(this.shaderProgram, "uTextureType");
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
             float[] projectionMatrixBuffer = new float[16];
@@ -243,6 +244,7 @@ public class HelloWorld {
 
             GL20.glUniformMatrix4fv(uProjectionMatrix, false, projectionMatrixBuffer);
             GL20.glUniformMatrix4fv(uModelRotationMatrix, false, modelViewMatrixBuffer);
+            GL20.glUniform1i(uTextureType, 0);
             renderableObjects.forEach(renderableObject -> {
                 renderableObject.render(this.shaderProgram);
             });
@@ -265,6 +267,8 @@ public class HelloWorld {
             glfwGetWindowSize(window, width, height);
             glViewport(0, 0, width[0], height[0]);
 
+            glFrontFace(GL_CCW);
+            glEnable(GL_CULL_FACE);
             glEnable(GL_DEPTH_TEST);
             glPointSize(5.0f);
             glLineWidth(2.0f);

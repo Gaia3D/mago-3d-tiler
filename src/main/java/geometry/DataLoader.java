@@ -1,14 +1,17 @@
 package geometry;
 
+import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
 import org.lwjgl.system.MemoryUtil;
 import util.FileUtil;
 
+import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
 
 /**
  * Loads a scene from a file
@@ -22,7 +25,9 @@ public class DataLoader {
             |Assimp.aiProcess_Triangulate
             |Assimp.aiProcess_JoinIdenticalVertices
             |Assimp.aiProcess_CalcTangentSpace
-            |Assimp.aiProcess_SortByPType;
+            |Assimp.aiProcess_SortByPType
+            //|Assimp.aiProcess_FixInfacingNormals 이거 아님\
+            |Assimp.aiProcess_FlipWindingOrder;
 
     /** Loads a scene from a filePath
      * @param filePath 파일 경로
@@ -165,20 +170,71 @@ public class DataLoader {
             AIFace aiFace = facesBuffer.get(i);
             GaiaFace face = processFace(aiFace);
             surface.getFaces().add(face);
+
+            //ArrayList<Integer> indices = face.getIndices();
+            /*if (indices.size() == 3) {
+                System.out.println(indices);
+                primitive.getIndices().add(indices.get(0));
+                primitive.getIndices().add(indices.get(1));
+                primitive.getIndices().add(indices.get(2));
+            }*/
+
             face.getIndices().stream().forEach((indices) -> {
                 primitive.getIndices().add(indices);
             });
         }
 
+
         int mNumVertices = aiMesh.mNumVertices();
         AIVector3D.Buffer verticesBuffer = aiMesh.mVertices();
+        AIVector3D.Buffer normalsBuffer = aiMesh.mNormals();
+        AIVector3D.Buffer textCoords = aiMesh.mTextureCoords(0);
+
+//        System.out.println("mNumVertices: " + mNumVertices);
+//        System.out.println("verticesBuffer: " + verticesBuffer.remaining());
+//        System.out.println("normalsBuffer: " + normalsBuffer.remaining());
+//        System.out.println("textCoords: " + textCoords.remaining());
+
+        /*int numTextCoords = textCoords != null ? textCoords.remaining() : 0;
+        for (int i = 0; i < numTextCoords; i++) {
+            AIVector3D textCoord = textCoords.get();
+        }*/
         for (int i = 0; i < mNumVertices; i++) {
-            AIVector3D aiVector3D = verticesBuffer.get(i);
+            AIVector3D aiVertice = verticesBuffer.get(i);
+            AIVector3D aiNormal = normalsBuffer.get(i);
+            AIVector3D textCoord = textCoords.get(i);
             GaiaVertex vertex = new GaiaVertex();
-            vertex.setPosition(new Vector3d((double) aiVector3D.x(), (double) aiVector3D.z(), (double) aiVector3D.y()));
+            vertex.setPosition(new Vector3d((double) aiVertice.x(), (double) aiVertice.z(), (double) aiVertice.y()));
+            vertex.setNormal(new Vector3d((double) aiNormal.x(), (double) aiNormal.z(), (double) aiNormal.y()));
+            vertex.setTextureCoordinates(new Vector2d((double) textCoord.x(), 1.0 - (double) textCoord.y()));
+            System.out.println(vertex.getTextureCoordinates().x + ", " + vertex.getTextureCoordinates().y);
             primitive.getVertices().add(vertex);
         }
+
+        Rectangle2D rectangle2D = getTextureCoordsBoundingRect(primitive);
+
         return primitive;
+    }
+
+    // getTextureCoordsBoundingRect
+    private static Rectangle2D getTextureCoordsBoundingRect(GaiaPrimitive primitive) {
+        Rectangle2D rect = new Rectangle2D.Double();
+        for (GaiaVertex vertex : primitive.getVertices()) {
+            Vector2d textureCoordinates = vertex.getTextureCoordinates();
+            if (textureCoordinates.x < rect.getMinX()) {
+                rect.setRect(textureCoordinates.x, rect.getMinY(), rect.getWidth(), rect.getHeight());
+            }
+            if (textureCoordinates.y < rect.getMinY()) {
+                rect.setRect(rect.getMinX(), textureCoordinates.y, rect.getWidth(), rect.getHeight());
+            }
+            if (textureCoordinates.x > rect.getMaxX()) {
+                rect.setRect(rect.getMinX(), rect.getMinY(), textureCoordinates.x, rect.getHeight());
+            }
+            if (textureCoordinates.y > rect.getMaxY()) {
+                rect.setRect(rect.getMinX(), rect.getMinY(), rect.getWidth(), textureCoordinates.y);
+            }
+        }
+        return rect;
     }
 
     /**

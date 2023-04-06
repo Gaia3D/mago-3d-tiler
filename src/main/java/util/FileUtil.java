@@ -4,14 +4,79 @@ import geometry.*;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryUtil;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.IntBuffer;
 import java.nio.file.Files;
 
 public class FileUtil {
+
+    public static BufferedImage readImage(String filePath) {
+        BufferedImage image;
+        try {
+            image = ImageIO.read(new File(filePath));
+            return image;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    // readImage
+    public static ByteBuffer convertByteBufferToBufferdImage(BufferedImage bufferedImage) {
+        int srcPixelFormat = -1;
+        if (bufferedImage.getColorModel().hasAlpha()) {
+            srcPixelFormat = GL20.GL_RGBA;
+        } else {
+            srcPixelFormat = GL20.GL_RGB;
+        }
+
+        byte[] bytes = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
+        //ByteBuffer byteBuffer = BufferUtils.createByteBuffer(bytes.length);
+        //ByteBuffer byteBuffer = BufferUtils.createByteBuffer(bufferedImage.getWidth() * bufferedImage.getHeight() * 4);
+        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(bufferedImage.getWidth() * bufferedImage.getHeight() * 4);
+        byteBuffer.order(ByteOrder.nativeOrder());
+        byteBuffer.put(bytes);
+        byteBuffer.flip();
+        return byteBuffer;
+    }
+
+    // convertIntBufferToByteBuffer
+    public static IntBuffer convertByteBufferToIntBuffer(ByteBuffer byteBuffer) {
+        int length = byteBuffer.capacity() / 4;
+        IntBuffer intBuffer = IntBuffer.allocate(length);
+        for (int i = 0; i < length; i++) {
+            intBuffer.put(byteBuffer.getInt(i * 4));
+        }
+        /*IntBuffer intBuffer = BufferUtils.createIntBuffer(byteBuffer.capacity() / 4);
+        for (int i = 0; i < byteBuffer.capacity() / 4; i++) {
+            intBuffer.put(byteBuffer.getInt(i * 4));
+        }*/
+        return intBuffer;
+    }
+
+    public static String changeExtension(String fileName, String extension) {
+        String name = getFileNameWithoutExtension(fileName);
+        return name + "." + extension;
+    }
+
+    public static String getFileNameWithoutExtension(String fileName) {
+        String name = "";
+        int i = fileName.lastIndexOf('.');
+        if (i > 0) {
+            name = fileName.substring(0, i);
+        }
+        return name;
+    }
+
     public static String getExtension(String fileName) {
         String extension = "";
         int i = fileName.lastIndexOf('.');

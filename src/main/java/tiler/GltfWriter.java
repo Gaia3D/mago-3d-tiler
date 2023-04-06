@@ -127,7 +127,7 @@ public class GltfWriter {
         }
 
         addMeshNode(gltf, meshId, null, "znkim test");
-        System.out.println("good");
+//        System.out.println("good");
     }
 
     private static GltfBinary createBinaryBuffer(GlTF gltf, GaiaScene gaiaScene) {
@@ -138,16 +138,16 @@ public class GltfWriter {
         int totalColorsByteLength = gaiaScene.getTotalColorsCount() * 4 * 4;
         int totalTextureCoordinatesByteLength = gaiaScene.getTotalTextureCoordinatesCount() * 2;
 
-        System.out.println("totalIndicesByteLength: " + totalIndicesByteLength);
-        System.out.println("totalVerticesByteLength: " + totalVerticesByteLength);
-        System.out.println("totalNormalsByteLength: " + totalNormalsByteLength);
-        System.out.println("totalColorsByteLength: " + totalColorsByteLength);
-        System.out.println("totalTextureCoordinatesByteLength: " + totalTextureCoordinatesByteLength);
+//        System.out.println("totalIndicesByteLength: " + totalIndicesByteLength);
+//        System.out.println("totalVerticesByteLength: " + totalVerticesByteLength);
+//        System.out.println("totalNormalsByteLength: " + totalNormalsByteLength);
+//        System.out.println("totalColorsByteLength: " + totalColorsByteLength);
+//        System.out.println("totalTextureCoordinatesByteLength: " + totalTextureCoordinatesByteLength);
 
 
         int totalBodyByteLength = totalIndicesByteLength + totalVerticesByteLength + totalNormalsByteLength + totalColorsByteLength + totalTextureCoordinatesByteLength;
         //int totalBodyByteLength = 10;
-        System.out.println("totalBodyByteLength: " + totalBodyByteLength);
+//        System.out.println("totalBodyByteLength: " + totalBodyByteLength);
 
         GltfBinary binary = new GltfBinary();
         binary.setBody(ByteBuffer.allocate(totalBodyByteLength));

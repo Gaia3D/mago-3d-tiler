@@ -10,7 +10,7 @@ project.ext.lwjglVersion = "3.3.1"
 
 switch ( OperatingSystem.current() ) {
     case OperatingSystem.WINDOWS:
-        project.ext.lwjglNatives = "natives-linux"
+        project.ext.lwjglNatives = "natives-windows"
         break
     case OperatingSystem.LINUX:
         project.ext.lwjglNatives = "natives-linux"

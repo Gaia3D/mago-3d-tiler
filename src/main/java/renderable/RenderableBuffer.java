@@ -16,13 +16,16 @@ public class RenderableBuffer {
     private int indicesLength;
     private int indicesVbo;
     private int positionVbo;
+    private int normalVbo;
     private int colorVbo;
+    private int textureCoordinateVbo;
+    private int textureVbo;
 
     public RenderableBuffer() {
         this.initVbo();
     }
     public void initVbo() {
-        vbos = new int[4];
+        vbos = new int[6];
         GL20.glGenBuffers(vbos);
         vboCount = 0;
     }

@@ -2,18 +2,27 @@ package renderable;
 
 import geometry.*;
 import org.joml.Matrix4f;
+import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
 import util.FileUtil;
 
+import java.awt.image.BufferedImage;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class AssimpObject extends RenderableObject {
     RenderableBuffer renderableBuffer;
+    TextureBuffer textureBuffer;
+
     int[] vbos;
     boolean dirty;
     String path;
@@ -28,10 +37,13 @@ public class AssimpObject extends RenderableObject {
     @Override
     public void render(int program) {
         RenderableBuffer renderableBuffer = this.getBuffer();
+        TextureBuffer textureBuffer = this.textureBuffer;
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
             Matrix4f objectRotationMatrix = getTransformMatrix();
             int uObjectRotationMatrix = GL20.glGetUniformLocation(program, "uObjectRotationMatrix");
+            int uTextureType = GL20.glGetUniformLocation(program, "uTextureType");
+
             float[] objectRotationMatrixBuffer = new float[16];
             objectRotationMatrix.get(objectRotationMatrixBuffer);
 
@@ -39,12 +51,22 @@ public class AssimpObject extends RenderableObject {
 
             int aVertexPosition = GL20.glGetAttribLocation(program, "aVertexPosition");
             int aVertexColor = GL20.glGetAttribLocation(program, "aVertexColor");
+            int aVertexNormal = GL20.glGetAttribLocation(program, "aVertexNormal");
+            int aVertexTextureCoordinate = GL20.glGetAttribLocation(program, "aVertexTextureCoordinate");
+
+            GL20.glUniform1i(uTextureType, 1);
+            int uTexture = GL20.glGetUniformLocation(program, "uTexture");
+            textureBuffer.setTextureBind(textureBuffer.getTextureVbo());
 
             renderableBuffer.setIndiceBind(renderableBuffer.getIndicesVbo());
             renderableBuffer.setAttribute(renderableBuffer.getPositionVbo(), aVertexPosition, 3, 0);
             renderableBuffer.setAttribute(renderableBuffer.getColorVbo(), aVertexColor, 4, 0);
+            renderableBuffer.setAttribute(renderableBuffer.getNormalVbo(), aVertexNormal, 3, 0);
+            renderableBuffer.setAttribute(renderableBuffer.getTextureCoordinateVbo(), aVertexTextureCoordinate, 2, 0);
 
             GL20.glDrawElements(GL20.GL_TRIANGLES, renderableBuffer.getIndicesLength(), GL20.GL_UNSIGNED_SHORT, 0);
+            GL20.glUniform1i(uTextureType, 0);
+            textureBuffer.setTextureUnbind();
         }
     }
     @Override
@@ -53,9 +75,11 @@ public class AssimpObject extends RenderableObject {
             ArrayList<Short> indicesList = new ArrayList<Short>();
             ArrayList<Float> positionList = new ArrayList<Float>();
             ArrayList<Float> colorList = new ArrayList<Float>();
+            ArrayList<Float> normalList = new ArrayList<Float>();
+            ArrayList<Float> textureCoordinateLsit = new ArrayList<Float>();
 
             GaiaScene scene = DataLoader.load(path, null);
-            scene = FileUtil.sampleScene();
+            //scene = FileUtil.sampleScene();
 
             GaiaNode rootNode = scene.getNodes().get(0);
             ArrayList<GaiaNode> children = rootNode.getChildren();
@@ -67,13 +91,21 @@ public class AssimpObject extends RenderableObject {
                         ArrayList<GaiaVertex> primitiveVerticesList = primitive.getVertices();
                         ArrayList<Integer> primitiveIndicesList = primitive.getIndices();
                         primitiveVerticesList.stream().forEach((vertices) -> {
-                            Vector3d vector3d = vertices.getPosition();
-                            positionList.add((float) vector3d.x);
-                            positionList.add((float) vector3d.z);
-                            positionList.add((float) vector3d.y);
-                            colorList.add(0.6f);
-                            colorList.add(0.6f);
-                            colorList.add(0.6f);
+                            Vector3d position = vertices.getPosition();
+                            positionList.add((float) position.x);
+                            positionList.add((float) position.z);
+                            positionList.add((float) position.y);
+                            Vector3d normal = vertices.getNormal();
+                            normalList.add((float) normal.x);
+                            normalList.add((float) normal.y);
+                            normalList.add((float) normal.z);
+                            Vector2d textureCoordinate = vertices.getTextureCoordinates();
+                            textureCoordinateLsit.add((float) textureCoordinate.x);
+                            textureCoordinateLsit.add((float) textureCoordinate.y);
+
+                            colorList.add(0.4f);
+                            colorList.add(0.4f);
+                            colorList.add(0.8f);
                             colorList.add(1.0f);
                         });
 
@@ -88,16 +120,47 @@ public class AssimpObject extends RenderableObject {
             });
 
             RenderableBuffer renderableBuffer = new RenderableBuffer();
+            TextureBuffer textureBuffer = new TextureBuffer();
 
             int indicesVbo = renderableBuffer.createIndicesBuffer(indicesList);
             int positionVbo = renderableBuffer.createBuffer(positionList);
             int colorVbo = renderableBuffer.createBuffer(colorList);
+            int normalVbo = renderableBuffer.createBuffer(normalList);
+            int textureCoordinateVbo = renderableBuffer.createBuffer(textureCoordinateLsit);
+
+            //String imagePath = "C:\\data\\sample\\grid.jpg";
+            String imagePath = "C:\\data\\sample\\a_bd001.png";
+
+            BufferedImage image = FileUtil.readImage(imagePath);
+            int textureVbo = textureBuffer.makeTexture(image, GL20.GL_RGBA);
+            //int textureVbo = textureBuffer.createTexture(image);
+
+            /*IntBuffer x = BufferUtils.createIntBuffer(1);
+            IntBuffer y = BufferUtils.createIntBuffer(1);
+            IntBuffer channels = BufferUtils.createIntBuffer(1);
+            ByteBuffer image = STBImage.stbi_load(imagePath, x, y, channels, STBImage.STBI_rgb_alpha);
+            if (image == null) {
+                System.err.println("Could not decode image file ["+ imagePath +"]: ["+ STBImage.stbi_failure_reason() +"]");
+            }*/
+
+
+
+            //int textureVbo = textureBuffer.createTexture(image, x.get(), y.get(), GL20.GL_RGBA8, GL20.GL_RGBA);
+
+            //ByteBuffer imageByteBuffer = FileUtil.convertByteBufferToBufferdImage(image);
+
+            //int textureVbo = textureBuffer.createTexture(byteBuffer, image.getWidth(), image.getHeight(), GL20.GL_RGBA, GL20.GL_RGBA);
+            //System.out.println("textureVbo: " + textureVbo);
 
             renderableBuffer.setPositionVbo(positionVbo);
             renderableBuffer.setColorVbo(colorVbo);
+            renderableBuffer.setNormalVbo(normalVbo);
+            renderableBuffer.setTextureCoordinateVbo(textureCoordinateVbo);
             renderableBuffer.setIndicesVbo(indicesVbo);
             renderableBuffer.setIndicesLength(indicesList.size());
+            textureBuffer.setTextureVbo(textureVbo);
             this.renderableBuffer = renderableBuffer;
+            this.textureBuffer = textureBuffer;
         }
         return this.renderableBuffer;
     }

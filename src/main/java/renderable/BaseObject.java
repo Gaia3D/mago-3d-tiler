@@ -1,6 +1,7 @@
 package renderable;
 
 import org.joml.Matrix4f;
+import org.joml.Vector3d;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryStack;
 
@@ -43,6 +44,19 @@ public class BaseObject extends RenderableObject {
             GL20.glDrawElements(GL20.GL_TRIANGLES, renderableBuffer.getIndicesLength(), GL20.GL_UNSIGNED_SHORT, 0);
         }
     }
+    // calcNormal
+    // Calculate the normal of a triangle
+    public static Vector3d calcNormal(Vector3d v1, Vector3d v2, Vector3d v3) {
+        Vector3d normal = new Vector3d();
+        Vector3d v1v2 = new Vector3d();
+        Vector3d v1v3 = new Vector3d();
+        v2.sub(v1, v1v2);
+        v3.sub(v1, v1v3);
+        v1v2.cross(v1v3, normal);
+        normal.normalize();
+        return normal;
+    }
+
     @Override
     public RenderableBuffer getBuffer() {
         if (this.renderableBuffer == null) {
@@ -50,6 +64,7 @@ public class BaseObject extends RenderableObject {
 
             ArrayList<Short> indicesList = new ArrayList<Short>();
             ArrayList<Float> positionList = new ArrayList<Float>();
+            ArrayList<Float> normalList = new ArrayList<Float>();
             ArrayList<Float> colorList = new ArrayList<Float>();
             
             float size = this.size;
@@ -78,6 +93,28 @@ public class BaseObject extends RenderableObject {
                     positionList.add(startX);
                     positionList.add(endY);
                     positionList.add(0.0f);
+
+                    Vector3d normal = calcNormal(
+                        new Vector3d(startX, startY, 0.0f),
+                        new Vector3d(endX, startY, 0.0f),
+                        new Vector3d(endX, endY, 0.0f)
+                    );
+
+                    normalList.add((float) normal.x);
+                    normalList.add((float) normal.y);
+                    normalList.add((float) normal.z);
+
+                    normalList.add((float) normal.x);
+                    normalList.add((float) normal.y);
+                    normalList.add((float) normal.z);
+
+                    normalList.add((float) normal.x);
+                    normalList.add((float) normal.y);
+                    normalList.add((float) normal.z);
+
+                    normalList.add((float) normal.x);
+                    normalList.add((float) normal.y);
+                    normalList.add((float) normal.z);
 
                     for (int i = 0; i < 4; i++) {
                         if (checkPattern % 2 == 0) {
@@ -116,11 +153,12 @@ public class BaseObject extends RenderableObject {
             for (int i = 0; i < positionList.size() / 3; i++) {
                 int indicesOffset = i * 4;
                 indicesList.add((short) (0 + indicesOffset));
+                indicesList.add((short) (2 + indicesOffset));
                 indicesList.add((short) (1 + indicesOffset));
-                indicesList.add((short) (2 + indicesOffset));
+
                 indicesList.add((short) (0 + indicesOffset));
-                indicesList.add((short) (2 + indicesOffset));
                 indicesList.add((short) (3 + indicesOffset));
+                indicesList.add((short) (2 + indicesOffset));
                 checkPattern++;
             }
 
@@ -129,10 +167,10 @@ public class BaseObject extends RenderableObject {
             int colorVbo = renderableBuffer.createBuffer(colorList);
 
             Short max = indicesList.stream().max(Comparator.comparingInt(x->x)).orElseThrow(NoSuchElementException::new);
-            System.out.println("MAXINDICES :: " + max);
-            System.out.println("INDICESCNT :: " + indicesList.size());
-            System.out.println("POSITIONSC :: " + positionList.size() / 3);
-            System.out.println("COLORSCONT :: " + colorList.size() / 4);
+//            System.out.println("MAXINDICES :: " + max);
+//            System.out.println("INDICESCNT :: " + indicesList.size());
+//            System.out.println("POSITIONSC :: " + positionList.size() / 3);
+//            System.out.println("COLORSCONT :: " + colorList.size() / 4);
 
             renderableBuffer.setPositionVbo(positionVbo);
             renderableBuffer.setColorVbo(colorVbo);
