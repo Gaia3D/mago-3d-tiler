@@ -13,12 +13,14 @@ public class GltfBinary {
     private int normalsBufferViewId = -1;
     private int colorsBufferViewId = -1;
     private int textureCoordinatesBufferViewId = -1;
+    private int textureBufferViewId = -1;
 
     private int indicesAccessorId = -1;
     private int verticesAccessorId = -1;
     private int normalsAccessorId = -1;
     private int colorsAccessorId = -1;
     private int textureCoordinatesAccessorId = -1;
+    private int textureAccessorId = -1;
 
     private ByteBuffer body;
     private ByteBuffer indicesBuffer;
@@ -26,6 +28,7 @@ public class GltfBinary {
     private ByteBuffer normalsBuffer;
     private ByteBuffer colorsBuffer;
     private ByteBuffer textureCoordinatesBuffer;
+    private ByteBuffer textureBuffer;
 
     public void fill() {
         body.clear();
@@ -53,6 +56,11 @@ public class GltfBinary {
             textureCoordinatesBuffer.rewind();
             textureCoordinatesBuffer.limit(textureCoordinatesBuffer.capacity());
             body.put(textureCoordinatesBuffer);
+        }
+        if (textureBuffer != null) {
+            textureBuffer.rewind();
+            textureBuffer.limit(textureBuffer.capacity());
+            body.put(textureBuffer);
         }
         body.rewind();
     }

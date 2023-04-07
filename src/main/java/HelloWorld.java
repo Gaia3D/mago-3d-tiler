@@ -8,11 +8,13 @@ import org.joml.*;
 import renderable.*;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.*;
 import java.util.ArrayList;
+import java.util.Random;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -42,7 +44,25 @@ public class HelloWorld {
         //renderableObjects.add(new CubeObject());
         renderableObjects.add(new BaseObject());
         renderableObjects.add(new OriginObject());
-        renderableObjects.add(new AssimpObject("C:\\data\\sample\\a_bd001.3ds"));
+
+        for (int i = 1 ; i < 10; i++) {
+            String formated = String.format("%03d", i);
+            String path = "D:\\Gaia3d\\ws2_3ds\\a_bd" + formated + ".3ds";
+            File file = new File(path);
+            if (!file.exists()) {
+                continue;
+            }
+            Random random = new Random();
+            int bound = 256;
+            int x = random.nextInt(bound) - (bound/2);
+            int y = random.nextInt(bound) - (bound/2);
+
+            RenderableObject renderableObject = new AssimpObject(path);
+            renderableObject.setPosition(x, y, -1);
+            renderableObjects.add(renderableObject);
+
+
+        }
 
         init();
         loop();

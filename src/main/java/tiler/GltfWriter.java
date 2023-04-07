@@ -80,12 +80,14 @@ public class GltfWriter {
         ByteBuffer normalsBuffer = binary.getNormalsBuffer();
         ByteBuffer colorsBuffer = binary.getColorsBuffer();
         ByteBuffer textureCoordinatesBuffer = binary.getTextureCoordinatesBuffer();
+        ByteBuffer textureBuffer = binary.getTextureBuffer();
 
         int indicesBufferViewId = binary.getIndicesBufferViewId();
         int verticesBufferViewId = binary.getVerticesBufferViewId();
         int normalsBufferViewId = binary.getNormalsBufferViewId();
         int colorsBufferViewId = binary.getColorsBufferViewId();
         int textureCoordinatesBufferViewId = binary.getTextureCoordinatesBufferViewId();
+        int textureBufferViewId = binary.getTextureBufferViewId();
 
         if (indicesBufferViewId > -1)
             binary.setIndicesAccessorId(createAccessor(gltf, indicesBufferViewId, 0, indices.size(), GltfConstants.GL_UNSIGNED_SHORT, AccessorType.SCALAR));
@@ -97,8 +99,10 @@ public class GltfWriter {
             binary.setColorsAccessorId(createAccessor(gltf, colorsBufferViewId, 0, colors.size() / 4, GltfConstants.GL_FLOAT, AccessorType.VEC4));
         if (textureCoordinatesBufferViewId > -1)
             binary.setTextureCoordinatesAccessorId(createAccessor(gltf, textureCoordinatesBufferViewId, 0, textureCoordinates.size() / 2, GltfConstants.GL_FLOAT, AccessorType.VEC2));
+        if (textureBufferViewId > -1)
+            binary.setTextureAccessorId(createAccessor(gltf, textureBufferViewId, 0, textureBuffer.capacity(), GltfConstants.GL_UNSIGNED_BYTE, AccessorType.SCALAR));
 
-        int meshId = createMeshWithPrimitive(gltf, -1, binary, 0);
+        int meshId = createMeshWithPrimitive(gltf, -1, binary);
 
 //        int indicesAccessorId = createAccessor(gltf, indicesBufferViewId, 0, indices.size(), GltfConstants.GL_UNSIGNED_SHORT, AccessorType.VEC3);
 //        int verticesAccessorId = createAccessor(gltf, verticesBufferViewId, 0, vertices.size() / 3, GltfConstants.GL_FLOAT, AccessorType.VEC3);
@@ -299,11 +303,11 @@ public class GltfWriter {
     }
 
     //createPrimitive
-    private static int createMeshWithPrimitive(GlTF gltf, int mesh, GltfBinary binary, int materialId) {
+    private static int createMeshWithPrimitive(GlTF gltf, int mesh, GltfBinary binary) {
         MeshPrimitive primitive = new MeshPrimitive();
 
         primitive.setMode(GltfConstants.GL_TRIANGLES);
-        //primitive.setMaterial(materialId);
+        primitive.setMaterial(binary.getTextureAccessorId());
         primitive.setAttributes(new HashMap<>());
         primitive.setIndices(binary.getIndicesAccessorId());
 

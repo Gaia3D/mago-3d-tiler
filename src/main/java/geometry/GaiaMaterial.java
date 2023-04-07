@@ -13,16 +13,16 @@ import java.util.LinkedHashMap;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GaiaMaterial {
-    private Vector4d ambientColor;
-    private Vector4d diffuseColor;
-    private Vector4d specularColor;
-    private float shininess;
+    private Vector4d ambientColor = new Vector4d(0.0, 0.0, 0.0, 1.0);
+    private Vector4d diffuseColor = new Vector4d(0.0, 0.0, 0.0, 1.0);
+    private Vector4d specularColor = new Vector4d(0.0, 0.0, 0.0, 1.0);
+    private float shininess = 0.0f;
 
-    private int id;
+    private int id = -1;
     private String name;
     private LinkedHashMap<MaterialType, String> textures = new LinkedHashMap<>();
 
-    private enum MaterialType {
+    public enum MaterialType {
         NONE(0),
         DIFFUSE(1),
         SPECULAR(2),

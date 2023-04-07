@@ -12,9 +12,11 @@ import org.lwjgl.system.MemoryStack;
 import util.FileUtil;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,12 +27,14 @@ public class AssimpObject extends RenderableObject {
 
     int[] vbos;
     boolean dirty;
-    String path;
+    File file;
+    Path path;
 
-    public AssimpObject(String path) {
+    public AssimpObject(String filePath) {
         super();
         //path = "C:\\data\\cesium-ion-converted\\ws2-before\\a_bd001_d.dae";
-        this.path = path;
+        this.file = new File(filePath);
+        this.path = file.toPath();
         this.setPosition(0.0f, 0.0f, -1.0f);
         this.setRotation(0.0f, 0.0f, 0.0f);
     }
@@ -78,7 +82,7 @@ public class AssimpObject extends RenderableObject {
             ArrayList<Float> normalList = new ArrayList<Float>();
             ArrayList<Float> textureCoordinateLsit = new ArrayList<Float>();
 
-            GaiaScene scene = DataLoader.load(path, null);
+            GaiaScene scene = DataLoader.load(file.getAbsolutePath(), null);
             //scene = FileUtil.sampleScene();
 
             GaiaNode rootNode = scene.getNodes().get(0);
@@ -128,8 +132,13 @@ public class AssimpObject extends RenderableObject {
             int normalVbo = renderableBuffer.createBuffer(normalList);
             int textureCoordinateVbo = renderableBuffer.createBuffer(textureCoordinateLsit);
 
+
+            GaiaMaterial material = scene.getMaterials().get(0);
+            String diffusePath = material.getTextures().get(GaiaMaterial.MaterialType.DIFFUSE);
+
             //String imagePath = "C:\\data\\sample\\grid.jpg";
-            String imagePath = "C:\\data\\sample\\a_bd001.png";
+            String imagePath = path.getParent() + File.separator + diffusePath;
+            System.out.println("DIFFUSE_PATH : " + imagePath);
 
             BufferedImage image = FileUtil.readImage(imagePath);
             int textureVbo = textureBuffer.makeTexture(image, GL20.GL_RGBA);

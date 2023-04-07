@@ -2,6 +2,7 @@ package geometry;
 
 import org.joml.Vector2d;
 import org.joml.Vector3d;
+import org.joml.Vector4d;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
 import org.lwjgl.system.MemoryUtil;
@@ -26,7 +27,7 @@ public class DataLoader {
             |Assimp.aiProcess_JoinIdenticalVertices
             |Assimp.aiProcess_CalcTangentSpace
             |Assimp.aiProcess_SortByPType
-            //|Assimp.aiProcess_FixInfacingNormals 이거 아님\
+            //|Assimp.aiProcess_FixInfacingNormals
             |Assimp.aiProcess_FlipWindingOrder;
 
     /** Loads a scene from a filePath
@@ -90,10 +91,25 @@ public class DataLoader {
         //PointerBuffer aiTextures = aiScene.mTextures();
         GaiaMaterial material = new GaiaMaterial();
 
+        AIColor4D color = AIColor4D.create();
+        Vector4d vector4d;
+        int result = Assimp.aiGetMaterialColor(aiMaterial, Assimp.AI_MATKEY_COLOR_DIFFUSE, Assimp.aiTextureType_NONE, 0, color);
+        if (result == 0) {
+            vector4d = new Vector4d(color.r(), color.g(), color.b(), color.a());
+            material.setDiffuseColor(vector4d);
+        }
+
         AIString diffPath = AIString.calloc();
         Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_DIFFUSE, 0, diffPath, (IntBuffer) null, null, null, null, null, null);
         String diffTexPath = diffPath.dataString();
-        //System.out.println(diffTexPath);
+        System.out.println(diffTexPath);
+
+        AIString otherPath = AIString.calloc();
+        Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_NORMALS, 0, diffPath, (IntBuffer) null, null, null, null, null, null);
+        String otherTexPath = otherPath.dataString();
+
+        //test
+        material.getTextures().put(GaiaMaterial.MaterialType.DIFFUSE, diffTexPath);
 
         GaiaTexture texture  = null;
         if (diffTexPath != null && diffTexPath.length() > 0) {
@@ -105,7 +121,7 @@ public class DataLoader {
         PointerBuffer pointerBuffer = aiMaterial.mProperties();
         for (int i = 0; i < numProperties; i++) {
             AIMaterialProperty aiMaterialProperty = AIMaterialProperty.create(pointerBuffer.get(i));
-            aiMaterialProperty.mData();
+            ByteBuffer byteBuffer = aiMaterialProperty.mData();
             //System.out.println(aiMaterialProperty.mKey().dataString());
             //System.out.println(aiMaterialProperty.mType());
         }
