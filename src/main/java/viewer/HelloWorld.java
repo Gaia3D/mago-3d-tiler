@@ -1,3 +1,5 @@
+package viewer;
+
 import org.joml.Math;
 import org.lwjgl.*;
 
@@ -8,13 +10,11 @@ import org.joml.*;
 import renderable.*;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.*;
 import java.util.ArrayList;
-import java.util.Random;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -38,31 +38,39 @@ public class HelloWorld {
     public void run() {
         System.out.println("Hello LWJGL " + Version.getVersion() + "!");
         renderableObjects = new ArrayList<RenderableObject>();
-        //renderableObjects.add(new RenderablePoint(-0.25f, 0.0f, -1.0f));
-        //renderableObjects.add(new RenderablePoint(0.25f, 0.0f, -1.0f));
+        //renderableObjects.add(new renderable.RenderablePoint(-0.25f, 0.0f, -1.0f));
+        //renderableObjects.add(new renderable.RenderablePoint(0.25f, 0.0f, -1.0f));
         //renderableObjects.add(new TriangleObject());
         //renderableObjects.add(new CubeObject());
         renderableObjects.add(new BaseObject());
         renderableObjects.add(new OriginObject());
 
-        for (int i = 1 ; i < 10; i++) {
-            String formated = String.format("%03d", i);
-            String path = "D:\\Gaia3d\\ws2_3ds\\a_bd" + formated + ".3ds";
-            File file = new File(path);
-            if (!file.exists()) {
-                continue;
-            }
-            Random random = new Random();
-            int bound = 256;
-            int x = random.nextInt(bound) - (bound/2);
-            int y = random.nextInt(bound) - (bound/2);
+//        for (int i = 1 ; i < 1; i++) {
+//            String formated = String.format("%03d", i);
+//
+//            String inputPath = "C:\\data\\znkim-3ds-test";
+//            String path = inputPath + File.separator + "a_bd" + formated + ".gltf";
+//            //String inputPath = "C:\\data\\ws2-3ds";
+//            //String path = inputPath + File.separator + "a_bd" + formated + ".3ds";
+//            File file = new File(path);
+//            if (!file.exists()) {
+//                continue;
+//            }
+//            Random random = new Random();
+//            int bound = 256;
+//            int x = random.nextInt(bound) - (bound/2);
+//            int y = random.nextInt(bound) - (bound/2);
+//
+//            RenderableObject renderableObject = new AssimpObject(path);
+//            renderableObject.setPosition(x, y, -1);
+//            renderableObjects.add(renderableObject);
+//        }
 
-            RenderableObject renderableObject = new AssimpObject(path);
-            renderableObject.setPosition(x, y, -1);
-            renderableObjects.add(renderableObject);
+        //RenderableObject renderableObject = new AssimpObject("C:\\data\\sample\\KSJ_100.ifc");
+        //renderableObjects.add(renderableObject);
 
-
-        }
+        RenderableObject renderableObject = new AssimpObject("C:\\data\\ws2-3ds\\a_bd001.3ds");
+        renderableObjects.add(renderableObject);
 
         init();
         loop();
@@ -101,7 +109,7 @@ public class HelloWorld {
                 Vector3d pivot = new Vector3d(0.0d,0.0d,0.0d);
                 float xoffset = (float) (this.xpos - xpos) * 0.01f;
                 float yoffset = (float) (this.ypos - ypos) * 0.01f;
-                camera.rotationOrbit(xoffset, yoffset, pivot);
+                camera.rotationOrbit(-xoffset, -yoffset, pivot);
             }
             this.xpos = xpos;
             this.ypos = ypos;
@@ -237,7 +245,7 @@ public class HelloWorld {
 //        System.out.println("right : " + camera.right);
 //        System.out.println("up : " + camera.up);
 //        System.out.println("dir : " + camera.direction);
-        camera.rotationOrbit(0.0001f, -0.0000f, new Vector3d(0.0d,0.0d,-1.0d));
+        camera.rotationOrbit(0.00005f, -0.0000f, new Vector3d(0.0d,0.0d,-1.0d));
         int[] width = new int[1];
         int[] height = new int[1];
         glfwGetWindowSize(window, width, height);

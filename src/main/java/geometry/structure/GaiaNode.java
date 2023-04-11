@@ -1,12 +1,12 @@
-package geometry;
+package geometry.structure;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.joml.Matrix4d;
 
 import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Setter
@@ -14,9 +14,25 @@ import java.util.List;
 @AllArgsConstructor
 public class GaiaNode {
     private GaiaNode parent = null;
+    private String name = "";
     private ArrayList<GaiaMesh> meshes = new ArrayList<>();
     private ArrayList<GaiaNode> children = new ArrayList<>();
-    //tm double[16]
+    private Matrix4d transform = new Matrix4d();
+
+    /**
+     * recalculate transform
+     * @param node
+     * @return
+     */
+    public static Matrix4d recalculateTransform(GaiaNode node) {
+        if (node.getParent() != null) {
+            node.getTransform().mul(node.getParent().getTransform());
+        }
+        for (GaiaNode child : node.getChildren()) {
+            recalculateTransform(child);
+        }
+        return node.getTransform();
+    }
 
     // getTotalIndicesCount
     public static int getTotalIndicesCount(int totalIndices, ArrayList<GaiaNode> nodeList) {

@@ -1,21 +1,14 @@
 package renderable;
 
-import geometry.*;
+import assimp.DataLoader;
+import geometry.structure.*;
 import org.joml.Matrix4f;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
-import org.joml.Vector4d;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL20;
-import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
-import util.FileUtil;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +25,6 @@ public class AssimpObject extends RenderableObject {
 
     public AssimpObject(String filePath) {
         super();
-        //path = "C:\\data\\cesium-ion-converted\\ws2-before\\a_bd001_d.dae";
         this.file = new File(filePath);
         this.path = file.toPath();
         this.setPosition(0.0f, 0.0f, -1.0f);
@@ -99,10 +91,12 @@ public class AssimpObject extends RenderableObject {
                             positionList.add((float) position.x);
                             positionList.add((float) position.z);
                             positionList.add((float) position.y);
+
                             Vector3d normal = vertices.getNormal();
                             normalList.add((float) normal.x);
                             normalList.add((float) normal.y);
                             normalList.add((float) normal.z);
+
                             Vector2d textureCoordinate = vertices.getTextureCoordinates();
                             textureCoordinateLsit.add((float) textureCoordinate.x);
                             textureCoordinateLsit.add((float) textureCoordinate.y);
@@ -133,15 +127,23 @@ public class AssimpObject extends RenderableObject {
             int textureCoordinateVbo = renderableBuffer.createBuffer(textureCoordinateLsit);
 
 
-            GaiaMaterial material = scene.getMaterials().get(0);
-            String diffusePath = material.getTextures().get(GaiaMaterial.MaterialType.DIFFUSE);
+
+            //String diffusePath = gaiaTexture.getPath();
 
             //String imagePath = "C:\\data\\sample\\grid.jpg";
-            String imagePath = path.getParent() + File.separator + diffusePath;
-            System.out.println("DIFFUSE_PATH : " + imagePath);
+            //String imagePath = path.getParent() + File.separator + diffusePath;
+            //System.out.println("DIFFUSE_PATH : " + imagePath);
 
-            BufferedImage image = FileUtil.readImage(imagePath);
-            int textureVbo = textureBuffer.makeTexture(image, GL20.GL_RGBA);
+//            GaiaMaterial material = scene.getMaterials().get(0);
+//            GaiaTexture gaiaTexture = material.getTextures().get(GaiaMaterial.MaterialType.DIFFUSE);
+//            gaiaTexture.setFormat(GL20.GL_RGB);
+//            gaiaTexture.readImage(path.getParent());
+//            gaiaTexture.loadBuffer();
+//            int textureVbo = textureBuffer.createGlTexture(gaiaTexture);
+
+
+            //BufferedImage image = FileUtil.readImage(imagePath);
+            //int textureVbo = textureBuffer.makeTexture(image, GL20.GL_RGBA);
             //int textureVbo = textureBuffer.createTexture(image);
 
             /*IntBuffer x = BufferUtils.createIntBuffer(1);
@@ -167,7 +169,7 @@ public class AssimpObject extends RenderableObject {
             renderableBuffer.setTextureCoordinateVbo(textureCoordinateVbo);
             renderableBuffer.setIndicesVbo(indicesVbo);
             renderableBuffer.setIndicesLength(indicesList.size());
-            textureBuffer.setTextureVbo(textureVbo);
+            //textureBuffer.setTextureVbo(textureVbo);
             this.renderableBuffer = renderableBuffer;
             this.textureBuffer = textureBuffer;
         }

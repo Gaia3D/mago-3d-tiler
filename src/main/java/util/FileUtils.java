@@ -1,23 +1,40 @@
 package util;
 
-import geometry.*;
+import geometry.structure.*;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL20;
-import org.lwjgl.system.MemoryUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.nio.file.Files;
+import java.util.Base64;
 
-public class FileUtil {
+public class FileUtils {
+    public static String writeImage(BufferedImage bufferedImage, String mimeType) {
+
+        String imageString = null;
+        if (mimeType == null) {
+            mimeType = "image/png";
+        }
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            ImageIO.write(bufferedImage, "jpeg", baos);
+            byte[] bytes = baos.toByteArray();
+            imageString = "data:" + mimeType +";base64," + Base64.getEncoder().encodeToString(bytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return imageString;
+    }
 
     public static BufferedImage readImage(String filePath) {
         BufferedImage image;
@@ -28,39 +45,6 @@ public class FileUtil {
             e.printStackTrace();
         }
         return null;
-    }
-
-    // readImage
-    public static ByteBuffer convertByteBufferToBufferdImage(BufferedImage bufferedImage) {
-        int srcPixelFormat = -1;
-        if (bufferedImage.getColorModel().hasAlpha()) {
-            srcPixelFormat = GL20.GL_RGBA;
-        } else {
-            srcPixelFormat = GL20.GL_RGB;
-        }
-
-        byte[] bytes = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
-        //ByteBuffer byteBuffer = BufferUtils.createByteBuffer(bytes.length);
-        //ByteBuffer byteBuffer = BufferUtils.createByteBuffer(bufferedImage.getWidth() * bufferedImage.getHeight() * 4);
-        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(bufferedImage.getWidth() * bufferedImage.getHeight() * 4);
-        byteBuffer.order(ByteOrder.nativeOrder());
-        byteBuffer.put(bytes);
-        byteBuffer.flip();
-        return byteBuffer;
-    }
-
-    // convertIntBufferToByteBuffer
-    public static IntBuffer convertByteBufferToIntBuffer(ByteBuffer byteBuffer) {
-        int length = byteBuffer.capacity() / 4;
-        IntBuffer intBuffer = IntBuffer.allocate(length);
-        for (int i = 0; i < length; i++) {
-            intBuffer.put(byteBuffer.getInt(i * 4));
-        }
-        /*IntBuffer intBuffer = BufferUtils.createIntBuffer(byteBuffer.capacity() / 4);
-        for (int i = 0; i < byteBuffer.capacity() / 4; i++) {
-            intBuffer.put(byteBuffer.getInt(i * 4));
-        }*/
-        return intBuffer;
     }
 
     public static String changeExtension(String fileName, String extension) {

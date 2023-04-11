@@ -1,4 +1,4 @@
-package geometry;
+package geometry.structure;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -58,5 +58,10 @@ public class GaiaScene {
     //getTotalColors
     public ArrayList<Float> getTotalColors() {
         return GaiaNode.getTotalColors(new ArrayList<Float>(), nodes);
+    }
+
+    public int getTotalTextureSize() {
+        //return GaiaMaterial.getTotalTextureSize(0, materials);
+        return 0;
     }
 }

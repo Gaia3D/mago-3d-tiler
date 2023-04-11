@@ -1,72 +1,61 @@
 package command;
 
-import geometry.DataLoader;
-import geometry.GaiaScene;
+import assimp.DataLoader;
+import geometry.structure.GaiaScene;
 import tiler.GltfWriter;
-import util.FileUtil;
+import util.FileUtils;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 public class Command {
+    static boolean isQuiet = false;
+
     public static void main(String[] args) {
         boolean isHelp = false;
         CommandOption commandOption = new CommandOption();
         commandOption.setInputType(CommandOption.InputType.IN_3DS);
         commandOption.setOutputType(CommandOption.OutputType.OUT_GLB);
 
-        //File absolutePath = new File("").getAbsoluteFile();
-        //System.out.println("absolutePath : " + absolutePath);
-
         for (int i = 0 ; i < args.length; i++) {
             String arg = args[i];
-            System.out.println("arg ["+ i +"]: " + arg);
             if (arg.contains("-help") || arg.contains("--help")) {
                 isHelp = true;
             }
             if (arg.contains("-input=")) {
                 String path = arg.substring(arg.indexOf("=") + 1);
                 commandOption.setInputPath(new File(path).toPath());
-            }
-            if (arg.contains("-output=")) {
+            } else if (arg.contains("-output=")) {
                 String path = arg.substring(arg.indexOf("=") + 1);
                 commandOption.setOutputPath(new File(path).toPath());
-            }
-            if (arg.contains("-inputType=")) {
+            } else if (arg.contains("-inputType=")) {
                 String value = arg.substring(arg.indexOf("=") + 1);
                 commandOption.setInputType(CommandOption.InputType.fromExtension(value));
-            }
-            if (arg.contains("-outputType=")) {
+            } else if (arg.contains("-outputType=")) {
                 String value = arg.substring(arg.indexOf("=") + 1);
                 commandOption.setOutputType(CommandOption.OutputType.fromExtension(value));
+            } else if (arg.contains("-quiet")) {
+                isQuiet = true;
             }
         }
 
+        printLogo();
         if (isHelp) {
-            System.out.println("=============[HELP][Plasma Gltf Converter]=============");
-            System.out.println("Usage: java -jar tiler.jar -input=<inputPath> -output=<outputPath> -inputType=<inputType> -outputType=<outputType>");
-            System.out.println("inputType : 3ds, obj, dae, fbx, gltf, glb");
-            System.out.println("outputType : gltf, glb");
-            System.out.println("Example: java -jar tiler.jar -input=C:\\data\\sample\\a_bd001.3ds -output=C:\\data\\sample\\a_bd001.gltf -inputType=3ds -outputType=gltf");
-            System.out.println("Author: ZNKIM");
-            System.out.println("Version: 0.1.0");
-            System.out.println("=============[HELP][Plasma Gltf Converter]=============");
+            printHelp();
+            return;
+        } else if (commandOption.getInputPath() == null) {
+            errlog("inputPath is not defined.");
+            return;
+        }  else if (commandOption.getOutputPath() == null) {
+            errlog("outputPath is not defined.");
             return;
         }
-        if (commandOption.getInputPath() == null) {
-            System.err.println("inputPath is not defined.");
-            return;
-        }
-        if (commandOption.getOutputPath() == null) {
-            System.err.println("outputPath is not defined.");
-            return;
-        }
-
-//        System.out.println("inputPath : " + commandOption.getInputPath().toAbsolutePath().toString());
-//        System.out.println("outputPath : " + commandOption.getOutputPath().toAbsolutePath().toString());
-//        System.out.println("root : " + commandOption.getInputPath().getRoot());
-//        System.out.println("parent : " + commandOption.getInputPath().getParent());
-//        System.out.println("fileName : " + commandOption.getInputPath().getFileName());
-//        System.out.println("nameCount : " + commandOption.getInputPath().getNameCount());
+        logWithoutTime("inputPath : " + commandOption.getInputPath().toAbsolutePath().toString());
+        logWithoutTime("outputPath : " + commandOption.getOutputPath().toAbsolutePath().toString());
+        logWithoutTime("inputType : " + commandOption.getInputType().getExtension());
+        logWithoutTime("outputType : " + commandOption.getOutputType().getExtension());
 
         File inputPathFile = commandOption.getInputPath().toFile();
         File outputPathFile = commandOption.getOutputPath().toFile();
@@ -76,18 +65,72 @@ public class Command {
             File[] Children = inputPathFile.listFiles();
             for (File child : Children) {
                 if (child.isFile() && child.getName().endsWith("." + inputExtension)) {
-                    String outputFile = FileUtil.changeExtension(child.getName(), outputExtension);
+                    String outputFile = FileUtils.changeExtension(child.getName(), outputExtension);
                     File output = new File(commandOption.getOutputPath().toAbsolutePath().toString() + File.separator + outputFile);
-                    System.out.println("convert : " + child.getAbsolutePath() + " -> " + output.getAbsolutePath());
+                    log("convert : " + child.getAbsolutePath() + " -> " + output.getAbsolutePath());
                     GaiaScene scene = DataLoader.load(child.getAbsolutePath(), null);
                     GltfWriter.writeGltf(scene, output.getAbsolutePath());
                 } else {
-                    System.out.println("skip : " + child.getName());
+                    log("skip : " + child.getName());
                 }
             }
         }
+        log("=============[END][Plasma Gltf Converter]=============");
+    }
 
-        //GaiaScene scene = DataLoader.load(commandOption.getInputPath().toAbsolutePath().toString(), null);
-        //GltfWriter.writeGltf(scene, commandOption.getOutputPath().toAbsolutePath().toString());
+    private static void printLogo() {
+        if (isQuiet) {
+            return;
+        }
+        System.out.println(
+                " _______  ___      _______  _______  __   __  _______ \n" +
+                "|       ||   |    |   _   ||       ||  |_|  ||   _   |\n" +
+                "|    _  ||   |    |  |_|  ||  _____||       ||  |_|  |\n" +
+                "|   |_| ||   |    |       || |_____ |       ||       |\n" +
+                "|    ___||   |___ |       ||_____  ||       ||       |\n" +
+                "|   |    |       ||   _   | _____| || ||_|| ||   _   |\n" +
+                "|___|    |_______||__| |__||_______||_|   |_||__| |__|\n" +
+                "===============[Plasma Gltf Converter]================");
+    }
+
+    private static void printHelp() {
+        logWithoutTime("==========================[HELP][How to use]==========================");
+        logWithoutTime("Usage: java -jar tiler.jar -input=<inputPath> -output=<outputPath> -inputType=<inputType> -outputType=<outputType>");
+        logWithoutTime("inputType : 3ds, obj, dae, fbx, gltf, glb");
+        logWithoutTime("outputType : gltf, glb");
+        logWithoutTime("Example: java -jar tiler.jar -input=C:\\data\\sample\\a_bd001.3ds -output=C:\\data\\sample\\a_bd001.gltf -inputType=3ds -outputType=gltf");
+        logWithoutTime("DefaultValue: inputType = 3ds, outputType = gltf");
+        logWithoutTime("Author: Gaia3D-znkim");
+        logWithoutTime("Version: 0.1.1");
+        logWithoutTime("==========================[HELP][How to use]==========================");
+    }
+
+    private static void logWithoutTime(String message) {
+        if (isQuiet) {
+            return;
+        }
+        System.out.println("[P] " + message);
+    }
+
+    private static void log(String message) {
+        if (isQuiet) {
+            return;
+        }
+        String nowDate = getStringDate();
+        System.out.println("[P]["+ nowDate +"] " + message);
+    }
+
+    private static void errlog(String message) {
+        if (isQuiet) {
+            return;
+        }
+        String nowDate = getStringDate();
+        System.out.println("[P]["+ nowDate +"] " + message);
+    }
+
+    private static String getStringDate() {
+        Date date = new Date();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return simpleDateFormat.format(date);
     }
 }

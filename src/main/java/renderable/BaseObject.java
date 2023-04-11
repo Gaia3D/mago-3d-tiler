@@ -4,6 +4,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3d;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryStack;
+import util.GeometryUtils;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -44,18 +45,6 @@ public class BaseObject extends RenderableObject {
             GL20.glDrawElements(GL20.GL_TRIANGLES, renderableBuffer.getIndicesLength(), GL20.GL_UNSIGNED_SHORT, 0);
         }
     }
-    // calcNormal
-    // Calculate the normal of a triangle
-    public static Vector3d calcNormal(Vector3d v1, Vector3d v2, Vector3d v3) {
-        Vector3d normal = new Vector3d();
-        Vector3d v1v2 = new Vector3d();
-        Vector3d v1v3 = new Vector3d();
-        v2.sub(v1, v1v2);
-        v3.sub(v1, v1v3);
-        v1v2.cross(v1v3, normal);
-        normal.normalize();
-        return normal;
-    }
 
     @Override
     public RenderableBuffer getBuffer() {
@@ -94,7 +83,7 @@ public class BaseObject extends RenderableObject {
                     positionList.add(endY);
                     positionList.add(0.0f);
 
-                    Vector3d normal = calcNormal(
+                    Vector3d normal = GeometryUtils.calcNormal(
                         new Vector3d(startX, startY, 0.0f),
                         new Vector3d(endX, startY, 0.0f),
                         new Vector3d(endX, endY, 0.0f)
@@ -134,22 +123,6 @@ public class BaseObject extends RenderableObject {
                 checkPattern++;
             }
 
-            /*positionList.add(-size);
-            positionList.add(-size);
-            positionList.add(0.0f);
-
-            positionList.add(size);
-            positionList.add(-size);
-            positionList.add(0.0f);
-
-            positionList.add(size);
-            positionList.add(size);
-            positionList.add(0.0f);
-
-            positionList.add(-size);
-            positionList.add(size);
-            positionList.add(0.0f);*/
-
             for (int i = 0; i < positionList.size() / 3; i++) {
                 int indicesOffset = i * 4;
                 indicesList.add((short) (0 + indicesOffset));
@@ -167,11 +140,7 @@ public class BaseObject extends RenderableObject {
             int colorVbo = renderableBuffer.createBuffer(colorList);
 
             Short max = indicesList.stream().max(Comparator.comparingInt(x->x)).orElseThrow(NoSuchElementException::new);
-//            System.out.println("MAXINDICES :: " + max);
-//            System.out.println("INDICESCNT :: " + indicesList.size());
-//            System.out.println("POSITIONSC :: " + positionList.size() / 3);
-//            System.out.println("COLORSCONT :: " + colorList.size() / 4);
-
+            Short min = indicesList.stream().min(Comparator.comparingInt(x->x)).orElseThrow(NoSuchElementException::new);
             renderableBuffer.setPositionVbo(positionVbo);
             renderableBuffer.setColorVbo(colorVbo);
             renderableBuffer.setIndicesVbo(indicesVbo);

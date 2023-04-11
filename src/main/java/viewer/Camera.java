@@ -1,3 +1,5 @@
+package viewer;
+
 import org.joml.Matrix3d;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
@@ -151,19 +153,18 @@ public class Camera {
         rotatedUp.cross(rotatedRight);
         rotatedUp.normalize();
 
-        if (dotResult > 0.995d || Double.isNaN(rotatedRight.x)) {
-            rotatedUp = new Vector3d(this.up);
+        if (dotResult > 0.999d || Double.isNaN(rotatedRight.x)) {
+            /*rotatedUp = new Vector3d(this.up);
             rotatedUp.mul(totalRotationMatrix3);
             rotatedUp.normalize();
-
             rotatedRight = new Vector3d(rotatedDirection);
             rotatedRight.cross(rotatedUp);
-            rotatedRight.normalize();
+            rotatedRight.normalize();*/
 
-            this.direction = rotatedDirection;
-            this.up = rotatedUp;
-            this.right = rotatedRight;
-            this.position = returnedCameraPosition;
+            //this.direction = rotatedDirection;
+            //this.up = rotatedUp;
+            //this.right = rotatedRight;
+            //this.position = returnedCameraPosition;
         } else {
             this.direction = rotatedDirection;
             this.up = rotatedUp;

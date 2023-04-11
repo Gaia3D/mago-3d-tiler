@@ -1,4 +1,4 @@
-package geometry;
+package geometry.structure;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

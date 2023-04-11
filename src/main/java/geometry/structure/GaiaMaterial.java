@@ -1,4 +1,4 @@
-package geometry;
+package geometry.structure;
 
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -19,8 +19,8 @@ public class GaiaMaterial {
     private float shininess = 0.0f;
 
     private int id = -1;
-    private String name;
-    private LinkedHashMap<MaterialType, String> textures = new LinkedHashMap<>();
+    private String name = "GaiaDefaultMaterial";
+    private LinkedHashMap<MaterialType, GaiaTexture> textures = new LinkedHashMap<>();
 
     public enum MaterialType {
         NONE(0),
@@ -44,9 +44,10 @@ public class GaiaMaterial {
         UNKNOWN(18);
 
         private int value;
-
         MaterialType(int value) {
             this.value = value;
         }
     }
+
+    //getTotalTextureSize
 }

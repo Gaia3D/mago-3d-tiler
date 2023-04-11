@@ -1,18 +1,19 @@
-package geometry;
+package assimp;
 
+import geometry.structure.*;
+import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
-import org.lwjgl.system.MemoryUtil;
-import util.FileUtil;
+import util.FileUtils;
 
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
+import java.nio.file.Path;
 
 /**
  * Loads a scene from a file
@@ -48,8 +49,8 @@ public class DataLoader {
     public static GaiaScene load(File file, String hint) {
         String path = file.getAbsolutePath().replace(file.getName(), "");
 
-        ByteBuffer byteBuffer = FileUtil.readFile(file);
-        hint = (hint != null) ? hint : FileUtil.getExtension(file.getName());
+        ByteBuffer byteBuffer = FileUtils.readFile(file);
+        hint = (hint != null) ? hint : FileUtils.getExtension(file.getName());
 
         //AIScene aiScene = Assimp.aiImportFile(path, flags);
         AIScene aiScene = Assimp.aiImportFileFromMemory(byteBuffer, DEFAULT_FLAGS, hint);
@@ -59,6 +60,29 @@ public class DataLoader {
         //MemoryUtil.memFree(byteBuffer);
         return gaiaScene;
     }
+
+    // convertMatrix4dFromAIMatrix4x4
+    private static Matrix4d convertMatrix4dFromAIMatrix4x4(AIMatrix4x4 aiMatrix4x4) {
+        Matrix4d matrix4d = new Matrix4d();
+        matrix4d.m00(aiMatrix4x4.a1());
+        matrix4d.m01(aiMatrix4x4.b1());
+        matrix4d.m02(aiMatrix4x4.c1());
+        matrix4d.m03(aiMatrix4x4.d1());
+        matrix4d.m10(aiMatrix4x4.a2());
+        matrix4d.m11(aiMatrix4x4.b2());
+        matrix4d.m12(aiMatrix4x4.c2());
+        matrix4d.m13(aiMatrix4x4.d2());
+        matrix4d.m20(aiMatrix4x4.a3());
+        matrix4d.m21(aiMatrix4x4.b3());
+        matrix4d.m22(aiMatrix4x4.c3());
+        matrix4d.m23(aiMatrix4x4.d3());
+        matrix4d.m30(aiMatrix4x4.a4());
+        matrix4d.m31(aiMatrix4x4.b4());
+        matrix4d.m32(aiMatrix4x4.c4());
+        matrix4d.m33(aiMatrix4x4.d4());
+        return matrix4d;
+    }
+
 
     /**
      * Converts an Assimp scene to a Gaia scene
@@ -77,6 +101,9 @@ public class DataLoader {
             scene.getMaterials().add(processMaterial(aiMaterial, filePath));
         }
         GaiaNode node = processNode(aiScene, aiNode, null);
+
+        node.recalculateTransform(node);
+
         scene.getNodes().add(node);
         return scene;
     }
@@ -109,9 +136,16 @@ public class DataLoader {
         String otherTexPath = otherPath.dataString();
 
         //test
-        material.getTextures().put(GaiaMaterial.MaterialType.DIFFUSE, diffTexPath);
 
-        GaiaTexture texture  = null;
+        Path parentPath = new File(path).toPath();
+
+
+        GaiaTexture texture = new GaiaTexture();
+        texture.setPath(diffTexPath);
+        texture.setType(GaiaMaterial.MaterialType.DIFFUSE);
+        texture.readImage(parentPath);
+        material.getTextures().put(texture.getType(), texture);
+
         if (diffTexPath != null && diffTexPath.length() > 0) {
             //TextureCache textureCache = TextureCache.getInstance();
             //diffuseTexture = new TextureImage2D(path + "/" + diffTexPath, SamplerFilter.Trilinear);
@@ -136,6 +170,9 @@ public class DataLoader {
      * @return Gaia node
      */
     private static GaiaNode processNode(AIScene aiScene, AINode aiNode, GaiaNode parentNode) {
+        AIMatrix4x4 transformation = aiNode.mTransformation();
+        Matrix4d matrix4d = convertMatrix4dFromAIMatrix4x4(transformation);
+
         PointerBuffer aiMeshes = aiScene.mMeshes();
         GaiaNode node = new GaiaNode();
         node.setParent(parentNode);
@@ -194,7 +231,6 @@ public class DataLoader {
                 primitive.getIndices().add(indices.get(1));
                 primitive.getIndices().add(indices.get(2));
             }*/
-
             face.getIndices().stream().forEach((indices) -> {
                 primitive.getIndices().add(indices);
             });
@@ -221,36 +257,16 @@ public class DataLoader {
             AIVector3D textCoord = textCoords.get(i);
             GaiaVertex vertex = new GaiaVertex();
             vertex.setPosition(new Vector3d((double) aiVertice.x(), (double) aiVertice.z(), (double) aiVertice.y()));
-            vertex.setNormal(new Vector3d((double) aiNormal.x(), (double) aiNormal.z(), (double) aiNormal.y()));
+            if (!(aiNormal.x() == 0.0 && aiNormal.y() == 0.0 && aiNormal.z() == 0.0)) {
+                vertex.setNormal(new Vector3d((double) aiNormal.x(), (double) aiNormal.z(), (double) aiNormal.y()));
+            }
             vertex.setTextureCoordinates(new Vector2d((double) textCoord.x(), 1.0 - (double) textCoord.y()));
-            //System.out.println(vertex.getTextureCoordinates().x + ", " + vertex.getTextureCoordinates().y);
             primitive.getVertices().add(vertex);
         }
 
-        Rectangle2D rectangle2D = getTextureCoordsBoundingRect(primitive);
-
+        //Rectangle2D rectangle2D = getTextureCoordsBoundingRect(primitive);
+        primitive.genNormals();
         return primitive;
-    }
-
-    // getTextureCoordsBoundingRect
-    private static Rectangle2D getTextureCoordsBoundingRect(GaiaPrimitive primitive) {
-        Rectangle2D rect = new Rectangle2D.Double();
-        for (GaiaVertex vertex : primitive.getVertices()) {
-            Vector2d textureCoordinates = vertex.getTextureCoordinates();
-            if (textureCoordinates.x < rect.getMinX()) {
-                rect.setRect(textureCoordinates.x, rect.getMinY(), rect.getWidth(), rect.getHeight());
-            }
-            if (textureCoordinates.y < rect.getMinY()) {
-                rect.setRect(rect.getMinX(), textureCoordinates.y, rect.getWidth(), rect.getHeight());
-            }
-            if (textureCoordinates.x > rect.getMaxX()) {
-                rect.setRect(rect.getMinX(), rect.getMinY(), textureCoordinates.x, rect.getHeight());
-            }
-            if (textureCoordinates.y > rect.getMaxY()) {
-                rect.setRect(rect.getMinX(), rect.getMinY(), rect.getWidth(), textureCoordinates.y);
-            }
-        }
-        return rect;
     }
 
     /**

@@ -4,64 +4,53 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Getter
 @Setter
 public class GltfBinary {
-    private int indicesBufferViewId = -1;
-    private int verticesBufferViewId = -1;
-    private int normalsBufferViewId = -1;
-    private int colorsBufferViewId = -1;
-    private int textureCoordinatesBufferViewId = -1;
-    private int textureBufferViewId = -1;
+    private int materialId = -1;
+    private int textureId = -1;
+    private int imageId = -1;
 
-    private int indicesAccessorId = -1;
-    private int verticesAccessorId = -1;
-    private int normalsAccessorId = -1;
-    private int colorsAccessorId = -1;
-    private int textureCoordinatesAccessorId = -1;
-    private int textureAccessorId = -1;
-
-    private ByteBuffer body;
-    private ByteBuffer indicesBuffer;
-    private ByteBuffer verticesBuffer;
-    private ByteBuffer normalsBuffer;
-    private ByteBuffer colorsBuffer;
-    private ByteBuffer textureCoordinatesBuffer;
-    private ByteBuffer textureBuffer;
+    private Optional<ByteBuffer> body = Optional.empty();
+    private List<GltfNodeBuffer> nodeBuffers = new ArrayList<>();
 
     public void fill() {
-        body.clear();
-        if (indicesBuffer != null) {
-            indicesBuffer.rewind();
-            indicesBuffer.limit(indicesBuffer.capacity());
-            body.put(indicesBuffer);
+        body = Optional.of(ByteBuffer.allocate(nodeBuffers.stream().mapToInt(GltfNodeBuffer::getTotalByteBufferLength).sum()));
+        if (body.isPresent()) {
+            ByteBuffer bodyBuffer = body.get();
+            bodyBuffer.clear();
+            nodeBuffers.stream().forEach((nodeBuffer) -> {
+                if (nodeBuffer.getIndicesBuffer().isPresent()) {
+                    nodeBuffer.getIndicesBuffer().get().rewind();
+                    nodeBuffer.getIndicesBuffer().get().limit(nodeBuffer.getIndicesBuffer().get().capacity());
+                    bodyBuffer.put(nodeBuffer.getIndicesBuffer().get());
+                }
+                if (nodeBuffer.getPositionsBuffer().isPresent()) {
+                    nodeBuffer.getPositionsBuffer().get().rewind();
+                    nodeBuffer.getPositionsBuffer().get().limit(nodeBuffer.getPositionsBuffer().get().capacity());
+                    bodyBuffer.put(nodeBuffer.getPositionsBuffer().get());
+                }
+                if (nodeBuffer.getNormalsBuffer().isPresent()) {
+                    nodeBuffer.getNormalsBuffer().get().rewind();
+                    nodeBuffer.getNormalsBuffer().get().limit(nodeBuffer.getNormalsBuffer().get().capacity());
+                    bodyBuffer.put(nodeBuffer.getNormalsBuffer().get());
+                }
+                if (nodeBuffer.getColorsBuffer().isPresent()) {
+                    nodeBuffer.getColorsBuffer().get().rewind();
+                    nodeBuffer.getColorsBuffer().get().limit(nodeBuffer.getColorsBuffer().get().capacity());
+                    bodyBuffer.put(nodeBuffer.getColorsBuffer().get());
+                }
+                if (nodeBuffer.getTextureCoordinatesBuffer().isPresent()) {
+                    nodeBuffer.getTextureCoordinatesBuffer().get().rewind();
+                    nodeBuffer.getTextureCoordinatesBuffer().get().limit(nodeBuffer.getTextureCoordinatesBuffer().get().capacity());
+                    bodyBuffer.put(nodeBuffer.getTextureCoordinatesBuffer().get());
+                }
+            });
+            bodyBuffer.rewind();
         }
-        if (verticesBuffer != null) {
-            verticesBuffer.rewind();
-            verticesBuffer.limit(verticesBuffer.capacity());
-            body.put(verticesBuffer);
-        }
-        if (normalsBuffer != null) {
-            normalsBuffer.rewind();
-            normalsBuffer.limit(normalsBuffer.capacity());
-            body.put(normalsBuffer);
-        }
-        if (colorsBuffer != null) {
-            colorsBuffer.rewind();
-            colorsBuffer.limit(colorsBuffer.capacity());
-            body.put(colorsBuffer);
-        }
-        if (textureCoordinatesBuffer != null) {
-            textureCoordinatesBuffer.rewind();
-            textureCoordinatesBuffer.limit(textureCoordinatesBuffer.capacity());
-            body.put(textureCoordinatesBuffer);
-        }
-        if (textureBuffer != null) {
-            textureBuffer.rewind();
-            textureBuffer.limit(textureBuffer.capacity());
-            body.put(textureBuffer);
-        }
-        body.rewind();
     }
 }
