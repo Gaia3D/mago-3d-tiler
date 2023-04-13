@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +23,7 @@ public class GltfBinary {
         body = Optional.of(ByteBuffer.allocate(nodeBuffers.stream().mapToInt(GltfNodeBuffer::getTotalByteBufferLength).sum()));
         if (body.isPresent()) {
             ByteBuffer bodyBuffer = body.get();
+            bodyBuffer.order(ByteOrder.LITTLE_ENDIAN);
             bodyBuffer.clear();
             nodeBuffers.stream().forEach((nodeBuffer) -> {
                 if (nodeBuffer.getIndicesBuffer().isPresent()) {

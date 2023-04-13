@@ -4,13 +4,13 @@ import de.javagl.jgltf.impl.v2.*;
 import de.javagl.jgltf.model.GltfConstants;
 import de.javagl.jgltf.model.GltfModel;
 import de.javagl.jgltf.model.GltfModels;
-import de.javagl.jgltf.model.impl.DefaultGltfModel;
 import de.javagl.jgltf.model.io.GltfModelWriter;
 import de.javagl.jgltf.model.io.v2.GltfAssetV2;
-import de.javagl.jgltf.model.v1.GltfModelV1;
 import geometry.structure.*;
 import org.joml.Matrix4d;
 import org.lwjgl.opengl.GL20;
+import util.FileUtils;
+import util.GeometryUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,11 +21,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
-import util.FileUtils;
-
-import javax.swing.text.html.Option;
-
 public class GltfWriter {
+
+    private static int FLOAT_SIZE = 4;
+
     public static void writeGltf(GaiaScene gaiaScene, String outputPath) {
         try {
             GltfModel gltfModel = convert(gaiaScene);
@@ -46,24 +45,17 @@ public class GltfWriter {
     }
 
     private static GltfModel convert(GaiaScene gaiaScene) {
+        GltfBinary binary = new GltfBinary();
         GlTF gltf = new GlTF();
         gltf.setAsset(genAsset());
         gltf.addSamplers(genSampler());
-
         initScene(gltf);
-        GltfBinary binary = new GltfBinary();
         if (binary != null) {
-            List<Double> areas = new ArrayList<>();
-            List<Double> volumes = new ArrayList<>();
-
             gaiaScene.getMaterials().stream().forEach(gaiaMaterial -> {
-                int materialId = createMaterial(gltf, gaiaMaterial);
-                binary.setMaterialId(materialId);
+                //int materialId = createMaterial(gltf, gaiaMaterial);
+                //binary.setMaterialId(materialId);
             });
             convertNode(gltf, binary, null, gaiaScene.getNodes());
-
-            areas.sort(Double::compareTo);
-            volumes.sort(Double::compareTo);
             binary.fill();
         }
         if (binary.getBody().isPresent()) {
@@ -93,7 +85,6 @@ public class GltfWriter {
 
             ArrayList<GaiaMesh> gaiaMeshes = gaiaNode.getMeshes();
             gaiaMeshes.stream().forEach((gaiaMesh) -> {
-                //GltfNodeBuffer nodeBuffer = createNodeBuffer(gltf, gaiaMesh);
                 GltfNodeBuffer nodeBuffer = convertGeometryInfo(gltf, gaiaMesh, node);
                 nodeBuffers.add(nodeBuffer);
             });
@@ -101,15 +92,15 @@ public class GltfWriter {
     }
 
     private static GltfNodeBuffer convertGeometryInfo(GlTF gltf, GaiaMesh gaiaMesh, Node node) {
-        GltfNodeBuffer nodeBuffer = createNodeBuffer(gltf, gaiaMesh);
+        GltfNodeBuffer nodeBuffer = initNodeBuffer(gaiaMesh);
         createBuffer(gltf, nodeBuffer);
 
         ArrayList<Short> indices = gaiaMesh.getIndices();
-        ArrayList<Float> vertices = gaiaMesh.getPositions();
+        ArrayList<Float> positions = gaiaMesh.getPositions();
         ArrayList<Float> normals = gaiaMesh.getNormals();
         ArrayList<Float> colors = gaiaMesh.getColors();
-
         ArrayList<Float> textureCoordinates = gaiaMesh.getTextureCoordinates();
+
         Optional<ByteBuffer> indicesBuffer = nodeBuffer.getIndicesBuffer();
         Optional<ByteBuffer> positionsBuffer = nodeBuffer.getPositionsBuffer();
         Optional<ByteBuffer> normalsBuffer = nodeBuffer.getNormalsBuffer();
@@ -122,27 +113,6 @@ public class GltfWriter {
         int colorsBufferViewId = nodeBuffer.getColorsBufferViewId();
         int textureCoordinatesBufferViewId = nodeBuffer.getTextureCoordinatesBufferViewId();
 
-        if (indicesBufferViewId > -1 && indices.size() > 0) {
-            int indicesAccessorId = createAccessor(gltf, indicesBufferViewId, 0, indices.size(), GltfConstants.GL_UNSIGNED_SHORT, AccessorType.SCALAR);
-            nodeBuffer.setIndicesAccessorId(indicesAccessorId);
-        }
-        if (positionsBufferViewId > -1 && vertices.size() > 0) {
-            int verticesAccessorId = createAccessor(gltf, positionsBufferViewId, 0, vertices.size(), GltfConstants.GL_FLOAT, AccessorType.VEC3);
-            nodeBuffer.setPositionsAccessorId(verticesAccessorId);
-        }
-        if (normalsBufferViewId > -1 && normals.size() > 0) {
-            int normalsAccessorId = createAccessor(gltf, normalsBufferViewId, 0, normals.size(), GltfConstants.GL_FLOAT, AccessorType.VEC3);
-            nodeBuffer.setNormalsAccessorId(normalsAccessorId);
-        }
-        if (colorsBufferViewId > -1 && colors.size() > 0) {
-            int colorsAccessorId = createAccessor(gltf, colorsBufferViewId, 0, colors.size(), GltfConstants.GL_FLOAT, AccessorType.VEC3);
-            nodeBuffer.setColorsAccessorId(colorsAccessorId);
-        }
-        if (textureCoordinatesBufferViewId > -1 && textureCoordinates.size() > 0) {
-            int textureCoordinatesAccessorId = createAccessor(gltf, textureCoordinatesBufferViewId, 0, textureCoordinates.size(), GltfConstants.GL_FLOAT, AccessorType.VEC2);
-            nodeBuffer.setTextureCoordinatesAccessorId(textureCoordinatesAccessorId);
-        }
-
         if (indicesBuffer.isPresent()) {
             ByteBuffer indicesByteBuffer = indicesBuffer.get();
             indices.stream().forEach((indice) -> {
@@ -151,8 +121,8 @@ public class GltfWriter {
         }
         if (positionsBuffer.isPresent()) {
             ByteBuffer positionByteBuffer = positionsBuffer.get();
-            for (Float vertex: vertices) {
-                positionByteBuffer.putFloat(vertex);
+            for (Float position: positions) {
+                positionByteBuffer.putFloat(position);
             }
         }
         if (normalsBuffer.isPresent()) {
@@ -174,19 +144,45 @@ public class GltfWriter {
             }
         }
 
-        MeshPrimitive primitive = createPrimitive(nodeBuffer, 0); // TODO
+        if (indicesBufferViewId > -1 && indices.size() > 0) {
+            //Number[] min = GeometryUtils.getMinIndices(indices);
+            //Number[] max = GeometryUtils.getMaxIndices(indices);
+            int indicesAccessorId = createAccessor(gltf, indicesBufferViewId, 0, indices.size(), GltfConstants.GL_UNSIGNED_SHORT, AccessorType.SCALAR/*, min, max*/);
+            nodeBuffer.setIndicesAccessorId(indicesAccessorId);
+        }
+        if (positionsBufferViewId > -1 && positions.size() > 0) {
+//            Number[] min = GeometryUtils.getMin(positions, AccessorType.VEC3);
+//            Number[] max = GeometryUtils.getMax(positions, AccessorType.VEC3);
+            int verticesAccessorId = createAccessor(gltf, positionsBufferViewId, 0, positions.size() / 3, GltfConstants.GL_FLOAT, AccessorType.VEC3/*, min, max*/);
+            nodeBuffer.setPositionsAccessorId(verticesAccessorId);
+        }
+        if (normalsBufferViewId > -1 && normals.size() > 0) {
+//            Number[] min = GeometryUtils.getMin(normals, AccessorType.VEC3);
+//            Number[] max = GeometryUtils.getMax(normals, AccessorType.VEC3);
+            int normalsAccessorId = createAccessor(gltf, normalsBufferViewId, 0, normals.size() / 3, GltfConstants.GL_FLOAT, AccessorType.VEC3/*, min, max*/);
+            nodeBuffer.setNormalsAccessorId(normalsAccessorId);
+        }
+        if (colorsBufferViewId > -1 && colors.size() > 0) {
+//            Number[] min = GeometryUtils.getMin(colors, AccessorType.VEC4);
+//            Number[] max = GeometryUtils.getMax(colors, AccessorType.VEC4);
+            int colorsAccessorId = createAccessor(gltf, colorsBufferViewId, 0, colors.size() / 4, GltfConstants.GL_FLOAT, AccessorType.VEC4/*, min, max*/);
+            nodeBuffer.setColorsAccessorId(colorsAccessorId);
+        }
+        if (textureCoordinatesBufferViewId > -1 && textureCoordinates.size() > 0) {
+//            Number[] min = GeometryUtils.getMin(textureCoordinates, AccessorType.VEC2);
+//            Number[] max = GeometryUtils.getMax(textureCoordinates, AccessorType.VEC2);
+            int textureCoordinatesAccessorId = createAccessor(gltf, textureCoordinatesBufferViewId, 0, textureCoordinates.size() / 2, GltfConstants.GL_FLOAT, AccessorType.VEC2/*, min, max*/);
+            nodeBuffer.setTextureCoordinatesAccessorId(textureCoordinatesAccessorId);
+        }
+
+        List<Material> materials = gltf.getMaterials();
+        MeshPrimitive primitive = createPrimitive(nodeBuffer, materials); // TODO
         int meshId = createMesh(gltf, primitive);
         node.setMesh(meshId);
         return nodeBuffer;
     }
 
-    private static int SHORT_SIZE = 2;
-    private static int INTEGER_SIZE = 4;
-    private static int VEC2_SIZE = 2;
-    private static int VEC3_SIZE = 3;
-    private static int VEC4_SIZE = 4;
-    private static int FLOAT_SIZE = 4;
-    private static GltfNodeBuffer createNodeBuffer(GlTF gltf, GaiaMesh gaiaMesh) {
+    private static GltfNodeBuffer initNodeBuffer(GaiaMesh gaiaMesh) {
         GltfNodeBuffer nodeBuffer = new GltfNodeBuffer();
 
         int indicesByteLength = gaiaMesh.getIndicesCount() * FLOAT_SIZE;
@@ -264,7 +260,6 @@ public class GltfWriter {
         Buffer buffer = new Buffer();
         gltf.addBuffers(buffer);
         int bufferId = gltf.getBuffers().size() - 1;
-
         int bufferOffset = 0;
         if (nodeBuffer.getIndicesBuffer().isPresent()) {
             ByteBuffer indicesBuffer = nodeBuffer.getIndicesBuffer().get();
@@ -288,7 +283,7 @@ public class GltfWriter {
         }
         if (nodeBuffer.getTextureCoordinatesBuffer().isPresent()) {
             ByteBuffer textureCoordinatesBuffer = nodeBuffer.getTextureCoordinatesBuffer().get();
-            nodeBuffer.setTextureCoordinatesBufferViewId(createBufferView(gltf, bufferId, bufferOffset, textureCoordinatesBuffer.capacity() * 2, 8, GL20.GL_ARRAY_BUFFER));
+            nodeBuffer.setTextureCoordinatesBufferViewId(createBufferView(gltf, bufferId, bufferOffset, textureCoordinatesBuffer.capacity(), 8, GL20.GL_ARRAY_BUFFER));
             bufferOffset += textureCoordinatesBuffer.capacity();
         }
         buffer.setByteLength(bufferOffset);
@@ -308,13 +303,6 @@ public class GltfWriter {
         return gltf.getBufferViews().size() - 1;
     }
 
-    private static boolean isIdentity(float[] matrix) {
-        return matrix[0] == 1 && matrix[1] == 0 && matrix[2] == 0 && matrix[3] == 0 &&
-                matrix[4] == 0 && matrix[5] == 1 && matrix[6] == 0 && matrix[7] == 0 &&
-                matrix[8] == 0 && matrix[9] == 0 && matrix[10] == 1 && matrix[11] == 0 &&
-                matrix[12] == 0 && matrix[13] == 0 && matrix[14] == 0 && matrix[15] == 1;
-    }
-
     private static Node createNode(GlTF gltf, Node parentNode, GaiaNode gaiaNode) {
         if (parentNode != null) {
             parentNode = gltf.getNodes().get(0);
@@ -322,49 +310,11 @@ public class GltfWriter {
         Node node = new Node();
         //node.setMesh(mesh);
         float[] matrix = gaiaNode.getTransform().get(new float[16]);
-        if (matrix != null && !isIdentity(matrix)) {
+        if (matrix != null && !GeometryUtils.isIdentity(matrix)) {
             node.setMatrix(matrix);
         }
         node.setName(gaiaNode.getName());
         return node;
-    }
-
-    private static int addMeshNode(GlTF gltf, int mesh, GaiaNode gaiaNode, String name) {
-        Node root = gltf.getNodes().get(0);
-        Node node = new Node();
-        node.setMesh(mesh);
-
-        float[] matrix = gaiaNode.getTransform().get(new float[16]);
-        if (matrix != null && !isIdentity(matrix)) {
-            node.setMatrix(matrix);
-        }
-        if (name != null) {
-            node.setName(name);
-        }
-        gltf.addNodes(node);
-        int nodeId = gltf.getNodes().size() - 1;
-        root.addChildren(nodeId);
-        return nodeId;
-    }
-
-    private static int createAccessor(GlTF gltf, int bufferView, int byteOffset, int count, int componentType, AccessorType accessorType) {
-        Accessor accessor = new Accessor();
-        accessor.setBufferView(bufferView);
-        accessor.setByteOffset(byteOffset);
-        accessor.setCount(count);
-        accessor.setComponentType(componentType);
-        accessor.setType(accessorType.name());
-        gltf.addAccessors(accessor);
-        return gltf.getAccessors().size() - 1;
-    }
-
-    private static Sampler genSampler() {
-        Sampler sampler = new Sampler();
-        sampler.setMagFilter(GL20.GL_LINEAR);
-        sampler.setMinFilter(GL20.GL_LINEAR_MIPMAP_LINEAR);
-        sampler.setWrapS(GL20.GL_REPEAT);
-        sampler.setWrapT(GL20.GL_REPEAT);
-        return sampler;
     }
 
     private static int createMaterial(GlTF gltf, GaiaMaterial gaiaMaterial) {
@@ -408,34 +358,34 @@ public class GltfWriter {
         return gltf.getTextures().size() - 1;
     }
 
-    /*private static int createMeshWithPrimitive(GlTF gltf, int mesh, GltfNodeBuffer nodeBuffer) {
+    private static int createAccessor(GlTF gltf, int bufferView, int byteOffset, int count, int componentType, AccessorType accessorType/*, Number[] min, Number[] max*/) {
+        Accessor accessor = new Accessor();
+        accessor.setBufferView(bufferView);
+        accessor.setByteOffset(byteOffset);
+        accessor.setCount(count);
+        accessor.setComponentType(componentType);
+        accessor.setType(accessorType.name());
+        //accessor.setMin(new Float[]{0.0f, 0.0f, 0.0f});
+        //accessor.setMax(new Float[]{0.0f, 0.0f, 0.0f});
+        gltf.addAccessors(accessor);
+        return gltf.getAccessors().size() - 1;
+    }
+
+    private static Sampler genSampler() {
+        Sampler sampler = new Sampler();
+        sampler.setMagFilter(GL20.GL_LINEAR);
+        sampler.setMinFilter(GL20.GL_LINEAR_MIPMAP_LINEAR);
+        sampler.setWrapS(GL20.GL_REPEAT);
+        sampler.setWrapT(GL20.GL_REPEAT);
+        return sampler;
+    }
+
+    private static MeshPrimitive createPrimitive(GltfNodeBuffer nodeBuffer, List<Material> materials) {
         MeshPrimitive primitive = new MeshPrimitive();
-
         primitive.setMode(GltfConstants.GL_TRIANGLES);
-        //primitive.setMaterial(nodeBuffer.getMaterialId());  //TODO
-        primitive.setAttributes(new HashMap<>());
-        primitive.setIndices(nodeBuffer.getIndicesAccessorId());
-
-        if (nodeBuffer.getPositionsAccessorId() > -1)
-            primitive.getAttributes().put("POSITION", nodeBuffer.getPositionsAccessorId());
-        if (nodeBuffer.getNormalsAccessorId() > -1)
-            primitive.getAttributes().put("NORMAL", nodeBuffer.getNormalsAccessorId());
-        if (nodeBuffer.getColorsAccessorId() > -1)
-            primitive.getAttributes().put("COLOR_0", nodeBuffer.getColorsAccessorId());
-        if (nodeBuffer.getTextureCoordinatesAccessorId() > -1)
-            primitive.getAttributes().put("TEXCOORD_0", nodeBuffer.getTextureCoordinatesAccessorId());
-
-        if (mesh == -1)
-            mesh = createMesh(gltf);
-        gltf.getMeshes().get(mesh).addPrimitives(primitive);
-        return mesh;
-    }*/
-
-    private static MeshPrimitive createPrimitive(GltfNodeBuffer nodeBuffer, int materialId) {
-        MeshPrimitive primitive = new MeshPrimitive();
-        primitive.setMode(GltfConstants.GL_TRIANGLES);
-        primitive.setMaterial(materialId);
-        //primitive.setMaterial(nodeBuffer.getMaterialId());
+        if (materials != null && materials.size() > 0) {
+            primitive.setMaterial(0);
+        }
         primitive.setAttributes(new HashMap<>());
         primitive.setIndices(nodeBuffer.getIndicesAccessorId());
 

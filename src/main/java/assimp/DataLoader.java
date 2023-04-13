@@ -139,12 +139,13 @@ public class DataLoader {
 
         Path parentPath = new File(path).toPath();
 
-
-        GaiaTexture texture = new GaiaTexture();
-        texture.setPath(diffTexPath);
-        texture.setType(GaiaMaterial.MaterialType.DIFFUSE);
-        texture.readImage(parentPath);
-        material.getTextures().put(texture.getType(), texture);
+        if (diffTexPath != null && diffTexPath.length() > 0) {
+            GaiaTexture texture = new GaiaTexture();
+            texture.setPath(diffTexPath);
+            texture.setType(GaiaMaterial.MaterialType.DIFFUSE);
+            texture.readImage(parentPath);
+            material.getTextures().put(texture.getType(), texture);
+        }
 
         if (diffTexPath != null && diffTexPath.length() > 0) {
             //TextureCache textureCache = TextureCache.getInstance();
@@ -254,13 +255,18 @@ public class DataLoader {
         for (int i = 0; i < mNumVertices; i++) {
             AIVector3D aiVertice = verticesBuffer.get(i);
             AIVector3D aiNormal = normalsBuffer.get(i);
-            AIVector3D textCoord = textCoords.get(i);
             GaiaVertex vertex = new GaiaVertex();
             vertex.setPosition(new Vector3d((double) aiVertice.x(), (double) aiVertice.z(), (double) aiVertice.y()));
+
             if (!(aiNormal.x() == 0.0 && aiNormal.y() == 0.0 && aiNormal.z() == 0.0)) {
                 vertex.setNormal(new Vector3d((double) aiNormal.x(), (double) aiNormal.z(), (double) aiNormal.y()));
             }
-            vertex.setTextureCoordinates(new Vector2d((double) textCoord.x(), 1.0 - (double) textCoord.y()));
+
+
+            if (textCoords != null) {
+                AIVector3D textCoord = textCoords.get(i);
+                vertex.setTextureCoordinates(new Vector2d((double) textCoord.x(), 1.0 - (double) textCoord.y()));
+            }
             primitive.getVertices().add(vertex);
         }
 

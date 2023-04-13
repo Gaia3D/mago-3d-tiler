@@ -69,7 +69,11 @@ public class Command {
                     File output = new File(commandOption.getOutputPath().toAbsolutePath().toString() + File.separator + outputFile);
                     log("convert : " + child.getAbsolutePath() + " -> " + output.getAbsolutePath());
                     GaiaScene scene = DataLoader.load(child.getAbsolutePath(), null);
-                    GltfWriter.writeGltf(scene, output.getAbsolutePath());
+                    if (commandOption.getOutputType() == CommandOption.OutputType.OUT_GLB) {
+                        GltfWriter.writeGlb(scene, output.getAbsolutePath());
+                    } else if (commandOption.getOutputType() == CommandOption.OutputType.OUT_GLTF) {
+                        GltfWriter.writeGltf(scene, output.getAbsolutePath());
+                    }
                 } else {
                     log("skip : " + child.getName());
                 }
