@@ -13,8 +13,8 @@ import java.util.Date;
 
 public class CommandTest {
     public static void main(String[] args) {
-        String inputPath = "C:\\data\\sample\\KSJ_100.ifc";
-        GaiaScene scene = DataLoader.load(inputPath, "ifc");
+        String inputPath = "C:\\data\\sample\\face.3ds";
+        GaiaScene scene = DataLoader.load(inputPath, "3ds");
         //GaiaScene scene = GeometryUtils.sampleScene();
         String outputPath = "C:\\data\\sample\\test.gltf";
         GltfWriter.writeGltf(scene, outputPath);

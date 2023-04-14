@@ -1,19 +1,20 @@
 package assimp;
 
+import de.javagl.jgltf.impl.v2.Material;
+import geometry.basic.GaiaBoundingBox;
 import geometry.structure.*;
-import org.joml.Matrix4d;
-import org.joml.Vector2d;
-import org.joml.Vector3d;
-import org.joml.Vector4d;
+import org.joml.*;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
 import util.FileUtils;
 
 import java.awt.geom.Rectangle2D;
 import java.io.File;
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
+import java.util.ArrayList;
 
 /**
  * Loads a scene from a file
@@ -63,24 +64,24 @@ public class DataLoader {
 
     // convertMatrix4dFromAIMatrix4x4
     private static Matrix4d convertMatrix4dFromAIMatrix4x4(AIMatrix4x4 aiMatrix4x4) {
-        Matrix4d matrix4d = new Matrix4d();
-        matrix4d.m00(aiMatrix4x4.a1());
-        matrix4d.m01(aiMatrix4x4.b1());
-        matrix4d.m02(aiMatrix4x4.c1());
-        matrix4d.m03(aiMatrix4x4.d1());
-        matrix4d.m10(aiMatrix4x4.a2());
-        matrix4d.m11(aiMatrix4x4.b2());
-        matrix4d.m12(aiMatrix4x4.c2());
-        matrix4d.m13(aiMatrix4x4.d2());
-        matrix4d.m20(aiMatrix4x4.a3());
-        matrix4d.m21(aiMatrix4x4.b3());
-        matrix4d.m22(aiMatrix4x4.c3());
-        matrix4d.m23(aiMatrix4x4.d3());
-        matrix4d.m30(aiMatrix4x4.a4());
-        matrix4d.m31(aiMatrix4x4.b4());
-        matrix4d.m32(aiMatrix4x4.c4());
-        matrix4d.m33(aiMatrix4x4.d4());
-        return matrix4d;
+        Matrix4d matrix4 = new Matrix4d();
+        matrix4.m00(aiMatrix4x4.a1());
+        matrix4.m01(aiMatrix4x4.b1());
+        matrix4.m02(aiMatrix4x4.c1());
+        matrix4.m03(aiMatrix4x4.d1());
+        matrix4.m10(aiMatrix4x4.a2());
+        matrix4.m11(aiMatrix4x4.b2());
+        matrix4.m12(aiMatrix4x4.c2());
+        matrix4.m13(aiMatrix4x4.d2());
+        matrix4.m20(aiMatrix4x4.a3());
+        matrix4.m21(aiMatrix4x4.b3());
+        matrix4.m22(aiMatrix4x4.c3());
+        matrix4.m23(aiMatrix4x4.d3());
+        matrix4.m30(aiMatrix4x4.a4());
+        matrix4.m31(aiMatrix4x4.b4());
+        matrix4.m32(aiMatrix4x4.c4());
+        matrix4.m33(aiMatrix4x4.d4());
+        return matrix4;
     }
 
 
@@ -91,21 +92,33 @@ public class DataLoader {
      * @return Gaia scene
      */
     public static GaiaScene convertScene(AIScene aiScene, String filePath) {
-        GaiaScene scene = new GaiaScene();
+        GaiaScene gaiaScene = new GaiaScene();
         AINode aiNode = aiScene.mRootNode();
 
         int numMaterials = aiScene.mNumMaterials();
         PointerBuffer aiMaterials = aiScene.mMaterials();
         for (int i = 0; i < numMaterials; i++) {
             AIMaterial aiMaterial = AIMaterial.create(aiMaterials.get(i));
-            scene.getMaterials().add(processMaterial(aiMaterial, filePath));
+            gaiaScene.getMaterials().add(processMaterial(aiMaterial, filePath));
         }
-        GaiaNode node = processNode(aiScene, aiNode, null);
+
+        GaiaNode node = processNode(gaiaScene, aiScene, aiNode, null);
+        GaiaBoundingBox boundingBox = node.getBoundingBox(null);
+        Vector3d boundingBoxCenter = boundingBox.getCenter();
+        Vector3d translation = new Vector3d(-boundingBoxCenter.x, -boundingBoxCenter.y, -boundingBoxCenter.z);
+
+
+        Matrix4d rootTransform = node.getTransformMatrix();
+        rootTransform.translate(translation, rootTransform);
+        node.setTransformMatrix(rootTransform);
 
         node.recalculateTransform(node);
 
-        scene.getNodes().add(node);
-        return scene;
+        //GaiaBoundingBox boundingBox = node.getBoundingBox(node, null);
+        //System.out.println(node.getTransformMatrix());
+        //System.out.println(node.recalculateTransform(node));
+        gaiaScene.getNodes().add(node);
+        return gaiaScene;
     }
 
     /**
@@ -115,7 +128,6 @@ public class DataLoader {
      * @return Gaia node
      */
     private static GaiaMaterial processMaterial(AIMaterial aiMaterial, String path) {
-        //PointerBuffer aiTextures = aiScene.mTextures();
         GaiaMaterial material = new GaiaMaterial();
 
         AIColor4D color = AIColor4D.create();
@@ -129,37 +141,29 @@ public class DataLoader {
         AIString diffPath = AIString.calloc();
         Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_DIFFUSE, 0, diffPath, (IntBuffer) null, null, null, null, null, null);
         String diffTexPath = diffPath.dataString();
-        System.out.println(diffTexPath);
 
-        AIString otherPath = AIString.calloc();
-        Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_NORMALS, 0, diffPath, (IntBuffer) null, null, null, null, null, null);
-        String otherTexPath = otherPath.dataString();
-
-        //test
+        //AIString otherPath = AIString.calloc();
+        //Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_NORMALS, 0, otherPath, (IntBuffer) null, null, null, null, null, null);
+        //String otherTexPath = otherPath.dataString();
 
         Path parentPath = new File(path).toPath();
 
         if (diffTexPath != null && diffTexPath.length() > 0) {
             GaiaTexture texture = new GaiaTexture();
             texture.setPath(diffTexPath);
-            texture.setType(GaiaMaterial.MaterialType.DIFFUSE);
+            texture.setType(GaiaMaterialType.DIFFUSE);
             texture.readImage(parentPath);
             material.getTextures().put(texture.getType(), texture);
         }
 
-        if (diffTexPath != null && diffTexPath.length() > 0) {
-            //TextureCache textureCache = TextureCache.getInstance();
-            //diffuseTexture = new TextureImage2D(path + "/" + diffTexPath, SamplerFilter.Trilinear);
-        }
-
-        int numProperties = aiMaterial.mNumProperties();
+        /*int numProperties = aiMaterial.mNumProperties();
         PointerBuffer pointerBuffer = aiMaterial.mProperties();
         for (int i = 0; i < numProperties; i++) {
             AIMaterialProperty aiMaterialProperty = AIMaterialProperty.create(pointerBuffer.get(i));
             ByteBuffer byteBuffer = aiMaterialProperty.mData();
             //System.out.println(aiMaterialProperty.mKey().dataString());
             //System.out.println(aiMaterialProperty.mType());
-        }
+        }*/
         return material;
     }
 
@@ -170,27 +174,46 @@ public class DataLoader {
      * @param parentNode
      * @return Gaia node
      */
-    private static GaiaNode processNode(AIScene aiScene, AINode aiNode, GaiaNode parentNode) {
+    private static GaiaNode processNode(GaiaScene gaiaScene, AIScene aiScene, AINode aiNode, GaiaNode parentNode) {
         AIMatrix4x4 transformation = aiNode.mTransformation();
-        Matrix4d matrix4d = convertMatrix4dFromAIMatrix4x4(transformation);
+        Matrix4d transfrom = convertMatrix4dFromAIMatrix4x4(transformation);
 
-        PointerBuffer aiMeshes = aiScene.mMeshes();
-        GaiaNode node = new GaiaNode();
-        node.setParent(parentNode);
-
+        String name = aiNode.mName().dataString();
         int numMeshes = aiNode.mNumMeshes();
+        int numChildren = aiNode.mNumChildren();
+
+        if (numMeshes < 1 && numChildren < 1) {
+            return null;
+        }
+
+        GaiaNode node = new GaiaNode();
+        node.setName(name);
+        node.setParent(parentNode);
+        node.setTransformMatrix(transfrom);
+        PointerBuffer aiMeshes = aiScene.mMeshes();
+
+        IntBuffer nodeMeshes = aiNode.mMeshes();
+        int nodeNum = -1;
+        if (nodeMeshes != null && nodeMeshes.capacity() > 0) {
+            nodeNum = nodeMeshes.get(0);
+        }
+
+        //System.out.println("Node name: " + name);
+        //System.out.println("Node meshes num: " + nodeMeshesNum);
+        //System.out.println("Node num: " + nodeNum);
         for (int i = 0; i < numMeshes; i++) {
-            AIMesh aiMesh = AIMesh.create(aiMeshes.get(i));
-            GaiaMesh mesh = processMesh(aiMesh);
+            AIMesh aiMesh = AIMesh.create(aiMeshes.get(nodeNum));
+            GaiaMesh mesh = processMesh(aiMesh, gaiaScene.getMaterials());
             node.getMeshes().add(mesh);
         }
 
-        int numChildren = aiNode.mNumChildren();
         PointerBuffer childrenBuffer = aiNode.mChildren();
         for (int i = 0; i < numChildren; i++) {
             AINode aiChildNode = AINode.create(childrenBuffer.get(i));
-            GaiaNode childNode = processNode(aiScene, aiChildNode, node);
-            node.getChildren().add(childNode);
+            GaiaNode childNode = processNode(gaiaScene, aiScene, aiChildNode, node);
+            if (childNode != null) {
+                node.getChildren().add(childNode);
+            }
         }
         return node;
     }
@@ -200,8 +223,11 @@ public class DataLoader {
      * @param aiMesh Assimp mesh
      * @return Gaia mesh
      */
-    private static GaiaMesh processMesh(AIMesh aiMesh) {
-        GaiaPrimitive primitive = processPrimitive(aiMesh);
+    private static GaiaMesh processMesh(AIMesh aiMesh, ArrayList<GaiaMaterial> materials) {
+        int materialIndex = aiMesh.mMaterialIndex();
+
+        GaiaMaterial material = materials.get(materialIndex);
+        GaiaPrimitive primitive = processPrimitive(aiMesh, material);
         GaiaMesh mesh = new GaiaMesh();
         mesh.getPrimitives().add(primitive);
         return mesh;
@@ -212,11 +238,12 @@ public class DataLoader {
      * @param aiMesh Assimp mesh
      * @return Gaia surface
      */
-    private static GaiaPrimitive processPrimitive(AIMesh aiMesh) {
+    private static GaiaPrimitive processPrimitive(AIMesh aiMesh, GaiaMaterial material) {
         GaiaSurface surface = processSurface();
 
         GaiaPrimitive primitive = new GaiaPrimitive();
         primitive.getSurfaces().add(surface);
+        primitive.setMaterial(material);
 
         int numFaces = aiMesh.mNumFaces();
         AIFace.Buffer facesBuffer = aiMesh.mFaces();
@@ -225,33 +252,16 @@ public class DataLoader {
             GaiaFace face = processFace(aiFace);
             surface.getFaces().add(face);
 
-            //ArrayList<Integer> indices = face.getIndices();
-            /*if (indices.size() == 3) {
-                System.out.println(indices);
-                primitive.getIndices().add(indices.get(0));
-                primitive.getIndices().add(indices.get(1));
-                primitive.getIndices().add(indices.get(2));
-            }*/
             face.getIndices().stream().forEach((indices) -> {
                 primitive.getIndices().add(indices);
             });
         }
-
 
         int mNumVertices = aiMesh.mNumVertices();
         AIVector3D.Buffer verticesBuffer = aiMesh.mVertices();
         AIVector3D.Buffer normalsBuffer = aiMesh.mNormals();
         AIVector3D.Buffer textCoords = aiMesh.mTextureCoords(0);
 
-//        System.out.println("mNumVertices: " + mNumVertices);
-//        System.out.println("verticesBuffer: " + verticesBuffer.remaining());
-//        System.out.println("normalsBuffer: " + normalsBuffer.remaining());
-//        System.out.println("textCoords: " + textCoords.remaining());
-
-        /*int numTextCoords = textCoords != null ? textCoords.remaining() : 0;
-        for (int i = 0; i < numTextCoords; i++) {
-            AIVector3D textCoord = textCoords.get();
-        }*/
         for (int i = 0; i < mNumVertices; i++) {
             AIVector3D aiVertice = verticesBuffer.get(i);
             AIVector3D aiNormal = normalsBuffer.get(i);
@@ -261,7 +271,6 @@ public class DataLoader {
             if (!(aiNormal.x() == 0.0 && aiNormal.y() == 0.0 && aiNormal.z() == 0.0)) {
                 vertex.setNormal(new Vector3d((double) aiNormal.x(), (double) aiNormal.z(), (double) aiNormal.y()));
             }
-
 
             if (textCoords != null) {
                 AIVector3D textCoord = textCoords.get(i);

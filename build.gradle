@@ -59,3 +59,14 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+
+// jar task
+jar {
+    manifest {
+        attributes 'Main-Class': 'command.Command'
+    }
+    from {
+        configurations.runtimeClasspath.collect {it.isDirectory() ? it : zipTree(it)}
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}

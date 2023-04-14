@@ -1,10 +1,11 @@
 package geometry.structure;
 
+import geometry.basic.GaiaBoundingBox;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.joml.Matrix4d;
+import org.joml.*;
 
 import java.util.ArrayList;
 
@@ -17,21 +18,55 @@ public class GaiaNode {
     private String name = "";
     private ArrayList<GaiaMesh> meshes = new ArrayList<>();
     private ArrayList<GaiaNode> children = new ArrayList<>();
-    private Matrix4d transform = new Matrix4d();
+    private Matrix4d transformMatrix = new Matrix4d();
+    private Matrix4d preMultipliedTransformMatrix = new Matrix4d();
+    private GaiaBoundingBox gaiaBoundingBox = null;
+
+    public GaiaBoundingBox getBoundingBox(Matrix4d parentTransformMatrix) {
+        GaiaBoundingBox boundingBox = null;
+        Matrix4d transformMatrix = new Matrix4d(this.transformMatrix);
+        if (parentTransformMatrix != null) {
+            parentTransformMatrix.mul(transformMatrix, transformMatrix);
+        }
+        for (GaiaMesh mesh : this.getMeshes()) {
+            GaiaBoundingBox meshBoudingBox = mesh.getBoundingBox(transformMatrix);
+            if (boundingBox == null) {
+                boundingBox = meshBoudingBox;
+            } else {
+                boundingBox.addBoundingBox(meshBoudingBox);
+            }
+        }
+        for (GaiaNode child : this.getChildren()) {
+            GaiaBoundingBox childBoundingBox = child.getBoundingBox(transformMatrix);
+            if (childBoundingBox == null) {
+                continue;
+            }
+            if (boundingBox == null) {
+                boundingBox = childBoundingBox;
+            } else {
+                boundingBox.addBoundingBox(childBoundingBox);
+            }
+        }
+        return boundingBox;
+    }
 
     /**
      * recalculate transform
      * @param node
      * @return
      */
-    public static Matrix4d recalculateTransform(GaiaNode node) {
+    public static void recalculateTransform(GaiaNode node) {
+        System.out.println(node.getName() + " before");
+        System.out.println(node.getTransformMatrix());
+        node.setPreMultipliedTransformMatrix(new Matrix4d(node.getTransformMatrix()));
         if (node.getParent() != null) {
-            node.getTransform().mul(node.getParent().getTransform());
+            Matrix4d parentPreMultipliedTransformMatrix = node.getParent().getPreMultipliedTransformMatrix();
+            Matrix4d preMultipliedTransformMatrix = node.getPreMultipliedTransformMatrix();
+            parentPreMultipliedTransformMatrix.mul(preMultipliedTransformMatrix, preMultipliedTransformMatrix);
         }
         for (GaiaNode child : node.getChildren()) {
             recalculateTransform(child);
         }
-        return node.getTransform();
     }
 
     // getTotalIndicesCount

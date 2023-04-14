@@ -20,7 +20,7 @@ import java.nio.file.Path;
 public class GaiaTexture {
     private String name;
     private String path;
-    private GaiaMaterial.MaterialType type;
+    private GaiaMaterialType type;
 
     private int width;
     private int height;
@@ -30,11 +30,6 @@ public class GaiaTexture {
     private BufferedImage bufferedImage;
     private ByteBuffer byteBuffer;
 
-    /**
-     * read image from path
-     * @param parentPath
-     * @return
-     */
     public BufferedImage readImage(Path parentPath) {
         Path diffusePath = new File(path).toPath();
         String imagePath = parentPath + File.separator + diffusePath;
@@ -45,10 +40,6 @@ public class GaiaTexture {
         return bufferedImage;
     }
 
-    /**
-     * load texture from image
-     * @return
-     */
     public ByteBuffer loadBuffer() {
         BufferedImage image = this.bufferedImage;
         byte size = 4;

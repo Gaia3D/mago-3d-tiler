@@ -2,16 +2,20 @@ package renderable;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.joml.Matrix4d;
+import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL20;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 @Setter
 @Getter
 public class RenderableBuffer {
     private int[] vbos;
     private int vboCount = 0;
+    private Matrix4d transformMatrix;
 
     private int indicesLength;
     private int indicesVbo;
@@ -29,20 +33,13 @@ public class RenderableBuffer {
         GL20.glGenBuffers(vbos);
         vboCount = 0;
     }
-    public static void setIndiceBind(int vbo) {
+    public void setIndiceBind(int vbo) {
         GL20.glBindBuffer(GL20.GL_ELEMENT_ARRAY_BUFFER, vbo);
     }
     public static void setAttribute(int vbo, int attributeLocation, int size, int pointer) {
         GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vbo);
         GL20.glVertexAttribPointer(attributeLocation, size, GL20.GL_FLOAT, false, 0, pointer);
         GL20.glEnableVertexAttribArray(attributeLocation);
-    }
-    public int createBuffer(float[] buffer) {
-        int vbo = vbos[this.vboCount];
-        GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vbo);
-        GL20.glBufferData(GL20.GL_ARRAY_BUFFER, buffer, GL20.GL_STATIC_DRAW);
-        vboCount++;
-        return vbo;
     }
     public int createBuffer(ArrayList<Float> buffer) {
         float[] datas = this.convertFloatArrayToArrayList(buffer);
@@ -52,14 +49,7 @@ public class RenderableBuffer {
         vboCount++;
         return vbo;
     }
-    public int createIndicesBuffer(short[] buffer) {
-        int vbo = vbos[this.vboCount];
-        GL20.glBindBuffer(GL20.GL_ELEMENT_ARRAY_BUFFER, vbo);
-        GL20.glBufferData(GL20.GL_ELEMENT_ARRAY_BUFFER, buffer, GL20.GL_STATIC_DRAW);
-        vboCount++;
-        return vbo;
-    }
-    public int createIndicesBuffer(ArrayList<Short> buffer) {
+    public int createIndicesBuffer(List<Short> buffer) {
         short[] indices = convertShortArrayToArrayList(buffer);
         int vbo = vbos[this.vboCount];
         GL20.glBindBuffer(GL20.GL_ELEMENT_ARRAY_BUFFER, vbo);
@@ -68,7 +58,7 @@ public class RenderableBuffer {
         return vbo;
     }
 
-    public short[] convertShortArrayToArrayList(ArrayList<Short> shortList) {
+    public short[] convertShortArrayToArrayList(List<Short> shortList) {
         short[] shortArray = new short[shortList.size()];
         int i = 0;
         for (Short s : shortList) {
@@ -78,7 +68,7 @@ public class RenderableBuffer {
         return shortArray;
     }
 
-    public float[] convertFloatArrayToArrayList(ArrayList<Float> floatList) {
+    public float[] convertFloatArrayToArrayList(List<Float> floatList) {
         float[] floatArray = new float[floatList.size()];
         int i = 0;
         for (Float f : floatList) {
@@ -87,7 +77,6 @@ public class RenderableBuffer {
         return floatArray;
     }
 
-    public void debug() {
-
+    public void setTextureBind(int textureVbo) {
     }
 }

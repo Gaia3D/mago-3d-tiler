@@ -52,8 +52,7 @@ public class GltfWriter {
         initScene(gltf);
         if (binary != null) {
             gaiaScene.getMaterials().stream().forEach(gaiaMaterial -> {
-                //int materialId = createMaterial(gltf, gaiaMaterial);
-                //binary.setMaterialId(materialId);
+                int materialId = createMaterial(gltf, gaiaMaterial);
             });
             convertNode(gltf, binary, null, gaiaScene.getNodes());
             binary.fill();
@@ -145,32 +144,22 @@ public class GltfWriter {
         }
 
         if (indicesBufferViewId > -1 && indices.size() > 0) {
-            //Number[] min = GeometryUtils.getMinIndices(indices);
-            //Number[] max = GeometryUtils.getMaxIndices(indices);
             int indicesAccessorId = createAccessor(gltf, indicesBufferViewId, 0, indices.size(), GltfConstants.GL_UNSIGNED_SHORT, AccessorType.SCALAR/*, min, max*/);
             nodeBuffer.setIndicesAccessorId(indicesAccessorId);
         }
         if (positionsBufferViewId > -1 && positions.size() > 0) {
-//            Number[] min = GeometryUtils.getMin(positions, AccessorType.VEC3);
-//            Number[] max = GeometryUtils.getMax(positions, AccessorType.VEC3);
             int verticesAccessorId = createAccessor(gltf, positionsBufferViewId, 0, positions.size() / 3, GltfConstants.GL_FLOAT, AccessorType.VEC3/*, min, max*/);
             nodeBuffer.setPositionsAccessorId(verticesAccessorId);
         }
         if (normalsBufferViewId > -1 && normals.size() > 0) {
-//            Number[] min = GeometryUtils.getMin(normals, AccessorType.VEC3);
-//            Number[] max = GeometryUtils.getMax(normals, AccessorType.VEC3);
             int normalsAccessorId = createAccessor(gltf, normalsBufferViewId, 0, normals.size() / 3, GltfConstants.GL_FLOAT, AccessorType.VEC3/*, min, max*/);
             nodeBuffer.setNormalsAccessorId(normalsAccessorId);
         }
         if (colorsBufferViewId > -1 && colors.size() > 0) {
-//            Number[] min = GeometryUtils.getMin(colors, AccessorType.VEC4);
-//            Number[] max = GeometryUtils.getMax(colors, AccessorType.VEC4);
             int colorsAccessorId = createAccessor(gltf, colorsBufferViewId, 0, colors.size() / 4, GltfConstants.GL_FLOAT, AccessorType.VEC4/*, min, max*/);
             nodeBuffer.setColorsAccessorId(colorsAccessorId);
         }
         if (textureCoordinatesBufferViewId > -1 && textureCoordinates.size() > 0) {
-//            Number[] min = GeometryUtils.getMin(textureCoordinates, AccessorType.VEC2);
-//            Number[] max = GeometryUtils.getMax(textureCoordinates, AccessorType.VEC2);
             int textureCoordinatesAccessorId = createAccessor(gltf, textureCoordinatesBufferViewId, 0, textureCoordinates.size() / 2, GltfConstants.GL_FLOAT, AccessorType.VEC2/*, min, max*/);
             nodeBuffer.setTextureCoordinatesAccessorId(textureCoordinatesAccessorId);
         }
@@ -308,8 +297,7 @@ public class GltfWriter {
             parentNode = gltf.getNodes().get(0);
         }
         Node node = new Node();
-        //node.setMesh(mesh);
-        float[] matrix = gaiaNode.getTransform().get(new float[16]);
+        float[] matrix = gaiaNode.getTransformMatrix().get(new float[16]);
         if (matrix != null && !GeometryUtils.isIdentity(matrix)) {
             node.setMatrix(matrix);
         }
@@ -319,6 +307,10 @@ public class GltfWriter {
 
     private static int createMaterial(GlTF gltf, GaiaMaterial gaiaMaterial) {
         GaiaTexture gaiaTexture = gaiaMaterial.getTextures().get(GaiaMaterial.MaterialType.DIFFUSE);
+        if (gaiaTexture == null) {
+            return -1;
+        }
+
         Material material = new Material();
         material.setName(gaiaMaterial.getName());
         material.setDoubleSided(false);
@@ -365,8 +357,6 @@ public class GltfWriter {
         accessor.setCount(count);
         accessor.setComponentType(componentType);
         accessor.setType(accessorType.name());
-        //accessor.setMin(new Float[]{0.0f, 0.0f, 0.0f});
-        //accessor.setMax(new Float[]{0.0f, 0.0f, 0.0f});
         gltf.addAccessors(accessor);
         return gltf.getAccessors().size() - 1;
     }

@@ -1,5 +1,7 @@
 package viewer;
 
+import assimp.DataLoader;
+import geometry.structure.GaiaScene;
 import org.joml.Math;
 import org.lwjgl.*;
 
@@ -66,10 +68,13 @@ public class HelloWorld {
 //            renderableObjects.add(renderableObject);
 //        }
 
-        //RenderableObject renderableObject = new AssimpObject("C:\\data\\sample\\KSJ_100.ifc");
-        //renderableObjects.add(renderableObject);
+        RenderableObject renderableObject = new AssimpObject("C:\\data\\sample\\KSJ_100.ifc");
+        //RenderableObject renderableObject = new AssimpObject("C:\\data\\sample\\face.3ds");
+        //RenderableObject renderableObject = new AssimpObject("C:\\data\\sample\\face.3ds");
+        //RenderableObject renderableObject = new AssimpObject("C:\\data\\sample\\aces.3ds");
+        //RenderableObject renderableObject = new AssimpObject("C:\\data\\ws2-3ds\\a_bd001.3ds");
 
-        RenderableObject renderableObject = new AssimpObject("C:\\data\\ws2-3ds\\a_bd001.3ds");
+
         renderableObjects.add(renderableObject);
 
         init();

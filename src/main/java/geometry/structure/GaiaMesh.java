@@ -1,9 +1,12 @@
 package geometry.structure;
 
+import de.javagl.jgltf.impl.v2.Material;
+import geometry.basic.GaiaBoundingBox;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
@@ -16,6 +19,19 @@ import java.util.ArrayList;
 @AllArgsConstructor
 public class GaiaMesh {
     private ArrayList<GaiaPrimitive> primitives = new ArrayList<>();
+
+    public GaiaBoundingBox getBoundingBox(Matrix4d transform) {
+        GaiaBoundingBox boundingBox = null;
+        for (GaiaPrimitive primitive : primitives) {
+            GaiaBoundingBox primitiveBoundingBox = primitive.getBoundingBox(transform);
+            if (boundingBox == null) {
+                boundingBox = primitiveBoundingBox;
+            } else {
+                boundingBox.addBoundingBox(primitiveBoundingBox);
+            }
+        }
+        return boundingBox;
+    }
 
     // getTotalIndices
     public ArrayList<Short> getIndices() {
