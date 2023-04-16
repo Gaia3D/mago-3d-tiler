@@ -14,7 +14,7 @@ public class OriginObject extends RenderableObject {
 
     public OriginObject() {
         super();
-        this.size = 32.0f;
+        this.size = 16.0f;
         this.setPosition(0.0f, 0.0f, 0.0f);
         this.setRotation(0.0f, 0.0f, 0.0f);
     }

@@ -76,7 +76,7 @@ public class HelloWorld {
         //RenderableObject renderableObject = new AssimpObject("C:\\Datas\\3dsample\\aces.3ds");
         //RenderableObject renderableObject = new AssimpObject("C:\\Datas\\3dsample\\face.3ds");
 
-        renderableObjects.add(new GaiaSceneObject("C:\\Datas\\3dsample\\a_bd001_d.dae"));
+        renderableObjects.add(new GaiaSceneObject("C:\\Datas\\3dsample\\a_bd001.3ds"));
         //renderableObjects.add(new GaiaSceneObject("C:\\Datas\\3dsample\\aces.3ds"));
         //renderableObjects.add(new GaiaSceneObject("C:\\Datas\\3dsample\\KSJ_100.ifc"));
         //renderableObjects.add(new GaiaSceneObject("C:\\Datas\\3dsample\\DC_library_del_3DS\\DC_library_del.3ds"));

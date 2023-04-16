@@ -140,10 +140,9 @@ public class GaiaPrimitive {
         for (GaiaVertex vertex : vertices) {
             Vector3d position = vertex.getPosition();
 
-            Matrix4d transformMatrix = transform;
             Vector3d transformedPosition = new Vector3d(position);
             if (transform != null) {
-                transformMatrix.transformPosition(position, transformedPosition);
+                transform.transformPosition(position, transformedPosition);
             }
 
             if (boundingBox == null) {

@@ -106,11 +106,13 @@ public class DataLoader {
         }
 
         GaiaNode node = processNode(gaiaScene, aiScene, aiNode, null);
+        Matrix4d rootTransform = node.getTransformMatrix();
+        Vector4d pos = rootTransform.transform(0,0,0,1.0, new Vector4d());
+
         GaiaBoundingBox boundingBox = node.getBoundingBox(null);
         Vector3d boundingBoxCenter = boundingBox.getCenter();
         Vector3d translation = new Vector3d(-boundingBoxCenter.x, -boundingBoxCenter.y, -boundingBoxCenter.z);
 
-        Matrix4d rootTransform = node.getTransformMatrix();
         //rootTransform.identity();
         System.out.println(rootTransform);
         //rootTransform.scale(0.001);
