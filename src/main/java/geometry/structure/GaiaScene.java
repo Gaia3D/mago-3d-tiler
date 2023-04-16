@@ -15,6 +15,12 @@ public class GaiaScene {
     private ArrayList<GaiaNode> nodes = new ArrayList<>();
     private ArrayList<GaiaMaterial> materials = new ArrayList<>();
 
+    public void renderScene(int program) {
+        for (GaiaNode node : nodes) {
+            node.renderNode(program);
+        }
+    }
+
     // getTotalIndicesCount
     public int getTotalIndicesCount() {
         return GaiaNode.getTotalIndicesCount(0, nodes);

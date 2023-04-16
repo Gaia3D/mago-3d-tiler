@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.joml.*;
+import org.lwjgl.opengl.GL20;
 
 import java.util.ArrayList;
 
@@ -18,9 +19,26 @@ public class GaiaNode {
     private String name = "";
     private ArrayList<GaiaMesh> meshes = new ArrayList<>();
     private ArrayList<GaiaNode> children = new ArrayList<>();
+
     private Matrix4d transformMatrix = new Matrix4d();
     private Matrix4d preMultipliedTransformMatrix = new Matrix4d();
     private GaiaBoundingBox gaiaBoundingBox = null;
+
+    public void renderNode(int program) {
+        int uObjectRotationMatrix = GL20.glGetUniformLocation(program, "uObjectRotationMatrix");
+        float[] objectTransformMatrixBuffer = new float[16];
+        Matrix4d preMultipliedTransformMatrix = this.getPreMultipliedTransformMatrix();
+        preMultipliedTransformMatrix.get(objectTransformMatrixBuffer);
+        GL20.glUniformMatrix4fv(uObjectRotationMatrix, false, objectTransformMatrixBuffer);
+
+        //System.out.println("render : " + this.getName());
+        for (GaiaMesh mesh : meshes) {
+            mesh.renderMesh(program);
+        }
+        for (GaiaNode child : children) {
+            child.renderNode(program);
+        }
+    }
 
     public GaiaBoundingBox getBoundingBox(Matrix4d parentTransformMatrix) {
         GaiaBoundingBox boundingBox = null;
@@ -29,11 +47,11 @@ public class GaiaNode {
             parentTransformMatrix.mul(transformMatrix, transformMatrix);
         }
         for (GaiaMesh mesh : this.getMeshes()) {
-            GaiaBoundingBox meshBoudingBox = mesh.getBoundingBox(transformMatrix);
+            GaiaBoundingBox meshBoundingBox = mesh.getBoundingBox(transformMatrix);
             if (boundingBox == null) {
-                boundingBox = meshBoudingBox;
+                boundingBox = meshBoundingBox;
             } else {
-                boundingBox.addBoundingBox(meshBoudingBox);
+                boundingBox.addBoundingBox(meshBoundingBox);
             }
         }
         for (GaiaNode child : this.getChildren()) {
@@ -55,9 +73,8 @@ public class GaiaNode {
      * @param node
      * @return
      */
-    public static void recalculateTransform(GaiaNode node) {
-        System.out.println(node.getName() + " before");
-        System.out.println(node.getTransformMatrix());
+    public void recalculateTransform() {
+        GaiaNode node = this;
         node.setPreMultipliedTransformMatrix(new Matrix4d(node.getTransformMatrix()));
         if (node.getParent() != null) {
             Matrix4d parentPreMultipliedTransformMatrix = node.getParent().getPreMultipliedTransformMatrix();
@@ -65,7 +82,7 @@ public class GaiaNode {
             parentPreMultipliedTransformMatrix.mul(preMultipliedTransformMatrix, preMultipliedTransformMatrix);
         }
         for (GaiaNode child : node.getChildren()) {
-            recalculateTransform(child);
+            child.recalculateTransform();
         }
     }
 

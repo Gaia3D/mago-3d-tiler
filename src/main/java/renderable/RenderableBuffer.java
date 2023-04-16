@@ -30,13 +30,13 @@ public class RenderableBuffer {
     }
     public void initVbo() {
         vbos = new int[6];
-        GL20.glGenBuffers(vbos);
         vboCount = 0;
+        GL20.glGenBuffers(vbos);
     }
     public void setIndiceBind(int vbo) {
         GL20.glBindBuffer(GL20.GL_ELEMENT_ARRAY_BUFFER, vbo);
     }
-    public static void setAttribute(int vbo, int attributeLocation, int size, int pointer) {
+    public void setAttribute(int vbo, int attributeLocation, int size, int pointer) {
         GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vbo);
         GL20.glVertexAttribPointer(attributeLocation, size, GL20.GL_FLOAT, false, 0, pointer);
         GL20.glEnableVertexAttribArray(attributeLocation);
@@ -78,5 +78,6 @@ public class RenderableBuffer {
     }
 
     public void setTextureBind(int textureVbo) {
+
     }
 }

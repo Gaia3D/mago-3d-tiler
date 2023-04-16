@@ -18,6 +18,7 @@ import java.nio.file.Path;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GaiaTexture {
+    Path parentPath;
     private String name;
     private String path;
     private GaiaMaterialType type;
@@ -30,7 +31,7 @@ public class GaiaTexture {
     private BufferedImage bufferedImage;
     private ByteBuffer byteBuffer;
 
-    public BufferedImage readImage(Path parentPath) {
+    public BufferedImage readImage() {
         Path diffusePath = new File(path).toPath();
         String imagePath = parentPath + File.separator + diffusePath;
         BufferedImage bufferedImage = FileUtils.readImage(imagePath);

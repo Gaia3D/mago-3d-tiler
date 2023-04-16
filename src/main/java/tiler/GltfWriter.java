@@ -306,7 +306,7 @@ public class GltfWriter {
     }
 
     private static int createMaterial(GlTF gltf, GaiaMaterial gaiaMaterial) {
-        GaiaTexture gaiaTexture = gaiaMaterial.getTextures().get(GaiaMaterial.MaterialType.DIFFUSE);
+        GaiaTexture gaiaTexture = gaiaMaterial.getTextures().get(GaiaMaterialType.DIFFUSE);
         if (gaiaTexture == null) {
             return -1;
         }
@@ -339,6 +339,9 @@ public class GltfWriter {
     }
 
     private static int createTexture(GlTF gltf, GaiaTexture gaiaTexture) {
+        if (gaiaTexture.getBufferedImage() == null) {
+            gaiaTexture.readImage();
+        }
         int imageSource = createImage(gltf, gaiaTexture);
 
         Texture texture = new Texture();

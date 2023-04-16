@@ -27,11 +27,11 @@ public class TextureBuffer {
     }
 
     //bind texture
-    public static void setTextureBind(int vbo) {
+    public void setTextureBind(int vbo) {
         GL20.glBindTexture(GL20.GL_TEXTURE_2D, vbo);
     }
     //unbind texture
-    public static void setTextureUnbind() {
+    public void setTextureUnbind() {
         GL20.glBindTexture(GL20.GL_TEXTURE_2D, 0);
     }
 
@@ -44,6 +44,7 @@ public class TextureBuffer {
         GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_MIN_FILTER, GL20.GL_NEAREST);
         GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_MAG_FILTER, GL20.GL_NEAREST);
         GL20.glTexImage2D(GL20.GL_TEXTURE_2D, 0, GL20.GL_RGBA8, gaiaTexture.getWidth(), gaiaTexture.getHeight(), 0, gaiaTexture.getFormat(), GL20.GL_UNSIGNED_BYTE, gaiaTexture.getByteBuffer());
+        vboCount++;
         return texture;
     }
 

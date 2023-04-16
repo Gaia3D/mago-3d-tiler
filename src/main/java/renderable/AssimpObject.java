@@ -82,6 +82,8 @@ public class AssimpObject extends RenderableObject {
             GaiaNode rootNode = scene.getNodes().get(0);
             ArrayList<GaiaNode> children = rootNode.getChildren();
             children.stream().forEach((node) -> {
+                System.out.println(node.getName());
+
                 ArrayList<Short> indicesList = new ArrayList<Short>();
                 ArrayList<Float> positionList = new ArrayList<Float>();
                 ArrayList<Float> colorList = new ArrayList<Float>();
@@ -127,18 +129,17 @@ public class AssimpObject extends RenderableObject {
                             colorList.add((float) diffuseColor.w);
                         });
 
-                        List<Short> shortIndicesList = primitiveIndicesList.stream().map((indices) -> {
-                            int indicesInt = indices;
-                            short indicesShort = (short) indicesInt;
-                            return Short.valueOf(indicesShort);
-                        }).collect(Collectors.toList());
+                        List<Short> shortIndicesList = primitiveIndicesList.stream()
+                                .map(Integer::shortValue)
+                                .collect(Collectors.toList());
                         indicesList.addAll(shortIndicesList);
 
                         if (texture != null) {
                             // 임시 singleTexture
                             TextureBuffer textureBuffer = new TextureBuffer();
                             texture.setFormat(GL20.GL_RGB);
-                            texture.readImage(path.getParent());
+                            texture.setParentPath(path.getParent());
+                            texture.readImage();
                             texture.loadBuffer();
                             int textureVbo = textureBuffer.createGlTexture(texture);
                             textureBuffer.setTextureVbo(textureVbo);

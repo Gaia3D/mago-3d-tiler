@@ -68,14 +68,20 @@ public class HelloWorld {
 //            renderableObjects.add(renderableObject);
 //        }
 
-        RenderableObject renderableObject = new AssimpObject("C:\\data\\sample\\KSJ_100.ifc");
+        //RenderableObject renderableObject = new GaiaSceneObject("C:\\Datas\\3dsample\\KSJ_100.ifc");
+        //RenderableObject renderableObject = new GaiaSceneObject("C:\\Datas\\3dsample\\KSJ_100.ifc");
+        //RenderableObject renderableObject = new AssimpObject("C:\\Datas\\3dsample\\KSJ_100.ifc");
         //RenderableObject renderableObject = new AssimpObject("C:\\data\\sample\\face.3ds");
         //RenderableObject renderableObject = new AssimpObject("C:\\data\\sample\\face.3ds");
-        //RenderableObject renderableObject = new AssimpObject("C:\\data\\sample\\aces.3ds");
-        //RenderableObject renderableObject = new AssimpObject("C:\\data\\ws2-3ds\\a_bd001.3ds");
+        //RenderableObject renderableObject = new AssimpObject("C:\\Datas\\3dsample\\aces.3ds");
+        //RenderableObject renderableObject = new AssimpObject("C:\\Datas\\3dsample\\face.3ds");
+
+        renderableObjects.add(new GaiaSceneObject("C:\\Datas\\3dsample\\a_bd001_d.dae"));
+        //renderableObjects.add(new GaiaSceneObject("C:\\Datas\\3dsample\\aces.3ds"));
+        //renderableObjects.add(new GaiaSceneObject("C:\\Datas\\3dsample\\KSJ_100.ifc"));
+        //renderableObjects.add(new GaiaSceneObject("C:\\Datas\\3dsample\\DC_library_del_3DS\\DC_library_del.3ds"));
 
 
-        renderableObjects.add(renderableObject);
 
         init();
         loop();
@@ -122,7 +128,7 @@ public class HelloWorld {
 
         // 마우스 휠 이벤트
         glfwSetScrollCallback(window, (window, xoffset, yoffset) -> {
-            camera.moveForward((float) yoffset * 3.0f);
+            camera.moveForward((float) yoffset * 10.0f);
         });
 
         // 마우스 버튼 이벤트
@@ -306,7 +312,7 @@ public class HelloWorld {
             glPointSize(5.0f);
             glLineWidth(2.0f);
             // 클리어 컬러를 적용합니다.
-            glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+            glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
             glClearDepth(1.0f);
             // 프레임 버퍼 클리어
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

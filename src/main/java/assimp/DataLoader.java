@@ -10,6 +10,7 @@ import util.FileUtils;
 
 import java.awt.geom.Rectangle2D;
 import java.io.File;
+import java.lang.Math;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -28,9 +29,11 @@ public class DataLoader {
             |Assimp.aiProcess_Triangulate
             |Assimp.aiProcess_JoinIdenticalVertices
             |Assimp.aiProcess_CalcTangentSpace
-            |Assimp.aiProcess_SortByPType
-            //|Assimp.aiProcess_FixInfacingNormals
-            |Assimp.aiProcess_FlipWindingOrder;
+            |Assimp.aiProcess_FixInfacingNormals
+            |Assimp.aiProcess_FlipWindingOrder
+            //Assimp.aiProcess_ConvertToLeftHanded
+            |Assimp.aiProcess_SortByPType;
+
 
     /** Loads a scene from a filePath
      * @param filePath 파일 경로
@@ -107,12 +110,29 @@ public class DataLoader {
         Vector3d boundingBoxCenter = boundingBox.getCenter();
         Vector3d translation = new Vector3d(-boundingBoxCenter.x, -boundingBoxCenter.y, -boundingBoxCenter.z);
 
-
         Matrix4d rootTransform = node.getTransformMatrix();
-        rootTransform.translate(translation, rootTransform);
+        //rootTransform.identity();
+        System.out.println(rootTransform);
+        //rootTransform.scale(0.001);
+
+        Matrix4d rotationMatrix = new Matrix4d();
+        rotationMatrix.rotateX(Math.toRadians(90));
+        Matrix4d translateMatrix = new Matrix4d();
+        translateMatrix.translate(translation, translateMatrix);
+        Matrix4d rotatedTranslatedMatrix = new Matrix4d();
+
+        //rootTransform.translate(translation, rootTransform);
+        //rootTransform.rotateX(Math.toRadians(90), rootTransform);
+
+        rootTransform.mul(translateMatrix);
+        rootTransform.mul(rotationMatrix);
         node.setTransformMatrix(rootTransform);
 
-        node.recalculateTransform(node);
+        System.out.println(rootTransform);
+
+        node.recalculateTransform();
+
+        System.out.println(node.getPreMultipliedTransformMatrix());
 
         //GaiaBoundingBox boundingBox = node.getBoundingBox(node, null);
         //System.out.println(node.getTransformMatrix());
@@ -152,7 +172,8 @@ public class DataLoader {
             GaiaTexture texture = new GaiaTexture();
             texture.setPath(diffTexPath);
             texture.setType(GaiaMaterialType.DIFFUSE);
-            texture.readImage(parentPath);
+            texture.setParentPath(parentPath);
+            //texture.readImage();
             material.getTextures().put(texture.getType(), texture);
         }
 
@@ -225,7 +246,6 @@ public class DataLoader {
      */
     private static GaiaMesh processMesh(AIMesh aiMesh, ArrayList<GaiaMaterial> materials) {
         int materialIndex = aiMesh.mMaterialIndex();
-
         GaiaMaterial material = materials.get(materialIndex);
         GaiaPrimitive primitive = processPrimitive(aiMesh, material);
         GaiaMesh mesh = new GaiaMesh();
@@ -266,10 +286,10 @@ public class DataLoader {
             AIVector3D aiVertice = verticesBuffer.get(i);
             AIVector3D aiNormal = normalsBuffer.get(i);
             GaiaVertex vertex = new GaiaVertex();
-            vertex.setPosition(new Vector3d((double) aiVertice.x(), (double) aiVertice.z(), (double) aiVertice.y()));
+            vertex.setPosition(new Vector3d((double) aiVertice.x(), (double) aiVertice.y(), (double) aiVertice.z()));
 
             if (!(aiNormal.x() == 0.0 && aiNormal.y() == 0.0 && aiNormal.z() == 0.0)) {
-                vertex.setNormal(new Vector3d((double) aiNormal.x(), (double) aiNormal.z(), (double) aiNormal.y()));
+                vertex.setNormal(new Vector3d((double) aiNormal.x(), (double) aiNormal.y(), (double) aiNormal.z()));
             }
 
             if (textCoords != null) {
