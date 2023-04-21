@@ -17,8 +17,6 @@ public class Camera {
     Vector3d up;
     Vector3d right;
 
-    int[] vbo;
-
     boolean dirty;
 
     public Camera() {
@@ -31,11 +29,15 @@ public class Camera {
         this.modelViewMatrix = null;
         this.rotationMatrix = null;
 
+        //this.position = new Vector3d(0, -100, 150);
         this.position = new Vector3d(0, 0, 150);
-        this.rotation = new Vector3d(0, 0, 0);
+        this.rotation = new Vector3d(0, 1, 0);
 
+        //this.direction = new Vector3d(0, 100, -150);
         this.direction = new Vector3d(0, 0, -1);
+
         this.up = new Vector3d(0, 1, 0);
+
         this.right = new Vector3d(1, 0, 0);
     }
 
@@ -95,11 +97,11 @@ public class Camera {
         direction.normalize();
 
         Vector3d right = new Vector3d(0, 0, 1);
-        right.cross(direction);
+        direction.cross(right, right);
         right.normalize();
 
         Vector3d up = new Vector3d(direction);
-        up.cross(right);
+        right.cross(up, up);
         up.normalize();
 
         this.direction = direction;
@@ -143,34 +145,27 @@ public class Camera {
         rotatedDirection.mul(totalRotationMatrix3);
         rotatedDirection.normalize();
 
-        double dotResult = Math.abs(rotatedDirection.dot(0, 0, 1));
-        Vector3d rotatedRight, rotatedUp;
+        Vector3d rotatedRight;
         rotatedRight = new Vector3d(new Vector3d(0, 0, 1));
-        rotatedRight.cross(rotatedDirection);
+        rotatedDirection.cross(rotatedRight, rotatedRight);
         rotatedRight.normalize();
 
-        rotatedUp = new Vector3d(rotatedDirection);
-        rotatedUp.cross(rotatedRight);
+        Vector3d rotatedUp = new Vector3d(rotatedDirection);
+        rotatedRight.cross(rotatedUp, rotatedUp);
         rotatedUp.normalize();
 
-        if (dotResult > 0.999d || Double.isNaN(rotatedRight.x)) {
-            /*rotatedUp = new Vector3d(this.up);
-            rotatedUp.mul(totalRotationMatrix3);
-            rotatedUp.normalize();
-            rotatedRight = new Vector3d(rotatedDirection);
-            rotatedRight.cross(rotatedUp);
-            rotatedRight.normalize();*/
-
-            //this.direction = rotatedDirection;
-            //this.up = rotatedUp;
-            //this.right = rotatedRight;
-            //this.position = returnedCameraPosition;
-        } else {
+        /*double dotResult = Math.abs(rotatedDirection.dot(0, 0, 1));
+        if (!(dotResult > 0.990d || Double.isNaN(rotatedRight.x))) {
             this.direction = rotatedDirection;
             this.up = rotatedUp;
             this.right = rotatedRight;
             this.position = returnedCameraPosition;
-        }
+        }*/
+
+        this.direction = rotatedDirection;
+        this.up = rotatedUp;
+        this.right = rotatedRight;
+        this.position = returnedCameraPosition;
 
         this.dirty = true;
     }

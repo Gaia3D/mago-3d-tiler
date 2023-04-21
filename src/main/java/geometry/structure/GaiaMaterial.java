@@ -13,8 +13,8 @@ import java.util.LinkedHashMap;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GaiaMaterial {
-    private Vector4d ambientColor = new Vector4d(0.0, 0.0, 0.0, 1.0);
     private Vector4d diffuseColor = new Vector4d(0.0, 0.0, 0.0, 1.0);
+    private Vector4d ambientColor = new Vector4d(0.0, 0.0, 0.0, 1.0);
     private Vector4d specularColor = new Vector4d(0.0, 0.0, 0.0, 1.0);
     private float shininess = 0.0f;
 

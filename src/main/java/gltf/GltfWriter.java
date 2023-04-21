@@ -1,4 +1,4 @@
-package tiler;
+package gltf;
 
 import de.javagl.jgltf.impl.v2.*;
 import de.javagl.jgltf.model.GltfConstants;
@@ -8,6 +8,7 @@ import de.javagl.jgltf.model.io.GltfModelWriter;
 import de.javagl.jgltf.model.io.v2.GltfAssetV2;
 import geometry.structure.*;
 import org.joml.Matrix4d;
+import org.joml.Vector4d;
 import org.lwjgl.opengl.GL20;
 import util.FileUtils;
 import util.GeometryUtils;
@@ -69,11 +70,8 @@ public class GltfWriter {
         List<GltfNodeBuffer> nodeBuffers = binary.getNodeBuffers();
         gaiaNodes.stream().forEach((gaiaNode) -> {
             Node node = createNode(gltf, parentNode, gaiaNode);
-            gltf.addNodes(node);
             int nodeId = gltf.getNodes().size() - 1;
-            if (parentNode == null) {
-                gltf.getNodes().get(0).addChildren(nodeId);
-            } else {
+            if (parentNode != null) {
                 parentNode.addChildren(nodeId);
             }
 
@@ -165,7 +163,8 @@ public class GltfWriter {
         }
 
         List<Material> materials = gltf.getMaterials();
-        MeshPrimitive primitive = createPrimitive(nodeBuffer, materials); // TODO
+        GaiaPrimitive gaiaPrimitive = gaiaMesh.getPrimitives().get(0);
+        MeshPrimitive primitive = createPrimitive(nodeBuffer, gaiaPrimitive, materials); // TODO
         int meshId = createMesh(gltf, primitive);
         node.setMesh(meshId);
         return nodeBuffer;
@@ -230,12 +229,11 @@ public class GltfWriter {
         Scene scene = new Scene();
         List<Node> nodes = new ArrayList<>();
         Node rootNode = new Node();
-        rootNode.setName("root");
+        rootNode.setName("default root node");
 
         Matrix4d matrix4d = new Matrix4d();
         matrix4d.identity();
-        float[] transform = matrix4d.get(new float[16]);
-        rootNode.setMatrix(transform);
+        rootNode.setMatrix(matrix4d.get(new float[16]));
 
         nodes.add(rootNode);
         gltf.setNodes(nodes);
@@ -245,37 +243,72 @@ public class GltfWriter {
         gltf.setScene(gltf.getScenes().size() - 1);
     }
 
+    private static Buffer initBuffer(GlTF gltf) {
+        if (gltf.getBuffers() == null) {
+            Buffer buffer = new Buffer();
+            gltf.addBuffers(buffer);
+        }
+        return gltf.getBuffers().get(0);
+    }
+
     private static int createBuffer(GlTF gltf, GltfNodeBuffer nodeBuffer) {
-        Buffer buffer = new Buffer();
-        gltf.addBuffers(buffer);
-        int bufferId = gltf.getBuffers().size() - 1;
+
+
+        /*int calcBufferOffset = 0;
+        if (gltf.getBuffers() != null) {
+            calcBufferOffset = gltf.getBuffers().stream().mapToInt(preNodeBuffer -> {
+                Integer byteLength = preNodeBuffer.getByteLength();
+                return byteLength == null ? 0 : byteLength;
+            }).sum();
+        }*/
+        //int buffId = gltf.getBuffers().size() - 1;
+        //System.out.println("calcBufferOffset : " + calcBufferOffset);
+        //gltf.addBuffers(buffer);
+        Buffer buffer = initBuffer(gltf);
+        int bufferLength = buffer.getByteLength() == null ? 0 : buffer.getByteLength();
+        int bufferId = 0;
         int bufferOffset = 0;
         if (nodeBuffer.getIndicesBuffer().isPresent()) {
             ByteBuffer indicesBuffer = nodeBuffer.getIndicesBuffer().get();
-            nodeBuffer.setIndicesBufferViewId(createBufferView(gltf, bufferId, bufferOffset, indicesBuffer.capacity(), -1, GL20.GL_ELEMENT_ARRAY_BUFFER));
+            int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, indicesBuffer.capacity(), -1, GL20.GL_ELEMENT_ARRAY_BUFFER);
+            nodeBuffer.setIndicesBufferViewId(bufferViewId);
+            BufferView bufferView = gltf.getBufferViews().get(bufferViewId);
+            bufferView.setName("indices");
             bufferOffset += indicesBuffer.capacity();
         }
         if (nodeBuffer.getPositionsBuffer().isPresent()) {
             ByteBuffer positionBuffer = nodeBuffer.getPositionsBuffer().get();
-            nodeBuffer.setPositionsBufferViewId(createBufferView(gltf, bufferId, bufferOffset, positionBuffer.capacity(), 12, GL20.GL_ARRAY_BUFFER));
+            int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, positionBuffer.capacity(), 12, GL20.GL_ARRAY_BUFFER);
+            nodeBuffer.setPositionsBufferViewId(bufferViewId);
+            BufferView bufferView = gltf.getBufferViews().get(bufferViewId);
+            bufferView.setName("positions");
             bufferOffset += positionBuffer.capacity();
         }
         if (nodeBuffer.getNormalsBuffer().isPresent()) {
             ByteBuffer normalsBuffer = nodeBuffer.getNormalsBuffer().get();
-            nodeBuffer.setNormalsBufferViewId(createBufferView(gltf, bufferId, bufferOffset, normalsBuffer.capacity(), 12, GL20.GL_ARRAY_BUFFER));
+            int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, normalsBuffer.capacity(), 12, GL20.GL_ARRAY_BUFFER);
+            nodeBuffer.setNormalsBufferViewId(bufferViewId);
+            BufferView bufferView = gltf.getBufferViews().get(bufferViewId);
+            bufferView.setName("normals");
             bufferOffset += normalsBuffer.capacity();
         }
         if (nodeBuffer.getColorsBuffer().isPresent()) {
             ByteBuffer colorsBuffer = nodeBuffer.getColorsBuffer().get();
-            nodeBuffer.setColorsBufferViewId(createBufferView(gltf, bufferId, bufferOffset, colorsBuffer.capacity(), 16, GL20.GL_ARRAY_BUFFER));
+            int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, colorsBuffer.capacity(), 16, GL20.GL_ARRAY_BUFFER);
+            nodeBuffer.setColorsBufferViewId(bufferViewId);
+            BufferView bufferView = gltf.getBufferViews().get(bufferViewId);
+            bufferView.setName("colors");
             bufferOffset += colorsBuffer.capacity();
         }
         if (nodeBuffer.getTextureCoordinatesBuffer().isPresent()) {
             ByteBuffer textureCoordinatesBuffer = nodeBuffer.getTextureCoordinatesBuffer().get();
-            nodeBuffer.setTextureCoordinatesBufferViewId(createBufferView(gltf, bufferId, bufferOffset, textureCoordinatesBuffer.capacity(), 8, GL20.GL_ARRAY_BUFFER));
+            int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, textureCoordinatesBuffer.capacity(), 8, GL20.GL_ARRAY_BUFFER);
+            nodeBuffer.setTextureCoordinatesBufferViewId(bufferViewId);
+            BufferView bufferView = gltf.getBufferViews().get(bufferViewId);
+            bufferView.setName("textureCoordinates");
             bufferOffset += textureCoordinatesBuffer.capacity();
         }
-        buffer.setByteLength(bufferOffset);
+        buffer.setByteLength(bufferLength + bufferOffset);
         return bufferId;
     }
 
@@ -293,10 +326,13 @@ public class GltfWriter {
     }
 
     private static Node createNode(GlTF gltf, Node parentNode, GaiaNode gaiaNode) {
-        if (parentNode != null) {
-            parentNode = gltf.getNodes().get(0);
+        Node node;
+        if (parentNode == null) {
+            node = gltf.getNodes().get(0); // root node
+        } else {
+            node = new Node();
+            gltf.addNodes(node);
         }
-        Node node = new Node();
         float[] matrix = gaiaNode.getTransformMatrix().get(new float[16]);
         if (matrix != null && !GeometryUtils.isIdentity(matrix)) {
             node.setMatrix(matrix);
@@ -307,33 +343,34 @@ public class GltfWriter {
 
     private static int createMaterial(GlTF gltf, GaiaMaterial gaiaMaterial) {
         GaiaTexture gaiaTexture = gaiaMaterial.getTextures().get(GaiaMaterialType.DIFFUSE);
-        if (gaiaTexture == null) {
-            return -1;
-        }
 
         Material material = new Material();
         material.setName(gaiaMaterial.getName());
         material.setDoubleSided(false);
 
-        int textureId = createTexture(gltf, gaiaTexture);
-        TextureInfo textureInfo = new TextureInfo();
-        textureInfo.setIndex(textureId);
-
         MaterialPbrMetallicRoughness pbrMetallicRoughness = new MaterialPbrMetallicRoughness();
-        pbrMetallicRoughness.setBaseColorFactor(new float[]{1, 1, 1, 1});
-        pbrMetallicRoughness.setBaseColorTexture(textureInfo);
+        Vector4d diffuseColor = gaiaMaterial.getDiffuseColor();
+        pbrMetallicRoughness.setBaseColorFactor(new float[]{(float) diffuseColor.x, (float) diffuseColor.y, (float) diffuseColor.z, (float) diffuseColor.w});
+
+        if (gaiaTexture != null) {
+            int textureId = createTexture(gltf, gaiaTexture);
+            TextureInfo textureInfo = new TextureInfo();
+            textureInfo.setIndex(textureId);
+            pbrMetallicRoughness.setBaseColorTexture(textureInfo);
+        }
+
         material.setPbrMetallicRoughness(pbrMetallicRoughness);
         gltf.addMaterials(material);
         return gltf.getMaterials().size() - 1;
     }
 
     private static int createImage(GlTF gltf, GaiaTexture gaiaTexture) {
-        String mimeType = "image/jpeg";
+        String extension = FileUtils.getExtension(gaiaTexture.getPath());
+        String mimeType = FileUtils.getMimeTypeByExtension(extension);
         String uri = FileUtils.writeImage(gaiaTexture.getBufferedImage(), mimeType);
         Image image = new Image();
         image.setUri(uri);
         image.setMimeType(mimeType);
-
         gltf.addImages(image);
         return gltf.getImages().size() -1;
     }
@@ -373,11 +410,11 @@ public class GltfWriter {
         return sampler;
     }
 
-    private static MeshPrimitive createPrimitive(GltfNodeBuffer nodeBuffer, List<Material> materials) {
+    private static MeshPrimitive createPrimitive(GltfNodeBuffer nodeBuffer, GaiaPrimitive gaiaPrimitive, List<Material> materials) {
         MeshPrimitive primitive = new MeshPrimitive();
         primitive.setMode(GltfConstants.GL_TRIANGLES);
         if (materials != null && materials.size() > 0) {
-            primitive.setMaterial(0);
+            primitive.setMaterial(gaiaPrimitive.getMaterialIndex());
         }
         primitive.setAttributes(new HashMap<>());
         primitive.setIndices(nodeBuffer.getIndicesAccessorId());

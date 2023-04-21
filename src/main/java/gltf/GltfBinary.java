@@ -1,4 +1,4 @@
-package tiler;
+package gltf;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -1,4 +1,4 @@
-package tiler;
+package gltf;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -9,13 +9,6 @@ import java.util.Optional;
 @Getter
 @Setter
 public class GltfNodeBuffer {
-//    Optional<GltfBufferSet> indicesBufferSet = Optional.empty();
-//    Optional<GltfBufferSet> positionsBufferSet = Optional.empty();;
-//    Optional<GltfBufferSet> normalsBufferSet = Optional.empty();;
-//    Optional<GltfBufferSet> colorsBufferSet = Optional.empty();;
-//    Optional<GltfBufferSet> textureCoordinatesBufferSet = Optional.empty();;
-//    private int totalByteBufferLength = 0;
-
     private int indicesBufferViewId = -1;
     private int positionsBufferViewId = -1;
     private int normalsBufferViewId = -1;
@@ -35,6 +28,5 @@ public class GltfNodeBuffer {
     private Optional<ByteBuffer> normalsBuffer = Optional.empty();
     private Optional<ByteBuffer> colorsBuffer = Optional.empty();
     private Optional<ByteBuffer> textureCoordinatesBuffer = Optional.empty();
-
     private Optional<ByteBuffer> textureBuffer = Optional.empty();
 }

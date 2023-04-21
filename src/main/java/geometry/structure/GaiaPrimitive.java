@@ -11,10 +11,12 @@ import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.system.MemoryStack;
 import renderable.RenderableBuffer;
 import renderable.TextureBuffer;
 import util.GeometryUtils;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,7 +28,7 @@ import java.util.stream.Collectors;
 public class GaiaPrimitive {
     private Integer accessorIndices = -1;
     private Integer materialIndex = -1;
-    private ArrayList<Integer> indices = new ArrayList<>(); // 3d
+    private ArrayList<Integer> indices = new ArrayList<>();
     private ArrayList<GaiaVertex> vertices = new ArrayList<>();
     private ArrayList<GaiaSurface> surfaces = new ArrayList<>();
 
@@ -38,39 +40,42 @@ public class GaiaPrimitive {
         RenderableBuffer renderableBuffer = this.getRenderableBuffer();
         TextureBuffer textureBuffer = this.getTextureBuffer();
 
-        int uTextureType = GL20.glGetUniformLocation(program, "uTextureType");
-        int aVertexPosition = GL20.glGetAttribLocation(program, "aVertexPosition");
-        int aVertexColor = GL20.glGetAttribLocation(program, "aVertexColor");
-        int aVertexNormal = GL20.glGetAttribLocation(program, "aVertexNormal");
-        int aVertexTextureCoordinate = GL20.glGetAttribLocation(program, "aVertexTextureCoordinate");
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            int uTextureType = GL20.glGetUniformLocation(program, "uTextureType");
+            int aVertexPosition = GL20.glGetAttribLocation(program, "aVertexPosition");
+            int aVertexColor = GL20.glGetAttribLocation(program, "aVertexColor");
+            int aVertexNormal = GL20.glGetAttribLocation(program, "aVertexNormal");
+            int aVertexTextureCoordinate = GL20.glGetAttribLocation(program, "aVertexTextureCoordinate");
 
-        renderableBuffer.setIndiceBind(renderableBuffer.getIndicesVbo());
-        renderableBuffer.setAttribute(renderableBuffer.getPositionVbo(), aVertexPosition, 3, 0);
-        renderableBuffer.setAttribute(renderableBuffer.getColorVbo(), aVertexColor, 4, 0);
-        renderableBuffer.setAttribute(renderableBuffer.getNormalVbo(), aVertexNormal, 3, 0);
-        renderableBuffer.setAttribute(renderableBuffer.getTextureCoordinateVbo(), aVertexTextureCoordinate, 2, 0);
+            renderableBuffer.setIndiceBind(renderableBuffer.getIndicesVbo());
+            renderableBuffer.setAttribute(renderableBuffer.getPositionVbo(), aVertexPosition, 3, 0);
+            renderableBuffer.setAttribute(renderableBuffer.getColorVbo(), aVertexColor, 4, 0);
+            renderableBuffer.setAttribute(renderableBuffer.getNormalVbo(), aVertexNormal, 3, 0);
+            renderableBuffer.setAttribute(renderableBuffer.getTextureCoordinateVbo(), aVertexTextureCoordinate, 2, 0);
 
-        GaiaTexture texture = material.getTextures().get(GaiaMaterialType.DIFFUSE);
-        if (texture != null) {
-            if (texture.getBufferedImage() == null) {
-                texture.setFormat(GL20.GL_RGB);
-                texture.readImage();
-                texture.loadBuffer();
+            GaiaTexture texture = material.getTextures().get(GaiaMaterialType.DIFFUSE);
+            if (texture != null) {
+                if (texture.getBufferedImage() == null) {
+                    //texture.setFormat(GL20.GL_RGB);
+                    //texture.readImage();
+                    //texture.loadBuffer();
+                }
+                if (textureBuffer.getVboCount() < 1) {
+                    ByteBuffer byteBuffer = texture.loadTextureBuffer();
+                    int textureVbo = textureBuffer.createGlTexture(texture);
+                    textureBuffer.setTextureVbo(textureVbo);
+                }
             }
-            if (textureBuffer.getVboCount() < 1) {
-                int textureVbo = textureBuffer.createGlTexture(texture);
-                textureBuffer.setTextureVbo(textureVbo);
-            }
-        }
 
-        if (texture != null) {
-            GL20.glUniform1i(uTextureType, 1);
-            textureBuffer.setTextureBind(textureBuffer.getTextureVbo());
-        } else {
+            if (texture != null) {
+                GL20.glUniform1i(uTextureType, 1);
+                textureBuffer.setTextureBind(textureBuffer.getTextureVbo());
+            } else {
+                GL20.glUniform1i(uTextureType, 0);
+            }
+            GL20.glDrawElements(GL20.GL_TRIANGLES, renderableBuffer.getIndicesLength(), GL20.GL_UNSIGNED_SHORT, 0);
             GL20.glUniform1i(uTextureType, 0);
         }
-        GL20.glDrawElements(GL20.GL_TRIANGLES, renderableBuffer.getIndicesLength(), GL20.GL_UNSIGNED_SHORT, 0);
-        GL20.glUniform1i(uTextureType, 0);
     }
     public RenderableBuffer getRenderableBuffer() {
         if (this.renderableBuffer == null) {
@@ -155,15 +160,9 @@ public class GaiaPrimitive {
         return boundingBox;
     }
 
-    public void genNormals() {
-        for (int i = 0; i < indices.size(); i += 3) {
-            GaiaVertex vertex1 = vertices.get(indices.get(i));
-            GaiaVertex vertex2 = vertices.get(indices.get(i + 1));
-            GaiaVertex vertex3 = vertices.get(indices.get(i + 2));
-            if (vertex1.getNormal() != null && vertex2.getNormal() != null && vertex3.getNormal() != null) {
-                continue;
-            }
-            GeometryUtils.genNormals(vertex1, vertex2, vertex3);
+    public void calculateNormal() {
+        for (GaiaSurface surface : surfaces) {
+            surface.calculateNormal(this.vertices);
         }
     }
 }

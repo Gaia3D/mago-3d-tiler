@@ -19,7 +19,7 @@ public class BaseObject extends RenderableObject {
     public BaseObject() {
         super();
         this.size = 256.0f;
-        this.setPosition(0.0f, 0.0f, -size/8);
+        this.setPosition(0.0f, 0.0f, -size/4);
         this.setRotation(0.0f, 0.0f, 0.0f);
     }
     @Override
@@ -27,18 +27,20 @@ public class BaseObject extends RenderableObject {
         RenderableBuffer renderableBuffer = this.getBuffer();
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            Matrix4f objectRotationMatrix = getTransformMatrix();
-            int uObjectRotationMatrix = GL20.glGetUniformLocation(program, "uObjectRotationMatrix");
-            float[] objectRotationMatrixBuffer = new float[16];
-            objectRotationMatrix.get(objectRotationMatrixBuffer);
+            Matrix4f objectTransformMatrix = getTransformMatrix();
+            int uObjectTransformMatrix = GL20.glGetUniformLocation(program, "uObjectTransformMatrix");
+            float[] objectTransformMatrixBuffer = new float[16];
+            objectTransformMatrix.get(objectTransformMatrixBuffer);
 
-            GL20.glUniformMatrix4fv(uObjectRotationMatrix, false, objectRotationMatrixBuffer);
+            GL20.glUniformMatrix4fv(uObjectTransformMatrix, false, objectTransformMatrixBuffer);
 
             int aVertexPosition = GL20.glGetAttribLocation(program, "aVertexPosition");
+            int aVertexNormal = GL20.glGetAttribLocation(program, "aVertexNormal");
             int aVertexColor = GL20.glGetAttribLocation(program, "aVertexColor");
 
             renderableBuffer.setIndiceBind(renderableBuffer.getIndicesVbo());
             renderableBuffer.setAttribute(renderableBuffer.getPositionVbo(), aVertexPosition, 3, 0);
+            renderableBuffer.setAttribute(renderableBuffer.getNormalVbo(), aVertexNormal, 3, 0);
             renderableBuffer.setAttribute(renderableBuffer.getColorVbo(), aVertexColor, 4, 0);
 
             //GL20.glDrawArrays(GL20.GL_TRIANGLES, 0, 3);
@@ -84,9 +86,9 @@ public class BaseObject extends RenderableObject {
                     positionList.add(0.0f);
 
                     Vector3d normal = GeometryUtils.calcNormal(
-                        new Vector3d(startX, startY, 0.0f),
-                        new Vector3d(endX, startY, 0.0f),
-                        new Vector3d(endX, endY, 0.0f)
+                            new Vector3d(startX, startY, 0.0f),
+                            new Vector3d(endX, endY, 0.0f),
+                            new Vector3d(endX, startY, 0.0f)
                     );
 
                     normalList.add((float) normal.x);
@@ -126,22 +128,24 @@ public class BaseObject extends RenderableObject {
             for (int i = 0; i < positionList.size() / 3; i++) {
                 int indicesOffset = i * 4;
                 indicesList.add((short) (0 + indicesOffset));
-                indicesList.add((short) (2 + indicesOffset));
                 indicesList.add((short) (1 + indicesOffset));
+                indicesList.add((short) (2 + indicesOffset));
 
                 indicesList.add((short) (0 + indicesOffset));
-                indicesList.add((short) (3 + indicesOffset));
                 indicesList.add((short) (2 + indicesOffset));
+                indicesList.add((short) (3 + indicesOffset));
                 checkPattern++;
             }
 
             int indicesVbo = renderableBuffer.createIndicesBuffer(indicesList);
             int positionVbo = renderableBuffer.createBuffer(positionList);
+            int normalVbo = renderableBuffer.createBuffer(normalList);
             int colorVbo = renderableBuffer.createBuffer(colorList);
 
             Short max = indicesList.stream().max(Comparator.comparingInt(x->x)).orElseThrow(NoSuchElementException::new);
             Short min = indicesList.stream().min(Comparator.comparingInt(x->x)).orElseThrow(NoSuchElementException::new);
             renderableBuffer.setPositionVbo(positionVbo);
+            renderableBuffer.setNormalVbo(normalVbo);
             renderableBuffer.setColorVbo(colorVbo);
             renderableBuffer.setIndicesVbo(indicesVbo);
             renderableBuffer.setIndicesLength(indicesList.size());

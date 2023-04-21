@@ -12,11 +12,20 @@ public class CommandOption {
     private InputType inputType = InputType.IN_3DS;
     private Path outputPath = null;
     private OutputType outputType = OutputType.OUT_GLB;
+    boolean recursive = false;
+
+    float scaleFactor = 0.0f;
+    boolean strictMode = false;
+    boolean genNormals = false;
+    boolean genTangents = false;
+    boolean swapYZ = false;
+    boolean ignoreTextures = false;
 
     public enum InputType {
         IN_3DS("3ds"),
         IN_OBJ("obj"),
         IN_COLLADA("dae"),
+        IN_IFC("ifc"),
         IN_GLTF("gltf"),
         IN_GLB("glb");
 

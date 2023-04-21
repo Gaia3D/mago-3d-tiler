@@ -29,8 +29,8 @@ public class HelloWorld {
 
     // The window handle
     private long window;
-    private Camera camera;
     private int shaderProgram;
+    private Camera camera;
     private ArrayList<RenderableObject> renderableObjects;
 
     private double xpos = 0;
@@ -75,11 +75,27 @@ public class HelloWorld {
         //RenderableObject renderableObject = new AssimpObject("C:\\data\\sample\\face.3ds");
         //RenderableObject renderableObject = new AssimpObject("C:\\Datas\\3dsample\\aces.3ds");
         //RenderableObject renderableObject = new AssimpObject("C:\\Datas\\3dsample\\face.3ds");
-
-        renderableObjects.add(new GaiaSceneObject("C:\\Datas\\3dsample\\a_bd001.3ds"));
-        //renderableObjects.add(new GaiaSceneObject("C:\\Datas\\3dsample\\aces.3ds"));
         //renderableObjects.add(new GaiaSceneObject("C:\\Datas\\3dsample\\KSJ_100.ifc"));
-        //renderableObjects.add(new GaiaSceneObject("C:\\Datas\\3dsample\\DC_library_del_3DS\\DC_library_del.3ds"));
+
+        //renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\a_bd001_d.dae"));
+        //renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\KSJ_100.ifc"));
+
+        //renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\face.3ds"));
+
+
+        //renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\a_bd001.3ds"));
+        //renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\Data3D\\DC_library_del_3DS\\DC_library_del.3ds"));
+        //renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\Data3D\\Dongdaemoongu_center_del_3DS\\Dongdaemoongu_center_del.3ds"));
+        ////renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\Data3D\\dogok_library_del_3DS\\dogok_library_del.3ds"));
+        //renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\Data3D\\Edumuseum_del_150417_02_3DS\\Edumuseum_del_150417_02.3ds"));
+        //renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\Data3D\\gangbuk_cultur_del_3DS\\gangbuk_cultur_del.3ds"));
+
+
+        renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\simpleCube.gltf"));
+        //renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\Data3D\\gangil_del_3DS\\gangil_del.3ds"));
+        //renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\Data3D\\gangnam_del_3DS\\gangnam_del.3ds"));
+
+
 
 
 
@@ -120,7 +136,7 @@ public class HelloWorld {
                 Vector3d pivot = new Vector3d(0.0d,0.0d,0.0d);
                 float xoffset = (float) (this.xpos - xpos) * 0.01f;
                 float yoffset = (float) (this.ypos - ypos) * 0.01f;
-                camera.rotationOrbit(-xoffset, -yoffset, pivot);
+                camera.rotationOrbit(xoffset, yoffset, pivot);
             }
             this.xpos = xpos;
             this.ypos = ypos;
@@ -183,10 +199,7 @@ public class HelloWorld {
             GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
             // 모니터 중앙에 창을 위치시킵니다.
-            glfwSetWindowPos(
-                    window,
-                    (vidmode.width() - pWidth.get(0)) / 2,
-                    (vidmode.height() - pHeight.get(0)) / 2
+            glfwSetWindowPos(window, (vidmode.width() - pWidth.get(0)) / 2, (vidmode.height() - pHeight.get(0)) / 2
             );
 
         } // 스택 프레임이 자동으로 팝업됩니다.
@@ -204,6 +217,7 @@ public class HelloWorld {
         setupShader();
         this.camera = new Camera();
         camera.rotationOrbit(-1.0f, 1.0f, new Vector3d(0.0d,0.0d,0.0d));
+        //camera.rotationOrbit(-0.001f, 0.001f, new Vector3d(0.0d,0.0d,0.0d));
     }
 
     private void setupShader() {
@@ -256,29 +270,31 @@ public class HelloWorld {
 //        System.out.println("right : " + camera.right);
 //        System.out.println("up : " + camera.up);
 //        System.out.println("dir : " + camera.direction);
-        camera.rotationOrbit(0.00005f, -0.0000f, new Vector3d(0.0d,0.0d,-1.0d));
+        //camera.rotationOrbit(0.00005f, -0.0000f, new Vector3d(0.0d,0.0d,-1.0d));
         int[] width = new int[1];
         int[] height = new int[1];
+
         glfwGetWindowSize(window, width, height);
         float fovy = Math.toRadians(90);
-        float aspect = width[0] / height[0];
+        float aspect = (float) width[0] / (float) height[0];
         float near = 0.1f;
         float far = 10000.0f;
-
-        Matrix4f projectionMatrix = new Matrix4f();
-        projectionMatrix = projectionMatrix.perspective(fovy, aspect, near, far);
-
-        Matrix4d modelViewMatrix = this.camera.getModelViewMatrix();
 
         int uProjectionMatrix = GL20.glGetUniformLocation(this.shaderProgram, "uProjectionMatrix");
         int uModelRotationMatrix = GL20.glGetUniformLocation(this.shaderProgram, "uModelRotationMatrix");
         int uTextureType = GL20.glGetUniformLocation(this.shaderProgram, "uTextureType");
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            float[] projectionMatrixBuffer = new float[16];
+            Matrix4f projectionMatrix = new Matrix4f();
+            projectionMatrix = projectionMatrix.perspective(fovy, aspect, near, far);
+            Matrix4d modelViewMatrix = this.camera.getModelViewMatrix();
+
+            FloatBuffer projectionMatrixBuffer = stack.mallocFloat(16);
+            //float[] projectionMatrixBuffer = new float[16];
             projectionMatrix.get(projectionMatrixBuffer);
 
-            float[] modelViewMatrixBuffer = new float[16];
+            //float[] modelViewMatrixBuffer = new float[16];
+            FloatBuffer modelViewMatrixBuffer = stack.mallocFloat(16);
             modelViewMatrix.get(modelViewMatrixBuffer);
 
             GL20.glUniformMatrix4fv(uProjectionMatrix, false, projectionMatrixBuffer);
@@ -312,15 +328,11 @@ public class HelloWorld {
             glPointSize(5.0f);
             glLineWidth(2.0f);
             // 클리어 컬러를 적용합니다.
-            glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
+            glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
             glClearDepth(1.0f);
             // 프레임 버퍼 클리어
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            //Random random = new Random();
-            //Float randomColor = random.nextFloat();
-            //glClearColor(randomColor, randomColor, randomColor, 1.0f);
-
+            // 쉐이더를 사용하여 랜더링합니다.
             draw();
             // 색상버퍼 교체
             glfwSwapBuffers(window);

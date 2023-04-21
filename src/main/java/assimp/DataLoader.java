@@ -1,17 +1,19 @@
 package assimp;
 
-import de.javagl.jgltf.impl.v2.Material;
 import geometry.basic.GaiaBoundingBox;
 import geometry.structure.*;
-import org.joml.*;
+import org.joml.Matrix4d;
+import org.joml.Vector2d;
+import org.joml.Vector3d;
+import org.joml.Vector4d;
+import org.locationtech.proj4j.CRSFactory;
+import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
 import util.FileUtils;
+import util.GeometryUtils;
 
-import java.awt.geom.Rectangle2D;
 import java.io.File;
-import java.lang.Math;
-import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
@@ -25,14 +27,16 @@ public class DataLoader {
     /**
      * Default flags for Assimp import process
      */
-    final static int DEFAULT_FLAGS = Assimp.aiProcess_GenNormals
-            |Assimp.aiProcess_Triangulate
-            |Assimp.aiProcess_JoinIdenticalVertices
-            |Assimp.aiProcess_CalcTangentSpace
-            |Assimp.aiProcess_FixInfacingNormals
-            |Assimp.aiProcess_FlipWindingOrder
-            //Assimp.aiProcess_ConvertToLeftHanded
-            |Assimp.aiProcess_SortByPType;
+    final static int DEFAULT_FLAGS =
+            Assimp.aiProcess_GenNormals |
+            //Assimp.aiProcess_FixInfacingNormals|
+            Assimp.aiProcess_Triangulate|
+            //Assimp.aiProcess_JoinIdenticalVertices|
+            //Assimp.aiProcess_CalcTangentSpace|
+            //Assimp.aiProcess_FlipWindingOrder|
+            //Assimp.aiProcess_FixInfacingNormals|
+            //Assimp.aiProcess_ConvertToLeftHanded|
+            Assimp.aiProcess_SortByPType;
 
 
     /** Loads a scene from a filePath
@@ -106,39 +110,27 @@ public class DataLoader {
         }
 
         GaiaNode node = processNode(gaiaScene, aiScene, aiNode, null);
+
+
+
         Matrix4d rootTransform = node.getTransformMatrix();
-        Vector4d pos = rootTransform.transform(0,0,0,1.0, new Vector4d());
+        //rootTransform.rotateX(Math.toRadians(90), rootTransform);
 
         GaiaBoundingBox boundingBox = node.getBoundingBox(null);
         Vector3d boundingBoxCenter = boundingBox.getCenter();
+
+        Vector3d volume = boundingBox.getVolume();
         Vector3d translation = new Vector3d(-boundingBoxCenter.x, -boundingBoxCenter.y, -boundingBoxCenter.z);
+        //CRSFactory factory = new CRSFactory();
+        //CoordinateReferenceSystem epsg5186 = factory.createFromParameters("EPSG:5186", "+proj=tmerc +lat_0=38 +lon_0=127 +k=1 +x_0=200000 +y_0=600000 +ellps=GRS80 +units=m +no_defs");
+        //CoordinateReferenceSystem epsg4326 = factory.createFromParameters("EPSG:4326", "+proj=longlat +datum=WGS84 +no_defs");
+        //GeometryUtils.transform(epsg5186, epsg4326, 0.0d, 0.0d);
 
-        //rootTransform.identity();
-        System.out.println(rootTransform);
-        //rootTransform.scale(0.001);
-
-        Matrix4d rotationMatrix = new Matrix4d();
-        rotationMatrix.rotateX(Math.toRadians(90));
-        Matrix4d translateMatrix = new Matrix4d();
-        translateMatrix.translate(translation, translateMatrix);
-        Matrix4d rotatedTranslatedMatrix = new Matrix4d();
-
+        //srootTransform.identity();
+        //rootTransform.scale(0.1d);
         //rootTransform.translate(translation, rootTransform);
-        //rootTransform.rotateX(Math.toRadians(90), rootTransform);
-
-        rootTransform.mul(translateMatrix);
-        rootTransform.mul(rotationMatrix);
         node.setTransformMatrix(rootTransform);
-
-        System.out.println(rootTransform);
-
         node.recalculateTransform();
-
-        System.out.println(node.getPreMultipliedTransformMatrix());
-
-        //GaiaBoundingBox boundingBox = node.getBoundingBox(node, null);
-        //System.out.println(node.getTransformMatrix());
-        //System.out.println(node.recalculateTransform(node));
         gaiaScene.getNodes().add(node);
         return gaiaScene;
     }
@@ -169,24 +161,19 @@ public class DataLoader {
         //String otherTexPath = otherPath.dataString();
 
         Path parentPath = new File(path).toPath();
-
         if (diffTexPath != null && diffTexPath.length() > 0) {
             GaiaTexture texture = new GaiaTexture();
             texture.setPath(diffTexPath);
             texture.setType(GaiaMaterialType.DIFFUSE);
             texture.setParentPath(parentPath);
-            //texture.readImage();
-            material.getTextures().put(texture.getType(), texture);
-        }
 
-        /*int numProperties = aiMaterial.mNumProperties();
-        PointerBuffer pointerBuffer = aiMaterial.mProperties();
-        for (int i = 0; i < numProperties; i++) {
-            AIMaterialProperty aiMaterialProperty = AIMaterialProperty.create(pointerBuffer.get(i));
-            ByteBuffer byteBuffer = aiMaterialProperty.mData();
-            //System.out.println(aiMaterialProperty.mKey().dataString());
-            //System.out.println(aiMaterialProperty.mType());
-        }*/
+            File file = new File(parentPath.toFile(), diffTexPath);
+            if (!(file.exists() && file.isFile())) {
+                System.err.println("Texture not found: " + file.getAbsolutePath());
+            } else {
+                material.getTextures().put(texture.getType(), texture);
+            }
+        }
         return material;
     }
 
@@ -199,7 +186,7 @@ public class DataLoader {
      */
     private static GaiaNode processNode(GaiaScene gaiaScene, AIScene aiScene, AINode aiNode, GaiaNode parentNode) {
         AIMatrix4x4 transformation = aiNode.mTransformation();
-        Matrix4d transfrom = convertMatrix4dFromAIMatrix4x4(transformation);
+        Matrix4d transform = convertMatrix4dFromAIMatrix4x4(transformation);
 
         String name = aiNode.mName().dataString();
         int numMeshes = aiNode.mNumMeshes();
@@ -212,7 +199,7 @@ public class DataLoader {
         GaiaNode node = new GaiaNode();
         node.setName(name);
         node.setParent(parentNode);
-        node.setTransformMatrix(transfrom);
+        node.setTransformMatrix(transform);
         PointerBuffer aiMeshes = aiScene.mMeshes();
 
         IntBuffer nodeMeshes = aiNode.mMeshes();
@@ -221,9 +208,6 @@ public class DataLoader {
             nodeNum = nodeMeshes.get(0);
         }
 
-        //System.out.println("Node name: " + name);
-        //System.out.println("Node meshes num: " + nodeMeshesNum);
-        //System.out.println("Node num: " + nodeNum);
         for (int i = 0; i < numMeshes; i++) {
             AIMesh aiMesh = AIMesh.create(aiMeshes.get(nodeNum));
             GaiaMesh mesh = processMesh(aiMesh, gaiaScene.getMaterials());
@@ -249,6 +233,7 @@ public class DataLoader {
     private static GaiaMesh processMesh(AIMesh aiMesh, ArrayList<GaiaMaterial> materials) {
         int materialIndex = aiMesh.mMaterialIndex();
         GaiaMaterial material = materials.get(materialIndex);
+        material.setId(materialIndex);
         GaiaPrimitive primitive = processPrimitive(aiMesh, material);
         GaiaMesh mesh = new GaiaMesh();
         mesh.getPrimitives().add(primitive);
@@ -266,6 +251,7 @@ public class DataLoader {
         GaiaPrimitive primitive = new GaiaPrimitive();
         primitive.getSurfaces().add(surface);
         primitive.setMaterial(material);
+        primitive.setMaterialIndex(material.getId());
 
         int numFaces = aiMesh.mNumFaces();
         AIFace.Buffer facesBuffer = aiMesh.mFaces();
@@ -282,27 +268,47 @@ public class DataLoader {
         int mNumVertices = aiMesh.mNumVertices();
         AIVector3D.Buffer verticesBuffer = aiMesh.mVertices();
         AIVector3D.Buffer normalsBuffer = aiMesh.mNormals();
-        AIVector3D.Buffer textCoords = aiMesh.mTextureCoords(0);
-
+        AIVector3D.Buffer textureCoordiantesBuffer = aiMesh.mTextureCoords(0);
         for (int i = 0; i < mNumVertices; i++) {
-            AIVector3D aiVertice = verticesBuffer.get(i);
-            AIVector3D aiNormal = normalsBuffer.get(i);
             GaiaVertex vertex = new GaiaVertex();
-            vertex.setPosition(new Vector3d((double) aiVertice.x(), (double) aiVertice.y(), (double) aiVertice.z()));
-
-            if (!(aiNormal.x() == 0.0 && aiNormal.y() == 0.0 && aiNormal.z() == 0.0)) {
-                vertex.setNormal(new Vector3d((double) aiNormal.x(), (double) aiNormal.y(), (double) aiNormal.z()));
+            if (verticesBuffer != null) {
+                AIVector3D aiVertice = verticesBuffer.get(i);
+                if (Float.isNaN(aiVertice.x()) || Float.isNaN(aiVertice.y()) || Float.isNaN(aiVertice.z())) {
+                    vertex.setPosition(new Vector3d());
+                } else {
+                    vertex.setPosition(new Vector3d((double) aiVertice.x(), (double) aiVertice.y(), (double) aiVertice.z()));
+                }
+            } else {
+                //vertex.setPosition(new Vector3d());
             }
 
-            if (textCoords != null) {
-                AIVector3D textCoord = textCoords.get(i);
-                vertex.setTextureCoordinates(new Vector2d((double) textCoord.x(), 1.0 - (double) textCoord.y()));
+            if (normalsBuffer != null) {
+                AIVector3D aiNormal = normalsBuffer.get(i);
+                if (Double.isNaN((double) aiNormal.x()) || Double.isNaN((double) aiNormal.y()) || Double.isNaN((double) aiNormal.z())) {
+                    vertex.setNormal(new Vector3d());
+                } else {
+                    vertex.setNormal(new Vector3d((double) aiNormal.x(), (double) aiNormal.y(), (double) aiNormal.z()));
+                }
+            } else {
+                vertex.setNormal(new Vector3d());
+            }
+
+            if (textureCoordiantesBuffer != null) {
+                AIVector3D textureCoordiante = textureCoordiantesBuffer.get(i);
+                if (Float.isNaN(textureCoordiante.x()) || Float.isNaN(textureCoordiante.y())) {
+                    vertex.setTextureCoordinates(new Vector2d());
+                } else {
+                    vertex.setTextureCoordinates(new Vector2d((double) textureCoordiante.x(), 1.0 - (double) textureCoordiante.y()));
+                }
+            } else {
+                //vertex.setTextureCoordinates(new Vector2d());
             }
             primitive.getVertices().add(vertex);
         }
 
         //Rectangle2D rectangle2D = getTextureCoordsBoundingRect(primitive);
-        primitive.genNormals();
+        //primitive.genNormals();
+        primitive.calculateNormal();
         return primitive;
     }
 

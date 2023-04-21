@@ -28,6 +28,7 @@ public class AssimpObject extends RenderableObject {
         this.setPosition(0.0f, 0.0f, -1.0f);
         this.setRotation(0.0f, 0.0f, 0.0f);
     }
+
     @Override
     public void render(int program) {
         RenderableBuffer testRenderable = this.getBuffer(); // test
@@ -35,8 +36,8 @@ public class AssimpObject extends RenderableObject {
         TextureBuffer textureBuffer = this.textureBuffer;
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            Matrix4f objectRotationMatrix = getTransformMatrix();
-            int uObjectRotationMatrix = GL20.glGetUniformLocation(program, "uObjectRotationMatrix");
+            Matrix4f objectTransformMatrix = getTransformMatrix();
+            int uObjectTransformMatrix = GL20.glGetUniformLocation(program, "uObjectTransformMatrix");
             int uTextureType = GL20.glGetUniformLocation(program, "uTextureType");
 
             int aVertexPosition = GL20.glGetAttribLocation(program, "aVertexPosition");
@@ -44,7 +45,7 @@ public class AssimpObject extends RenderableObject {
             int aVertexNormal = GL20.glGetAttribLocation(program, "aVertexNormal");
             int aVertexTextureCoordinate = GL20.glGetAttribLocation(program, "aVertexTextureCoordinate");
 
-            float[] objectRotationMatrixBuffer = new float[16];
+            float[] objectTransformMatrixBuffer = new float[16];
 
             if (textureBuffer != null) {
                 GL20.glUniform1i(uTextureType, 1);
@@ -54,9 +55,8 @@ public class AssimpObject extends RenderableObject {
             }
             renderableBuffers.stream().forEach((renderableBuffer) -> {
                 Matrix4d nodeTransformMatrix = renderableBuffer.getTransformMatrix();
-                nodeTransformMatrix.get(objectRotationMatrixBuffer);
-                //objectRotationMatrix.get(objectRotationMatrixBuffer);
-                GL20.glUniformMatrix4fv(uObjectRotationMatrix, false, objectRotationMatrixBuffer);
+                nodeTransformMatrix.get(objectTransformMatrixBuffer);
+                GL20.glUniformMatrix4fv(uObjectTransformMatrix, false, objectTransformMatrixBuffer);
 
                 renderableBuffer.setIndiceBind(renderableBuffer.getIndicesVbo());
                 renderableBuffer.setAttribute(renderableBuffer.getPositionVbo(), aVertexPosition, 3, 0);
@@ -72,6 +72,7 @@ public class AssimpObject extends RenderableObject {
             }
         }
     }
+
     @Override
     public RenderableBuffer getBuffer() {
         if (this.renderableBuffers == null) {

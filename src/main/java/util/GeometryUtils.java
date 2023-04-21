@@ -4,14 +4,17 @@ import geometry.structure.*;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
-import tiler.AccessorType;
+import gltf.AccessorType;
+import org.locationtech.proj4j.BasicCoordinateTransform;
+import org.locationtech.proj4j.CRSFactory;
+import org.locationtech.proj4j.CoordinateReferenceSystem;
+import org.locationtech.proj4j.ProjCoordinate;
 
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 public class GeometryUtils {
     public static boolean isIdentity(float[] matrix) {
@@ -35,6 +38,9 @@ public class GeometryUtils {
 
     public static void genNormals(GaiaVertex v1, GaiaVertex v2, GaiaVertex v3) {
         Vector3d normal = calcNormal(v1, v2, v3);
+        if (Double.isNaN(normal.x()) || Double.isNaN(normal.y()) || Double.isNaN(normal.z())) {
+            System.out.println("NaN normal: " + normal.x() + ", " + normal.y() + ", " + normal.z());
+        }
         v1.setNormal(normal);
         v2.setNormal(normal);
         v3.setNormal(normal);
@@ -313,5 +319,19 @@ public class GeometryUtils {
         rootNode.getChildren().add(childNode);
         scene.getNodes().add(rootNode);
         return scene;
+    }
+
+    public static ProjCoordinate transform(CoordinateReferenceSystem source, CoordinateReferenceSystem target, Double x, Double y) {
+        //CRSFactory factory = new CRSFactory();
+        //CoordinateReferenceSystem grs80 = factory.createFromName("EPSG:5179");
+        //CoordinateReferenceSystem wgs84 = factory.createFromName("EPSG:4326");
+        BasicCoordinateTransform transformer = new BasicCoordinateTransform(source, target);
+        ProjCoordinate beforeCoord = new ProjCoordinate(x, y);
+        ProjCoordinate afterCoord = new ProjCoordinate();
+        transformer.transform(beforeCoord, afterCoord);
+
+        //변환된 좌표
+        //System.out.println(afterCoord.x + "," + afterCoord.y);
+        return afterCoord;
     }
 }

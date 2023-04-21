@@ -18,7 +18,7 @@ public class GaiaSceneObject extends RenderableObject {
         super();
         this.file = new File(filePath);
         this.path = file.toPath();
-        this.setPosition(0.0f, 0.0f, -1.0f);
+        this.setPosition(0.0f, 0.0f, 0.0f);
         this.setRotation(0.0f, 0.0f, 0.0f);
     }
     @Override

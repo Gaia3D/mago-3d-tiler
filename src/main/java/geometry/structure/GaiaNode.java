@@ -25,13 +25,13 @@ public class GaiaNode {
     private GaiaBoundingBox gaiaBoundingBox = null;
 
     public void renderNode(int program) {
-        int uObjectRotationMatrix = GL20.glGetUniformLocation(program, "uObjectRotationMatrix");
+        int uObjectTransformMatrix = GL20.glGetUniformLocation(program, "uObjectTransformMatrix");
         float[] objectTransformMatrixBuffer = new float[16];
         Matrix4d preMultipliedTransformMatrix = this.getPreMultipliedTransformMatrix();
+        //Matrix4d preMultipliedTransformMatrix = new Matrix4d().identity();
         preMultipliedTransformMatrix.get(objectTransformMatrixBuffer);
-        GL20.glUniformMatrix4fv(uObjectRotationMatrix, false, objectTransformMatrixBuffer);
+        GL20.glUniformMatrix4fv(uObjectTransformMatrix, false, objectTransformMatrixBuffer);
 
-        //System.out.println("render : " + this.getName());
         for (GaiaMesh mesh : meshes) {
             mesh.renderMesh(program);
         }
@@ -76,6 +76,7 @@ public class GaiaNode {
     public void recalculateTransform() {
         GaiaNode node = this;
         node.setPreMultipliedTransformMatrix(new Matrix4d(node.getTransformMatrix()));
+        //node.setPreMultipliedTransformMatrix(new Matrix4d().identity());
         if (node.getParent() != null) {
             Matrix4d parentPreMultipliedTransformMatrix = node.getParent().getPreMultipliedTransformMatrix();
             Matrix4d preMultipliedTransformMatrix = node.getPreMultipliedTransformMatrix();

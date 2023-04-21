@@ -25,6 +25,14 @@ public class GaiaBoundingBox {
         return new Vector3d((minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2);
     }
 
+    public Vector3d getVolume() {
+        return new Vector3d(maxX - minX, maxY - minY, maxZ - minZ);
+    }
+
+    public Vector3d getCenterCorrected() {
+        return new Vector3d((minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2);
+    }
+
     //setInit
     public void setInit(Vector3d vector3d) {
         minX = vector3d.x;

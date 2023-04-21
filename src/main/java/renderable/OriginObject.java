@@ -23,12 +23,12 @@ public class OriginObject extends RenderableObject {
         RenderableBuffer renderableBuffer = this.getBuffer();
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            Matrix4f objectRotationMatrix = getTransformMatrix();
-            int uObjectRotationMatrix = GL20.glGetUniformLocation(program, "uObjectRotationMatrix");
-            float[] objectRotationMatrixBuffer = new float[16];
-            objectRotationMatrix.get(objectRotationMatrixBuffer);
+            Matrix4f objectTransformMatrix = getTransformMatrix();
+            int uObjectTransformMatrix = GL20.glGetUniformLocation(program, "uObjectTransformMatrix");
+            float[] objectTransformMatrixBuffer = new float[16];
+            objectTransformMatrix.get(objectTransformMatrixBuffer);
 
-            GL20.glUniformMatrix4fv(uObjectRotationMatrix, false, objectRotationMatrixBuffer);
+            GL20.glUniformMatrix4fv(uObjectTransformMatrix, false, objectTransformMatrixBuffer);
 
             int aVertexPosition = GL20.glGetAttribLocation(program, "aVertexPosition");
             int aVertexColor = GL20.glGetAttribLocation(program, "aVertexColor");
