@@ -91,8 +91,12 @@ public class HelloWorld {
         //renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\Data3D\\gangbuk_cultur_del_3DS\\gangbuk_cultur_del.3ds"));
 
 
-        renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\simpleCube.gltf"));
-        //renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\Data3D\\gangil_del_3DS\\gangil_del.3ds"));
+        renderableObjects.add(new GaiaSceneObject("C:\\Datas\\3dsample\\box.3ds"));
+        //renderableObjects.add(new GaiaSceneObject("C:\\Datas\\Data3D\\DC_library_del_3DS\\DC_library_del.3ds"));
+        //renderableObjects.add(new GaiaSceneObject("C:\\Datas\\Data3D\\dogok_library_del_3DS\\dogok_library_del.3ds"));
+        //renderableObjects.add(new GaiaSceneObject("C:\\Datas\\Data3D\\Edumuseum_del_150417_02_3DS\\Edumuseum_del_150417_02.3ds"));
+        //renderableObjects.add(new GaiaSceneObject("C:\\Datas\\Data3D\\gangbuk_cultur_del_3DS\\gangbuk_cultur_del.3ds"));
+        //renderableObjects.add(new GaiaSceneObject("C:\\Datas\\Data3D\\Dongdaemoongu_center_del_3DS\\Dongdaemoongu_center_del.3ds"));
         //renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\Data3D\\gangnam_del_3DS\\gangnam_del.3ds"));
 
 

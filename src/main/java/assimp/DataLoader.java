@@ -44,6 +44,10 @@ public class DataLoader {
      * @param hint 파일 확장자
      * @return
      */
+    public static GaiaScene load(String filePath) {
+        return load(new File(filePath), null);
+    }
+
     public static GaiaScene load(String filePath, String hint) {
         return load(new File(filePath), hint);
     }
@@ -55,18 +59,19 @@ public class DataLoader {
      * @return
      */
     public static GaiaScene load(File file, String hint) {
-        String path = file.getAbsolutePath().replace(file.getName(), "");
+        if (file.isFile()) {
+            String path = file.getAbsolutePath().replace(file.getName(), "");
+            ByteBuffer byteBuffer = FileUtils.readFile(file);
+            hint = (hint != null) ? hint : FileUtils.getExtension(file.getName());
 
-        ByteBuffer byteBuffer = FileUtils.readFile(file);
-        hint = (hint != null) ? hint : FileUtils.getExtension(file.getName());
-
-        //AIScene aiScene = Assimp.aiImportFile(path, flags);
-        AIScene aiScene = Assimp.aiImportFileFromMemory(byteBuffer, DEFAULT_FLAGS, hint);
-        GaiaScene gaiaScene = convertScene(aiScene, path);
-
-        aiScene.free();
-        //MemoryUtil.memFree(byteBuffer);
-        return gaiaScene;
+            AIScene aiScene = Assimp.aiImportFileFromMemory(byteBuffer, DEFAULT_FLAGS, hint);
+            GaiaScene gaiaScene = convertScene(aiScene, path);
+            aiScene.free();
+            //MemoryUtil.memFree(byteBuffer);
+            return gaiaScene;
+        } else {
+            return null;
+        }
     }
 
     // convertMatrix4dFromAIMatrix4x4
@@ -126,8 +131,8 @@ public class DataLoader {
         //CoordinateReferenceSystem epsg4326 = factory.createFromParameters("EPSG:4326", "+proj=longlat +datum=WGS84 +no_defs");
         //GeometryUtils.transform(epsg5186, epsg4326, 0.0d, 0.0d);
 
-        //srootTransform.identity();
-        //rootTransform.scale(0.1d);
+        //rootTransform.identity();
+        rootTransform.scale(0.1d);
         //rootTransform.translate(translation, rootTransform);
         node.setTransformMatrix(rootTransform);
         node.recalculateTransform();

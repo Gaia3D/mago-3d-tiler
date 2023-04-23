@@ -1,5 +1,6 @@
 package geometry.structure;
 
+import geometry.exchangable.GaiaSet;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -69,5 +70,12 @@ public class GaiaScene {
     public int getTotalTextureSize() {
         //return GaiaMaterial.getTotalTextureSize(0, materials);
         return 0;
+    }
+
+    public GaiaSet toGaiaSet() {
+        GaiaSet gaiaSet = new GaiaSet();
+
+
+        return null;
     }
 }
