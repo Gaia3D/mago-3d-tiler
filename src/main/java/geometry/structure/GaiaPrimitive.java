@@ -170,7 +170,6 @@ public class GaiaPrimitive {
 
     public GaiaBufferDataSet toGaiaBufferSet() {
         GaiaBufferDataSet gaiaBufferDataSet = new GaiaBufferDataSet();
-        
 
         GaiaBuffer positionBuffer = new GaiaBuffer();
         gaiaBufferDataSet.getBuffers().put(AttributeType.POSITION, positionBuffer);

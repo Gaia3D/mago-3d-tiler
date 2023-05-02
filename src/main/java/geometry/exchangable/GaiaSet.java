@@ -58,7 +58,7 @@ public class GaiaSet {
         }
         File output = new File(path.toAbsolutePath().toString(), projectName + ".mgb");
 
-        try (BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(output))) {
+        try (DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(output)))) {
             // material count
             for (GaiaMaterial material : materials) {
                 material.write(stream);
