@@ -1,4 +1,4 @@
-package gltf;
+package geometry.types;
 
 public enum AccessorType {
     SCALAR,

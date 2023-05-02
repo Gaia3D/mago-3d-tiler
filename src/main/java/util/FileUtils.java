@@ -38,15 +38,6 @@ public class FileUtils {
         }
     }
 
-    // resizeIamge
-    /*public static BufferedImage resizeImage(BufferedImage originalImage, int targetWidth, int targetHeight) {
-        BufferedImage resizedImage = new BufferedImage(targetWidth, targetHeight, originalImage.getType());
-        int x = (targetWidth - originalImage.getWidth()) / 2;
-        int y = (targetHeight - originalImage.getHeight()) / 2;
-        resizedImage.getGraphics().drawImage(originalImage, x, y, null);
-        return resizedImage;
-    }*/
-
     private static BufferedImage resizeImageGraphic2D(BufferedImage originalImage, int width, int height) {
         BufferedImage outputImage = new BufferedImage(width, height, originalImage.getType());
         Graphics2D graphics2D = outputImage.createGraphics();
@@ -63,7 +54,6 @@ public class FileUtils {
             int width = bufferedImage.getWidth();
             int height = bufferedImage.getHeight();
             if (width != getNearestPowerOfTwo(width) || height != getNearestPowerOfTwo(height)) {
-                //bufferedImage = resizeImage(bufferedImage, getNearestPowerOfTwo(width), getNearestPowerOfTwo(height));
                 bufferedImage = resizeImageGraphic2D(bufferedImage, getNearestPowerOfTwo(width), getNearestPowerOfTwo(height));
             }
             ImageIO.write(bufferedImage, formatName, baos);
@@ -102,9 +92,6 @@ public class FileUtils {
                 break;
             case "image/webp":
                 formatName = "webp";
-                break;
-            default:
-                formatName = "png";
                 break;
         }
         return formatName;

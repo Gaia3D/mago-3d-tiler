@@ -2,6 +2,7 @@ package geometry.structure;
 
 import de.javagl.jgltf.impl.v2.Material;
 import geometry.basic.GaiaBoundingBox;
+import geometry.exchangable.GaiaBufferDataSet;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,6 +13,7 @@ import org.joml.Vector3d;
 import org.joml.Vector4d;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -182,5 +184,15 @@ public class GaiaMesh {
             vertexCount += primitive.getVertices().size();
         }
         return vertexCount;
+    }
+
+    public void toGaiaBufferSets(List<GaiaBufferDataSet> bufferSets) {
+        if (bufferSets == null) {
+            bufferSets = new ArrayList<>();
+        }
+        for (GaiaPrimitive primitive : primitives) {
+            GaiaBufferDataSet gaiaBufferDataSet = primitive.toGaiaBufferSet();
+            bufferSets.add(gaiaBufferDataSet);
+        }
     }
 }

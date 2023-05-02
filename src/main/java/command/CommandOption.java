@@ -8,6 +8,8 @@ import java.nio.file.Path;
 @Setter
 @Getter
 public class CommandOption {
+    private boolean quiet = false;
+
     private Path inputPath = null;
     private InputType inputType = InputType.IN_3DS;
     private Path outputPath = null;

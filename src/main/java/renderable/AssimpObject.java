@@ -2,6 +2,7 @@ package renderable;
 
 import assimp.DataLoader;
 import geometry.structure.*;
+import geometry.types.TextureType;
 import org.joml.*;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryStack;
@@ -97,7 +98,7 @@ public class AssimpObject extends RenderableObject {
                     ArrayList<GaiaPrimitive> primitives = mesh.getPrimitives();
                     primitives.stream().forEach((primitive) -> {
                         GaiaMaterial material = primitive.getMaterial();
-                        GaiaTexture texture = material.getTextures().get(GaiaMaterialType.DIFFUSE);
+                        List<GaiaTexture> textures = material.getTextures().get(TextureType.DIFFUSE);
 
                         ArrayList<GaiaVertex> primitiveVerticesList = primitive.getVertices();
                         ArrayList<Integer> primitiveIndicesList = primitive.getIndices();
@@ -135,8 +136,9 @@ public class AssimpObject extends RenderableObject {
                                 .collect(Collectors.toList());
                         indicesList.addAll(shortIndicesList);
 
-                        if (texture != null) {
+                        if (textures.size() > 0) {
                             // 임시 singleTexture
+                            GaiaTexture texture = textures.get(0);
                             TextureBuffer textureBuffer = new TextureBuffer();
                             texture.setFormat(GL20.GL_RGB);
                             texture.setParentPath(path.getParent());

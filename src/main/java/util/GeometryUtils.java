@@ -4,9 +4,8 @@ import geometry.structure.*;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
-import gltf.AccessorType;
+import geometry.types.AccessorType;
 import org.locationtech.proj4j.BasicCoordinateTransform;
-import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 

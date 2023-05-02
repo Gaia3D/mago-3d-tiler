@@ -7,6 +7,9 @@ import de.javagl.jgltf.model.GltfModels;
 import de.javagl.jgltf.model.io.GltfModelWriter;
 import de.javagl.jgltf.model.io.v2.GltfAssetV2;
 import geometry.structure.*;
+import geometry.types.AccessorType;
+import geometry.types.AttributeType;
+import geometry.types.TextureType;
 import org.joml.Matrix4d;
 import org.joml.Vector4d;
 import org.lwjgl.opengl.GL20;
@@ -342,7 +345,7 @@ public class GltfWriter {
     }
 
     private static int createMaterial(GlTF gltf, GaiaMaterial gaiaMaterial) {
-        GaiaTexture gaiaTexture = gaiaMaterial.getTextures().get(GaiaMaterialType.DIFFUSE);
+        List<GaiaTexture> diffuseTextures = gaiaMaterial.getTextures().get(TextureType.DIFFUSE);
 
         Material material = new Material();
         material.setName(gaiaMaterial.getName());
@@ -352,7 +355,8 @@ public class GltfWriter {
         Vector4d diffuseColor = gaiaMaterial.getDiffuseColor();
         pbrMetallicRoughness.setBaseColorFactor(new float[]{(float) diffuseColor.x, (float) diffuseColor.y, (float) diffuseColor.z, (float) diffuseColor.w});
 
-        if (gaiaTexture != null) {
+        if (diffuseTextures.size() > 0) {
+            GaiaTexture gaiaTexture = diffuseTextures.get(0);
             int textureId = createTexture(gltf, gaiaTexture);
             TextureInfo textureInfo = new TextureInfo();
             textureInfo.setIndex(textureId);
@@ -420,13 +424,13 @@ public class GltfWriter {
         primitive.setIndices(nodeBuffer.getIndicesAccessorId());
 
         if (nodeBuffer.getPositionsAccessorId() > -1)
-            primitive.getAttributes().put("POSITION", nodeBuffer.getPositionsAccessorId());
+            primitive.getAttributes().put(AttributeType.POSITION.toString(), nodeBuffer.getPositionsAccessorId());
         if (nodeBuffer.getNormalsAccessorId() > -1)
-            primitive.getAttributes().put("NORMAL", nodeBuffer.getNormalsAccessorId());
+            primitive.getAttributes().put(AttributeType.NORMAL.toString(), nodeBuffer.getNormalsAccessorId());
         if (nodeBuffer.getColorsAccessorId() > -1)
-            primitive.getAttributes().put("COLOR_0", nodeBuffer.getColorsAccessorId());
+            primitive.getAttributes().put(AttributeType.COLOR_0.toString(), nodeBuffer.getColorsAccessorId());
         if (nodeBuffer.getTextureCoordinatesAccessorId() > -1)
-            primitive.getAttributes().put("TEXCOORD_0", nodeBuffer.getTextureCoordinatesAccessorId());
+            primitive.getAttributes().put(AttributeType.TEXCOORD_0.toString(), nodeBuffer.getTextureCoordinatesAccessorId());
 
         return primitive;
     }

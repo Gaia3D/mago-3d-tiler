@@ -1,7 +1,10 @@
 package geometry.structure;
 
 import geometry.basic.GaiaBoundingBox;
-import geometry.basic.GaiaVBO;
+import geometry.exchangable.GaiaBuffer;
+import geometry.exchangable.GaiaBufferDataSet;
+import geometry.types.AttributeType;
+import geometry.types.TextureType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +17,6 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryStack;
 import renderable.RenderableBuffer;
 import renderable.TextureBuffer;
-import util.GeometryUtils;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -53,8 +55,11 @@ public class GaiaPrimitive {
             renderableBuffer.setAttribute(renderableBuffer.getNormalVbo(), aVertexNormal, 3, 0);
             renderableBuffer.setAttribute(renderableBuffer.getTextureCoordinateVbo(), aVertexTextureCoordinate, 2, 0);
 
-            GaiaTexture texture = material.getTextures().get(GaiaMaterialType.DIFFUSE);
-            if (texture != null) {
+            //GaiaTexture texture = material.getTextures().get(TextureType.DIFFUSE);
+
+            List<GaiaTexture> textures = material.getTextures().get(TextureType.DIFFUSE);
+            if (textures.size() > 0) {
+                GaiaTexture texture = textures.get(0);
                 if (texture.getBufferedImage() == null) {
                     //texture.setFormat(GL20.GL_RGB);
                     //texture.readImage();
@@ -65,9 +70,6 @@ public class GaiaPrimitive {
                     int textureVbo = textureBuffer.createGlTexture(texture);
                     textureBuffer.setTextureVbo(textureVbo);
                 }
-            }
-
-            if (texture != null) {
                 GL20.glUniform1i(uTextureType, 1);
                 textureBuffer.setTextureBind(textureBuffer.getTextureVbo());
             } else {
@@ -164,5 +166,24 @@ public class GaiaPrimitive {
         for (GaiaSurface surface : surfaces) {
             surface.calculateNormal(this.vertices);
         }
+    }
+
+    public GaiaBufferDataSet toGaiaBufferSet() {
+        GaiaBufferDataSet gaiaBufferDataSet = new GaiaBufferDataSet();
+        
+
+        GaiaBuffer positionBuffer = new GaiaBuffer();
+        gaiaBufferDataSet.getBuffers().put(AttributeType.POSITION, positionBuffer);
+
+        GaiaBuffer normalBuffer = new GaiaBuffer();
+        gaiaBufferDataSet.getBuffers().put(AttributeType.NORMAL, normalBuffer);
+
+        GaiaBuffer colorBuffer = new GaiaBuffer();
+        gaiaBufferDataSet.getBuffers().put(AttributeType.COLOR_0, colorBuffer);
+
+        GaiaBuffer textureCoordinateBuffer = new GaiaBuffer();
+        gaiaBufferDataSet.getBuffers().put(AttributeType.TEXCOORD_0, textureCoordinateBuffer);
+
+        return gaiaBufferDataSet;
     }
 }

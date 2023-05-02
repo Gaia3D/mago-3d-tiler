@@ -1,23 +1,23 @@
 package assimp;
 
+import command.CommandOption;
 import geometry.basic.GaiaBoundingBox;
 import geometry.structure.*;
+import geometry.types.TextureType;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
-import org.locationtech.proj4j.CRSFactory;
-import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
 import util.FileUtils;
-import util.GeometryUtils;
 
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Loads a scene from a file
@@ -31,7 +31,7 @@ public class DataLoader {
             Assimp.aiProcess_GenNormals |
             //Assimp.aiProcess_FixInfacingNormals|
             Assimp.aiProcess_Triangulate|
-            //Assimp.aiProcess_JoinIdenticalVertices|
+            Assimp.aiProcess_JoinIdenticalVertices|
             //Assimp.aiProcess_CalcTangentSpace|
             //Assimp.aiProcess_FlipWindingOrder|
             //Assimp.aiProcess_FixInfacingNormals|
@@ -41,15 +41,18 @@ public class DataLoader {
 
     /** Loads a scene from a filePath
      * @param filePath 파일 경로
-     * @param hint 파일 확장자
      * @return
      */
-    public static GaiaScene load(String filePath) {
-        return load(new File(filePath), null);
+    public static GaiaScene load(String filePath, CommandOption option) {
+        return load(new File(filePath), null, option);
     }
 
-    public static GaiaScene load(String filePath, String hint) {
-        return load(new File(filePath), hint);
+    public static GaiaScene load(Path filePath, CommandOption option) {
+        return load(filePath.toFile(), null, option);
+    }
+
+    public static GaiaScene load(String filePath, String hint, CommandOption option) {
+        return load(new File(filePath), hint, option);
     }
 
     /**
@@ -58,7 +61,7 @@ public class DataLoader {
      * @param hint 파일 확장자
      * @return
      */
-    public static GaiaScene load(File file, String hint) {
+    public static GaiaScene load(File file, String hint, CommandOption option) {
         if (file.isFile()) {
             String path = file.getAbsolutePath().replace(file.getName(), "");
             ByteBuffer byteBuffer = FileUtils.readFile(file);
@@ -66,6 +69,7 @@ public class DataLoader {
 
             AIScene aiScene = Assimp.aiImportFileFromMemory(byteBuffer, DEFAULT_FLAGS, hint);
             GaiaScene gaiaScene = convertScene(aiScene, path);
+            gaiaScene.setOriginalPath(file.toPath());
             aiScene.free();
             //MemoryUtil.memFree(byteBuffer);
             return gaiaScene;
@@ -132,7 +136,7 @@ public class DataLoader {
         //GeometryUtils.transform(epsg5186, epsg4326, 0.0d, 0.0d);
 
         //rootTransform.identity();
-        rootTransform.scale(0.1d);
+        //rootTransform.scale(0.1d);
         //rootTransform.translate(translation, rootTransform);
         node.setTransformMatrix(rootTransform);
         node.recalculateTransform();
@@ -167,16 +171,17 @@ public class DataLoader {
 
         Path parentPath = new File(path).toPath();
         if (diffTexPath != null && diffTexPath.length() > 0) {
+            List<GaiaTexture> textures = new ArrayList<>();
             GaiaTexture texture = new GaiaTexture();
             texture.setPath(diffTexPath);
-            texture.setType(GaiaMaterialType.DIFFUSE);
+            texture.setType(TextureType.DIFFUSE);
             texture.setParentPath(parentPath);
-
             File file = new File(parentPath.toFile(), diffTexPath);
             if (!(file.exists() && file.isFile())) {
                 System.err.println("Texture not found: " + file.getAbsolutePath());
             } else {
-                material.getTextures().put(texture.getType(), texture);
+                textures.add(texture);
+                material.getTextures().put(texture.getType(), textures);
             }
         }
         return material;

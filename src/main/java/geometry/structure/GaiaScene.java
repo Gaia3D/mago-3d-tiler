@@ -1,12 +1,16 @@
 package geometry.structure;
 
+import geometry.exchangable.GaiaBufferDataSet;
 import geometry.exchangable.GaiaSet;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import util.FileUtils;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -15,6 +19,7 @@ import java.util.ArrayList;
 public class GaiaScene {
     private ArrayList<GaiaNode> nodes = new ArrayList<>();
     private ArrayList<GaiaMaterial> materials = new ArrayList<>();
+    private Path originalPath;
 
     public void renderScene(int program) {
         for (GaiaNode node : nodes) {
@@ -70,12 +75,5 @@ public class GaiaScene {
     public int getTotalTextureSize() {
         //return GaiaMaterial.getTotalTextureSize(0, materials);
         return 0;
-    }
-
-    public GaiaSet toGaiaSet() {
-        GaiaSet gaiaSet = new GaiaSet();
-
-
-        return null;
     }
 }

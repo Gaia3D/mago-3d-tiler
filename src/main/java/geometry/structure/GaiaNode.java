@@ -1,6 +1,7 @@
 package geometry.structure;
 
 import geometry.basic.GaiaBoundingBox;
+import geometry.exchangable.GaiaBufferDataSet;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,6 +10,7 @@ import org.joml.*;
 import org.lwjgl.opengl.GL20;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -70,7 +72,6 @@ public class GaiaNode {
 
     /**
      * recalculate transform
-     * @param node
      * @return
      */
     public void recalculateTransform() {
@@ -268,5 +269,18 @@ public class GaiaNode {
             totalColors = getTotalColors(totalColors, children);
         }
         return totalColors;
+    }
+
+    public List<GaiaBufferDataSet> toGaiaBufferSets(List<GaiaBufferDataSet> bufferSets) {
+        if (bufferSets == null) {
+            bufferSets = new ArrayList<GaiaBufferDataSet>();
+        }
+        for (GaiaMesh mesh : this.getMeshes()) {
+            mesh.toGaiaBufferSets(bufferSets);
+        }
+        for (GaiaNode child : this.getChildren()) {
+            child.toGaiaBufferSets(bufferSets);
+        }
+        return bufferSets;
     }
 }

@@ -3,35 +3,37 @@ package command;
 import assimp.DataLoader;
 import geometry.structure.GaiaScene;
 import gltf.GltfWriter;
+import lombok.extern.slf4j.Slf4j;
 import util.FileUtils;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+@Slf4j
 public class Command {
-    static boolean isHelp = false;
-    static boolean isVersion = false;
-    static boolean isQuiet = false;
-    static String version = "0.0.1";
+    private CommandOption commandOption;
+    private String version = "0.0.1";
+    private boolean isHelp = false;
+    private boolean isVersion = false;
 
-    public static void main(String[] args) {
-
-        CommandOption commandOption = new CommandOption();
+    public Command() {
+        commandOption = new CommandOption();
         commandOption.setInputType(CommandOption.InputType.IN_3DS);
         commandOption.setOutputType(CommandOption.OutputType.OUT_GLTF);
         commandOption.setRecursive(false);
         commandOption.setSwapYZ(false);
+    }
 
-        for (int i = 0 ; i < args.length; i++) {
-            String arg = args[i];
-
+    public void startCommand(String[] args) {
+        log.info("how");
+        for (String arg : args) {
             if (arg.contains("-version") || arg.contains("-v")) {
                 isVersion = true;
             } else if (arg.contains("-help") || arg.contains("--help") || arg.contains("-h")) {
                 isHelp = true;
             } else if (arg.contains("-quiet")) {
-                isQuiet = true;
+                commandOption.setQuiet(true);
             } else if (arg.contains("-input=")) {
                 String path = arg.substring(arg.indexOf("=") + 1);
                 commandOption.setInputPath(new File(path).toPath());
@@ -63,37 +65,18 @@ public class Command {
             errlog("outputPath is not defined.");
             return;
         }
-        logWithoutTime("inputPath : " + commandOption.getInputPath().toAbsolutePath().toString());
-        logWithoutTime("outputPath : " + commandOption.getOutputPath().toAbsolutePath().toString());
-        logWithoutTime("inputType : " + commandOption.getInputType().getExtension());
-        logWithoutTime("outputType : " + commandOption.getOutputType().getExtension());
+//        logWithoutTime("inputPath : " + commandOption.getInputPath().toAbsolutePath().toString());
+//        logWithoutTime("outputPath : " + commandOption.getOutputPath().toAbsolutePath().toString());
+//        logWithoutTime("inputType : " + commandOption.getInputType().getExtension());
+//        logWithoutTime("outputType : " + commandOption.getOutputType().getExtension());
 
         File inputPathFile = commandOption.getInputPath().toFile();
         File outputPathFile = commandOption.getOutputPath().toFile();
         excute(commandOption, inputPathFile, outputPathFile);
-
-        /*String inputExtension = commandOption.getInputType().getExtension();
-        String outputExtension = commandOption.getOutputType().getExtension();
-        if (inputPathFile.isDirectory() && outputPathFile.isDirectory()) {
-            File[] Children = inputPathFile.listFiles();
-            for (File child : Children) {
-                if (child.isFile() && child.getName().endsWith("." + inputExtension)) {
-                    String outputFile = FileUtils.changeExtension(child.getName(), outputExtension);
-                    File output = new File(commandOption.getOutputPath().toAbsolutePath().toString() + File.separator + outputFile);
-                    log("convert : " + child.getAbsolutePath() + " -> " + output.getAbsolutePath());
-                    GaiaScene scene = DataLoader.load(child.getAbsolutePath(), null);
-                    if (commandOption.getOutputType() == CommandOption.OutputType.OUT_GLB) {
-                        GltfWriter.writeGlb(scene, output.getAbsolutePath());
-                    } else if (commandOption.getOutputType() == CommandOption.OutputType.OUT_GLTF) {
-                        GltfWriter.writeGltf(scene, output.getAbsolutePath());
-                    }
-                }
-            }
-        }*/
-        logWithoutTime("=============[END][Plasma Gltf Converter]=============");
+        printEnd();
     }
 
-    private static void excute(CommandOption commandOption, File inputPath, File outputPath) {
+    private void excute(CommandOption commandOption, File inputPath, File outputPath) {
         String inputExtension = commandOption.getInputType().getExtension();
         String outputExtension = commandOption.getOutputType().getExtension();
         if (inputPath.isFile() && (FileUtils.getExtension(inputPath.getName()).equals(inputExtension))) {
@@ -115,8 +98,8 @@ public class Command {
         }
     }
 
-    private static void printLogo() {
-        if (isQuiet) {
+    private void printLogo() {
+        if (commandOption.isQuiet()) {
             return;
         }
         System.out.println(
@@ -130,14 +113,21 @@ public class Command {
                 "==================[Plasma Converter]==================");
     }
 
-    private static void printVersion() {
+    private void printEnd() {
+        if (commandOption.isQuiet()) {
+            return;
+        }
+        System.out.println("=============[END][Plasma Gltf Converter]=============");
+    }
+
+    private void printVersion() {
         logWithoutTime("==========================[HELP][Version]==========================");
         logWithoutTime("Author: Gaia3D-znkim");
         logWithoutTime("Version: " + version);
         logWithoutTime("==========================[HELP][Version]==========================");
     }
 
-    private static void printHelp() {
+    private void printHelp() {
         logWithoutTime("==========================[HELP][How to use]==========================");
         logWithoutTime("Usage: java -jar tiler.jar -input=<inputPath> -output=<outputPath> -inputType=<inputType> -outputType=<outputType> -recursive");
         logWithoutTime("Example: java -jar tiler.jar -input=C:\\sample\\sampleFile.3ds -output=C:\\sample\\sampleFile.gltf");
@@ -156,30 +146,30 @@ public class Command {
         logWithoutTime("==========================[HELP][How to use]==========================");
     }
 
-    private static void logWithoutTime(String message) {
-        if (isQuiet) {
+    private void logWithoutTime(String message) {
+        if (commandOption.isQuiet()) {
             return;
         }
         System.out.println("[P] " + message);
     }
 
-    private static void log(String message) {
-        if (isQuiet) {
+    private void log(String message) {
+        if (commandOption.isQuiet()) {
             return;
         }
         String nowDate = getStringDate();
         System.out.println("[P]["+ nowDate +"] " + message);
     }
 
-    private static void errlog(String message) {
-        if (isQuiet) {
+    private void errlog(String message) {
+        if (commandOption.isQuiet()) {
             return;
         }
         String nowDate = getStringDate();
         System.out.println("[P]["+ nowDate +"] " + message);
     }
 
-    private static String getStringDate() {
+    private String getStringDate() {
         Date date = new Date();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return simpleDateFormat.format(date);

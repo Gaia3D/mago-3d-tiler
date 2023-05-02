@@ -1,6 +1,6 @@
-package geometry.structure;
+package geometry.types;
 
-public enum GaiaMaterialType {
+public enum TextureType {
     NONE(0),
     DIFFUSE(1),
     SPECULAR(2),
@@ -22,7 +22,7 @@ public enum GaiaMaterialType {
     UNKNOWN(18);
 
     private int value;
-    GaiaMaterialType(int value) {
+    TextureType(int value) {
         this.value = value;
     }
 }

@@ -1,11 +1,11 @@
 import org.gradle.internal.os.OperatingSystem
 
 plugins {
-    id 'java'
+    id "java"
 }
 
-group 'com.gaia3d'
-version '1.0-SNAPSHOT'
+group "com.gaia3d"
+version "1.0.1-SNAPSHOT"
 project.ext.lwjglVersion = "3.3.1"
 
 switch ( OperatingSystem.current() ) {
@@ -25,23 +25,29 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'org.projectlombok:lombok:1.18.26'
-    annotationProcessor 'org.projectlombok:lombok:1.18.26'
+    compileOnly "org.projectlombok:lombok:1.18.26"
+    annotationProcessor "org.projectlombok:lombok:1.18.26"
 
     implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
+
     implementation "org.lwjgl:lwjgl"
     implementation "org.lwjgl:lwjgl-assimp"
     implementation "org.lwjgl:lwjgl-glfw"
     implementation "org.lwjgl:lwjgl-openal"
     implementation "org.lwjgl:lwjgl-opengl"
     implementation "org.lwjgl:lwjgl-stb"
-    implementation 'org.joml:joml:1.10.5'
+    implementation "org.joml:joml:1.10.5"
 
-    implementation 'de.javagl:jgltf-obj:2.0.3'
-    implementation 'de.javagl:jgltf-model:2.0.3'
-    implementation 'de.javagl:jgltf-validator:2.0.3'
+    implementation 'org.slf4j:jul-to-slf4j:2.0.7'
+    implementation 'ch.qos.logback:logback:0.5'
+    implementation 'ch.qos.logback:logback-classic:0.5'
+    implementation 'ch.qos.logback:logback-core:0.5'
 
-    implementation 'org.locationtech.proj4j:proj4j:1.2.3'
+    implementation "de.javagl:jgltf-obj:2.0.3"
+    implementation "de.javagl:jgltf-model:2.0.3"
+    implementation "de.javagl:jgltf-validator:2.0.3"
+
+    implementation "org.locationtech.proj4j:proj4j:1.2.3"
 
     runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-assimp::$lwjglNatives"
@@ -49,11 +55,12 @@ dependencies {
     runtimeOnly "org.lwjgl:lwjgl-openal::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-stb::$lwjglNatives"
+    runtimeOnly "org.slf4j:slf4j-simple:2.0.7"
 
-    testCompileOnly 'org.projectlombok:lombok:1.18.26'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.26'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    testCompileOnly "org.projectlombok:lombok:1.18.26"
+    testAnnotationProcessor "org.projectlombok:lombok:1.18.26"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.0"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.0"
 }
 
 test {
@@ -63,7 +70,7 @@ test {
 // jar task
 jar {
     manifest {
-        attributes 'Main-Class': 'command.Command'
+        attributes "Main-Class": "command.Main"
     }
     from {
         configurations.runtimeClasspath.collect {it.isDirectory() ? it : zipTree(it)}

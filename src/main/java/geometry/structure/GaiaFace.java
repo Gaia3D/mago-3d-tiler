@@ -50,13 +50,13 @@ public class GaiaFace {
     public boolean validateNormal(Vector3d normal) {
         boolean result = true;
         if (Double.isNaN(normal.lengthSquared()) || Double.isNaN(normal.x()) || Double.isNaN(normal.y()) || Double.isNaN(normal.z()) || Float.isNaN((float) normal.x()) || Float.isNaN((float) normal.y()) || Float.isNaN((float) normal.z())) {
-            System.err.println("[calcNormal Error] : " + normal.x() + ", " + normal.y() + ", " + normal.z());
+            //System.err.println("[calcNormal Error] : " + normal.x() + ", " + normal.y() + ", " + normal.z());
             result = false;
         } else if (normal.lengthSquared() != 1.0f) {
-            System.out.println("[calcNormal Wraning] : " + normal.lengthSquared());
+            //System.out.println("[calcNormal Wraning] : " + normal.lengthSquared());
             //result = false;
         } else {
-            System.out.println("[calcNormal Correct] : " + normal.x() + ", " + normal.y() + ", " + normal.z());
+            //System.out.println("[calcNormal Correct] : " + normal.x() + ", " + normal.y() + ", " + normal.z());
         }
         return result;
     }
@@ -91,10 +91,10 @@ public class GaiaFace {
             } else {
                 System.err.println(" ======= other error. " + position1 + ", " + position2 + ", " + position3);
             }*/
-            System.err.print(" ======= " + resultNormal + " -> ");
+            //System.err.print(" ======= " + resultNormal + " -> ");
             resultNormal = new Vector3d(1.0, 1.0, 1.0);
             resultNormal.normalize();
-            System.err.println(resultNormal);
+            //System.err.println(resultNormal);
         }
         vertex1.setNormal(new Vector3d(resultNormal));
         vertex2.setNormal(new Vector3d(resultNormal));

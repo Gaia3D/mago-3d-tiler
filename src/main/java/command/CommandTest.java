@@ -60,7 +60,7 @@ public class CommandTest {
     public static void convert(File path, String extension, String outputPath) {
         if (path.isFile() && FileUtils.getExtension(path.getName()).equals(extension)) {
             String fileName = FileUtils.getFileNameWithoutExtension(path.getName());
-            GaiaScene scene = DataLoader.load(path.getAbsolutePath(), extension);
+            GaiaScene scene = DataLoader.load(path.getAbsolutePath(), extension, new CommandOption());
 
             String outputPathGltf = "C:\\data\\sample";
             File output = new File(outputPathGltf, fileName + ".glb");

@@ -1,5 +1,6 @@
 package geometry.structure;
 
+import geometry.types.TextureType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,10 +9,13 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
+import util.BinaryUtils;
 import util.FileUtils;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
@@ -26,7 +30,7 @@ public class GaiaTexture {
     Path parentPath;
     private String name;
     private String path;
-    private GaiaMaterialType type;
+    private TextureType type;
 
     private int width;
     private int height;
@@ -120,5 +124,9 @@ public class GaiaTexture {
             setByteBuffer(result);
             return result;
         }
+    }
+
+    public void write(OutputStream stream) throws IOException {
+        BinaryUtils.writeText(stream, path);
     }
 }
