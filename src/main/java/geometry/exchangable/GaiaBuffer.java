@@ -4,17 +4,25 @@ import de.javagl.jgltf.impl.v1.Accessor;
 import de.javagl.jgltf.model.GltfConstants;
 import geometry.types.AccessorType;
 import geometry.types.AttributeType;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import util.BinaryUtils;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class GaiaBuffer {
     AttributeType attributeType;
     AccessorType accessorType;
 
-    int glDimension;
+    byte glDimension;
     int glType;
     int glTarget;
 
@@ -24,26 +32,26 @@ public class GaiaBuffer {
     byte[] bytes;
 
     public void writeBuffer(DataOutputStream stream) throws IOException {
-        BinaryUtils.writeByte(stream, (byte) glDimension); // glDimension (SCALAR, VEC2, VEC3, VEC4, MAT2, MAT3, MAT4)
+        BinaryUtils.writeByte(stream, glDimension); // glDimension (SCALAR, VEC2, VEC3, VEC4, MAT2, MAT3, MAT4)
         BinaryUtils.writeInt(stream, glType); // glType (FLOAT, INT, UNSIGNED_INT, SHORT, UNSIGNED_SHORT, BYTE, UNSIGNED_BYTE)
         BinaryUtils.writeInt(stream, glTarget); // target (ARRAY_BUFFER, ELEMENT_ARRAY_BUFFER
         BinaryUtils.writeInt(stream, -1); // elementsCount
-        if (glDimension == GltfConstants.GL_FLOAT) {
+        if (glType == GltfConstants.GL_FLOAT) {
             BinaryUtils.writeInt(stream, floats.length);
 
-        } else if (glDimension == GltfConstants.GL_INT) {
+        } else if (glType == GltfConstants.GL_INT) {
             BinaryUtils.writeInt(stream, ints.length);
 
-        } else if (glDimension == GltfConstants.GL_SHORT) {
+        } else if (glType == GltfConstants.GL_SHORT) {
             BinaryUtils.writeInt(stream, shorts.length);
 
-        } else if (glDimension == GltfConstants.GL_UNSIGNED_SHORT) {
+        } else if (glType == GltfConstants.GL_UNSIGNED_SHORT) {
             BinaryUtils.writeInt(stream, shorts.length);
 
-        } else if (glDimension == GltfConstants.GL_BYTE) {
+        } else if (glType == GltfConstants.GL_BYTE) {
             BinaryUtils.writeInt(stream, bytes.length);
 
-        } else if (glDimension == GltfConstants.GL_UNSIGNED_BYTE) {
+        } else if (glType == GltfConstants.GL_UNSIGNED_BYTE) {
             BinaryUtils.writeInt(stream, bytes.length);
 
         }

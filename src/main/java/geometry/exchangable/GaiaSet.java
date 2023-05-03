@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
+import util.BinaryUtils;
 import util.FileUtils;
 
 import java.io.*;
@@ -57,13 +58,13 @@ public class GaiaSet {
             imagesDir.mkdirs();
         }
         File output = new File(path.toAbsolutePath().toString(), projectName + ".mgb");
-
         try (DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(output)))) {
-            // material count
+            BinaryUtils.writeText(stream, projectName);
+            BinaryUtils.writeInt(stream, materials.size());
             for (GaiaMaterial material : materials) {
                 material.write(stream);
             }
-            // buffer count
+            BinaryUtils.writeInt(stream, bufferDatas.size());
             for (GaiaBufferDataSet bufferData : bufferDatas) {
                 bufferData.write(stream);
             }

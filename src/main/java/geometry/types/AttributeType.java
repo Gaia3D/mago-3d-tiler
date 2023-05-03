@@ -1,13 +1,18 @@
 package geometry.types;
 
+import lombok.Getter;
+
+@Getter
 public enum AttributeType {
-    POSITION,
-    NORMAL,
-    TANGENT,
-    TEXCOORD_0,
-    COLOR_0,
-    _BATHCHID,
-    //TEXCOORD_1,
-    //JOINTS_0,
-    //WEIGHTS_0
+    INDICE("INDICE"),
+    POSITION("POSITION3"),
+    NORMAL("NORMAL3"),
+    TEXCOORD_0("TEXCOORD2"),
+    COLOR_0("COLOR4"),
+    _BATHCHID("OBJECTID");
+
+    String name;
+    AttributeType(String name) {
+        this.name = name;
+    }
 }

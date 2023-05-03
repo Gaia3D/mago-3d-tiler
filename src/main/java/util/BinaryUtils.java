@@ -17,7 +17,7 @@ public class BinaryUtils {
     }
 
     public static void writeInt(DataOutputStream stream, int value) throws IOException {
-        stream.write(value);
+        stream.writeInt(value);
     }
 
     public static void writeShort(DataOutputStream stream, short value) throws IOException {
@@ -26,7 +26,7 @@ public class BinaryUtils {
 
     public static void writeText(DataOutputStream stream, String value) throws IOException {
         byte[] bytes = value.getBytes();
-        stream.write(value.length());
+        stream.writeInt(value.length());
         stream.write(bytes);
     }
 

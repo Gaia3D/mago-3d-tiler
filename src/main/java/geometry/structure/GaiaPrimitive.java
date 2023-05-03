@@ -3,6 +3,7 @@ package geometry.structure;
 import geometry.basic.GaiaBoundingBox;
 import geometry.exchangable.GaiaBuffer;
 import geometry.exchangable.GaiaBufferDataSet;
+import geometry.types.AccessorType;
 import geometry.types.AttributeType;
 import geometry.types.TextureType;
 import lombok.AllArgsConstructor;
@@ -171,17 +172,36 @@ public class GaiaPrimitive {
     public GaiaBufferDataSet toGaiaBufferSet() {
         GaiaBufferDataSet gaiaBufferDataSet = new GaiaBufferDataSet();
 
+        GaiaBuffer indicesBuffer = new GaiaBuffer();
+        indicesBuffer.setGlTarget(GL20.GL_ELEMENT_ARRAY_BUFFER);
+        indicesBuffer.setGlType(GL20.GL_UNSIGNED_SHORT);
+        indicesBuffer.setGlDimension((byte) 1);
+        gaiaBufferDataSet.getBuffers().put(AttributeType.INDICE, indicesBuffer);
+
         GaiaBuffer positionBuffer = new GaiaBuffer();
+        positionBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
+        positionBuffer.setGlType(GL20.GL_FLOAT);
+        positionBuffer.setGlDimension((byte) 3);
         gaiaBufferDataSet.getBuffers().put(AttributeType.POSITION, positionBuffer);
 
         GaiaBuffer normalBuffer = new GaiaBuffer();
+        normalBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
+        normalBuffer.setGlType(GL20.GL_FLOAT);
+        normalBuffer.setGlDimension((byte) 3);
         gaiaBufferDataSet.getBuffers().put(AttributeType.NORMAL, normalBuffer);
 
         GaiaBuffer colorBuffer = new GaiaBuffer();
+        colorBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
+        colorBuffer.setGlType(GL20.GL_UNSIGNED_SHORT);
+        colorBuffer.setGlDimension((byte) 4);
         gaiaBufferDataSet.getBuffers().put(AttributeType.COLOR_0, colorBuffer);
 
         GaiaBuffer textureCoordinateBuffer = new GaiaBuffer();
         gaiaBufferDataSet.getBuffers().put(AttributeType.TEXCOORD_0, textureCoordinateBuffer);
+
+        for (GaiaVertex vertex : vertices) {
+            vertex.
+        }
 
         return gaiaBufferDataSet;
     }

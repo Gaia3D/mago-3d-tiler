@@ -14,7 +14,7 @@ import java.util.Map;
 public class GaiaBufferDataSet<T> {
     private LinkedHashMap<AttributeType, GaiaBuffer> buffers;
     private int id = -1;
-    private String guid = "NoGuid";
+    private String guid = "no_guid";
     private int materialId;
 
     public GaiaBufferDataSet() {
@@ -28,7 +28,7 @@ public class GaiaBufferDataSet<T> {
         for (Map.Entry<AttributeType, GaiaBuffer> entry : buffers.entrySet()) {
             AttributeType attributeType = entry.getKey();
             GaiaBuffer buffer = entry.getValue();
-            BinaryUtils.writeText(stream, attributeType.toString());
+            BinaryUtils.writeText(stream, attributeType.getName());
             buffer.writeBuffer(stream);
         }
     }

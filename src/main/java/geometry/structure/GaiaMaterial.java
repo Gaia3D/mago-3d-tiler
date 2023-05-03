@@ -8,10 +8,7 @@ import lombok.Setter;
 import org.joml.Vector4d;
 import util.BinaryUtils;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,16 +18,16 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GaiaMaterial {
-    private Vector4d diffuseColor = new Vector4d(0.0, 0.0, 0.0, 1.0);
-    private Vector4d ambientColor = new Vector4d(0.0, 0.0, 0.0, 1.0);
-    private Vector4d specularColor = new Vector4d(0.0, 0.0, 0.0, 1.0);
+    private Vector4d diffuseColor = new Vector4d(1.0, 1.0, 1.0, 1.0);
+    private Vector4d ambientColor = new Vector4d(1.0, 1.0, 1.0, 1.0);
+    private Vector4d specularColor = new Vector4d(1.0, 1.0, 1.0, 1.0);
     private float shininess = 0.0f;
 
     private int id = -1;
-    private String name = "GaiaDefaultMaterial";
+    private String name = "no_name";
     private LinkedHashMap<TextureType, List<GaiaTexture>> textures = new LinkedHashMap<>();
 
-    public void write(OutputStream stream) throws IOException {
+    public void write(DataOutputStream stream) throws IOException {
         BinaryUtils.writeInt(stream, id);
         BinaryUtils.writeText(stream, name);
         BinaryUtils.writeVector4(stream, diffuseColor);

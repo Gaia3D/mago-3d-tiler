@@ -13,6 +13,7 @@ import util.BinaryUtils;
 import util.FileUtils;
 
 import java.awt.image.BufferedImage;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -126,7 +127,7 @@ public class GaiaTexture {
         }
     }
 
-    public void write(OutputStream stream) throws IOException {
+    public void write(DataOutputStream stream) throws IOException {
         BinaryUtils.writeText(stream, path);
     }
 }
