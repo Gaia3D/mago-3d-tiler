@@ -18,6 +18,7 @@ import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.List;
 
 /**
  * Loads a scene from a file
@@ -32,9 +33,9 @@ public class DataLoader {
             //Assimp.aiProcess_FixInfacingNormals|
             Assimp.aiProcess_Triangulate|
             Assimp.aiProcess_JoinIdenticalVertices|
-            //Assimp.aiProcess_CalcTangentSpace|
+            Assimp.aiProcess_CalcTangentSpace|
             //Assimp.aiProcess_FlipWindingOrder|
-            //Assimp.aiProcess_FixInfacingNormals|
+            //=Assimp.aiProcess_FixInfacingNormals|
             //Assimp.aiProcess_ConvertToLeftHanded|
             Assimp.aiProcess_SortByPType;
 
@@ -153,17 +154,45 @@ public class DataLoader {
     private static GaiaMaterial processMaterial(AIMaterial aiMaterial, String path) {
         GaiaMaterial material = new GaiaMaterial();
 
-        AIColor4D color = AIColor4D.create();
-        Vector4d vector4d;
-        int result = Assimp.aiGetMaterialColor(aiMaterial, Assimp.AI_MATKEY_COLOR_DIFFUSE, Assimp.aiTextureType_NONE, 0, color);
-        if (result == 0) {
-            vector4d = new Vector4d(color.r(), color.g(), color.b(), color.a());
-            material.setDiffuseColor(vector4d);
+        Vector4d diffVector4d;
+        AIColor4D diffColor = AIColor4D.create();
+        int diffResult = Assimp.aiGetMaterialColor(aiMaterial, Assimp.AI_MATKEY_COLOR_DIFFUSE, Assimp.aiTextureType_NONE, 0, diffColor);
+        if (diffResult == 0) {
+            diffVector4d = new Vector4d(diffColor.r(), diffColor.g(), diffColor.b(), diffColor.a());
+            material.setDiffuseColor(diffVector4d);
+        }
+
+        Vector4d ambientVector4d;
+        AIColor4D ambientColor = AIColor4D.create();
+        int ambientResult = Assimp.aiGetMaterialColor(aiMaterial, Assimp.AI_MATKEY_COLOR_AMBIENT, Assimp.aiTextureType_NONE, 0, ambientColor);
+        if (ambientResult == 0) {
+            ambientVector4d = new Vector4d(ambientColor.r(), ambientColor.g(), ambientColor.b(), ambientColor.a());
+            material.setAmbientColor(ambientVector4d);
+        }
+
+        Vector4d specVector4d;
+        AIColor4D specColor = AIColor4D.create();
+        int specResult = Assimp.aiGetMaterialColor(aiMaterial, Assimp.AI_MATKEY_COLOR_SPECULAR, Assimp.aiTextureType_NONE, 0, specColor);
+        if (specResult == 0) {
+            specVector4d = new Vector4d(specColor.r(), specColor.g(), specColor.b(), specColor.a());
+            material.setSpecularColor(specVector4d);
         }
 
         AIString diffPath = AIString.calloc();
         Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_DIFFUSE, 0, diffPath, (IntBuffer) null, null, null, null, null, null);
         String diffTexPath = diffPath.dataString();
+
+        AIString ambientPath = AIString.calloc();
+        Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_AMBIENT, 0, ambientPath, (IntBuffer) null, null, null, null, null, null);
+        String ambientTexPath = ambientPath.dataString();
+
+        AIString specularPath = AIString.calloc();
+        Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_SPECULAR, 0, specularPath, (IntBuffer) null, null, null, null, null, null);
+        String specularTexPath = specularPath.dataString();
+
+        AIString shininessPath = AIString.calloc();
+        Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_SHININESS, 0, shininessPath, (IntBuffer) null, null, null, null, null, null);
+        String shininessTexPath = shininessPath.dataString();
 
         //AIString otherPath = AIString.calloc();
         //Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_NORMALS, 0, otherPath, (IntBuffer) null, null, null, null, null, null);
@@ -173,17 +202,75 @@ public class DataLoader {
         if (diffTexPath != null && diffTexPath.length() > 0) {
             List<GaiaTexture> textures = new ArrayList<>();
             GaiaTexture texture = new GaiaTexture();
-            texture.setPath(diffTexPath);
             texture.setType(TextureType.DIFFUSE);
+            texture.setPath(diffTexPath);
             texture.setParentPath(parentPath);
             File file = new File(parentPath.toFile(), diffTexPath);
             if (!(file.exists() && file.isFile())) {
-                System.err.println("Texture not found: " + file.getAbsolutePath());
+                System.err.println("Diffuse Texture not found: " + file.getAbsolutePath());
             } else {
                 textures.add(texture);
                 material.getTextures().put(texture.getType(), textures);
             }
+        } else {
+            List<GaiaTexture> textures = new ArrayList<>();
+            material.getTextures().put(TextureType.DIFFUSE, textures);
         }
+
+        if (ambientTexPath != null && ambientTexPath.length() > 0) {
+            List<GaiaTexture> textures = new ArrayList<>();
+            GaiaTexture texture = new GaiaTexture();
+            texture.setType(TextureType.AMBIENT);
+            texture.setPath(ambientTexPath);
+            texture.setParentPath(parentPath);
+            File file = new File(parentPath.toFile(), ambientTexPath);
+            if (!(file.exists() && file.isFile())) {
+                System.err.println("Ambient Texture not found: " + file.getAbsolutePath());
+            } else {
+                textures.add(texture);
+                material.getTextures().put(texture.getType(), textures);
+            }
+        } else {
+            List<GaiaTexture> textures = new ArrayList<>();
+            material.getTextures().put(TextureType.AMBIENT, textures);
+        }
+
+        if (specularTexPath != null && specularTexPath.length() > 0) {
+            List<GaiaTexture> textures = new ArrayList<>();
+            GaiaTexture texture = new GaiaTexture();
+            texture.setPath(specularTexPath);
+            texture.setType(TextureType.SPECULAR);
+            texture.setParentPath(parentPath);
+            File file = new File(parentPath.toFile(), specularTexPath);
+            if (!(file.exists() && file.isFile())) {
+                System.err.println("Specular Texture not found: " + file.getAbsolutePath());
+            } else {
+                textures.add(texture);
+                material.getTextures().put(texture.getType(), textures);
+            }
+        } else {
+            List<GaiaTexture> textures = new ArrayList<>();
+            material.getTextures().put(TextureType.SPECULAR, textures);
+        }
+
+        if (shininessTexPath != null && shininessTexPath.length() > 0) {
+            List<GaiaTexture> textures = new ArrayList<>();
+            GaiaTexture texture = new GaiaTexture();
+            texture.setPath(shininessTexPath);
+            texture.setType(TextureType.SHININESS);
+            texture.setParentPath(parentPath);
+            File file = new File(parentPath.toFile(), specularTexPath);
+            if (!(file.exists() && file.isFile())) {
+                System.err.println("Shininess Texture not found: " + file.getAbsolutePath());
+            } else {
+                textures.add(texture);
+                material.getTextures().put(texture.getType(), textures);
+            }
+        } else {
+            List<GaiaTexture> textures = new ArrayList<>();
+            material.getTextures().put(TextureType.SHININESS, textures);
+        }
+
         return material;
     }
 
@@ -240,7 +327,7 @@ public class DataLoader {
      * @param aiMesh Assimp mesh
      * @return Gaia mesh
      */
-    private static GaiaMesh processMesh(AIMesh aiMesh, ArrayList<GaiaMaterial> materials) {
+    private static GaiaMesh processMesh(AIMesh aiMesh, List<GaiaMaterial> materials) {
         int materialIndex = aiMesh.mMaterialIndex();
         GaiaMaterial material = materials.get(materialIndex);
         material.setId(materialIndex);

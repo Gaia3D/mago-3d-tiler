@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class AssimpObject extends RenderableObject {
-    ArrayList<RenderableBuffer> renderableBuffers;
+    List<RenderableBuffer> renderableBuffers;
     TextureBuffer textureBuffer;
 
     int[] vbos;
@@ -33,7 +33,7 @@ public class AssimpObject extends RenderableObject {
     @Override
     public void render(int program) {
         RenderableBuffer testRenderable = this.getBuffer(); // test
-        ArrayList<RenderableBuffer> renderableBuffers = this.renderableBuffers;
+        List<RenderableBuffer> renderableBuffers = this.renderableBuffers;
         TextureBuffer textureBuffer = this.textureBuffer;
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -82,26 +82,26 @@ public class AssimpObject extends RenderableObject {
             //scene = FileUtil.sampleScene();
 
             GaiaNode rootNode = scene.getNodes().get(0);
-            ArrayList<GaiaNode> children = rootNode.getChildren();
+            List<GaiaNode> children = rootNode.getChildren();
             children.stream().forEach((node) -> {
                 System.out.println(node.getName());
 
-                ArrayList<Short> indicesList = new ArrayList<Short>();
-                ArrayList<Float> positionList = new ArrayList<Float>();
-                ArrayList<Float> colorList = new ArrayList<Float>();
-                ArrayList<Float> normalList = new ArrayList<Float>();
-                ArrayList<Float> textureCoordinateLsit = new ArrayList<Float>();
+                List<Short> indicesList = new ArrayList<Short>();
+                List<Float> positionList = new ArrayList<Float>();
+                List<Float> colorList = new ArrayList<Float>();
+                List<Float> normalList = new ArrayList<>();
+                List<Float> textureCoordinateLsit = new ArrayList<Float>();
 
-                ArrayList<GaiaMesh> meshes = node.getMeshes();
+                List<GaiaMesh> meshes = node.getMeshes();
                 meshes.stream().forEach((mesh) -> {
 
-                    ArrayList<GaiaPrimitive> primitives = mesh.getPrimitives();
+                    List<GaiaPrimitive> primitives = mesh.getPrimitives();
                     primitives.stream().forEach((primitive) -> {
                         GaiaMaterial material = primitive.getMaterial();
                         List<GaiaTexture> textures = material.getTextures().get(TextureType.DIFFUSE);
 
-                        ArrayList<GaiaVertex> primitiveVerticesList = primitive.getVertices();
-                        ArrayList<Integer> primitiveIndicesList = primitive.getIndices();
+                        List<GaiaVertex> primitiveVerticesList = primitive.getVertices();
+                        List<Integer> primitiveIndicesList = primitive.getIndices();
                         primitiveVerticesList.stream().forEach((vertices) -> {
 
                             if (vertices.getPosition() != null) {

@@ -20,10 +20,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
 
 public class GltfWriter {
 
@@ -69,7 +67,7 @@ public class GltfWriter {
         return null;
     }
 
-    private static void convertNode(GlTF gltf, GltfBinary binary, Node parentNode, ArrayList<GaiaNode> gaiaNodes) {
+    private static void convertNode(GlTF gltf, GltfBinary binary, Node parentNode, List<GaiaNode> gaiaNodes) {
         List<GltfNodeBuffer> nodeBuffers = binary.getNodeBuffers();
         gaiaNodes.stream().forEach((gaiaNode) -> {
             Node node = createNode(gltf, parentNode, gaiaNode);
@@ -78,12 +76,12 @@ public class GltfWriter {
                 parentNode.addChildren(nodeId);
             }
 
-            ArrayList<GaiaNode> children = gaiaNode.getChildren();
+            List<GaiaNode> children = gaiaNode.getChildren();
             if (children.size() > 0) {
                 convertNode(gltf, binary, node, children);
             }
 
-            ArrayList<GaiaMesh> gaiaMeshes = gaiaNode.getMeshes();
+            List<GaiaMesh> gaiaMeshes = gaiaNode.getMeshes();
             gaiaMeshes.stream().forEach((gaiaMesh) -> {
                 GltfNodeBuffer nodeBuffer = convertGeometryInfo(gltf, gaiaMesh, node);
                 nodeBuffers.add(nodeBuffer);
@@ -95,11 +93,11 @@ public class GltfWriter {
         GltfNodeBuffer nodeBuffer = initNodeBuffer(gaiaMesh);
         createBuffer(gltf, nodeBuffer);
 
-        ArrayList<Short> indices = gaiaMesh.getIndices();
-        ArrayList<Float> positions = gaiaMesh.getPositions();
-        ArrayList<Float> normals = gaiaMesh.getNormals();
-        ArrayList<Float> colors = gaiaMesh.getColors();
-        ArrayList<Float> textureCoordinates = gaiaMesh.getTextureCoordinates();
+        List<Short> indices = gaiaMesh.getIndices();
+        List<Float> positions = gaiaMesh.getPositions();
+        List<Float> normals = gaiaMesh.getNormals();
+        List<Float> colors = gaiaMesh.getColors();
+        List<Float> textureCoordinates = gaiaMesh.getTextureCoordinates();
 
         Optional<ByteBuffer> indicesBuffer = nodeBuffer.getIndicesBuffer();
         Optional<ByteBuffer> positionsBuffer = nodeBuffer.getPositionsBuffer();
@@ -424,13 +422,13 @@ public class GltfWriter {
         primitive.setIndices(nodeBuffer.getIndicesAccessorId());
 
         if (nodeBuffer.getPositionsAccessorId() > -1)
-            primitive.getAttributes().put(AttributeType.POSITION.toString(), nodeBuffer.getPositionsAccessorId());
+            primitive.getAttributes().put(AttributeType.POSITION.getAccessor(), nodeBuffer.getPositionsAccessorId());
         if (nodeBuffer.getNormalsAccessorId() > -1)
-            primitive.getAttributes().put(AttributeType.NORMAL.toString(), nodeBuffer.getNormalsAccessorId());
+            primitive.getAttributes().put(AttributeType.NORMAL.getAccessor(), nodeBuffer.getNormalsAccessorId());
         if (nodeBuffer.getColorsAccessorId() > -1)
-            primitive.getAttributes().put(AttributeType.COLOR_0.toString(), nodeBuffer.getColorsAccessorId());
+            primitive.getAttributes().put(AttributeType.COLOR.getAccessor(), nodeBuffer.getColorsAccessorId());
         if (nodeBuffer.getTextureCoordinatesAccessorId() > -1)
-            primitive.getAttributes().put(AttributeType.TEXCOORD_0.toString(), nodeBuffer.getTextureCoordinatesAccessorId());
+            primitive.getAttributes().put(AttributeType.TEXCOORD.getAccessor(), nodeBuffer.getTextureCoordinatesAccessorId());
 
         return primitive;
     }

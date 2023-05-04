@@ -9,6 +9,7 @@ import org.joml.Vector4d;
 import util.BinaryUtils;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,13 +40,45 @@ public class GaiaMaterial {
             TextureType gaiaMaterialType = entry.getKey();
             List<GaiaTexture> gaiaTextures = entry.getValue();
 
-            BinaryUtils.writeText(stream, gaiaMaterialType.toString());
+            BinaryUtils.writeByte(stream, gaiaMaterialType.getValue());
             BinaryUtils.writeInt(stream, gaiaTextures.size());
             for (GaiaTexture gaiaTexture : gaiaTextures) {
                 boolean isExist = gaiaTexture != null;
                 BinaryUtils.writeBoolean(stream, isExist);
-                gaiaTexture.write(stream);
+                if (isExist) {
+                    gaiaTexture.write(stream);
+                }
             }
+        }
+    }
+
+    public void read(DataInputStream stream) throws IOException {
+        this.setId(BinaryUtils.readInt(stream));
+        this.setName(BinaryUtils.readText(stream));
+        this.setDiffuseColor(BinaryUtils.readVector4(stream));
+        this.setAmbientColor(BinaryUtils.readVector4(stream));
+        this.setSpecularColor(BinaryUtils.readVector4(stream));
+        this.setShininess(BinaryUtils.readFloat(stream));
+        int texturesSize = BinaryUtils.readInt(stream);
+
+
+        for (int i = 0; i < texturesSize; i++) {
+            List<GaiaTexture> gaiaTextures = new ArrayList<>();
+            byte textureType = BinaryUtils.readByte(stream);
+            int gaiaTexturesSize = BinaryUtils.readInt(stream);
+            TextureType gaiaMaterialType = TextureType.fromValue(textureType);
+
+            //int gaiaTexturesSize = BinaryUtils.readInt(stream);
+
+            for (int j = 0; j < gaiaTexturesSize; j++) {
+                boolean isExist = BinaryUtils.readBoolean(stream);
+                if (isExist) {
+                    GaiaTexture gaiaTexture = new GaiaTexture();
+                    gaiaTexture.read(stream);
+                    gaiaTextures.add(gaiaTexture);
+                }
+            }
+            this.textures.put(gaiaMaterialType, gaiaTextures);
         }
     }
 }

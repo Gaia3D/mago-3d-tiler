@@ -18,6 +18,7 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryStack;
 import renderable.RenderableBuffer;
 import renderable.TextureBuffer;
+import util.ArrayUtils;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -31,9 +32,9 @@ import java.util.stream.Collectors;
 public class GaiaPrimitive {
     private Integer accessorIndices = -1;
     private Integer materialIndex = -1;
-    private ArrayList<Integer> indices = new ArrayList<>();
-    private ArrayList<GaiaVertex> vertices = new ArrayList<>();
-    private ArrayList<GaiaSurface> surfaces = new ArrayList<>();
+    private List<Integer> indices = new ArrayList<>();
+    private List<GaiaVertex> vertices = new ArrayList<>();
+    private List<GaiaSurface> surfaces = new ArrayList<>();
 
     private GaiaMaterial material = null;
     private RenderableBuffer renderableBuffer = null;
@@ -170,37 +171,99 @@ public class GaiaPrimitive {
     }
 
     public GaiaBufferDataSet toGaiaBufferSet() {
-        GaiaBufferDataSet gaiaBufferDataSet = new GaiaBufferDataSet();
-
-        GaiaBuffer indicesBuffer = new GaiaBuffer();
-        indicesBuffer.setGlTarget(GL20.GL_ELEMENT_ARRAY_BUFFER);
-        indicesBuffer.setGlType(GL20.GL_UNSIGNED_SHORT);
-        indicesBuffer.setGlDimension((byte) 1);
-        gaiaBufferDataSet.getBuffers().put(AttributeType.INDICE, indicesBuffer);
-
-        GaiaBuffer positionBuffer = new GaiaBuffer();
-        positionBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
-        positionBuffer.setGlType(GL20.GL_FLOAT);
-        positionBuffer.setGlDimension((byte) 3);
-        gaiaBufferDataSet.getBuffers().put(AttributeType.POSITION, positionBuffer);
-
-        GaiaBuffer normalBuffer = new GaiaBuffer();
-        normalBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
-        normalBuffer.setGlType(GL20.GL_FLOAT);
-        normalBuffer.setGlDimension((byte) 3);
-        gaiaBufferDataSet.getBuffers().put(AttributeType.NORMAL, normalBuffer);
-
-        GaiaBuffer colorBuffer = new GaiaBuffer();
-        colorBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
-        colorBuffer.setGlType(GL20.GL_UNSIGNED_SHORT);
-        colorBuffer.setGlDimension((byte) 4);
-        gaiaBufferDataSet.getBuffers().put(AttributeType.COLOR_0, colorBuffer);
-
-        GaiaBuffer textureCoordinateBuffer = new GaiaBuffer();
-        gaiaBufferDataSet.getBuffers().put(AttributeType.TEXCOORD_0, textureCoordinateBuffer);
-
+        List<Short> indicesList = this.indices.stream()
+                .map((indices) -> Short.valueOf(indices.shortValue()))
+                .collect(Collectors.toList());
+        ArrayList<Float> positionList = new ArrayList<Float>();
+        ArrayList<Float> batchIdList = new ArrayList<Float>();
+        ArrayList<Float> normalList = new ArrayList<Float>();
+        ArrayList<Float> textureCoordinateList = new ArrayList<Float>();
         for (GaiaVertex vertex : vertices) {
-            vertex.
+            Vector3d position = vertex.getPosition();
+            if (position != null) {
+                positionList.add((float) position.x);
+                positionList.add((float) position.y);
+                positionList.add((float) position.z);
+            }
+
+            Vector3d normal = vertex.getNormal();
+            if (normal != null) {
+                normalList.add((float) normal.x);
+                normalList.add((float) normal.y);
+                normalList.add((float) normal.z);
+            }
+
+            batchIdList.add((float) 0.0f);
+
+            Vector2d textureCoordinate = vertex.getTextureCoordinates();
+            if (textureCoordinate != null) {
+                textureCoordinateList.add((float) textureCoordinate.x);
+                textureCoordinateList.add((float) textureCoordinate.y);
+            }
+        }
+
+        GaiaBufferDataSet gaiaBufferDataSet = new GaiaBufferDataSet();
+        if (indicesList.size() > 0) {
+            GaiaBuffer indicesBuffer = new GaiaBuffer();
+            indicesBuffer.setGlTarget(GL20.GL_ELEMENT_ARRAY_BUFFER);
+            indicesBuffer.setGlType(GL20.GL_UNSIGNED_SHORT);
+            indicesBuffer.setElementsCount(indicesList.size());
+            indicesBuffer.setGlDimension((byte) 1);
+            indicesBuffer.setShorts(ArrayUtils.convertShortArrayToArrayList(indicesList));
+            gaiaBufferDataSet.getBuffers().put(AttributeType.INDICE, indicesBuffer);
+        }
+
+        if (normalList.size() > 0) {
+            GaiaBuffer normalBuffer = new GaiaBuffer();
+            normalBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
+            normalBuffer.setGlType(GL20.GL_FLOAT);
+            normalBuffer.setElementsCount(vertices.size());
+            normalBuffer.setGlDimension((byte) 3);
+            normalBuffer.setFloats(ArrayUtils.convertFloatArrayToArrayList(normalList));
+            gaiaBufferDataSet.getBuffers().put(AttributeType.NORMAL, normalBuffer);
+        }
+
+        if (batchIdList.size() > 0) {
+            GaiaBuffer batchIdBuffer = new GaiaBuffer();
+            batchIdBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
+            batchIdBuffer.setGlType(GL20.GL_FLOAT);
+            batchIdBuffer.setElementsCount(vertices.size());
+            batchIdBuffer.setGlDimension((byte) 1);
+            batchIdBuffer.setFloats(ArrayUtils.convertFloatArrayToArrayList(batchIdList));
+            gaiaBufferDataSet.getBuffers().put(AttributeType.BATCHID, batchIdBuffer);
+        }
+
+        if (positionList.size() > 0) {
+            GaiaBuffer positionBuffer = new GaiaBuffer();
+            positionBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
+            positionBuffer.setGlType(GL20.GL_FLOAT);
+            positionBuffer.setElementsCount(vertices.size());
+            positionBuffer.setGlDimension((byte) 3);
+            positionBuffer.setFloats(ArrayUtils.convertFloatArrayToArrayList(positionList));
+            gaiaBufferDataSet.getBuffers().put(AttributeType.POSITION, positionBuffer);
+        }
+
+        /*if (colorList.size() > 0) {
+            GaiaBuffer colorBuffer = new GaiaBuffer();
+            colorBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
+            colorBuffer.setGlType(GL20.GL_UNSIGNED_SHORT);
+            colorBuffer.setGlDimension((byte) 4);
+
+            float[] colorFloatArray = ArrayUtils.convertFloatArrayToArrayList(colorList);
+            short[] colorShortArray = ArrayUtils.convertColorsVBO(colorFloatArray);
+            colorBuffer.setShorts(colorShortArray);
+            // colorBuffer float -> unsigned short
+            gaiaBufferDataSet.getBuffers().put(AttributeType.COLOR, colorBuffer);
+        }*/
+
+        if (textureCoordinateList.size() > 0) {
+            GaiaBuffer textureCoordinateBuffer = new GaiaBuffer();
+            textureCoordinateBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
+            textureCoordinateBuffer.setGlType(GL20.GL_FLOAT);
+            textureCoordinateBuffer.setElementsCount(vertices.size());
+            textureCoordinateBuffer.setGlDimension((byte) 2);
+            textureCoordinateBuffer.setFloats(ArrayUtils.convertFloatArrayToArrayList(textureCoordinateList));
+            gaiaBufferDataSet.getBuffers().put(AttributeType.TEXCOORD, textureCoordinateBuffer);
         }
 
         return gaiaBufferDataSet;

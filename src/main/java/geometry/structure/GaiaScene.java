@@ -2,14 +2,16 @@ package geometry.structure;
 
 import geometry.exchangable.GaiaBufferDataSet;
 import geometry.exchangable.GaiaSet;
+import geometry.types.TextureType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import util.FileUtils;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @Getter
@@ -17,9 +19,21 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GaiaScene {
-    private ArrayList<GaiaNode> nodes = new ArrayList<>();
-    private ArrayList<GaiaMaterial> materials = new ArrayList<>();
+    private List<GaiaNode> nodes = new ArrayList<>();
+    private List<GaiaMaterial> materials = new ArrayList<>();
     private Path originalPath;
+
+    public GaiaScene(GaiaSet gaiaSet) {
+        List<GaiaBufferDataSet> bufferDataSets = gaiaSet.getBufferDatas();
+        List<GaiaMaterial> materials = gaiaSet.getMaterials();
+        this.setMaterials(materials);
+
+        //GaiaNode rootNode = new GaiaNode();
+        bufferDataSets.stream().forEach((bufferDataSet) -> {
+            GaiaNode node = new GaiaNode(bufferDataSet);
+            this.nodes.add(node);
+        });
+    }
 
     public void renderScene(int program) {
         for (GaiaNode node : nodes) {
@@ -32,7 +46,7 @@ public class GaiaScene {
         return GaiaNode.getTotalIndicesCount(0, nodes);
     }
     // getTotalIndices
-    public ArrayList<Short> getTotalIndices() {
+    public List<Short> getTotalIndices() {
         return GaiaNode.getTotalIndices(new ArrayList<Short>(), nodes);
     }
 
@@ -41,8 +55,8 @@ public class GaiaScene {
         return GaiaNode.getTotalVerticesCount(0, nodes);
     }
     // getTotalVertices
-    public ArrayList<Float> getTotalVertices() {
-        return GaiaNode.getTotalVertices(new ArrayList<Float>(), nodes);
+    public List<Float> getTotalVertices() {
+        return GaiaNode.getTotalVertices(new ArrayList<>(), nodes);
     }
 
     //getTotalNormalsCount
@@ -50,7 +64,7 @@ public class GaiaScene {
         return GaiaNode.getTotalNormalsCount(0, nodes);
     }
     //getTotalNormals
-    public ArrayList<Float> getTotalNormals() {
+    public List<Float> getTotalNormals() {
         return GaiaNode.getTotalNormals(new ArrayList<Float>(), nodes);
     }
 
@@ -59,7 +73,7 @@ public class GaiaScene {
         return GaiaNode.getTotalTextureCoordinatesCount(0, nodes);
     }
     //getTotalTexCoords
-    public ArrayList<Float> getTotalTextureCoordinates() {
+    public List<Float> getTotalTextureCoordinates() {
         return GaiaNode.getTotalTextureCoordinates(new ArrayList<Float>(), nodes);
     }
 
@@ -68,12 +82,32 @@ public class GaiaScene {
         return GaiaNode.getTotalColorsCount(0, nodes);
     }
     //getTotalColors
-    public ArrayList<Float> getTotalColors() {
+    public List<Float> getTotalColors() {
         return GaiaNode.getTotalColors(new ArrayList<Float>(), nodes);
     }
 
     public int getTotalTextureSize() {
         //return GaiaMaterial.getTotalTextureSize(0, materials);
         return 0;
+    }
+
+    // getAllTexturePaths
+    public List<String> getAllTexturePaths() {
+        List<String> texturePaths = new ArrayList<>();
+        for (GaiaMaterial material : materials) {
+
+            LinkedHashMap<TextureType, List<GaiaTexture>> textures = material.getTextures();
+            textures.forEach((textureType, gaiaTextures) -> {
+                for (GaiaTexture gaiaTexture : gaiaTextures) {
+                    String texturePath = gaiaTexture.getPath();
+                    if (texturePath != null) {
+                        //gaiaTexture.setTexturePath(FileUtils.getFileName(texturePath));
+                        texturePaths.add(texturePath);
+                    }
+                }
+            });
+
+        }
+        return texturePaths;
     }
 }

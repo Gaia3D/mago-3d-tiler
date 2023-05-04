@@ -4,15 +4,27 @@ import lombok.Getter;
 
 @Getter
 public enum AttributeType {
-    INDICE("INDICE"),
-    POSITION("POSITION3"),
-    NORMAL("NORMAL3"),
-    TEXCOORD_0("TEXCOORD2"),
-    COLOR_0("COLOR4"),
-    _BATHCHID("OBJECTID");
+    NONE("NONE", "NONE"),
+    INDICE("INDICE", "INDICES"),
+    POSITION("POSITION3", "POSITION"),
+    NORMAL("NORMAL3", "NORMAL"),
+    TEXCOORD("TEXCOORD2", "TEXCOORD_0"),
+    COLOR("COLOR4", "COLOR_0"),
+    BATCHID("OBJECTID", "_BATCHID");
 
-    String name;
-    AttributeType(String name) {
-        this.name = name;
+    String gaia;
+    String accessor;
+    AttributeType(String gaia, String accessor) {
+        this.gaia = gaia;
+        this.accessor = accessor;
+    }
+
+    public static AttributeType getGaiaAttribute(String gaia) {
+        for (AttributeType type : AttributeType.values()) {
+            if (type.gaia.equals(gaia)) {
+                return type;
+            }
+        }
+        return AttributeType.NONE;
     }
 }

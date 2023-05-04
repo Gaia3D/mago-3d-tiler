@@ -13,10 +13,7 @@ import util.BinaryUtils;
 import util.FileUtils;
 
 import java.awt.image.BufferedImage;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
@@ -129,5 +126,10 @@ public class GaiaTexture {
 
     public void write(DataOutputStream stream) throws IOException {
         BinaryUtils.writeText(stream, path);
+        //BinaryUtils.writeText(stream, "magoMosaicTex_0.jpg"); // just for test
+    }
+
+    public void read(DataInputStream stream) throws IOException {
+        this.setPath(BinaryUtils.readText(stream));
     }
 }

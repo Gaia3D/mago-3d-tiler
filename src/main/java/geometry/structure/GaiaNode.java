@@ -1,7 +1,9 @@
 package geometry.structure;
 
 import geometry.basic.GaiaBoundingBox;
+import geometry.exchangable.GaiaBuffer;
 import geometry.exchangable.GaiaBufferDataSet;
+import geometry.types.AttributeType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,6 +12,8 @@ import org.joml.*;
 import org.lwjgl.opengl.GL20;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.List;
 
 @Getter
@@ -19,12 +23,23 @@ import java.util.List;
 public class GaiaNode {
     private GaiaNode parent = null;
     private String name = "";
-    private ArrayList<GaiaMesh> meshes = new ArrayList<>();
-    private ArrayList<GaiaNode> children = new ArrayList<>();
+    private List<GaiaMesh> meshes = new ArrayList<>();
+    private List<GaiaNode> children = new ArrayList<>();
 
     private Matrix4d transformMatrix = new Matrix4d();
     private Matrix4d preMultipliedTransformMatrix = new Matrix4d();
     private GaiaBoundingBox gaiaBoundingBox = null;
+
+    public GaiaNode(GaiaBufferDataSet bufferDataSet) {
+        GaiaMesh mesh = new GaiaMesh();
+        GaiaPrimitive primitive = bufferDataSet.toPrimitive();
+        primitive.setMaterialIndex(bufferDataSet.getMaterialId());
+        mesh.getPrimitives().add(primitive);
+        this.meshes.add(mesh);
+        /*bufferDataSet.getBuffers().forEach((attributeType, buffer) -> {
+            GaiaPrimitive primitive = new GaiaPrimitive();
+        });*/
+    }
 
     public void renderNode(int program) {
         int uObjectTransformMatrix = GL20.glGetUniformLocation(program, "uObjectTransformMatrix");
@@ -89,10 +104,10 @@ public class GaiaNode {
     }
 
     // getTotalIndicesCount
-    public static int getTotalIndicesCount(int totalIndices, ArrayList<GaiaNode> nodeList) {
+    public static int getTotalIndicesCount(int totalIndices, List<GaiaNode> nodeList) {
         for (GaiaNode node : nodeList) {
-            ArrayList<GaiaMesh> meshes = node.getMeshes();
-            ArrayList<GaiaNode> children = node.getChildren();
+            List<GaiaMesh> meshes = node.getMeshes();
+            List<GaiaNode> children = node.getChildren();
             for (GaiaMesh mesh : meshes) {
                 for (GaiaPrimitive primitive : mesh.getPrimitives()) {
                     totalIndices += primitive.getIndices().size();
@@ -103,10 +118,10 @@ public class GaiaNode {
         return totalIndices;
     }
     // getTotalIndices
-    public static ArrayList<Short> getTotalIndices(ArrayList<Short> totalIndices, ArrayList<GaiaNode> nodeList) {
+    public static List<Short> getTotalIndices(List<Short> totalIndices, List<GaiaNode> nodeList) {
         for (GaiaNode node : nodeList) {
-            ArrayList<GaiaMesh> meshes = node.getMeshes();
-            ArrayList<GaiaNode> children = node.getChildren();
+            List<GaiaMesh> meshes = node.getMeshes();
+            List<GaiaNode> children = node.getChildren();
             for (GaiaMesh mesh : meshes) {
                 for (GaiaPrimitive primitive : mesh.getPrimitives()) {
                     for (Integer indices : primitive.getIndices()) {
@@ -120,10 +135,10 @@ public class GaiaNode {
     }
 
     // getTotalVerticesCount
-    public static int getTotalVerticesCount(int totalVertices, ArrayList<GaiaNode> nodeList) {
+    public static int getTotalVerticesCount(int totalVertices, List<GaiaNode> nodeList) {
         for (GaiaNode node : nodeList) {
-            ArrayList<GaiaMesh> meshes = node.getMeshes();
-            ArrayList<GaiaNode> children = node.getChildren();
+            List<GaiaMesh> meshes = node.getMeshes();
+            List<GaiaNode> children = node.getChildren();
             for (GaiaMesh mesh : meshes) {
                 for (GaiaPrimitive primitive : mesh.getPrimitives()) {
                     totalVertices += primitive.getVertices().size();
@@ -134,10 +149,10 @@ public class GaiaNode {
         return totalVertices;
     }
     // getTotalVertices
-    public static ArrayList<Float> getTotalVertices(ArrayList<Float> totalVertices, ArrayList<GaiaNode> nodeList) {
+    public static List<Float> getTotalVertices(List<Float> totalVertices, List<GaiaNode> nodeList) {
         for (GaiaNode node : nodeList) {
-            ArrayList<GaiaMesh> meshes = node.getMeshes();
-            ArrayList<GaiaNode> children = node.getChildren();
+            List<GaiaMesh> meshes = node.getMeshes();
+            List<GaiaNode> children = node.getChildren();
             for (GaiaMesh mesh : meshes) {
                 for (GaiaPrimitive primitive : mesh.getPrimitives()) {
                     for (GaiaVertex vertex : primitive.getVertices()) {
@@ -155,10 +170,10 @@ public class GaiaNode {
     }
 
     //getTotalNormalsCount
-    public static int getTotalNormalsCount(int totalNormals, ArrayList<GaiaNode> nodeList) {
+    public static int getTotalNormalsCount(int totalNormals, List<GaiaNode> nodeList) {
         for (GaiaNode node : nodeList) {
-            ArrayList<GaiaMesh> meshes = node.getMeshes();
-            ArrayList<GaiaNode> children = node.getChildren();
+            List<GaiaMesh> meshes = node.getMeshes();
+            List<GaiaNode> children = node.getChildren();
             for (GaiaMesh mesh : meshes) {
                 for (GaiaPrimitive primitive : mesh.getPrimitives()) {
                     for (GaiaVertex vertex : primitive.getVertices()) {
@@ -173,10 +188,10 @@ public class GaiaNode {
         return totalNormals;
     }
     //getTotalNormals
-    public static ArrayList<Float> getTotalNormals(ArrayList<Float> totalNormals, ArrayList<GaiaNode> nodeList) {
+    public static List<Float> getTotalNormals(List<Float> totalNormals, List<GaiaNode> nodeList) {
         for (GaiaNode node : nodeList) {
-            ArrayList<GaiaMesh> meshes = node.getMeshes();
-            ArrayList<GaiaNode> children = node.getChildren();
+            List<GaiaMesh> meshes = node.getMeshes();
+            List<GaiaNode> children = node.getChildren();
             for (GaiaMesh mesh : meshes) {
                 for (GaiaPrimitive primitive : mesh.getPrimitives()) {
                     for (GaiaVertex vertex : primitive.getVertices()) {
@@ -194,10 +209,10 @@ public class GaiaNode {
     }
 
     //getTotalTextureCoordinatesCount
-    public static int getTotalTextureCoordinatesCount(int totalTexCoords, ArrayList<GaiaNode> nodeList) {
+    public static int getTotalTextureCoordinatesCount(int totalTexCoords, List<GaiaNode> nodeList) {
         for (GaiaNode node : nodeList) {
-            ArrayList<GaiaMesh> meshes = node.getMeshes();
-            ArrayList<GaiaNode> children = node.getChildren();
+            List<GaiaMesh> meshes = node.getMeshes();
+            List<GaiaNode> children = node.getChildren();
             for (GaiaMesh mesh : meshes) {
                 for (GaiaPrimitive primitive : mesh.getPrimitives()) {
                     for (GaiaVertex vertex : primitive.getVertices()) {
@@ -212,10 +227,10 @@ public class GaiaNode {
         return totalTexCoords;
     }
     //getTotalTextureCoordinates
-    public static ArrayList<Float> getTotalTextureCoordinates(ArrayList<Float> totalTexCoords, ArrayList<GaiaNode> nodeList) {
+    public static List<Float> getTotalTextureCoordinates(List<Float> totalTexCoords, List<GaiaNode> nodeList) {
         for (GaiaNode node : nodeList) {
-            ArrayList<GaiaMesh> meshes = node.getMeshes();
-            ArrayList<GaiaNode> children = node.getChildren();
+            List<GaiaMesh> meshes = node.getMeshes();
+            List<GaiaNode> children = node.getChildren();
             for (GaiaMesh mesh : meshes) {
                 for (GaiaPrimitive primitive : mesh.getPrimitives()) {
                     for (GaiaVertex vertex : primitive.getVertices()) {
@@ -232,10 +247,10 @@ public class GaiaNode {
     }
 
     // getTotalColorsCount
-    public static int getTotalColorsCount(int totalColors, ArrayList<GaiaNode> nodeList) {
+    public static int getTotalColorsCount(int totalColors, List<GaiaNode> nodeList) {
         for (GaiaNode node : nodeList) {
-            ArrayList<GaiaMesh> meshes = node.getMeshes();
-            ArrayList<GaiaNode> children = node.getChildren();
+            List<GaiaMesh> meshes = node.getMeshes();
+            List<GaiaNode> children = node.getChildren();
             for (GaiaMesh mesh : meshes) {
                 for (GaiaPrimitive primitive : mesh.getPrimitives()) {
                     for (GaiaVertex vertex : primitive.getVertices()) {
@@ -250,10 +265,10 @@ public class GaiaNode {
         return totalColors;
     }
     // getTotalColors
-    public static ArrayList<Float> getTotalColors(ArrayList<Float> totalColors, ArrayList<GaiaNode> nodeList) {
+    public static List<Float> getTotalColors(List<Float> totalColors, List<GaiaNode> nodeList) {
         for (GaiaNode node : nodeList) {
-            ArrayList<GaiaMesh> meshes = node.getMeshes();
-            ArrayList<GaiaNode> children = node.getChildren();
+            List<GaiaMesh> meshes = node.getMeshes();
+            List<GaiaNode> children = node.getChildren();
             for (GaiaMesh mesh : meshes) {
                 for (GaiaPrimitive primitive : mesh.getPrimitives()) {
                     for (GaiaVertex vertex : primitive.getVertices()) {

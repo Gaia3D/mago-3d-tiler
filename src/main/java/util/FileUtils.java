@@ -20,6 +20,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Base64;
 
 public class FileUtils {
@@ -190,5 +191,16 @@ public class FileUtils {
         byteBuffer.put(bytes);
         byteBuffer.flip();
         return byteBuffer;
+    }
+
+    // copyFile
+    public static void copyFile(Path source, Path dest) {
+        try {
+            if (!dest.toFile().exists()) {
+                Files.copy(source, dest);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

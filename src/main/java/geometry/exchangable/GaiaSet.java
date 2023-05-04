@@ -29,6 +29,7 @@ public class GaiaSet {
     Vector3d scale;
     Quaterniond quaternion;
 
+    byte isBigEndian = 0;
     String projectName;
     String filePath;
     String folderPath;
@@ -52,13 +53,9 @@ public class GaiaSet {
     }
 
     public void writeFile(Path path) {
-        Path imagesPath = path.resolve("images");
-        File imagesDir = imagesPath.toFile();
-        if (!imagesDir.exists()) {
-            imagesDir.mkdirs();
-        }
         File output = new File(path.toAbsolutePath().toString(), projectName + ".mgb");
         try (DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(output)))) {
+            BinaryUtils.writeByte(stream, isBigEndian);
             BinaryUtils.writeText(stream, projectName);
             BinaryUtils.writeInt(stream, materials.size());
             for (GaiaMaterial material : materials) {
@@ -71,6 +68,31 @@ public class GaiaSet {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(output);
+    }
+
+    public void readFile(Path path) {
+        File input = path.toFile();
+        try (DataInputStream stream = new DataInputStream(new BufferedInputStream(new FileInputStream(input)))) {
+            this.setIsBigEndian(BinaryUtils.readByte(stream));
+            this.setProjectName(BinaryUtils.readText(stream));
+            int materialCount = BinaryUtils.readInt(stream);
+            List<GaiaMaterial> materials = new ArrayList<>();
+            for (int i = 0; i < materialCount; i++) {
+                GaiaMaterial material = new GaiaMaterial();
+                material.read(stream);
+                materials.add(material);
+            }
+            this.setMaterials(materials);
+            int bufferDataCount = BinaryUtils.readInt(stream);
+            List<GaiaBufferDataSet> bufferDataSets = new ArrayList<>();
+            for (int i = 0; i < bufferDataCount; i++) {
+                GaiaBufferDataSet bufferDataSet = new GaiaBufferDataSet();
+                bufferDataSet.read(stream);
+                bufferDataSets.add(bufferDataSet);
+            }
+            this.setBufferDatas(bufferDataSets);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
