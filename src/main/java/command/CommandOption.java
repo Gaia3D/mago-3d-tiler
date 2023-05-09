@@ -54,6 +54,7 @@ public class CommandOption {
         OUT_I3DM("i3dm");
 
         String extension;
+
         OutputType(String extension) {
             this.extension = extension;
         }

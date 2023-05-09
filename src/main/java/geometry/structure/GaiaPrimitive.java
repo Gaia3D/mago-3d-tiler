@@ -3,7 +3,6 @@ package geometry.structure;
 import geometry.basic.GaiaBoundingBox;
 import geometry.exchangable.GaiaBuffer;
 import geometry.exchangable.GaiaBufferDataSet;
-import geometry.types.AccessorType;
 import geometry.types.AttributeType;
 import geometry.types.TextureType;
 import lombok.AllArgsConstructor;

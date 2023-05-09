@@ -3,17 +3,15 @@ package command;
 import assimp.DataLoader;
 import geometry.structure.GaiaScene;
 import gltf.GltfWriter;
-import lombok.extern.slf4j.Slf4j;
 import util.FileUtils;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-@Slf4j
 public class Command {
     private CommandOption commandOption;
-    private String version = "0.0.1";
+    private String VERSION = "0.1.0";
     private boolean isHelp = false;
     private boolean isVersion = false;
 
@@ -25,8 +23,7 @@ public class Command {
         commandOption.setSwapYZ(false);
     }
 
-    public void startCommand(String[] args) {
-        log.info("how");
+    public void excute(String[] args) {
         for (String arg : args) {
             if (arg.contains("-version") || arg.contains("-v")) {
                 isVersion = true;
@@ -65,10 +62,6 @@ public class Command {
             errlog("outputPath is not defined.");
             return;
         }
-//        logWithoutTime("inputPath : " + commandOption.getInputPath().toAbsolutePath().toString());
-//        logWithoutTime("outputPath : " + commandOption.getOutputPath().toAbsolutePath().toString());
-//        logWithoutTime("inputType : " + commandOption.getInputType().getExtension());
-//        logWithoutTime("outputType : " + commandOption.getOutputType().getExtension());
 
         File inputPathFile = commandOption.getInputPath().toFile();
         File outputPathFile = commandOption.getOutputPath().toFile();
@@ -123,7 +116,7 @@ public class Command {
     private void printVersion() {
         logWithoutTime("==========================[HELP][Version]==========================");
         logWithoutTime("Author: Gaia3D-znkim");
-        logWithoutTime("Version: " + version);
+        logWithoutTime("Version: " + VERSION);
         logWithoutTime("==========================[HELP][Version]==========================");
     }
 

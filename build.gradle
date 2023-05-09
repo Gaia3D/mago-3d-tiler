@@ -5,7 +5,7 @@ plugins {
 }
 
 group "com.gaia3d"
-version "1.0.1-SNAPSHOT"
+version "0.1.0-SNAPSHOT"
 project.ext.lwjglVersion = "3.3.1"
 
 switch ( OperatingSystem.current() ) {
@@ -37,16 +37,9 @@ dependencies {
     implementation "org.lwjgl:lwjgl-opengl"
     implementation "org.lwjgl:lwjgl-stb"
     implementation "org.joml:joml:1.10.5"
-
-    implementation 'org.slf4j:jul-to-slf4j:2.0.7'
-    implementation 'ch.qos.logback:logback:0.5'
-    implementation 'ch.qos.logback:logback-classic:0.5'
-    implementation 'ch.qos.logback:logback-core:0.5'
-
     implementation "de.javagl:jgltf-obj:2.0.3"
     implementation "de.javagl:jgltf-model:2.0.3"
     implementation "de.javagl:jgltf-validator:2.0.3"
-
     implementation "org.locationtech.proj4j:proj4j:1.2.3"
 
     runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
@@ -55,7 +48,6 @@ dependencies {
     runtimeOnly "org.lwjgl:lwjgl-openal::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-stb::$lwjglNatives"
-    runtimeOnly "org.slf4j:slf4j-simple:2.0.7"
 
     testCompileOnly "org.projectlombok:lombok:1.18.26"
     testAnnotationProcessor "org.projectlombok:lombok:1.18.26"
