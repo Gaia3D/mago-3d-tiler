@@ -52,6 +52,12 @@ public class GaiaSet {
         setBufferDatas(bufferDataSets);
     }
 
+    public void renderSet(int program) {
+        for (GaiaBufferDataSet bufferData : bufferDatas) {
+            bufferData.render(program, materials);
+        }
+    }
+
     public void writeFile(Path path) {
         File output = new File(path.toAbsolutePath().toString(), projectName + ".mgb");
         try (DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(output)))) {
@@ -72,6 +78,8 @@ public class GaiaSet {
 
     public void readFile(Path path) {
         File input = path.toFile();
+        Path imagesPath = path.getParent().resolve("images");
+
         try (DataInputStream stream = new DataInputStream(new BufferedInputStream(new FileInputStream(input)))) {
             this.setIsBigEndian(BinaryUtils.readByte(stream));
             this.setProjectName(BinaryUtils.readText(stream));
@@ -79,7 +87,7 @@ public class GaiaSet {
             List<GaiaMaterial> materials = new ArrayList<>();
             for (int i = 0; i < materialCount; i++) {
                 GaiaMaterial material = new GaiaMaterial();
-                material.read(stream);
+                material.read(stream, imagesPath);
                 materials.add(material);
             }
             this.setMaterials(materials);

@@ -2,12 +2,19 @@ package geometry.exchangable;
 
 import de.javagl.jgltf.impl.v1.Accessor;
 import de.javagl.jgltf.model.GltfConstants;
+import geometry.structure.GaiaVertex;
 import geometry.types.AccessorType;
 import geometry.types.AttributeType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.joml.Matrix4d;
+import org.joml.Vector2d;
+import org.joml.Vector3d;
+import org.joml.Vector4d;
+import org.lwjgl.opengl.GL20;
+import renderable.RenderableBuffer;
 import util.BinaryUtils;
 
 import java.io.DataInputStream;
@@ -15,6 +22,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter

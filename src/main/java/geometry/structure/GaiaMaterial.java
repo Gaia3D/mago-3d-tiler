@@ -9,6 +9,7 @@ import org.joml.Vector4d;
 import util.BinaryUtils;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -52,7 +53,7 @@ public class GaiaMaterial {
         }
     }
 
-    public void read(DataInputStream stream) throws IOException {
+    public void read(DataInputStream stream, Path parentPath) throws IOException {
         this.setId(BinaryUtils.readInt(stream));
         this.setName(BinaryUtils.readText(stream));
         this.setDiffuseColor(BinaryUtils.readVector4(stream));
@@ -60,7 +61,6 @@ public class GaiaMaterial {
         this.setSpecularColor(BinaryUtils.readVector4(stream));
         this.setShininess(BinaryUtils.readFloat(stream));
         int texturesSize = BinaryUtils.readInt(stream);
-
 
         for (int i = 0; i < texturesSize; i++) {
             List<GaiaTexture> gaiaTextures = new ArrayList<>();
@@ -74,6 +74,7 @@ public class GaiaMaterial {
                 boolean isExist = BinaryUtils.readBoolean(stream);
                 if (isExist) {
                     GaiaTexture gaiaTexture = new GaiaTexture();
+                    gaiaTexture.setParentPath(parentPath);
                     gaiaTexture.read(stream);
                     gaiaTextures.add(gaiaTexture);
                 }

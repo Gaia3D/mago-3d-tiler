@@ -7,6 +7,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 
 public class BinaryUtils {
@@ -27,7 +29,10 @@ public class BinaryUtils {
     }
 
     public static float readFloat(DataInputStream stream) throws IOException {
-        return swap(stream.readFloat());
+        float value = stream.readFloat();
+        float value1 = swap(value);
+        //System.out.println(value + "::" + value1);
+        return value1;
     }
 
     public static String readText(DataInputStream stream) throws IOException {
@@ -100,8 +105,12 @@ public class BinaryUtils {
     }
 
     public static void writeFloat(DataOutputStream stream, float value) throws IOException {
-        float swaped = swap(value);
-        stream.writeFloat(swaped);
+        byte[] bytes = floatToBytesLE(value);
+        stream.write(bytes);
+        //byte[] bytes = floatToBytesLE(value);
+        //float swaped = swap(value);
+        //stream.writeFloat(swaped);
+        //System.out.println(value + "::" + swaped);
     }
 
     public static void writeVector4(DataOutputStream stream, Vector4d values) throws IOException {
@@ -169,7 +178,26 @@ public class BinaryUtils {
         return Float.intBitsToFloat(swap(Float.floatToRawIntBits(x)));
     }
 
+    /*public static float swap(float x) {
+        byte[] bytes = floatToBytesLE(x);
+
+    }*/
+
+
     public static double swap(double x){
         return Double.longBitsToDouble(swap(Double.doubleToRawLongBits(x)));
+    }
+
+
+
+
+    public static byte[] floatToBytesLE(float value) {
+        byte[] bytes = new byte[4];
+        ByteBuffer buffer = ByteBuffer.allocate(4);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        buffer.putFloat(value);
+        buffer.flip();
+        buffer.get(bytes);
+        return bytes;
     }
 }

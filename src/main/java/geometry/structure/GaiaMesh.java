@@ -192,6 +192,7 @@ public class GaiaMesh {
         }
         for (GaiaPrimitive primitive : primitives) {
             GaiaBufferDataSet gaiaBufferDataSet = primitive.toGaiaBufferSet();
+            gaiaBufferDataSet.setMaterialId(primitive.getMaterialIndex());
             bufferSets.add(gaiaBufferDataSet);
         }
     }

@@ -1,7 +1,7 @@
 package viewer;
 
-import assimp.DataLoader;
-import geometry.structure.GaiaScene;
+import lombok.Getter;
+import lombok.Setter;
 import org.joml.Math;
 import org.lwjgl.*;
 
@@ -25,8 +25,8 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
-public class HelloWorld {
-
+@Getter
+public class OpenGlViwer {
     // The window handle
     private long window;
     private int shaderProgram;
@@ -37,72 +37,17 @@ public class HelloWorld {
     private double ypos = 0;
     private boolean clicked = false;
 
+    public OpenGlViwer() {
+        renderableObjects = new ArrayList<RenderableObject>();
+    }
+
     public void run() {
         System.out.println("Hello LWJGL " + Version.getVersion() + "!");
-        renderableObjects = new ArrayList<RenderableObject>();
-        //renderableObjects.add(new renderable.RenderablePoint(-0.25f, 0.0f, -1.0f));
-        //renderableObjects.add(new renderable.RenderablePoint(0.25f, 0.0f, -1.0f));
-        //renderableObjects.add(new TriangleObject());
-        //renderableObjects.add(new CubeObject());
         renderableObjects.add(new BaseObject());
         renderableObjects.add(new OriginObject());
 
-//        for (int i = 1 ; i < 1; i++) {
-//            String formated = String.format("%03d", i);
-//
-//            String inputPath = "C:\\data\\znkim-3ds-test";
-//            String path = inputPath + File.separator + "a_bd" + formated + ".gltf";
-//            //String inputPath = "C:\\data\\ws2-3ds";
-//            //String path = inputPath + File.separator + "a_bd" + formated + ".3ds";
-//            File file = new File(path);
-//            if (!file.exists()) {
-//                continue;
-//            }
-//            Random random = new Random();
-//            int bound = 256;
-//            int x = random.nextInt(bound) - (bound/2);
-//            int y = random.nextInt(bound) - (bound/2);
-//
-//            RenderableObject renderableObject = new AssimpObject(path);
-//            renderableObject.setPosition(x, y, -1);
-//            renderableObjects.add(renderableObject);
-//        }
-
-        //RenderableObject renderableObject = new GaiaSceneObject("C:\\Datas\\3dsample\\KSJ_100.ifc");
-        //RenderableObject renderableObject = new GaiaSceneObject("C:\\Datas\\3dsample\\KSJ_100.ifc");
-        //RenderableObject renderableObject = new AssimpObject("C:\\Datas\\3dsample\\KSJ_100.ifc");
-        //RenderableObject renderableObject = new AssimpObject("C:\\data\\sample\\face.3ds");
-        //RenderableObject renderableObject = new AssimpObject("C:\\data\\sample\\face.3ds");
-        //RenderableObject renderableObject = new AssimpObject("C:\\Datas\\3dsample\\aces.3ds");
-        //RenderableObject renderableObject = new AssimpObject("C:\\Datas\\3dsample\\face.3ds");
-        //renderableObjects.add(new GaiaSceneObject("C:\\Datas\\3dsample\\KSJ_100.ifc"));
-
-        //renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\a_bd001_d.dae"));
-        //renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\KSJ_100.ifc"));
-
-        //renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\face.3ds"));
-
-
-        //renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\a_bd001.3ds"));
-        renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\Data3D\\DC_library_del_3DS\\DC_library_del.3ds"));
-        //renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\Data3D\\Dongdaemoongu_center_del_3DS\\Dongdaemoongu_center_del.3ds"));
-        ////renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\Data3D\\dogok_library_del_3DS\\dogok_library_del.3ds"));
-        //renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\Data3D\\Edumuseum_del_150417_02_3DS\\Edumuseum_del_150417_02.3ds"));
-        //renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\Data3D\\gangbuk_cultur_del_3DS\\gangbuk_cultur_del.3ds"));
-
-        //renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\a_bd001.3ds"));
-
-        //renderableObjects.add(new GaiaSceneObject("C:\\Datas\\3dsample\\box.3ds"));
-        //renderableObjects.add(new GaiaSceneObject("C:\\Datas\\Data3D\\DC_library_del_3DS\\DC_library_del.3ds"));
-        //renderableObjects.add(new GaiaSceneObject("C:\\Datas\\Data3D\\dogok_library_del_3DS\\dogok_library_del.3ds"));
-        //renderableObjects.add(new GaiaSceneObject("C:\\Datas\\Data3D\\Edumuseum_del_150417_02_3DS\\Edumuseum_del_150417_02.3ds"));
-        //renderableObjects.add(new GaiaSceneObject("C:\\Datas\\Data3D\\gangbuk_cultur_del_3DS\\gangbuk_cultur_del.3ds"));
-        //renderableObjects.add(new GaiaSceneObject("C:\\Datas\\Data3D\\Dongdaemoongu_center_del_3DS\\Dongdaemoongu_center_del.3ds"));
-        //renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\Data3D\\gangnam_del_3DS\\gangnam_del.3ds"));
-
-
-
-
+        //renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\Data3D\\DC_library_del_3DS\\DC_library_del.3ds"));
+        //renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\Data3D\\DC_library_del_3DS\\DC_library_del.3ds"));
 
         init();
         loop();
@@ -347,6 +292,6 @@ public class HelloWorld {
     }
 
     public static void main(String[] args) {
-        new HelloWorld().run();
+        new OpenGlViwer().run();
     }
 }

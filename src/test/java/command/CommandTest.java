@@ -3,6 +3,7 @@ package command;
 import assimp.DataLoader;
 import geometry.structure.GaiaScene;
 import gltf.GltfWriter;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import util.FileUtils;
@@ -11,6 +12,7 @@ import java.io.File;
 
 class CommandTest {
     @Test
+    @Disabled
     @DisplayName("excute")
     void excute() {
         File thePath = new File("C:\\data\\sample\\Data3D\\gangbuk_cultur_del_3DS\\gangbuk_cultur_del.3ds");
@@ -31,6 +33,7 @@ class CommandTest {
     }
 
     @Test
+    @Disabled
     @DisplayName("convert multi File")
     void convertMultiFiles() {
         String[] args = {
