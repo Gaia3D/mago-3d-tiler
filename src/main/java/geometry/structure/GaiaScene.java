@@ -26,8 +26,6 @@ public class GaiaScene {
     public GaiaScene(GaiaSet gaiaSet) {
         List<GaiaBufferDataSet> bufferDataSets = gaiaSet.getBufferDatas();
         List<GaiaMaterial> materials = gaiaSet.getMaterials();
-
-        //GaiaNode rootNode = new GaiaNode();
         bufferDataSets.stream().forEach((bufferDataSet) -> {
             GaiaNode node = new GaiaNode(bufferDataSet);
             this.nodes.add(node);

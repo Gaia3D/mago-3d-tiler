@@ -4,6 +4,7 @@ import command.CommandOption;
 import geometry.basic.GaiaBoundingBox;
 import geometry.structure.*;
 import geometry.types.TextureType;
+import org.apache.commons.cli.CommandLine;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
@@ -25,18 +26,11 @@ import java.util.List;
  */
 public class DataLoader {
 
-    /**
-     * Default flags for Assimp import process
-     */
     final static int DEFAULT_FLAGS =
             Assimp.aiProcess_GenNormals |
-            //Assimp.aiProcess_FixInfacingNormals|
             Assimp.aiProcess_Triangulate|
             Assimp.aiProcess_JoinIdenticalVertices|
             Assimp.aiProcess_CalcTangentSpace|
-            //Assimp.aiProcess_FlipWindingOrder|
-            //=Assimp.aiProcess_FixInfacingNormals|
-            //Assimp.aiProcess_ConvertToLeftHanded|
             Assimp.aiProcess_SortByPType;
 
 
@@ -44,16 +38,16 @@ public class DataLoader {
      * @param filePath 파일 경로
      * @return
      */
-    public static GaiaScene load(String filePath, CommandOption option) {
-        return load(new File(filePath), null, option);
+    public static GaiaScene load(String filePath, CommandLine command) {
+        return load(new File(filePath), null, command);
     }
 
-    public static GaiaScene load(Path filePath, CommandOption option) {
-        return load(filePath.toFile(), null, option);
+    public static GaiaScene load(Path filePath, CommandLine command) {
+        return load(filePath.toFile(), null, command);
     }
 
-    public static GaiaScene load(String filePath, String hint, CommandOption option) {
-        return load(new File(filePath), hint, option);
+    public static GaiaScene load(String filePath, String hint, CommandLine command) {
+        return load(new File(filePath), hint, command);
     }
 
     /**
@@ -62,7 +56,7 @@ public class DataLoader {
      * @param hint 파일 확장자
      * @return
      */
-    public static GaiaScene load(File file, String hint, CommandOption option) {
+    public static GaiaScene load(File file, String hint, CommandLine command) {
         if (file.isFile()) {
             String path = file.getAbsolutePath().replace(file.getName(), "");
             ByteBuffer byteBuffer = FileUtils.readFile(file);

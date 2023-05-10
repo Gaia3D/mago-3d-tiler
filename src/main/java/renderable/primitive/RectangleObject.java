@@ -1,7 +1,6 @@
-package renderable;
+package renderable.primitive;
 
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryStack;
 import renderable.RenderableBuffer;
@@ -9,14 +8,15 @@ import renderable.RenderableObject;
 
 import java.util.ArrayList;
 
-public class TriangleObject extends RenderableObject {
+public class RectangleObject extends RenderableObject {
     RenderableBuffer renderableBuffer;
     int[] vbos;
     boolean dirty;
 
-    public TriangleObject() {
+    public RectangleObject() {
         super();
         this.setPosition(0.0f, 0.0f, -1.0f);
+        this.setRotation(1.0f, 1.0f, 0.0f);
     }
     @Override
     public void render(int program) {
@@ -58,7 +58,11 @@ public class TriangleObject extends RenderableObject {
             positionList.add(-0.25f);
             positionList.add(0.0f);
 
+            positionList.add(0.25f);
+            positionList.add(0.25f);
             positionList.add(0.0f);
+
+            positionList.add(-0.25f);
             positionList.add(0.25f);
             positionList.add(0.0f);
 
@@ -77,9 +81,18 @@ public class TriangleObject extends RenderableObject {
             colorList.add(1.0f);
             colorList.add(1.0f);
 
+            colorList.add(1.0f);
+            colorList.add(1.0f);
+            colorList.add(0.0f);
+            colorList.add(1.0f);
+
             indicesList.add((short) 0);
             indicesList.add((short) 1);
             indicesList.add((short) 2);
+
+            indicesList.add((short) 0);
+            indicesList.add((short) 2);
+            indicesList.add((short) 3);
 
             int indicesVbo = renderableBuffer.createIndicesBuffer(indicesList);
             int positionVbo = renderableBuffer.createBuffer(positionList);

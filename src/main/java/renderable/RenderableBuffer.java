@@ -2,6 +2,7 @@ package renderable;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL20;

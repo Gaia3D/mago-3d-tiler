@@ -24,7 +24,6 @@ import java.util.*;
 import java.util.List;
 
 public class GltfWriter {
-
     private static int FLOAT_SIZE = 4;
 
     public static void writeGltf(GaiaScene gaiaScene, String outputPath) {
@@ -230,7 +229,7 @@ public class GltfWriter {
         Scene scene = new Scene();
         List<Node> nodes = new ArrayList<>();
         Node rootNode = new Node();
-        rootNode.setName("default root node");
+        rootNode.setName("RootNode");
 
         Matrix4d matrix4d = new Matrix4d();
         matrix4d.identity();
@@ -253,18 +252,6 @@ public class GltfWriter {
     }
 
     private static int createBuffer(GlTF gltf, GltfNodeBuffer nodeBuffer) {
-
-
-        /*int calcBufferOffset = 0;
-        if (gltf.getBuffers() != null) {
-            calcBufferOffset = gltf.getBuffers().stream().mapToInt(preNodeBuffer -> {
-                Integer byteLength = preNodeBuffer.getByteLength();
-                return byteLength == null ? 0 : byteLength;
-            }).sum();
-        }*/
-        //int buffId = gltf.getBuffers().size() - 1;
-        //System.out.println("calcBufferOffset : " + calcBufferOffset);
-        //gltf.addBuffers(buffer);
         Buffer buffer = initBuffer(gltf);
         int bufferLength = buffer.getByteLength() == null ? 0 : buffer.getByteLength();
         int bufferId = 0;

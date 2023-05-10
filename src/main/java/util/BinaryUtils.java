@@ -29,10 +29,7 @@ public class BinaryUtils {
     }
 
     public static float readFloat(DataInputStream stream) throws IOException {
-        float value = stream.readFloat();
-        float value1 = swap(value);
-        //System.out.println(value + "::" + value1);
-        return value1;
+        return swap(stream.readFloat());
     }
 
     public static String readText(DataInputStream stream) throws IOException {
@@ -107,10 +104,7 @@ public class BinaryUtils {
     public static void writeFloat(DataOutputStream stream, float value) throws IOException {
         byte[] bytes = floatToBytesLE(value);
         stream.write(bytes);
-        //byte[] bytes = floatToBytesLE(value);
-        //float swaped = swap(value);
-        //stream.writeFloat(swaped);
-        //System.out.println(value + "::" + swaped);
+        //stream.writeFloat(swap(value));
     }
 
     public static void writeVector4(DataOutputStream stream, Vector4d values) throws IOException {
@@ -178,18 +172,9 @@ public class BinaryUtils {
         return Float.intBitsToFloat(swap(Float.floatToRawIntBits(x)));
     }
 
-    /*public static float swap(float x) {
-        byte[] bytes = floatToBytesLE(x);
-
-    }*/
-
-
     public static double swap(double x){
         return Double.longBitsToDouble(swap(Double.doubleToRawLongBits(x)));
     }
-
-
-
 
     public static byte[] floatToBytesLE(float value) {
         byte[] bytes = new byte[4];

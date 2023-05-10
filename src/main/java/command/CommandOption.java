@@ -32,12 +32,15 @@ public class CommandOption {
         IN_GLB("glb");
 
         String extension;
+
         InputType(String extension) {
             this.extension = extension;
         }
+
         public String getExtension() {
             return extension;
         }
+
         public static InputType fromExtension(String extension) {
             for (InputType inputType : InputType.values()) {
                 if (inputType.getExtension().equals(extension)) {
@@ -47,6 +50,7 @@ public class CommandOption {
             return null;
         }
     }
+
     public enum OutputType {
         OUT_GLTF("gltf"),
         OUT_GLB("glb"),
@@ -58,9 +62,11 @@ public class CommandOption {
         OutputType(String extension) {
             this.extension = extension;
         }
+
         public String getExtension() {
             return extension;
         }
+
         public static OutputType fromExtension(String extension) {
             for (OutputType outputType : OutputType.values()) {
                 if (outputType.getExtension().equals(extension)) {

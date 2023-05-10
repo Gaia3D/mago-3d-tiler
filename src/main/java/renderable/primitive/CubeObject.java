@@ -1,8 +1,10 @@
-package renderable;
+package renderable.primitive;
 
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryStack;
+import renderable.RenderableBuffer;
+import renderable.RenderableObject;
 
 import java.util.ArrayList;
 

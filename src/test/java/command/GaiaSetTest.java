@@ -6,6 +6,7 @@ import geometry.exchangable.GaiaSet;
 import geometry.exchangable.GaiaUniverse;
 import geometry.structure.GaiaScene;
 import geometry.types.AttributeType;
+import gltf.GltfWriter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import renderable.GaiaSetObject;
@@ -17,11 +18,11 @@ import java.util.List;
 
 class GaiaSetTest {
 
-    private static final String FILE_NAME = "DC_library_del";
-    private static final String INPUT_PATH = "C:\\data\\sample\\Data3D\\DC_library_del_3DS\\DC_library_del.3ds";
+    //private static final String FILE_NAME = "DC_library_del";
+    //private static final String INPUT_PATH = "C:\\data\\sample\\Data3D\\DC_library_del_3DS\\DC_library_del.3ds";
 
-    //private static final String FILE_NAME = "a_bd001";
-    //private static final String INPUT_PATH = "C:\\data\\sample\\a_bd001.3ds";
+    private static final String FILE_NAME = "a_bd001";
+    private static final String INPUT_PATH = "C:\\data\\sample\\a_bd001.3ds";
 
     //private static final String FILE_NAME = "face";
     //private static final String INPUT_PATH = "C:\\data\\sample\\face.3ds";
@@ -37,17 +38,17 @@ class GaiaSetTest {
 
     @Test
     void writeGaiaSet() {
-        CommandOption commandOption = new CommandOption();
-        commandOption.setInputPath(new File(INPUT_PATH).toPath());
-        commandOption.setOutputPath(new File(OUTPUT_PATH).toPath());
+        //CommandOption commandOption = new CommandOption();
+        //commandOption.setInputPath(new File(INPUT_PATH).toPath());
+        //commandOption.setOutputPath(new File(OUTPUT_PATH).toPath());
 
-        GaiaScene scene = DataLoader.load(commandOption.getInputPath(), commandOption);
+        GaiaScene scene = DataLoader.load(new File(INPUT_PATH).toPath(), null);
         GaiaUniverse gaiaUniverse = new GaiaUniverse();
         gaiaUniverse.getScenes().add(scene);
-        gaiaUniverse.writeFiles(commandOption.getOutputPath());
+        gaiaUniverse.writeFiles(new File(OUTPUT_PATH).toPath());
     }
 
-    @Test
+    //@Test
     GaiaSet readGaiaSet() {
         String readMgbPath = OUTPUT_PATH + FILE_NAME + ".mgb";
         GaiaSet gaiaSet = new GaiaSet();
@@ -56,14 +57,19 @@ class GaiaSetTest {
     }
 
     @Test
-    GaiaSet convertGaiaSet() {
-        CommandOption commandOption = new CommandOption();
-        commandOption.setInputPath(new File(INPUT_PATH).toPath());
-        commandOption.setOutputPath(new File(OUTPUT_PATH).toPath());
-
-        GaiaScene scene = DataLoader.load(commandOption.getInputPath(), commandOption);
+    GaiaSet convertSceneToSet() {
+        GaiaScene scene = DataLoader.load(new File(INPUT_PATH).toPath(), null);
         GaiaSet gaiaSet = new GaiaSet(scene);
         return gaiaSet;
+    }
+
+    @Test
+    void convertSetToScene() {
+        this.writeGaiaSet();
+        GaiaSet set = this.readGaiaSet();
+        GaiaScene scene = new GaiaScene(set);
+        GltfWriter.writeGltf(scene, OUTPUT_PATH + FILE_NAME + ".gltf");
+        //return scene;
     }
 
     @Test

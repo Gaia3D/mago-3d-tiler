@@ -49,8 +49,7 @@ class CommandTest {
     public void convert(File path, String extension, String outputPath) {
         if (path.isFile() && FileUtils.getExtension(path.getName()).equals(extension)) {
             String fileName = FileUtils.getFileNameWithoutExtension(path.getName());
-            GaiaScene scene = DataLoader.load(path.getAbsolutePath(), extension, new CommandOption());
-
+            GaiaScene scene = DataLoader.load(path.getAbsolutePath(), extension, null);
             File output = new File(outputPath, fileName + ".glb");
             System.out.println(path.getAbsolutePath() + " -> " + output.getAbsolutePath());
             GltfWriter.writeGlb(scene, output.getAbsolutePath());

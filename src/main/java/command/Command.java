@@ -3,6 +3,7 @@ package command;
 import assimp.DataLoader;
 import geometry.structure.GaiaScene;
 import gltf.GltfWriter;
+import lombok.extern.slf4j.Slf4j;
 import util.FileUtils;
 
 import java.io.File;
@@ -16,6 +17,9 @@ public class Command {
     private boolean isVersion = false;
 
     public Command() {
+
+
+
         commandOption = new CommandOption();
         commandOption.setInputType(CommandOption.InputType.IN_3DS);
         commandOption.setOutputType(CommandOption.OutputType.OUT_GLTF);
