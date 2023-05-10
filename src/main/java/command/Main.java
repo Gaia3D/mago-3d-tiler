@@ -22,15 +22,16 @@ public class Main {
         //command.excute(arg);
         LoggerConfigurator.initLogger();
         Options options = new Options();
-        options.addOption("help", false, "print help");
-        options.addOption("version", false, "print version");
+        options.addOption("h", "help", false, "print help");
+        options.addOption("v", "version", false, "print version");
+        options.addOption("r", "recursive", false, "recursive");
 
-        options.addOption("input", true, "input file path");
-        options.addOption("output", true, "output file path");
-        options.addOption("inputType", true, "input file type");
-        options.addOption("outputType", "gltf", true, "output file type");
+        options.addOption("i", "input", true, "input file path");
+        options.addOption("o", "output", true, "output file path");
+        options.addOption("it", "inputType", true, "input file type");
+        options.addOption("ot", "outputType", true, "output file type");
 
-        options.addOption("quiet", false, "quiet mode");
+        options.addOption("q", "quiet", false, "quiet mode");
 
         CommandLineParser parser = new DefaultParser();
         try {
@@ -50,22 +51,22 @@ public class Main {
                 return;
             }
 
-            for (Option option : cmd.getOptions()) {
+            /*for (Option option : cmd.getOptions()) {
                 log.info(option.getOpt());
-            }
+            }*/
 
             String inputPath = cmd.getOptionValue("input");
             String outputPath = cmd.getOptionValue("output");
             File inputFile = new File(inputPath);
             File outputFile = new File(outputPath);
-            excute(cmd, inputFile, outputFile);
+            excute(cmd, inputFile, outputFile, 0);
         } catch (ParseException e) {
             e.printStackTrace();
         }
         end();
     }
 
-    private static void excute(CommandLine command, File inputFile, File outputFile) {
+    private static void excute(CommandLine command, File inputFile, File outputFile, int depth) {
         //String outputExtension = FilenameUtils.getExtension(outputFile.getName());
         String inputExtension = command.getOptionValue("inputType");
         String outputExtension = command.getOptionValue("outputType");
@@ -83,8 +84,11 @@ public class Main {
                 log.error("output type is not supported. :: " + outputExtension);
             }
         } else if (inputFile.isDirectory()) {
+            if (command.getOptionValue("recursive") == null && (depth > 0)) {
+                return;
+            }
             for (File child : inputFile.listFiles()) {
-                excute(command, child, outputFile);
+                excute(command, child, outputFile, depth++);
             }
         }
     }

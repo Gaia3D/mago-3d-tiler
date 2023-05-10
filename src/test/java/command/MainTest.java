@@ -33,6 +33,17 @@ class MainTest {
     }
 
     @Test
+    void shortOptionTest() {
+        String[] args= new String[]{
+                "-i", INPUT_PATH,
+                "-it", "3ds",
+                "-o", OUTPUT_PATH,
+                "-ot", "gltf",
+        };
+        Main.main(args);
+    }
+
+    @Test
     void testMain() {
         String[] args = new String[]{
                 "-input", INPUT_PATH,
