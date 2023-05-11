@@ -4,11 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,7 +21,7 @@ public class GaiaFace {
 
     public void calculateFaceNormal(List<GaiaVertex> vertices) {
         if (indices.size() < 3) {
-            System.err.println("[calculateFaceNormal Error] : indices.size() < 3");
+            log.error("[calculateFaceNormal Error] : indices.size() < 3");
             return;
         }
 
@@ -50,13 +52,7 @@ public class GaiaFace {
     public boolean validateNormal(Vector3d normal) {
         boolean result = true;
         if (Double.isNaN(normal.lengthSquared()) || Double.isNaN(normal.x()) || Double.isNaN(normal.y()) || Double.isNaN(normal.z()) || Float.isNaN((float) normal.x()) || Float.isNaN((float) normal.y()) || Float.isNaN((float) normal.z())) {
-            //System.err.println("[calcNormal Error] : " + normal.x() + ", " + normal.y() + ", " + normal.z());
             result = false;
-        } else if (normal.lengthSquared() != 1.0f) {
-            //System.out.println("[calcNormal Wraning] : " + normal.lengthSquared());
-            //result = false;
-        } else {
-            //System.out.println("[calcNormal Correct] : " + normal.x() + ", " + normal.y() + ", " + normal.z());
         }
         return result;
     }
@@ -73,28 +69,11 @@ public class GaiaFace {
         Vector3d position1 = vertex1.getPosition();
         Vector3d position2 = vertex2.getPosition();
         Vector3d position3 = vertex3.getPosition();
-
-        //Vector3d vector1 = new Vector3d(position2);
-        //Vector3d vector2 = new Vector3d(position3);
-        //Vector3d resultNormal = new Vector3d();
-
         Vector3d resultNormal = calcNormal(position1, position2, position3);
 
-//        position2.sub(position1, vector1);
-//        position3.sub(position1, vector2);
-//        vector2.cross(vector1, resultNormal);
-//        resultNormal.normalize();
-
         if (!validateNormal(resultNormal)) {
-            /*if (position1.equals(position2) || position1.equals(position3) || position2.equals(position3)) {
-                System.err.println(" ======= position is same.");
-            } else {
-                System.err.println(" ======= other error. " + position1 + ", " + position2 + ", " + position3);
-            }*/
-            //System.err.print(" ======= " + resultNormal + " -> ");
             resultNormal = new Vector3d(1.0, 1.0, 1.0);
             resultNormal.normalize();
-            //System.err.println(resultNormal);
         }
         vertex1.setNormal(new Vector3d(resultNormal));
         vertex2.setNormal(new Vector3d(resultNormal));

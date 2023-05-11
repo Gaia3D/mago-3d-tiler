@@ -12,13 +12,13 @@ public class GltfNodeBuffer {
     private int positionsBufferViewId = -1;
     private int normalsBufferViewId = -1;
     private int colorsBufferViewId = -1;
-    private int textureCoordinatesBufferViewId = -1;
+    private int texcoordsBufferViewId = -1;
 
     private int indicesAccessorId = -1;
     private int positionsAccessorId = -1;
     private int normalsAccessorId = -1;
     private int colorsAccessorId = -1;
-    private int textureCoordinatesAccessorId = -1;
+    private int texcoordsAccessorId = -1;
 
     private int totalByteBufferLength = -1;
 
@@ -26,6 +26,6 @@ public class GltfNodeBuffer {
     private ByteBuffer positionsBuffer = null;
     private ByteBuffer normalsBuffer = null;
     private ByteBuffer colorsBuffer = null;
-    private ByteBuffer textureCoordinatesBuffer = null;
+    private ByteBuffer texcoordsBuffer = null;
     private ByteBuffer textureBuffer = null;
 }

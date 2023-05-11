@@ -10,7 +10,6 @@ import lombok.Setter;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -66,12 +65,12 @@ public class GaiaScene {
     }
 
     //getTotalTexCoordsCount
-    public int getTotalTextureCoordinatesCount() {
-        return GaiaNode.getTotalTextureCoordinatesCount(0, nodes);
+    public int getTotalTexcoordsCount() {
+        return GaiaNode.getTotalTexcoordsCount(0, nodes);
     }
     //getTotalTexCoords
-    public List<Float> getTotalTextureCoordinates() {
-        return GaiaNode.getTotalTextureCoordinates(new ArrayList<Float>(), nodes);
+    public List<Float> getTotalTexcoords() {
+        return GaiaNode.getTotalTexcoords(new ArrayList<Float>(), nodes);
     }
 
     //getTotalColorsCount
@@ -92,7 +91,6 @@ public class GaiaScene {
     public List<String> getAllTexturePaths() {
         List<String> texturePaths = new ArrayList<>();
         for (GaiaMaterial material : materials) {
-
             LinkedHashMap<TextureType, List<GaiaTexture>> textures = material.getTextures();
             textures.forEach((textureType, gaiaTextures) -> {
                 for (GaiaTexture gaiaTexture : gaiaTextures) {

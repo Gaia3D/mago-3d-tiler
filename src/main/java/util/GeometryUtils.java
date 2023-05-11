@@ -45,21 +45,21 @@ public class GeometryUtils {
         v3.setNormal(normal);
     }
 
-    private static Rectangle2D getTextureCoordinatesBoundingRectangle(GaiaPrimitive primitive) {
+    private static Rectangle2D getTexcoordsBoundingRectangle(GaiaPrimitive primitive) {
         Rectangle2D rect = new Rectangle2D.Double();
         for (GaiaVertex vertex : primitive.getVertices()) {
-            Vector2d textureCoordinates = vertex.getTextureCoordinates();
-            if (textureCoordinates.x < rect.getMinX()) {
-                rect.setRect(textureCoordinates.x, rect.getMinY(), rect.getWidth(), rect.getHeight());
+            Vector2d texcoords = vertex.getTexcoords();
+            if (texcoords.x < rect.getMinX()) {
+                rect.setRect(texcoords.x, rect.getMinY(), rect.getWidth(), rect.getHeight());
             }
-            if (textureCoordinates.y < rect.getMinY()) {
-                rect.setRect(rect.getMinX(), textureCoordinates.y, rect.getWidth(), rect.getHeight());
+            if (texcoords.y < rect.getMinY()) {
+                rect.setRect(rect.getMinX(), texcoords.y, rect.getWidth(), rect.getHeight());
             }
-            if (textureCoordinates.x > rect.getMaxX()) {
-                rect.setRect(rect.getMinX(), rect.getMinY(), textureCoordinates.x, rect.getHeight());
+            if (texcoords.x > rect.getMaxX()) {
+                rect.setRect(rect.getMinX(), rect.getMinY(), texcoords.x, rect.getHeight());
             }
-            if (textureCoordinates.y > rect.getMaxY()) {
-                rect.setRect(rect.getMinX(), rect.getMinY(), rect.getWidth(), textureCoordinates.y);
+            if (texcoords.y > rect.getMaxY()) {
+                rect.setRect(rect.getMinX(), rect.getMinY(), rect.getWidth(), texcoords.y);
             }
         }
         return rect;
@@ -330,7 +330,6 @@ public class GeometryUtils {
         transformer.transform(beforeCoord, afterCoord);
 
         //변환된 좌표
-        //System.out.println(afterCoord.x + "," + afterCoord.y);
         return afterCoord;
     }
 }

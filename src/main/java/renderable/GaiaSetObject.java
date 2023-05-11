@@ -1,8 +1,6 @@
 package renderable;
 
-import assimp.DataLoader;
 import geometry.exchangable.GaiaSet;
-import geometry.structure.GaiaScene;
 import org.lwjgl.system.MemoryStack;
 
 import java.io.File;
@@ -10,8 +8,6 @@ import java.nio.file.Path;
 
 public class GaiaSetObject extends RenderableObject {
     GaiaSet gaiaSet;
-    File file;
-    Path path;
 
     public GaiaSetObject(GaiaSet gaiaSet) {
         super();

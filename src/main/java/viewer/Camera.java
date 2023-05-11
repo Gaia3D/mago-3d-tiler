@@ -28,19 +28,13 @@ public class Camera {
         this.transformMatrix = null;
         this.modelViewMatrix = null;
         this.rotationMatrix = null;
-
-        //this.position = new Vector3d(0, -100, 150);
-        this.position = new Vector3d(0, 0, 150);
+        this.position = new Vector3d(0, 0, 500);
         this.rotation = new Vector3d(0, 1, 0);
-
-        //this.direction = new Vector3d(0, 100, -150);
         this.direction = new Vector3d(0, 0, -1);
-
         this.up = new Vector3d(0, 1, 0);
-
         this.right = new Vector3d(1, 0, 0);
     }
-
+    // getTransformMatrix
     public Matrix4d getTransformMatrix() {
         if (this.dirty || this.transformMatrix == null) {
             //this.calcRight();
@@ -52,6 +46,7 @@ public class Camera {
         }
         return this.transformMatrix;
     }
+    // getModelViewMatrix
     public Matrix4d getModelViewMatrix() {
         if (this.dirty || this.modelViewMatrix == null) {
             Matrix4d transformMatrix = this.getTransformMatrix();
@@ -60,7 +55,6 @@ public class Camera {
         }
         return this.modelViewMatrix;
     }
-
     // move forward
     public void moveForward(float value) {
         this.position.add(this.direction.mul(value, new Vector3d()));
@@ -109,6 +103,7 @@ public class Camera {
         this.up = up;
         this.dirty = true;
     }
+
     //lookat from x,y,z (from Copilot)
     public void lookAt(float x, float y, float z) {
         Vector3d target = new Vector3d(x, y, z);
@@ -153,14 +148,6 @@ public class Camera {
         Vector3d rotatedUp = new Vector3d(rotatedDirection);
         rotatedRight.cross(rotatedUp, rotatedUp);
         rotatedUp.normalize();
-
-        /*double dotResult = Math.abs(rotatedDirection.dot(0, 0, 1));
-        if (!(dotResult > 0.990d || Double.isNaN(rotatedRight.x))) {
-            this.direction = rotatedDirection;
-            this.up = rotatedUp;
-            this.right = rotatedRight;
-            this.position = returnedCameraPosition;
-        }*/
 
         this.direction = rotatedDirection;
         this.up = rotatedUp;

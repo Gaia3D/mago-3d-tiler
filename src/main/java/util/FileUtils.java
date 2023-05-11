@@ -1,28 +1,20 @@
 package util;
 
-import geometry.structure.*;
-import org.joml.Vector3d;
-import org.joml.Vector4d;
+import lombok.extern.slf4j.Slf4j;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
 
+@Slf4j
 public class FileUtils {
     // getNearestPowerOfTwo
     public static int getNearestPowerOfTwo(int value) {
@@ -151,56 +143,31 @@ public class FileUtils {
         return null;
     }
 
-    public static String changeExtension(String fileName, String extension) {
-        String name = getFileNameWithoutExtension(fileName);
-        return name + "." + extension;
-    }
-
-    public static String getFileNameWithoutExtension(String fileName) {
-        String name = "";
-        int i = fileName.lastIndexOf('.');
-        if (i > 0) {
-            name = fileName.substring(0, i);
-        }
-        return name;
-    }
-
-    public static String getExtension(String fileName) {
-        String extension = "";
-        int i = fileName.lastIndexOf('.');
-        if (i > 0) {
-            extension = fileName.substring(i+1);
-        }
-        return extension;
-    }
-
-    public static byte[] readBytes(File file) {
-        byte[] bytes = null;
+    // readFile
+    public static ByteBuffer readFile(File file, boolean flip) {
         try {
-            bytes = Files.readAllBytes(file.toPath());
+            byte[] bytes = Files.readAllBytes(file.toPath());
+            ByteBuffer byteBuffer = BufferUtils.createByteBuffer(bytes.length);
+            byteBuffer.put(bytes);
+            if (flip)
+                byteBuffer.flip();
+            return byteBuffer;
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("FileUtils.readBytes: " + e.getMessage());
         }
-        return bytes;
-    }
-
-    public static ByteBuffer readFile(File file) {
-        ByteBuffer byteBuffer = null;
-        byte[] bytes = readBytes(file);
-        byteBuffer = BufferUtils.createByteBuffer(bytes.length);
-        byteBuffer.put(bytes);
-        byteBuffer.flip();
-        return byteBuffer;
+        return null;
     }
 
     // copyFile
-    public static void copyFile(Path source, Path dest) {
+    public static void copyPath(Path source, Path dest) {
         try {
             if (!dest.toFile().exists()) {
                 Files.copy(source, dest);
+            } else {
+                //log.error("FileUtils.copyFile: File already exists :: " + dest.toString());
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("FileUtils.copyFile: " + e.getMessage());
         }
     }
 }

@@ -11,9 +11,8 @@ import org.apache.logging.log4j.core.layout.PatternLayout;
 
 import java.nio.charset.StandardCharsets;
 
-public class LoggerConfigurator {
+public class Configurator {
     public static final Level LEVEL = Level.ALL;
-    //private static final String PATTERN = "[%level{lowerCase=true} %date{yyyy/MM/dd HH:mm:ss.SSS z} <%thread> tid=%tid] %message%n%throwable";
     private static final String PATTERN = "%message%n";
 
     public static void initLogger() {

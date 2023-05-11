@@ -1,40 +1,48 @@
 package command;
 
-import assimp.DataLoader;
+import assimp.AssimpConverter;
 import geometry.structure.GaiaScene;
+import geometry.types.FormatType;
 import gltf.GltfWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
-import org.slf4j.LoggerFactory;
-import util.FileUtils;
 
 import java.io.File;
-import java.lang.reflect.Field;
 
 
 @Slf4j
 public class Main {
+    public static AssimpConverter assimpConverter = null;
+
     public static void main(String[] args) {
-        LoggerConfigurator.initLogger();
+        Configurator.initLogger();
         Options options = new Options();
-        options.addOption("h", "help", false, "print help");
-        options.addOption("v", "version", false, "print version");
-        options.addOption("r", "recursive", false, "recursive");
+
         options.addOption("i", "input", true, "input file path");
         options.addOption("o", "output", true, "output file path");
         options.addOption("it", "inputType", true, "input file type");
         options.addOption("ot", "outputType", true, "output file type");
+
+        options.addOption("h", "help", false, "print help");
+        options.addOption("v", "version", false, "print version");
+        options.addOption("r", "recursive", false, "recursive");
         options.addOption("q", "quiet", false, "quiet mode");
+
+        options.addOption("s", "scale", true, "scale factor");
+        options.addOption("st", "strict", true, "strict mode");
+        options.addOption("gn", "genNormals", false, "generate normals");
+        options.addOption("gt", "quiet", false, "generate tangents");
+        options.addOption("yz", "swapYZ", false, "swap YZ");
+        options.addOption("nt", "ignoreTextures", false, "ignore textures");
 
         CommandLineParser parser = new DefaultParser();
         try {
             CommandLine cmd = parser.parse(options, args);
 
             if (cmd.hasOption("quiet")) {
-                LoggerConfigurator.setLevel(Level.OFF);
+                Configurator.setLevel(Level.OFF);
             }
             start();
             if (cmd.hasOption("help")) {
@@ -56,6 +64,7 @@ public class Main {
                 return;
             }
 
+            assimpConverter = new AssimpConverter(cmd);
             File inputFile = new File(cmd.getOptionValue("input"));
             File outputFile = new File(cmd.getOptionValue("output"));
             excute(cmd, inputFile, outputFile, 0);
@@ -66,18 +75,17 @@ public class Main {
     }
 
     private static void excute(CommandLine command, File inputFile, File outputFile, int depth) {
-        //String outputExtension = FilenameUtils.getExtension(outputFile.getName());
         String inputExtension = command.getOptionValue("inputType");
         String outputExtension = command.getOptionValue("outputType");
         if (inputFile.isFile() && inputExtension.equals(FilenameUtils.getExtension(inputFile.getName()))) {
             String outputFileName = FilenameUtils.removeExtension(inputFile.getName()) + "." + outputExtension;
             File output = new File(outputFile.getAbsolutePath() + File.separator + outputFileName);
             log.info("convert : " + inputFile.getAbsolutePath() + " -> " + output.getAbsolutePath());
-            GaiaScene scene = DataLoader.load(inputFile.getAbsolutePath(), command);
-            CommandOption.OutputType outputType = CommandOption.OutputType.fromExtension(outputExtension);
-            if (outputType == CommandOption.OutputType.OUT_GLB) {
+            GaiaScene scene = assimpConverter.load(inputFile.getAbsolutePath(), inputExtension);
+            FormatType outputType = FormatType.fromExtension(outputExtension);
+            if (outputType == FormatType.GLB) {
                 GltfWriter.writeGlb(scene, output.getAbsolutePath());
-            } else if (outputType == CommandOption.OutputType.OUT_GLTF) {
+            } else if (outputType == FormatType.GLTF) {
                 GltfWriter.writeGltf(scene, output.getAbsolutePath());
             } else {
                 log.error("output type is not supported. :: " + outputExtension);

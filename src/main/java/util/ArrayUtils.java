@@ -63,13 +63,4 @@ public class ArrayUtils {
         }
         return floats;
     }
-
-    /*public static short[] convertColorsVBO(float[] list) {
-        short[] array = new short[list.length];
-        int num = 0;
-        for (float f : list) {
-            array[num++] = (short) (f * 255);
-        }
-        return array;
-    }*/
 }

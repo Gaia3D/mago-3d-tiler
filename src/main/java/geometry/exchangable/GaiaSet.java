@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.io.FilenameUtils;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 import util.FileUtils;
@@ -43,7 +44,7 @@ public class GaiaSet {
     }
 
     public GaiaSet(GaiaScene gaiaScene) {
-        String projectName = FileUtils.getFileNameWithoutExtension(gaiaScene.getOriginalPath().getFileName().toString());
+        String projectName = FilenameUtils.removeExtension(gaiaScene.getOriginalPath().getFileName().toString());
         setProjectName(projectName);
         List<GaiaBufferDataSet> bufferDataSets = new ArrayList<>();
         for (GaiaNode node : gaiaScene.getNodes()) {

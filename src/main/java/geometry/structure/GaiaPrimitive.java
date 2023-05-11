@@ -106,7 +106,7 @@ public class GaiaPrimitive {
                     normalList.add((float) normal.y);
                     normalList.add((float) normal.z);
                 }
-                Vector2d textureCoordinate = vertex.getTextureCoordinates();
+                Vector2d textureCoordinate = vertex.getTexcoords();
                 if (textureCoordinate != null) {
                     textureCoordinateList.add((float) textureCoordinate.x);
                     textureCoordinateList.add((float) textureCoordinate.y);
@@ -194,7 +194,7 @@ public class GaiaPrimitive {
 
             batchIdList.add((float) 0.0f);
 
-            Vector2d textureCoordinate = vertex.getTextureCoordinates();
+            Vector2d textureCoordinate = vertex.getTexcoords();
             if (textureCoordinate != null) {
                 textureCoordinateList.add((float) textureCoordinate.x);
                 textureCoordinateList.add((float) textureCoordinate.y);

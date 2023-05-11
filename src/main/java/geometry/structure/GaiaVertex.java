@@ -13,7 +13,7 @@ import org.joml.Vector4d;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GaiaVertex {
-    private Vector2d textureCoordinates;
+    private Vector2d texcoords;
     private Vector3d position;
     private Vector3d normal;
     private Vector4d color;

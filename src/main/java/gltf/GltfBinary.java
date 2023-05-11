@@ -46,10 +46,10 @@ public class GltfBinary {
                     nodeBuffer.getColorsBuffer().limit(nodeBuffer.getColorsBuffer().capacity());
                     bodyBuffer.put(nodeBuffer.getColorsBuffer());
                 }
-                if (nodeBuffer.getTextureCoordinatesBuffer() != null) {
-                    nodeBuffer.getTextureCoordinatesBuffer().rewind();
-                    nodeBuffer.getTextureCoordinatesBuffer().limit(nodeBuffer.getTextureCoordinatesBuffer().capacity());
-                    bodyBuffer.put(nodeBuffer.getTextureCoordinatesBuffer());
+                if (nodeBuffer.getTexcoordsBuffer() != null) {
+                    nodeBuffer.getTexcoordsBuffer().rewind();
+                    nodeBuffer.getTexcoordsBuffer().limit(nodeBuffer.getTexcoordsBuffer().capacity());
+                    bodyBuffer.put(nodeBuffer.getTexcoordsBuffer());
                 }
             });
             bodyBuffer.rewind();

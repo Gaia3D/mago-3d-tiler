@@ -1,10 +1,12 @@
 package assimp;
 
-import command.CommandOption;
 import geometry.basic.GaiaBoundingBox;
 import geometry.structure.*;
 import geometry.types.TextureType;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.io.FilenameUtils;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
@@ -19,62 +21,47 @@ import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.List;
 
-/**
- * Loads a scene from a file
- */
-public class DataLoader {
+@Slf4j
+public class AssimpConverter {
+    private CommandLine command;
 
-    final static int DEFAULT_FLAGS =
+    public AssimpConverter(CommandLine command) {
+        this.command = command;
+    }
+
+    final int DEFAULT_FLAGS =
             Assimp.aiProcess_GenNormals |
             Assimp.aiProcess_Triangulate|
             Assimp.aiProcess_JoinIdenticalVertices|
             Assimp.aiProcess_CalcTangentSpace|
             Assimp.aiProcess_SortByPType;
 
-
-    /** Loads a scene from a filePath
-     * @param filePath 파일 경로
-     * @return
-     */
-    public static GaiaScene load(String filePath, CommandLine command) {
-        return load(new File(filePath), null, command);
+    public GaiaScene load(String filePath, String hint) {
+        return load(new File(filePath), hint);
     }
 
-    public static GaiaScene load(Path filePath, CommandLine command) {
-        return load(filePath.toFile(), null, command);
+    public GaiaScene load(Path filePath, String hint) {
+        return load(filePath.toFile(), hint);
     }
 
-    public static GaiaScene load(String filePath, String hint, CommandLine command) {
-        return load(new File(filePath), hint, command);
-    }
-
-    /**
-     * Loads a scene from a file
-     * @param file 파일
-     * @param hint 파일 확장자
-     * @return
-     */
-    public static GaiaScene load(File file, String hint, CommandLine command) {
+    public GaiaScene load(File file, String hint) {
         if (file.isFile()) {
             String path = file.getAbsolutePath().replace(file.getName(), "");
-            ByteBuffer byteBuffer = FileUtils.readFile(file);
-            hint = (hint != null) ? hint : FileUtils.getExtension(file.getName());
+            ByteBuffer byteBuffer = FileUtils.readFile(file, true);
+            hint = (hint != null) ? hint : FilenameUtils.getExtension(file.getName());
 
             AIScene aiScene = Assimp.aiImportFileFromMemory(byteBuffer, DEFAULT_FLAGS, hint);
             GaiaScene gaiaScene = convertScene(aiScene, path);
             gaiaScene.setOriginalPath(file.toPath());
-            aiScene.free();
-            //MemoryUtil.memFree(byteBuffer);
+            //aiScene.free();
             return gaiaScene;
         } else {
             return null;
         }
     }
 
-    // convertMatrix4dFromAIMatrix4x4
-    private static Matrix4d convertMatrix4dFromAIMatrix4x4(AIMatrix4x4 aiMatrix4x4) {
+    private Matrix4d convertMatrix4dFromAIMatrix4x4(AIMatrix4x4 aiMatrix4x4) {
         Matrix4d matrix4 = new Matrix4d();
         matrix4.m00(aiMatrix4x4.a1());
         matrix4.m01(aiMatrix4x4.b1());
@@ -95,14 +82,7 @@ public class DataLoader {
         return matrix4;
     }
 
-
-    /**
-     * Converts an Assimp scene to a Gaia scene
-     * @param aiScene Assimp scene
-     * @param filePath 서브파일 경로
-     * @return Gaia scene
-     */
-    public static GaiaScene convertScene(AIScene aiScene, String filePath) {
+    public GaiaScene convertScene(AIScene aiScene, String filePath) {
         GaiaScene gaiaScene = new GaiaScene();
         AINode aiNode = aiScene.mRootNode();
 
@@ -112,10 +92,7 @@ public class DataLoader {
             AIMaterial aiMaterial = AIMaterial.create(aiMaterials.get(i));
             gaiaScene.getMaterials().add(processMaterial(aiMaterial, filePath));
         }
-
         GaiaNode node = processNode(gaiaScene, aiScene, aiNode, null);
-
-
 
         Matrix4d rootTransform = node.getTransformMatrix();
         //rootTransform.rotateX(Math.toRadians(90), rootTransform);
@@ -139,13 +116,7 @@ public class DataLoader {
         return gaiaScene;
     }
 
-    /**
-     * Converts an Assimp node to a Gaia node
-     * @param aiMaterial Assimp material
-     * @param path 서브파일 경로
-     * @return Gaia node
-     */
-    private static GaiaMaterial processMaterial(AIMaterial aiMaterial, String path) {
+    private GaiaMaterial processMaterial(AIMaterial aiMaterial, String path) {
         GaiaMaterial material = new GaiaMaterial();
 
         Vector4d diffVector4d;
@@ -188,10 +159,6 @@ public class DataLoader {
         Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_SHININESS, 0, shininessPath, (IntBuffer) null, null, null, null, null, null);
         String shininessTexPath = shininessPath.dataString();
 
-        //AIString otherPath = AIString.calloc();
-        //Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_NORMALS, 0, otherPath, (IntBuffer) null, null, null, null, null, null);
-        //String otherTexPath = otherPath.dataString();
-
         Path parentPath = new File(path).toPath();
         if (diffTexPath != null && diffTexPath.length() > 0) {
             List<GaiaTexture> textures = new ArrayList<>();
@@ -201,7 +168,7 @@ public class DataLoader {
             texture.setParentPath(parentPath);
             File file = new File(parentPath.toFile(), diffTexPath);
             if (!(file.exists() && file.isFile())) {
-                System.err.println("Diffuse Texture not found: " + file.getAbsolutePath());
+                log.error("Diffuse Texture not found: " + file.getAbsolutePath());
             } else {
                 textures.add(texture);
                 material.getTextures().put(texture.getType(), textures);
@@ -219,7 +186,7 @@ public class DataLoader {
             texture.setParentPath(parentPath);
             File file = new File(parentPath.toFile(), ambientTexPath);
             if (!(file.exists() && file.isFile())) {
-                System.err.println("Ambient Texture not found: " + file.getAbsolutePath());
+                log.error("Ambient Texture not found: " + file.getAbsolutePath());
             } else {
                 textures.add(texture);
                 material.getTextures().put(texture.getType(), textures);
@@ -237,7 +204,7 @@ public class DataLoader {
             texture.setParentPath(parentPath);
             File file = new File(parentPath.toFile(), specularTexPath);
             if (!(file.exists() && file.isFile())) {
-                System.err.println("Specular Texture not found: " + file.getAbsolutePath());
+                log.error("Specular Texture not found: " + file.getAbsolutePath());
             } else {
                 textures.add(texture);
                 material.getTextures().put(texture.getType(), textures);
@@ -255,7 +222,7 @@ public class DataLoader {
             texture.setParentPath(parentPath);
             File file = new File(parentPath.toFile(), specularTexPath);
             if (!(file.exists() && file.isFile())) {
-                System.err.println("Shininess Texture not found: " + file.getAbsolutePath());
+                log.error("Shininess Texture not found: " + file.getAbsolutePath());
             } else {
                 textures.add(texture);
                 material.getTextures().put(texture.getType(), textures);
@@ -268,14 +235,7 @@ public class DataLoader {
         return material;
     }
 
-    /**
-     * Converts an Assimp node to a Gaia node
-     * @param aiScene
-     * @param aiNode
-     * @param parentNode
-     * @return Gaia node
-     */
-    private static GaiaNode processNode(GaiaScene gaiaScene, AIScene aiScene, AINode aiNode, GaiaNode parentNode) {
+    private GaiaNode processNode(GaiaScene gaiaScene, AIScene aiScene, AINode aiNode, GaiaNode parentNode) {
         AIMatrix4x4 transformation = aiNode.mTransformation();
         Matrix4d transform = convertMatrix4dFromAIMatrix4x4(transformation);
 
@@ -316,12 +276,7 @@ public class DataLoader {
         return node;
     }
 
-    /**
-     * Converts an Assimp mesh to a Gaia mesh
-     * @param aiMesh Assimp mesh
-     * @return Gaia mesh
-     */
-    private static GaiaMesh processMesh(AIMesh aiMesh, List<GaiaMaterial> materials) {
+    private GaiaMesh processMesh(AIMesh aiMesh, List<GaiaMaterial> materials) {
         int materialIndex = aiMesh.mMaterialIndex();
         GaiaMaterial material = materials.get(materialIndex);
         material.setId(materialIndex);
@@ -331,12 +286,7 @@ public class DataLoader {
         return mesh;
     }
 
-    /**
-     * Converts an Assimp surface to a Gaia surface
-     * @param aiMesh Assimp mesh
-     * @return Gaia surface
-     */
-    private static GaiaPrimitive processPrimitive(AIMesh aiMesh, GaiaMaterial material) {
+    private GaiaPrimitive processPrimitive(AIMesh aiMesh, GaiaMaterial material) {
         GaiaSurface surface = processSurface();
 
         GaiaPrimitive primitive = new GaiaPrimitive();
@@ -369,8 +319,6 @@ public class DataLoader {
                 } else {
                     vertex.setPosition(new Vector3d((double) aiVertice.x(), (double) aiVertice.y(), (double) aiVertice.z()));
                 }
-            } else {
-                //vertex.setPosition(new Vector3d());
             }
 
             if (normalsBuffer != null) {
@@ -387,37 +335,24 @@ public class DataLoader {
             if (textureCoordiantesBuffer != null) {
                 AIVector3D textureCoordiante = textureCoordiantesBuffer.get(i);
                 if (Float.isNaN(textureCoordiante.x()) || Float.isNaN(textureCoordiante.y())) {
-                    vertex.setTextureCoordinates(new Vector2d());
+                    vertex.setTexcoords(new Vector2d());
                 } else {
-                    vertex.setTextureCoordinates(new Vector2d((double) textureCoordiante.x(), 1.0 - (double) textureCoordiante.y()));
+                    vertex.setTexcoords(new Vector2d((double) textureCoordiante.x(), 1.0 - (double) textureCoordiante.y()));
                 }
-            } else {
-                //vertex.setTextureCoordinates(new Vector2d());
             }
             primitive.getVertices().add(vertex);
         }
 
-        //Rectangle2D rectangle2D = getTextureCoordsBoundingRect(primitive);
-        //primitive.genNormals();
         primitive.calculateNormal();
         return primitive;
     }
 
-    /**
-     * Converts an Assimp surface to a Gaia surface
-     * @return
-     */
-    private static GaiaSurface processSurface() {
+    private GaiaSurface processSurface() {
         GaiaSurface surface = new GaiaSurface();
         return surface;
     }
 
-    /**
-     * Converts an Assimp face to a Gaia face
-     * @param aiFace
-     * @return
-     */
-    private static GaiaFace processFace(AIFace aiFace) {
+    private GaiaFace processFace(AIFace aiFace) {
         GaiaFace face = new GaiaFace();
         int numIndices = aiFace.mNumIndices();
         IntBuffer indicesBuffer = aiFace.mIndices();

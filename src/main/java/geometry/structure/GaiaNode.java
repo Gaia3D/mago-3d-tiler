@@ -208,40 +208,40 @@ public class GaiaNode {
         return totalNormals;
     }
 
-    //getTotalTextureCoordinatesCount
-    public static int getTotalTextureCoordinatesCount(int totalTexCoords, List<GaiaNode> nodeList) {
+    //getTotalTexcoordsCount
+    public static int getTotalTexcoordsCount(int totalTexCoords, List<GaiaNode> nodeList) {
         for (GaiaNode node : nodeList) {
             List<GaiaMesh> meshes = node.getMeshes();
             List<GaiaNode> children = node.getChildren();
             for (GaiaMesh mesh : meshes) {
                 for (GaiaPrimitive primitive : mesh.getPrimitives()) {
                     for (GaiaVertex vertex : primitive.getVertices()) {
-                        if (vertex.getTextureCoordinates() != null) {
+                        if (vertex.getTexcoords() != null) {
                             totalTexCoords++;
                         }
                     }
                 }
             }
-            totalTexCoords = getTotalTextureCoordinatesCount(totalTexCoords, children);
+            totalTexCoords = getTotalTexcoordsCount(totalTexCoords, children);
         }
         return totalTexCoords;
     }
-    //getTotalTextureCoordinates
-    public static List<Float> getTotalTextureCoordinates(List<Float> totalTexCoords, List<GaiaNode> nodeList) {
+    //getTotalTexcoords
+    public static List<Float> getTotalTexcoords(List<Float> totalTexCoords, List<GaiaNode> nodeList) {
         for (GaiaNode node : nodeList) {
             List<GaiaMesh> meshes = node.getMeshes();
             List<GaiaNode> children = node.getChildren();
             for (GaiaMesh mesh : meshes) {
                 for (GaiaPrimitive primitive : mesh.getPrimitives()) {
                     for (GaiaVertex vertex : primitive.getVertices()) {
-                        if (vertex.getTextureCoordinates() != null) {
-                            totalTexCoords.add((float) vertex.getTextureCoordinates().get(0));
-                            totalTexCoords.add((float) vertex.getTextureCoordinates().get(1));
+                        if (vertex.getTexcoords() != null) {
+                            totalTexCoords.add((float) vertex.getTexcoords().get(0));
+                            totalTexCoords.add((float) vertex.getTexcoords().get(1));
                         }
                     }
                 }
             }
-            totalTexCoords = getTotalTextureCoordinates(totalTexCoords, children);
+            totalTexCoords = getTotalTexcoords(totalTexCoords, children);
         }
         return totalTexCoords;
     }

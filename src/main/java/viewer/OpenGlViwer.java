@@ -2,32 +2,39 @@ package viewer;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.joml.Math;
-import org.lwjgl.*;
-
-import org.lwjgl.glfw.*;
-import org.lwjgl.opengl.*;
-import org.lwjgl.system.*;
-import org.joml.*;
-import renderable.*;
+import org.joml.Matrix4d;
+import org.joml.Matrix4f;
+import org.joml.Vector3d;
+import org.lwjgl.Version;
+import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL20;
+import org.lwjgl.system.MemoryStack;
+import renderable.BaseObject;
+import renderable.OriginObject;
+import renderable.RenderableObject;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.*;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 
-import static org.lwjgl.glfw.Callbacks.*;
+import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.glfw.GLFW.glfwSetKeyCallback;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.system.MemoryStack.*;
-import static org.lwjgl.system.MemoryUtil.*;
+import static org.lwjgl.system.MemoryStack.stackPush;
+import static org.lwjgl.system.MemoryUtil.NULL;
 
+@Slf4j
 @Getter
+@Setter
 public class OpenGlViwer {
-    // The window handle
     private long window;
     private int shaderProgram;
     private Camera camera;
@@ -37,25 +44,25 @@ public class OpenGlViwer {
     private double ypos = 0;
     private boolean clicked = false;
 
-    public OpenGlViwer() {
+    private final int width;
+    private final int height;
+
+    public OpenGlViwer(int width, int height) {
+        this.width = width;
+        this.height = height;
         renderableObjects = new ArrayList<RenderableObject>();
     }
 
     public void run() {
-        System.out.println("Hello LWJGL " + Version.getVersion() + "!");
+        log.info("Hello LWJGL " + Version.getVersion() + "!");
         renderableObjects.add(new BaseObject());
         renderableObjects.add(new OriginObject());
 
-        //renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\Data3D\\DC_library_del_3DS\\DC_library_del.3ds"));
-        //renderableObjects.add(new GaiaSceneObject("C:\\data\\sample\\Data3D\\DC_library_del_3DS\\DC_library_del.3ds"));
-
         init();
         loop();
-
         // 창의 콜백을 해제하고 창을 삭제합니다.
         glfwFreeCallbacks(window);
         glfwDestroyWindow(window);
-
         // GLFW를 종료하고 에러 콜백을 해제합니다.
         glfwTerminate();
         glfwSetErrorCallback(null).free();
@@ -76,7 +83,7 @@ public class OpenGlViwer {
         //glfwGetCurrentContext();
 
         // 창을 생성합니다.
-        window = glfwCreateWindow(800, 600, "Hello World!", NULL, NULL);
+        window = glfwCreateWindow(this.width, this.height, "Gaia3D Plasma", NULL, NULL);
         if (window == NULL) {
             throw new RuntimeException("Failed to create the GLFW window");
         }
@@ -167,7 +174,6 @@ public class OpenGlViwer {
         setupShader();
         this.camera = new Camera();
         camera.rotationOrbit(-1.0f, 1.0f, new Vector3d(0.0d,0.0d,0.0d));
-        //camera.rotationOrbit(-0.001f, 0.001f, new Vector3d(0.0d,0.0d,0.0d));
     }
 
     private void setupShader() {
@@ -190,10 +196,10 @@ public class OpenGlViwer {
 
         int linkStatus = GL20.glGetProgrami(program, GL20.GL_LINK_STATUS);
         if (linkStatus == GL_FALSE) {
-            System.err.println(GL20.glGetShaderInfoLog(vertexShader, GL20.glGetShaderi(vertexShader, GL20.GL_INFO_LOG_LENGTH)));
-            System.err.println(GL20.glGetShaderInfoLog(fragmentShader, GL20.glGetShaderi(fragmentShader, GL20.GL_INFO_LOG_LENGTH)));
-            System.err.println("Program failed to link");
-            System.err.println(GL20.glGetProgramInfoLog(program, GL20.glGetProgrami(program, GL20.GL_INFO_LOG_LENGTH)));
+            log.error(GL20.glGetShaderInfoLog(vertexShader, GL20.glGetShaderi(vertexShader, GL20.GL_INFO_LOG_LENGTH)));
+            log.error(GL20.glGetShaderInfoLog(fragmentShader, GL20.glGetShaderi(fragmentShader, GL20.GL_INFO_LOG_LENGTH)));
+            log.error("Program failed to link");
+            log.error(GL20.glGetProgramInfoLog(program, GL20.glGetProgrami(program, GL20.GL_INFO_LOG_LENGTH)));
         }
         GL20.glUseProgram(program);
         this.shaderProgram = program;
@@ -209,18 +215,15 @@ public class OpenGlViwer {
                 buffer.append(reader.readLine());
             }
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            log.info(e.getMessage());
         }
         String shaderSource = buffer.toString();
         return shaderSource;
     }
 
     private void draw() {
-//        System.out.println("position : " + camera.position);
-//        System.out.println("right : " + camera.right);
-//        System.out.println("up : " + camera.up);
-//        System.out.println("dir : " + camera.direction);
-        //camera.rotationOrbit(0.00005f, -0.0000f, new Vector3d(0.0d,0.0d,-1.0d));
+        camera.rotationOrbit(0.00005f, -0.0000f, new Vector3d(0.0d,0.0d,-1.0d));
+
         int[] width = new int[1];
         int[] height = new int[1];
 
@@ -240,10 +243,8 @@ public class OpenGlViwer {
             Matrix4d modelViewMatrix = this.camera.getModelViewMatrix();
 
             FloatBuffer projectionMatrixBuffer = stack.mallocFloat(16);
-            //float[] projectionMatrixBuffer = new float[16];
             projectionMatrix.get(projectionMatrixBuffer);
 
-            //float[] modelViewMatrixBuffer = new float[16];
             FloatBuffer modelViewMatrixBuffer = stack.mallocFloat(16);
             modelViewMatrix.get(modelViewMatrixBuffer);
 
@@ -289,9 +290,5 @@ public class OpenGlViwer {
             // 이벤트를 폴링상태로 둡니다. key 콜백이 실행되려면 폴링상태가 활성화 되어있어야 합니다.
             glfwPollEvents();
         }
-    }
-
-    public static void main(String[] args) {
-        new OpenGlViwer().run();
     }
 }

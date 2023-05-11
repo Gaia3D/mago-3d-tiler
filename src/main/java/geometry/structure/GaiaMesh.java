@@ -113,12 +113,12 @@ public class GaiaMesh {
     }
 
     // getTotalTexCoordsCount
-    public int getTextureCoordinatesCount() {
+    public int getTexcoordsCount() {
         int count = 0;
         for (GaiaPrimitive primitive : primitives) {
             for (GaiaVertex vertex : primitive.getVertices()) {
-                Vector2d textureCoordinates = vertex.getTextureCoordinates();
-                if (textureCoordinates != null) {
+                Vector2d texcoords = vertex.getTexcoords();
+                if (texcoords != null) {
                     count+=2;
                 }
             }
@@ -127,18 +127,18 @@ public class GaiaMesh {
     }
 
     // getTotalTexCoords
-    public ArrayList<Float> getTextureCoordinates() {
-        ArrayList<Float> totalTexCoords = new ArrayList<>();
+    public ArrayList<Float> getTexcoords() {
+        ArrayList<Float> totalTexcoords = new ArrayList<>();
         for (GaiaPrimitive primitive : primitives) {
             for (GaiaVertex vertex : primitive.getVertices()) {
-                Vector2d textureCoordinates = vertex.getTextureCoordinates();
-                if (textureCoordinates != null) {
-                    totalTexCoords.add((float) vertex.getTextureCoordinates().x());
-                    totalTexCoords.add((float) vertex.getTextureCoordinates().y());
+                Vector2d texcoords = vertex.getTexcoords();
+                if (texcoords != null) {
+                    totalTexcoords.add((float) vertex.getTexcoords().x());
+                    totalTexcoords.add((float) vertex.getTexcoords().y());
                 }
             }
         }
-        return totalTexCoords;
+        return totalTexcoords;
     }
 
     public int getColorsCount() {

@@ -18,8 +18,8 @@ public class BaseObject extends RenderableObject {
 
     public BaseObject() {
         super();
-        this.size = 256.0f;
-        this.setPosition(0.0f, 0.0f, -size/4);
+        this.size = 1024.0f;
+        this.setPosition(0.0f, 0.0f, -100.0f);
         this.setRotation(0.0f, 0.0f, 0.0f);
     }
     @Override
@@ -85,11 +85,7 @@ public class BaseObject extends RenderableObject {
                     positionList.add(endY);
                     positionList.add(0.0f);
 
-                    Vector3d normal = GeometryUtils.calcNormal(
-                            new Vector3d(startX, startY, 0.0f),
-                            new Vector3d(endX, endY, 0.0f),
-                            new Vector3d(endX, startY, 0.0f)
-                    );
+                    Vector3d normal = GeometryUtils.calcNormal(new Vector3d(startX, startY, 0.0f), new Vector3d(endX, endY, 0.0f), new Vector3d(endX, startY, 0.0f));
 
                     normalList.add((float) normal.x);
                     normalList.add((float) normal.y);

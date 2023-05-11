@@ -48,7 +48,7 @@ public class OriginObject extends RenderableObject {
             ArrayList<Short> indicesList = new ArrayList<Short>();
             ArrayList<Float> positionList = new ArrayList<Float>();
             ArrayList<Float> colorList = new ArrayList<Float>();
-            // forward
+
             positionList.add(0.0f);
             positionList.add(0.0f);
             positionList.add(0.0f);
@@ -105,7 +105,6 @@ public class OriginObject extends RenderableObject {
             colorList.add(1.0f);
             colorList.add(1.0f);
 
-            // forward
             indicesList.add((short) 0);
             indicesList.add((short) 1);
 

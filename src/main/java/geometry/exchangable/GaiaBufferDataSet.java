@@ -22,10 +22,7 @@ import util.ArrayUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Getter
 @Setter
@@ -38,6 +35,8 @@ public class GaiaBufferDataSet<T> {
     RenderableBuffer renderableBuffer = null;
     TextureBuffer textureBuffer = null;
 
+    Matrix4d preMultipliedTransformMatrix = null;
+
     public GaiaBufferDataSet() {
         this.buffers = new LinkedHashMap<>();
     }
@@ -45,7 +44,17 @@ public class GaiaBufferDataSet<T> {
     public void render(int program, List<GaiaMaterial> materials) {
         int uObjectTransformMatrix = GL20.glGetUniformLocation(program, "uObjectTransformMatrix");
         float[] objectTransformMatrixBuffer = new float[16];
-        Matrix4d preMultipliedTransformMatrix = new Matrix4d().identity();
+
+        Matrix4d preMultipliedTransformMatrix = this.getPreMultipliedTransformMatrix();
+        if (preMultipliedTransformMatrix == null) {
+            preMultipliedTransformMatrix = new Matrix4d().identity();
+
+            Random random = new Random();
+            float x = (random.nextFloat() * 1000) - 500;
+            float y = (random.nextFloat() * 1000) - 500;
+            preMultipliedTransformMatrix.translate(new Vector3d(x, y, 0.0f));
+            this.preMultipliedTransformMatrix = preMultipliedTransformMatrix;
+        }
         preMultipliedTransformMatrix.get(objectTransformMatrixBuffer);
         GL20.glUniformMatrix4fv(uObjectTransformMatrix, false, objectTransformMatrixBuffer);
 
@@ -66,7 +75,7 @@ public class GaiaBufferDataSet<T> {
             renderableBuffer.setAttribute(renderableBuffer.getTextureCoordinateVbo(), aVertexTextureCoordinate, 2, 0);
 
             List<GaiaTexture> textures = material.getTextures().get(TextureType.DIFFUSE);
-            if (textures.size() > 0) {
+            if (textures != null && textures.size() > 0) {
                 GaiaTexture texture = textures.get(0);
                 if (texture.getBufferedImage() == null) {
                     //texture.setFormat(GL20.GL_RGB);
@@ -254,14 +263,14 @@ public class GaiaBufferDataSet<T> {
                     for (int i = 0; i < vertices.size(); i++) {
                         GaiaVertex vertex = vertices.get(i);
                         Vector2d texcoord = new Vector2d(texcoords.get(texcoordCount++), texcoords.get(texcoordCount++));
-                        vertex.setTextureCoordinates(texcoord);
+                        vertex.setTexcoords(texcoord);
                     }
                 } else {
                     int texcoordSize = texcoords.size();
                     for (int i = 0; i < texcoordSize; i += 2) {
                         GaiaVertex vertex = new GaiaVertex();
                         Vector2d texcoord = new Vector2d(texcoords.get(i), texcoords.get(i + 1));
-                        vertex.setTextureCoordinates(texcoord);
+                        vertex.setTexcoords(texcoord);
                         vertices.add(vertex);
                     }
                 }
