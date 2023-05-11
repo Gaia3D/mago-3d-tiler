@@ -7,7 +7,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Getter
 @Setter
@@ -16,40 +15,41 @@ public class GltfBinary {
     private int textureId = -1;
     private int imageId = -1;
 
-    private Optional<ByteBuffer> body = Optional.empty();
+    private ByteBuffer body = null;
     private List<GltfNodeBuffer> nodeBuffers = new ArrayList<>();
 
     public void fill() {
-        body = Optional.of(ByteBuffer.allocate(nodeBuffers.stream().mapToInt(GltfNodeBuffer::getTotalByteBufferLength).sum()));
-        if (body.isPresent()) {
-            ByteBuffer bodyBuffer = body.get();
+
+        body = ByteBuffer.allocate(nodeBuffers.stream().mapToInt(GltfNodeBuffer::getTotalByteBufferLength).sum());
+        if (body != null) {
+            ByteBuffer bodyBuffer = body;
             bodyBuffer.order(ByteOrder.LITTLE_ENDIAN);
             bodyBuffer.clear();
             nodeBuffers.stream().forEach((nodeBuffer) -> {
-                if (nodeBuffer.getIndicesBuffer().isPresent()) {
-                    nodeBuffer.getIndicesBuffer().get().rewind();
-                    nodeBuffer.getIndicesBuffer().get().limit(nodeBuffer.getIndicesBuffer().get().capacity());
-                    bodyBuffer.put(nodeBuffer.getIndicesBuffer().get());
+                if (nodeBuffer.getIndicesBuffer() != null) {
+                    nodeBuffer.getIndicesBuffer().rewind();
+                    nodeBuffer.getIndicesBuffer().limit(nodeBuffer.getIndicesBuffer().capacity());
+                    bodyBuffer.put(nodeBuffer.getIndicesBuffer());
                 }
-                if (nodeBuffer.getPositionsBuffer().isPresent()) {
-                    nodeBuffer.getPositionsBuffer().get().rewind();
-                    nodeBuffer.getPositionsBuffer().get().limit(nodeBuffer.getPositionsBuffer().get().capacity());
-                    bodyBuffer.put(nodeBuffer.getPositionsBuffer().get());
+                if (nodeBuffer.getPositionsBuffer() != null) {
+                    nodeBuffer.getPositionsBuffer().rewind();
+                    nodeBuffer.getPositionsBuffer().limit(nodeBuffer.getPositionsBuffer().capacity());
+                    bodyBuffer.put(nodeBuffer.getPositionsBuffer());
                 }
-                if (nodeBuffer.getNormalsBuffer().isPresent()) {
-                    nodeBuffer.getNormalsBuffer().get().rewind();
-                    nodeBuffer.getNormalsBuffer().get().limit(nodeBuffer.getNormalsBuffer().get().capacity());
-                    bodyBuffer.put(nodeBuffer.getNormalsBuffer().get());
+                if (nodeBuffer.getNormalsBuffer() != null) {
+                    nodeBuffer.getNormalsBuffer().rewind();
+                    nodeBuffer.getNormalsBuffer().limit(nodeBuffer.getNormalsBuffer().capacity());
+                    bodyBuffer.put(nodeBuffer.getNormalsBuffer());
                 }
-                if (nodeBuffer.getColorsBuffer().isPresent()) {
-                    nodeBuffer.getColorsBuffer().get().rewind();
-                    nodeBuffer.getColorsBuffer().get().limit(nodeBuffer.getColorsBuffer().get().capacity());
-                    bodyBuffer.put(nodeBuffer.getColorsBuffer().get());
+                if (nodeBuffer.getColorsBuffer() != null) {
+                    nodeBuffer.getColorsBuffer().rewind();
+                    nodeBuffer.getColorsBuffer().limit(nodeBuffer.getColorsBuffer().capacity());
+                    bodyBuffer.put(nodeBuffer.getColorsBuffer());
                 }
-                if (nodeBuffer.getTextureCoordinatesBuffer().isPresent()) {
-                    nodeBuffer.getTextureCoordinatesBuffer().get().rewind();
-                    nodeBuffer.getTextureCoordinatesBuffer().get().limit(nodeBuffer.getTextureCoordinatesBuffer().get().capacity());
-                    bodyBuffer.put(nodeBuffer.getTextureCoordinatesBuffer().get());
+                if (nodeBuffer.getTextureCoordinatesBuffer() != null) {
+                    nodeBuffer.getTextureCoordinatesBuffer().rewind();
+                    nodeBuffer.getTextureCoordinatesBuffer().limit(nodeBuffer.getTextureCoordinatesBuffer().capacity());
+                    bodyBuffer.put(nodeBuffer.getTextureCoordinatesBuffer());
                 }
             });
             bodyBuffer.rewind();
