@@ -1,8 +1,13 @@
 package geometry.exchangable;
 
-import geometry.structure.*;
+import geometry.structure.GaiaMaterial;
+import geometry.structure.GaiaPrimitive;
+import geometry.structure.GaiaTexture;
+import geometry.structure.GaiaVertex;
 import geometry.types.AttributeType;
 import geometry.types.TextureType;
+import io.LittleEndianDataInputStream;
+import io.LittleEndianDataOutputStream;
 import lombok.Getter;
 import lombok.Setter;
 import org.joml.Matrix4d;
@@ -14,9 +19,8 @@ import org.lwjgl.system.MemoryStack;
 import renderable.RenderableBuffer;
 import renderable.TextureBuffer;
 import util.ArrayUtils;
-import util.BinaryUtils;
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -167,27 +171,27 @@ public class GaiaBufferDataSet<T> {
         return this.textureBuffer;
     }
 
-    public void write(DataOutputStream stream) throws IOException {
-        BinaryUtils.writeInt(stream, id);
-        BinaryUtils.writeText(stream, guid);
-        BinaryUtils.writeInt(stream, materialId);
-        BinaryUtils.writeInt(stream,  buffers.size());
+    public void write(LittleEndianDataOutputStream stream) throws IOException {
+        stream.writeInt(id);
+        stream.writeText(guid);
+        stream.writeInt(materialId);
+        stream.writeInt(buffers.size());
         for (Map.Entry<AttributeType, GaiaBuffer> entry : buffers.entrySet()) {
             AttributeType attributeType = entry.getKey();
             GaiaBuffer buffer = entry.getValue();
-            BinaryUtils.writeText(stream, attributeType.getGaia());
+            stream.writeText(attributeType.getGaia());
             buffer.writeBuffer(stream);
         }
     }
 
     //read
-    public void read(DataInputStream stream) throws IOException {
-        this.setId(BinaryUtils.readInt(stream));
-        this.setGuid(BinaryUtils.readText(stream));
-        this.setMaterialId(BinaryUtils.readInt(stream));
-        int size = BinaryUtils.readInt(stream);
+    public void read(LittleEndianDataInputStream stream) throws IOException {
+        this.setId(stream.readInt());
+        this.setGuid(stream.readText());
+        this.setMaterialId(stream.readInt());
+        int size = stream.readInt();
         for (int i = 0; i < size; i++) {
-            String gaiaAttribute = BinaryUtils.readText(stream);
+            String gaiaAttribute = stream.readText();
             AttributeType attributeType = AttributeType.getGaiaAttribute(gaiaAttribute);
             GaiaBuffer buffer = new GaiaBuffer();
             buffer.readBuffer(stream);

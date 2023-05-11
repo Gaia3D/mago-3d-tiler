@@ -3,13 +3,14 @@ package geometry.exchangable;
 import geometry.structure.GaiaMaterial;
 import geometry.structure.GaiaNode;
 import geometry.structure.GaiaScene;
+import io.LittleEndianDataInputStream;
+import io.LittleEndianDataOutputStream;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
-import util.BinaryUtils;
 import util.FileUtils;
 
 import java.io.*;
@@ -60,14 +61,14 @@ public class GaiaSet {
 
     public void writeFile(Path path) {
         File output = new File(path.toAbsolutePath().toString(), projectName + ".mgb");
-        try (DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(output)))) {
-            BinaryUtils.writeByte(stream, isBigEndian);
-            BinaryUtils.writeText(stream, projectName);
-            BinaryUtils.writeInt(stream, materials.size());
+        try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(output)))) {
+            stream.writeByte(isBigEndian);
+            stream.writeText(projectName);
+            stream.writeInt(materials.size());
             for (GaiaMaterial material : materials) {
                 material.write(stream);
             }
-            BinaryUtils.writeInt(stream, bufferDatas.size());
+            stream.writeInt(bufferDatas.size());
             for (GaiaBufferDataSet bufferData : bufferDatas) {
                 bufferData.write(stream);
             }
@@ -80,10 +81,10 @@ public class GaiaSet {
         File input = path.toFile();
         Path imagesPath = path.getParent().resolve("images");
 
-        try (DataInputStream stream = new DataInputStream(new BufferedInputStream(new FileInputStream(input)))) {
-            this.setIsBigEndian(BinaryUtils.readByte(stream));
-            this.setProjectName(BinaryUtils.readText(stream));
-            int materialCount = BinaryUtils.readInt(stream);
+        try (LittleEndianDataInputStream stream = new LittleEndianDataInputStream(new BufferedInputStream(new FileInputStream(input)))) {
+            this.setIsBigEndian(stream.readByte());
+            this.setProjectName(stream.readText());
+            int materialCount = stream.readInt();
             List<GaiaMaterial> materials = new ArrayList<>();
             for (int i = 0; i < materialCount; i++) {
                 GaiaMaterial material = new GaiaMaterial();
@@ -91,7 +92,7 @@ public class GaiaSet {
                 materials.add(material);
             }
             this.setMaterials(materials);
-            int bufferDataCount = BinaryUtils.readInt(stream);
+            int bufferDataCount = stream.readInt();
             List<GaiaBufferDataSet> bufferDataSets = new ArrayList<>();
             for (int i = 0; i < bufferDataCount; i++) {
                 GaiaBufferDataSet bufferDataSet = new GaiaBufferDataSet();

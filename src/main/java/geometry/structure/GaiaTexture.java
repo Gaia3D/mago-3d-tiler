@@ -1,6 +1,8 @@
 package geometry.structure;
 
 import geometry.types.TextureType;
+import io.LittleEndianDataInputStream;
+import io.LittleEndianDataOutputStream;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,11 +11,11 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
-import util.BinaryUtils;
 import util.FileUtils;
 
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
@@ -124,12 +126,11 @@ public class GaiaTexture {
         }
     }
 
-    public void write(DataOutputStream stream) throws IOException {
-        BinaryUtils.writeText(stream, path);
-        //BinaryUtils.writeText(stream, "magoMosaicTex_0.jpg"); // just for test
+    public void write(LittleEndianDataOutputStream stream) throws IOException {
+        stream.writeText(path);
     }
 
-    public void read(DataInputStream stream) throws IOException {
-        this.setPath(BinaryUtils.readText(stream));
+    public void read(LittleEndianDataInputStream stream) throws IOException {
+        this.setPath(stream.readText());
     }
 }

@@ -1,14 +1,15 @@
 package geometry.structure;
 
 import geometry.types.TextureType;
-import lombok.NoArgsConstructor;
+import io.LittleEndianDataInputStream;
+import io.LittleEndianDataOutputStream;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.joml.Vector4d;
-import util.BinaryUtils;
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -29,23 +30,23 @@ public class GaiaMaterial {
     private String name = "no_name";
     private LinkedHashMap<TextureType, List<GaiaTexture>> textures = new LinkedHashMap<>();
 
-    public void write(DataOutputStream stream) throws IOException {
-        BinaryUtils.writeInt(stream, id);
-        BinaryUtils.writeText(stream, name);
-        BinaryUtils.writeVector4(stream, diffuseColor);
-        BinaryUtils.writeVector4(stream, ambientColor);
-        BinaryUtils.writeVector4(stream, specularColor);
-        BinaryUtils.writeFloat(stream, shininess);
-        BinaryUtils.writeInt(stream, textures.size());
+    public void write(LittleEndianDataOutputStream stream) throws IOException {
+        stream.writeInt(id);
+        stream.writeText(name);
+        stream.writeVector4(diffuseColor);
+        stream.writeVector4(ambientColor);
+        stream.writeVector4(specularColor);
+        stream.writeFloat(shininess);
+        stream.writeInt(textures.size());
         for (Map.Entry<TextureType, List<GaiaTexture>> entry : textures.entrySet()) {
             TextureType gaiaMaterialType = entry.getKey();
             List<GaiaTexture> gaiaTextures = entry.getValue();
 
-            BinaryUtils.writeByte(stream, gaiaMaterialType.getValue());
-            BinaryUtils.writeInt(stream, gaiaTextures.size());
+            stream.writeByte(gaiaMaterialType.getValue());
+            stream.writeInt(gaiaTextures.size());
             for (GaiaTexture gaiaTexture : gaiaTextures) {
                 boolean isExist = gaiaTexture != null;
-                BinaryUtils.writeBoolean(stream, isExist);
+                stream.writeBoolean(isExist);
                 if (isExist) {
                     gaiaTexture.write(stream);
                 }
@@ -53,25 +54,25 @@ public class GaiaMaterial {
         }
     }
 
-    public void read(DataInputStream stream, Path parentPath) throws IOException {
-        this.setId(BinaryUtils.readInt(stream));
-        this.setName(BinaryUtils.readText(stream));
-        this.setDiffuseColor(BinaryUtils.readVector4(stream));
-        this.setAmbientColor(BinaryUtils.readVector4(stream));
-        this.setSpecularColor(BinaryUtils.readVector4(stream));
-        this.setShininess(BinaryUtils.readFloat(stream));
-        int texturesSize = BinaryUtils.readInt(stream);
+    public void read(LittleEndianDataInputStream stream, Path parentPath) throws IOException {
+        this.setId(stream.readInt());
+        this.setName(stream.readText());
+        this.setDiffuseColor(stream.readVector4());
+        this.setAmbientColor(stream.readVector4());
+        this.setSpecularColor(stream.readVector4());
+        this.setShininess(stream.readFloat());
+        int texturesSize = stream.readInt();
 
         for (int i = 0; i < texturesSize; i++) {
             List<GaiaTexture> gaiaTextures = new ArrayList<>();
-            byte textureType = BinaryUtils.readByte(stream);
-            int gaiaTexturesSize = BinaryUtils.readInt(stream);
+            byte textureType = stream.readByte();
+            int gaiaTexturesSize = stream.readInt();
             TextureType gaiaMaterialType = TextureType.fromValue(textureType);
 
             //int gaiaTexturesSize = BinaryUtils.readInt(stream);
 
             for (int j = 0; j < gaiaTexturesSize; j++) {
-                boolean isExist = BinaryUtils.readBoolean(stream);
+                boolean isExist = stream.readBoolean();
                 if (isExist) {
                     GaiaTexture gaiaTexture = new GaiaTexture();
                     gaiaTexture.setParentPath(parentPath);
