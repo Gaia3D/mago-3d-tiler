@@ -13,7 +13,7 @@ import org.joml.Vector3f;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GaiaBoundingBox {
-    private double minX;
+    private double minX; //
     private double minY;
     private double minZ;
     private double maxX;
