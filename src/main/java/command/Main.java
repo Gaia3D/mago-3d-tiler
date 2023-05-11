@@ -18,19 +18,15 @@ import java.lang.reflect.Field;
 @Slf4j
 public class Main {
     public static void main(String[] args) {
-        //Command command = new Command();
-        //command.excute(arg);
         LoggerConfigurator.initLogger();
         Options options = new Options();
         options.addOption("h", "help", false, "print help");
         options.addOption("v", "version", false, "print version");
         options.addOption("r", "recursive", false, "recursive");
-
         options.addOption("i", "input", true, "input file path");
         options.addOption("o", "output", true, "output file path");
         options.addOption("it", "inputType", true, "input file type");
         options.addOption("ot", "outputType", true, "output file type");
-
         options.addOption("q", "quiet", false, "quiet mode");
 
         CommandLineParser parser = new DefaultParser();
@@ -51,14 +47,17 @@ public class Main {
                 return;
             }
 
-            /*for (Option option : cmd.getOptions()) {
-                log.info(option.getOpt());
-            }*/
+            if (!cmd.hasOption("input")) {
+                log.error("input file path is not specified.");
+                return;
+            }
+            if (!cmd.hasOption("output")) {
+                log.error("output file path is not specified.");
+                return;
+            }
 
-            String inputPath = cmd.getOptionValue("input");
-            String outputPath = cmd.getOptionValue("output");
-            File inputFile = new File(inputPath);
-            File outputFile = new File(outputPath);
+            File inputFile = new File(cmd.getOptionValue("input"));
+            File outputFile = new File(cmd.getOptionValue("output"));
             excute(cmd, inputFile, outputFile, 0);
         } catch (ParseException e) {
             e.printStackTrace();
@@ -84,7 +83,7 @@ public class Main {
                 log.error("output type is not supported. :: " + outputExtension);
             }
         } else if (inputFile.isDirectory()) {
-            if (command.getOptionValue("recursive") == null && (depth > 0)) {
+            if (!command.hasOption("recursive") && (depth > 0)) {
                 return;
             }
             for (File child : inputFile.listFiles()) {

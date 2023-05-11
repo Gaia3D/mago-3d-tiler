@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 
 class MainTest {
 
-    private static final String INPUT_PATH = "C:\\data\\sample\\";
-    private static final String OUTPUT_PATH = "C:\\data\\sample\\output\\";
+    private static final String INPUT_PATH = "C:\\data\\plasma-test\\";
+    private static final String OUTPUT_PATH = "C:\\data\\plasma-test\\output\\";
 
     @Test
     void versionTest() {

@@ -18,11 +18,11 @@ import java.util.List;
 
 class GaiaSetTest {
 
-    //private static final String FILE_NAME = "DC_library_del";
-    //private static final String INPUT_PATH = "C:\\data\\sample\\Data3D\\DC_library_del_3DS\\DC_library_del.3ds";
+    private static final String FILE_NAME = "DC_library_del";
+    private static final String INPUT_PATH = "C:\\data\\sample\\Data3D\\DC_library_del_3DS\\DC_library_del.3ds";
 
-    private static final String FILE_NAME = "a_bd001";
-    private static final String INPUT_PATH = "C:\\data\\sample\\a_bd001.3ds";
+    //private static final String FILE_NAME = "a_bd001";
+    //private static final String INPUT_PATH = "C:\\data\\sample\\a_bd001.3ds";
 
     //private static final String FILE_NAME = "face";
     //private static final String INPUT_PATH = "C:\\data\\sample\\face.3ds";
