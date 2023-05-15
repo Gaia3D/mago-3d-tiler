@@ -10,10 +10,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.joml.*;
 import org.lwjgl.opengl.GL20;
+import util.ArrayUtils;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 import java.util.List;
 
 @Getter
@@ -32,8 +31,59 @@ public class GaiaNode {
 
     public GaiaNode(GaiaBufferDataSet bufferDataSet) {
         GaiaMesh mesh = new GaiaMesh();
+
         GaiaPrimitive primitive = bufferDataSet.toPrimitive();
         primitive.setMaterialIndex(bufferDataSet.getMaterialId());
+
+        List<Integer> indiceList = null;
+        List<Float> positionList = null;
+        List<Float> normalList = null;
+        List<Float> texCoordList = null;
+        List<GaiaVertex> vertexList = new ArrayList<>();
+
+        LinkedHashMap<AttributeType, GaiaBuffer> buffers = bufferDataSet.getBuffers();
+        for (Map.Entry<AttributeType, GaiaBuffer> entry : buffers.entrySet()) {
+            AttributeType attributeType = entry.getKey();
+            GaiaBuffer buffer = entry.getValue();
+            if (attributeType == AttributeType.POSITION) {
+                float[] positions = buffer.getFloats();
+                positionList = ArrayUtils.convertArrayListToFloatArray(positions);
+            } else if (attributeType == AttributeType.NORMAL) {
+                float[] normals = buffer.getFloats();
+                normalList = ArrayUtils.convertArrayListToFloatArray(normals);
+            } else if (attributeType == AttributeType.TEXCOORD) {
+                float[] texCoords = buffer.getFloats();
+                texCoordList = ArrayUtils.convertArrayListToFloatArray(texCoords);
+            } else if (attributeType == AttributeType.INDICE) {
+                short[] indices = buffer.getShorts();
+                indiceList = ArrayUtils.convertIntArrayListToShortArray(indices);
+            }
+        }
+        primitive.setIndices(indiceList);
+
+        for (int i = 0; i < positionList.size() / 3; i++) {
+            int vertexIndex = i * 3;
+
+            float positionX = positionList.get(vertexIndex);
+            float positionY = positionList.get(vertexIndex + 1);
+            float positionZ = positionList.get(vertexIndex + 2);
+
+            float normalX = normalList.get(vertexIndex);
+            float normalY = normalList.get(vertexIndex + 1);
+            float normalZ = normalList.get(vertexIndex + 2);
+
+            int texcoordIndex = i * 2;
+            float texcoordX = texCoordList.get(texcoordIndex);
+            float texcoordY = texCoordList.get(texcoordIndex + 1);
+
+            GaiaVertex vertex = new GaiaVertex();
+            vertex.setPosition(new Vector3d(positionX, positionY, positionZ));
+            vertex.setNormal(new Vector3d(normalX, normalY, normalZ));
+            vertex.setTexcoords(new Vector2d(texcoordX, texcoordY));
+
+            vertexList.add(vertex);
+        }
+        primitive.setVertices(vertexList);
         mesh.getPrimitives().add(primitive);
         this.meshes.add(mesh);
         /*bufferDataSet.getBuffers().forEach((attributeType, buffer) -> {
@@ -286,16 +336,19 @@ public class GaiaNode {
         return totalColors;
     }
 
-    public List<GaiaBufferDataSet> toGaiaBufferSets(List<GaiaBufferDataSet> bufferSets) {
+    public Matrix4d toGaiaBufferSets(List<GaiaBufferDataSet> bufferSets, Matrix4d transformMatrix) {
         if (bufferSets == null) {
             bufferSets = new ArrayList<GaiaBufferDataSet>();
         }
         for (GaiaMesh mesh : this.getMeshes()) {
+            if (transformMatrix == null && this.getPreMultipliedTransformMatrix() != null) {
+                transformMatrix = this.getPreMultipliedTransformMatrix();
+            }
             mesh.toGaiaBufferSets(bufferSets);
         }
         for (GaiaNode child : this.getChildren()) {
-            child.toGaiaBufferSets(bufferSets);
+            transformMatrix = child.toGaiaBufferSets(bufferSets, transformMatrix);
         }
-        return bufferSets;
+        return transformMatrix;
     }
 }

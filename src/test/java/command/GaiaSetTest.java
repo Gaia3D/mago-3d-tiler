@@ -15,6 +15,7 @@ import renderable.RenderableObject;
 import viewer.OpenGlViwer;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -29,7 +30,7 @@ class GaiaSetTest {
 
 
 
-    private static final String INPUT_PATH = "C:\\data\\plasma-test\\ws2-100\\";
+    private static final String INPUT_PATH = "C:\\data\\plasma-test\\ws2-3ds\\";
     private static final String OUTPUT_PATH = "C:\\data\\plasma-test\\output\\";
 
     private static final AssimpConverter assimpConverter = new AssimpConverter(null);
@@ -130,17 +131,46 @@ class GaiaSetTest {
     }
 
     @Test
+    void convertGltfTogGaiaSet() {
+        Configurator.initLogger();
+        GaiaUniverse gaiaUniverse = new GaiaUniverse();
+        File inputFile = new File(INPUT_PATH);
+        File outputFile = new File(OUTPUT_PATH);
+        Path outputPath = outputFile.toPath().resolve("batched" + ".mgb");
+
+        convertFiles(gaiaUniverse, inputFile);
+        GaiaSet writedGaiaSets = gaiaUniverse.writeFiles(outputFile.toPath());
+
+        GaiaSet readedGaiaSet = new GaiaSet();
+        readedGaiaSet.readFile(outputPath);
+        GaiaScene scene = new GaiaScene(readedGaiaSet);
+        GltfWriter.writeGltf(scene, OUTPUT_PATH + FILE_NAME + ".gltf");
+    }
+
+    @Test
     void renderTest1312f() {
+        Configurator.initLogger();
+
         OpenGlViwer openGlViwer = new OpenGlViwer(500, 500);
         List<RenderableObject> renderableObjectList = openGlViwer.getRenderableObjects();
 
 
         GaiaUniverse gaiaUniverse = new GaiaUniverse();
         File inputFile = new File(INPUT_PATH);
-        convertFiles(gaiaUniverse, inputFile);
-        GaiaSet gaiaSets = gaiaUniverse.writeFiles(new File(OUTPUT_PATH).toPath());
+        File outputFile = new File(OUTPUT_PATH);
+        Path outputPath = outputFile.toPath().resolve("batched" + ".mgb");
 
-        GaiaSetObject gaiaSetObject = new GaiaSetObject(gaiaSets);
+        convertFiles(gaiaUniverse, inputFile);
+        GaiaSet writedGaiaSets = gaiaUniverse.writeFiles(outputFile.toPath());
+        //GaiaScene scene = new GaiaScene(writedGaiaSets);
+
+        GaiaSet readedGaiaSet = new GaiaSet();
+        readedGaiaSet.readFile(outputPath);
+
+        GaiaScene scene = new GaiaScene(readedGaiaSet);
+        GltfWriter.writeGltf(scene, OUTPUT_PATH + FILE_NAME + ".gltf");
+
+        GaiaSetObject gaiaSetObject = new GaiaSetObject(readedGaiaSet);
         renderableObjectList.add(gaiaSetObject);
         openGlViwer.run();
     }
@@ -152,7 +182,9 @@ class GaiaSetTest {
             gaiaUniverse.getScenes().add(scene);
         } else if (inputFile.isDirectory()){
             for (File child : inputFile.listFiles()) {
-                convertFiles(gaiaUniverse, child);
+                if (gaiaUniverse.getGaiaSets().size() <= 100) {
+                    convertFiles(gaiaUniverse, child);
+                }
             }
         }
         return gaiaUniverse;
@@ -165,7 +197,7 @@ class GaiaSetTest {
             gaiaSets.add(gaiaSet);
         } else if (outputFile.isDirectory()){
             for (File child : outputFile.listFiles()) {
-                if (gaiaSets.size() <= 500) {
+                if (gaiaSets.size() <= 100) {
                     readFiles(gaiaSets, child);
                 }
             }

@@ -35,6 +35,7 @@ public class GaiaBufferDataSet<T> {
     RenderableBuffer renderableBuffer = null;
     TextureBuffer textureBuffer = null;
 
+    Matrix4d transformMatrix = null;
     Matrix4d preMultipliedTransformMatrix = null;
 
     public GaiaBufferDataSet() {
@@ -49,11 +50,11 @@ public class GaiaBufferDataSet<T> {
         if (preMultipliedTransformMatrix == null) {
             preMultipliedTransformMatrix = new Matrix4d().identity();
 
-            Random random = new Random();
-            float x = (random.nextFloat() * 1000) - 500;
-            float y = (random.nextFloat() * 1000) - 500;
-            preMultipliedTransformMatrix.translate(new Vector3d(x, y, 0.0f));
-            this.preMultipliedTransformMatrix = preMultipliedTransformMatrix;
+            //Random random = new Random();
+            //float x = (random.nextFloat() * 1000) - 500;
+            //float y = (random.nextFloat() * 1000) - 500;
+            //preMultipliedTransformMatrix.translate(new Vector3d(x, y, 0.0f));
+            //this.preMultipliedTransformMatrix = preMultipliedTransformMatrix;
         }
         preMultipliedTransformMatrix.get(objectTransformMatrixBuffer);
         GL20.glUniformMatrix4fv(uObjectTransformMatrix, false, objectTransformMatrixBuffer);

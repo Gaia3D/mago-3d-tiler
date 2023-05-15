@@ -11,9 +11,12 @@ import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
+import org.locationtech.proj4j.CRSFactory;
+import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
 import util.FileUtils;
+import util.GeometryUtils;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -95,13 +98,17 @@ public class AssimpConverter {
         GaiaNode node = processNode(gaiaScene, aiScene, aiNode, null);
 
         Matrix4d rootTransform = node.getTransformMatrix();
-        //rootTransform.rotateX(Math.toRadians(90), rootTransform);
+        rootTransform.rotateX(Math.toRadians(90), rootTransform);
 
-        GaiaBoundingBox boundingBox = node.getBoundingBox(null);
-        Vector3d boundingBoxCenter = boundingBox.getCenter();
+        //GaiaBoundingBox boundingBox = node.getBoundingBox(null);
+        //Vector3d boundingBoxCenter = boundingBox.getCenter();
 
-        Vector3d volume = boundingBox.getVolume();
-        Vector3d translation = new Vector3d(-boundingBoxCenter.x, -boundingBoxCenter.y, -boundingBoxCenter.z);
+        //Vector3d volume = boundingBox.getVolume();
+        //Vector3d translation = new Vector3d(boundingBoxCenter);
+        //translation.negate();
+
+        //Vector3d translation = new Vector3d(-boundingBoxCenter.x, -boundingBoxCenter.y, -boundingBoxCenter.z);
+
         //CRSFactory factory = new CRSFactory();
         //CoordinateReferenceSystem epsg5186 = factory.createFromParameters("EPSG:5186", "+proj=tmerc +lat_0=38 +lon_0=127 +k=1 +x_0=200000 +y_0=600000 +ellps=GRS80 +units=m +no_defs");
         //CoordinateReferenceSystem epsg4326 = factory.createFromParameters("EPSG:4326", "+proj=longlat +datum=WGS84 +no_defs");

@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.io.FilenameUtils;
+import org.joml.Matrix4d;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 import util.FileUtils;
@@ -26,6 +27,9 @@ import java.util.List;
 public class GaiaSet {
     List<GaiaBufferDataSet> bufferDatas;
     List<GaiaMaterial> materials;
+
+    //
+    private Matrix4d transformMatrix;
 
     Vector3d position;
     Vector3d scale;
@@ -48,7 +52,7 @@ public class GaiaSet {
         setProjectName(projectName);
         List<GaiaBufferDataSet> bufferDataSets = new ArrayList<>();
         for (GaiaNode node : gaiaScene.getNodes()) {
-            node.toGaiaBufferSets(bufferDataSets);
+            this.transformMatrix = node.toGaiaBufferSets(bufferDataSets, null);
         }
         setMaterials(gaiaScene.getMaterials());
         setBufferDatas(bufferDataSets);
