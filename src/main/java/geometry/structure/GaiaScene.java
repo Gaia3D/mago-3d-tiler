@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.joml.Matrix4d;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -25,10 +26,17 @@ public class GaiaScene {
     public GaiaScene(GaiaSet gaiaSet) {
         List<GaiaBufferDataSet> bufferDataSets = gaiaSet.getBufferDatas();
         List<GaiaMaterial> materials = gaiaSet.getMaterials();
+
+        Matrix4d transformMatrix = new Matrix4d();
+        transformMatrix.identity();
+        transformMatrix.rotateX(Math.toRadians(-90)); // y and z axis swap
+
         GaiaNode rootNode = new GaiaNode();
-        rootNode.setName("RooT");
+        rootNode.setName("BatchedRootNode");
+        rootNode.setTransformMatrix(transformMatrix);
         this.materials = materials;
         this.nodes.add(rootNode);
+
         bufferDataSets.stream().forEach((bufferDataSet) -> {
             GaiaNode node = new GaiaNode(bufferDataSet);
             rootNode.getChildren().add(node);

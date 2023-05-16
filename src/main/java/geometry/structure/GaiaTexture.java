@@ -11,7 +11,7 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
-import util.FileUtils;
+import util.ImageUtils;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -45,7 +45,7 @@ public class GaiaTexture {
     public BufferedImage readImage() {
         Path diffusePath = new File(path).toPath();
         String imagePath = parentPath + File.separator + diffusePath;
-        BufferedImage bufferedImage = FileUtils.readImage(imagePath);
+        BufferedImage bufferedImage = ImageUtils.readImage(imagePath);
         this.bufferedImage = bufferedImage;
         this.width = bufferedImage.getWidth();
         this.height = bufferedImage.getHeight();

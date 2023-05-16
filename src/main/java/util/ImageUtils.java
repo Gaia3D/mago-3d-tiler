@@ -1,6 +1,8 @@
 package util;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.lwjgl.BufferUtils;
 
 import javax.imageio.ImageIO;
@@ -8,6 +10,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
@@ -15,7 +18,7 @@ import java.nio.file.Path;
 import java.util.Base64;
 
 @Slf4j
-public class FileUtils {
+public class ImageUtils {
     // getNearestPowerOfTwo
     public static int getNearestPowerOfTwo(int value) {
         int power = 1;
@@ -164,7 +167,32 @@ public class FileUtils {
             if (!dest.toFile().exists()) {
                 Files.copy(source, dest);
             } else {
-                //log.error("FileUtils.copyFile: File already exists :: " + dest.toString());
+                //log.warn("FileUtils.copyFile: File already exists :: " + dest.toString());
+            }
+        } catch (IOException e) {
+            log.error("FileUtils.copyFile: " + e.getMessage());
+        }
+    }
+
+    // copyFile
+    public static void copyAndResize(Path source, Path dest) {
+        try {
+            if (!dest.toFile().exists()) {
+                String extension = FilenameUtils.getExtension(source.toString());
+                String mimeType = getMimeTypeByExtension(extension);
+                String formatName = getFormatNameByMimeType(mimeType);
+
+                BufferedImage bufferedImage = ImageIO.read(source.toFile());
+                int width = bufferedImage.getWidth();
+                int height = bufferedImage.getHeight();
+
+                if (width != getNearestPowerOfTwo(width) || height != getNearestPowerOfTwo(height)) {
+                    bufferedImage = resizeImageGraphic2D(bufferedImage, getNearestPowerOfTwo(width), getNearestPowerOfTwo(height));
+                }
+                ImageIO.write(bufferedImage, formatName, dest.toFile());
+                //Files.copy(source, dest);
+            } else {
+                //log.warn("FileUtils.copyFile: File already exists :: " + dest.toString());
             }
         } catch (IOException e) {
             log.error("FileUtils.copyFile: " + e.getMessage());

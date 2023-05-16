@@ -63,32 +63,30 @@ public class GaiaNode {
 
         for (int i = 0; i < positionList.size() / 3; i++) {
             int vertexIndex = i * 3;
-
-            float positionX = positionList.get(vertexIndex);
-            float positionY = positionList.get(vertexIndex + 1);
-            float positionZ = positionList.get(vertexIndex + 2);
-
-            float normalX = normalList.get(vertexIndex);
-            float normalY = normalList.get(vertexIndex + 1);
-            float normalZ = normalList.get(vertexIndex + 2);
-
-            int texcoordIndex = i * 2;
-            float texcoordX = texCoordList.get(texcoordIndex);
-            float texcoordY = texCoordList.get(texcoordIndex + 1);
-
             GaiaVertex vertex = new GaiaVertex();
-            vertex.setPosition(new Vector3d(positionX, positionY, positionZ));
-            vertex.setNormal(new Vector3d(normalX, normalY, normalZ));
-            vertex.setTexcoords(new Vector2d(texcoordX, texcoordY));
-
+            if (positionList != null) {
+                float positionX = positionList.get(vertexIndex);
+                float positionY = positionList.get(vertexIndex + 1);
+                float positionZ = positionList.get(vertexIndex + 2);
+                vertex.setPosition(new Vector3d(positionX, positionY, positionZ));
+            }
+            if (normalList != null) {
+                float normalX = normalList.get(vertexIndex);
+                float normalY = normalList.get(vertexIndex + 1);
+                float normalZ = normalList.get(vertexIndex + 2);
+                vertex.setNormal(new Vector3d(normalX, normalY, normalZ));
+            }
+            if (texCoordList != null) {
+                int texcoordIndex = i * 2;
+                float texcoordX = texCoordList.get(texcoordIndex);
+                float texcoordY = texCoordList.get(texcoordIndex + 1);
+                vertex.setTexcoords(new Vector2d(texcoordX, texcoordY));
+            }
             vertexList.add(vertex);
         }
         primitive.setVertices(vertexList);
         mesh.getPrimitives().add(primitive);
         this.meshes.add(mesh);
-        /*bufferDataSet.getBuffers().forEach((attributeType, buffer) -> {
-            GaiaPrimitive primitive = new GaiaPrimitive();
-        });*/
     }
 
     public void renderNode(int program) {

@@ -32,6 +32,10 @@ public class GaiaBoundingRectangle {
         return new Vector2d((minX + maxX) / 2, (minY + maxY) / 2);
     }
 
+    public Vector2d getRange() {
+        return new Vector2d(maxX - minX, maxY - minY);
+    }
+
     //setInit
     public void setInit(Vector2d vector2d) {
         minX = vector2d.x;
@@ -57,18 +61,18 @@ public class GaiaBoundingRectangle {
     }
 
     //addBoundingBox
-    public void addBoundingBox(GaiaBoundingRectangle boundingBox) {
-        if (boundingBox.minX < minX) {
-            minX = boundingBox.minX;
+    public void addBoundingRectangle(GaiaBoundingRectangle boundingRectangle) {
+        if (boundingRectangle.minX < minX) {
+            minX = boundingRectangle.minX;
         }
-        if (boundingBox.minY < minY) {
-            minY = boundingBox.minY;
+        if (boundingRectangle.minY < minY) {
+            minY = boundingRectangle.minY;
         }
-        if (boundingBox.maxX > maxX) {
-            maxX = boundingBox.maxX;
+        if (boundingRectangle.maxX > maxX) {
+            maxX = boundingRectangle.maxX;
         }
-        if (boundingBox.maxY > maxY) {
-            maxY = boundingBox.maxY;
+        if (boundingRectangle.maxY > maxY) {
+            maxY = boundingRectangle.maxY;
         }
     }
 }

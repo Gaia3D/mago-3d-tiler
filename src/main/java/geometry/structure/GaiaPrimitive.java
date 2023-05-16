@@ -1,6 +1,7 @@
 package geometry.structure;
 
 import geometry.basic.GaiaBoundingBox;
+import geometry.basic.GaiaBoundingRectangle;
 import geometry.exchangable.GaiaBuffer;
 import geometry.exchangable.GaiaBufferDataSet;
 import geometry.types.AttributeType;
@@ -177,6 +178,8 @@ public class GaiaPrimitive {
         ArrayList<Float> batchIdList = new ArrayList<Float>();
         ArrayList<Float> normalList = new ArrayList<Float>();
         ArrayList<Float> textureCoordinateList = new ArrayList<Float>();
+        GaiaBoundingRectangle texcoordBoundingRectangle = null;
+
         for (GaiaVertex vertex : vertices) {
             Vector3d position = vertex.getPosition();
             if (position != null) {
@@ -196,6 +199,12 @@ public class GaiaPrimitive {
 
             Vector2d textureCoordinate = vertex.getTexcoords();
             if (textureCoordinate != null) {
+                if (texcoordBoundingRectangle == null) {
+                    texcoordBoundingRectangle = new GaiaBoundingRectangle();
+                    texcoordBoundingRectangle.setInit(textureCoordinate);
+                } else {
+                    texcoordBoundingRectangle.addPoint(textureCoordinate);
+                }
                 textureCoordinateList.add((float) textureCoordinate.x);
                 textureCoordinateList.add((float) textureCoordinate.y);
             }
@@ -265,6 +274,7 @@ public class GaiaPrimitive {
             gaiaBufferDataSet.getBuffers().put(AttributeType.TEXCOORD, textureCoordinateBuffer);
         }
 
+        gaiaBufferDataSet.setTexcoordBoundingRectangle(texcoordBoundingRectangle);
         return gaiaBufferDataSet;
     }
 }

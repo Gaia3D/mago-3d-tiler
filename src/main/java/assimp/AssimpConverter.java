@@ -1,9 +1,7 @@
 package assimp;
 
-import geometry.basic.GaiaBoundingBox;
 import geometry.structure.*;
 import geometry.types.TextureType;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.io.FilenameUtils;
@@ -11,12 +9,9 @@ import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
-import org.locationtech.proj4j.CRSFactory;
-import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
-import util.FileUtils;
-import util.GeometryUtils;
+import util.ImageUtils;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -51,7 +46,7 @@ public class AssimpConverter {
     public GaiaScene load(File file, String hint) {
         if (file.isFile()) {
             String path = file.getAbsolutePath().replace(file.getName(), "");
-            ByteBuffer byteBuffer = FileUtils.readFile(file, true);
+            ByteBuffer byteBuffer = ImageUtils.readFile(file, true);
             hint = (hint != null) ? hint : FilenameUtils.getExtension(file.getName());
 
             AIScene aiScene = Assimp.aiImportFileFromMemory(byteBuffer, DEFAULT_FLAGS, hint);
@@ -168,6 +163,8 @@ public class AssimpConverter {
 
         Path parentPath = new File(path).toPath();
         if (diffTexPath != null && diffTexPath.length() > 0) {
+            material.setName(diffTexPath);
+
             List<GaiaTexture> textures = new ArrayList<>();
             GaiaTexture texture = new GaiaTexture();
             texture.setType(TextureType.DIFFUSE);
@@ -181,6 +178,7 @@ public class AssimpConverter {
                 material.getTextures().put(texture.getType(), textures);
             }
         } else {
+            material.setName("NoTexture");
             List<GaiaTexture> textures = new ArrayList<>();
             material.getTextures().put(TextureType.DIFFUSE, textures);
         }

@@ -71,7 +71,7 @@ class GaiaSetTest {
         this.writeGaiaSet();
         GaiaSet set = this.readGaiaSet();
         GaiaScene scene = new GaiaScene(set);
-        GltfWriter.writeGltf(scene, OUTPUT_PATH + FILE_NAME + ".gltf");
+        GltfWriter.writeGlb(scene, OUTPUT_PATH + FILE_NAME + ".glb");
     }
 
     @Test
@@ -130,21 +130,47 @@ class GaiaSetTest {
         //List<GaiaSet> gaiaSets = readFiles(new ArrayList<>(), outputFile);
     }
 
+
     @Test
-    void convertGltfTogGaiaSet() {
+    @Disabled("다중노드 싱글오브젝트 배칭 테스트")
+    void singleObjectMultiNodeTest() {
+        Configurator.initLogger();
+        GaiaUniverse gaiaUniverse = new GaiaUniverse();
+
+        String FILE_NAME = "DC_library_del.3ds";
+        String INPUT_PATH = "C:\\data\\sample\\DC_library_del_3DS\\DC_library_del.3ds";
+        String OUTPUT_PATH = "C:\\data\\plasma-test\\output\\";
+
+        File inputFile = new File(INPUT_PATH);
+        File outputFile = new File(OUTPUT_PATH);
+        Path outputPath = outputFile.toPath().resolve("GaiaBatchedProject" + ".mgb");
+
+        convertFiles(gaiaUniverse, inputFile);
+        GaiaSet gaiaSets = gaiaUniverse.writeFiles(outputFile.toPath());
+
+        //gaiaSets = new GaiaSet();
+        //gaiaSets.readFile(outputPath);
+
+        GaiaScene scene = new GaiaScene(gaiaSets);
+        GltfWriter.writeGlb(scene, OUTPUT_PATH + "GaiaBatchedProject" + ".glb");
+    }
+
+    @Test
+    @Disabled("싱글노드 다중오브젝트 배칭 테스트")
+    void multiObjectSingleNodeTest() {
         Configurator.initLogger();
         GaiaUniverse gaiaUniverse = new GaiaUniverse();
         File inputFile = new File(INPUT_PATH);
         File outputFile = new File(OUTPUT_PATH);
-        Path outputPath = outputFile.toPath().resolve("batched" + ".mgb");
+        Path outputPath = outputFile.toPath().resolve("GaiaBatchedProject" + ".mgb");
 
         convertFiles(gaiaUniverse, inputFile);
-        GaiaSet writedGaiaSets = gaiaUniverse.writeFiles(outputFile.toPath());
+        GaiaSet gaiaSets = gaiaUniverse.writeFiles(outputFile.toPath());
 
-        GaiaSet readedGaiaSet = new GaiaSet();
-        readedGaiaSet.readFile(outputPath);
-        GaiaScene scene = new GaiaScene(readedGaiaSet);
-        GltfWriter.writeGltf(scene, OUTPUT_PATH + FILE_NAME + ".gltf");
+        //gaiaSets = new GaiaSet();
+        //gaiaSets.readFile(outputPath);
+        GaiaScene scene = new GaiaScene(gaiaSets);
+        GltfWriter.writeGlb(scene, OUTPUT_PATH + "GaiaBatchedProject" + ".glb");
     }
 
     @Test
@@ -158,7 +184,7 @@ class GaiaSetTest {
         GaiaUniverse gaiaUniverse = new GaiaUniverse();
         File inputFile = new File(INPUT_PATH);
         File outputFile = new File(OUTPUT_PATH);
-        Path outputPath = outputFile.toPath().resolve("batched" + ".mgb");
+        Path outputPath = outputFile.toPath().resolve("GaiaBatchedProject" + ".mgb");
 
         convertFiles(gaiaUniverse, inputFile);
         GaiaSet writedGaiaSets = gaiaUniverse.writeFiles(outputFile.toPath());
@@ -168,7 +194,7 @@ class GaiaSetTest {
         readedGaiaSet.readFile(outputPath);
 
         GaiaScene scene = new GaiaScene(readedGaiaSet);
-        GltfWriter.writeGltf(scene, OUTPUT_PATH + FILE_NAME + ".gltf");
+        GltfWriter.writeGlb(scene, OUTPUT_PATH + FILE_NAME + ".glb");
 
         GaiaSetObject gaiaSetObject = new GaiaSetObject(readedGaiaSet);
         renderableObjectList.add(gaiaSetObject);
@@ -182,7 +208,7 @@ class GaiaSetTest {
             gaiaUniverse.getScenes().add(scene);
         } else if (inputFile.isDirectory()){
             for (File child : inputFile.listFiles()) {
-                if (gaiaUniverse.getGaiaSets().size() <= 100) {
+                if (gaiaUniverse.getGaiaSets().size() <= 300) {
                     convertFiles(gaiaUniverse, child);
                 }
             }

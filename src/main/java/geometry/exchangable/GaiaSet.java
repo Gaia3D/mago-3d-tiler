@@ -13,7 +13,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.joml.Matrix4d;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
-import util.FileUtils;
 
 import java.io.*;
 import java.nio.file.Path;

@@ -14,7 +14,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.joml.Matrix4d;
 import org.joml.Vector4d;
 import org.lwjgl.opengl.GL20;
-import util.FileUtils;
+import util.ImageUtils;
 import util.GeometryUtils;
 
 import java.io.File;
@@ -350,8 +350,8 @@ public class GltfWriter {
 
     private static int createImage(GlTF gltf, GaiaTexture gaiaTexture) {
         String extension = FilenameUtils.getExtension(gaiaTexture.getPath());
-        String mimeType = FileUtils.getMimeTypeByExtension(extension);
-        String uri = FileUtils.writeImage(gaiaTexture.getBufferedImage(), mimeType);
+        String mimeType = ImageUtils.getMimeTypeByExtension(extension);
+        String uri = ImageUtils.writeImage(gaiaTexture.getBufferedImage(), mimeType);
         Image image = new Image();
         image.setUri(uri);
         image.setMimeType(mimeType);
