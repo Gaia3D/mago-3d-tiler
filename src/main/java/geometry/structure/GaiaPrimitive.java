@@ -1,7 +1,7 @@
 package geometry.structure;
 
 import geometry.basic.GaiaBoundingBox;
-import geometry.basic.GaiaBoundingRectangle;
+import geometry.basic.GaiaRectangle;
 import geometry.exchangable.GaiaBuffer;
 import geometry.exchangable.GaiaBufferDataSet;
 import geometry.types.AttributeType;
@@ -178,7 +178,7 @@ public class GaiaPrimitive {
         ArrayList<Float> batchIdList = new ArrayList<Float>();
         ArrayList<Float> normalList = new ArrayList<Float>();
         ArrayList<Float> textureCoordinateList = new ArrayList<Float>();
-        GaiaBoundingRectangle texcoordBoundingRectangle = null;
+        GaiaRectangle texcoordBoundingRectangle = null;
 
         for (GaiaVertex vertex : vertices) {
             Vector3d position = vertex.getPosition();
@@ -200,7 +200,7 @@ public class GaiaPrimitive {
             Vector2d textureCoordinate = vertex.getTexcoords();
             if (textureCoordinate != null) {
                 if (texcoordBoundingRectangle == null) {
-                    texcoordBoundingRectangle = new GaiaBoundingRectangle();
+                    texcoordBoundingRectangle = new GaiaRectangle();
                     texcoordBoundingRectangle.setInit(textureCoordinate);
                 } else {
                     texcoordBoundingRectangle.addPoint(textureCoordinate);

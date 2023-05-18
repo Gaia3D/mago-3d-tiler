@@ -1,7 +1,6 @@
 package geometry.exchangable;
 
-import geometry.basic.GaiaBoundingBox;
-import geometry.basic.GaiaBoundingRectangle;
+import geometry.basic.GaiaRectangle;
 import geometry.structure.GaiaMaterial;
 import geometry.structure.GaiaPrimitive;
 import geometry.structure.GaiaTexture;
@@ -36,7 +35,7 @@ public class GaiaBufferDataSet {
 
     RenderableBuffer renderableBuffer = null;
     TextureBuffer textureBuffer = null;
-    GaiaBoundingRectangle texcoordBoundingRectangle = null;
+    GaiaRectangle texcoordBoundingRectangle = null;
 
     Matrix4d transformMatrix = null;
     Matrix4d preMultipliedTransformMatrix = null;

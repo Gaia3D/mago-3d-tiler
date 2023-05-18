@@ -1,6 +1,6 @@
 package geometry.exchangable;
 
-import geometry.basic.GaiaBoundingRectangle;
+import geometry.basic.GaiaRectangle;
 import geometry.structure.GaiaMaterial;
 import geometry.structure.GaiaScene;
 import geometry.structure.GaiaTexture;
@@ -24,7 +24,7 @@ import java.util.List;
 @Getter
 public class GaiaUniverse {
     private List<GaiaScene> scenes;
-    private GaiaBoundingRectangle boundingRectangle;
+    private GaiaRectangle boundingRectangle;
 
     public GaiaUniverse() {
         this.scenes = new ArrayList<>();

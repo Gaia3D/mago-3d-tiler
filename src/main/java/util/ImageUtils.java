@@ -34,7 +34,7 @@ public class ImageUtils {
         }
     }
 
-    private static BufferedImage resizeImageGraphic2D(BufferedImage originalImage, int width, int height) {
+    public static BufferedImage resizeImageGraphic2D(BufferedImage originalImage, int width, int height) {
         BufferedImage outputImage = new BufferedImage(width, height, originalImage.getType());
         Graphics2D graphics2D = outputImage.createGraphics();
         graphics2D.setComposite(AlphaComposite.Src);

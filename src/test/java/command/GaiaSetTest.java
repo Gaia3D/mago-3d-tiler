@@ -208,7 +208,7 @@ class GaiaSetTest {
             gaiaUniverse.getScenes().add(scene);
         } else if (inputFile.isDirectory()){
             for (File child : inputFile.listFiles()) {
-                if (gaiaUniverse.getGaiaSets().size() <= 300) {
+                if (gaiaUniverse.getGaiaSets().size() <= 100) {
                     convertFiles(gaiaUniverse, child);
                 }
             }

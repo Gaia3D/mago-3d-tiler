@@ -1,28 +1,23 @@
 package geometry.exchangable;
 
-import de.javagl.jgltf.impl.v2.Material;
 import geometry.basic.GaiaBoundingBox;
-import geometry.basic.GaiaBoundingRectangle;
+import geometry.basic.GaiaRectangle;
 import geometry.structure.GaiaMaterial;
 import geometry.structure.GaiaTexture;
 import geometry.types.AttributeType;
 import geometry.types.TextureType;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
-import org.joml.Vector4d;
 import org.lwjgl.opengl.GL20;
 import util.ArrayUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -190,7 +185,7 @@ public class GaiaBatcher {
         List<Float> normals = new ArrayList<>();
         List<Float> texCoords = new ArrayList<>();
         List<Short> indices = new ArrayList<>();
-        GaiaBoundingRectangle batchedBoundingRectangle = null;
+        GaiaRectangle batchedBoundingRectangle = null;
         int totalIndicesMax = 0;
 
         for (GaiaBufferDataSet bufferDataSet : bufferDataSets) {
@@ -216,7 +211,7 @@ public class GaiaBatcher {
                     texCoords.add(texCoord);
                 }
             }
-            GaiaBoundingRectangle boundingRectangle = bufferDataSet.getTexcoordBoundingRectangle();
+            GaiaRectangle boundingRectangle = bufferDataSet.getTexcoordBoundingRectangle();
             if (boundingRectangle != null) {
                 if (batchedBoundingRectangle == null) {
                     batchedBoundingRectangle = boundingRectangle;
@@ -348,7 +343,7 @@ public class GaiaBatcher {
         if (texCoordBuffer == null) {
             return false;
         }
-        GaiaBoundingRectangle boundingRectangle = gaiaBufferDataSet.getTexcoordBoundingRectangle();
+        GaiaRectangle boundingRectangle = gaiaBufferDataSet.getTexcoordBoundingRectangle();
         if (boundingRectangle != null) {
             Vector2d range = boundingRectangle.getRange();
             if (range.x > 1.00f || range.y > 1.001f) {
