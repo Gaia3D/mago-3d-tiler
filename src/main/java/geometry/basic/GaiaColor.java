@@ -14,9 +14,5 @@ public class GaiaColor {
     float g;
     float b;
     float a;
-
-    public void writeColor() {
-        //TODO
-    }
 }
 

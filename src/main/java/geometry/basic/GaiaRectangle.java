@@ -18,7 +18,6 @@ public class GaiaRectangle {
     private double maxY;
     private double maxZ;
 
-    //getCenterVector2d
     public Vector2d getCenter() {
         return new Vector2d((minX + maxX) / 2, (minY + maxY) / 2);
     }

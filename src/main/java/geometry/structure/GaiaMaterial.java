@@ -1,6 +1,5 @@
 package geometry.structure;
 
-import de.javagl.jgltf.impl.v2.Material;
 import geometry.types.TextureType;
 import io.LittleEndianDataInputStream;
 import io.LittleEndianDataOutputStream;
@@ -110,9 +109,7 @@ public class GaiaMaterial {
         if (targetTexture == null && compareTexture == null) {
             Vector4d targetDiffColor = target.getDiffuseColor();
             Vector4d compareDiffColor = compare.getDiffuseColor();
-            if (targetDiffColor.equals(compareDiffColor)) {
-                return true;
-            }
+            return targetDiffColor.equals(compareDiffColor);
         } else if (targetTexture != null && compareTexture != null) {
             File diffuseTextureFile = new File(targetTexture.getParentPath() + File.separator + targetTexture.getPath());
             File searchDiffuseTextureFile = new File(compareTexture.getParentPath() + File.separator + compareTexture.getPath());

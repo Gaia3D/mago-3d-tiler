@@ -27,7 +27,6 @@ public class GaiaSet {
     List<GaiaBufferDataSet> bufferDatas;
     List<GaiaMaterial> materials;
 
-    //
     private Matrix4d transformMatrix;
 
     Vector3d position;
@@ -40,11 +39,6 @@ public class GaiaSet {
     String folderPath;
     String projectFolderPath;
     String outputDir;
-
-    public GaiaSet(List<GaiaBufferDataSet> bufferDatas, List<GaiaMaterial> materials) {
-        this.bufferDatas = bufferDatas;
-        this.materials = materials;
-    }
 
     public GaiaSet(GaiaScene gaiaScene) {
         String projectName = FilenameUtils.removeExtension(gaiaScene.getOriginalPath().getFileName().toString());

@@ -2,7 +2,6 @@ package command;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.ConsoleAppender;
 import org.apache.logging.log4j.core.config.Configuration;
@@ -13,22 +12,27 @@ import java.nio.charset.StandardCharsets;
 
 public class Configurator {
     public static final Level LEVEL = Level.ALL;
-    private static final String PATTERN = "%message%n";
+    private static final String DEFAULT_PATTERN = "%message%n";
 
     public static void initLogger() {
+        initLogger(null);
+    }
+    public static void initLogger(String pattern) {
         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
         Configuration config = ctx.getConfiguration();
         LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
 
-        removeAppenders(loggerConfig);
-        PatternLayout layout = createPatternLayout(PATTERN);
+        removeAllAppender(loggerConfig);
+        if (pattern == null) {
+            pattern = DEFAULT_PATTERN;
+        }
+        PatternLayout layout = createPatternLayout(pattern);
         ConsoleAppender consoleAppender = createConsoleAppender(layout);
 
         loggerConfig.setLevel(LEVEL);
         loggerConfig.addAppender(consoleAppender, LEVEL, null);
         ctx.updateLoggers();
     }
-
     public static void setLevel(Level level) {
         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
         Configuration config = ctx.getConfiguration();
@@ -36,7 +40,6 @@ public class Configurator {
         loggerConfig.setLevel(level);
         ctx.updateLoggers();
     }
-
     // create PatternLayout
     private static PatternLayout createPatternLayout(String pattern) {
         return PatternLayout.newBuilder()
@@ -44,7 +47,6 @@ public class Configurator {
                 .withCharset(StandardCharsets.UTF_8)
                 .build();
     }
-
     // create ConsoleAppender
     private static ConsoleAppender createConsoleAppender(PatternLayout layout) {
         return ConsoleAppender.newBuilder()
@@ -53,11 +55,8 @@ public class Configurator {
                 .setLayout(layout)
                 .build();
     }
-
-    // removeAppenders
-    private static void removeAppenders(LoggerConfig loggerConfig) {
-        loggerConfig.getAppenders().forEach((key, value) -> {
-            loggerConfig.removeAppender(key);
-        });
+    // removeAllAppender
+    private static void removeAllAppender(LoggerConfig loggerConfig) {
+        loggerConfig.getAppenders().forEach((key, value) -> loggerConfig.removeAppender(key));
     }
 }

@@ -42,20 +42,18 @@ public class GaiaTexture {
 
     private int textureId = -1;
 
-    public BufferedImage readImage() {
+    public void loadImage() {
         Path diffusePath = new File(path).toPath();
         String imagePath = parentPath + File.separator + diffusePath;
         BufferedImage bufferedImage = ImageUtils.readImage(imagePath);
         this.bufferedImage = bufferedImage;
+        assert bufferedImage != null;
         this.width = bufferedImage.getWidth();
         this.height = bufferedImage.getHeight();
-        return bufferedImage;
     }
-
-    public ByteBuffer loadTextureBuffer() {
+    public void loadTextureBuffer() {
         Path diffusePath = new File(path).toPath();
         String imagePath = parentPath + File.separator + diffusePath;
-
 
         ByteBuffer buf = null;
         try (MemoryStack stack = stackPush()) {
@@ -66,28 +64,15 @@ public class GaiaTexture {
             if (buf == null) {
                 throw new Exception("Image file [" + imagePath  + "] not loaded: " + STBImage.stbi_failure_reason());
             }
-            //buf.flip();
-
-            /*int channel = channels.get();
-            if (channel == 3) {
-                this.format = GL20.GL_RGB;
-            } else {
-                this.format = GL20.GL_RGBA;
-            }*/
-
             this.format = GL20.GL_RGBA;
             this.width = width.get();
             this.height = height.get();
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        //STBImage.stbi_image_free(buf);
         setByteBuffer(buf);
-        return buf;
     }
-
-    public ByteBuffer loadBuffer() {
+    public void loadBuffer() {
         BufferedImage image = this.bufferedImage;
         byte size = 4;
         if (this.format == GL20.GL_RGB) {
@@ -110,19 +95,11 @@ public class GaiaTexture {
                 }
             }
             buffer.flip();
-            //setByteBuffer(buffer);
-
-            //ByteBuffer texturePointer = stack.malloc(1);
             IntBuffer width = stack.mallocInt(1);
             IntBuffer height = stack.mallocInt(1);
             IntBuffer channels = stack.mallocInt(1);
-            //width.put(image.getWidth());
-            //height.put(image.getHeight());
-            //channels.put(size);
-
             ByteBuffer result = STBImage.stbi_load_from_memory(buffer, width, height, channels, 4);
             setByteBuffer(result);
-            return result;
         }
     }
 

@@ -10,6 +10,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Level;
 
 import java.io.File;
+import java.util.Objects;
 
 
 @Slf4j
@@ -94,7 +95,7 @@ public class Main {
             if (!command.hasOption("recursive") && (depth > 0)) {
                 return;
             }
-            for (File child : inputFile.listFiles()) {
+            for (File child : Objects.requireNonNull(inputFile.listFiles())) {
                 excute(command, child, outputFile, depth++);
             }
         }

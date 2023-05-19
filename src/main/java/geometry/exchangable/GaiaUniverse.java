@@ -10,7 +10,6 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import util.ImageUtils;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -39,28 +38,6 @@ public class GaiaUniverse {
         return gaiaSets;
     }
 
-    /*public void calcBoundingRectangle() {
-        GaiaBoundingRectangle boundingRectangle = new GaiaBoundingRectangle();
-        for (GaiaScene scene : scenes) {
-            boundingRectangle.add(scene.getBoundingRectangle());
-        }
-        this.boundingRectangle = boundingRectangle;
-    }*/
-
-    public void filterTexture() {
-        List<GaiaMaterial> gaiaMaterialList = new ArrayList<>();
-        /*for (GaiaScene scene : scenes) {
-
-            List<GaiaMaterial> materials = scene.getMaterials();
-            for (GaiaMaterial material : materials) {
-                if (material.getTextureType() == TextureType.DIFFUSE) {
-                    gaiaMaterialList.add(material);
-                }
-            }
-
-        }*/
-    }
-
     public GaiaSet writeFiles(Path path) {
         GaiaBatcher gaiaBatcher = new GaiaBatcher();
         Path originalPath = null;
@@ -85,12 +62,9 @@ public class GaiaUniverse {
         }
 
         Path imagesPath = path.resolve("images");
-        File imagesDir = imagesPath.toFile();
-        if (!imagesDir.exists()) {
-            imagesDir.mkdirs();
-        }
         Path finalOriginalPath = originalPath;
         texturePaths.forEach(texturePath -> {
+            assert finalOriginalPath != null;
             Path originalTexturePath = finalOriginalPath.resolve(texturePath);
             Path destinationTexturePath = imagesPath.resolve(texturePath);
             ImageUtils.copyAndResize(originalTexturePath, destinationTexturePath);

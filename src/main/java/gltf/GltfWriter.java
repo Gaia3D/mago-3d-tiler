@@ -14,14 +14,15 @@ import org.apache.commons.io.FilenameUtils;
 import org.joml.Matrix4d;
 import org.joml.Vector4d;
 import org.lwjgl.opengl.GL20;
-import util.ImageUtils;
 import util.GeometryUtils;
+import util.ImageUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class GltfWriter {
@@ -50,24 +51,19 @@ public class GltfWriter {
         gltf.setAsset(genAsset());
         gltf.addSamplers(genSampler());
         initScene(gltf);
-        if (binary != null) {
-            gaiaScene.getMaterials().stream().forEach(gaiaMaterial -> {
-                int materialId = createMaterial(gltf, gaiaMaterial);
-            });
-            convertNode(gltf, binary, null, gaiaScene.getNodes());
-            binary.fill();
-        }
+        gaiaScene.getMaterials().forEach(gaiaMaterial -> createMaterial(gltf, gaiaMaterial));
+        convertNode(gltf, binary, null, gaiaScene.getNodes());
+        binary.fill();
         if (binary.getBody() != null) {
             GltfAssetV2 asset = new GltfAssetV2(gltf, binary.getBody());
-            GltfModel gltfModel = GltfModels.create(asset);
-            return gltfModel;
+            return GltfModels.create(asset);
         }
         return null;
     }
 
     private static void convertNode(GlTF gltf, GltfBinary binary, Node parentNode, List<GaiaNode> gaiaNodes) {
         List<GltfNodeBuffer> nodeBuffers = binary.getNodeBuffers();
-        gaiaNodes.stream().forEach((gaiaNode) -> {
+        gaiaNodes.forEach((gaiaNode) -> {
             Node node = createNode(gltf, parentNode, gaiaNode);
             int nodeId = gltf.getNodes().size() - 1;
             if (parentNode != null) {
@@ -80,7 +76,7 @@ public class GltfWriter {
             }
 
             List<GaiaMesh> gaiaMeshes = gaiaNode.getMeshes();
-            gaiaMeshes.stream().forEach((gaiaMesh) -> {
+            gaiaMeshes.forEach((gaiaMesh) -> {
                 GltfNodeBuffer nodeBuffer = convertGeometryInfo(gltf, gaiaMesh, node);
                 nodeBuffers.add(nodeBuffer);
             });
@@ -110,9 +106,7 @@ public class GltfWriter {
         int texcoordsBufferViewId = nodeBuffer.getTexcoordsBufferViewId();
 
         if (indicesBuffer != null) {
-            indices.stream().forEach((indice) -> {
-                indicesBuffer.putShort(indice);
-            });
+            indices.forEach(indicesBuffer::putShort);
         }
         if (positionsBuffer != null) {
             for (Float position: positions) {
@@ -164,10 +158,9 @@ public class GltfWriter {
         return nodeBuffer;
     }
 
-    private static int FLOAT_SIZE = 4;
-
     private static GltfNodeBuffer initNodeBuffer(GaiaMesh gaiaMesh) {
         GltfNodeBuffer nodeBuffer = new GltfNodeBuffer();
+        int FLOAT_SIZE = 4;
         int indicesCapacity = gaiaMesh.getIndicesCount() * FLOAT_SIZE;
         int positionsCapacity = gaiaMesh.getPositionsCount() * FLOAT_SIZE;
         int normalsCapacity = gaiaMesh.getNormalsCount() * FLOAT_SIZE;
@@ -246,7 +239,7 @@ public class GltfWriter {
         return gltf.getBuffers().get(0);
     }
 
-    private static int createBuffer(GlTF gltf, GltfNodeBuffer nodeBuffer) {
+    private static void createBuffer(GlTF gltf, GltfNodeBuffer nodeBuffer) {
         Buffer buffer = initBuffer(gltf);
         int bufferLength = buffer.getByteLength() == null ? 0 : buffer.getByteLength();
         int bufferId = 0;
@@ -292,7 +285,6 @@ public class GltfWriter {
             bufferOffset += texcoordsBuffer.capacity();
         }
         buffer.setByteLength(bufferLength + bufferOffset);
-        return bufferId;
     }
 
     private static int createBufferView(GlTF gltf, int buffer, int offset, int length, int stride, int target) {
@@ -317,14 +309,14 @@ public class GltfWriter {
             gltf.addNodes(node);
         }
         float[] matrix = gaiaNode.getTransformMatrix().get(new float[16]);
-        if (matrix != null && !GeometryUtils.isIdentity(matrix)) {
+        if (!GeometryUtils.isIdentity(matrix)) {
             node.setMatrix(matrix);
         }
         node.setName(gaiaNode.getName());
         return node;
     }
 
-    private static int createMaterial(GlTF gltf, GaiaMaterial gaiaMaterial) {
+    private static void createMaterial(GlTF gltf, GaiaMaterial gaiaMaterial) {
         List<GaiaTexture> diffuseTextures = gaiaMaterial.getTextures().get(TextureType.DIFFUSE);
 
         Material material = new Material();
@@ -345,7 +337,6 @@ public class GltfWriter {
 
         material.setPbrMetallicRoughness(pbrMetallicRoughness);
         gltf.addMaterials(material);
-        return gltf.getMaterials().size() - 1;
     }
 
     private static int createImage(GlTF gltf, GaiaTexture gaiaTexture) {
@@ -361,7 +352,7 @@ public class GltfWriter {
 
     private static int createTexture(GlTF gltf, GaiaTexture gaiaTexture) {
         if (gaiaTexture.getBufferedImage() == null) {
-            gaiaTexture.readImage();
+            gaiaTexture.loadImage();
         }
         int imageSource = createImage(gltf, gaiaTexture);
 

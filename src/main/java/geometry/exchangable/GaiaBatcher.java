@@ -62,6 +62,7 @@ public class GaiaBatcher {
             batchedMaterials.addAll(materials);
         }
 
+        assert globalBoundingBox != null;
         Vector3d translation = globalBoundingBox.getCenter();
         translation.negate();
 
@@ -75,9 +76,7 @@ public class GaiaBatcher {
                         gaiaBufferDataSet.setMaterialId(sameMaterial.getId());
                     }
                 }
-                if (materialId > sameMaterial.getId()) {
-                    return false;
-                }
+                return materialId <= sameMaterial.getId();
             }
             return true;
         }).collect(Collectors.toList());
@@ -98,14 +97,9 @@ public class GaiaBatcher {
         }
 
         LinkedHashMap<Integer, List<GaiaBufferDataSet>> batchedBufferDatasMap = new LinkedHashMap<>();
-        for (int i = 0; i < batchedBufferDatas.size(); i++) {
-            GaiaBufferDataSet batchedBufferData = batchedBufferDatas.get(i);
+        for (GaiaBufferDataSet batchedBufferData : batchedBufferDatas) {
             int materialId = batchedBufferData.getMaterialId();
-            List<GaiaBufferDataSet> bufferDataSetDataList = batchedBufferDatasMap.get(materialId);
-            if (bufferDataSetDataList == null) {
-                bufferDataSetDataList = new ArrayList<>();
-                batchedBufferDatasMap.put(materialId, bufferDataSetDataList);
-            }
+            List<GaiaBufferDataSet> bufferDataSetDataList = batchedBufferDatasMap.computeIfAbsent(materialId, k -> new ArrayList<>());
             bufferDataSetDataList.add(batchedBufferData);
             translate(batchedBufferData, translation);
         }
@@ -132,18 +126,9 @@ public class GaiaBatcher {
             }
         }
 
-        // 찍는용도
-        /*for (int i = 0; i < filterdMaterials.size(); i++) {
-            GaiaMaterial material = filterdMaterials.get(i);
-            if (!material.isRepeat()) {
-                log.info(material.getName() + " : " + material.isRepeat());
-
-            }
-        }*/
-
-        List<GaiaMaterial> nonRepeatMaterials = filterdMaterials.stream().filter((material) -> {
-            return !material.isRepeat();
-        }).collect(Collectors.toList());
+        List<GaiaMaterial> nonRepeatMaterials = filterdMaterials.stream()
+                .filter((material) -> !material.isRepeat())
+                .collect(Collectors.toList());
         log.info("nonRepeatMaterials : " + nonRepeatMaterials.size());
         List<GaiaBufferDataSet> nonRepeatBufferDatas = filterdBufferDatas.stream().filter((bufferDataSet) -> {
             int materialId = bufferDataSet.getMaterialId();
@@ -155,9 +140,9 @@ public class GaiaBatcher {
         GaiaTextureCoordinator textureCoordinator = new GaiaTextureCoordinator(nonRepeatMaterials, nonRepeatBufferDatas);
         textureCoordinator.batchTextures();
 
-        List<GaiaMaterial> repeatMaterials = filterdMaterials.stream().filter((material) -> {
-            return material.isRepeat();
-        }).collect(Collectors.toList());
+        List<GaiaMaterial> repeatMaterials = filterdMaterials.stream()
+                .filter(GaiaMaterial::isRepeat)
+                .collect(Collectors.toList());
         log.info("repeatMaterials : " + repeatMaterials.size());
 
         List<GaiaBufferDataSet> repeatBufferDatas = filterdBufferDatas.stream().filter((bufferDataSet) -> {
@@ -346,9 +331,7 @@ public class GaiaBatcher {
         GaiaRectangle boundingRectangle = gaiaBufferDataSet.getTexcoordBoundingRectangle();
         if (boundingRectangle != null) {
             Vector2d range = boundingRectangle.getRange();
-            if (range.x > 1.00f || range.y > 1.001f) {
-                return true;
-            }
+            return range.x > 1.00f || range.y > 1.001f;
         }
         return false;
     }

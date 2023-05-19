@@ -1,7 +1,6 @@
 package util;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.lwjgl.BufferUtils;
 
@@ -10,7 +9,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
@@ -95,7 +93,7 @@ public class ImageUtils {
 
     //getMimeTypeByExtension
     public static String getMimeTypeByExtension(String extension) {
-        String mimeType = null;
+        String mimeType;
         extension = extension.toLowerCase();
         switch (extension) {
             case "png":
@@ -162,19 +160,6 @@ public class ImageUtils {
     }
 
     // copyFile
-    public static void copyPath(Path source, Path dest) {
-        try {
-            if (!dest.toFile().exists()) {
-                Files.copy(source, dest);
-            } else {
-                //log.warn("FileUtils.copyFile: File already exists :: " + dest.toString());
-            }
-        } catch (IOException e) {
-            log.error("FileUtils.copyFile: " + e.getMessage());
-        }
-    }
-
-    // copyFile
     public static void copyAndResize(Path source, Path dest) {
         try {
             if (!dest.toFile().exists()) {
@@ -190,9 +175,6 @@ public class ImageUtils {
                     bufferedImage = resizeImageGraphic2D(bufferedImage, getNearestPowerOfTwo(width), getNearestPowerOfTwo(height));
                 }
                 ImageIO.write(bufferedImage, formatName, dest.toFile());
-                //Files.copy(source, dest);
-            } else {
-                //log.warn("FileUtils.copyFile: File already exists :: " + dest.toString());
             }
         } catch (IOException e) {
             log.error("FileUtils.copyFile: " + e.getMessage());

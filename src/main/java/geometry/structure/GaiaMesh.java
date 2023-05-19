@@ -1,6 +1,5 @@
 package geometry.structure;
 
-import de.javagl.jgltf.impl.v2.Material;
 import geometry.basic.GaiaBoundingBox;
 import geometry.exchangable.GaiaBufferDataSet;
 import lombok.AllArgsConstructor;
@@ -176,14 +175,6 @@ public class GaiaMesh {
             totalIndices += primitive.getIndices().size();
         }
         return totalIndices;
-    }
-
-    public int getVerticesCount() {
-        int vertexCount = 0;
-        for (GaiaPrimitive primitive : primitives) {
-            vertexCount += primitive.getVertices().size();
-        }
-        return vertexCount;
     }
 
     public void toGaiaBufferSets(List<GaiaBufferDataSet> bufferSets) {

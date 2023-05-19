@@ -22,7 +22,7 @@ import java.util.List;
 
 @Slf4j
 public class AssimpConverter {
-    private CommandLine command;
+    private final CommandLine command;
 
     public AssimpConverter(CommandLine command) {
         this.command = command;
@@ -49,10 +49,11 @@ public class AssimpConverter {
             ByteBuffer byteBuffer = ImageUtils.readFile(file, true);
             hint = (hint != null) ? hint : FilenameUtils.getExtension(file.getName());
 
+            assert byteBuffer != null;
             AIScene aiScene = Assimp.aiImportFileFromMemory(byteBuffer, DEFAULT_FLAGS, hint);
+            assert aiScene != null;
             GaiaScene gaiaScene = convertScene(aiScene, path);
             gaiaScene.setOriginalPath(file.toPath());
-            //aiScene.free();
             return gaiaScene;
         } else {
             return null;
@@ -87,31 +88,18 @@ public class AssimpConverter {
         int numMaterials = aiScene.mNumMaterials();
         PointerBuffer aiMaterials = aiScene.mMaterials();
         for (int i = 0; i < numMaterials; i++) {
+            assert aiMaterials != null;
             AIMaterial aiMaterial = AIMaterial.create(aiMaterials.get(i));
             gaiaScene.getMaterials().add(processMaterial(aiMaterial, filePath));
         }
+        assert aiNode != null;
         GaiaNode node = processNode(gaiaScene, aiScene, aiNode, null);
 
+        assert node != null;
         Matrix4d rootTransform = node.getTransformMatrix();
-        rootTransform.rotateX(Math.toRadians(90), rootTransform);
-
-        //GaiaBoundingBox boundingBox = node.getBoundingBox(null);
-        //Vector3d boundingBoxCenter = boundingBox.getCenter();
-
-        //Vector3d volume = boundingBox.getVolume();
-        //Vector3d translation = new Vector3d(boundingBoxCenter);
-        //translation.negate();
-
-        //Vector3d translation = new Vector3d(-boundingBoxCenter.x, -boundingBoxCenter.y, -boundingBoxCenter.z);
-
-        //CRSFactory factory = new CRSFactory();
-        //CoordinateReferenceSystem epsg5186 = factory.createFromParameters("EPSG:5186", "+proj=tmerc +lat_0=38 +lon_0=127 +k=1 +x_0=200000 +y_0=600000 +ellps=GRS80 +units=m +no_defs");
-        //CoordinateReferenceSystem epsg4326 = factory.createFromParameters("EPSG:4326", "+proj=longlat +datum=WGS84 +no_defs");
-        //GeometryUtils.transform(epsg5186, epsg4326, 0.0d, 0.0d);
-
-        //rootTransform.identity();
-        //rootTransform.scale(0.1d);
-        //rootTransform.translate(translation, rootTransform);
+        if (command.hasOption("swapYZ")) {
+            rootTransform.rotateX(Math.toRadians(90), rootTransform);
+        }
         node.setTransformMatrix(rootTransform);
         node.recalculateTransform();
         gaiaScene.getNodes().add(node);
@@ -162,7 +150,7 @@ public class AssimpConverter {
         String shininessTexPath = shininessPath.dataString();
 
         Path parentPath = new File(path).toPath();
-        if (diffTexPath != null && diffTexPath.length() > 0) {
+        if (diffTexPath.length() > 0) {
             material.setName(diffTexPath);
 
             List<GaiaTexture> textures = new ArrayList<>();
@@ -183,8 +171,9 @@ public class AssimpConverter {
             material.getTextures().put(TextureType.DIFFUSE, textures);
         }
 
-        if (ambientTexPath != null && ambientTexPath.length() > 0) {
-            List<GaiaTexture> textures = new ArrayList<>();
+        List<GaiaTexture> textures;
+        if (ambientTexPath.length() > 0) {
+            textures = new ArrayList<>();
             GaiaTexture texture = new GaiaTexture();
             texture.setType(TextureType.AMBIENT);
             texture.setPath(ambientTexPath);
@@ -197,12 +186,12 @@ public class AssimpConverter {
                 material.getTextures().put(texture.getType(), textures);
             }
         } else {
-            List<GaiaTexture> textures = new ArrayList<>();
+            textures = new ArrayList<>();
             material.getTextures().put(TextureType.AMBIENT, textures);
         }
 
-        if (specularTexPath != null && specularTexPath.length() > 0) {
-            List<GaiaTexture> textures = new ArrayList<>();
+        if (specularTexPath.length() > 0) {
+            textures = new ArrayList<>();
             GaiaTexture texture = new GaiaTexture();
             texture.setPath(specularTexPath);
             texture.setType(TextureType.SPECULAR);
@@ -215,12 +204,12 @@ public class AssimpConverter {
                 material.getTextures().put(texture.getType(), textures);
             }
         } else {
-            List<GaiaTexture> textures = new ArrayList<>();
+            textures = new ArrayList<>();
             material.getTextures().put(TextureType.SPECULAR, textures);
         }
 
-        if (shininessTexPath != null && shininessTexPath.length() > 0) {
-            List<GaiaTexture> textures = new ArrayList<>();
+        if (shininessTexPath.length() > 0) {
+            textures = new ArrayList<>();
             GaiaTexture texture = new GaiaTexture();
             texture.setPath(shininessTexPath);
             texture.setType(TextureType.SHININESS);
@@ -233,10 +222,9 @@ public class AssimpConverter {
                 material.getTextures().put(texture.getType(), textures);
             }
         } else {
-            List<GaiaTexture> textures = new ArrayList<>();
+            textures = new ArrayList<>();
             material.getTextures().put(TextureType.SHININESS, textures);
         }
-
         return material;
     }
 
@@ -265,6 +253,7 @@ public class AssimpConverter {
         }
 
         for (int i = 0; i < numMeshes; i++) {
+            assert aiMeshes != null;
             AIMesh aiMesh = AIMesh.create(aiMeshes.get(nodeNum));
             GaiaMesh mesh = processMesh(aiMesh, gaiaScene.getMaterials());
             node.getMeshes().add(mesh);
@@ -272,6 +261,7 @@ public class AssimpConverter {
 
         PointerBuffer childrenBuffer = aiNode.mChildren();
         for (int i = 0; i < numChildren; i++) {
+            assert childrenBuffer != null;
             AINode aiChildNode = AINode.create(childrenBuffer.get(i));
             GaiaNode childNode = processNode(gaiaScene, aiScene, aiChildNode, node);
             if (childNode != null) {
@@ -306,9 +296,7 @@ public class AssimpConverter {
             GaiaFace face = processFace(aiFace);
             surface.getFaces().add(face);
 
-            face.getIndices().stream().forEach((indices) -> {
-                primitive.getIndices().add(indices);
-            });
+            face.getIndices().forEach((indices) -> primitive.getIndices().add(indices));
         }
 
         int mNumVertices = aiMesh.mNumVertices();
@@ -317,32 +305,30 @@ public class AssimpConverter {
         AIVector3D.Buffer textureCoordiantesBuffer = aiMesh.mTextureCoords(0);
         for (int i = 0; i < mNumVertices; i++) {
             GaiaVertex vertex = new GaiaVertex();
-            if (verticesBuffer != null) {
-                AIVector3D aiVertice = verticesBuffer.get(i);
-                if (Float.isNaN(aiVertice.x()) || Float.isNaN(aiVertice.y()) || Float.isNaN(aiVertice.z())) {
-                    vertex.setPosition(new Vector3d());
-                } else {
-                    vertex.setPosition(new Vector3d((double) aiVertice.x(), (double) aiVertice.y(), (double) aiVertice.z()));
-                }
+            AIVector3D aiVertice = verticesBuffer.get(i);
+            if (Float.isNaN(aiVertice.x()) || Float.isNaN(aiVertice.y()) || Float.isNaN(aiVertice.z())) {
+                vertex.setPosition(new Vector3d());
+            } else {
+                vertex.setPosition(new Vector3d(aiVertice.x(), aiVertice.y(), aiVertice.z()));
             }
 
             if (normalsBuffer != null) {
                 AIVector3D aiNormal = normalsBuffer.get(i);
-                if (Double.isNaN((double) aiNormal.x()) || Double.isNaN((double) aiNormal.y()) || Double.isNaN((double) aiNormal.z())) {
+                if (Float.isNaN(aiNormal.x()) || Float.isNaN(aiNormal.y()) || Float.isNaN(aiNormal.z())) {
                     vertex.setNormal(new Vector3d());
                 } else {
-                    vertex.setNormal(new Vector3d((double) aiNormal.x(), (double) aiNormal.y(), (double) aiNormal.z()));
+                    vertex.setNormal(new Vector3d(aiNormal.x(), aiNormal.y(), aiNormal.z()));
                 }
             } else {
                 vertex.setNormal(new Vector3d());
             }
 
             if (textureCoordiantesBuffer != null) {
-                AIVector3D textureCoordiante = textureCoordiantesBuffer.get(i);
-                if (Float.isNaN(textureCoordiante.x()) || Float.isNaN(textureCoordiante.y())) {
+                AIVector3D textureCoordinate = textureCoordiantesBuffer.get(i);
+                if (Float.isNaN(textureCoordinate.x()) || Float.isNaN(textureCoordinate.y())) {
                     vertex.setTexcoords(new Vector2d());
                 } else {
-                    vertex.setTexcoords(new Vector2d((double) textureCoordiante.x(), 1.0 - (double) textureCoordiante.y()));
+                    vertex.setTexcoords(new Vector2d(textureCoordinate.x(), 1.0 - textureCoordinate.y()));
                 }
             }
             primitive.getVertices().add(vertex);
@@ -353,8 +339,7 @@ public class AssimpConverter {
     }
 
     private GaiaSurface processSurface() {
-        GaiaSurface surface = new GaiaSurface();
-        return surface;
+        return new GaiaSurface();
     }
 
     private GaiaFace processFace(AIFace aiFace) {

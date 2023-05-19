@@ -124,7 +124,7 @@ public class LittleEndianDataInputStream extends FilterInputStream implements Da
 
     @Override
     public long readLong() throws IOException {
-        int b[] = new int[8];
+        int[] b = new int[8];
         for (int i = 0; i < 8; i++) {
             b[i] = in.read();
         }
@@ -142,14 +142,14 @@ public class LittleEndianDataInputStream extends FilterInputStream implements Da
 
     @Override
     public float readFloat() throws IOException {
-        int b[] = new int[4];
+        int[] b = new int[4];
         for (int i = 0; i < 4; i++) {
             b[i] = in.read();
         }
         if (b[0] < 0)
             throw new EOFException();
 
-        byte bytes[] = bytesToInts(b);
+        byte[] bytes = bytesToInts(b);
         return ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getFloat();
     }
 
@@ -163,13 +163,13 @@ public class LittleEndianDataInputStream extends FilterInputStream implements Da
 
     @Override
     public double readDouble() throws IOException {
-        int b[] = new int[8];
+        int[] b = new int[8];
         for (int i = 0; i < 8; i++) {
             b[i] = in.read();
         }
         if (b[0] < 0)
             throw new EOFException();
-        byte bytes[] = bytesToInts(b);
+        byte[] bytes = bytesToInts(b);
         return ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getFloat();
     }
 

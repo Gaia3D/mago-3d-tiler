@@ -4,9 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.joml.Matrix4d;
 import org.joml.Vector3d;
-import org.joml.Vector3f;
 
 @Setter
 @Getter
@@ -20,7 +18,6 @@ public class GaiaBoundingBox {
     private double maxY;
     private double maxZ;
 
-    //getCenterVector3d
     public Vector3d getCenter() {
         return new Vector3d((minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2);
     }

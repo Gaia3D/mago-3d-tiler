@@ -1,11 +1,7 @@
 package renderable;
 
-import assimp.AssimpConverter;
 import geometry.structure.GaiaScene;
 import org.lwjgl.system.MemoryStack;
-
-import java.io.File;
-import java.nio.file.Path;
 
 public class GaiaSceneObject extends RenderableObject {
     GaiaScene scene;

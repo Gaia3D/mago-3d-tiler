@@ -1,7 +1,6 @@
 package util;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class ArrayUtils {
@@ -18,7 +17,7 @@ public class ArrayUtils {
         int[] array = new int[list.size()];
         int num = 0;
         for (Integer i : list) {
-            array[num++] = (i != null ? i : 0);;
+            array[num++] = (i != null ? i : 0);
         }
         return array;
     }

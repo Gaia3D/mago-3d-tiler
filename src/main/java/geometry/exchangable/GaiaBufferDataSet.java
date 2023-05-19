@@ -22,8 +22,10 @@ import renderable.TextureBuffer;
 import util.ArrayUtils;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -75,12 +77,12 @@ public class GaiaBufferDataSet {
             if (textures != null && textures.size() > 0) {
                 GaiaTexture texture = textures.get(0);
                 if (texture.getBufferedImage() == null) {
-                    //texture.setFormat(GL20.GL_RGB);
-                    //texture.readImage();
-                    //texture.loadBuffer();
+                    texture.setFormat(GL20.GL_RGB);
+                    texture.loadImage();
+                    texture.loadBuffer();
                 }
                 if (textureBuffer.getVboCount() < 1) {
-                    ByteBuffer byteBuffer = texture.loadTextureBuffer();
+                    texture.loadTextureBuffer();
                     int textureVbo = textureBuffer.createGlTexture(texture);
                     textureBuffer.setTextureVbo(textureVbo);
                 }
@@ -97,12 +99,7 @@ public class GaiaBufferDataSet {
     public RenderableBuffer getRenderableBuffer(GaiaMaterial material) {
         if (this.renderableBuffer == null) {
             this.renderableBuffer = new RenderableBuffer();
-
-            //short[] indices = buffers.get(AttributeType.INDICE).getShorts();
-            //float[] positionBuffer = buffers.get(AttributeType.POSITION).getFloats();
-            //float[] normalBuffer = buffers.get(AttributeType.NORMAL).getFloats();
-
-            short[] indices = null;
+            short[] indices;
             GaiaBuffer indiceBuffer = buffers.get(AttributeType.INDICE);
             if (indiceBuffer != null) {
                 indices = indiceBuffer.getShorts();
@@ -111,15 +108,17 @@ public class GaiaBufferDataSet {
                 renderableBuffer.setIndicesLength(indices.length);
             }
 
-            float[] positionBuffer = null;
+            float[] positionBuffer ;
             GaiaBuffer positionBufferBuffer = buffers.get(AttributeType.POSITION);
             if (positionBufferBuffer != null) {
                 positionBuffer = positionBufferBuffer.getFloats();
                 int positionVbo = renderableBuffer.createBuffer(positionBuffer);
                 renderableBuffer.setPositionVbo(positionVbo);
+            } else {
+                positionBuffer = new float[0];
             }
 
-            float[] normalBuffer = null;
+            float[] normalBuffer;
             GaiaBuffer normalBufferBuffer = buffers.get(AttributeType.NORMAL);
             if (normalBufferBuffer != null) {
                 normalBuffer = normalBufferBuffer.getFloats();
@@ -127,7 +126,7 @@ public class GaiaBufferDataSet {
                 renderableBuffer.setNormalVbo(normalVbo);
             }
 
-            float[] textureCoordinateList = null;
+            float[] textureCoordinateList;
             GaiaBuffer textureCoordinateBuffer = buffers.get(AttributeType.TEXCOORD);
             if (textureCoordinateBuffer != null) {
                 textureCoordinateList = textureCoordinateBuffer.getFloats();
@@ -135,7 +134,7 @@ public class GaiaBufferDataSet {
                 renderableBuffer.setTextureCoordinateVbo(textureCoordinateVbo);
             }
 
-            float[] colorList = null;
+            float[] colorList;
             GaiaBuffer colorBuffer = buffers.get(AttributeType.COLOR);
             if (colorBuffer != null) {
                 colorList = colorBuffer.getFloats();
@@ -154,18 +153,6 @@ public class GaiaBufferDataSet {
                 int colorVbo = renderableBuffer.createBuffer(colorList);
                 renderableBuffer.setColorVbo(colorVbo);
             }
-
-            //nt indicesVbo = renderableBuffer.createIndicesBuffer(indices);
-            //int positionVbo = renderableBuffer.createBuffer(positionBuffer);
-            //int colorVbo = renderableBuffer.createBuffer(colorList);
-            //int normalVbo = renderableBuffer.createBuffer(normalBuffer);
-            //int textureCoordinateVbo = renderableBuffer.createBuffer(textureCoordinateList);
-
-            //renderableBuffer.setPositionVbo(positionVbo);
-            //renderableBuffer.setNormalVbo(normalVbo);
-            //renderableBuffer.setTextureCoordinateVbo(textureCoordinateVbo);
-            //renderableBuffer.setIndicesVbo(indicesVbo);
-            //renderableBuffer.setIndicesLength(indices.length);
         }
         return this.renderableBuffer;
     }
@@ -221,8 +208,7 @@ public class GaiaBufferDataSet {
                 List<Float> positions = ArrayUtils.convertArrayListToFloatArray(buffer.getFloats());
                 if (vertices.size() > 0) {
                     int positionCount = 0;
-                    for (int i = 0; i < vertices.size(); i++) {
-                        GaiaVertex vertex = vertices.get(i);
+                    for (GaiaVertex vertex : vertices) {
                         Vector3d position = new Vector3d(positions.get(positionCount++), positions.get(positionCount++), positions.get(positionCount++));
                         vertex.setPosition(position);
                     }
@@ -239,8 +225,7 @@ public class GaiaBufferDataSet {
                 List<Float> normals = ArrayUtils.convertArrayListToFloatArray(buffer.getFloats());
                 if (vertices.size() > 0) {
                     int normalCount = 0;
-                    for (int i = 0; i < vertices.size(); i++) {
-                        GaiaVertex vertex = vertices.get(i);
+                    for (GaiaVertex vertex : vertices) {
                         Vector3d normal = new Vector3d(normals.get(normalCount++), normals.get(normalCount++), normals.get(normalCount++));
                         vertex.setNormal(normal);
                     }
@@ -257,8 +242,7 @@ public class GaiaBufferDataSet {
                 List<Float> texcoords = ArrayUtils.convertArrayListToFloatArray(buffer.getFloats());
                 if (vertices.size() > 0) {
                     int texcoordCount = 0;
-                    for (int i = 0; i < vertices.size(); i++) {
-                        GaiaVertex vertex = vertices.get(i);
+                    for (GaiaVertex vertex : vertices) {
                         Vector2d texcoord = new Vector2d(texcoords.get(texcoordCount++), texcoords.get(texcoordCount++));
                         vertex.setTexcoords(texcoord);
                     }
@@ -273,10 +257,8 @@ public class GaiaBufferDataSet {
                 }
             }
         }
-
         primitive.setIndices(indices);
         primitive.setVertices(vertices);
-
         return primitive;
     }
 }

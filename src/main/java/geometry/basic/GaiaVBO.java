@@ -7,7 +7,6 @@ import lombok.Setter;
 @Getter
 public class GaiaVBO {
     private int indicesLength;
-
     private int indicesVbo;
     private int positionVbo;
     private int normalVbo;

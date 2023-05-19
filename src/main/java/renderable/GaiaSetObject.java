@@ -3,9 +3,6 @@ package renderable;
 import geometry.exchangable.GaiaSet;
 import org.lwjgl.system.MemoryStack;
 
-import java.io.File;
-import java.nio.file.Path;
-
 public class GaiaSetObject extends RenderableObject {
     GaiaSet gaiaSet;
 

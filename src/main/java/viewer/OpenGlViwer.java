@@ -50,7 +50,7 @@ public class OpenGlViwer {
     public OpenGlViwer(int width, int height) {
         this.width = width;
         this.height = height;
-        renderableObjects = new ArrayList<RenderableObject>();
+        renderableObjects = new ArrayList<>();
     }
 
     public void run() {
@@ -100,9 +100,7 @@ public class OpenGlViwer {
         });
 
         // 마우스 휠 이벤트
-        glfwSetScrollCallback(window, (window, xoffset, yoffset) -> {
-            camera.moveForward((float) yoffset * 10.0f);
-        });
+        glfwSetScrollCallback(window, (window, xoffset, yoffset) -> camera.moveForward((float) yoffset * 10.0f));
 
         // 마우스 버튼 이벤트
         glfwSetMouseButtonCallback(window, (window, key, action, mode) -> {
@@ -118,8 +116,8 @@ public class OpenGlViwer {
                 glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
             }
 
+            //Vector3d pivot = new Vector3d(0.0d,0.0d,-1.0d);
             float rotationOffset = 2.0f;
-            Vector3d pivot = new Vector3d(0.0d,0.0d,-1.0d);
             if (key == GLFW_KEY_W) {
                 camera.moveForward(rotationOffset);
             }
@@ -156,8 +154,8 @@ public class OpenGlViwer {
             GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
             // 모니터 중앙에 창을 위치시킵니다.
-            glfwSetWindowPos(window, (vidmode.width() - pWidth.get(0)) / 2, (vidmode.height() - pHeight.get(0)) / 2
-            );
+            assert vidmode != null;
+            glfwSetWindowPos(window, (vidmode.width() - pWidth.get(0)) / 2, (vidmode.height() - pHeight.get(0)) / 2);
 
         } // 스택 프레임이 자동으로 팝업됩니다.
         // Make the OpenGL context current
@@ -207,9 +205,10 @@ public class OpenGlViwer {
 
     private String getShaderSource(String path) {
         URL resource = getClass().getClassLoader().getResource("./shader/" +path);
+        assert resource != null;
         String filePath = resource.getFile();
 
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         try(BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             while (reader.ready()){
                 buffer.append(reader.readLine());
@@ -217,8 +216,7 @@ public class OpenGlViwer {
         } catch (IOException e) {
             log.info(e.getMessage());
         }
-        String shaderSource = buffer.toString();
-        return shaderSource;
+        return buffer.toString();
     }
 
     private void draw() {
@@ -251,9 +249,7 @@ public class OpenGlViwer {
             GL20.glUniformMatrix4fv(uProjectionMatrix, false, projectionMatrixBuffer);
             GL20.glUniformMatrix4fv(uModelRotationMatrix, false, modelViewMatrixBuffer);
             GL20.glUniform1i(uTextureType, 0);
-            renderableObjects.forEach(renderableObject -> {
-                renderableObject.render(this.shaderProgram);
-            });
+            renderableObjects.forEach(renderableObject -> renderableObject.render(this.shaderProgram));
         }
     }
 

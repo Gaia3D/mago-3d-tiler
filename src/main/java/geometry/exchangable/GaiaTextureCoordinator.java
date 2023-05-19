@@ -54,7 +54,7 @@ public class GaiaTextureCoordinator {
             List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
             GaiaTexture texture = textures.get(0);
             if (texture.getBufferedImage() == null) {
-                texture.readImage();
+                texture.loadImage();
             }
 
             BufferedImage bufferedImage = texture.getBufferedImage();
@@ -90,7 +90,6 @@ public class GaiaTextureCoordinator {
         } else {
             int preWidth = this.batchWidth;
             int preHeight = this.batchHeight;
-            //int preHeight = this.batchHeight + bufferedImage.getHeight();
 
             int calcWidth = this.batchWidth;
             int calcHeight = this.batchHeight;

@@ -3,12 +3,7 @@ package renderable;
 import geometry.structure.GaiaTexture;
 import lombok.Getter;
 import lombok.Setter;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL20;
-
-import java.awt.image.BufferedImage;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
 
 @Setter
 @Getter

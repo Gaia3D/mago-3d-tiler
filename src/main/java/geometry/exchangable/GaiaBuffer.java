@@ -32,10 +32,10 @@ public class GaiaBuffer {
     byte[] bytes;
 
     public void writeBuffer(LittleEndianDataOutputStream stream) throws IOException {
-        stream.writeByte(glDimension); // glDimension (SCALAR, VEC2, VEC3, VEC4, MAT2, MAT3, MAT4)
-        stream.writeInt(glType); // glType (FLOAT, INT, UNSIGNED_INT, SHORT, UNSIGNED_SHORT, BYTE, UNSIGNED_BYTE)
-        stream.writeInt(glTarget); // target (ARRAY_BUFFER, ELEMENT_ARRAY_BUFFER
-        stream.writeInt(elementsCount); // elementsCount
+        stream.writeByte(glDimension);
+        stream.writeInt(glType);
+        stream.writeInt(glTarget);
+        stream.writeInt(elementsCount);
         if (glType == GltfConstants.GL_FLOAT) {
             stream.writeInt(floats.length);
             stream.writeFloats(floats);

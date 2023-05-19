@@ -33,16 +33,16 @@ public class GaiaFace {
             GaiaVertex vertex2 = vertices.get(indices2);
             GaiaVertex vertex3 = vertices.get(indices3);
 
-            Vector3d normal1 = vertex1.getNormal();
+            /*Vector3d normal1 = vertex1.getNormal();
             Vector3d normal2 = vertex2.getNormal();
             Vector3d normal3 = vertex3.getNormal();
-
             boolean isNull = normal1 == null || normal2 == null || normal3 == null;
             boolean isZero = normal1.length() != 1.0f || normal2.length() != 1.0f || normal3.length() != 1.0f;
             isZero = false;
             if (true) {
                 calcNormal(vertex1, vertex2, vertex3);
-            }
+            }*/
+            calcNormal(vertex1, vertex2, vertex3);
         }
 
         Vector3d firstNormal = vertices.get(0).getNormal();
@@ -50,11 +50,13 @@ public class GaiaFace {
     }
 
     public boolean validateNormal(Vector3d normal) {
-        boolean result = true;
-        if (Double.isNaN(normal.lengthSquared()) || Double.isNaN(normal.x()) || Double.isNaN(normal.y()) || Double.isNaN(normal.z()) || Float.isNaN((float) normal.x()) || Float.isNaN((float) normal.y()) || Float.isNaN((float) normal.z())) {
-            result = false;
-        }
-        return result;
+        return !Double.isNaN(normal.lengthSquared())
+                && !Double.isNaN(normal.x())
+                && !Double.isNaN(normal.y())
+                && !Double.isNaN(normal.z())
+                && !Float.isNaN((float) normal.x())
+                && !Float.isNaN((float) normal.y())
+                && !Float.isNaN((float) normal.z());
     }
 
     public static Vector3d calcNormal(Vector3d p1, Vector3d p2, Vector3d p3) {

@@ -2,7 +2,10 @@ package io;
 
 import org.joml.Vector4d;
 
-import java.io.*;
+import java.io.DataOutput;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
@@ -64,7 +67,7 @@ public class LittleEndianDataOutputStream extends FilterOutputStream implements 
         }
     }
 
-    private byte writeBuffer[] = new byte[8];
+    private final byte[] writeBuffer = new byte[8];
     @Override
     public void writeLong(long v) throws IOException {
         writeBuffer[0] = (byte)(v);
@@ -92,8 +95,7 @@ public class LittleEndianDataOutputStream extends FilterOutputStream implements 
 
     @Override
     public void writeDouble(double v) throws IOException {
-        //writeLong(Double.doubleToLongBits(v));
-        doubleToBytes(v);
+        write(doubleToBytes(v));
     }
 
     @Override
@@ -107,14 +109,12 @@ public class LittleEndianDataOutputStream extends FilterOutputStream implements 
         int len = s.length();
         for (int i = 0 ; i < len ; i++) {
             int v = s.charAt(i);
-            out.write((v >>> 0) & 0xFF);
+            out.write((v) & 0xFF);
             out.write((v >>> 8) & 0xFF);
         }
     }
 
     public void writeText(String s) throws IOException {
-        //writeInt(s.length());
-        //writeChars(s);
         writeUTF(s);
     }
 

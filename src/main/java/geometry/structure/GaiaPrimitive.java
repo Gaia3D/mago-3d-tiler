@@ -15,12 +15,10 @@ import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
 import org.lwjgl.opengl.GL20;
-import org.lwjgl.system.MemoryStack;
 import renderable.RenderableBuffer;
 import renderable.TextureBuffer;
 import util.ArrayUtils;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,54 +42,45 @@ public class GaiaPrimitive {
         RenderableBuffer renderableBuffer = this.getRenderableBuffer();
         TextureBuffer textureBuffer = this.getTextureBuffer();
 
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            int uTextureType = GL20.glGetUniformLocation(program, "uTextureType");
-            int aVertexPosition = GL20.glGetAttribLocation(program, "aVertexPosition");
-            int aVertexColor = GL20.glGetAttribLocation(program, "aVertexColor");
-            int aVertexNormal = GL20.glGetAttribLocation(program, "aVertexNormal");
-            int aVertexTextureCoordinate = GL20.glGetAttribLocation(program, "aVertexTextureCoordinate");
+        int uTextureType = GL20.glGetUniformLocation(program, "uTextureType");
+        int aVertexPosition = GL20.glGetAttribLocation(program, "aVertexPosition");
+        int aVertexColor = GL20.glGetAttribLocation(program, "aVertexColor");
+        int aVertexNormal = GL20.glGetAttribLocation(program, "aVertexNormal");
+        int aVertexTextureCoordinate = GL20.glGetAttribLocation(program, "aVertexTextureCoordinate");
 
-            renderableBuffer.setIndiceBind(renderableBuffer.getIndicesVbo());
-            renderableBuffer.setAttribute(renderableBuffer.getPositionVbo(), aVertexPosition, 3, 0);
-            renderableBuffer.setAttribute(renderableBuffer.getColorVbo(), aVertexColor, 4, 0);
-            renderableBuffer.setAttribute(renderableBuffer.getNormalVbo(), aVertexNormal, 3, 0);
-            renderableBuffer.setAttribute(renderableBuffer.getTextureCoordinateVbo(), aVertexTextureCoordinate, 2, 0);
+        renderableBuffer.setIndiceBind(renderableBuffer.getIndicesVbo());
+        renderableBuffer.setAttribute(renderableBuffer.getPositionVbo(), aVertexPosition, 3, 0);
+        renderableBuffer.setAttribute(renderableBuffer.getColorVbo(), aVertexColor, 4, 0);
+        renderableBuffer.setAttribute(renderableBuffer.getNormalVbo(), aVertexNormal, 3, 0);
+        renderableBuffer.setAttribute(renderableBuffer.getTextureCoordinateVbo(), aVertexTextureCoordinate, 2, 0);
 
-            //GaiaTexture texture = material.getTextures().get(TextureType.DIFFUSE);
-
-            List<GaiaTexture> textures = material.getTextures().get(TextureType.DIFFUSE);
-            if (textures.size() > 0) {
-                GaiaTexture texture = textures.get(0);
-                if (texture.getBufferedImage() == null) {
-                    //texture.setFormat(GL20.GL_RGB);
-                    //texture.readImage();
-                    //texture.loadBuffer();
-                }
-                if (textureBuffer.getVboCount() < 1) {
-                    ByteBuffer byteBuffer = texture.loadTextureBuffer();
-                    int textureVbo = textureBuffer.createGlTexture(texture);
-                    textureBuffer.setTextureVbo(textureVbo);
-                }
-                GL20.glUniform1i(uTextureType, 1);
-                textureBuffer.setTextureBind(textureBuffer.getTextureVbo());
-            } else {
-                GL20.glUniform1i(uTextureType, 0);
+        List<GaiaTexture> textures = material.getTextures().get(TextureType.DIFFUSE);
+        if (textures.size() > 0) {
+            GaiaTexture texture = textures.get(0);
+            if (textureBuffer.getVboCount() < 1) {
+                texture.loadTextureBuffer();
+                int textureVbo = textureBuffer.createGlTexture(texture);
+                textureBuffer.setTextureVbo(textureVbo);
             }
-            GL20.glDrawElements(GL20.GL_TRIANGLES, renderableBuffer.getIndicesLength(), GL20.GL_UNSIGNED_SHORT, 0);
+            GL20.glUniform1i(uTextureType, 1);
+            textureBuffer.setTextureBind(textureBuffer.getTextureVbo());
+        } else {
             GL20.glUniform1i(uTextureType, 0);
         }
+        GL20.glDrawElements(GL20.GL_TRIANGLES, renderableBuffer.getIndicesLength(), GL20.GL_UNSIGNED_SHORT, 0);
+        GL20.glUniform1i(uTextureType, 0);
     }
     public RenderableBuffer getRenderableBuffer() {
         if (this.renderableBuffer == null) {
             this.renderableBuffer = new RenderableBuffer();
 
-            ArrayList<Float> positionList = new ArrayList<Float>();
-            ArrayList<Float> colorList = new ArrayList<Float>();
-            ArrayList<Float> normalList = new ArrayList<Float>();
-            ArrayList<Float> textureCoordinateList = new ArrayList<Float>();
+            ArrayList<Float> positionList = new ArrayList<>();
+            ArrayList<Float> colorList = new ArrayList<>();
+            ArrayList<Float> normalList = new ArrayList<>();
+            ArrayList<Float> textureCoordinateList = new ArrayList<>();
 
             List<Short> indicesList = this.indices.stream()
-                    .map((indices) -> Short.valueOf(indices.shortValue()))
+                    .map(Integer::shortValue)
                     .collect(Collectors.toList());
 
             for (GaiaVertex vertex : this.vertices) {
@@ -172,12 +161,12 @@ public class GaiaPrimitive {
 
     public GaiaBufferDataSet toGaiaBufferSet() {
         List<Short> indicesList = this.indices.stream()
-                .map((indices) -> Short.valueOf(indices.shortValue()))
+                .map(Integer::shortValue)
                 .collect(Collectors.toList());
-        ArrayList<Float> positionList = new ArrayList<Float>();
-        ArrayList<Float> batchIdList = new ArrayList<Float>();
-        ArrayList<Float> normalList = new ArrayList<Float>();
-        ArrayList<Float> textureCoordinateList = new ArrayList<Float>();
+        ArrayList<Float> positionList = new ArrayList<>();
+        ArrayList<Float> batchIdList = new ArrayList<>();
+        ArrayList<Float> normalList = new ArrayList<>();
+        ArrayList<Float> textureCoordinateList = new ArrayList<>();
         GaiaRectangle texcoordBoundingRectangle = null;
 
         for (GaiaVertex vertex : vertices) {
@@ -187,16 +176,13 @@ public class GaiaPrimitive {
                 positionList.add((float) position.y);
                 positionList.add((float) position.z);
             }
-
             Vector3d normal = vertex.getNormal();
             if (normal != null) {
                 normalList.add((float) normal.x);
                 normalList.add((float) normal.y);
                 normalList.add((float) normal.z);
             }
-
-            batchIdList.add((float) 0.0f);
-
+            batchIdList.add(0.0f);
             Vector2d textureCoordinate = vertex.getTexcoords();
             if (textureCoordinate != null) {
                 if (texcoordBoundingRectangle == null) {
@@ -250,19 +236,6 @@ public class GaiaPrimitive {
             positionBuffer.setFloats(ArrayUtils.convertFloatArrayToArrayList(positionList));
             gaiaBufferDataSet.getBuffers().put(AttributeType.POSITION, positionBuffer);
         }
-
-        /*if (colorList.size() > 0) {
-            GaiaBuffer colorBuffer = new GaiaBuffer();
-            colorBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
-            colorBuffer.setGlType(GL20.GL_UNSIGNED_SHORT);
-            colorBuffer.setGlDimension((byte) 4);
-
-            float[] colorFloatArray = ArrayUtils.convertFloatArrayToArrayList(colorList);
-            short[] colorShortArray = ArrayUtils.convertColorsVBO(colorFloatArray);
-            colorBuffer.setShorts(colorShortArray);
-            // colorBuffer float -> unsigned short
-            gaiaBufferDataSet.getBuffers().put(AttributeType.COLOR, colorBuffer);
-        }*/
 
         if (textureCoordinateList.size() > 0) {
             GaiaBuffer textureCoordinateBuffer = new GaiaBuffer();
