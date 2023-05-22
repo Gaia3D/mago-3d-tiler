@@ -50,8 +50,7 @@ public class Camera {
     public Matrix4d getModelViewMatrix() {
         if (this.dirty || this.modelViewMatrix == null) {
             Matrix4d transformMatrix = this.getTransformMatrix();
-            Matrix4d modelViewMatrix = transformMatrix.invert(new Matrix4d());
-            this.modelViewMatrix = modelViewMatrix;
+            this.modelViewMatrix = transformMatrix.invert(new Matrix4d());
         }
         return this.modelViewMatrix;
     }

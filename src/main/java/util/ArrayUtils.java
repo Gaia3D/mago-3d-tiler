@@ -1,10 +1,12 @@
 package util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ArrayUtils {
-    public static short[] convertShortArrayToArrayList(List<Short> list) {
+    public static short[] convertShortArrayToList(List<Short> list) {
         short[] array = new short[list.size()];
         int num = 0;
         for (Short s : list) {
@@ -12,8 +14,7 @@ public class ArrayUtils {
         }
         return array;
     }
-
-    public static int[] convertIntArrayToArrayList(List<Integer> list) {
+    public static int[] convertIntArrayToList(List<Integer> list) {
         int[] array = new int[list.size()];
         int num = 0;
         for (Integer i : list) {
@@ -21,8 +22,7 @@ public class ArrayUtils {
         }
         return array;
     }
-
-    public static float[] convertFloatArrayToArrayList(List<Float> list) {
+    public static float[] convertFloatArrayToList(List<Float> list) {
         float[] array = new float[list.size()];
         int num = 0;
         for (Float f : list) {
@@ -30,36 +30,29 @@ public class ArrayUtils {
         }
         return array;
     }
-
-    public static List<Short> convertArrayListToShortArray(short[] array) {
-        List<Short> shorts = new ArrayList<>();
+    public static List<Short> convertListToShortArray(short[] array) {
+        List<Short> list = new ArrayList<>();
         for (short s : array) {
-            shorts.add(s);
+            list.add(s);
         }
-        return shorts;
+        return list;
     }
-
-    public static List<Integer> convertIntArrayListToShortArray(short[] array) {
-        List<Integer> integers = new ArrayList<>();
-        for (short s : array) {
-            integers.add((int) s);
-        }
-        return integers;
+    public static List<Integer> convertIntListToShortArray(short[] array) {
+        return convertListToShortArray(array)
+                .stream()
+                .map(Short::intValue)
+                .collect(Collectors.toList());
     }
-
-    public static List<Integer> convertArrayListToIntArray(int[] array) {
-        List<Integer> integers = new ArrayList<>();
-        for (int i : array) {
-            integers.add(i);
-        }
-        return integers;
+    public static List<Integer> convertListToIntArray(int[] array) {
+        return Arrays.stream(array)
+                .boxed()
+                .collect(Collectors.toList());
     }
-
-    public static List<Float> convertArrayListToFloatArray(float[] array) {
-        List<Float> floats = new ArrayList<>();
+    public static List<Float> convertListToFloatArray(float[] array) {
+        List<Float> list = new ArrayList<>();
         for (float f : array) {
-            floats.add(f);
+            list.add(f);
         }
-        return floats;
+        return list;
     }
 }

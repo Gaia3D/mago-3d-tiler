@@ -7,6 +7,7 @@ import gltf.GltfWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 
 import java.io.File;
@@ -17,27 +18,28 @@ import java.util.Objects;
 public class Main {
     public static AssimpConverter assimpConverter = null;
 
-    public static void main(String[] args) {
-        Configurator.initLogger();
+    public static Options createOptions() {
         Options options = new Options();
-
         options.addOption("i", "input", true, "input file path");
         options.addOption("o", "output", true, "output file path");
         options.addOption("it", "inputType", true, "input file type");
         options.addOption("ot", "outputType", true, "output file type");
-
         options.addOption("h", "help", false, "print help");
         options.addOption("v", "version", false, "print version");
         options.addOption("r", "recursive", false, "recursive");
         options.addOption("q", "quiet", false, "quiet mode");
-
         options.addOption("s", "scale", true, "scale factor");
         options.addOption("st", "strict", true, "strict mode");
         options.addOption("gn", "genNormals", false, "generate normals");
         options.addOption("gt", "quiet", false, "generate tangents");
         options.addOption("yz", "swapYZ", false, "swap YZ");
         options.addOption("nt", "ignoreTextures", false, "ignore textures");
+        return options;
+    }
 
+    public static void main(String[] args) {
+        Configurator.initLogger();
+        Options options = createOptions();
         CommandLineParser parser = new DefaultParser();
         try {
             CommandLine cmd = parser.parse(options, args);
@@ -78,7 +80,8 @@ public class Main {
     private static void excute(CommandLine command, File inputFile, File outputFile, int depth) {
         String inputExtension = command.getOptionValue("inputType");
         String outputExtension = command.getOptionValue("outputType");
-        if (inputFile.isFile() && inputExtension.equals(FilenameUtils.getExtension(inputFile.getName()))) {
+        boolean isSameExtension = StringUtils.equals(inputExtension,outputExtension);
+        if (inputFile.isFile() && isSameExtension) {
             String outputFileName = FilenameUtils.removeExtension(inputFile.getName()) + "." + outputExtension;
             File output = new File(outputFile.getAbsolutePath() + File.separator + outputFileName);
             log.info("convert : " + inputFile.getAbsolutePath() + " -> " + output.getAbsolutePath());

@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.collections.CollectionUtils;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
@@ -178,7 +179,7 @@ public class GaiaMesh {
     }
 
     public void toGaiaBufferSets(List<GaiaBufferDataSet> bufferSets) {
-        if (bufferSets == null) {
+        if (CollectionUtils.isEmpty(bufferSets)) {
             bufferSets = new ArrayList<>();
         }
         for (GaiaPrimitive primitive : primitives) {

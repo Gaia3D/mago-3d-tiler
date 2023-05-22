@@ -203,9 +203,9 @@ public class GaiaBufferDataSet {
             GaiaBuffer buffer = entry.getValue();
 
             if (attributeType.equals(AttributeType.INDICE)) {
-                indices = ArrayUtils.convertIntArrayListToShortArray(buffer.getShorts());
+                indices = ArrayUtils.convertIntListToShortArray(buffer.getShorts());
             } else if (attributeType.equals(AttributeType.POSITION)) {
-                List<Float> positions = ArrayUtils.convertArrayListToFloatArray(buffer.getFloats());
+                List<Float> positions = ArrayUtils.convertListToFloatArray(buffer.getFloats());
                 if (vertices.size() > 0) {
                     int positionCount = 0;
                     for (GaiaVertex vertex : vertices) {
@@ -222,7 +222,7 @@ public class GaiaBufferDataSet {
                     }
                 }
             } else if (attributeType.equals(AttributeType.NORMAL)) {
-                List<Float> normals = ArrayUtils.convertArrayListToFloatArray(buffer.getFloats());
+                List<Float> normals = ArrayUtils.convertListToFloatArray(buffer.getFloats());
                 if (vertices.size() > 0) {
                     int normalCount = 0;
                     for (GaiaVertex vertex : vertices) {
@@ -239,7 +239,7 @@ public class GaiaBufferDataSet {
                     }
                 }
             } else if (attributeType.equals(AttributeType.TEXCOORD)) {
-                List<Float> texcoords = ArrayUtils.convertArrayListToFloatArray(buffer.getFloats());
+                List<Float> texcoords = ArrayUtils.convertListToFloatArray(buffer.getFloats());
                 if (vertices.size() > 0) {
                     int texcoordCount = 0;
                     for (GaiaVertex vertex : vertices) {

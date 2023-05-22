@@ -1,9 +1,12 @@
 package assimp;
 
+import command.Main;
 import geometry.structure.*;
 import geometry.types.TextureType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.Options;
 import org.apache.commons.io.FilenameUtils;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
@@ -24,8 +27,25 @@ import java.util.List;
 public class AssimpConverter {
     private final CommandLine command;
 
+    public AssimpConverter() {
+        this.command = createDefaultCommand();
+    }
+
     public AssimpConverter(CommandLine command) {
+        if (command == null) {
+            command = createDefaultCommand();
+        }
         this.command = command;
+    }
+
+    private CommandLine createDefaultCommand() {
+        Options options = Main.createOptions();
+        CommandLineParser parser = new org.apache.commons.cli.DefaultParser();
+        try {
+            return parser.parse(options, new String[]{});
+        } catch (org.apache.commons.cli.ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     final int DEFAULT_FLAGS =

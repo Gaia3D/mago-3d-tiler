@@ -7,6 +7,7 @@ import org.lwjgl.BufferUtils;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -146,10 +147,14 @@ public class ImageUtils {
 
     // readFile
     public static ByteBuffer readFile(File file, boolean flip) {
-        try {
-            byte[] bytes = Files.readAllBytes(file.toPath());
-            ByteBuffer byteBuffer = BufferUtils.createByteBuffer(bytes.length);
-            byteBuffer.put(bytes);
+        Path path = file.toPath();
+        try (var is = new BufferedInputStream(Files.newInputStream(path))) {
+            int size = (int) Files.size(path);
+            ByteBuffer byteBuffer = BufferUtils.createByteBuffer(size);
+            byte[] buffer = new byte[8192];
+            while (is.read(buffer) != -1) {
+                byteBuffer.put(buffer);
+            }
             if (flip)
                 byteBuffer.flip();
             return byteBuffer;

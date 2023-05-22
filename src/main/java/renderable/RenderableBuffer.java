@@ -48,7 +48,7 @@ public class RenderableBuffer {
         return vbo;
     }
     public int createBuffer(List<Float> buffer) {
-        float[] datas = ArrayUtils.convertFloatArrayToArrayList(buffer);
+        float[] datas = ArrayUtils.convertFloatArrayToList(buffer);
         int vbo = vbos[this.vboCount];
         GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vbo);
         GL20.glBufferData(GL20.GL_ARRAY_BUFFER, datas, GL20.GL_STATIC_DRAW);
@@ -64,7 +64,9 @@ public class RenderableBuffer {
         return vbo;
     }
     public int createIndicesBuffer(List<Short> buffer) {
-        short[] indices = ArrayUtils.convertShortArrayToArrayList(buffer);
+
+
+        short[] indices = ArrayUtils.convertShortArrayToList(buffer);
         int vbo = vbos[this.vboCount];
         GL20.glBindBuffer(GL20.GL_ELEMENT_ARRAY_BUFFER, vbo);
         GL20.glBufferData(GL20.GL_ELEMENT_ARRAY_BUFFER, indices, GL20.GL_STATIC_DRAW);

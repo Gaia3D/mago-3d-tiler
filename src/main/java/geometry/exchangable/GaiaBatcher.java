@@ -225,7 +225,7 @@ public class GaiaBatcher {
             buffer.setGlType(GL20.GL_FLOAT);
             buffer.setElementsCount(totalPositionCount / 3);
             buffer.setGlDimension((byte) 3);
-            buffer.setFloats(ArrayUtils.convertFloatArrayToArrayList(positions));
+            buffer.setFloats(ArrayUtils.convertFloatArrayToList(positions));
             batchedBufferData.getBuffers().put(AttributeType.POSITION, buffer);
         }
         if (totalNormalCount > 0) {
@@ -234,7 +234,7 @@ public class GaiaBatcher {
             buffer.setGlType(GL20.GL_FLOAT);
             buffer.setElementsCount(totalNormalCount / 3);
             buffer.setGlDimension((byte) 3);
-            buffer.setFloats(ArrayUtils.convertFloatArrayToArrayList(normals));
+            buffer.setFloats(ArrayUtils.convertFloatArrayToList(normals));
             batchedBufferData.getBuffers().put(AttributeType.NORMAL, buffer);
         }
         if (totalTexCoordCount > 0) {
@@ -243,7 +243,7 @@ public class GaiaBatcher {
             buffer.setGlType(GL20.GL_FLOAT);
             buffer.setElementsCount(totalTexCoordCount / 2);
             buffer.setGlDimension((byte) 2);
-            buffer.setFloats(ArrayUtils.convertFloatArrayToArrayList(texCoords));
+            buffer.setFloats(ArrayUtils.convertFloatArrayToList(texCoords));
             batchedBufferData.getBuffers().put(AttributeType.TEXCOORD, buffer);
         }
         if (totalIndicesCount > 0) {
@@ -252,7 +252,7 @@ public class GaiaBatcher {
             buffer.setGlType(GL20.GL_UNSIGNED_SHORT);
             buffer.setElementsCount(totalIndicesCount);
             buffer.setGlDimension((byte) 1);
-            buffer.setShorts(ArrayUtils.convertShortArrayToArrayList(indices));
+            buffer.setShorts(ArrayUtils.convertShortArrayToList(indices));
             batchedBufferData.getBuffers().put(AttributeType.INDICE, buffer);
         }
         return batchedBufferData;

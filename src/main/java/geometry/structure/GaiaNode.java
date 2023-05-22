@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.collections.CollectionUtils;
 import org.joml.*;
 import org.lwjgl.opengl.GL20;
 import util.ArrayUtils;
@@ -35,10 +36,10 @@ public class GaiaNode {
         GaiaPrimitive primitive = bufferDataSet.toPrimitive();
         primitive.setMaterialIndex(bufferDataSet.getMaterialId());
 
-        List<Integer> indiceList = null;
-        List<Float> positionList = null;
-        List<Float> normalList = null;
-        List<Float> texCoordList = null;
+        List<Integer> indiceList = new ArrayList<>();
+        List<Float> positionList = new ArrayList<>();
+        List<Float> normalList = new ArrayList<>();
+        List<Float> texCoordList = new ArrayList<>();
         List<GaiaVertex> vertexList = new ArrayList<>();
 
         LinkedHashMap<AttributeType, GaiaBuffer> buffers = bufferDataSet.getBuffers();
@@ -47,16 +48,16 @@ public class GaiaNode {
             GaiaBuffer buffer = entry.getValue();
             if (attributeType == AttributeType.POSITION) {
                 float[] positions = buffer.getFloats();
-                positionList = ArrayUtils.convertArrayListToFloatArray(positions);
+                positionList = ArrayUtils.convertListToFloatArray(positions);
             } else if (attributeType == AttributeType.NORMAL) {
                 float[] normals = buffer.getFloats();
-                normalList = ArrayUtils.convertArrayListToFloatArray(normals);
+                normalList = ArrayUtils.convertListToFloatArray(normals);
             } else if (attributeType == AttributeType.TEXCOORD) {
                 float[] texCoords = buffer.getFloats();
-                texCoordList = ArrayUtils.convertArrayListToFloatArray(texCoords);
+                texCoordList = ArrayUtils.convertListToFloatArray(texCoords);
             } else if (attributeType == AttributeType.INDICE) {
                 short[] indices = buffer.getShorts();
-                indiceList = ArrayUtils.convertIntArrayListToShortArray(indices);
+                indiceList = ArrayUtils.convertIntListToShortArray(indices);
             }
         }
         primitive.setIndices(indiceList);
@@ -64,19 +65,19 @@ public class GaiaNode {
         for (int i = 0; i < positionList.size() / 3; i++) {
             int vertexIndex = i * 3;
             GaiaVertex vertex = new GaiaVertex();
-            if (positionList != null) {
+            if (CollectionUtils.isNotEmpty(positionList)) {
                 float positionX = positionList.get(vertexIndex);
                 float positionY = positionList.get(vertexIndex + 1);
                 float positionZ = positionList.get(vertexIndex + 2);
                 vertex.setPosition(new Vector3d(positionX, positionY, positionZ));
             }
-            if (normalList != null) {
+            if (CollectionUtils.isNotEmpty(normalList)) {
                 float normalX = normalList.get(vertexIndex);
                 float normalY = normalList.get(vertexIndex + 1);
                 float normalZ = normalList.get(vertexIndex + 2);
                 vertex.setNormal(new Vector3d(normalX, normalY, normalZ));
             }
-            if (texCoordList != null) {
+            if (CollectionUtils.isNotEmpty(texCoordList)) {
                 int texcoordIndex = i * 2;
                 float texcoordX = texCoordList.get(texcoordIndex);
                 float texcoordY = texCoordList.get(texcoordIndex + 1);
@@ -135,7 +136,6 @@ public class GaiaNode {
 
     /**
      * recalculate transform
-     * @return
      */
     public void recalculateTransform() {
         GaiaNode node = this;
@@ -149,189 +149,6 @@ public class GaiaNode {
         for (GaiaNode child : node.getChildren()) {
             child.recalculateTransform();
         }
-    }
-
-    // getTotalIndicesCount
-    public static int getTotalIndicesCount(int totalIndices, List<GaiaNode> nodeList) {
-        for (GaiaNode node : nodeList) {
-            List<GaiaMesh> meshes = node.getMeshes();
-            List<GaiaNode> children = node.getChildren();
-            for (GaiaMesh mesh : meshes) {
-                for (GaiaPrimitive primitive : mesh.getPrimitives()) {
-                    totalIndices += primitive.getIndices().size();
-                }
-            }
-            totalIndices = getTotalIndicesCount(totalIndices, children);
-        }
-        return totalIndices;
-    }
-    // getTotalIndices
-    public static List<Short> getTotalIndices(List<Short> totalIndices, List<GaiaNode> nodeList) {
-        for (GaiaNode node : nodeList) {
-            List<GaiaMesh> meshes = node.getMeshes();
-            List<GaiaNode> children = node.getChildren();
-            for (GaiaMesh mesh : meshes) {
-                for (GaiaPrimitive primitive : mesh.getPrimitives()) {
-                    for (Integer indices : primitive.getIndices()) {
-                        totalIndices.add(indices.shortValue());
-                    }
-                }
-            }
-            totalIndices = getTotalIndices(totalIndices, children);
-        }
-        return totalIndices;
-    }
-
-    // getTotalVerticesCount
-    public static int getTotalVerticesCount(int totalVertices, List<GaiaNode> nodeList) {
-        for (GaiaNode node : nodeList) {
-            List<GaiaMesh> meshes = node.getMeshes();
-            List<GaiaNode> children = node.getChildren();
-            for (GaiaMesh mesh : meshes) {
-                for (GaiaPrimitive primitive : mesh.getPrimitives()) {
-                    totalVertices += primitive.getVertices().size();
-                }
-            }
-            totalVertices = getTotalVerticesCount(totalVertices, children);
-        }
-        return totalVertices;
-    }
-    // getTotalVertices
-    public static List<Float> getTotalVertices(List<Float> totalVertices, List<GaiaNode> nodeList) {
-        for (GaiaNode node : nodeList) {
-            List<GaiaMesh> meshes = node.getMeshes();
-            List<GaiaNode> children = node.getChildren();
-            for (GaiaMesh mesh : meshes) {
-                for (GaiaPrimitive primitive : mesh.getPrimitives()) {
-                    for (GaiaVertex vertex : primitive.getVertices()) {
-                        if (vertex.getPosition() != null) {
-                            totalVertices.add((float) vertex.getPosition().get(0));
-                            totalVertices.add((float) vertex.getPosition().get(1));
-                            totalVertices.add((float) vertex.getPosition().get(2));
-                        }
-                    }
-                }
-            }
-            totalVertices = getTotalVertices(totalVertices, children);
-        }
-        return totalVertices;
-    }
-
-    //getTotalNormalsCount
-    public static int getTotalNormalsCount(int totalNormals, List<GaiaNode> nodeList) {
-        for (GaiaNode node : nodeList) {
-            List<GaiaMesh> meshes = node.getMeshes();
-            List<GaiaNode> children = node.getChildren();
-            for (GaiaMesh mesh : meshes) {
-                for (GaiaPrimitive primitive : mesh.getPrimitives()) {
-                    for (GaiaVertex vertex : primitive.getVertices()) {
-                        if (vertex.getNormal() != null) {
-                            totalNormals++;
-                        }
-                    }
-                }
-            }
-            totalNormals = getTotalNormalsCount(totalNormals, children);
-        }
-        return totalNormals;
-    }
-    //getTotalNormals
-    public static List<Float> getTotalNormals(List<Float> totalNormals, List<GaiaNode> nodeList) {
-        for (GaiaNode node : nodeList) {
-            List<GaiaMesh> meshes = node.getMeshes();
-            List<GaiaNode> children = node.getChildren();
-            for (GaiaMesh mesh : meshes) {
-                for (GaiaPrimitive primitive : mesh.getPrimitives()) {
-                    for (GaiaVertex vertex : primitive.getVertices()) {
-                        if (vertex.getNormal() != null) {
-                            totalNormals.add((float) vertex.getNormal().get(0));
-                            totalNormals.add((float) vertex.getNormal().get(1));
-                            totalNormals.add((float) vertex.getNormal().get(2));
-                        }
-                    }
-                }
-            }
-            totalNormals = getTotalNormals(totalNormals, children);
-        }
-        return totalNormals;
-    }
-
-    //getTotalTexcoordsCount
-    public static int getTotalTexcoordsCount(int totalTexCoords, List<GaiaNode> nodeList) {
-        for (GaiaNode node : nodeList) {
-            List<GaiaMesh> meshes = node.getMeshes();
-            List<GaiaNode> children = node.getChildren();
-            for (GaiaMesh mesh : meshes) {
-                for (GaiaPrimitive primitive : mesh.getPrimitives()) {
-                    for (GaiaVertex vertex : primitive.getVertices()) {
-                        if (vertex.getTexcoords() != null) {
-                            totalTexCoords++;
-                        }
-                    }
-                }
-            }
-            totalTexCoords = getTotalTexcoordsCount(totalTexCoords, children);
-        }
-        return totalTexCoords;
-    }
-    //getTotalTexcoords
-    public static List<Float> getTotalTexcoords(List<Float> totalTexCoords, List<GaiaNode> nodeList) {
-        for (GaiaNode node : nodeList) {
-            List<GaiaMesh> meshes = node.getMeshes();
-            List<GaiaNode> children = node.getChildren();
-            for (GaiaMesh mesh : meshes) {
-                for (GaiaPrimitive primitive : mesh.getPrimitives()) {
-                    for (GaiaVertex vertex : primitive.getVertices()) {
-                        if (vertex.getTexcoords() != null) {
-                            totalTexCoords.add((float) vertex.getTexcoords().get(0));
-                            totalTexCoords.add((float) vertex.getTexcoords().get(1));
-                        }
-                    }
-                }
-            }
-            totalTexCoords = getTotalTexcoords(totalTexCoords, children);
-        }
-        return totalTexCoords;
-    }
-
-    // getTotalColorsCount
-    public static int getTotalColorsCount(int totalColors, List<GaiaNode> nodeList) {
-        for (GaiaNode node : nodeList) {
-            List<GaiaMesh> meshes = node.getMeshes();
-            List<GaiaNode> children = node.getChildren();
-            for (GaiaMesh mesh : meshes) {
-                for (GaiaPrimitive primitive : mesh.getPrimitives()) {
-                    for (GaiaVertex vertex : primitive.getVertices()) {
-                        if (vertex.getColor() != null) {
-                            totalColors++;
-                        }
-                    }
-                }
-            }
-            totalColors = getTotalColorsCount(totalColors, children);
-        }
-        return totalColors;
-    }
-    // getTotalColors
-    public static List<Float> getTotalColors(List<Float> totalColors, List<GaiaNode> nodeList) {
-        for (GaiaNode node : nodeList) {
-            List<GaiaMesh> meshes = node.getMeshes();
-            List<GaiaNode> children = node.getChildren();
-            for (GaiaMesh mesh : meshes) {
-                for (GaiaPrimitive primitive : mesh.getPrimitives()) {
-                    for (GaiaVertex vertex : primitive.getVertices()) {
-                        if (vertex.getColor() != null) {
-                            totalColors.add((float) vertex.getColor().get(0));
-                            totalColors.add((float) vertex.getColor().get(1));
-                            totalColors.add((float) vertex.getColor().get(2));
-                            totalColors.add((float) vertex.getColor().get(3));
-                        }
-                    }
-                }
-            }
-            totalColors = getTotalColors(totalColors, children);
-        }
-        return totalColors;
     }
 
     public Matrix4d toGaiaBufferSets(List<GaiaBufferDataSet> bufferSets, Matrix4d transformMatrix) {

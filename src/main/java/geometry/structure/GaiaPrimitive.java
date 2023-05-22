@@ -203,7 +203,7 @@ public class GaiaPrimitive {
             indicesBuffer.setGlType(GL20.GL_UNSIGNED_SHORT);
             indicesBuffer.setElementsCount(indicesList.size());
             indicesBuffer.setGlDimension((byte) 1);
-            indicesBuffer.setShorts(ArrayUtils.convertShortArrayToArrayList(indicesList));
+            indicesBuffer.setShorts(ArrayUtils.convertShortArrayToList(indicesList));
             gaiaBufferDataSet.getBuffers().put(AttributeType.INDICE, indicesBuffer);
         }
 
@@ -213,7 +213,7 @@ public class GaiaPrimitive {
             normalBuffer.setGlType(GL20.GL_FLOAT);
             normalBuffer.setElementsCount(vertices.size());
             normalBuffer.setGlDimension((byte) 3);
-            normalBuffer.setFloats(ArrayUtils.convertFloatArrayToArrayList(normalList));
+            normalBuffer.setFloats(ArrayUtils.convertFloatArrayToList(normalList));
             gaiaBufferDataSet.getBuffers().put(AttributeType.NORMAL, normalBuffer);
         }
 
@@ -223,7 +223,7 @@ public class GaiaPrimitive {
             batchIdBuffer.setGlType(GL20.GL_FLOAT);
             batchIdBuffer.setElementsCount(vertices.size());
             batchIdBuffer.setGlDimension((byte) 1);
-            batchIdBuffer.setFloats(ArrayUtils.convertFloatArrayToArrayList(batchIdList));
+            batchIdBuffer.setFloats(ArrayUtils.convertFloatArrayToList(batchIdList));
             gaiaBufferDataSet.getBuffers().put(AttributeType.BATCHID, batchIdBuffer);
         }
 
@@ -233,7 +233,7 @@ public class GaiaPrimitive {
             positionBuffer.setGlType(GL20.GL_FLOAT);
             positionBuffer.setElementsCount(vertices.size());
             positionBuffer.setGlDimension((byte) 3);
-            positionBuffer.setFloats(ArrayUtils.convertFloatArrayToArrayList(positionList));
+            positionBuffer.setFloats(ArrayUtils.convertFloatArrayToList(positionList));
             gaiaBufferDataSet.getBuffers().put(AttributeType.POSITION, positionBuffer);
         }
 
@@ -243,7 +243,7 @@ public class GaiaPrimitive {
             textureCoordinateBuffer.setGlType(GL20.GL_FLOAT);
             textureCoordinateBuffer.setElementsCount(vertices.size());
             textureCoordinateBuffer.setGlDimension((byte) 2);
-            textureCoordinateBuffer.setFloats(ArrayUtils.convertFloatArrayToArrayList(textureCoordinateList));
+            textureCoordinateBuffer.setFloats(ArrayUtils.convertFloatArrayToList(textureCoordinateList));
             gaiaBufferDataSet.getBuffers().put(AttributeType.TEXCOORD, textureCoordinateBuffer);
         }
 

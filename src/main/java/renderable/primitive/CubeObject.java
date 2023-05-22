@@ -10,8 +10,6 @@ import java.util.ArrayList;
 
 public class CubeObject extends RenderableObject {
     RenderableBuffer renderableBuffer;
-    int[] vbos;
-    boolean dirty;
     float size;
 
     public CubeObject() {
@@ -47,9 +45,9 @@ public class CubeObject extends RenderableObject {
         if (this.renderableBuffer == null) {
             RenderableBuffer renderableBuffer = new RenderableBuffer();
 
-            ArrayList<Short> indicesList = new ArrayList<Short>();
-            ArrayList<Float> positionList = new ArrayList<Float>();
-            ArrayList<Float> colorList = new ArrayList<Float>();
+            ArrayList<Short> indicesList = new ArrayList<>();
+            ArrayList<Float> positionList = new ArrayList<>();
+            ArrayList<Float> colorList = new ArrayList<>();
             // forward
             positionList.add(-size);
             positionList.add(-size);
