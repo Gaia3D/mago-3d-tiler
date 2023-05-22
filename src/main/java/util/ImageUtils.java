@@ -151,9 +151,15 @@ public class ImageUtils {
         try (var is = new BufferedInputStream(Files.newInputStream(path))) {
             int size = (int) Files.size(path);
             ByteBuffer byteBuffer = BufferUtils.createByteBuffer(size);
-            byte[] buffer = new byte[8192];
-            while (is.read(buffer) != -1) {
+
+            int bufferSize = 8192;
+            bufferSize = Math.min(size, bufferSize);
+            byte[] buffer = new byte[bufferSize];
+            while (buffer.length > 0 && is.read(buffer) != -1) {
                 byteBuffer.put(buffer);
+                if (is.available() < bufferSize) {
+                    buffer = new byte[is.available()];
+                }
             }
             if (flip)
                 byteBuffer.flip();
