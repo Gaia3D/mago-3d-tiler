@@ -10,6 +10,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class GaiaSplittedImage {
     int materialId;
-    GaiaRectangle originalRectangle;
-    GaiaRectangle splittedRectangle;
+    GaiaRectangle originalRectangle; // original rectangle size
+    GaiaRectangle splittedRectangle; // batched rectangle size
 }

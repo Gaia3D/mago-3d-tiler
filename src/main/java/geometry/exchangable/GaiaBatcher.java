@@ -34,7 +34,7 @@ public class GaiaBatcher {
 
         List<GaiaBufferDataSet> batchedBufferDatas = new ArrayList<>();
         List<GaiaMaterial> batchedMaterials = new ArrayList<>();
-        GaiaBoundingBox globalBoundingBox = null;
+        GaiaBoundingBox globalBoundingBox = new GaiaBoundingBox();
 
         for (GaiaSet gaiaSet : gaiaSets) {
             List<GaiaBufferDataSet> bufferDatas = gaiaSet.getBufferDatas();
@@ -46,12 +46,10 @@ public class GaiaBatcher {
                 gaiaBufferDataSet.setTransformMatrix(gaiaSet.getTransformMatrix());
                 gaiaBufferDataSet.setMaterialId(batchedMaterialId + originMaterialId);
                 GaiaBoundingBox boundingBox = getBoundingBox(gaiaBufferDataSet, gaiaSet.getTransformMatrix());
-                //boundingBoxes.add(boundingBox);
-
-                if (globalBoundingBox == null) {
-                    globalBoundingBox = boundingBox;
-                } else {
+                if (globalBoundingBox.isInit()) {
                     globalBoundingBox.addBoundingBox(boundingBox);
+                } else {
+                    globalBoundingBox = boundingBox;
                 }
             }
             for (GaiaMaterial gaiaMaterial : materials) {

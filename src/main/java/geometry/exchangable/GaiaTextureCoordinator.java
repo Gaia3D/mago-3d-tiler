@@ -12,9 +12,9 @@ import util.ImageUtils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Getter
@@ -49,6 +49,214 @@ public class GaiaTextureCoordinator {
     }
 
     public void batchTextures() {
+        double error = 10E-5;
+        //error = 10E-5;
+
+        log.info((0.0001 == 10E-5) + " : ?");
+
+
+        int imageType = 0;
+        List<GaiaSplittedImage> splittedImages = new ArrayList<>();
+        for (GaiaMaterial material : materials) {
+            LinkedHashMap<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
+            List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
+            GaiaTexture texture = textures.get(0);
+            if (texture.getBufferedImage() == null) {
+                texture.loadImage();
+            }
+            BufferedImage bufferedImage = texture.getBufferedImage();
+            imageType = bufferedImage.getType();
+
+            bufferedImage = ImageUtils.resizeImageGraphic2D(bufferedImage, 256, 256);
+            texture.setBufferedImage(bufferedImage);
+
+            Vector2d minPoint = new Vector2d(0, 0);
+            //Vector2d maxPoint = new Vector2d(bufferedImage.getWidth(), bufferedImage.getHeight());
+            Vector2d maxPoint = new Vector2d(256, 256);
+            GaiaSplittedImage splittedImage = new GaiaSplittedImage();
+            splittedImage.setOriginalRectangle(new GaiaRectangle(minPoint, maxPoint));
+            splittedImage.setMaterialId(material.getId());
+            splittedImages.add(splittedImage);
+        }
+
+        // 사이즈 큰->작은 정렬
+        splittedImages = splittedImages.stream()
+                .sorted(Comparator.comparing(splittedImage -> splittedImage.getOriginalRectangle().getArea()))
+                .collect(Collectors.toList());
+        Collections.reverse(splittedImages);
+
+        // 분할이미지
+        for (GaiaSplittedImage target : splittedImages) {
+            GaiaRectangle targetRectangle = target.getOriginalRectangle();
+            List<GaiaSplittedImage> compareImages = getListWithoutSelf(target, splittedImages);
+
+            if (compareImages.isEmpty()) {
+                target.setSplittedRectangle(targetRectangle);
+            } else {
+                List<GaiaSplittedImage> leftBottomFiltered = compareImages.stream().filter((compareSplittedImage) -> {
+                            GaiaRectangle compare = compareSplittedImage.getSplittedRectangle();
+                            GaiaRectangle leftBottom = getLeftBottom(targetRectangle, compare);
+                            List<GaiaSplittedImage> filteredCompareImages = getListWithoutSelf(compareSplittedImage, compareImages);
+                            for (GaiaSplittedImage filteredCompareSplittedImage : filteredCompareImages) {
+                                GaiaRectangle compareRectangle = filteredCompareSplittedImage.getSplittedRectangle();
+                                if (compareRectangle.intersects(leftBottom, error)) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        }).sorted(Comparator.comparing(compareSplittedImage -> {
+                            return getLeftBottom(targetRectangle, compareSplittedImage.getSplittedRectangle()).getBoundingArea();
+                        })).collect(Collectors.toList());
+
+
+                List<GaiaSplittedImage> rightTopFiltered = compareImages.stream()
+                        .filter((compareSplittedImage) -> {
+                            GaiaRectangle compare = compareSplittedImage.getSplittedRectangle();
+                            GaiaRectangle rightTop = getRightTop(targetRectangle, compare);
+                            List<GaiaSplittedImage> filteredCompareImages = getListWithoutSelf(compareSplittedImage, compareImages);
+                            for (GaiaSplittedImage filteredCompareSplittedImage : filteredCompareImages) {
+                                GaiaRectangle compareRectangle = filteredCompareSplittedImage.getSplittedRectangle();
+                                if (compareRectangle.intersects(rightTop, error)) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        }).sorted(Comparator.comparing(compareSplittedImage -> {
+                            return getRightTop(targetRectangle, compareSplittedImage.getSplittedRectangle()).getBoundingArea();
+                        })).collect(Collectors.toList());
+
+                if (!leftBottomFiltered.isEmpty() && !rightTopFiltered.isEmpty()) {
+                    GaiaSplittedImage leftBottomImage = leftBottomFiltered.get(0);
+                    GaiaRectangle leftBottomCompare = leftBottomImage.getSplittedRectangle();
+                    GaiaRectangle leftBottom = getLeftBottom(targetRectangle, leftBottomCompare);
+
+
+                    GaiaSplittedImage rightTopImage = rightTopFiltered.get(0);
+                    GaiaRectangle rightTopCompare = rightTopImage.getSplittedRectangle();
+                    GaiaRectangle rightTop = getRightTop(targetRectangle, rightTopCompare);
+
+                    if (leftBottom.getBoundingArea() >= rightTop.getBoundingArea()) {
+                        target.setSplittedRectangle(rightTop);
+                        log.info("rightTop : " + (int) rightTop.getBoundingArea() + ":" + (int) Math.sqrt( (int)rightTop.getBoundingArea()));
+                    } else {
+                        target.setSplittedRectangle(leftBottom);
+                        log.info("leftBottom : " + (int) leftBottom.getBoundingArea() + ":" + (int) Math.sqrt( (int)leftBottom.getBoundingArea()));
+                    }
+                } else if (!leftBottomFiltered.isEmpty()) {
+                    GaiaSplittedImage notCompareImage = leftBottomFiltered.get(0);
+                    GaiaRectangle compare = notCompareImage.getSplittedRectangle();
+                    GaiaRectangle leftBottom = getLeftBottom(targetRectangle, compare);
+                    target.setSplittedRectangle(leftBottom);
+                    log.info("leftBottom : " + (int) leftBottom.getBoundingArea() + ":" + (int) Math.sqrt( (int)leftBottom.getBoundingArea()));
+                } else if (!rightTopFiltered.isEmpty()) {
+                    GaiaSplittedImage notCompareImage = rightTopFiltered.get(0);
+                    GaiaRectangle compare = notCompareImage.getSplittedRectangle();
+                    GaiaRectangle rightTop = getRightTop(targetRectangle, compare);
+                    target.setSplittedRectangle(rightTop);
+                    log.info("rightTop : " + (int) rightTop.getBoundingArea() + ":" + (int) Math.sqrt( (int)rightTop.getBoundingArea()));
+                } else {
+                    log.info("filtered isNotPresent");
+                }
+            }
+        }
+
+        int maxWidth = splittedImages.stream()
+                .mapToInt(splittedImage -> (int) splittedImage.getSplittedRectangle().getMaxX()).max().getAsInt();
+        int maxHeight = splittedImages.stream()
+                .mapToInt(splittedImage -> (int) splittedImage.getSplittedRectangle().getMaxY()).max().getAsInt();
+
+        BufferedImage image = new BufferedImage(maxWidth, maxHeight, imageType);
+        Graphics graphics = image.getGraphics();
+
+        for (GaiaSplittedImage splittedImage : splittedImages) {
+            GaiaRectangle splittedRectangle = splittedImage.getSplittedRectangle();
+            GaiaMaterial material = findMaterial(splittedImage.getMaterialId());
+
+            LinkedHashMap<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
+            List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
+            GaiaTexture texture = textures.get(0);
+
+            BufferedImage source = texture.getBufferedImage();
+            graphics.drawImage(source, (int) splittedRectangle.getMinX(), (int) splittedRectangle.getMinY(), (int) splittedRectangle.getMaxX(), (int) splittedRectangle.getMaxY(),null);
+
+            //log.info((int)splittedRectangle.getMinX() + "," + (int)splittedRectangle.getMinY() + " " + (int)splittedRectangle.getMaxX() + "," + (int)splittedRectangle.getMaxY());
+
+            //graphics.drawImage(source, (int) splittedRectangle.getMinX(), (int) splittedRectangle.getMinY(), null);
+            //graphics.dispose();
+        }
+
+        log.info("test");
+    }
+
+    //findMaterial
+    private GaiaMaterial findMaterial(int materialId) {
+        return materials.stream()
+                .filter(material -> material.getId() == materialId)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("not found material"));
+    }
+
+    private List<GaiaSplittedImage> getListWithoutSelf(GaiaSplittedImage targetSplittedImage, List<GaiaSplittedImage> splittedImages) {
+        return splittedImages.stream()
+                .filter(splittedImage -> (splittedImage != targetSplittedImage) && (splittedImage.getSplittedRectangle() != null))
+                .collect(Collectors.toList());
+    }
+
+    private List<GaiaSplittedImage> getLongSplittedImages(List<GaiaSplittedImage> splittedImages) {
+        return splittedImages.stream().filter(splittedImage -> {
+            double width = splittedImage.getOriginalRectangle().getRange().x;
+            double height = splittedImage.getOriginalRectangle().getRange().y;
+            return height > width;
+        }).collect(Collectors.toList());
+    }
+    private List<GaiaSplittedImage> getWideSplittedImages(List<GaiaSplittedImage> splittedImages) {
+        return splittedImages.stream().filter(splittedImage -> {
+            double width = splittedImage.getOriginalRectangle().getRange().x;
+            double height = splittedImage.getOriginalRectangle().getRange().y;
+            return height <= width;
+        }).collect(Collectors.toList());
+    }
+
+    private GaiaRectangle getRightTop(GaiaRectangle target, GaiaRectangle compare) {
+        Vector2d rightTopPoint = compare.getRightTopPoint();
+        Vector2d rightTopMaxPoint = new Vector2d(rightTopPoint.x + target.getMaxX(), rightTopPoint.y + target.getMaxY());
+        GaiaRectangle rightTopRectangle = new GaiaRectangle();
+        rightTopRectangle.setInit(rightTopPoint);
+        rightTopRectangle.addPoint(rightTopMaxPoint);
+        return rightTopRectangle;
+    }
+
+    private GaiaRectangle getLeftBottom(GaiaRectangle target, GaiaRectangle compare) {
+        Vector2d leftBottomPoint = compare.getLeftBottomPoint();
+        Vector2d leftBottomMaxPoint = new Vector2d(leftBottomPoint.x + target.getMaxX(), leftBottomPoint.y + target.getMaxY());
+        GaiaRectangle leftBottomRectangle = new GaiaRectangle();
+        leftBottomRectangle.setInit(leftBottomPoint);
+        leftBottomRectangle.addPoint(leftBottomMaxPoint);
+        return leftBottomRectangle;
+    }
+
+    public void findIntersect(GaiaRectangle target, GaiaRectangle compare) {
+        double error = 0.0001;
+        if (compare != null) {
+            Vector2d rightTopPoint = target.getRightTopPoint();
+            Vector2d rightTopMaxPoint = new Vector2d(rightTopPoint.x + target.getMaxX(), rightTopPoint.y + target.getMaxY());
+            GaiaRectangle rightTopRectangle = new GaiaRectangle();
+            rightTopRectangle.setInit(rightTopPoint);
+            rightTopRectangle.addPoint(rightTopMaxPoint);
+
+            Vector2d leftBottomPoint = compare.getLeftBottomPoint();
+            Vector2d leftBottomMaxPoint = new Vector2d(leftBottomPoint.x + target.getMaxX(), leftBottomPoint.y + target.getMaxY());
+            GaiaRectangle leftBottomRectangle = new GaiaRectangle();
+            leftBottomRectangle.setInit(leftBottomPoint);
+            leftBottomRectangle.addPoint(leftBottomMaxPoint);
+
+            if (rightTopRectangle.intersects(leftBottomRectangle, error)) {
+                log.info("test");
+            }
+        }
+    }
+
+    public void batchTextures2() {
         for (GaiaMaterial material : materials) {
             LinkedHashMap<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
             List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
@@ -63,7 +271,6 @@ public class GaiaTextureCoordinator {
             addImage(bufferedImage);
 
             log.info("material: {}", material.getName());
-            log.info("texture: {}", texture.getName());
             //TODO
         }
 
@@ -121,7 +328,6 @@ public class GaiaTextureCoordinator {
             }
             graphics.dispose();
         }
-        log.info(graphics.toString());
         boundingRectangles.add(boundingRectangle);
     }
 
