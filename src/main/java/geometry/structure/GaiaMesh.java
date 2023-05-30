@@ -179,7 +179,7 @@ public class GaiaMesh {
     }
 
     public void toGaiaBufferSets(List<GaiaBufferDataSet> bufferSets) {
-        if (CollectionUtils.isEmpty(bufferSets)) {
+        if (bufferSets == null) {
             bufferSets = new ArrayList<>();
         }
         for (GaiaPrimitive primitive : primitives) {

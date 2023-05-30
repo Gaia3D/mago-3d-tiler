@@ -117,9 +117,10 @@ public class AssimpConverter {
 
         assert node != null;
         Matrix4d rootTransform = node.getTransformMatrix();
-        if (command.hasOption("swapYZ")) {
+        /*if (command.hasOption("swapYZ")) {
             rootTransform.rotateX(Math.toRadians(90), rootTransform);
-        }
+        }*/
+        rootTransform.rotateX(Math.toRadians(90), rootTransform);
         node.setTransformMatrix(rootTransform);
         node.recalculateTransform();
         gaiaScene.getNodes().add(node);

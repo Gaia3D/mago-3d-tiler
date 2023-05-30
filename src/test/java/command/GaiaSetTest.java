@@ -11,6 +11,7 @@ import org.apache.commons.cli.CommandLine;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import renderable.GaiaSceneObject;
 import renderable.GaiaSetObject;
 import renderable.RenderableObject;
 import viewer.OpenGlViwer;
@@ -77,11 +78,15 @@ class GaiaSetTest {
 
     @Test
     void render() {
-        this.writeGaiaSet();
-        GaiaSet gaiaSet1 = this.readGaiaSet();
+        //this.writeGaiaSet();
+
+        GaiaScene scene = assimpConverter.load(new File("C:\\data\\plasma-test\\output\\GaiaBatchedProject.glb").toPath(), "glb");
+        GaiaSet gaiaSet = new GaiaSet(scene);
+
+        //GaiaSet gaiaSet1 = this.readGaiaSet();
         OpenGlViwer openGlViwer = new OpenGlViwer(500, 500);
         List<RenderableObject> renderableObjectList = openGlViwer.getRenderableObjects();
-        GaiaSetObject gaiaSetObject = new GaiaSetObject(gaiaSet1);
+        GaiaSetObject gaiaSetObject = new GaiaSetObject(gaiaSet);
         renderableObjectList.add(gaiaSetObject);
         openGlViwer.run();
     }
@@ -163,7 +168,6 @@ class GaiaSetTest {
         GaiaUniverse gaiaUniverse = new GaiaUniverse();
         File inputFile = new File(INPUT_PATH);
         File outputFile = new File(OUTPUT_PATH);
-        Path outputPath = outputFile.toPath().resolve("GaiaBatchedProject" + ".mgb");
 
         convertFiles(gaiaUniverse, inputFile);
         GaiaSet gaiaSets = gaiaUniverse.writeFiles(outputFile.toPath());
@@ -173,6 +177,29 @@ class GaiaSetTest {
         GaiaScene scene = new GaiaScene(gaiaSets);
         GltfWriter.writeGlb(scene, OUTPUT_PATH + "GaiaBatchedProject" + ".glb");
     }
+
+    @Test
+    void renderMgb() {
+        Configurator.initLogger();
+        OpenGlViwer openGlViwer = new OpenGlViwer(500, 500);
+        List<RenderableObject> renderableObjectList = openGlViwer.getRenderableObjects();
+
+        File outputFile = new File(OUTPUT_PATH);
+        Path outputPath = outputFile.toPath().resolve("GaiaBatchedProject_" + ".mgb");
+
+        GaiaSet gaiaSet = new GaiaSet();
+        gaiaSet.readFile(outputPath);
+
+        GaiaSetObject gaiaSetObject = new GaiaSetObject(gaiaSet);
+        renderableObjectList.add(gaiaSetObject);
+
+        //GaiaScene scene = new GaiaScene(gaiaSet);
+        //GaiaSceneObject gaiaSceneObject = new GaiaSceneObject(scene);
+        //renderableObjectList.add(gaiaSceneObject);
+
+        openGlViwer.run();
+    }
+
 
     @Test
     void renderTest1312f() {
@@ -209,7 +236,7 @@ class GaiaSetTest {
             gaiaUniverse.getScenes().add(scene);
         } else if (inputFile.isDirectory()){
             for (File child : inputFile.listFiles()) {
-                if (gaiaUniverse.getGaiaSets().size() <= 100) {
+                if (gaiaUniverse.getGaiaSets().size() <= 10000) {
                     convertFiles(gaiaUniverse, child);
                 }
             }

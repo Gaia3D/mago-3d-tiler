@@ -130,13 +130,10 @@ public class GaiaBatcher {
         log.info("nonRepeatMaterials : " + nonRepeatMaterials.size());
         List<GaiaBufferDataSet> nonRepeatBufferDatas = filterdBufferDatas.stream().filter((bufferDataSet) -> {
             int materialId = bufferDataSet.getMaterialId();
-            GaiaMaterial material = filterdMaterials.get(materialId);
+            GaiaMaterial material = findMaterial(filterdMaterials, materialId);
             return !material.isRepeat();
         }).collect(Collectors.toList());
         log.info("nonRepeatBufferDatas : " + nonRepeatBufferDatas.size());
-
-        GaiaTextureCoordinator textureCoordinator = new GaiaTextureCoordinator(nonRepeatMaterials, nonRepeatBufferDatas);
-        textureCoordinator.batchTextures();
 
         List<GaiaMaterial> repeatMaterials = filterdMaterials.stream()
                 .filter(GaiaMaterial::isRepeat)
@@ -145,16 +142,69 @@ public class GaiaBatcher {
 
         List<GaiaBufferDataSet> repeatBufferDatas = filterdBufferDatas.stream().filter((bufferDataSet) -> {
             int materialId = bufferDataSet.getMaterialId();
-            GaiaMaterial material = filterdMaterials.get(materialId);
+            GaiaMaterial material = findMaterial(filterdMaterials, materialId);
             return material.isRepeat();
         }).collect(Collectors.toList());
         log.info("repeatBufferDatas : " + repeatBufferDatas.size());
 
+        GaiaTextureCoordinator textureCoordinator = new GaiaTextureCoordinator(nonRepeatMaterials, nonRepeatBufferDatas);
+        textureCoordinator.batchTextures();
 
+        //GaiaBufferDataSet batchedBufferData = batchVertices(nonRepeatBufferDatas);
+        //batchedBufferData.setMaterialId(0);
 
-        batched.setBufferDatas(filterdBufferDatas);
-        batched.setMaterials(filterdMaterials);
+        List<List<GaiaBufferDataSet>> splitedIndicesLimits = splitIndicesLimit(nonRepeatBufferDatas);
+        List<GaiaBufferDataSet> finalBatchedDataSet = splitedIndicesLimits.stream().map((splitedIndicesLimit) -> {
+            GaiaBufferDataSet batchedBufferData = batchVertices(splitedIndicesLimit);
+            batchedBufferData.setMaterialId(0);
+            return batchedBufferData;
+        }).collect(Collectors.toList());
+
+        /*for (GaiaBufferDataSet nonRepeatBufferData : nonRepeatBufferDatas) {
+            nonRepeatBufferData.setMaterialId(0);
+        }*/
+        nonRepeatMaterials.removeIf((nonRepeatMaterial) -> {
+            return nonRepeatMaterial.getId() > 0;
+        });
+
+        List<GaiaBufferDataSet> resultBufferDatas = new ArrayList<>();
+        resultBufferDatas.addAll(finalBatchedDataSet);
+
+        List<GaiaMaterial> resultMaterials = new ArrayList<>();
+        resultMaterials.addAll(nonRepeatMaterials);
+
+        batched.setBufferDatas(resultBufferDatas);
+        batched.setMaterials(resultMaterials);
         return batched;
+    }
+
+
+    private List<List<GaiaBufferDataSet>> splitIndicesLimit(List<GaiaBufferDataSet> bufferDataSets) {
+        int SHORT_LIMIT = 65535;
+
+        int count = 0;
+        List<List<GaiaBufferDataSet>> result = new ArrayList<>();
+        List<GaiaBufferDataSet> splited = new ArrayList<>();
+        result.add(splited);
+
+        for (GaiaBufferDataSet bufferDataSet : bufferDataSets) {
+            LinkedHashMap<AttributeType, GaiaBuffer> buffers = bufferDataSet.getBuffers();
+
+            GaiaBuffer indicesBuffer = buffers.get(AttributeType.INDICE);
+            if (indicesBuffer != null) {
+                int indicesLength = indicesBuffer.getShorts().length;
+
+                if ((count + indicesLength) > SHORT_LIMIT) {
+                    splited = new ArrayList<>();
+                    result.add(splited);
+                    count = indicesLength;
+                } else {
+                    count += indicesLength;
+                }
+                splited.add(bufferDataSet);
+            }
+        }
+        return result;
     }
 
     private GaiaBufferDataSet batchVertices(List<GaiaBufferDataSet> bufferDataSets) {
@@ -173,6 +223,19 @@ public class GaiaBatcher {
 
         for (GaiaBufferDataSet bufferDataSet : bufferDataSets) {
             LinkedHashMap<AttributeType, GaiaBuffer> buffers = bufferDataSet.getBuffers();
+
+            GaiaBuffer indicesBuffer = buffers.get(AttributeType.INDICE);
+            if (indicesBuffer != null) {
+                int indicesMax = 0;
+                for (short indice : indicesBuffer.getShorts()) {
+                    indicesMax = Math.max(indicesMax, indice);
+                    int value = totalIndicesMax + indice;
+                    indices.add((short) value);
+                }
+                totalIndicesMax = totalIndicesMax + (indicesMax + 1);
+                totalIndicesCount += indicesBuffer.getShorts().length;
+            }
+
             GaiaBuffer positionBuffer = buffers.get(AttributeType.POSITION);
             if (positionBuffer != null) {
                 totalPositionCount += positionBuffer.getFloats().length;
@@ -201,18 +264,6 @@ public class GaiaBatcher {
                 } else {
                     batchedBoundingRectangle.addBoundingRectangle(boundingRectangle);
                 }
-            }
-
-            GaiaBuffer indicesBuffer = buffers.get(AttributeType.INDICE);
-            if (indicesBuffer != null) {
-                int indicesMax = 0;
-                for (short indice : indicesBuffer.getShorts()) {
-                    indicesMax = Math.max(indicesMax, indice);
-                    int value = totalIndicesMax + indice;
-                    indices.add((short) value);
-                }
-                totalIndicesMax = totalIndicesMax + (indicesMax + 1);
-                totalIndicesCount += indicesBuffer.getShorts().length;
             }
         }
 
@@ -332,5 +383,12 @@ public class GaiaBatcher {
             return range.x > 1.00f || range.y > 1.001f;
         }
         return false;
+    }
+
+    private GaiaMaterial findMaterial(List<GaiaMaterial> materials, int materialId) {
+        return materials.stream()
+                .filter(material -> material.getId() == materialId)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("not found material"));
     }
 }

@@ -3,6 +3,7 @@ package geometry.exchangable;
 import geometry.basic.GaiaRectangle;
 import geometry.structure.GaiaMaterial;
 import geometry.structure.GaiaTexture;
+import geometry.types.AttributeType;
 import geometry.types.TextureType;
 import lombok.Getter;
 import lombok.Setter;
@@ -49,11 +50,7 @@ public class GaiaTextureCoordinator {
     }
 
     public void batchTextures() {
-        double error = 10E-5;
-        //error = 10E-5;
-
-        log.info((0.0001 == 10E-5) + " : ?");
-
+        double error = 10E-5; //error = 10E-5;
 
         int imageType = 0;
         List<GaiaSplittedImage> splittedImages = new ArrayList<>();
@@ -67,12 +64,18 @@ public class GaiaTextureCoordinator {
             BufferedImage bufferedImage = texture.getBufferedImage();
             imageType = bufferedImage.getType();
 
+
+            //test
             bufferedImage = ImageUtils.resizeImageGraphic2D(bufferedImage, 256, 256);
             texture.setBufferedImage(bufferedImage);
 
             Vector2d minPoint = new Vector2d(0, 0);
-            //Vector2d maxPoint = new Vector2d(bufferedImage.getWidth(), bufferedImage.getHeight());
-            Vector2d maxPoint = new Vector2d(256, 256);
+            Vector2d maxPoint = new Vector2d(bufferedImage.getWidth(), bufferedImage.getHeight());
+
+            //test
+            //maxPoint = new Vector2d(256, 256);
+
+
             GaiaSplittedImage splittedImage = new GaiaSplittedImage();
             splittedImage.setOriginalRectangle(new GaiaRectangle(minPoint, maxPoint));
             splittedImage.setMaterialId(material.getId());
@@ -105,9 +108,18 @@ public class GaiaTextureCoordinator {
                             }
                             return true;
                         }).sorted(Comparator.comparing(compareSplittedImage -> {
-                            return getLeftBottom(targetRectangle, compareSplittedImage.getSplittedRectangle()).getBoundingArea();
-                        })).collect(Collectors.toList());
+                            GaiaRectangle compare = compareSplittedImage.getSplittedRectangle();
+                            GaiaRectangle leftBottom = getLeftBottom(targetRectangle, compare);
 
+                            int maxWidth = compareImages.stream()
+                                .mapToInt(splittedImage -> (int) splittedImage.getSplittedRectangle().getMaxX()).max().getAsInt();
+                            int maxHeight = compareImages.stream()
+                                .mapToInt(splittedImage -> (int) splittedImage.getSplittedRectangle().getMaxY()).max().getAsInt();
+                            maxWidth = maxWidth < leftBottom.getMaxX() ? (int) leftBottom.getMaxX() : maxWidth;
+                            maxHeight = maxHeight < leftBottom.getMaxY() ? (int) leftBottom.getMaxY() : maxHeight;
+                            int area = maxHeight * maxWidth;
+                            return area;
+                        })).collect(Collectors.toList());
 
                 List<GaiaSplittedImage> rightTopFiltered = compareImages.stream()
                         .filter((compareSplittedImage) -> {
@@ -122,7 +134,17 @@ public class GaiaTextureCoordinator {
                             }
                             return true;
                         }).sorted(Comparator.comparing(compareSplittedImage -> {
-                            return getRightTop(targetRectangle, compareSplittedImage.getSplittedRectangle()).getBoundingArea();
+                            GaiaRectangle compare = compareSplittedImage.getSplittedRectangle();
+                            GaiaRectangle rightTop = getRightTop(targetRectangle, compare);
+
+                            int maxWidth = compareImages.stream()
+                                    .mapToInt(splittedImage -> (int) splittedImage.getSplittedRectangle().getMaxX()).max().getAsInt();
+                            int maxHeight = compareImages.stream()
+                                    .mapToInt(splittedImage -> (int) splittedImage.getSplittedRectangle().getMaxY()).max().getAsInt();
+                            maxWidth = maxWidth < rightTop.getMaxX() ? (int) rightTop.getMaxX() : maxWidth;
+                            maxHeight = maxHeight < rightTop.getMaxY() ? (int) rightTop.getMaxY() : maxHeight;
+                            int area = maxHeight * maxWidth;
+                            return area;
                         })).collect(Collectors.toList());
 
                 if (!leftBottomFiltered.isEmpty() && !rightTopFiltered.isEmpty()) {
@@ -137,23 +159,23 @@ public class GaiaTextureCoordinator {
 
                     if (leftBottom.getBoundingArea() >= rightTop.getBoundingArea()) {
                         target.setSplittedRectangle(rightTop);
-                        log.info("rightTop : " + (int) rightTop.getBoundingArea() + ":" + (int) Math.sqrt( (int)rightTop.getBoundingArea()));
+                        log.info("RT :: " + rightTop.getMaxX() + ":" + rightTop.getMaxY());
                     } else {
                         target.setSplittedRectangle(leftBottom);
-                        log.info("leftBottom : " + (int) leftBottom.getBoundingArea() + ":" + (int) Math.sqrt( (int)leftBottom.getBoundingArea()));
+                        log.info("LB :: " + leftBottom.getMaxX() + ":" + leftBottom.getMaxY());
                     }
                 } else if (!leftBottomFiltered.isEmpty()) {
                     GaiaSplittedImage notCompareImage = leftBottomFiltered.get(0);
                     GaiaRectangle compare = notCompareImage.getSplittedRectangle();
                     GaiaRectangle leftBottom = getLeftBottom(targetRectangle, compare);
                     target.setSplittedRectangle(leftBottom);
-                    log.info("leftBottom : " + (int) leftBottom.getBoundingArea() + ":" + (int) Math.sqrt( (int)leftBottom.getBoundingArea()));
+                    log.info("LB :: " + leftBottom.getMaxX() + ":" + leftBottom.getMaxY());
                 } else if (!rightTopFiltered.isEmpty()) {
                     GaiaSplittedImage notCompareImage = rightTopFiltered.get(0);
                     GaiaRectangle compare = notCompareImage.getSplittedRectangle();
                     GaiaRectangle rightTop = getRightTop(targetRectangle, compare);
                     target.setSplittedRectangle(rightTop);
-                    log.info("rightTop : " + (int) rightTop.getBoundingArea() + ":" + (int) Math.sqrt( (int)rightTop.getBoundingArea()));
+                    log.info("RT :: " + rightTop.getMaxX() + ":" + rightTop.getMaxY());
                 } else {
                     log.info("filtered isNotPresent");
                 }
@@ -165,8 +187,12 @@ public class GaiaTextureCoordinator {
         int maxHeight = splittedImages.stream()
                 .mapToInt(splittedImage -> (int) splittedImage.getSplittedRectangle().getMaxY()).max().getAsInt();
 
-        BufferedImage image = new BufferedImage(maxWidth, maxHeight, imageType);
-        Graphics graphics = image.getGraphics();
+        BufferedImage atlasImage = new BufferedImage(maxWidth, maxHeight, imageType);
+        Graphics graphics = atlasImage.getGraphics();
+
+//        BufferedImage image4Test = new BufferedImage(maxWidth, maxHeight, imageType);
+//        Graphics graphics4Test = image4Test.getGraphics();
+        //int count = 0;
 
         for (GaiaSplittedImage splittedImage : splittedImages) {
             GaiaRectangle splittedRectangle = splittedImage.getSplittedRectangle();
@@ -176,16 +202,84 @@ public class GaiaTextureCoordinator {
             List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
             GaiaTexture texture = textures.get(0);
 
-            BufferedImage source = texture.getBufferedImage();
-            graphics.drawImage(source, (int) splittedRectangle.getMinX(), (int) splittedRectangle.getMinY(), (int) splittedRectangle.getMaxX(), (int) splittedRectangle.getMaxY(),null);
+//            log.info(":" + (splittedRectangle.getMaxX() - splittedRectangle.getMinX()));
+//            log.info(":" + (splittedRectangle.getMaxY() - splittedRectangle.getMinY()));
 
-            //log.info((int)splittedRectangle.getMinX() + "," + (int)splittedRectangle.getMinY() + " " + (int)splittedRectangle.getMaxX() + "," + (int)splittedRectangle.getMaxY());
+            BufferedImage source = texture.getBufferedImage();
+            graphics.drawImage(source, (int) splittedRectangle.getMinX(), (int) splittedRectangle.getMinY(),null);
+
+//            int width = (int) (splittedRectangle.getMaxX() - splittedRectangle.getMinX());
+//            int height = (int) (splittedRectangle.getMaxY() - splittedRectangle.getMinY());
+
+//            graphics4Test.setColor(Color.RED);
+//            graphics4Test.drawRect((int) splittedRectangle.getMinX(), (int) splittedRectangle.getMinY(), width, height);
+//            graphics4Test.setColor(Color.BLUE);
+//            graphics4Test.drawRect((int) splittedRectangle.getMinX() + 1, (int) splittedRectangle.getMinY() + 1, width - 2, height - 2);
+//            graphics4Test.drawString("" + count++, (int) splittedRectangle.getMinX() + (width/2), (int) splittedRectangle.getMinY() + (height/2));
+//
+//            log.info("");
 
             //graphics.drawImage(source, (int) splittedRectangle.getMinX(), (int) splittedRectangle.getMinY(), null);
             //graphics.dispose();
         }
 
-        log.info("test");
+        /*GaiaTexture gaiaTexture = new GaiaTexture();
+        gaiaTexture.setBufferedImage(atlasImage);
+        gaiaTexture.setType(TextureType.DIFFUSE);
+        gaiaTexture.setWidth(maxWidth);
+        gaiaTexture.setHeight(maxHeight);
+        List<GaiaTexture> gaiaTextureList = new ArrayList<>();
+        gaiaTextureList.add(gaiaTexture);
+        GaiaMaterial gaiaMaterial = new GaiaMaterial();
+        gaiaMaterial.setName("Atlas Texture");
+        LinkedHashMap<TextureType, List<GaiaTexture>> gaiaMaterialTextures = gaiaMaterial.getTextures();*/
+
+        for (GaiaSplittedImage target : splittedImages) {
+            GaiaRectangle splittedRectangle = target.getSplittedRectangle();
+
+            int width = (int) splittedRectangle.getMaxX() - (int) splittedRectangle.getMinX();
+            int height = (int) splittedRectangle.getMaxY() - (int) splittedRectangle.getMinY();
+
+            GaiaMaterial material = findMaterial(target.getMaterialId());
+            LinkedHashMap<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
+            List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
+            GaiaTexture texture = textures.get(0);
+            texture.setBufferedImage(atlasImage);
+            texture.setWidth(maxWidth);
+            texture.setHeight(maxHeight);
+
+            List<GaiaBufferDataSet> materialBufferDataSets = bufferDataSets.stream().filter((bufferDataSet) -> {
+                return bufferDataSet.getMaterialId() == target.getMaterialId();
+            }).collect(Collectors.toList());
+
+            for (GaiaBufferDataSet materialBufferDataSet : materialBufferDataSets) {
+                GaiaBuffer texcoordBuffer = materialBufferDataSet.getBuffers().get(AttributeType.TEXCOORD);
+                if (texcoordBuffer != null) {
+                    float[] texcoords = texcoordBuffer.getFloats();
+                    for (int i = 0; i < texcoords.length; i+=2) {
+                        float x = texcoords[i];
+                        float y = texcoords[i + 1];
+
+                        float calcX = width * x;
+                        float calcY = height * y;
+
+                        float offsetX = (float) splittedRectangle.getMinX() + calcX;
+                        float offsetY = (float) splittedRectangle.getMinY() + calcY;
+
+                        float testX = offsetX / maxWidth;
+                        float testY = offsetY / maxHeight;
+
+                        texcoords[i] = testX;
+                        texcoords[i + 1] = testY;
+
+                        log.info(texcoords[i] + ", " + texcoords[i + 1]);
+                    }
+
+                }
+
+            }
+
+        }
     }
 
     //findMaterial
