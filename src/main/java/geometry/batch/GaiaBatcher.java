@@ -1,41 +1,65 @@
-package geometry.exchangable;
+package geometry.batch;
 
 import geometry.basic.GaiaBoundingBox;
 import geometry.basic.GaiaRectangle;
+import geometry.exchangable.GaiaBuffer;
+import geometry.exchangable.GaiaBufferDataSet;
+import geometry.exchangable.GaiaSet;
+import geometry.exchangable.GaiaUniverse;
 import geometry.structure.GaiaMaterial;
 import geometry.structure.GaiaTexture;
 import geometry.types.AttributeType;
 import geometry.types.TextureType;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
+import org.joml.Vector4d;
 import org.lwjgl.opengl.GL20;
 import util.ArrayUtils;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
-@NoArgsConstructor
 public class GaiaBatcher {
-    //GaiaSet batched = new GaiaSet();
-    //List<GaiaBufferDataSet> batchedBufferDatas = new ArrayList<>();
-    //List<GaiaMaterial> batchedMaterials = new ArrayList<>();
+    private final GaiaSet bachedSet;
+    private GaiaBoundingBox globalBoundingBox = new GaiaBoundingBox();
 
-    // GaiaSets를 하나로
-    public GaiaSet batch(List<GaiaSet> gaiaSets) {
-        GaiaSet batched = new GaiaSet();
-        batched.setProjectName("GaiaBatchedProject");
+    public GaiaBatcher() {
+        this.bachedSet = new GaiaSet();
+        this.bachedSet.setProjectName("GaiaBatchedProject");
+        this.globalBoundingBox = new GaiaBoundingBox();
+    }
 
+    public void excute(GaiaUniverse universe) {
+
+    }
+
+    public GaiaSet batchAltas(Path imagesPath, List<GaiaMaterial> materials, List<GaiaBufferDataSet> bufferDataSets) {
+        GaiaTextureCoordinator textureCoordinator = new GaiaTextureCoordinator(materials, bufferDataSets);
+        textureCoordinator.batchTextures();
+        textureCoordinator.writeBatchedImage(imagesPath);
+
+        List<List<GaiaBufferDataSet>> splitedLimitList = splitIndicesLimit(bufferDataSets);
+        List<GaiaBufferDataSet> finalBatchedDataSet = splitedLimitList.stream().map((splitedLimit) -> {
+            GaiaBufferDataSet batchedBufferData = batchVertices(splitedLimit);
+            batchedBufferData.setMaterialId(0);
+            return batchedBufferData;
+        }).collect(Collectors.toList());
+
+        return this.bachedSet;
+    }
+
+    public GaiaSet batch(List<GaiaSet> gaiaSets, Path imagesPath) {
         List<GaiaBufferDataSet> batchedBufferDatas = new ArrayList<>();
         List<GaiaMaterial> batchedMaterials = new ArrayList<>();
-        GaiaBoundingBox globalBoundingBox = new GaiaBoundingBox();
-
         for (GaiaSet gaiaSet : gaiaSets) {
             List<GaiaBufferDataSet> bufferDatas = gaiaSet.getBufferDatas();
             List<GaiaMaterial> materials = gaiaSet.getMaterials();
@@ -109,7 +133,6 @@ public class GaiaBatcher {
             filterdBufferDatas.add(batchedBufferData);
         });
 
-
         for (GaiaBufferDataSet bufferDataSet : filterdBufferDatas) {
             int materialId = bufferDataSet.getMaterialId();
             GaiaMaterial material = filterdMaterials.get(materialId);
@@ -127,31 +150,29 @@ public class GaiaBatcher {
         List<GaiaMaterial> nonRepeatMaterials = filterdMaterials.stream()
                 .filter((material) -> !material.isRepeat())
                 .collect(Collectors.toList());
-        log.info("nonRepeatMaterials : " + nonRepeatMaterials.size());
         List<GaiaBufferDataSet> nonRepeatBufferDatas = filterdBufferDatas.stream().filter((bufferDataSet) -> {
             int materialId = bufferDataSet.getMaterialId();
             GaiaMaterial material = findMaterial(filterdMaterials, materialId);
             return !material.isRepeat();
         }).collect(Collectors.toList());
-        log.info("nonRepeatBufferDatas : " + nonRepeatBufferDatas.size());
 
         List<GaiaMaterial> repeatMaterials = filterdMaterials.stream()
                 .filter(GaiaMaterial::isRepeat)
                 .collect(Collectors.toList());
-        log.info("repeatMaterials : " + repeatMaterials.size());
-
         List<GaiaBufferDataSet> repeatBufferDatas = filterdBufferDatas.stream().filter((bufferDataSet) -> {
             int materialId = bufferDataSet.getMaterialId();
             GaiaMaterial material = findMaterial(filterdMaterials, materialId);
             return material.isRepeat();
         }).collect(Collectors.toList());
+
+        log.info("nonRepeatMaterials : " + nonRepeatMaterials.size());
+        log.info("nonRepeatBufferDatas : " + nonRepeatBufferDatas.size());
+        log.info("repeatMaterials : " + repeatMaterials.size());
         log.info("repeatBufferDatas : " + repeatBufferDatas.size());
 
         GaiaTextureCoordinator textureCoordinator = new GaiaTextureCoordinator(nonRepeatMaterials, nonRepeatBufferDatas);
         textureCoordinator.batchTextures();
-
-        //GaiaBufferDataSet batchedBufferData = batchVertices(nonRepeatBufferDatas);
-        //batchedBufferData.setMaterialId(0);
+        textureCoordinator.writeBatchedImage(imagesPath);
 
         List<List<GaiaBufferDataSet>> splitedIndicesLimits = splitIndicesLimit(nonRepeatBufferDatas);
         List<GaiaBufferDataSet> finalBatchedDataSet = splitedIndicesLimits.stream().map((splitedIndicesLimit) -> {
@@ -160,9 +181,6 @@ public class GaiaBatcher {
             return batchedBufferData;
         }).collect(Collectors.toList());
 
-        /*for (GaiaBufferDataSet nonRepeatBufferData : nonRepeatBufferDatas) {
-            nonRepeatBufferData.setMaterialId(0);
-        }*/
         nonRepeatMaterials.removeIf((nonRepeatMaterial) -> {
             return nonRepeatMaterial.getId() > 0;
         });
@@ -173,14 +191,14 @@ public class GaiaBatcher {
         List<GaiaMaterial> resultMaterials = new ArrayList<>();
         resultMaterials.addAll(nonRepeatMaterials);
 
-        batched.setBufferDatas(resultBufferDatas);
-        batched.setMaterials(resultMaterials);
-        return batched;
+        this.bachedSet.setBufferDatas(resultBufferDatas);
+        this.bachedSet.setMaterials(resultMaterials);
+        return this.bachedSet;
     }
 
 
     private List<List<GaiaBufferDataSet>> splitIndicesLimit(List<GaiaBufferDataSet> bufferDataSets) {
-        int SHORT_LIMIT = 65535;
+        final int SHORT_LIMIT = 65535;
 
         int count = 0;
         List<List<GaiaBufferDataSet>> result = new ArrayList<>();
@@ -346,7 +364,8 @@ public class GaiaBatcher {
                 }
                 if (boundingBox == null) {
                     boundingBox = new GaiaBoundingBox();
-                    boundingBox.setInit(transformedPosition);
+                    //boundingBox.setInit(transformedPosition);
+                    boundingBox.addPoint(transformedPosition);
                 } else {
                     boundingBox.addPoint(transformedPosition);
                 }
@@ -356,14 +375,10 @@ public class GaiaBatcher {
     }
 
     private GaiaMaterial getSameMaterial(GaiaMaterial material, List<GaiaMaterial> materials) {
-        try {
-            for (GaiaMaterial searchMaterial : materials) {
-                if (searchMaterial.compareTo(material)) {
-                    return searchMaterial;
-                }
+        for (GaiaMaterial searchMaterial : materials) {
+            if (searchMaterial.compareTo(material)) {
+                return searchMaterial;
             }
-        } catch (IOException e) {
-            log.error(e.getMessage());
         }
         return null;
     }

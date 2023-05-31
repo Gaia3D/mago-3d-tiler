@@ -26,23 +26,29 @@ import java.util.HashMap;
 import java.util.List;
 
 public class GltfWriter {
-    public static void writeGltf(GaiaScene gaiaScene, String outputPath) {
+    public static void writeGltf(GaiaScene gaiaScene, File outputPath) {
         try {
             GltfModel gltfModel = convert(gaiaScene);
             GltfModelWriter writer = new GltfModelWriter();
-            writer.writeEmbedded(gltfModel, new File(outputPath));
+            writer.writeEmbedded(gltfModel, outputPath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public static void writeGltf(GaiaScene gaiaScene, String outputPath) {
+        writeGltf(gaiaScene, new File(outputPath));
+    }
+    public static void writeGlb(GaiaScene gaiaScene, File outputPath) {
+        try {
+            GltfModel gltfModel = convert(gaiaScene);
+            GltfModelWriter writer = new GltfModelWriter();
+            writer.writeBinary(gltfModel, outputPath);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
     public static void writeGlb(GaiaScene gaiaScene, String outputPath) {
-        try {
-            GltfModel gltfModel = convert(gaiaScene);
-            GltfModelWriter writer = new GltfModelWriter();
-            writer.writeBinary(gltfModel, new File(outputPath));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        writeGlb(gaiaScene, new File(outputPath));
     }
 
     private static GltfModel convert(GaiaScene gaiaScene) {

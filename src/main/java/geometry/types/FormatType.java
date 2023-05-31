@@ -1,7 +1,6 @@
 package geometry.types;
 
 public enum FormatType {
-
     MAX_3DS("3ds"),
     OBJ("obj"),
     COLLADA("dae"),
@@ -9,7 +8,8 @@ public enum FormatType {
     GLTF("gltf"),
     GLB("glb"),
     B3DM("b3dm"),
-    I3DM("i3dm");
+    I3DM("i3dm"),
+    TEMP("mgb");
 
     String extension;
 

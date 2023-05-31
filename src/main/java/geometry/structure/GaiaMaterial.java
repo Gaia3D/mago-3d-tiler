@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.joml.Vector4d;
 
@@ -18,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Getter
 @Setter
 @NoArgsConstructor
@@ -88,7 +90,7 @@ public class GaiaMaterial {
         }
     }
 
-    public boolean compareTo(GaiaMaterial compare) throws IOException {
+    public boolean compareTo(GaiaMaterial compare) {
         GaiaMaterial target = this;
         if (target.getId() == compare.getId()) {
             return true;
@@ -116,7 +118,12 @@ public class GaiaMaterial {
             if (diffuseTextureFile.equals(searchDiffuseTextureFile)) {
                 return true;
             } else if (diffuseTextureFile.length() == searchDiffuseTextureFile.length()) {
-                FileUtils.contentEquals(diffuseTextureFile, searchDiffuseTextureFile);
+                try {
+                    FileUtils.contentEquals(diffuseTextureFile, searchDiffuseTextureFile);
+                } catch (IOException e) {
+                    log.error(e.getMessage());
+                    return false;
+                }
                 return true;
             }
         }

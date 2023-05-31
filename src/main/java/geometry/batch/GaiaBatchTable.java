@@ -1,4 +1,4 @@
-package geometry.exchangable;
+package geometry.batch;
 
 public class GaiaBatchTable {
 
