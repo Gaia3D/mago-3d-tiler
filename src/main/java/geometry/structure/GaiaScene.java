@@ -1,5 +1,6 @@
 package geometry.structure;
 
+import geometry.basic.GaiaBoundingBox;
 import geometry.exchangable.GaiaBufferDataSet;
 import geometry.exchangable.GaiaSet;
 import lombok.AllArgsConstructor;
@@ -20,6 +21,7 @@ public class GaiaScene {
     private List<GaiaNode> nodes = new ArrayList<>();
     private List<GaiaMaterial> materials = new ArrayList<>();
     private Path originalPath;
+    private GaiaBoundingBox gaiaBoundingBox;
 
     public GaiaScene(GaiaSet gaiaSet) {
         List<GaiaBufferDataSet> bufferDataSets = gaiaSet.getBufferDatas();
@@ -42,5 +44,14 @@ public class GaiaScene {
         for (GaiaNode node : nodes) {
             node.renderNode(program);
         }
+    }
+
+    public GaiaBoundingBox getBoundingBox() {
+        this.gaiaBoundingBox = new GaiaBoundingBox();
+        for (GaiaNode node : this.getNodes()) {
+            GaiaBoundingBox boundingBox = node.getBoundingBox(null);
+            gaiaBoundingBox.addBoundingBox(boundingBox);
+        }
+        return this.gaiaBoundingBox;
     }
 }

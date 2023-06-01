@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileExistsException;
 import org.apache.commons.io.FilenameUtils;
 import org.joml.Matrix4d;
@@ -20,7 +21,7 @@ import java.io.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-
+@Slf4j
 @Setter
 @Getter
 @NoArgsConstructor
@@ -77,7 +78,7 @@ public class GaiaSet {
                 bufferData.write(stream);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
     }
 

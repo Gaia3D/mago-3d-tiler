@@ -134,7 +134,7 @@ public class GaiaPrimitive {
     }
 
     public GaiaBoundingBox getBoundingBox(Matrix4d transform) {
-        GaiaBoundingBox boundingBox = null;
+        GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         for (GaiaVertex vertex : vertices) {
             Vector3d position = vertex.getPosition();
 
@@ -142,13 +142,7 @@ public class GaiaPrimitive {
             if (transform != null) {
                 transform.transformPosition(position, transformedPosition);
             }
-
-            if (boundingBox == null) {
-                boundingBox = new GaiaBoundingBox();
-                boundingBox.setInit(transformedPosition);
-            } else {
-                boundingBox.addPoint(transformedPosition);
-            }
+            boundingBox.addPoint(transformedPosition);
         }
         return boundingBox;
     }

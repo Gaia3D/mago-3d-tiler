@@ -1,5 +1,6 @@
 package geometry.exchangable;
 
+import geometry.batch.Batcher;
 import geometry.batch.GaiaBatcher;
 import geometry.structure.GaiaMaterial;
 import geometry.structure.GaiaScene;
@@ -58,38 +59,7 @@ public class GaiaUniverse {
         this.sets.removeAll(new ArrayList());
         this.sets.addAll(sets);
     }
-    public GaiaSet write() {
-        Path imagesPath = this.outputRoot.resolve("images");
 
-        if (this.sets.size() < 0) {
-            convertGaiaSet();
-        }
-        List<GaiaSet> gaiaSets = this.sets;
-        GaiaBatcher gaiaBatcher = new GaiaBatcher();
-
-        GaiaSet result = gaiaBatcher.batch(gaiaSets, imagesPath);
-
-        List<String> texturePaths = new ArrayList<>();
-        for (GaiaMaterial material : result.getMaterials()) {
-            LinkedHashMap<TextureType, List<GaiaTexture>> textures = material.getTextures();
-            textures.forEach((textureType, gaiaTextures) -> {
-                for (GaiaTexture gaiaTexture : gaiaTextures) {
-                    String texturePath = gaiaTexture.getPath();
-                    if (texturePath != null) {
-                        texturePaths.add(texturePath);
-                    }
-                }
-            });
-        }
-        texturePaths.forEach(texturePath -> {
-            Path originalTexturePath = this.inputRoot.resolve(texturePath);
-            Path destinationTexturePath = imagesPath.resolve(texturePath);
-            ImageUtils.copyAndResize(originalTexturePath, destinationTexturePath);
-        });
-
-        result.writeFile(this.outputRoot);
-        return result;
-    }
 
     public GaiaSet writeFiles() {
         Path imagesPath = this.outputRoot.resolve("images");

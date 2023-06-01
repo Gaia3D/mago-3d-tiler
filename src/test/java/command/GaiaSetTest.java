@@ -1,6 +1,7 @@
 package command;
 
 import assimp.AssimpConverter;
+import geometry.batch.Batcher;
 import geometry.exchangable.GaiaSet;
 import geometry.exchangable.GaiaUniverse;
 import geometry.structure.GaiaScene;
@@ -20,15 +21,25 @@ import java.util.stream.Collectors;
 
 @Slf4j
 class GaiaSetTest {
+    private static final AssimpConverter assimpConverter = new AssimpConverter(null);
     private static final String RESULT = "GaiaBatchedProject";
     private static final String INPUT_PATH = "C:\\data\\plasma-test\\ws2-3ds\\";
     private static final String OUTPUT_PATH = "C:\\data\\plasma-test\\output\\";
-    private static final AssimpConverter assimpConverter = new AssimpConverter(null);
-    private static final int TEST_COUNT = 200;
+    private static final int TEST_COUNT = 1000;
 
     @Test
     public void read() {
         Configurator.initLogger();
+        File input = new File(INPUT_PATH);
+        File output = new File(OUTPUT_PATH);
+        Path inputPath = input.toPath();
+        Path outputPath = output.toPath();
+        GaiaUniverse universe = new GaiaUniverse(inputPath, outputPath);
+        readOriginFiles(universe, FormatType.MAX_3DS);
+        universe.convertGaiaSet();
+        Batcher batcher = new Batcher(universe);
+        GaiaSet set = batcher.batch();
+        writeGlb(set);
     }
 
     @Test

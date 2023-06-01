@@ -19,6 +19,7 @@ import util.ArrayUtils;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,14 +44,21 @@ public class Batcher {
         sets.forEach((set) -> {
             List<GaiaBufferDataSet> dataSets = set.getBufferDatas();
             List<GaiaMaterial> materials = set.getMaterials();
+            int materialIdOffset = batchedMaterials.size();
             dataSets.forEach((dataSet) -> {
+                int materialId = dataSet.getMaterialId();
                 dataSet.setTransformMatrix(set.getTransformMatrix());
+                dataSet.setMaterialId(materialIdOffset + materialId);
+            });
+            materials.forEach((material) -> {
+                int materialId = material.getId();
+                material.setId(materialIdOffset + materialId);
             });
             batchedDataSets.addAll(dataSets);
             batchedMaterials.addAll(materials);
         });
 
-        rearrangeMaterial();
+        //rearrangeMaterial();
         calcGlobalBBox();
         List<GaiaMaterial> filterdMaterials = batchDuplicateMaterial(batchedDataSets, batchedMaterials);
         rearrangeMaterial(batchedDataSets, filterdMaterials);
@@ -82,7 +90,7 @@ public class Batcher {
         log.info("repeatMaterials : " + repeatMaterials.size());
         log.info("repeatBufferDatas : " + repeatDataSets.size());
 
-        atlasTextures(clampDataSets, batchedMaterials);
+        atlasTextures(clampDataSets, clampMaterials);
         List<List<GaiaBufferDataSet>> splitedDataSets = divisionByMaxIndices(clampDataSets);
         List<GaiaBufferDataSet> batchedClampDataSets = batchClampMaterial(splitedDataSets);
         clampMaterials.removeIf((clampMaterial) -> {
@@ -101,16 +109,17 @@ public class Batcher {
     }
 
     // Material Id 재정렬
+    @Deprecated
     private void rearrangeMaterial() {
         List<GaiaSet> sets = universe.getSets();
+        int materialIdOffset = 0;
         sets.forEach((set) -> {
-            int materialIdOffset = set.getMaterials().size();
             set.getBufferDatas().forEach((dataSet) -> {
                 int materialId = dataSet.getMaterialId();
                 dataSet.setMaterialId(materialIdOffset + materialId);
             });
             set.getMaterials().forEach((material) -> {
-                material.setId(materialIdOffset + material.getId());
+                material.setId((materialIdOffset) + material.getId());
             });
         });
     }
@@ -259,7 +268,7 @@ public class Batcher {
     private void checkIsRepeatMaterial(List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials) {
         for (GaiaBufferDataSet dataSet : dataSets) {
             int materialId = dataSet.getMaterialId();
-            GaiaMaterial material = materials.get(materialId);
+            GaiaMaterial material = findMaterial(materials, materialId);
             if (material != null) {
                 LinkedHashMap<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
                 List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
@@ -285,7 +294,7 @@ public class Batcher {
     private void atlasTextures(List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials) {
         GaiaTextureCoordinator textureCoordinator = new GaiaTextureCoordinator(materials, dataSets);
         textureCoordinator.batchTextures();
-        textureCoordinator.writeBatchedImage(this.universe.getOutputRoot().resolve(File.separator + "images"));
+        textureCoordinator.writeBatchedImage(this.universe.getOutputRoot().resolve("images"));
     }
 
     private boolean checkRepeat(GaiaMaterial material, GaiaBufferDataSet dataSet) {

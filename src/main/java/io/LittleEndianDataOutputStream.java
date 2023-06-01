@@ -131,9 +131,13 @@ public class LittleEndianDataOutputStream extends FilterOutputStream implements 
 
     @Override
     public void writeUTF(String s) throws IOException {
-        //out.write(s.getBytes());
         byte[] bytes = s.getBytes(StandardCharsets.UTF_8);
         writeInt(s.length());
+        write(bytes);
+    }
+
+    public void writePureText(String s) throws IOException {
+        byte[] bytes = s.getBytes(StandardCharsets.UTF_8);
         write(bytes);
     }
 
