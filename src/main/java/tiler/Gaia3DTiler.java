@@ -140,7 +140,7 @@ public class Gaia3DTiler {
                 childNode.setTransform(childTransform);
                 childNode.setNodeCode(parentNode.getNodeCode() + i);
                 childNode.setGeometricError(276.41843f);
-                childNode.setRefine("REPLACE");
+                childNode.setRefine(Node.RefineType.REPLACE);
                 childNode.setBoundingVolume(rootBoundingVolume);
                 childNode.setChildren(new ArrayList<>());
                 List<GaiaScene> childScenes = containScenes(childBoundingBox, scenes);
@@ -168,7 +168,7 @@ public class Gaia3DTiler {
                         BoundingVolume rootBoundingVolume = getBoundingVolume(childBoundingBox);
                         childNode.setNodeCode(parentNode.getNodeCode() + i);
                         childNode.setGeometricError(100.0f);
-                        childNode.setRefine("REPLACE");
+                        childNode.setRefine(Node.RefineType.REPLACE);
                         childNode.setBoundingVolume(rootBoundingVolume);
                         childNode.setChildren(new ArrayList<>());
 
@@ -177,9 +177,9 @@ public class Gaia3DTiler {
                         Matrix4d transformMatrix = new Matrix4d();
                         transformMatrix.identity();
                         float[] childTransform = transformMatrix.get(new float[16]);
-//                        childTransform[13] = parentTransform[13] - childTransform[13];
-//                        childTransform[14] = parentTransform[14] - childTransform[14];
-//                        childTransform[15] = parentTransform[15] - childTransform[15];
+                        childTransform[13] = parentTransform[13] - childTransform[13];
+                        childTransform[14] = parentTransform[14] - childTransform[14];
+                        childTransform[15] = parentTransform[15] - childTransform[15];
 
                         childNode.setTransform(childTransform);
                         List<GaiaScene> childScenes = containScenes(childBoundingBox, scenes);
@@ -210,7 +210,7 @@ public class Gaia3DTiler {
         Node root = createRoot();
         root.setNodeCode("R");
         root.setGeometricError(276.41843f);
-        root.setRefine("REPLACE");
+        root.setRefine(Node.RefineType.REPLACE);
         root.setChildren(new ArrayList<>());
         root.setBoundingVolume(getBoundingVolume(globalBoundingBox));
         root.setTransform(transfrom);
@@ -267,7 +267,7 @@ public class Gaia3DTiler {
 
         child.setContent(content);
         child.setGeometricError(276.41843f);
-        child.setRefine("REPLACE");
+        child.setRefine(Node.RefineType.REPLACE);
         children.add(child);
         root.setChildren(children);
     }

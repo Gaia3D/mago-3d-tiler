@@ -12,11 +12,20 @@ public class Node {
     @JsonIgnore
     private String nodeCode;
 
+    @JsonIgnore
+    private Node parent;
+
+    private List<Node> children;
+
     private BoundingVolume boundingVolume;
+    private RefineType refine = RefineType.ADD;
     private float geometricError = 0.0f;
-    private String refine = "ADD";
     private float[] transform;
 
-    private Content content = null;
-    private List<Node> children;
+    private Content content;
+
+    public enum RefineType {
+        ADD,
+        REPLACE,
+    }
 }
