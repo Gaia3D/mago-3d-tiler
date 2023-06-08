@@ -34,7 +34,7 @@ class GaiaSetTest {
         File output = new File(OUTPUT_PATH);
         Path inputPath = input.toPath();
         Path outputPath = output.toPath();
-        GaiaUniverse universe = new GaiaUniverse(inputPath, outputPath);
+        GaiaUniverse universe = new GaiaUniverse(RESULT, inputPath, outputPath);
         readOriginFiles(universe, FormatType.MAX_3DS);
         universe.convertGaiaSet();
         Batcher batcher = new Batcher(universe);
@@ -50,7 +50,7 @@ class GaiaSetTest {
         Path inputPath = input.toPath();
         Path outputPath = output.toPath();
 
-        GaiaUniverse gaiaUniverse = new GaiaUniverse(inputPath, outputPath);
+        GaiaUniverse gaiaUniverse = new GaiaUniverse(RESULT, inputPath, outputPath);
         readOriginFiles(gaiaUniverse, FormatType.MAX_3DS);
         GaiaSet set = gaiaUniverse.writeFiles();
         writeGlb(set);

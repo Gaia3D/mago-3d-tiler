@@ -24,14 +24,15 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class GaiaTextureCoordinator {
-    final private String ATLAS_IMAGE = "atlas_image";
+    final private String ATLAS_IMAGE;
     final private double ERROR = 10E-5; //error = 10E-5;
 
     private final List<GaiaMaterial> materials;
     private final List<GaiaBufferDataSet> bufferDataSets;
     private BufferedImage atlasImage;
 
-    public GaiaTextureCoordinator(List<GaiaMaterial> materials, List<GaiaBufferDataSet> bufferDataSets) {
+    public GaiaTextureCoordinator(String name, List<GaiaMaterial> materials, List<GaiaBufferDataSet> bufferDataSets) {
+        this.ATLAS_IMAGE = name;
         this.materials = materials;
         this.bufferDataSets = bufferDataSets;
         this.initBatchImage(0, 0);

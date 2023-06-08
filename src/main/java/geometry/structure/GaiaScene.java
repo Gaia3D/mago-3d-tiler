@@ -29,7 +29,7 @@ public class GaiaScene {
 
         Matrix4d transformMatrix = new Matrix4d();
         transformMatrix.identity();
-        transformMatrix.rotateX(Math.toRadians(-90)); // y and z axis swap
+        //transformMatrix.rotateX(Math.toRadians(-90)); // y and z axis swap
 
         GaiaNode rootNode = new GaiaNode();
         rootNode.setName("BatchedRootNode");

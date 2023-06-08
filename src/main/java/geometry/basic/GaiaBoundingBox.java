@@ -89,4 +89,11 @@ public class GaiaBoundingBox {
             maxZ = boundingBox.getMaxZ();
         }
     }
+
+    public boolean contains(Vector3d vector3d) {
+        boolean containX = minX <= vector3d.x() && vector3d.x() <= maxX;
+        boolean containY = minY <= vector3d.y() && vector3d.y() <= maxY;
+        boolean containZ = minZ <= vector3d.z() && vector3d.z() <= maxZ;
+        return containX && containY && containZ;
+    }
 }

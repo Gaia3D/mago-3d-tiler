@@ -19,7 +19,7 @@ class Batched3DModelTest {
     private static final String RESULT = "GaiaBatchedProject";
     private static final String INPUT_PATH = "C:\\data\\plasma-test\\ws2-3ds\\";
     private static final String OUTPUT_PATH = "C:\\data\\plasma-test\\output\\";
-    private static final int TEST_COUNT = 100;
+    private static final int TEST_COUNT = 3000;
 
     @Test
     void write() {
@@ -29,11 +29,11 @@ class Batched3DModelTest {
         Path inputPath = input.toPath();
         Path outputPath = output.toPath();
 
-        GaiaUniverse universe = new GaiaUniverse(inputPath, outputPath);
+        GaiaUniverse universe = new GaiaUniverse(RESULT, inputPath, outputPath);
         readOriginFiles(universe, FormatType.MAX_3DS);
 
         Batched3DModel batched3DModel = new Batched3DModel(universe);
-        batched3DModel.write();
+        batched3DModel.write("test");
 
         log.info("done");
     }

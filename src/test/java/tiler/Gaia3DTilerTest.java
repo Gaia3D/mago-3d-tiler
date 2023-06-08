@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Slf4j
 class Gaia3DTilerTest {
     private static final String INPUT_PATH = "C:\\data\\plasma-test\\ws2-3ds\\";
-    private static final String OUTPUT_PATH = "C:\\data\\plasma-test\\output\\";
+    private static final String OUTPUT_PATH = "C:\\data\\plasma-test\\output2\\";
 
     @Test
     void createRoot() {
@@ -22,7 +22,7 @@ class Gaia3DTilerTest {
         Path inputPath = input.toPath();
         Path outputPath = output.toPath();
 
-        Gaia3DTiler tiler = new Gaia3DTiler();
-        tiler.createRoot(inputPath, outputPath);
+        Gaia3DTiler tiler = new Gaia3DTiler(inputPath, outputPath);
+        tiler.excute();
     }
 }

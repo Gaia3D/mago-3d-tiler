@@ -17,9 +17,7 @@ import org.joml.Vector3d;
 import org.lwjgl.opengl.GL20;
 import util.ArrayUtils;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,7 +30,7 @@ public class Batcher {
 
     public Batcher(GaiaUniverse universe) {
         this.batchedSet = new GaiaSet();
-        this.batchedSet.setProjectName("GaiaBatchedProject");
+        this.batchedSet.setProjectName(universe.getName());
         this.universe = universe;
         this.globalBBox = new GaiaBoundingBox();
     }
@@ -105,6 +103,12 @@ public class Batcher {
 
         this.batchedSet.setBufferDatas(resultBufferDatas);
         this.batchedSet.setMaterials(resultMaterials);
+
+        Matrix4d transform = new Matrix4d();
+        transform.identity();
+
+        this.batchedSet.setTransformMatrix(transform);
+
         return this.batchedSet;
     }
 
@@ -292,7 +296,7 @@ public class Batcher {
 
     // 각 Material의 Texture들을 하나의 이미지로 변경
     private void atlasTextures(List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials) {
-        GaiaTextureCoordinator textureCoordinator = new GaiaTextureCoordinator(materials, dataSets);
+        GaiaTextureCoordinator textureCoordinator = new GaiaTextureCoordinator(universe.getName(), materials, dataSets);
         textureCoordinator.batchTextures();
         textureCoordinator.writeBatchedImage(this.universe.getOutputRoot().resolve("images"));
     }
@@ -438,6 +442,7 @@ public class Batcher {
         return materials.stream()
                 .filter(material -> material.getId() == materialId)
                 .findFirst()
+                //.orElse(materials.get(0));
                 .orElseThrow(() -> new RuntimeException("not found material"));
     }
 }

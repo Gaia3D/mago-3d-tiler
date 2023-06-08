@@ -43,7 +43,7 @@ public class GaiaBatcher {
     }
 
     public GaiaSet batchAltas(Path imagesPath, List<GaiaMaterial> materials, List<GaiaBufferDataSet> bufferDataSets) {
-        GaiaTextureCoordinator textureCoordinator = new GaiaTextureCoordinator(materials, bufferDataSets);
+        GaiaTextureCoordinator textureCoordinator = new GaiaTextureCoordinator("", materials, bufferDataSets);
         textureCoordinator.batchTextures();
         textureCoordinator.writeBatchedImage(imagesPath);
 
@@ -170,7 +170,7 @@ public class GaiaBatcher {
         log.info("repeatMaterials : " + repeatMaterials.size());
         log.info("repeatBufferDatas : " + repeatBufferDatas.size());
 
-        GaiaTextureCoordinator textureCoordinator = new GaiaTextureCoordinator(nonRepeatMaterials, nonRepeatBufferDatas);
+        GaiaTextureCoordinator textureCoordinator = new GaiaTextureCoordinator("", nonRepeatMaterials, nonRepeatBufferDatas);
         textureCoordinator.batchTextures();
         textureCoordinator.writeBatchedImage(imagesPath);
 
