@@ -37,7 +37,7 @@ class GaiaSetTest {
         GaiaUniverse universe = new GaiaUniverse(RESULT, inputPath, outputPath);
         readOriginFiles(universe, FormatType.MAX_3DS);
         universe.convertGaiaSet();
-        Batcher batcher = new Batcher(universe);
+        Batcher batcher = new Batcher(universe, null, 0);
         GaiaSet set = batcher.batch();
         writeGlb(set);
     }

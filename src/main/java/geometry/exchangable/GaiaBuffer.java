@@ -51,7 +51,6 @@ public class GaiaBuffer {
         }
     }
 
-    //readBuffer
     public void readBuffer(LittleEndianDataInputStream stream) throws IOException {
         glDimension = stream.readByte();
         glType = stream.readInt();

@@ -7,6 +7,7 @@ import geometry.structure.GaiaScene;
 import geometry.types.FormatType;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import tiler.TileInfo;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -32,7 +33,10 @@ class Batched3DModelTest {
         GaiaUniverse universe = new GaiaUniverse(RESULT, inputPath, outputPath);
         readOriginFiles(universe, FormatType.MAX_3DS);
 
-        Batched3DModel batched3DModel = new Batched3DModel(universe);
+        TileInfo tileInfo = new TileInfo();
+        tileInfo.setUniverse(universe);
+
+        Batched3DModel batched3DModel = new Batched3DModel(tileInfo, 0);
         batched3DModel.write("test");
 
         log.info("done");

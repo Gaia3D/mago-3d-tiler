@@ -46,6 +46,10 @@ public class GaiaTextureCoordinator {
     }
     public void writeBatchedImage(Path outputPath) {
         Path output = outputPath.resolve(ATLAS_IMAGE + ".jpg");
+        if (!outputPath.toFile().exists()) {
+            outputPath.toFile().mkdir();
+        }
+
         if (this.atlasImage != null) {
             try {
                 ImageIO.write(this.atlasImage, "jpg", output.toFile());
@@ -58,7 +62,7 @@ public class GaiaTextureCoordinator {
             }
         }
     }
-    public void batchTextures() {
+    public void batchTextures(int lod) {
         List<GaiaBatchImage> splittedImages = new ArrayList<>();
         for (GaiaMaterial material : materials) {
             LinkedHashMap<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
@@ -69,8 +73,17 @@ public class GaiaTextureCoordinator {
             }
             BufferedImage bufferedImage = texture.getBufferedImage();
 
-            int resizeWidth = (int) (bufferedImage.getWidth() * 0.125);
-            int resizeHeight = (int) (bufferedImage.getHeight() * 0.125);
+            float scale = 1.0f;
+            if (lod == 1) {
+                scale = 0.5f;
+            } else if (lod == 2) {
+                scale = 0.25f;
+            } else if (lod == 3) {
+                scale = 0.125f;
+            }
+
+            int resizeWidth = (int) (bufferedImage.getWidth() * scale);
+            int resizeHeight = (int) (bufferedImage.getHeight() * scale);
 
             resizeWidth = ImageUtils.getNearestPowerOfTwo(resizeWidth);
             resizeHeight = ImageUtils.getNearestPowerOfTwo(resizeHeight);
@@ -176,6 +189,12 @@ public class GaiaTextureCoordinator {
         int maxWidth = getMaxWidth(splittedImages);
         int maxHeight = getMaxHeight(splittedImages);
         initBatchImage(maxWidth, maxHeight);
+
+        if (this.atlasImage == null) {
+            log.error("atlasImage is null");
+            return;
+        }
+
         Graphics graphics = this.atlasImage.getGraphics();
         for (GaiaBatchImage splittedImage : splittedImages) {
             GaiaRectangle splittedRectangle = splittedImage.getBatchedBoundary();

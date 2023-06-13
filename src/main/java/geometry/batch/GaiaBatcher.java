@@ -11,16 +11,12 @@ import geometry.structure.GaiaTexture;
 import geometry.types.AttributeType;
 import geometry.types.TextureType;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
-import org.joml.Vector4d;
 import org.lwjgl.opengl.GL20;
 import util.ArrayUtils;
 
-import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -44,7 +40,7 @@ public class GaiaBatcher {
 
     public GaiaSet batchAltas(Path imagesPath, List<GaiaMaterial> materials, List<GaiaBufferDataSet> bufferDataSets) {
         GaiaTextureCoordinator textureCoordinator = new GaiaTextureCoordinator("", materials, bufferDataSets);
-        textureCoordinator.batchTextures();
+        textureCoordinator.batchTextures(0);
         textureCoordinator.writeBatchedImage(imagesPath);
 
         List<List<GaiaBufferDataSet>> splitedLimitList = splitIndicesLimit(bufferDataSets);
@@ -165,13 +161,13 @@ public class GaiaBatcher {
             return material.isRepeat();
         }).collect(Collectors.toList());
 
-        log.info("nonRepeatMaterials : " + nonRepeatMaterials.size());
-        log.info("nonRepeatBufferDatas : " + nonRepeatBufferDatas.size());
-        log.info("repeatMaterials : " + repeatMaterials.size());
-        log.info("repeatBufferDatas : " + repeatBufferDatas.size());
+//        log.info("nonRepeatMaterials : " + nonRepeatMaterials.size());
+//        log.info("nonRepeatBufferDatas : " + nonRepeatBufferDatas.size());
+//        log.info("repeatMaterials : " + repeatMaterials.size());
+//        log.info("repeatBufferDatas : " + repeatBufferDatas.size());
 
         GaiaTextureCoordinator textureCoordinator = new GaiaTextureCoordinator("", nonRepeatMaterials, nonRepeatBufferDatas);
-        textureCoordinator.batchTextures();
+        textureCoordinator.batchTextures(0);
         textureCoordinator.writeBatchedImage(imagesPath);
 
         List<List<GaiaBufferDataSet>> splitedIndicesLimits = splitIndicesLimit(nonRepeatBufferDatas);

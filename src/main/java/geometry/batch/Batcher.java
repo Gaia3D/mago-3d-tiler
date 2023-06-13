@@ -26,13 +26,15 @@ import java.util.stream.Collectors;
 public class Batcher {
     private final GaiaSet batchedSet;
     private final GaiaUniverse universe;
-    private final GaiaBoundingBox globalBBox;
+    private GaiaBoundingBox globalBBox;
+    private final int lod;
 
-    public Batcher(GaiaUniverse universe) {
+    public Batcher(GaiaUniverse universe, GaiaBoundingBox boundingBox, int lod) {
         this.batchedSet = new GaiaSet();
         this.batchedSet.setProjectName(universe.getName());
         this.universe = universe;
-        this.globalBBox = new GaiaBoundingBox();
+        this.globalBBox = boundingBox;
+        this.lod = lod;
     }
 
     public GaiaSet batch() {
@@ -57,7 +59,7 @@ public class Batcher {
         });
 
         //rearrangeMaterial();
-        calcGlobalBBox();
+        calcGlobalBBox(); // ex
         List<GaiaMaterial> filterdMaterials = batchDuplicateMaterial(batchedDataSets, batchedMaterials);
         rearrangeMaterial(batchedDataSets, filterdMaterials);
 
@@ -83,12 +85,15 @@ public class Batcher {
             return material.isRepeat();
         }).collect(Collectors.toList());
 
-        log.info("nonRepeatMaterials : " + clampMaterials.size());
-        log.info("nonRepeatBufferDatas : " + clampDataSets.size());
-        log.info("repeatMaterials : " + repeatMaterials.size());
-        log.info("repeatBufferDatas : " + repeatDataSets.size());
+//        log.info("nonRepeatMaterials : " + clampMaterials.size());
+//        log.info("nonRepeatBufferDatas : " + clampDataSets.size());
+//        log.info("repeatMaterials : " + repeatMaterials.size());
+//        log.info("repeatBufferDatas : " + repeatDataSets.size());
 
-        atlasTextures(clampDataSets, clampMaterials);
+        if (clampDataSets.size() > 0 && clampMaterials.size() > 0) {
+            atlasTextures(clampDataSets, clampMaterials);
+        }
+
         List<List<GaiaBufferDataSet>> splitedDataSets = divisionByMaxIndices(clampDataSets);
         List<GaiaBufferDataSet> batchedClampDataSets = batchClampMaterial(splitedDataSets);
         clampMaterials.removeIf((clampMaterial) -> {
@@ -147,16 +152,21 @@ public class Batcher {
 
     // Vertices 바운더리 구함
     private void calcGlobalBBox() {
+        if (this.globalBBox == null) {
+            this.globalBBox = new GaiaBoundingBox();
+        }
         List<GaiaSet> sets = universe.getSets();
         sets.forEach((set) -> {
             set.getBufferDatas().forEach((dataSet) -> {
-                globalBBox.addBoundingBox(getBoundingBox(dataSet, set.getTransformMatrix()));
+                this.globalBBox.addBoundingBox(getBoundingBox(dataSet, set.getTransformMatrix()));
             });
         });
     }
     // 원점이동 구함
     private Vector3d calcTranslation() {
-        Vector3d translation = this.globalBBox.getCenter();
+        Vector3d temp = this.globalBBox.getCenter();
+        Vector3d translation = new Vector3d(temp.x(), temp.y(), this.globalBBox.getMinZ());
+        //Vector3d translation = new Vector3d(temp.x(), temp.y(), temp.z());
         translation.negate();
         return translation;
     }
@@ -297,7 +307,7 @@ public class Batcher {
     // 각 Material의 Texture들을 하나의 이미지로 변경
     private void atlasTextures(List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials) {
         GaiaTextureCoordinator textureCoordinator = new GaiaTextureCoordinator(universe.getName(), materials, dataSets);
-        textureCoordinator.batchTextures();
+        textureCoordinator.batchTextures(lod);
         textureCoordinator.writeBatchedImage(this.universe.getOutputRoot().resolve("images"));
     }
 

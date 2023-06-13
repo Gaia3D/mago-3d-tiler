@@ -11,6 +11,7 @@ import io.LittleEndianDataOutputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Matrix4f;
+import tiler.TileInfo;
 import util.ImageUtils;
 
 import java.io.BufferedOutputStream;
@@ -32,10 +33,12 @@ public class Batched3DModel {
     private String featureTableJson = "";
     private String batchTableJson = "";
 
-    private final GaiaUniverse universe;
+    private final TileInfo tileInfo;
+    private final int lod;
 
-    public Batched3DModel(GaiaUniverse universe) {
-        this.universe = universe;
+    public Batched3DModel(TileInfo tileInfo, int lod) {
+        this.tileInfo = tileInfo;
+        this.lod = lod;
     }
 
     public byte[] readGlb(File glbOutputFile) {
@@ -45,16 +48,25 @@ public class Batched3DModel {
         return bytes;
     }
 
-    public void write(String filename) {
-        this.universe.convertGaiaSet();
-        Batcher batcher = new Batcher(universe);
+    public boolean write(String filename) {
+        GaiaUniverse universe = this.tileInfo.getUniverse();
+        universe.convertGaiaSet();
+
+        Batcher batcher = new Batcher(universe, this.tileInfo.getBoundingBox(), this.lod);
         GaiaSet set = batcher.batch();
+
+        log.info(set.getMaterials().size() + " materials");
+        log.info(set.getBufferDatas().size() + " buffers");
+        if (set.getMaterials().size() < 1 || set.getBufferDatas().size() < 1) {
+            return false;
+        }
+
         GaiaScene scene = new GaiaScene(set);
         GaiaNode node = scene.getNodes().get(0);
 
         Matrix4d rootTransformMatrix = node.getTransformMatrix();
 
-        File glbOutputFile = this.universe.getOutputRoot().resolve(filename + ".glb").toFile();
+        File glbOutputFile = universe.getOutputRoot().resolve(filename + ".glb").toFile();
         GltfWriter.writeGlb(scene, glbOutputFile);
 
         //float[] rctCenter = {-3056303.58824933f,4030639.359383482f,3872020.676540839f}; //ion-sample
@@ -75,9 +87,10 @@ public class Batched3DModel {
 
         byte[] glbBytes = readGlb(glbOutputFile);
 
-        this.byteLength = 28 + featureTableJSONByteLength + batchTableJSONByteLength + glbBytes.length; // without featureTable/batchTable
+        // without featureTable/batchTable
+        this.byteLength = 28 + featureTableJSONByteLength + batchTableJSONByteLength + glbBytes.length;
 
-        File b3dmOutputFile = this.universe.getOutputRoot().resolve(filename + ".b3dm").toFile();
+        File b3dmOutputFile = universe.getOutputRoot().resolve(filename + ".b3dm").toFile();
         try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(b3dmOutputFile)))) {
             // 28-byte header (first 20 bytes)
             stream.writePureText(MAGIC);
@@ -88,7 +101,6 @@ public class Batched3DModel {
             // 28-byte header (next 8 bytes)
             stream.writeInt(batchTableJSONByteLength);
             stream.writeInt(batchTableBinaryByteLength);
-
             //stream.writePureText(featureTableJson);
             //stream.writePureText(batchTableJson);
 
@@ -97,5 +109,6 @@ public class Batched3DModel {
         } catch (Exception e) {
             log.error(e.getMessage());
         }
+        return true;
     }
 }
