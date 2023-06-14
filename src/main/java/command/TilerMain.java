@@ -9,13 +9,15 @@ import org.apache.commons.cli.*;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
+import tiler.Gaia3DTiler;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Objects;
 
 
 @Slf4j
-public class Main {
+public class TilerMain {
     public static AssimpConverter assimpConverter = null;
 
     public static Options createOptions() {
@@ -50,11 +52,11 @@ public class Main {
             start();
             if (cmd.hasOption("help")) {
                 HelpFormatter formatter = new HelpFormatter();
-                formatter.printHelp("GaiaConverter", options);
+                formatter.printHelp("Gaia3D Tiler", options);
                 return;
             }
             if (cmd.hasOption("version")) {
-                log.info("GaiaConverter version 0.1.0");
+                log.info("Gaia3D Tiler version 0.1.0");
                 return;
             }
 
@@ -80,28 +82,12 @@ public class Main {
     private static void excute(CommandLine command, File inputFile, File outputFile, int depth) {
         String inputExtension = command.getOptionValue("inputType");
         String outputExtension = command.getOptionValue("outputType");
-        boolean isSameExtension = StringUtils.equals(inputExtension,outputExtension);
-        if (inputFile.isFile() && isSameExtension) {
-            String outputFileName = FilenameUtils.removeExtension(inputFile.getName()) + "." + outputExtension;
-            File output = new File(outputFile.getAbsolutePath() + File.separator + outputFileName);
-            log.info("convert : " + inputFile.getAbsolutePath() + " -> " + output.getAbsolutePath());
-            GaiaScene scene = assimpConverter.load(inputFile.getAbsolutePath(), inputExtension);
-            FormatType outputType = FormatType.fromExtension(outputExtension);
-            if (outputType == FormatType.GLB) {
-                GltfWriter.writeGlb(scene, output.getAbsolutePath());
-            } else if (outputType == FormatType.GLTF) {
-                GltfWriter.writeGltf(scene, output.getAbsolutePath());
-            } else {
-                log.error("output type is not supported. :: " + outputExtension);
-            }
-        } else if (inputFile.isDirectory()) {
-            if (!command.hasOption("recursive") && (depth > 0)) {
-                return;
-            }
-            for (File child : Objects.requireNonNull(inputFile.listFiles())) {
-                excute(command, child, outputFile, depth++);
-            }
-        }
+
+        Path inputPath = inputFile.toPath();
+        Path outputPath = outputFile.toPath();
+
+        Gaia3DTiler tiler = new Gaia3DTiler(inputPath, outputPath);
+        tiler.excute();
     }
 
     private static void start() {
@@ -113,10 +99,10 @@ public class Main {
             "|    ___||   |___ |       ||_____  ||       ||       |\n" +
             "|   |    |       ||   _   | _____| || ||_|| ||   _   |\n" +
             "|___|    |_______||__| |__||_______||_|   |_||__| |__|\n" +
-            "==================[Plasma Converter]==================");
+            "===================[Plasma 3DTiler]===================");
     }
 
     private static void end() {
-        log.info("================[Plasma Converter END]================");
+        log.info("===================[Plasma 3DTiler]===================");
     }
 }

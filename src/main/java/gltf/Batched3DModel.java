@@ -11,6 +11,7 @@ import io.LittleEndianDataOutputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Matrix4f;
+import tiler.LevelOfDetail;
 import tiler.TileInfo;
 import util.ImageUtils;
 
@@ -34,9 +35,9 @@ public class Batched3DModel {
     private String batchTableJson = "";
 
     private final TileInfo tileInfo;
-    private final int lod;
+    private final LevelOfDetail lod;
 
-    public Batched3DModel(TileInfo tileInfo, int lod) {
+    public Batched3DModel(TileInfo tileInfo, LevelOfDetail lod) {
         this.tileInfo = tileInfo;
         this.lod = lod;
     }
@@ -55,20 +56,20 @@ public class Batched3DModel {
         Batcher batcher = new Batcher(universe, this.tileInfo.getBoundingBox(), this.lod);
         GaiaSet set = batcher.batch();
 
-        log.info(set.getMaterials().size() + " materials");
-        log.info(set.getBufferDatas().size() + " buffers");
         if (set.getMaterials().size() < 1 || set.getBufferDatas().size() < 1) {
+            log.info(set.getMaterials().size() + " materials");
+            log.info(set.getBufferDatas().size() + " buffers");
             return false;
         }
 
         GaiaScene scene = new GaiaScene(set);
         GaiaNode node = scene.getNodes().get(0);
 
-        Matrix4d rootTransformMatrix = node.getTransformMatrix();
 
         File glbOutputFile = universe.getOutputRoot().resolve(filename + ".glb").toFile();
         GltfWriter.writeGlb(scene, glbOutputFile);
 
+        Matrix4d rootTransformMatrix = node.getTransformMatrix();
         //float[] rctCenter = {-3056303.58824933f,4030639.359383482f,3872020.676540839f}; //ion-sample
         //FeatureTable featureTable = new FeatureTable();
         //featureTable.setBatchLength(1);
@@ -106,6 +107,11 @@ public class Batched3DModel {
 
             // body
             stream.write(glbBytes);
+
+            // delete glb file
+            if (false) {
+                glbOutputFile.delete();
+            }
         } catch (Exception e) {
             log.error(e.getMessage());
         }

@@ -15,6 +15,7 @@ import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.lwjgl.opengl.GL20;
+import tiler.LevelOfDetail;
 import util.ArrayUtils;
 
 import java.util.ArrayList;
@@ -27,9 +28,9 @@ public class Batcher {
     private final GaiaSet batchedSet;
     private final GaiaUniverse universe;
     private GaiaBoundingBox globalBBox;
-    private final int lod;
+    private final LevelOfDetail lod;
 
-    public Batcher(GaiaUniverse universe, GaiaBoundingBox boundingBox, int lod) {
+    public Batcher(GaiaUniverse universe, GaiaBoundingBox boundingBox, LevelOfDetail lod) {
         this.batchedSet = new GaiaSet();
         this.batchedSet.setProjectName(universe.getName());
         this.universe = universe;

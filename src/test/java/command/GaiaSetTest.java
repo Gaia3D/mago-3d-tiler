@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import renderable.GaiaSetObject;
 import renderable.RenderableObject;
+import tiler.LevelOfDetail;
 import viewer.OpenGlViwer;
 
 import java.io.File;
@@ -37,25 +38,9 @@ class GaiaSetTest {
         GaiaUniverse universe = new GaiaUniverse(RESULT, inputPath, outputPath);
         readOriginFiles(universe, FormatType.MAX_3DS);
         universe.convertGaiaSet();
-        Batcher batcher = new Batcher(universe, null, 0);
+        Batcher batcher = new Batcher(universe, null, LevelOfDetail.LOD4);
         GaiaSet set = batcher.batch();
         writeGlb(set);
-    }
-
-    @Test
-    public void createTemp() {
-        Configurator.initLogger();
-        File input = new File(INPUT_PATH);
-        File output = new File(OUTPUT_PATH);
-        Path inputPath = input.toPath();
-        Path outputPath = output.toPath();
-
-        GaiaUniverse gaiaUniverse = new GaiaUniverse(RESULT, inputPath, outputPath);
-        readOriginFiles(gaiaUniverse, FormatType.MAX_3DS);
-        GaiaSet set = gaiaUniverse.writeFiles();
-        writeGlb(set);
-
-        gaiaUniverse.getGaiaSets();
     }
 
     @Test

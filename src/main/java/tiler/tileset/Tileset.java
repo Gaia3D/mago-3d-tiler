@@ -10,7 +10,7 @@ import tiler.tileset.node.Properties;
 @Setter
 public class Tileset {
     private Asset asset;
-    private float geometricError = 0.0f;
+    private double geometricError = 0.0d;
     private Node root;
     private Properties properties;
 }

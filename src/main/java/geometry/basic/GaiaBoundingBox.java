@@ -5,10 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 
 import java.util.List;
 
+@Slf4j
 @Setter
 @Getter
 @NoArgsConstructor
@@ -93,12 +95,19 @@ public class GaiaBoundingBox {
         }
     }
 
-    /*public boolean contains(Vector3d vector3d) {
-        boolean containX = minX <= vector3d.x() && vector3d.x() <= maxX;
-        boolean containY = minY <= vector3d.y() && vector3d.y() <= maxY;
-        //boolean containZ = minZ <= vector3d.z() && vector3d.z() <= maxZ;
-        return containX && containY;
-    }*/
+    public double getLongestDistance() {
+        Vector3d volume = getVolume();
+        return Math.sqrt(volume.x * volume.x + volume.y * volume.y + volume.z * volume.z);
+    }
+
+    public double getLongestAxisValue() {
+        Vector3d volume = getVolume();
+        if (volume.x > volume.y) {
+            return Math.max(volume.x, volume.z);
+        } else {
+            return Math.max(volume.y, volume.z);
+        }
+    }
 
     public GaiaBoundingBox tightBoundingBox(List<GaiaScene> scenes) {
         GaiaBoundingBox tightBoundingBox = new GaiaBoundingBox();

@@ -1,7 +1,5 @@
 package geometry.exchangable;
 
-import geometry.batch.Batcher;
-import geometry.batch.GaiaBatcher;
 import geometry.structure.GaiaMaterial;
 import geometry.structure.GaiaScene;
 import geometry.structure.GaiaTexture;
@@ -61,45 +59,5 @@ public class GaiaUniverse {
                 .collect(Collectors.toList());
         this.sets.removeAll(new ArrayList());
         this.sets.addAll(sets);
-    }
-
-
-    public GaiaSet writeFiles() {
-        Path imagesPath = this.outputRoot.resolve("images");
-        Path originalPath = null;
-
-        GaiaBatcher gaiaBatcher = new GaiaBatcher();
-        List<GaiaSet> gaiaSets = new ArrayList<>();
-        for (GaiaScene scene : scenes) {
-            GaiaSet gaiaSet = new GaiaSet(scene);
-            gaiaSets.add(gaiaSet);
-            originalPath = scene.getOriginalPath().getParent();
-        }
-
-        GaiaSet gaiaSet = gaiaBatcher.batch(gaiaSets, imagesPath);
-
-        List<String> texturePaths = new ArrayList<>();
-        for (GaiaMaterial material : gaiaSet.getMaterials()) {
-            LinkedHashMap<TextureType, List<GaiaTexture>> textures = material.getTextures();
-            textures.forEach((textureType, gaiaTextures) -> {
-                for (GaiaTexture gaiaTexture : gaiaTextures) {
-                    String texturePath = gaiaTexture.getPath();
-                    if (texturePath != null) {
-                        texturePaths.add(texturePath);
-                    }
-                }
-            });
-        }
-
-        Path finalOriginalPath = originalPath;
-        texturePaths.forEach(texturePath -> {
-            assert finalOriginalPath != null;
-            Path originalTexturePath = finalOriginalPath.resolve(texturePath);
-            Path destinationTexturePath = imagesPath.resolve(texturePath);
-            ImageUtils.copyAndResize(originalTexturePath, destinationTexturePath);
-        });
-
-        gaiaSet.writeFile(this.outputRoot);
-        return gaiaSet;
     }
 }

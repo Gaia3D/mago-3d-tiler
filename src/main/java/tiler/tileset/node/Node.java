@@ -26,7 +26,7 @@ public class Node {
 
     private BoundingVolume boundingVolume;
     private RefineType refine = RefineType.ADD;
-    private float geometricError = 0.0f;
+    private double geometricError = 0.0d;
     private float[] transform;
     private List<Node> children;
     private Content content;

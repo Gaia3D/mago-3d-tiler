@@ -7,6 +7,7 @@ import geometry.structure.GaiaScene;
 import geometry.types.FormatType;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import tiler.LevelOfDetail;
 import tiler.TileInfo;
 
 import java.io.File;
@@ -36,7 +37,7 @@ class Batched3DModelTest {
         TileInfo tileInfo = new TileInfo();
         tileInfo.setUniverse(universe);
 
-        Batched3DModel batched3DModel = new Batched3DModel(tileInfo, 0);
+        Batched3DModel batched3DModel = new Batched3DModel(tileInfo, LevelOfDetail.LOD4);
         batched3DModel.write("test");
 
         log.info("done");

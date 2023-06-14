@@ -6,6 +6,7 @@ import geometry.structure.GaiaScene;
 import geometry.types.FormatType;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 import org.locationtech.proj4j.ProjCoordinate;
 import util.GlobeUtils;
@@ -13,6 +14,7 @@ import util.GlobeUtils;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Getter
 @Setter
 public class BoundingVolume {
@@ -20,8 +22,8 @@ public class BoundingVolume {
     BoundingVolumeType type;
 
     double[] region;
-    double[] box;
-    double[] sphere;
+    //double[] box;
+    //double[] sphere;
 
     public BoundingVolume(GaiaBoundingBox boundingBox) {
         ProjCoordinate minPoint = new ProjCoordinate(boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ());
@@ -55,6 +57,52 @@ public class BoundingVolume {
         SPHERE,
         REGION
     }
+
+    //convertRectangle
+    public void square() {
+        double minX = region[0];
+        double maxX = region[2];
+        double minY = region[1];
+        double maxY = region[3];
+        double minZ = region[4];
+        double maxZ = region[5];
+        double x = maxX - minX;
+        double y = maxY - minY;
+
+        double offset = 0.0d;
+        if (x > y) {
+            offset = x-y;
+            maxY = maxY + offset;
+            region[3] = maxY;
+        } else if (y > x) {
+            offset = y-x;
+            maxX = maxX + offset;
+            region[2] = maxX;
+        }
+    }
+
+    //getLongestAxisValue
+    public double getLongestAxisValue() {
+        double minX = region[0];
+        double maxX = region[2];
+        double minY = region[1];
+        double maxY = region[3];
+        double minZ = region[4];
+        double maxZ = region[5];
+        double x = maxX - minX;
+        double y = maxY - minY;
+        double z = maxZ - minZ;
+        if (x > y) {
+            return Math.max(x, z);
+        } else {
+            return Math.max(y, z);
+        }
+    }
+
+    /*Double goldenRatio = 1.618d;
+    public BoundingVolume[] divideBoundingVolume() {
+
+    }*/
 
     public BoundingVolume[] divideBoundingVolume() {
         BoundingVolume[] result = new BoundingVolume[4];

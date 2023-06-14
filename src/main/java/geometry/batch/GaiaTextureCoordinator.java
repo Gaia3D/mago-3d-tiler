@@ -9,6 +9,7 @@ import geometry.types.AttributeType;
 import geometry.types.TextureType;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector2d;
+import tiler.LevelOfDetail;
 import util.ImageUtils;
 
 import javax.imageio.ImageIO;
@@ -62,7 +63,7 @@ public class GaiaTextureCoordinator {
             }
         }
     }
-    public void batchTextures(int lod) {
+    public void batchTextures(LevelOfDetail lod) {
         List<GaiaBatchImage> splittedImages = new ArrayList<>();
         for (GaiaMaterial material : materials) {
             LinkedHashMap<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
@@ -73,20 +74,16 @@ public class GaiaTextureCoordinator {
             }
             BufferedImage bufferedImage = texture.getBufferedImage();
 
-            float scale = 1.0f;
-            if (lod == 1) {
-                scale = 0.5f;
-            } else if (lod == 2) {
-                scale = 0.25f;
-            } else if (lod == 3) {
-                scale = 0.125f;
-            }
-
+            float scale = lod.getTextureScale();
             int resizeWidth = (int) (bufferedImage.getWidth() * scale);
             int resizeHeight = (int) (bufferedImage.getHeight() * scale);
 
             resizeWidth = ImageUtils.getNearestPowerOfTwo(resizeWidth);
             resizeHeight = ImageUtils.getNearestPowerOfTwo(resizeHeight);
+
+            if (resizeWidth < 128 || resizeHeight < 128) {
+                log.info("resizeWidth: {}, resizeHeight: {}", resizeWidth, resizeHeight);
+            }
 
             bufferedImage = ImageUtils.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight);
             texture.setBufferedImage(bufferedImage);
@@ -189,13 +186,14 @@ public class GaiaTextureCoordinator {
         int maxWidth = getMaxWidth(splittedImages);
         int maxHeight = getMaxHeight(splittedImages);
         initBatchImage(maxWidth, maxHeight);
-
         if (this.atlasImage == null) {
             log.error("atlasImage is null");
             return;
         }
 
         Graphics graphics = this.atlasImage.getGraphics();
+
+        // debug
         for (GaiaBatchImage splittedImage : splittedImages) {
             GaiaRectangle splittedRectangle = splittedImage.getBatchedBoundary();
             GaiaMaterial material = findMaterial(splittedImage.getMaterialId());
@@ -206,6 +204,12 @@ public class GaiaTextureCoordinator {
 
             BufferedImage source = texture.getBufferedImage();
             graphics.drawImage(source, (int) splittedRectangle.getMinX(), (int) splittedRectangle.getMinY(),null);
+        }
+        if (true) {
+            float[] debugColor = lod.getDebugColor();
+            Color color = new Color(debugColor[0], debugColor[1], debugColor[2], 0.5f);
+            graphics.setColor(color);
+            graphics.fillRect(0, 0, maxWidth, maxHeight);
         }
 
         for (GaiaBatchImage target : splittedImages) {
