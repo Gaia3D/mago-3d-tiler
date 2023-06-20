@@ -1,6 +1,7 @@
 package tiler;
 
 import command.Configurator;
+import geometry.types.FormatType;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
@@ -30,7 +31,7 @@ class Gaia3DTilerTest {
         Path inputPath = input.toPath();
         Path outputPath = output.toPath();
 
-        Gaia3DTiler tiler = new Gaia3DTiler(inputPath, outputPath);
+        Gaia3DTiler tiler = new Gaia3DTiler(inputPath, outputPath, FormatType.MAX_3DS,null);
         tiler.excute();
     }
 }

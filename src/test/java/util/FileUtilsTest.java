@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class FileUtilsTest {
-
     @DisplayName("2의 거듭제곱 근접 값")
     @Test
     void getNearestPowerOfTwo() {

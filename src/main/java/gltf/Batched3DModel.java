@@ -109,7 +109,7 @@ public class Batched3DModel {
             stream.write(glbBytes);
 
             // delete glb file
-            if (false) {
+            if (true) {
                 glbOutputFile.delete();
             }
         } catch (Exception e) {

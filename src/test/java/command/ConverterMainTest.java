@@ -1,22 +1,21 @@
 package command;
 
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
-class MainTest {
+class ConverterMainTest {
     private static final String INPUT_PATH = "C:\\data\\plasma-test\\";
     private static final String OUTPUT_PATH = "C:\\data\\plasma-test\\output\\";
 
     @Test
     void versionTest() {
         String[] args= {"-version"};
-        Main.main(args);
+        ConverterMain.main(args);
     }
 
     @Test
     void helpTest() {
         String[] args= {"-help"};
-        Main.main(args);
+        ConverterMain.main(args);
     }
 
     @Test
@@ -28,7 +27,7 @@ class MainTest {
                 "-outputType", "gltf",
                 "-quiet",
         };
-        Main.main(args);
+        ConverterMain.main(args);
     }
 
     @Test
@@ -39,7 +38,7 @@ class MainTest {
                 "-o", OUTPUT_PATH,
                 "-ot", "gltf",
         };
-        Main.main(args);
+        ConverterMain.main(args);
     }
 
     @Test
@@ -50,7 +49,6 @@ class MainTest {
                 "-output", OUTPUT_PATH,
                 "-outputType", "gltf"
         };
-        Main.main(args);
+        ConverterMain.main(args);
     }
-
 }

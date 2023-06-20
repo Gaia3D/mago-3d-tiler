@@ -1,7 +1,6 @@
 package util;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,14 +13,14 @@ public class ArrayUtils {
         }
         return array;
     }
-    public static int[] convertIntArrayToList(List<Integer> list) {
+    /*public static int[] convertIntArrayToList(List<Integer> list) {
         int[] array = new int[list.size()];
         int num = 0;
         for (Integer i : list) {
             array[num++] = (i != null ? i : 0);
         }
         return array;
-    }
+    }*/
     public static float[] convertFloatArrayToList(List<Float> list) {
         float[] array = new float[list.size()];
         int num = 0;
@@ -43,11 +42,11 @@ public class ArrayUtils {
                 .map(Short::intValue)
                 .collect(Collectors.toList());
     }
-    public static List<Integer> convertListToIntArray(int[] array) {
+    /*public static List<Integer> convertListToIntArray(int[] array) {
         return Arrays.stream(array)
                 .boxed()
                 .collect(Collectors.toList());
-    }
+    }*/
     public static List<Float> convertListToFloatArray(float[] array) {
         List<Float> list = new ArrayList<>();
         for (float f : array) {

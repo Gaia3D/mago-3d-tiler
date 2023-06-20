@@ -15,7 +15,7 @@ import java.util.Objects;
 
 
 @Slf4j
-public class Main {
+public class ConverterMain {
     public static AssimpConverter assimpConverter = null;
 
     public static Options createOptions() {
@@ -24,7 +24,6 @@ public class Main {
         options.addOption("o", "output", true, "output file path");
         options.addOption("it", "inputType", true, "input file type");
         options.addOption("ot", "outputType", true, "output file type");
-        options.addOption("h", "help", false, "print help");
         options.addOption("v", "version", false, "print version");
         options.addOption("r", "recursive", false, "recursive");
         options.addOption("q", "quiet", false, "quiet mode");
@@ -34,6 +33,7 @@ public class Main {
         options.addOption("gt", "quiet", false, "generate tangents");
         options.addOption("yz", "swapYZ", false, "swap YZ");
         options.addOption("nt", "ignoreTextures", false, "ignore textures");
+        options.addOption("h", "help", false, "print help");
         return options;
     }
 

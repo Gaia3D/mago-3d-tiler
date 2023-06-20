@@ -36,34 +36,20 @@ public class Node {
         this.transformMatrixAux = transformMatrixAux;
         if (parent == this) { // root
             this.transformMatrix = transformMatrixAux;
-            this.transformMatrixAux = transformMatrixAux;
-
-
         } else if (parent.getTransformMatrixAux() != null) {
             Matrix4d resultTransfromMatrix = new Matrix4d();
             Matrix4d parentTransformMatrix = parent.getTransformMatrixAux();
             Matrix4d parentTransformMatrixInv = new Matrix4d(parentTransformMatrix).invert();
 
-
-            //log.info("{}", parentTransformMatrixInv);
-            //log.info("{}", transformMatrixAux);
             parentTransformMatrixInv.mul(transformMatrixAux, resultTransfromMatrix);
-            //log.info("{}", resultTransfromMatrix);
 
             this.transformMatrix = resultTransfromMatrix;
             this.transformMatrixAux = transformMatrixAux;
-            //this.transformMatrix.set(3, 1, 0.0d);
         } else {
-            // error
             this.transformMatrix = transformMatrixAux;
-            this.transformMatrixAux = transformMatrixAux;
-            log.error("error");
+            log.error("Error :: Wrong TransformMatrix");
         }
-
         this.transform = transformMatrix.get(new float[16]);
-        //log.info("{}", this.transformMatrix);
-        //log.info("{}", this.transformMatrixAux);
-        //log.info("{}", this.transformMatrix.get(3, 1));
     }
 
     public enum RefineType {

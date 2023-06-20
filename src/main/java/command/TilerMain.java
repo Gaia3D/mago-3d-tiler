@@ -1,19 +1,16 @@
 package command;
 
 import assimp.AssimpConverter;
-import geometry.structure.GaiaScene;
 import geometry.types.FormatType;
-import gltf.GltfWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
+import org.locationtech.proj4j.CRSFactory;
+import org.locationtech.proj4j.CoordinateReferenceSystem;
 import tiler.Gaia3DTiler;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.Objects;
 
 
 @Slf4j
@@ -26,7 +23,7 @@ public class TilerMain {
         options.addOption("o", "output", true, "output file path");
         options.addOption("it", "inputType", true, "input file type");
         options.addOption("ot", "outputType", true, "output file type");
-        options.addOption("h", "help", false, "print help");
+        options.addOption("s", "src", true, "Spatial Reference Systems EPSG code");
         options.addOption("v", "version", false, "print version");
         options.addOption("r", "recursive", false, "recursive");
         options.addOption("q", "quiet", false, "quiet mode");
@@ -36,6 +33,7 @@ public class TilerMain {
         options.addOption("gt", "quiet", false, "generate tangents");
         options.addOption("yz", "swapYZ", false, "swap YZ");
         options.addOption("nt", "ignoreTextures", false, "ignore textures");
+        options.addOption("h", "help", false, "print help");
         return options;
     }
 
@@ -68,25 +66,46 @@ public class TilerMain {
                 log.error("output file path is not specified.");
                 return;
             }
+            if (!cmd.hasOption("src")) {
+                log.error("src.");
+                return;
+            }
 
             assimpConverter = new AssimpConverter(cmd);
             File inputFile = new File(cmd.getOptionValue("input"));
             File outputFile = new File(cmd.getOptionValue("output"));
-            excute(cmd, inputFile, outputFile, 0);
+            String src = cmd.getOptionValue("src");
+            excute(cmd, inputFile, outputFile, src);
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        end();
+        underline();
     }
 
-    private static void excute(CommandLine command, File inputFile, File outputFile, int depth) {
+    private static void excute(CommandLine command, File inputFile, File outputFile, String src) {
         String inputExtension = command.getOptionValue("inputType");
-        String outputExtension = command.getOptionValue("outputType");
-
+        //String outputExtension = command.getOptionValue("outputType");
         Path inputPath = inputFile.toPath();
         Path outputPath = outputFile.toPath();
 
-        Gaia3DTiler tiler = new Gaia3DTiler(inputPath, outputPath);
+        if (!inputFile.exists()) {
+            if (!inputFile.mkdir()) {
+                log.error("input file path is not exist.");
+                return;
+            }
+        }
+        if (!outputFile.exists()) {
+            if (!outputFile.mkdir()) {
+                log.error("output file path is not exist.");
+                return;
+            }
+            return;
+        }
+
+        FormatType formatType = FormatType.fromExtension(inputExtension);
+        CRSFactory factory = new CRSFactory();
+        CoordinateReferenceSystem source = factory.createFromName("EPSG:" + src);
+        Gaia3DTiler tiler = new Gaia3DTiler(inputPath, outputPath, formatType, source);
         tiler.excute();
     }
 
@@ -98,11 +117,11 @@ public class TilerMain {
             "|   |_| ||   |    |       || |_____ |       ||       |\n" +
             "|    ___||   |___ |       ||_____  ||       ||       |\n" +
             "|   |    |       ||   _   | _____| || ||_|| ||   _   |\n" +
-            "|___|    |_______||__| |__||_______||_|   |_||__| |__|\n" +
-            "===================[Plasma 3DTiler]===================");
+            "|___|    |_______||__| |__||_______||_|   |_||__| |__|\n");
+        underline();
     }
 
-    private static void end() {
+    private static void underline() {
         log.info("===================[Plasma 3DTiler]===================");
     }
 }

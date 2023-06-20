@@ -1,7 +1,6 @@
 package util;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FilenameUtils;
 import org.lwjgl.BufferUtils;
 
 import javax.imageio.ImageIO;
@@ -97,12 +96,7 @@ public class ImageUtils {
         String mimeType;
         extension = extension.toLowerCase();
         switch (extension) {
-            case "png":
-                mimeType = "image/png";
-                break;
             case "jpg":
-                mimeType = "image/jpeg";
-                break;
             case "jpeg":
                 mimeType = "image/jpeg";
                 break;
@@ -113,8 +107,6 @@ public class ImageUtils {
                 mimeType = "image/bmp";
                 break;
             case "tiff":
-                mimeType = "image/tiff";
-                break;
             case "tif":
                 mimeType = "image/tiff";
                 break;
@@ -145,7 +137,6 @@ public class ImageUtils {
         return null;
     }
 
-    // readFile
     public static ByteBuffer readFile(File file, boolean flip) {
         Path path = file.toPath();
         try (var is = new BufferedInputStream(Files.newInputStream(path))) {
@@ -168,27 +159,5 @@ public class ImageUtils {
             log.error("FileUtils.readBytes: " + e.getMessage());
         }
         return null;
-    }
-
-    // copyFile
-    public static void copyAndResize(Path source, Path dest) {
-        try {
-            if (!dest.toFile().exists()) {
-                String extension = FilenameUtils.getExtension(source.toString());
-                String mimeType = getMimeTypeByExtension(extension);
-                String formatName = getFormatNameByMimeType(mimeType);
-
-                BufferedImage bufferedImage = ImageIO.read(source.toFile());
-                int width = bufferedImage.getWidth();
-                int height = bufferedImage.getHeight();
-
-                if (width != getNearestPowerOfTwo(width) || height != getNearestPowerOfTwo(height)) {
-                    bufferedImage = resizeImageGraphic2D(bufferedImage, getNearestPowerOfTwo(width), getNearestPowerOfTwo(height));
-                }
-                ImageIO.write(bufferedImage, formatName, dest.toFile());
-            }
-        } catch (IOException e) {
-            log.error("FileUtils.copyFile: " + e.getMessage());
-        }
     }
 }

@@ -205,7 +205,7 @@ public class GaiaTextureCoordinator {
             BufferedImage source = texture.getBufferedImage();
             graphics.drawImage(source, (int) splittedRectangle.getMinX(), (int) splittedRectangle.getMinY(),null);
         }
-        if (true) {
+        if (false) {
             float[] debugColor = lod.getDebugColor();
             Color color = new Color(debugColor[0], debugColor[1], debugColor[2], 0.5f);
             graphics.setColor(color);

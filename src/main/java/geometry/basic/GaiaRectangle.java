@@ -21,17 +21,17 @@ public class GaiaRectangle {
         addPoint(maxPoint);
     }
 
-    public Vector2d getCenter() {
+    /*public Vector2d getCenter() {
         return new Vector2d((minX + maxX) / 2, (minY + maxY) / 2);
-    }
+    }*/
 
-    public Vector2d getVolume() {
+    /*public Vector2d getVolume() {
         return new Vector2d(maxX - minX, maxY - minY);
-    }
+    }*/
 
-    public Vector2d getCenterCorrected() {
+    /*public Vector2d getCenterCorrected() {
         return new Vector2d((minX + maxX) / 2, (minY + maxY) / 2);
-    }
+    }*/
 
     public Vector2d getRange() {
         return new Vector2d(maxX - minX, maxY - minY);

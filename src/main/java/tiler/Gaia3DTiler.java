@@ -11,6 +11,7 @@ import gltf.Batched3DModel;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
+import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 import tiler.tileset.Tileset;
 import tiler.tileset.asset.*;
@@ -26,6 +27,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -35,10 +37,14 @@ public class Gaia3DTiler {
     private static final int TEST_COUNT = 5000;
     private final Path inputPath;
     private final Path outputPath;
+    private final FormatType inputFormatType;
+    private final CoordinateReferenceSystem source;
 
-    public Gaia3DTiler(Path inputPath, Path outputPath) {
+    public Gaia3DTiler(Path inputPath, Path outputPath, FormatType inputFormatType, CoordinateReferenceSystem source) {
         this.inputPath = inputPath;
         this.outputPath = outputPath;
+        this.inputFormatType = inputFormatType;
+        this.source = source;
     }
 
     public void excute() {
@@ -50,7 +56,7 @@ public class Gaia3DTiler {
         rotateX90(transformMatrix);
 
         Node root = createRoot();
-        root.setBoundingVolume(new BoundingVolume(globalBoundingBox));
+        root.setBoundingVolume(new BoundingVolume(globalBoundingBox, this.source));
         root.setTransformMatrix(transformMatrix);
         root.setGeometricError(geometricError);
 
@@ -65,12 +71,12 @@ public class Gaia3DTiler {
     }
 
     public List<GaiaScene> containScenes(BoundingVolume boundingVolume, List<GaiaScene> scenes) {
-        List<GaiaScene> result = boundingVolume.contains(scenes);
+        List<GaiaScene> result = boundingVolume.contains(scenes, this.source);
         return reloadScenes(result);
     }
 
     public List<GaiaScene> reloadScenes(List<GaiaScene> scenes) {
-        FormatType formatType = FormatType.MAX_3DS;
+        FormatType formatType = this.inputFormatType;
         return scenes.stream()
                 .map((scene) -> assimpConverter.load(scene.getOriginalPath(), formatType.getExtension()))
                 .collect(Collectors.toList());
@@ -134,7 +140,7 @@ public class Gaia3DTiler {
         Matrix4d transformMatrix = getTransfromMatrix(childBoundingBox);
         rotateX90(transformMatrix);
 
-        BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
+        BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox, this.source);
         boundingVolume.square();
 
         String nodeCode = parentNode.getNodeCode();
@@ -161,7 +167,7 @@ public class Gaia3DTiler {
         Matrix4d transformMatrix = getTransfromMatrix(childBoundingBox);
         rotateX90(transformMatrix);
 
-        BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
+        BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox, this.source);
         //boundingVolume.square();
 
         String nodeCode = parentNode.getNodeCode();
@@ -216,135 +222,6 @@ public class Gaia3DTiler {
         return levelOfDetail;
     }
 
-
-    private boolean tiling2(Node parentNode, List<GaiaScene> scenes) {
-        BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
-        if (scenes.size() > MAX_COUNT) {
-            log.info(parentNode.getNodeCode() + "(" + scenes.size() + ")");
-            BoundingVolume[] childrenBoundingVolume = parentBoundingVolume.divideBoundingVolume();
-            for (int i = 0; i < childrenBoundingVolume.length; i++) {
-                BoundingVolume childBoundingVolume = childrenBoundingVolume[i];
-                List<GaiaScene> childScenes = containScenes(childBoundingVolume, scenes);
-                if (childScenes.size() < 1) {
-                    continue;
-                }
-                GaiaBoundingBox childBoundingBox = calcBoundingBox(childScenes);
-                childBoundingVolume = new BoundingVolume(childBoundingBox);
-                double geometricError = calcGeometricError(scenes);
-
-                Matrix4d transformMatrix = getTransfromMatrix(childBoundingBox);
-                rotateX90(transformMatrix);
-
-                Node childNode = new Node();
-                childNode.setParent(parentNode);
-                childNode.setTransformMatrix(transformMatrix);
-                if (childScenes.size() > MAX_COUNT) {
-                    childNode.setNodeCode(parentNode.getNodeCode() + i);
-                    childNode.setGeometricError(geometricError);
-                } else {
-                    childNode.setNodeCode(parentNode.getNodeCode() + "C" + i);
-                    childNode.setGeometricError(LevelOfDetail.LOD3.getGeometricError());
-                }
-                childNode.setRefine(Node.RefineType.REPLACE);
-                childNode.setBoundingVolume(childBoundingVolume);
-                childNode.setChildren(new ArrayList<>());
-
-                boolean result = tiling2(childNode, childScenes);
-                if (result) {
-                    parentNode.getChildren().add(childNode);
-                }
-            }
-        } else {
-            LevelOfDetail levelOfDetail;
-            String nodeCode = parentNode.getNodeCode();
-            String contentLevel = nodeCode.split("C")[1];
-            int level = contentLevel.length();
-            if (level == 4) {
-                levelOfDetail = LevelOfDetail.LOD0;
-            } else if (level == 3) {
-                levelOfDetail = LevelOfDetail.LOD1;
-            } else if (level == 2) {
-                levelOfDetail = LevelOfDetail.LOD2;
-            } else if (level == 1) {
-                levelOfDetail = LevelOfDetail.LOD3;
-            } else {
-                return false;
-            }
-
-            if (scenes.size() > 0) {
-                GaiaBoundingBox parentBoundingBox = calcBoundingBox(scenes);
-                log.info("┕" + contentLevel + "(" + scenes.size() + ")(" + levelOfDetail.getLevel() + ")");
-
-                GaiaUniverse universe = new GaiaUniverse(nodeCode, inputPath, outputPath);
-                scenes.forEach(scene -> universe.getScenes().add(scene));
-
-                TileInfo tileInfo = new TileInfo();
-                tileInfo.setUniverse(universe);
-                tileInfo.setBoundingBox(parentBoundingBox);
-                Batched3DModel batched3DModel = new Batched3DModel(tileInfo, levelOfDetail);
-                if (!batched3DModel.write(nodeCode)) {
-                    return false;
-                }
-                Content content = new Content();
-                content.setUri(nodeCode + ".b3dm");
-                parentNode.setContent(content);
-
-                if (scenes.size() > 1) {
-                    BoundingVolume[] childrenBoundingVolume = parentBoundingVolume.divideBoundingVolume();
-                    for (int i = 0; i < childrenBoundingVolume.length; i++) {
-                        BoundingVolume childBoundingVolume = childrenBoundingVolume[i];
-                        List<GaiaScene> childScenes = containScenes(childBoundingVolume, scenes);
-
-                        GaiaBoundingBox childBoundingBox = calcBoundingBox(childScenes);
-                        Matrix4d transformMatrix = getTransfromMatrix(childBoundingBox);
-                        rotateX90(transformMatrix);
-
-                        childBoundingVolume = new BoundingVolume(childBoundingBox);
-
-                        Node childNode = new Node();
-                        childNode.setParent(parentNode);
-                        childNode.setTransformMatrix(transformMatrix);
-                        childNode.setNodeCode(nodeCode + i);
-                        childNode.setGeometricError(levelOfDetail.getGeometricError());
-                        childNode.setRefine(Node.RefineType.REPLACE);
-                        childNode.setBoundingVolume(childBoundingVolume);
-                        childNode.setChildren(new ArrayList<>());
-                        boolean result = tiling2(childNode, childScenes);
-                        if (result) {
-                            parentNode.getChildren().add(childNode);
-                        }
-                    }
-                } else {
-                    BoundingVolume childBoundingVolume = parentBoundingVolume;
-                    List<GaiaScene> childScenes = containScenes(childBoundingVolume, scenes);
-
-                    GaiaBoundingBox childBoundingBox = calcBoundingBox(childScenes);
-                    Matrix4d transformMatrix = getTransfromMatrix(childBoundingBox);
-                    rotateX90(transformMatrix);
-
-                    childBoundingVolume = new BoundingVolume(childBoundingBox);
-
-                    Node childNode = new Node();
-                    childNode.setParent(parentNode);
-                    childNode.setTransformMatrix(transformMatrix);
-                    childNode.setNodeCode(nodeCode + levelOfDetail.getLevel());
-                    childNode.setGeometricError(levelOfDetail.getGeometricError());
-                    childNode.setRefine(Node.RefineType.REPLACE);
-                    childNode.setBoundingVolume(childBoundingVolume);
-                    childNode.setChildren(new ArrayList<>());
-
-                    boolean result = tiling2(childNode, childScenes);
-                    if (result) {
-                        parentNode.getChildren().add(childNode);
-                    }
-                }
-            } else {
-                return false;
-            }
-        }
-        return true;
-    }
-
     private void rotateX90(Matrix4d matrix) {
         Matrix4d rotationMatrix = new Matrix4d();
         rotationMatrix.identity();
@@ -356,7 +233,7 @@ public class Gaia3DTiler {
         Vector3d center = new Vector3d(boundingBox.getCenter());
         Vector3d centerBottom = new Vector3d(center.x, center.y, boundingBox.getMinZ());
         ProjCoordinate centerPoint = new ProjCoordinate(centerBottom.x(), centerBottom.y(), centerBottom.z());
-        ProjCoordinate translatedCenterPoint = GlobeUtils.transform(null, centerPoint);
+        ProjCoordinate translatedCenterPoint = GlobeUtils.transform(this.source, centerPoint);
         double[] cartesian = GlobeUtils.geographicToCartesianWgs84(translatedCenterPoint.x, translatedCenterPoint.y, centerBottom.z());
         return GlobeUtils.normalAtCartesianPointWgs84(cartesian[0], cartesian[1], cartesian[2]);
     }
@@ -401,7 +278,7 @@ public class Gaia3DTiler {
 
     public List<GaiaScene> read(Path input) {
         List<GaiaScene> sceneList = new ArrayList<>();
-        readTree(sceneList, input.toFile(), FormatType.MAX_3DS);
+        readTree(sceneList, input.toFile(), this.inputFormatType);
         return sceneList;
     }
 
@@ -410,7 +287,7 @@ public class Gaia3DTiler {
             GaiaScene scene = assimpConverter.load(inputFile.toPath(), formatType.getExtension());
             sceneList.add(scene);
         } else if (inputFile.isDirectory()){
-            for (File child : inputFile.listFiles()) {
+            for (File child : Objects.requireNonNull(inputFile.listFiles())) {
                 if (sceneList.size() <= TEST_COUNT) {
                     readTree(sceneList, child, formatType);
                 }

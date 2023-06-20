@@ -1,6 +1,6 @@
 package assimp;
 
-import command.Main;
+import command.ConverterMain;
 import geometry.structure.*;
 import geometry.types.TextureType;
 import lombok.extern.slf4j.Slf4j;
@@ -27,10 +27,6 @@ import java.util.List;
 public class AssimpConverter {
     private final CommandLine command;
 
-    public AssimpConverter() {
-        this.command = createDefaultCommand();
-    }
-
     public AssimpConverter(CommandLine command) {
         if (command == null) {
             command = createDefaultCommand();
@@ -39,7 +35,7 @@ public class AssimpConverter {
     }
 
     private CommandLine createDefaultCommand() {
-        Options options = Main.createOptions();
+        Options options = ConverterMain.createOptions();
         CommandLineParser parser = new org.apache.commons.cli.DefaultParser();
         try {
             return parser.parse(options, new String[]{});
@@ -117,10 +113,9 @@ public class AssimpConverter {
 
         assert node != null;
         Matrix4d rootTransform = node.getTransformMatrix();
-        /*if (command.hasOption("swapYZ")) {
+        if (command.hasOption("swapYZ")) {
             rootTransform.rotateX(Math.toRadians(90), rootTransform);
-        }*/
-        rootTransform.rotateX(Math.toRadians(90), rootTransform);
+        }
         node.setTransformMatrix(rootTransform);
         node.recalculateTransform();
         gaiaScene.getNodes().add(node);

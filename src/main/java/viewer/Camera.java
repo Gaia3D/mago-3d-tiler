@@ -70,10 +70,10 @@ public class Camera {
         this.dirty = true;
     }
     // 카메라 이동 (from Copilot)
-    public void move(float xValue, float yValue, float zValue) {
+    /*public void move(float xValue, float yValue, float zValue) {
         this.position.add(xValue, yValue, zValue);
         this.dirty = true;
-    }
+    }*/
     // 카메라 위치 변경 (from Copilot)
     public void setPosition(float xValue, float yValue, float zValue) {
         this.position.set(xValue, yValue, zValue);
@@ -155,9 +155,8 @@ public class Camera {
 
         this.dirty = true;
     }
-
-    private void calcRight() {
+    /*private void calcRight() {
         Vector3d direction = new Vector3d(this.direction);
         this.right = direction.cross(this.up);
-    }
+    }*/
 }

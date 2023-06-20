@@ -101,11 +101,8 @@ public class Batcher {
             return clampMaterial.getId() > 0;
         });
 
-        List<GaiaBufferDataSet> resultBufferDatas = new ArrayList<>();
-        resultBufferDatas.addAll(batchedClampDataSets);
-
-        List<GaiaMaterial> resultMaterials = new ArrayList<>();
-        resultMaterials.addAll(clampMaterials);
+        List<GaiaBufferDataSet> resultBufferDatas = new ArrayList<>(batchedClampDataSets);
+        List<GaiaMaterial> resultMaterials = new ArrayList<>(clampMaterials);
 
         this.batchedSet.setBufferDatas(resultBufferDatas);
         this.batchedSet.setMaterials(resultMaterials);
@@ -114,24 +111,7 @@ public class Batcher {
         transform.identity();
 
         this.batchedSet.setTransformMatrix(transform);
-
         return this.batchedSet;
-    }
-
-    // Material Id 재정렬
-    @Deprecated
-    private void rearrangeMaterial() {
-        List<GaiaSet> sets = universe.getSets();
-        int materialIdOffset = 0;
-        sets.forEach((set) -> {
-            set.getBufferDatas().forEach((dataSet) -> {
-                int materialId = dataSet.getMaterialId();
-                dataSet.setMaterialId(materialIdOffset + materialId);
-            });
-            set.getMaterials().forEach((material) -> {
-                material.setId((materialIdOffset) + material.getId());
-            });
-        });
     }
 
     // Material Id 재정렬
@@ -274,9 +254,7 @@ public class Batcher {
 
     // 같은 Material 찾기
     private GaiaMaterial findDuplicateMaterial(GaiaMaterial target, List<GaiaMaterial> materials) {
-        return materials.stream().filter((searchMaterial) -> {
-            return target.compareTo(searchMaterial);
-        }).findFirst().orElse(null);
+        return materials.stream().filter(target::compareTo).findFirst().orElse(null);
     }
 
     // 바둑판 텍스쳐인지 확인

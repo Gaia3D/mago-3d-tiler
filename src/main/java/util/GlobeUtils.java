@@ -8,20 +8,15 @@ import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 
 public class GlobeUtils {
-
     private static final double degToRadFactor = 0.017453292519943296d; // 3.141592653589793 / 180.0;
-
     private static final double equatorialRadius = 6378137.0d; // meters.
     private static final double equatorialRadiusSquared = 40680631590769.0d;
-    private static final double polarRadius = 6356752.3142d; // meters.
+    //private static final double polarRadius = 6356752.3142d; // meters.
     private static final double polarRadiusSquared = 40408299984087.05552164d;
-
-
     private static final double firstEccentricitySquared = 6.69437999014E-3d;
 
     private static final CRSFactory factory = new CRSFactory();
     private static final CoordinateReferenceSystem wgs84 = factory.createFromParameters("WGS84", "+proj=longlat +datum=WGS84 +no_defs");
-    private static final CoordinateReferenceSystem grs80 = factory.createFromParameters("EPSG:5186", "+proj=tmerc +lat_0=38 +lon_0=127 +k=1 +x_0=200000 +y_0=600000 +ellps=GRS80 +units=m +no_defs");
 
     /**
      * convert world coordinate to wgs84
@@ -34,16 +29,13 @@ public class GlobeUtils {
         double cosLat = Math.cos(latRad);
         double sinLon = Math.sin(lonRad);
         double sinLat = Math.sin(latRad);
-        double a = equatorialRadius;
         double e2 = firstEccentricitySquared;
-        double v = a / Math.sqrt(1.0 - e2 * sinLat * sinLat);
-        double h = altitude;
-        result[0] = (v + h) * cosLat * cosLon;
-        result[1] = (v + h) * cosLat * sinLon;
-        result[2] = (v * (1.0 - e2) + h) * sinLat;
+        double v = equatorialRadius / Math.sqrt(1.0 - e2 * sinLat * sinLat);
+        result[0] = (v + altitude) * cosLat * cosLon;
+        result[1] = (v + altitude) * cosLat * sinLon;
+        result[2] = (v * (1.0 - e2) + altitude) * sinLat;
         return result;
     }
-
 
     /**
      *
@@ -51,17 +43,10 @@ public class GlobeUtils {
     public static Matrix4d normalAtCartesianPointWgs84(double x, double y, double z) {
         Vector3d zAxis = new Vector3d(x / equatorialRadiusSquared, y / equatorialRadiusSquared, z / polarRadiusSquared);
         zAxis.normalize();
-        Vector3d xAxis = new Vector3d(-y, x, 0.0);
+        Vector3d xAxis = new Vector3d(-y, +x, 0.0);
         xAxis.normalize();
         Vector3d yAxis = zAxis.cross(xAxis, new Vector3d());
         yAxis.normalize();
-
-        //        double[] result = new double[3];
-        //        result[0] = normalResult.x();
-        //        result[1] = normalResult.y();
-        //        result[2] = normalResult.z();
-        //        return result;
-
 
         double[] transfrom = new double[16];
         transfrom[0] = xAxis.x();
@@ -89,20 +74,17 @@ public class GlobeUtils {
         return transfromMatrix;
     }
 
-    public static ProjCoordinate transform(CoordinateReferenceSystem source, ProjCoordinate beforeCoord) {
-        if (source == null) {
-            source = grs80; // for Test
-        }
-        BasicCoordinateTransform transformer = new BasicCoordinateTransform(source, wgs84);
-        ProjCoordinate result = new ProjCoordinate();
-        transformer.transform(beforeCoord, result);
-        return result;
-    }
-
-    public static ProjCoordinate transform(CoordinateReferenceSystem source, CoordinateReferenceSystem target, ProjCoordinate beforeCoord) {
+    /*public static ProjCoordinate transform(CoordinateReferenceSystem source, CoordinateReferenceSystem target, ProjCoordinate coordinate) {
         BasicCoordinateTransform transformer = new BasicCoordinateTransform(source, target);
         ProjCoordinate result = new ProjCoordinate();
-        transformer.transform(beforeCoord, result);
+        transformer.transform(coordinate, result);
+        return result;
+    }*/
+
+    public static ProjCoordinate transform(CoordinateReferenceSystem source, ProjCoordinate coordinate) {
+        BasicCoordinateTransform transformer = new BasicCoordinateTransform(source, wgs84);
+        ProjCoordinate result = new ProjCoordinate();
+        transformer.transform(coordinate, result);
         return result;
     }
 }
