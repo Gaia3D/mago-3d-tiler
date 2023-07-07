@@ -21,6 +21,7 @@ import util.ArrayUtils;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -143,6 +144,7 @@ public class Batcher {
             });
         });
     }
+
     // 원점이동 구함
     private Vector3d calcTranslation() {
         Vector3d temp = this.globalBBox.getCenter();
@@ -157,23 +159,23 @@ public class Batcher {
         final int SHORT_LIMIT = 65535;
         int count = 0;
         List<List<GaiaBufferDataSet>> result = new ArrayList<>();
-        List<GaiaBufferDataSet> splited = new ArrayList<>();
-        result.add(splited);
+        List<GaiaBufferDataSet> splitList = new ArrayList<>();
+        result.add(splitList);
         for (GaiaBufferDataSet dataSet : dataSets) {
-            LinkedHashMap<AttributeType, GaiaBuffer> buffers = dataSet.getBuffers();
+            Map<AttributeType, GaiaBuffer> buffers = dataSet.getBuffers();
 
             GaiaBuffer indicesBuffer = buffers.get(AttributeType.INDICE);
             if (indicesBuffer != null) {
                 int indicesLength = indicesBuffer.getShorts().length;
 
                 if ((count + indicesLength) > SHORT_LIMIT) {
-                    splited = new ArrayList<>();
-                    result.add(splited);
+                    splitList = new ArrayList<>();
+                    result.add(splitList);
                     count = indicesLength;
                 } else {
                     count += indicesLength;
                 }
-                splited.add(dataSet);
+                splitList.add(dataSet);
             }
         }
         return result;
@@ -181,8 +183,8 @@ public class Batcher {
 
     // 객체의 Indices와 Vertices를 하나로 배칭
     private List<GaiaBufferDataSet> batchDataSets(List<GaiaBufferDataSet> dataSets, Vector3d translation) {
-        LinkedHashMap<Integer, List<GaiaBufferDataSet>> dataSetsMap = new LinkedHashMap<>();
-        List<GaiaBufferDataSet> filterdBufferDatas = new ArrayList<>();
+        Map<Integer, List<GaiaBufferDataSet>> dataSetsMap = new LinkedHashMap<>();
+        List<GaiaBufferDataSet> filterdBufferDataList = new ArrayList<>();
         for (GaiaBufferDataSet dataSet : dataSets) {
             int materialId = dataSet.getMaterialId();
             List<GaiaBufferDataSet> bufferDataSetDataList = dataSetsMap.computeIfAbsent(materialId, k -> new ArrayList<>());
@@ -192,14 +194,14 @@ public class Batcher {
         dataSetsMap.forEach((materialId, bufferDataSetDataList) -> {
             GaiaBufferDataSet batchedBufferData = batchVertices(bufferDataSetDataList);
             batchedBufferData.setMaterialId(materialId);
-            filterdBufferDatas.add(batchedBufferData);
+            filterdBufferDataList.add(batchedBufferData);
         });
-        return filterdBufferDatas;
+        return filterdBufferDataList;
     }
 
     // 모든 객체를 0,0 기준으로 이동
     private void translateOrigin(GaiaBufferDataSet batchedBufferData, Vector3d translations) {
-        LinkedHashMap<AttributeType, GaiaBuffer> buffers = batchedBufferData.getBuffers();
+        Map<AttributeType, GaiaBuffer> buffers = batchedBufferData.getBuffers();
         GaiaBuffer positionBuffer = buffers.get(AttributeType.POSITION);
         Matrix4d transform = batchedBufferData.getTransformMatrix();
         Vector3d translatedPosition = transform.transformPosition(translations, new Vector3d());
@@ -263,10 +265,10 @@ public class Batcher {
             int materialId = dataSet.getMaterialId();
             GaiaMaterial material = findMaterial(materials, materialId);
             if (material != null) {
-                LinkedHashMap<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
+                Map<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
                 List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
                 if (textures == null || textures.size() == 0) {
-                    LinkedHashMap<AttributeType, GaiaBuffer> buffers = dataSet.getBuffers();
+                    Map<AttributeType, GaiaBuffer> buffers = dataSet.getBuffers();
                     buffers.remove(AttributeType.TEXCOORD);
                 }
                 material.setRepeat(checkRepeat(material, dataSet));
@@ -294,7 +296,7 @@ public class Batcher {
         if (material.isRepeat()) {
             return true;
         }
-        LinkedHashMap<AttributeType, GaiaBuffer> buffers = dataSet.getBuffers();
+        Map<AttributeType, GaiaBuffer> buffers = dataSet.getBuffers();
         GaiaBuffer texCoordBuffer = buffers.get(AttributeType.TEXCOORD);
         if (texCoordBuffer == null) {
             return false;
@@ -310,7 +312,7 @@ public class Batcher {
     // getBoundingBox
     private GaiaBoundingBox getBoundingBox(GaiaBufferDataSet batchedBufferData, Matrix4d transform) {
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
-        LinkedHashMap<AttributeType, GaiaBuffer> buffers = batchedBufferData.getBuffers();
+        Map<AttributeType, GaiaBuffer> buffers = batchedBufferData.getBuffers();
         GaiaBuffer positionBuffer = buffers.get(AttributeType.POSITION);
         if (positionBuffer != null) {
             float[] positions = positionBuffer.getFloats();
@@ -328,6 +330,7 @@ public class Batcher {
         }
         return boundingBox;
     }
+
     private GaiaBufferDataSet batchVertices(List<GaiaBufferDataSet> bufferDataSets) {
         GaiaBufferDataSet dataSet = new GaiaBufferDataSet();
         int totalPositionCount = 0;
@@ -342,7 +345,7 @@ public class Batcher {
         GaiaRectangle batchedBoundingRectangle = null;
         int totalIndicesMax = 0;
         for (GaiaBufferDataSet bufferDataSet : bufferDataSets) {
-            LinkedHashMap<AttributeType, GaiaBuffer> buffers = bufferDataSet.getBuffers();
+            Map<AttributeType, GaiaBuffer> buffers = bufferDataSet.getBuffers();
 
             GaiaBuffer indicesBuffer = buffers.get(AttributeType.INDICE);
             if (indicesBuffer != null) {

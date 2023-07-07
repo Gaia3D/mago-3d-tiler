@@ -10,6 +10,7 @@ import geometry.structure.*;
 import geometry.types.AccessorType;
 import geometry.types.AttributeType;
 import geometry.types.TextureType;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.joml.Matrix4d;
 import org.joml.Vector4d;
@@ -19,12 +20,14 @@ import util.ImageUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+@Slf4j
 public class GltfWriter {
     public static void writeGltf(GaiaScene gaiaScene, File outputPath) {
         try {
@@ -47,6 +50,15 @@ public class GltfWriter {
             e.printStackTrace();
         }
     }
+    public static void writeGlb(GaiaScene gaiaScene, OutputStream outputStream) {
+        try {
+            GltfModel gltfModel = convert(gaiaScene);
+            GltfModelWriter writer = new GltfModelWriter();
+            writer.writeBinary(gltfModel, outputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     public static void writeGlb(GaiaScene gaiaScene, String outputPath) {
         writeGlb(gaiaScene, new File(outputPath));
     }
@@ -57,8 +69,10 @@ public class GltfWriter {
         gltf.setAsset(genAsset());
         gltf.addSamplers(genSampler());
         initScene(gltf);
+
         gaiaScene.getMaterials().forEach(gaiaMaterial -> createMaterial(gltf, gaiaMaterial));
         convertNode(gltf, binary, null, gaiaScene.getNodes());
+
         binary.fill();
         if (binary.getBody() != null) {
             GltfAssetV2 asset = new GltfAssetV2(gltf, binary.getBody());

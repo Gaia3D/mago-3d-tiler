@@ -42,7 +42,7 @@ public class GaiaNode {
         List<Float> texCoordList = new ArrayList<>();
         List<GaiaVertex> vertexList = new ArrayList<>();
 
-        LinkedHashMap<AttributeType, GaiaBuffer> buffers = bufferDataSet.getBuffers();
+        Map<AttributeType, GaiaBuffer> buffers = bufferDataSet.getBuffers();
         for (Map.Entry<AttributeType, GaiaBuffer> entry : buffers.entrySet()) {
             AttributeType attributeType = entry.getKey();
             GaiaBuffer buffer = entry.getValue();

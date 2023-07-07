@@ -9,6 +9,7 @@ import geometry.structure.GaiaScene;
 import geometry.types.FormatType;
 import gltf.Batched3DModel;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.cli.CommandLine;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
@@ -32,23 +33,24 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class Gaia3DTiler {
-    private static final AssimpConverter assimpConverter = new AssimpConverter(null);
-    private static final int MAX_COUNT = 36;
-    private static final int TEST_COUNT = 5000;
+    private static final int MAX_COUNT = 128;
+
+    private AssimpConverter assimpConverter;
     private final Path inputPath;
     private final Path outputPath;
     private final FormatType inputFormatType;
     private final CoordinateReferenceSystem source;
 
-    public Gaia3DTiler(Path inputPath, Path outputPath, FormatType inputFormatType, CoordinateReferenceSystem source) {
+    public Gaia3DTiler(Path inputPath, Path outputPath, FormatType inputFormatType, CoordinateReferenceSystem source, CommandLine command) {
+        this.assimpConverter = new AssimpConverter(command);
         this.inputPath = inputPath;
         this.outputPath = outputPath;
         this.inputFormatType = inputFormatType;
         this.source = source;
     }
 
-    public void excute() {
-        List<GaiaScene> scenes = read(inputPath);
+    public void execute() {
+        List<GaiaScene> scenes = readInputFile(inputPath);
         double geometricError = calcGeometricError(scenes);
 
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(scenes);
@@ -87,7 +89,7 @@ public class Gaia3DTiler {
         return sceneList.stream().mapToDouble(scene -> {
             double result = scene.getBoundingBox().getLongestDistance();
             if (result > 1000.0d) {
-                log.info(result + " is too long distance. check it.");
+                log.info(result + " is too long distance. check it please.");
             }
             return result;
         }).max().orElse(0.0d);
@@ -98,6 +100,7 @@ public class Gaia3DTiler {
         sceneList.forEach(scene -> boundingBox.addBoundingBox(scene.getBoundingBox()));
         return boundingBox;
     }
+
     private void tiling(Node parentNode, List<GaiaScene> scenes) {
         BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
         if (scenes.size() > MAX_COUNT) {
@@ -159,6 +162,7 @@ public class Gaia3DTiler {
         scenes.forEach(scene -> universe.getScenes().add(scene));
         return childNode;
     }
+
     private Node createContentNode(Node parentNode, List<GaiaScene> scenes, int index) {
         if (scenes.size() < 1) {
             return null;
@@ -168,7 +172,6 @@ public class Gaia3DTiler {
         rotateX90(transformMatrix);
 
         BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox, this.source);
-        //boundingVolume.square();
 
         String nodeCode = parentNode.getNodeCode();
         LevelOfDetail lod = getLodByNodeCode(nodeCode);
@@ -178,7 +181,6 @@ public class Gaia3DTiler {
             return null;
         }
         nodeCode = nodeCode + index;
-        log.info("┕ " + nodeCode + " : " + scenes.size() + " : " + lod.getGeometricError());
 
         Node childNode = new Node();
         childNode.setParent(parentNode);
@@ -188,15 +190,20 @@ public class Gaia3DTiler {
         childNode.setGeometricError(lod.getGeometricError());
         childNode.setRefine(Node.RefineType.REPLACE);
         childNode.setChildren(new ArrayList<>());
+
         GaiaUniverse universe = new GaiaUniverse(nodeCode, inputPath, outputPath);
         scenes.forEach(scene -> universe.getScenes().add(scene));
         TileInfo tileInfo = new TileInfo();
         tileInfo.setUniverse(universe);
         tileInfo.setBoundingBox(childBoundingBox);
+
+        long start = System.currentTimeMillis();
         Batched3DModel batched3DModel = new Batched3DModel(tileInfo, lod);
         if (!batched3DModel.write(nodeCode)) {
             return null;
         }
+        log.info("┕ " + nodeCode + " : " + scenes.size() + " : " + (System.currentTimeMillis() - start));
+
         Content content = new Content();
         content.setUri(nodeCode + ".b3dm");
         childNode.setContent(content);
@@ -230,7 +237,7 @@ public class Gaia3DTiler {
     }
 
     private Matrix4d getTransfromMatrix(GaiaBoundingBox boundingBox) {
-        Vector3d center = new Vector3d(boundingBox.getCenter());
+        Vector3d center = boundingBox.getCenter();
         Vector3d centerBottom = new Vector3d(center.x, center.y, boundingBox.getMinZ());
         ProjCoordinate centerPoint = new ProjCoordinate(centerBottom.x(), centerBottom.y(), centerBottom.z());
         ProjCoordinate translatedCenterPoint = GlobeUtils.transform(this.source, centerPoint);
@@ -257,7 +264,7 @@ public class Gaia3DTiler {
     private Node createRoot() {
         Node root = new Node();
         root.setParent(root);
-        root.setNodeCode("0");
+        root.setNodeCode("R");
         root.setRefine(Node.RefineType.REPLACE);
         root.setChildren(new ArrayList<>());
         return root;
@@ -269,14 +276,14 @@ public class Gaia3DTiler {
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(tilesetFile))) {
             String result = objectMapper.writeValueAsString(tileset);
-            //log.info(result);
             writer.write(result);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public List<GaiaScene> read(Path input) {
+    private List<GaiaScene> readInputFile(Path input) {
+        Objects.requireNonNull(input, "input path is null");
         List<GaiaScene> sceneList = new ArrayList<>();
         readTree(sceneList, input.toFile(), this.inputFormatType);
         return sceneList;
@@ -287,8 +294,9 @@ public class Gaia3DTiler {
             GaiaScene scene = assimpConverter.load(inputFile.toPath(), formatType.getExtension());
             sceneList.add(scene);
         } else if (inputFile.isDirectory()){
-            for (File child : Objects.requireNonNull(inputFile.listFiles())) {
-                if (sceneList.size() <= TEST_COUNT) {
+            File[] childFiles = inputFile.listFiles();
+            if (childFiles != null) {
+                for (File child : childFiles) {
                     readTree(sceneList, child, formatType);
                 }
             }

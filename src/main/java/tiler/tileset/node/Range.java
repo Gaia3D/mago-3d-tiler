@@ -1,10 +1,12 @@
 package tiler.tileset.node;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@EqualsAndHashCode
 public class Range {
     private double maximum;
     private double minimum;

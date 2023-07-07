@@ -81,10 +81,6 @@ public class GaiaTextureCoordinator {
             resizeWidth = ImageUtils.getNearestPowerOfTwo(resizeWidth);
             resizeHeight = ImageUtils.getNearestPowerOfTwo(resizeHeight);
 
-            if (resizeWidth < 128 || resizeHeight < 128) {
-                log.info("resizeWidth: {}, resizeHeight: {}", resizeWidth, resizeHeight);
-            }
-
             bufferedImage = ImageUtils.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight);
             texture.setBufferedImage(bufferedImage);
 

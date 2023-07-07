@@ -2,9 +2,35 @@ package command;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+import java.net.URISyntaxException;
+
 class ConverterMainTest {
-    private static final String INPUT_PATH = "C:\\data\\plasma-test\\";
-    private static final String OUTPUT_PATH = "C:\\data\\plasma-test\\output\\";
+    private static final String INPUT_PATH = "../sample/";
+    private static final String OUTPUT_PATH = "../output/";
+
+    @Test
+    void shortOptionTest() throws URISyntaxException {
+        String[] args= new String[]{
+                "-i", getInputPath(),
+                "-it", "3ds",
+                "-o", getOutputPath(),
+                "-ot", "gltf",
+                "-r",
+        };
+        ConverterMain.main(args);
+    }
+
+    @Test
+    void testMain() throws URISyntaxException {
+        String[] args = new String[]{
+                "-input", getInputPath(),
+                "-inputType", "3ds",
+                "-output", getOutputPath(),
+                "-outputType", "gltf"
+        };
+        ConverterMain.main(args);
+    }
 
     @Test
     void versionTest() {
@@ -19,36 +45,26 @@ class ConverterMainTest {
     }
 
     @Test
-    void quietTest() {
+    void quietTest() throws URISyntaxException {
         String[] args= new String[]{
-                "-input", INPUT_PATH,
+                "-input", getInputPath(),
                 "-inputType", "3ds",
-                "-output", OUTPUT_PATH,
+                "-output", getOutputPath(),
                 "-outputType", "gltf",
                 "-quiet",
         };
         ConverterMain.main(args);
     }
 
-    @Test
-    void shortOptionTest() {
-        String[] args= new String[]{
-                "-i", INPUT_PATH,
-                "-it", "3ds",
-                "-o", OUTPUT_PATH,
-                "-ot", "gltf",
-        };
-        ConverterMain.main(args);
+    private String getInputPath() throws URISyntaxException {
+        File file = new File(getClass().getResource(INPUT_PATH).toURI());
+        assert(file != null);
+        return file.getAbsolutePath();
     }
 
-    @Test
-    void testMain() {
-        String[] args = new String[]{
-                "-input", INPUT_PATH,
-                "-inputType", "3ds",
-                "-output", OUTPUT_PATH,
-                "-outputType", "gltf"
-        };
-        ConverterMain.main(args);
+    private String getOutputPath() throws URISyntaxException {
+        File file = new File(getClass().getResource(OUTPUT_PATH).toURI());
+        assert(file != null);
+        return file.getAbsolutePath();
     }
 }

@@ -5,9 +5,9 @@ plugins {
 }
 
 group "com.gaia3d"
-version "0.1.0-SNAPSHOT"
-project.ext.lwjglVersion = "3.3.1"
+version "0.1.1-SNAPSHOT"
 
+project.ext.lwjglVersion = "3.3.1"
 switch ( OperatingSystem.current() ) {
     case OperatingSystem.WINDOWS:
         project.ext.lwjglNatives = "natives-windows"
@@ -60,6 +60,7 @@ dependencies {
     implementation "de.javagl:jgltf-model:2.0.3"
     implementation "de.javagl:jgltf-validator:2.0.3"
     implementation "org.locationtech.proj4j:proj4j:1.2.3"
+    implementation "org.locationtech.proj4j:proj4j-epsg:1.2.3"
 
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.0.1'
 
@@ -76,7 +77,7 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.0"
 }
 test {
-    //useJUnitPlatform()
+    useJUnitPlatform()
 }
 
 // jar task

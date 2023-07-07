@@ -8,8 +8,6 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @Slf4j
 class Gaia3DTilerTest {
     private static final String INPUT_PATH = "C:\\data\\plasma-test\\ws2-3ds\\";
@@ -31,7 +29,7 @@ class Gaia3DTilerTest {
         Path inputPath = input.toPath();
         Path outputPath = output.toPath();
 
-        Gaia3DTiler tiler = new Gaia3DTiler(inputPath, outputPath, FormatType.MAX_3DS,null);
-        tiler.excute();
+        Gaia3DTiler tiler = new Gaia3DTiler(inputPath, outputPath, FormatType.MAX_3DS,null, null);
+        tiler.execute();
     }
 }

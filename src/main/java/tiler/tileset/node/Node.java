@@ -2,6 +2,7 @@ package tiler.tileset.node;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import geometry.basic.GaiaBoundingBox;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ import java.util.List;
 @Getter
 @Setter
 public class Node {
+    // TODO: 2023-06-26 builder 패턴으로 바꾸는 것 추천 
     @JsonIgnore
     private String nodeCode;
     @JsonIgnore

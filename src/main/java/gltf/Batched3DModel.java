@@ -9,6 +9,7 @@ import geometry.structure.GaiaNode;
 import geometry.structure.GaiaScene;
 import io.LittleEndianDataOutputStream;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.joml.Matrix4d;
 import org.joml.Matrix4f;
 import tiler.LevelOfDetail;
@@ -50,6 +51,8 @@ public class Batched3DModel {
     }
 
     public boolean write(String filename) {
+
+
         GaiaUniverse universe = this.tileInfo.getUniverse();
         universe.convertGaiaSet();
 
@@ -63,13 +66,16 @@ public class Batched3DModel {
         }
 
         GaiaScene scene = new GaiaScene(set);
-        GaiaNode node = scene.getNodes().get(0);
 
+        //GaiaNode node = scene.getNodes().get(0);
 
-        File glbOutputFile = universe.getOutputRoot().resolve(filename + ".glb").toFile();
-        GltfWriter.writeGlb(scene, glbOutputFile);
+        //File glbOutputFile = universe.getOutputRoot().resolve(filename + ".glb").toFile();
+        //GltfWriter.writeGlb(scene, glbOutputFile);
 
-        Matrix4d rootTransformMatrix = node.getTransformMatrix();
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        GltfWriter.writeGlb(scene, byteArrayOutputStream);
+
+        //Matrix4d rootTransformMatrix = node.getTransformMatrix();
         //float[] rctCenter = {-3056303.58824933f,4030639.359383482f,3872020.676540839f}; //ion-sample
         //FeatureTable featureTable = new FeatureTable();
         //featureTable.setBatchLength(1);
@@ -86,7 +92,10 @@ public class Batched3DModel {
             throw new RuntimeException(e);
         }*/
 
-        byte[] glbBytes = readGlb(glbOutputFile);
+
+        byte[] glbBytes = byteArrayOutputStream.toByteArray();
+
+        //byte[] glbBytes = readGlb(glbOutputFile);
 
         // without featureTable/batchTable
         this.byteLength = 28 + featureTableJSONByteLength + batchTableJSONByteLength + glbBytes.length;
@@ -107,10 +116,9 @@ public class Batched3DModel {
 
             // body
             stream.write(glbBytes);
-
             // delete glb file
-            if (true) {
-                glbOutputFile.delete();
+            if (false) {
+                //glbOutputFile.delete();
             }
         } catch (Exception e) {
             log.error(e.getMessage());

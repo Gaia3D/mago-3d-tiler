@@ -80,7 +80,7 @@ public class ConverterMain {
     private static void excute(CommandLine command, File inputFile, File outputFile, int depth) {
         String inputExtension = command.getOptionValue("inputType");
         String outputExtension = command.getOptionValue("outputType");
-        boolean isSameExtension = StringUtils.equals(inputExtension,outputExtension);
+        boolean isSameExtension = StringUtils.equals(inputExtension, FilenameUtils.getExtension(inputFile.getName()));
         if (inputFile.isFile() && isSameExtension) {
             String outputFileName = FilenameUtils.removeExtension(inputFile.getName()) + "." + outputExtension;
             File output = new File(outputFile.getAbsolutePath() + File.separator + outputFileName);

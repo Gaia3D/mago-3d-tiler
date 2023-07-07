@@ -30,7 +30,7 @@ import java.util.Map;
 @Getter
 @Setter
 public class GaiaBufferDataSet {
-    private LinkedHashMap<AttributeType, GaiaBuffer> buffers;
+    private Map<AttributeType, GaiaBuffer> buffers;
     private int id = -1;
     private String guid = "no_guid";
     private int materialId;

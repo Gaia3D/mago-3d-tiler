@@ -4,18 +4,21 @@ import assimp.AssimpConverter;
 import geometry.types.FormatType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
+import org.apache.commons.io.FileExistsException;
 import org.apache.logging.log4j.Level;
 import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import tiler.Gaia3DTiler;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 
 
 @Slf4j
 public class TilerMain {
-    public static AssimpConverter assimpConverter = null;
+    public static int count = 0;
 
     public static Options createOptions() {
         Options options = new Options();
@@ -71,42 +74,43 @@ public class TilerMain {
                 return;
             }
 
-            assimpConverter = new AssimpConverter(cmd);
             File inputFile = new File(cmd.getOptionValue("input"));
             File outputFile = new File(cmd.getOptionValue("output"));
             String src = cmd.getOptionValue("src");
             excute(cmd, inputFile, outputFile, src);
-        } catch (ParseException e) {
+        } catch (ParseException | IOException e) {
             e.printStackTrace();
+            log.error("Failed to parse command line properties", e);
         }
         underline();
     }
 
-    private static void excute(CommandLine command, File inputFile, File outputFile, String src) {
+    private static void excute(CommandLine command, File inputFile, File outputFile, String src) throws IOException {
         String inputExtension = command.getOptionValue("inputType");
-        //String outputExtension = command.getOptionValue("outputType");
         Path inputPath = inputFile.toPath();
         Path outputPath = outputFile.toPath();
-
-        if (!inputFile.exists()) {
-            if (!inputFile.mkdir()) {
-                log.error("input file path is not exist.");
-                return;
-            }
-        }
-        if (!outputFile.exists()) {
-            if (!outputFile.mkdir()) {
-                log.error("output file path is not exist.");
-                return;
-            }
+        inputFile.mkdir();
+        outputFile.mkdir();
+        if (!validate(outputPath)) {
             return;
         }
-
         FormatType formatType = FormatType.fromExtension(inputExtension);
         CRSFactory factory = new CRSFactory();
         CoordinateReferenceSystem source = factory.createFromName("EPSG:" + src);
-        Gaia3DTiler tiler = new Gaia3DTiler(inputPath, outputPath, formatType, source);
-        tiler.excute();
+        Gaia3DTiler tiler = new Gaia3DTiler(inputPath, outputPath, formatType, source, command);
+        tiler.execute();
+    }
+
+    private static boolean validate(Path outputPath) throws IOException {
+        File output = outputPath.toFile();
+        if (!output.exists()) {
+            throw new FileExistsException("output path is not exist.");
+        } else if (!output.isDirectory()) {
+            throw new NotDirectoryException("output path is not directory.");
+        } else if (!output.canWrite()) {
+            throw new IOException("output path is not writable.");
+        }
+        return true;
     }
 
     private static void start() {
@@ -117,11 +121,11 @@ public class TilerMain {
             "|   |_| ||   |    |       || |_____ |       ||       |\n" +
             "|    ___||   |___ |       ||_____  ||       ||       |\n" +
             "|   |    |       ||   _   | _____| || ||_|| ||   _   |\n" +
-            "|___|    |_______||__| |__||_______||_|   |_||__| |__|\n");
+            "|___|    |_______||__| |__||_______||_|   |_||__| |__|");
         underline();
     }
 
     private static void underline() {
-        log.info("===================[Plasma 3DTiler]===================");
+        log.info("======================================================");
     }
 }

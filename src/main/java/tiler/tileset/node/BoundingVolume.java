@@ -3,6 +3,7 @@ package tiler.tileset.node;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import geometry.basic.GaiaBoundingBox;
 import geometry.structure.GaiaScene;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Getter
 @Setter
+@EqualsAndHashCode
 public class BoundingVolume {
     private static final float GOLDEN_RATIO = 1.61803398875f;
 
@@ -82,113 +84,6 @@ public class BoundingVolume {
     }
 
     public BoundingVolume[] divideBoundingVolume() {
-        BoundingVolume[] result = new BoundingVolume[2];
-        if (BoundingVolumeType.REGION == type) {
-            double minX = region[0];
-            double minY = region[1];
-            double maxX = region[2];
-            double maxY = region[3];
-            double minZ = region[4];
-            double maxZ = region[5];
-            double midX = (minX + maxX) / 2;
-            double midY = (minY + maxY) / 2;
-            double x = maxX - minX;
-            double y = maxY - minY;
-
-            double ratioXTest = x / y;
-            double ratioYTest = y / x;
-            boolean goldenRatio = ratioXTest > GOLDEN_RATIO || ratioYTest > GOLDEN_RATIO;
-
-            double[] region0;
-            double[] region1;
-            double[] region2;
-            double[] region3;
-            if (x > y && goldenRatio) {
-                region0 = new double[] {minX, minY, midX, maxY, minZ, maxZ};
-                region1 = new double[] {midX, minY, maxX, maxY, minZ, maxZ};
-
-                BoundingVolume boundingVolume0 = new BoundingVolume(BoundingVolumeType.REGION);
-                boundingVolume0.setRegion(region0);
-                BoundingVolume boundingVolume1 = new BoundingVolume(BoundingVolumeType.REGION);
-                boundingVolume1.setRegion(region1);
-
-                result[0] = boundingVolume0;
-                result[1] = boundingVolume1;
-            } else if (y > x && goldenRatio) {
-                region0 = new double[] {minX, minY, maxX, midY, minZ, maxZ};
-                region1 = new double[] {minX, midY, maxX, maxY, minZ, maxZ};
-
-                BoundingVolume boundingVolume0 = new BoundingVolume(BoundingVolumeType.REGION);
-                boundingVolume0.setRegion(region0);
-                BoundingVolume boundingVolume1 = new BoundingVolume(BoundingVolumeType.REGION);
-                boundingVolume1.setRegion(region1);
-
-                result[0] = boundingVolume0;
-                result[1] = boundingVolume1;
-
-            } else {
-                result = new BoundingVolume[4];
-                region0 = new double[] {minX, minY, midX, midY, minZ, maxZ};
-                region1 = new double[] {midX, minY, maxX, midY, minZ, maxZ};
-                region2 = new double[] {midX, midY, maxX, maxY, minZ, maxZ};
-                region3 = new double[] {minX, midY, midX, maxY, minZ, maxZ};
-
-                BoundingVolume boundingVolume0 = new BoundingVolume(BoundingVolumeType.REGION);
-                boundingVolume0.setRegion(region0);
-                BoundingVolume boundingVolume1 = new BoundingVolume(BoundingVolumeType.REGION);
-                boundingVolume1.setRegion(region1);
-                BoundingVolume boundingVolume2 = new BoundingVolume(BoundingVolumeType.REGION);
-                boundingVolume2.setRegion(region2);
-                BoundingVolume boundingVolume3 = new BoundingVolume(BoundingVolumeType.REGION);
-                boundingVolume3.setRegion(region3);
-
-                result[0] = boundingVolume0;
-                result[1] = boundingVolume1;
-                result[2] = boundingVolume2;
-                result[3] = boundingVolume3;
-            }
-        }
-        return result;
-    }
-
-    public BoundingVolume[] divideHalfBoundingVolume() {
-        BoundingVolume[] result = new BoundingVolume[2];
-        if (BoundingVolumeType.REGION == type) {
-            double minX = region[0];
-            double minY = region[1];
-            double maxX = region[2];
-            double maxY = region[3];
-            double minZ = region[4];
-            double maxZ = region[5];
-            double midX = (minX + maxX) / 2;
-            double midY = (minY + maxY) / 2;
-
-            double x = maxX - minX;
-            double y = maxY - minY;
-
-            double[] region0;
-            double[] region1;
-
-            if (x > y) {
-                region0 = new double[] {minX, minY, midX, maxY, minZ, maxZ};
-                region1 = new double[] {midX, minY, maxX, maxY, minZ, maxZ};
-            } else {
-                region0 = new double[] {minX, minY, maxX, midY, minZ, maxZ};
-                region1 = new double[] {minX, midY, maxX, maxY, minZ, maxZ};
-            }
-
-            BoundingVolume boundingVolume0 = new BoundingVolume(BoundingVolumeType.REGION);
-            boundingVolume0.setRegion(region0);
-            BoundingVolume boundingVolume1 = new BoundingVolume(BoundingVolumeType.REGION);
-            boundingVolume1.setRegion(region1);
-
-            result[0] = boundingVolume0;
-            result[1] = boundingVolume1;
-        }
-        return result;
-    }
-
-    public BoundingVolume[] divideQuarterBoundingVolume() {
         BoundingVolume[] result = new BoundingVolume[4];
         if (BoundingVolumeType.REGION == type) {
             double minX = region[0];
@@ -221,40 +116,6 @@ public class BoundingVolume {
         }
         return result;
     }
-
-    /*public BoundingVolume[] divideBoundingVolume() {
-        BoundingVolume[] result = new BoundingVolume[4];
-        if (BoundingVolumeType.REGION == type) {
-            double minX = region[0];
-            double minY = region[1];
-            double maxX = region[2];
-            double maxY = region[3];
-            double minZ = region[4];
-            double maxZ = region[5];
-            double midX = (minX + maxX) / 2;
-            double midY = (minY + maxY) / 2;
-
-            double[] region0 = new double[] {minX, minY, midX, midY, minZ, maxZ};
-            double[] region1 = new double[] {midX, minY, maxX, midY, minZ, maxZ};
-            double[] region2 = new double[] {midX, midY, maxX, maxY, minZ, maxZ};
-            double[] region3 = new double[] {minX, midY, midX, maxY, minZ, maxZ};
-
-            BoundingVolume boundingVolume0 = new BoundingVolume(BoundingVolumeType.REGION);
-            boundingVolume0.setRegion(region0);
-            BoundingVolume boundingVolume1 = new BoundingVolume(BoundingVolumeType.REGION);
-            boundingVolume1.setRegion(region1);
-            BoundingVolume boundingVolume2 = new BoundingVolume(BoundingVolumeType.REGION);
-            boundingVolume2.setRegion(region2);
-            BoundingVolume boundingVolume3 = new BoundingVolume(BoundingVolumeType.REGION);
-            boundingVolume3.setRegion(region3);
-
-            result[0] = boundingVolume0;
-            result[1] = boundingVolume1;
-            result[2] = boundingVolume2;
-            result[3] = boundingVolume3;
-        }
-        return result;
-    }*/
 
     public List<GaiaScene> contains(List<GaiaScene> scenes, CoordinateReferenceSystem source) {
         return scenes.stream().filter((scene) -> {
