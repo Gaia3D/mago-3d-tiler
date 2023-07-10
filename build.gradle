@@ -5,7 +5,7 @@ plugins {
 }
 
 group "com.gaia3d"
-version "0.1.1-SNAPSHOT"
+version "1.0.0-SNAPSHOT"
 
 project.ext.lwjglVersion = "3.3.1"
 switch ( OperatingSystem.current() ) {
@@ -23,7 +23,6 @@ switch ( OperatingSystem.current() ) {
 repositories {
     mavenCentral()
 }
-
 
 dependencies {
     compileOnly "org.projectlombok:lombok:1.18.26"
@@ -77,13 +76,13 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.0"
 }
 test {
-    useJUnitPlatform()
+    //useJUnitPlatform()
 }
 
 // jar task
 jar {
     manifest {
-        attributes "Main-Class": "command.Main"
+        attributes "Main-Class": "command.TilerMain"
     }
     from {
         configurations.runtimeClasspath.collect {it.isDirectory() ? it : zipTree(it)}

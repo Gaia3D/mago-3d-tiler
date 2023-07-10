@@ -8,6 +8,7 @@ import geometry.structure.GaiaTexture;
 import geometry.types.AttributeType;
 import geometry.types.TextureType;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.cli.CommandLine;
 import org.joml.Vector2d;
 import tiler.LevelOfDetail;
 import util.ImageUtils;
@@ -63,15 +64,17 @@ public class GaiaTextureCoordinator {
             }
         }
     }
-    public void batchTextures(LevelOfDetail lod) {
+    public void batchTextures(LevelOfDetail lod, CommandLine command) {
         List<GaiaBatchImage> splittedImages = new ArrayList<>();
         for (GaiaMaterial material : materials) {
+
             LinkedHashMap<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
             List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
             GaiaTexture texture = textures.get(0);
             if (texture.getBufferedImage() == null) {
                 texture.loadImage();
             }
+
             BufferedImage bufferedImage = texture.getBufferedImage();
 
             float scale = lod.getTextureScale();
@@ -201,7 +204,8 @@ public class GaiaTextureCoordinator {
             BufferedImage source = texture.getBufferedImage();
             graphics.drawImage(source, (int) splittedRectangle.getMinX(), (int) splittedRectangle.getMinY(),null);
         }
-        if (false) {
+
+        if (command.hasOption("debug")) {
             float[] debugColor = lod.getDebugColor();
             Color color = new Color(debugColor[0], debugColor[1], debugColor[2], 0.5f);
             graphics.setColor(color);
@@ -246,7 +250,6 @@ public class GaiaTextureCoordinator {
                 }
 
             }
-
         }
     }
 

@@ -10,6 +10,7 @@ import geometry.types.FormatType;
 import gltf.Batched3DModel;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.io.FileUtils;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
@@ -33,13 +34,14 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class Gaia3DTiler {
-    private static final int MAX_COUNT = 128;
+    private static final int MAX_COUNT = 64;
 
-    private AssimpConverter assimpConverter;
+    private final AssimpConverter assimpConverter;
     private final Path inputPath;
     private final Path outputPath;
     private final FormatType inputFormatType;
     private final CoordinateReferenceSystem source;
+    private final CommandLine command;
 
     public Gaia3DTiler(Path inputPath, Path outputPath, FormatType inputFormatType, CoordinateReferenceSystem source, CommandLine command) {
         this.assimpConverter = new AssimpConverter(command);
@@ -47,10 +49,12 @@ public class Gaia3DTiler {
         this.outputPath = outputPath;
         this.inputFormatType = inputFormatType;
         this.source = source;
+        this.command = command;
     }
 
     public void execute() {
-        List<GaiaScene> scenes = readInputFile(inputPath);
+        boolean recursive = command.hasOption("recursive");
+        List<GaiaScene> scenes = readInputFile(inputPath, recursive);
         double geometricError = calcGeometricError(scenes);
 
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(scenes);
@@ -77,7 +81,7 @@ public class Gaia3DTiler {
         return reloadScenes(result);
     }
 
-    public List<GaiaScene> reloadScenes(List<GaiaScene> scenes) {
+    private List<GaiaScene> reloadScenes(List<GaiaScene> scenes) {
         FormatType formatType = this.inputFormatType;
         return scenes.stream()
                 .map((scene) -> assimpConverter.load(scene.getOriginalPath(), formatType.getExtension()))
@@ -144,7 +148,7 @@ public class Gaia3DTiler {
         rotateX90(transformMatrix);
 
         BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox, this.source);
-        boundingVolume.square();
+        //boundingVolume.square();
 
         String nodeCode = parentNode.getNodeCode();
         nodeCode = nodeCode + index;
@@ -198,11 +202,11 @@ public class Gaia3DTiler {
         tileInfo.setBoundingBox(childBoundingBox);
 
         long start = System.currentTimeMillis();
-        Batched3DModel batched3DModel = new Batched3DModel(tileInfo, lod);
+        Batched3DModel batched3DModel = new Batched3DModel(tileInfo, lod, this.command);
         if (!batched3DModel.write(nodeCode)) {
             return null;
         }
-        log.info("┕ " + nodeCode + " : " + scenes.size() + " : " + (System.currentTimeMillis() - start));
+        log.info("- " + nodeCode + " : " + scenes.size() + " : " + (System.currentTimeMillis() - start));
 
         Content content = new Content();
         content.setUri(nodeCode + ".b3dm");
@@ -282,24 +286,15 @@ public class Gaia3DTiler {
         }
     }
 
-    private List<GaiaScene> readInputFile(Path input) {
+    private List<GaiaScene> readInputFile(Path input, boolean recursive) {
         Objects.requireNonNull(input, "input path is null");
         List<GaiaScene> sceneList = new ArrayList<>();
-        readTree(sceneList, input.toFile(), this.inputFormatType);
-        return sceneList;
-    }
+        String[] extensions = new String[] {this.inputFormatType.getExtension()};
 
-    private void readTree(List<GaiaScene> sceneList, File inputFile, FormatType formatType) {
-        if (inputFile.isFile() && inputFile.getName().endsWith("." + formatType.getExtension())) {
-            GaiaScene scene = assimpConverter.load(inputFile.toPath(), formatType.getExtension());
+        for (File child : FileUtils.listFiles(input.toFile(), extensions, recursive)) {
+            GaiaScene scene = assimpConverter.load(child.toPath(), extensions[0]);
             sceneList.add(scene);
-        } else if (inputFile.isDirectory()){
-            File[] childFiles = inputFile.listFiles();
-            if (childFiles != null) {
-                for (File child : childFiles) {
-                    readTree(sceneList, child, formatType);
-                }
-            }
         }
+        return sceneList;
     }
 }

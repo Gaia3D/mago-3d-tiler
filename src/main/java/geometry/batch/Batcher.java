@@ -11,6 +11,7 @@ import geometry.structure.GaiaTexture;
 import geometry.types.AttributeType;
 import geometry.types.TextureType;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.cli.CommandLine;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
@@ -30,13 +31,15 @@ public class Batcher {
     private final GaiaUniverse universe;
     private GaiaBoundingBox globalBBox;
     private final LevelOfDetail lod;
+    private final CommandLine command;
 
-    public Batcher(GaiaUniverse universe, GaiaBoundingBox boundingBox, LevelOfDetail lod) {
+    public Batcher(GaiaUniverse universe, GaiaBoundingBox boundingBox, LevelOfDetail lod, CommandLine command) {
         this.batchedSet = new GaiaSet();
         this.batchedSet.setProjectName(universe.getName());
         this.universe = universe;
         this.globalBBox = boundingBox;
         this.lod = lod;
+        this.command = command;
     }
 
     public GaiaSet batch() {
@@ -288,7 +291,7 @@ public class Batcher {
     // 각 Material의 Texture들을 하나의 이미지로 변경
     private void atlasTextures(List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials) {
         GaiaTextureCoordinator textureCoordinator = new GaiaTextureCoordinator(universe.getName(), materials, dataSets);
-        textureCoordinator.batchTextures(lod);
+        textureCoordinator.batchTextures(lod, this.command);
         textureCoordinator.writeBatchedImage(this.universe.getOutputRoot().resolve("images"));
     }
 

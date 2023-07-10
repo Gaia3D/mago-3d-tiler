@@ -97,7 +97,7 @@ public class AssimpConverter {
         return matrix4;
     }
 
-    public GaiaScene convertScene(AIScene aiScene, String filePath) {
+    private GaiaScene convertScene(AIScene aiScene, String filePath) {
         GaiaScene gaiaScene = new GaiaScene();
         AINode aiNode = aiScene.mRootNode();
 

@@ -32,6 +32,8 @@ public class Configurator {
         loggerConfig.setLevel(LEVEL);
         loggerConfig.addAppender(consoleAppender, LEVEL, null);
         ctx.updateLoggers();
+
+        consoleAppender.start();
     }
     public static void setLevel(Level level) {
         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);

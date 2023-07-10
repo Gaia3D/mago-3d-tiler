@@ -9,6 +9,7 @@ import geometry.structure.GaiaNode;
 import geometry.structure.GaiaScene;
 import io.LittleEndianDataOutputStream;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.cli.CommandLine;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.joml.Matrix4d;
 import org.joml.Matrix4f;
@@ -37,10 +38,12 @@ public class Batched3DModel {
 
     private final TileInfo tileInfo;
     private final LevelOfDetail lod;
+    private final CommandLine command;
 
-    public Batched3DModel(TileInfo tileInfo, LevelOfDetail lod) {
+    public Batched3DModel(TileInfo tileInfo, LevelOfDetail lod, CommandLine command) {
         this.tileInfo = tileInfo;
         this.lod = lod;
+        this.command = command;
     }
 
     public byte[] readGlb(File glbOutputFile) {
@@ -51,12 +54,10 @@ public class Batched3DModel {
     }
 
     public boolean write(String filename) {
-
-
         GaiaUniverse universe = this.tileInfo.getUniverse();
         universe.convertGaiaSet();
 
-        Batcher batcher = new Batcher(universe, this.tileInfo.getBoundingBox(), this.lod);
+        Batcher batcher = new Batcher(universe, this.tileInfo.getBoundingBox(), this.lod, this.command);
         GaiaSet set = batcher.batch();
 
         if (set.getMaterials().size() < 1 || set.getBufferDatas().size() < 1) {

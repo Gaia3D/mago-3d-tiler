@@ -40,6 +40,7 @@ class TilerMainTest {
                 "-outputType", "gltf",
                 "-src", src,
                 "-swapYZ",
+                "-debug"
         };
         TilerMain.main(args);
     }

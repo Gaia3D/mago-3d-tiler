@@ -10,6 +10,7 @@ import renderable.RenderableObject;
 import viewer.OpenGlViwer;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,12 +24,12 @@ class GaiaSetMgbTest {
     private static final AssimpConverter assimpConverter = new AssimpConverter(null);
 
     @Test
-    void renderMgb() {
+    void renderMgb() throws URISyntaxException {
         Configurator.initLogger();
         OpenGlViwer openGlViwer = new OpenGlViwer(500, 500);
         List<RenderableObject> renderableObjectList = openGlViwer.getRenderableObjects();
 
-        File output = new File(OUTPUT_PATH);
+        File output = new File(getAbsolutePath(OUTPUT_PATH));
         Path outputFile = output.toPath().resolve("GaiaBatchedProject" + "." + FormatType.TEMP.getExtension());
 
         GaiaSet gaiaSet = new GaiaSet();
@@ -69,5 +70,11 @@ class GaiaSetMgbTest {
             }
         }
         return gaiaSets;
+    }
+
+    private String getAbsolutePath(String classPath) throws URISyntaxException {
+        File file = new File(getClass().getResource(classPath).toURI());
+        assert(file != null);
+        return file.getAbsolutePath() + File.separator;
     }
 }

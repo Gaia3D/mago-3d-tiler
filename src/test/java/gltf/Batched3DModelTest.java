@@ -6,12 +6,15 @@ import geometry.exchangable.GaiaUniverse;
 import geometry.structure.GaiaScene;
 import geometry.types.FormatType;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import tiler.LevelOfDetail;
 import tiler.TileInfo;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -37,17 +40,27 @@ class Batched3DModelTest {
         TileInfo tileInfo = new TileInfo();
         tileInfo.setUniverse(universe);
 
-        Batched3DModel batched3DModel = new Batched3DModel(tileInfo, LevelOfDetail.LOD4);
+        Batched3DModel batched3DModel = new Batched3DModel(tileInfo, LevelOfDetail.LOD4, null);
         batched3DModel.write("test");
 
         log.info("done");
     }
 
     public void readOriginFiles(GaiaUniverse gaiaUniverse, FormatType formatType) {
-        File inputPath = gaiaUniverse.getInputRoot().toFile();
-        readTree(gaiaUniverse, inputPath, formatType);
+        File parent = gaiaUniverse.getInputRoot().toFile();
+        if (parent.isFile()) {
+            GaiaScene scene = assimpConverter.load(parent.toPath(), formatType.getExtension());
+            gaiaUniverse.getScenes().add(scene);
+        } else if (parent.isDirectory()){
+            String[] extensions = new String[] {formatType.getExtension()};
+            for (File child : FileUtils.listFiles(parent, extensions, true)) {
+                GaiaScene scene = assimpConverter.load(child.toPath(), formatType.getExtension());
+                gaiaUniverse.getScenes().add(scene);
+            }
+        }
     }
-    private void readTree(GaiaUniverse gaiaUniverse, File inputFile, FormatType formatType) {
+    /*private void readTree(GaiaUniverse gaiaUniverse, File inputFile, FormatType formatType) {
+
         if (inputFile.isFile() && inputFile.getName().endsWith("." + formatType.getExtension())) {
             GaiaScene scene = assimpConverter.load(inputFile.toPath(), formatType.getExtension());
             gaiaUniverse.getScenes().add(scene);
@@ -58,5 +71,6 @@ class Batched3DModelTest {
                 }
             }
         }
-    }
+    }*/
+
 }

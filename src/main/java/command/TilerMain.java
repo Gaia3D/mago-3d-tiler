@@ -22,21 +22,21 @@ public class TilerMain {
 
     public static Options createOptions() {
         Options options = new Options();
+        options.addOption("h", "help", false, "print help");
+        options.addOption("v", "version", false, "print version");
+        options.addOption("q", "quiet", false, "quiet mode");
         options.addOption("i", "input", true, "input file path");
         options.addOption("o", "output", true, "output file path");
         options.addOption("it", "inputType", true, "input file type");
         options.addOption("ot", "outputType", true, "output file type");
         options.addOption("s", "src", true, "Spatial Reference Systems EPSG code");
-        options.addOption("v", "version", false, "print version");
-        options.addOption("r", "recursive", false, "recursive");
-        options.addOption("q", "quiet", false, "quiet mode");
-        options.addOption("s", "scale", true, "scale factor");
+        options.addOption("r", "recursive", false, "recursive search directory");
+        options.addOption("sc", "scale", true, "scale factor");
         options.addOption("st", "strict", true, "strict mode");
         options.addOption("gn", "genNormals", false, "generate normals");
-        options.addOption("gt", "quiet", false, "generate tangents");
-        options.addOption("yz", "swapYZ", false, "swap YZ");
         options.addOption("nt", "ignoreTextures", false, "ignore textures");
-        options.addOption("h", "help", false, "print help");
+        options.addOption("yz", "swapYZ", false, "swap YZ");
+        options.addOption("d", "debug", false, "debug mode");
         return options;
     }
 
@@ -46,11 +46,13 @@ public class TilerMain {
         CommandLineParser parser = new DefaultParser();
         try {
             CommandLine cmd = parser.parse(options, args);
-
             if (cmd.hasOption("quiet")) {
                 Configurator.setLevel(Level.OFF);
             }
             start();
+            if (cmd.hasOption("debug")) {
+                log.info("Starting Gaia3D Tiler in debug mode.");
+            }
             if (cmd.hasOption("help")) {
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.printHelp("Gaia3D Tiler", options);
@@ -60,7 +62,6 @@ public class TilerMain {
                 log.info("Gaia3D Tiler version 0.1.0");
                 return;
             }
-
             if (!cmd.hasOption("input")) {
                 log.error("input file path is not specified.");
                 return;

@@ -15,6 +15,7 @@ import tiler.LevelOfDetail;
 import viewer.OpenGlViwer;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,23 +25,29 @@ import java.util.stream.Collectors;
 class GaiaSetTest {
     private static final AssimpConverter assimpConverter = new AssimpConverter(null);
     private static final String RESULT = "GaiaBatchedProject";
-    private static final String INPUT_PATH = "C:\\data\\plasma-test\\ws2-3ds\\";
-    private static final String OUTPUT_PATH = "C:\\data\\plasma-test\\output\\";
-    private static final int TEST_COUNT = 1000;
+    private static final String INPUT_PATH = "../sample-external/";
+    private static final String OUTPUT_PATH = "../output/";
+    private static final int TEST_COUNT = 100;
 
     @Test
-    public void read() {
+    public void read() throws URISyntaxException {
         Configurator.initLogger();
-        File input = new File(INPUT_PATH);
-        File output = new File(OUTPUT_PATH);
+        File input = new File(getAbsolutePath(INPUT_PATH));
+        File output = new File(getAbsolutePath(OUTPUT_PATH));
         Path inputPath = input.toPath();
         Path outputPath = output.toPath();
+
         GaiaUniverse universe = new GaiaUniverse(RESULT, inputPath, outputPath);
         readOriginFiles(universe, FormatType.MAX_3DS);
         universe.convertGaiaSet();
-        Batcher batcher = new Batcher(universe, null, LevelOfDetail.LOD4);
+
+        Batcher batcher = new Batcher(universe, null, LevelOfDetail.LOD4, null);
         GaiaSet set = batcher.batch();
-        writeGlb(set);
+        List<GaiaSet> sets = new ArrayList<>();
+        sets.add(set);
+
+        render(sets);
+        ///writeGlb(set);
     }
 
     @Test
@@ -104,21 +111,10 @@ class GaiaSetTest {
         renderableObjects.addAll(gaiaSetObejcts);
         openGlViwer.run();
     }
-    private List<GaiaSet> readTemps(List<GaiaSet> gaiaSets, File outputFile) {
-        if (gaiaSets == null) {
-            gaiaSets = new ArrayList<>();
-        }
-        if (outputFile.isFile() && outputFile.getName().endsWith("." + FormatType.TEMP.getExtension())) {
-            GaiaSet gaiaSet = new GaiaSet();
-            gaiaSet.readFile(outputFile.toPath());
-            gaiaSets.add(gaiaSet);
-        } else if (outputFile.isDirectory()){
-            for (File child : outputFile.listFiles()) {
-                if (gaiaSets.size() <= 100) {
-                    readTemps(gaiaSets, child);
-                }
-            }
-        }
-        return gaiaSets;
+
+    private String getAbsolutePath(String classPath) throws URISyntaxException {
+        File file = new File(getClass().getResource(classPath).toURI());
+        assert(file != null);
+        return file.getAbsolutePath() + File.separator;
     }
 }
