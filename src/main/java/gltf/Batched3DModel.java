@@ -70,11 +70,11 @@ public class Batched3DModel {
 
         //GaiaNode node = scene.getNodes().get(0);
 
-        //File glbOutputFile = universe.getOutputRoot().resolve(filename + ".glb").toFile();
-        //GltfWriter.writeGlb(scene, glbOutputFile);
+        File glbOutputFile = universe.getOutputRoot().resolve(filename + ".glb").toFile();
+        GltfWriter.writeGlb(scene, glbOutputFile);
 
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        GltfWriter.writeGlb(scene, byteArrayOutputStream);
+        //ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        //GltfWriter.writeGlb(scene, byteArrayOutputStream);
 
         //Matrix4d rootTransformMatrix = node.getTransformMatrix();
         //float[] rctCenter = {-3056303.58824933f,4030639.359383482f,3872020.676540839f}; //ion-sample
@@ -94,9 +94,8 @@ public class Batched3DModel {
         }*/
 
 
-        byte[] glbBytes = byteArrayOutputStream.toByteArray();
-
-        //byte[] glbBytes = readGlb(glbOutputFile);
+        //byte[] glbBytes = byteArrayOutputStream.toByteArray();
+        byte[] glbBytes = readGlb(glbOutputFile);
 
         // without featureTable/batchTable
         this.byteLength = 28 + featureTableJSONByteLength + batchTableJSONByteLength + glbBytes.length;

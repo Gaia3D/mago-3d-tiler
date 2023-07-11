@@ -32,16 +32,6 @@ public class GaiaFace {
             GaiaVertex vertex1 = vertices.get(indices1);
             GaiaVertex vertex2 = vertices.get(indices2);
             GaiaVertex vertex3 = vertices.get(indices3);
-
-            /*Vector3d normal1 = vertex1.getNormal();
-            Vector3d normal2 = vertex2.getNormal();
-            Vector3d normal3 = vertex3.getNormal();
-            boolean isNull = normal1 == null || normal2 == null || normal3 == null;
-            boolean isZero = normal1.length() != 1.0f || normal2.length() != 1.0f || normal3.length() != 1.0f;
-            isZero = false;
-            if (true) {
-                calcNormal(vertex1, vertex2, vertex3);
-            }*/
             calcNormal(vertex1, vertex2, vertex3);
         }
 

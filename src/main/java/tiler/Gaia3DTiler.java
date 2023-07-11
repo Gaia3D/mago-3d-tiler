@@ -202,6 +202,7 @@ public class Gaia3DTiler {
         tileInfo.setBoundingBox(childBoundingBox);
 
         long start = System.currentTimeMillis();
+
         Batched3DModel batched3DModel = new Batched3DModel(tileInfo, lod, this.command);
         if (!batched3DModel.write(nodeCode)) {
             return null;

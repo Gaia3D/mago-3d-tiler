@@ -265,6 +265,7 @@ public class Batcher {
     // 바둑판 텍스쳐인지 확인
     private void checkIsRepeatMaterial(List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials) {
         for (GaiaBufferDataSet dataSet : dataSets) {
+
             int materialId = dataSet.getMaterialId();
             GaiaMaterial material = findMaterial(materials, materialId);
             if (material != null) {

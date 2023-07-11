@@ -1,6 +1,5 @@
 package command;
 
-import assimp.AssimpConverter;
 import geometry.types.FormatType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
