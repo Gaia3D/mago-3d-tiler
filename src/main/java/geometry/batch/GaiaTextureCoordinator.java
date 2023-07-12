@@ -73,8 +73,11 @@ public class GaiaTextureCoordinator {
             GaiaTexture texture = textures.get(0);
 
             BufferedImage bufferedImage = null;
-
-            bufferedImage = new BufferedImage(32, 32, BufferedImage.TYPE_INT_RGB);
+            if (texture.getBufferedImage() == null) {
+                texture.loadImage();
+            }
+            bufferedImage = texture.getBufferedImage();
+            //bufferedImage = new BufferedImage(32, 32, BufferedImage.TYPE_INT_RGB);
 
             float scale = lod.getTextureScale();
             int resizeWidth = (int) (bufferedImage.getWidth() * scale);

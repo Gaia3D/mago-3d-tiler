@@ -123,10 +123,8 @@ public class Gaia3DTiler {
 
             List<List<GaiaScene>> childrenScenes = parentBoundingVolume.distributeScene(scenes, this.source);
             for (int index = 0; index < childrenScenes.size(); index++) {
-                List<GaiaScene> childScenes = childrenScenes.get(index);
-
+                List<GaiaScene> childScenes = reloadScenes(childrenScenes.get(index));
                 test += childScenes.size();
-
                 Node childNode = createContentNode(parentNode, childScenes, index);
                 if (childNode != null) {
                     parentNode.getChildren().add(childNode);
