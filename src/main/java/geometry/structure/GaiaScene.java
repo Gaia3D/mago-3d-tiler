@@ -40,12 +40,6 @@ public class GaiaScene {
         bufferDataSets.forEach((bufferDataSet) -> rootNode.getChildren().add(new GaiaNode(bufferDataSet)));
     }
 
-    public void renderScene(int program) {
-        for (GaiaNode node : nodes) {
-            node.renderNode(program);
-        }
-    }
-
     public GaiaBoundingBox getBoundingBox() {
         this.gaiaBoundingBox = new GaiaBoundingBox();
         for (GaiaNode node : this.getNodes()) {

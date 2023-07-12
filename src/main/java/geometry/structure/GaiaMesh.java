@@ -22,12 +22,6 @@ import java.util.List;
 public class GaiaMesh {
     private ArrayList<GaiaPrimitive> primitives = new ArrayList<>();
 
-    public void renderMesh(int program) {
-        for (GaiaPrimitive primitive : primitives) {
-            primitive.renderPrimitive(program);
-        }
-    }
-
     public GaiaBoundingBox getBoundingBox(Matrix4d transform) {
         GaiaBoundingBox boundingBox = null;
         for (GaiaPrimitive primitive : primitives) {

@@ -90,22 +90,6 @@ public class GaiaNode {
         this.meshes.add(mesh);
     }
 
-    public void renderNode(int program) {
-        int uObjectTransformMatrix = GL20.glGetUniformLocation(program, "uObjectTransformMatrix");
-        float[] objectTransformMatrixBuffer = new float[16];
-        Matrix4d preMultipliedTransformMatrix = this.getPreMultipliedTransformMatrix();
-        //Matrix4d preMultipliedTransformMatrix = new Matrix4d().identity();
-        preMultipliedTransformMatrix.get(objectTransformMatrixBuffer);
-        GL20.glUniformMatrix4fv(uObjectTransformMatrix, false, objectTransformMatrixBuffer);
-
-        for (GaiaMesh mesh : meshes) {
-            mesh.renderMesh(program);
-        }
-        for (GaiaNode child : children) {
-            child.renderNode(program);
-        }
-    }
-
     public GaiaBoundingBox getBoundingBox(Matrix4d parentTransformMatrix) {
         GaiaBoundingBox boundingBox = null;
         Matrix4d transformMatrix = new Matrix4d(this.transformMatrix);

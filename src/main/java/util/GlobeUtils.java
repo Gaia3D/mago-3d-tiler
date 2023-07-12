@@ -11,7 +11,7 @@ public class GlobeUtils {
     private static final double degToRadFactor = 0.017453292519943296d; // 3.141592653589793 / 180.0;
     private static final double equatorialRadius = 6378137.0d; // meters.
     private static final double equatorialRadiusSquared = 40680631590769.0d;
-    //private static final double polarRadius = 6356752.3142d; // meters.
+    private static final double polarRadius = 6356752.3142d; // meters.
     private static final double polarRadiusSquared = 40408299984087.05552164d;
     private static final double firstEccentricitySquared = 6.69437999014E-3d;
 

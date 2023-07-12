@@ -12,6 +12,7 @@ import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 import util.GlobeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -81,6 +82,42 @@ public class BoundingVolume {
             maxX = maxX + offset;
             region[2] = maxX;
         }
+    }
+
+    public List<List<GaiaScene>> distributeScene(List<GaiaScene> scenes, CoordinateReferenceSystem source) {
+        List<List<GaiaScene>> result = new ArrayList<>();
+        result.add(new ArrayList<>());
+        result.add(new ArrayList<>());
+        result.add(new ArrayList<>());
+        result.add(new ArrayList<>());
+
+        if (BoundingVolumeType.REGION == type) {
+            double minX = region[0];
+            double minY = region[1];
+            double maxX = region[2];
+            double maxY = region[3];
+            double midX = (minX + maxX) / 2;
+            double midY = (minY + maxY) / 2;
+            for (GaiaScene scene : scenes) {
+                GaiaBoundingBox localBoundingBox = scene.getBoundingBox();
+                BoundingVolume localBoundingVolume = new BoundingVolume(localBoundingBox, source);
+                Vector3d center = localBoundingVolume.getCenter();
+                if (midX < center.x()) {
+                    if (midY < center.y()) {
+                        result.get(2).add(scene);
+                    } else {
+                        result.get(1).add(scene);
+                    }
+                } else {
+                    if (midY < center.y()) {
+                        result.get(3).add(scene);
+                    } else {
+                        result.get(0).add(scene);
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     public BoundingVolume[] divideBoundingVolume() {

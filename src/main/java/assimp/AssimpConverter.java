@@ -1,6 +1,6 @@
 package assimp;
 
-import command.ConverterMain;
+import command.TilerMain;
 import geometry.structure.*;
 import geometry.types.TextureType;
 import lombok.extern.slf4j.Slf4j;
@@ -34,16 +34,6 @@ public class AssimpConverter {
         this.command = command;
     }
 
-    private CommandLine createDefaultCommand() {
-        Options options = ConverterMain.createOptions();
-        CommandLineParser parser = new org.apache.commons.cli.DefaultParser();
-        try {
-            return parser.parse(options, new String[]{});
-        } catch (org.apache.commons.cli.ParseException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     final int DEFAULT_FLAGS =
             Assimp.aiProcess_GenNormals |
             Assimp.aiProcess_Triangulate|
@@ -73,6 +63,16 @@ public class AssimpConverter {
             return gaiaScene;
         } else {
             return null;
+        }
+    }
+
+    private CommandLine createDefaultCommand() {
+        Options options = TilerMain.createOptions();
+        CommandLineParser parser = new org.apache.commons.cli.DefaultParser();
+        try {
+            return parser.parse(options, new String[]{});
+        } catch (org.apache.commons.cli.ParseException e) {
+            throw new RuntimeException(e);
         }
     }
 

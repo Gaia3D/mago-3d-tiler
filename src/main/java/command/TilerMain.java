@@ -17,8 +17,6 @@ import java.nio.file.Path;
 
 @Slf4j
 public class TilerMain {
-    public static int count = 0;
-
     public static Options createOptions() {
         Options options = new Options();
         options.addOption("h", "help", false, "print help");
@@ -73,7 +71,6 @@ public class TilerMain {
                 log.error("src.");
                 return;
             }
-
             File inputFile = new File(cmd.getOptionValue("input"));
             File outputFile = new File(cmd.getOptionValue("output"));
             String src = cmd.getOptionValue("src");

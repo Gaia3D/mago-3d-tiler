@@ -19,14 +19,12 @@ import org.lwjgl.opengl.GL20;
 import tiler.LevelOfDetail;
 import util.ArrayUtils;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class Batcher {
+    private final int SHORT_LIMIT = 65535;
     private final GaiaSet batchedSet;
     private final GaiaUniverse universe;
     private GaiaBoundingBox globalBBox;
@@ -63,7 +61,6 @@ public class Batcher {
             batchedMaterials.addAll(materials);
         });
 
-        //rearrangeMaterial();
         calcGlobalBBox(); // ex
         List<GaiaMaterial> filterdMaterials = batchDuplicateMaterial(batchedDataSets, batchedMaterials);
         rearrangeMaterial(batchedDataSets, filterdMaterials);
@@ -111,6 +108,10 @@ public class Batcher {
         this.batchedSet.setBufferDatas(resultBufferDatas);
         this.batchedSet.setMaterials(resultMaterials);
 
+        if (resultBufferDatas.size() < 1 || resultMaterials.size() < 1) {
+            log.error("Batched Set is empty");
+        }
+
         Matrix4d transform = new Matrix4d();
         transform.identity();
 
@@ -152,26 +153,22 @@ public class Batcher {
     private Vector3d calcTranslation() {
         Vector3d temp = this.globalBBox.getCenter();
         Vector3d translation = new Vector3d(temp.x(), temp.y(), this.globalBBox.getMinZ());
-        //Vector3d translation = new Vector3d(temp.x(), temp.y(), temp.z());
         translation.negate();
         return translation;
     }
 
     // Indices 최대 값 만큼 객체를 나눔
     private List<List<GaiaBufferDataSet>> divisionByMaxIndices(List<GaiaBufferDataSet> dataSets) {
-        final int SHORT_LIMIT = 65535;
         int count = 0;
         List<List<GaiaBufferDataSet>> result = new ArrayList<>();
         List<GaiaBufferDataSet> splitList = new ArrayList<>();
         result.add(splitList);
         for (GaiaBufferDataSet dataSet : dataSets) {
             Map<AttributeType, GaiaBuffer> buffers = dataSet.getBuffers();
-
             GaiaBuffer indicesBuffer = buffers.get(AttributeType.INDICE);
             if (indicesBuffer != null) {
                 int indicesLength = indicesBuffer.getShorts().length;
-
-                if ((count + indicesLength) > SHORT_LIMIT) {
+                if ((count + indicesLength) >= SHORT_LIMIT) {
                     splitList = new ArrayList<>();
                     result.add(splitList);
                     count = indicesLength;
@@ -308,7 +305,11 @@ public class Batcher {
         GaiaRectangle boundingRectangle = dataSet.getTexcoordBoundingRectangle();
         if (boundingRectangle != null) {
             Vector2d range = boundingRectangle.getRange();
-            return range.x > 1.00f || range.y > 1.001f;
+            boolean isRepeat = range.x > 1.1f || range.y > 1.1f;
+            if (isRepeat) {
+                log.error("Material {} is repeat texture", material.getId());
+            }
+            return isRepeat;
         }
         return false;
     }
@@ -354,13 +355,21 @@ public class Batcher {
             GaiaBuffer indicesBuffer = buffers.get(AttributeType.INDICE);
             if (indicesBuffer != null) {
                 int indicesMax = 0;
-                for (short indice : indicesBuffer.getShorts()) {
+                /*for (short indice : indicesBuffer.getShorts()) {
                     indicesMax = Math.max(indicesMax, indice);
                     int value = totalIndicesMax + indice;
+                    indices.add((short) value);
+                }*/
+                for (short indice : indicesBuffer.getShorts()) {
+                    int intIndice = indice < 0 ? indice + 65536 : indice;
+                    indicesMax = Math.max(indicesMax, intIndice);
+                    int value = totalIndicesMax + intIndice;
                     indices.add((short) value);
                 }
                 totalIndicesMax = totalIndicesMax + (indicesMax + 1);
                 totalIndicesCount += indicesBuffer.getShorts().length;
+            } else {
+                log.error("indicesBuffer is null");
             }
 
             GaiaBuffer positionBuffer = buffers.get(AttributeType.POSITION);
@@ -369,6 +378,8 @@ public class Batcher {
                 for (float position : positionBuffer.getFloats()) {
                     positions.add(position);
                 }
+            } else {
+                log.error("positionBuffer is null");
             }
             GaiaBuffer normalBuffer = buffers.get(AttributeType.NORMAL);
             if (normalBuffer != null) {
@@ -438,7 +449,7 @@ public class Batcher {
         return materials.stream()
                 .filter(material -> material.getId() == materialId)
                 .findFirst()
-                //.orElse(materials.get(0));
-                .orElseThrow(() -> new RuntimeException("not found material"));
+                .orElse(materials.get(0));
+                //.orElseThrow(() -> new RuntimeException("not found material"));
     }
 }

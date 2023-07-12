@@ -57,12 +57,6 @@ public class GaiaSet {
         this.bufferDatas = bufferDataSets;
     }
 
-    public void renderSet(int program) {
-        for (GaiaBufferDataSet bufferData : bufferDatas) {
-            bufferData.render(program, materials);
-        }
-    }
-
     public void writeFile(Path path) {
         String tempFile = projectName + "." + FormatType.TEMP.getExtension();
         File output = new File(path.toAbsolutePath().toString(), tempFile);

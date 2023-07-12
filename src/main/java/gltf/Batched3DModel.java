@@ -117,8 +117,8 @@ public class Batched3DModel {
             // body
             stream.write(glbBytes);
             // delete glb file
-            if (false) {
-                //glbOutputFile.delete();
+            if (!command.hasOption("debug")) {
+                glbOutputFile.delete();
             }
         } catch (Exception e) {
             log.error(e.getMessage());

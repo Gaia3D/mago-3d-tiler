@@ -15,8 +15,6 @@ import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
 import org.lwjgl.opengl.GL20;
-import renderable.RenderableBuffer;
-import renderable.TextureBuffer;
 import util.ArrayUtils;
 
 import java.util.ArrayList;
@@ -35,103 +33,6 @@ public class GaiaPrimitive {
     private List<GaiaSurface> surfaces = new ArrayList<>();
 
     private GaiaMaterial material = null;
-    private RenderableBuffer renderableBuffer = null;
-    private TextureBuffer textureBuffer = null;
-
-    public void renderPrimitive(int program) {
-        RenderableBuffer renderableBuffer = this.getRenderableBuffer();
-        TextureBuffer textureBuffer = this.getTextureBuffer();
-
-        int uTextureType = GL20.glGetUniformLocation(program, "uTextureType");
-        int aVertexPosition = GL20.glGetAttribLocation(program, "aVertexPosition");
-        int aVertexColor = GL20.glGetAttribLocation(program, "aVertexColor");
-        int aVertexNormal = GL20.glGetAttribLocation(program, "aVertexNormal");
-        int aVertexTextureCoordinate = GL20.glGetAttribLocation(program, "aVertexTextureCoordinate");
-
-        renderableBuffer.setIndiceBind(renderableBuffer.getIndicesVbo());
-        renderableBuffer.setAttribute(renderableBuffer.getPositionVbo(), aVertexPosition, 3, 0);
-        renderableBuffer.setAttribute(renderableBuffer.getColorVbo(), aVertexColor, 4, 0);
-        renderableBuffer.setAttribute(renderableBuffer.getNormalVbo(), aVertexNormal, 3, 0);
-        renderableBuffer.setAttribute(renderableBuffer.getTextureCoordinateVbo(), aVertexTextureCoordinate, 2, 0);
-
-        List<GaiaTexture> textures = material.getTextures().get(TextureType.DIFFUSE);
-        if (textures.size() > 0) {
-            GaiaTexture texture = textures.get(0);
-            if (textureBuffer.getVboCount() < 1) {
-                texture.loadTextureBuffer();
-                int textureVbo = textureBuffer.createGlTexture(texture);
-                textureBuffer.setTextureVbo(textureVbo);
-            }
-            GL20.glUniform1i(uTextureType, 1);
-            textureBuffer.setTextureBind(textureBuffer.getTextureVbo());
-        } else {
-            GL20.glUniform1i(uTextureType, 0);
-        }
-        GL20.glDrawElements(GL20.GL_TRIANGLES, renderableBuffer.getIndicesLength(), GL20.GL_UNSIGNED_SHORT, 0);
-        GL20.glUniform1i(uTextureType, 0);
-    }
-    public RenderableBuffer getRenderableBuffer() {
-        if (this.renderableBuffer == null) {
-            this.renderableBuffer = new RenderableBuffer();
-
-            ArrayList<Float> positionList = new ArrayList<>();
-            ArrayList<Float> colorList = new ArrayList<>();
-            ArrayList<Float> normalList = new ArrayList<>();
-            ArrayList<Float> textureCoordinateList = new ArrayList<>();
-
-            List<Short> indicesList = this.indices.stream()
-                    .map(Integer::shortValue)
-                    .collect(Collectors.toList());
-
-            for (GaiaVertex vertex : this.vertices) {
-                Vector3d position = vertex.getPosition();
-                if (position != null) {
-                    positionList.add((float) position.x);
-                    positionList.add((float) position.y);
-                    positionList.add((float) position.z);
-                }
-                Vector3d normal = vertex.getNormal();
-                if (normal != null) {
-                    normalList.add((float) normal.x);
-                    normalList.add((float) normal.y);
-                    normalList.add((float) normal.z);
-                }
-                Vector2d textureCoordinate = vertex.getTexcoords();
-                if (textureCoordinate != null) {
-                    textureCoordinateList.add((float) textureCoordinate.x);
-                    textureCoordinateList.add((float) textureCoordinate.y);
-                }
-                Vector4d diffuseColor = material.getDiffuseColor();
-                if (diffuseColor != null) {
-                    colorList.add((float) diffuseColor.x);
-                    colorList.add((float) diffuseColor.y);
-                    colorList.add((float) diffuseColor.z);
-                    colorList.add((float) diffuseColor.w);
-                }
-            }
-
-            int indicesVbo = renderableBuffer.createIndicesBuffer(indicesList);
-            int positionVbo = renderableBuffer.createBuffer(positionList);
-            int colorVbo = renderableBuffer.createBuffer(colorList);
-            int normalVbo = renderableBuffer.createBuffer(normalList);
-            int textureCoordinateVbo = renderableBuffer.createBuffer(textureCoordinateList);
-
-            renderableBuffer.setPositionVbo(positionVbo);
-            renderableBuffer.setColorVbo(colorVbo);
-            renderableBuffer.setNormalVbo(normalVbo);
-            renderableBuffer.setTextureCoordinateVbo(textureCoordinateVbo);
-            renderableBuffer.setIndicesVbo(indicesVbo);
-            renderableBuffer.setIndicesLength(indicesList.size());
-        }
-        return this.renderableBuffer;
-    }
-
-    private TextureBuffer getTextureBuffer() {
-        if (this.textureBuffer == null) {
-            this.textureBuffer = new TextureBuffer();
-        }
-        return this.textureBuffer;
-    }
 
     public GaiaBoundingBox getBoundingBox(Matrix4d transform) {
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();

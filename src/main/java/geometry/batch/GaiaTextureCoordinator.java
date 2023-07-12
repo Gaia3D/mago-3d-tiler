@@ -71,11 +71,10 @@ public class GaiaTextureCoordinator {
             LinkedHashMap<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
             List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
             GaiaTexture texture = textures.get(0);
-            if (texture.getBufferedImage() == null) {
-                texture.loadImage();
-            }
 
-            BufferedImage bufferedImage = texture.getBufferedImage();
+            BufferedImage bufferedImage = null;
+
+            bufferedImage = new BufferedImage(32, 32, BufferedImage.TYPE_INT_RGB);
 
             float scale = lod.getTextureScale();
             int resizeWidth = (int) (bufferedImage.getWidth() * scale);
