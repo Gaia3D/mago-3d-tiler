@@ -60,50 +60,62 @@ public class Batcher {
             batchedDataSets.addAll(dataSets);
             batchedMaterials.addAll(materials);
         });
+        rearrangeMaterial(batchedDataSets, batchedMaterials);
 
-        calcGlobalBBox(); // ex
-        List<GaiaMaterial> filterdMaterials = batchDuplicateMaterial(batchedDataSets, batchedMaterials);
-        rearrangeMaterial(batchedDataSets, filterdMaterials);
+        calcGlobalBBox();
+        List<GaiaMaterial> filteredMaterials = batchDuplicateMaterial(batchedDataSets, batchedMaterials);
+        rearrangeMaterial(batchedDataSets, filteredMaterials);
 
         Vector3d translation = calcTranslation();
-        List<GaiaBufferDataSet> filterdDataSets = batchDataSets(batchedDataSets, translation);
-        checkIsRepeatMaterial(filterdDataSets, filterdMaterials);
+        List<GaiaBufferDataSet> filteredDataSets = batchDataSets(batchedDataSets, translation);
+        checkIsRepeatMaterial(filteredDataSets, filteredMaterials);
 
-        List<GaiaMaterial> clampMaterials = filterdMaterials.stream()
+        List<GaiaMaterial> clampMaterials = filteredMaterials.stream()
                 .filter((material) -> !material.isRepeat())
                 .collect(Collectors.toList());
-        List<GaiaBufferDataSet> clampDataSets = filterdDataSets.stream().filter((bufferDataSet) -> {
+        List<GaiaBufferDataSet> clampDataSets = filteredDataSets.stream().filter((bufferDataSet) -> {
             int materialId = bufferDataSet.getMaterialId();
-            GaiaMaterial material = findMaterial(filterdMaterials, materialId);
+            GaiaMaterial material = findMaterial(filteredMaterials, materialId);
             return !material.isRepeat();
         }).collect(Collectors.toList());
+        rearrangeMaterial(clampDataSets, clampMaterials);
 
-        List<GaiaMaterial> repeatMaterials = filterdMaterials.stream()
+        List<GaiaMaterial> repeatMaterials = filteredMaterials.stream()
                 .filter(GaiaMaterial::isRepeat)
                 .collect(Collectors.toList());
-        List<GaiaBufferDataSet> repeatDataSets = filterdDataSets.stream().filter((bufferDataSet) -> {
+        List<GaiaBufferDataSet> repeatDataSets = filteredDataSets.stream().filter((bufferDataSet) -> {
             int materialId = bufferDataSet.getMaterialId();
-            GaiaMaterial material = findMaterial(filterdMaterials, materialId);
+            GaiaMaterial material = findMaterial(filteredMaterials, materialId);
             return material.isRepeat();
         }).collect(Collectors.toList());
+        rearrangeMaterial(repeatDataSets, repeatMaterials);
 
-//        log.info("nonRepeatMaterials : " + clampMaterials.size());
-//        log.info("nonRepeatBufferDatas : " + clampDataSets.size());
+//        log.info("[{}] = ", universe.getName());
+//        log.info("clampMaterials : " + clampMaterials.size());
+//        log.info("clampBufferDatas : " + clampDataSets.size());
 //        log.info("repeatMaterials : " + repeatMaterials.size());
 //        log.info("repeatBufferDatas : " + repeatDataSets.size());
 
+        List<GaiaBufferDataSet> resultBufferDatas = new ArrayList<>();
+        List<GaiaMaterial> resultMaterials = new ArrayList<>();
         if (clampDataSets.size() > 0 && clampMaterials.size() > 0) {
             atlasTextures(clampDataSets, clampMaterials);
+            List<List<GaiaBufferDataSet>> splitedDataSets = divisionByMaxIndices(clampDataSets);
+            List<GaiaBufferDataSet> batchedClampDataSets = batchClampMaterial(splitedDataSets);
+            clampMaterials.removeIf((clampMaterial) -> {
+                return clampMaterial.getId() > 0;
+            });
+            clampMaterials.get(0).setName("ATLAS");
+            resultMaterials.addAll(clampMaterials);
+            resultBufferDatas.addAll(batchedClampDataSets);
         }
 
-        List<List<GaiaBufferDataSet>> splitedDataSets = divisionByMaxIndices(clampDataSets);
-        List<GaiaBufferDataSet> batchedClampDataSets = batchClampMaterial(splitedDataSets);
-        clampMaterials.removeIf((clampMaterial) -> {
-            return clampMaterial.getId() > 0;
-        });
-
-        List<GaiaBufferDataSet> resultBufferDatas = new ArrayList<>(batchedClampDataSets);
-        List<GaiaMaterial> resultMaterials = new ArrayList<>(clampMaterials);
+        if (repeatDataSets.size() > 0 && repeatMaterials.size() > 0) {
+            rearrangeRepeatMaterial(repeatDataSets, repeatMaterials, resultMaterials.size());
+            resultMaterials.addAll(repeatMaterials);
+            resultBufferDatas.addAll(repeatDataSets);
+            log.info("with Repeat");
+        }
 
         this.batchedSet.setBufferDatas(resultBufferDatas);
         this.batchedSet.setMaterials(resultMaterials);
@@ -133,6 +145,23 @@ public class Batcher {
         for (int i = 0; i < materials.size(); i++) {
             GaiaMaterial material = materials.get(i);
             material.setId(i);
+        }
+    }
+
+    // Material Id 재정렬
+    private void rearrangeRepeatMaterial(List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials, int offset) {
+        dataSets.forEach((batchedBufferData) -> {
+            for (int i = 0; i < materials.size(); i++) {
+                GaiaMaterial material = materials.get(i);
+                if (material.getId() == batchedBufferData.getMaterialId()) {
+                    batchedBufferData.setMaterialId(i + offset);
+                    break;
+                }
+            }
+        });
+        for (int i = 0; i < materials.size(); i++) {
+            GaiaMaterial material = materials.get(i);
+            material.setId(i + offset);
         }
     }
 
@@ -306,9 +335,6 @@ public class Batcher {
         if (boundingRectangle != null) {
             Vector2d range = boundingRectangle.getRange();
             boolean isRepeat = range.x > 1.1f || range.y > 1.1f;
-            if (isRepeat) {
-                log.error("Material {} is repeat texture", material.getId());
-            }
             return isRepeat;
         }
         return false;
@@ -450,6 +476,6 @@ public class Batcher {
                 .filter(material -> material.getId() == materialId)
                 .findFirst()
                 .orElse(materials.get(0));
-                //.orElseThrow(() -> new RuntimeException("not found material"));
+        //.orElseThrow(() -> new RuntimeException("not found material"));
     }
 }

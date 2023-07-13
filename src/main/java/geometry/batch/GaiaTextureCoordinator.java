@@ -64,10 +64,10 @@ public class GaiaTextureCoordinator {
             }
         }
     }
+
     public void batchTextures(LevelOfDetail lod, CommandLine command) {
         List<GaiaBatchImage> splittedImages = new ArrayList<>();
         for (GaiaMaterial material : materials) {
-
             LinkedHashMap<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
             List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
             GaiaTexture texture = textures.get(0);

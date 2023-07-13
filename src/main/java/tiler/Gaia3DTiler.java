@@ -76,11 +76,6 @@ public class Gaia3DTiler {
         write(outputPath, tileset);
     }
 
-    public List<GaiaScene> containScenes(BoundingVolume boundingVolume, List<GaiaScene> scenes) {
-        List<GaiaScene> result = boundingVolume.contains(scenes, this.source);
-        return reloadScenes(result);
-    }
-
     private List<GaiaScene> reloadScenes(List<GaiaScene> scenes) {
         FormatType formatType = this.inputFormatType;
         return scenes.stream()
