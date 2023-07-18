@@ -72,8 +72,6 @@ public class GaiaMaterial {
             int gaiaTexturesSize = stream.readInt();
             TextureType gaiaMaterialType = TextureType.fromValue(textureType);
 
-            //int gaiaTexturesSize = BinaryUtils.readInt(stream);
-
             for (int j = 0; j < gaiaTexturesSize; j++) {
                 boolean isExist = stream.readBoolean();
                 if (isExist) {

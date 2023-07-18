@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class Gaia3DTiler {
-    private static final int MAX_COUNT = 1024;
+    private static final int MAX_COUNT = 256;
 
     private final AssimpConverter assimpConverter;
     private final Path inputPath;
@@ -56,11 +56,10 @@ public class Gaia3DTiler {
         boolean recursive = command.hasOption("recursive");
         List<GaiaScene> scenes = readInputFile(inputPath, recursive);
         int scenesCount = scenes.size();
-        for(int i=0; i<scenesCount; i++) {
+        for (int i = 0; i < scenesCount; i++) {
             GaiaScene scene = scenes.get(i);
-            if(scene.checkIfIsTexRepeat_TESTSON())
-            {
-                log.info("Scene {} is tex repeat", scene.getOriginalPath());
+            if(scene.checkIfIsTexRepeat_TESTSON()) {
+                //log.info("Scene {} is tex repeat", scene.getOriginalPath());
                 continue;
             }
         }

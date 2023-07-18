@@ -12,10 +12,24 @@ class TilerMainTest {
     private static final String OUTPUT_PATH = "../output/";
 
     @Test
-    void convertWs() throws URISyntaxException {
+    void convertWs2() throws URISyntaxException {
         String input = getAbsolutePath(INPUT_PATH);
         String output = getAbsolutePath(OUTPUT_PATH);
         convert(input, output, "3d-tiles-ws2", "5186");
+    }
+
+    @Test
+    void convertWs1() throws URISyntaxException {
+        String input = getAbsolutePath(INPUT_PATH);
+        String output = getAbsolutePath(OUTPUT_PATH);
+        convert(input, output, "3d-tiles-ws1", "5186");
+    }
+
+    @Test
+    void convertAsjs() throws URISyntaxException {
+        String input = getAbsolutePath(INPUT_PATH);
+        String output = getAbsolutePath(OUTPUT_PATH);
+        convert(input, output, "3d-tiles-asjs", "5186");
     }
 
     @Test
@@ -24,13 +38,6 @@ class TilerMainTest {
         String output = getAbsolutePath(OUTPUT_PATH);
         convert(input, output, "3d-tiles-gy", "5186");
     }
-
-    /*@Test
-    void convertWs2Gy() throws URISyntaxException {
-        String input = getAbsolutePath(INPUT_PATH);
-        String output = getAbsolutePath(OUTPUT_PATH);
-        convert(input, output, "3d-tiles-ws2gy", "5186");
-    }*/
 
     @Test
     void convertGs() throws URISyntaxException {
@@ -47,7 +54,7 @@ class TilerMainTest {
                 "-outputType", "gltf",
                 "-srs", srs,
                 "-swapYZ",
-                "-debug"
+                //"-debug"
         };
         TilerMain.main(args);
     }

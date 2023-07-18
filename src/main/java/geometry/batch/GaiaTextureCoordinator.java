@@ -189,7 +189,6 @@ public class GaiaTextureCoordinator {
             LinkedHashMap<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
             List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
             GaiaTexture texture = textures.get(0);
-
             BufferedImage source = texture.getBufferedImage();
             graphics.drawImage(source, (int) splittedRectangle.getMinX(), (int) splittedRectangle.getMinY(),null);
         }
@@ -200,6 +199,8 @@ public class GaiaTextureCoordinator {
             graphics.setColor(color);
             graphics.fillRect(0, 0, maxWidth, maxHeight);
         }
+
+        this.atlasImage = resizeNearestPowerOfTwo(this.atlasImage);
 
         for (GaiaBatchImage target : splittedImages) {
             GaiaRectangle splittedRectangle = target.getBatchedBoundary();
@@ -242,12 +243,9 @@ public class GaiaTextureCoordinator {
         }
     }
 
-    private BufferedImage resizeImage(BufferedImage bufferedImage, LevelOfDetail lod) {
-        float scale = lod.getTextureScale();
-        int resizeWidth = (int) (bufferedImage.getWidth() * scale);
-        int resizeHeight = (int) (bufferedImage.getHeight() * scale);
-        resizeWidth = ImageUtils.getNearestPowerOfTwo(resizeWidth);
-        resizeHeight = ImageUtils.getNearestPowerOfTwo(resizeHeight);
+    private BufferedImage resizeNearestPowerOfTwo(BufferedImage bufferedImage) {
+        int resizeWidth = ImageUtils.getNearestPowerOfTwo(bufferedImage.getWidth());
+        int resizeHeight = ImageUtils.getNearestPowerOfTwo(bufferedImage.getHeight());
         bufferedImage = ImageUtils.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight);
         return bufferedImage;
     }
