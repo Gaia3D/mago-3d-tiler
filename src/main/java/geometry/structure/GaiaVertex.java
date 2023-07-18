@@ -17,4 +17,5 @@ public class GaiaVertex {
     private Vector3d position;
     private Vector3d normal;
     private Vector4d color;
+    private float batchId;
 }

@@ -147,6 +147,34 @@ public class GaiaMesh {
         return totalTexcoords;
     }
 
+    // getBatchIdsCount
+    public int getBatchIdsCount() {
+        int count = 0;
+        for (GaiaPrimitive primitive : primitives) {
+            for (GaiaVertex vertex : primitive.getVertices()) {
+                float batchId = vertex.getBatchId();
+                if (batchId >= 0) {
+                    count+=1;
+                }
+            }
+        }
+        return count;
+    }
+
+    // getBatchId
+    public ArrayList<Float> getBatchIds() {
+        ArrayList<Float> totalBatchIds = new ArrayList<>();
+        for (GaiaPrimitive primitive : primitives) {
+            for (GaiaVertex vertex : primitive.getVertices()) {
+                float batchId = vertex.getBatchId();
+                if (batchId >= 0) {
+                    totalBatchIds.add(vertex.getBatchId());
+                }
+            }
+        }
+        return totalBatchIds;
+    }
+
     public int getColorsCount() {
         int count = 0;
         for (GaiaPrimitive primitive : primitives) {

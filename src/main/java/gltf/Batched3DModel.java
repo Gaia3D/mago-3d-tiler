@@ -3,16 +3,14 @@ package gltf;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import geometry.batch.Batcher;
+import geometry.batch.GaiaBatchTable;
+import geometry.batch.GaiaFeatureTable;
 import geometry.exchangable.GaiaSet;
 import geometry.exchangable.GaiaUniverse;
-import geometry.structure.GaiaNode;
 import geometry.structure.GaiaScene;
 import io.LittleEndianDataOutputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.joml.Matrix4d;
-import org.joml.Matrix4f;
 import tiler.LevelOfDetail;
 import tiler.TileInfo;
 import util.ImageUtils;
@@ -58,6 +56,8 @@ public class Batched3DModel {
         GaiaUniverse universe = this.tileInfo.getUniverse();
         universe.convertGaiaSet();
 
+        int batchLength = universe.getGaiaSets().size();
+
         Batcher batcher = new Batcher(universe, this.tileInfo.getBoundingBox(), this.lod, this.command);
         GaiaSet set = batcher.batch();
 
@@ -74,32 +74,42 @@ public class Batched3DModel {
         File glbOutputFile = universe.getOutputRoot().resolve(filename + ".glb").toFile();
         GltfWriter.writeGlb(scene, glbOutputFile);
 
+        //File gltfOutputFile2 = universe.getOutputRoot().resolve(filename + ".gltf").toFile();
+        //GltfWriter.writeGltf(scene, gltfOutputFile2);
+
         //ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         //GltfWriter.writeGlb(scene, byteArrayOutputStream);
-
         //Matrix4d rootTransformMatrix = node.getTransformMatrix();
-        //float[] rctCenter = {-3056303.58824933f,4030639.359383482f,3872020.676540839f}; //ion-sample
-        //FeatureTable featureTable = new FeatureTable();
-        //featureTable.setBatchLength(1);
-        //featureTable.setRctCenter(rctCenter);
 
-        /*ObjectMapper objectMapper = new ObjectMapper();
+        GaiaFeatureTable featureTable = new GaiaFeatureTable();
+        featureTable.setBatchLength(batchLength);
+
+        GaiaBatchTable batchTable = new GaiaBatchTable();
+        for (int i = 0 ; i < batchLength ; i++) {
+            batchTable.getName().add("GAIA_BATCH_NAME" + i);
+        }
+
+        ObjectMapper objectMapper = new ObjectMapper();
         try {
-            String test = objectMapper.writeValueAsString(featureTable);
-            log.info(test);
-            //featureTableJson = test;
-            //featureTableJSONByteLength = test.length();
+            String featureTableText = objectMapper.writeValueAsString(featureTable);
+            log.info("featureTable : {}", featureTableText);
+            featureTableJson = featureTableText;
+            featureTableJSONByteLength = featureTableText.length();
+
+            String batchTableText = objectMapper.writeValueAsString(batchTable);
+            log.info("batchTable : {}", batchTableText);
+            batchTableJson = batchTableText;
+            batchTableJSONByteLength = batchTableText.length();
         } catch (JsonProcessingException e) {
             log.error(e.getMessage());
             throw new RuntimeException(e);
-        }*/
-
+        }
 
         //byte[] glbBytes = byteArrayOutputStream.toByteArray();
         byte[] glbBytes = readGlb(glbOutputFile);
 
         // without featureTable/batchTable
-        this.byteLength = 28 + featureTableJSONByteLength + batchTableJSONByteLength + glbBytes.length;
+        this.byteLength = 28 + featureTableJSONByteLength + batchTableJSONByteLength + glbBytes.length + featureTableJson.length() + batchTableJson.length();
 
         File b3dmOutputFile = universe.getOutputRoot().resolve(filename + ".b3dm").toFile();
         try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(b3dmOutputFile)))) {
@@ -112,8 +122,8 @@ public class Batched3DModel {
             // 28-byte header (next 8 bytes)
             stream.writeInt(batchTableJSONByteLength);
             stream.writeInt(batchTableBinaryByteLength);
-            //stream.writePureText(featureTableJson);
-            //stream.writePureText(batchTableJson);
+            stream.writePureText(featureTableJson);
+            stream.writePureText(batchTableJson);
 
             // body
             stream.write(glbBytes);

@@ -181,7 +181,6 @@ public class GaiaTextureCoordinator {
 
         Graphics graphics = this.atlasImage.getGraphics();
 
-        // debug
         for (GaiaBatchImage splittedImage : splittedImages) {
             GaiaRectangle splittedRectangle = splittedImage.getBatchedBoundary();
             GaiaMaterial material = findMaterial(splittedImage.getMaterialId());

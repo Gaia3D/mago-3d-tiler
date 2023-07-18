@@ -81,6 +81,7 @@ public class GaiaPrimitive {
         ArrayList<Float> batchIdList = new ArrayList<>();
         ArrayList<Float> normalList = new ArrayList<>();
         ArrayList<Float> textureCoordinateList = new ArrayList<>();
+
         GaiaRectangle texcoordBoundingRectangle = null;
 
         // calculate texcoordBoundingRectangle by indices.
@@ -113,7 +114,7 @@ public class GaiaPrimitive {
                 normalList.add((float) normal.y);
                 normalList.add((float) normal.z);
             }
-            batchIdList.add(0.0f);
+            batchIdList.add(vertex.getBatchId());
             Vector2d textureCoordinate = vertex.getTexcoords();
             if (textureCoordinate != null) {
                 /*

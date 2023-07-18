@@ -49,6 +49,11 @@ public class GltfBinary {
                 nodeBuffer.getTexcoordsBuffer().limit(nodeBuffer.getTexcoordsBuffer().capacity());
                 bodyBuffer.put(nodeBuffer.getTexcoordsBuffer());
             }
+            if (nodeBuffer.getBatchIdBuffer() != null) {
+                nodeBuffer.getBatchIdBuffer().rewind();
+                nodeBuffer.getBatchIdBuffer().limit(nodeBuffer.getBatchIdBuffer().capacity());
+                bodyBuffer.put(nodeBuffer.getBatchIdBuffer());
+            }
         });
         bodyBuffer.rewind();
     }

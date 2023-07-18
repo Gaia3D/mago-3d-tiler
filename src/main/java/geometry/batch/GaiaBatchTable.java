@@ -1,14 +1,19 @@
 package geometry.batch;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 @Getter
 @Setter
 @AllArgsConstructor
 public class GaiaBatchTable {
-    private final HashMap<String, GaiaBatchValue> batchValues = new HashMap<>();
+    @JsonProperty("NAME")
+    private final List<String> name = new ArrayList<>();
+    //private final HashMap<String, List<GaiaBatchValue>> batchValues = new HashMap<>();
 }

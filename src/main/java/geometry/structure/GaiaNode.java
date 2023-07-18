@@ -40,6 +40,7 @@ public class GaiaNode {
         List<Float> positionList = new ArrayList<>();
         List<Float> normalList = new ArrayList<>();
         List<Float> texCoordList = new ArrayList<>();
+        List<Float> batchIdList = new ArrayList<>();
         List<GaiaVertex> vertexList = new ArrayList<>();
 
         Map<AttributeType, GaiaBuffer> buffers = bufferDataSet.getBuffers();
@@ -58,6 +59,9 @@ public class GaiaNode {
             } else if (attributeType == AttributeType.INDICE) {
                 short[] indices = buffer.getShorts();
                 indiceList = ArrayUtils.convertIntListToShortArray(indices);
+            } else if (attributeType == AttributeType.BATCHID) {
+                float[] texCoords = buffer.getFloats();
+                batchIdList = ArrayUtils.convertListToFloatArray(texCoords);
             }
         }
         primitive.setIndices(indiceList);
@@ -82,6 +86,10 @@ public class GaiaNode {
                 float texcoordX = texCoordList.get(texcoordIndex);
                 float texcoordY = texCoordList.get(texcoordIndex + 1);
                 vertex.setTexcoords(new Vector2d(texcoordX, texcoordY));
+            }
+            if (CollectionUtils.isNotEmpty(batchIdList)) {
+                float batchId = batchIdList.get(i);
+                vertex.setBatchId(batchId);
             }
             vertexList.add(vertex);
         }

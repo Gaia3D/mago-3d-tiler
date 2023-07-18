@@ -20,10 +20,7 @@ import tiler.LevelOfDetail;
 import util.ArrayUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -44,7 +41,7 @@ public class Batcher {
         this.command = command;
     }
 
-    public void reassignMaterialsToGaiaBufferDataSetWithSameMaterial(List<GaiaBufferDataSet> dataSets) throws IOException {
+    private void reassignMaterialsToGaiaBufferDataSetWithSameMaterial(List<GaiaBufferDataSet> dataSets) throws IOException {
         int datasetsCount = dataSets.size();
         for(int i=0; i<datasetsCount; i++)
         {
@@ -70,10 +67,36 @@ public class Batcher {
         }
     }
 
+    private void setBatchId (List<GaiaSet> sets) {
+        for (int i = 0; i < sets.size(); i++) {
+            GaiaSet set = sets.get(i);
+            List<GaiaBufferDataSet> dataSets = set.getBufferDatas();
+            for (int loop = 0; loop < dataSets.size(); loop++) {
+                GaiaBufferDataSet dataSet = dataSets.get(loop);
+
+                Map<AttributeType, GaiaBuffer> buffers = dataSet.getBuffers();
+                GaiaBuffer positionBuffer = buffers.get(AttributeType.POSITION);
+                int elementsCount = positionBuffer.getElementsCount();
+                float[] batchIdList = new float[elementsCount];
+                Arrays.fill(batchIdList, i);
+
+                GaiaBuffer batchIdBuffer = new GaiaBuffer();
+                batchIdBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
+                batchIdBuffer.setGlType(GL20.GL_FLOAT);
+                batchIdBuffer.setElementsCount(elementsCount);
+                batchIdBuffer.setGlDimension((byte) 1);
+                batchIdBuffer.setFloats(batchIdList);
+
+                buffers.put(AttributeType.BATCHID, batchIdBuffer);
+            }
+        }
+    }
+
     public GaiaSet batch() throws IOException {
         long startTime = System.currentTimeMillis();
 
         List<GaiaSet> sets = universe.getSets();
+        setBatchId(sets);
 
         // test to check if sets are texRepeat.***
         /*
@@ -290,7 +313,7 @@ public class Batcher {
     }
 
     // 객체의 Indices와 Vertices를 하나로 배칭
-    private List<GaiaBufferDataSet> batchDataSets(List<GaiaBufferDataSet> dataSets, Vector3d translation) {
+    /*rivate List<GaiaBufferDataSet> batchDataSets(List<GaiaBufferDataSet> dataSets, Vector3d translation) {
         Map<Integer, List<GaiaBufferDataSet>> dataSetsMap = new LinkedHashMap<>();
         List<GaiaBufferDataSet> filterdBufferDataList = new ArrayList<>();
         for (GaiaBufferDataSet dataSet : dataSets) {
@@ -305,7 +328,7 @@ public class Batcher {
             filterdBufferDataList.add(batchedBufferData);
         });
         return filterdBufferDataList;
-    }
+    }*/
 
     private List<GaiaBufferDataSet> batchDataSetsWithTheSameMaterial(List<GaiaBufferDataSet> dataSets, Vector3d translation) {
         List<GaiaBufferDataSet> filterdBufferDataList = new ArrayList<>();
@@ -482,11 +505,13 @@ public class Batcher {
         int totalPositionCount = 0;
         int totalNormalCount = 0;
         int totalTexCoordCount = 0;
+        int totalBatchIdCount = 0;
         int totalIndicesCount = 0;
 
         List<Float> positions = new ArrayList<>();
         List<Float> normals = new ArrayList<>();
         List<Float> texCoords = new ArrayList<>();
+        List<Float> batchIds = new ArrayList<>();
         List<Short> indices = new ArrayList<>();
         GaiaRectangle batchedBoundingRectangle = null;
         int totalIndicesMax = 0;
@@ -496,11 +521,6 @@ public class Batcher {
             GaiaBuffer indicesBuffer = buffers.get(AttributeType.INDICE);
             if (indicesBuffer != null) {
                 int indicesMax = 0;
-                /*for (short indice : indicesBuffer.getShorts()) {
-                    indicesMax = Math.max(indicesMax, indice);
-                    int value = totalIndicesMax + indice;
-                    indices.add((short) value);
-                }*/
                 for (short indice : indicesBuffer.getShorts()) {
                     int intIndice = indice < 0 ? indice + 65536 : indice;
                     indicesMax = Math.max(indicesMax, intIndice);
@@ -534,6 +554,13 @@ public class Batcher {
                 totalTexCoordCount += texCoordBuffer.getFloats().length;
                 for (float texCoord : texCoordBuffer.getFloats()) {
                     texCoords.add(texCoord);
+                }
+            }
+            GaiaBuffer batchIdBuffer = buffers.get(AttributeType.BATCHID);
+            if (batchIdBuffer != null) {
+                totalBatchIdCount += batchIdBuffer.getFloats().length;
+                for (float batchId : batchIdBuffer.getFloats()) {
+                    batchIds.add(batchId);
                 }
             }
             GaiaRectangle boundingRectangle = bufferDataSet.getTexcoordBoundingRectangle();
@@ -573,6 +600,15 @@ public class Batcher {
             buffer.setGlDimension((byte) 2);
             buffer.setFloats(ArrayUtils.convertFloatArrayToList(texCoords));
             dataSet.getBuffers().put(AttributeType.TEXCOORD, buffer);
+        }
+        if (totalBatchIdCount > 0) {
+            GaiaBuffer buffer = new GaiaBuffer();
+            buffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
+            buffer.setGlType(GL20.GL_FLOAT);
+            buffer.setElementsCount(totalBatchIdCount);
+            buffer.setGlDimension((byte) 1);
+            buffer.setFloats(ArrayUtils.convertFloatArrayToList(batchIds));
+            dataSet.getBuffers().put(AttributeType.BATCHID, buffer);
         }
         if (totalIndicesCount > 0) {
             GaiaBuffer buffer = new GaiaBuffer();
