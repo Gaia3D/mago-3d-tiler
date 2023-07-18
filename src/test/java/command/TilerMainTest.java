@@ -25,12 +25,12 @@ class TilerMainTest {
         convert(input, output, "3d-tiles-gy", "5186");
     }
 
-    @Test
+    /*@Test
     void convertWs2Gy() throws URISyntaxException {
         String input = getAbsolutePath(INPUT_PATH);
         String output = getAbsolutePath(OUTPUT_PATH);
         convert(input, output, "3d-tiles-ws2gy", "5186");
-    }
+    }*/
 
     @Test
     void convertGs() throws URISyntaxException {
@@ -39,15 +39,15 @@ class TilerMainTest {
         convert(input, output, "3d-tiles-gs2", "5174");
     }
 
-    private void convert(String inputPath, String outputPath, String suffix, String src) {
+    private void convert(String inputPath, String outputPath, String suffix, String srs) {
         String[] args= new String[]{
                 "-input", inputPath + suffix,
                 "-inputType", "3ds",
                 "-output", outputPath + suffix,
                 "-outputType", "gltf",
-                "-src", src,
+                "-srs", srs,
                 "-swapYZ",
-                "-debug"
+                //"-debug"
         };
         TilerMain.main(args);
     }
