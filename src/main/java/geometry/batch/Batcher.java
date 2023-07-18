@@ -55,8 +55,15 @@ public class Batcher {
                 GaiaBufferDataSet dataSet2 = dataSets.get(j);
                 if(dataSet == dataSet2)
                     continue;
+
+                if(dataSet2.material == material)
+                {
+                    continue;
+                }
+
                 if(GaiaMaterial.areEqualMaterials(dataSet2.material, material))
                 {
+                    dataSet2.material.deleteTextures();
                     dataSet2.material = material;
                 }
             }
@@ -107,6 +114,11 @@ public class Batcher {
         Batcher.reassignMaterialsToGaiaBufferDataSetWithSameMaterial(batchedDataSets);
         List<GaiaMaterial> filteredMaterials = new ArrayList<>();
         GaiaBufferDataSet.getMaterialslIstOfBufferDataSet(batchedDataSets, filteredMaterials);
+
+        // 1rst delete textures of materials to free memory.
+        filteredMaterials.forEach((material) -> {
+            material.deleteTextures();
+        });
 
         Vector3d translation = calcTranslation();
         //List<GaiaBufferDataSet> filteredDataSets = batchDataSets(batchedDataSets, translation);
