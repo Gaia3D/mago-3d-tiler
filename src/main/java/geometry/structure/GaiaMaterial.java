@@ -10,6 +10,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.joml.Vector4d;
+import tiler.LevelOfDetail;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +31,6 @@ public class GaiaMaterial {
     private int id = -1;
     private String name = "no_name";
     private LinkedHashMap<TextureType, List<GaiaTexture>> textures = new LinkedHashMap<>();
-
 
     // experimental :: is repeat texture
     private boolean isRepeat = false;
@@ -99,7 +99,7 @@ public class GaiaMaterial {
         }
     }
 
-    public static boolean areEqualMaterials(GaiaMaterial materialA, GaiaMaterial materialB) throws IOException {
+    public static boolean areEqualMaterials(GaiaMaterial materialA, GaiaMaterial materialB, LevelOfDetail lod) throws IOException {
         // This function determines if two materials are equal.
         if (materialA == null && materialB == null) {
             return true;
@@ -128,9 +128,14 @@ public class GaiaMaterial {
             for(int i = 0; i < listTexturesA.size(); i++){
                 GaiaTexture textureA = listTexturesA.get(i);
                 GaiaTexture textureB = listTexturesB.get(i);
-                if(!GaiaTexture.areEqualTextures(textureA, textureB)){
+
+                if (!textureA.isEqualTexture(textureB, lod)) {
                     return false;
                 }
+
+                /*if(!GaiaTexture.areEqualTextures(textureA, textureB)){
+                    return false;
+                }*/
             }
         }
         return true;

@@ -12,6 +12,7 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
+import tiler.LevelOfDetail;
 import util.ImageUtils;
 
 import javax.imageio.ImageIO;
@@ -52,15 +53,34 @@ public class GaiaTexture {
         String imagePath = parentPath + File.separator + diffusePath;
         BufferedImage bufferedImage = ImageUtils.readImage(imagePath);
         this.bufferedImage = bufferedImage;
-        assert bufferedImage != null;
         this.width = bufferedImage.getWidth();
         this.height = bufferedImage.getHeight();
+        assert bufferedImage != null;
+    }
+
+    public void loadImage(float scaleFactor) {
+        loadImage();
+        int resizeWidth = (int) (this.bufferedImage.getWidth() * scaleFactor);
+        int resizeHeight = (int) (this.bufferedImage.getHeight() * scaleFactor);
+        resizeWidth = ImageUtils.getNearestPowerOfTwo(resizeWidth);
+        resizeHeight = ImageUtils.getNearestPowerOfTwo(resizeHeight);
+        this.width = resizeWidth;
+        this.height = resizeHeight;
+        this.bufferedImage = ImageUtils.resizeImageGraphic2D(this.bufferedImage, resizeWidth, resizeHeight);
     }
 
     // getBufferedImage
     public BufferedImage getBufferedImage() {
         if (this.bufferedImage == null) {
             loadImage();
+        }
+        return this.bufferedImage;
+    }
+
+    // getBufferedImage
+    public BufferedImage getBufferedImage(float scaleFactor) {
+        if (this.bufferedImage == null) {
+            loadImage(scaleFactor);
         }
         return this.bufferedImage;
     }
@@ -79,7 +99,40 @@ public class GaiaTexture {
 
     }
 
-    public static boolean areEqualTextures(GaiaTexture textureA, GaiaTexture textureB) throws IOException {
+    public boolean isEqualTexture(GaiaTexture compareTexture) {
+        BufferedImage bufferedImage = this.getBufferedImage();
+        BufferedImage comparebufferedImage = compareTexture.getBufferedImage();
+
+        if (this.getWidth() != compareTexture.getWidth()) {
+            return false;
+        }
+        if (this.getHeight() != compareTexture.getHeight()) {
+            return false;
+        }
+        if (this.getFormat() != compareTexture.getFormat()) {
+            return false;
+        }
+
+        // now, compare the pixels
+        int width = this.getWidth();
+        int height = this.getHeight();
+
+        byte[] rgbaByteArray = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
+        byte[] rgbaByteArray2 = ((DataBufferByte) comparebufferedImage.getRaster().getDataBuffer()).getData();
+
+        boolean areEqual = Arrays.equals(rgbaByteArray, rgbaByteArray2);
+
+        return areEqual;
+    }
+
+    public boolean isEqualTexture(GaiaTexture compareTexture, LevelOfDetail levelOfDetail) {
+        float scaleFactor = levelOfDetail.getTextureScale();
+        BufferedImage bufferedImage = this.getBufferedImage(scaleFactor);
+        BufferedImage comparebufferedImage = compareTexture.getBufferedImage(scaleFactor);
+        return isEqualTexture(compareTexture);
+    }
+
+    /*public static boolean areEqualTextures(GaiaTexture textureA, GaiaTexture textureB) throws IOException {
         if (textureA == null || textureB == null) {
             return false;
         }
@@ -90,15 +143,6 @@ public class GaiaTexture {
 
         BufferedImage bufferedImageA = textureA.getBufferedImage();
         BufferedImage bufferedImageB = textureB.getBufferedImage();
-        // load image if not loaded
-        /*if (textureA.getBufferedImage() == null) {
-            textureA.loadImage();
-
-        }
-
-        if (textureB.getBufferedImage() == null) {
-            textureB.loadImage();
-        }*/
 
         if (textureA.getWidth() != textureB.getWidth()) {
             return false;
@@ -119,37 +163,7 @@ public class GaiaTexture {
         boolean areEqual = Arrays.equals(rgbaByteArray, rgbaByteArray2);
 
         return areEqual;
-    }
-    public void loadBuffer() {
-        BufferedImage image = this.bufferedImage;
-        byte size = 4;
-        if (this.format == GL20.GL_RGB) {
-            size = 3;
-        }
-        int[] pixels = new int[image.getWidth() * image.getHeight()];
-        image.getRGB(0, 0, image.getWidth(), image.getHeight(), pixels, 0, image.getWidth());
-
-        try (MemoryStack stack = stackPush()) {
-            ByteBuffer buffer = BufferUtils.createByteBuffer(image.getWidth() * image.getHeight() * size);
-            for (int y = 0; y < image.getHeight(); y++) {
-                for( int x = 0; x < image.getWidth(); x++) {
-                    int pixel = pixels[y * image.getWidth() + x];
-                    buffer.put((byte) ((pixel >> 16) & 0xFF));
-                    buffer.put((byte) ((pixel >> 8) & 0xFF));
-                    buffer.put((byte) (pixel & 0xFF));
-                    if (size == 4) {
-                        buffer.put((byte) ((pixel >> 24) & 0xFF));    // Alpha component. Only for RGBA
-                    }
-                }
-            }
-            buffer.flip();
-            IntBuffer width = stack.mallocInt(1);
-            IntBuffer height = stack.mallocInt(1);
-            IntBuffer channels = stack.mallocInt(1);
-            ByteBuffer result = STBImage.stbi_load_from_memory(buffer, width, height, channels, 4);
-            setByteBuffer(result);
-        }
-    }
+    } */
 
     public void write(LittleEndianDataOutputStream stream) throws IOException {
         stream.writeText(path);

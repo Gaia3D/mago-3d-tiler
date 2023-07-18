@@ -44,7 +44,7 @@ public class Batcher {
         this.command = command;
     }
 
-    public static void reassignMaterialsToGaiaBufferDataSetWithSameMaterial(List<GaiaBufferDataSet> dataSets) throws IOException {
+    public void reassignMaterialsToGaiaBufferDataSetWithSameMaterial(List<GaiaBufferDataSet> dataSets) throws IOException {
         int datasetsCount = dataSets.size();
         for(int i=0; i<datasetsCount; i++)
         {
@@ -61,7 +61,7 @@ public class Batcher {
                     continue;
                 }
 
-                if(GaiaMaterial.areEqualMaterials(dataSet2.material, material))
+                if(GaiaMaterial.areEqualMaterials(dataSet2.material, material, lod))
                 {
                     dataSet2.material.deleteTextures();
                     dataSet2.material = material;
@@ -71,6 +71,8 @@ public class Batcher {
     }
 
     public GaiaSet batch() throws IOException {
+        long startTime = System.currentTimeMillis();
+
         List<GaiaSet> sets = universe.getSets();
 
         // test to check if sets are texRepeat.***
@@ -104,6 +106,9 @@ public class Batcher {
             batchedDataSets.addAll(dataSets);
             batchedMaterials.addAll(materials);
         });
+
+        //log.info("time);
+
         //rearrangeMaterial(batchedDataSets, batchedMaterials);
 
         calcGlobalBBox();
@@ -111,7 +116,7 @@ public class Batcher {
         //rearrangeMaterial(batchedDataSets, filteredMaterials);
 
         // check if exist equal materials.***
-        Batcher.reassignMaterialsToGaiaBufferDataSetWithSameMaterial(batchedDataSets);
+        reassignMaterialsToGaiaBufferDataSetWithSameMaterial(batchedDataSets);
         List<GaiaMaterial> filteredMaterials = new ArrayList<>();
         GaiaBufferDataSet.getMaterialslIstOfBufferDataSet(batchedDataSets, filteredMaterials);
 

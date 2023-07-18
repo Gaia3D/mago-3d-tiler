@@ -72,8 +72,9 @@ public class GaiaTextureCoordinator {
             List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
             GaiaTexture texture = textures.get(0);
 
-            BufferedImage bufferedImage = texture.getBufferedImage();
-            texture.setBufferedImage(resizeImage(bufferedImage, lod));
+            BufferedImage bufferedImage = texture.getBufferedImage(lod.getTextureScale());
+            //bufferedImage = resizeImage(bufferedImage, lod);
+            //texture.setBufferedImage(bufferedImage);
 
             Vector2d minPoint = new Vector2d(0, 0);
             Vector2d maxPoint = new Vector2d(bufferedImage.getWidth(), bufferedImage.getHeight());
@@ -195,7 +196,7 @@ public class GaiaTextureCoordinator {
 
         if (command.hasOption("debug")) {
             float[] debugColor = lod.getDebugColor();
-            Color color = new Color(debugColor[0], debugColor[1], debugColor[2], 0.5f);
+            Color color = new Color(debugColor[0], debugColor[1], debugColor[2], 0.3f);
             graphics.setColor(color);
             graphics.fillRect(0, 0, maxWidth, maxHeight);
         }
