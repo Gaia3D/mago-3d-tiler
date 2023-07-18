@@ -92,12 +92,12 @@ public class Batched3DModel {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             String featureTableText = objectMapper.writeValueAsString(featureTable);
-            log.info("featureTable : {}", featureTableText);
+            //log.info("featureTable : {}", featureTableText);
             featureTableJson = featureTableText;
             featureTableJSONByteLength = featureTableText.length();
 
             String batchTableText = objectMapper.writeValueAsString(batchTable);
-            log.info("batchTable : {}", batchTableText);
+            //log.info("batchTable : {}", batchTableText);
             batchTableJson = batchTableText;
             batchTableJSONByteLength = batchTableText.length();
         } catch (JsonProcessingException e) {
