@@ -57,26 +57,12 @@ public class GaiaTexture {
         this.height = bufferedImage.getHeight();
     }
 
-    public void loadTextureBuffer() {
-        Path diffusePath = new File(path).toPath();
-        String imagePath = parentPath + File.separator + diffusePath;
-
-        ByteBuffer buf = null;
-        try (MemoryStack stack = stackPush()) {
-            IntBuffer width = stack.mallocInt(1);
-            IntBuffer height = stack.mallocInt(1);
-            IntBuffer channels = stack.mallocInt(1);
-            buf = STBImage.stbi_load(imagePath, width, height, channels, 4);
-            if (buf == null) {
-                throw new Exception("Image file [" + imagePath  + "] not loaded: " + STBImage.stbi_failure_reason());
-            }
-            this.format = GL20.GL_RGBA;
-            this.width = width.get();
-            this.height = height.get();
-        } catch (Exception e) {
-            e.printStackTrace();
+    // getBufferedImage
+    public BufferedImage getBufferedImage() {
+        if (this.bufferedImage == null) {
+            loadImage();
         }
-        setByteBuffer(buf);
+        return this.bufferedImage;
     }
 
     public static boolean areEqualTextures(GaiaTexture textureA, GaiaTexture textureB) throws IOException {
@@ -88,15 +74,17 @@ public class GaiaTexture {
             return true;
         }
 
+        BufferedImage bufferedImageA = textureA.getBufferedImage();
+        BufferedImage bufferedImageB = textureB.getBufferedImage();
         // load image if not loaded
-        if (textureA.getBufferedImage() == null) {
+        /*if (textureA.getBufferedImage() == null) {
             textureA.loadImage();
 
         }
 
         if (textureB.getBufferedImage() == null) {
             textureB.loadImage();
-        }
+        }*/
 
         if (textureA.getWidth() != textureB.getWidth()) {
             return false;
@@ -111,8 +99,8 @@ public class GaiaTexture {
         int width = textureA.getWidth();
         int height = textureA.getHeight();
 
-        byte[] rgbaByteArray = ((DataBufferByte) textureA.bufferedImage.getRaster().getDataBuffer()).getData();
-        byte[] rgbaByteArray2 = ((DataBufferByte) textureB.bufferedImage.getRaster().getDataBuffer()).getData();
+        byte[] rgbaByteArray = ((DataBufferByte) bufferedImageA.getRaster().getDataBuffer()).getData();
+        byte[] rgbaByteArray2 = ((DataBufferByte) bufferedImageB.getRaster().getDataBuffer()).getData();
 
         boolean areEqual = Arrays.equals(rgbaByteArray, rgbaByteArray2);
         return areEqual;

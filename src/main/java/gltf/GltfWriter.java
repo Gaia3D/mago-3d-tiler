@@ -374,9 +374,7 @@ public class GltfWriter {
     }
 
     private static int createTexture(GlTF gltf, GaiaTexture gaiaTexture) {
-        if (gaiaTexture.getBufferedImage() == null) {
-            gaiaTexture.loadImage();
-        }
+        gaiaTexture.getBufferedImage();
         int imageSource = createImage(gltf, gaiaTexture);
 
         Texture texture = new Texture();

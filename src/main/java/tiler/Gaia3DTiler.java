@@ -60,7 +60,7 @@ public class Gaia3DTiler {
             GaiaScene scene = scenes.get(i);
             if(scene.checkIfIsTexRepeat_TESTSON())
             {
-                log.info("Scene {} is tex repeat");
+                log.info("Scene {} is tex repeat", scene.getOriginalPath());
                 continue;
             }
         }

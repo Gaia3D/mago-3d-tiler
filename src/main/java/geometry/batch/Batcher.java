@@ -59,7 +59,6 @@ public class Batcher {
                 {
                     dataSet2.material = material;
                 }
-
             }
         }
     }

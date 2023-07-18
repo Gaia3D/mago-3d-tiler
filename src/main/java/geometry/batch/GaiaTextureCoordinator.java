@@ -72,22 +72,8 @@ public class GaiaTextureCoordinator {
             List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
             GaiaTexture texture = textures.get(0);
 
-            BufferedImage bufferedImage = null;
-            if (texture.getBufferedImage() == null) {
-                texture.loadImage();
-            }
-            bufferedImage = texture.getBufferedImage();
-            //bufferedImage = new BufferedImage(32, 32, BufferedImage.TYPE_INT_RGB);
-
-            float scale = lod.getTextureScale();
-            int resizeWidth = (int) (bufferedImage.getWidth() * scale);
-            int resizeHeight = (int) (bufferedImage.getHeight() * scale);
-
-            resizeWidth = ImageUtils.getNearestPowerOfTwo(resizeWidth);
-            resizeHeight = ImageUtils.getNearestPowerOfTwo(resizeHeight);
-
-            bufferedImage = ImageUtils.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight);
-            texture.setBufferedImage(bufferedImage);
+            BufferedImage bufferedImage = texture.getBufferedImage();
+            texture.setBufferedImage(resizeImage(bufferedImage, lod));
 
             Vector2d minPoint = new Vector2d(0, 0);
             Vector2d maxPoint = new Vector2d(bufferedImage.getWidth(), bufferedImage.getHeight());
@@ -253,6 +239,16 @@ public class GaiaTextureCoordinator {
 
             }
         }
+    }
+
+    private BufferedImage resizeImage(BufferedImage bufferedImage, LevelOfDetail lod) {
+        float scale = lod.getTextureScale();
+        int resizeWidth = (int) (bufferedImage.getWidth() * scale);
+        int resizeHeight = (int) (bufferedImage.getHeight() * scale);
+        resizeWidth = ImageUtils.getNearestPowerOfTwo(resizeWidth);
+        resizeHeight = ImageUtils.getNearestPowerOfTwo(resizeHeight);
+        bufferedImage = ImageUtils.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight);
+        return bufferedImage;
     }
 
     //findMaterial
