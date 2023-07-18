@@ -26,7 +26,7 @@ public class TilerMain {
         options.addOption("o", "output", true, "output file path");
         options.addOption("it", "inputType", true, "input file type");
         options.addOption("ot", "outputType", true, "output file type");
-        options.addOption("s", "src", true, "Spatial Reference Systems EPSG code");
+        options.addOption("s", "srs", true, "Spatial Reference Systems EPSG code");
         options.addOption("r", "recursive", false, "recursive search directory");
         options.addOption("sc", "scale", true, "scale factor");
         options.addOption("st", "strict", true, "strict mode");
@@ -67,14 +67,14 @@ public class TilerMain {
                 log.error("output file path is not specified.");
                 return;
             }
-            if (!cmd.hasOption("src")) {
-                log.error("src.");
+            if (!cmd.hasOption("srs")) {
+                log.error("srs.");
                 return;
             }
             File inputFile = new File(cmd.getOptionValue("input"));
             File outputFile = new File(cmd.getOptionValue("output"));
-            String src = cmd.getOptionValue("src");
-            excute(cmd, inputFile, outputFile, src);
+            String srs = cmd.getOptionValue("srs");
+            excute(cmd, inputFile, outputFile, srs);
         } catch (ParseException | IOException e) {
             e.printStackTrace();
             log.error("Failed to parse command line properties", e);
@@ -82,7 +82,7 @@ public class TilerMain {
         underline();
     }
 
-    private static void excute(CommandLine command, File inputFile, File outputFile, String src) throws IOException {
+    private static void excute(CommandLine command, File inputFile, File outputFile, String srs) throws IOException {
         String inputExtension = command.getOptionValue("inputType");
         Path inputPath = inputFile.toPath();
         Path outputPath = outputFile.toPath();
@@ -93,7 +93,7 @@ public class TilerMain {
         }
         FormatType formatType = FormatType.fromExtension(inputExtension);
         CRSFactory factory = new CRSFactory();
-        CoordinateReferenceSystem source = factory.createFromName("EPSG:" + src);
+        CoordinateReferenceSystem source = factory.createFromName("EPSG:" + srs);
         Gaia3DTiler tiler = new Gaia3DTiler(inputPath, outputPath, formatType, source, command);
         tiler.execute();
     }
