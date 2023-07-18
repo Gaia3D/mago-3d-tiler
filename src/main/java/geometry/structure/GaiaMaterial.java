@@ -87,6 +87,18 @@ public class GaiaMaterial {
         }
     }
 
+    public void deleteTextures()
+    {
+        for (Map.Entry<TextureType, List<GaiaTexture>> entry : textures.entrySet()) {
+            List<GaiaTexture> gaiaTextures = entry.getValue();
+            for (GaiaTexture gaiaTexture : gaiaTextures) {
+                if (gaiaTexture != null) {
+                    gaiaTexture.deleteObjects();
+                }
+            }
+        }
+    }
+
     public static boolean areEqualMaterials(GaiaMaterial materialA, GaiaMaterial materialB) throws IOException {
         // This function determines if two materials are equal.
         if (materialA == null && materialB == null) {

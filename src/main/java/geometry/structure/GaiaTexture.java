@@ -79,6 +79,20 @@ public class GaiaTexture {
         setByteBuffer(buf);
     }
 
+    public void deleteObjects()
+    {
+        //if (textureId != -1) {
+        //    GL20.glDeleteTextures(textureId);
+        //}
+
+        if (byteBuffer != null) {
+            byteBuffer.clear();
+        }
+
+        bufferedImage = null;
+
+    }
+
     public static boolean areEqualTextures(GaiaTexture textureA, GaiaTexture textureB) throws IOException {
         if (textureA == null || textureB == null) {
             return false;
@@ -115,6 +129,7 @@ public class GaiaTexture {
         byte[] rgbaByteArray2 = ((DataBufferByte) textureB.bufferedImage.getRaster().getDataBuffer()).getData();
 
         boolean areEqual = Arrays.equals(rgbaByteArray, rgbaByteArray2);
+
         return areEqual;
     }
     public void loadBuffer() {
