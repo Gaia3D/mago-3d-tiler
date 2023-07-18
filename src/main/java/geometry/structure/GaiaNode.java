@@ -90,6 +90,28 @@ public class GaiaNode {
         this.meshes.add(mesh);
     }
 
+    public boolean checkIfIsTexRepeat_TESTSON()
+    {
+        boolean isTexRepeat = false;
+        for (GaiaMesh mesh : this.getMeshes()) {
+            if(mesh.checkIfIsTexRepeat_TESTSON())
+            {
+                isTexRepeat = true;
+                break;
+            }
+        }
+
+        // check children.
+        for (GaiaNode child : this.getChildren()) {
+            if(child.checkIfIsTexRepeat_TESTSON())
+            {
+                isTexRepeat = true;
+                break;
+            }
+        }
+        return isTexRepeat;
+    }
+
     public GaiaBoundingBox getBoundingBox(Matrix4d parentTransformMatrix) {
         GaiaBoundingBox boundingBox = null;
         Matrix4d transformMatrix = new Matrix4d(this.transformMatrix);

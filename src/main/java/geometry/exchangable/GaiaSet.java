@@ -3,6 +3,7 @@ package geometry.exchangable;
 import geometry.structure.GaiaMaterial;
 import geometry.structure.GaiaNode;
 import geometry.structure.GaiaScene;
+import geometry.types.AttributeType;
 import geometry.types.FormatType;
 import io.LittleEndianDataInputStream;
 import io.LittleEndianDataOutputStream;
@@ -21,6 +22,8 @@ import java.io.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 @Slf4j
 @Setter
 @Getter
@@ -55,6 +58,35 @@ public class GaiaSet {
         }
         this.materials = gaiaScene.getMaterials();
         this.bufferDatas = bufferDataSets;
+    }
+
+    public boolean checkIfIsTextureReperat_TEST()
+    {
+        int buffDataSetsCount = bufferDatas.size();
+        for(int i = 0; i < buffDataSetsCount; i++)
+        {
+            GaiaBufferDataSet buffDataSet = bufferDatas.get(i);
+            Map<AttributeType, GaiaBuffer> mapAttribName_Buffer = buffDataSet.getBuffers();
+            // now check if exist "TEXCOORD" attribute
+
+            if(mapAttribName_Buffer.containsKey(AttributeType.TEXCOORD))
+            {
+                GaiaBuffer buff = mapAttribName_Buffer.get(AttributeType.TEXCOORD);
+                if(buff.getGlType() == 5126) // 5126 is float type
+                {
+                    float[] buffData = buff.floats;
+                    int buffDataCount = buffData.length;
+                    for(int j = 0; j < buffDataCount; j++)
+                    {
+                        if(buffData[j] > 1.1f || buffData[j] < -0.2f)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     public void writeFile(Path path) {

@@ -59,6 +59,8 @@ public class ImageUtils {
         return imageString;
     }
 
+
+
     //getFormatNameByMimeType
     public static String getFormatNameByMimeType(String mimeType) {
         String formatName = null;

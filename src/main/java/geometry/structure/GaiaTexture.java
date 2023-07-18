@@ -7,18 +7,23 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.io.FilenameUtils;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
 import util.ImageUtils;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
+import java.util.Arrays;
 
 import static org.lwjgl.system.MemoryStack.stackPush;
 
@@ -51,6 +56,7 @@ public class GaiaTexture {
         this.width = bufferedImage.getWidth();
         this.height = bufferedImage.getHeight();
     }
+
     public void loadTextureBuffer() {
         Path diffusePath = new File(path).toPath();
         String imagePath = parentPath + File.separator + diffusePath;
@@ -71,6 +77,45 @@ public class GaiaTexture {
             e.printStackTrace();
         }
         setByteBuffer(buf);
+    }
+
+    public static boolean areEqualTextures(GaiaTexture textureA, GaiaTexture textureB) throws IOException {
+        if (textureA == null || textureB == null) {
+            return false;
+        }
+
+        if(textureA == textureB) {
+            return true;
+        }
+
+        // load image if not loaded
+        if (textureA.getBufferedImage() == null) {
+            textureA.loadImage();
+
+        }
+
+        if (textureB.getBufferedImage() == null) {
+            textureB.loadImage();
+        }
+
+        if (textureA.getWidth() != textureB.getWidth()) {
+            return false;
+        }
+        if (textureA.getHeight() != textureB.getHeight()) {
+            return false;
+        }
+        if (textureA.getFormat() != textureB.getFormat()) {
+            return false;
+        }
+        // now, compare the pixels
+        int width = textureA.getWidth();
+        int height = textureA.getHeight();
+
+        byte[] rgbaByteArray = ((DataBufferByte) textureA.bufferedImage.getRaster().getDataBuffer()).getData();
+        byte[] rgbaByteArray2 = ((DataBufferByte) textureB.bufferedImage.getRaster().getDataBuffer()).getData();
+
+        boolean areEqual = Arrays.equals(rgbaByteArray, rgbaByteArray2);
+        return areEqual;
     }
     public void loadBuffer() {
         BufferedImage image = this.bufferedImage;

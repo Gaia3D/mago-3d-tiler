@@ -32,6 +32,7 @@ public class GaiaBufferDataSet {
     private int id = -1;
     private String guid = "no_guid";
     private int materialId;
+    public GaiaMaterial material = null;
 
     GaiaRectangle texcoordBoundingRectangle = null;
 
@@ -40,6 +41,17 @@ public class GaiaBufferDataSet {
 
     public GaiaBufferDataSet() {
         this.buffers = new LinkedHashMap<>();
+    }
+
+    public static void getMaterialslIstOfBufferDataSet(List<GaiaBufferDataSet> bufferDataSets, List<GaiaMaterial> materials) {
+        // first, make a map to avoid duplicate materials
+        Map<GaiaMaterial, GaiaMaterial> materialMap = new LinkedHashMap<>();
+        for (GaiaBufferDataSet bufferDataSet : bufferDataSets) {
+            materialMap.put(bufferDataSet.getMaterial(), bufferDataSet.getMaterial());
+        }
+        // second, make a list from the map
+        materials.addAll(materialMap.values());
+
     }
 
     public void write(LittleEndianDataOutputStream stream) throws IOException {

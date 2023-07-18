@@ -52,9 +52,18 @@ public class Gaia3DTiler {
         this.command = command;
     }
 
-    public void execute() {
+    public void execute() throws IOException {
         boolean recursive = command.hasOption("recursive");
         List<GaiaScene> scenes = readInputFile(inputPath, recursive);
+        int scenesCount = scenes.size();
+        for(int i=0; i<scenesCount; i++) {
+            GaiaScene scene = scenes.get(i);
+            if(scene.checkIfIsTexRepeat_TESTSON())
+            {
+                log.info("Scene {} is tex repeat");
+                continue;
+            }
+        }
         double geometricError = calcGeometricError(scenes);
 
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(scenes);
@@ -100,7 +109,7 @@ public class Gaia3DTiler {
         return boundingBox;
     }
 
-    private void tiling(Node parentNode, List<GaiaScene> scenes) {
+    private void tiling(Node parentNode, List<GaiaScene> scenes) throws IOException {
         BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
         if (scenes.size() > MAX_COUNT) {
             List<List<GaiaScene>> childrenScenes = parentBoundingVolume.distributeScene(scenes, this.source);
@@ -169,7 +178,7 @@ public class Gaia3DTiler {
         return childNode;
     }
 
-    private Node createContentNode(Node parentNode, List<GaiaScene> scenes, int index) {
+    private Node createContentNode(Node parentNode, List<GaiaScene> scenes, int index) throws IOException {
         if (scenes.size() < 1) {
             return null;
         }
@@ -187,6 +196,11 @@ public class Gaia3DTiler {
             return null;
         }
         nodeCode = nodeCode + index;
+
+        if(nodeCode.equals("RC122"))
+        {
+            int hola = 0;
+        }
 
         Node childNode = new Node();
         childNode.setParent(parentNode);

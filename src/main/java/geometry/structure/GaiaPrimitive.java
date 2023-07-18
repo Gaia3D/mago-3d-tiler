@@ -48,6 +48,25 @@ public class GaiaPrimitive {
         return boundingBox;
     }
 
+    public boolean checkIfIsTexRepeat_TESTSON()
+    {
+        int vertexCount = vertices.size();
+        GaiaRectangle texRect = new GaiaRectangle();
+        for(int i=0; i<vertexCount; i++)
+        {
+            GaiaVertex vertex = vertices.get(i);
+            Vector2d texcoord = vertex.getTexcoords();
+            texRect.addPoint(texcoord);
+        }
+
+        if(texRect.getRange().x > 1.2 || texRect.getRange().y > 1.2)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public void calculateNormal() {
         for (GaiaSurface surface : surfaces) {
             surface.calculateNormal(this.vertices);
@@ -63,6 +82,23 @@ public class GaiaPrimitive {
         ArrayList<Float> normalList = new ArrayList<>();
         ArrayList<Float> textureCoordinateList = new ArrayList<>();
         GaiaRectangle texcoordBoundingRectangle = null;
+
+        // calculate texcoordBoundingRectangle by indices.
+        if (indicesList.size() > 0) {
+            for (int i = 0; i < indicesList.size(); i++) {
+                int index = indicesList.get(i);
+                GaiaVertex vertex = vertices.get(index);
+                Vector2d textureCoordinate = vertex.getTexcoords();
+                if (textureCoordinate != null) {
+                    if (texcoordBoundingRectangle == null) {
+                        texcoordBoundingRectangle = new GaiaRectangle();
+                        texcoordBoundingRectangle.setInit(textureCoordinate);
+                    } else {
+                        texcoordBoundingRectangle.addPoint(textureCoordinate);
+                    }
+                }
+            }
+        }
 
         for (GaiaVertex vertex : vertices) {
             Vector3d position = vertex.getPosition();
@@ -80,12 +116,13 @@ public class GaiaPrimitive {
             batchIdList.add(0.0f);
             Vector2d textureCoordinate = vertex.getTexcoords();
             if (textureCoordinate != null) {
+                /*
                 if (texcoordBoundingRectangle == null) {
                     texcoordBoundingRectangle = new GaiaRectangle();
                     texcoordBoundingRectangle.setInit(textureCoordinate);
                 } else {
                     texcoordBoundingRectangle.addPoint(textureCoordinate);
-                }
+                }*/
                 textureCoordinateList.add((float) textureCoordinate.x);
                 textureCoordinateList.add((float) textureCoordinate.y);
             }
@@ -143,6 +180,10 @@ public class GaiaPrimitive {
         }
 
         gaiaBufferDataSet.setTexcoordBoundingRectangle(texcoordBoundingRectangle);
+
+        //assign material. Son 2023.07.17
+        gaiaBufferDataSet.setMaterial(this.material);
+
         return gaiaBufferDataSet;
     }
 }

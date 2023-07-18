@@ -14,10 +14,7 @@ import org.joml.Vector4d;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Getter
@@ -88,6 +85,43 @@ public class GaiaMaterial {
             }
             this.textures.put(gaiaMaterialType, gaiaTextures);
         }
+    }
+
+    public static boolean areEqualMaterials(GaiaMaterial materialA, GaiaMaterial materialB) throws IOException {
+        // This function determines if two materials are equal.
+        if (materialA == null && materialB == null) {
+            return true;
+        } else if (materialA == null || materialB == null) {
+            return false;
+        }
+
+        if(materialA == materialB){
+            return true;
+        }
+
+        LinkedHashMap<TextureType, List<GaiaTexture>> textureMapA = materialA.getTextures();
+
+        Set<TextureType> keys = textureMapA.keySet();
+        for(TextureType key : keys){
+            List<GaiaTexture> listTexturesA = textureMapA.get(key);
+            List<GaiaTexture> listTexturesB = materialB.getTextures().get(key);
+            if(listTexturesA == null && listTexturesB == null){
+                continue;
+            }else if(listTexturesA == null || listTexturesB == null){
+                return false;
+            }
+            if(listTexturesA.size() != listTexturesB.size()){
+                return false;
+            }
+            for(int i = 0; i < listTexturesA.size(); i++){
+                GaiaTexture textureA = listTexturesA.get(i);
+                GaiaTexture textureB = listTexturesB.get(i);
+                if(!GaiaTexture.areEqualTextures(textureA, textureB)){
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     public boolean compareTo(GaiaMaterial compare) {

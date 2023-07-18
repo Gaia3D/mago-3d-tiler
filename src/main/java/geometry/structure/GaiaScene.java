@@ -40,6 +40,19 @@ public class GaiaScene {
         bufferDataSets.forEach((bufferDataSet) -> rootNode.getChildren().add(new GaiaNode(bufferDataSet)));
     }
 
+    public boolean checkIfIsTexRepeat_TESTSON()
+    {
+        for(GaiaNode node : nodes)
+        {
+            if(node.checkIfIsTexRepeat_TESTSON())
+            {
+                node.checkIfIsTexRepeat_TESTSON();
+                return true;
+            }
+        }
+        return false;
+    }
+
     public GaiaBoundingBox getBoundingBox() {
         this.gaiaBoundingBox = new GaiaBoundingBox();
         for (GaiaNode node : this.getNodes()) {

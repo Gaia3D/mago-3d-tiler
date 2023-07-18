@@ -20,6 +20,7 @@ import util.ImageUtils;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 @Slf4j
@@ -53,7 +54,7 @@ public class Batched3DModel {
         return bytes;
     }
 
-    public boolean write(String filename) {
+    public boolean write(String filename) throws IOException {
         GaiaUniverse universe = this.tileInfo.getUniverse();
         universe.convertGaiaSet();
 
