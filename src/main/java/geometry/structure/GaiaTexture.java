@@ -16,6 +16,7 @@ import tiler.LevelOfDetail;
 import util.ImageUtils;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.ByteArrayOutputStream;
@@ -48,10 +49,21 @@ public class GaiaTexture {
 
     private int textureId = -1;
 
+    private BufferedImage test() {
+        BufferedImage bufferedImage = new BufferedImage(64, 64, BufferedImage.TYPE_BYTE_BINARY);
+        Graphics2D graphics = bufferedImage.createGraphics();
+        graphics.setColor(Color.PINK);
+        graphics.fillRect(0, 0, 64, 64);
+        graphics.dispose();
+        return bufferedImage;
+    }
+
     public void loadImage() {
         Path diffusePath = new File(path).toPath();
         String imagePath = parentPath + File.separator + diffusePath;
         BufferedImage bufferedImage = ImageUtils.readImage(imagePath);
+        //BufferedImage bufferedImage = test();
+
         this.bufferedImage = bufferedImage;
         this.width = bufferedImage.getWidth();
         this.height = bufferedImage.getHeight();

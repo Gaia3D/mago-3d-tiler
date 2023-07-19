@@ -20,6 +20,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class Batched3DModel {
@@ -56,7 +58,13 @@ public class Batched3DModel {
         GaiaUniverse universe = this.tileInfo.getUniverse();
         universe.convertGaiaSet();
 
+        List<String> names = universe.getGaiaSets().stream().map((gaiaSet) -> {
+            return gaiaSet.getProjectName();
+        }).collect(Collectors.toList());
+
         int batchLength = universe.getGaiaSets().size();
+
+
 
         Batcher batcher = new Batcher(universe, this.tileInfo.getBoundingBox(), this.lod, this.command);
         GaiaSet set = batcher.batch();
@@ -87,6 +95,7 @@ public class Batched3DModel {
         GaiaBatchTable batchTable = new GaiaBatchTable();
         for (int i = 0 ; i < batchLength ; i++) {
             batchTable.getName().add("GAIA_BATCH_NAME" + i);
+            batchTable.getFileName().add(names.get(i));
         }
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -109,7 +118,7 @@ public class Batched3DModel {
         byte[] glbBytes = readGlb(glbOutputFile);
 
         // without featureTable/batchTable
-        this.byteLength = 28 + featureTableJSONByteLength + batchTableJSONByteLength + glbBytes.length + featureTableJson.length() + batchTableJson.length();
+        this.byteLength = 28 + featureTableJSONByteLength + batchTableJSONByteLength + glbBytes.length;
 
         File b3dmOutputFile = universe.getOutputRoot().resolve(filename + ".b3dm").toFile();
         try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(b3dmOutputFile)))) {
