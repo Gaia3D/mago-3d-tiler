@@ -12,7 +12,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileExistsException;
 import org.apache.commons.io.FilenameUtils;
 import org.joml.Matrix4d;
 import org.joml.Quaterniond;
@@ -63,23 +62,18 @@ public class GaiaSet {
     public boolean checkIfIsTextureReperat_TEST()
     {
         int buffDataSetsCount = bufferDatas.size();
-        for(int i = 0; i < buffDataSetsCount; i++)
-        {
-            GaiaBufferDataSet buffDataSet = bufferDatas.get(i);
+        for (GaiaBufferDataSet buffDataSet : bufferDatas) {
             Map<AttributeType, GaiaBuffer> mapAttribName_Buffer = buffDataSet.getBuffers();
             // now check if exist "TEXCOORD" attribute
 
-            if(mapAttribName_Buffer.containsKey(AttributeType.TEXCOORD))
-            {
+            if (mapAttribName_Buffer.containsKey(AttributeType.TEXCOORD)) {
                 GaiaBuffer buff = mapAttribName_Buffer.get(AttributeType.TEXCOORD);
-                if(buff.getGlType() == 5126) // 5126 is float type
+                if (buff.getGlType() == 5126) // 5126 is float type
                 {
                     float[] buffData = buff.floats;
                     int buffDataCount = buffData.length;
-                    for(int j = 0; j < buffDataCount; j++)
-                    {
-                        if(buffData[j] > 1.1f || buffData[j] < -0.2f)
-                        {
+                    for (float buffDatum : buffData) {
+                        if (buffDatum > 1.1f || buffDatum < -0.2f) {
                             return true;
                         }
                     }

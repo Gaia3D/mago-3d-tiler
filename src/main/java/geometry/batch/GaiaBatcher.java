@@ -96,25 +96,9 @@ public class GaiaBatcher implements Batcher {
 
     public GaiaSet batch() throws IOException {
         log.info("Batching started : {}", universe.getName());
-
-        long startTime = System.currentTimeMillis();
-
         List<GaiaSet> sets = universe.getSets();
         setBatchId(sets);
 
-        // test to check if sets are texRepeat.***
-        /*
-        int setsCount = sets.size();
-        for(int i=0; i<setsCount; i++){
-            GaiaSet set = sets.get(i);
-            if(set.checkIfIsTextureReperat_TEST())
-            {
-                int hola = 0;
-                hola += 1;
-            }
-        }
-
-         */
         List<GaiaBufferDataSet> batchedDataSets = new ArrayList<>();
         List<GaiaMaterial> batchedMaterials = new ArrayList<>();
         sets.forEach((set) -> {
@@ -135,13 +119,7 @@ public class GaiaBatcher implements Batcher {
         });
 
         //log.info("time);
-
-        //rearrangeMaterial(batchedDataSets, batchedMaterials);
-
         calcGlobalBBox();
-        //List<GaiaMaterial> filteredMaterials = batchDuplicateMaterial(batchedDataSets, batchedMaterials);
-        //rearrangeMaterial(batchedDataSets, filteredMaterials);
-
         // check if exist equal materials.***
         reassignMaterialsToGaiaBufferDataSetWithSameMaterial(batchedDataSets);
         List<GaiaMaterial> filteredMaterials = new ArrayList<>();
@@ -153,42 +131,29 @@ public class GaiaBatcher implements Batcher {
         });*/
 
         Vector3d translation = calcTranslation();
-        //List<GaiaBufferDataSet> filteredDataSets = batchDataSets(batchedDataSets, translation);
 
         // batch dataSets with same material.***
         List<GaiaBufferDataSet> filteredDataSets = batchDataSetsWithTheSameMaterial(batchedDataSets, translation);
         setMaterialsIndexInList(filteredMaterials, filteredDataSets);
-        checkIsRepeatMaterialSon(filteredDataSets, filteredMaterials);
+        checkIsRepeatMaterial(filteredDataSets);
 
         List<GaiaMaterial> clampMaterials = filteredMaterials.stream()
                 .filter((material) -> !material.isRepeat())
                 .collect(Collectors.toList());
         List<GaiaBufferDataSet> clampDataSets = filteredDataSets.stream().filter((bufferDataSet) -> {
-            //int materialId = bufferDataSet.getMaterialId();
-            //GaiaMaterial material = findMaterial(filteredMaterials, materialId);
             GaiaMaterial material = bufferDataSet.material;
             return !material.isRepeat();
         }).collect(Collectors.toList());
-        //rearrangeMaterial(clampDataSets, clampMaterials);
         setMaterialsIndexInList(clampMaterials, clampDataSets);
 
         List<GaiaMaterial> repeatMaterials = filteredMaterials.stream()
                 .filter(GaiaMaterial::isRepeat)
                 .collect(Collectors.toList());
         List<GaiaBufferDataSet> repeatDataSets = filteredDataSets.stream().filter((bufferDataSet) -> {
-            //int materialId = bufferDataSet.getMaterialId();
-            //GaiaMaterial material = findMaterial(filteredMaterials, materialId);
             GaiaMaterial material = bufferDataSet.material;
             return material.isRepeat();
         }).collect(Collectors.toList());
-        //rearrangeMaterial(repeatDataSets, repeatMaterials);
         setMaterialsIndexInList(repeatMaterials, repeatDataSets);
-
-//        log.info("[{}] = ", universe.getName());
-//        log.info("clampMaterials : " + clampMaterials.size());
-//        log.info("clampBufferDatas : " + clampDataSets.size());
-//        log.info("repeatMaterials : " + repeatMaterials.size());
-//        log.info("repeatBufferDatas : " + repeatDataSets.size());
 
         List<GaiaBufferDataSet> resultBufferDatas = new ArrayList<>();
         List<GaiaMaterial> resultMaterials = new ArrayList<>();
@@ -222,23 +187,6 @@ public class GaiaBatcher implements Batcher {
 
         this.batchedSet.setTransformMatrix(transform);
         return this.batchedSet;
-    }
-
-    // Material Id 재정렬
-    private void rearrangeMaterial(List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials) {
-        dataSets.forEach((batchedBufferData) -> {
-            for (int i = 0; i < materials.size(); i++) {
-                GaiaMaterial material = materials.get(i);
-                if (material.getId() == batchedBufferData.getMaterialId()) {
-                    batchedBufferData.setMaterialId(i);
-                    break;
-                }
-            }
-        });
-        for (int i = 0; i < materials.size(); i++) {
-            GaiaMaterial material = materials.get(i);
-            material.setId(i);
-        }
     }
 
     private void setMaterialsIndexInList(List<GaiaMaterial> materials, List<GaiaBufferDataSet> dataSets) {
@@ -373,67 +321,8 @@ public class GaiaBatcher implements Batcher {
         }
     }
 
-    // 같은 Material 배칭
-    private List<GaiaMaterial> batchDuplicateMaterial(List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials) {
-        List<GaiaMaterial> filterdMaterials = materials.stream().filter((material) -> {
-            int materialId = material.getId();
-            GaiaMaterial sameMaterial = findDuplicateMaterial(material, materials);
-            if (sameMaterial != null) {
-                dataSets.forEach((dataSet) -> {
-                    int usedMaterialId = dataSet.getMaterialId();
-                    if (usedMaterialId == materialId) {
-                        dataSet.setMaterialId(sameMaterial.getId());
-                    }
-                });
-                return materialId <= sameMaterial.getId();
-            }
-            return true;
-        }).collect(Collectors.toList());
-
-        // MaterialId를 재정렬
-        dataSets.forEach((dataSet) -> {
-            for (int i = 0; i < filterdMaterials.size(); i++) {
-                GaiaMaterial material = filterdMaterials.get(i);
-                if (material.getId() == dataSet.getMaterialId()) {
-                    dataSet.setMaterialId(i);
-                    break;
-                }
-            }
-        });
-        for (int i = 0; i < filterdMaterials.size(); i++) {
-            GaiaMaterial material = filterdMaterials.get(i);
-            material.setId(i);
-        }
-        return filterdMaterials;
-    }
-
-    // 같은 Material 찾기
-    private GaiaMaterial findDuplicateMaterial(GaiaMaterial target, List<GaiaMaterial> materials) {
-        return materials.stream().filter(target::compareTo).findFirst().orElse(null);
-    }
-
-    // 바둑판 텍스쳐인지 확인
-    private void checkIsRepeatMaterial(List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials) {
+    private void checkIsRepeatMaterial(List<GaiaBufferDataSet> dataSets) {
         for (GaiaBufferDataSet dataSet : dataSets) {
-
-            int materialId = dataSet.getMaterialId();
-            GaiaMaterial material = findMaterial(materials, materialId);
-            if (material != null) {
-                Map<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
-                List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
-                if (textures == null || textures.size() == 0) {
-                    Map<AttributeType, GaiaBuffer> buffers = dataSet.getBuffers();
-                    buffers.remove(AttributeType.TEXCOORD);
-                }
-                material.setRepeat(checkRepeat(material, dataSet));
-            }
-        }
-    }
-
-    private void checkIsRepeatMaterialSon(List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials) {
-        for (GaiaBufferDataSet dataSet : dataSets) {
-
-            //int materialId = dataSet.getMaterialId();
             GaiaMaterial material = dataSet.material;
             if (material != null) {
                 Map<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
@@ -475,8 +364,7 @@ public class GaiaBatcher implements Batcher {
         GaiaRectangle boundingRectangle = dataSet.getTexcoordBoundingRectangle();
         if (boundingRectangle != null) {
             Vector2d range = boundingRectangle.getRange();
-            boolean isRepeat = range.x > 1.1f || range.y > 1.1f;
-            return isRepeat;
+            return range.x > 1.1f || range.y > 1.1f;
         }
         return false;
     }
@@ -623,13 +511,5 @@ public class GaiaBatcher implements Batcher {
             dataSet.getBuffers().put(AttributeType.INDICE, buffer);
         }
         return dataSet;
-    }
-
-    private GaiaMaterial findMaterial(List<GaiaMaterial> materials, int materialId) {
-        return materials.stream()
-                .filter(material -> material.getId() == materialId)
-                .findFirst()
-                .orElse(materials.get(0));
-        //.orElseThrow(() -> new RuntimeException("not found material"));
     }
 }
