@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 public class GaiaPrimitive {
     private Integer accessorIndices = -1;
     private Integer materialIndex = -1;
-    private List<Integer> indices = new ArrayList<>();
     private List<GaiaVertex> vertices = new ArrayList<>();
     private List<GaiaSurface> surfaces = new ArrayList<>();
 
@@ -46,30 +45,37 @@ public class GaiaPrimitive {
         return boundingBox;
     }
 
-    public boolean checkIfIsTexRepeat_TESTSON()
-    {
-        int vertexCount = vertices.size();
-        GaiaRectangle texRect = new GaiaRectangle();
-        for(int i=0; i<vertexCount; i++)
-        {
-            GaiaVertex vertex = vertices.get(i);
-            Vector2d texcoord = vertex.getTexcoords();
-            texRect.addPoint(texcoord);
-        }
-
-        return texRect.getRange().x > 1.2 || texRect.getRange().y > 1.2;
-    }
-
     public void calculateNormal() {
         for (GaiaSurface surface : surfaces) {
             surface.calculateNormal(this.vertices);
         }
     }
 
+    public ArrayList<Integer> getIndices()
+    {
+        ArrayList<Integer> resultIndices = new ArrayList<>();
+        int surfacesCount = surfaces.size();
+        for(int i=0; i<surfacesCount; i++)
+        {
+            GaiaSurface surface = surfaces.get(i);
+            resultIndices.addAll(surface.getIndices());
+        }
+        return resultIndices;
+    }
+
     public GaiaBufferDataSet toGaiaBufferSet() {
+        ArrayList<Integer> indicesArray = getIndices();
+        List<Short> indicesList = new ArrayList<>();
+        for (Integer indices : indicesArray) {
+            indicesList.add(indices.shortValue());
+        }
+        /*
+        // primitive has no "indices" attribute.
         List<Short> indicesList = this.indices.stream()
                 .map(Integer::shortValue)
                 .collect(Collectors.toList());
+
+         */
         ArrayList<Float> positionList = new ArrayList<>();
         ArrayList<Float> batchIdList = new ArrayList<>();
         ArrayList<Float> normalList = new ArrayList<>();

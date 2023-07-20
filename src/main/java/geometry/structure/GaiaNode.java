@@ -66,7 +66,7 @@ public class GaiaNode {
                 batchIdList = ArrayUtils.convertListToFloatArray(texCoords);
             }
         }
-        primitive.setIndices(indiceList);
+        //primitive.setIndices(indiceList);
 
         for (int i = 0; i < positionList.size() / 3; i++) {
             int vertexIndex = i * 3;
@@ -98,28 +98,6 @@ public class GaiaNode {
         primitive.setVertices(vertexList);
         mesh.getPrimitives().add(primitive);
         this.meshes.add(mesh);
-    }
-
-    public boolean checkIfIsTexRepeat_TESTSON()
-    {
-        boolean isTexRepeat = false;
-        for (GaiaMesh mesh : this.getMeshes()) {
-            if(mesh.checkIfIsTexRepeat_TESTSON())
-            {
-                isTexRepeat = true;
-                break;
-            }
-        }
-
-        // check children.
-        for (GaiaNode child : this.getChildren()) {
-            if(child.checkIfIsTexRepeat_TESTSON())
-            {
-                isTexRepeat = true;
-                break;
-            }
-        }
-        return isTexRepeat;
     }
 
     public GaiaBoundingBox getBoundingBox(Matrix4d parentTransformMatrix) {

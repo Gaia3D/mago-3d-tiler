@@ -35,18 +35,6 @@ public class GaiaMesh {
         return boundingBox;
     }
 
-    public boolean checkIfIsTexRepeat_TESTSON()
-    {
-        for(GaiaPrimitive primitive : primitives)
-        {
-            if(primitive.checkIfIsTexRepeat_TESTSON())
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
     // getTotalIndices
     public ArrayList<Short> getIndices() {
         ArrayList<Short> totalIndices = new ArrayList<>();

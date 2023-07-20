@@ -311,7 +311,7 @@ public class AssimpConverter implements Converter {
             GaiaFace face = processFace(aiFace);
             surface.getFaces().add(face);
 
-            face.getIndices().forEach((indices) -> primitive.getIndices().add(indices));
+            //face.getIndices().forEach((indices) -> primitive.getIndices().add(indices));
         }
 
         int mNumVertices = aiMesh.mNumVertices();

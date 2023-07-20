@@ -6,6 +6,7 @@ import converter.AssimpConverter;
 import converter.Converter;
 import geometry.basic.GaiaBoundingBox;
 import geometry.exchangable.GaiaUniverse;
+import geometry.extension.GeometryOptimizer;
 import geometry.structure.GaiaScene;
 import geometry.types.FormatType;
 import lombok.extern.slf4j.Slf4j;
@@ -55,13 +56,6 @@ public class Gaia3DTiler implements Tiler {
     public Tileset tile() {
         boolean recursive = command.hasOption("recursive");
         List<GaiaScene> scenes = readInputFile(inputPath, recursive);
-        int scenesCount = scenes.size();
-        for (GaiaScene scene : scenes) {
-            if (scene.checkIfIsTexRepeat_TESTSON()) {
-                //log.info("Scene {} is tex repeat", scene.getOriginalPath());
-                continue;
-            }
-        }
         double geometricError = calcGeometricError(scenes);
 
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(scenes);
@@ -78,6 +72,7 @@ public class Gaia3DTiler implements Tiler {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
 
         Asset asset = createAsset();
         Tileset tileset = new Tileset();
@@ -181,6 +176,7 @@ public class Gaia3DTiler implements Tiler {
         if (scenes.size() < 1) {
             return null;
         }
+
         GaiaBoundingBox childBoundingBox = calcBoundingBox(scenes);
         Matrix4d transformMatrix = getTransfromMatrix(childBoundingBox);
         rotateX90(transformMatrix);
