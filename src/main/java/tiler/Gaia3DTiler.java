@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import geometry.basic.GaiaBoundingBox;
 import geometry.exchangable.GaiaUniverse;
+import geometry.extension.GeometryOptimizer;
 import geometry.structure.GaiaScene;
 import geometry.types.FormatType;
 import gltf.Batched3DModel;
@@ -55,14 +56,6 @@ public class Gaia3DTiler {
     public void execute() throws IOException {
         boolean recursive = command.hasOption("recursive");
         List<GaiaScene> scenes = readInputFile(inputPath, recursive);
-        int scenesCount = scenes.size();
-        for (int i = 0; i < scenesCount; i++) {
-            GaiaScene scene = scenes.get(i);
-            if(scene.checkIfIsTexRepeat_TESTSON()) {
-                //log.info("Scene {} is tex repeat", scene.getOriginalPath());
-                continue;
-            }
-        }
         double geometricError = calcGeometricError(scenes);
 
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(scenes);
@@ -75,6 +68,7 @@ public class Gaia3DTiler {
         root.setGeometricError(geometricError);
 
         tiling(root, scenes);
+
 
         Asset asset = createAsset();
         Tileset tileset = new Tileset();
@@ -181,6 +175,7 @@ public class Gaia3DTiler {
         if (scenes.size() < 1) {
             return null;
         }
+
         GaiaBoundingBox childBoundingBox = calcBoundingBox(scenes);
         Matrix4d transformMatrix = getTransfromMatrix(childBoundingBox);
         rotateX90(transformMatrix);

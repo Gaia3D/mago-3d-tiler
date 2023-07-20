@@ -20,4 +20,13 @@ public class GaiaSurface {
             face.calculateFaceNormal(vertices);
         }
     }
+
+    public ArrayList<Integer> getIndices() {
+        ArrayList<Integer> resultIndices = new ArrayList<>();
+        for (GaiaFace face : faces) {
+            resultIndices.addAll(face.getIndices());
+        }
+
+        return resultIndices;
+    }
 }

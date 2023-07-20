@@ -1,10 +1,7 @@
 package geometry.exchangable;
 
 import geometry.basic.GaiaRectangle;
-import geometry.structure.GaiaMaterial;
-import geometry.structure.GaiaPrimitive;
-import geometry.structure.GaiaTexture;
-import geometry.structure.GaiaVertex;
+import geometry.structure.*;
 import geometry.types.AttributeType;
 import geometry.types.TextureType;
 import io.LittleEndianDataInputStream;
@@ -147,7 +144,18 @@ public class GaiaBufferDataSet {
                 }
             }
         }
-        primitive.setIndices(indices);
+
+        // set indices as face of a surface of the primitive 2023.07.19
+        GaiaSurface surface = new GaiaSurface();
+        GaiaFace face = new GaiaFace();
+        face.setIndices((ArrayList<Integer>) indices);
+        surface.setFaces(new ArrayList<GaiaFace>() {{
+            add(face);
+        }});
+        primitive.setSurfaces(new ArrayList<GaiaSurface>() {{
+            add(surface);
+        }});
+        ////primitive.setIndices(indices); // old. indices are now in faces of surface of the primitive
         primitive.setVertices(vertices);
         return primitive;
     }
