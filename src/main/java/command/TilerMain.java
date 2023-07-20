@@ -1,6 +1,8 @@
 package command;
 
 import geometry.batch.Batched3DModel;
+import geometry.structure.GaiaMaterial;
+import geometry.structure.GaiaScene;
 import geometry.types.FormatType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
@@ -33,7 +35,7 @@ public class TilerMain {
         options.addOption("it", "inputType", true, "Input file type");
         options.addOption("ot", "outputType", true, "Output file type");
 
-        options.addOption("s", "srs", true, "Spatial Reference Systems EPSG code");
+        options.addOption("c", "crs", true, "Coordinate Reference Systems EPSG code");
         options.addOption("r", "recursive", false, "Recursive search directory");
         options.addOption("sc", "scale", true, "Scale factor");
         options.addOption("st", "strict", true, "Strict mode");
@@ -78,8 +80,8 @@ public class TilerMain {
                 log.error("output file path is not specified.");
                 return;
             }
-            if (!cmd.hasOption("srs")) {
-                log.error("srs.");
+            if (!cmd.hasOption("crs")) {
+                log.error("crs is not specified.");
                 return;
             }
             File inputFile = new File(cmd.getOptionValue("input"));
@@ -95,7 +97,7 @@ public class TilerMain {
     private static void excute(CommandLine command, File inputFile, File outputFile) throws IOException {
         long start = System.currentTimeMillis();
 
-        String srs = command.getOptionValue("srs");
+        String crs = command.getOptionValue("crs");
         String inputExtension = command.getOptionValue("inputType");
         Path inputPath = inputFile.toPath();
         Path outputPath = outputFile.toPath();
@@ -106,7 +108,7 @@ public class TilerMain {
         }
         FormatType formatType = FormatType.fromExtension(inputExtension);
         CRSFactory factory = new CRSFactory();
-        CoordinateReferenceSystem source = factory.createFromName("EPSG:" + srs);
+        CoordinateReferenceSystem source = factory.createFromName("EPSG:" + crs);
 
 
 
@@ -118,6 +120,10 @@ public class TilerMain {
             Batched3DModel batched3DModel = new Batched3DModel(batchInfo, command);
             try {
                 batched3DModel.write();
+                batched3DModel = null;
+                batchInfo.getUniverse().getScenes().forEach(gaiaScene -> {
+                    gaiaScene.getMaterials().forEach(GaiaMaterial::deleteTextures);
+                });
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

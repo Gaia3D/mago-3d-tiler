@@ -91,6 +91,8 @@ public class GaiaBatcher implements Batcher {
     }
 
     public GaiaSet batch() throws IOException {
+        log.info("Batching started : {}", universe.getName());
+
         long startTime = System.currentTimeMillis();
 
         List<GaiaSet> sets = universe.getSets();
@@ -202,7 +204,6 @@ public class GaiaBatcher implements Batcher {
             rearrangeRepeatMaterial(repeatDataSets, repeatMaterials, resultMaterials.size());
             resultMaterials.addAll(repeatMaterials);
             resultBufferDatas.addAll(repeatDataSets);
-            log.info("with Repeat");
         }
 
         this.batchedSet.setBufferDatas(resultBufferDatas);

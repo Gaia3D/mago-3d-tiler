@@ -46,13 +46,13 @@ class TilerMainTest {
         convert(input, output, "3d-tiles-gs2", "5174");
     }
 
-    private void convert(String inputPath, String outputPath, String suffix, String srs) {
+    private void convert(String inputPath, String outputPath, String suffix, String crs) {
         String[] args= new String[]{
                 "-input", inputPath + suffix,
                 "-inputType", "3ds",
                 "-output", outputPath + suffix,
                 "-outputType", "gltf",
-                "-srs", srs,
+                "-crs", crs,
                 "-swapYZ",
                 "-glb",
                 //"-debug"

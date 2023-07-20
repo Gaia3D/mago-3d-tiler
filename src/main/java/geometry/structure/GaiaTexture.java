@@ -45,7 +45,6 @@ public class GaiaTexture {
         BufferedImage bufferedImage = ImageUtils.readImage(imagePath);
         //BufferedImage bufferedImage = simpleImage();
         this.bufferedImage = bufferedImage;
-        assert bufferedImage != null;
         this.width = bufferedImage.getWidth();
         this.height = bufferedImage.getHeight();
     }
@@ -91,13 +90,10 @@ public class GaiaTexture {
         //if (textureId != -1) {
         //    GL20.glDeleteTextures(textureId);
         //}
-
         if (byteBuffer != null) {
             byteBuffer.clear();
         }
-
         bufferedImage = null;
-
     }
 
     public boolean isEqualTexture(GaiaTexture compareTexture) {
