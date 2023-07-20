@@ -9,12 +9,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.collections.CollectionUtils;
-import org.joml.*;
-import org.lwjgl.opengl.GL20;
+import org.joml.Matrix4d;
+import org.joml.Vector2d;
+import org.joml.Vector3d;
 import util.ArrayUtils;
 
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter

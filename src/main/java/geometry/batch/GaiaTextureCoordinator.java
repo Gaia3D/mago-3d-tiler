@@ -51,7 +51,6 @@ public class GaiaTextureCoordinator {
         if (!outputPath.toFile().exists()) {
             outputPath.toFile().mkdir();
         }
-
         if (this.atlasImage != null) {
             try {
                 ImageIO.write(this.atlasImage, "jpg", output.toFile());
@@ -199,7 +198,7 @@ public class GaiaTextureCoordinator {
             graphics.fillRect(0, 0, maxWidth, maxHeight);
         }
 
-        this.atlasImage = resizeNearestPowerOfTwo(this.atlasImage);
+        //this.atlasImage = resizeNearestPowerOfTwo(this.atlasImage);
 
         for (GaiaBatchImage target : splittedImages) {
             GaiaRectangle splittedRectangle = target.getBatchedBoundary();
@@ -240,6 +239,7 @@ public class GaiaTextureCoordinator {
 
             }
         }
+        this.atlasImage = null;
     }
 
     private BufferedImage resizeNearestPowerOfTwo(BufferedImage bufferedImage) {

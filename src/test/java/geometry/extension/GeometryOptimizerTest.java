@@ -1,6 +1,7 @@
 package geometry.extension;
 
-import assimp.AssimpConverter;
+import converter.AssimpConverter;
+import converter.Converter;
 import geometry.structure.GaiaScene;
 import org.junit.jupiter.api.Test;
 
@@ -13,8 +14,8 @@ class GeometryOptimizerTest {
 
     @Test
     void optimize() {
-        AssimpConverter assimpConverter = new AssimpConverter(null);
-        GaiaScene gaiaScene = assimpConverter.load(new File("src\\test\\resources\\test.obj"), "3ds");
+        Converter assimpConverter = new AssimpConverter(null);
+        GaiaScene gaiaScene = assimpConverter.load(new File("src\\test\\resources\\test.obj"));
 
         ArrayList<GaiaScene> gaiaScenes = new ArrayList<>();
         gaiaScenes.add(gaiaScene);

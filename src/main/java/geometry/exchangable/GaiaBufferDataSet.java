@@ -3,7 +3,6 @@ package geometry.exchangable;
 import geometry.basic.GaiaRectangle;
 import geometry.structure.*;
 import geometry.types.AttributeType;
-import geometry.types.TextureType;
 import io.LittleEndianDataInputStream;
 import io.LittleEndianDataOutputStream;
 import lombok.Getter;
@@ -11,9 +10,6 @@ import lombok.Setter;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
-import org.joml.Vector4d;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.system.MemoryStack;
 import util.ArrayUtils;
 
 import java.io.IOException;

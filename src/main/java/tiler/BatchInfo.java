@@ -7,7 +7,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class TileInfo {
+public class BatchInfo {
+    LevelOfDetail lod;
     GaiaUniverse universe;
     GaiaBoundingBox boundingBox;
+    String nodeCode;
 }

@@ -6,10 +6,7 @@ import org.lwjgl.BufferUtils;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -129,14 +126,13 @@ public class ImageUtils {
     }
 
     public static BufferedImage readImage(String filePath) {
-        BufferedImage image;
-        try {
-            image = ImageIO.read(new File(filePath));
-            return image;
+        BufferedImage image = null;
+        try (FileInputStream stream = new FileInputStream(new File(filePath))){
+            image = ImageIO.read(stream);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
+        return image;
     }
 
     public static ByteBuffer readFile(File file, boolean flip) {

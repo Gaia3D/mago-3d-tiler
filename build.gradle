@@ -2,6 +2,7 @@ import org.gradle.internal.os.OperatingSystem
 
 plugins {
     id "java"
+    id "com.google.cloud.tools.jib" version "3.1.4"
 }
 
 group "com.gaia3d"
@@ -77,6 +78,20 @@ dependencies {
 }
 test {
     //useJUnitPlatform()
+}
+
+jib {
+    from {
+        image = "openjdk:11"
+    }
+    to {
+        image = "gaia3d/tiler"
+        tags = ["latest"]
+    }
+    container {
+        jvmFlags = ["-Xms512m", "-Xmx1024m"]
+        mainClass = "command.TilerMain"
+    }
 }
 
 // jar task
