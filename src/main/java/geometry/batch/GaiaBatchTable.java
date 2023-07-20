@@ -13,9 +13,8 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 public class GaiaBatchTable {
-    @JsonProperty("NAME")
-    private final List<String> name = new ArrayList<>();
-    @JsonProperty("FILE_NAME")
+    @JsonProperty("BatchId")
+    private final List<String> batchId = new ArrayList<>();
+    @JsonProperty("Name")
     private final List<String> fileName = new ArrayList<>();
-    //private final HashMap<String, List<GaiaBatchValue>> batchValues = new HashMap<>();
 }

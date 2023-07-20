@@ -1,17 +1,12 @@
 package geometry.exchangable;
 
-import geometry.structure.GaiaMaterial;
 import geometry.structure.GaiaScene;
-import geometry.structure.GaiaTexture;
-import geometry.types.TextureType;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import util.ImageUtils;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -57,7 +52,7 @@ public class GaiaUniverse {
         List<GaiaSet> sets = this.getScenes().stream()
                 .map(GaiaSet::new)
                 .collect(Collectors.toList());
-        this.sets.removeAll(new ArrayList());
+        this.sets.removeAll(new ArrayList<>());
         this.sets.addAll(sets);
     }
 }

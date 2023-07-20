@@ -7,7 +7,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
+import tiler.BatchInfo;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -57,5 +59,18 @@ public class Node {
     public enum RefineType {
         ADD,
         REPLACE,
+    }
+
+    public List<BatchInfo> findAllBatchInfo(List<BatchInfo> batchInfoList) {
+        if (content != null) {
+            BatchInfo batchInfo = content.getBatchInfo();
+            if (batchInfo != null) {
+                batchInfoList.add(batchInfo);
+            }
+        }
+        for (Node node : children) {
+            node.findAllBatchInfo(batchInfoList);
+        }
+        return batchInfoList;
     }
 }

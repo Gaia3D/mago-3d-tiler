@@ -1,13 +1,13 @@
 package tiler;
 
-import assimp.AssimpConverter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import converter.AssimpConverter;
+import converter.Converter;
 import geometry.basic.GaiaBoundingBox;
 import geometry.exchangable.GaiaUniverse;
 import geometry.structure.GaiaScene;
 import geometry.types.FormatType;
-import gltf.Batched3DModel;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.io.FileUtils;
@@ -33,10 +33,10 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class Gaia3DTiler {
+public class Gaia3DTiler implements Tiler {
     private static final int MAX_COUNT = 256;
 
-    private final AssimpConverter assimpConverter;
+    private final Converter assimpConverter;
     private final Path inputPath;
     private final Path outputPath;
     private final FormatType inputFormatType;
@@ -52,13 +52,12 @@ public class Gaia3DTiler {
         this.command = command;
     }
 
-    public void execute() throws IOException {
+    public Tileset tile() {
         boolean recursive = command.hasOption("recursive");
         List<GaiaScene> scenes = readInputFile(inputPath, recursive);
         int scenesCount = scenes.size();
-        for (int i = 0; i < scenesCount; i++) {
-            GaiaScene scene = scenes.get(i);
-            if(scene.checkIfIsTexRepeat_TESTSON()) {
+        for (GaiaScene scene : scenes) {
+            if (scene.checkIfIsTexRepeat_TESTSON()) {
                 //log.info("Scene {} is tex repeat", scene.getOriginalPath());
                 continue;
             }
@@ -74,7 +73,11 @@ public class Gaia3DTiler {
         root.setTransformMatrix(transformMatrix);
         root.setGeometricError(geometricError);
 
-        tiling(root, scenes);
+        try {
+            createNode(root, scenes);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         Asset asset = createAsset();
         Tileset tileset = new Tileset();
@@ -82,12 +85,14 @@ public class Gaia3DTiler {
         tileset.setAsset(asset);
         tileset.setRoot(root);
         write(outputPath, tileset);
+
+        return tileset;
     }
 
     private List<GaiaScene> reloadScenes(List<GaiaScene> scenes) {
-        FormatType formatType = this.inputFormatType;
+        //FormatType formatType = this.inputFormatType;
         return scenes.stream()
-                .map((scene) -> assimpConverter.load(scene.getOriginalPath(), formatType.getExtension()))
+                .map((scene) -> assimpConverter.load(scene.getOriginalPath()))
                 .collect(Collectors.toList());
     }
 
@@ -108,7 +113,7 @@ public class Gaia3DTiler {
         return boundingBox;
     }
 
-    private void tiling(Node parentNode, List<GaiaScene> scenes) throws IOException {
+    private void createNode(Node parentNode, List<GaiaScene> scenes) throws IOException {
         BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
         if (scenes.size() > MAX_COUNT) {
             List<List<GaiaScene>> childrenScenes = parentBoundingVolume.distributeScene(scenes, this.source);
@@ -117,13 +122,11 @@ public class Gaia3DTiler {
                 Node childNode = createStructNode(parentNode, childScenes, index);
                 if (childNode != null) {
                     parentNode.getChildren().add(childNode);
-                    tiling(childNode, childScenes);
+                    createNode(childNode, childScenes);
                 }
             }
         } else if (scenes.size() > 1) {
             int test = 0;
-
-
             List<List<GaiaScene>> childrenScenes = parentBoundingVolume.distributeScene(scenes, this.source);
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<GaiaScene> childScenes = reloadScenes(childrenScenes.get(index));
@@ -131,19 +134,17 @@ public class Gaia3DTiler {
                 Node childNode = createContentNode(parentNode, childScenes, index);
                 if (childNode != null) {
                     parentNode.getChildren().add(childNode);
-                    tiling(childNode, childScenes);
+                    createNode(childNode, childScenes);
                 }
             }
-
             if (test != scenes.size()) {
                 log.info("test : " + test + ", scenes : " + scenes.size());
             }
-
         } else if (scenes.size() > 0) {
             Node childNode = createContentNode(parentNode, reloadScenes(scenes), 0);
             if (childNode != null) {
                 parentNode.getChildren().add(childNode);
-                tiling(childNode, scenes);
+                createNode(childNode, scenes);
             }
         }
     }
@@ -152,17 +153,16 @@ public class Gaia3DTiler {
         if (scenes.size() < 1) {
             return null;
         }
+        String nodeCode = parentNode.getNodeCode();
+        nodeCode = nodeCode + index;
+        log.info("[StructNode ][" + nodeCode + "] : {}", scenes.size());
+
         double geometricError = calcGeometricError(scenes);
         GaiaBoundingBox childBoundingBox = calcBoundingBox(scenes);
         Matrix4d transformMatrix = getTransfromMatrix(childBoundingBox);
         rotateX90(transformMatrix);
 
         BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox, this.source);
-        //boundingVolume.square();
-
-        String nodeCode = parentNode.getNodeCode();
-        nodeCode = nodeCode + index;
-        log.info("[" + nodeCode + "] : " + scenes.size());
 
         Node childNode = new Node();
         childNode.setParent(parentNode);
@@ -196,10 +196,7 @@ public class Gaia3DTiler {
         }
         nodeCode = nodeCode + index;
 
-        if(nodeCode.equals("RC122"))
-        {
-            int hola = 0;
-        }
+        log.info("[ContentNode][" + nodeCode + "] : {}", scenes.size());
 
         Node childNode = new Node();
         childNode.setParent(parentNode);
@@ -212,18 +209,21 @@ public class Gaia3DTiler {
 
         GaiaUniverse universe = new GaiaUniverse(nodeCode, inputPath, outputPath);
         scenes.forEach(scene -> universe.getScenes().add(scene));
-        TileInfo tileInfo = new TileInfo();
-        tileInfo.setUniverse(universe);
-        tileInfo.setBoundingBox(childBoundingBox);
 
-        log.info("- " + nodeCode + " : " + scenes.size());
-        Batched3DModel batched3DModel = new Batched3DModel(tileInfo, lod, this.command);
+        BatchInfo batchInfo = new BatchInfo();
+        batchInfo.setLod(lod);
+        batchInfo.setUniverse(universe);
+        batchInfo.setBoundingBox(childBoundingBox);
+        batchInfo.setNodeCode(nodeCode);
+
+        /*Batched3DModel batched3DModel = new Batched3DModel(tileInfo, lod, this.command);
         if (!batched3DModel.write(nodeCode)) {
             return null;
-        }
+        }*/
 
         Content content = new Content();
         content.setUri(nodeCode + ".b3dm");
+        content.setBatchInfo(batchInfo);
         childNode.setContent(content);
         return childNode;
     }
@@ -304,9 +304,8 @@ public class Gaia3DTiler {
         Objects.requireNonNull(input, "input path is null");
         List<GaiaScene> sceneList = new ArrayList<>();
         String[] extensions = new String[] {this.inputFormatType.getExtension()};
-
         for (File child : FileUtils.listFiles(input.toFile(), extensions, recursive)) {
-            GaiaScene scene = assimpConverter.load(child.toPath(), extensions[0]);
+            GaiaScene scene = assimpConverter.load(child);
             sceneList.add(scene);
         }
         return sceneList;
