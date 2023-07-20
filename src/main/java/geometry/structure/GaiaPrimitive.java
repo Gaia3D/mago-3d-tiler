@@ -5,7 +5,6 @@ import geometry.basic.GaiaRectangle;
 import geometry.exchangable.GaiaBuffer;
 import geometry.exchangable.GaiaBufferDataSet;
 import geometry.types.AttributeType;
-import geometry.types.TextureType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +12,6 @@ import lombok.Setter;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
-import org.joml.Vector4d;
 import org.lwjgl.opengl.GL20;
 import util.ArrayUtils;
 
@@ -59,12 +57,7 @@ public class GaiaPrimitive {
             texRect.addPoint(texcoord);
         }
 
-        if(texRect.getRange().x > 1.2 || texRect.getRange().y > 1.2)
-        {
-            return true;
-        }
-
-        return false;
+        return texRect.getRange().x > 1.2 || texRect.getRange().y > 1.2;
     }
 
     public void calculateNormal() {
@@ -86,8 +79,7 @@ public class GaiaPrimitive {
 
         // calculate texcoordBoundingRectangle by indices.
         if (indicesList.size() > 0) {
-            for (int i = 0; i < indicesList.size(); i++) {
-                int index = indicesList.get(i);
+            for (int index : indicesList) {
                 GaiaVertex vertex = vertices.get(index);
                 Vector2d textureCoordinate = vertex.getTexcoords();
                 if (textureCoordinate != null) {

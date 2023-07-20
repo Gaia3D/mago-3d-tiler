@@ -1,4 +1,4 @@
-package assimp;
+package converter;
 
 import command.TilerMain;
 import geometry.structure.*;
@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-public class AssimpConverter {
+public class AssimpConverter implements Converter {
     private final CommandLine command;
 
     public AssimpConverter(CommandLine command) {
@@ -41,29 +41,28 @@ public class AssimpConverter {
             Assimp.aiProcess_CalcTangentSpace|
             Assimp.aiProcess_SortByPType;
 
-    public GaiaScene load(String filePath, String hint) {
-        return load(new File(filePath), hint);
+    public GaiaScene load(String filePath) {
+        return load(new File(filePath));
     }
 
-    public GaiaScene load(Path filePath, String hint) {
-        return load(filePath.toFile(), hint);
+    public GaiaScene load(Path filePath) {
+        return load(filePath.toFile());
     }
 
-    public GaiaScene load(File file, String hint) {
-        if (file.isFile()) {
-            String path = file.getAbsolutePath().replace(file.getName(), "");
-            ByteBuffer byteBuffer = ImageUtils.readFile(file, true);
-            hint = (hint != null) ? hint : FilenameUtils.getExtension(file.getName());
-
-            assert byteBuffer != null;
-            AIScene aiScene = Assimp.aiImportFileFromMemory(byteBuffer, DEFAULT_FLAGS, hint);
-            assert aiScene != null;
-            GaiaScene gaiaScene = convertScene(aiScene, path);
-            gaiaScene.setOriginalPath(file.toPath());
-            return gaiaScene;
-        } else {
-            return null;
+    public GaiaScene load(File file) {
+        if (!file.isFile() && !file.exists()) {
+            throw new RuntimeException("File does not exist: " + file.getAbsolutePath());
         }
+        String path = file.getAbsolutePath().replace(file.getName(), "");
+        ByteBuffer byteBuffer = ImageUtils.readFile(file, true);
+        String hint = FilenameUtils.getExtension(file.getName());
+
+        assert byteBuffer != null;
+        AIScene aiScene = Assimp.aiImportFileFromMemory(byteBuffer, DEFAULT_FLAGS, hint);
+        assert aiScene != null;
+        GaiaScene gaiaScene = convertScene(aiScene, path);
+        gaiaScene.setOriginalPath(file.toPath());
+        return gaiaScene;
     }
 
     private CommandLine createDefaultCommand() {

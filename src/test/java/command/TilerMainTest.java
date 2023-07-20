@@ -54,6 +54,7 @@ class TilerMainTest {
                 "-outputType", "gltf",
                 "-srs", srs,
                 "-swapYZ",
+                "-glb",
                 //"-debug"
         };
         TilerMain.main(args);

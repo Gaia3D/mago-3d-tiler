@@ -7,27 +7,17 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.apache.commons.io.FilenameUtils;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.stb.STBImage;
-import org.lwjgl.system.MemoryStack;
 import tiler.LevelOfDetail;
 import util.ImageUtils;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.util.Arrays;
-
-import static org.lwjgl.system.MemoryStack.stackPush;
 
 @Getter
 @Setter
@@ -49,25 +39,24 @@ public class GaiaTexture {
 
     private int textureId = -1;
 
-    private BufferedImage test() {
+    public void loadImage() {
+        Path diffusePath = new File(path).toPath();
+        String imagePath = parentPath + File.separator + diffusePath;
+        BufferedImage bufferedImage = ImageUtils.readImage(imagePath);
+        //BufferedImage bufferedImage = simpleImage();
+        this.bufferedImage = bufferedImage;
+        assert bufferedImage != null;
+        this.width = bufferedImage.getWidth();
+        this.height = bufferedImage.getHeight();
+    }
+
+    private BufferedImage simpleImage() {
         BufferedImage bufferedImage = new BufferedImage(64, 64, BufferedImage.TYPE_BYTE_BINARY);
         Graphics2D graphics = bufferedImage.createGraphics();
         graphics.setColor(Color.PINK);
         graphics.fillRect(0, 0, 64, 64);
         graphics.dispose();
         return bufferedImage;
-    }
-
-    public void loadImage() {
-        Path diffusePath = new File(path).toPath();
-        String imagePath = parentPath + File.separator + diffusePath;
-        BufferedImage bufferedImage = ImageUtils.readImage(imagePath);
-        //BufferedImage bufferedImage = test();
-
-        this.bufferedImage = bufferedImage;
-        this.width = bufferedImage.getWidth();
-        this.height = bufferedImage.getHeight();
-        assert bufferedImage != null;
     }
 
     public void loadImage(float scaleFactor) {
@@ -115,32 +104,29 @@ public class GaiaTexture {
         BufferedImage bufferedImage = this.getBufferedImage();
         BufferedImage comparebufferedImage = compareTexture.getBufferedImage();
 
-        if (this.getWidth() != compareTexture.getWidth()) {
+        int width = this.getWidth();
+        int height = this.getHeight();
+
+        if (width != compareTexture.getWidth()) {
             return false;
         }
-        if (this.getHeight() != compareTexture.getHeight()) {
+        if (height != compareTexture.getHeight()) {
             return false;
         }
         if (this.getFormat() != compareTexture.getFormat()) {
             return false;
         }
 
-        // now, compare the pixels
-        int width = this.getWidth();
-        int height = this.getHeight();
-
         byte[] rgbaByteArray = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
         byte[] rgbaByteArray2 = ((DataBufferByte) comparebufferedImage.getRaster().getDataBuffer()).getData();
 
-        boolean areEqual = Arrays.equals(rgbaByteArray, rgbaByteArray2);
-
-        return areEqual;
+        return Arrays.equals(rgbaByteArray, rgbaByteArray2);
     }
 
     public boolean isEqualTexture(GaiaTexture compareTexture, LevelOfDetail levelOfDetail) {
         float scaleFactor = levelOfDetail.getTextureScale();
-        BufferedImage bufferedImage = this.getBufferedImage(scaleFactor);
-        BufferedImage comparebufferedImage = compareTexture.getBufferedImage(scaleFactor);
+        getBufferedImage(scaleFactor);
+        compareTexture.getBufferedImage(scaleFactor);
         return isEqualTexture(compareTexture);
     }
 

@@ -1,4 +1,4 @@
-package assimp;
+package converter;
 
 import geometry.structure.GaiaScene;
 import org.junit.jupiter.api.Test;
@@ -14,8 +14,8 @@ class AssimpConverterTest {
 
     @Test
     void load() throws URISyntaxException {
-        AssimpConverter converter = new AssimpConverter(null);
-        GaiaScene scene = converter.load(getAbsolutePath(INPUT_PATH) + "a_bd001.3ds", "3ds");
+        Converter converter = new AssimpConverter(null);
+        GaiaScene scene = converter.load(getAbsolutePath(INPUT_PATH) + "a_bd001.3ds");
         assertNotNull(scene);
     }
 
