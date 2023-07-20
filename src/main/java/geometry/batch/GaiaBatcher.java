@@ -16,6 +16,7 @@ import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.lwjgl.opengl.GL20;
+import tiler.BatchInfo;
 import tiler.LevelOfDetail;
 import util.ArrayUtils;
 
@@ -32,13 +33,16 @@ public class GaiaBatcher implements Batcher {
     private final LevelOfDetail lod;
     private final CommandLine command;
 
-    public GaiaBatcher(GaiaUniverse universe, GaiaBoundingBox boundingBox, LevelOfDetail lod, CommandLine command) {
-        this.batchedSet = new GaiaSet();
-        this.batchedSet.setProjectName(universe.getName());
-        this.universe = universe;
-        this.globalBBox = boundingBox;
-        this.lod = lod;
+    public GaiaBatcher(BatchInfo tileInfo, CommandLine command) {
+        GaiaUniverse universe = tileInfo.getUniverse();
+        universe.convertGaiaSet();
+
         this.command = command;
+        this.globalBBox = tileInfo.getBoundingBox();
+        this.universe = universe;
+        this.lod = tileInfo.getLod();
+        this.batchedSet = new GaiaSet();
+        this.batchedSet.setProjectName(this.universe.getName());
     }
 
     private void reassignMaterialsToGaiaBufferDataSetWithSameMaterial(List<GaiaBufferDataSet> dataSets) throws IOException {

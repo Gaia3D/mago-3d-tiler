@@ -43,12 +43,12 @@ public class Gaia3DTiler implements Tiler {
     private final CoordinateReferenceSystem source;
     private final CommandLine command;
 
-    public Gaia3DTiler(Path inputPath, Path outputPath, FormatType inputFormatType, CoordinateReferenceSystem source, CommandLine command) {
+    public Gaia3DTiler(TilerInfo tilerInfo, CommandLine command) {
         this.assimpConverter = new AssimpConverter(command);
-        this.inputPath = inputPath;
-        this.outputPath = outputPath;
-        this.inputFormatType = inputFormatType;
-        this.source = source;
+        this.inputPath = tilerInfo.getInputPath();
+        this.outputPath = tilerInfo.getOutputPath();
+        this.inputFormatType = tilerInfo.getInputFormatType();
+        this.source = tilerInfo.getSource();
         this.command = command;
     }
 

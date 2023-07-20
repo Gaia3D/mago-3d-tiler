@@ -9,7 +9,6 @@ import gltf.GltfWriter;
 import io.LittleEndianDataOutputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
-import tiler.LevelOfDetail;
 import tiler.BatchInfo;
 import util.ImageUtils;
 
@@ -24,38 +23,26 @@ public class Batched3DModel {
     private static final String MAGIC = "b3dm";
     private static final int VERSION = 1;
 
-    private final BatchInfo tileInfo;
     private final CommandLine command;
 
-    public Batched3DModel(BatchInfo tileInfo, CommandLine command) {
-        this.tileInfo = tileInfo;
+    public Batched3DModel(CommandLine command) {
         this.command = command;
     }
 
-    public boolean write() throws IOException {
+    public boolean write(GaiaSet batchedSet, BatchInfo batchInfo) throws IOException {
         int featureTableJSONByteLength;
         int batchTableJSONByteLength;
         String featureTableJson;
         String batchTableJson;
-        LevelOfDetail lod = this.tileInfo.getLod();
-        String nodeCode = this.tileInfo.getNodeCode();
-
-        GaiaUniverse universe = this.tileInfo.getUniverse();
-        universe.convertGaiaSet();
+        String nodeCode = batchInfo.getNodeCode();
+        GaiaUniverse universe = batchInfo.getUniverse();
 
         int batchLength = universe.getGaiaSets().size();
         List<String> names = universe.getGaiaSets().stream()
                 .map(GaiaSet::getProjectName)
                 .collect(Collectors.toList());
+        GaiaScene scene = new GaiaScene(batchedSet);
 
-        Batcher batcher = new GaiaBatcher(universe, this.tileInfo.getBoundingBox(), lod, this.command);
-        GaiaSet set = batcher.batch();
-
-        if (set.getMaterials().size() < 1 || set.getBufferDatas().size() < 1) {
-            throw new RuntimeException("No materials or buffers");
-        }
-
-        GaiaScene scene = new GaiaScene(set);
         byte[] glbBytes;
         if (command.hasOption("glb")) {
             String glbFileName = nodeCode + ".glb";

@@ -1,6 +1,9 @@
 package command;
 
 import geometry.batch.Batched3DModel;
+import geometry.batch.Batcher;
+import geometry.batch.GaiaBatcher;
+import geometry.exchangable.GaiaSet;
 import geometry.structure.GaiaMaterial;
 import geometry.structure.GaiaScene;
 import geometry.types.FormatType;
@@ -13,6 +16,7 @@ import org.locationtech.proj4j.CoordinateReferenceSystem;
 import tiler.BatchInfo;
 import tiler.Gaia3DTiler;
 import tiler.Tiler;
+import tiler.TilerInfo;
 import tiler.tileset.Tileset;
 
 import java.io.File;
@@ -110,16 +114,27 @@ public class TilerMain {
         CRSFactory factory = new CRSFactory();
         CoordinateReferenceSystem source = factory.createFromName("EPSG:" + crs);
 
+        TilerInfo tilerInfo = TilerInfo.builder()
+                .inputPath(inputPath)
+                .outputPath(outputPath)
+                .inputFormatType(formatType)
+                .source(source)
+                .build();
 
-
-        Tiler tiler = new Gaia3DTiler(inputPath, outputPath, formatType, source, command);
+        Tiler tiler = new Gaia3DTiler(tilerInfo, command);
         Tileset tileset = tiler.tile();
-        List<BatchInfo> batchInfos = tileset.findAllBatchInfo();
 
+        List<BatchInfo> batchInfos = tileset.findAllBatchInfo();
         batchInfos.forEach(batchInfo -> {
-            Batched3DModel batched3DModel = new Batched3DModel(batchInfo, command);
             try {
-                batched3DModel.write();
+                Batcher batcher = new GaiaBatcher(batchInfo, command);
+                GaiaSet batchedSet = batcher.batch();
+                if (batchedSet.getMaterials().size() < 1 || batchedSet.getBufferDatas().size() < 1) {
+                    throw new RuntimeException("No materials or buffers");
+                }
+
+                Batched3DModel batched3DModel = new Batched3DModel(command);
+                batched3DModel.write(batchedSet, batchInfo);
                 batched3DModel = null;
                 batchInfo.getUniverse().getScenes().forEach(gaiaScene -> {
                     gaiaScene.getMaterials().forEach(GaiaMaterial::deleteTextures);
