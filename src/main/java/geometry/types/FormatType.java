@@ -1,5 +1,10 @@
 package geometry.types;
 
+import lombok.Getter;
+
+import java.util.Arrays;
+
+@Getter
 public enum FormatType {
     MAX_3DS("3ds"),
     OBJ("obj"),
@@ -11,22 +16,16 @@ public enum FormatType {
     I3DM("i3dm"),
     TEMP("mgb");
 
-    String extension;
+    final String extension;
 
     FormatType(String extension) {
         this.extension = extension;
     }
 
-    public String getExtension() {
-        return extension;
-    }
-
     public static FormatType fromExtension(String extension) {
-        for (FormatType type : FormatType.values()) {
-            if (type.getExtension().equals(extension)) {
-                return type;
-            }
-        }
-        return null;
+        return Arrays.stream(FormatType.values())
+                .filter(type -> type.getExtension().equals(extension))
+                .findFirst()
+                .orElse(null);
     }
 }
