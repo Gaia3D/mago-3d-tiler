@@ -191,7 +191,7 @@ public class GaiaTextureCoordinator {
             graphics.drawImage(source, (int) splittedRectangle.getMinX(), (int) splittedRectangle.getMinY(),null);
         }
 
-        if (command.hasOption("debug")) {
+        if (command != null && command.hasOption("debug")) {
             float[] debugColor = lod.getDebugColor();
             Color color = new Color(debugColor[0], debugColor[1], debugColor[2], 0.3f);
             graphics.setColor(color);

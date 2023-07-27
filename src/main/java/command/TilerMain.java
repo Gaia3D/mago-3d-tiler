@@ -5,7 +5,6 @@ import geometry.batch.Batcher;
 import geometry.batch.GaiaBatcher;
 import geometry.exchangable.GaiaSet;
 import geometry.structure.GaiaMaterial;
-import geometry.structure.GaiaScene;
 import geometry.types.FormatType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
@@ -16,7 +15,7 @@ import org.locationtech.proj4j.CoordinateReferenceSystem;
 import tiler.BatchInfo;
 import tiler.Gaia3DTiler;
 import tiler.Tiler;
-import tiler.TilerInfo;
+import tiler.TilerOptions;
 import tiler.tileset.Tileset;
 
 import java.io.File;
@@ -39,6 +38,7 @@ public class TilerMain {
         options.addOption("it", "inputType", true, "Input file type");
         options.addOption("ot", "outputType", true, "Output file type");
 
+        options.addOption("k", "kml", false, "Use KML file.");
         options.addOption("c", "crs", true, "Coordinate Reference Systems EPSG code");
         options.addOption("r", "recursive", false, "Recursive search directory");
         options.addOption("sc", "scale", true, "Scale factor");
@@ -51,6 +51,8 @@ public class TilerMain {
         options.addOption("d", "debug", false, "Debug mode");
         options.addOption("gf", "gltf", false, "Create gltf file");
         options.addOption("gb", "glb", false, "Create glb file");
+
+        options.addOption("mc", "maxCount", true, "Max count of nodes (Default: 256)");
         return options;
     }
 
@@ -84,10 +86,10 @@ public class TilerMain {
                 log.error("output file path is not specified.");
                 return;
             }
-            if (!cmd.hasOption("crs")) {
+            /*if (!cmd.hasOption("crs")) {
                 log.error("crs is not specified.");
                 return;
-            }
+            }*/
             File inputFile = new File(cmd.getOptionValue("input"));
             File outputFile = new File(cmd.getOptionValue("output"));
             excute(cmd, inputFile, outputFile);
@@ -112,9 +114,9 @@ public class TilerMain {
         }
         FormatType formatType = FormatType.fromExtension(inputExtension);
         CRSFactory factory = new CRSFactory();
-        CoordinateReferenceSystem source = factory.createFromName("EPSG:" + crs);
+        CoordinateReferenceSystem source = (crs != null) ? factory.createFromName("EPSG:" + crs) : null;
 
-        TilerInfo tilerInfo = TilerInfo.builder()
+        TilerOptions tilerInfo = TilerOptions.builder()
                 .inputPath(inputPath)
                 .outputPath(outputPath)
                 .inputFormatType(formatType)

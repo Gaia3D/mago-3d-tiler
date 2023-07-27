@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+  <name>a_bd002</name>
+  <Placemark>
+	<Model>
+		<Location>
+			<longitude>127.1715514</longitude>
+			<latitude>37.62272621</latitude>
+			<altitude>0</altitude>
+		</Location>
+		<altitudeMode>clampToGround</altitudeMode>
+		<Orientation>
+			<heading>0</heading>	<!-- kml:angle360 -->
+			<tilt>0</tilt>			<!-- kml:anglepos180 -->
+			<roll>0</roll>			<!-- kml:angle180 -->
+		</Orientation>
+		<Scale>
+			<x>1</x>	<!-- double -->
+			<y>1</y>	<!-- double -->
+			<z>1</z>	<!-- double -->
+		</Scale>
+		<Link>
+			<href>a_bd002.dae</href>
+		</Link>
+	</Model>
+  </Placemark>
+</Document>
+</kml>
+

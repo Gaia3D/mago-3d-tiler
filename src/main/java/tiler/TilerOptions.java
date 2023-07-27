@@ -9,7 +9,7 @@ import java.nio.file.Path;
 
 @Getter
 @Builder
-public class TilerInfo {
+public class TilerOptions {
     private final Path inputPath;
     private final Path outputPath;
     private final FormatType inputFormatType;

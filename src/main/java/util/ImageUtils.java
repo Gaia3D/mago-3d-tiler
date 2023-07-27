@@ -135,6 +135,20 @@ public class ImageUtils {
         return image;
     }
 
+    public static String readText(File file) {
+        try (var ir = new BufferedReader(new FileReader(file))) {
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = ir.readLine()) != null) {
+                sb.append(line);
+            }
+            return sb.toString();
+        } catch (IOException e) {
+            log.error("FileUtils.readFile: " + e.getMessage());
+        }
+        return null;
+    }
+
     public static ByteBuffer readFile(File file, boolean flip) {
         Path path = file.toPath();
         try (var is = new BufferedInputStream(Files.newInputStream(path))) {

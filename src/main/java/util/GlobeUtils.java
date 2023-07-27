@@ -74,6 +74,78 @@ public class GlobeUtils {
         return transfromMatrix;
     }
 
+    public static Vector3d cartesianToGeographicWgs84(Vector3d position) {
+        double x = position.x;
+        double y = position.y;
+        double z = position.z;
+
+        double xxpyy = x * x + y * y;
+        double sqrtXXpYY = Math.sqrt(xxpyy);
+        double a = equatorialRadius;
+        double ra2 = 1.0 / (a * a);
+        double e2 = firstEccentricitySquared;
+        double e4 = e2 * e2;
+        double p = xxpyy * ra2;
+        double q = z * z * (1.0 - e2) * ra2;
+        double r = (p + q - e4) / 6.0;
+
+        //double r = 1.0 / 6.0 * (p - q - e4);
+        double evoluteBorderTest = 8 * r * r * r + e4 * p * q;
+
+        double h, phi, u, v, w, k, D, sqrtDDpZZ, e, lambda, s2, rad1, rad2, rad3, atan;
+
+        if (evoluteBorderTest > 0.0 || q != 0.0) {
+            if (evoluteBorderTest > 0) {
+                rad1 = Math.sqrt(evoluteBorderTest);
+                rad2 = Math.sqrt(e4 * p * q);
+                if (evoluteBorderTest > 10 * e2) {
+                    rad3 = Math.cbrt((rad1 + rad2) * (rad1 + rad2));
+                    u = r + 0.5 * rad3 + 2 * r * r / rad3;
+                } else {
+                    u = r + 0.5 * Math.cbrt((rad1 + rad2) * (rad1 + rad2)) + 0.5 * Math.cbrt((rad1 - rad2) * (rad1 - rad2));
+                }
+            } else {
+                rad1 = Math.sqrt(-evoluteBorderTest);
+                rad2 = Math.sqrt(-8 * r * r * r);
+                rad3 = Math.sqrt(e4 * p * q);
+                atan = 2 * Math.atan2(rad3, rad1 + rad2) / 3;
+                u = -4 * r * Math.sin(atan) * Math.cos(Math.PI / 6 + atan);
+            }
+
+            v = Math.sqrt(u * u + e4 * q);
+            w = e2 * (u + v - q) / (2 * v);
+            k = (u + v) / (Math.sqrt(w * w + u + v) + w);
+            D = k * sqrtXXpYY / (k + e2);
+            sqrtDDpZZ = Math.sqrt(D * D + z * z);
+
+            h = (k + e2 - 1) * sqrtDDpZZ / k;
+            phi = 2 * Math.atan2(z, sqrtDDpZZ + D);
+        } else {
+            rad1 = Math.sqrt(1 - e2);
+            rad2 = Math.sqrt(e2 - p);
+            e = Math.sqrt(e2);
+
+            h = -a * rad1 * rad2 / e;
+            phi = rad2 / (e * rad2 + rad1 * Math.sqrt(p));
+        }
+
+        s2 = Math.sqrt(2);
+        if ((s2 - 1) * y < sqrtXXpYY + x) {
+            lambda = 2 * Math.atan2(y, sqrtXXpYY + x);
+        } else if (sqrtXXpYY + y < (s2 + 1) * x) {
+            lambda = -Math.PI * 0.5 + 2 * Math.atan2(x, sqrtXXpYY - y);
+        } else {
+            lambda = Math.PI * 0.5 - 2 * Math.atan2(x, sqrtXXpYY + y);
+        }
+
+        double factor = 180.0 / Math.PI;
+        /*double[] result = new double[3];
+        result[0] = factor * lambda;
+        result[1] = factor * phi;
+        result[2] = h;*/
+        return new Vector3d(factor * lambda, factor * phi, h);
+    }
+
     /*public static ProjCoordinate transform(CoordinateReferenceSystem source, CoordinateReferenceSystem target, ProjCoordinate coordinate) {
         BasicCoordinateTransform transformer = new BasicCoordinateTransform(source, target);
         ProjCoordinate result = new ProjCoordinate();

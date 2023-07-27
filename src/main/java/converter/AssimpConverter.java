@@ -112,6 +112,7 @@ public class AssimpConverter implements Converter {
 
         assert node != null;
         Matrix4d rootTransform = node.getTransformMatrix();
+
         if (command.hasOption("swapYZ")) {
             rootTransform.rotateX(Math.toRadians(90), rootTransform);
         }

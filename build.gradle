@@ -59,10 +59,16 @@ dependencies {
     implementation "de.javagl:jgltf-obj:2.0.3"
     implementation "de.javagl:jgltf-model:2.0.3"
     implementation "de.javagl:jgltf-validator:2.0.3"
+
+    // kml reader
+    //implementation "de.micromata.jak:JavaAPIforKml:2.2.1"
+
+    //implementation "org.locationtech.jts:jts:1.19.0"
+    //implementation "org.locationtech.jts:jts-io:1.19.0"
     implementation "org.locationtech.proj4j:proj4j:1.2.3"
     implementation "org.locationtech.proj4j:proj4j-epsg:1.2.3"
 
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.0.1'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
 
     runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-assimp::$lwjglNatives"

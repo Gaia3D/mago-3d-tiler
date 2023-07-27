@@ -232,7 +232,7 @@ public class GaiaBatcher implements Batcher {
     }
 
     // 원점이동 구함
-    private Vector3d calcTranslation() {
+    Vector3d calcTranslation() {
         Vector3d temp = this.globalBBox.getCenter();
         Vector3d translation = new Vector3d(temp.x(), temp.y(), this.globalBBox.getMinZ());
         translation.negate();

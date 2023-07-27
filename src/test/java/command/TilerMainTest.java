@@ -12,10 +12,69 @@ class TilerMainTest {
     private static final String OUTPUT_PATH = "../output/";
 
     @Test
+    void test() {
+        log.debug("test");
+    }
+
+    @Test
     void convertWs2() throws URISyntaxException {
         String input = getAbsolutePath(INPUT_PATH);
         String output = getAbsolutePath(OUTPUT_PATH);
         convert(input, output, "3d-tiles-ws2", "5186");
+    }
+
+    @Test
+    void convertWs2Kml() throws URISyntaxException {
+        String input = getAbsolutePath(INPUT_PATH);
+        String output = getAbsolutePath(OUTPUT_PATH);
+        String suffix = "collada-ws2";
+        String[] args= new String[]{
+                "-input", input + suffix,
+                "-inputType", "kml",
+                "-output", output + suffix,
+                "-outputType", "gltf",
+                "-swapYZ",
+                "-maxCount", "256",
+                "-glb",
+                //"-debug"
+        };
+        TilerMain.main(args);
+    }
+
+    @Test
+    void data32651() throws URISyntaxException {
+        String input = "D:\\51zone\\51zone_3DS\\";
+        String output = "D:\\51zone\\51zone_3DS_output\\";
+        String[] args= new String[]{
+                "-input", input,
+                "-inputType", "3ds",
+                "-output", output,
+                "-outputType", "gltf",
+                "-crs", "32651",
+                "-swapYZ",
+                "-maxCount", "256",
+                //"-glb",
+                //"-debug"
+        };
+        TilerMain.main(args);
+    }
+
+    @Test
+    void data32652() throws URISyntaxException {
+        String input = "D:\\52zone\\52zone_3DS\\";
+        String output = "D:\\52zone\\52zone_3DS_output\\";
+        String[] args= new String[]{
+                "-input", input,
+                "-inputType", "3ds",
+                "-output", output,
+                "-outputType", "gltf",
+                "-crs", "32652",
+                "-swapYZ",
+                "-maxCount", "128",
+                //"-glb",
+                //"-debug"
+        };
+        TilerMain.main(args);
     }
 
     @Test
@@ -54,7 +113,8 @@ class TilerMainTest {
                 "-outputType", "gltf",
                 "-crs", crs,
                 "-swapYZ",
-                "-glb",
+                //"-glb",
+                "-maxCount", "1024",
                 //"-debug"
         };
         TilerMain.main(args);

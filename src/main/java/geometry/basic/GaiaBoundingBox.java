@@ -88,6 +88,15 @@ public class GaiaBoundingBox {
         }
     }
 
+    public void translate(Vector3d vector3d) {
+        minX += vector3d.x;
+        minY += vector3d.y;
+        minZ += vector3d.z;
+        maxX += vector3d.x;
+        maxY += vector3d.y;
+        maxZ += vector3d.z;
+    }
+
     public double getLongestDistance() {
         Vector3d volume = getVolume();
         return Math.sqrt(volume.x * volume.x + volume.y * volume.y + volume.z * volume.z);
