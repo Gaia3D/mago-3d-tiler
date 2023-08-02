@@ -5,11 +5,14 @@ import geometry.exchangable.GaiaUniverse;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
-public class BatchInfo {
+public class ContentInfo {
+    String nodeCode;
     LevelOfDetail lod;
+    List<TileInfo> tileInfos;
     GaiaUniverse universe;
     GaiaBoundingBox boundingBox;
-    String nodeCode;
 }

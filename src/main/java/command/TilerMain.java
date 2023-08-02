@@ -3,6 +3,7 @@ package command;
 import geometry.batch.Batched3DModel;
 import geometry.batch.Batcher;
 import geometry.batch.GaiaBatcher;
+import geometry.batch.GaiaTransfomer;
 import geometry.exchangable.GaiaSet;
 import geometry.structure.GaiaMaterial;
 import geometry.types.FormatType;
@@ -12,10 +13,7 @@ import org.apache.commons.io.FileExistsException;
 import org.apache.logging.log4j.Level;
 import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
-import tiler.BatchInfo;
-import tiler.Gaia3DTiler;
-import tiler.Tiler;
-import tiler.TilerOptions;
+import tiler.*;
 import tiler.tileset.Tileset;
 
 import java.io.File;
@@ -92,7 +90,7 @@ public class TilerMain {
             }*/
             File inputFile = new File(cmd.getOptionValue("input"));
             File outputFile = new File(cmd.getOptionValue("output"));
-            excute(cmd, inputFile, outputFile);
+            execute(cmd, inputFile, outputFile);
         } catch (ParseException | IOException e) {
             e.printStackTrace();
             log.error("Failed to parse command line properties", e);
@@ -100,7 +98,7 @@ public class TilerMain {
         underline();
     }
 
-    private static void excute(CommandLine command, File inputFile, File outputFile) throws IOException {
+    private static void execute(CommandLine command, File inputFile, File outputFile) throws IOException {
         long start = System.currentTimeMillis();
 
         String crs = command.getOptionValue("crs");
@@ -116,29 +114,37 @@ public class TilerMain {
         CRSFactory factory = new CRSFactory();
         CoordinateReferenceSystem source = (crs != null) ? factory.createFromName("EPSG:" + crs) : null;
 
-        TilerOptions tilerInfo = TilerOptions.builder()
+
+        FileLoader fileLoader = new FileLoader(command);
+        List<TileInfo> tileInfos = fileLoader.loadTileInfos(formatType, inputPath, command.hasOption("recursive"));
+        tileInfos.forEach((tileInfo) -> {
+            GaiaTransfomer.translate(source, tileInfo);
+        });
+
+        TilerOptions tilerOptions = TilerOptions.builder()
                 .inputPath(inputPath)
                 .outputPath(outputPath)
                 .inputFormatType(formatType)
                 .source(source)
                 .build();
+        Tiler tiler = new Gaia3DTiler(tilerOptions, command);
+        Tileset tileset = tiler.tile(tileInfos);
+        tiler.writeTileset(outputPath, tileset);
 
-        Tiler tiler = new Gaia3DTiler(tilerInfo, command);
-        Tileset tileset = tiler.tile();
-
-        List<BatchInfo> batchInfos = tileset.findAllBatchInfo();
-        batchInfos.forEach(batchInfo -> {
+        List<ContentInfo> contentInfos = tileset.findAllBatchInfo();
+        contentInfos.forEach(contentInfo -> {
+            GaiaTransfomer.relocation(contentInfo);
             try {
-                Batcher batcher = new GaiaBatcher(batchInfo, command);
+                Batcher batcher = new GaiaBatcher(contentInfo, command);
                 GaiaSet batchedSet = batcher.batch();
                 if (batchedSet.getMaterials().size() < 1 || batchedSet.getBufferDatas().size() < 1) {
                     throw new RuntimeException("No materials or buffers");
                 }
 
                 Batched3DModel batched3DModel = new Batched3DModel(command);
-                batched3DModel.write(batchedSet, batchInfo);
+                batched3DModel.write(batchedSet, contentInfo);
                 batched3DModel = null;
-                batchInfo.getUniverse().getScenes().forEach(gaiaScene -> {
+                contentInfo.getUniverse().getScenes().forEach(gaiaScene -> {
                     gaiaScene.getMaterials().forEach(GaiaMaterial::deleteTextures);
                 });
             } catch (IOException e) {

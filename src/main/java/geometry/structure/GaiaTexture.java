@@ -50,11 +50,11 @@ public class GaiaTexture {
     }
 
     private BufferedImage simpleImage() {
-        BufferedImage bufferedImage = new BufferedImage(64, 64, BufferedImage.TYPE_BYTE_BINARY);
+        BufferedImage bufferedImage = new BufferedImage(16, 16, BufferedImage.TYPE_BYTE_BINARY);
         Graphics2D graphics = bufferedImage.createGraphics();
-        graphics.setColor(Color.PINK);
-        graphics.fillRect(0, 0, 64, 64);
-        graphics.dispose();
+        graphics.setColor(Color.WHITE);
+        graphics.fillRect(0, 0, 16, 16);
+        //graphics.dispose();
         return bufferedImage;
     }
 

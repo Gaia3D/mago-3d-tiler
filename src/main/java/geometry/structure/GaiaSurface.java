@@ -4,10 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Getter
 @Setter
 @NoArgsConstructor
@@ -24,9 +26,11 @@ public class GaiaSurface {
     public ArrayList<Integer> getIndices() {
         ArrayList<Integer> resultIndices = new ArrayList<>();
         for (GaiaFace face : faces) {
+            if (face == null || face.getIndices() == null) {
+                log.info("Test");
+            }
             resultIndices.addAll(face.getIndices());
         }
-
         return resultIndices;
     }
 }

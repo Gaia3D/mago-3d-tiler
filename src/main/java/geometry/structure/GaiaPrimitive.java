@@ -78,6 +78,7 @@ public class GaiaPrimitive {
          */
         ArrayList<Float> positionList = new ArrayList<>();
         ArrayList<Float> batchIdList = new ArrayList<>();
+        ArrayList<Float> colorList = new ArrayList<>();
         ArrayList<Float> normalList = new ArrayList<>();
         ArrayList<Float> textureCoordinateList = new ArrayList<>();
 
@@ -112,6 +113,13 @@ public class GaiaPrimitive {
                 normalList.add((float) normal.y);
                 normalList.add((float) normal.z);
             }
+
+            // colors
+            colorList.add(1.0f);
+            colorList.add(1.0f);
+            colorList.add(1.0f);
+            colorList.add(1.0f);
+
             batchIdList.add(vertex.getBatchId());
             Vector2d textureCoordinate = vertex.getTexcoords();
             if (textureCoordinate != null) {
@@ -146,6 +154,16 @@ public class GaiaPrimitive {
             normalBuffer.setGlDimension((byte) 3);
             normalBuffer.setFloats(ArrayUtils.convertFloatArrayToList(normalList));
             gaiaBufferDataSet.getBuffers().put(AttributeType.NORMAL, normalBuffer);
+        }
+
+        if (colorList.size() > 0) {
+            GaiaBuffer colorBuffer = new GaiaBuffer();
+            colorBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
+            colorBuffer.setGlType(GL20.GL_FLOAT);
+            colorBuffer.setElementsCount(vertices.size());
+            colorBuffer.setGlDimension((byte) 4);
+            colorBuffer.setFloats(ArrayUtils.convertFloatArrayToList(colorList));
+            gaiaBufferDataSet.getBuffers().put(AttributeType.COLOR, colorBuffer);
         }
 
         if (batchIdList.size() > 0) {
@@ -184,5 +202,14 @@ public class GaiaPrimitive {
         gaiaBufferDataSet.setMaterial(this.material);
 
         return gaiaBufferDataSet;
+    }
+
+    public void translate(Vector3d translation) {
+        for (GaiaVertex vertex : vertices) {
+            Vector3d position = vertex.getPosition();
+            if (position != null) {
+                position.add(translation);
+            }
+        }
     }
 }

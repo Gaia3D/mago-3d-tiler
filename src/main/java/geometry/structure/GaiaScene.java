@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.joml.Matrix4d;
+import org.joml.Vector3d;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -40,7 +41,6 @@ public class GaiaScene {
         bufferDataSets.forEach((bufferDataSet) -> rootNode.getChildren().add(new GaiaNode(bufferDataSet)));
     }
 
-
     public GaiaBoundingBox getBoundingBox() {
         this.gaiaBoundingBox = new GaiaBoundingBox();
         for (GaiaNode node : this.getNodes()) {
@@ -50,5 +50,11 @@ public class GaiaScene {
             }
         }
         return this.gaiaBoundingBox;
+    }
+
+    public void translate(Vector3d translation) {
+        for (GaiaNode node : this.getNodes()) {
+            node.translate(translation);
+        }
     }
 }

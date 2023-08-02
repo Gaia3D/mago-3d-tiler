@@ -2,14 +2,12 @@ package tiler.tileset.node;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import geometry.basic.GaiaBoundingBox;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
-import tiler.BatchInfo;
+import tiler.ContentInfo;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -61,16 +59,16 @@ public class Node {
         REPLACE,
     }
 
-    public List<BatchInfo> findAllBatchInfo(List<BatchInfo> batchInfoList) {
+    public List<ContentInfo> findAllContentInfo(List<ContentInfo> contentInfoList) {
         if (content != null) {
-            BatchInfo batchInfo = content.getBatchInfo();
-            if (batchInfo != null) {
-                batchInfoList.add(batchInfo);
+            ContentInfo contentInfo = content.getContentInfo();
+            if (contentInfo != null) {
+                contentInfoList.add(contentInfo);
             }
         }
         for (Node node : children) {
-            node.findAllBatchInfo(batchInfoList);
+            node.findAllContentInfo(contentInfoList);
         }
-        return batchInfoList;
+        return contentInfoList;
     }
 }

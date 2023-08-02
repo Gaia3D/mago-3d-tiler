@@ -10,9 +10,8 @@ import geometry.exchangable.GaiaUniverse;
 import geometry.structure.GaiaScene;
 import gltf.GltfWriter;
 import org.junit.jupiter.api.Test;
-import tiler.BatchInfo;
+import tiler.ContentInfo;
 import tiler.LevelOfDetail;
-import util.ImageUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,7 +49,7 @@ class AssimpConverterTest {
         assertNotNull(scene);
 
 
-        BatchInfo batchInfo = new BatchInfo();
+        ContentInfo batchInfo = new ContentInfo();
         GaiaUniverse universe = new GaiaUniverse("test", new File(getAbsolutePath(INPUT_PATH)), new File(getAbsolutePath(OUTPUT_PATH)));
         universe.getScenes().add(scene);
 

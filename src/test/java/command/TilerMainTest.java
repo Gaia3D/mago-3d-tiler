@@ -34,45 +34,27 @@ class TilerMainTest {
                 "-output", output + suffix,
                 "-outputType", "gltf",
                 "-swapYZ",
-                "-maxCount", "256",
+                "-maxCount", "1024",
+                //"-gltf",
                 "-glb",
-                //"-debug"
+                "-debug"
         };
         TilerMain.main(args);
     }
 
     @Test
-    void data32651() throws URISyntaxException {
-        String input = "D:\\51zone\\51zone_3DS\\";
-        String output = "D:\\51zone\\51zone_3DS_output\\";
+    void convertSeoul() {
+        String input = "D:\\workspaces\\su_kml_collada\\inputdata\\";
+        String output = "D:\\workspaces\\su_kml_collada\\seoul_tileset_plasma_all\\";
         String[] args= new String[]{
                 "-input", input,
-                "-inputType", "3ds",
+                "-inputType", "kml",
                 "-output", output,
                 "-outputType", "gltf",
-                "-crs", "32651",
                 "-swapYZ",
-                "-maxCount", "256",
-                //"-glb",
-                //"-debug"
-        };
-        TilerMain.main(args);
-    }
-
-    @Test
-    void data32652() throws URISyntaxException {
-        String input = "D:\\52zone\\52zone_3DS\\";
-        String output = "D:\\52zone\\52zone_3DS_output\\";
-        String[] args= new String[]{
-                "-input", input,
-                "-inputType", "3ds",
-                "-output", output,
-                "-outputType", "gltf",
-                "-crs", "32652",
-                "-swapYZ",
-                "-maxCount", "128",
-                //"-glb",
-                //"-debug"
+                //"-gltf",
+                //"-debug",
+                "-maxCount", "512",
         };
         TilerMain.main(args);
     }
@@ -110,11 +92,10 @@ class TilerMainTest {
                 "-input", inputPath + suffix,
                 "-inputType", "3ds",
                 "-output", outputPath + suffix,
-                "-outputType", "gltf",
                 "-crs", crs,
                 "-swapYZ",
-                //"-glb",
-                "-maxCount", "1024",
+                //"-gltf",
+                //"-maxCount", "1024",
                 //"-debug"
         };
         TilerMain.main(args);

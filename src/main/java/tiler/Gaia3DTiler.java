@@ -7,6 +7,7 @@ import command.KmlReader;
 import converter.AssimpConverter;
 import converter.Converter;
 import geometry.basic.GaiaBoundingBox;
+import geometry.batch.GaiaTransfomer;
 import geometry.exchangable.GaiaUniverse;
 import geometry.structure.GaiaScene;
 import geometry.types.FormatType;
@@ -15,7 +16,6 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.io.FileUtils;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
-import org.locationtech.proj4j.ProjCoordinate;
 import tiler.tileset.Tileset;
 import tiler.tileset.asset.*;
 import tiler.tileset.node.BoundingVolume;
@@ -35,22 +35,18 @@ import java.util.stream.Collectors;
 @Slf4j
 public class Gaia3DTiler implements Tiler {
     private static final int DEFUALT_MAX_COUNT = 256;
-
-    private final TilerOptions tilerOptions;
-
     private final CommandLine command;
     private final Converter assimpConverter;
 
-    public Gaia3DTiler(TilerOptions tilerOptions, CommandLine command) {
-        this.tilerOptions = tilerOptions;
+    private final TilerOptions options;
 
+    public Gaia3DTiler(TilerOptions tilerOptions, CommandLine command) {
+        this.options = tilerOptions;
         this.assimpConverter = new AssimpConverter(command);
         this.command = command;
     }
 
-    public Tileset tile() {
-        boolean recursive = command.hasOption("recursive");
-        List<TileInfo> tileInfos = createTileInfos(tilerOptions.getInputPath(), recursive);
+    public Tileset tile(List<TileInfo> tileInfos) {
         double geometricError = calcGeometricError(tileInfos);
 
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
@@ -58,7 +54,7 @@ public class Gaia3DTiler implements Tiler {
         rotateX90(transformMatrix);
 
         Node root = createRoot();
-        root.setBoundingVolume(new BoundingVolume(globalBoundingBox, tilerOptions.getSource()));
+        root.setBoundingVolume(new BoundingVolume(globalBoundingBox));
         root.setTransformMatrix(transformMatrix);
         root.setGeometricError(geometricError);
 
@@ -73,14 +69,32 @@ public class Gaia3DTiler implements Tiler {
         tileset.setGeometricError(geometricError);
         tileset.setAsset(asset);
         tileset.setRoot(root);
-        write(tilerOptions.getOutputPath(), tileset);
-
         return tileset;
+    }
+
+    public void writeTileset(Path output, Tileset tileset) {
+        File tilesetFile = output.resolve("tileset.json").toFile();
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(tilesetFile))) {
+            String result = objectMapper.writeValueAsString(tileset);
+            writer.write(result);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private List<TileInfo> reloadScenes(List<TileInfo> tileInfos) {
         return tileInfos.stream().map((tileInfo) -> {
-            return TileInfo.builder().kmlInfo(tileInfo.getKmlInfo()).scene(assimpConverter.load(tileInfo.getScene().getOriginalPath())).build();
+            TileInfo tileinfo = TileInfo.builder().scene(assimpConverter.load(tileInfo.getScene().getOriginalPath())).build();
+            GaiaTransfomer.translate(options.getSource(), tileinfo);
+            return tileinfo;
+            /*return TileInfo.builder()
+                    .kmlInfo(tileInfo.getKmlInfo())
+                    .scene(assimpConverter.load(tileInfo.getScene().getOriginalPath()))
+                    .build();*/
         }).collect(Collectors.toList());
     }
 
@@ -98,14 +112,22 @@ public class Gaia3DTiler implements Tiler {
     private GaiaBoundingBox calcBoundingBox(List<TileInfo> tileInfos) {
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         tileInfos.forEach(tileInfo -> {
-            FormatType type = this.tilerOptions.getInputFormatType();
-            if (FormatType.KML == type) {
+            KmlInfo kmlInfo = tileInfo.getKmlInfo();
+            Vector3d position = kmlInfo.getPosition();
+            GaiaBoundingBox localBoundingBox = tileInfo.getScene().getBoundingBox();
+            localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(position);
+            boundingBox.addBoundingBox(localBoundingBox);
+
+
+            /*if (FormatType.KML == type) {
                 KmlInfo kmlInfo = tileInfo.getKmlInfo();
                 Vector3d position = kmlInfo.getPosition();
-                boundingBox.addPoint(position);
+                GaiaBoundingBox localBoundingBox = tileInfo.getScene().getBoundingBox();
+                localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(position);
+                boundingBox.addBoundingBox(localBoundingBox);
             } else {
                 boundingBox.addBoundingBox(tileInfo.getScene().getBoundingBox());
-            }
+            }*/
         });
         return boundingBox;
     }
@@ -114,25 +136,37 @@ public class Gaia3DTiler implements Tiler {
         BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
         int maxCount = command.hasOption("maxCount") ? Integer.parseInt(command.getOptionValue("maxCount")) : DEFUALT_MAX_COUNT;
         if (tileInfos.size() > maxCount) {
-            List<List<TileInfo>> childrenScenes = parentBoundingVolume.distributeScene(tileInfos, tilerOptions.getSource());
+            List<List<TileInfo>> childrenScenes = parentBoundingVolume.distributeScene(tileInfos);
+
+            int test = 0;
+            for (List<TileInfo> tileInfoList : childrenScenes) {
+                test += tileInfoList.size();
+            }
+
+            if (test == tileInfos.size()) {
+                log.info("test : " + test + ", scenes : " + tileInfos.size());
+            }
+
             for (int index = 0; index < childrenScenes.size(); index++) {
-                List<TileInfo> childScenes = childrenScenes.get(index);
-                Node childNode = createStructNode(parentNode, childScenes, index);
+                List<TileInfo> childTileInfos = childrenScenes.get(index);
+                Node childNode = createStructNode(parentNode, childTileInfos, index);
                 if (childNode != null) {
                     parentNode.getChildren().add(childNode);
-                    createNode(childNode, tileInfos);
+                    createNode(childNode, childTileInfos);
                 }
             }
         } else if (tileInfos.size() > 1) {
             int test = 0;
-            List<List<TileInfo>> childrenScenes = parentBoundingVolume.distributeScene(tileInfos, tilerOptions.getSource());
+            List<List<TileInfo>> childrenScenes = parentBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
-                List<TileInfo> childScenes = reloadScenes(childrenScenes.get(index));
-                test += childScenes.size();
-                Node childNode = createContentNode(parentNode, childScenes, index);
+                List<TileInfo> childTileInfos = reloadScenes(childrenScenes.get(index));
+                //List<TileInfo> childTileInfos = childrenScenes.get(index);
+
+                test += childTileInfos.size();
+                Node childNode = createContentNode(parentNode, childTileInfos, index);
                 if (childNode != null) {
                     parentNode.getChildren().add(childNode);
-                    createNode(childNode, childScenes);
+                    createNode(childNode, childTileInfos);
                 }
             }
             if (test != tileInfos.size()) {
@@ -140,6 +174,8 @@ public class Gaia3DTiler implements Tiler {
             }
         } else if (tileInfos.size() > 0) {
             Node childNode = createContentNode(parentNode, reloadScenes(tileInfos), 0);
+            //Node childNode = createContentNode(parentNode, tileInfos, 0);
+
             if (childNode != null) {
                 parentNode.getChildren().add(childNode);
                 createNode(childNode, tileInfos);
@@ -160,7 +196,7 @@ public class Gaia3DTiler implements Tiler {
         Matrix4d transformMatrix = getTransfromMatrix(childBoundingBox);
         rotateX90(transformMatrix);
 
-        BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox, tilerOptions.getSource());
+        BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
 
         Node childNode = new Node();
         childNode.setParent(parentNode);
@@ -170,12 +206,12 @@ public class Gaia3DTiler implements Tiler {
         childNode.setGeometricError(geometricError);
         childNode.setRefine(Node.RefineType.REPLACE);
         childNode.setChildren(new ArrayList<>());
-        GaiaUniverse universe = new GaiaUniverse(nodeCode, tilerOptions.getInputPath(), tilerOptions.getOutputPath());
-        tileInfos.forEach(tileInfo -> universe.getScenes().add(tileInfo.getScene()));
+        /*GaiaUniverse universe = new GaiaUniverse(nodeCode, tilerOptions.getInputPath(), tilerOptions.getOutputPath());
+        tileInfos.forEach(tileInfo -> universe.getScenes().add(tileInfo.getScene()));*/
         return childNode;
     }
 
-    private Node createContentNode(Node parentNode, List<TileInfo> tileInfos, int index) throws IOException {
+    private Node createContentNode(Node parentNode, List<TileInfo> tileInfos, int index) {
         if (tileInfos.size() < 1) {
             return null;
         }
@@ -184,7 +220,7 @@ public class Gaia3DTiler implements Tiler {
         Matrix4d transformMatrix = getTransfromMatrix(childBoundingBox);
         rotateX90(transformMatrix);
 
-        BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox, tilerOptions.getSource());
+        BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
 
         String nodeCode = parentNode.getNodeCode();
         LevelOfDetail lod = getLodByNodeCode(nodeCode);
@@ -206,18 +242,19 @@ public class Gaia3DTiler implements Tiler {
         childNode.setRefine(Node.RefineType.REPLACE);
         childNode.setChildren(new ArrayList<>());
 
-        GaiaUniverse universe = new GaiaUniverse(nodeCode, tilerOptions.getInputPath(), tilerOptions.getOutputPath());
+        GaiaUniverse universe = new GaiaUniverse(nodeCode, options.getInputPath(), options.getOutputPath());
         tileInfos.forEach(tileInfo -> universe.getScenes().add(tileInfo.getScene()));
 
-        BatchInfo batchInfo = new BatchInfo();
-        batchInfo.setLod(lod);
-        batchInfo.setUniverse(universe);
-        batchInfo.setBoundingBox(childBoundingBox);
-        batchInfo.setNodeCode(nodeCode);
+        ContentInfo contentInfo = new ContentInfo();
+        contentInfo.setLod(lod);
+        contentInfo.setUniverse(universe);
+        contentInfo.setTileInfos(tileInfos);
+        contentInfo.setBoundingBox(childBoundingBox);
+        contentInfo.setNodeCode(nodeCode);
 
         Content content = new Content();
         content.setUri(nodeCode + ".b3dm");
-        content.setBatchInfo(batchInfo);
+        content.setContentInfo(contentInfo);
         childNode.setContent(content);
         return childNode;
     }
@@ -250,16 +287,20 @@ public class Gaia3DTiler implements Tiler {
 
     private Matrix4d getTransfromMatrix(GaiaBoundingBox boundingBox) {
         Vector3d center = boundingBox.getCenter();
-        FormatType formatType = this.tilerOptions.getInputFormatType();
-        if (FormatType.KML == formatType) {
-            return GlobeUtils.normalAtCartesianPointWgs84(center.x, center.y, center.z);
+        double[] cartesian = GlobeUtils.geographicToCartesianWgs84(center.x, center.y, center.z);
+        return GlobeUtils.normalAtCartesianPointWgs84(cartesian[0], cartesian[1], cartesian[2]);
+
+
+        /*if (FormatType.KML == formatType) {
+            double[] cartesian = GlobeUtils.geographicToCartesianWgs84(center.x, center.y, center.z);
+            return GlobeUtils.normalAtCartesianPointWgs84(cartesian[0], cartesian[1], cartesian[2]);
         } else {
             Vector3d centerBottom = new Vector3d(center.x, center.y, boundingBox.getMinZ());
             ProjCoordinate centerPoint = new ProjCoordinate(centerBottom.x(), centerBottom.y(), centerBottom.z());
             ProjCoordinate translatedCenterPoint = GlobeUtils.transform(tilerOptions.getSource(), centerPoint);
             double[] cartesian = GlobeUtils.geographicToCartesianWgs84(translatedCenterPoint.x, translatedCenterPoint.y, centerBottom.z());
             return GlobeUtils.normalAtCartesianPointWgs84(cartesian[0], cartesian[1], cartesian[2]);
-        }
+        }*/
     }
 
     private Asset createAsset() {
@@ -269,7 +310,7 @@ public class Gaia3DTiler implements Tiler {
         Ion ion = new Ion();
         List<Credit> credits = new ArrayList<>();
         Credit credit = new Credit();
-        credit.setHtml("<html>");
+        credit.setHtml("<html>TEST</html>");
         credits.add(credit);
         cesium.setCredits(credits);
         extras.setIon(ion);
@@ -285,58 +326,5 @@ public class Gaia3DTiler implements Tiler {
         root.setRefine(Node.RefineType.REPLACE);
         root.setChildren(new ArrayList<>());
         return root;
-    }
-
-    private void write(Path output, Tileset tileset) {
-        File tilesetFile = output.resolve("tileset.json").toFile();
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(tilesetFile))) {
-            String result = objectMapper.writeValueAsString(tileset);
-            writer.write(result);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private List<GaiaScene> readInputFile(Path input, boolean recursive) {
-        List<GaiaScene> sceneList = new ArrayList<>();
-        FormatType formatType = tilerOptions.getInputFormatType();
-        String[] extensions = new String[]{formatType.getExtension()};
-        for (File child : FileUtils.listFiles(input.toFile(), extensions, recursive)) {
-            if (FormatType.KML == formatType) {
-                KmlInfo kmlInfo = KmlReader.read(child);
-                child = new File(child.getParent(), kmlInfo.getHref());
-            }
-            GaiaScene scene = assimpConverter.load(child);
-            sceneList.add(scene);
-        }
-        return sceneList;
-    }
-
-    private List<TileInfo> createTileInfos(Path input, boolean recursive) {
-        List<TileInfo> tileInfos = new ArrayList<>();
-        FormatType formatType = tilerOptions.getInputFormatType();
-        String[] extensions = getExtensions(formatType);
-        for (File child : FileUtils.listFiles(input.toFile(), extensions, recursive)) {
-            TileInfo tileInfo = createTileInfo(child, formatType);
-            tileInfos.add(tileInfo);
-        }
-        return tileInfos;
-    }
-
-    private String[] getExtensions(FormatType formatType) {
-        return new String[]{formatType.getExtension().toLowerCase(), formatType.getExtension().toUpperCase()};
-    }
-
-    private TileInfo createTileInfo(File file, FormatType formatType) {
-        KmlInfo kmlInfo = null;
-        if (FormatType.KML == formatType) {
-            kmlInfo = KmlReader.read(file);
-            file = new File(file.getParent(), kmlInfo.getHref());
-        }
-        return TileInfo.builder().kmlInfo(kmlInfo).scene(assimpConverter.load(file)).build();
     }
 }

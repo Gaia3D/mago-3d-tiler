@@ -43,6 +43,12 @@ public class KmlReader {
                     .scaleY(Double.parseDouble(findContent(elements, "y")))
                     .scaleZ(Double.parseDouble(findContent(elements, "z")))
                     .build();
+
+            factory = null;
+            documentBuilder = null;
+            document = null;
+            root = null;
+            elements = null;
         } catch (ParserConfigurationException | IOException | SAXException e) {
             log.error(e.getMessage());
         }

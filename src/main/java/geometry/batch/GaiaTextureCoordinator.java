@@ -69,9 +69,19 @@ public class GaiaTextureCoordinator {
         for (GaiaMaterial material : materials) {
             LinkedHashMap<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
             List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
-            GaiaTexture texture = textures.get(0);
+            GaiaTexture texture = null;
+            BufferedImage bufferedImage;
+            if (textures.size() > 0) {
+                texture = textures.get(0);
+                bufferedImage = texture.getBufferedImage(lod.getTextureScale());
+            } else {
+                bufferedImage = new BufferedImage(32, 32, BufferedImage.TYPE_INT_RGB);
+                Graphics2D graphics = bufferedImage.createGraphics();
+                graphics.setColor(Color.WHITE);
+                graphics.fillRect(0, 0, 32, 32);
+            }
 
-            BufferedImage bufferedImage = texture.getBufferedImage(lod.getTextureScale());
+            //BufferedImage bufferedImage = texture.getBufferedImage(lod.getTextureScale());
             //bufferedImage = resizeImage(bufferedImage, lod);
             //texture.setBufferedImage(bufferedImage);
 
@@ -186,14 +196,16 @@ public class GaiaTextureCoordinator {
 
             LinkedHashMap<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
             List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
-            GaiaTexture texture = textures.get(0);
-            BufferedImage source = texture.getBufferedImage();
-            graphics.drawImage(source, (int) splittedRectangle.getMinX(), (int) splittedRectangle.getMinY(),null);
+            if (textures.size() > 0) {
+                GaiaTexture texture = textures.get(0);
+                BufferedImage source = texture.getBufferedImage();
+                graphics.drawImage(source, (int) splittedRectangle.getMinX(), (int) splittedRectangle.getMinY(),null);
+            }
         }
 
         if (command != null && command.hasOption("debug")) {
             float[] debugColor = lod.getDebugColor();
-            Color color = new Color(debugColor[0], debugColor[1], debugColor[2], 0.3f);
+            Color color = new Color(debugColor[0], debugColor[1], debugColor[2], 0.5f);
             graphics.setColor(color);
             graphics.fillRect(0, 0, maxWidth, maxHeight);
         }
@@ -209,7 +221,16 @@ public class GaiaTextureCoordinator {
             GaiaMaterial material = findMaterial(target.getMaterialId());
             LinkedHashMap<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
             List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
-            GaiaTexture texture = textures.get(0);
+
+            GaiaTexture texture = null;
+            if (textures.size() > 0) {
+                texture = textures.get(0);
+            } else {
+                texture = new GaiaTexture();
+                texture.setType(TextureType.DIFFUSE);
+                textures.add(texture);
+            }
+
             texture.setBufferedImage(this.atlasImage);
             texture.setWidth(maxWidth);
             texture.setHeight(maxHeight);
@@ -239,7 +260,7 @@ public class GaiaTextureCoordinator {
 
             }
         }
-        this.atlasImage = null;
+        //this.atlasImage = null;
     }
 
     private BufferedImage resizeNearestPowerOfTwo(BufferedImage bufferedImage) {

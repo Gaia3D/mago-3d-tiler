@@ -5,7 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.joml.Matrix4d;
 import org.joml.Vector3d;
+import util.GlobeUtils;
 
 @Slf4j
 @Setter
@@ -96,6 +98,35 @@ public class GaiaBoundingBox {
         maxY += vector3d.y;
         maxZ += vector3d.z;
     }
+
+    public GaiaBoundingBox convertLocalToLonlatBoundingBox(Vector3d center) {
+        Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
+        Matrix4d transformMatrix = GlobeUtils.normalAtCartesianPointWgs84(centerWorldCoordinate);
+        //Matrix4d transformMatrixInv = transformMatrix.invert(new Matrix4d());
+
+
+        Vector3d minLocalCoordinate = new Vector3d(minX, minY, minZ);
+        Matrix4d minTransfromMatrix = transformMatrix.translate(minLocalCoordinate, new Matrix4d());
+        Vector3d minWorldCoordinate = new Vector3d(minTransfromMatrix.m30(), minTransfromMatrix.m31(), minTransfromMatrix.m32());
+        minWorldCoordinate = GlobeUtils.cartesianToGeographicWgs84(minWorldCoordinate);
+        //minLocalCoordinate.add(centerWorldCoordinate);
+        //Vector3d minWorldCoordinate = GlobeUtils.cartesianToGeographicWgs84(minLocalCoordinate);
+
+
+        Vector3d maxLocalCoordinate = new Vector3d(maxX, maxY, maxZ);
+        Matrix4d maxTransfromMatrix = transformMatrix.translate(maxLocalCoordinate, new Matrix4d());
+        Vector3d maxWorldCoordinate = new Vector3d(maxTransfromMatrix.m30(), maxTransfromMatrix.m31(), maxTransfromMatrix.m32());
+        maxWorldCoordinate = GlobeUtils.cartesianToGeographicWgs84(maxWorldCoordinate);
+
+        //maxLocalCoordinate.add(centerWorldCoordinate);
+        //Vector3d maxWorldCoordinate = GlobeUtils.cartesianToGeographicWgs84(maxLocalCoordinate);
+
+        GaiaBoundingBox result = new GaiaBoundingBox();
+        result.addPoint(minWorldCoordinate);
+        result.addPoint(maxWorldCoordinate);
+        return result;
+    }
+
 
     public double getLongestDistance() {
         Vector3d volume = getVolume();

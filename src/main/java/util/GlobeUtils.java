@@ -37,6 +37,11 @@ public class GlobeUtils {
         return result;
     }
 
+    public static Vector3d geographicToCartesianWgs84(Vector3d position) {
+        double[] result = geographicToCartesianWgs84(position.x, position.y, position.z);
+        return new Vector3d(result[0], result[1], result[2]);
+    }
+
     /**
      *
      */
@@ -72,6 +77,10 @@ public class GlobeUtils {
         Matrix4d transfromMatrix = new Matrix4d();
         transfromMatrix.set(transfrom);
         return transfromMatrix;
+    }
+
+    public static Matrix4d normalAtCartesianPointWgs84(Vector3d position) {
+        return normalAtCartesianPointWgs84(position.x, position.y, position.z);
     }
 
     public static Vector3d cartesianToGeographicWgs84(Vector3d position) {

@@ -210,4 +210,10 @@ public class GaiaMesh {
             bufferSets.add(gaiaBufferDataSet);
         }
     }
+
+    public void translate(Vector3d translation) {
+        for (GaiaPrimitive primitive : primitives) {
+            primitive.translate(translation);
+        }
+    }
 }

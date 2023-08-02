@@ -12,6 +12,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
+import org.joml.Vector4d;
 import util.ArrayUtils;
 
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ public class GaiaNode {
         List<Integer> indiceList = new ArrayList<>();
         List<Float> positionList = new ArrayList<>();
         List<Float> normalList = new ArrayList<>();
+        List<Float> colorList = new ArrayList<>();
         List<Float> texCoordList = new ArrayList<>();
         List<Float> batchIdList = new ArrayList<>();
         List<GaiaVertex> vertexList = new ArrayList<>();
@@ -55,7 +57,10 @@ public class GaiaNode {
             } else if (attributeType == AttributeType.NORMAL) {
                 float[] normals = buffer.getFloats();
                 normalList = ArrayUtils.convertListToFloatArray(normals);
-            } else if (attributeType == AttributeType.TEXCOORD) {
+            } else if (attributeType == AttributeType.COLOR) {
+                float[] colors = buffer.getFloats();
+                colorList = ArrayUtils.convertListToFloatArray(colors);
+            }else if (attributeType == AttributeType.TEXCOORD) {
                 float[] texCoords = buffer.getFloats();
                 texCoordList = ArrayUtils.convertListToFloatArray(texCoords);
             } else if (attributeType == AttributeType.INDICE) {
@@ -82,6 +87,14 @@ public class GaiaNode {
                 float normalY = normalList.get(vertexIndex + 1);
                 float normalZ = normalList.get(vertexIndex + 2);
                 vertex.setNormal(new Vector3d(normalX, normalY, normalZ));
+            }
+            if (CollectionUtils.isNotEmpty(colorList)) {
+                int colorIndex = i * 4;
+                float colorR = colorList.get(colorIndex);
+                float colorG = colorList.get(colorIndex + 1);
+                float colorB = colorList.get(colorIndex + 2);
+                float colorA = colorList.get(colorIndex + 3);
+                vertex.setColor(new Vector4d(colorR, colorG, colorB, colorA));
             }
             if (CollectionUtils.isNotEmpty(texCoordList)) {
                 int texcoordIndex = i * 2;
@@ -159,5 +172,14 @@ public class GaiaNode {
             transformMatrix = child.toGaiaBufferSets(bufferSets, transformMatrix);
         }
         return transformMatrix;
+    }
+
+    public void translate(Vector3d translation) {
+        for (GaiaMesh mesh : this.getMeshes()) {
+            mesh.translate(translation);
+        }
+        for (GaiaNode child : this.getChildren()) {
+            child.translate(translation);
+        }
     }
 }

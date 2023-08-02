@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
@@ -42,24 +43,15 @@ public class BoundingVolume {
         }
     }
 
-    public BoundingVolume(GaiaBoundingBox boundingBox, CoordinateReferenceSystem source) {
+    //public BoundingVolume(GaiaBoundingBox boundingBox, CoordinateReferenceSystem source) {
+    public BoundingVolume(GaiaBoundingBox boundingBox) {
         ProjCoordinate minPoint = new ProjCoordinate(boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ());
         ProjCoordinate maxPoint = new ProjCoordinate(boundingBox.getMaxX(), boundingBox.getMaxY(), boundingBox.getMaxZ());
-
-        ProjCoordinate translatedMinPoint = null;
-        ProjCoordinate translatedMaxPoint = null;
-        if (source != null) {
-            translatedMinPoint = GlobeUtils.transform(source, minPoint);
-            translatedMaxPoint = GlobeUtils.transform(source, maxPoint);
-        } else {
-            translatedMinPoint = minPoint;
-            translatedMaxPoint = maxPoint;
-        }
         double[] rootRegion = new double[6];
-        rootRegion[0] = Math.toRadians(translatedMinPoint.x);
-        rootRegion[1] = Math.toRadians(translatedMinPoint.y);
-        rootRegion[2] = Math.toRadians(translatedMaxPoint.x);
-        rootRegion[3] = Math.toRadians(translatedMaxPoint.y);
+        rootRegion[0] = Math.toRadians(minPoint.x);
+        rootRegion[1] = Math.toRadians(minPoint.y);
+        rootRegion[2] = Math.toRadians(maxPoint.x);
+        rootRegion[3] = Math.toRadians(maxPoint.y);
         rootRegion[4] = boundingBox.getMinZ();
         rootRegion[5] = boundingBox.getMaxZ();
         this.setType(BoundingVolumeType.REGION);
@@ -72,7 +64,7 @@ public class BoundingVolume {
         REGION
     }
 
-    public List<List<TileInfo>> distributeScene(List<TileInfo> tileInfos, CoordinateReferenceSystem source) {
+    public List<List<TileInfo>> distributeScene(List<TileInfo> tileInfos) {
         List<List<TileInfo>> result = new ArrayList<>();
         result.add(new ArrayList<>());
         result.add(new ArrayList<>());
@@ -88,15 +80,12 @@ public class BoundingVolume {
             double midY = (minY + maxY) / 2;
             for (TileInfo tileInfo : tileInfos) {
                 GaiaScene scene = tileInfo.getScene();
-
-                //KmlInfo kmlInfo = tileInfo.getKmlInfo();
-                //Vector3d test = GlobeUtils.cartesianToGeographicWgs84(kmlInfo.getPosition());
-
                 GaiaBoundingBox localBoundingBox = scene.getBoundingBox();
-                //localBoundingBox.translate(-test.x, -test.y, -test.z);
-
-                BoundingVolume localBoundingVolume = new BoundingVolume(localBoundingBox, source);
+                KmlInfo kmlInfo = tileInfo.getKmlInfo();
+                localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(kmlInfo.getPosition());
+                BoundingVolume localBoundingVolume = new BoundingVolume(localBoundingBox);
                 Vector3d center = localBoundingVolume.calcCenter();
+
                 if (midX < center.x()) {
                     if (midY < center.y()) {
                         result.get(2).add(tileInfo);

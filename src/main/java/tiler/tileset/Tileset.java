@@ -2,7 +2,7 @@ package tiler.tileset;
 
 import lombok.Getter;
 import lombok.Setter;
-import tiler.BatchInfo;
+import tiler.ContentInfo;
 import tiler.tileset.asset.Asset;
 import tiler.tileset.node.Node;
 import tiler.tileset.node.Properties;
@@ -18,7 +18,7 @@ public class Tileset {
     private Node root;
     private Properties properties;
 
-    public List<BatchInfo> findAllBatchInfo() {
-        return root.findAllBatchInfo(new ArrayList<>());
+    public List<ContentInfo> findAllBatchInfo() {
+        return root.findAllContentInfo(new ArrayList<>());
     }
 }

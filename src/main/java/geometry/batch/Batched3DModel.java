@@ -9,7 +9,7 @@ import gltf.GltfWriter;
 import io.LittleEndianDataOutputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
-import tiler.BatchInfo;
+import tiler.ContentInfo;
 import util.ImageUtils;
 
 import java.io.*;
@@ -29,7 +29,7 @@ public class Batched3DModel {
         this.command = command;
     }
 
-    public boolean write(GaiaSet batchedSet, BatchInfo batchInfo) throws IOException {
+    public boolean write(GaiaSet batchedSet, ContentInfo batchInfo) throws IOException {
         int featureTableJSONByteLength;
         int batchTableJSONByteLength;
         String featureTableJson;
@@ -44,6 +44,12 @@ public class Batched3DModel {
         GaiaScene scene = new GaiaScene(batchedSet);
 
         byte[] glbBytes;
+        if (command.hasOption("gltf")) {
+            String glbFileName = nodeCode + ".gltf";
+            File glbOutputFile = universe.getOutputRoot().resolve(glbFileName).toFile();
+            gltfWriter.writeGltf(scene, glbOutputFile);
+        }
+
         if (command.hasOption("glb")) {
             String glbFileName = nodeCode + ".glb";
             File glbOutputFile = universe.getOutputRoot().resolve(glbFileName).toFile();

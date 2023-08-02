@@ -1,25 +1,8 @@
 package geometry.batch;
 
 import command.Configurator;
-import command.KmlInfo;
-import command.KmlReader;
-import converter.AssimpConverter;
-import converter.Converter;
-import geometry.basic.GaiaBoundingBox;
-import geometry.exchangable.GaiaSet;
-import geometry.exchangable.GaiaUniverse;
-import geometry.structure.GaiaNode;
-import geometry.structure.GaiaScene;
-import gltf.GltfWriter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Options;
-import org.joml.Matrix4d;
-import org.joml.Vector3d;
 import org.junit.jupiter.api.Test;
-import tiler.BatchInfo;
-import tiler.LevelOfDetail;
-import util.GlobeUtils;
 
 import java.io.File;
 import java.io.IOException;
