@@ -34,8 +34,7 @@ class TilerMainTest {
                 "-output", output + suffix,
                 "-outputType", "gltf",
                 "-swapYZ",
-                "-maxCount", "1024",
-                //"-gltf",
+                "-maxCount", "256",
                 "-glb",
                 "-debug"
         };

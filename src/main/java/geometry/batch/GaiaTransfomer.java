@@ -24,11 +24,13 @@ public class GaiaTransfomer {
 
         GaiaScene gaiaScene = tileInfo.getScene();
         GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox();
+
+
         Vector3d center = boundingBox.getCenter();
-        ProjCoordinate centerSource = new ProjCoordinate(center.x, center.y, center.z);
+        ProjCoordinate centerSource = new ProjCoordinate(center.x, center.y, boundingBox.getMinZ());
         ProjCoordinate centerWgs84 = GlobeUtils.transform(source, centerSource);
 
-        Vector3d position = new Vector3d(centerWgs84.x, centerWgs84.y, center.z);
+        Vector3d position = new Vector3d(centerWgs84.x, centerWgs84.y, 0.0d);
 
         Vector3d traslation = new Vector3d(center.x, center.y, 0.0d);
         traslation.negate();
@@ -100,7 +102,12 @@ public class GaiaTransfomer {
             kmlCenter = GlobeUtils.geographicToCartesianWgs84(kmlCenter);
 
             Matrix4d resultTransfromMatrix = transformMatrixInv.translate(kmlCenter, new Matrix4d());
-            Vector3d translation = new Vector3d(resultTransfromMatrix.get(3, 0), resultTransfromMatrix.get(3, 1), resultTransfromMatrix.get(3, 2));
+
+            double x = resultTransfromMatrix.get(3, 0);
+            double y = resultTransfromMatrix.get(3, 1);
+            double z = resultTransfromMatrix.get(3, 2);
+
+            Vector3d translation = new Vector3d(x, y, z);
 
             GaiaScene scene = tileInfo.getScene();
             scene.translate(translation);

@@ -88,7 +88,7 @@ public class Gaia3DTiler implements Tiler {
 
     private List<TileInfo> reloadScenes(List<TileInfo> tileInfos) {
         return tileInfos.stream().map((tileInfo) -> {
-            TileInfo tileinfo = TileInfo.builder().scene(assimpConverter.load(tileInfo.getScene().getOriginalPath())).build();
+            TileInfo tileinfo = TileInfo.builder().kmlInfo(tileInfo.getKmlInfo()).scene(assimpConverter.load(tileInfo.getScene().getOriginalPath())).build();
             GaiaTransfomer.translate(options.getSource(), tileinfo);
             return tileinfo;
             /*return TileInfo.builder()
@@ -113,6 +113,11 @@ public class Gaia3DTiler implements Tiler {
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         tileInfos.forEach(tileInfo -> {
             KmlInfo kmlInfo = tileInfo.getKmlInfo();
+
+            if (kmlInfo == null) {
+                log.info("test");
+            }
+
             Vector3d position = kmlInfo.getPosition();
             GaiaBoundingBox localBoundingBox = tileInfo.getScene().getBoundingBox();
             localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(position);
