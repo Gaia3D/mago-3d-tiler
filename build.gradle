@@ -6,7 +6,7 @@ plugins {
 }
 
 group "com.gaia3d"
-version "1.0.0-SNAPSHOT"
+version "1.0.1-SNAPSHOT"
 
 project.ext.lwjglVersion = "3.3.1"
 switch ( OperatingSystem.current() ) {
@@ -60,14 +60,11 @@ dependencies {
     implementation "de.javagl:jgltf-model:2.0.3"
     implementation "de.javagl:jgltf-validator:2.0.3"
 
-    // kml reader
-    //implementation "de.micromata.jak:JavaAPIforKml:2.2.1"
-
-    //implementation "org.locationtech.jts:jts:1.19.0"
-    //implementation "org.locationtech.jts:jts-io:1.19.0"
+    // proj4j (java projection library)
     implementation "org.locationtech.proj4j:proj4j:1.2.3"
     implementation "org.locationtech.proj4j:proj4j-epsg:1.2.3"
 
+    // jackson (json library)
     implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
 
     runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
@@ -98,6 +95,17 @@ jib {
         jvmFlags = ["-Xms512m", "-Xmx1024m"]
         mainClass = "command.TilerMain"
     }
+}
+
+java {
+    withJavadocJar()
+}
+
+javadoc {
+    options.addStringOption("locale","ko_KR");
+    options.addStringOption("encoding","UTF-8");
+    options.addStringOption("charset","UTF-8");
+    options.addStringOption("docencoding","UTF-8");
 }
 
 // jar task

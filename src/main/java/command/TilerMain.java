@@ -31,7 +31,7 @@ import java.util.List;
 
 @Slf4j
 public class TilerMain {
-    public static String version = "1.0.0";
+    public static String version = "1.0.1";
     public static CommandLine command = null;
 
     public static void main(String[] args) {
