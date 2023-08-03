@@ -1,6 +1,7 @@
 package command;
 
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -10,11 +11,6 @@ import java.net.URISyntaxException;
 class TilerMainTest {
     private static final String INPUT_PATH = "../sample-external/";
     private static final String OUTPUT_PATH = "../output/";
-
-    @Test
-    void test() {
-        log.debug("test");
-    }
 
     @Test
     void convertWs2() throws URISyntaxException {
@@ -34,9 +30,9 @@ class TilerMainTest {
                 "-output", output + suffix,
                 "-outputType", "gltf",
                 "-swapYZ",
-                "-maxCount", "256",
-                "-glb",
-                "-debug"
+                "-maxCount", "512",
+                //"-glb",
+                //"-debug"
         };
         TilerMain.main(args);
     }
@@ -44,7 +40,7 @@ class TilerMainTest {
     @Test
     void convertSeoul() {
         String input = "D:\\workspaces\\su_kml_collada\\inputdata\\";
-        String output = "D:\\workspaces\\su_kml_collada\\seoul_tileset_plasma_all\\";
+        String output = "D:\\workspaces\\su_kml_collada\\seoul_tileset_plasma\\";
         String[] args= new String[]{
                 "-input", input,
                 "-inputType", "kml",
@@ -53,7 +49,7 @@ class TilerMainTest {
                 "-swapYZ",
                 //"-gltf",
                 //"-debug",
-                "-maxCount", "512",
+                "-maxCount", "2048",
         };
         TilerMain.main(args);
     }
@@ -93,8 +89,8 @@ class TilerMainTest {
                 "-output", outputPath + suffix,
                 "-crs", crs,
                 "-swapYZ",
-                //"-gltf",
-                //"-maxCount", "1024",
+                "-maxCount", "512",
+                //"-glb",
                 //"-debug"
         };
         TilerMain.main(args);
@@ -102,7 +98,6 @@ class TilerMainTest {
 
     private String getAbsolutePath(String classPath) throws URISyntaxException {
         File file = new File(getClass().getResource(classPath).toURI());
-        assert(file != null);
         return file.getAbsolutePath() + File.separator;
     }
 }

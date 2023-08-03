@@ -1,112 +1,86 @@
 package command;
 
-import geometry.batch.Batched3DModel;
-import geometry.batch.Batcher;
-import geometry.batch.GaiaBatcher;
-import geometry.batch.GaiaTransfomer;
-import geometry.exchangable.GaiaSet;
-import geometry.structure.GaiaMaterial;
-import geometry.types.FormatType;
+import basic.types.FormatType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileExistsException;
 import org.apache.logging.log4j.Level;
 import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
-import tiler.*;
-import tiler.tileset.Tileset;
+import process.ProcessFlow;
+import process.ProcessOptions;
+import process.TilerOptions;
+import process.postprocess.GaiaRelocator;
+import process.postprocess.PostProcess;
+import process.postprocess.batch.Batched3DModel;
+import process.postprocess.batch.GaiaBatcher;
+import process.preprocess.GaiaTranslator;
+import process.preprocess.PreProcess;
+import process.tileprocess.TileProcess;
+import converter.FileLoader;
+import process.tileprocess.tile.Gaia3DTiler;
+import process.tileprocess.tile.TileInfo;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 
 @Slf4j
 public class TilerMain {
-    public static Options createOptions() {
-        Options options = new Options();
-        options.addOption("h", "help", false, "Print help");
-        options.addOption("v", "version", false, "Print version");
-        options.addOption("q", "quiet", false, "Quiet mode");
-
-        options.addOption("i", "input", true, "Input file path");
-        options.addOption("o", "output", true, "Output file path");
-        options.addOption("it", "inputType", true, "Input file type");
-        options.addOption("ot", "outputType", true, "Output file type");
-
-        options.addOption("k", "kml", false, "Use KML file.");
-        options.addOption("c", "crs", true, "Coordinate Reference Systems EPSG code");
-        options.addOption("r", "recursive", false, "Recursive search directory");
-        options.addOption("sc", "scale", true, "Scale factor");
-        options.addOption("st", "strict", true, "Strict mode");
-
-        options.addOption("gn", "genNormals", false, "generate normals");
-        options.addOption("nt", "ignoreTextures", false, "ignore textures");
-        options.addOption("yz", "swapYZ", false, "swap YZ");
-
-        options.addOption("d", "debug", false, "Debug mode");
-        options.addOption("gf", "gltf", false, "Create gltf file");
-        options.addOption("gb", "glb", false, "Create glb file");
-
-        options.addOption("mc", "maxCount", true, "Max count of nodes (Default: 256)");
-        return options;
-    }
+    public static String version = "1.0.0";
+    public static CommandLine command = null;
 
     public static void main(String[] args) {
         Configurator.initLogger();
-        Options options = createOptions();
+        Options options = Configurator.createOptions();
         CommandLineParser parser = new DefaultParser();
         try {
-            CommandLine cmd = parser.parse(options, args);
-            if (cmd.hasOption("quiet")) {
+            command = parser.parse(options, args);
+            if (command.hasOption(ProcessOptions.QUIET.getArgName())) {
                 Configurator.setLevel(Level.OFF);
             }
             start();
-            if (cmd.hasOption("debug")) {
+            if (command.hasOption(ProcessOptions.DEBUG.getArgName())) {
                 log.info("Starting Gaia3D Tiler in debug mode.");
             }
-            if (cmd.hasOption("help")) {
-                HelpFormatter formatter = new HelpFormatter();
-                formatter.printHelp("Gaia3D Tiler", options);
+            if (command.hasOption(ProcessOptions.HELP.getArgName())) {
+                new HelpFormatter().printHelp("Gaia3D Tiler", options);
                 return;
             }
-            if (cmd.hasOption("version")) {
-                log.info("Gaia3D Tiler version 1.0.0");
+            if (command.hasOption(ProcessOptions.VERSION.getArgName())) {
+                log.info("Gaia3D Tiler version {}", version);
                 return;
             }
-            if (!cmd.hasOption("input")) {
-                log.error("input file path is not specified.");
+            if (!command.hasOption(ProcessOptions.INPUT.getArgName())) {
+                log.error("Input file path is not specified.");
                 return;
             }
-            if (!cmd.hasOption("output")) {
+            if (!command.hasOption(ProcessOptions.OUTPUT.getArgName())) {
                 log.error("output file path is not specified.");
                 return;
             }
-            /*if (!cmd.hasOption("crs")) {
-                log.error("crs is not specified.");
-                return;
-            }*/
-            File inputFile = new File(cmd.getOptionValue("input"));
-            File outputFile = new File(cmd.getOptionValue("output"));
-            execute(cmd, inputFile, outputFile);
+            execute();
         } catch (ParseException | IOException e) {
-            e.printStackTrace();
             log.error("Failed to parse command line properties", e);
         }
         underline();
     }
 
-    private static void execute(CommandLine command, File inputFile, File outputFile) throws IOException {
+    private static void execute() throws IOException {
         long start = System.currentTimeMillis();
 
+        File inputFile = new File(command.getOptionValue(ProcessOptions.INPUT.getArgName()));
+        File outputFile = new File(command.getOptionValue(ProcessOptions.OUTPUT.getArgName()));
         String crs = command.getOptionValue("crs");
         String inputExtension = command.getOptionValue("inputType");
-        Path inputPath = inputFile.toPath();
-        Path outputPath = outputFile.toPath();
-        inputFile.mkdir();
-        outputFile.mkdir();
+        boolean recursive = command.hasOption("recursive");
+
+        Path inputPath = createPath(inputFile);
+        Path outputPath = createPath(outputFile);
         if (!validate(outputPath)) {
             return;
         }
@@ -116,10 +90,10 @@ public class TilerMain {
 
 
         FileLoader fileLoader = new FileLoader(command);
-        List<TileInfo> tileInfos = fileLoader.loadTileInfos(formatType, inputPath, command.hasOption("recursive"));
-        tileInfos.forEach((tileInfo) -> {
-            GaiaTransfomer.translate(source, tileInfo);
-        });
+        List<TileInfo> tileInfos = fileLoader.loadTileInfos(formatType, inputFile.toPath(), recursive);
+
+        List<PreProcess> preProcessors = new ArrayList<>();
+        preProcessors.add(new GaiaTranslator(source));
 
         TilerOptions tilerOptions = TilerOptions.builder()
                 .inputPath(inputPath)
@@ -127,30 +101,15 @@ public class TilerMain {
                 .inputFormatType(formatType)
                 .source(source)
                 .build();
-        Tiler tiler = new Gaia3DTiler(tilerOptions, command);
-        Tileset tileset = tiler.tile(tileInfos);
-        tiler.writeTileset(outputPath, tileset);
+        TileProcess tileProcess = new Gaia3DTiler(tilerOptions, command);
 
-        List<ContentInfo> contentInfos = tileset.findAllBatchInfo();
-        contentInfos.forEach(contentInfo -> {
-            GaiaTransfomer.relocation(contentInfo);
-            try {
-                Batcher batcher = new GaiaBatcher(contentInfo, command);
-                GaiaSet batchedSet = batcher.batch();
-                if (batchedSet.getMaterials().size() < 1 || batchedSet.getBufferDatas().size() < 1) {
-                    throw new RuntimeException("No materials or buffers");
-                }
+        List<PostProcess> postProcessors = new ArrayList<>();
+        postProcessors.add(new GaiaRelocator());
+        postProcessors.add(new GaiaBatcher(command));
+        postProcessors.add(new Batched3DModel(command));
 
-                Batched3DModel batched3DModel = new Batched3DModel(command);
-                batched3DModel.write(batchedSet, contentInfo);
-                batched3DModel = null;
-                contentInfo.getUniverse().getScenes().forEach(gaiaScene -> {
-                    gaiaScene.getMaterials().forEach(GaiaMaterial::deleteTextures);
-                });
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        ProcessFlow processFlow = new ProcessFlow(preProcessors, tileProcess, postProcessors);
+        processFlow.process(tileInfos);
 
         long end = System.currentTimeMillis();
         log.info("Tiling finished in {} seconds.", (end - start) / 1000);
@@ -159,28 +118,37 @@ public class TilerMain {
     private static boolean validate(Path outputPath) throws IOException {
         File output = outputPath.toFile();
         if (!output.exists()) {
-            throw new FileExistsException("output path is not exist.");
+            throw new FileExistsException("Output path is not exist.");
         } else if (!output.isDirectory()) {
-            throw new NotDirectoryException("output path is not directory.");
+            throw new NotDirectoryException("Output path is not directory.");
         } else if (!output.canWrite()) {
-            throw new IOException("output path is not writable.");
+            throw new IOException("Output path is not writable.");
         }
         return true;
     }
 
     private static void start() {
         log.info(
-            " _______  ___      _______  _______  __   __  _______ \n" +
-            "|       ||   |    |   _   ||       ||  |_|  ||   _   |\n" +
-            "|    _  ||   |    |  |_|  ||  _____||       ||  |_|  |\n" +
-            "|   |_| ||   |    |       || |_____ |       ||       |\n" +
-            "|    ___||   |___ |       ||_____  ||       ||       |\n" +
-            "|   |    |       ||   _   | _____| || ||_|| ||   _   |\n" +
-            "|___|    |_______||__| |__||_______||_|   |_||__| |__|");
+                " _______  ___      _______  _______  __   __  _______ \n" +
+                        "|       ||   |    |   _   ||       ||  |_|  ||   _   |\n" +
+                        "|    _  ||   |    |  |_|  ||  _____||       ||  |_|  |\n" +
+                        "|   |_| ||   |    |       || |_____ |       ||       |\n" +
+                        "|    ___||   |___ |       ||_____  ||       ||       |\n" +
+                        "|   |    |       ||   _   | _____| || ||_|| ||   _   |\n" +
+                        "|___|    |_______||__| |__||_______||_|   |_||__| |__|");
         underline();
     }
 
     private static void underline() {
         log.info("======================================================");
+    }
+
+    private static Path createPath(File file) {
+        Path path = file.toPath();
+        boolean result = file.mkdir();
+        if (result) {
+            log.info("Created new directory: {}", path);
+        }
+        return path;
     }
 }
