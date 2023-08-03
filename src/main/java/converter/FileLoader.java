@@ -37,7 +37,7 @@ public class FileLoader {
         log.info("Start loading tile infos.");
         List<File> fileList = (List<File>) FileUtils.listFiles(input.toFile(), extensions, recursive);
         log.info("Total {} files.", fileList.size());
-        fileList = fileList.subList(0, 300000); // FOR TEST
+        //fileList = fileList.subList(0, 300000); // FOR TEST
         int size = fileList.size();
         for (File child : fileList) {
             count++;
