@@ -1,5 +1,6 @@
 package command;
 
+import converter.FileLoader;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,21 @@ import java.net.URISyntaxException;
 class TilerMainTest {
     private static final String INPUT_PATH = "../sample-external/";
     private static final String OUTPUT_PATH = "../output/";
+
+    @Test
+    void order() throws URISyntaxException {
+        String input = "D:\\workspaces\\ComplicatedModels";
+        String output = "D:\\workspaces\\ComplicatedModels\\output";
+        String[] args= new String[]{
+                "-input", input,
+                "-inputType", "kml",
+                "-output", output,
+                "-swapYZ",
+                "-maxCount", "512",
+                //"-debug",
+        };
+        TilerMain.main(args);
+    }
 
     @Test
     void convertWs2() throws URISyntaxException {
@@ -39,8 +55,8 @@ class TilerMainTest {
 
     @Test
     void convertSeoul() {
-        String input = "D:\\workspaces\\su_kml_collada\\inputdata\\";
-        String output = "D:\\workspaces\\su_kml_collada\\seoul_tileset_plasma\\";
+        String input = "D:\\workspaces\\su_kml_collada\\mini\\";
+        String output = "D:\\workspaces\\su_kml_collada\\mini_output\\";
         String[] args= new String[]{
                 "-input", input,
                 "-inputType", "kml",
@@ -49,7 +65,7 @@ class TilerMainTest {
                 "-swapYZ",
                 //"-gltf",
                 //"-debug",
-                "-maxCount", "2048",
+                "-maxCount", "1024",
         };
         TilerMain.main(args);
     }

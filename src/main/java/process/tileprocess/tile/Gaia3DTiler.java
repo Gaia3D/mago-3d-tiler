@@ -84,21 +84,26 @@ public class Gaia3DTiler implements Tiler {
         }
     }
 
-    private List<TileInfo> reloadScenes(List<TileInfo> tileInfos) {
+    /*private List<TileInfo> reloadScenes(List<TileInfo> tileInfos) {
         return tileInfos.stream().map((tileInfo) -> {
-            TileInfo tileinfo = TileInfo.builder().kmlInfo(tileInfo.getKmlInfo()).scene(converter.load(tileInfo.getScene().getOriginalPath())).build();
+            TileInfo tileinfo = TileInfo.builder()
+                    .kmlInfo(tileInfo.getKmlInfo())
+                    .scene(converter.load(tileInfo.getScenePath()))
+                    .build();
             GaiaTranslator gaiaTranslator = new GaiaTranslator(options.getSource());
             gaiaTranslator.run(tileinfo);
+            tileinfo.minimize();
             return tileinfo;
         }).collect(Collectors.toList());
-    }
+    }*/
 
     private double calcGeometricError(List<TileInfo> tileInfos) {
         return tileInfos.stream().mapToDouble(tileInfo -> {
-            GaiaBoundingBox boundingBox = tileInfo.getScene().getBoundingBox();
+            GaiaBoundingBox boundingBox = tileInfo.getBoundingBox();
+            //GaiaBoundingBox boundingBox = tileInfo.getScene().getBoundingBox();
             double result = boundingBox.getLongestDistance();
             if (result > 1000.0d) {
-                log.info(result + " is too long distance. check it please.");
+                log.warn("[Warn]{} is too long distance. check it please. (GeometricError)", result);
             }
             return result;
         }).max().orElse(0.0d);
@@ -109,7 +114,8 @@ public class Gaia3DTiler implements Tiler {
         tileInfos.forEach(tileInfo -> {
             KmlInfo kmlInfo = tileInfo.getKmlInfo();
             Vector3d position = kmlInfo.getPosition();
-            GaiaBoundingBox localBoundingBox = tileInfo.getScene().getBoundingBox();
+            //GaiaBoundingBox localBoundingBox = tileInfo.getScene().getBoundingBox();
+            GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();
             localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(position);
             boundingBox.addBoundingBox(localBoundingBox);
         });
@@ -143,8 +149,8 @@ public class Gaia3DTiler implements Tiler {
             int test = 0;
             List<List<TileInfo>> childrenScenes = parentBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
-                List<TileInfo> childTileInfos = reloadScenes(childrenScenes.get(index));
-                //List<TileInfo> childTileInfos = childrenScenes.get(index);
+                //List<TileInfo> childTileInfos = reloadScenes(childrenScenes.get(index));
+                List<TileInfo> childTileInfos = childrenScenes.get(index);
 
                 test += childTileInfos.size();
                 Node childNode = createContentNode(parentNode, childTileInfos, index);
@@ -157,9 +163,8 @@ public class Gaia3DTiler implements Tiler {
                 log.info("test : " + test + ", scenes : " + tileInfos.size());
             }
         } else if (tileInfos.size() > 0) {
-            Node childNode = createContentNode(parentNode, reloadScenes(tileInfos), 0);
-            //Node childNode = createContentNode(parentNode, tileInfos, 0);
-
+            //Node childNode = createContentNode(parentNode, reloadScenes(tileInfos), 0);
+            Node childNode = createContentNode(parentNode, tileInfos, 0);
             if (childNode != null) {
                 parentNode.getChildren().add(childNode);
                 createNode(childNode, tileInfos);
@@ -190,8 +195,6 @@ public class Gaia3DTiler implements Tiler {
         childNode.setGeometricError(geometricError);
         childNode.setRefine(Node.RefineType.REPLACE);
         childNode.setChildren(new ArrayList<>());
-        /*GaiaUniverse universe = new GaiaUniverse(nodeCode, tilerOptions.getInputPath(), tilerOptions.getOutputPath());
-        tileInfos.forEach(tileInfo -> universe.getScenes().add(tileInfo.getScene()));*/
         return childNode;
     }
 
@@ -226,18 +229,15 @@ public class Gaia3DTiler implements Tiler {
         childNode.setRefine(Node.RefineType.REPLACE);
         childNode.setChildren(new ArrayList<>());
 
-        GaiaUniverse universe = new GaiaUniverse(nodeCode, options.getInputPath(), options.getOutputPath());
-        tileInfos.forEach(tileInfo -> universe.getScenes().add(tileInfo.getScene()));
-
         ContentInfo contentInfo = new ContentInfo();
+        contentInfo.setName(nodeCode);
         contentInfo.setLod(lod);
-        contentInfo.setUniverse(universe);
         contentInfo.setTileInfos(tileInfos);
         contentInfo.setBoundingBox(childBoundingBox);
         contentInfo.setNodeCode(nodeCode);
 
         Content content = new Content();
-        content.setUri(nodeCode + ".b3dm");
+        content.setUri("data" + File.separator + nodeCode + ".b3dm");
         content.setContentInfo(contentInfo);
         childNode.setContent(content);
         return childNode;

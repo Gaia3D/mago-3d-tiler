@@ -43,9 +43,11 @@ public class AssimpConverter implements Converter {
         return load(filePath.toFile());
     }
 
-    public GaiaScene load(File file) {
+    public GaiaScene load(File file) throws RuntimeException {
         if (!file.isFile() && !file.exists()) {
-            throw new RuntimeException("File does not exist: " + file.getAbsolutePath());
+            //throw new RuntimeException("File does not exist: " + file.getAbsolutePath());
+            log.error("File does not exist: {}", file.getAbsolutePath());
+            return null;
         }
         String path = file.getAbsolutePath().replace(file.getName(), "");
         ByteBuffer byteBuffer = ImageUtils.readFile(file, true);
@@ -55,6 +57,7 @@ public class AssimpConverter implements Converter {
         AIScene aiScene = Assimp.aiImportFileFromMemory(byteBuffer, DEFAULT_FLAGS, hint);
         assert aiScene != null;
         GaiaScene gaiaScene = convertScene(aiScene, path);
+        aiScene.free();
         gaiaScene.setOriginalPath(file.toPath());
         return gaiaScene;
     }

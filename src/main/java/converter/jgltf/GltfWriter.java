@@ -57,6 +57,7 @@ public class GltfWriter {
             GltfModel gltfModel = convert(gaiaScene);
             GltfModelWriter writer = new GltfModelWriter();
             writer.writeBinary(gltfModel, outputStream);
+            outputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

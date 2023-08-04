@@ -52,11 +52,10 @@ class AssimpConverterTest {
 
 
         ContentInfo batchInfo = new ContentInfo();
-        GaiaUniverse universe = new GaiaUniverse("test", new File(getAbsolutePath(INPUT_PATH)), new File(getAbsolutePath(OUTPUT_PATH)));
-        universe.getScenes().add(scene);
+        //GaiaUniverse universe = new GaiaUniverse("test", new File(getAbsolutePath(INPUT_PATH)), new File(getAbsolutePath(OUTPUT_PATH)));
+        //universe.getScenes().add(scene);
 
         batchInfo.setLod(LevelOfDetail.LOD0);
-        batchInfo.setUniverse(universe);
         batchInfo.setNodeCode("TEST");
         batchInfo.setBoundingBox(scene.getBoundingBox());
         Batcher batcher = new GaiaBatcher(null);

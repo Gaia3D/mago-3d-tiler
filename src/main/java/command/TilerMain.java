@@ -90,7 +90,7 @@ public class TilerMain {
 
 
         FileLoader fileLoader = new FileLoader(command);
-        List<TileInfo> tileInfos = fileLoader.loadTileInfos(formatType, inputFile.toPath(), recursive);
+        //List<TileInfo> tileInfos = fileLoader.loadTileInfos(formatType, inputFile.toPath(), recursive);
 
         List<PreProcess> preProcessors = new ArrayList<>();
         preProcessors.add(new GaiaTranslator(source));
@@ -109,7 +109,7 @@ public class TilerMain {
         postProcessors.add(new Batched3DModel(command));
 
         ProcessFlow processFlow = new ProcessFlow(preProcessors, tileProcess, postProcessors);
-        processFlow.process(tileInfos);
+        processFlow.process(fileLoader);
 
         long end = System.currentTimeMillis();
         log.info("Tiling finished in {} seconds.", (end - start) / 1000);
