@@ -469,7 +469,7 @@ public class GaiaTextureCoordinator {
                         }
 
                         u = fractPart_x;
-                        v = fractPart_y;
+                        v = 1.0 - fractPart_y;
 
                         if(u<0.0)
                         {
