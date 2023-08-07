@@ -1,5 +1,6 @@
 package command;
 
+import basic.extension.GeometryOptimizer;
 import basic.types.FormatType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
@@ -94,6 +95,7 @@ public class TilerMain {
 
         List<PreProcess> preProcessors = new ArrayList<>();
         preProcessors.add(new GaiaTranslator(source));
+        //preProcessors.add(new GeometryOptimizer()); // son.***
 
         TilerOptions tilerOptions = TilerOptions.builder()
                 .inputPath(inputPath)
@@ -130,12 +132,12 @@ public class TilerMain {
     private static void start() {
         log.info(
                 " _______  ___      _______  _______  __   __  _______ \n" +
-                        "|       ||   |    |   _   ||       ||  |_|  ||   _   |\n" +
-                        "|    _  ||   |    |  |_|  ||  _____||       ||  |_|  |\n" +
-                        "|   |_| ||   |    |       || |_____ |       ||       |\n" +
-                        "|    ___||   |___ |       ||_____  ||       ||       |\n" +
-                        "|   |    |       ||   _   | _____| || ||_|| ||   _   |\n" +
-                        "|___|    |_______||__| |__||_______||_|   |_||__| |__|");
+                "|       ||   |    |   _   ||       ||  |_|  ||   _   |\n" +
+                "|    _  ||   |    |  |_|  ||  _____||       ||  |_|  |\n" +
+                "|   |_| ||   |    |       || |_____ |       ||       |\n" +
+                "|    ___||   |___ |       ||_____  ||       ||       |\n" +
+                "|   |    |       ||   _   | _____| || ||_|| ||   _   |\n" +
+                "|___|    |_______||__| |__||_______||_|   |_||__| |__|");
         underline();
     }
 

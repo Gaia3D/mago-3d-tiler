@@ -52,6 +52,11 @@ public class GaiaRectangle {
         return ((maxX - minX) * (maxY - minY));
     }
 
+    public double getPerimeter()
+    {
+        return (maxX - minX) * 2 + (maxY - minY) * 2;
+    }
+
     //setInit
     public void setInit(Vector2d vector2d) {
         minX = vector2d.x;
@@ -92,6 +97,24 @@ public class GaiaRectangle {
         }
     }
 
+    public double getWidth()
+    {
+        return maxX - minX;
+    }
+
+    public double getHeight()
+    {
+        return maxY - minY;
+    }
+
+    public void copyFrom(GaiaRectangle rectangle)
+    {
+        minX = rectangle.minX;
+        minY = rectangle.minY;
+        maxX = rectangle.maxX;
+        maxY = rectangle.maxY;
+    }
+
     // interects
     /*public boolean intersects(GaiaRectangle rectangle) {
         return (minX < rectangle.maxX
@@ -107,6 +130,10 @@ public class GaiaRectangle {
             return false;
         } else if (compare.minY > this.maxY - error) {
             return false;
-        } else return !(compare.maxY < this.minY + error);
+        } else if(compare.maxY < this.minY + error) {
+            return false;
+        } else {
+            return true;
+        }
     }
 }

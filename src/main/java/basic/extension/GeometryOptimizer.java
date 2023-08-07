@@ -2,11 +2,19 @@ package basic.extension;
 
 import basic.structure.*;
 import org.joml.Vector3d;
+import process.preprocess.PreProcess;
+import process.tileprocess.tile.TileInfo;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class GeometryOptimizer {
+public class GeometryOptimizer implements PreProcess {
+
+    @Override
+    public TileInfo run(TileInfo tileInfo) {
+        return null;
+    }
+
     public void optimize(ArrayList<GaiaScene> gaiaScenes) {
         System.out.println("Optimize TEST");
 
@@ -100,4 +108,5 @@ public class GeometryOptimizer {
             deleteFacesWithNormalInNode(node, normalReference, error);
         }
     }
+
 }

@@ -55,6 +55,23 @@ class TilerMainTest {
     }
 
     @Test
+    void convertTEST() {
+        String input = "D:\\MAGO_TEST_FOLDER\\ComplicatedModels";
+        String output = "D:\\MAGO_TEST_FOLDER\\ComplicatedModels\\output";
+        String[] args= new String[]{
+                "-input", input,
+                "-inputType", "kml",
+                "-output", output,
+                "-outputType", "gltf",
+                "-swapYZ",
+                "-glb",
+                //"-debug",
+                //"-maxCount", "256",
+        };
+        TilerMain.main(args);
+    }
+
+    @Test
     void convertWs1() throws URISyntaxException {
         String input = getAbsolutePath(INPUT_PATH);
         String output = getAbsolutePath(OUTPUT_PATH);
