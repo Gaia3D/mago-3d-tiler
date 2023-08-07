@@ -26,6 +26,7 @@ public class GaiaTranslator implements PreProcess {
         }
         GaiaScene gaiaScene = tileInfo.getScene();
         GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox();
+        //GaiaBoundingBox boundingBox = tileInfo.getBoundingBox();
 
         Vector3d center = boundingBox.getCenter();
         ProjCoordinate centerSource = new ProjCoordinate(center.x, center.y, boundingBox.getMinZ());
@@ -40,6 +41,7 @@ public class GaiaTranslator implements PreProcess {
         Matrix4d transfrom = rootNode.getTransformMatrix();
         Matrix4d resultTransfromMatrix = transfrom.translate(traslation, new Matrix4d());
 
+        //tileInfo.setTransformMatrix(resultTransfromMatrix);
         rootNode.setTransformMatrix(resultTransfromMatrix);
         gaiaScene.getBoundingBox();
 

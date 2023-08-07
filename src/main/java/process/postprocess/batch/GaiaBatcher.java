@@ -6,6 +6,7 @@ import basic.exchangable.GaiaSet;
 import basic.exchangable.GaiaUniverse;
 import basic.geometry.GaiaRectangle;
 import basic.structure.GaiaMaterial;
+import basic.structure.GaiaScene;
 import basic.structure.GaiaTexture;
 import basic.types.AttributeType;
 import basic.types.TextureType;
@@ -16,6 +17,7 @@ import org.joml.Vector2d;
 import org.lwjgl.opengl.GL20;
 import process.tileprocess.tile.ContentInfo;
 import process.tileprocess.tile.LevelOfDetail;
+import process.tileprocess.tile.TileInfo;
 import util.ArrayUtils;
 
 import java.util.*;
@@ -26,7 +28,6 @@ public class GaiaBatcher implements Batcher {
     private final static int SHORT_LIMIT = 65535;
     private final CommandLine command;
     private  GaiaSet batchedSet;
-    private  GaiaUniverse universe;
     private  LevelOfDetail lod;
 
     public GaiaBatcher(CommandLine command) {
@@ -34,12 +35,9 @@ public class GaiaBatcher implements Batcher {
     }
 
     private void initContentInfo(ContentInfo info) {
-        GaiaUniverse universe = info.getUniverse();
-        universe.convertGaiaSet();
-        this.universe = universe;
         this.lod = info.getLod();
         this.batchedSet = new GaiaSet();
-        this.batchedSet.setProjectName(this.universe.getName());
+        this.batchedSet.setProjectName(info.getName());
     }
 
     private void reassignMaterialsToGaiaBufferDataSetWithSameMaterial(List<GaiaBufferDataSet> dataSets) {
@@ -88,8 +86,21 @@ public class GaiaBatcher implements Batcher {
 
     public ContentInfo run(ContentInfo contentInfo) {
         initContentInfo(contentInfo);
-        log.info("Batching started : {}", universe.getName());
-        List<GaiaSet> sets = universe.getSets();
+
+        log.info("Batching started : {}", contentInfo.getName());
+        //List<GaiaSet> sets = universe.getSets();
+
+        List<TileInfo> tileInfos = contentInfo.getTileInfos();
+        List<GaiaSet> sets = tileInfos.stream()
+                .map((tileInfo) -> {
+                    //GaiaScene gaiaScene = tileInfo.getScene();
+                    //GaiaSet gaiaSet = tileInfo.getSet();
+                    //GaiaSet gaiaSet = new GaiaSet(gaiaScene);
+                    //tileInfo.minimize();
+                    return tileInfo.getSet();
+                })
+                .collect(Collectors.toList());
+
         setBatchId(sets);
 
         List<GaiaBufferDataSet> batchedDataSets = new ArrayList<>();
@@ -102,6 +113,7 @@ public class GaiaBatcher implements Batcher {
                 int materialId = dataSet.getMaterialId();
                 dataSet.setTransformMatrix(set.getTransformMatrix());
                 dataSet.setMaterialId(materialIdOffset + materialId);
+                dataSet.setMaterial(materials.get(materialId));
             });
             materials.forEach((material) -> {
                 int materialId = material.getId();
@@ -120,7 +132,6 @@ public class GaiaBatcher implements Batcher {
         List<GaiaBufferDataSet> filteredDataSets = batchDataSetsWithTheSameMaterial(batchedDataSets);
         setMaterialsIndexInList(filteredMaterials, filteredDataSets);
         checkIsRepeatMaterial(filteredDataSets);
-
 
         List<GaiaMaterial> colorMaterials = filteredMaterials.stream().filter((material) -> {
             LinkedHashMap<TextureType, List<GaiaTexture>> textures = material.getTextures();
@@ -165,7 +176,7 @@ public class GaiaBatcher implements Batcher {
         List<GaiaBufferDataSet> resultBufferDatas = new ArrayList<>();
         List<GaiaMaterial> resultMaterials = new ArrayList<>();
         if (clampDataSets.size() > 0 && clampMaterials.size() > 0) {
-            atlasTextures(clampDataSets, clampMaterials);
+            atlasTextures(contentInfo.getNodeCode(), clampDataSets, clampMaterials);
             List<List<GaiaBufferDataSet>> splitedDataSets = divisionByMaxIndices(clampDataSets);
             List<GaiaBufferDataSet> batchedClampDataSets = batchClampMaterial(splitedDataSets);
             clampMaterials.removeIf((clampMaterial) -> {
@@ -323,8 +334,8 @@ public class GaiaBatcher implements Batcher {
     }
 
     // 각 Material의 Texture들을 하나의 이미지로 변경
-    private void atlasTextures(List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials) {
-        GaiaTextureCoordinator textureCoordinator = new GaiaTextureCoordinator(universe.getName(), materials, dataSets);
+    private void atlasTextures(String codeName, List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials) {
+        GaiaTextureCoordinator textureCoordinator = new GaiaTextureCoordinator(codeName, materials, dataSets);
         textureCoordinator.batchTextures(lod, this.command);
         //textureCoordinator.writeBatchedImage(this.universe.getOutputRoot().resolve("images"));
     }

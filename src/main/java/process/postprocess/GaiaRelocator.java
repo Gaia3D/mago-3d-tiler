@@ -1,5 +1,6 @@
 package process.postprocess;
 
+import basic.exchangable.GaiaSet;
 import converter.kml.KmlInfo;
 import basic.geometry.GaiaBoundingBox;
 import basic.structure.GaiaScene;
@@ -33,8 +34,10 @@ public class GaiaRelocator implements PostProcess {
 
             Vector3d translation = new Vector3d(x, y, z);
 
-            GaiaScene scene = tileInfo.getScene();
-            scene.translate(translation);
+            GaiaSet set = tileInfo.getSet();
+            set.translate(translation);
+            //GaiaScene scene = tileInfo.getScene();
+            //scene.translate(translation);
         }
         return contentInfo;
     }

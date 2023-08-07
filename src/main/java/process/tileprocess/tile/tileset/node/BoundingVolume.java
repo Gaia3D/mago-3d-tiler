@@ -76,8 +76,8 @@ public class BoundingVolume {
             double midX = (minX + maxX) / 2;
             double midY = (minY + maxY) / 2;
             for (TileInfo tileInfo : tileInfos) {
-                GaiaScene scene = tileInfo.getScene();
-                GaiaBoundingBox localBoundingBox = scene.getBoundingBox();
+                //GaiaScene scene = tileInfo.getScene();
+                GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();
                 KmlInfo kmlInfo = tileInfo.getKmlInfo();
                 localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(kmlInfo.getPosition());
                 BoundingVolume localBoundingVolume = new BoundingVolume(localBoundingBox);

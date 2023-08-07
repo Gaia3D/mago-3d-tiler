@@ -3,8 +3,11 @@ package basic.exchangable;
 import basic.structure.GaiaMaterial;
 import basic.structure.GaiaNode;
 import basic.structure.GaiaScene;
+import basic.structure.GaiaTexture;
 import basic.types.AttributeType;
 import basic.types.FormatType;
+import basic.types.TextureType;
+import org.apache.commons.io.FileUtils;
 import util.io.LittleEndianDataInputStream;
 import util.io.LittleEndianDataOutputStream;
 import lombok.AllArgsConstructor;
@@ -20,6 +23,7 @@ import org.joml.Vector3d;
 import java.io.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -83,39 +87,63 @@ public class GaiaSet {
         return false;
     }
 
-    public void writeFile(Path path) {
+    public Path writeFile(Path path) {
         String tempFile = projectName + "." + FormatType.TEMP.getExtension();
         File output = new File(path.toAbsolutePath().toString(), tempFile);
         try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(output)))) {
             stream.writeByte(isBigEndian);
             stream.writeText(projectName);
             stream.writeInt(materials.size());
+
+            if (materials.size() == 0) {
+                log.error("material size is 0");
+            }
+
             for (GaiaMaterial material : materials) {
                 material.write(stream);
+                LinkedHashMap<TextureType, List<GaiaTexture>> materialTextures = material.getTextures();
+                List<GaiaTexture> diffuseTextures = materialTextures.get(TextureType.DIFFUSE);
+                if (diffuseTextures.size() > 0) {
+                    GaiaTexture texture = materialTextures.get(TextureType.DIFFUSE).get(0);
+                    Path parentPath = texture.getParentPath();
+                    String diffusePath = texture.getPath();
+                    String imagePath = parentPath + File.separator + diffusePath;
+                    Path outputPath = path.resolve("images").resolve(diffusePath);
+                    FileUtils.copyFile(new File(imagePath), outputPath.toFile());
+                }
             }
             stream.writeInt(bufferDatas.size());
             for (GaiaBufferDataSet bufferData : bufferDatas) {
                 bufferData.write(stream);
             }
         } catch (Exception e) {
+            e.printStackTrace();
             log.error(e.getMessage());
         }
+        return output.toPath();
     }
 
     public void readFile(Path path) {
         File input = path.toFile();
         Path imagesPath = path.getParent().resolve("images");
+        imagesPath.toFile().mkdir();
 
         try (LittleEndianDataInputStream stream = new LittleEndianDataInputStream(new BufferedInputStream(new FileInputStream(input)))) {
             this.isBigEndian = stream.readByte();
             this.projectName = stream.readText();
             int materialCount = stream.readInt();
             List<GaiaMaterial> materials = new ArrayList<>();
+
             for (int i = 0; i < materialCount; i++) {
                 GaiaMaterial material = new GaiaMaterial();
                 material.read(stream, imagesPath);
                 materials.add(material);
             }
+
+            if (materials.size() == 0) {
+                log.error("material size is 0");
+            }
+
             this.materials = materials;
             int bufferDataCount = stream.readInt();
             List<GaiaBufferDataSet> bufferDataSets = new ArrayList<>();
@@ -148,5 +176,22 @@ public class GaiaSet {
                 }
             }
         }
+    }
+
+    public void translate(Vector3d translation) {
+        for (GaiaBufferDataSet bufferData : this.bufferDatas) {
+            GaiaBuffer positionBuffer = bufferData.getBuffers().get(AttributeType.POSITION);
+            float[] positions = positionBuffer.getFloats();
+            for (int i = 0; i < positions.length; i += 3) {
+                positions[i] += translation.x;
+                positions[i + 1] += translation.y;
+                positions[i + 2] += translation.z;
+            }
+        }
+    }
+
+    public void deleteTextures() {
+        List<GaiaMaterial> materials = getMaterials();
+        materials.forEach(GaiaMaterial::deleteTextures);
     }
 }

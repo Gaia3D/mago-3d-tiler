@@ -13,6 +13,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +32,6 @@ public class KmlReader {
             Document document = documentBuilder.parse(file);
             Element root = document.getDocumentElement();
             List<Element> elements = getAllElements(root);
-
             Vector3d position = new Vector3d(Double.parseDouble(findContent(elements, "longitude")), Double.parseDouble(findContent(elements, "latitude")), Double.parseDouble(findContent(elements, "altitude")));
 
             kmlInfo = KmlInfo.builder()
@@ -46,15 +46,14 @@ public class KmlReader {
                     .scaleY(Double.parseDouble(findContent(elements, "y")))
                     .scaleZ(Double.parseDouble(findContent(elements, "z")))
                     .build();
-
-            document = null;
-            root = null;
-            elements = null;
+            //documentBuilder.reset();
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (SAXException e) {
             //throw new RuntimeException(e);
             log.error("SAXException: {}", e.getMessage());
+        } finally {
+            //System.gc();
         }
         return kmlInfo;
     }
