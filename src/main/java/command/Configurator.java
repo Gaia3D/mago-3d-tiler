@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.ConsoleAppender;
+import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
@@ -16,11 +17,11 @@ public class Configurator {
     public static final Level LEVEL = Level.ALL;
     private static final String DEFAULT_PATTERN = "%message%n";
 
-    public static void initLogger() {
-        initLogger(null);
+    public static void initConsoleLogger() {
+        initConsoleLogger(null);
     }
 
-    public static void initLogger(String pattern) {
+    public static void initConsoleLogger(String pattern) {
         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
         Configuration config = ctx.getConfiguration();
         LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
@@ -37,6 +38,23 @@ public class Configurator {
         ctx.updateLoggers();
 
         consoleAppender.start();
+    }
+
+    public static void initFileLogger(String pattern, String path) {
+        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+        Configuration config = ctx.getConfiguration();
+        LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+
+        if (pattern == null) {
+            pattern = DEFAULT_PATTERN;
+        }
+        PatternLayout layout = createPatternLayout(pattern);
+        FileAppender fileAppender = createRollingFileAppender(layout, path);
+
+        loggerConfig.setLevel(LEVEL);
+        loggerConfig.addAppender(fileAppender, LEVEL, null);
+        ctx.updateLoggers();
+        fileAppender.start();
     }
 
     public static Options createOptions() {
@@ -57,6 +75,21 @@ public class Configurator {
 
     private static PatternLayout createPatternLayout(String pattern) {
         return PatternLayout.newBuilder().withPattern(pattern).withCharset(StandardCharsets.UTF_8).build();
+    }
+
+    private static FileAppender createRollingFileAppender(PatternLayout layout, String path) {
+        if (path == null) {
+            path = "logs/gaia3d-tiler.log";
+        }
+        return FileAppender.newBuilder()
+                .setName("FileLogger")
+                .withFileName(path)
+                .withAppend(true)
+                .withImmediateFlush(true)
+                .withBufferedIo(true)
+                .withBufferSize(8192)
+                .setLayout(layout)
+                .build();
     }
 
     private static ConsoleAppender createConsoleAppender(PatternLayout layout) {

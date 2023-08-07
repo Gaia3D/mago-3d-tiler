@@ -7,7 +7,6 @@ import converter.assimp.AssimpConverter;
 import converter.assimp.Converter;
 import process.postprocess.batch.Batcher;
 import process.postprocess.batch.GaiaBatcher;
-import basic.exchangable.GaiaUniverse;
 import basic.structure.GaiaScene;
 import org.junit.jupiter.api.Test;
 import process.tileprocess.tile.ContentInfo;
@@ -41,7 +40,7 @@ class AssimpConverterTest {
 
     @Test
     void loadColladaWithKml() throws URISyntaxException, IOException, ParserConfigurationException {
-        Configurator.initLogger();
+        Configurator.initConsoleLogger();
         File kml = new File(getAbsolutePath(INPUT_PATH) + "a_bd001.kml");
         KmlReader kmlReader = new KmlReader();
         KmlInfo kmlInfo = kmlReader.read(kml);

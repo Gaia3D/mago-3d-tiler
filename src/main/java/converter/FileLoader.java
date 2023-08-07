@@ -1,11 +1,11 @@
 package converter;
 
 import basic.structure.GaiaScene;
-import converter.kml.KmlInfo;
-import converter.kml.KmlReader;
+import basic.types.FormatType;
 import converter.assimp.AssimpConverter;
 import converter.assimp.Converter;
-import basic.types.FormatType;
+import converter.kml.KmlInfo;
+import converter.kml.KmlReader;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.io.FileUtils;
@@ -15,14 +15,12 @@ import process.tileprocess.tile.TileInfo;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 public class FileLoader {
     private final Converter converter;
     private final KmlReader kmlReader;
-
     private final CommandLine command;
 
     public FileLoader(CommandLine command) {
@@ -52,35 +50,8 @@ public class FileLoader {
         return (List<File>) FileUtils.listFiles(inputFile, extensions, recursive);
     }
 
-    /*public List<TileInfo> loadTileInfos() {
-        File inputFile = new File(command.getOptionValue(ProcessOptions.INPUT.getArgName()));
-        //File outputFile = new File(command.getOptionValue(ProcessOptions.OUTPUT.getArgName()));
-        //String crs = command.getOptionValue("crs");
-        String inputExtension = command.getOptionValue("inputType");
-        boolean recursive = command.hasOption("recursive");
-        FormatType formatType = FormatType.fromExtension(inputExtension);
-
-        log.info("Start loading tile infos.");
-        List<File> fileList = loadFiles();
-        //fileList = fileList.subList(0, 300000); // FOR TEST
-        log.info("Total {} files.", fileList.size());
-
-        int count = 0;
-        List<TileInfo> tileInfos = new ArrayList<>();
-        int size = fileList.size();
-        for (File child : fileList) {
-            count++;
-            log.info("[{}/{}] load tile info: {}", count, size, child);
-            TileInfo tileInfo = loadTileInfo(child, formatType);
-            if (tileInfo != null) {
-                tileInfo.minimize();
-                tileInfos.add(tileInfo);
-            }
-        }
-        return tileInfos;
-    }*/
-
     public TileInfo loadTileInfo(File file) {
+        Path outputPath = new File(command.getOptionValue(ProcessOptions.OUTPUT.getArgName())).toPath();
         String inputExtension = command.getOptionValue("inputType");
         FormatType formatType = FormatType.fromExtension(inputExtension);
         KmlInfo kmlInfo = null;
@@ -93,7 +64,11 @@ public class FileLoader {
                     log.error("Failed to load scene: {}", file);
                     return null;
                 } else {
-                    return TileInfo.builder().kmlInfo(kmlInfo).scene(scene).build();
+                    return TileInfo.builder()
+                            .kmlInfo(kmlInfo)
+                            .scene(scene)
+                            .outputPath(outputPath)
+                            .build();
                 }
             } else {
                 file = null;
@@ -104,7 +79,10 @@ public class FileLoader {
                 log.error("Failed to load scene: {}", file);
                 return null;
             } else {
-                return TileInfo.builder().scene(scene).build();
+                return TileInfo.builder()
+                        .scene(scene)
+                        .outputPath(outputPath)
+                        .build();
             }
         }
         return null;

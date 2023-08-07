@@ -26,13 +26,14 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class Batched3DModel implements TileModel {
-    private static final GltfWriter gltfWriter = new GltfWriter();
     private static final String MAGIC = "b3dm";
     private static final int VERSION = 1;
 
+    private final GltfWriter gltfWriter;
     private final CommandLine command;
 
     public Batched3DModel(CommandLine command) {
+        this.gltfWriter = new GltfWriter();
         this.command = command;
     }
 
@@ -49,8 +50,9 @@ public class Batched3DModel implements TileModel {
         int batchLength = tileInfos.size();
         List<String> names = tileInfos.stream()
                 .map((tileInfo) -> {
-                    Path path = tileInfo.getScene().getOriginalPath().getFileName();
-                    return path.toString();
+                    //Path path = tileInfo.getScene().getOriginalPath().getFileName();
+                    //return path.toString();
+                    return tileInfo.getSet().getFilePath();
                 })
                 .collect(Collectors.toList());
         GaiaScene scene = new GaiaScene(batchedSet);
@@ -62,19 +64,21 @@ public class Batched3DModel implements TileModel {
         if (command.hasOption("gltf")) {
             String glbFileName = nodeCode + ".gltf";
             File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
-            gltfWriter.writeGltf(scene, glbOutputFile);
+            this.gltfWriter.writeGltf(scene, glbOutputFile);
         }
 
         if (command.hasOption("glb")) {
             String glbFileName = nodeCode + ".glb";
             File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
-            gltfWriter.writeGlb(scene, glbOutputFile);
+            this.gltfWriter.writeGlb(scene, glbOutputFile);
             glbBytes = readGlb(glbOutputFile);
         } else {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            gltfWriter.writeGlb(scene, byteArrayOutputStream);
+            this.gltfWriter.writeGlb(scene, byteArrayOutputStream);
             glbBytes = byteArrayOutputStream.toByteArray();
         }
+        scene = null;
+        //this.gltfWriter = null;
 
         GaiaFeatureTable featureTable = new GaiaFeatureTable();
         featureTable.setBatchLength(batchLength);

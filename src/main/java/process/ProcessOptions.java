@@ -9,6 +9,7 @@ public enum ProcessOptions {
     HELP("help", "h", "help", false, "print this message"),
     VERSION("version", "v", "version", false, "print version"),
     QUIET("quiet", "q", "quiet", false, "quiet mode"),
+    LOG("log", "l", "log", true, "output log file path"),
     INPUT("input", "i", "input", true, "input file path"),
     OUTPUT("output", "o", "output", true, "output file path"),
     INPUT_TYPE("inputType", "it", "inputType", true, "input file type (kml, 3ds, obj, gltf, etc...)"),

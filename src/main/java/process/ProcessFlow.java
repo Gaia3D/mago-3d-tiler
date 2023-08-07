@@ -39,8 +39,11 @@ public class ProcessFlow {
                 for (PreProcess preProcessors : preProcesses) {
                     preProcessors.run(tileInfo);
                 }
-                //tileInfo.minimize();
+                tileInfo.minimize();
                 tileInfos.add(tileInfo);
+            }
+            if (count % 1000 == 0) {
+                System.gc();
             }
         }
         System.gc();
@@ -56,9 +59,8 @@ public class ProcessFlow {
         for (ContentInfo contentInfo : contentInfos) {
             List<TileInfo> childTileInfos = contentInfo.getTileInfos();
             for (TileInfo tileInfo : childTileInfos) {
-                tileInfo.maximize(fileLoader);
+                tileInfo.maximize();
             }
-
             for (PostProcess postProcessor : postProcesses) {
                 postProcessor.run(contentInfo);
             }

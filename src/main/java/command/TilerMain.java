@@ -19,7 +19,6 @@ import process.preprocess.PreProcess;
 import process.tileprocess.TileProcess;
 import converter.FileLoader;
 import process.tileprocess.tile.Gaia3DTiler;
-import process.tileprocess.tile.TileInfo;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,11 +34,15 @@ public class TilerMain {
     public static CommandLine command = null;
 
     public static void main(String[] args) {
-        Configurator.initLogger();
+        Configurator.initConsoleLogger();
         Options options = Configurator.createOptions();
         CommandLineParser parser = new DefaultParser();
         try {
             command = parser.parse(options, args);
+            if (command.hasOption(ProcessOptions.LOG.getArgName())) {
+                log.info("Starting Gaia3D Tiler with log file : {}.", command.getOptionValue(ProcessOptions.LOG.getArgName()));
+                Configurator.initFileLogger(null, command.getOptionValue(ProcessOptions.LOG.getArgName()));
+            }
             if (command.hasOption(ProcessOptions.QUIET.getArgName())) {
                 Configurator.setLevel(Level.OFF);
             }

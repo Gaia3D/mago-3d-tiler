@@ -93,10 +93,11 @@ public class GaiaBatcher implements Batcher {
         List<TileInfo> tileInfos = contentInfo.getTileInfos();
         List<GaiaSet> sets = tileInfos.stream()
                 .map((tileInfo) -> {
-                    GaiaScene gaiaScene = tileInfo.getScene();
-                    GaiaSet gaiaSet = new GaiaSet(gaiaScene);
+                    //GaiaScene gaiaScene = tileInfo.getScene();
+                    //GaiaSet gaiaSet = tileInfo.getSet();
+                    //GaiaSet gaiaSet = new GaiaSet(gaiaScene);
                     //tileInfo.minimize();
-                    return gaiaSet;
+                    return tileInfo.getSet();
                 })
                 .collect(Collectors.toList());
 
@@ -112,6 +113,7 @@ public class GaiaBatcher implements Batcher {
                 int materialId = dataSet.getMaterialId();
                 dataSet.setTransformMatrix(set.getTransformMatrix());
                 dataSet.setMaterialId(materialIdOffset + materialId);
+                dataSet.setMaterial(materials.get(materialId));
             });
             materials.forEach((material) -> {
                 int materialId = material.getId();
@@ -130,7 +132,6 @@ public class GaiaBatcher implements Batcher {
         List<GaiaBufferDataSet> filteredDataSets = batchDataSetsWithTheSameMaterial(batchedDataSets);
         setMaterialsIndexInList(filteredMaterials, filteredDataSets);
         checkIsRepeatMaterial(filteredDataSets);
-
 
         List<GaiaMaterial> colorMaterials = filteredMaterials.stream().filter((material) -> {
             LinkedHashMap<TextureType, List<GaiaTexture>> textures = material.getTextures();

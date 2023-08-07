@@ -23,9 +23,8 @@ public class ContentInfo {
 
     public void deleteTexture() {
         for (TileInfo tileInfo : tileInfos) {
-            GaiaScene scene = tileInfo.getScene();
-            List<GaiaMaterial> materials = scene.getMaterials();
-            materials.forEach(GaiaMaterial::deleteTextures);
+            GaiaSet set = tileInfo.getSet();
+            set.deleteTextures();
         }
     }
 
@@ -33,6 +32,7 @@ public class ContentInfo {
         this.name = null;
         this.boundingBox = null;
         this.batchedSet = null;
+        this.tileInfos.forEach(TileInfo::clear);
         this.tileInfos = null;
     }
 }

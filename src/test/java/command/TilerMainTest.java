@@ -71,6 +71,21 @@ class TilerMainTest {
     }
 
     @Test
+    void convertSeoulBig() {
+        String input = "F:\\inputdata\\";
+        String output = "F:\\outputdata+\\";
+        String[] args= new String[]{
+                "-input", input,
+                "-inputType", "kml",
+                "-log", output + "theLog.log",
+                "-output", output,
+                "-swapYZ",
+                "-maxCount", "2048",
+        };
+        TilerMain.main(args);
+    }
+
+    @Test
     void convertWs1() throws URISyntaxException {
         String input = getAbsolutePath(INPUT_PATH);
         String output = getAbsolutePath(OUTPUT_PATH);
@@ -100,6 +115,7 @@ class TilerMainTest {
 
     private void convert(String inputPath, String outputPath, String suffix, String crs) {
         String[] args= new String[]{
+                "-log", outputPath + suffix + "/theLog.log",
                 "-input", inputPath + suffix,
                 "-inputType", "3ds",
                 "-output", outputPath + suffix,
