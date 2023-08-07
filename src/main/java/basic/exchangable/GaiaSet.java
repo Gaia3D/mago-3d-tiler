@@ -1,13 +1,13 @@
 package basic.exchangable;
 
-import basic.structure.GaiaMaterial;
-import basic.structure.GaiaNode;
-import basic.structure.GaiaScene;
-import basic.structure.GaiaTexture;
+import basic.geometry.GaiaBoundingBox;
+import basic.geometry.GaiaRectangle;
+import basic.structure.*;
 import basic.types.AttributeType;
 import basic.types.FormatType;
 import basic.types.TextureType;
 import org.apache.commons.io.FileUtils;
+import org.joml.Vector2d;
 import util.io.LittleEndianDataInputStream;
 import util.io.LittleEndianDataOutputStream;
 import lombok.AllArgsConstructor;
@@ -150,12 +150,41 @@ public class GaiaSet {
             for (int i = 0; i < bufferDataCount; i++) {
                 GaiaBufferDataSet bufferDataSet = new GaiaBufferDataSet();
                 bufferDataSet.read(stream);
+
+                int materialId = bufferDataSet.getMaterialId();
+                GaiaMaterial materialById = materials.stream()
+                        .filter(material -> material.getId() == materialId)
+                        .findFirst().orElseThrow();
+                bufferDataSet.setMaterial(materialById);
+                GaiaRectangle texcoordBoundingRectangle = calcTexcoordBoundingRectangle(bufferDataSet);
+                bufferDataSet.setTexcoordBoundingRectangle(texcoordBoundingRectangle);
                 bufferDataSets.add(bufferDataSet);
             }
             this.bufferDatas = bufferDataSets;
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private GaiaRectangle calcTexcoordBoundingRectangle(GaiaBufferDataSet bufferDataSet) {
+        GaiaRectangle texcoordBoundingRectangle = null;
+        Map<AttributeType, GaiaBuffer> buffers = bufferDataSet.getBuffers();
+        GaiaBuffer texcoordBuffer = buffers.get(AttributeType.TEXCOORD);
+        if (texcoordBuffer != null) {
+            float[] texcoords = texcoordBuffer.getFloats();
+            for (int i = 0; i < texcoords.length; i += 2) {
+                float x = texcoords[i];
+                float y = texcoords[i + 1];
+                Vector2d textureCoordinate = new Vector2d(x, y);
+                if (texcoordBoundingRectangle == null) {
+                    texcoordBoundingRectangle = new GaiaRectangle();
+                    texcoordBoundingRectangle.setInit(textureCoordinate);
+                } else {
+                    texcoordBoundingRectangle.addPoint(textureCoordinate);
+                }
+            }
+        }
+        return texcoordBoundingRectangle;
     }
 
     public static List<GaiaSet> readFiles(Path path){

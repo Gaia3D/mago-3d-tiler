@@ -497,7 +497,7 @@ public class GaiaTextureCoordinator {
 
             }
         }
-        writeBatchedImage();
+        //writeBatchedImage();
         //this.atlasImage = null;
     }
 

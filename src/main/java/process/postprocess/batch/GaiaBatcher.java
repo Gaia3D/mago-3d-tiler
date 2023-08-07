@@ -113,7 +113,7 @@ public class GaiaBatcher implements Batcher {
                 int materialId = dataSet.getMaterialId();
                 dataSet.setTransformMatrix(set.getTransformMatrix());
                 dataSet.setMaterialId(materialIdOffset + materialId);
-                dataSet.setMaterial(materials.get(materialId));
+                //dataSet.setMaterial(materials.get(materialIdOffset + materialId));
             });
             materials.forEach((material) -> {
                 int materialId = material.getId();

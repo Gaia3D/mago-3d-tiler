@@ -52,7 +52,7 @@ public class Batched3DModel implements TileModel {
                 .map((tileInfo) -> {
                     //Path path = tileInfo.getScene().getOriginalPath().getFileName();
                     //return path.toString();
-                    return tileInfo.getSet().getFilePath();
+                    return tileInfo.getSet().getProjectName();
                 })
                 .collect(Collectors.toList());
         GaiaScene scene = new GaiaScene(batchedSet);
