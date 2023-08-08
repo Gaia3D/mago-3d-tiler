@@ -199,12 +199,12 @@ public class GaiaMesh {
         return totalIndices;
     }
 
-    public void toGaiaBufferSets(List<GaiaBufferDataSet> bufferSets) {
+    public void toGaiaBufferSets(List<GaiaBufferDataSet> bufferSets, Matrix4d transformMatrix) {
         if (bufferSets == null) {
             bufferSets = new ArrayList<>();
         }
         for (GaiaPrimitive primitive : primitives) {
-            GaiaBufferDataSet gaiaBufferDataSet = primitive.toGaiaBufferSet();
+            GaiaBufferDataSet gaiaBufferDataSet = primitive.toGaiaBufferSet(transformMatrix);
             gaiaBufferDataSet.setMaterialId(primitive.getMaterialIndex());
             bufferSets.add(gaiaBufferDataSet);
         }

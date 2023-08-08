@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.joml.Matrix3d;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
@@ -58,7 +59,11 @@ public class GaiaPrimitive {
         return resultIndices;
     }
 
-    public GaiaBufferDataSet toGaiaBufferSet() {
+    public GaiaBufferDataSet toGaiaBufferSet(Matrix4d transformMatrix) {
+        Matrix3d rotationMatrix = new Matrix3d();
+        transformMatrix.get3x3(rotationMatrix);
+        Matrix4d rotationMatrix4 = new Matrix4d(rotationMatrix);
+
         ArrayList<Integer> indicesArray = getIndices();
         List<Short> indicesList = new ArrayList<>();
         for (Integer indices : indicesArray) {
@@ -72,10 +77,14 @@ public class GaiaPrimitive {
         ArrayList<Float> textureCoordinateList = new ArrayList<>();
 
         GaiaRectangle texcoordBoundingRectangle = null;
+        GaiaBoundingBox boundingBox = new GaiaBoundingBox();
 
         // calculate texcoordBoundingRectangle by indices.
         if (indicesList.size() > 0) {
             for (int index : indicesList) {
+                if (index < 0) {
+                    index += Short.MAX_VALUE * 2 + 2;
+                }
                 GaiaVertex vertex = vertices.get(index);
                 Vector2d textureCoordinate = vertex.getTexcoords();
                 if (textureCoordinate != null) {
@@ -91,12 +100,15 @@ public class GaiaPrimitive {
 
         for (GaiaVertex vertex : vertices) {
             Vector3d position = vertex.getPosition();
+            transformMatrix.transformPosition(position);
             if (position != null) {
                 positionList.add((float) position.x);
                 positionList.add((float) position.y);
                 positionList.add((float) position.z);
             }
+            boundingBox.addPoint(position);
             Vector3d normal = vertex.getNormal();
+            rotationMatrix4.transformPosition(normal);
             if (normal != null) {
                 normalList.add((float) normal.x);
                 normalList.add((float) normal.y);
@@ -179,6 +191,7 @@ public class GaiaPrimitive {
         }
 
         gaiaBufferDataSet.setTexcoordBoundingRectangle(texcoordBoundingRectangle);
+        gaiaBufferDataSet.setBoundingBox(boundingBox);
 
         //assign material. Son 2023.07.17
         gaiaBufferDataSet.setMaterial(this.material);

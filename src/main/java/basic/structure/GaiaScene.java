@@ -28,6 +28,7 @@ public class GaiaScene {
         List<GaiaBufferDataSet> bufferDataSets = gaiaSet.getBufferDatas();
         List<GaiaMaterial> materials = gaiaSet.getMaterials();
 
+        //Matrix4d transformMatrix = gaiaSet.getTransformMatrix();
         Matrix4d transformMatrix = new Matrix4d();
         transformMatrix.identity();
         //transformMatrix.rotateX(Math.toRadians(-90)); // y and z axis swap

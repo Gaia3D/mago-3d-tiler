@@ -33,7 +33,7 @@ public class TileInfo {
     private void init() {
         GaiaNode rootNode = this.scene.getNodes().get(0);
         this.transformMatrix = rootNode.getTransformMatrix();
-        this.boundingBox = this.scene.getBoundingBox();
+        this.boundingBox = this.scene.getGaiaBoundingBox();
         this.scenePath = this.scene.getOriginalPath();
 
         this.tempPath = this.outputPath.resolve("temp");
@@ -45,6 +45,8 @@ public class TileInfo {
         if (this.scene != null) {
             init();
             GaiaSet tempSet = new GaiaSet(this.scene);
+            //this.transformMatrix = tempSet.getTransformMatrix();
+            //this.boundingBox = tempSet.getBoundingBox();
             this.tempPath = tempSet.writeFile(this.tempPath);
             this.scene = null;
         } else {

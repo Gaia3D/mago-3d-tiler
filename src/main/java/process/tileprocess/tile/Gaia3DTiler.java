@@ -6,13 +6,12 @@ import converter.kml.KmlInfo;
 import converter.assimp.AssimpConverter;
 import converter.assimp.Converter;
 import basic.geometry.GaiaBoundingBox;
-import basic.exchangable.GaiaUniverse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
+import process.ProcessOptions;
 import process.TilerOptions;
-import process.preprocess.GaiaTranslator;
 import process.tileprocess.Tiler;
 import process.tileprocess.tile.tileset.Tileset;
 import process.tileprocess.tile.tileset.asset.*;
@@ -27,11 +26,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class Gaia3DTiler implements Tiler {
     private static final int DEFUALT_MAX_COUNT = 256;
+    private static final int DEFUALT_MIN_LEVEL = 0;
+    private static final int DEFUALT_MAX_LEVEL = 3;
+
     private final CommandLine command;
     private final Converter converter;
     private final TilerOptions options;
@@ -48,7 +49,7 @@ public class Gaia3DTiler implements Tiler {
         double geometricError = calcGeometricError(tileInfos);
 
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
-        Matrix4d transformMatrix = getTransfromMatrix(globalBoundingBox);
+        Matrix4d transformMatrix = getTransformMatrix(globalBoundingBox);
         rotateX90(transformMatrix);
 
         Node root = createRoot();
@@ -124,7 +125,7 @@ public class Gaia3DTiler implements Tiler {
 
     private void createNode(Node parentNode, List<TileInfo> tileInfos) throws IOException {
         BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
-        int maxCount = command.hasOption("maxCount") ? Integer.parseInt(command.getOptionValue("maxCount")) : DEFUALT_MAX_COUNT;
+        int maxCount = command.hasOption(ProcessOptions.MAX_COUNT.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_COUNT.getArgName())) : DEFUALT_MAX_COUNT;
         if (tileInfos.size() > maxCount) {
             List<List<TileInfo>> childrenScenes = parentBoundingVolume.distributeScene(tileInfos);
 
@@ -182,7 +183,7 @@ public class Gaia3DTiler implements Tiler {
 
         double geometricError = calcGeometricError(tileInfos);
         GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
-        Matrix4d transformMatrix = getTransfromMatrix(childBoundingBox);
+        Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
         rotateX90(transformMatrix);
 
         BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
@@ -203,17 +204,24 @@ public class Gaia3DTiler implements Tiler {
             return null;
         }
 
+        int minLevel = command.hasOption(ProcessOptions.MIN_LOD.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MIN_LOD.getArgName())) : DEFUALT_MIN_LEVEL;
+        int maxLevel = command.hasOption(ProcessOptions.MAX_LOD.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_LOD.getArgName())) : DEFUALT_MAX_LEVEL;
+
         GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
-        Matrix4d transformMatrix = getTransfromMatrix(childBoundingBox);
+        Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
         rotateX90(transformMatrix);
 
         BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
 
         String nodeCode = parentNode.getNodeCode();
-        LevelOfDetail lod = getLodByNodeCode(nodeCode);
-        if (lod == LevelOfDetail.LOD3) {
+        LevelOfDetail minLod = LevelOfDetail.getByLevel(minLevel);
+        LevelOfDetail maxLod = LevelOfDetail.getByLevel(maxLevel);
+        boolean hasContent = nodeCode.contains("C");
+        if (!hasContent) {
             nodeCode = nodeCode + "C";
-        } else if (lod == LevelOfDetail.NONE) {
+        }
+        LevelOfDetail lod = getLodByNodeCode(minLod, maxLod, nodeCode);
+        if (lod == LevelOfDetail.NONE) {
             return null;
         }
         nodeCode = nodeCode + index;
@@ -243,22 +251,41 @@ public class Gaia3DTiler implements Tiler {
         return childNode;
     }
 
-    private LevelOfDetail getLodByNodeCode(String nodeCode) {
+    private LevelOfDetail getLodByNodeCode(LevelOfDetail minLod, LevelOfDetail maxLod, String nodeCode) {
         LevelOfDetail levelOfDetail = LevelOfDetail.NONE;
-        boolean hasContent = nodeCode.contains("C");
+        int minLevel = minLod.getLevel();
+        int maxLevel = maxLod.getLevel();
+
+        String[] splitCode = nodeCode.split("C");
+        if (splitCode.length > 1) {
+            String contentLevel = nodeCode.split("C")[1];
+            int level = maxLevel - contentLevel.length();
+            if (level < minLevel) {
+                level = -1;
+            }
+            levelOfDetail = LevelOfDetail.getByLevel(level);
+        } else {
+            return maxLod;
+        }
+
+        /*int level;
         if (hasContent) {
             String contentLevel = nodeCode.split("C")[1];
             int level = contentLevel.length();
-            if (level == 1) {
-                levelOfDetail = LevelOfDetail.LOD2;
-            } else if (level == 2) {
-                levelOfDetail = LevelOfDetail.LOD1;
-            } else if (level == 3) {
-                levelOfDetail = LevelOfDetail.LOD0;
+            if (maxLevel >= level) {
+                int offset = maxLevel - level;
+                if (minLevel < offset) {
+                    offset = minLevel;
+                }
+                levelOfDetail = LevelOfDetail.getByLevel(offset);
             }
         } else {
-            levelOfDetail = LevelOfDetail.LOD3;
-        }
+            levelOfDetail = maxLod;
+        }*/
+
+
+
+
         return levelOfDetail;
     }
 
@@ -269,7 +296,7 @@ public class Gaia3DTiler implements Tiler {
         matrix.mul(rotationMatrix, matrix);
     }
 
-    private Matrix4d getTransfromMatrix(GaiaBoundingBox boundingBox) {
+    private Matrix4d getTransformMatrix(GaiaBoundingBox boundingBox) {
         Vector3d center = boundingBox.getCenter();
         double[] cartesian = GlobeUtils.geographicToCartesianWgs84(center.x, center.y, center.z);
         return GlobeUtils.normalAtCartesianPointWgs84(cartesian[0], cartesian[1], cartesian[2]);

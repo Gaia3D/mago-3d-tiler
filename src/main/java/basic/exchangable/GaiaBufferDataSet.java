@@ -1,5 +1,6 @@
 package basic.exchangable;
 
+import basic.geometry.GaiaBoundingBox;
 import basic.geometry.GaiaRectangle;
 import basic.structure.*;
 import basic.types.AttributeType;
@@ -27,6 +28,7 @@ public class GaiaBufferDataSet {
     private int materialId;
     public GaiaMaterial material = null;
 
+    GaiaBoundingBox boundingBox = null;
     GaiaRectangle texcoordBoundingRectangle = null;
 
     Matrix4d transformMatrix = null;

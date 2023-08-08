@@ -51,16 +51,26 @@ public class GaiaSet {
 
     public GaiaSet(Path path) {
         readFile(path);
+        this.transformMatrix = new Matrix4d();
+        this.transformMatrix.identity();
     }
 
     public GaiaSet(GaiaScene gaiaScene) {
         this.projectName = FilenameUtils.removeExtension(gaiaScene.getOriginalPath().getFileName().toString());
         List<GaiaBufferDataSet> bufferDataSets = new ArrayList<>();
         for (GaiaNode node : gaiaScene.getNodes()) {
-            this.transformMatrix = node.toGaiaBufferSets(bufferDataSets, null);
+            node.toGaiaBufferSets(bufferDataSets, null);
         }
         this.materials = gaiaScene.getMaterials();
         this.bufferDatas = bufferDataSets;
+    }
+
+    public GaiaBoundingBox getBoundingBox() {
+        GaiaBoundingBox boundingBox = new GaiaBoundingBox();
+        for (GaiaBufferDataSet bufferDataSet : bufferDatas) {
+            boundingBox.addBoundingBox(bufferDataSet.getBoundingBox());
+        }
+        return boundingBox;
     }
 
     public boolean checkIfIsTextureReperat_TEST()
@@ -100,17 +110,22 @@ public class GaiaSet {
             }
 
             for (GaiaMaterial material : materials) {
-                material.write(stream);
                 LinkedHashMap<TextureType, List<GaiaTexture>> materialTextures = material.getTextures();
                 List<GaiaTexture> diffuseTextures = materialTextures.get(TextureType.DIFFUSE);
                 if (diffuseTextures.size() > 0) {
                     GaiaTexture texture = materialTextures.get(TextureType.DIFFUSE).get(0);
                     Path parentPath = texture.getParentPath();
                     String diffusePath = texture.getPath();
+                    texture.setPath(this.projectName + File.separator + diffusePath);
                     String imagePath = parentPath + File.separator + diffusePath;
-                    Path outputPath = path.resolve("images").resolve(diffusePath);
+
+                    Path imageTempPath = path.resolve("images").resolve(this.projectName);
+                    imageTempPath.toFile().mkdir();
+
+                    Path outputPath = imageTempPath.resolve(diffusePath);
                     FileUtils.copyFile(new File(imagePath), outputPath.toFile());
                 }
+                material.write(stream);
             }
             stream.writeInt(bufferDatas.size());
             for (GaiaBufferDataSet bufferData : bufferDatas) {

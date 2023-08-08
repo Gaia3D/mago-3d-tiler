@@ -142,7 +142,6 @@ public class GaiaNode {
     public void recalculateTransform() {
         GaiaNode node = this;
         node.setPreMultipliedTransformMatrix(new Matrix4d(node.getTransformMatrix()));
-        //node.setPreMultipliedTransformMatrix(new Matrix4d().identity());
         if (node.getParent() != null) {
             Matrix4d parentPreMultipliedTransformMatrix = node.getParent().getPreMultipliedTransformMatrix();
             Matrix4d preMultipliedTransformMatrix = node.getPreMultipliedTransformMatrix();
@@ -153,18 +152,24 @@ public class GaiaNode {
         }
     }
 
-    public Matrix4d toGaiaBufferSets(List<GaiaBufferDataSet> bufferSets, Matrix4d transformMatrix) {
-        if (bufferSets == null) {
-            bufferSets = new ArrayList<GaiaBufferDataSet>();
+    public Matrix4d toGaiaBufferSets(List<GaiaBufferDataSet> bufferSets, Matrix4d parentTransformMatrix) {
+        Matrix4d transformMatrix = new Matrix4d(this.transformMatrix);
+        if (parentTransformMatrix != null) {
+            parentTransformMatrix.mul(transformMatrix, transformMatrix);
         }
+        /*if (bufferSets == null) {
+            bufferSets = new ArrayList<GaiaBufferDataSet>();
+        }*/
         for (GaiaMesh mesh : this.getMeshes()) {
-            if (transformMatrix == null && this.getPreMultipliedTransformMatrix() != null) {
+            /*if (transformMatrix == null && this.getPreMultipliedTransformMatrix() != null) {
                 transformMatrix = this.getPreMultipliedTransformMatrix();
-            }
-            mesh.toGaiaBufferSets(bufferSets);
+            }*/
+            mesh.toGaiaBufferSets(bufferSets, transformMatrix);
         }
         for (GaiaNode child : this.getChildren()) {
-            transformMatrix = child.toGaiaBufferSets(bufferSets, transformMatrix);
+            //Matrix4d childTransformMatrix = new Matrix4d();
+            //transformMatrix.mul(child.getTransformMatrix(), childTransformMatrix);
+            child.toGaiaBufferSets(bufferSets, transformMatrix);
         }
         return transformMatrix;
     }

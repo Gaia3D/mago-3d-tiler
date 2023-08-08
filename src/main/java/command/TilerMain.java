@@ -15,6 +15,8 @@ import process.postprocess.GaiaRelocator;
 import process.postprocess.PostProcess;
 import process.postprocess.batch.Batched3DModel;
 import process.postprocess.batch.GaiaBatcher;
+import process.preprocess.GaiaRotator;
+import process.preprocess.GaiaScaler;
 import process.preprocess.GaiaTranslator;
 import process.preprocess.PreProcess;
 import process.tileprocess.TileProcess;
@@ -97,7 +99,12 @@ public class TilerMain {
         //List<TileInfo> tileInfos = fileLoader.loadTileInfos(formatType, inputFile.toPath(), recursive);
 
         List<PreProcess> preProcessors = new ArrayList<>();
+        if (command.hasOption("swapYZ")) {
+            preProcessors.add(new GaiaRotator());
+        }
         preProcessors.add(new GaiaTranslator(source));
+        preProcessors.add(new GaiaScaler());
+
         //preProcessors.add(new GeometryOptimizer()); // son.***
 
         TilerOptions tilerOptions = TilerOptions.builder()

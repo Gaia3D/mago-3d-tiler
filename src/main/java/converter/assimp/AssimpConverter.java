@@ -11,6 +11,7 @@ import org.joml.Vector3d;
 import org.joml.Vector4d;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
+import process.ProcessOptions;
 import util.ImageUtils;
 
 import java.io.File;
@@ -100,9 +101,10 @@ public class AssimpConverter implements Converter {
         assert node != null;
         Matrix4d rootTransform = node.getTransformMatrix();
 
-        if (command.hasOption("swapYZ")) {
+        /*if (command.hasOption("swapYZ")) {
             rootTransform.rotateX(Math.toRadians(90), rootTransform);
-        }
+        }*/
+
         node.setTransformMatrix(rootTransform);
         node.recalculateTransform();
         gaiaScene.getNodes().add(node);
@@ -285,6 +287,7 @@ public class AssimpConverter implements Converter {
     }
 
     private GaiaPrimitive processPrimitive(AIMesh aiMesh, GaiaMaterial material) {
+        boolean reverseTextureCoord = command.hasOption(ProcessOptions.REVERSE_TEXCOORD.getArgName());
         GaiaSurface surface = processSurface();
 
         GaiaPrimitive primitive = new GaiaPrimitive();
@@ -331,7 +334,11 @@ public class AssimpConverter implements Converter {
                 if (Float.isNaN(textureCoordinate.x()) || Float.isNaN(textureCoordinate.y())) {
                     vertex.setTexcoords(new Vector2d());
                 } else {
-                    vertex.setTexcoords(new Vector2d(textureCoordinate.x(), 1.0 - textureCoordinate.y()));
+                    if (reverseTextureCoord) {
+                        vertex.setTexcoords(new Vector2d(textureCoordinate.x(), textureCoordinate.y()));
+                    } else {
+                        vertex.setTexcoords(new Vector2d(textureCoordinate.x(), 1.0 - textureCoordinate.y()));
+                    }
                 }
             }
             primitive.getVertices().add(vertex);
