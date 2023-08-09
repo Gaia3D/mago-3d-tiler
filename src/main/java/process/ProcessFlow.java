@@ -4,6 +4,7 @@ import converter.FileLoader;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import process.postprocess.PostProcess;
+import process.postprocess.thread.TestPool;
 import process.preprocess.PreProcess;
 import process.tileprocess.TileProcess;
 import process.tileprocess.Tiler;
@@ -28,8 +29,17 @@ public class ProcessFlow {
         log.info("Start loading tile infos.");
         List<File> fileList = fileLoader.loadFiles();
         log.info("Total {} files.", fileList.size());
+
+        TestPool testPool = new TestPool();
+
         /* PreProcess */
-        int count = 0;
+        try {
+            testPool.preProcessStart(tileInfos, fileList, fileLoader, preProcesses);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        /*int count = 0;
         int size = fileList.size();
         for (File file : fileList) {
             count++;
@@ -45,18 +55,24 @@ public class ProcessFlow {
             if (count % 1000 == 0) {
                 System.gc();
             }
-        }
+        }*/
         System.gc();
 
         /* TileProcess */
         Tiler tiler = (Tiler) tileProcess;
         Tileset tileset = tiler.run(tileInfos);
         tiler.writeTileset(tileset);
-        System.gc();
+        //System.gc();
 
         /* PostProcess */
         List<ContentInfo> contentInfos = tileset.findAllContentInfo();
-        for (ContentInfo contentInfo : contentInfos) {
+        try {
+            testPool.postProcessStart(contentInfos, postProcesses);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        /*for (ContentInfo contentInfo : contentInfos) {
             List<TileInfo> childTileInfos = contentInfo.getTileInfos();
             for (TileInfo tileInfo : childTileInfos) {
                 tileInfo.maximize();
@@ -66,7 +82,11 @@ public class ProcessFlow {
             }
             contentInfo.deleteTexture();
             contentInfo.clear();
-            //System.gc();
+        }*/
+
+        // Delete Temp Directory
+        if (tileInfos.size() > 0) {
+            tileInfos.get(0).deleteTemp();
         }
     }
 }

@@ -129,15 +129,6 @@ public class Gaia3DTiler implements Tiler {
         if (tileInfos.size() > maxCount) {
             List<List<TileInfo>> childrenScenes = parentBoundingVolume.distributeScene(tileInfos);
 
-            int test = 0;
-            for (List<TileInfo> tileInfoList : childrenScenes) {
-                test += tileInfoList.size();
-            }
-
-            if (test == tileInfos.size()) {
-                log.info("test : " + test + ", scenes : " + tileInfos.size());
-            }
-
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
                 Node childNode = createStructNode(parentNode, childTileInfos, index);
@@ -150,7 +141,6 @@ public class Gaia3DTiler implements Tiler {
             int test = 0;
             List<List<TileInfo>> childrenScenes = parentBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
-                //List<TileInfo> childTileInfos = reloadScenes(childrenScenes.get(index));
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
 
                 test += childTileInfos.size();

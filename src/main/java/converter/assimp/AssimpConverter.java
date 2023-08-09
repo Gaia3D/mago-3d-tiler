@@ -295,14 +295,15 @@ public class AssimpConverter implements Converter {
         primitive.setMaterial(material);
         primitive.setMaterialIndex(material.getId());
 
+        Vector4d diffuse = material.getDiffuseColor();
+        byte[] diffuseColor = new byte[]{(byte) (diffuse.x * 255), (byte) (diffuse.y * 255), (byte) (diffuse.z * 255), (byte) (diffuse.w * 255)};
+
         int numFaces = aiMesh.mNumFaces();
         AIFace.Buffer facesBuffer = aiMesh.mFaces();
         for (int i = 0; i < numFaces; i++) {
             AIFace aiFace = facesBuffer.get(i);
             GaiaFace face = processFace(aiFace);
             surface.getFaces().add(face);
-
-            //face.getIndices().forEach((indices) -> primitive.getIndices().add(indices));
         }
 
         int mNumVertices = aiMesh.mNumVertices();
@@ -341,6 +342,11 @@ public class AssimpConverter implements Converter {
                     }
                 }
             }
+
+            diffuseColor[0] = (byte) (diffuse.x * 255);
+            diffuseColor[1] = (byte) (diffuse.y * 255);
+            diffuseColor[2] = (byte) (diffuse.z * 255);
+            diffuseColor[3] = (byte) (diffuse.w * 255);
             primitive.getVertices().add(vertex);
         }
 

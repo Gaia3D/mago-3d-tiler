@@ -41,7 +41,7 @@ public class GaiaNode {
 
         List<Float> positionList = new ArrayList<>();
         List<Float> normalList = new ArrayList<>();
-        List<Float> colorList = new ArrayList<>();
+        List<Byte> colorList = new ArrayList<>();
         List<Float> texCoordList = new ArrayList<>();
         List<Float> batchIdList = new ArrayList<>();
         List<GaiaVertex> vertexList = new ArrayList<>();
@@ -57,8 +57,8 @@ public class GaiaNode {
                 float[] normals = buffer.getFloats();
                 normalList = ArrayUtils.convertListToFloatArray(normals);
             } else if (attributeType == AttributeType.COLOR) {
-                float[] colors = buffer.getFloats();
-                colorList = ArrayUtils.convertListToFloatArray(colors);
+                byte[] colors = buffer.getBytes();
+                colorList = ArrayUtils.convertByteListToShortArray(colors);
             } else if (attributeType == AttributeType.TEXCOORD) {
                 float[] texCoords = buffer.getFloats();
                 texCoordList = ArrayUtils.convertListToFloatArray(texCoords);
@@ -85,11 +85,12 @@ public class GaiaNode {
             }
             if (CollectionUtils.isNotEmpty(colorList)) {
                 int colorIndex = i * 4;
-                float colorR = colorList.get(colorIndex);
-                float colorG = colorList.get(colorIndex + 1);
-                float colorB = colorList.get(colorIndex + 2);
-                float colorA = colorList.get(colorIndex + 3);
-                vertex.setColor(new Vector4d(colorR, colorG, colorB, colorA));
+                byte[] color = new byte[4];
+                color[0] = colorList.get(colorIndex);
+                color[1] = colorList.get(colorIndex + 1);
+                color[2] = colorList.get(colorIndex + 2);
+                color[3] = colorList.get(colorIndex + 3);
+                vertex.setColor(color);
             }
             if (CollectionUtils.isNotEmpty(texCoordList)) {
                 int texcoordIndex = i * 2;

@@ -112,7 +112,7 @@ public class GltfWriter {
         List<Short> indices = gaiaMesh.getIndices();
         List<Float> positions = gaiaMesh.getPositions();
         List<Float> normals = gaiaMesh.getNormals();
-        List<Float> colors = gaiaMesh.getColors();
+        List<Byte> colors = gaiaMesh.getColors();
         List<Float> texcoords = gaiaMesh.getTexcoords();
         List<Float> batchIds = gaiaMesh.getBatchIds();
 
@@ -144,8 +144,8 @@ public class GltfWriter {
             }
         }
         if (colorsBuffer != null) {
-            for (Float color: colors) {
-                colorsBuffer.putFloat(color);
+            for (Byte color: colors) {
+                colorsBuffer.put(color);
             }
         }
         if (texcoordsBuffer != null) {

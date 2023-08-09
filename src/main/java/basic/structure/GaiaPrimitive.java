@@ -18,6 +18,7 @@ import util.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 @Getter
 @Setter
@@ -72,7 +73,7 @@ public class GaiaPrimitive {
 
         ArrayList<Float> positionList = new ArrayList<>();
         ArrayList<Float> batchIdList = new ArrayList<>();
-        ArrayList<Float> colorList = new ArrayList<>();
+        ArrayList<Byte> colorList = new ArrayList<>();
         ArrayList<Float> normalList = new ArrayList<>();
         ArrayList<Float> textureCoordinateList = new ArrayList<>();
 
@@ -98,6 +99,9 @@ public class GaiaPrimitive {
             }
         }
 
+        Random random = new Random();
+        byte[] bytes = new byte[4];
+        random.nextBytes(bytes);
         for (GaiaVertex vertex : vertices) {
             Vector3d position = vertex.getPosition();
             transformMatrix.transformPosition(position);
@@ -114,12 +118,24 @@ public class GaiaPrimitive {
                 normalList.add((float) normal.y);
                 normalList.add((float) normal.z);
             }
+            byte[] color = vertex.getColor();
+            if (color != null) {
+                colorList.add(color[0]);
+                colorList.add(color[1]);
+                colorList.add(color[2]);
+                colorList.add(color[3]);
+            }
+            // colors
+//            colorList.add(bytes[0]);
+//            colorList.add(bytes[1]);
+//            colorList.add(bytes[2]);
+//            colorList.add(bytes[3]);
 
             // colors
-            colorList.add(1.0f);
-            colorList.add(1.0f);
-            colorList.add(1.0f);
-            colorList.add(1.0f);
+//            colorList.add((byte) 255);
+//            colorList.add((byte) 255);
+//            colorList.add((byte) 255);
+//            colorList.add((byte) 255);
 
             batchIdList.add(vertex.getBatchId());
             Vector2d textureCoordinate = vertex.getTexcoords();
@@ -153,10 +169,10 @@ public class GaiaPrimitive {
         if (colorList.size() > 0) {
             GaiaBuffer colorBuffer = new GaiaBuffer();
             colorBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
-            colorBuffer.setGlType(GL20.GL_FLOAT);
+            colorBuffer.setGlType(GL20.GL_UNSIGNED_BYTE);
             colorBuffer.setElementsCount(vertices.size());
-            colorBuffer.setGlDimension((byte) 4);
-            colorBuffer.setFloats(ArrayUtils.convertFloatArrayToList(colorList));
+            colorBuffer.setGlDimension((byte) 1);
+            colorBuffer.setBytes(ArrayUtils.convertByteArrayToList(colorList));
             gaiaBufferDataSet.getBuffers().put(AttributeType.COLOR, colorBuffer);
         }
 

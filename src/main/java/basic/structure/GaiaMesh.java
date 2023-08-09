@@ -166,7 +166,7 @@ public class GaiaMesh {
         int count = 0;
         for (GaiaPrimitive primitive : primitives) {
             for (GaiaVertex vertex : primitive.getVertices()) {
-                Vector4d color = vertex.getColor();
+                byte[] color = vertex.getColor();
                 if (color != null) {
                     count += 4;
                 }
@@ -175,16 +175,16 @@ public class GaiaMesh {
         return count;
     }
 
-    public ArrayList<Float> getColors() {
-        ArrayList<Float> totalColors = new ArrayList<>();
+    public List<Byte> getColors() {
+        List<Byte> totalColors = new ArrayList<>();
         for (GaiaPrimitive primitive : primitives) {
             for (GaiaVertex vertex : primitive.getVertices()) {
-                Vector4d color = vertex.getColor();
+                byte[] color = vertex.getColor();
                 if (color != null) {
-                    totalColors.add((float) vertex.getColor().x());
-                    totalColors.add((float) vertex.getColor().y());
-                    totalColors.add((float) vertex.getColor().z());
-                    totalColors.add((float) vertex.getColor().w());
+                    totalColors.add(color[0]);
+                    totalColors.add(color[1]);
+                    totalColors.add(color[2]);
+                    totalColors.add(color[3]);
                 }
             }
         }

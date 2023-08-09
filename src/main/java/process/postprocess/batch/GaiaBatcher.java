@@ -368,9 +368,9 @@ public class GaiaBatcher implements Batcher {
 
         List<Float> positions = new ArrayList<>();
         List<Float> normals = new ArrayList<>();
-        List<Float> colors = new ArrayList<>();
         List<Float> texCoords = new ArrayList<>();
         List<Float> batchIds = new ArrayList<>();
+        List<Byte> colors = new ArrayList<>();
         List<Short> indices = new ArrayList<>();
         GaiaRectangle batchedBoundingRectangle = null;
         int totalIndicesMax = 0;
@@ -410,8 +410,8 @@ public class GaiaBatcher implements Batcher {
             }
             GaiaBuffer colorBuffer = buffers.get(AttributeType.COLOR);
             if (colorBuffer != null) {
-                totalColorCount += colorBuffer.getFloats().length;
-                for (float color : colorBuffer.getFloats()) {
+                totalColorCount += colorBuffer.getBytes().length;
+                for (byte color : colorBuffer.getBytes()) {
                     colors.add(color);
                 }
             }
@@ -464,7 +464,7 @@ public class GaiaBatcher implements Batcher {
             buffer.setGlType(GL20.GL_FLOAT);
             buffer.setElementsCount(totalColorCount / 4);
             buffer.setGlDimension((byte) 4);
-            buffer.setFloats(ArrayUtils.convertFloatArrayToList(colors));
+            buffer.setBytes(ArrayUtils.convertByteArrayToList(colors));
             dataSet.getBuffers().put(AttributeType.COLOR, buffer);
         }
         if (totalTexCoordCount > 0) {

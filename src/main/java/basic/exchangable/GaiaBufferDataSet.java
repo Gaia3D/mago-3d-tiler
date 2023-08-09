@@ -81,7 +81,6 @@ public class GaiaBufferDataSet {
         List<Integer> indices = null;
         List<GaiaVertex> vertices = new ArrayList<>();
         GaiaPrimitive primitive = new GaiaPrimitive();
-        //int elementsCount = buffers.get(AttributeType.POSITION).getElementsCount();
 
         for (Map.Entry<AttributeType, GaiaBuffer> entry : buffers.entrySet()) {
             AttributeType attributeType = entry.getKey();

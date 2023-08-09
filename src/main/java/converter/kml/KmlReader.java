@@ -19,17 +19,16 @@ import java.util.List;
 
 @Slf4j
 public class KmlReader {
-    private final DocumentBuilder documentBuilder;
     public KmlReader() throws ParserConfigurationException {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        this.documentBuilder = factory.newDocumentBuilder();
     }
 
     //read kml file
     public KmlInfo read(File file) {
         KmlInfo kmlInfo = null;
         try {
-            Document document = documentBuilder.parse(file);
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document document = builder.parse(file);
             Element root = document.getDocumentElement();
             List<Element> elements = getAllElements(root);
             Vector3d position = new Vector3d(Double.parseDouble(findContent(elements, "longitude")), Double.parseDouble(findContent(elements, "latitude")), Double.parseDouble(findContent(elements, "altitude")));
@@ -49,7 +48,8 @@ public class KmlReader {
             //documentBuilder.reset();
         } catch (IOException e) {
             throw new RuntimeException(e);
-        } catch (SAXException e) {
+        } catch (SAXException | ParserConfigurationException e) {
+            e.printStackTrace();
             //throw new RuntimeException(e);
             log.error("SAXException: {}", e.getMessage());
         } finally {

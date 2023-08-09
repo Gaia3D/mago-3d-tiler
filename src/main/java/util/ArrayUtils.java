@@ -6,6 +6,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ArrayUtils {
+    public static byte[] convertByteArrayToList(List<Byte> list) {
+        byte[] array = new byte[list.size()];
+        int num = 0;
+        for (Byte s : list) {
+            array[num++] = (s != null ? s : 0);
+        }
+        return array;
+    }
     public static short[] convertShortArrayToList(List<Short> list) {
         short[] array = new short[list.size()];
         int num = 0;
@@ -29,6 +37,14 @@ public class ArrayUtils {
             array[num++] = (f != null ? f : Float.NaN);
         }
         return array;
+    }
+
+    public static List<Byte> convertByteListToShortArray(byte[] array) {
+        List<Byte> list = new ArrayList<>();
+        for (byte s : array) {
+            list.add(s);
+        }
+        return list;
     }
     public static List<Short> convertListToShortArray(short[] array) {
         List<Short> list = new ArrayList<>();

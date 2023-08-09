@@ -11,8 +11,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.joml.Matrix4d;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 @Getter
@@ -71,5 +73,9 @@ public class TileInfo {
         //this.scenePath = null;
         //this.outputPath = null;
         //this.tempPath = null;
+    }
+
+    public void deleteTemp() throws IOException {
+        FileUtils.deleteDirectory(this.tempPath.getParent().toFile());
     }
 }
