@@ -45,12 +45,13 @@ public class KmlReader {
                     .scaleY(Double.parseDouble(findContent(elements, "y")))
                     .scaleZ(Double.parseDouble(findContent(elements, "z")))
                     .build();
-            //documentBuilder.reset();
+            document = null;
+            builder = null;
+            factory = null;
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (SAXException | ParserConfigurationException e) {
             e.printStackTrace();
-            //throw new RuntimeException(e);
             log.error("SAXException: {}", e.getMessage());
         } finally {
             //System.gc();

@@ -27,20 +27,20 @@ import java.util.stream.Collectors;
 public class GaiaBatcher implements Batcher {
     private final static int SHORT_LIMIT = 65535;
     private final CommandLine command;
-    private  GaiaSet batchedSet;
-    private  LevelOfDetail lod;
+    //private GaiaSet batchedSet;
+    //private LevelOfDetail lod;
 
     public GaiaBatcher(CommandLine command) {
         this.command = command;
     }
 
     private void initContentInfo(ContentInfo info) {
-        this.lod = info.getLod();
-        this.batchedSet = new GaiaSet();
-        this.batchedSet.setProjectName(info.getName());
+        //this.lod = info.getLod();
+        //this.batchedSet = new GaiaSet();
+        //this.batchedSet.setProjectName(info.getName());
     }
 
-    private void reassignMaterialsToGaiaBufferDataSetWithSameMaterial(List<GaiaBufferDataSet> dataSets) {
+    private void reassignMaterialsToGaiaBufferDataSetWithSameMaterial(List<GaiaBufferDataSet> dataSets, LevelOfDetail lod) {
         int datasetsCount = dataSets.size();
         for (int i = 0; i < datasetsCount; i++) {
             GaiaBufferDataSet dataSet = dataSets.get(i);
@@ -124,7 +124,7 @@ public class GaiaBatcher implements Batcher {
         });
 
         // check if exist equal materials.***
-        reassignMaterialsToGaiaBufferDataSetWithSameMaterial(batchedDataSets);
+        reassignMaterialsToGaiaBufferDataSetWithSameMaterial(batchedDataSets, contentInfo.getLod());
         List<GaiaMaterial> filteredMaterials = new ArrayList<>();
         GaiaBufferDataSet.getMaterialslIstOfBufferDataSet(batchedDataSets, filteredMaterials);
 
@@ -176,7 +176,7 @@ public class GaiaBatcher implements Batcher {
         List<GaiaBufferDataSet> resultBufferDatas = new ArrayList<>();
         List<GaiaMaterial> resultMaterials = new ArrayList<>();
         if (clampDataSets.size() > 0 && clampMaterials.size() > 0) {
-            atlasTextures(contentInfo.getNodeCode(), clampDataSets, clampMaterials);
+            atlasTextures(contentInfo.getLod(), contentInfo.getNodeCode(), clampDataSets, clampMaterials);
             List<List<GaiaBufferDataSet>> splitedDataSets = divisionByMaxIndices(clampDataSets);
             List<GaiaBufferDataSet> batchedClampDataSets = batchClampMaterial(splitedDataSets);
             clampMaterials.removeIf((clampMaterial) -> {
@@ -199,8 +199,10 @@ public class GaiaBatcher implements Batcher {
             resultBufferDatas.addAll(colorDataSet);
         }
 
-        this.batchedSet.setBufferDatas(resultBufferDatas);
-        this.batchedSet.setMaterials(resultMaterials);
+        GaiaSet batchedSet = new GaiaSet();
+        batchedSet.setProjectName(contentInfo.getName());
+        batchedSet.setBufferDatas(resultBufferDatas);
+        batchedSet.setMaterials(resultMaterials);
 
         if (resultBufferDatas.size() < 1 || resultMaterials.size() < 1) {
             log.error("Batched Set is empty");
@@ -209,9 +211,9 @@ public class GaiaBatcher implements Batcher {
         Matrix4d transform = new Matrix4d();
         transform.identity();
 
-        this.batchedSet.setTransformMatrix(transform);
+        batchedSet.setTransformMatrix(transform);
 
-        contentInfo.setBatchedSet(this.batchedSet);
+        contentInfo.setBatchedSet(batchedSet);
         return contentInfo;
     }
 
@@ -334,7 +336,7 @@ public class GaiaBatcher implements Batcher {
     }
 
     // 각 Material의 Texture들을 하나의 이미지로 변경
-    private void atlasTextures(String codeName, List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials) {
+    private void atlasTextures(LevelOfDetail lod, String codeName, List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials) {
         GaiaTextureCoordinator textureCoordinator = new GaiaTextureCoordinator(codeName, materials, dataSets);
         textureCoordinator.batchTextures(lod, this.command);
         //textureCoordinator.writeBatchedImage(this.universe.getOutputRoot().resolve("images"));

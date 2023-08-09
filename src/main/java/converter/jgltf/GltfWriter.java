@@ -17,14 +17,19 @@ import org.joml.Matrix4d;
 import org.joml.Vector4d;
 import org.lwjgl.opengl.GL20;
 import util.GeometryUtils;
+import util.ImageResizer;
 import util.ImageUtils;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 
@@ -394,7 +399,7 @@ public class GltfWriter {
     private int createImage(GlTF gltf, GaiaTexture gaiaTexture) {
         String extension = FilenameUtils.getExtension(gaiaTexture.getPath());
         String mimeType = ImageUtils.getMimeTypeByExtension(extension);
-        String uri = ImageUtils.writeImage(gaiaTexture.getBufferedImage(), mimeType);
+        String uri = writeImage(gaiaTexture.getBufferedImage(), mimeType);
         Image image = new Image();
         image.setUri(uri);
         image.setMimeType(mimeType);
@@ -465,5 +470,27 @@ public class GltfWriter {
         mesh.addPrimitives(primitive);
         gltf.addMeshes(mesh);
         return gltf.getMeshes().size() - 1;
+    }
+
+
+    private String writeImage(BufferedImage bufferedImage, String mimeType) {
+        ImageResizer imageResizer = new ImageResizer();
+        String formatName = ImageUtils.getFormatNameByMimeType(mimeType);
+        String imageString = null;
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            int width = bufferedImage.getWidth();
+            int height = bufferedImage.getHeight();
+            if (width != ImageUtils.getNearestPowerOfTwo(width) || height != ImageUtils.getNearestPowerOfTwo(height)) {
+                bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, ImageUtils.getNearestPowerOfTwo(width), ImageUtils.getNearestPowerOfTwo(height));
+            }
+            ImageIO.write(bufferedImage, formatName, baos);
+            byte[] bytes = baos.toByteArray();
+            imageString = "data:" + mimeType +";base64," + Base64.getEncoder().encodeToString(bytes);
+            bufferedImage.flush();
+            bytes = null;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return imageString;
     }
 }

@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class TestPool  {
-    private static final int THREAD_COUNT = 4;
+    private static final int THREAD_COUNT = 8;
 
     public void preProcessStart(List<TileInfo> tileInfos, List<File> fileList, FileLoader fileLoader, List<PreProcess> preProcessors) throws InterruptedException {
         log.info("start pre process");
@@ -83,10 +83,9 @@ public class TestPool  {
                 }
 
                 contentInfo.deleteTexture();
-
-                contentInfo.setTileInfos(childTileInfos);
-                contentInfo.deleteTexture();
-                contentInfo.clear();
+                //contentInfo.setTileInfos(childTileInfos);
+                //contentInfo.deleteTexture();
+                //contentInfo.clear();
 
                 copiedTileInfos.clear();
                 copiedTileInfos = null;

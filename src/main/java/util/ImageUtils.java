@@ -29,16 +29,16 @@ public class ImageUtils {
         }
     }
 
-    public static BufferedImage resizeImageGraphic2D(BufferedImage originalImage, int width, int height) {
+    /*public static BufferedImage resizeImageGraphic2D(BufferedImage originalImage, int width, int height) {
         BufferedImage outputImage = new BufferedImage(width, height, originalImage.getType());
         Graphics2D graphics2D = outputImage.createGraphics();
         graphics2D.setComposite(AlphaComposite.Src);
         graphics2D.drawImage(originalImage, 0, 0, width, height, null);
         graphics2D.dispose();
         return outputImage;
-    }
+    }*/
 
-    public static String writeImage(BufferedImage bufferedImage, String mimeType) {
+    /*public static String writeImage(BufferedImage bufferedImage, String mimeType) {
         String formatName = getFormatNameByMimeType(mimeType);
         String imageString = null;
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
@@ -54,7 +54,7 @@ public class ImageUtils {
             e.printStackTrace();
         }
         return imageString;
-    }
+    }*/
 
 
 
@@ -125,7 +125,7 @@ public class ImageUtils {
         return mimeType;
     }
 
-    public static BufferedImage readImage(String filePath) {
+    /*public static BufferedImage readImage(String filePath) {
         BufferedImage image = null;
         try (FileInputStream stream = new FileInputStream(new File(filePath))){
             image = ImageIO.read(stream);
@@ -133,7 +133,7 @@ public class ImageUtils {
             e.printStackTrace();
         }
         return image;
-    }
+    }*/
 
     public static String readText(File file) {
         try (var ir = new BufferedReader(new FileReader(file))) {

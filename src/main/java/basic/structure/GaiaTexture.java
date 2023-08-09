@@ -1,6 +1,7 @@
 package basic.structure;
 
 import basic.types.TextureType;
+import util.ImageResizer;
 import util.io.LittleEndianDataInputStream;
 import util.io.LittleEndianDataOutputStream;
 import lombok.AllArgsConstructor;
@@ -10,10 +11,12 @@ import lombok.Setter;
 import process.tileprocess.tile.LevelOfDetail;
 import util.ImageUtils;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
@@ -42,11 +45,21 @@ public class GaiaTexture {
     public void loadImage() {
         Path diffusePath = new File(path).toPath();
         String imagePath = parentPath + File.separator + diffusePath;
-        BufferedImage bufferedImage = ImageUtils.readImage(imagePath);
+        BufferedImage bufferedImage = readImage(imagePath);
         //BufferedImage bufferedImage = simpleImage();
         this.bufferedImage = bufferedImage;
         this.width = bufferedImage.getWidth();
         this.height = bufferedImage.getHeight();
+    }
+
+    private BufferedImage readImage(String filePath) {
+        BufferedImage image = null;
+        try (FileInputStream stream = new FileInputStream(filePath)){
+            image = ImageIO.read(stream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return image;
     }
 
     private BufferedImage simpleImage() {
@@ -66,7 +79,8 @@ public class GaiaTexture {
         resizeHeight = ImageUtils.getNearestPowerOfTwo(resizeHeight);
         this.width = resizeWidth;
         this.height = resizeHeight;
-        this.bufferedImage = ImageUtils.resizeImageGraphic2D(this.bufferedImage, resizeWidth, resizeHeight);
+        ImageResizer imageResizer = new ImageResizer();
+        this.bufferedImage = imageResizer.resizeImageGraphic2D(this.bufferedImage, resizeWidth, resizeHeight);
     }
 
     // getBufferedImage
@@ -93,6 +107,7 @@ public class GaiaTexture {
         if (byteBuffer != null) {
             byteBuffer.clear();
         }
+        bufferedImage.flush();
         bufferedImage = null;
     }
 

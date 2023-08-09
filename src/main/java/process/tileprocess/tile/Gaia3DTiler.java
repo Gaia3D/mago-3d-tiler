@@ -45,7 +45,6 @@ public class Gaia3DTiler implements Tiler {
 
     @Override
     public Tileset run(List<TileInfo> tileInfos) {
-        //List<TileInfo> tileInfos = options.getTileInfos();
         double geometricError = calcGeometricError(tileInfos);
 
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
@@ -85,19 +84,6 @@ public class Gaia3DTiler implements Tiler {
         }
     }
 
-    /*private List<TileInfo> reloadScenes(List<TileInfo> tileInfos) {
-        return tileInfos.stream().map((tileInfo) -> {
-            TileInfo tileinfo = TileInfo.builder()
-                    .kmlInfo(tileInfo.getKmlInfo())
-                    .scene(converter.load(tileInfo.getScenePath()))
-                    .build();
-            GaiaTranslator gaiaTranslator = new GaiaTranslator(options.getSource());
-            gaiaTranslator.run(tileinfo);
-            tileinfo.minimize();
-            return tileinfo;
-        }).collect(Collectors.toList());
-    }*/
-
     private double calcGeometricError(List<TileInfo> tileInfos) {
         return tileInfos.stream().mapToDouble(tileInfo -> {
             GaiaBoundingBox boundingBox = tileInfo.getBoundingBox();
@@ -128,7 +114,6 @@ public class Gaia3DTiler implements Tiler {
         int maxCount = command.hasOption(ProcessOptions.MAX_COUNT.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_COUNT.getArgName())) : DEFUALT_MAX_COUNT;
         if (tileInfos.size() > maxCount) {
             List<List<TileInfo>> childrenScenes = parentBoundingVolume.distributeScene(tileInfos);
-
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
                 Node childNode = createStructNode(parentNode, childTileInfos, index);
@@ -216,7 +201,7 @@ public class Gaia3DTiler implements Tiler {
         }
         nodeCode = nodeCode + index;
 
-        log.info("[ContentNode][" + nodeCode + "] : {}", tileInfos.size());
+        log.info("[ContentNode][" + nodeCode + "][{}] : {}", lod.getLevel(), tileInfos.size());
 
         Node childNode = new Node();
         childNode.setParent(parentNode);

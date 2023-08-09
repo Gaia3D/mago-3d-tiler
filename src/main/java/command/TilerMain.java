@@ -94,7 +94,6 @@ public class TilerMain {
         CRSFactory factory = new CRSFactory();
         CoordinateReferenceSystem source = (crs != null) ? factory.createFromName("EPSG:" + crs) : null;
 
-
         FileLoader fileLoader = new FileLoader(command);
         //List<TileInfo> tileInfos = fileLoader.loadTileInfos(formatType, inputFile.toPath(), recursive);
 

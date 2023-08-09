@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
 import org.joml.Vector2d;
 import process.tileprocess.tile.LevelOfDetail;
+import util.ImageResizer;
 import util.ImageUtils;
 
 import javax.imageio.ImageIO;
@@ -249,6 +250,7 @@ public class GaiaTextureCoordinator {
                 Graphics2D graphics = bufferedImage.createGraphics();
                 graphics.setColor(Color.WHITE);
                 graphics.fillRect(0, 0, 32, 32);
+                graphics.dispose();
             }
 
             //BufferedImage bufferedImage = texture.getBufferedImage(lod.getTextureScale());
@@ -501,12 +503,13 @@ public class GaiaTextureCoordinator {
         //this.atlasImage = null;
     }
 
-    private BufferedImage resizeNearestPowerOfTwo(BufferedImage bufferedImage) {
+    /*private BufferedImage resizeNearestPowerOfTwo(BufferedImage bufferedImage) {
+        ImageResizer resizer = new ImageResizer();
         int resizeWidth = ImageUtils.getNearestPowerOfTwo(bufferedImage.getWidth());
         int resizeHeight = ImageUtils.getNearestPowerOfTwo(bufferedImage.getHeight());
-        bufferedImage = ImageUtils.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight);
+        bufferedImage = resizer.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight);
         return bufferedImage;
-    }
+    }*/
 
     //findMaterial
     private GaiaMaterial findMaterial(int materialId) {
