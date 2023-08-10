@@ -5,6 +5,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * ArrayUtils
+ * @author znkim
+ * @since 1.0.0
+ */
 public class ArrayUtils {
     public static byte[] convertByteArrayToList(List<Byte> list) {
         byte[] array = new byte[list.size()];

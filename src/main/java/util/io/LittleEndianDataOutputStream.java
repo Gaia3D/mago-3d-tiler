@@ -10,17 +10,14 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * LittleEndianDataOutputStream
+ * @author znkim
+ * @since 1.0.0
+ * @see FilterOutputStream
+ */
 public class LittleEndianDataOutputStream extends FilterOutputStream implements DataOutput {
 
-    /**
-     * Creates an output stream filter built on top of the specified
-     * underlying output stream.
-     *
-     * @param out the underlying output stream to be assigned to
-     *            the field {@code this.out} for later use, or
-     *            <code>null</code> if this instance is to be
-     *            created without an underlying stream.
-     */
     public LittleEndianDataOutputStream(OutputStream out) {
         super(out);
     }

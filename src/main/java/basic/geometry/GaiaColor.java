@@ -5,6 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * GaiaColor is a class to store the color of a geometry.
+ */
 @Getter
 @Setter
 @AllArgsConstructor

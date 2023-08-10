@@ -19,6 +19,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A GaiaBufferDataSet can correspond to a Node in a 3d structure.
+ * It uses a straightforward structure and has a buffer for each attribute.
+ * @auther znkim
+ * @since 1.0.0
+ * @see GaiaSet, GaiaMaterial, GaiaBoundingBox, GaiaRectangle, GaiaPrimitive, GaiaNode, GaiaBuffer
+ */
 @Getter
 @Setter
 public class GaiaBufferDataSet {
@@ -90,7 +97,7 @@ public class GaiaBufferDataSet {
                 indices = ArrayUtils.convertIntListToShortArray(buffer.getShorts());
             } else if (attributeType.equals(AttributeType.POSITION)) {
                 List<Float> positions = ArrayUtils.convertListToFloatArray(buffer.getFloats());
-                if (vertices.size() > 0) {
+                if (!vertices.isEmpty()) {
                     int positionCount = 0;
                     for (GaiaVertex vertex : vertices) {
                         Vector3d position = new Vector3d(positions.get(positionCount++), positions.get(positionCount++), positions.get(positionCount++));
@@ -107,7 +114,7 @@ public class GaiaBufferDataSet {
                 }
             } else if (attributeType.equals(AttributeType.NORMAL)) {
                 List<Float> normals = ArrayUtils.convertListToFloatArray(buffer.getFloats());
-                if (vertices.size() > 0) {
+                if (!vertices.isEmpty()) {
                     int normalCount = 0;
                     for (GaiaVertex vertex : vertices) {
                         Vector3d normal = new Vector3d(normals.get(normalCount++), normals.get(normalCount++), normals.get(normalCount++));
@@ -124,7 +131,7 @@ public class GaiaBufferDataSet {
                 }
             } else if (attributeType.equals(AttributeType.TEXCOORD)) {
                 List<Float> texcoords = ArrayUtils.convertListToFloatArray(buffer.getFloats());
-                if (vertices.size() > 0) {
+                if (!vertices.isEmpty()) {
                     int texcoordCount = 0;
                     for (GaiaVertex vertex : vertices) {
                         Vector2d texcoord = new Vector2d(texcoords.get(texcoordCount++), texcoords.get(texcoordCount++));

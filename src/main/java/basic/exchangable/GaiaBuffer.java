@@ -12,6 +12,12 @@ import lombok.Setter;
 
 import java.io.IOException;
 
+/**
+ * GaiaBuffer represents a buffer by attribute, which is a convenient form to convert to gltf.
+ * @auther znkim
+ * @since 1.0.0
+ * @see AttributeType, AccessorType, GaiaBufferDataSet
+ */
 @Getter
 @Setter
 @NoArgsConstructor

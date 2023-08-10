@@ -12,13 +12,21 @@ import org.apache.commons.collections.CollectionUtils;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
-import org.joml.Vector4d;
 import util.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A class that represents a node of a Gaia object.
+ * It contains the meshes and children.
+ * The meshes are used for rendering.
+ * The children are used for hierarchical structure.
+ * @author znkim
+ * @since 1.0.0
+ * @see <a href="https://en.wikipedia.org/wiki/Scene_graph">Scene graph</a>
+ */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -153,26 +161,17 @@ public class GaiaNode {
         }
     }
 
-    public Matrix4d toGaiaBufferSets(List<GaiaBufferDataSet> bufferSets, Matrix4d parentTransformMatrix) {
+    public void toGaiaBufferSets(List<GaiaBufferDataSet> bufferSets, Matrix4d parentTransformMatrix) {
         Matrix4d transformMatrix = new Matrix4d(this.transformMatrix);
         if (parentTransformMatrix != null) {
             parentTransformMatrix.mul(transformMatrix, transformMatrix);
         }
-        /*if (bufferSets == null) {
-            bufferSets = new ArrayList<GaiaBufferDataSet>();
-        }*/
         for (GaiaMesh mesh : this.getMeshes()) {
-            /*if (transformMatrix == null && this.getPreMultipliedTransformMatrix() != null) {
-                transformMatrix = this.getPreMultipliedTransformMatrix();
-            }*/
             mesh.toGaiaBufferSets(bufferSets, transformMatrix);
         }
         for (GaiaNode child : this.getChildren()) {
-            //Matrix4d childTransformMatrix = new Matrix4d();
-            //transformMatrix.mul(child.getTransformMatrix(), childTransformMatrix);
             child.toGaiaBufferSets(bufferSets, transformMatrix);
         }
-        return transformMatrix;
     }
 
     public void translate(Vector3d translation) {

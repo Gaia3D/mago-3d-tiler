@@ -10,8 +10,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * GaiaUniverse is an aggregation of GaiaSet and GaiaScene.
+ * It is a root of the Gaia data structure.
+ * @auther znkim
+ * @since 1.0.0
+ * @see GaiaSet, GaiaScene
+ * @Deprecated
+ */
 @Slf4j
 @Getter
+@Deprecated
 public class GaiaUniverse {
     private final String name;
     private final Path inputRoot;

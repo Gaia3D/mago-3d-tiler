@@ -20,6 +20,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * A class that represents a primitive of a Gaia object.
+ * It contains the vertices and surfaces.
+ * The vertices are used for rendering.
+ * The surfaces are used for calculating normals.
+ * @author znkim
+ * @since 1.0.0
+ * @see <a href="https://en.wikipedia.org/wiki/Polygon_mesh">Polygon mesh</a>
+ */
 @Getter
 @Setter
 @NoArgsConstructor

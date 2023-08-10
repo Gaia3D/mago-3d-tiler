@@ -9,11 +9,18 @@ import lombok.Setter;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
-import org.joml.Vector4d;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A class that represents a mesh of a Gaia object.
+ * It contains the primitives.
+ * The primitives are used for rendering.
+ * @author znkim
+ * @since 1.0.0
+ * @see <a href="https://en.wikipedia.org/wiki/Polygon_mesh">Polygon mesh</a>
+ */
 @Getter
 @Setter
 @NoArgsConstructor

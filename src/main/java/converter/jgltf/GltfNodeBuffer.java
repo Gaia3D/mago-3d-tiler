@@ -5,6 +5,14 @@ import lombok.Setter;
 
 import java.nio.ByteBuffer;
 
+/**
+ * GltfBinary is a class that contains the binary data of the glTF file.
+ * It contains the binary data of the glTF file, and the information of the buffer of each node.
+ * The binary data of the glTF file is stored in the body variable.
+ * @author znkim
+ * @since 1.0.0
+ * @see GltfNodeBuffer, GltfWriter
+ */
 @Getter
 @Setter
 public class GltfNodeBuffer {

@@ -12,9 +12,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
 
+/**
+ * Utility class for image operations.
+ * @author znkim
+ * @since 1.0.0
+ */
 @Slf4j
 public class ImageUtils {
-    // getNearestPowerOfTwo
     public static int getNearestPowerOfTwo(int value) {
         int power = 1;
         int powerDown = 1;
@@ -29,36 +33,6 @@ public class ImageUtils {
         }
     }
 
-    /*public static BufferedImage resizeImageGraphic2D(BufferedImage originalImage, int width, int height) {
-        BufferedImage outputImage = new BufferedImage(width, height, originalImage.getType());
-        Graphics2D graphics2D = outputImage.createGraphics();
-        graphics2D.setComposite(AlphaComposite.Src);
-        graphics2D.drawImage(originalImage, 0, 0, width, height, null);
-        graphics2D.dispose();
-        return outputImage;
-    }*/
-
-    /*public static String writeImage(BufferedImage bufferedImage, String mimeType) {
-        String formatName = getFormatNameByMimeType(mimeType);
-        String imageString = null;
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            int width = bufferedImage.getWidth();
-            int height = bufferedImage.getHeight();
-            if (width != getNearestPowerOfTwo(width) || height != getNearestPowerOfTwo(height)) {
-                bufferedImage = resizeImageGraphic2D(bufferedImage, getNearestPowerOfTwo(width), getNearestPowerOfTwo(height));
-            }
-            ImageIO.write(bufferedImage, formatName, baos);
-            byte[] bytes = baos.toByteArray();
-            imageString = "data:" + mimeType +";base64," + Base64.getEncoder().encodeToString(bytes);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return imageString;
-    }*/
-
-
-
-    //getFormatNameByMimeType
     public static String getFormatNameByMimeType(String mimeType) {
         String formatName = null;
         switch (mimeType) {
@@ -90,7 +64,6 @@ public class ImageUtils {
         return formatName;
     }
 
-    //getMimeTypeByExtension
     public static String getMimeTypeByExtension(String extension) {
         String mimeType;
         extension = extension.toLowerCase();
@@ -123,30 +96,6 @@ public class ImageUtils {
                 break;
         }
         return mimeType;
-    }
-
-    /*public static BufferedImage readImage(String filePath) {
-        BufferedImage image = null;
-        try (FileInputStream stream = new FileInputStream(new File(filePath))){
-            image = ImageIO.read(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return image;
-    }*/
-
-    public static String readText(File file) {
-        try (var ir = new BufferedReader(new FileReader(file))) {
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = ir.readLine()) != null) {
-                sb.append(line);
-            }
-            return sb.toString();
-        } catch (IOException e) {
-            log.error("FileUtils.readFile: " + e.getMessage());
-        }
-        return null;
     }
 
     public static ByteBuffer readFile(File file, boolean flip) {

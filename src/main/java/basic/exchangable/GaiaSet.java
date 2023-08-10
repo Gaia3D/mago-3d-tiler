@@ -27,6 +27,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A GaiaSet is a set of data that contains a buffer of raw scene-level 3D data.
+ * @auther znkim
+ * @since 1.0.0
+ * @see GaiaBufferDataSet, GaiaMaterial, GaiaTexture, GaiaScene, GaiaNode
+ */
 @Slf4j
 @Setter
 @Getter
@@ -73,30 +79,6 @@ public class GaiaSet {
         return boundingBox;
     }
 
-    public boolean checkIfIsTextureReperat_TEST()
-    {
-        int buffDataSetsCount = bufferDatas.size();
-        for (GaiaBufferDataSet buffDataSet : bufferDatas) {
-            Map<AttributeType, GaiaBuffer> mapAttribName_Buffer = buffDataSet.getBuffers();
-            // now check if exist "TEXCOORD" attribute
-
-            if (mapAttribName_Buffer.containsKey(AttributeType.TEXCOORD)) {
-                GaiaBuffer buff = mapAttribName_Buffer.get(AttributeType.TEXCOORD);
-                if (buff.getGlType() == 5126) // 5126 is float type
-                {
-                    float[] buffData = buff.floats;
-                    int buffDataCount = buffData.length;
-                    for (float buffDatum : buffData) {
-                        if (buffDatum > 1.1f || buffDatum < -0.2f) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
     public Path writeFile(Path path) {
         String tempFile = projectName + "." + FormatType.TEMP.getExtension();
         File output = new File(path.toAbsolutePath().toString(), tempFile);
@@ -105,14 +87,14 @@ public class GaiaSet {
             stream.writeText(projectName);
             stream.writeInt(materials.size());
 
-            if (materials.size() == 0) {
+            if (materials.isEmpty()) {
                 log.error("material size is 0");
             }
 
             for (GaiaMaterial material : materials) {
                 LinkedHashMap<TextureType, List<GaiaTexture>> materialTextures = material.getTextures();
                 List<GaiaTexture> diffuseTextures = materialTextures.get(TextureType.DIFFUSE);
-                if (diffuseTextures.size() > 0) {
+                if (!diffuseTextures.isEmpty()) {
                     GaiaTexture texture = materialTextures.get(TextureType.DIFFUSE).get(0);
                     Path parentPath = texture.getParentPath();
                     String diffusePath = texture.getPath();
@@ -132,7 +114,6 @@ public class GaiaSet {
                 bufferData.write(stream);
             }
         } catch (Exception e) {
-            e.printStackTrace();
             log.error(e.getMessage());
         }
         return output.toPath();
@@ -155,7 +136,7 @@ public class GaiaSet {
                 materials.add(material);
             }
 
-            if (materials.size() == 0) {
+            if (materials.isEmpty()) {
                 log.error("material size is 0");
             }
 
@@ -177,7 +158,7 @@ public class GaiaSet {
             }
             this.bufferDatas = bufferDataSets;
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
     }
 
@@ -202,34 +183,14 @@ public class GaiaSet {
         return texcoordBoundingRectangle;
     }
 
-    public static List<GaiaSet> readFiles(Path path){
-        List<GaiaSet> result = new ArrayList<>();
-        readTree(result, path.toFile());
-        return result;
-    }
-
-    private static void readTree(List<GaiaSet> result, File outputFile){
-        if (outputFile.isFile() && outputFile.getName().endsWith("." + FormatType.TEMP.getExtension())) {
-            GaiaSet gaiaSet = new GaiaSet();
-            gaiaSet.readFile(outputFile.toPath());
-            result.add(gaiaSet);
-        } else if (outputFile.isDirectory()){
-            for (File child : outputFile.listFiles()) {
-                if (result.size() <= 100) {
-                    readTree(result, child);
-                }
-            }
-        }
-    }
-
     public void translate(Vector3d translation) {
         for (GaiaBufferDataSet bufferData : this.bufferDatas) {
             GaiaBuffer positionBuffer = bufferData.getBuffers().get(AttributeType.POSITION);
             float[] positions = positionBuffer.getFloats();
             for (int i = 0; i < positions.length; i += 3) {
-                positions[i] += translation.x;
-                positions[i + 1] += translation.y;
-                positions[i + 2] += translation.z;
+                positions[i] += (float) translation.x;
+                positions[i + 1] += (float) translation.y;
+                positions[i + 2] += (float) translation.z;
             }
         }
     }

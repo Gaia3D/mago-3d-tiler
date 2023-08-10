@@ -1,6 +1,7 @@
 package basic.structure;
 
 import basic.types.TextureType;
+import lombok.extern.slf4j.Slf4j;
 import util.ImageResizer;
 import util.io.LittleEndianDataInputStream;
 import util.io.LittleEndianDataOutputStream;
@@ -22,6 +23,16 @@ import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.Arrays;
 
+/**
+ * A class that represents a texture of a Gaia object.
+ * It contains the texture name, path, type, width, height, format, byteLength, and byteBuffer.
+ * The byteBuffer is used to create a texture.
+ * The byteBuffer is created by reading the texture file.
+ * @author znkim
+ * @since 1.0.0
+ * @see <a href="https://en.wikipedia.org/wiki/Texture_mapping">Texture mapping</a>
+ */
+@Slf4j
 @Getter
 @Setter
 @NoArgsConstructor
@@ -46,7 +57,7 @@ public class GaiaTexture {
         Path diffusePath = new File(path).toPath();
         String imagePath = parentPath + File.separator + diffusePath;
         BufferedImage bufferedImage = readImage(imagePath);
-        //BufferedImage bufferedImage = simpleImage();
+        //BufferedImage bufferedImage = testImage();
         this.bufferedImage = bufferedImage;
         this.width = bufferedImage.getWidth();
         this.height = bufferedImage.getHeight();
@@ -57,17 +68,16 @@ public class GaiaTexture {
         try (FileInputStream stream = new FileInputStream(filePath)){
             image = ImageIO.read(stream);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
         return image;
     }
 
-    private BufferedImage simpleImage() {
+    private BufferedImage testImage() {
         BufferedImage bufferedImage = new BufferedImage(16, 16, BufferedImage.TYPE_BYTE_BINARY);
         Graphics2D graphics = bufferedImage.createGraphics();
         graphics.setColor(Color.WHITE);
         graphics.fillRect(0, 0, 16, 16);
-        //graphics.dispose();
         return bufferedImage;
     }
 

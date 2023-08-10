@@ -13,10 +13,16 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * KmlReader is a class that reads kml files.
+ * It reads kml files and returns the information of the kml file.
+ * @author znkim
+ * @since 1.0.0
+ * @see KmlReader, KmlInfo
+ */
 @Slf4j
 public class KmlReader {
     public KmlReader() throws ParserConfigurationException {
@@ -51,10 +57,7 @@ public class KmlReader {
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (SAXException | ParserConfigurationException e) {
-            e.printStackTrace();
             log.error("SAXException: {}", e.getMessage());
-        } finally {
-            //System.gc();
         }
         return kmlInfo;
     }

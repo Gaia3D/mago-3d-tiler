@@ -17,6 +17,11 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 
+/**
+ * Loads files from the input directory.
+ * @author znkim
+ * @since 1.0.0
+ */
 @Slf4j
 public class FileLoader {
     private final Converter converter;

@@ -4,6 +4,7 @@ import converter.assimp.AssimpConverter;
 import converter.assimp.Converter;
 import basic.structure.GaiaScene;
 import org.junit.jupiter.api.Test;
+import process.preprocess.GeometryOptimizer;
 
 import java.io.File;
 import java.util.ArrayList;

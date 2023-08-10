@@ -15,6 +15,15 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 
+/**
+ * A class that represents a material of a Gaia object.
+ * It contains the diffuse color, ambient color, specular color, shininess, id, name and textures.
+ * The textures are stored in a LinkedHashMap.
+ * The key is the texture type and the value is the list of textures.
+ * @ author znkim
+ * @ since 1.0.0
+ * @ see <a href="https://en.wikipedia.org/wiki/Texture_mapping">Texture mapping</a>
+ */
 @Slf4j
 @Getter
 @Setter

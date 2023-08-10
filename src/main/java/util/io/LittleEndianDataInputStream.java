@@ -7,6 +7,12 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * LittleEndianDataInputStream
+ * @author znkim
+ * @since 1.0.0
+ * @see FilterInputStream
+ */
 public class LittleEndianDataInputStream extends FilterInputStream implements DataInput {
     /**
      * Creates a <code>FilterInputStream</code>

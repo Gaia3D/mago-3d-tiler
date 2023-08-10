@@ -21,6 +21,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A class that converts a file to a GaiaScene object using Assimp.
+ * @author znkim
+ * @since 1.0.0
+ * @see Converter
+ */
 @Slf4j
 public class AssimpConverter implements Converter {
     private final CommandLine command;
@@ -155,7 +161,7 @@ public class AssimpConverter implements Converter {
         String shininessTexPath = shininessPath.dataString();
 
         Path parentPath = new File(path).toPath();
-        if (diffTexPath.length() > 0) {
+        if (!diffTexPath.isEmpty()) {
             material.setName(diffTexPath);
 
             List<GaiaTexture> textures = new ArrayList<>();
@@ -177,7 +183,7 @@ public class AssimpConverter implements Converter {
         }
 
         List<GaiaTexture> textures;
-        if (ambientTexPath.length() > 0) {
+        if (!ambientTexPath.isEmpty()) {
             textures = new ArrayList<>();
             GaiaTexture texture = new GaiaTexture();
             texture.setType(TextureType.AMBIENT);
@@ -195,7 +201,7 @@ public class AssimpConverter implements Converter {
             material.getTextures().put(TextureType.AMBIENT, textures);
         }
 
-        if (specularTexPath.length() > 0) {
+        if (!specularTexPath.isEmpty()) {
             textures = new ArrayList<>();
             GaiaTexture texture = new GaiaTexture();
             texture.setPath(specularTexPath);
@@ -213,7 +219,7 @@ public class AssimpConverter implements Converter {
             material.getTextures().put(TextureType.SPECULAR, textures);
         }
 
-        if (shininessTexPath.length() > 0) {
+        if (!shininessTexPath.isEmpty()) {
             textures = new ArrayList<>();
             GaiaTexture texture = new GaiaTexture();
             texture.setPath(shininessTexPath);

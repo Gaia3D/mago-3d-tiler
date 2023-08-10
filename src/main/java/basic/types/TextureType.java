@@ -2,6 +2,14 @@ package basic.types;
 
 import lombok.Getter;
 
+/**
+ * Enum for the different types of textures that can be used in the application.
+ * Each texture has a corresponding extension.
+ * The extension is used to determine the type of the file.
+ * @Author znkim
+ * @Since 1.0.0
+ * @See GaiaSet
+ */
 @Getter
 public enum TextureType {
     NONE((byte) 0),

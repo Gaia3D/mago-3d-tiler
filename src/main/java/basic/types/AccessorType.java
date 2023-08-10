@@ -1,5 +1,10 @@
 package basic.types;
 
+/**
+ * Enumerates the types of accessors.
+ * @author znkim
+ * @since 1.0.0
+ */
 public enum AccessorType {
     SCALAR,
     VEC2,

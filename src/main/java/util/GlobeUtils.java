@@ -7,6 +7,11 @@ import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 
+/**
+ * Utility class for converting between geographic and cartesian coordinates.
+ * @author znkim
+ * @since 1.0.0
+ */
 public class GlobeUtils {
     private static final double degToRadFactor = 0.017453292519943296d; // 3.141592653589793 / 180.0;
     private static final double equatorialRadius = 6378137.0d; // meters.
@@ -18,9 +23,6 @@ public class GlobeUtils {
     private static final CRSFactory factory = new CRSFactory();
     private static final CoordinateReferenceSystem wgs84 = factory.createFromParameters("WGS84", "+proj=longlat +datum=WGS84 +no_defs");
 
-    /**
-     * convert world coordinate to wgs84
-     */
     public static double[] geographicToCartesianWgs84(double longitude, double latitude, double altitude) {
         double[] result = new double[3];
         double lonRad = longitude * degToRadFactor;
@@ -42,9 +44,6 @@ public class GlobeUtils {
         return new Vector3d(result[0], result[1], result[2]);
     }
 
-    /**
-     *
-     */
     public static Matrix4d normalAtCartesianPointWgs84(double x, double y, double z) {
         Vector3d zAxis = new Vector3d(x / equatorialRadiusSquared, y / equatorialRadiusSquared, z / polarRadiusSquared);
         zAxis.normalize();

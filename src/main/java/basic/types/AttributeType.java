@@ -2,6 +2,12 @@ package basic.types;
 
 import lombok.Getter;
 
+/**
+ * Enumerates the types of attributes.
+ * @Author znkim
+ * @Since 1.0.0
+ * @See GaiaBuffer, GltfWriter, GaiaNode, GaiaPrimitive
+ */
 @Getter
 public enum AttributeType {
     NONE("NONE", "NONE"),

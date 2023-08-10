@@ -1,7 +1,7 @@
 package command;
 
-import basic.extension.GeometryOptimizer;
 import basic.types.FormatType;
+import converter.FileLoader;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileExistsException;
@@ -20,7 +20,6 @@ import process.preprocess.GaiaScaler;
 import process.preprocess.GaiaTranslator;
 import process.preprocess.PreProcess;
 import process.tileprocess.TileProcess;
-import converter.FileLoader;
 import process.tileprocess.tile.Gaia3DTiler;
 
 import java.io.File;
@@ -30,7 +29,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Main class for Gaia3D Tiler.
+ * @Author znkim
+ * @Since 1.0.0
+ */
 @Slf4j
 public class TilerMain {
     public static String version = "1.0.1";
@@ -81,9 +84,8 @@ public class TilerMain {
 
         File inputFile = new File(command.getOptionValue(ProcessOptions.INPUT.getArgName()));
         File outputFile = new File(command.getOptionValue(ProcessOptions.OUTPUT.getArgName()));
-        String crs = command.getOptionValue("crs");
-        String inputExtension = command.getOptionValue("inputType");
-        boolean recursive = command.hasOption("recursive");
+        String crs = command.getOptionValue(ProcessOptions.CRS.getArgName());
+        String inputExtension = command.getOptionValue(ProcessOptions.INPUT_TYPE.getArgName());
 
         Path inputPath = createPath(inputFile);
         Path outputPath = createPath(outputFile);
@@ -95,7 +97,6 @@ public class TilerMain {
         CoordinateReferenceSystem source = (crs != null) ? factory.createFromName("EPSG:" + crs) : null;
 
         FileLoader fileLoader = new FileLoader(command);
-        //List<TileInfo> tileInfos = fileLoader.loadTileInfos(formatType, inputFile.toPath(), recursive);
 
         List<PreProcess> preProcessors = new ArrayList<>();
         if (command.hasOption("swapYZ")) {
@@ -103,7 +104,6 @@ public class TilerMain {
         }
         preProcessors.add(new GaiaTranslator(source));
         preProcessors.add(new GaiaScaler());
-
         //preProcessors.add(new GeometryOptimizer()); // son.***
 
         TilerOptions tilerOptions = TilerOptions.builder()

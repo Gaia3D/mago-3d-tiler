@@ -14,6 +14,14 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A class that represents a scene of a Gaia object.
+ * The largest unit of the 3D file.
+ * It contains the nodes and materials.
+ * @author znkim
+ * @since 1.0.0
+ * @see <a href="https://en.wikipedia.org/wiki/3D_computer_graphics">3D computer graphics</a>
+ */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -51,11 +59,5 @@ public class GaiaScene {
             }
         }
         return this.gaiaBoundingBox;
-    }
-
-    public void translate(Vector3d translation) {
-        for (GaiaNode node : this.getNodes()) {
-            node.translate(translation);
-        }
     }
 }

@@ -6,6 +6,15 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.joml.Vector2d;
 
+/**
+ * GaiaRectangle is a class to store the bounding rectangle of a geometry.
+ * It can be used to calculate the center and volume of the geometry.
+ * It can also be used to convert the local bounding rectangle to lonlat bounding rectangle.
+ * It can also be used to calculate the longest distance of the geometry.
+ * @auther znkim
+ * @since 1.0.0
+ * @see GaiaBoundingBox
+ */
 @Setter
 @Getter
 @NoArgsConstructor
@@ -40,20 +49,20 @@ public class GaiaRectangle {
     public Vector2d getLeftBottomPoint() {
         return new Vector2d(minX, maxY);
     }
+
     public Vector2d getRightTopPoint() {
         return new Vector2d(maxX, minY);
     }
 
-    public double getBoundingArea() {
+    /*public double getBoundingArea() {
         return (maxX * maxY);
-    }
+    }*/
 
     public double getArea() {
         return ((maxX - minX) * (maxY - minY));
     }
 
-    public double getPerimeter()
-    {
+    public double getPerimeter() {
         return (maxX - minX) * 2 + (maxY - minY) * 2;
     }
 
@@ -97,18 +106,15 @@ public class GaiaRectangle {
         }
     }
 
-    public double getWidth()
-    {
+    public double getWidth() {
         return maxX - minX;
     }
 
-    public double getHeight()
-    {
+    public double getHeight() {
         return maxY - minY;
     }
 
-    public void copyFrom(GaiaRectangle rectangle)
-    {
+    public void copyFrom(GaiaRectangle rectangle) {
         minX = rectangle.minX;
         minY = rectangle.minY;
         maxX = rectangle.maxX;
@@ -130,10 +136,6 @@ public class GaiaRectangle {
             return false;
         } else if (compare.minY > this.maxY - error) {
             return false;
-        } else if(compare.maxY < this.minY + error) {
-            return false;
-        } else {
-            return true;
-        }
+        } else return !(compare.maxY < this.minY + error);
     }
 }

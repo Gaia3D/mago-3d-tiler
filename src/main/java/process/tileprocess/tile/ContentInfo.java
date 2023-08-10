@@ -1,10 +1,7 @@
 package process.tileprocess.tile;
 
-import basic.geometry.GaiaBoundingBox;
 import basic.exchangable.GaiaSet;
-import basic.exchangable.GaiaUniverse;
-import basic.structure.GaiaMaterial;
-import basic.structure.GaiaScene;
+import basic.geometry.GaiaBoundingBox;
 import lombok.Getter;
 import lombok.Setter;
 

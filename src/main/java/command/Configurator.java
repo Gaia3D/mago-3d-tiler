@@ -13,6 +13,12 @@ import process.ProcessOptions;
 
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Class for setting up logs.
+ * @author znkim
+ * @since 1.0.0
+ * @see <a href="https://logging.apache.org/log4j/2.x/manual/configuration.html">Log4j2 Configuration</a>
+ */
 public class Configurator {
     public static final Level LEVEL = Level.ALL;
     private static final String DEFAULT_PATTERN = "%message%n";

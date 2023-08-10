@@ -33,6 +33,14 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * GltfWriter is a class that writes the glTF file.
+ * It contains the method to write the glTF file from the GaiaScene object.
+ * The glTF file is written in the glTF 2.0 format.
+ * author znkim
+ * @since 1.0.0
+ * @see GaiaScene, GltfBinary
+ */
 @Slf4j
 @NoArgsConstructor
 public class GltfWriter {
@@ -42,7 +50,8 @@ public class GltfWriter {
             GltfModelWriter writer = new GltfModelWriter();
             writer.writeEmbedded(gltfModel, outputPath);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            log.error("Failed to write glTF file.");
         }
     }
     public void writeGltf(GaiaScene gaiaScene, String outputPath) {
@@ -54,7 +63,8 @@ public class GltfWriter {
             GltfModelWriter writer = new GltfModelWriter();
             writer.writeBinary(gltfModel, outputPath);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            log.error("Failed to write glb file.");
         }
     }
     public void writeGlb(GaiaScene gaiaScene, OutputStream outputStream) {
@@ -64,7 +74,8 @@ public class GltfWriter {
             writer.writeBinary(gltfModel, outputStream);
             outputStream.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            log.error("Failed to write glb file.");
         }
     }
     public void writeGlb(GaiaScene gaiaScene, String outputPath) {
@@ -98,7 +109,7 @@ public class GltfWriter {
             }
 
             List<GaiaNode> children = gaiaNode.getChildren();
-            if (children.size() > 0) {
+            if (!children.isEmpty()) {
                 convertNode(gltf, binary, node, children);
             }
 
@@ -164,27 +175,27 @@ public class GltfWriter {
             }
         }
 
-        if (indicesBufferViewId > -1 && indices.size() > 0) {
+        if (indicesBufferViewId > -1 && !indices.isEmpty()) {
             int indicesAccessorId = createAccessor(gltf, indicesBufferViewId, 0, indices.size(), GltfConstants.GL_UNSIGNED_SHORT, AccessorType.SCALAR, false);
             nodeBuffer.setIndicesAccessorId(indicesAccessorId);
         }
-        if (positionsBufferViewId > -1 && positions.size() > 0) {
+        if (positionsBufferViewId > -1 && !positions.isEmpty()) {
             int verticesAccessorId = createAccessor(gltf, positionsBufferViewId, 0, positions.size() / 3, GltfConstants.GL_FLOAT, AccessorType.VEC3, false);
             nodeBuffer.setPositionsAccessorId(verticesAccessorId);
         }
-        if (normalsBufferViewId > -1 && normals.size() > 0) {
+        if (normalsBufferViewId > -1 && !normals.isEmpty()) {
             int normalsAccessorId = createAccessor(gltf, normalsBufferViewId, 0, normals.size() / 3, GltfConstants.GL_FLOAT, AccessorType.VEC3, false);
             nodeBuffer.setNormalsAccessorId(normalsAccessorId);
         }
-        if (colorsBufferViewId > -1 && colors.size() > 0) {
+        if (colorsBufferViewId > -1 && !colors.isEmpty()) {
             int colorsAccessorId = createAccessor(gltf, colorsBufferViewId, 0, colors.size() / 4, GltfConstants.GL_FLOAT, AccessorType.VEC4, false);
             nodeBuffer.setColorsAccessorId(colorsAccessorId);
         }
-        if (texcoordsBufferViewId > -1 && texcoords.size() > 0) {
+        if (texcoordsBufferViewId > -1 && !texcoords.isEmpty()) {
             int texcoordsAccessorId = createAccessor(gltf, texcoordsBufferViewId, 0, texcoords.size() / 2, GltfConstants.GL_FLOAT, AccessorType.VEC2, false);
             nodeBuffer.setTexcoordsAccessorId(texcoordsAccessorId);
         }
-        if (batchIdBufferViewId > -1 && batchIds.size() > 0) {
+        if (batchIdBufferViewId > -1 && !batchIds.isEmpty()) {
             int batchIdAccessorId = createAccessor(gltf, batchIdBufferViewId, 0, batchIds.size(), GltfConstants.GL_FLOAT, AccessorType.SCALAR, false);
             nodeBuffer.setBatchIdAccessorId(batchIdAccessorId);
         }
@@ -381,7 +392,7 @@ public class GltfWriter {
         Vector4d diffuseColor = gaiaMaterial.getDiffuseColor();
         pbrMetallicRoughness.setBaseColorFactor(new float[]{(float) diffuseColor.x, (float) diffuseColor.y, (float) diffuseColor.z, (float) diffuseColor.w});
 
-        if (diffuseTextures.size() > 0) {
+        if (!diffuseTextures.isEmpty()) {
             GaiaTexture gaiaTexture = diffuseTextures.get(0);
             int textureId = createTexture(gltf, gaiaTexture);
             TextureInfo textureInfo = new TextureInfo();
@@ -444,7 +455,7 @@ public class GltfWriter {
     private MeshPrimitive createPrimitive(GltfNodeBuffer nodeBuffer, GaiaPrimitive gaiaPrimitive, List<Material> materials) {
         MeshPrimitive primitive = new MeshPrimitive();
         primitive.setMode(GltfConstants.GL_TRIANGLES);
-        if (materials != null && materials.size() > 0) {
+        if (materials != null && !materials.isEmpty()) {
             primitive.setMaterial(gaiaPrimitive.getMaterialIndex());
         }
         primitive.setAttributes(new HashMap<>());
@@ -489,7 +500,8 @@ public class GltfWriter {
             bufferedImage.flush();
             bytes = null;
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            log.error("Error writing image");
         }
         return imageString;
     }
