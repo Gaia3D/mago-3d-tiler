@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * GltfWriter is a class that writes the glTF file.
@@ -122,6 +123,20 @@ public class GltfWriter {
         });
     }
 
+    private List<Byte> convertNormal(List<Float> normalValues) {
+        List<Byte> normalBytes = new ArrayList<>();
+        for (int i = 0; i < normalValues.size(); i += 3) {
+            normalBytes.add((byte) (normalValues.get(i) * 127));
+            normalBytes.add((byte) (normalValues.get(i + 1) * 127));
+            normalBytes.add((byte) (normalValues.get(i + 2) * 127));
+            normalBytes.add((byte) 1);
+        }
+        return normalBytes;
+        /*return normalValues.stream().map((normalValue) -> {
+            return (byte) (normalValue * 127);
+        }).collect(Collectors.toList());*/
+    }
+
     private GltfNodeBuffer convertGeometryInfo(GlTF gltf, GaiaMesh gaiaMesh, Node node) {
         GltfNodeBuffer nodeBuffer = initNodeBuffer(gaiaMesh);
         createBuffer(gltf, nodeBuffer);
@@ -129,6 +144,8 @@ public class GltfWriter {
         List<Short> indices = gaiaMesh.getIndices();
         List<Float> positions = gaiaMesh.getPositions();
         List<Float> normals = gaiaMesh.getNormals();
+        List<Byte> normalBytes = convertNormal(normals);
+
         List<Byte> colors = gaiaMesh.getColors();
         List<Float> texcoords = gaiaMesh.getTexcoords();
         List<Float> batchIds = gaiaMesh.getBatchIds();
@@ -156,8 +173,11 @@ public class GltfWriter {
             }
         }
         if (normalsBuffer != null) {
-            for (Float normal: normals) {
+            /*for (Float normal: normals) {
                 normalsBuffer.putFloat(normal);
+            }*/
+            for (Byte normal: normalBytes) {
+                normalsBuffer.put(normal);
             }
         }
         if (colorsBuffer != null) {
@@ -185,11 +205,12 @@ public class GltfWriter {
             nodeBuffer.setPositionsAccessorId(verticesAccessorId);
         }
         if (normalsBufferViewId > -1 && !normals.isEmpty()) {
-            int normalsAccessorId = createAccessor(gltf, normalsBufferViewId, 0, normals.size() / 3, GltfConstants.GL_FLOAT, AccessorType.VEC3, false);
+            //int normalsAccessorId = createAccessor(gltf, normalsBufferViewId, 0, normals.size() / 3, GltfConstants.GL_FLOAT, AccessorType.VEC3, false);
+            int normalsAccessorId = createAccessor(gltf, normalsBufferViewId, 0, normals.size() / 3, GltfConstants.GL_UNSIGNED_BYTE, AccessorType.VEC3, false);
             nodeBuffer.setNormalsAccessorId(normalsAccessorId);
         }
         if (colorsBufferViewId > -1 && !colors.isEmpty()) {
-            int colorsAccessorId = createAccessor(gltf, colorsBufferViewId, 0, colors.size() / 4, GltfConstants.GL_FLOAT, AccessorType.VEC4, false);
+            int colorsAccessorId = createAccessor(gltf, colorsBufferViewId, 0, colors.size() / 4, GltfConstants.GL_UNSIGNED_BYTE, AccessorType.VEC4, false);
             nodeBuffer.setColorsAccessorId(colorsAccessorId);
         }
         if (texcoordsBufferViewId > -1 && !texcoords.isEmpty()) {
@@ -211,11 +232,12 @@ public class GltfWriter {
 
     private GltfNodeBuffer initNodeBuffer(GaiaMesh gaiaMesh) {
         GltfNodeBuffer nodeBuffer = new GltfNodeBuffer();
+        int SHORT_SIZE = 2;
         int FLOAT_SIZE = 4;
-        int indicesCapacity = gaiaMesh.getIndicesCount() * FLOAT_SIZE;
+        int indicesCapacity = gaiaMesh.getIndicesCount() * SHORT_SIZE;
         int positionsCapacity = gaiaMesh.getPositionsCount() * FLOAT_SIZE;
-        int normalsCapacity = gaiaMesh.getNormalsCount() * FLOAT_SIZE;
-        int colorsCapacity = gaiaMesh.getColorsCount() * FLOAT_SIZE;
+        int normalsCapacity = gaiaMesh.getNormalsCount() / 3 * 4;
+        int colorsCapacity = gaiaMesh.getColorsCount();
         int texcoordCapacity = gaiaMesh.getTexcoordsCount() * FLOAT_SIZE;
         int batchIdCapacity = gaiaMesh.getBatchIdsCount() * FLOAT_SIZE;
 
@@ -320,7 +342,8 @@ public class GltfWriter {
         }
         if (nodeBuffer.getNormalsBuffer() != null) {
             ByteBuffer normalsBuffer = nodeBuffer.getNormalsBuffer();
-            int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, normalsBuffer.capacity(), 12, GL20.GL_ARRAY_BUFFER);
+            int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, normalsBuffer.capacity(), 4, GL20.GL_ARRAY_BUFFER);
+            //int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, normalsBuffer.capacity(), 12, GL20.GL_ARRAY_BUFFER);
             nodeBuffer.setNormalsBufferViewId(bufferViewId);
             BufferView bufferView = gltf.getBufferViews().get(bufferViewId);
             bufferView.setName("normals");
@@ -328,7 +351,7 @@ public class GltfWriter {
         }
         if (nodeBuffer.getColorsBuffer() != null) {
             ByteBuffer colorsBuffer = nodeBuffer.getColorsBuffer();
-            int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, colorsBuffer.capacity(), 16, GL20.GL_ARRAY_BUFFER);
+            int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, colorsBuffer.capacity(), 4, GL20.GL_ARRAY_BUFFER);
             nodeBuffer.setColorsBufferViewId(bufferViewId);
             BufferView bufferView = gltf.getBufferViews().get(bufferViewId);
             bufferView.setName("colors");
