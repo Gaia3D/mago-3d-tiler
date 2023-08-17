@@ -200,6 +200,12 @@ public class LittleEndianDataInputStream extends FilterInputStream implements Da
         return new String(bytes, StandardCharsets.UTF_8);
     }
 
+    public String readUTF(int length) throws IOException {
+        byte[] bytes = new byte[length];
+        read(bytes);
+        return new String(bytes, StandardCharsets.UTF_8);
+    }
+
     public byte[] bytesToInts(int[] value) {
         byte[] bytes = new byte[4];
         for (int i = 0; i < value.length; i++) {
