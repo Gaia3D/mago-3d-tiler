@@ -26,6 +26,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class Gaia3DTiler implements Tiler {
@@ -203,6 +204,16 @@ public class Gaia3DTiler implements Tiler {
 
         log.info("[ContentNode][" + nodeCode + "][{}] : {}", lod.getLevel(), tileInfos.size());
 
+        List<TileInfo> resultInfos = tileInfos;
+        if (lod != LevelOfDetail.LOD0) {
+            resultInfos = tileInfos.stream().filter(tileInfo -> {
+                double geometricError = tileInfo.getBoundingBox().getLongestDistance();
+
+                log.info("{}", geometricError);
+                return geometricError >= lod.getGeometricErrorFilter();
+            }).collect(Collectors.toList());
+        }
+
         Node childNode = new Node();
         childNode.setParent(parentNode);
         childNode.setTransformMatrix(transformMatrix);
@@ -215,7 +226,7 @@ public class Gaia3DTiler implements Tiler {
         ContentInfo contentInfo = new ContentInfo();
         contentInfo.setName(nodeCode);
         contentInfo.setLod(lod);
-        contentInfo.setTileInfos(tileInfos);
+        contentInfo.setTileInfos(resultInfos);
         contentInfo.setBoundingBox(childBoundingBox);
         contentInfo.setNodeCode(nodeCode);
 
