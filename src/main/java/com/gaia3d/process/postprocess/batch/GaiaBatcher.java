@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
+import org.joml.Vector4d;
 import org.lwjgl.opengl.GL20;
 import com.gaia3d.util.ArrayUtils;
 
@@ -140,6 +141,7 @@ public class GaiaBatcher implements Batcher {
             GaiaMaterial material = bufferDataSet.material;
             LinkedHashMap<TextureType, List<GaiaTexture>> textures = material.getTextures();
             List<GaiaTexture> diffuseTextures = textures.get(TextureType.DIFFUSE);
+            createColorBuffer(bufferDataSet);
             return diffuseTextures.size() == 0;
         }).collect(Collectors.toList());
         setMaterialsIndexInList(colorMaterials, colorDataSet);
@@ -355,6 +357,35 @@ public class GaiaBatcher implements Batcher {
             return range.x > 1.1f || range.y > 1.1f;
         }
         return false;
+    }
+
+    private void createColorBuffer(GaiaBufferDataSet bufferDataSet) {
+        GaiaMaterial material = bufferDataSet.material;
+        Vector4d diffuseColor = material.getDiffuseColor();
+
+        Map<AttributeType, GaiaBuffer> bufferMap = bufferDataSet.getBuffers();
+        GaiaBuffer positionBuffer = bufferMap.get(AttributeType.POSITION);
+        int elementsCount = positionBuffer.getElementsCount();
+
+        List<Byte> colorList = new ArrayList<>();
+        for (int i = 0; i < elementsCount; i++) {
+            colorList.add((byte) (diffuseColor.x * 255));
+            colorList.add((byte) (diffuseColor.y * 255));
+            colorList.add((byte) (diffuseColor.z * 255));
+            colorList.add((byte) (diffuseColor.w * 255));
+//            colorList.add((byte) 255);
+//            colorList.add((byte) 255);
+//            colorList.add((byte) 255);
+//            colorList.add((byte) 255);
+        }
+
+        GaiaBuffer colorBuffer = new GaiaBuffer();
+        colorBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
+        colorBuffer.setGlType(GL20.GL_UNSIGNED_BYTE);
+        colorBuffer.setElementsCount(elementsCount);
+        colorBuffer.setGlDimension((byte) 4);
+        colorBuffer.setBytes(ArrayUtils.convertByteArrayToList(colorList));
+        bufferDataSet.getBuffers().put(AttributeType.COLOR, colorBuffer);
     }
 
     private GaiaBufferDataSet batchVertices(List<GaiaBufferDataSet> bufferDataSets) {

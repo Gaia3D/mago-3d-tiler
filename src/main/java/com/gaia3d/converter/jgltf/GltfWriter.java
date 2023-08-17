@@ -123,18 +123,19 @@ public class GltfWriter {
         });
     }
 
-    private List<Byte> convertNormal(List<Float> normalValues) {
+    private Byte convertNormal(Float normalValue) {
+        return (byte) (normalValue * 127);
+    }
+
+    private List<Byte> convertNormals(List<Float> normalValues) {
         List<Byte> normalBytes = new ArrayList<>();
         for (int i = 0; i < normalValues.size(); i += 3) {
-            normalBytes.add((byte) (normalValues.get(i) * 127));
-            normalBytes.add((byte) (normalValues.get(i + 1) * 127));
-            normalBytes.add((byte) (normalValues.get(i + 2) * 127));
+            normalBytes.add(convertNormal(normalValues.get(i)));
+            normalBytes.add(convertNormal(normalValues.get(i + 1)));
+            normalBytes.add(convertNormal(normalValues.get(i + 2)));
             normalBytes.add((byte) 1);
         }
         return normalBytes;
-        /*return normalValues.stream().map((normalValue) -> {
-            return (byte) (normalValue * 127);
-        }).collect(Collectors.toList());*/
     }
 
     private GltfNodeBuffer convertGeometryInfo(GlTF gltf, GaiaMesh gaiaMesh, Node node) {
@@ -144,7 +145,7 @@ public class GltfWriter {
         List<Short> indices = gaiaMesh.getIndices();
         List<Float> positions = gaiaMesh.getPositions();
         List<Float> normals = gaiaMesh.getNormals();
-        List<Byte> normalBytes = convertNormal(normals);
+        List<Byte> normalBytes = convertNormals(normals);
 
         List<Byte> colors = gaiaMesh.getColors();
         List<Float> texcoords = gaiaMesh.getTexcoords();
@@ -206,11 +207,11 @@ public class GltfWriter {
         }
         if (normalsBufferViewId > -1 && !normals.isEmpty()) {
             //int normalsAccessorId = createAccessor(gltf, normalsBufferViewId, 0, normals.size() / 3, GltfConstants.GL_FLOAT, AccessorType.VEC3, false);
-            int normalsAccessorId = createAccessor(gltf, normalsBufferViewId, 0, normals.size() / 3, GltfConstants.GL_UNSIGNED_BYTE, AccessorType.VEC3, false);
+            int normalsAccessorId = createAccessor(gltf, normalsBufferViewId, 0, normals.size() / 4, GltfConstants.GL_BYTE, AccessorType.VEC3, true);
             nodeBuffer.setNormalsAccessorId(normalsAccessorId);
         }
         if (colorsBufferViewId > -1 && !colors.isEmpty()) {
-            int colorsAccessorId = createAccessor(gltf, colorsBufferViewId, 0, colors.size() / 4, GltfConstants.GL_UNSIGNED_BYTE, AccessorType.VEC4, false);
+            int colorsAccessorId = createAccessor(gltf, colorsBufferViewId, 0, colors.size() / 4, GltfConstants.GL_UNSIGNED_BYTE, AccessorType.VEC4, true);
             nodeBuffer.setColorsAccessorId(colorsAccessorId);
         }
         if (texcoordsBufferViewId > -1 && !texcoords.isEmpty()) {
@@ -412,10 +413,10 @@ public class GltfWriter {
         material.setName(gaiaMaterial.getName());
         material.setDoubleSided(false);
 
-        MaterialPbrMetallicRoughness pbrMetallicRoughness = new MaterialPbrMetallicRoughness();
-        Vector4d diffuseColor = gaiaMaterial.getDiffuseColor();
-        pbrMetallicRoughness.setBaseColorFactor(new float[]{(float) diffuseColor.x, (float) diffuseColor.y, (float) diffuseColor.z, (float) diffuseColor.w});
 
+        MaterialPbrMetallicRoughness pbrMetallicRoughness = new MaterialPbrMetallicRoughness();
+        //Vector4d diffuseColor = gaiaMaterial.getDiffuseColor();
+        //pbrMetallicRoughness.setBaseColorFactor(new float[]{(float) diffuseColor.x, (float) diffuseColor.y, (float) diffuseColor.z, (float) diffuseColor.w});
         if (!diffuseTextures.isEmpty()) {
             GaiaTexture gaiaTexture = diffuseTextures.get(0);
             int textureId = createTexture(gltf, gaiaTexture);
@@ -423,8 +424,12 @@ public class GltfWriter {
             textureInfo.setIndex(textureId);
             pbrMetallicRoughness.setBaseColorTexture(textureInfo);
             pbrMetallicRoughness.setBaseColorFactor(new float[]{1.0f, 1.0f, 1.0f, 1.0f});
-            pbrMetallicRoughness.setMetallicFactor(0.0f);
-            pbrMetallicRoughness.setRoughnessFactor(0.5f);
+            pbrMetallicRoughness.setMetallicFactor(0.25f);
+            pbrMetallicRoughness.setRoughnessFactor(0.25f);
+        } else {
+            pbrMetallicRoughness.setBaseColorFactor(new float[]{1.0f, 1.0f, 1.0f, 1.0f});
+            pbrMetallicRoughness.setMetallicFactor(0.25f);
+            pbrMetallicRoughness.setRoughnessFactor(0.25f);
         }
 
         material.setPbrMetallicRoughness(pbrMetallicRoughness);

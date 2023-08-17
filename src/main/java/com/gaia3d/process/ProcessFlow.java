@@ -69,6 +69,8 @@ public class ProcessFlow {
         try {
             testPool.postProcessStart(contentInfos, postProcesses);
         } catch (InterruptedException e) {
+            log.error("Error while post processing.", e);
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
 
