@@ -8,6 +8,7 @@ import com.gaia3d.process.ProcessOptions;
 import com.gaia3d.process.postprocess.TileModel;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
+import com.gaia3d.util.io.LittleEndianDataInputStream;
 import com.gaia3d.util.io.LittleEndianDataOutputStream;
 import com.gaia3d.converter.jgltf.GltfWriter;
 import lombok.extern.slf4j.Slf4j;
@@ -15,10 +16,7 @@ import org.apache.commons.cli.CommandLine;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.util.ImageUtils;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.List;
@@ -84,7 +82,7 @@ public class Batched3DModel implements TileModel {
         featureTable.setBatchLength(batchLength);
 
         GaiaBatchTable batchTable = new GaiaBatchTable();
-        for (int i = 0 ; i < batchLength ; i++) {
+        for (int i = 0; i < batchLength; i++) {
             batchTable.getBatchId().add(String.valueOf(i));
             batchTable.getFileName().add(names.get(i));
         }
@@ -138,5 +136,40 @@ public class Batched3DModel implements TileModel {
         byte[] bytes = new byte[byteBuffer.remaining()];
         byteBuffer.get(bytes);
         return bytes;
+    }
+
+    public void extract(File b3dm, File output) {
+        byte[] glbBytes = null;
+        try (LittleEndianDataInputStream stream = new LittleEndianDataInputStream(new BufferedInputStream(new FileInputStream(b3dm)))) {
+            // 28-byte header (first 20 bytes)
+            String magic = stream.readUTF(4);
+            int version = stream.readInt();
+            int byteLength = stream.readInt();
+            int featureTableJSONByteLength = stream.readInt();
+            int featureTableBinaryByteLength = stream.readInt();
+            // 28-byte header (next 8 bytes)
+            int batchTableJSONByteLength = stream.readInt();
+            int batchTableBinaryByteLength = stream.readInt();
+            String featureTableJson = stream.readUTF(featureTableJSONByteLength);
+            String batchTableJson = stream.readUTF(batchTableJSONByteLength);
+            String featureTableBinary = stream.readUTF(featureTableBinaryByteLength);
+            String batchTableBinary = stream.readUTF(batchTableBinaryByteLength);
+            // body
+            int glbSize = byteLength - 28 - featureTableJSONByteLength - batchTableJSONByteLength - featureTableBinaryByteLength - batchTableBinaryByteLength;
+            glbBytes = new byte[glbSize];
+            int result = stream.read(glbBytes);
+
+            log.info("magic : {}", magic);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error(e.getMessage());
+        }
+
+
+        try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(output)))) {
+            stream.write(glbBytes);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
