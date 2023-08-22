@@ -22,7 +22,5 @@ class Batched3DModelTest {
 
         //AssimpConverter assimpConverter = new AssimpConverter(null);
         //GaiaScene gaiaScene = assimpConverter.load(output);
-
-        //log.info("gaiaScene: {}", gaiaScene);
     }
 }

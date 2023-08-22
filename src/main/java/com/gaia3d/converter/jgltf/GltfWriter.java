@@ -424,12 +424,12 @@ public class GltfWriter {
             textureInfo.setIndex(textureId);
             pbrMetallicRoughness.setBaseColorTexture(textureInfo);
             pbrMetallicRoughness.setBaseColorFactor(new float[]{1.0f, 1.0f, 1.0f, 1.0f});
-            pbrMetallicRoughness.setMetallicFactor(0.25f);
-            pbrMetallicRoughness.setRoughnessFactor(0.25f);
+            pbrMetallicRoughness.setMetallicFactor(0.125f);
+            pbrMetallicRoughness.setRoughnessFactor(0.125f);
         } else {
             pbrMetallicRoughness.setBaseColorFactor(new float[]{1.0f, 1.0f, 1.0f, 1.0f});
-            pbrMetallicRoughness.setMetallicFactor(0.25f);
-            pbrMetallicRoughness.setRoughnessFactor(0.25f);
+            pbrMetallicRoughness.setMetallicFactor(0.125f);
+            pbrMetallicRoughness.setRoughnessFactor(0.125f);
         }
 
         material.setPbrMetallicRoughness(pbrMetallicRoughness);

@@ -52,7 +52,7 @@ public class GaiaBatcher implements Batcher {
                     continue;
                 }
 
-                if (GaiaMaterial.areEqualMaterials(dataSet2.material, material, lod)) {
+                if (GaiaMaterial.areEqualMaterials(dataSet2.material, material, lod.getTextureScale())) {
                     //dataSet2.material.deleteTextures();
                     dataSet2.material = material;
                 }
@@ -86,7 +86,7 @@ public class GaiaBatcher implements Batcher {
     public ContentInfo run(ContentInfo contentInfo) {
         initContentInfo(contentInfo);
 
-        log.info("Batching started : {}", contentInfo.getName());
+        log.info("[Batching Running] : {}", contentInfo.getName());
         //List<GaiaSet> sets = universe.getSets();
 
         List<TileInfo> tileInfos = contentInfo.getTileInfos();

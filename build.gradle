@@ -6,7 +6,7 @@ plugins {
 }
 
 group "com.gaia3d"
-version "1.0.1-SNAPSHOT"
+version "1.0.2"
 
 project.ext.lwjglVersion = "3.3.1"
 switch ( OperatingSystem.current() ) {
@@ -20,6 +20,7 @@ switch ( OperatingSystem.current() ) {
         project.ext.lwjglNatives = "natives-macos"
         break
 }
+//project.ext.lwjglNatives = "natives-linux"
 
 repositories {
     mavenCentral()
@@ -67,6 +68,8 @@ dependencies {
     // jackson (json library)
     implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
 
+    implementation files ("libs/plasma-core-1.0.0.jar")
+
     runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-assimp::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"
@@ -98,7 +101,7 @@ jib {
 }
 
 java {
-    withJavadocJar()
+    //withJavadocJar()
 }
 
 javadoc {

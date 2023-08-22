@@ -20,9 +20,29 @@ class TilerMainTest {
 
     @Test
     void convertWs2Kml() throws URISyntaxException {
-        String input = getAbsolutePath(INPUT_PATH);
+        String input = "D:\\temp\\sample-external\\";
         String output = getAbsolutePath(OUTPUT_PATH);
         convert(input, output, "collada-ws2", "", "kml");
+    }
+
+    @Test
+    void convertSeoul() {
+        String path = "F:\\workspace\\";
+        String[] args = new String[]{
+        "-i", path + "seoul-input",
+        "-it", "kml",
+        "-o", path +  "seoul-output-debug",
+        "-l", path + "seoul-output-debug" + "/result.log",
+        "-c", "",
+        "-yz",
+        "-mx", "32768",
+        "-nl", "0",
+        "-xl", "0",
+        "-mt",
+        //"-glb",
+        //"-debug"
+        };
+        TilerMain.main(args);
     }
 
     @Test
@@ -71,7 +91,8 @@ class TilerMainTest {
                 "-maxCount", "1024",
                 "-minLod", "0",
                 "-maxLod", "3",
-                //"-glb",
+                "-multiThread",
+                "-glb",
                 //"-debug"
         };
         TilerMain.main(args);

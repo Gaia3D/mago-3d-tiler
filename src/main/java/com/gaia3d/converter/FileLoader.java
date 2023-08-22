@@ -4,6 +4,7 @@ import com.gaia3d.basic.structure.GaiaScene;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.assimp.Converter;
+import com.gaia3d.converter.kml.FastKmlReader;
 import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.converter.kml.KmlReader;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,7 @@ import com.gaia3d.process.tileprocess.tile.TileInfo;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -25,16 +27,12 @@ import java.util.List;
 @Slf4j
 public class FileLoader {
     private final Converter converter;
-    private final KmlReader kmlReader;
+    private final FastKmlReader kmlReader;
     private final CommandLine command;
 
     public FileLoader(CommandLine command) {
         this.command = command;
-        try {
-            this.kmlReader = new KmlReader();
-        } catch (ParserConfigurationException e) {
-            throw new RuntimeException(e);
-        }
+        this.kmlReader = new FastKmlReader();
         this.converter = new AssimpConverter(command);
     }
 

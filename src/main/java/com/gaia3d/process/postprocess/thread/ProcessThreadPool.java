@@ -17,11 +17,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class TestPool  {
+public class ProcessThreadPool {
     private static final int THREAD_COUNT = 8;
 
     public void preProcessStart(List<TileInfo> tileInfos, List<File> fileList, FileLoader fileLoader, List<PreProcess> preProcessors) throws InterruptedException {
-        log.info("start pre process");
+        log.info("[ThreadPool][Start Pre-process]");
         ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
         List<Runnable> tasks = new ArrayList<>();
 
@@ -53,11 +53,11 @@ public class TestPool  {
                 executorService.shutdownNow();
             }
         } while (!executorService.awaitTermination(2, TimeUnit.SECONDS));
-        log.info("end pre process");
+        log.info("[ThreadPool][End Pre-process]");
     }
     
     public void postProcessStart(List<ContentInfo> contentInfos, List<PostProcess> postProcesses) throws InterruptedException {
-        log.info("start post process");
+        log.info("[ThreadPool][Start Post-process]");
         ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
 
         List<Runnable> tasks = new ArrayList<>();
@@ -103,6 +103,6 @@ public class TestPool  {
                 executorService.shutdownNow();
             }
         } while (!executorService.awaitTermination(2, TimeUnit.SECONDS));
-        log.info("end post process");
+        log.info("[ThreadPool][End Post-process]");
     }
 }

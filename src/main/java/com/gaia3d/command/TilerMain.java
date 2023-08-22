@@ -3,6 +3,7 @@ package com.gaia3d.command;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.converter.FileLoader;
 import com.gaia3d.process.ProcessFlow;
+import com.gaia3d.process.ProcessFlowThread;
 import com.gaia3d.process.ProcessOptions;
 import com.gaia3d.process.TilerOptions;
 import com.gaia3d.process.postprocess.GaiaRelocator;
@@ -13,6 +14,7 @@ import com.gaia3d.process.preprocess.GaiaRotator;
 import com.gaia3d.process.preprocess.GaiaScaler;
 import com.gaia3d.process.preprocess.GaiaTranslator;
 import com.gaia3d.process.preprocess.PreProcess;
+import com.gaia3d.process.tileprocess.Process;
 import com.gaia3d.process.tileprocess.TileProcess;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
@@ -121,7 +123,13 @@ public class TilerMain {
         postProcessors.add(new GaiaBatcher(command));
         postProcessors.add(new Batched3DModel(command));
 
-        ProcessFlow processFlow = new ProcessFlow(preProcessors, tileProcess, postProcessors);
+        Process processFlow;
+        if (command.hasOption("multiThread")) {
+            processFlow = new ProcessFlowThread(preProcessors, tileProcess, postProcessors);
+            log.info("Multi Thread Mode");
+        } else {
+            processFlow = new ProcessFlow(preProcessors, tileProcess, postProcessors);
+        }
         processFlow.process(fileLoader);
 
         long end = System.currentTimeMillis();

@@ -124,23 +124,17 @@ public class Gaia3DTiler implements Tiler {
                 }
             }
         } else if (tileInfos.size() > 1) {
-            int test = 0;
             List<List<TileInfo>> childrenScenes = parentBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
 
-                test += childTileInfos.size();
                 Node childNode = createContentNode(parentNode, childTileInfos, index);
                 if (childNode != null) {
                     parentNode.getChildren().add(childNode);
                     createNode(childNode, childTileInfos);
                 }
             }
-            if (test != tileInfos.size()) {
-                log.info("test : " + test + ", scenes : " + tileInfos.size());
-            }
         } else if (tileInfos.size() > 0) {
-            //Node childNode = createContentNode(parentNode, reloadScenes(tileInfos), 0);
             Node childNode = createContentNode(parentNode, tileInfos, 0);
             if (childNode != null) {
                 parentNode.getChildren().add(childNode);
@@ -208,8 +202,6 @@ public class Gaia3DTiler implements Tiler {
         if (lod != LevelOfDetail.LOD0) {
             resultInfos = tileInfos.stream().filter(tileInfo -> {
                 double geometricError = tileInfo.getBoundingBox().getLongestDistance();
-
-                log.info("{}", geometricError);
                 return geometricError >= lod.getGeometricErrorFilter();
             }).collect(Collectors.toList());
         }
@@ -223,17 +215,22 @@ public class Gaia3DTiler implements Tiler {
         childNode.setRefine(Node.RefineType.REPLACE);
         childNode.setChildren(new ArrayList<>());
 
-        ContentInfo contentInfo = new ContentInfo();
-        contentInfo.setName(nodeCode);
-        contentInfo.setLod(lod);
-        contentInfo.setTileInfos(resultInfos);
-        contentInfo.setBoundingBox(childBoundingBox);
-        contentInfo.setNodeCode(nodeCode);
+        if (resultInfos.size() > 0) {
+            ContentInfo contentInfo = new ContentInfo();
+            contentInfo.setName(nodeCode);
+            contentInfo.setLod(lod);
+            contentInfo.setTileInfos(resultInfos);
+            contentInfo.setBoundingBox(childBoundingBox);
+            contentInfo.setNodeCode(nodeCode);
 
-        Content content = new Content();
-        content.setUri("data/" + nodeCode + ".b3dm");
-        content.setContentInfo(contentInfo);
-        childNode.setContent(content);
+            Content content = new Content();
+            content.setUri("data/" + nodeCode + ".b3dm");
+            content.setContentInfo(contentInfo);
+            childNode.setContent(content);
+        } else {
+            log.error("No content : {}", nodeCode);
+        }
+
         return childNode;
     }
 

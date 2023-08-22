@@ -93,12 +93,10 @@ public class Batched3DModel implements TileModel {
             String featureTableText = objectMapper.writeValueAsString(featureTable);
             featureTableJson = featureTableText;
             featureTableJSONByteLength = featureTableText.length();
-            //log.info("featureTable : {}", featureTableText);
 
             String batchTableText = objectMapper.writeValueAsString(batchTable);
             batchTableJson = batchTableText;
             batchTableJSONByteLength = batchTableText.length();
-            //log.info("batchTable : {}", batchTableText);
         } catch (JsonProcessingException e) {
             log.error(e.getMessage());
             throw new RuntimeException(e);
@@ -159,7 +157,7 @@ public class Batched3DModel implements TileModel {
             glbBytes = new byte[glbSize];
             int result = stream.read(glbBytes);
 
-            log.info("magic : {}", magic);
+            //log.info("magic : {}", magic);
         } catch (Exception e) {
             e.printStackTrace();
             log.error(e.getMessage());

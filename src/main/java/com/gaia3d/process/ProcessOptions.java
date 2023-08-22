@@ -18,6 +18,7 @@ public enum ProcessOptions {
     RECURSIVE("recursive", "r", "recursive", false, "deep directory exploration"),
     SWAP_YZ("swapYZ", "yz", "swapYZ", false, "Swap Vertex Axis YZ"),
     REVERSE_TEXCOORD("reverseTexCoord", "rt", "reverseTexCoord", false, "Reverse Texture Coordinate Y"),
+    MULTI_THREAD("multiThread", "mt", "multiThread", false, "Multi Thread Mode"),
 
     //Experimental
     AUTO_AXIS("autoAxis", "aa", "autoAxis", false, "[Experimental] auto axis"),

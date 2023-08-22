@@ -1,6 +1,7 @@
 package com.gaia3d.converter;
 
 import com.gaia3d.command.Configurator;
+import com.gaia3d.converter.kml.FastKmlReader;
 import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.converter.kml.KmlReader;
 import com.gaia3d.converter.assimp.AssimpConverter;
@@ -42,7 +43,9 @@ class AssimpConverterTest {
     void loadColladaWithKml() throws URISyntaxException, IOException, ParserConfigurationException {
         Configurator.initConsoleLogger();
         File kml = new File(getAbsolutePath(INPUT_PATH) + "a_bd001.kml");
-        KmlReader kmlReader = new KmlReader();
+        //KmlReader kmlReader = new KmlReader();
+        FastKmlReader kmlReader = new FastKmlReader();
+
         KmlInfo kmlInfo = kmlReader.read(kml);
 
         Converter converter = new AssimpConverter(null);

@@ -2,6 +2,7 @@ package com.gaia3d.process;
 
 import com.gaia3d.converter.FileLoader;
 import com.gaia3d.process.postprocess.PostProcess;
+import com.gaia3d.process.postprocess.thread.ProcessThreadPool;
 import com.gaia3d.process.preprocess.PreProcess;
 import com.gaia3d.process.tileprocess.Process;
 import com.gaia3d.process.tileprocess.TileProcess;
@@ -19,7 +20,7 @@ import java.util.List;
 
 @Slf4j
 @AllArgsConstructor
-public class ProcessFlow implements Process {
+public class ProcessFlowThread implements Process {
     private List<PreProcess> preProcesses;
     private TileProcess tileProcess;
     private List<PostProcess> postProcesses;
@@ -38,9 +39,8 @@ public class ProcessFlow implements Process {
 
         /* PostProcess */
         postprocess(tileset);
-        System.gc();
 
-        /* Delete Temp Directory */
+        // Delete Temp Directory
         if (tileInfos.size() > 0) {
             tileInfos.get(0).deleteTemp();
         }
@@ -48,25 +48,16 @@ public class ProcessFlow implements Process {
 
     private void preprocess(FileLoader fileLoader, List<TileInfo> tileInfos) {
         List<File> fileList = fileLoader.loadFiles();
-        log.info("Total file counts : {}", fileList.size());
+        log.info("Total {} files.", fileList.size());
 
-        int count = 0;
-        int size = fileList.size();
-        for (File file : fileList) {
-            count++;
-            log.info("[File Loading] : {}/{} : {}", count, size, file);
-            TileInfo tileInfo = fileLoader.loadTileInfo(file);
-            if (tileInfo != null) {
-                for (PreProcess preProcessors : preProcesses) {
-                    preProcessors.run(tileInfo);
-                }
-                tileInfo.minimize();
-                tileInfos.add(tileInfo);
-            }
-            if (count % 1000 == 0) {
-                System.gc();
-            }
+        ProcessThreadPool pool = new ProcessThreadPool();
+        try {
+            pool.preProcessStart(tileInfos, fileList, fileLoader, preProcesses);
+        } catch (InterruptedException e) {
+            log.error("Error while pre processing.", e);
+            throw new RuntimeException(e);
         }
+        pool = null;
     }
 
     private Tileset tileprocess(List<TileInfo> tileInfos) {
@@ -77,17 +68,14 @@ public class ProcessFlow implements Process {
     }
 
     private void postprocess(Tileset tileset) {
+        ProcessThreadPool pool = new ProcessThreadPool();
         List<ContentInfo> contentInfos = tileset.findAllContentInfo();
-        for (ContentInfo contentInfo : contentInfos) {
-            List<TileInfo> childTileInfos = contentInfo.getTileInfos();
-            for (TileInfo tileInfo : childTileInfos) {
-                tileInfo.maximize();
-            }
-            for (PostProcess postProcessor : postProcesses) {
-                postProcessor.run(contentInfo);
-            }
-            contentInfo.deleteTexture();
-            contentInfo.clear();
+        try {
+            pool.postProcessStart(contentInfos, postProcesses);
+        } catch (InterruptedException e) {
+            log.error("Error while post processing.", e);
+            throw new RuntimeException(e);
         }
+        pool = null;
     }
 }

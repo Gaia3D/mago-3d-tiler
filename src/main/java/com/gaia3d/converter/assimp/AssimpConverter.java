@@ -1,9 +1,9 @@
 package com.gaia3d.converter.assimp;
 
 import com.gaia3d.basic.structure.*;
-import com.gaia3d.basic.structure.*;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.process.ProcessOptions;
+import com.gaia3d.util.ImageUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.io.FilenameUtils;
@@ -13,7 +13,6 @@ import org.joml.Vector3d;
 import org.joml.Vector4d;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
-import com.gaia3d.util.ImageUtils;
 
 import java.io.File;
 import java.nio.ByteBuffer;
