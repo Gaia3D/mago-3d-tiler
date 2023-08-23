@@ -47,16 +47,20 @@ public class TilerMain {
         CommandLineParser parser = new DefaultParser();
         try {
             command = parser.parse(options, args);
+            if (command.hasOption(ProcessOptions.DEBUG.getArgName())) {
+                Configurator.initConsoleLogger("[%p][%d{HH:mm:ss}][%C{2}(%M:%L)]::%message%n");
+            }
             if (command.hasOption(ProcessOptions.LOG.getArgName())) {
                 Configurator.initFileLogger(null, command.getOptionValue(ProcessOptions.LOG.getArgName()));
             }
             if (command.hasOption(ProcessOptions.QUIET.getArgName())) {
                 Configurator.setLevel(Level.OFF);
             }
-            start();
             if (command.hasOption(ProcessOptions.DEBUG.getArgName())) {
                 log.info("Starting Gaia3D Tiler in debug mode.");
             }
+            start();
+
             if (command.hasOption(ProcessOptions.HELP.getArgName())) {
                 new HelpFormatter().printHelp("Gaia3D Tiler", options);
                 return;
@@ -103,7 +107,7 @@ public class TilerMain {
         FileLoader fileLoader = new FileLoader(command);
 
         List<PreProcess> preProcessors = new ArrayList<>();
-        if (command.hasOption("swapYZ")) {
+        if (command.hasOption(ProcessOptions.SWAP_YZ.getArgName())) {
             preProcessors.add(new GaiaRotator());
         }
         preProcessors.add(new GaiaTranslator(source));
@@ -124,7 +128,7 @@ public class TilerMain {
         postProcessors.add(new Batched3DModel(command));
 
         Process processFlow;
-        if (command.hasOption("multiThread")) {
+        if (command.hasOption(ProcessOptions.MULTI_THREAD.getArgName())) {
             processFlow = new ProcessFlowThread(preProcessors, tileProcess, postProcessors);
             log.info("Multi Thread Mode");
         } else {

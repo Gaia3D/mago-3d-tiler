@@ -56,6 +56,7 @@ public class AssimpConverter implements Converter {
             log.error("File does not exist: {}", file.getAbsolutePath());
             return null;
         }
+        //
         String path = file.getAbsolutePath().replace(file.getName(), "");
         ByteBuffer byteBuffer = ImageUtils.readFile(file, true);
         String hint = FilenameUtils.getExtension(file.getName());
@@ -93,7 +94,6 @@ public class AssimpConverter implements Converter {
     private GaiaScene convertScene(AIScene aiScene, String filePath) {
         GaiaScene gaiaScene = new GaiaScene();
         AINode aiNode = aiScene.mRootNode();
-
         int numMaterials = aiScene.mNumMaterials();
         PointerBuffer aiMaterials = aiScene.mMaterials();
         for (int i = 0; i < numMaterials; i++) {
@@ -167,14 +167,15 @@ public class AssimpConverter implements Converter {
             List<GaiaTexture> textures = new ArrayList<>();
             GaiaTexture texture = new GaiaTexture();
             texture.setType(TextureType.DIFFUSE);
-            texture.setPath(diffTexPath);
             texture.setParentPath(parentPath);
-            File file = new File(parentPath.toFile(), diffTexPath);
-            if (!(file.exists() && file.isFile())) {
-                log.error("Diffuse Texture not found: " + file.getAbsolutePath());
-            } else {
+
+            File file = getTextureFile(parentPath.toFile(), diffTexPath);
+            if (file != null && file.exists() && file.isFile()) {
+                texture.setPath(file.getName());
                 textures.add(texture);
                 material.getTextures().put(texture.getType(), textures);
+            } else {
+                log.error("Diffuse Texture not found: " + diffTexPath);
             }
         } else {
             material.setName("NoTexture");
@@ -373,5 +374,35 @@ public class AssimpConverter implements Converter {
             face.getIndices().add(indices);
         }
         return face;
+    }
+
+    private File getTextureFile(File parent, String path) {
+        File file = new File(parent, path);
+        String name = FilenameUtils.getBaseName(path);
+        String ext = FilenameUtils.getExtension(path);
+        if (file.exists() && file.isFile()) {
+            return file;
+        }
+
+        file = new File(parent, name.toLowerCase() + "." + ext.toLowerCase());
+        if (file.exists() && file.isFile()) {
+            return file;
+        }
+
+        file = new File(parent, name.toUpperCase() + "." + ext.toUpperCase());
+        if (file.exists() && file.isFile()) {
+            return file;
+        }
+
+        file = new File(parent, name.toLowerCase() + "." + ext.toUpperCase());
+        if (file.exists() && file.isFile()) {
+            return file;
+        }
+
+        file = new File(parent, name.toUpperCase() + "." + ext.toLowerCase());
+        if (file.exists() && file.isFile()) {
+            return file;
+        }
+        return null;
     }
 }

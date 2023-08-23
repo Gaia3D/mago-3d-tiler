@@ -46,8 +46,8 @@ public class FileLoader {
 
     public List<File> loadFiles() {
         File inputFile = new File(command.getOptionValue(ProcessOptions.INPUT.getArgName()));
-        String inputExtension = command.getOptionValue("inputType");
-        boolean recursive = command.hasOption("recursive");
+        String inputExtension = command.getOptionValue(ProcessOptions.INPUT_TYPE.getArgName());
+        boolean recursive = command.hasOption(ProcessOptions.RECURSIVE.getArgName());
         FormatType formatType = FormatType.fromExtension(inputExtension);
         String[] extensions = getExtensions(formatType);
         return (List<File>) FileUtils.listFiles(inputFile, extensions, recursive);

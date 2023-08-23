@@ -3,8 +3,6 @@ package com.gaia3d.process.tileprocess.tile;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.converter.assimp.AssimpConverter;
-import com.gaia3d.converter.assimp.Converter;
 import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.process.ProcessOptions;
 import com.gaia3d.process.TilerOptions;
@@ -30,17 +28,15 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class Gaia3DTiler implements Tiler {
-    private static final int DEFUALT_MAX_COUNT = 256;
+    private static final int DEFUALT_MAX_COUNT = 512;
     private static final int DEFUALT_MIN_LEVEL = 0;
     private static final int DEFUALT_MAX_LEVEL = 3;
 
     private final CommandLine command;
-    private final Converter converter;
     private final TilerOptions options;
 
     public Gaia3DTiler(TilerOptions tilerOptions, CommandLine command) {
         this.options = tilerOptions;
-        this.converter = new AssimpConverter(command);
         this.command = command;
     }
 

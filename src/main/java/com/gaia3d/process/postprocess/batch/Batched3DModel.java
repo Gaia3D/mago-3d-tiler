@@ -59,13 +59,13 @@ public class Batched3DModel implements TileModel {
         Path outputRoot = outputFile.toPath().resolve("data");
         outputRoot.toFile().mkdir();
         byte[] glbBytes;
-        if (command.hasOption("gltf")) {
+        if (command.hasOption(ProcessOptions.GLTF.getArgName())) {
             String glbFileName = nodeCode + ".gltf";
             File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
             this.gltfWriter.writeGltf(scene, glbOutputFile);
         }
 
-        if (command.hasOption("glb")) {
+        if (command.hasOption(ProcessOptions.GLB.getArgName())) {
             String glbFileName = nodeCode + ".glb";
             File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
             this.gltfWriter.writeGlb(scene, glbOutputFile);
