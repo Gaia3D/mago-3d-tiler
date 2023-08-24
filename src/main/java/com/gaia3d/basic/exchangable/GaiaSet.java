@@ -26,7 +26,6 @@ import org.joml.Vector3d;
 import java.io.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -95,7 +94,7 @@ public class GaiaSet {
             }
 
             for (GaiaMaterial material : materials) {
-                LinkedHashMap<TextureType, List<GaiaTexture>> materialTextures = material.getTextures();
+                Map<TextureType, List<GaiaTexture>> materialTextures = material.getTextures();
                 List<GaiaTexture> diffuseTextures = materialTextures.get(TextureType.DIFFUSE);
                 if (!diffuseTextures.isEmpty()) {
                     GaiaTexture texture = materialTextures.get(TextureType.DIFFUSE).get(0);
@@ -201,5 +200,11 @@ public class GaiaSet {
     public void deleteTextures() {
         List<GaiaMaterial> materials = getMaterials();
         materials.forEach(GaiaMaterial::deleteTextures);
+    }
+
+    public void clear() {
+        this.bufferDatas.forEach(GaiaBufferDataSet::clear);
+        this.bufferDatas.clear();
+        this.materials.clear();
     }
 }

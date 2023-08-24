@@ -4,7 +4,6 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.basic.types.AttributeType;
-import com.gaia3d.util.ArrayUtils;
 import com.gaia3d.util.io.LittleEndianDataInputStream;
 import com.gaia3d.util.io.LittleEndianDataOutputStream;
 import lombok.Getter;
@@ -14,10 +13,7 @@ import org.joml.Vector2d;
 import org.joml.Vector3d;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A GaiaBufferDataSet can correspond to a Node in a 3d structure.
@@ -42,19 +38,19 @@ public class GaiaBufferDataSet {
     Matrix4d preMultipliedTransformMatrix = null;
 
     public GaiaBufferDataSet() {
-        this.buffers = new LinkedHashMap<>();
+        this.buffers = new WeakHashMap<>();
     }
 
-    public static void getMaterialslIstOfBufferDataSet(List<GaiaBufferDataSet> bufferDataSets, List<GaiaMaterial> materials) {
+    /*public static void getMaterialslIstOfBufferDataSet(List<GaiaBufferDataSet> bufferDataSets, List<GaiaMaterial> materials) {
         // first, make a map to avoid duplicate materials
-        Map<GaiaMaterial, GaiaMaterial> materialMap = new LinkedHashMap<>();
+        Map<GaiaMaterial, GaiaMaterial> materialMap = new WeakHashMap<>();
         for (GaiaBufferDataSet bufferDataSet : bufferDataSets) {
             materialMap.put(bufferDataSet.getMaterial(), bufferDataSet.getMaterial());
         }
         // second, make a list from the map
         materials.addAll(materialMap.values());
 
-    }
+    }*/
 
     public void write(LittleEndianDataOutputStream stream) throws IOException {
         stream.writeInt(id);
@@ -85,7 +81,7 @@ public class GaiaBufferDataSet {
     }
 
     public GaiaPrimitive toPrimitive() {
-        List<Integer> indices = null;
+        short[] indices = new short[0];
         List<GaiaVertex> vertices = new ArrayList<>();
         GaiaPrimitive primitive = new GaiaPrimitive();
 
@@ -94,54 +90,51 @@ public class GaiaBufferDataSet {
             GaiaBuffer buffer = entry.getValue();
 
             if (attributeType.equals(AttributeType.INDICE)) {
-                indices = ArrayUtils.convertIntListToShortArray(buffer.getShorts());
+                indices = buffer.getShorts();
             } else if (attributeType.equals(AttributeType.POSITION)) {
-                List<Float> positions = ArrayUtils.convertListToFloatArray(buffer.getFloats());
+                float[] positions = buffer.getFloats();
                 if (!vertices.isEmpty()) {
                     int positionCount = 0;
                     for (GaiaVertex vertex : vertices) {
-                        Vector3d position = new Vector3d(positions.get(positionCount++), positions.get(positionCount++), positions.get(positionCount++));
+                        Vector3d position = new Vector3d(positions[positionCount++], positions[positionCount++], positions[positionCount]);
                         vertex.setPosition(position);
                     }
                 } else {
-                    int positionSize = positions.size();
-                    for (int i = 0; i < positionSize; i += 3) {
+                    for (int i = 0; i < positions.length; i += 3) {
                         GaiaVertex vertex = new GaiaVertex();
-                        Vector3d position = new Vector3d(positions.get(i), positions.get(i + 1), positions.get(i + 2));
+                        Vector3d position = new Vector3d(positions[i], positions[i + 1], positions[i + 2]);
                         vertex.setPosition(position);
                         vertices.add(vertex);
                     }
                 }
             } else if (attributeType.equals(AttributeType.NORMAL)) {
-                List<Float> normals = ArrayUtils.convertListToFloatArray(buffer.getFloats());
+                float[] normals = buffer.getFloats();
                 if (!vertices.isEmpty()) {
                     int normalCount = 0;
                     for (GaiaVertex vertex : vertices) {
-                        Vector3d normal = new Vector3d(normals.get(normalCount++), normals.get(normalCount++), normals.get(normalCount++));
+                        Vector3d normal = new Vector3d(normals[normalCount++], normals[normalCount++], normals[normalCount++]);
                         vertex.setNormal(normal);
                     }
                 } else {
-                    int normalSize = normals.size();
-                    for (int i = 0; i < normalSize; i += 3) {
+                    for (int i = 0; i < normals.length; i += 3) {
                         GaiaVertex vertex = new GaiaVertex();
-                        Vector3d normal = new Vector3d(normals.get(i), normals.get(i + 1), normals.get(i + 2));
+                        Vector3d normal = new Vector3d(normals[i], normals[i + 1], normals[i + 2]);
                         vertex.setNormal(normal);
                         vertices.add(vertex);
                     }
                 }
             } else if (attributeType.equals(AttributeType.TEXCOORD)) {
-                List<Float> texcoords = ArrayUtils.convertListToFloatArray(buffer.getFloats());
+                float[] texcoords = buffer.getFloats();
                 if (!vertices.isEmpty()) {
                     int texcoordCount = 0;
                     for (GaiaVertex vertex : vertices) {
-                        Vector2d texcoord = new Vector2d(texcoords.get(texcoordCount++), texcoords.get(texcoordCount++));
+                        Vector2d texcoord = new Vector2d(texcoords[texcoordCount++], texcoords[texcoordCount++]);
                         vertex.setTexcoords(texcoord);
                     }
                 } else {
-                    int texcoordSize = texcoords.size();
-                    for (int i = 0; i < texcoordSize; i += 2) {
+                    for (int i = 0; i < texcoords.length; i += 2) {
                         GaiaVertex vertex = new GaiaVertex();
-                        Vector2d texcoord = new Vector2d(texcoords.get(i), texcoords.get(i + 1));
+                        Vector2d texcoord = new Vector2d(texcoords[i], texcoords[i + 1]);
                         vertex.setTexcoords(texcoord);
                         vertices.add(vertex);
                     }
@@ -152,7 +145,12 @@ public class GaiaBufferDataSet {
         // set indices as face of a surface of the primitive 2023.07.19
         GaiaSurface surface = new GaiaSurface();
         GaiaFace face = new GaiaFace();
-        face.setIndices((ArrayList<Integer>) indices);
+        
+        int[] indicesInt = new int[indices.length];
+        for (int i = 0; i < indices.length; i++) {
+            indicesInt[i] = indices[i];
+        }
+        face.setIndices(indicesInt);
         surface.setFaces(new ArrayList<GaiaFace>() {{
             add(face);
         }});
@@ -162,5 +160,17 @@ public class GaiaBufferDataSet {
         ////primitive.setIndices(indices); // old. indices are now in faces of surface of the primitive
         primitive.setVertices(vertices);
         return primitive;
+    }
+
+    public void clear() {
+        buffers.forEach((key, value) -> value.clear());
+        buffers.clear();
+
+        material.clear();
+        material = null;
+        boundingBox = null;
+        texcoordBoundingRectangle = null;
+        transformMatrix = null;
+        preMultipliedTransformMatrix = null;
     }
 }

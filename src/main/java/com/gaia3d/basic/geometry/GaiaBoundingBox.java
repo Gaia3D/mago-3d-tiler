@@ -119,7 +119,6 @@ public class GaiaBoundingBox {
         return result;
     }
 
-
     public double getLongestDistance() {
         Vector3d volume = getVolume();
         return Math.sqrt(volume.x * volume.x + volume.y * volume.y + volume.z * volume.z);

@@ -59,4 +59,13 @@ public class GaiaScene {
         }
         return this.gaiaBoundingBox;
     }
+
+    public void clear() {
+        this.nodes.forEach(GaiaNode::clear);
+        this.materials.forEach(GaiaMaterial::clear);
+        this.originalPath = null;
+        this.gaiaBoundingBox = null;
+        this.nodes.clear();
+        this.materials.clear();
+    }
 }

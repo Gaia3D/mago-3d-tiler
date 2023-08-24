@@ -36,7 +36,7 @@ public class GaiaMaterial {
 
     private int id = -1;
     private String name = "no_name";
-    private LinkedHashMap<TextureType, List<GaiaTexture>> textures = new LinkedHashMap<>();
+    private Map<TextureType, List<GaiaTexture>> textures = new WeakHashMap<>();
 
     // experimental :: is repeat texture
     private boolean isRepeat = false;
@@ -53,7 +53,7 @@ public class GaiaMaterial {
             return true;
         }
 
-        LinkedHashMap<TextureType, List<GaiaTexture>> textureMapA = materialA.getTextures();
+        Map<TextureType, List<GaiaTexture>> textureMapA = materialA.getTextures();
 
         Set<TextureType> keys = textureMapA.keySet();
         for (TextureType key : keys) {
@@ -138,5 +138,17 @@ public class GaiaMaterial {
                 }
             }
         }
+    }
+
+    public void clear() {
+        if (textures != null) {
+            textures.forEach((key, value) -> {
+                value.forEach(GaiaTexture::clear);
+            });
+        }
+        this.diffuseColor = null;
+        this.ambientColor = null;
+        this.specularColor = null;
+        this.textures = null;
     }
 }

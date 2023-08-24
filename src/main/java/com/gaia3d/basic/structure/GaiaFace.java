@@ -24,25 +24,24 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GaiaFace {
-    private ArrayList<Integer> indices = new ArrayList<>();
+    //private ArrayList<Integer> indices = new ArrayList<>();
+    private int[] indices;
     private Vector3d faceNormal = new Vector3d();
 
     public void calculateFaceNormal(List<GaiaVertex> vertices) {
-        if (indices.size() < 3) {
+        if (indices.length < 3) {
             log.error("[calculateFaceNormal Error] : indices.size() < 3");
             return;
         }
-
-        for (int i = 0; i < indices.size(); i+=3) {
-            int indices1 = indices.get(i);
-            int indices2 = indices.get(i + 1);
-            int indices3 = indices.get(i + 2);
+        for (int i = 0; i < indices.length; i+=3) {
+            int indices1 = indices[i];
+            int indices2 = indices[i + 1];
+            int indices3 = indices[i + 2];
             GaiaVertex vertex1 = vertices.get(indices1);
             GaiaVertex vertex2 = vertices.get(indices2);
             GaiaVertex vertex3 = vertices.get(indices3);
             calcNormal(vertex1, vertex2, vertex3);
         }
-
         Vector3d firstNormal = vertices.get(0).getNormal();
         this.faceNormal = new Vector3d(firstNormal);
     }
@@ -57,11 +56,13 @@ public class GaiaFace {
                 && !Float.isNaN((float) normal.z());
     }
 
-    public static Vector3d calcNormal(Vector3d p1, Vector3d p2, Vector3d p3) {
+    public Vector3d calcNormal(Vector3d p1, Vector3d p2, Vector3d p3) {
         Vector3d p2SubP1 = new Vector3d(p2).sub(p1);
         Vector3d p3SubP2 = new Vector3d(p3).sub(p2);
         Vector3d normal = new Vector3d(p2SubP1).cross(p3SubP2);
         normal.normalize();
+        p3SubP2 = null;
+        p2SubP1 = null;
         return normal;
     }
 
@@ -78,5 +79,10 @@ public class GaiaFace {
         vertex1.setNormal(new Vector3d(resultNormal));
         vertex2.setNormal(new Vector3d(resultNormal));
         vertex3.setNormal(new Vector3d(resultNormal));
+    }
+
+    public void clear() {
+        indices = null;
+        faceNormal = null;
     }
 }

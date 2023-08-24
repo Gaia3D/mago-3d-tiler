@@ -42,11 +42,13 @@ public class GaiaMesh {
     }
 
     // getTotalIndices
-    public ArrayList<Short> getIndices() {
-        ArrayList<Short> totalIndices = new ArrayList<>();
+    public short[] getIndices() {
+        short[] totalIndices = new short[getIndicesCount()];
+        int index = 0;
         for (GaiaPrimitive primitive : primitives) {
-            for (Integer indices : primitive.getIndices()) {
-                totalIndices.add(indices.shortValue());
+            for (int indices : primitive.getIndices()) {
+                totalIndices[index++] = (short) indices;
+                //totalIndices.add(indices.shortValue());
             }
         }
         return totalIndices;
@@ -67,15 +69,16 @@ public class GaiaMesh {
     }
 
     // getTotalVertices
-    public ArrayList<Float> getPositions() {
-        ArrayList<Float> totalVertices = new ArrayList<>();
+    public float[] getPositions() {
+        float[] totalVertices = new float[getPositionsCount()];
+        int index = 0;
         for (GaiaPrimitive primitive : primitives) {
             for (GaiaVertex vertex : primitive.getVertices()) {
                 Vector3d position = vertex.getPosition();
                 if (position != null) {
-                    totalVertices.add((float) vertex.getPosition().x());
-                    totalVertices.add((float) vertex.getPosition().y());
-                    totalVertices.add((float) vertex.getPosition().z());
+                    totalVertices[index++] = (float) position.x();
+                    totalVertices[index++] = (float) position.y();
+                    totalVertices[index++] = (float) position.z();
                 }
             }
         }
@@ -97,15 +100,16 @@ public class GaiaMesh {
     }
 
     // getTotalNormals
-    public ArrayList<Float> getNormals() {
-        ArrayList<Float> totalNormals = new ArrayList<>();
+    public float[] getNormals() {
+        float[] totalNormals = new float[getNormalsCount()];
+        int index = 0;
         for (GaiaPrimitive primitive : primitives) {
             for (GaiaVertex vertex : primitive.getVertices()) {
                 Vector3d normal = vertex.getNormal();
                 if (normal != null) {
-                    totalNormals.add((float) vertex.getNormal().x());
-                    totalNormals.add((float) vertex.getNormal().y());
-                    totalNormals.add((float) vertex.getNormal().z());
+                    totalNormals[index++] = (float) normal.x();
+                    totalNormals[index++] = (float) normal.y();
+                    totalNormals[index++] = (float) normal.z();
                 }
             }
         }
@@ -127,14 +131,15 @@ public class GaiaMesh {
     }
 
     // getTotalTexCoords
-    public ArrayList<Float> getTexcoords() {
-        ArrayList<Float> totalTexcoords = new ArrayList<>();
+    public float[] getTexcoords() {
+        float[] totalTexcoords = new float[getTexcoordsCount()];
+        int index = 0;
         for (GaiaPrimitive primitive : primitives) {
             for (GaiaVertex vertex : primitive.getVertices()) {
                 Vector2d texcoords = vertex.getTexcoords();
                 if (texcoords != null) {
-                    totalTexcoords.add((float) vertex.getTexcoords().x());
-                    totalTexcoords.add((float) vertex.getTexcoords().y());
+                    totalTexcoords[index++] = (float) texcoords.x();
+                    totalTexcoords[index++] = (float) texcoords.y();
                 }
             }
         }
@@ -156,14 +161,13 @@ public class GaiaMesh {
     }
 
     // getBatchId
-    public ArrayList<Float> getBatchIds() {
-        ArrayList<Float> totalBatchIds = new ArrayList<>();
+    public float[] getBatchIds() {
+        float[] totalBatchIds = new float[getBatchIdsCount()];
+        int index = 0;
         for (GaiaPrimitive primitive : primitives) {
             for (GaiaVertex vertex : primitive.getVertices()) {
                 float batchId = vertex.getBatchId();
-                if (batchId >= 0) {
-                    totalBatchIds.add(vertex.getBatchId());
-                }
+                totalBatchIds[index++] = batchId;
             }
         }
         return totalBatchIds;
@@ -182,16 +186,17 @@ public class GaiaMesh {
         return count;
     }
 
-    public List<Byte> getColors() {
-        List<Byte> totalColors = new ArrayList<>();
+    public byte[] getColors() {
+        byte[] totalColors = new byte[getColorsCount()];
+        int index = 0;
         for (GaiaPrimitive primitive : primitives) {
             for (GaiaVertex vertex : primitive.getVertices()) {
                 byte[] color = vertex.getColor();
                 if (color != null) {
-                    totalColors.add(color[0]);
-                    totalColors.add(color[1]);
-                    totalColors.add(color[2]);
-                    totalColors.add(color[3]);
+                    totalColors[index++] = color[0];
+                    totalColors[index++] = color[1];
+                    totalColors[index++] = color[2];
+                    totalColors[index++] = color[3];
                 }
             }
         }
@@ -201,7 +206,7 @@ public class GaiaMesh {
     public int getIndicesCount() {
         int totalIndices = 0;
         for (GaiaPrimitive primitive : primitives) {
-            totalIndices += primitive.getIndices().size();
+            totalIndices += primitive.getIndices().length;
         }
         return totalIndices;
     }
@@ -221,5 +226,10 @@ public class GaiaMesh {
         for (GaiaPrimitive primitive : primitives) {
             primitive.translate(translation);
         }
+    }
+
+    public void clear() {
+        this.primitives.forEach(GaiaPrimitive::clear);
+        this.primitives.clear();
     }
 }

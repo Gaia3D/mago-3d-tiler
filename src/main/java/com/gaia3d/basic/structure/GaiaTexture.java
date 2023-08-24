@@ -189,4 +189,15 @@ public class GaiaTexture {
     public void read(LittleEndianDataInputStream stream) throws IOException {
         this.setPath(stream.readText());
     }
+
+    public void clear() {
+        if (this.bufferedImage != null) {
+            this.bufferedImage.flush();
+            this.bufferedImage = null;
+        }
+        if (this.byteBuffer != null) {
+            this.byteBuffer.clear();
+            this.byteBuffer = null;
+        }
+    }
 }

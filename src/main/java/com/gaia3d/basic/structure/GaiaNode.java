@@ -4,7 +4,6 @@ import com.gaia3d.basic.exchangable.GaiaBuffer;
 import com.gaia3d.basic.exchangable.GaiaBufferDataSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.types.AttributeType;
-import com.gaia3d.util.ArrayUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -46,11 +45,11 @@ public class GaiaNode {
         GaiaPrimitive primitive = bufferDataSet.toPrimitive();
         primitive.setMaterialIndex(bufferDataSet.getMaterialId());
 
-        List<Float> positionList = new ArrayList<>();
-        List<Float> normalList = new ArrayList<>();
-        List<Byte> colorList = new ArrayList<>();
-        List<Float> texCoordList = new ArrayList<>();
-        List<Float> batchIdList = new ArrayList<>();
+        float[] positionList = new float[0];
+        float[] normalList = new float[0];
+        byte[] colorList = new byte[0];
+        float[] texCoordList = new float[0];
+        float[] batchIdList = new float[0];
         List<GaiaVertex> vertexList = new ArrayList<>();
 
         Map<AttributeType, GaiaBuffer> buffers = bufferDataSet.getBuffers();
@@ -58,55 +57,50 @@ public class GaiaNode {
             AttributeType attributeType = entry.getKey();
             GaiaBuffer buffer = entry.getValue();
             if (attributeType == AttributeType.POSITION) {
-                float[] positions = buffer.getFloats();
-                positionList = ArrayUtils.convertListToFloatArray(positions);
+                positionList = buffer.getFloats();
             } else if (attributeType == AttributeType.NORMAL) {
-                float[] normals = buffer.getFloats();
-                normalList = ArrayUtils.convertListToFloatArray(normals);
+                normalList = buffer.getFloats();
             } else if (attributeType == AttributeType.COLOR) {
-                byte[] colors = buffer.getBytes();
-                colorList = ArrayUtils.convertByteListToShortArray(colors);
+                colorList = buffer.getBytes();
             } else if (attributeType == AttributeType.TEXCOORD) {
-                float[] texCoords = buffer.getFloats();
-                texCoordList = ArrayUtils.convertListToFloatArray(texCoords);
+                texCoordList = buffer.getFloats();
             } else if (attributeType == AttributeType.BATCHID) {
-                float[] texCoords = buffer.getFloats();
-                batchIdList = ArrayUtils.convertListToFloatArray(texCoords);
+                batchIdList = buffer.getFloats();
             }
         }
 
-        for (int i = 0; i < positionList.size() / 3; i++) {
+        for (int i = 0; i < positionList.length / 3; i++) {
             int vertexIndex = i * 3;
             GaiaVertex vertex = new GaiaVertex();
-            if (!positionList.isEmpty()) {
-                float positionX = positionList.get(vertexIndex);
-                float positionY = positionList.get(vertexIndex + 1);
-                float positionZ = positionList.get(vertexIndex + 2);
+            if (positionList.length > 0) {
+                float positionX = positionList[vertexIndex];
+                float positionY = positionList[vertexIndex + 1];
+                float positionZ = positionList[vertexIndex + 2];
                 vertex.setPosition(new Vector3d(positionX, positionY, positionZ));
             }
-            if (!normalList.isEmpty()) {
-                float normalX = normalList.get(vertexIndex);
-                float normalY = normalList.get(vertexIndex + 1);
-                float normalZ = normalList.get(vertexIndex + 2);
+            if (normalList.length > 0) {
+                float normalX = normalList[vertexIndex];
+                float normalY = normalList[vertexIndex + 1];
+                float normalZ = normalList[vertexIndex + 2];
                 vertex.setNormal(new Vector3d(normalX, normalY, normalZ));
             }
-            if (!colorList.isEmpty()) {
+            if (colorList.length > 0) {
                 int colorIndex = i * 4;
                 byte[] color = new byte[4];
-                color[0] = colorList.get(colorIndex);
-                color[1] = colorList.get(colorIndex + 1);
-                color[2] = colorList.get(colorIndex + 2);
-                color[3] = colorList.get(colorIndex + 3);
+                color[0] = colorList[colorIndex];
+                color[1] = colorList[colorIndex + 1];
+                color[2] = colorList[colorIndex + 2];
+                color[3] = colorList[colorIndex + 3];
                 vertex.setColor(color);
             }
-            if (!texCoordList.isEmpty()) {
+            if (texCoordList.length > 0) {
                 int texcoordIndex = i * 2;
-                float texcoordX = texCoordList.get(texcoordIndex);
-                float texcoordY = texCoordList.get(texcoordIndex + 1);
+                float texcoordX = texCoordList[texcoordIndex];
+                float texcoordY = texCoordList[texcoordIndex + 1];
                 vertex.setTexcoords(new Vector2d(texcoordX, texcoordY));
             }
-            if (!batchIdList.isEmpty()) {
-                float batchId = batchIdList.get(i);
+            if (batchIdList.length > 0) {
+                float batchId = batchIdList[i];
                 vertex.setBatchId(batchId);
             }
             vertexList.add(vertex);
@@ -180,5 +174,17 @@ public class GaiaNode {
         for (GaiaNode child : this.getChildren()) {
             child.translate(translation);
         }
+    }
+
+    public void clear() {
+        this.parent = null;
+        this.name = null;
+        this.transformMatrix = null;
+        this.preMultipliedTransformMatrix = null;
+        this.gaiaBoundingBox = null;
+        this.meshes.forEach(GaiaMesh::clear);
+        this.children.forEach(GaiaNode::clear);
+        this.meshes.clear();
+        this.children.clear();
     }
 }

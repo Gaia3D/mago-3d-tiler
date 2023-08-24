@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,11 +32,28 @@ public class GaiaSurface {
         }
     }
 
-    public ArrayList<Integer> getIndices() {
-        ArrayList<Integer> resultIndices = new ArrayList<>();
+    public int[] getIndices() {
+        int index = 0;
+        int indicesCount = getIndicesCount();
+        int[] resultIndices = new int[indicesCount];
         for (GaiaFace face : faces) {
-            resultIndices.addAll(face.getIndices());
+            for (int indices : face.getIndices()) {
+                resultIndices[index++] = indices;
+            }
         }
         return resultIndices;
+    }
+
+    public int getIndicesCount() {
+        int count = 0;
+        for (GaiaFace face : faces) {
+            count += face.getIndices().length;
+        }
+        return count;
+    }
+
+    public void clear() {
+        faces.forEach(GaiaFace::clear);
+        faces.clear();
     }
 }

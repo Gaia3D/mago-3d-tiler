@@ -24,4 +24,12 @@ public class GaiaVertex {
     private Vector3d normal;
     private byte[] color;
     private float batchId;
+
+    public void clear() {
+        texcoords = null;
+        position = null;
+        normal = null;
+        color = null;
+        batchId = 0;
+    }
 }

@@ -76,4 +76,11 @@ public class GaiaBuffer {
             bytes = stream.readBytes(length);
         }
     }
+
+    public void clear() {
+        floats = null;
+        ints = null;
+        shorts = null;
+        bytes = null;
+    }
 }

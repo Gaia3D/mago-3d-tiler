@@ -155,8 +155,15 @@ public class LittleEndianDataInputStream extends FilterInputStream implements Da
         if (b[0] < 0)
             throw new EOFException();
 
-        byte[] bytes = bytesToInts(b);
-        return ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+        byte[] bytes = intsToBytes(b);
+        ByteBuffer byteBuffer = ByteBuffer
+                .wrap(bytes)
+                .order(ByteOrder.LITTLE_ENDIAN);
+        float result = byteBuffer.getFloat();
+        byteBuffer.clear();
+        bytes = null;
+        b = null;
+        return result;
     }
 
     public float[] readFloats(int count) throws IOException {
@@ -175,8 +182,13 @@ public class LittleEndianDataInputStream extends FilterInputStream implements Da
         }
         if (b[0] < 0)
             throw new EOFException();
-        byte[] bytes = bytesToInts(b);
-        return ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+        byte[] bytes = intsToBytes(b);
+        ByteBuffer byteBuffer = ByteBuffer
+                .wrap(bytes)
+                .order(ByteOrder.LITTLE_ENDIAN);
+        float result = byteBuffer.getFloat();
+        byteBuffer.clear();
+        return result;
     }
 
     @Override
@@ -206,8 +218,8 @@ public class LittleEndianDataInputStream extends FilterInputStream implements Da
         return new String(bytes, StandardCharsets.UTF_8);
     }
 
-    public byte[] bytesToInts(int[] value) {
-        byte[] bytes = new byte[4];
+    public byte[] intsToBytes(int[] value) {
+        byte[] bytes = new byte[value.length];
         for (int i = 0; i < value.length; i++) {
             bytes[i] = (byte) value[i];
         }

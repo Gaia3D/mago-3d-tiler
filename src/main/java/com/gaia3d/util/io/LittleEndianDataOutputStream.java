@@ -81,7 +81,9 @@ public class LittleEndianDataOutputStream extends FilterOutputStream implements 
     @Override
     public void writeFloat(float v) throws IOException {
         //writeInt(Float.floatToIntBits(v));
-        write(floatToBytes(v));
+        byte[] bytes = floatToBytes(v);
+        write(bytes);
+        bytes = null;
     }
 
     public void writeFloats(float[] v) throws IOException {
@@ -92,7 +94,9 @@ public class LittleEndianDataOutputStream extends FilterOutputStream implements 
 
     @Override
     public void writeDouble(double v) throws IOException {
-        write(doubleToBytes(v));
+        byte[] bytes = doubleToBytes(v);
+        write(bytes);
+        bytes = null;
     }
 
     @Override
@@ -141,18 +145,21 @@ public class LittleEndianDataOutputStream extends FilterOutputStream implements 
     // The Soulution for Float NaN Error
     private byte[] floatToBytes(float value) {
         byte[] bytes = new byte[4];
-        ByteBuffer buffer = ByteBuffer.allocate(4);
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+        //ByteBuffer byteBuffer = ByteBuffer.allocate(4);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
         buffer.putFloat(value);
         buffer.flip();
         buffer.get(bytes);
+        buffer.clear();
         return bytes;
     }
 
     // The Soulution for Double NaN Error
     private byte[] doubleToBytes(double value) {
         byte[] bytes = new byte[8];
-        ByteBuffer buffer = ByteBuffer.allocate(8);
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+        //ByteBuffer buffer = ByteBuffer.allocate(8);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
         buffer.putDouble(value);
         buffer.flip();
