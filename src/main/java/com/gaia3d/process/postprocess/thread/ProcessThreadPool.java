@@ -63,9 +63,13 @@ public class ProcessThreadPool {
         log.info("[ThreadPool][Start Post-process]");
         ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
 
+        AtomicInteger count = new AtomicInteger();
+        int size = contentInfos.size();
         List<Runnable> tasks = new ArrayList<>();
         for (ContentInfo contentInfo : contentInfos) {
             Runnable callableTask = () -> {
+                count.getAndIncrement();
+                log.info("[{}/{}] post-process content-info : {}", count, size, contentInfo.getName());
                 List<TileInfo> childTileInfos = contentInfo.getTileInfos();
                 List<TileInfo> copiedTileInfos = childTileInfos.stream().map((childTileInfo) -> {
                     return TileInfo.builder()

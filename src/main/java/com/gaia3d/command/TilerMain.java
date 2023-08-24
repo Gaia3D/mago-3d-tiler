@@ -39,12 +39,12 @@ import java.util.List;
 @Slf4j
 public class TilerMain {
     public static String version = "1.0.4";
-    public static CommandLine command = null;
 
     public static void main(String[] args) {
         Configurator.initConsoleLogger();
         Options options = Configurator.createOptions();
         CommandLineParser parser = new DefaultParser();
+        CommandLine command;
         try {
             command = parser.parse(options, args);
             if (command.hasOption(ProcessOptions.DEBUG.getArgName())) {
@@ -80,14 +80,14 @@ public class TilerMain {
                 log.error("output file path is not specified.");
                 return;
             }
-            execute();
+            execute(command);
         } catch (ParseException | IOException e) {
             log.error("Failed to parse command line properties", e);
         }
         underline();
     }
 
-    private static void execute() throws IOException {
+    private static void execute(CommandLine command) throws IOException {
         long start = System.currentTimeMillis();
 
         File inputFile = new File(command.getOptionValue(ProcessOptions.INPUT.getArgName()));

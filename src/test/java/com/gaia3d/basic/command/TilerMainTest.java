@@ -31,16 +31,36 @@ class TilerMainTest {
         String[] args = new String[]{
         "-i", path + "seoul-input",
         "-it", "kml",
-        "-o", path +  "seoul-output-add",
+        "-o", path +  "seoul-output-final",
         "-c", "",
         "-yz",
         "-mx", "65536",
         "-nl", "0",
-        "-xl", "3",
+        "-xl", "4",
         "-refineAdd",
         "-mt",
         //"-glb",
         //"-debug"
+        };
+        TilerMain.main(args);
+    }
+
+    @Test
+    void convertSeoulMini() {
+        String path = "F:\\workspace\\";
+        String[] args = new String[]{
+                "-i", path + "optimize",
+                "-it", "kml",
+                "-o", path +  "seoul-output-10000",
+                "-c", "",
+                "-yz",
+                "-mx", "65536",
+                "-nl", "0",
+                "-xl", "5",
+                "-refineAdd",
+                "-mt",
+                //"-glb",
+                //"-debug"
         };
         TilerMain.main(args);
     }
@@ -101,7 +121,7 @@ class TilerMainTest {
 
     private void convert(String inputPath, String outputPath, String suffix, String crs, String inputType) {
         String[] args = new String[]{
-                "-log", outputPath + suffix + "/result.log",
+                //"-log", outputPath + suffix + "/result.log",
                 "-input", inputPath + suffix,
                 "-inputType", inputType,
                 "-output", outputPath + suffix,
@@ -109,9 +129,9 @@ class TilerMainTest {
                 "-swapYZ",
                 "-maxCount", "1024",
                 "-minLod", "0",
-                "-maxLod", "3",
+                "-maxLod", "6",
                 "-multiThread",
-                "-refineAdd",
+                //"-refineAdd",
                 //"-glb",
                 "-debug"
         };

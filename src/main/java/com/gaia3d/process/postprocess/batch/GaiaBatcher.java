@@ -85,7 +85,7 @@ public class GaiaBatcher implements Batcher {
 
     public ContentInfo run(ContentInfo contentInfo) {
         initContentInfo(contentInfo);
-        log.info("[Batching Running] : {}", contentInfo.getName());
+        //log.info("[Batching Running] : {}", contentInfo.getName());
         List<TileInfo> tileInfos = contentInfo.getTileInfos();
         List<GaiaSet> sets = tileInfos.stream()
                 .map((tileInfo) -> {

@@ -108,6 +108,7 @@ public class Gaia3DTiler implements Tiler {
 
     private void createNode(Node parentNode, List<TileInfo> tileInfos) throws IOException {
         BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
+        boolean refineAdd = command.hasOption(ProcessOptions.REFINE_ADD.getArgName());
         int maxCount = command.hasOption(ProcessOptions.MAX_COUNT.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_COUNT.getArgName())) : DEFUALT_MAX_COUNT;
         if (tileInfos.size() > maxCount) {
             List<List<TileInfo>> childrenScenes = parentBoundingVolume.distributeScene(tileInfos);
@@ -120,7 +121,6 @@ public class Gaia3DTiler implements Tiler {
                 }
             }
         } else if (tileInfos.size() > 1) {
-            boolean refineAdd = command.hasOption(ProcessOptions.REFINE_ADD.getArgName());
             List<List<TileInfo>> childrenScenes = parentBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
@@ -128,14 +128,10 @@ public class Gaia3DTiler implements Tiler {
                 Node childNode = createContentNode(parentNode, childTileInfos, index);
                 if (childNode != null) {
                     parentNode.getChildren().add(childNode);
-                    if (refineAdd) {
-                        Content content = childNode.getContent();
-                        if (content != null) {
-                            ContentInfo contentInfo = content.getContentInfo();
-                            createNode(childNode, contentInfo.getRemainTileInfos());
-                        } else {
-                            createNode(childNode, childTileInfos);
-                        }
+                    Content content = childNode.getContent();
+                    if (content != null && refineAdd) {
+                        ContentInfo contentInfo = content.getContentInfo();
+                        createNode(childNode, contentInfo.getRemainTileInfos());
                     } else {
                         createNode(childNode, childTileInfos);
                     }
@@ -183,6 +179,7 @@ public class Gaia3DTiler implements Tiler {
 
         int minLevel = command.hasOption(ProcessOptions.MIN_LOD.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MIN_LOD.getArgName())) : DEFUALT_MIN_LEVEL;
         int maxLevel = command.hasOption(ProcessOptions.MAX_LOD.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_LOD.getArgName())) : DEFUALT_MAX_LEVEL;
+        boolean refineAdd = command.hasOption(ProcessOptions.REFINE_ADD.getArgName());
 
         GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
         Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
@@ -205,47 +202,38 @@ public class Gaia3DTiler implements Tiler {
 
         log.info("[ContentNode][" + nodeCode + "][{}] : {}", lod.getLevel(), tileInfos.size());
 
+        int lodError = refineAdd ? lod.getGeometricErrorBlock() : lod.getGeometricError();
+
         List<TileInfo> resultInfos = tileInfos;
         List<TileInfo> remainInfos = new ArrayList<>();
-        if (lod != LevelOfDetail.LOD0) {
-            resultInfos = tileInfos.stream().filter(tileInfo -> {
-                double geometricError = tileInfo.getBoundingBox().getLongestDistance();
-                log.info("[{}][{}] : {}", tileInfo.getOutputPath(), lod.getLevel(), geometricError);
-                return geometricError >= lod.getGeometricErrorFilter();
-            }).collect(Collectors.toList());
-            remainInfos = tileInfos.stream().filter(tileInfo -> {
-                double geometricError = tileInfo.getBoundingBox().getLongestDistance();
-                log.info("[{}][{}] : {}", tileInfo.getOutputPath(), lod.getLevel(), geometricError);
-                return geometricError < lod.getGeometricErrorFilter();
-            }).collect(Collectors.toList());
-        }
+        resultInfos = tileInfos.stream().filter(tileInfo -> {
+            double geometricError = tileInfo.getBoundingBox().getLongestDistance();
+            return geometricError >= lodError;
+        }).collect(Collectors.toList());
+        remainInfos = tileInfos.stream().filter(tileInfo -> {
+            double geometricError = tileInfo.getBoundingBox().getLongestDistance();
+            return geometricError < lodError;
+        }).collect(Collectors.toList());
 
         Node childNode = new Node();
         childNode.setParent(parentNode);
         childNode.setTransformMatrix(transformMatrix);
         childNode.setBoundingVolume(boundingVolume);
         childNode.setNodeCode(nodeCode);
-        childNode.setGeometricError(lod.getGeometricError());
+        childNode.setGeometricError(lodError);
         childNode.setChildren(new ArrayList<>());
 
-        boolean refineAdd = command.hasOption(ProcessOptions.REFINE_ADD.getArgName());
-        if (refineAdd) {
-            childNode.setRefine(Node.RefineType.ADD);
-        } else {
-            childNode.setRefine(Node.RefineType.REPLACE);
-        }
+        childNode.setRefine(refineAdd ? Node.RefineType.ADD : Node.RefineType.REPLACE);
+        //childNode.setRefine(Node.RefineType.ADD);
 
         if (resultInfos.size() > 0) {
             ContentInfo contentInfo = new ContentInfo();
             contentInfo.setName(nodeCode);
             contentInfo.setLod(lod);
-            contentInfo.setTileInfos(resultInfos);
             contentInfo.setBoundingBox(childBoundingBox);
             contentInfo.setNodeCode(nodeCode);
-
-            if (refineAdd) {
-                contentInfo.setRemainTileInfos(remainInfos);
-            }
+            contentInfo.setTileInfos(resultInfos);
+            contentInfo.setRemainTileInfos(remainInfos);
 
             Content content = new Content();
             content.setUri("data/" + nodeCode + ".b3dm");
@@ -254,7 +242,6 @@ public class Gaia3DTiler implements Tiler {
         } else {
             log.error("No content : {}", nodeCode);
         }
-
         return childNode;
     }
 
@@ -275,24 +262,6 @@ public class Gaia3DTiler implements Tiler {
             return maxLod;
         }
 
-        /*int level;
-        if (hasContent) {
-            String contentLevel = nodeCode.split("C")[1];
-            int level = contentLevel.length();
-            if (maxLevel >= level) {
-                int offset = maxLevel - level;
-                if (minLevel < offset) {
-                    offset = minLevel;
-                }
-                levelOfDetail = LevelOfDetail.getByLevel(offset);
-            }
-        } else {
-            levelOfDetail = maxLod;
-        }*/
-
-
-
-
         return levelOfDetail;
     }
 
@@ -307,18 +276,6 @@ public class Gaia3DTiler implements Tiler {
         Vector3d center = boundingBox.getCenter();
         double[] cartesian = GlobeUtils.geographicToCartesianWgs84(center.x, center.y, center.z);
         return GlobeUtils.normalAtCartesianPointWgs84(cartesian[0], cartesian[1], cartesian[2]);
-
-
-        /*if (FormatType.KML == formatType) {
-            double[] cartesian = GlobeUtils.geographicToCartesianWgs84(center.x, center.y, center.z);
-            return GlobeUtils.normalAtCartesianPointWgs84(cartesian[0], cartesian[1], cartesian[2]);
-        } else {
-            Vector3d centerBottom = new Vector3d(center.x, center.y, boundingBox.getMinZ());
-            ProjCoordinate centerPoint = new ProjCoordinate(centerBottom.x(), centerBottom.y(), centerBottom.z());
-            ProjCoordinate translatedCenterPoint = GlobeUtils.transform(tilerOptions.getSource(), centerPoint);
-            double[] cartesian = GlobeUtils.geographicToCartesianWgs84(translatedCenterPoint.x, translatedCenterPoint.y, centerBottom.z());
-            return GlobeUtils.normalAtCartesianPointWgs84(cartesian[0], cartesian[1], cartesian[2]);
-        }*/
     }
 
     private Asset createAsset() {
@@ -328,7 +285,7 @@ public class Gaia3DTiler implements Tiler {
         Ion ion = new Ion();
         List<Credit> credits = new ArrayList<>();
         Credit credit = new Credit();
-        credit.setHtml("<html>TEST</html>");
+        credit.setHtml("<html>Gaia3D</html>");
         credits.add(credit);
         cesium.setCredits(credits);
         extras.setIon(ion);
