@@ -13,11 +13,11 @@ import com.gaia3d.process.tileprocess.tile.LevelOfDetail;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.lang3.ArrayUtils;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector4d;
 import org.lwjgl.opengl.GL20;
-import com.gaia3d.util.ArrayUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -122,7 +122,7 @@ public class GaiaBatcher implements Batcher {
         // check if exist equal materials.***
         reassignMaterialsToGaiaBufferDataSetWithSameMaterial(batchedDataSets, contentInfo.getLod());
         List<GaiaMaterial> filteredMaterials = new ArrayList<>();
-        GaiaBufferDataSet.getMaterialslIstOfBufferDataSet(batchedDataSets, filteredMaterials);
+        getMaterialslIstOfBufferDataSet(batchedDataSets, filteredMaterials);
 
         // batch dataSets with same material.***
         List<GaiaBufferDataSet> filteredDataSets = batchDataSetsWithTheSameMaterial(batchedDataSets);
@@ -130,13 +130,13 @@ public class GaiaBatcher implements Batcher {
         checkIsRepeatMaterial(filteredDataSets);
 
         List<GaiaMaterial> colorMaterials = filteredMaterials.stream().filter((material) -> {
-            LinkedHashMap<TextureType, List<GaiaTexture>> textures = material.getTextures();
+            Map<TextureType, List<GaiaTexture>> textures = material.getTextures();
             List<GaiaTexture> diffuseTextures = textures.get(TextureType.DIFFUSE);
             return diffuseTextures.size() == 0;
         }).collect(Collectors.toList());
         List<GaiaBufferDataSet> colorDataSet = filteredDataSets.stream().filter((bufferDataSet) -> {
             GaiaMaterial material = bufferDataSet.material;
-            LinkedHashMap<TextureType, List<GaiaTexture>> textures = material.getTextures();
+            Map<TextureType, List<GaiaTexture>> textures = material.getTextures();
             List<GaiaTexture> diffuseTextures = textures.get(TextureType.DIFFUSE);
             createColorBuffer(bufferDataSet);
             return diffuseTextures.size() == 0;
@@ -144,13 +144,13 @@ public class GaiaBatcher implements Batcher {
         setMaterialsIndexInList(colorMaterials, colorDataSet);
 
         List<GaiaMaterial> textureMaterials = filteredMaterials.stream().filter((material) -> {
-            LinkedHashMap<TextureType, List<GaiaTexture>> textures = material.getTextures();
+            Map<TextureType, List<GaiaTexture>> textures = material.getTextures();
             List<GaiaTexture> diffuseTextures = textures.get(TextureType.DIFFUSE);
             return diffuseTextures.size() > 0;
         }).collect(Collectors.toList());
         List<GaiaBufferDataSet> textureDataSet = filteredDataSets.stream().filter((bufferDataSet) -> {
             GaiaMaterial material = bufferDataSet.material;
-            LinkedHashMap<TextureType, List<GaiaTexture>> textures = material.getTextures();
+            Map<TextureType, List<GaiaTexture>> textures = material.getTextures();
             List<GaiaTexture> diffuseTextures = textures.get(TextureType.DIFFUSE);
             return diffuseTextures.size() > 0;
         }).collect(Collectors.toList());
@@ -214,6 +214,16 @@ public class GaiaBatcher implements Batcher {
         return contentInfo;
     }
 
+    public void getMaterialslIstOfBufferDataSet(List<GaiaBufferDataSet> bufferDataSets, List<GaiaMaterial> materials) {
+        // first, make a map to avoid duplicate materials
+        Map<GaiaMaterial, GaiaMaterial> materialMap = new WeakHashMap<>();
+        for (GaiaBufferDataSet bufferDataSet : bufferDataSets) {
+            materialMap.put(bufferDataSet.getMaterial(), bufferDataSet.getMaterial());
+        }
+        // second, make a list from the map
+        materials.addAll(materialMap.values());
+    }
+
     private void setMaterialsIndexInList(List<GaiaMaterial> materials, List<GaiaBufferDataSet> dataSets) {
         for (int i = 0; i < materials.size(); i++) {
             GaiaMaterial material = materials.get(i);
@@ -271,7 +281,7 @@ public class GaiaBatcher implements Batcher {
 
     // 객체의 Indices와 Vertices를 하나로 배칭
     /*rivate List<GaiaBufferDataSet> batchDataSets(List<GaiaBufferDataSet> dataSets, Vector3d translation) {
-        Map<Integer, List<GaiaBufferDataSet>> dataSetsMap = new LinkedHashMap<>();
+        Map<Integer, List<GaiaBufferDataSet>> dataSetsMap = new Map<>();
         List<GaiaBufferDataSet> filterdBufferDataList = new ArrayList<>();
         for (GaiaBufferDataSet dataSet : dataSets) {
             int materialId = dataSet.getMaterialId();
@@ -290,7 +300,7 @@ public class GaiaBatcher implements Batcher {
     private List<GaiaBufferDataSet> batchDataSetsWithTheSameMaterial(List<GaiaBufferDataSet> dataSets) {
         List<GaiaBufferDataSet> filterdBufferDataList = new ArrayList<>();
         // make map : key = GaiaMaterial, value = array<GaiaBufferDataSet>.
-        Map<GaiaMaterial, List<GaiaBufferDataSet>> dataSetsMap = new LinkedHashMap<>();
+        Map<GaiaMaterial, List<GaiaBufferDataSet>> dataSetsMap = new WeakHashMap<>();
         for (GaiaBufferDataSet dataSet : dataSets) {
             GaiaMaterial material = dataSet.getMaterial();
             List<GaiaBufferDataSet> bufferDataSetDataList = dataSetsMap.computeIfAbsent(material, k -> new ArrayList<>());
@@ -363,17 +373,13 @@ public class GaiaBatcher implements Batcher {
         Map<AttributeType, GaiaBuffer> bufferMap = bufferDataSet.getBuffers();
         GaiaBuffer positionBuffer = bufferMap.get(AttributeType.POSITION);
         int elementsCount = positionBuffer.getElementsCount();
-
-        List<Byte> colorList = new ArrayList<>();
-        for (int i = 0; i < elementsCount; i++) {
-            colorList.add((byte) (diffuseColor.x * 255));
-            colorList.add((byte) (diffuseColor.y * 255));
-            colorList.add((byte) (diffuseColor.z * 255));
-            colorList.add((byte) (diffuseColor.w * 255));
-//            colorList.add((byte) 255);
-//            colorList.add((byte) 255);
-//            colorList.add((byte) 255);
-//            colorList.add((byte) 255);
+        int length = elementsCount * 4;
+        byte[] colorList = new byte[length];
+        for (int i = 0; i < length; i+=4) {
+            colorList[i] = (byte) (diffuseColor.x * 255);
+            colorList[i + 1] = (byte) (diffuseColor.y * 255);
+            colorList[i + 2] = (byte) (diffuseColor.z * 255);
+            colorList[i + 3] = (byte) (diffuseColor.w * 255);
         }
 
         GaiaBuffer colorBuffer = new GaiaBuffer();
@@ -381,38 +387,81 @@ public class GaiaBatcher implements Batcher {
         colorBuffer.setGlType(GL20.GL_UNSIGNED_BYTE);
         colorBuffer.setElementsCount(elementsCount);
         colorBuffer.setGlDimension((byte) 4);
-        colorBuffer.setBytes(ArrayUtils.convertByteArrayToList(colorList));
+        colorBuffer.setBytes(colorList);
         bufferDataSet.getBuffers().put(AttributeType.COLOR, colorBuffer);
     }
 
     private GaiaBufferDataSet batchVertices(List<GaiaBufferDataSet> bufferDataSets) {
         GaiaBufferDataSet dataSet = new GaiaBufferDataSet();
+        int totalIndicesCount = 0;
         int totalPositionCount = 0;
         int totalNormalCount = 0;
         int totalColorCount = 0;
         int totalTexCoordCount = 0;
         int totalBatchIdCount = 0;
-        int totalIndicesCount = 0;
 
-        List<Float> positions = new ArrayList<>();
-        List<Float> normals = new ArrayList<>();
-        List<Float> texCoords = new ArrayList<>();
-        List<Float> batchIds = new ArrayList<>();
-        List<Byte> colors = new ArrayList<>();
-        List<Short> indices = new ArrayList<>();
+        int indicesIndex = 0;
+        int positionIndex = 0;
+        int normalIndex = 0;
+        int colorIndex = 0;
+        int texCoordIndex = 0;
+        int batchIdIndex = 0;
+
+        for (GaiaBufferDataSet bufferDataSet : bufferDataSets) {
+            Map<AttributeType, GaiaBuffer> buffers = bufferDataSet.getBuffers();
+            GaiaBuffer indicesBuffer = buffers.get(AttributeType.INDICE);
+            GaiaBuffer positionBuffer = buffers.get(AttributeType.POSITION);
+            GaiaBuffer normalBuffer = buffers.get(AttributeType.NORMAL);
+            GaiaBuffer colorBuffer = buffers.get(AttributeType.COLOR);
+            GaiaBuffer texCoordBuffer = buffers.get(AttributeType.TEXCOORD);
+            GaiaBuffer batchIdBuffer = buffers.get(AttributeType.BATCHID);
+
+            if (indicesBuffer != null) {
+                totalIndicesCount += indicesBuffer.getShorts().length;
+            }
+            if (positionBuffer != null) {
+                totalPositionCount += positionBuffer.getFloats().length;
+            }
+            if (normalBuffer != null) {
+                totalNormalCount += normalBuffer.getFloats().length;
+            }
+            if (colorBuffer != null) {
+                totalColorCount += colorBuffer.getBytes().length;
+            }
+            if (texCoordBuffer != null) {
+                totalTexCoordCount += texCoordBuffer.getFloats().length;
+            }
+            if (batchIdBuffer != null) {
+                totalBatchIdCount += batchIdBuffer.getFloats().length;
+            }
+        }
+
+        short[] indices = new short[totalIndicesCount];
+        float[] positions = new float[totalPositionCount];
+        float[] normals = new float[totalNormalCount];
+        float[] texCoords = new float[totalTexCoordCount];
+        float[] batchIds = new float[totalBatchIdCount];
+        byte[] colors = new byte[totalColorCount];
+
         GaiaRectangle batchedBoundingRectangle = null;
         int totalIndicesMax = 0;
         for (GaiaBufferDataSet bufferDataSet : bufferDataSets) {
             Map<AttributeType, GaiaBuffer> buffers = bufferDataSet.getBuffers();
 
             GaiaBuffer indicesBuffer = buffers.get(AttributeType.INDICE);
+            GaiaBuffer positionBuffer = buffers.get(AttributeType.POSITION);
+            GaiaBuffer normalBuffer = buffers.get(AttributeType.NORMAL);
+            GaiaBuffer colorBuffer = buffers.get(AttributeType.COLOR);
+            GaiaBuffer texCoordBuffer = buffers.get(AttributeType.TEXCOORD);
+            GaiaBuffer batchIdBuffer = buffers.get(AttributeType.BATCHID);
+
             if (indicesBuffer != null) {
                 int indicesMax = 0;
                 for (short indice : indicesBuffer.getShorts()) {
                     int intIndice = indice < 0 ? indice + 65536 : indice;
                     indicesMax = Math.max(indicesMax, intIndice);
-                    int value = totalIndicesMax + intIndice;
-                    indices.add((short) value);
+                    short value = (short) (totalIndicesMax + intIndice);
+                    indices[indicesIndex++] = value;
                 }
                 totalIndicesMax = totalIndicesMax + (indicesMax + 1);
                 totalIndicesCount += indicesBuffer.getShorts().length;
@@ -420,43 +469,38 @@ public class GaiaBatcher implements Batcher {
                 log.error("indicesBuffer is null");
             }
 
-            GaiaBuffer positionBuffer = buffers.get(AttributeType.POSITION);
             if (positionBuffer != null) {
-                totalPositionCount += positionBuffer.getFloats().length;
                 for (float position : positionBuffer.getFloats()) {
-                    positions.add(position);
+                    positions[positionIndex++] = position;
                 }
             } else {
                 log.error("positionBuffer is null");
             }
-            GaiaBuffer normalBuffer = buffers.get(AttributeType.NORMAL);
+
             if (normalBuffer != null) {
-                totalNormalCount += normalBuffer.getFloats().length;
                 for (float normal : normalBuffer.getFloats()) {
-                    normals.add(normal);
+                    normals[normalIndex++] = normal;
                 }
             }
-            GaiaBuffer colorBuffer = buffers.get(AttributeType.COLOR);
+
             if (colorBuffer != null) {
-                totalColorCount += colorBuffer.getBytes().length;
                 for (byte color : colorBuffer.getBytes()) {
-                    colors.add(color);
+                    colors[colorIndex++] = color;
                 }
             }
-            GaiaBuffer texCoordBuffer = buffers.get(AttributeType.TEXCOORD);
+
             if (texCoordBuffer != null) {
-                totalTexCoordCount += texCoordBuffer.getFloats().length;
                 for (float texCoord : texCoordBuffer.getFloats()) {
-                    texCoords.add(texCoord);
+                    texCoords[texCoordIndex++] = texCoord;
                 }
             }
-            GaiaBuffer batchIdBuffer = buffers.get(AttributeType.BATCHID);
+
             if (batchIdBuffer != null) {
-                totalBatchIdCount += batchIdBuffer.getFloats().length;
                 for (float batchId : batchIdBuffer.getFloats()) {
-                    batchIds.add(batchId);
+                    batchIds[batchIdIndex++] = batchId;
                 }
             }
+
             GaiaRectangle boundingRectangle = bufferDataSet.getTexcoordBoundingRectangle();
             if (boundingRectangle != null) {
                 if (batchedBoundingRectangle == null) {
@@ -474,7 +518,7 @@ public class GaiaBatcher implements Batcher {
             buffer.setGlType(GL20.GL_FLOAT);
             buffer.setElementsCount(totalPositionCount / 3);
             buffer.setGlDimension((byte) 3);
-            buffer.setFloats(ArrayUtils.convertFloatArrayToList(positions));
+            buffer.setFloats(positions);
             dataSet.getBuffers().put(AttributeType.POSITION, buffer);
         }
         if (totalNormalCount > 0) {
@@ -483,16 +527,16 @@ public class GaiaBatcher implements Batcher {
             buffer.setGlType(GL20.GL_FLOAT);
             buffer.setElementsCount(totalNormalCount / 3);
             buffer.setGlDimension((byte) 3);
-            buffer.setFloats(ArrayUtils.convertFloatArrayToList(normals));
+            buffer.setFloats(normals);
             dataSet.getBuffers().put(AttributeType.NORMAL, buffer);
         }
         if (totalColorCount > 0) {
             GaiaBuffer buffer = new GaiaBuffer();
             buffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
-            buffer.setGlType(GL20.GL_FLOAT);
+            buffer.setGlType(GL20.GL_UNSIGNED_BYTE);
             buffer.setElementsCount(totalColorCount / 4);
             buffer.setGlDimension((byte) 4);
-            buffer.setBytes(ArrayUtils.convertByteArrayToList(colors));
+            buffer.setBytes(colors);
             dataSet.getBuffers().put(AttributeType.COLOR, buffer);
         }
         if (totalTexCoordCount > 0) {
@@ -501,7 +545,7 @@ public class GaiaBatcher implements Batcher {
             buffer.setGlType(GL20.GL_FLOAT);
             buffer.setElementsCount(totalTexCoordCount / 2);
             buffer.setGlDimension((byte) 2);
-            buffer.setFloats(ArrayUtils.convertFloatArrayToList(texCoords));
+            buffer.setFloats(texCoords);
             dataSet.getBuffers().put(AttributeType.TEXCOORD, buffer);
         }
         if (totalBatchIdCount > 0) {
@@ -510,7 +554,7 @@ public class GaiaBatcher implements Batcher {
             buffer.setGlType(GL20.GL_FLOAT);
             buffer.setElementsCount(totalBatchIdCount);
             buffer.setGlDimension((byte) 1);
-            buffer.setFloats(ArrayUtils.convertFloatArrayToList(batchIds));
+            buffer.setFloats(batchIds);
             dataSet.getBuffers().put(AttributeType.BATCHID, buffer);
         }
         if (totalIndicesCount > 0) {
@@ -519,7 +563,7 @@ public class GaiaBatcher implements Batcher {
             buffer.setGlType(GL20.GL_UNSIGNED_SHORT);
             buffer.setElementsCount(totalIndicesCount);
             buffer.setGlDimension((byte) 1);
-            buffer.setShorts(ArrayUtils.convertShortArrayToList(indices));
+            buffer.setShorts(indices);
             dataSet.getBuffers().put(AttributeType.INDICE, buffer);
         }
         return dataSet;

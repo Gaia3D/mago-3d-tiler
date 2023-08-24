@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class ProcessThreadPool {
-    private static final int THREAD_COUNT = 8;
+    private static final int THREAD_COUNT = 4;
 
     public void preProcessStart(List<TileInfo> tileInfos, List<File> fileList, FileLoader fileLoader, List<PreProcess> preProcessors) throws InterruptedException {
         log.info("[ThreadPool][Start Pre-process]");
@@ -51,8 +51,11 @@ public class ProcessThreadPool {
         do {
             if (executorService.isTerminated()) {
                 executorService.shutdownNow();
+            } else {
+                //System.gc();
+                //log.warn("GC");
             }
-        } while (!executorService.awaitTermination(2, TimeUnit.SECONDS));
+        } while (!executorService.awaitTermination(3, TimeUnit.SECONDS));
         log.info("[ThreadPool][End Pre-process]");
     }
     
@@ -101,8 +104,11 @@ public class ProcessThreadPool {
         do {
             if (executorService.isTerminated()) {
                 executorService.shutdownNow();
+            } else {
+                //System.gc();
+                //log.warn("GC");
             }
-        } while (!executorService.awaitTermination(2, TimeUnit.SECONDS));
+        } while (!executorService.awaitTermination(3, TimeUnit.SECONDS));
         log.info("[ThreadPool][End Post-process]");
     }
 }

@@ -127,13 +127,15 @@ public class GltfWriter {
         return (byte) (normalValue * 127);
     }
 
-    private List<Byte> convertNormals(List<Float> normalValues) {
-        List<Byte> normalBytes = new ArrayList<>();
-        for (int i = 0; i < normalValues.size(); i += 3) {
-            normalBytes.add(convertNormal(normalValues.get(i)));
-            normalBytes.add(convertNormal(normalValues.get(i + 1)));
-            normalBytes.add(convertNormal(normalValues.get(i + 2)));
-            normalBytes.add((byte) 1);
+    private byte[] convertNormals(float[] normalValues) {
+        int length = (normalValues.length / 3) * 4;
+        int index = 0;
+        byte[] normalBytes = new byte[length];
+        for (int i = 0; i < length; i += 4) {
+            normalBytes[i] = convertNormal(normalValues[index++]);
+            normalBytes[i + 1] = convertNormal(normalValues[index++]);
+            normalBytes[i + 2] = convertNormal(normalValues[index++]);
+            normalBytes[i + 3] = (byte) 1;
         }
         return normalBytes;
     }
@@ -142,14 +144,13 @@ public class GltfWriter {
         GltfNodeBuffer nodeBuffer = initNodeBuffer(gaiaMesh);
         createBuffer(gltf, nodeBuffer);
 
-        List<Short> indices = gaiaMesh.getIndices();
-        List<Float> positions = gaiaMesh.getPositions();
-        List<Float> normals = gaiaMesh.getNormals();
-        List<Byte> normalBytes = convertNormals(normals);
-
-        List<Byte> colors = gaiaMesh.getColors();
-        List<Float> texcoords = gaiaMesh.getTexcoords();
-        List<Float> batchIds = gaiaMesh.getBatchIds();
+        short[] indices = gaiaMesh.getIndices();
+        float[] positions = gaiaMesh.getPositions();
+        float[] normals = gaiaMesh.getNormals();
+        byte[] normalBytes = convertNormals(normals);
+        byte[] colors = gaiaMesh.getColors();
+        float[] texcoords = gaiaMesh.getTexcoords();
+        float[] batchIds = gaiaMesh.getBatchIds();
 
         ByteBuffer indicesBuffer = nodeBuffer.getIndicesBuffer();
         ByteBuffer positionsBuffer = nodeBuffer.getPositionsBuffer();
@@ -166,7 +167,9 @@ public class GltfWriter {
         int batchIdBufferViewId = nodeBuffer.getBatchIdBufferViewId();
 
         if (indicesBuffer != null) {
-            indices.forEach(indicesBuffer::putShort);
+            for (short indicesValue: indices) {
+                indicesBuffer.putShort(indicesValue);
+            }
         }
         if (positionsBuffer != null) {
             for (Float position: positions) {
@@ -174,9 +177,6 @@ public class GltfWriter {
             }
         }
         if (normalsBuffer != null) {
-            /*for (Float normal: normals) {
-                normalsBuffer.putFloat(normal);
-            }*/
             for (Byte normal: normalBytes) {
                 normalsBuffer.put(normal);
             }
@@ -197,29 +197,29 @@ public class GltfWriter {
             }
         }
 
-        if (indicesBufferViewId > -1 && !indices.isEmpty()) {
-            int indicesAccessorId = createAccessor(gltf, indicesBufferViewId, 0, indices.size(), GltfConstants.GL_UNSIGNED_SHORT, AccessorType.SCALAR, false);
+        if (indicesBufferViewId > -1 && indices.length > 0) {
+            int indicesAccessorId = createAccessor(gltf, indicesBufferViewId, 0, indices.length, GltfConstants.GL_UNSIGNED_SHORT, AccessorType.SCALAR, false);
             nodeBuffer.setIndicesAccessorId(indicesAccessorId);
         }
-        if (positionsBufferViewId > -1 && !positions.isEmpty()) {
-            int verticesAccessorId = createAccessor(gltf, positionsBufferViewId, 0, positions.size() / 3, GltfConstants.GL_FLOAT, AccessorType.VEC3, false);
+        if (positionsBufferViewId > -1 && positions.length > 0) {
+            int verticesAccessorId = createAccessor(gltf, positionsBufferViewId, 0, positions.length / 3, GltfConstants.GL_FLOAT, AccessorType.VEC3, false);
             nodeBuffer.setPositionsAccessorId(verticesAccessorId);
         }
-        if (normalsBufferViewId > -1 && !normals.isEmpty()) {
+        if (normalsBufferViewId > -1 && normalBytes.length > 0) {
             //int normalsAccessorId = createAccessor(gltf, normalsBufferViewId, 0, normals.size() / 3, GltfConstants.GL_FLOAT, AccessorType.VEC3, false);
-            int normalsAccessorId = createAccessor(gltf, normalsBufferViewId, 0, normals.size() / 4, GltfConstants.GL_BYTE, AccessorType.VEC3, true);
+            int normalsAccessorId = createAccessor(gltf, normalsBufferViewId, 0, normals.length / 3, GltfConstants.GL_BYTE, AccessorType.VEC3, true);
             nodeBuffer.setNormalsAccessorId(normalsAccessorId);
         }
-        if (colorsBufferViewId > -1 && !colors.isEmpty()) {
-            int colorsAccessorId = createAccessor(gltf, colorsBufferViewId, 0, colors.size() / 4, GltfConstants.GL_UNSIGNED_BYTE, AccessorType.VEC4, true);
+        if (colorsBufferViewId > -1 && colors.length > 0) {
+            int colorsAccessorId = createAccessor(gltf, colorsBufferViewId, 0, colors.length / 4, GltfConstants.GL_UNSIGNED_BYTE, AccessorType.VEC4, true);
             nodeBuffer.setColorsAccessorId(colorsAccessorId);
         }
-        if (texcoordsBufferViewId > -1 && !texcoords.isEmpty()) {
-            int texcoordsAccessorId = createAccessor(gltf, texcoordsBufferViewId, 0, texcoords.size() / 2, GltfConstants.GL_FLOAT, AccessorType.VEC2, false);
+        if (texcoordsBufferViewId > -1 && texcoords.length > 0) {
+            int texcoordsAccessorId = createAccessor(gltf, texcoordsBufferViewId, 0, texcoords.length / 2, GltfConstants.GL_FLOAT, AccessorType.VEC2, false);
             nodeBuffer.setTexcoordsAccessorId(texcoordsAccessorId);
         }
-        if (batchIdBufferViewId > -1 && !batchIds.isEmpty()) {
-            int batchIdAccessorId = createAccessor(gltf, batchIdBufferViewId, 0, batchIds.size(), GltfConstants.GL_FLOAT, AccessorType.SCALAR, false);
+        if (batchIdBufferViewId > -1 && batchIds.length > 0) {
+            int batchIdAccessorId = createAccessor(gltf, batchIdBufferViewId, 0, batchIds.length, GltfConstants.GL_FLOAT, AccessorType.SCALAR, false);
             nodeBuffer.setBatchIdAccessorId(batchIdAccessorId);
         }
 

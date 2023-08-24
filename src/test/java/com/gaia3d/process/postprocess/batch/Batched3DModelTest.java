@@ -16,8 +16,9 @@ class Batched3DModelTest {
     void extract() {
         Configurator.initConsoleLogger();
         Batched3DModel batched3DModel = new Batched3DModel(null);
-        File b3dm = new File("D:\\workspaces\\plasma-tester\\data\\ion-seoul\\7\\66\\89.b3dm");
-        File output = new File("D:\\extracted.glb");
+        //File b3dm = new File("D:\\workspaces\\plasma-tester\\data\\ion-seoul\\4\\0\\0.b3dm");
+        File b3dm = new File("D:\\workspaces\\plasma-tester\\data\\plasma_seoul\\data\\R00C0.b3dm");
+        File output = new File("D:\\extracted2.glb");
         batched3DModel.extract(b3dm, output);
 
         //AssimpConverter assimpConverter = new AssimpConverter(null);

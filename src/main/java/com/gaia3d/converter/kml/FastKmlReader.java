@@ -1,5 +1,6 @@
 package com.gaia3d.converter.kml;
 
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 import org.w3c.dom.Document;
@@ -12,6 +13,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,18 +25,14 @@ import java.util.List;
  * @see FastKmlReader , KmlInfo
  */
 @Slf4j
+@NoArgsConstructor
 public class FastKmlReader {
-
-
 
     public KmlInfo read(File file) {
         KmlInfo kmlInfo = null;
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            StringBuilder sb = new StringBuilder();
-            while (reader.ready()) {
-                sb.append(reader.readLine());
-            }
-            String xml = sb.toString();
+        StringBuffer sb = new StringBuffer();
+        try {
+            String xml = Files.readString(file.toPath());
             Vector3d position = new Vector3d(Double.parseDouble(findValue(xml, "longitude")), Double.parseDouble(findValue(xml, "latitude")), Double.parseDouble(findValue(xml, "altitude")));
             kmlInfo = KmlInfo.builder()
                     .name(findValue(xml, "name"))
@@ -48,10 +46,12 @@ public class FastKmlReader {
                     .scaleY(Double.parseDouble(findValue(xml, "y")))
                     .scaleZ(Double.parseDouble(findValue(xml, "z")))
                     .build();
-            sb = null;
+            xml = null;
         } catch (IOException e) {
+            log.error(e.getMessage());
             throw new RuntimeException(e);
         }
+        sb = null;
         return kmlInfo;
     }
 

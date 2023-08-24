@@ -6,7 +6,7 @@ plugins {
 }
 
 group "com.gaia3d"
-version "1.0.3-windows"
+version "1.0.4-windows"
 
 project.ext.lwjglVersion = "3.3.1"
 switch ( OperatingSystem.current() ) {
@@ -68,7 +68,7 @@ dependencies {
     // jackson (json library)
     implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
 
-    implementation files ("libs/plasma-core-1.0.0.jar")
+    implementation files ("libs/plasma-core-1.0.1.jar")
 
     runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-assimp::$lwjglNatives"

@@ -38,7 +38,7 @@ import java.util.List;
  */
 @Slf4j
 public class TilerMain {
-    public static String version = "1.0.1";
+    public static String version = "1.0.4";
     public static CommandLine command = null;
 
     public static void main(String[] args) {
@@ -56,10 +56,13 @@ public class TilerMain {
             if (command.hasOption(ProcessOptions.QUIET.getArgName())) {
                 Configurator.setLevel(Level.OFF);
             }
+            start();
             if (command.hasOption(ProcessOptions.DEBUG.getArgName())) {
                 log.info("Starting Gaia3D Tiler in debug mode.");
             }
-            start();
+            if (command.hasOption(ProcessOptions.LOG.getArgName())) {
+                Configurator.initFileLogger(null, command.getOptionValue(ProcessOptions.LOG.getArgName()));
+            }
 
             if (command.hasOption(ProcessOptions.HELP.getArgName())) {
                 new HelpFormatter().printHelp("Gaia3D Tiler", options);

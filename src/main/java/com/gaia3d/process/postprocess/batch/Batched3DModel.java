@@ -1,23 +1,24 @@
 package com.gaia3d.process.postprocess.batch;
 
-import com.gaia3d.basic.exchangable.GaiaSet;
-import com.gaia3d.basic.structure.GaiaScene;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gaia3d.basic.exchangable.GaiaSet;
+import com.gaia3d.basic.structure.GaiaScene;
+import com.gaia3d.converter.jgltf.GltfWriter;
 import com.gaia3d.process.ProcessOptions;
 import com.gaia3d.process.postprocess.TileModel;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
+import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.io.LittleEndianDataInputStream;
 import com.gaia3d.util.io.LittleEndianDataOutputStream;
-import com.gaia3d.converter.jgltf.GltfWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
-import com.gaia3d.process.tileprocess.tile.ContentInfo;
-import com.gaia3d.util.ImageUtils;
+import org.lwjgl.BufferUtils;
 
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -130,7 +131,7 @@ public class Batched3DModel implements TileModel {
     }
 
     private byte[] readGlb(File glbOutputFile) {
-        ByteBuffer byteBuffer = ImageUtils.readFile(glbOutputFile, true);
+        ByteBuffer byteBuffer = readFile(glbOutputFile, true);
         byte[] bytes = new byte[byteBuffer.remaining()];
         byteBuffer.get(bytes);
         return bytes;
@@ -169,5 +170,29 @@ public class Batched3DModel implements TileModel {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public ByteBuffer readFile(File file, boolean flip) {
+        Path path = file.toPath();
+        try (var is = new BufferedInputStream(Files.newInputStream(path))) {
+            int size = (int) Files.size(path);
+            ByteBuffer byteBuffer = BufferUtils.createByteBuffer(size);
+
+            int bufferSize = 8192;
+            bufferSize = Math.min(size, bufferSize);
+            byte[] buffer = new byte[bufferSize];
+            while (buffer.length > 0 && is.read(buffer) != -1) {
+                byteBuffer.put(buffer);
+                if (is.available() < bufferSize) {
+                    buffer = new byte[is.available()];
+                }
+            }
+            if (flip)
+                byteBuffer.flip();
+            return byteBuffer;
+        } catch (IOException e) {
+            log.error("FileUtils.readBytes: " + e.getMessage());
+        }
+        return null;
     }
 }

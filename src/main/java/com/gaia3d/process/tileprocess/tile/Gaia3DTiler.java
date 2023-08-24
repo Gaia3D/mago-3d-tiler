@@ -120,6 +120,7 @@ public class Gaia3DTiler implements Tiler {
                 }
             }
         } else if (tileInfos.size() > 1) {
+            boolean refineAdd = command.hasOption(ProcessOptions.REFINE_ADD.getArgName());
             List<List<TileInfo>> childrenScenes = parentBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
@@ -127,7 +128,17 @@ public class Gaia3DTiler implements Tiler {
                 Node childNode = createContentNode(parentNode, childTileInfos, index);
                 if (childNode != null) {
                     parentNode.getChildren().add(childNode);
-                    createNode(childNode, childTileInfos);
+                    if (refineAdd) {
+                        Content content = childNode.getContent();
+                        if (content != null) {
+                            ContentInfo contentInfo = content.getContentInfo();
+                            createNode(childNode, contentInfo.getRemainTileInfos());
+                        } else {
+                            createNode(childNode, childTileInfos);
+                        }
+                    } else {
+                        createNode(childNode, childTileInfos);
+                    }
                 }
             }
         } else if (tileInfos.size() > 0) {
@@ -195,10 +206,17 @@ public class Gaia3DTiler implements Tiler {
         log.info("[ContentNode][" + nodeCode + "][{}] : {}", lod.getLevel(), tileInfos.size());
 
         List<TileInfo> resultInfos = tileInfos;
+        List<TileInfo> remainInfos = new ArrayList<>();
         if (lod != LevelOfDetail.LOD0) {
             resultInfos = tileInfos.stream().filter(tileInfo -> {
                 double geometricError = tileInfo.getBoundingBox().getLongestDistance();
+                log.info("[{}][{}] : {}", tileInfo.getOutputPath(), lod.getLevel(), geometricError);
                 return geometricError >= lod.getGeometricErrorFilter();
+            }).collect(Collectors.toList());
+            remainInfos = tileInfos.stream().filter(tileInfo -> {
+                double geometricError = tileInfo.getBoundingBox().getLongestDistance();
+                log.info("[{}][{}] : {}", tileInfo.getOutputPath(), lod.getLevel(), geometricError);
+                return geometricError < lod.getGeometricErrorFilter();
             }).collect(Collectors.toList());
         }
 
@@ -208,8 +226,14 @@ public class Gaia3DTiler implements Tiler {
         childNode.setBoundingVolume(boundingVolume);
         childNode.setNodeCode(nodeCode);
         childNode.setGeometricError(lod.getGeometricError());
-        childNode.setRefine(Node.RefineType.REPLACE);
         childNode.setChildren(new ArrayList<>());
+
+        boolean refineAdd = command.hasOption(ProcessOptions.REFINE_ADD.getArgName());
+        if (refineAdd) {
+            childNode.setRefine(Node.RefineType.ADD);
+        } else {
+            childNode.setRefine(Node.RefineType.REPLACE);
+        }
 
         if (resultInfos.size() > 0) {
             ContentInfo contentInfo = new ContentInfo();
@@ -218,6 +242,10 @@ public class Gaia3DTiler implements Tiler {
             contentInfo.setTileInfos(resultInfos);
             contentInfo.setBoundingBox(childBoundingBox);
             contentInfo.setNodeCode(nodeCode);
+
+            if (refineAdd) {
+                contentInfo.setRemainTileInfos(remainInfos);
+            }
 
             Content content = new Content();
             content.setUri("data/" + nodeCode + ".b3dm");

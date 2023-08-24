@@ -31,11 +31,11 @@ public class ProcessFlowThread implements Process {
 
         /* PreProcess */
         preprocess(fileLoader, tileInfos);
-        System.gc();
+        //System.gc();
 
         /* TileProcess */
         Tileset tileset = tileprocess(tileInfos);
-        System.gc();
+        //System.gc();
 
         /* PostProcess */
         postprocess(tileset);

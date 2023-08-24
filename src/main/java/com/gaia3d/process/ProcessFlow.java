@@ -30,15 +30,15 @@ public class ProcessFlow implements Process {
 
         /* PreProcess */
         preprocess(fileLoader, tileInfos);
-        System.gc();
+        //System.gc();
 
         /* TileProcess */
         Tileset tileset = tileprocess(tileInfos);
-        System.gc();
+        //System.gc();
 
         /* PostProcess */
         postprocess(tileset);
-        System.gc();
+        //System.gc();
 
         /* Delete Temp Directory */
         if (tileInfos.size() > 0) {
@@ -63,8 +63,8 @@ public class ProcessFlow implements Process {
                 tileInfo.minimize();
                 tileInfos.add(tileInfo);
             }
-            if (count % 1000 == 0) {
-                System.gc();
+            if (count % 10000 == 0) {
+                //System.gc();
             }
         }
     }

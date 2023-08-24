@@ -44,10 +44,13 @@ public class TileInfo {
     public void minimize() {
         if (this.scene != null) {
             init();
+
             GaiaSet tempSet = new GaiaSet(this.scene);
-            //this.transformMatrix = tempSet.getTransformMatrix();
-            //this.boundingBox = tempSet.getBoundingBox();
             this.tempPath = tempSet.writeFile(this.tempPath);
+
+            tempSet.clear();
+            tempSet = null;
+            this.scene.clear();
             this.scene = null;
         } else {
             log.warn("[Warn] Can't minimize tile info because scene is null.");

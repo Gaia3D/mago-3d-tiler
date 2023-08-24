@@ -31,16 +31,35 @@ class TilerMainTest {
         String[] args = new String[]{
         "-i", path + "seoul-input",
         "-it", "kml",
-        "-o", path +  "seoul-output-debug",
-        "-l", path + "seoul-output-debug" + "/result.log",
+        "-o", path +  "seoul-output-add",
         "-c", "",
         "-yz",
-        "-mx", "32768",
+        "-mx", "65536",
         "-nl", "0",
-        "-xl", "0",
+        "-xl", "3",
+        "-refineAdd",
         "-mt",
         //"-glb",
         //"-debug"
+        };
+        TilerMain.main(args);
+    }
+
+    @Test
+    void convertTree() {
+        String path = "D:\\workspaces\\Instance\\";
+        String[] args = new String[]{
+                "-i", path + "instance-test",
+                "-it", "kml",
+                "-o", path +  "test1",
+                "-c", "",
+                "-yz",
+                "-mx", "1024",
+                "-nl", "0",
+                "-xl", "0",
+                "-mt",
+                "-glb",
+                //"-debug"
         };
         TilerMain.main(args);
     }
@@ -92,8 +111,9 @@ class TilerMainTest {
                 "-minLod", "0",
                 "-maxLod", "3",
                 "-multiThread",
-                "-glb",
-                //"-debug"
+                "-refineAdd",
+                //"-glb",
+                "-debug"
         };
         TilerMain.main(args);
     }
