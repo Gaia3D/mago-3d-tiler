@@ -45,7 +45,7 @@ public class GaiaBuffer {
         if (glType == GL20.GL_FLOAT) {
             stream.writeInt(floats.length);
             stream.writeFloats(floats);
-        } else if (glType == GL20.GL_INT) {
+        } else if (glType == GL20.GL_INT || glType == GL20.GL_UNSIGNED_INT) {
             stream.writeInt(ints.length);
             stream.writeInts(ints);
         } else if (glType == GL20.GL_SHORT || glType == GL20.GL_UNSIGNED_SHORT) {
@@ -65,7 +65,7 @@ public class GaiaBuffer {
         if (glType == GL20.GL_FLOAT) {
             int length = stream.readInt();
             floats = stream.readFloats(length);
-        } else if (glType == GL20.GL_INT) {
+        } else if (glType == GL20.GL_INT || glType == GL20.GL_UNSIGNED_INT) {
             int length = stream.readInt();
             ints = stream.readInts(length);
         } else if (glType == GL20.GL_SHORT || glType == GL20.GL_UNSIGNED_SHORT) {

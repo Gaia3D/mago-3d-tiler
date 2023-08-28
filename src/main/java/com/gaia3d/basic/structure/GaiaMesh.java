@@ -42,13 +42,12 @@ public class GaiaMesh {
     }
 
     // getTotalIndices
-    public short[] getIndices() {
-        short[] totalIndices = new short[getIndicesCount()];
+    public int[] getIndices() {
+        int[] totalIndices = new int[getIndicesCount()];
         int index = 0;
         for (GaiaPrimitive primitive : primitives) {
             for (int indices : primitive.getIndices()) {
-                totalIndices[index++] = (short) indices;
-                //totalIndices.add(indices.shortValue());
+                totalIndices[index++] = indices;
             }
         }
         return totalIndices;

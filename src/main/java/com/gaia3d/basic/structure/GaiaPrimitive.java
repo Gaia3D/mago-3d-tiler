@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.joml.Matrix3d;
 import org.joml.Matrix4d;
@@ -29,6 +30,7 @@ import java.util.Random;
  * @since 1.0.0
  * @see <a href="https://en.wikipedia.org/wiki/Polygon_mesh">Polygon mesh</a>
  */
+@Slf4j
 @Getter
 @Setter
 @NoArgsConstructor
@@ -74,20 +76,13 @@ public class GaiaPrimitive {
         transformMatrix.get3x3(rotationMatrix);
         Matrix4d rotationMatrix4 = new Matrix4d(rotationMatrix);
 
-        int[] indicesArray = getIndices();
-        short[] indicesShort = new short[indicesArray.length];
-        for (int i = 0; i < indicesArray.length; i++) {
-            indicesShort[i] = (short) indicesArray[i];
-        }
+        int[] indices = getIndices();
 
         GaiaRectangle texcoordBoundingRectangle = null;
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
 
         // calculate texcoordBoundingRectangle by indices.
-        for (short index : indicesShort) {
-            if (index < 0) {
-                index += Short.MAX_VALUE * 2 + 2;
-            }
+        for (int index : indices) {
             GaiaVertex vertex = vertices.get(index);
             Vector2d textureCoordinate = vertex.getTexcoords();
             if (textureCoordinate != null) {
@@ -191,7 +186,17 @@ public class GaiaPrimitive {
         }
 
         GaiaBufferDataSet gaiaBufferDataSet = new GaiaBufferDataSet();
-        if (indicesShort.length > 0) {
+        if (indices.length > 0) {
+            GaiaBuffer indicesBuffer = new GaiaBuffer();
+            indicesBuffer.setGlTarget(GL20.GL_ELEMENT_ARRAY_BUFFER);
+            indicesBuffer.setGlType(GL20.GL_UNSIGNED_INT);
+            indicesBuffer.setElementsCount(indices.length);
+            indicesBuffer.setGlDimension((byte) 1);
+            indicesBuffer.setInts(indices);
+            gaiaBufferDataSet.getBuffers().put(AttributeType.INDICE, indicesBuffer);
+        }
+
+        /*if (indicesShort.length > 0) {
             GaiaBuffer indicesBuffer = new GaiaBuffer();
             indicesBuffer.setGlTarget(GL20.GL_ELEMENT_ARRAY_BUFFER);
             indicesBuffer.setGlType(GL20.GL_UNSIGNED_SHORT);
@@ -199,7 +204,7 @@ public class GaiaPrimitive {
             indicesBuffer.setGlDimension((byte) 1);
             indicesBuffer.setShorts(indicesShort);
             gaiaBufferDataSet.getBuffers().put(AttributeType.INDICE, indicesBuffer);
-        }
+        }*/
 
         if (normalList.length > 0) {
             GaiaBuffer normalBuffer = new GaiaBuffer();

@@ -81,7 +81,8 @@ public class GaiaBufferDataSet {
     }
 
     public GaiaPrimitive toPrimitive() {
-        short[] indices = new short[0];
+        int[] indices = new int[0];
+        //short[] indices = new short[0];
         List<GaiaVertex> vertices = new ArrayList<>();
         GaiaPrimitive primitive = new GaiaPrimitive();
 
@@ -90,7 +91,7 @@ public class GaiaBufferDataSet {
             GaiaBuffer buffer = entry.getValue();
 
             if (attributeType.equals(AttributeType.INDICE)) {
-                indices = buffer.getShorts();
+                indices = buffer.getInts();
             } else if (attributeType.equals(AttributeType.POSITION)) {
                 float[] positions = buffer.getFloats();
                 if (!vertices.isEmpty()) {

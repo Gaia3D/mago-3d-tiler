@@ -160,6 +160,7 @@ public class GaiaSet {
             }
             this.bufferDatas = bufferDataSets;
         } catch (IOException e) {
+            e.printStackTrace();
             log.error(e.getMessage());
         }
     }
