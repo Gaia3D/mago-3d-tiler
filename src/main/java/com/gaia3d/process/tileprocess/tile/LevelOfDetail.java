@@ -9,13 +9,13 @@ public enum LevelOfDetail {
     NONE(-1,0, 0, 1.0f, new float[]{1.0f, 1.0f, 1.0f}),
 
     LOD0(0,0,0, 1.0f, new float[]{1.0f, 0.0f, 0.0f}),
-    LOD1(1, 4, 32, 0.5f, new float[]{0.0f, 1.0f, 0.0f}),
-    LOD2(2, 8, 64, 0.25f, new float[]{0.0f, 0.0f, 1.0f}),
-    LOD3(3, 16, 128, 0.125f, new float[]{1.0f, 1.0f, 0.0f}),
+    LOD1(1, 4, 8, 0.5f, new float[]{0.0f, 1.0f, 0.0f}),
+    LOD2(2, 8, 32, 0.25f, new float[]{0.0f, 0.0f, 1.0f}),
+    LOD3(3, 16, 64, 0.125f, new float[]{1.0f, 1.0f, 0.0f}),
 
-    LOD4(4, 32, 256, 0.0625f, new float[]{0.0f, 1.0f, 1.0f}),
-    LOD5(5, 64, 512, 0.03125f, new float[]{1.0f, 0.0f, 1.0f}),
-    LOD6(6, 128, 1024, 0.01625f, new float[]{1.0f, 1.0f, 1.0f});
+    LOD4(4, 32, 128, 0.0625f, new float[]{0.0f, 1.0f, 1.0f}),
+    LOD5(5, 64, 256, 0.03125f, new float[]{1.0f, 0.0f, 1.0f}),
+    LOD6(6, 128, 512, 0.01625f, new float[]{1.0f, 1.0f, 1.0f});
 
     final int level;
     final int geometricError;

@@ -203,16 +203,17 @@ public class Gaia3DTiler implements Tiler {
         log.info("[ContentNode][" + nodeCode + "][{}] : {}", lod.getLevel(), tileInfos.size());
 
         int lodError = refineAdd ? lod.getGeometricErrorBlock() : lod.getGeometricError();
+        int lodErrorDouble = lodError * 2;
 
         List<TileInfo> resultInfos = tileInfos;
         List<TileInfo> remainInfos = new ArrayList<>();
         resultInfos = tileInfos.stream().filter(tileInfo -> {
             double geometricError = tileInfo.getBoundingBox().getLongestDistance();
-            return geometricError >= lodError;
+            return geometricError >= lodErrorDouble;
         }).collect(Collectors.toList());
         remainInfos = tileInfos.stream().filter(tileInfo -> {
             double geometricError = tileInfo.getBoundingBox().getLongestDistance();
-            return geometricError < lodError;
+            return geometricError < lodErrorDouble;
         }).collect(Collectors.toList());
 
         Node childNode = new Node();

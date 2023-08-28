@@ -101,6 +101,7 @@ public class TilerMain {
             return;
         }
         FormatType formatType = FormatType.fromExtension(inputExtension);
+
         CRSFactory factory = new CRSFactory();
         CoordinateReferenceSystem source = null;
 

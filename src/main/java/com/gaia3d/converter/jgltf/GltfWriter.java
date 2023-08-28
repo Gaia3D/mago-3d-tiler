@@ -141,16 +141,22 @@ public class GltfWriter {
     }
 
     private GltfNodeBuffer convertGeometryInfo(GlTF gltf, GaiaMesh gaiaMesh, Node node) {
-        GltfNodeBuffer nodeBuffer = initNodeBuffer(gaiaMesh);
-        createBuffer(gltf, nodeBuffer);
-
-        short[] indices = gaiaMesh.getIndices();
+        int[] indices = gaiaMesh.getIndices();
         float[] positions = gaiaMesh.getPositions();
         float[] normals = gaiaMesh.getNormals();
         byte[] normalBytes = convertNormals(normals);
         byte[] colors = gaiaMesh.getColors();
         float[] texcoords = gaiaMesh.getTexcoords();
         float[] batchIds = gaiaMesh.getBatchIds();
+
+        boolean isIntegerIndices = (gaiaMesh.getPositionsCount() / 3) >= 65535;
+        if (isIntegerIndices) {
+            log.warn("Integer indices are used. The number of indices is greater than {}/65535", gaiaMesh.getPositionsCount() / 3);
+        }
+        //boolean isIntegerIndices = true;
+
+        GltfNodeBuffer nodeBuffer = initNodeBuffer(gaiaMesh, isIntegerIndices);
+        createBuffer(gltf, nodeBuffer);
 
         ByteBuffer indicesBuffer = nodeBuffer.getIndicesBuffer();
         ByteBuffer positionsBuffer = nodeBuffer.getPositionsBuffer();
@@ -167,8 +173,13 @@ public class GltfWriter {
         int batchIdBufferViewId = nodeBuffer.getBatchIdBufferViewId();
 
         if (indicesBuffer != null) {
-            for (short indicesValue: indices) {
-                indicesBuffer.putShort(indicesValue);
+            for (int indicesValue: indices) {
+                if (isIntegerIndices) {
+                    indicesBuffer.putInt(indicesValue);
+                } else {
+                    short indicesValueShort = (short) indicesValue;
+                    indicesBuffer.putShort(indicesValueShort);
+                }
             }
         }
         if (positionsBuffer != null) {
@@ -198,8 +209,13 @@ public class GltfWriter {
         }
 
         if (indicesBufferViewId > -1 && indices.length > 0) {
-            int indicesAccessorId = createAccessor(gltf, indicesBufferViewId, 0, indices.length, GltfConstants.GL_UNSIGNED_SHORT, AccessorType.SCALAR, false);
-            nodeBuffer.setIndicesAccessorId(indicesAccessorId);
+            if (isIntegerIndices) {
+                int indicesAccessorId = createAccessor(gltf, indicesBufferViewId, 0, indices.length, GltfConstants.GL_UNSIGNED_INT, AccessorType.SCALAR, false);
+                nodeBuffer.setIndicesAccessorId(indicesAccessorId);
+            } else {
+                int indicesAccessorId = createAccessor(gltf, indicesBufferViewId, 0, indices.length, GltfConstants.GL_UNSIGNED_SHORT, AccessorType.SCALAR, false);
+                nodeBuffer.setIndicesAccessorId(indicesAccessorId);
+            }
         }
         if (positionsBufferViewId > -1 && positions.length > 0) {
             int verticesAccessorId = createAccessor(gltf, positionsBufferViewId, 0, positions.length / 3, GltfConstants.GL_FLOAT, AccessorType.VEC3, false);
@@ -231,11 +247,13 @@ public class GltfWriter {
         return nodeBuffer;
     }
 
-    private GltfNodeBuffer initNodeBuffer(GaiaMesh gaiaMesh) {
+    private GltfNodeBuffer initNodeBuffer(GaiaMesh gaiaMesh, boolean isIntegerIndices) {
         GltfNodeBuffer nodeBuffer = new GltfNodeBuffer();
         int SHORT_SIZE = 2;
+        int INT_SIZE = 4;
         int FLOAT_SIZE = 4;
-        int indicesCapacity = gaiaMesh.getIndicesCount() * SHORT_SIZE;
+
+        int indicesCapacity = gaiaMesh.getIndicesCount() * (isIntegerIndices ? INT_SIZE : SHORT_SIZE);
         int positionsCapacity = gaiaMesh.getPositionsCount() * FLOAT_SIZE;
         int normalsCapacity = gaiaMesh.getNormalsCount() / 3 * 4;
         int colorsCapacity = gaiaMesh.getColorsCount();

@@ -263,7 +263,7 @@ public class GaiaBatcher implements Batcher {
             Map<AttributeType, GaiaBuffer> buffers = dataSet.getBuffers();
             GaiaBuffer indicesBuffer = buffers.get(AttributeType.INDICE);
             if (indicesBuffer != null) {
-                int indicesLength = indicesBuffer.getShorts().length;
+                int indicesLength = indicesBuffer.getInts().length;
                 if ((count + indicesLength) >= SHORT_LIMIT) {
                     if (splitList.size() > 0) {
                         splitList = new ArrayList<>();
@@ -417,7 +417,7 @@ public class GaiaBatcher implements Batcher {
             GaiaBuffer batchIdBuffer = buffers.get(AttributeType.BATCHID);
 
             if (indicesBuffer != null) {
-                totalIndicesCount += indicesBuffer.getShorts().length;
+                totalIndicesCount += indicesBuffer.getInts().length;
             }
             if (positionBuffer != null) {
                 totalPositionCount += positionBuffer.getFloats().length;
@@ -436,7 +436,7 @@ public class GaiaBatcher implements Batcher {
             }
         }
 
-        short[] indices = new short[totalIndicesCount];
+        int[] indices = new int[totalIndicesCount];
         float[] positions = new float[totalPositionCount];
         float[] normals = new float[totalNormalCount];
         float[] texCoords = new float[totalTexCoordCount];
@@ -457,14 +457,15 @@ public class GaiaBatcher implements Batcher {
 
             if (indicesBuffer != null) {
                 int indicesMax = 0;
-                for (short indice : indicesBuffer.getShorts()) {
+                for (int indice : indicesBuffer.getInts()) {
                     int intIndice = indice < 0 ? indice + 65536 : indice;
                     indicesMax = Math.max(indicesMax, intIndice);
-                    short value = (short) (totalIndicesMax + intIndice);
+                    //short value = (short) (totalIndicesMax + intIndice);
+                    int value = (totalIndicesMax + intIndice);
                     indices[indicesIndex++] = value;
                 }
                 totalIndicesMax = totalIndicesMax + (indicesMax + 1);
-                totalIndicesCount += indicesBuffer.getShorts().length;
+                totalIndicesCount += indicesBuffer.getInts().length;
             } else {
                 log.error("indicesBuffer is null");
             }
@@ -560,10 +561,10 @@ public class GaiaBatcher implements Batcher {
         if (totalIndicesCount > 0) {
             GaiaBuffer buffer = new GaiaBuffer();
             buffer.setGlTarget(GL20.GL_ELEMENT_ARRAY_BUFFER);
-            buffer.setGlType(GL20.GL_UNSIGNED_SHORT);
+            buffer.setGlType(GL20.GL_UNSIGNED_INT);
             buffer.setElementsCount(totalIndicesCount);
             buffer.setGlDimension((byte) 1);
-            buffer.setShorts(indices);
+            buffer.setInts(indices);
             dataSet.getBuffers().put(AttributeType.INDICE, buffer);
         }
         return dataSet;

@@ -18,6 +18,47 @@ class TilerMainTest {
         TilerMain.main(args);
     }
 
+    //@Test
+    void sapporoObj() {
+        String path = "D:\\workspaces\\sapporo-test\\";
+        String[] args = new String[]{
+                "-i", path + "sapporo-lod1",
+                "-it", "obj",
+                "-o", path +  "sapporo-lod1-output",
+                "-crs", "6680",
+                "-r",
+                //"-swapYZ",
+                "-maxCount", "4",
+                "-minLod", "0",
+                "-maxLod", "3",
+                //"-multiThread",
+                "-refineAdd",
+                //"-glb",
+                //"-debug"
+        };
+        TilerMain.main(args);
+    }
+
+    //@Test
+    void sapporoObj2() {
+        String path = "D:\\workspaces\\sapporo-test\\";
+        String[] args = new String[]{
+                "-i", path + "sapporo-lod2",
+                "-it", "obj",
+                "-o", path +  "sapporo-lod2-output",
+                "-crs", "6680",
+                "-r",
+                //"-swapYZ",
+                "-maxCount", "64",
+                "-minLod", "0",
+                "-maxLod", "3",
+                "-multiThread",
+                "-glb",
+                "-debug"
+        };
+        TilerMain.main(args);
+    }
+
     @Test
     void convertWs2Kml() throws URISyntaxException {
         String input = "D:\\temp\\sample-external\\";
@@ -25,7 +66,7 @@ class TilerMainTest {
         convert(input, output, "collada-ws2", "", "kml");
     }
 
-    @Test
+    //@Test
     void convertSeoul() {
         String path = "F:\\workspace\\";
         String[] args = new String[]{
@@ -45,7 +86,7 @@ class TilerMainTest {
         TilerMain.main(args);
     }
 
-    @Test
+    //@Test
     void convertSeoulMini() {
         String path = "F:\\workspace\\";
         String[] args = new String[]{
@@ -65,21 +106,20 @@ class TilerMainTest {
         TilerMain.main(args);
     }
 
-    @Test
+    //@Test
     void convertTree() {
         String path = "D:\\workspaces\\Instance\\";
         String[] args = new String[]{
                 "-i", path + "instance-test",
-                "-it", "kml",
+                "-it", "obj",
                 "-o", path +  "test1",
-                "-c", "",
-                "-yz",
-                "-mx", "1024",
-                "-nl", "0",
-                "-xl", "0",
-                "-mt",
-                "-glb",
-                //"-debug"
+                "-crs", "6668",
+                //"-swapYZ",
+                "-maxCount", "256",
+                "-minLod", "0",
+                "-maxLod", "3",
+                "-multiThread",
+                "-debug"
         };
         TilerMain.main(args);
     }
@@ -129,11 +169,11 @@ class TilerMainTest {
                 "-swapYZ",
                 "-maxCount", "1024",
                 "-minLod", "0",
-                "-maxLod", "6",
+                "-maxLod", "3",
                 "-multiThread",
                 //"-refineAdd",
                 //"-glb",
-                "-debug"
+                //"-debug"
         };
         TilerMain.main(args);
     }

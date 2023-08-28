@@ -49,24 +49,26 @@ public class Batched3DModel implements TileModel {
         int batchLength = tileInfos.size();
         List<String> names = tileInfos.stream()
                 .map((tileInfo) -> {
-                    //Path path = tileInfo.getScene().getOriginalPath().getFileName();
-                    //return path.toString();
                     return tileInfo.getSet().getProjectName();
                 })
                 .collect(Collectors.toList());
+        List<Double> geometricErrors = tileInfos.stream().map((tileInfo) -> {
+            return tileInfo.getBoundingBox().getLongestDistance();
+        }).collect(Collectors.toList());
+
         GaiaScene scene = new GaiaScene(batchedSet);
 
         File outputFile = new File(command.getOptionValue(ProcessOptions.OUTPUT.getArgName()));
         Path outputRoot = outputFile.toPath().resolve("data");
         outputRoot.toFile().mkdir();
         byte[] glbBytes;
-        if (command.hasOption(ProcessOptions.GLTF.getArgName())) {
+        if (command.hasOption(ProcessOptions.DEBUG_GLTF.getArgName())) {
             String glbFileName = nodeCode + ".gltf";
             File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
             this.gltfWriter.writeGltf(scene, glbOutputFile);
         }
 
-        if (command.hasOption(ProcessOptions.GLB.getArgName())) {
+        if (command.hasOption(ProcessOptions.DEBUG_GLB.getArgName())) {
             String glbFileName = nodeCode + ".glb";
             File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
             this.gltfWriter.writeGlb(scene, glbOutputFile);
@@ -86,6 +88,7 @@ public class Batched3DModel implements TileModel {
         for (int i = 0; i < batchLength; i++) {
             batchTable.getBatchId().add(String.valueOf(i));
             batchTable.getFileName().add(names.get(i));
+            batchTable.getGeometricError().add(geometricErrors.get(i));
         }
 
         ObjectMapper objectMapper = new ObjectMapper();

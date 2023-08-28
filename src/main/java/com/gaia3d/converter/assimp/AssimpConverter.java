@@ -304,7 +304,10 @@ public class AssimpConverter implements Converter {
     }
 
     private GaiaPrimitive processPrimitive(AIMesh aiMesh, GaiaMaterial material) {
-        boolean reverseTextureCoord = command.hasOption(ProcessOptions.REVERSE_TEXCOORD.getArgName());
+        boolean reverseTextureCoord = false;
+        if (command != null) {
+            reverseTextureCoord = command.hasOption(ProcessOptions.REVERSE_TEXCOORD.getArgName());
+        }
         GaiaSurface surface = processSurface();
 
         GaiaPrimitive primitive = new GaiaPrimitive();
