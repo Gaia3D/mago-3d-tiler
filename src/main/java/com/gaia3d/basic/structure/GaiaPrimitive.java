@@ -151,8 +151,8 @@ public class GaiaPrimitive {
             }
             boundingBox.addPoint(position);
             Vector3d normal = vertex.getNormal();
-            rotationMatrix4.transformPosition(normal);
             if (normal != null) {
+                rotationMatrix4.transformPosition(normal);
                 normalList[normalIndex++] = (float) normal.x;
                 normalList[normalIndex++] = (float) normal.y;
                 normalList[normalIndex++] = (float) normal.z;

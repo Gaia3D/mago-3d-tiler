@@ -24,7 +24,9 @@ public enum FormatType {
     GLB("glb"),
     B3DM("b3dm"),
     I3DM("i3dm"),
-    TEMP("mgb");
+    TEMP("mgb"),
+    CITY_GML("gml"),
+    SHP("shp");
 
     final String extension;
 
