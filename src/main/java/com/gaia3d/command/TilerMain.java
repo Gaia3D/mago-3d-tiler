@@ -1,7 +1,11 @@
 package com.gaia3d.command;
 
 import com.gaia3d.basic.types.FormatType;
+import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.FileLoader;
+import com.gaia3d.converter.assimp.AssimpConverter;
+import com.gaia3d.converter.citygml.CityGmlConverter;
+import com.gaia3d.converter.shape.ShapeConverter;
 import com.gaia3d.process.ProcessFlow;
 import com.gaia3d.process.ProcessFlowThread;
 import com.gaia3d.process.ProcessOptions;
@@ -105,10 +109,19 @@ public class TilerMain {
         CRSFactory factory = new CRSFactory();
         CoordinateReferenceSystem source = null;
 
-        if (formatType != FormatType.KML) {
-            source = (crs != null) ? factory.createFromName("EPSG:" + crs) : null;
+        Converter converter;
+        if (formatType == FormatType.CITY_GML) {
+            converter = new CityGmlConverter();
+        } else if (formatType == FormatType.SHP) {
+            converter = new ShapeConverter();
+        } else {
+            converter = new AssimpConverter(command);
         }
-        FileLoader fileLoader = new FileLoader(command);
+
+        if (formatType != FormatType.KML) {
+            source = (crs != null && !crs.equals("")) ? factory.createFromName("EPSG:" + crs) : null;
+        }
+        FileLoader fileLoader = new FileLoader(command, converter);
 
         List<PreProcess> preProcessors = new ArrayList<>();
         if (command.hasOption(ProcessOptions.SWAP_YZ.getArgName())) {

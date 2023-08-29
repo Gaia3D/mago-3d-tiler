@@ -66,13 +66,13 @@ class TilerMainTest {
         convert(input, output, "collada-ws2", "", "kml");
     }
 
-    //@Test
+    @Test
     void convertSeoul() {
         String path = "F:\\workspace\\";
         String[] args = new String[]{
         "-i", path + "seoul-input",
         "-it", "kml",
-        "-o", path +  "seoul-output-final",
+        "-o", path +  "seoul-output-over",
         "-c", "",
         "-yz",
         "-mx", "65536",
@@ -125,6 +125,13 @@ class TilerMainTest {
     }
 
     @Test
+    void convertGML() throws URISyntaxException {
+        String input = "D:\\workspaces\\cityGML\\";
+        String output = "D:\\workspaces\\cityGML\\output\\";
+        convert(input, output, "moran_6697", "4326", "gml");
+    }
+
+    @Test
     void convertWs2() throws URISyntaxException {
         String input = getAbsolutePath(INPUT_PATH);
         String output = getAbsolutePath(OUTPUT_PATH);
@@ -166,12 +173,12 @@ class TilerMainTest {
                 "-inputType", inputType,
                 "-output", outputPath + suffix,
                 "-crs", crs,
-                "-swapYZ",
+                //"-swapYZ",
                 "-maxCount", "1024",
                 "-minLod", "0",
                 "-maxLod", "3",
-                "-multiThread",
-                //"-refineAdd",
+                //"-multiThread",
+                "-refineAdd",
                 //"-glb",
                 //"-debug"
         };

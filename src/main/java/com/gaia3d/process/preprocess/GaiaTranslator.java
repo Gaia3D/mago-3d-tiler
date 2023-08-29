@@ -40,7 +40,6 @@ public class GaiaTranslator implements PreProcess {
         GaiaNode rootNode = gaiaScene.getNodes().get(0);
         Matrix4d transfrom = rootNode.getTransformMatrix();
         Matrix4d resultTransfromMatrix = transfrom.translate(traslation, new Matrix4d());
-
         rootNode.setTransformMatrix(resultTransfromMatrix);
 
         boundingBox = gaiaScene.getBoundingBox();

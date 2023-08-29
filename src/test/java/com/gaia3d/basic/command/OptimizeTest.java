@@ -2,6 +2,7 @@ package com.gaia3d.basic.command;
 
 import com.gaia3d.command.Configurator;
 import com.gaia3d.converter.FileLoader;
+import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
@@ -47,7 +48,7 @@ public class OptimizeTest {
         System.out.println((usedMemory / 1000 / 1000) + " mega bytes");
 
         log.info("Start loading files.");
-        FileLoader fileLoader = new FileLoader(command);
+        FileLoader fileLoader = new FileLoader(command, new AssimpConverter(null));
         List<File> fileList = fileLoader.loadFiles();
         log.info("End loading files.");
 

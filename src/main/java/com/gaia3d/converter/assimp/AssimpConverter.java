@@ -2,8 +2,8 @@ package com.gaia3d.converter.assimp;
 
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.basic.types.TextureType;
+import com.gaia3d.converter.Converter;
 import com.gaia3d.process.ProcessOptions;
-import com.gaia3d.util.ImageUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.io.FilenameUtils;

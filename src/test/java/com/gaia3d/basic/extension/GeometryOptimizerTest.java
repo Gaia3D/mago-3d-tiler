@@ -1,7 +1,7 @@
 package com.gaia3d.basic.extension;
 
 import com.gaia3d.converter.assimp.AssimpConverter;
-import com.gaia3d.converter.assimp.Converter;
+import com.gaia3d.converter.Converter;
 import com.gaia3d.basic.structure.GaiaScene;
 import org.junit.jupiter.api.Test;
 import com.gaia3d.process.preprocess.GeometryOptimizer;
