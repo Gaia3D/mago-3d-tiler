@@ -39,26 +39,6 @@ class TilerMainTest {
         TilerMain.main(args);
     }
 
-    //@Test
-    void sapporoObj2() {
-        String path = "D:\\workspaces\\sapporo-test\\";
-        String[] args = new String[]{
-                "-i", path + "sapporo-lod2",
-                "-it", "obj",
-                "-o", path +  "sapporo-lod2-output",
-                "-crs", "6680",
-                "-r",
-                //"-swapYZ",
-                "-maxCount", "64",
-                "-minLod", "0",
-                "-maxLod", "3",
-                "-multiThread",
-                "-glb",
-                "-debug"
-        };
-        TilerMain.main(args);
-    }
-
     @Test
     void convertWs2Kml() throws URISyntaxException {
         String input = "D:\\temp\\sample-external\\";
@@ -125,10 +105,24 @@ class TilerMainTest {
     }
 
     @Test
-    void convertGML() throws URISyntaxException {
+    void convertGML() {
         String input = "D:\\workspaces\\cityGML\\";
         String output = "D:\\workspaces\\cityGML\\output\\";
-        convert(input, output, "moran_6697", "4326", "gml");
+        convert(input, output, "sapporo", "4326", "gml");
+    }
+
+    @Test
+    void convertShp() {
+        String input = "D:\\workspaces\\shapeSample\\";
+        String output = "D:\\workspaces\\shapeSample\\output\\";
+        convert(input, output, "ws2_buildings", "5186", "shp");
+    }
+
+    @Test
+    void convertGmlHawai() {
+        String input = "D:\\workspaces\\cityGML\\";
+        String output = "D:\\workspaces\\cityGML\\output\\";
+        convert(input, output, "hawaii", "4326", "gml");
     }
 
     @Test
@@ -173,11 +167,12 @@ class TilerMainTest {
                 "-inputType", inputType,
                 "-output", outputPath + suffix,
                 "-crs", crs,
+                //"-recursive",
                 //"-swapYZ",
-                "-maxCount", "1024",
+                "-maxCount", "256",
                 "-minLod", "0",
                 "-maxLod", "3",
-                //"-multiThread",
+                "-multiThread",
                 "-refineAdd",
                 //"-glb",
                 //"-debug"

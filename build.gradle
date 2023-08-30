@@ -23,6 +23,7 @@ switch ( OperatingSystem.current() ) {
 //project.ext.lwjglNatives = "natives-linux"
 
 repositories {
+    maven { url "https://repo.osgeo.org/repository/release/" }
     mavenCentral()
 }
 
@@ -67,6 +68,10 @@ dependencies {
 
     // jackson (json library)
     implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
+
+    // GeoTools (geospatial library)
+    implementation 'org.geotools:gt-main:25.5'
+    implementation 'org.geotools:gt-shapefile:25.5'
 
     // CityGML4J (citygml library)
     implementation 'org.citygml4j:citygml4j-xml:3.0.0'

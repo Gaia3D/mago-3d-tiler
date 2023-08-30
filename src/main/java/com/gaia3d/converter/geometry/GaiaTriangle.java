@@ -12,7 +12,6 @@ public class GaiaTriangle {
 
     public GaiaTriangle(Vector3d[] positions) {
         this.positions = positions;
-
         calcNormal();
     }
 

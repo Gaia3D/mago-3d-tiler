@@ -113,7 +113,7 @@ public class TilerMain {
         if (formatType == FormatType.CITY_GML) {
             converter = new CityGmlConverter();
         } else if (formatType == FormatType.SHP) {
-            converter = new ShapeConverter();
+            converter = new ShapeConverter(command);
         } else {
             converter = new AssimpConverter(command);
         }
@@ -127,7 +127,7 @@ public class TilerMain {
         if (command.hasOption(ProcessOptions.SWAP_YZ.getArgName())) {
             preProcessors.add(new GaiaRotator());
         }
-        preProcessors.add(new GaiaTranslator(source));
+        preProcessors.add(new GaiaTranslator(source, command));
         preProcessors.add(new GaiaScaler());
         //preProcessors.add(new GeometryOptimizer()); // son.***
 

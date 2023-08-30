@@ -89,7 +89,7 @@ class CityGmlConverterTest {
                     Vector3d position = new Vector3d(x, y, z);
                     polygon.add(position);
 
-                    log.info("{}A : {}, {}, {}", i, position.x(), position.y(), position.z());
+                    //log.info("{}A : {}, {}, {}", i, position.x(), position.y(), position.z());
                     //ProjCoordinate centerSource = new ProjCoordinate(x, y, z);
                     //ProjCoordinate centerWgs84 = GlobeUtils.transform(source, centerSource);
                     //log.info("B : {}, {}, {}", centerWgs84.x, centerWgs84.y, centerWgs84.z);
