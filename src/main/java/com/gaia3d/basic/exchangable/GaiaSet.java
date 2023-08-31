@@ -81,8 +81,8 @@ public class GaiaSet {
         return boundingBox;
     }
 
-    public Path writeFile(Path path) {
-        String tempFile = projectName + "." + FormatType.TEMP.getExtension();
+    public Path writeFile(Path path, int serial) {
+        String tempFile = projectName + "_" + serial + "." + FormatType.TEMP.getExtension();
         File output = new File(path.toAbsolutePath().toString(), tempFile);
         try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(output)))) {
             stream.writeByte(isBigEndian);
