@@ -38,10 +38,10 @@ class CityGmlConverterTest {
         String path2 = "D:\\workspaces\\cityGML\\hawaii\\Hawaii-15001-002.gml";
 
         Converter converter = new CityGmlConverter();
-        GaiaScene scene = converter.load(path);
+        List<GaiaScene> scenes = converter.load(path);
 
         GltfWriter gltfWriter = new GltfWriter();
-        gltfWriter.writeGltf(scene, "D:\\sample.gltf");
+        gltfWriter.writeGltf(scenes.get(0), "D:\\sample.gltf");
     }
 
     @Test

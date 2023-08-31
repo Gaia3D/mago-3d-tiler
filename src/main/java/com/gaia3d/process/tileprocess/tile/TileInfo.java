@@ -23,6 +23,7 @@ public class TileInfo {
     private KmlInfo kmlInfo;
     private GaiaScene scene;
     private GaiaSet set;
+    private String name;
 
     private Matrix4d transformMatrix;
     private GaiaBoundingBox boundingBox;
@@ -35,18 +36,19 @@ public class TileInfo {
         this.transformMatrix = rootNode.getTransformMatrix();
         this.boundingBox = this.scene.getGaiaBoundingBox();
         this.scenePath = this.scene.getOriginalPath();
+        this.name = rootNode.getName();
 
         this.tempPath = this.outputPath.resolve("temp");
         this.tempPath.toFile().mkdir();
         //this.tempPath = this.tempPath.resolve(scenePath.getFileName() + ".set");
     }
 
-    public void minimize() {
+    public void minimize(int serial) {
         if (this.scene != null) {
             init();
 
             GaiaSet tempSet = new GaiaSet(this.scene);
-            this.tempPath = tempSet.writeFile(this.tempPath);
+            this.tempPath = tempSet.writeFile(this.tempPath, serial);
 
             tempSet.clear();
             tempSet = null;

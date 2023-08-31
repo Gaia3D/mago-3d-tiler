@@ -55,16 +55,18 @@ public class ProcessFlow implements Process {
         for (File file : fileList) {
             count++;
             log.info("[File Loading] : {}/{} : {}", count, size, file);
-            TileInfo tileInfo = fileLoader.loadTileInfo(file);
-            if (tileInfo != null) {
-                for (PreProcess preProcessors : preProcesses) {
-                    preProcessors.run(tileInfo);
+            List<TileInfo> tileInfoResult = fileLoader.loadTileInfo(file);
+
+            int serial = 0;
+            for (TileInfo tileInfo : tileInfoResult) {
+                if (tileInfo != null) {
+                    log.info("{}/{}", serial, tileInfoResult.size());
+                    for (PreProcess preProcessors : preProcesses) {
+                        preProcessors.run(tileInfo);
+                    }
+                    tileInfo.minimize(serial++);
+                    tileInfos.add(tileInfo);
                 }
-                tileInfo.minimize();
-                tileInfos.add(tileInfo);
-            }
-            if (count % 10000 == 0) {
-                //System.gc();
             }
         }
     }

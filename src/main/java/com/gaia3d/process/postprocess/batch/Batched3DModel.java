@@ -47,14 +47,18 @@ public class Batched3DModel implements TileModel {
 
         List<TileInfo> tileInfos = batchInfo.getTileInfos();
         int batchLength = tileInfos.size();
-        List<String> names = tileInfos.stream()
+        List<String> projectNames = tileInfos.stream()
                 .map((tileInfo) -> {
                     return tileInfo.getSet().getProjectName();
                 })
                 .collect(Collectors.toList());
+        List<String> nodeNames = tileInfos.stream()
+                .map(TileInfo::getName)
+                .collect(Collectors.toList());
         List<Double> geometricErrors = tileInfos.stream().map((tileInfo) -> {
             return tileInfo.getBoundingBox().getLongestDistance();
         }).collect(Collectors.toList());
+
 
         GaiaScene scene = new GaiaScene(batchedSet);
 
@@ -87,7 +91,8 @@ public class Batched3DModel implements TileModel {
         GaiaBatchTable batchTable = new GaiaBatchTable();
         for (int i = 0; i < batchLength; i++) {
             batchTable.getBatchId().add(String.valueOf(i));
-            batchTable.getFileName().add(names.get(i));
+            batchTable.getProejctName().add(projectNames.get(i));
+            batchTable.getNodeName().add(nodeNames.get(i));
             batchTable.getGeometricError().add(geometricErrors.get(i));
         }
 

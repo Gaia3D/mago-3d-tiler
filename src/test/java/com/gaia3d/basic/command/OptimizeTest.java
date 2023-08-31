@@ -59,8 +59,12 @@ public class OptimizeTest {
         log.info("Start loading tile infos.");
         int count = 0;
         for (File file : fileList) {
-            TileInfo tileInfo = fileLoader.loadTileInfo(file);
-            tileInfos.add(tileInfo);
+            List<TileInfo> tileInfo = fileLoader.loadTileInfo(file);
+            for (TileInfo info : tileInfo) {
+                if (info != null) {
+                    tileInfos.add(info);
+                }
+            }
             //log.info("loaded tile info: {}/{}", count++, fileList.size());
         }
         log.info("End loading tile infos.");
@@ -69,8 +73,9 @@ public class OptimizeTest {
         System.out.println((usedMemory / 1000 / 1000) + " mega bytes");
 
         log.info("Start minimizing tile infos.");
+        int serial = 0;
         for (TileInfo tileInfo : tileInfos) {
-            tileInfo.minimize();
+            tileInfo.minimize(serial++);
         }
         log.info("End minimizing tile infos.");
 

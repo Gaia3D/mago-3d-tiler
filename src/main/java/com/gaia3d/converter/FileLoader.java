@@ -13,6 +13,7 @@ import com.gaia3d.process.tileprocess.tile.TileInfo;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -32,11 +33,11 @@ public class FileLoader {
         this.converter = converter;
     }
 
-    public GaiaScene loadScene(Path input) {
+    public List<GaiaScene> loadScene(Path input) {
         return converter.load(input);
     }
 
-    public GaiaScene loadScene(File input) {
+    public List<GaiaScene> loadScene(File input) {
         return converter.load(input);
     }
 
@@ -49,42 +50,50 @@ public class FileLoader {
         return (List<File>) FileUtils.listFiles(inputFile, extensions, recursive);
     }
 
-    public TileInfo loadTileInfo(File file) {
+    public List<TileInfo> loadTileInfo(File file) {
         Path outputPath = new File(command.getOptionValue(ProcessOptions.OUTPUT.getArgName())).toPath();
         String inputExtension = command.getOptionValue("inputType");
         FormatType formatType = FormatType.fromExtension(inputExtension);
+
+        List<TileInfo> tileInfos = new ArrayList<>();
         KmlInfo kmlInfo = null;
         if (FormatType.KML == formatType) {
             kmlInfo = kmlReader.read(file);
             if (kmlInfo != null) {
                 file = new File(file.getParent(), kmlInfo.getHref());
-                GaiaScene scene = loadScene(file);
-                if (scene == null) {
-                    log.error("Failed to load scene: {}", file);
-                    return null;
-                } else {
-                    return TileInfo.builder()
-                            .kmlInfo(kmlInfo)
-                            .scene(scene)
-                            .outputPath(outputPath)
-                            .build();
+                List<GaiaScene> scenes = loadScene(file);
+                for (GaiaScene scene : scenes) {
+                    if (scene == null) {
+                        log.error("Failed to load scene: {}", file.getAbsolutePath());
+                        return null;
+                    } else {
+                        TileInfo tileInfo = TileInfo.builder()
+                                .kmlInfo(kmlInfo)
+                                .scene(scene)
+                                .outputPath(outputPath)
+                                .build();
+                        tileInfos.add(tileInfo);
+                    }
                 }
             } else {
                 file = null;
             }
         } else {
-            GaiaScene scene = loadScene(file);
-            if (scene == null) {
-                log.error("Failed to load scene: {}", file);
-                return null;
-            } else {
-                return TileInfo.builder()
-                        .scene(scene)
-                        .outputPath(outputPath)
-                        .build();
+            List<GaiaScene> scenes = loadScene(file);
+            for (GaiaScene scene : scenes) {
+                if (scene == null) {
+                    log.error("Failed to load scene: {}", file.getAbsolutePath());
+                    return null;
+                } else {
+                    TileInfo tileInfo = TileInfo.builder()
+                            .scene(scene)
+                            .outputPath(outputPath)
+                            .build();
+                    tileInfos.add(tileInfo);
+                }
             }
         }
-        return null;
+        return tileInfos;
     }
 
     private String[] getExtensions(FormatType formatType) {

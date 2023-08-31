@@ -115,7 +115,14 @@ class TilerMainTest {
     void convertShp() {
         String input = "D:\\workspaces\\shapeSample\\";
         String output = "D:\\workspaces\\shapeSample\\output\\";
-        convert(input, output, "ws2_buildings", "5186", "shp");
+        convert(input, output, "busan", "4326", "shp");
+    }
+
+    @Test
+    void convertShpSejong() {
+        String input = "D:\\workspaces\\shapeSample\\";
+        String output = "D:\\workspaces\\shapeSample\\output\\";
+        convert(input, output, "sejong", "4326", "shp");
     }
 
     @Test
@@ -169,13 +176,13 @@ class TilerMainTest {
                 "-crs", crs,
                 //"-recursive",
                 //"-swapYZ",
-                "-maxCount", "256",
+                "-maxCount", "32768",
                 "-minLod", "0",
                 "-maxLod", "3",
                 "-multiThread",
                 "-refineAdd",
-                //"-glb",
-                //"-debug"
+                "-glb",
+                "-debug"
         };
         TilerMain.main(args);
     }

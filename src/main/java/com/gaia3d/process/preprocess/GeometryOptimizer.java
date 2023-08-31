@@ -14,7 +14,7 @@ public class GeometryOptimizer implements PreProcess {
         return null;
     }
 
-    public void optimize(ArrayList<GaiaScene> gaiaScenes) {
+    public void optimize(List<GaiaScene> gaiaScenes) {
         System.out.println("Optimize TEST");
 
         // delete faces with normal aprox to (0, 0, -1).

@@ -43,7 +43,7 @@ public class GaiaTranslator implements PreProcess {
         String inputExtension = command.getOptionValue(ProcessOptions.INPUT_TYPE.getArgName());
         FormatType formatType = FormatType.fromExtension(inputExtension);
 
-        if (formatType == FormatType.CITY_GML) {
+        if (formatType == FormatType.CITY_GML || formatType == FormatType.SHP) {
             center = new Vector3d(transform.get(3,0), transform.get(3,1), 0.0d);
         }
 

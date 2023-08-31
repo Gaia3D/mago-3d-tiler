@@ -31,13 +31,17 @@ public class ProcessThreadPool {
             Runnable callableTask = () -> {
                 count.getAndIncrement();
                 log.info("[{}/{}] load tile info: {}", count, size, file);
-                TileInfo tileInfo = fileLoader.loadTileInfo(file);
-                if (tileInfo != null) {
-                    for (PreProcess preProcessor : preProcessors) {
-                        preProcessor.run(tileInfo);
+                List<TileInfo> tileInfoResult = fileLoader.loadTileInfo(file);
+                int serial = 0;
+                for (TileInfo tileInfo : tileInfoResult) {
+                    if (tileInfo != null) {
+                        log.info("{}/{}", serial, tileInfoResult.size());
+                        for (PreProcess preProcessor : preProcessors) {
+                            preProcessor.run(tileInfo);
+                        }
+                        tileInfo.minimize(serial++);
+                        tileInfos.add(tileInfo);
                     }
-                    tileInfo.minimize();
-                    tileInfos.add(tileInfo);
                 }
             };
             tasks.add(callableTask);

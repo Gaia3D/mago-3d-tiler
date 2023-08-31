@@ -1,5 +1,6 @@
 package com.gaia3d.converter.geometry;
 
+import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,6 +19,8 @@ public class GaiaBuilding {
     private String name;
     private double roofHeight;
     private double floorHeight;
+    private GaiaBoundingBox boundingBox;
+
     List<Vector3d> positions;
-    List<Triangle> triangles;
+    //List<Triangle> triangles;
 }

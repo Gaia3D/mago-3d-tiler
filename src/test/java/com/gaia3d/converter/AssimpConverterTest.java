@@ -15,6 +15,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -26,15 +27,15 @@ class AssimpConverterTest {
     @Test
     void load() throws URISyntaxException {
         Converter converter = new AssimpConverter(null);
-        GaiaScene scene = converter.load(getAbsolutePath(INPUT_PATH) + "a_bd001.3ds");
-        assertNotNull(scene);
+        List<GaiaScene> scenes = converter.load(getAbsolutePath(INPUT_PATH) + "a_bd001.3ds");
+        assertNotNull(scenes);
     }
 
     @Test
     void loadCollada() throws URISyntaxException {
         Converter converter = new AssimpConverter(null);
-        GaiaScene scene = converter.load(getAbsolutePath(INPUT_PATH) + "a_bd001.dae");
-        assertNotNull(scene);
+        List<GaiaScene> scenes = converter.load(getAbsolutePath(INPUT_PATH) + "a_bd001.dae");
+        assertNotNull(scenes);
     }
 
     @Test
@@ -47,8 +48,8 @@ class AssimpConverterTest {
         KmlInfo kmlInfo = kmlReader.read(kml);
 
         Converter converter = new AssimpConverter(null);
-        GaiaScene scene = converter.load(getAbsolutePath(INPUT_PATH) + kmlInfo.getHref());
-        assertNotNull(scene);
+        List<GaiaScene> scenes = converter.load(getAbsolutePath(INPUT_PATH) + kmlInfo.getHref());
+        assertNotNull(scenes);
 
 
         ContentInfo batchInfo = new ContentInfo();
@@ -57,7 +58,7 @@ class AssimpConverterTest {
 
         batchInfo.setLod(LevelOfDetail.LOD0);
         batchInfo.setNodeCode("TEST");
-        batchInfo.setBoundingBox(scene.getBoundingBox());
+        batchInfo.setBoundingBox(scenes.get(0).getBoundingBox());
         Batcher batcher = new GaiaBatcher(null);
         //GaiaSet gaiaSet = batcher.batch(batchInfo);
         //GaiaScene batchedScene = new GaiaScene(gaiaSet);

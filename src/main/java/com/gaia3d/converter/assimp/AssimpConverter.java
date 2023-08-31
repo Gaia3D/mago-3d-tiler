@@ -46,17 +46,16 @@ public class AssimpConverter implements Converter {
             Assimp.aiProcess_CalcTangentSpace|
             Assimp.aiProcess_SortByPType;
 
-    public GaiaScene load(String filePath) {
+    public List<GaiaScene> load(String filePath) {
         return load(new File(filePath));
     }
 
-    public GaiaScene load(Path filePath) {
+    public List<GaiaScene> load(Path filePath) {
         return load(filePath.toFile());
     }
 
-    public GaiaScene load(File file) throws RuntimeException {
+    public List<GaiaScene> load(File file) throws RuntimeException {
         if (!file.isFile() && !file.exists()) {
-            //throw new RuntimeException("File does not exist: " + file.getAbsolutePath());
             log.error("File does not exist: {}", file.getAbsolutePath());
             return null;
         }
@@ -76,8 +75,10 @@ public class AssimpConverter implements Converter {
         BufferUtils.zeroBuffer(byteBuffer);
         byteBuffer.clear();
         byteBuffer = null;
-        return gaiaScene;
 
+        List<GaiaScene> gaiaScenes = new ArrayList<>();
+        gaiaScenes.add(gaiaScene);
+        return gaiaScenes;
     }
 
     private Matrix4d convertMatrix4dFromAIMatrix4x4(AIMatrix4x4 aiMatrix4x4) {

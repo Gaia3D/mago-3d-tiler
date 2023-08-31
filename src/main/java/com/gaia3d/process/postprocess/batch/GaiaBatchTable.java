@@ -13,10 +13,12 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 public class GaiaBatchTable {
-    @JsonProperty("BatchId")
-    private final List<String> batchId = new ArrayList<>();
-    @JsonProperty("Name")
-    private final List<String> fileName = new ArrayList<>();
+    @JsonProperty("ProjectName")
+    private final List<String> proejctName = new ArrayList<>();
+    @JsonProperty("NodeName")
+    private final List<String> nodeName = new ArrayList<>();
     @JsonProperty("GeometricError")
     private final List<Double> geometricError = new ArrayList<>();
+    @JsonProperty("BatchId")
+    private final List<String> batchId = new ArrayList<>();
 }

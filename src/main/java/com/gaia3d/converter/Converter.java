@@ -5,6 +5,7 @@ import com.gaia3d.converter.assimp.AssimpConverter;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.List;
 
 /**
  * Interface for the converter.
@@ -13,7 +14,7 @@ import java.nio.file.Path;
  * @see AssimpConverter
  */
 public interface Converter {
-    GaiaScene load(String path);
-    GaiaScene load(File file);
-    GaiaScene load(Path path);
+    List<GaiaScene> load(String path);
+    List<GaiaScene> load(File file);
+    List<GaiaScene> load(Path path);
 }

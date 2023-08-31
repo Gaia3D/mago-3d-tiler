@@ -31,21 +31,23 @@ import java.util.stream.IntStream;
 public class CityGmlConverter implements Converter {
 
     @Override
-    public GaiaScene load(String path) {
+    public List<GaiaScene> load(String path) {
         return convert(new File(path));
     }
 
     @Override
-    public GaiaScene load(File file) {
+    public List<GaiaScene> load(File file) {
         return convert(file);
     }
 
     @Override
-    public GaiaScene load(Path path) {
+    public List<GaiaScene> load(Path path) {
         return convert(path.toFile());
     }
 
-    private GaiaScene convert(File file) {
+    private List<GaiaScene> convert(File file) {
+        List<GaiaScene> scenes = new ArrayList<>();
+
         GaiaScene scene = initScene();
         scene.setOriginalPath(file.toPath());
         GaiaMaterial material = scene.getMaterials().get(0);
@@ -148,7 +150,9 @@ public class CityGmlConverter implements Converter {
         } catch (CityGMLReadException e) {
             throw new RuntimeException(e);
         }
-        return scene;
+
+        scenes.add(scene);
+        return scenes;
     }
 
     private GaiaScene initScene() {
