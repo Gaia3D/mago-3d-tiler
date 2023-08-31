@@ -5,8 +5,10 @@ import com.gaia3d.basic.structure.*;
 import com.gaia3d.converter.geometry.AbstractGeometryConverter;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.geometry.*;
+import com.gaia3d.process.ProcessOptions;
 import com.gaia3d.util.GlobeUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.cli.CommandLine;
 import org.citygml4j.core.model.building.Building;
 import org.citygml4j.core.model.core.AbstractCityObject;
 import org.citygml4j.core.model.core.AbstractCityObjectProperty;
@@ -28,6 +30,12 @@ import java.util.*;
 @Slf4j
 public class CityGmlConverter extends AbstractGeometryConverter implements Converter {
 
+    private final CommandLine command;
+
+    public CityGmlConverter(CommandLine command) {
+        this.command = command;
+    }
+
     @Override
     public List<GaiaScene> load(String path) {
         return convert(new File(path));
@@ -45,6 +53,8 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
 
     protected List<GaiaScene> convert(File file) {
         List<GaiaScene> scenes = new ArrayList<>();
+
+        boolean flipCoordnate = this.command.hasOption(ProcessOptions.Flip_Coordinate.getArgName());
 
         try {
             Tessellator tessellator = new Tessellator();
@@ -94,12 +104,16 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
 
                     double value = 0d;
                     for (int i = 0; i < values.size(); i+=3) {
-                        double x = values.get(i
-                        );
-                        double y = values.get(i + 1);
-                        //double z = values.get(i + 2);
+                        double x, y, z;
+                        if (flipCoordnate) {
+                            x = values.get(i + 1);
+                            y = values.get(i);
+                        } else {
+                            x = values.get(i);
+                            y = values.get(i + 1);
+                        }
+                        z = 0.0d;
                         value += values.get(i + 2);
-                        double z = 0.0d;
                         Vector3d position = new Vector3d(x, y, z);
                         polygon.add(position);
                         boundingBox.addPoint(position);

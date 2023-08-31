@@ -24,6 +24,8 @@ public enum ProcessOptions {
     MAX_COUNT("maxCount", "mx", "maxCount", true, "max count of nodes (Default: 256)"),
     MAX_LOD("maxLod", "xl", "maxLod", true, "max level of detail (Default: 3)"),
     MIN_LOD("minLod", "nl", "minLod", true, "min level of detail (Default: 0)"),
+
+    Flip_Coordinate("flipCoordinate", "fc", "flipCoordinate", false, "Flip Coordinate"),
     //Experimental
     //AUTO_AXIS("autoAxis", "aa", "autoAxis", false, "[Experimental] auto axis"),
     //GENERATE_NORMALS("genNormals", "gn", "genNormals", false, "generate normals"),

@@ -10,6 +10,7 @@ import com.gaia3d.converter.geometry.Extruder;
 import com.gaia3d.converter.geometry.Extrusion;
 import com.gaia3d.converter.geometry.GaiaBuilding;
 import com.gaia3d.converter.geometry.Tessellator;
+import com.gaia3d.process.ProcessOptions;
 import com.gaia3d.util.GlobeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
@@ -70,6 +71,8 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         Tessellator tessellator = new Tessellator();
         Extruder extruder = new Extruder(tessellator);
 
+        boolean flipCoordnate = this.command.hasOption(ProcessOptions.Flip_Coordinate.getArgName());
+
         ShpFiles shpFiles = null;
         try {
             shpFiles = new ShpFiles(file);
@@ -111,8 +114,15 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
 
                 for (Coordinate coordinate : coordinates) {
                     Point point = (Point) geometryFactory.createPoint(coordinate);
-                    double x = point.getX();
-                    double y = point.getY();
+
+                    double x, y;
+                    if (flipCoordnate) {
+                        x = point.getY();
+                        y = point.getX();
+                    } else {
+                        x = point.getX();
+                        y = point.getY();
+                    }
 
                     Vector3d position = new Vector3d(x, y, 0);
                     positions.add(position);

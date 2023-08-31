@@ -29,7 +29,7 @@ class CityGmlConverterTest {
         String path = "D:\\workspaces\\cityGML\\moran_6697\\63403779_bldg_6697_op.gml";
         String path2 = "D:\\workspaces\\cityGML\\hawaii\\Hawaii-15001-002.gml";
 
-        Converter converter = new CityGmlConverter();
+        Converter converter = new CityGmlConverter(null);
         List<GaiaScene> scenes = converter.load(path);
 
         GltfWriter gltfWriter = new GltfWriter();

@@ -111,7 +111,7 @@ public class TilerMain {
 
         Converter converter;
         if (formatType == FormatType.CITY_GML) {
-            converter = new CityGmlConverter();
+            converter = new CityGmlConverter(command);
         } else if (formatType == FormatType.SHP) {
             converter = new ShapeConverter(command);
         } else {
