@@ -1,12 +1,10 @@
 package com.gaia3d.converter.citygml;
 
 import com.gaia3d.basic.structure.GaiaScene;
-import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.Configurator;
 import com.gaia3d.converter.Converter;
-import com.gaia3d.converter.FileLoader;
+import com.gaia3d.converter.geometry.citygml.CityGmlConverter;
 import com.gaia3d.converter.jgltf.GltfWriter;
-import com.gaia3d.util.GlobeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.citygml4j.core.model.building.Building;
 import org.citygml4j.core.model.core.AbstractCityObject;
@@ -16,18 +14,12 @@ import org.citygml4j.xml.CityGMLContextException;
 import org.citygml4j.xml.reader.*;
 import org.joml.Vector3d;
 import org.junit.jupiter.api.Test;
-import org.locationtech.proj4j.CRSFactory;
-import org.locationtech.proj4j.CoordinateReferenceSystem;
-import org.locationtech.proj4j.ProjCoordinate;
 import org.xmlobjects.gml.model.geometry.DirectPositionList;
-import org.xmlobjects.gml.model.geometry.GeometricPositionList;
 import org.xmlobjects.gml.model.geometry.primitives.*;
 
 import java.io.File;
 import java.util.List;
 import java.util.Vector;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
 class CityGmlConverterTest {

@@ -1,8 +1,8 @@
-package com.gaia3d.converter.citygml;
+package com.gaia3d.converter.geometry.citygml;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.structure.*;
-import com.gaia3d.basic.types.TextureType;
+import com.gaia3d.converter.geometry.AbstractGeometryConverter;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.geometry.*;
 import com.gaia3d.util.GlobeUtils;
@@ -18,17 +18,15 @@ import org.citygml4j.xml.reader.CityGMLReadException;
 import org.citygml4j.xml.reader.CityGMLReader;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
-import org.joml.Vector4d;
 import org.xmlobjects.gml.model.geometry.DirectPositionList;
 import org.xmlobjects.gml.model.geometry.primitives.*;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.stream.IntStream;
 
 @Slf4j
-public class CityGmlConverter implements Converter {
+public class CityGmlConverter extends AbstractGeometryConverter implements Converter {
 
     @Override
     public List<GaiaScene> load(String path) {
@@ -45,13 +43,9 @@ public class CityGmlConverter implements Converter {
         return convert(path.toFile());
     }
 
-    private List<GaiaScene> convert(File file) {
+    protected List<GaiaScene> convert(File file) {
         List<GaiaScene> scenes = new ArrayList<>();
 
-        GaiaScene scene = initScene();
-        scene.setOriginalPath(file.toPath());
-        GaiaMaterial material = scene.getMaterials().get(0);
-        GaiaNode rootNode = scene.getNodes().get(0);
         try {
             Tessellator tessellator = new Tessellator();
             Extruder extruder = new Extruder(tessellator);
@@ -61,8 +55,6 @@ public class CityGmlConverter implements Converter {
             CityGMLReader reader = factory.createCityGMLReader(file);
             CityModel cityModel = (CityModel) reader.next();
             List<String> names = new ArrayList<>();
-            GaiaBoundingBox boundingBox = new GaiaBoundingBox();
-
 
             //List<List<Vector3d>> polygons = new ArrayList<>();
             List<GaiaBuilding> gaiaBuildings = new ArrayList<>();
@@ -90,6 +82,8 @@ public class CityGmlConverter implements Converter {
                         .roofHeight(height)
                         .build();
 
+                GaiaBoundingBox boundingBox = new GaiaBoundingBox();
+
                 for (SurfaceProperty surfaceProperty : surfaceProperties) {
                     List<Vector3d> polygon = new Vector<>();
 
@@ -100,8 +94,9 @@ public class CityGmlConverter implements Converter {
 
                     double value = 0d;
                     for (int i = 0; i < values.size(); i+=3) {
-                        double x = values.get(i + 1);
-                        double y = values.get(i);
+                        double x = values.get(i
+                        );
+                        double y = values.get(i + 1);
                         //double z = values.get(i + 2);
                         value += values.get(i + 2);
                         double z = 0.0d;
@@ -118,11 +113,19 @@ public class CityGmlConverter implements Converter {
                     names.add(cityObject.getId());
                     break;
                 }
+                gaiaBuilding.setBoundingBox(boundingBox);
                 gaiaBuildings.add(gaiaBuilding);
             }
 
-            Vector3d center = boundingBox.getCenter();
             for (GaiaBuilding gaiaBuilding : gaiaBuildings) {
+                GaiaScene scene = initScene();
+                scene.setOriginalPath(file.toPath());
+                GaiaMaterial material = scene.getMaterials().get(0);
+                GaiaNode rootNode = scene.getNodes().get(0);
+
+                GaiaBoundingBox boundingBox = gaiaBuilding.getBoundingBox();
+                Vector3d center = boundingBox.getCenter();
+
                 Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
                 Matrix4d transformMatrix = GlobeUtils.normalAtCartesianPointWgs84(centerWorldCoordinate);
                 Matrix4d transfromMatrixInv = new Matrix4d(transformMatrix).invert();
@@ -138,103 +141,16 @@ public class CityGmlConverter implements Converter {
                 Extrusion extrusion = extruder.extrude(localPositions, gaiaBuilding.getRoofHeight(), gaiaBuilding.getFloorHeight());
                 GaiaNode node = createNode(material, extrusion.getPositions(), extrusion.getTriangles());
                 rootNode.getChildren().add(node);
+
+                Matrix4d rootTransformMatrix = new Matrix4d().identity();
+                rootTransformMatrix.translate(center, rootTransformMatrix);
+                rootNode.setTransformMatrix(rootTransformMatrix);
+                scenes.add(scene);
             }
-
-            Matrix4d transformMatrix = new Matrix4d().identity();
-            transformMatrix.translate(center, transformMatrix);
-
-            rootNode.setTransformMatrix(transformMatrix);
-
-        } catch (CityGMLContextException e) {
-            throw new RuntimeException(e);
-        } catch (CityGMLReadException e) {
+        } catch (CityGMLContextException | CityGMLReadException e) {
             throw new RuntimeException(e);
         }
 
-        scenes.add(scene);
         return scenes;
     }
-
-    private GaiaScene initScene() {
-        GaiaScene scene = new GaiaScene();
-        GaiaMaterial material = new GaiaMaterial();
-        material.setId(0);
-        material.setName("color");
-        material.setDiffuseColor(new Vector4d(0.5, 0.5, 0.5, 1));
-        Map<TextureType, List<GaiaTexture>> textureTypeListMap = material.getTextures();
-        textureTypeListMap.put(TextureType.DIFFUSE, new ArrayList<>());
-        scene.getMaterials().add(material);
-
-        GaiaNode rootNode = new GaiaNode();
-        Matrix4d transformMatrix = new Matrix4d();
-        transformMatrix.identity();
-        rootNode.setTransformMatrix(transformMatrix);
-        scene.getNodes().add(rootNode);
-        return scene;
-    }
-
-    private GaiaNode createNode(GaiaMaterial material, List<Vector3d> positions, List<GaiaTriangle> triangles) {
-        GaiaNode node = new GaiaNode();
-        node.setTransformMatrix(new Matrix4d().identity());
-        GaiaMesh mesh = new GaiaMesh();
-        GaiaPrimitive primitive = createPrimitives(material, positions, triangles);
-        mesh.getPrimitives().add(primitive);
-        node.getMeshes().add(mesh);
-        return node;
-    }
-
-    private GaiaPrimitive createPrimitives(GaiaMaterial material, List<Vector3d> positions, List<GaiaTriangle> triangles) {
-        GaiaPrimitive primitive = new GaiaPrimitive();
-        List<GaiaSurface> surfaces = new ArrayList<>();
-        List<GaiaVertex> vertices = new ArrayList<>();
-        primitive.setMaterial(material);
-        primitive.setMaterialIndex(0);
-        primitive.setSurfaces(surfaces);
-        primitive.setVertices(vertices);
-
-        GaiaSurface surface = new GaiaSurface();
-        Vector3d[] normals = new Vector3d[positions.size()];
-        for (GaiaTriangle triangle : triangles) {
-            GaiaFace face = new GaiaFace();
-            Vector3d[] trianglePositions = triangle.getPositions();
-            int[] indices = new int[trianglePositions.length];
-
-            indices[0] = indexOf(positions, trianglePositions[0]);
-            indices[1] = indexOf(positions, trianglePositions[1]);
-            indices[2] = indexOf(positions, trianglePositions[2]);
-
-            normals[indices[0]] = triangle.getNormal();
-            normals[indices[1]] = triangle.getNormal();
-            normals[indices[2]] = triangle.getNormal();
-
-            face.setIndices(indices);
-            surface.getFaces().add(face);
-        }
-
-        for (int i = 0; i < positions.size(); i++) {
-        //for (Vector3d position : positions) {
-            Random random = new Random();
-            byte[] colors = new byte[4];
-            random.nextBytes(colors);
-
-            Vector3d position = positions.get(i);
-            Vector3d normal = normals[i];
-
-            GaiaVertex vertex = new GaiaVertex();
-            vertex.setPosition(new Vector3d(position.x, position.y, position.z));
-            vertex.setNormal(normal);
-            vertex.setColor(colors);
-            vertices.add(vertex);
-        }
-
-        surfaces.add(surface);
-        return primitive;
-    }
-
-    private int indexOf(List<Vector3d> positions, Vector3d item) {
-        return IntStream.range(0, positions.size())
-                //.filter(i -> Objects.equals(positions.get(i), item))
-                .filter(i -> positions.get(i) == item)
-                .findFirst().orElse(-1);
-    };
 }

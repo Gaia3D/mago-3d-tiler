@@ -174,14 +174,14 @@ class TilerMainTest {
                 "-inputType", inputType,
                 "-output", outputPath + suffix,
                 "-crs", crs,
-                //"-recursive",
+                "-recursive",
                 //"-swapYZ",
                 "-maxCount", "32768",
                 "-minLod", "0",
                 "-maxLod", "3",
                 "-multiThread",
                 "-refineAdd",
-                "-glb",
+                //"-glb",
                 "-debug"
         };
         TilerMain.main(args);
