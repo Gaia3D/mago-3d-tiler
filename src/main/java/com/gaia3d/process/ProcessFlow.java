@@ -41,7 +41,7 @@ public class ProcessFlow implements Process {
         //System.gc();
 
         /* Delete Temp Directory */
-        if (tileInfos.size() > 0) {
+        if (!tileInfos.isEmpty()) {
             tileInfos.get(0).deleteTemp();
         }
     }

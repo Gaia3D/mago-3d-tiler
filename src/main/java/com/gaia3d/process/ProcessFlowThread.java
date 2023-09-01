@@ -41,7 +41,7 @@ public class ProcessFlowThread implements Process {
         postprocess(tileset);
 
         // Delete Temp Directory
-        if (tileInfos.size() > 0) {
+        if (!tileInfos.isEmpty()) {
             tileInfos.get(0).deleteTemp();
         }
     }

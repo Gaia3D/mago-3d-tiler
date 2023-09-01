@@ -4,22 +4,20 @@ import com.gaia3d.basic.structure.*;
 import com.gaia3d.basic.types.AccessorType;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.TextureType;
+import com.gaia3d.util.GeometryUtils;
+import com.gaia3d.util.ImageResizer;
+import com.gaia3d.util.ImageUtils;
 import de.javagl.jgltf.impl.v2.*;
 import de.javagl.jgltf.model.GltfConstants;
 import de.javagl.jgltf.model.GltfModel;
 import de.javagl.jgltf.model.GltfModels;
 import de.javagl.jgltf.model.io.GltfModelWriter;
 import de.javagl.jgltf.model.io.v2.GltfAssetV2;
-import com.gaia3d.basic.structure.*;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.joml.Matrix4d;
-import org.joml.Vector4d;
 import org.lwjgl.opengl.GL20;
-import com.gaia3d.util.GeometryUtils;
-import com.gaia3d.util.ImageResizer;
-import com.gaia3d.util.ImageUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -33,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * GltfWriter is a class that writes the glTF file.
@@ -83,6 +80,7 @@ public class GltfWriter {
     public void writeGlb(GaiaScene gaiaScene, String outputPath) {
         writeGlb(gaiaScene, new File(outputPath));
     }
+
     private GltfModel convert(GaiaScene gaiaScene) {
         GltfBinary binary = new GltfBinary();
         GlTF gltf = new GlTF();
@@ -241,7 +239,7 @@ public class GltfWriter {
 
         List<Material> materials = gltf.getMaterials();
         GaiaPrimitive gaiaPrimitive = gaiaMesh.getPrimitives().get(0);
-        MeshPrimitive primitive = createPrimitive(nodeBuffer, gaiaPrimitive, materials); // TODO
+        MeshPrimitive primitive = createPrimitive(nodeBuffer, gaiaPrimitive, materials);
         int meshId = createMesh(gltf, primitive);
         node.setMesh(meshId);
         return nodeBuffer;

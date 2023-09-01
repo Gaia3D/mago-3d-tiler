@@ -35,8 +35,6 @@ public class GaiaRelocator implements PostProcess {
 
             GaiaSet set = tileInfo.getSet();
             set.translate(translation);
-            //GaiaScene scene = tileInfo.getScene();
-            //scene.translate(translation);
         }
         return contentInfo;
     }

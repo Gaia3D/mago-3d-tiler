@@ -9,7 +9,6 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 public class Extrusion {
-
     private final List<GaiaTriangle> triangles;
     private final List<Vector3d> positions;
 }

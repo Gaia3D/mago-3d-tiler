@@ -3,6 +3,7 @@ package com.gaia3d.process.tileprocess.tile.tileset.node;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -13,8 +14,8 @@ import java.util.List;
 @Slf4j
 @Getter
 @Setter
+@Builder
 public class Node {
-    // TODO: 2023-06-26 builder 패턴으로 바꾸는 것 추천 
     @JsonIgnore
     private String nodeCode;
     @JsonIgnore

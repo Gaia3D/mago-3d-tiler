@@ -24,10 +24,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class Batched3DModel implements TileModel {
+public class  Batched3DModel implements TileModel {
     private static final String MAGIC = "b3dm";
     private static final int VERSION = 1;
-
     private final GltfWriter gltfWriter;
     private final CommandLine command;
 
@@ -48,17 +47,14 @@ public class Batched3DModel implements TileModel {
         List<TileInfo> tileInfos = batchInfo.getTileInfos();
         int batchLength = tileInfos.size();
         List<String> projectNames = tileInfos.stream()
-                .map((tileInfo) -> {
-                    return tileInfo.getSet().getProjectName();
-                })
+                .map((tileInfo) -> tileInfo.getSet().getProjectName())
                 .collect(Collectors.toList());
         List<String> nodeNames = tileInfos.stream()
                 .map(TileInfo::getName)
                 .collect(Collectors.toList());
-        List<Double> geometricErrors = tileInfos.stream().map((tileInfo) -> {
-            return tileInfo.getBoundingBox().getLongestDistance();
-        }).collect(Collectors.toList());
-
+        List<Double> geometricErrors = tileInfos.stream()
+                .map((tileInfo) -> tileInfo.getBoundingBox().getLongestDistance())
+                .collect(Collectors.toList());
 
         GaiaScene scene = new GaiaScene(batchedSet);
 
@@ -165,15 +161,18 @@ public class Batched3DModel implements TileModel {
             int glbSize = byteLength - 28 - featureTableJSONByteLength - batchTableJSONByteLength - featureTableBinaryByteLength - batchTableBinaryByteLength;
             glbBytes = new byte[glbSize];
             int result = stream.read(glbBytes);
-
-            //log.info("magic : {}", magic);
+            log.info("{}, {}", magic, version);
+            log.info("{}", featureTableJson);
+            log.info("{}", batchTableJson);
+            log.info("{}", featureTableBinary);
+            log.info("{}", batchTableBinary);
+            log.info("{}", result);
         } catch (Exception e) {
-            e.printStackTrace();
             log.error(e.getMessage());
         }
 
-
         try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(output)))) {
+            assert glbBytes != null;
             stream.write(glbBytes);
         } catch (IOException e) {
             throw new RuntimeException(e);

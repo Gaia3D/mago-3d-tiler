@@ -13,7 +13,6 @@ import com.gaia3d.process.tileprocess.tile.LevelOfDetail;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.lang3.ArrayUtils;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector4d;
@@ -26,17 +25,9 @@ import java.util.stream.Collectors;
 public class GaiaBatcher implements Batcher {
     private final static int SHORT_LIMIT = 65535;
     private final CommandLine command;
-    //private GaiaSet batchedSet;
-    //private LevelOfDetail lod;
 
     public GaiaBatcher(CommandLine command) {
         this.command = command;
-    }
-
-    private void initContentInfo(ContentInfo info) {
-        //this.lod = info.getLod();
-        //this.batchedSet = new GaiaSet();
-        //this.batchedSet.setProjectName(info.getName());
     }
 
     private void reassignMaterialsToGaiaBufferDataSetWithSameMaterial(List<GaiaBufferDataSet> dataSets, LevelOfDetail lod) {
@@ -84,19 +75,10 @@ public class GaiaBatcher implements Batcher {
     }
 
     public ContentInfo run(ContentInfo contentInfo) {
-        initContentInfo(contentInfo);
-        //log.info("[Batching Running] : {}", contentInfo.getName());
         List<TileInfo> tileInfos = contentInfo.getTileInfos();
         List<GaiaSet> sets = tileInfos.stream()
-                .map((tileInfo) -> {
-                    //GaiaScene gaiaScene = tileInfo.getScene();
-                    //GaiaSet gaiaSet = tileInfo.getSet();
-                    //GaiaSet gaiaSet = new GaiaSet(gaiaScene);
-                    //tileInfo.minimize();
-                    return tileInfo.getSet();
-                })
+                .map(TileInfo::getSet)
                 .collect(Collectors.toList());
-
         setBatchId(sets);
 
         List<GaiaBufferDataSet> batchedDataSets = new ArrayList<>();
@@ -109,7 +91,6 @@ public class GaiaBatcher implements Batcher {
                 int materialId = dataSet.getMaterialId();
                 dataSet.setTransformMatrix(set.getTransformMatrix());
                 dataSet.setMaterialId(materialIdOffset + materialId);
-                //dataSet.setMaterial(materials.get(materialIdOffset + materialId));
             });
             materials.forEach((material) -> {
                 int materialId = material.getId();
@@ -132,27 +113,27 @@ public class GaiaBatcher implements Batcher {
         List<GaiaMaterial> colorMaterials = filteredMaterials.stream().filter((material) -> {
             Map<TextureType, List<GaiaTexture>> textures = material.getTextures();
             List<GaiaTexture> diffuseTextures = textures.get(TextureType.DIFFUSE);
-            return diffuseTextures.size() == 0;
+            return diffuseTextures.isEmpty();
         }).collect(Collectors.toList());
         List<GaiaBufferDataSet> colorDataSet = filteredDataSets.stream().filter((bufferDataSet) -> {
             GaiaMaterial material = bufferDataSet.material;
             Map<TextureType, List<GaiaTexture>> textures = material.getTextures();
             List<GaiaTexture> diffuseTextures = textures.get(TextureType.DIFFUSE);
             createColorBuffer(bufferDataSet);
-            return diffuseTextures.size() == 0;
+            return diffuseTextures.isEmpty();
         }).collect(Collectors.toList());
         setMaterialsIndexInList(colorMaterials, colorDataSet);
 
         List<GaiaMaterial> textureMaterials = filteredMaterials.stream().filter((material) -> {
             Map<TextureType, List<GaiaTexture>> textures = material.getTextures();
             List<GaiaTexture> diffuseTextures = textures.get(TextureType.DIFFUSE);
-            return diffuseTextures.size() > 0;
+            return !diffuseTextures.isEmpty();
         }).collect(Collectors.toList());
         List<GaiaBufferDataSet> textureDataSet = filteredDataSets.stream().filter((bufferDataSet) -> {
             GaiaMaterial material = bufferDataSet.material;
             Map<TextureType, List<GaiaTexture>> textures = material.getTextures();
             List<GaiaTexture> diffuseTextures = textures.get(TextureType.DIFFUSE);
-            return diffuseTextures.size() > 0;
+            return !diffuseTextures.isEmpty();
         }).collect(Collectors.toList());
         setMaterialsIndexInList(textureMaterials, textureDataSet);
 
@@ -172,7 +153,7 @@ public class GaiaBatcher implements Batcher {
 
         List<GaiaBufferDataSet> resultBufferDatas = new ArrayList<>();
         List<GaiaMaterial> resultMaterials = new ArrayList<>();
-        if (clampDataSets.size() > 0 && clampMaterials.size() > 0) {
+        if (!clampDataSets.isEmpty() && !clampMaterials.isEmpty()) {
             atlasTextures(contentInfo.getLod(), contentInfo.getNodeCode(), clampDataSets, clampMaterials);
             List<List<GaiaBufferDataSet>> splitedDataSets = divisionByMaxIndices(clampDataSets);
             List<GaiaBufferDataSet> batchedClampDataSets = batchClampMaterial(splitedDataSets);
@@ -184,13 +165,12 @@ public class GaiaBatcher implements Batcher {
             resultBufferDatas.addAll(batchedClampDataSets);
         }
 
-        if (repeatDataSets.size() > 0 && repeatMaterials.size() > 0) {
+        if (!repeatDataSets.isEmpty() && !repeatMaterials.isEmpty()) {
             rearrangeRepeatMaterial(repeatDataSets, repeatMaterials, resultMaterials.size());
             resultMaterials.addAll(repeatMaterials);
             resultBufferDatas.addAll(repeatDataSets);
         }
-
-        if (colorMaterials.size() > 0 && colorDataSet.size() > 0) {
+        if (!colorMaterials.isEmpty() && !colorDataSet.isEmpty()) {
             rearrangeRepeatMaterial(colorDataSet, colorMaterials, resultMaterials.size());
             resultMaterials.addAll(colorMaterials);
             resultBufferDatas.addAll(colorDataSet);
@@ -201,7 +181,7 @@ public class GaiaBatcher implements Batcher {
         batchedSet.setBufferDatas(resultBufferDatas);
         batchedSet.setMaterials(resultMaterials);
 
-        if (resultBufferDatas.size() < 1 || resultMaterials.size() < 1) {
+        if (resultBufferDatas.isEmpty() || resultMaterials.isEmpty()) {
             log.error("Batched Set is empty");
         }
 
@@ -265,7 +245,7 @@ public class GaiaBatcher implements Batcher {
             if (indicesBuffer != null) {
                 int indicesLength = indicesBuffer.getInts().length;
                 if ((count + indicesLength) >= SHORT_LIMIT) {
-                    if (splitList.size() > 0) {
+                    if (!splitList.isEmpty()) {
                         splitList = new ArrayList<>();
                     }
                     result.add(splitList);
@@ -324,7 +304,7 @@ public class GaiaBatcher implements Batcher {
             if (material != null) {
                 Map<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
                 List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
-                if (textures == null || textures.size() == 0) {
+                if (textures == null || textures.isEmpty()) {
                     Map<AttributeType, GaiaBuffer> buffers = dataSet.getBuffers();
                     buffers.remove(AttributeType.TEXCOORD);
                 }
@@ -346,7 +326,6 @@ public class GaiaBatcher implements Batcher {
     private void atlasTextures(LevelOfDetail lod, String codeName, List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials) {
         GaiaTextureCoordinator textureCoordinator = new GaiaTextureCoordinator(codeName, materials, dataSets);
         textureCoordinator.batchTextures(lod, this.command);
-        //textureCoordinator.writeBatchedImage(this.universe.getOutputRoot().resolve("images"));
     }
 
     private boolean checkRepeat(GaiaMaterial material, GaiaBufferDataSet dataSet) {

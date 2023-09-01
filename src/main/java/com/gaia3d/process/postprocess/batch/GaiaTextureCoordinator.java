@@ -27,8 +27,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GaiaTextureCoordinator {
     final private String ATLAS_IMAGE;
-    final private double ERROR = 10E-5; //error = 10E-5;
-
     private final List<GaiaMaterial> materials;
     private final List<GaiaBufferDataSet> bufferDataSets;
     private BufferedImage atlasImage;
@@ -69,17 +67,14 @@ public class GaiaTextureCoordinator {
         }
     }
 
-    private boolean intersectsRectangle_atlasingProcess(List<GaiaRectangle> listRectangles, GaiaRectangle rectangle) {
+    private boolean intersectsRectangleAtlasingProcess(List<GaiaRectangle> listRectangles, GaiaRectangle rectangle) {
         // this function returns true if the rectangle intersects with any existent rectangle of the listRectangles.***
         boolean intersects = false;
         double error = 10E-5;
-        int listRectanglesCount = listRectangles.size();
-        for (int i = 0; i < listRectanglesCount; i++) {
-            GaiaRectangle existentRectangle = listRectangles.get(i);
+        for (GaiaRectangle existentRectangle : listRectangles) {
             if (existentRectangle == rectangle) {
                 continue;
             }
-
             if (existentRectangle.intersects(rectangle, error)) {
                 intersects = true;
                 break;
@@ -96,7 +91,7 @@ public class GaiaTextureCoordinator {
         double currMosaicPerimeter, candidateMosaicPerimeter;
         candidateMosaicPerimeter = -1.0;
 
-        GaiaRectangle rect_toPutInMosaic = splitData_toPutInMosaic.getOriginBoundary();
+        //GaiaRectangle rect_toPutInMosaic = splitData_toPutInMosaic.getOriginBoundary();
 
         // make existent rectangles list using listProcessSplitDatas.***
         List<GaiaRectangle> list_rectangles = new ArrayList<>();
@@ -142,7 +137,7 @@ public class GaiaTextureCoordinator {
             splitData_toPutInMosaic.batchedBoundary.setMaxY(currPosY + height);
 
             // put our rectangle into mosaic & check that no intersects with another rectangles.***
-            if (!this.intersectsRectangle_atlasingProcess(list_rectangles, splitData_toPutInMosaic.batchedBoundary)) {
+            if (!this.intersectsRectangleAtlasingProcess(list_rectangles, splitData_toPutInMosaic.batchedBoundary)) {
                 GaiaRectangle afterMosaicRectangle = new GaiaRectangle(0.0, 0.0, 0.0, 0.0);
                 afterMosaicRectangle.copyFrom(beforeMosaicRectangle);
                 afterMosaicRectangle.addBoundingRectangle(splitData_toPutInMosaic.batchedBoundary);
@@ -173,7 +168,7 @@ public class GaiaTextureCoordinator {
             splitData_toPutInMosaic.batchedBoundary.setMaxY(currPosY + height);
 
             // put our rectangle into mosaic & check that no intersects with another rectangles.***
-            if (!this.intersectsRectangle_atlasingProcess(list_rectangles, splitData_toPutInMosaic.batchedBoundary)) {
+            if (!this.intersectsRectangleAtlasingProcess(list_rectangles, splitData_toPutInMosaic.batchedBoundary)) {
                 GaiaRectangle afterMosaicRectangle = new GaiaRectangle(0.0, 0.0, 0.0, 0.0);
                 afterMosaicRectangle.copyFrom(beforeMosaicRectangle);
                 afterMosaicRectangle.addBoundingRectangle(splitData_toPutInMosaic.batchedBoundary);
@@ -220,7 +215,7 @@ public class GaiaTextureCoordinator {
             List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
             GaiaTexture texture = null;
             BufferedImage bufferedImage;
-            if (textures.size() > 0) {
+            if (!textures.isEmpty()) {
                 texture = textures.get(0);
                 bufferedImage = texture.getBufferedImage(lod.getTextureScale());
             } else {
@@ -230,10 +225,6 @@ public class GaiaTextureCoordinator {
                 graphics.fillRect(0, 0, 32, 32);
                 graphics.dispose();
             }
-
-            //BufferedImage bufferedImage = texture.getBufferedImage(lod.getTextureScale());
-            //bufferedImage = resizeImage(bufferedImage, lod);
-            //texture.setBufferedImage(bufferedImage);
 
             Vector2d minPoint = new Vector2d(0, 0);
             Vector2d maxPoint = new Vector2d(bufferedImage.getWidth(), bufferedImage.getHeight());
@@ -245,9 +236,7 @@ public class GaiaTextureCoordinator {
         }
 
         // 사이즈 큰->작은 정렬
-        splittedImages = splittedImages.stream()
-                .sorted(Comparator.comparing(splittedImage -> splittedImage.getOriginBoundary().getArea()))
-                .collect(Collectors.toList());
+        splittedImages = splittedImages.stream().sorted(Comparator.comparing(splittedImage -> splittedImage.getOriginBoundary().getArea())).collect(Collectors.toList());
         Collections.reverse(splittedImages);
 
         // do the atlasing process.***
@@ -271,89 +260,6 @@ public class GaiaTextureCoordinator {
             listProcessSplitDatas.add(splittedImage);
         }
 
-        /*
-        // 분할이미지
-        for (GaiaBatchImage target : splittedImages) {
-            GaiaRectangle targetRectangle = target.getOriginBoundary();
-            List<GaiaBatchImage> compareImages = getListWithoutSelf(target, splittedImages);
-
-            if (compareImages.isEmpty()) {
-                target.setBatchedBoundary(targetRectangle);
-            } else {
-                List<GaiaBatchImage> leftBottomFiltered = compareImages.stream().filter((compareSplittedImage) -> {
-                            GaiaRectangle compare = compareSplittedImage.getBatchedBoundary();
-                            GaiaRectangle leftBottom = getLeftBottom(targetRectangle, compare);
-                            List<GaiaBatchImage> filteredCompareImages = getListWithoutSelf(compareSplittedImage, compareImages);
-                            for (GaiaBatchImage filteredCompareSplittedImage : filteredCompareImages) {
-                                GaiaRectangle compareRectangle = filteredCompareSplittedImage.getBatchedBoundary();
-                                if (compareRectangle.intersects(leftBottom, ERROR)) {
-                                    return false;
-                                }
-                            }
-                            return true;
-                        }).sorted(Comparator.comparing(compareSplittedImage -> {
-                            GaiaRectangle compare = compareSplittedImage.getBatchedBoundary();
-                            GaiaRectangle leftBottom = getLeftBottom(targetRectangle, compare);
-
-                            int maxWidth = getMaxWidth(compareImages);
-                            int maxHeight = getMaxHeight(compareImages);
-                            maxWidth = maxWidth < leftBottom.getMaxX() ? (int) leftBottom.getMaxX() : maxWidth;
-                            maxHeight = maxHeight < leftBottom.getMaxY() ? (int) leftBottom.getMaxY() : maxHeight;
-                            return maxHeight * maxWidth;
-                        })).collect(Collectors.toList());
-
-                List<GaiaBatchImage> rightTopFiltered = compareImages.stream()
-                        .filter((compareSplittedImage) -> {
-                            GaiaRectangle compare = compareSplittedImage.getBatchedBoundary();
-                            GaiaRectangle rightTop = getRightTop(targetRectangle, compare);
-                            List<GaiaBatchImage> filteredCompareImages = getListWithoutSelf(compareSplittedImage, compareImages);
-                            for (GaiaBatchImage filteredCompareSplittedImage : filteredCompareImages) {
-                                GaiaRectangle compareRectangle = filteredCompareSplittedImage.getBatchedBoundary();
-                                if (compareRectangle.intersects(rightTop, ERROR)) {
-                                    return false;
-                                }
-                            }
-                            return true;
-                        }).sorted(Comparator.comparing(compareSplittedImage -> {
-                            GaiaRectangle compare = compareSplittedImage.getBatchedBoundary();
-                            GaiaRectangle rightTop = getRightTop(targetRectangle, compare);
-                            int maxWidth = getMaxWidth(compareImages);
-                            int maxHeight = getMaxHeight(compareImages);
-                            maxWidth = maxWidth < rightTop.getMaxX() ? (int) rightTop.getMaxX() : maxWidth;
-                            maxHeight = maxHeight < rightTop.getMaxY() ? (int) rightTop.getMaxY() : maxHeight;
-                            return maxHeight * maxWidth;
-                        })).collect(Collectors.toList());
-
-                if (!leftBottomFiltered.isEmpty() && !rightTopFiltered.isEmpty()) {
-                    GaiaBatchImage leftBottomImage = leftBottomFiltered.get(0);
-                    GaiaRectangle leftBottomCompare = leftBottomImage.getBatchedBoundary();
-                    GaiaRectangle leftBottom = getLeftBottom(targetRectangle, leftBottomCompare);
-
-                    GaiaBatchImage rightTopImage = rightTopFiltered.get(0);
-                    GaiaRectangle rightTopCompare = rightTopImage.getBatchedBoundary();
-                    GaiaRectangle rightTop = getRightTop(targetRectangle, rightTopCompare);
-
-                    if (leftBottom.getBoundingArea() >= rightTop.getBoundingArea()) {
-                        target.setBatchedBoundary(rightTop);
-                    } else {
-                        target.setBatchedBoundary(leftBottom);
-                    }
-                } else if (!leftBottomFiltered.isEmpty()) {
-                    GaiaBatchImage notCompareImage = leftBottomFiltered.get(0);
-                    GaiaRectangle compare = notCompareImage.getBatchedBoundary();
-                    GaiaRectangle leftBottom = getLeftBottom(targetRectangle, compare);
-                    target.setBatchedBoundary(leftBottom);
-                } else if (!rightTopFiltered.isEmpty()) {
-                    GaiaBatchImage notCompareImage = rightTopFiltered.get(0);
-                    GaiaRectangle compare = notCompareImage.getBatchedBoundary();
-                    GaiaRectangle rightTop = getRightTop(targetRectangle, compare);
-                    target.setBatchedBoundary(rightTop);
-                }
-            }
-        }
-
-         */
-
         int maxWidth = getMaxWidth(splittedImages);
         int maxHeight = getMaxHeight(splittedImages);
         initBatchImage(maxWidth, maxHeight);
@@ -370,7 +276,7 @@ public class GaiaTextureCoordinator {
 
             Map<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
             List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
-            if (textures.size() > 0) {
+            if (!textures.isEmpty()) {
                 GaiaTexture texture = textures.get(0);
                 BufferedImage source = texture.getBufferedImage();
                 graphics.drawImage(source, (int) splittedRectangle.getMinX(), (int) splittedRectangle.getMinY(), null);
@@ -384,8 +290,6 @@ public class GaiaTextureCoordinator {
             graphics.fillRect(0, 0, maxWidth, maxHeight);
         }
 
-        //this.atlasImage = resizeNearestPowerOfTwo(this.atlasImage);
-
         for (GaiaBatchImage target : splittedImages) {
             GaiaRectangle splittedRectangle = target.getBatchedBoundary();
 
@@ -397,7 +301,7 @@ public class GaiaTextureCoordinator {
             List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
 
             GaiaTexture texture = null;
-            if (textures.size() > 0) {
+            if (!textures.isEmpty()) {
                 texture = textures.get(0);
             } else {
                 texture = new GaiaTexture();
@@ -410,9 +314,7 @@ public class GaiaTextureCoordinator {
             texture.setHeight(maxHeight);
             texture.setPath(ATLAS_IMAGE + ".jpg");
 
-            List<GaiaBufferDataSet> materialBufferDataSets = bufferDataSets.stream()
-                    .filter((bufferDataSet) -> bufferDataSet.getMaterialId() == target.getMaterialId())
-                    .collect(Collectors.toList());
+            List<GaiaBufferDataSet> materialBufferDataSets = bufferDataSets.stream().filter((bufferDataSet) -> bufferDataSet.getMaterialId() == target.getMaterialId()).collect(Collectors.toList());
 
             Double intPart_x = null, intPart_y = null;
             double fractPart_x, fractPart_y;
@@ -449,17 +351,6 @@ public class GaiaTextureCoordinator {
 
                         u2 = (splittedRectangle.getMinX() + u * width) / maxWidth;
                         v2 = (splittedRectangle.getMinY() + v * height) / maxHeight;
-                        /*
-                        float convertX = originX * width;
-                        float convertY = originY * height;
-                        float offsetX = (float) (splittedRectangle.getMinX() + convertX);
-                        float offsetY = (float) (splittedRectangle.getMinY() + convertY);
-                        float resultX = offsetX / maxWidth;
-                        float resultY = offsetY / maxHeight;
-                        texcoords[i] = resultX;
-                        texcoords[i + 1] = resultY;
-
-                         */
 
                         texcoords[i] = (float) (u2);
                         texcoords[i + 1] = (float) (v2);
@@ -468,62 +359,19 @@ public class GaiaTextureCoordinator {
 
             }
         }
-        //writeBatchedImage();
-        //this.atlasImage = null;
     }
-
-    /*private BufferedImage resizeNearestPowerOfTwo(BufferedImage bufferedImage) {
-        ImageResizer resizer = new ImageResizer();
-        int resizeWidth = ImageUtils.getNearestPowerOfTwo(bufferedImage.getWidth());
-        int resizeHeight = ImageUtils.getNearestPowerOfTwo(bufferedImage.getHeight());
-        bufferedImage = resizer.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight);
-        return bufferedImage;
-    }*/
 
     //findMaterial
     private GaiaMaterial findMaterial(int materialId) {
-        return materials.stream()
-                .filter(material -> material.getId() == materialId)
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("not found material"));
-    }
-
-    private List<GaiaBatchImage> getListWithoutSelf(GaiaBatchImage targetSplittedImage, List<GaiaBatchImage> splittedImages) {
-        return splittedImages.stream()
-                .filter(splittedImage -> (splittedImage != targetSplittedImage) && (splittedImage.getBatchedBoundary() != null))
-                .collect(Collectors.toList());
-    }
-
-    private GaiaRectangle getRightTop(GaiaRectangle target, GaiaRectangle compare) {
-        Vector2d rightTopPoint = compare.getRightTopPoint();
-        Vector2d rightTopMaxPoint = new Vector2d(rightTopPoint.x + target.getMaxX(), rightTopPoint.y + target.getMaxY());
-        GaiaRectangle rightTopRectangle = new GaiaRectangle();
-        rightTopRectangle.setInit(rightTopPoint);
-        rightTopRectangle.addPoint(rightTopMaxPoint);
-        return rightTopRectangle;
-    }
-
-    private GaiaRectangle getLeftBottom(GaiaRectangle target, GaiaRectangle compare) {
-        Vector2d leftBottomPoint = compare.getLeftBottomPoint();
-        Vector2d leftBottomMaxPoint = new Vector2d(leftBottomPoint.x + target.getMaxX(), leftBottomPoint.y + target.getMaxY());
-        GaiaRectangle leftBottomRectangle = new GaiaRectangle();
-        leftBottomRectangle.setInit(leftBottomPoint);
-        leftBottomRectangle.addPoint(leftBottomMaxPoint);
-        return leftBottomRectangle;
+        return materials.stream().filter(material -> material.getId() == materialId).findFirst().orElseThrow(() -> new RuntimeException("not found material"));
     }
 
     private int getMaxWidth(List<GaiaBatchImage> compareImages) {
-        return compareImages.stream()
-                .mapToInt(splittedImage -> (int) splittedImage.getBatchedBoundary().getMaxX())
-                .max()
-                .orElse(0);
+        return compareImages.stream().mapToInt(splittedImage -> (int) splittedImage.getBatchedBoundary().getMaxX()).max().orElse(0);
     }
 
     private int getMaxHeight(List<GaiaBatchImage> compareImages) {
-        return compareImages.stream()
-                .mapToInt(splittedImage -> (int) splittedImage.getBatchedBoundary().getMaxY())
-                .max()
-                .orElse(0);
+        return compareImages.stream().mapToInt(splittedImage -> (int) splittedImage.getBatchedBoundary().getMaxY()).max().orElse(0);
     }
 }
 

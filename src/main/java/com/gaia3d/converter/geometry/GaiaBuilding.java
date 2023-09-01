@@ -11,7 +11,6 @@ import java.util.List;
 
 @Getter
 @Setter
-
 @Builder
 public class GaiaBuilding {
 
@@ -22,5 +21,4 @@ public class GaiaBuilding {
     private GaiaBoundingBox boundingBox;
 
     List<Vector3d> positions;
-    //List<Triangle> triangles;
 }

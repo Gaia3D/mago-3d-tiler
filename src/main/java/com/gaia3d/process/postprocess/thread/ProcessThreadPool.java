@@ -55,14 +55,11 @@ public class ProcessThreadPool {
         do {
             if (executorService.isTerminated()) {
                 executorService.shutdownNow();
-            } else {
-                //System.gc();
-                //log.warn("GC");
             }
         } while (!executorService.awaitTermination(3, TimeUnit.SECONDS));
         log.info("[ThreadPool][End Pre-process]");
     }
-    
+
     public void postProcessStart(List<ContentInfo> contentInfos, List<PostProcess> postProcesses) throws InterruptedException {
         log.info("[ThreadPool][Start Post-process]");
         ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
@@ -75,15 +72,15 @@ public class ProcessThreadPool {
                 count.getAndIncrement();
                 log.info("[{}/{}] post-process content-info : {}", count, size, contentInfo.getName());
                 List<TileInfo> childTileInfos = contentInfo.getTileInfos();
-                List<TileInfo> copiedTileInfos = childTileInfos.stream().map((childTileInfo) -> {
-                    return TileInfo.builder()
-                            .kmlInfo(childTileInfo.getKmlInfo())
-                            .scenePath(childTileInfo.getScenePath())
-                            .tempPath(childTileInfo.getTempPath())
-                            .transformMatrix(childTileInfo.getTransformMatrix())
-                            .boundingBox(childTileInfo.getBoundingBox())
-                            .build();
-                }).collect(Collectors.toList());
+                List<TileInfo> copiedTileInfos = childTileInfos.stream()
+                        .map((childTileInfo) -> TileInfo.builder()
+                                .kmlInfo(childTileInfo.getKmlInfo())
+                                .scenePath(childTileInfo.getScenePath())
+                                .tempPath(childTileInfo.getTempPath())
+                                .transformMatrix(childTileInfo.getTransformMatrix())
+                                .boundingBox(childTileInfo.getBoundingBox())
+                                .build())
+                        .collect(Collectors.toList());
                 contentInfo.setTileInfos(copiedTileInfos);
 
                 for (TileInfo tileInfo : copiedTileInfos) {
@@ -92,11 +89,7 @@ public class ProcessThreadPool {
                 for (PostProcess postProcessor : postProcesses) {
                     postProcessor.run(contentInfo);
                 }
-
                 contentInfo.deleteTexture();
-                //contentInfo.setTileInfos(childTileInfos);
-                //contentInfo.deleteTexture();
-                //contentInfo.clear();
 
                 copiedTileInfos.clear();
                 copiedTileInfos = null;
@@ -112,9 +105,6 @@ public class ProcessThreadPool {
         do {
             if (executorService.isTerminated()) {
                 executorService.shutdownNow();
-            } else {
-                //System.gc();
-                //log.warn("GC");
             }
         } while (!executorService.awaitTermination(3, TimeUnit.SECONDS));
         log.info("[ThreadPool][End Post-process]");

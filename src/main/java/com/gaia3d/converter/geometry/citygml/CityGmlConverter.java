@@ -64,9 +64,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             CityGMLInputFactory factory = context.createCityGMLInputFactory();
             CityGMLReader reader = factory.createCityGMLReader(file);
             CityModel cityModel = (CityModel) reader.next();
-            List<String> names = new ArrayList<>();
 
-            //List<List<Vector3d>> polygons = new ArrayList<>();
             List<GaiaBuilding> gaiaBuildings = new ArrayList<>();
 
             List<AbstractCityObjectProperty> cityObjectMembers = cityModel.getCityObjectMembers();
@@ -80,7 +78,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                 Shell shell = ((Solid) solid).getExterior().getObject();
                 List<SurfaceProperty> surfaceProperties = shell.getSurfaceMembers();
 
-                if (building.getHeights().size() < 1) {
+                if (building.getHeights().isEmpty()) {
                     continue;
                 }
 
@@ -123,8 +121,6 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                     gaiaBuilding.setPositions(polygon);
                     gaiaBuilding.setFloorHeight(floorHeight);
                     gaiaBuilding.setRoofHeight(floorHeight + height);
-
-                    names.add(cityObject.getId());
                     break;
                 }
                 gaiaBuilding.setBoundingBox(boundingBox);

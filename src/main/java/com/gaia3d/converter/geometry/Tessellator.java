@@ -3,7 +3,9 @@ package com.gaia3d.converter.geometry;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Slf4j
 public class Tessellator {
@@ -125,7 +127,7 @@ public class Tessellator {
             }
         }
 
-        Collections.sort(result, (p1, p2) -> {
+        /*Collections.sort(result, (p1, p2) -> {
             double d1 = clockWisePosition.distanceSquared(p1);
             double d2 = clockWisePosition.distanceSquared(p2);
             if (d1 < d2) {
@@ -135,12 +137,13 @@ public class Tessellator {
             } else {
                 return 0;
             }
+        });*/
+        result.sort((p1, p2) -> {
+            double d1 = clockWisePosition.distanceSquared(p1);
+            double d2 = clockWisePosition.distanceSquared(p2);
+            return Double.compare(d1, d2);
         });
 
-
-        /*result = result.stream().sorted(Comparator.comparing((position) -> {
-            return clockWisePosition.distance(positions.get(clockWiseIndex));
-        })).collect(Collectors.toList());*/
         return result;
     }
 
@@ -255,23 +258,11 @@ public class Tessellator {
     }
 
     // find intersection point
-    /*private boolean isIntersection(Vector3d a1, Vector3d a2, Vector3d p1) {
-        Vector3d c1 = cross(a1, a2, p1);
-        if (c1.z() == 0) {
-            return true;
-        }
-        return false;
-    }*/
-
-    // find intersection point
     private boolean isIntersection(Vector3d a1, Vector3d a2, Vector3d p1) {
         if (a1.equals(p1) || a2.equals(p1)) {
             return false;
         }
         Vector3d c1 = cross(a1, a2, p1);
-        if (c1.z() == 0) {
-            return true;
-        }
-        return false;
+        return c1.z() == 0;
     }
 }

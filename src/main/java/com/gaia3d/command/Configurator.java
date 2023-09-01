@@ -15,9 +15,10 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * Class for setting up logs.
+ *
  * @author znkim
- * @since 1.0.0
  * @see <a href="https://logging.apache.org/log4j/2.x/manual/configuration.html">Log4j2 Configuration</a>
+ * @since 1.0.0
  */
 public class Configurator {
     public static final Level LEVEL = Level.ALL;
@@ -87,15 +88,7 @@ public class Configurator {
         if (path == null) {
             path = "logs/gaia3d-tiler.log";
         }
-        return FileAppender.newBuilder()
-                .setName("FileLogger")
-                .withFileName(path)
-                .withAppend(true)
-                .withImmediateFlush(true)
-                .withBufferedIo(true)
-                .withBufferSize(8192)
-                .setLayout(layout)
-                .build();
+        return FileAppender.newBuilder().setName("FileLogger").withFileName(path).withAppend(true).withImmediateFlush(true).withBufferedIo(true).withBufferSize(8192).setLayout(layout).build();
     }
 
     private static ConsoleAppender createConsoleAppender(PatternLayout layout) {

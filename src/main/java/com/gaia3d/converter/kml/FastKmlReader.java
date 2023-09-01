@@ -30,7 +30,6 @@ public class FastKmlReader {
 
     public KmlInfo read(File file) {
         KmlInfo kmlInfo = null;
-        StringBuffer sb = new StringBuffer();
         try {
             String xml = Files.readString(file.toPath());
             Vector3d position = new Vector3d(Double.parseDouble(findValue(xml, "longitude")), Double.parseDouble(findValue(xml, "latitude")), Double.parseDouble(findValue(xml, "altitude")));
@@ -51,7 +50,6 @@ public class FastKmlReader {
             log.error(e.getMessage());
             throw new RuntimeException(e);
         }
-        sb = null;
         return kmlInfo;
     }
 

@@ -34,7 +34,7 @@ public class GeometryOptimizer implements PreProcess {
     }
 
     public void deleteFacesWithNormalInNode(GaiaNode gaiaNode, Vector3d normalReference, double error) {
-        if(gaiaNode.getMeshes().size() > 0) {
+        if(!gaiaNode.getMeshes().isEmpty()) {
             List<GaiaMesh> meshes = gaiaNode.getMeshes();
             ArrayList<GaiaMesh> meshesToRemove = new ArrayList<>();
             for (GaiaMesh mesh : meshes) {
@@ -62,7 +62,7 @@ public class GeometryOptimizer implements PreProcess {
                             }
 
                             // check if the surface has faces.
-                            if(surface.getFaces().size() == 0) {
+                            if(surface.getFaces().isEmpty()) {
                                 surfacesToRemove.add(surface);
                             }
                         }
@@ -73,7 +73,7 @@ public class GeometryOptimizer implements PreProcess {
                             surfaces.remove(surface);
                         }
                         // check if the primitive has surfaces.
-                        if(primitive.getSurfaces().size() == 0) {
+                        if(primitive.getSurfaces().isEmpty()) {
                             primitivesToRemove.add(primitive);
                         }
                     }
@@ -84,7 +84,7 @@ public class GeometryOptimizer implements PreProcess {
                         primitives.remove(primitive);
                     }
                     // check if the mesh has primitives.
-                    if(mesh.getPrimitives().size() == 0) {
+                    if(mesh.getPrimitives().isEmpty()) {
                         meshesToRemove.add(mesh);
                     }
                 }
@@ -96,7 +96,7 @@ public class GeometryOptimizer implements PreProcess {
         }
 
         // check if exist children.
-        if(gaiaNode.getChildren().size() > 0) {
+        if(!gaiaNode.getChildren().isEmpty()) {
             gaiaNode.getChildren().forEach((child) -> deleteFacesWithNormalInNode(child, normalReference, error));
         }
     }

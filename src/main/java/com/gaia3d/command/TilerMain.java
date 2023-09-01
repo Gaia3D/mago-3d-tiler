@@ -20,13 +20,13 @@ import com.gaia3d.process.preprocess.GaiaTranslator;
 import com.gaia3d.process.preprocess.PreProcess;
 import com.gaia3d.process.tileprocess.Process;
 import com.gaia3d.process.tileprocess.TileProcess;
+import com.gaia3d.process.tileprocess.tile.Gaia3DTiler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileExistsException;
 import org.apache.logging.log4j.Level;
 import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
-import com.gaia3d.process.tileprocess.tile.Gaia3DTiler;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,8 +37,9 @@ import java.util.List;
 
 /**
  * Main class for Gaia3D Tiler.
- * @Author znkim
- * @Since 1.0.0
+ *
+ * @author znkim
+ * @since 1.0.0
  */
 @Slf4j
 public class TilerMain {
@@ -119,7 +120,7 @@ public class TilerMain {
         }
 
         if (formatType != FormatType.KML) {
-            source = (crs != null && !crs.equals("")) ? factory.createFromName("EPSG:" + crs) : null;
+            source = (crs != null && !crs.isEmpty()) ? factory.createFromName("EPSG:" + crs) : null;
         }
         FileLoader fileLoader = new FileLoader(command, converter);
 
@@ -131,12 +132,7 @@ public class TilerMain {
         preProcessors.add(new GaiaScaler());
         //preProcessors.add(new GeometryOptimizer()); // son.***
 
-        TilerOptions tilerOptions = TilerOptions.builder()
-                .inputPath(inputPath)
-                .outputPath(outputPath)
-                .inputFormatType(formatType)
-                .source(source)
-                .build();
+        TilerOptions tilerOptions = TilerOptions.builder().inputPath(inputPath).outputPath(outputPath).inputFormatType(formatType).source(source).build();
         TileProcess tileProcess = new Gaia3DTiler(tilerOptions, command);
 
         List<PostProcess> postProcessors = new ArrayList<>();
@@ -170,8 +166,7 @@ public class TilerMain {
     }
 
     private static void start() {
-        log.info(
-                " _______  ___      _______  _______  __   __  _______ \n" +
+        log.info(" _______  ___      _______  _______  __   __  _______ \n" +
                 "|       ||   |    |   _   ||       ||  |_|  ||   _   |\n" +
                 "|    _  ||   |    |  |_|  ||  _____||       ||  |_|  |\n" +
                 "|   |_| ||   |    |       || |_____ |       ||       |\n" +

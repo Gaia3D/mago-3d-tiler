@@ -4,12 +4,8 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.structure.GaiaMaterial;
 import com.gaia3d.basic.structure.GaiaNode;
 import com.gaia3d.basic.structure.GaiaScene;
-import com.gaia3d.converter.geometry.AbstractGeometryConverter;
 import com.gaia3d.converter.Converter;
-import com.gaia3d.converter.geometry.Extruder;
-import com.gaia3d.converter.geometry.Extrusion;
-import com.gaia3d.converter.geometry.GaiaBuilding;
-import com.gaia3d.converter.geometry.Tessellator;
+import com.gaia3d.converter.geometry.*;
 import com.gaia3d.process.ProcessOptions;
 import com.gaia3d.util.GlobeUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -18,12 +14,10 @@ import org.geotools.data.DataStore;
 import org.geotools.data.Query;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.files.ShpFiles;
-import org.geotools.data.shapefile.shp.ShapefileHeader;
 import org.geotools.data.shapefile.shp.ShapefileReader;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.FeatureIterator;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.util.factory.Hints;
 import org.joml.Matrix4d;
@@ -33,7 +27,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
 
 import java.io.File;
@@ -81,23 +74,21 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         }
 
         try (ShapefileReader reader = new ShapefileReader(shpFiles, true, true, new GeometryFactory())) {
-            ShapefileHeader header = reader.getHeader();
-
+            //ShapefileHeader header = reader.getHeader();
             DataStore dataStore = new ShapefileDataStore(file.toURI().toURL());
             String typeName = dataStore.getTypeNames()[0];
             SimpleFeatureSource source = dataStore.getFeatureSource(typeName);
-            SimpleFeatureType schema = source.getSchema();
-
-            ShapefileDataStore shapeFileDatastore = (ShapefileDataStore) dataStore;
+            //SimpleFeatureType schema = source.getSchema();
+            //ShapefileDataStore shapeFileDatastore = (ShapefileDataStore) dataStore;
 
             source = dataStore.getFeatureSource(typeName);
-            schema = source.getSchema();
+            //schema = source.getSchema();
 
             var query = new Query(typeName, Filter.INCLUDE);
             query.getHints().add(new Hints(Hints.FEATURE_2D, true)); // for 3d feature
             SimpleFeatureCollection features = source.getFeatures(query);
 
-            SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(schema);
+            //SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(schema);
 
             FeatureIterator<SimpleFeature> iterator = features.features();
 
@@ -113,7 +104,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 List<Vector3d> positions = new ArrayList<>();
 
                 for (Coordinate coordinate : coordinates) {
-                    Point point = (Point) geometryFactory.createPoint(coordinate);
+                    Point point = geometryFactory.createPoint(coordinate);
 
                     double x, y;
                     if (flipCoordnate) {
@@ -130,7 +121,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 }
 
 
-
                 String heightAttribute = (String) feature.getAttribute("height");
                 int heightUppercaseAttribute = 0;
 
@@ -140,7 +130,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 }
 
                 double height = 0;
-                if (heightAttribute != null && !heightAttribute.equals("")) {
+                if (heightAttribute != null && !heightAttribute.isEmpty()) {
                     height = Double.parseDouble(heightAttribute);
                 } else if (heightUppercaseAttribute != 0) {
                     height = heightUppercaseAttribute;
@@ -153,14 +143,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                     height = 1.0d;
                 }
 
-                GaiaBuilding building = GaiaBuilding.builder()
-                        .id(feature.getID())
-                        .name("test")
-                        .boundingBox(boundingBox)
-                        .floorHeight(0)
-                        .roofHeight(height)
-                        .positions(positions)
-                        .build();
+                GaiaBuilding building = GaiaBuilding.builder().id(feature.getID()).name("test").boundingBox(boundingBox).floorHeight(0).roofHeight(height).positions(positions).build();
                 buildings.add(building);
             }
 

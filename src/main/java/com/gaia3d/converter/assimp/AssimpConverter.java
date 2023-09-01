@@ -15,7 +15,6 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -59,15 +58,13 @@ public class AssimpConverter implements Converter {
             log.error("File does not exist: {}", file.getAbsolutePath());
             return null;
         }
-        //
+
         String path = file.getAbsolutePath().replace(file.getName(), "");
-        //ByteBuffer byteBuffer = readFile(file, true);
         ByteBuffer byteBuffer = readFile(file);
         String hint = FilenameUtils.getExtension(file.getName());
 
         assert byteBuffer != null;
         AIScene aiScene = Assimp.aiImportFileFromMemory(byteBuffer, DEFAULT_FLAGS, hint);
-        //AIScene aiScene = Assimp.aiImportFileFromMemory(byteBuffer, DEFAULT_FLAGS, hint);
         assert aiScene != null;
         GaiaScene gaiaScene = convertScene(aiScene, path);
         aiScene.free();
@@ -117,10 +114,6 @@ public class AssimpConverter implements Converter {
 
         assert node != null;
         Matrix4d rootTransform = node.getTransformMatrix();
-
-        /*if (command.hasOption("swapYZ")) {
-            rootTransform.rotateX(Math.toRadians(90), rootTransform);
-        }*/
 
         node.setTransformMatrix(rootTransform);
         node.recalculateTransform();
@@ -432,30 +425,5 @@ public class AssimpConverter implements Converter {
             log.error("FileUtils.readBytes: " + e.getMessage());
             throw new RuntimeException(e);
         }
-    }
-
-    public ByteBuffer readFile(File file, boolean flip) {
-        Path path = file.toPath();
-        try (BufferedInputStream stream = new BufferedInputStream(Files.newInputStream(path))) {
-            int size = (int) Files.size(path);
-            ByteBuffer byteBuffer = BufferUtils.createByteBuffer(size);
-
-            int bufferSize = 8192;
-            bufferSize = Math.min(size, bufferSize);
-            byte[] buffer = new byte[bufferSize];
-            while (buffer.length > 0 && stream.read(buffer) != -1) {
-                byteBuffer.put(buffer);
-                if (stream.available() < bufferSize) {
-                    buffer = null;
-                    buffer = new byte[stream.available()];
-                }
-            }
-            if (flip)
-                byteBuffer.flip();
-            return byteBuffer;
-        } catch (IOException e) {
-            log.error("FileUtils.readBytes: " + e.getMessage());
-        }
-        return null;
     }
 }

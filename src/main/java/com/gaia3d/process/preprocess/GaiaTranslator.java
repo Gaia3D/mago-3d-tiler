@@ -16,8 +16,6 @@ import org.joml.Vector3d;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 
-import java.nio.file.Path;
-
 @Slf4j
 @AllArgsConstructor
 public class GaiaTranslator implements PreProcess {
@@ -30,6 +28,7 @@ public class GaiaTranslator implements PreProcess {
         if (source == null && tileInfo != null) {
             return tileInfo;
         }
+        assert tileInfo != null;
         GaiaScene gaiaScene = tileInfo.getScene();
         GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox();
 

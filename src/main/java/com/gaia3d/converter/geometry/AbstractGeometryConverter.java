@@ -2,7 +2,6 @@ package com.gaia3d.converter.geometry;
 
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.basic.types.TextureType;
-import com.gaia3d.converter.geometry.GaiaTriangle;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
@@ -11,7 +10,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.stream.IntStream;
 
 public abstract class AbstractGeometryConverter {
@@ -88,8 +86,7 @@ public abstract class AbstractGeometryConverter {
     }
 
     protected int indexOf(List<Vector3d> positions, Vector3d item) {
-        return IntStream.range(0, positions.size())
-                .filter(i -> positions.get(i) == item)
-                .findFirst().orElse(-1);
-    };
+        return IntStream.range(0, positions.size()).filter(i -> positions.get(i) == item).findFirst().orElse(-1);
+    }
+
 }

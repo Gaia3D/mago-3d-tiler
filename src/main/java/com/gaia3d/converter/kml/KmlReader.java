@@ -25,7 +25,8 @@ import java.util.List;
  */
 @Slf4j
 public class KmlReader {
-    public KmlReader() throws ParserConfigurationException {
+    public KmlReader() {
+
     }
 
     //read kml file

@@ -10,11 +10,6 @@ public class GaiaTriangle {
     private final Vector3d[] positions;
     private final Vector3d normal = new Vector3d();
 
-    public GaiaTriangle(Vector3d[] positions) {
-        this.positions = positions;
-        calcNormal();
-    }
-
     public GaiaTriangle(Vector3d position1, Vector3d position2, Vector3d position3) {
         this.positions = new Vector3d[3];
         this.positions[0] = position1;
