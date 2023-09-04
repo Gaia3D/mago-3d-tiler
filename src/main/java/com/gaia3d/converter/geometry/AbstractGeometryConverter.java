@@ -2,6 +2,7 @@ package com.gaia3d.converter.geometry;
 
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.basic.types.TextureType;
+import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
+@Slf4j
 public abstract class AbstractGeometryConverter {
 
     abstract protected List<GaiaScene> convert(File file);
@@ -55,6 +57,10 @@ public abstract class AbstractGeometryConverter {
 
         GaiaSurface surface = new GaiaSurface();
         Vector3d[] normals = new Vector3d[positions.size()];
+        for (int i = 0; i < normals.length; i++) {
+            normals[i] = new Vector3d(0,0,0);
+        }
+
         for (GaiaTriangle triangle : triangles) {
             GaiaFace face = new GaiaFace();
             Vector3d[] trianglePositions = triangle.getPositions();
@@ -78,6 +84,9 @@ public abstract class AbstractGeometryConverter {
 
             GaiaVertex vertex = new GaiaVertex();
             vertex.setPosition(new Vector3d(position.x, position.y, position.z));
+            if (normal == null) {
+                log.error("why");
+            }
             vertex.setNormal(normal);
             vertices.add(vertex);
         }

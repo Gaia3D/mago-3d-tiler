@@ -26,6 +26,9 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
+import org.locationtech.proj4j.CRSFactory;
+import org.locationtech.proj4j.CoordinateReferenceSystem;
+import org.locationtech.proj4j.ProjCoordinate;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.Filter;
 
@@ -39,9 +42,15 @@ import java.util.List;
 @Slf4j
 public class ShapeConverter extends AbstractGeometryConverter implements Converter {
     private final CommandLine command;
+    private final CoordinateReferenceSystem crs;
 
-    public ShapeConverter(CommandLine command) {
+    public ShapeConverter(CommandLine command, CoordinateReferenceSystem crs) {
         this.command = command;
+        //this.crs = crs;
+
+        //CRSFactory factory = new CRSFactory();
+        //crs = factory.createFromParameters("EPSG:5174", "+proj=tmerc +lat_0=38 +lon_0=127.0028902777778 +k=1 +x_0=200000 +y_0=500000 +ellps=bessel +units=m +no_defs +towgs84=-115.80,474.99,674.11,1.16,-2.31,-1.63,6.43");
+        this.crs = crs;
     }
 
     @Override
@@ -96,6 +105,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             while (iterator.hasNext()) {
                 SimpleFeature feature = iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
+                //geom = geom.getEnvelope();
 
                 GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
                 Coordinate[] coordinates = geom.getCoordinates();
@@ -103,6 +113,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 GaiaBoundingBox boundingBox = new GaiaBoundingBox();
                 List<Vector3d> positions = new ArrayList<>();
 
+                Vector3d firstPosition = null;
                 for (Coordinate coordinate : coordinates) {
                     Point point = geometryFactory.createPoint(coordinate);
 
@@ -115,13 +126,50 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                         y = point.getY();
                     }
 
-                    Vector3d position = new Vector3d(x, y, 0);
+                    Vector3d position;
+                    if (crs != null) {
+                        ProjCoordinate projCoordinate = new ProjCoordinate(x, y, boundingBox.getMinZ());
+                        ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
+                        position = new Vector3d(centerWgs84.x, centerWgs84.y, 0.0d);
+                    } else {
+                        position = new Vector3d(x, y, 0.0d);
+                    }
+
+                    if (firstPosition == null) {
+                        firstPosition = position;
+                    } else if (firstPosition.equals(position)) {
+                        break;
+                    }
+
                     positions.add(position);
                     boundingBox.addPoint(position);
                 }
 
+                double height = 0;
+                int floor = 0;
+                Object floorAttributeObject = feature.getAttribute("GRND_FLR");
+                if (floorAttributeObject != null) {
+                    floor = (int) floorAttributeObject;
+                    //String floorAttribute = (String) floorAttributeObject;
+                    //floor = Double.parseDouble(floorAttribute);
+                }
+                Object heightAttributeObject = feature.getAttribute("HEIGHT");
+                if (heightAttributeObject != null) {
+                    height = (int) heightAttributeObject;
+                    //String heightAttribute = (String) heightAttributeObject;
+                    //height = Double.parseDouble(heightAttribute);
+                }
 
-                String heightAttribute = (String) feature.getAttribute("height");
+                if (height == 0 && floor > 1) {
+                    height = floor * 3.0d;
+                }
+
+                if (height == 0) {
+                    height = 3.0d;
+                }
+
+
+                /*String heightAttribute = (String) feature.getAttribute("height");
                 int heightUppercaseAttribute = 0;
 
                 Object heightUppercaseAttributeObject = feature.getAttribute("HEIGHT");
@@ -129,19 +177,18 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                     heightUppercaseAttribute = (int) feature.getAttribute("HEIGHT");
                 }
 
+
+
                 double height = 0;
                 if (heightAttribute != null && !heightAttribute.isEmpty()) {
                     height = Double.parseDouble(heightAttribute);
                 } else if (heightUppercaseAttribute != 0) {
                     height = heightUppercaseAttribute;
                 }
-                /*else if (heightUppercaseAttribute != null && !heightUppercaseAttribute.equals("")) {
-                    height = Double.parseDouble(heightUppercaseAttribute);
-                }*/
 
                 if (height == 0) {
                     height = 1.0d;
-                }
+                }*/
 
                 GaiaBuilding building = GaiaBuilding.builder().id(feature.getID()).name("test").boundingBox(boundingBox).floorHeight(0).roofHeight(height).positions(positions).build();
                 buildings.add(building);
@@ -154,7 +201,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 GaiaMaterial material = scene.getMaterials().get(0);
                 GaiaNode rootNode = scene.getNodes().get(0);
                 rootNode.setName(building.getName());
-
 
                 Vector3d center = building.getBoundingBox().getCenter();
 

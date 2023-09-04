@@ -14,7 +14,6 @@ import java.util.List;
 @Slf4j
 @Getter
 @Setter
-@Builder
 public class Node {
     @JsonIgnore
     private String nodeCode;

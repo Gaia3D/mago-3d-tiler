@@ -43,7 +43,7 @@ import java.util.List;
  */
 @Slf4j
 public class TilerMain {
-    public static String version = "1.1.5";
+    public static String version = "1.1.1";
 
     public static void main(String[] args) {
         Configurator.initConsoleLogger();
@@ -98,6 +98,7 @@ public class TilerMain {
         File inputFile = new File(command.getOptionValue(ProcessOptions.INPUT.getArgName()));
         File outputFile = new File(command.getOptionValue(ProcessOptions.OUTPUT.getArgName()));
         String crs = command.getOptionValue(ProcessOptions.CRS.getArgName());
+        String proj = command.getOptionValue(ProcessOptions.PROJ4.getArgName());
         String inputExtension = command.getOptionValue(ProcessOptions.INPUT_TYPE.getArgName());
 
         Path inputPath = createPath(inputFile);
@@ -109,19 +110,21 @@ public class TilerMain {
 
         CRSFactory factory = new CRSFactory();
         CoordinateReferenceSystem source = null;
+        if (proj != null && !proj.isEmpty()) {
+            source = factory.createFromParameters("CUSTOM", proj);
+        } else {
+            source = (crs != null && !crs.isEmpty()) ? factory.createFromName("EPSG:" + crs) : null;
+        }
 
         Converter converter;
         if (formatType == FormatType.CITY_GML) {
             converter = new CityGmlConverter(command);
         } else if (formatType == FormatType.SHP) {
-            converter = new ShapeConverter(command);
+            converter = new ShapeConverter(command, source);
         } else {
             converter = new AssimpConverter(command);
         }
 
-        if (formatType != FormatType.KML) {
-            source = (crs != null && !crs.isEmpty()) ? factory.createFromName("EPSG:" + crs) : null;
-        }
         FileLoader fileLoader = new FileLoader(command, converter);
 
         List<PreProcess> preProcessors = new ArrayList<>();
@@ -130,7 +133,6 @@ public class TilerMain {
         }
         preProcessors.add(new GaiaTranslator(source, command));
         preProcessors.add(new GaiaScaler());
-        //preProcessors.add(new GeometryOptimizer()); // son.***
 
         TilerOptions tilerOptions = TilerOptions.builder().inputPath(inputPath).outputPath(outputPath).inputFormatType(formatType).source(source).build();
         TileProcess tileProcess = new Gaia3DTiler(tilerOptions, command);
@@ -166,13 +168,12 @@ public class TilerMain {
     }
 
     private static void start() {
-        log.info(" _______  ___      _______  _______  __   __  _______ \n" +
-                "|       ||   |    |   _   ||       ||  |_|  ||   _   |\n" +
-                "|    _  ||   |    |  |_|  ||  _____||       ||  |_|  |\n" +
-                "|   |_| ||   |    |       || |_____ |       ||       |\n" +
-                "|    ___||   |___ |       ||_____  ||       ||       |\n" +
-                "|   |    |       ||   _   | _____| || ||_|| ||   _   |\n" +
-                "|___|    |_______||__| |__||_______||_|   |_||__| |__|");
+        log.info(
+                "┏┓┓ ┏┓┏┓┳┳┓┏┓\n" +
+                "┃┃┃ ┣┫┗┓┃┃┃┣┫\n" +
+                "┣┛┗┛┛┗┗┛┛ ┗┛┗\n" +
+                "3D Tiler:" + version
+        );
         underline();
     }
 

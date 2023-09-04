@@ -42,15 +42,22 @@ public class GaiaTranslator implements PreProcess {
         String inputExtension = command.getOptionValue(ProcessOptions.INPUT_TYPE.getArgName());
         FormatType formatType = FormatType.fromExtension(inputExtension);
 
+        Vector3d position = new Vector3d(center.x, center.y, 0.0d);
         if (formatType == FormatType.CITY_GML || formatType == FormatType.SHP) {
             center = new Vector3d(transform.get(3,0), transform.get(3,1), 0.0d);
+            position = new Vector3d(center.x, center.y, 0.0d);
+        } else {
+            ProjCoordinate centerSource = new ProjCoordinate(center.x, center.y, boundingBox.getMinZ());
+            ProjCoordinate centerWgs84 = GlobeUtils.transform(source, centerSource);
+            position = new Vector3d(centerWgs84.x, centerWgs84.y, 0.0d);
         }
+        KmlInfo kmlInfo = KmlInfo.builder().position(position).build();
 
         // lon/lat position
-        ProjCoordinate centerSource = new ProjCoordinate(center.x, center.y, boundingBox.getMinZ());
+        /*rojCoordinate centerSource = new ProjCoordinate(center.x, center.y, boundingBox.getMinZ());
         ProjCoordinate centerWgs84 = GlobeUtils.transform(source, centerSource);
         Vector3d position = new Vector3d(centerWgs84.x, centerWgs84.y, 0.0d);
-        KmlInfo kmlInfo = KmlInfo.builder().position(position).build();
+        KmlInfo kmlInfo = KmlInfo.builder().position(position).build();*/
 
 
         Matrix4d resultTransfromMatrix = transform.translate(traslation, new Matrix4d());

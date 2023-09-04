@@ -15,6 +15,8 @@ public enum ProcessOptions {
     INPUT_TYPE("inputType", "it", "inputType", true, "input file type (kml, 3ds, obj, gltf, etc...)"),
     OUTPUT_TYPE("outputType", "ot", "outputType", true, "output file type"),
     CRS("crs", "c", "crs", true,"Coordinate Reference Systems, only epsg code (4326, 3857, etc...)"),
+    PROJ4("proj", "p", "proj", true, "proj4 parameters (ex: +proj=tmerc +la...)"),
+
     RECURSIVE("recursive", "r", "recursive", false, "deep directory exploration"),
     SWAP_YZ("swapYZ", "yz", "swapYZ", false, "Swap Vertex Axis YZ"),
     REVERSE_TEXCOORD("reverseTexCoord", "rt", "reverseTexCoord", false, "Reverse Texture Coordinate Y"),

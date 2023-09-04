@@ -68,6 +68,7 @@ public class ProcessFlowThread implements Process {
     }
 
     private void postprocess(Tileset tileset) {
+
         ProcessThreadPool pool = new ProcessThreadPool();
         List<ContentInfo> contentInfos = tileset.findAllContentInfo();
         try {

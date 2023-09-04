@@ -56,11 +56,10 @@ public class ProcessFlow implements Process {
             count++;
             log.info("[File Loading] : {}/{} : {}", count, size, file);
             List<TileInfo> tileInfoResult = fileLoader.loadTileInfo(file);
-
             int serial = 0;
             for (TileInfo tileInfo : tileInfoResult) {
                 if (tileInfo != null) {
-                    log.info("{}/{}", serial, tileInfoResult.size());
+                    log.info("[{}/{}][{}/{}] load tile...", count, size, serial, tileInfoResult.size());
                     for (PreProcess preProcessors : preProcesses) {
                         preProcessors.run(tileInfo);
                     }
@@ -80,7 +79,11 @@ public class ProcessFlow implements Process {
 
     private void postprocess(Tileset tileset) {
         List<ContentInfo> contentInfos = tileset.findAllContentInfo();
+        int count = 0;
+        int size = contentInfos.size();
         for (ContentInfo contentInfo : contentInfos) {
+            count++;
+            log.info("[{}/{}] post-process content-info : {}", count, size, contentInfo.getName());
             List<TileInfo> childTileInfos = contentInfo.getTileInfos();
             for (TileInfo tileInfo : childTileInfos) {
                 tileInfo.maximize();
