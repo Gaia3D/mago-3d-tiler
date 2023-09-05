@@ -20,6 +20,12 @@ class ShapeKoreaTest {
     private static final String input = "D:\\workspaces\\korea_fixed\\";
     private static final String output = "D:\\workspaces\\korea_fixed\\output\\";
 
+    /*@Test
+    void convertKorea() {
+        String suffix = "south_korea";
+        convert(suffix);
+    }*/
+
     @Test
     void convertShp1() {
         String suffix = "seoul";
@@ -122,14 +128,13 @@ class ShapeKoreaTest {
         convert(suffix);
     }
 
-
     void convert(String suffix) {
         String[] args = new String[]{
                 "-input", input + suffix + ".shp",
                 "-inputType", "shp",
                 "-output", output + suffix,
                 "-recursive",
-                "-maxCount", "16384",
+                "-maxCount", "32768",
                 "-minLod", "0",
                 "-maxLod", "3",
                 "-proj", "+proj=tmerc +lat_0=38 +lon_0=127.0028902777778 +k=1 +x_0=200000 +y_0=500000 +ellps=bessel +units=m +no_defs +towgs84=-115.80,474.99,674.11,1.16,-2.31,-1.63,6.43",
@@ -137,13 +142,7 @@ class ShapeKoreaTest {
                 "-refineAdd",
                 "-crs", "5174",
                 //"-glb",
-                //"-debug"
         };
         TilerMain.main(args);
-    }
-
-    private String getAbsolutePath(String classPath) throws URISyntaxException {
-        File file = new File(getClass().getResource(classPath).toURI());
-        return file.getAbsolutePath() + File.separator;
     }
 }

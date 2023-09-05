@@ -35,7 +35,7 @@ public class ProcessThreadPool {
                 int serial = 0;
                 for (TileInfo tileInfo : tileInfoResult) {
                     if (tileInfo != null) {
-                        log.info("[{}/{}][{}/{}] load tile...", count, size, serial, tileInfoResult.size());
+                        log.info("[{}/{}][{}/{}] load sub-tile...", count, size, serial, tileInfoResult.size());
                         for (PreProcess preProcessor : preProcessors) {
                             preProcessor.run(tileInfo);
                         }

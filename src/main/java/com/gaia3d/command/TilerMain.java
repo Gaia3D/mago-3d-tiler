@@ -172,7 +172,7 @@ public class TilerMain {
                 "┏┓┓ ┏┓┏┓┳┳┓┏┓\n" +
                 "┃┃┃ ┣┫┗┓┃┃┃┣┫\n" +
                 "┣┛┗┛┛┗┗┛┛ ┗┛┗\n" +
-                "3D Tiler:" + version
+                "3DTiler:" + version
         );
         underline();
     }

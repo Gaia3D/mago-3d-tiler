@@ -9,42 +9,37 @@ import java.net.URISyntaxException;
 
 @Slf4j
 class GmlTest {
-    private static final String INPUT_PATH = "../../../../sample-external/";
-    private static final String OUTPUT_PATH = "../../../../output/";
+    private static final String INPUT_PATH = "D:\\workspaces\\cityGML\\";
+    private static final String OUTPUT_PATH = "D:\\workspaces\\cityGML\\output\\";
 
     @Test
-    void help() {
-        String[] args = new String[]{"-help"};
-        TilerMain.main(args);
+    void convertGmlSapporo() {
+        convert("sapporo", "4326");
     }
     @Test
-    void convertGML() {
-        String input = "D:\\workspaces\\cityGML\\";
-        String output = "D:\\workspaces\\cityGML\\output\\";
-        convert(input, output, "sapporo", "4326", "gml");
+    void convertGmlMoran() {
+        convert("moran", "4326");
     }
     @Test
-    void convertGmlHawai() {
-        String input = "D:\\workspaces\\cityGML\\";
-        String output = "D:\\workspaces\\cityGML\\output\\";
-        convert(input, output, "hawaii", "4326", "gml");
+    void convertGmlHawaii() {
+        convert("hawaii", "4326");
     }
-    private void convert(String inputPath, String outputPath, String suffix, String crs, String inputType) {
+    private void convert(String suffix, String crs) {
         String[] args = new String[]{
-                //"-log", outputPath + suffix + "/result.log",
-                "-input", inputPath + suffix,
-                "-inputType", inputType,
-                "-output", outputPath + suffix,
+                "-input", INPUT_PATH + suffix,
+                "-inputType", "gml",
+                "-output", OUTPUT_PATH + suffix,
                 "-crs", crs,
                 "-recursive",
                 //"-swapYZ",
+                "-flipCoordinate",
                 "-maxCount", "32768",
                 "-minLod", "0",
                 "-maxLod", "3",
-                "-multiThread",
                 "-refineAdd",
+                "-multiThread",
                 //"-glb",
-                "-debug"
+                //"-debug"
         };
         TilerMain.main(args);
     }

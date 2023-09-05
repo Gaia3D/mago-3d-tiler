@@ -29,6 +29,7 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
+import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.Filter;
 
@@ -37,6 +38,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Slf4j
@@ -72,10 +74,9 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         List<GaiaScene> scenes = new ArrayList<>();
         Tessellator tessellator = new Tessellator();
         Extruder extruder = new Extruder(tessellator);
-
         boolean flipCoordnate = this.command.hasOption(ProcessOptions.Flip_Coordinate.getArgName());
-
         ShpFiles shpFiles = null;
+
         try {
             shpFiles = new ShpFiles(file);
         } catch (MalformedURLException e) {
@@ -94,18 +95,18 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             //schema = source.getSchema();
 
             var query = new Query(typeName, Filter.INCLUDE);
-            query.getHints().add(new Hints(Hints.FEATURE_2D, true)); // for 3d feature
+            query.getHints().add(new Hints(Hints.FEATURE_2D, true)); // for 3d
+
             SimpleFeatureCollection features = source.getFeatures(query);
 
             //SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(schema);
 
             FeatureIterator<SimpleFeature> iterator = features.features();
-
             List<GaiaBuilding> buildings = new ArrayList<>();
+            int i = 0;
             while (iterator.hasNext()) {
                 SimpleFeature feature = iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
-                //geom = geom.getEnvelope();
 
                 GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
                 Coordinate[] coordinates = geom.getCoordinates();
@@ -145,54 +146,18 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                     boundingBox.addPoint(position);
                 }
 
-                double height = 0;
-                int floor = 0;
-                Object floorAttributeObject = feature.getAttribute("GRND_FLR");
-                if (floorAttributeObject != null) {
-                    floor = (int) floorAttributeObject;
-                    //String floorAttribute = (String) floorAttributeObject;
-                    //floor = Double.parseDouble(floorAttribute);
-                }
-                Object heightAttributeObject = feature.getAttribute("HEIGHT");
-                if (heightAttributeObject != null) {
-                    height = (int) heightAttributeObject;
-                    //String heightAttribute = (String) heightAttributeObject;
-                    //height = Double.parseDouble(heightAttribute);
-                }
-
-                if (height == 0 && floor > 1) {
-                    height = floor * 3.0d;
-                }
-
-                if (height == 0) {
-                    height = 3.0d;
-                }
-
-
-                /*String heightAttribute = (String) feature.getAttribute("height");
-                int heightUppercaseAttribute = 0;
-
-                Object heightUppercaseAttributeObject = feature.getAttribute("HEIGHT");
-                if (heightUppercaseAttributeObject != null) {
-                    heightUppercaseAttribute = (int) feature.getAttribute("HEIGHT");
-                }
-
-
-
-                double height = 0;
-                if (heightAttribute != null && !heightAttribute.isEmpty()) {
-                    height = Double.parseDouble(heightAttribute);
-                } else if (heightUppercaseAttribute != 0) {
-                    height = heightUppercaseAttribute;
-                }
-
-                if (height == 0) {
-                    height = 1.0d;
-                }*/
-
-                GaiaBuilding building = GaiaBuilding.builder().id(feature.getID()).name("test").boundingBox(boundingBox).floorHeight(0).roofHeight(height).positions(positions).build();
+                double height = getHeight(feature);
+                GaiaBuilding building = GaiaBuilding.builder()
+                        .id(feature.getID())
+                        .name("test")
+                        .boundingBox(boundingBox)
+                        .floorHeight(0)
+                        .roofHeight(height)
+                        .positions(positions)
+                        .build();
                 buildings.add(building);
             }
+            iterator.close();
 
             for (GaiaBuilding building : buildings) {
                 GaiaScene scene = initScene();
@@ -233,5 +198,38 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         }
         shpFiles.dispose();
         return scenes;
+    }
+
+    private double getHeight(SimpleFeature feature) {
+        List<Object> attributes = feature.getAttributes();
+
+        double result = 0.0d;
+        Object heightLower = feature.getAttribute("height");
+        Object heightUpper = feature.getAttribute("HEIGHT");
+        Object heightObject = null;
+        if (heightLower != null) {
+            heightObject = heightLower;
+        } else if (heightUpper != null) {
+            heightObject = heightUpper;
+        }
+
+        if (heightObject instanceof Integer) {
+            result = result + (int) heightObject;
+        } else if (heightObject instanceof Double) {
+            result = result + (double) heightObject;
+        } else if (heightObject instanceof String) {
+            String heightString = (String) heightObject;
+            if (heightString.contains(".")) {
+                result = Double.parseDouble(heightString);
+            } else {
+                result = (double) Integer.parseInt(heightString);
+            }
+        }
+
+        if (result < 0.1) {
+            result = 1.0d;
+        }
+
+        return result;
     }
 }
