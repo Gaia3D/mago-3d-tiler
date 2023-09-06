@@ -3,6 +3,7 @@ package com.gaia3d.process.postprocess.batch;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exchangable.GaiaSet;
+import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.structure.GaiaScene;
 import com.gaia3d.converter.jgltf.GltfWriter;
 import com.gaia3d.process.ProcessOptions;
@@ -55,6 +56,12 @@ public class  Batched3DModel implements TileModel {
         List<Double> geometricErrors = tileInfos.stream()
                 .map((tileInfo) -> tileInfo.getBoundingBox().getLongestDistance())
                 .collect(Collectors.toList());
+        List<Double> heights = tileInfos.stream()
+                .map((tileInfo) -> {
+                    GaiaBoundingBox boundingBox = tileInfo.getBoundingBox();
+                    return boundingBox.getMaxZ() - boundingBox.getMinZ();
+                })
+                .collect(Collectors.toList());
 
         GaiaScene scene = new GaiaScene(batchedSet);
 
@@ -90,6 +97,7 @@ public class  Batched3DModel implements TileModel {
             batchTable.getProejctName().add(projectNames.get(i));
             batchTable.getNodeName().add(nodeNames.get(i));
             batchTable.getGeometricError().add(geometricErrors.get(i));
+            batchTable.getHeight().add(heights.get(i));
         }
 
         ObjectMapper objectMapper = new ObjectMapper();

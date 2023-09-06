@@ -20,4 +20,6 @@ public class GaiaBatchTable {
     private final List<Double> geometricError = new ArrayList<>();
     @JsonProperty("BatchId")
     private final List<String> batchId = new ArrayList<>();
+    @JsonProperty("Height")
+    private final List<Double> height = new ArrayList<>();
 }

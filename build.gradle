@@ -6,7 +6,7 @@ plugins {
 }
 
 group "com.gaia3d"
-version "1.1.5-windows"
+version "1.1.1-windows"
 
 project.ext.lwjglVersion = "3.3.1"
 switch ( OperatingSystem.current() ) {
