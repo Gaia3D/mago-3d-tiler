@@ -54,7 +54,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
     protected List<GaiaScene> convert(File file) {
         List<GaiaScene> scenes = new ArrayList<>();
 
-        boolean flipCoordnate = this.command.hasOption(ProcessOptions.Flip_Coordinate.getArgName());
+        boolean flipCoordnate = this.command.hasOption(ProcessOptions.FLIP_COORDINATE.getArgName());
 
         try {
             Tessellator tessellator = new Tessellator();
@@ -82,8 +82,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                     continue;
                 }
 
-                double height = building.getHeights().get(0).getObject().getValue().getValue();
-
+                double height = getHeight(building);
                 GaiaBuilding gaiaBuilding = GaiaBuilding.builder()
                         .id(cityObject.getId())
                         .floorHeight(0)
@@ -91,7 +90,6 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                         .build();
 
                 GaiaBoundingBox boundingBox = new GaiaBoundingBox();
-
                 for (SurfaceProperty surfaceProperty : surfaceProperties) {
                     List<Vector3d> polygon = new Vector<>();
 
@@ -162,5 +160,9 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
         }
 
         return scenes;
+    }
+
+    protected double getHeight(Building building) {
+        return building.getHeights().get(0).getObject().getValue().getValue();
     }
 }

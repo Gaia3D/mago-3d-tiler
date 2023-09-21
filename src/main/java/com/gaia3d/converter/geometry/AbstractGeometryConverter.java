@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
+import org.opengis.feature.simple.SimpleFeature;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -22,7 +23,7 @@ public abstract class AbstractGeometryConverter {
         GaiaScene scene = new GaiaScene();
         GaiaMaterial material = new GaiaMaterial();
         material.setId(0);
-        material.setName("default");
+        material.setName("extruded");
         material.setDiffuseColor(new Vector4d(0.5, 0.5, 0.5, 1));
         Map<TextureType, List<GaiaTexture>> textureTypeListMap = material.getTextures();
         textureTypeListMap.put(TextureType.DIFFUSE, new ArrayList<>());
@@ -98,4 +99,85 @@ public abstract class AbstractGeometryConverter {
         return IntStream.range(0, positions.size()).filter(i -> positions.get(i) == item).findFirst().orElse(-1);
     }
 
+    protected double getHeight(SimpleFeature feature, String column, double minimumHeight) {
+        double result = 0.0d;
+        Object heightLower = feature.getAttribute(column);
+        Object heightUpper = feature.getAttribute(column);
+        Object heightObject = null;
+        if (heightLower != null) {
+            heightObject = heightLower;
+        } else if (heightUpper != null) {
+            heightObject = heightUpper;
+        }
+
+        if (heightObject instanceof Short) {
+            result = result + (short) heightObject;
+        } else if (heightObject instanceof Integer) {
+            result = result + (int) heightObject;
+        } else if (heightObject instanceof Long) {
+            result = result + (Long) heightObject;
+        } else if (heightObject instanceof Double) {
+            result = result + (double) heightObject;
+        } else if (heightObject instanceof String) {
+            String heightString = (String) heightObject;
+            result = Double.parseDouble(heightString);
+        }
+
+        if (result < minimumHeight) {
+            result = minimumHeight;
+        }
+        return result;
+    }
+
+    protected String getAttribute(SimpleFeature feature, String column) {
+        String result = "default";
+        Object LowerObject = feature.getAttribute(column);
+        Object UpperObject = feature.getAttribute(column);
+        Object attributeObject = null;
+        if (LowerObject != null) {
+            attributeObject = LowerObject;
+        } else if (UpperObject != null) {
+            attributeObject = UpperObject;
+        }
+
+        if (attributeObject instanceof String) {
+            String value = (String) attributeObject;
+            result = value;
+        } else if (attributeObject instanceof Integer) {
+            result = String.valueOf((int) attributeObject);
+        } else if (attributeObject instanceof Long) {
+            result = String.valueOf((Long) attributeObject);
+        } else if (attributeObject instanceof Double) {
+            result = String.valueOf((double) attributeObject);
+        } else if (attributeObject instanceof Short) {
+            result = String.valueOf((short) attributeObject);
+        }
+        return result;
+    }
+
+    protected double getAltitude(SimpleFeature feature, String column, double absoluteAltitude) {
+        double result = 0.0d;
+        Object heightLower = feature.getAttribute(column);
+        Object heightUpper = feature.getAttribute(column);
+        Object heightObject = null;
+        if (heightLower != null) {
+            heightObject = heightLower;
+        } else if (heightUpper != null) {
+            heightObject = heightUpper;
+        }
+
+        if (heightObject instanceof Short) {
+            result = result + (short) heightObject;
+        } else if (heightObject instanceof Integer) {
+            result = result + (int) heightObject;
+        } else if (heightObject instanceof Long) {
+            result = result + (Long) heightObject;
+        } else if (heightObject instanceof Double) {
+            result = result + (double) heightObject;
+        } else if (heightObject instanceof String) {
+            String heightString = (String) heightObject;
+            result = Double.parseDouble(heightString);
+        }
+        return result;
+    }
 }

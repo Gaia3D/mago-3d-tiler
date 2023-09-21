@@ -170,7 +170,7 @@ public class TilerMain {
     }
 
     private static void start() {
-        log.info(
+        log.info("\n" +
                 "┏┓┓ ┏┓┏┓┳┳┓┏┓\n" +
                 "┃┃┃ ┣┫┗┓┃┃┃┣┫\n" +
                 "┣┛┗┛┛┗┗┛┛ ┗┛┗\n" +

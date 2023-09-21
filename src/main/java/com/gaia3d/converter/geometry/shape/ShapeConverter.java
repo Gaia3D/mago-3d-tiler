@@ -26,19 +26,15 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
-import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
-import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.Filter;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 @Slf4j
@@ -70,38 +66,66 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         List<GaiaScene> scenes = new ArrayList<>();
         Tessellator tessellator = new Tessellator();
         Extruder extruder = new Extruder(tessellator);
-        boolean flipCoordnate = this.command.hasOption(ProcessOptions.Flip_Coordinate.getArgName());
-        ShpFiles shpFiles = null;
+        boolean flipCoordinate = this.command.hasOption(ProcessOptions.FLIP_COORDINATE.getArgName());
+        boolean hasNameColumn = this.command.hasOption(ProcessOptions.NAME_COLUMN.getArgName());
+        boolean hasHeightColumn = this.command.hasOption(ProcessOptions.HEIGHT_COLUMN.getArgName());
+        boolean hasAltitudeColumn = this.command.hasOption(ProcessOptions.ALTITUDE_COLUMN.getArgName());
+        boolean hasAbsoluteAltitude = this.command.hasOption(ProcessOptions.ABSOLUTE_ALTITUDE.getArgName());
+        boolean hasMinimumHeight = this.command.hasOption(ProcessOptions.MINIMUM_HEIGHT.getArgName());
 
-        try {
-            shpFiles = new ShpFiles(file);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
+        String nameColumnName;
+        if (hasNameColumn) {
+            nameColumnName = this.command.getOptionValue(ProcessOptions.NAME_COLUMN.getArgName());
+        } else {
+            nameColumnName = "ExtrusionBuilding";
+        }
+        String heightColumnName;
+        if (hasHeightColumn) {
+            heightColumnName = this.command.getOptionValue(ProcessOptions.HEIGHT_COLUMN.getArgName());
+        } else {
+            heightColumnName = "height";
         }
 
+        String altitudeColumnName;
+        if (hasAltitudeColumn) {
+            altitudeColumnName = this.command.getOptionValue(ProcessOptions.ALTITUDE_COLUMN.getArgName());
+        } else {
+            altitudeColumnName = "altitude";
+        }
+
+        double absoluteAltitudeValue;
+        if (hasAbsoluteAltitude) {
+            String absoluteAltitude = this.command.getOptionValue(ProcessOptions.ABSOLUTE_ALTITUDE.getArgName());
+            absoluteAltitudeValue = Double.parseDouble(absoluteAltitude);
+        } else {
+            absoluteAltitudeValue = 0.0d;
+        }
+
+        double minimumHeightValue;
+        if (hasMinimumHeight) {
+            String minimumHeight = this.command.getOptionValue(ProcessOptions.MINIMUM_HEIGHT.getArgName());
+            minimumHeightValue = Double.parseDouble(minimumHeight);
+        } else {
+            minimumHeightValue = 1.0d;
+        }
+
+        ShpFiles shpFiles = null;
         ShapefileReader reader = null;
         try {
+            shpFiles = new ShpFiles(file);
             reader = new ShapefileReader(shpFiles, true, true, new GeometryFactory());
-            //ShapefileHeader header = reader.getHeader();
             DataStore dataStore = new ShapefileDataStore(file.toURI().toURL());
             String typeName = dataStore.getTypeNames()[0];
             SimpleFeatureSource source = dataStore.getFeatureSource(typeName);
-            //SimpleFeatureType schema = source.getSchema();
-            //ShapefileDataStore shapeFileDatastore = (ShapefileDataStore) dataStore;
 
             source = dataStore.getFeatureSource(typeName);
-            //schema = source.getSchema();
-
             var query = new Query(typeName, Filter.INCLUDE);
             query.getHints().add(new Hints(Hints.FEATURE_2D, true)); // for 3d
 
             SimpleFeatureCollection features = source.getFeatures(query);
 
-            //SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(schema);
-
             FeatureIterator<SimpleFeature> iterator = features.features();
             List<GaiaBuilding> buildings = new ArrayList<>();
-            int i = 0;
             while (iterator.hasNext()) {
                 SimpleFeature feature = iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
@@ -117,7 +141,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                     Point point = geometryFactory.createPoint(coordinate);
 
                     double x, y;
-                    if (flipCoordnate) {
+                    if (flipCoordinate) {
                         x = point.getY();
                         y = point.getX();
                     } else {
@@ -144,12 +168,19 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                     boundingBox.addPoint(position);
                 }
 
-                double height = getHeight(feature);
+                String name = getAttribute(feature, nameColumnName);
+                double height = getHeight(feature, heightColumnName, minimumHeightValue);
+                double altitude = 0.0d;
+                if (hasAbsoluteAltitude) {
+                    altitude = absoluteAltitudeValue;
+                } else if (hasAltitudeColumn) {
+                    getAltitude(feature, altitudeColumnName, absoluteAltitudeValue);
+                }
                 GaiaBuilding building = GaiaBuilding.builder()
                         .id(feature.getID())
-                        .name("test")
+                        .name(name)
                         .boundingBox(boundingBox)
-                        .floorHeight(0)
+                        .floorHeight(altitude)
                         .roofHeight(height)
                         .positions(positions)
                         .build();
@@ -188,7 +219,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 rootNode.setTransformMatrix(rootTransformMatrix);
                 scenes.add(scene);
             }
-
             dataStore.dispose();
             reader.close();
         } catch (IOException e) {
@@ -196,38 +226,5 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         }
         shpFiles.dispose();
         return scenes;
-    }
-
-    private double getHeight(SimpleFeature feature) {
-        List<Object> attributes = feature.getAttributes();
-
-        double result = 0.0d;
-        Object heightLower = feature.getAttribute("height");
-        Object heightUpper = feature.getAttribute("HEIGHT");
-        Object heightObject = null;
-        if (heightLower != null) {
-            heightObject = heightLower;
-        } else if (heightUpper != null) {
-            heightObject = heightUpper;
-        }
-
-        if (heightObject instanceof Integer) {
-            result = result + (int) heightObject;
-        } else if (heightObject instanceof Double) {
-            result = result + (double) heightObject;
-        } else if (heightObject instanceof String) {
-            String heightString = (String) heightObject;
-            if (heightString.contains(".")) {
-                result = Double.parseDouble(heightString);
-            } else {
-                result = (double) Integer.parseInt(heightString);
-            }
-        }
-
-        if (result < 0.1) {
-            result = 1.0d;
-        }
-
-        return result;
     }
 }

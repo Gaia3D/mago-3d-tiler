@@ -10,26 +10,16 @@ import com.gaia3d.process.ProcessOptions;
 import com.gaia3d.util.GlobeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
-import org.geotools.data.DataStore;
-import org.geotools.data.shapefile.files.ShpFiles;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollection;
-import org.geotools.feature.FeatureCollectionIteration;
 import org.geotools.feature.FeatureIterator;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.geojson.GeoJSONUtil;
 import org.geotools.geojson.feature.FeatureJSON;
-import org.geotools.geojson.geom.GeometryJSON;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.locationtech.jts.geom.*;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
-import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -67,7 +57,48 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
         List<GaiaScene> scenes = new ArrayList<>();
         Tessellator tessellator = new Tessellator();
         Extruder extruder = new Extruder(tessellator);
-        boolean flipCoordnate = this.command.hasOption(ProcessOptions.Flip_Coordinate.getArgName());
+        boolean flipCoordinate = this.command.hasOption(ProcessOptions.FLIP_COORDINATE.getArgName());
+        boolean hasNameColumn = this.command.hasOption(ProcessOptions.NAME_COLUMN.getArgName());
+        boolean hasHeightColumn = this.command.hasOption(ProcessOptions.HEIGHT_COLUMN.getArgName());
+        boolean hasAltitudeColumn = this.command.hasOption(ProcessOptions.ALTITUDE_COLUMN.getArgName());
+        boolean hasAbsoluteAltitude = this.command.hasOption(ProcessOptions.ABSOLUTE_ALTITUDE.getArgName());
+        boolean hasMinimumHeight = this.command.hasOption(ProcessOptions.MINIMUM_HEIGHT.getArgName());
+
+        String nameColumnName;
+        if (hasNameColumn) {
+            nameColumnName = this.command.getOptionValue(ProcessOptions.NAME_COLUMN.getArgName());
+        } else {
+            nameColumnName = "ExtrusionBuilding";
+        }
+        String heightColumnName;
+        if (hasHeightColumn) {
+            heightColumnName = this.command.getOptionValue(ProcessOptions.HEIGHT_COLUMN.getArgName());
+        } else {
+            heightColumnName = "height";
+        }
+
+        String altitudeColumnName;
+        if (hasAltitudeColumn) {
+            altitudeColumnName = this.command.getOptionValue(ProcessOptions.ALTITUDE_COLUMN.getArgName());
+        } else {
+            altitudeColumnName = "altitude";
+        }
+
+        double absoluteAltitudeValue;
+        if (hasAbsoluteAltitude) {
+            String absoluteAltitude = this.command.getOptionValue(ProcessOptions.ABSOLUTE_ALTITUDE.getArgName());
+            absoluteAltitudeValue = Double.parseDouble(absoluteAltitude);
+        } else {
+            absoluteAltitudeValue = 0.0d;
+        }
+
+        double minimumHeightValue;
+        if (hasMinimumHeight) {
+            String minimumHeight = this.command.getOptionValue(ProcessOptions.MINIMUM_HEIGHT.getArgName());
+            minimumHeightValue = Double.parseDouble(minimumHeight);
+        } else {
+            minimumHeightValue = 1.0d;
+        }
 
         try {
             FeatureJSON gjson = new FeatureJSON();
@@ -80,7 +111,6 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
             while (iterator.hasNext()) {
                 SimpleFeature feature = iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
-                //log.info(geom.getCoordinates());
 
                 GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
                 Coordinate[] coordinates = geom.getCoordinates();
@@ -88,12 +118,10 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                 GaiaBoundingBox boundingBox = new GaiaBoundingBox();
                 List<Vector3d> positions = new ArrayList<>();
 
-                Vector3d firstPosition = null;
                 for (Coordinate coordinate : coordinates) {
-                    //log.info(coordinate.toString());
                     Point point = geometryFactory.createPoint(coordinate);
                     double x, y;
-                    if (flipCoordnate) {
+                    if (flipCoordinate) {
                         x = point.getY();
                         y = point.getX();
                     } else {
@@ -109,24 +137,28 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                     } else {
                         position = new Vector3d(x, y, 0.0d);
                     }
-
                     positions.add(position);
                     boundingBox.addPoint(position);
                 }
 
-                double height = getHeight(feature);
+                String name = getAttribute(feature, nameColumnName);
+                double height = getHeight(feature, heightColumnName, minimumHeightValue);
+                double altitude = 0.0d;
+                if (hasAbsoluteAltitude) {
+                    altitude = absoluteAltitudeValue;
+                } else if (hasAltitudeColumn) {
+                    altitude = getAltitude(feature, altitudeColumnName, absoluteAltitudeValue);
+                }
                 GaiaBuilding building = GaiaBuilding.builder()
                         .id(feature.getID())
-                        .name("test")
+                        .name(name)
                         .boundingBox(boundingBox)
-                        .floorHeight(0)
-                        .roofHeight(height)
+                        .floorHeight(altitude)
+                        .roofHeight(altitude + height)
                         .positions(positions)
                         .build();
                 buildings.add(building);
             }
-
-
             iterator.close();
 
             for (GaiaBuilding building : buildings) {
@@ -164,42 +196,5 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
             throw new RuntimeException(e);
         }
         return scenes;
-    }
-
-    private double getHeight(SimpleFeature feature) {
-        List<Object> attributes = feature.getAttributes();
-
-        double result = 0.0d;
-        Object heightLower = feature.getAttribute("height");
-        Object heightUpper = feature.getAttribute("HEIGHT");
-        Object heightObject = null;
-        if (heightLower != null) {
-            heightObject = heightLower;
-        } else if (heightUpper != null) {
-            heightObject = heightUpper;
-        }
-
-        if (heightObject instanceof Integer) {
-            result = result + (int) heightObject;
-        } else if (heightObject instanceof Long) {
-            result = result + (long) heightObject;
-        } else if (heightObject instanceof Short) {
-            result = result + (short) heightObject;
-        } else if (heightObject instanceof Double) {
-            result = result + (double) heightObject;
-        } else if (heightObject instanceof String) {
-            String heightString = (String) heightObject;
-            if (heightString.contains(".")) {
-                result = Double.parseDouble(heightString);
-            } else {
-                result = (double) Integer.parseInt(heightString);
-            }
-        }
-
-        if (result < 0.1) {
-            result = 1.0d;
-        }
-
-        return result;
     }
 }
