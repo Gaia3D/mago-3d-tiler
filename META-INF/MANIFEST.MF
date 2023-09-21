@@ -1,3 +1,3 @@
 Manifest-Version: 1.0
-Main-Class: tiler.Tiler
+Main-Class: com.gaia3d.command.TilerMain
 

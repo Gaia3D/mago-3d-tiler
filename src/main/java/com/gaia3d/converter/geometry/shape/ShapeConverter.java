@@ -48,10 +48,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
 
     public ShapeConverter(CommandLine command, CoordinateReferenceSystem crs) {
         this.command = command;
-        //this.crs = crs;
-
-        //CRSFactory factory = new CRSFactory();
-        //crs = factory.createFromParameters("EPSG:5174", "+proj=tmerc +lat_0=38 +lon_0=127.0028902777778 +k=1 +x_0=200000 +y_0=500000 +ellps=bessel +units=m +no_defs +towgs84=-115.80,474.99,674.11,1.16,-2.31,-1.63,6.43");
         this.crs = crs;
     }
 
@@ -83,7 +79,9 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             throw new RuntimeException(e);
         }
 
-        try (ShapefileReader reader = new ShapefileReader(shpFiles, true, true, new GeometryFactory())) {
+        ShapefileReader reader = null;
+        try {
+            reader = new ShapefileReader(shpFiles, true, true, new GeometryFactory());
             //ShapefileHeader header = reader.getHeader();
             DataStore dataStore = new ShapefileDataStore(file.toURI().toURL());
             String typeName = dataStore.getTypeNames()[0];

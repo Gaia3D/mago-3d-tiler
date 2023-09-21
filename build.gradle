@@ -6,7 +6,7 @@ plugins {
 }
 
 group "com.gaia3d"
-version "1.1.1-windows"
+version "1.1.2-Windows"
 
 project.ext.lwjglVersion = "3.3.1"
 switch ( OperatingSystem.current() ) {
@@ -70,9 +70,10 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
 
     // GeoTools (geospatial library)
-    implementation 'org.geotools:gt-main:25.5'
-    implementation 'org.geotools:gt-shapefile:25.5'
-    implementation 'org.geotools:gt-geojson:25.5'
+    implementation 'org.geotools:gt-main:21.1'
+    implementation 'org.geotools:gt-shapefile:21.1'
+    implementation 'org.geotools:gt-geojson:21.1'
+    implementation 'org.geotools:gt-geojsondatastore:21.1'
 
     // CityGML4J (citygml library)
     implementation 'org.citygml4j:citygml4j-xml:3.0.0'
@@ -122,13 +123,14 @@ javadoc {
     options.addStringOption("docencoding","UTF-8");
 }
 
-// jar task
 jar {
     manifest {
         attributes "Main-Class": "com.gaia3d.command.TilerMain"
     }
     from {
-        configurations.runtimeClasspath.collect {it.isDirectory() ? it : zipTree(it)}
+        configurations.runtimeClasspath.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

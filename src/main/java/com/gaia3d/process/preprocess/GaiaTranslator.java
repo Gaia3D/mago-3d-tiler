@@ -43,7 +43,7 @@ public class GaiaTranslator implements PreProcess {
         FormatType formatType = FormatType.fromExtension(inputExtension);
 
         Vector3d position = new Vector3d(center.x, center.y, 0.0d);
-        if (formatType == FormatType.CITY_GML || formatType == FormatType.SHP) {
+        if (formatType == FormatType.CITY_GML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON) {
             center = new Vector3d(transform.get(3,0), transform.get(3,1), 0.0d);
             position = new Vector3d(center.x, center.y, 0.0d);
         } else {

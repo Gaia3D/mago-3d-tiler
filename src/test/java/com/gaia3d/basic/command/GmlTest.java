@@ -32,7 +32,7 @@ class GmlTest {
                 "-crs", crs,
                 "-recursive",
                 //"-swapYZ",
-                "-flipCoordinate",
+                "-flipCoordinate", //sapporo, moran
                 "-maxCount", "32768",
                 "-minLod", "0",
                 "-maxLod", "3",

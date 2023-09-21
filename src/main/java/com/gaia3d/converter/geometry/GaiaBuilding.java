@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.joml.Vector3d;
-import org.xmlobjects.gml.model.geometry.primitives.Triangle;
 
 import java.util.List;
 

@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class ProcessThreadPool {
-    private static final int THREAD_COUNT = 4;
+    private static final int THREAD_COUNT = 8;
 
     public void preProcessStart(List<TileInfo> tileInfos, List<File> fileList, FileLoader fileLoader, List<PreProcess> preProcessors) throws InterruptedException {
         log.info("[ThreadPool][Start Pre-process]");

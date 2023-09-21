@@ -5,6 +5,7 @@ import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.FileLoader;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.geometry.citygml.CityGmlConverter;
+import com.gaia3d.converter.geometry.geojson.GeoJsonConverter;
 import com.gaia3d.converter.geometry.shape.ShapeConverter;
 import com.gaia3d.process.ProcessFlow;
 import com.gaia3d.process.ProcessFlowThread;
@@ -44,7 +45,6 @@ import java.util.List;
 @Slf4j
 public class TilerMain {
     public static String version = "1.1.1";
-
     public static void main(String[] args) {
         Configurator.initConsoleLogger();
         Options options = Configurator.createOptions();
@@ -121,6 +121,8 @@ public class TilerMain {
             converter = new CityGmlConverter(command);
         } else if (formatType == FormatType.SHP) {
             converter = new ShapeConverter(command, source);
+        } else if (formatType == FormatType.GEOJSON || formatType == FormatType.JSON) {
+            converter = new GeoJsonConverter(command, source);
         } else {
             converter = new AssimpConverter(command);
         }

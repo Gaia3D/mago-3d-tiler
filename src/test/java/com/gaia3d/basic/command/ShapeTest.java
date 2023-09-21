@@ -1,9 +1,7 @@
 package com.gaia3d.basic.command;
 
 import com.gaia3d.command.TilerMain;
-import com.gaia3d.util.GlobeUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.joml.Vector3d;
 import org.junit.jupiter.api.Test;
 import org.locationtech.proj4j.BasicCoordinateTransform;
 import org.locationtech.proj4j.CRSFactory;

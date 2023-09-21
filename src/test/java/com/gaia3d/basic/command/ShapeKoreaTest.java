@@ -3,14 +3,6 @@ package com.gaia3d.basic.command;
 import com.gaia3d.command.TilerMain;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import org.locationtech.proj4j.BasicCoordinateTransform;
-import org.locationtech.proj4j.CRSFactory;
-import org.locationtech.proj4j.CoordinateReferenceSystem;
-import org.locationtech.proj4j.ProjCoordinate;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
 
 @Slf4j
 class ShapeKoreaTest {
@@ -70,7 +62,7 @@ class ShapeKoreaTest {
 
     @Test
     void convertShp8() {
-        String suffix = "deajeon";
+        String suffix = "daejeon";
         convert(suffix);
     }
 
