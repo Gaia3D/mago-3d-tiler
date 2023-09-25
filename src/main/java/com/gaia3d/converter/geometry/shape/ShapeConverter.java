@@ -1,9 +1,7 @@
 package com.gaia3d.converter.geometry.shape;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.structure.GaiaMaterial;
-import com.gaia3d.basic.structure.GaiaNode;
-import com.gaia3d.basic.structure.GaiaScene;
+import com.gaia3d.basic.structure.*;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.geometry.*;
 import com.gaia3d.process.ProcessOptions;
@@ -22,10 +20,7 @@ import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.util.factory.Hints;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.*;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 import org.opengis.feature.simple.SimpleFeature;
@@ -130,8 +125,31 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 SimpleFeature feature = iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
 
+                Polygon polygon = null;
+                LineString lineString = null;
+                if (geom instanceof MultiPolygon) {
+                    MultiPolygon multiPolygon = (MultiPolygon)geom;
+                    polygon = (Polygon) multiPolygon.getGeometryN(0);
+                    lineString = polygon.getExteriorRing();
+                } else if (geom instanceof Polygon) {
+                    polygon = (Polygon) geom;
+                    lineString = polygon.getExteriorRing();
+                } else if (geom instanceof MultiLineString) {
+                    MultiLineString multiLineString = (MultiLineString) geom;
+                    lineString = (LineString) multiLineString.getGeometryN(0);
+                } else if (geom instanceof LineString) {
+                    lineString = (LineString) geom;
+                } else {
+                    log.warn("Is Not Supported Geometry Type : {}", geom.getGeometryType());
+                    continue;
+                }
+                if (!lineString.isValid()) {
+                    log.warn("Invalid : {}", feature.getID());
+                    continue;
+                }
+
                 GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
-                Coordinate[] coordinates = geom.getCoordinates();
+                Coordinate[] coordinates = lineString.getCoordinates();
 
                 GaiaBoundingBox boundingBox = new GaiaBoundingBox();
                 List<Vector3d> positions = new ArrayList<>();
@@ -163,28 +181,32 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                     } else if (firstPosition.equals(position)) {
                         break;
                     }
-
                     positions.add(position);
                     boundingBox.addPoint(position);
                 }
 
-                String name = getAttribute(feature, nameColumnName);
-                double height = getHeight(feature, heightColumnName, minimumHeightValue);
-                double altitude = 0.0d;
-                if (hasAbsoluteAltitude) {
-                    altitude = absoluteAltitudeValue;
-                } else if (hasAltitudeColumn) {
-                    getAltitude(feature, altitudeColumnName, absoluteAltitudeValue);
+                if (positions.size() >= 3) {
+                    String name = getAttribute(feature, nameColumnName);
+                    double height = getHeight(feature, heightColumnName, minimumHeightValue);
+                    double altitude = 0.0d;
+                    if (hasAbsoluteAltitude) {
+                        altitude = absoluteAltitudeValue;
+                    } else if (hasAltitudeColumn) {
+                        getAltitude(feature, altitudeColumnName, absoluteAltitudeValue);
+                    }
+                    GaiaBuilding building = GaiaBuilding.builder()
+                            .id(feature.getID())
+                            .name(name)
+                            .boundingBox(boundingBox)
+                            .floorHeight(altitude)
+                            .roofHeight(height)
+                            .positions(positions)
+                            .build();
+                    buildings.add(building);
+                } else {
+                    String name = getAttribute(feature, nameColumnName);
+                    log.warn("Invalid Geometry : {}, {}", feature.getID(), name);
                 }
-                GaiaBuilding building = GaiaBuilding.builder()
-                        .id(feature.getID())
-                        .name(name)
-                        .boundingBox(boundingBox)
-                        .floorHeight(altitude)
-                        .roofHeight(height)
-                        .positions(positions)
-                        .build();
-                buildings.add(building);
             }
             iterator.close();
 

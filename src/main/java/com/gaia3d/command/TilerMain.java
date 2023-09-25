@@ -44,7 +44,7 @@ import java.util.List;
  */
 @Slf4j
 public class TilerMain {
-    public static String version = "1.1.1";
+    public static String version = "1.1.4";
     public static void main(String[] args) {
         Configurator.initConsoleLogger();
         Options options = Configurator.createOptions();

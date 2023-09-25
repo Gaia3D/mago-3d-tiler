@@ -112,12 +112,36 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                 SimpleFeature feature = iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
 
+                Polygon polygon = null;
+                LineString lineString = null;
+                if (geom instanceof MultiPolygon) {
+                    MultiPolygon multiPolygon = (MultiPolygon)geom;
+                    polygon = (Polygon) multiPolygon.getGeometryN(0);
+                    lineString = polygon.getExteriorRing();
+                } else if (geom instanceof Polygon) {
+                    polygon = (Polygon) geom;
+                    lineString = polygon.getExteriorRing();
+                } else if (geom instanceof MultiLineString) {
+                    MultiLineString multiLineString = (MultiLineString) geom;
+                    lineString = (LineString) multiLineString.getGeometryN(0);
+                } else if (geom instanceof LineString) {
+                    lineString = (LineString) geom;
+                } else {
+                    log.warn("Is Not Supported Geometry Type : {}", geom.getGeometryType());
+                    continue;
+                }
+                if (!lineString.isValid()) {
+                    log.warn("Invalid : {}", feature.getID());
+                    continue;
+                }
+
                 GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
-                Coordinate[] coordinates = geom.getCoordinates();
+                Coordinate[] coordinates = lineString.getCoordinates();
 
                 GaiaBoundingBox boundingBox = new GaiaBoundingBox();
                 List<Vector3d> positions = new ArrayList<>();
 
+                Vector3d firstPosition = null;
                 for (Coordinate coordinate : coordinates) {
                     Point point = geometryFactory.createPoint(coordinate);
                     double x, y;
@@ -136,6 +160,12 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                         position = new Vector3d(centerWgs84.x, centerWgs84.y, 0.0d);
                     } else {
                         position = new Vector3d(x, y, 0.0d);
+                    }
+
+                    if (firstPosition == null) {
+                        firstPosition = position;
+                    } else if (firstPosition.equals(position)) {
+                        break;
                     }
                     positions.add(position);
                     boundingBox.addPoint(position);
