@@ -102,7 +102,7 @@ public abstract class AbstractGeometryConverter {
     protected double getHeight(SimpleFeature feature, String column, double minimumHeight) {
         double result = 0.0d;
         Object heightLower = feature.getAttribute(column);
-        Object heightUpper = feature.getAttribute(column);
+        Object heightUpper = feature.getAttribute(column.toUpperCase());
         Object heightObject = null;
         if (heightLower != null) {
             heightObject = heightLower;
@@ -132,7 +132,7 @@ public abstract class AbstractGeometryConverter {
     protected String getAttribute(SimpleFeature feature, String column) {
         String result = "default";
         Object LowerObject = feature.getAttribute(column);
-        Object UpperObject = feature.getAttribute(column);
+        Object UpperObject = feature.getAttribute(column.toUpperCase());
         Object attributeObject = null;
         if (LowerObject != null) {
             attributeObject = LowerObject;
@@ -158,7 +158,7 @@ public abstract class AbstractGeometryConverter {
     protected double getAltitude(SimpleFeature feature, String column, double absoluteAltitude) {
         double result = 0.0d;
         Object heightLower = feature.getAttribute(column);
-        Object heightUpper = feature.getAttribute(column);
+        Object heightUpper = feature.getAttribute(column.toUpperCase());
         Object heightObject = null;
         if (heightLower != null) {
             heightObject = heightLower;
