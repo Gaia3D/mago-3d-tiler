@@ -26,7 +26,11 @@ public enum FormatType {
     I3DM("i3dm"),
     TEMP("mgb"),
     CITY_GML("gml"),
-    SHP("shp");
+    SHP("shp"),
+    GEOJSON("geojson"),
+    JSON("json"),
+    LAS("las"),
+    LAZ("laz");
 
     final String extension;
 
