@@ -18,6 +18,12 @@ class TilerMainTest {
         TilerMain.main(args);
     }
 
+    @Test
+    void version() {
+        String[] args = new String[]{"-version"};
+        TilerMain.main(args);
+    }
+
     //@Test
     void sapporoObj() {
         String path = "D:\\workspaces\\sapporo-test\\";

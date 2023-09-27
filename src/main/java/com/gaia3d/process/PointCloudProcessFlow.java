@@ -20,28 +20,16 @@ import java.util.List;
 
 @Slf4j
 @AllArgsConstructor
-public class ProcessFlow implements Process {
+public class PointCloudProcessFlow implements Process {
     private List<PreProcess> preProcesses;
     private TileProcess tileProcess;
     private List<PostProcess> postProcesses;
 
     public void process(FileLoader fileLoader) throws IOException {
         List<TileInfo> tileInfos = new ArrayList<>();
-        log.info("Start loading tile infos.");
-
-        /* PreProcess */
         preprocess(fileLoader, tileInfos);
-        //System.gc();
-
-        /* TileProcess */
         Tileset tileset = tileprocess(tileInfos);
-        //System.gc();
-
-        /* PostProcess */
         postprocess(tileset);
-        //System.gc();
-
-        /* Delete Temp Directory */
         if (!tileInfos.isEmpty()) {
             tileInfos.get(0).deleteTemp();
         }
@@ -49,22 +37,13 @@ public class ProcessFlow implements Process {
 
     private void preprocess(FileLoader fileLoader, List<TileInfo> tileInfos) {
         List<File> fileList = fileLoader.loadFiles();
-        log.info("Total file counts : {}", fileList.size());
-
-        int count = 0;
-        int size = fileList.size();
         for (File file : fileList) {
-            count++;
-            log.info("[File Loading] : {}/{} : {}", count, size, file);
             List<TileInfo> tileInfoResult = fileLoader.loadTileInfo(file);
-            int serial = 0;
             for (TileInfo tileInfo : tileInfoResult) {
                 if (tileInfo != null) {
-                    log.info("[{}/{}][{}/{}] load tile...", count, size, serial, tileInfoResult.size());
                     for (PreProcess preProcessors : preProcesses) {
                         preProcessors.run(tileInfo);
                     }
-                    tileInfo.minimize(serial++);
                     tileInfos.add(tileInfo);
                 }
             }
@@ -80,20 +59,11 @@ public class ProcessFlow implements Process {
 
     private void postprocess(Tileset tileset) {
         List<ContentInfo> contentInfos = tileset.findAllContentInfo();
-        int count = 0;
-        int size = contentInfos.size();
         for (ContentInfo contentInfo : contentInfos) {
-            count++;
-            log.info("[{}/{}] post-process content-info : {}", count, size, contentInfo.getName());
             List<TileInfo> childTileInfos = contentInfo.getTileInfos();
-            for (TileInfo tileInfo : childTileInfos) {
-                tileInfo.maximize();
-            }
             for (PostProcess postProcessor : postProcesses) {
                 postProcessor.run(contentInfo);
             }
-            contentInfo.deleteTexture();
-            contentInfo.clear();
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.gaia3d.process;
 
 import com.gaia3d.converter.FileLoader;
+import com.gaia3d.converter.TriangleFileLoader;
 import com.gaia3d.process.postprocess.PostProcess;
 import com.gaia3d.process.postprocess.thread.ProcessThreadPool;
 import com.gaia3d.process.preprocess.PreProcess;

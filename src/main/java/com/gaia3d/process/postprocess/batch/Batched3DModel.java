@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class  Batched3DModel implements TileModel {
+public class Batched3DModel implements TileModel {
     private static final String MAGIC = "b3dm";
     private static final int VERSION = 1;
     private final GltfWriter gltfWriter;

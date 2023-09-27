@@ -49,7 +49,8 @@ class TempTest {
                 "-refineAdd",
                 "-crs", "5174",
                 "-gltf",
-                "-debug"
+                "-debug",
+                "-heightColumn", "HEIGHT"
         };
         TilerMain.main(args);
     }

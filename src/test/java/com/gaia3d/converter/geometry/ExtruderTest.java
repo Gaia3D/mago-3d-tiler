@@ -22,7 +22,6 @@ class ExtruderTest {
 
     @Test
     void extrude() {
-
         Configurator.initConsoleLogger();
         double[] target = getStar();
 

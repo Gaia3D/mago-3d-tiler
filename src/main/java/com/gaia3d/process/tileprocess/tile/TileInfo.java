@@ -2,6 +2,7 @@ package com.gaia3d.process.tileprocess.tile;
 
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.pointcloud.GaiaPointCloud;
 import com.gaia3d.basic.structure.GaiaNode;
 import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.basic.structure.GaiaScene;
@@ -23,6 +24,7 @@ public class TileInfo {
     private KmlInfo kmlInfo;
     private GaiaScene scene;
     private GaiaSet set;
+    private GaiaPointCloud pointCloud;
     private String name;
 
     private Matrix4d transformMatrix;
@@ -68,17 +70,13 @@ public class TileInfo {
     }
 
     public void clear() {
-        //this.kmlInfo = null;
         this.scene = null;
         this.set = null;
-        //this.transformMatrix = null;
-        //this.boundingBox = null;
-        //this.scenePath = null;
-        //this.outputPath = null;
-        //this.tempPath = null;
     }
 
     public void deleteTemp() throws IOException {
-        FileUtils.deleteDirectory(this.tempPath.getParent().toFile());
+        if (this.tempPath != null) {
+            FileUtils.deleteDirectory(this.tempPath.toFile());
+        }
     }
 }

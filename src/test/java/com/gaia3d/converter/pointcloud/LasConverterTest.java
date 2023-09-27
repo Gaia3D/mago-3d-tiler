@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class LasConverterTest {
     @Test
     void load() throws URISyntaxException {
-        LasConverter lasConverter = new LasConverter();
+        LasConverter lasConverter = new LasConverter(null, null);
         lasConverter.load("D:\\temp\\las\\temp.las");
     }
 }
