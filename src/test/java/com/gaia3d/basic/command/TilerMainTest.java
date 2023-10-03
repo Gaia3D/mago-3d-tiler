@@ -15,6 +15,7 @@ class TilerMainTest {
     @Test
     void help() {
         String[] args = new String[]{"-help"};
+        log.info("help Test");
         TilerMain.main(args);
     }
 
