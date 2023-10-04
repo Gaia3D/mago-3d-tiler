@@ -56,27 +56,35 @@ public class GaiaMaterial {
         Map<TextureType, List<GaiaTexture>> textureMapA = materialA.getTextures();
 
         Set<TextureType> keys = textureMapA.keySet();
+        boolean hasTexture = false;
+        boolean hasTextureAreEquals = true;
         for (TextureType key : keys) {
             List<GaiaTexture> listTexturesA = textureMapA.get(key);
             List<GaiaTexture> listTexturesB = materialB.getTextures().get(key);
             if (listTexturesA == null && listTexturesB == null) {
                 continue;
             } else if (listTexturesA == null || listTexturesB == null) {
-                return false;
+                hasTextureAreEquals = false;
             }
             if (listTexturesA.size() != listTexturesB.size()) {
-                return false;
+                hasTextureAreEquals = false;
             }
             for (int i = 0; i < listTexturesA.size(); i++) {
                 GaiaTexture textureA = listTexturesA.get(i);
                 GaiaTexture textureB = listTexturesB.get(i);
-
+                hasTexture = true;
                 if (!textureA.isEqualTexture(textureB, scaleFactor)) {
-                    return false;
+                    hasTextureAreEquals = false;
                 }
             }
         }
-        return true;
+
+        if (!hasTexture) {
+            Vector4d colorA = materialA.getDiffuseColor();
+            Vector4d colorB = materialB.getDiffuseColor();
+            return colorA.equals(colorB);
+        }
+        return hasTextureAreEquals;
     }
 
     public void write(LittleEndianDataOutputStream stream) throws IOException {
