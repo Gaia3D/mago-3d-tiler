@@ -89,16 +89,18 @@ public class LasConverter {
             rgb[2] = (byte) (blue * 255);
 
             GaiaVertex vertex = new GaiaVertex();
-            vertex.setPosition(new Vector3d(x, y, z));
+            //vertex.setPosition(new Vector3d(x, y, z));
+            vertex.setPosition(position);
             vertex.setColor(rgb);
+            vertex.setBatchId(0);
             vertices.add(vertex);
             boundingBox.addPoint(position);
         });
 
         // BatchId setting
-        for (int i = 0; i < vertices.size(); i++) {
+        /*for (int i = 0; i < vertices.size(); i++) {
             vertices.get(i).setBatchId(i);
-        }
+        }*/
 
         // randomize arrays
         Collections.shuffle(vertices);

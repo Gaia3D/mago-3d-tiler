@@ -19,7 +19,6 @@ public class PointCloudBinaryWriter {
     private String batchTableJson;
 
     private byte[] featureTableBytes;
-
     private byte[] batchTableBytes;
 
     public PointCloudBinaryWriter(String featureTable, String batchTable, byte[] featureTableBytes, byte[] batchTableBytes) {
@@ -30,8 +29,6 @@ public class PointCloudBinaryWriter {
     }
 
     public void write(Path outputRoot, String nodeCode) {
-        this.batchTableJson = "";
-
         int featureTableJSONByteLength = featureTableJson.length();
         int batchTableJSONByteLength = batchTableJson.length();
 
@@ -55,8 +52,9 @@ public class PointCloudBinaryWriter {
 
             // body
             stream.writePureText(featureTableJson);
-            stream.writePureText(batchTableJson);
             stream.write(featureTableBytes);
+
+            stream.writePureText(batchTableJson);
             stream.write(batchTableBytes);
         } catch (Exception e) {
             log.error(e.getMessage());

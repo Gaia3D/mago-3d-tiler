@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.joml.Matrix4d;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
@@ -76,7 +77,14 @@ public class TileInfo {
 
     public void deleteTemp() throws IOException {
         if (this.tempPath != null) {
-            FileUtils.deleteDirectory(this.tempPath.toFile());
+            File file = this.tempPath.toFile();
+            if (file.isFile()) {
+                FileUtils.delete(file);
+            } else if (file.isDirectory()) {
+                FileUtils.deleteDirectory(file);
+            } else {
+                log.warn("[Warn] Can't delete temp file because it is not file or directory.");
+            }
         }
     }
 }

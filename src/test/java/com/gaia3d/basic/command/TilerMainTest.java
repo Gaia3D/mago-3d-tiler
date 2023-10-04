@@ -54,6 +54,13 @@ class TilerMainTest {
     }
 
     @Test
+    void convertSnowman() throws URISyntaxException {
+        String input = "D:\\data\\kml\\";
+        String output = "D:\\data\\kml\\output\\";
+        convert(input, output, "snowman", "", "kml");
+    }
+
+    @Test
     void convertSeoul() {
         String path = "F:\\workspace\\";
         String[] args = new String[]{
@@ -182,13 +189,13 @@ class TilerMainTest {
                 "-output", outputPath + suffix,
                 "-crs", crs,
                 "-recursive",
-                //"-swapYZ",
+                "-swapYZ",
                 "-maxCount", "32768",
                 "-minLod", "0",
                 "-maxLod", "3",
-                "-multiThread",
-                "-refineAdd",
-                //"-glb",
+                //"-multiThread",
+                //"-refineAdd",
+                "-glb",
                 "-debug"
         };
         TilerMain.main(args);

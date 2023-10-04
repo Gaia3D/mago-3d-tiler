@@ -2,6 +2,8 @@ package com.gaia3d.process.postprocess.instance;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gaia3d.process.postprocess.pointcloud.BatchId;
+import com.gaia3d.process.postprocess.pointcloud.Color;
 import com.gaia3d.process.postprocess.pointcloud.Position;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,5 +19,9 @@ public class GaiaFeatureTable {
     @JsonProperty("POINTS_LENGTH")
     int pointsLength;
     @JsonProperty("POSITION")
-    Position position = new Position(0);
+    Position position;
+    @JsonProperty("RGB")
+    Color color;
+    @JsonProperty("BATCH_ID")
+    BatchId batchId;
 }
