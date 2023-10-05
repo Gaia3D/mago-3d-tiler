@@ -104,6 +104,8 @@ public class LasConverter {
 
         // randomize arrays
         Collections.shuffle(vertices);
+        //var divided = pointCloud.divide();
+        //pointClouds.add(divided.get(0));
 
         pointClouds.add(pointCloud);
         return pointClouds;

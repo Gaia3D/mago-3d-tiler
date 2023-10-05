@@ -7,7 +7,6 @@ import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.geometry.citygml.CityGmlConverter;
 import com.gaia3d.converter.geometry.geojson.GeoJsonConverter;
 import com.gaia3d.converter.geometry.shape.ShapeConverter;
-import com.gaia3d.converter.pointcloud.LasConverter;
 import com.gaia3d.process.ProcessFlow;
 import com.gaia3d.process.ProcessFlowThread;
 import com.gaia3d.process.ProcessOptions;
@@ -37,7 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-public class TriangleProcessFlow {
+public class BatchProcessModel implements ProcessFlowModel{
     public void run(CommandLine command) throws IOException {
         File inputFile = new File(command.getOptionValue(ProcessOptions.INPUT.getArgName()));
         File outputFile = new File(command.getOptionValue(ProcessOptions.OUTPUT.getArgName()));
@@ -96,7 +95,6 @@ public class TriangleProcessFlow {
         Process processFlow;
         if (command.hasOption(ProcessOptions.MULTI_THREAD.getArgName())) {
             processFlow = new ProcessFlowThread(preProcessors, tileProcess, postProcessors);
-            log.info("Multi Thread Mode");
         } else {
             processFlow = new ProcessFlow(preProcessors, tileProcess, postProcessors);
         }

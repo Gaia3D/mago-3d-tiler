@@ -74,13 +74,19 @@ public class TilerMain {
         String inputExtension = command.getOptionValue(ProcessOptions.INPUT_TYPE.getArgName());
         FormatType formatType = FormatType.fromExtension(inputExtension);
 
+        //String outputExtension = command.getOptionValue(ProcessOptions.OUTPUT_TYPE.getArgName());
+
+        //FormatType outputType = FormatType.fromExtension(outputExtension);
+
+        ProcessFlowModel processFlow = null;
         if (formatType == FormatType.LAS || formatType == FormatType.LAZ) {
-            LasProcessFlow processFlow = new LasProcessFlow();
-            processFlow.run(command);
-        } else {
-            TriangleProcessFlow processFlow = new TriangleProcessFlow();
-            processFlow.run(command);
+            processFlow = new PointCloudProcessModel();
+        } /*else if (outputType == FormatType.I3DM) {
+            processFlow = new InstanceProcessModel();
+        } */else {
+            processFlow = new BatchProcessModel();
         }
+        processFlow.run(command);
     }
 
     private static void start() {

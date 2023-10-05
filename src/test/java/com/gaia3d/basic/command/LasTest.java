@@ -19,7 +19,7 @@ class LasTest {
         String[] args = new String[]{
                 "-input", input + suffix,
                 "-inputType", "las",
-                "-output", output + "test1",
+                "-output", output + "test3",
                 "-recursive",
                 "-maxCount", "1024",
                 "-minLod", "0",

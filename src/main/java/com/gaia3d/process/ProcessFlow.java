@@ -28,20 +28,9 @@ public class ProcessFlow implements Process {
     public void process(FileLoader fileLoader) throws IOException {
         List<TileInfo> tileInfos = new ArrayList<>();
         log.info("Start loading tile infos.");
-
-        /* PreProcess */
         preprocess(fileLoader, tileInfos);
-        //System.gc();
-
-        /* TileProcess */
         Tileset tileset = tileprocess(tileInfos);
-        //System.gc();
-
-        /* PostProcess */
         postprocess(tileset);
-        //System.gc();
-
-        /* Delete Temp Directory */
         if (!tileInfos.isEmpty()) {
             tileInfos.get(0).deleteTemp();
         }
@@ -50,7 +39,6 @@ public class ProcessFlow implements Process {
     private void preprocess(FileLoader fileLoader, List<TileInfo> tileInfos) {
         List<File> fileList = fileLoader.loadFiles();
         log.info("Total file counts : {}", fileList.size());
-
         int count = 0;
         int size = fileList.size();
         for (File file : fileList) {

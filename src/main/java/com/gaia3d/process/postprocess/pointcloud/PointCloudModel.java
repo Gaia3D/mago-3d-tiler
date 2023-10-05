@@ -55,6 +55,8 @@ public class PointCloudModel implements TileModel {
         });
 
         int vertexLength = vertexCount.get();
+        //vertexLength = 100000;
+
         float[] positions = new float[vertexLength * 3];
         Vector3d center = boundingBox.getCenter();
         Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
@@ -65,13 +67,19 @@ public class PointCloudModel implements TileModel {
         float[] batchIds = new float[vertexLength];
         //Arrays.fill(batchIds, (float) 0);
 
+        AtomicInteger mainIndex = new AtomicInteger();
         AtomicInteger positionIndex = new AtomicInteger();
         AtomicInteger colorIndex= new AtomicInteger();
         AtomicInteger batchIdIndex= new AtomicInteger();
+        int finalVertexLength = vertexLength;
         tileInfos.forEach((tileInfo) -> {
             GaiaPointCloud pointCloud = tileInfo.getPointCloud();
             List<GaiaVertex> gaiaVertex = pointCloud.getVertices();
             gaiaVertex.forEach((vertex) -> {
+                int index = mainIndex.getAndIncrement();
+                if (index >= finalVertexLength) {
+                    return;
+                }
                 Vector3d position = vertex.getPosition();
                 Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
                 Vector3d localPosition = positionWorldCoordinate.mulPosition(transfromMatrixInv, new Vector3d());
@@ -113,7 +121,7 @@ public class PointCloudModel implements TileModel {
         featureTable.setPointsLength(vertexLength);
         featureTable.setPosition(new Position(0));
         featureTable.setColor(new Color(positionBytes.length));
-        featureTable.setBatchLength(2);
+        featureTable.setBatchLength(1);
 
         BatchId batchIdObject = new BatchId(0, "FLOAT");
         featureTable.setBatchId(batchIdObject);
@@ -121,7 +129,6 @@ public class PointCloudModel implements TileModel {
         GaiaBatchTable batchTable = new GaiaBatchTable();
         List<String> batchTableIds = batchTable.getBatchId();
         batchTableIds.add("0");
-        batchTableIds.add("1");
 
         ObjectMapper objectMapper = new ObjectMapper();
         //objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);

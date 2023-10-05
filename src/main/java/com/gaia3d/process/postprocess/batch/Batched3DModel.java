@@ -37,15 +37,15 @@ public class Batched3DModel implements TileModel {
     }
 
     @Override
-    public ContentInfo run(ContentInfo batchInfo) {
-        GaiaSet batchedSet = batchInfo.getBatchedSet();
+    public ContentInfo run(ContentInfo contentInfo) {
+        GaiaSet batchedSet = contentInfo.getBatchedSet();
         int featureTableJSONByteLength;
         int batchTableJSONByteLength;
         String featureTableJson;
         String batchTableJson;
-        String nodeCode = batchInfo.getNodeCode();
+        String nodeCode = contentInfo.getNodeCode();
 
-        List<TileInfo> tileInfos = batchInfo.getTileInfos();
+        List<TileInfo> tileInfos = contentInfo.getTileInfos();
         int batchLength = tileInfos.size();
         List<String> projectNames = tileInfos.stream()
                 .map((tileInfo) -> tileInfo.getSet().getProjectName())
@@ -139,7 +139,7 @@ public class Batched3DModel implements TileModel {
         } catch (Exception e) {
             log.error(e.getMessage());
         }
-        return batchInfo;
+        return contentInfo;
     }
 
     private byte[] readGlb(File glbOutputFile) {

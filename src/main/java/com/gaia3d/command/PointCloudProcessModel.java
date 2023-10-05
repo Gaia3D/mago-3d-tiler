@@ -1,18 +1,14 @@
 package com.gaia3d.command;
 
 import com.gaia3d.basic.types.FormatType;
-import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.PointCloudFileLoader;
 import com.gaia3d.converter.pointcloud.LasConverter;
 import com.gaia3d.process.PointCloudProcessFlow;
 import com.gaia3d.process.ProcessOptions;
 import com.gaia3d.process.TilerOptions;
 import com.gaia3d.process.postprocess.PostProcess;
-import com.gaia3d.process.postprocess.batch.Batched3DModel;
-import com.gaia3d.process.postprocess.pointcloud.PointCloudModel;
 import com.gaia3d.process.preprocess.PreProcess;
 import com.gaia3d.process.tileprocess.TileProcess;
-import com.gaia3d.process.tileprocess.tile.Gaia3DTiler;
 import com.gaia3d.process.tileprocess.tile.PointCloudTiler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
@@ -28,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-public class LasProcessFlow {
+public class PointCloudProcessModel implements ProcessFlowModel{
     public void run(CommandLine command) throws IOException {
         File inputFile = new File(command.getOptionValue(ProcessOptions.INPUT.getArgName()));
         File outputFile = new File(command.getOptionValue(ProcessOptions.OUTPUT.getArgName()));
@@ -63,7 +59,7 @@ public class LasProcessFlow {
                 .build();
         TileProcess tileProcess = new PointCloudTiler(tilerOptions, command);
         List<PostProcess> postProcessors = new ArrayList<>();
-        postProcessors.add(new PointCloudModel(command));
+        postProcessors.add(new com.gaia3d.process.postprocess.pointcloud.PointCloudModel(command));
 
         PointCloudProcessFlow processFlow = new PointCloudProcessFlow(preProcessors, tileProcess, postProcessors);
         processFlow.process(fileLoader);
