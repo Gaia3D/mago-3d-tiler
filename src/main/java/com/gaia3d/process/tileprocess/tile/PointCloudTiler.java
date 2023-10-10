@@ -46,10 +46,36 @@ public class PointCloudTiler implements Tiler {
         double geometricError = calcGeometricError(tileInfos);
 
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
+
+        double minX = globalBoundingBox.getMinX();
+        double maxX = globalBoundingBox.getMaxX();
+        double minY = globalBoundingBox.getMinY();
+        double maxY = globalBoundingBox.getMaxY();
+        double minZ = globalBoundingBox.getMinZ();
+        double maxZ = globalBoundingBox.getMaxZ();
+
+        double x = (maxX - minX);
+        double y = (maxY - minY);
+        double maxLength = Math.max(x, y);
+
+        double xoffset = maxLength - x;
+        double yoffset = maxLength - y;
+
+        maxX += xoffset;
+        maxY += yoffset;
+        GaiaBoundingBox cubeBoundingBox = new GaiaBoundingBox();
+        cubeBoundingBox.addPoint(new Vector3d(minX, minY, minZ));
+        cubeBoundingBox.addPoint(new Vector3d(maxX, maxY, maxZ));
+
+        globalBoundingBox = cubeBoundingBox;
+
+
         Matrix4d transformMatrix = getTransformMatrix(globalBoundingBox);
         rotateX90(transformMatrix);
 
         Node root = createRoot();
+        root.setBoundingBox(globalBoundingBox);
+        // root만 큐브로
         root.setBoundingVolume(new BoundingVolume(globalBoundingBox));
         root.setTransformMatrix(transformMatrix);
         root.setGeometricError(geometricError);
@@ -109,6 +135,7 @@ public class PointCloudTiler implements Tiler {
 
     private void createRootNode(Node parentNode, List<TileInfo> tileInfos) throws IOException {
         BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
+        parentNode.setBoundingVolume(parentBoundingVolume);
         parentNode.setRefine(Node.RefineType.ADD);
 
         List<GaiaPointCloud> pointClouds = tileInfos.stream()
@@ -116,11 +143,11 @@ public class PointCloudTiler implements Tiler {
                 .collect(Collectors.toList());
 
         for (GaiaPointCloud pointCloud : pointClouds) {
-            createNode(parentNode, pointCloud);
+            createNode(parentNode, pointCloud, 32.0d);
         }
     }
 
-    private void createNode(Node parentNode, GaiaPointCloud pointCloud) {
+    private void createNode(Node parentNode, GaiaPointCloud pointCloud, double geometricError) {
         int vertexLength = pointCloud.getVertices().size();
 
         List<GaiaPointCloud> divided = pointCloud.divideChunkSize(DEFUALT_MAX_COUNT);
@@ -129,16 +156,21 @@ public class PointCloudTiler implements Tiler {
 
         GaiaBoundingBox childBoundingBox = selfPointCloud.getGaiaBoundingBox();
         Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
+
+        //Matrix4d transformMatrix = new Matrix4d();
+        //transformMatrix.identity();
         rotateX90(transformMatrix);
         BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
 
         Node childNode = new Node();
         childNode.setParent(parentNode);
         childNode.setTransformMatrix(transformMatrix);
+        childNode.setBoundingBox(childBoundingBox);
         childNode.setBoundingVolume(boundingVolume);
         childNode.setRefine(Node.RefineType.ADD);
         childNode.setChildren(new ArrayList<>());
         childNode.setNodeCode(parentNode.getNodeCode() + pointCloud.getCode());
+        childNode.setGeometricError(geometricError);
 
         TileInfo selfTileInfo = TileInfo.builder()
                 .pointCloud(selfPointCloud)
@@ -157,14 +189,17 @@ public class PointCloudTiler implements Tiler {
         Content content = new Content();
         content.setUri("data/" + childNode.getNodeCode() + ".pnts");
         content.setContentInfo(contentInfo);
-        parentNode.setContent(content);
+        childNode.setContent(content);
+
         parentNode.getChildren().add(childNode);
         log.info(childNode.getNodeCode());
 
-        if (vertexLength > DEFUALT_MAX_COUNT) {
-            List<GaiaPointCloud> distributes = remainPointCloud.distribute();
+        if (vertexLength > 0) { // vertexLength > DEFUALT_MAX_COUNT
+            List<GaiaPointCloud> distributes = remainPointCloud.distributeOct();
             distributes.forEach(distribute -> {
-                createNode(childNode, distribute);
+                if (distribute.getVertices().size() > 0) {
+                    createNode(childNode, distribute, geometricError/2);
+                }
             });
         } else {
             return;
