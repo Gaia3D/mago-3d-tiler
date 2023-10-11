@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class PointCloudTiler implements Tiler {
-    private static final int DEFUALT_MAX_COUNT = 1000000;
+    private static final int DEFUALT_MAX_COUNT = 20000;
     private static final int DEFUALT_MIN_LEVEL = 0;
     private static final int DEFUALT_MAX_LEVEL = 3;
 
@@ -112,11 +112,14 @@ public class PointCloudTiler implements Tiler {
         return tileInfos.stream().mapToDouble(tileInfo -> {
             GaiaBoundingBox boundingBox = tileInfo.getPointCloud().getGaiaBoundingBox();
             double result = boundingBox.getLongestDistance();
-            if (result > 1000.0d) {
-                log.warn("[Warn]{} is too long distance. check it please. (GeometricError)", result);
-            }
             return result;
         }).max().orElse(0.0d);
+    }
+
+    private double calcGeometricError(GaiaPointCloud pointCloud) {
+        GaiaBoundingBox boundingBox = pointCloud.getGaiaBoundingBox();
+        double result = boundingBox.getLongestDistance();
+        return result;
     }
 
     private GaiaBoundingBox calcBoundingBox(List<TileInfo> tileInfos) {
@@ -142,8 +145,11 @@ public class PointCloudTiler implements Tiler {
                 .map(TileInfo::getPointCloud)
                 .collect(Collectors.toList());
 
+        int index = 0;
         for (GaiaPointCloud pointCloud : pointClouds) {
-            createNode(parentNode, pointCloud, 32.0d);
+            pointCloud.setCode((index++) + "");
+            //parentNode.setNodeCode(parentNode.getNodeCode() + index);
+            createNode(parentNode, pointCloud, 16.0d);
         }
     }
 
@@ -162,6 +168,8 @@ public class PointCloudTiler implements Tiler {
         rotateX90(transformMatrix);
         BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
 
+        double geometricErrorCalc = calcGeometricError(selfPointCloud);
+
         Node childNode = new Node();
         childNode.setParent(parentNode);
         childNode.setTransformMatrix(transformMatrix);
@@ -170,7 +178,9 @@ public class PointCloudTiler implements Tiler {
         childNode.setRefine(Node.RefineType.ADD);
         childNode.setChildren(new ArrayList<>());
         childNode.setNodeCode(parentNode.getNodeCode() + pointCloud.getCode());
+        childNode.setGeometricError(geometricErrorCalc/2);
         childNode.setGeometricError(geometricError);
+
 
         TileInfo selfTileInfo = TileInfo.builder()
                 .pointCloud(selfPointCloud)

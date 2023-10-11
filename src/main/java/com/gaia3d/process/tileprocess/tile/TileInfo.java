@@ -78,7 +78,11 @@ public class TileInfo {
     public void deleteTemp() throws IOException {
         if (this.tempPath != null) {
             File file = this.tempPath.toFile();
-            if (file.isFile()) {
+            File parent = file.getParentFile();
+
+            if (parent.isDirectory()) {
+                FileUtils.deleteDirectory(parent);
+            } else if (file.isFile()) {
                 FileUtils.delete(file);
             } else if (file.isDirectory()) {
                 FileUtils.deleteDirectory(file);

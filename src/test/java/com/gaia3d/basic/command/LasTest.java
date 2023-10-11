@@ -15,15 +15,28 @@ class LasTest {
         convert(suffix);
     }
 
+    @Test
+    void convertldaps() {
+        String suffix = "ldaps";
+        convert(suffix);
+    }
+
+    @Test
+    void convertlSangamParts() {
+        String suffix = "sangamdong_parts";
+        convert(suffix);
+    }
+
     void convert(String suffix) {
         String[] args = new String[]{
                 "-input", input + suffix,
                 "-inputType", "las",
-                "-output", output + "test3",
+                "-output", output + suffix,
                 "-recursive",
                 "-maxCount", "1024",
                 "-minLod", "0",
                 "-maxLod", "3",
+                //"-crs", "3857",
                 "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
         };
         TilerMain.main(args);
