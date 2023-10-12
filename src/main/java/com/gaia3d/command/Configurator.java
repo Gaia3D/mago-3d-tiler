@@ -10,7 +10,14 @@ import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.geotools.metadata.iso.citation.Citations;
+import org.geotools.referencing.ReferencingFactoryFinder;
+import org.geotools.referencing.factory.PropertyAuthorityFactory;
+import org.geotools.referencing.factory.ReferencingFactoryContainer;
+import org.geotools.util.factory.Hints;
 
+import java.io.File;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -98,5 +105,4 @@ public class Configurator {
     private static void removeAllAppender(LoggerConfig loggerConfig) {
         loggerConfig.getAppenders().forEach((key, value) -> loggerConfig.removeAppender(key));
     }
-
 }

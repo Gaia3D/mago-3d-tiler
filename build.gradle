@@ -6,7 +6,7 @@ plugins {
 }
 
 group "com.gaia3d"
-version "1.1.4-windows"
+version "1.1.5-windows"
 project.ext.lwjglVersion = "3.3.1"
 switch ( OperatingSystem.current() ) {
     case OperatingSystem.WINDOWS:
@@ -20,6 +20,7 @@ switch ( OperatingSystem.current() ) {
         break
 }
 //project.ext.lwjglNatives = "natives-linux"
+//project.ext.lwjglNatives = "natives-macos"
 
 repositories {
     maven { url "https://repo.osgeo.org/repository/release/" }
@@ -69,10 +70,12 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
 
     // GeoTools (geospatial library)
-    implementation 'org.geotools:gt-main:21.1'
-    implementation 'org.geotools:gt-shapefile:21.1'
-    implementation 'org.geotools:gt-geojson:21.1'
-    implementation 'org.geotools:gt-geojsondatastore:21.1'
+    //implementation 'org.geotools:gt-main:21.3'
+    implementation 'org.geotools:gt-shapefile:21.3'
+    implementation 'org.geotools:gt-geojson:21.3'
+    implementation 'org.geotools:gt-geojsondatastore:21.3'
+    //implementation 'org.geotools:gt-referencing:21.3'
+    //implementation 'org.geotools:gt-epsg-wkt:21.3'
 
     // CityGML4J (citygml library)
     implementation 'org.citygml4j:citygml4j-xml:3.0.0'

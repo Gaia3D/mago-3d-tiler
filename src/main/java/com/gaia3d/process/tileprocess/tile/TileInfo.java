@@ -80,6 +80,7 @@ public class TileInfo {
             File file = this.tempPath.toFile();
             File parent = file.getParentFile();
 
+            log.info("[DeleteTemp] {}", file);
             if (parent.isDirectory()) {
                 FileUtils.deleteDirectory(parent);
             } else if (file.isFile()) {

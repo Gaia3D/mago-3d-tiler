@@ -45,7 +45,7 @@ public class OptimizeTest {
 
         //Runtime.getRuntime().gc();
         long usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-        System.out.println((usedMemory / 1000 / 1000) + " mega bytes");
+        log.info((usedMemory / 1000 / 1000) + " mega bytes");
 
         log.info("Start loading files.");
         TriangleFileLoader fileLoader = new TriangleFileLoader(command, new AssimpConverter(null));
@@ -53,7 +53,7 @@ public class OptimizeTest {
         log.info("End loading files.");
 
         usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-        System.out.println((usedMemory / 1000 / 1000) + " mega bytes");
+        log.info((usedMemory / 1000 / 1000) + " mega bytes");
 
         List<TileInfo> tileInfos = new ArrayList<>();
         log.info("Start loading tile infos.");
@@ -70,7 +70,7 @@ public class OptimizeTest {
         log.info("End loading tile infos.");
 
         usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-        System.out.println((usedMemory / 1000 / 1000) + " mega bytes");
+        log.info((usedMemory / 1000 / 1000) + " mega bytes");
 
         log.info("Start minimizing tile infos.");
         int serial = 0;
@@ -80,7 +80,7 @@ public class OptimizeTest {
         log.info("End minimizing tile infos.");
 
         usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-        System.out.println((usedMemory / 1000 / 1000) + " mega bytes");
+        log.info((usedMemory / 1000 / 1000) + " mega bytes");
 
         log.info("Start maximizing tile infos.");
         for (TileInfo tileInfo : tileInfos) {
@@ -89,6 +89,6 @@ public class OptimizeTest {
         log.info("End maximizing tile infos.");
 
         usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-        System.out.println((usedMemory / 1000 / 1000) + " mega bytes");
+        log.info((usedMemory / 1000 / 1000) + " mega bytes");
     }
 }

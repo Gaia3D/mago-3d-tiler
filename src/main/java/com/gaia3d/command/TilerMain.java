@@ -63,6 +63,9 @@ public class TilerMain {
                 log.error("output file path is not specified.");
                 return;
             }
+            GeotoolsConfigurator geotoolsConfigurator = new GeotoolsConfigurator();
+            geotoolsConfigurator.setEpsg();
+
             execute(command);
         } catch (ParseException | IOException e) {
             log.error("Failed to parse command line properties", e);
