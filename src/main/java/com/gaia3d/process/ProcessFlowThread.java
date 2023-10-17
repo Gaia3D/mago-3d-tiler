@@ -28,15 +28,13 @@ public class ProcessFlowThread implements Process {
 
     public void process(FileLoader fileLoader) throws IOException {
         List<TileInfo> tileInfos = new ArrayList<>();
-        log.info("Start loading tile infos.");
+        log.info("[process] Start loading tile infos.");
 
         /* PreProcess */
         preprocess(fileLoader, tileInfos);
-        //System.gc();
 
         /* TileProcess */
         Tileset tileset = tileprocess(tileInfos);
-        //System.gc();
 
         /* PostProcess */
         postprocess(tileset);
@@ -69,7 +67,6 @@ public class ProcessFlowThread implements Process {
     }
 
     private void postprocess(Tileset tileset) {
-
         ProcessThreadPool pool = new ProcessThreadPool();
         List<ContentInfo> contentInfos = tileset.findAllContentInfo();
         try {

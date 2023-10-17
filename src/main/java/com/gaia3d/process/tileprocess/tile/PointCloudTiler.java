@@ -181,7 +181,6 @@ public class PointCloudTiler implements Tiler {
         childNode.setGeometricError(geometricErrorCalc/2);
         childNode.setGeometricError(geometricError);
 
-
         TileInfo selfTileInfo = TileInfo.builder()
                 .pointCloud(selfPointCloud)
                 .boundingBox(childBoundingBox)
@@ -202,7 +201,7 @@ public class PointCloudTiler implements Tiler {
         childNode.setContent(content);
 
         parentNode.getChildren().add(childNode);
-        log.info(childNode.getNodeCode());
+        log.info("[ContentNode][{}] Point cloud nodes calculated.",childNode.getNodeCode());
 
         if (vertexLength > 0) { // vertexLength > DEFUALT_MAX_COUNT
             List<GaiaPointCloud> distributes = remainPointCloud.distributeOct();

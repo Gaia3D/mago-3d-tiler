@@ -17,22 +17,12 @@ import java.net.URL;
 public class GeotoolsConfigurator {
     public void setEpsg() throws IOException {
         URL epsg = Thread.currentThread().getContextClassLoader().getResource("epsg.properties");
-
         if (epsg != null) {
             Hints hints = new Hints(Hints.CRS_AUTHORITY_FACTORY, PropertyAuthorityFactory.class);
             ReferencingFactoryContainer referencingFactoryContainer = ReferencingFactoryContainer.instance(hints);
             PropertyAuthorityFactory factory = new PropertyAuthorityFactory(referencingFactoryContainer, Citations.fromName("EPSG"), epsg);
             ReferencingFactoryFinder.addAuthorityFactory(factory);
             ReferencingFactoryFinder.scanForPlugins();
-            log.info("EPSG properties loaded from {}", epsg);
-
-            CoordinateReferenceSystem crs = null;
-            try {
-                crs = CRS.decode("EPSG:5186");
-            } catch (FactoryException e) {
-                throw new RuntimeException(e);
-            }
-            System.out.println( crs.toWKT() );
         }
     }
 }

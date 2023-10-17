@@ -27,7 +27,7 @@ public class ProcessFlow implements Process {
 
     public void process(FileLoader fileLoader) throws IOException {
         List<TileInfo> tileInfos = new ArrayList<>();
-        log.info("Start loading tile infos.");
+        log.info("[process] Start loading tile infos.");
         preprocess(fileLoader, tileInfos);
         Tileset tileset = tileprocess(tileInfos);
         postprocess(tileset);
@@ -38,12 +38,12 @@ public class ProcessFlow implements Process {
 
     private void preprocess(FileLoader fileLoader, List<TileInfo> tileInfos) {
         List<File> fileList = fileLoader.loadFiles();
-        log.info("Total file counts : {}", fileList.size());
+        log.info("[pre-process] Total file counts : {}", fileList.size());
         int count = 0;
         int size = fileList.size();
         for (File file : fileList) {
             count++;
-            log.info("[File Loading] : {}/{} : {}", count, size, file);
+            log.info("[load] : {}/{} : {}", count, size, file);
             List<TileInfo> tileInfoResult = fileLoader.loadTileInfo(file);
             int serial = 0;
             for (TileInfo tileInfo : tileInfoResult) {
@@ -72,7 +72,7 @@ public class ProcessFlow implements Process {
         int size = contentInfos.size();
         for (ContentInfo contentInfo : contentInfos) {
             count++;
-            log.info("[{}/{}] post-process content-info : {}", count, size, contentInfo.getName());
+            log.info("[post-process][{}/{}] content-info : {}", count, size, contentInfo.getName());
             List<TileInfo> childTileInfos = contentInfo.getTileInfos();
             for (TileInfo tileInfo : childTileInfos) {
                 tileInfo.maximize();

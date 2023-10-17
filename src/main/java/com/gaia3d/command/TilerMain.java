@@ -94,10 +94,10 @@ public class TilerMain {
 
     private static void start() {
         log.info("\n" +
-                "┏┓┓ ┏┓┏┓┳┳┓┏┓\n" +
-                "┃┃┃ ┣┫┗┓┃┃┃┣┫\n" +
-                "┣┛┗┛┛┗┗┛┛ ┗┛┗\n" +
-                "3DTiler:" + VERSION
+                "┏┓┓ ┏┓┏┓┳┳┓┏┓  ┏┳┓┳┓ ┏┓┳┓\n" +
+                "┃┃┃ ┣┫┗┓┃┃┃┣┫━━ ┃ ┃┃ ┣ ┣┫\n" +
+                "┣┛┗┛┛┗┗┛┛ ┗┛┗   ┻ ┻┗┛┗┛┛┗\n" +
+                "VERSION : " + VERSION
         );
         underline();
     }

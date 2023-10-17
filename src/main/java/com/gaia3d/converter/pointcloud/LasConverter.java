@@ -56,10 +56,10 @@ public class LasConverter {
         LASReader reader = new LASReader(file);
         LASHeader header = reader.getHeader();
 
-        Iterable<LASPoint> pointIterable = reader.getPoints();
+        log.info("[LoadFile] Loading a pointcloud file. : {}", file.getAbsolutePath());
 
+        Iterable<LASPoint> pointIterable = reader.getPoints();
         GaiaBoundingBox boundingBox = pointCloud.getGaiaBoundingBox();
-        log.info("header: {}", header);
 
         double xScaleFactor = header.getXScaleFactor();
         double xOffset = header.getXOffset();

@@ -27,6 +27,7 @@ public class PointCloudProcessFlow implements Process {
 
     public void process(FileLoader fileLoader) throws IOException {
         List<TileInfo> tileInfos = new ArrayList<>();
+        log.info("[process] Start loading tile infos.");
         preprocess(fileLoader, tileInfos);
         Tileset tileset = tileprocess(tileInfos);
         postprocess(tileset);
@@ -37,13 +38,21 @@ public class PointCloudProcessFlow implements Process {
 
     private void preprocess(FileLoader fileLoader, List<TileInfo> tileInfos) {
         List<File> fileList = fileLoader.loadFiles();
+        log.info("[pre-process] Total file counts : {}", fileList.size());
+        int count = 0;
+        int size = fileList.size();
         for (File file : fileList) {
+            count++;
+            log.info("[load] : {}/{} : {}", count, size, file);
             List<TileInfo> tileInfoResult = fileLoader.loadTileInfo(file);
+            int serial = 0;
             for (TileInfo tileInfo : tileInfoResult) {
                 if (tileInfo != null) {
+                    log.info("[{}/{}][{}/{}] load tile...", count, size, serial, tileInfoResult.size());
                     for (PreProcess preProcessors : preProcesses) {
                         preProcessors.run(tileInfo);
                     }
+                    serial++;
                     tileInfos.add(tileInfo);
                 }
             }
@@ -59,7 +68,11 @@ public class PointCloudProcessFlow implements Process {
 
     private void postprocess(Tileset tileset) {
         List<ContentInfo> contentInfos = tileset.findAllContentInfo();
+        int count = 0;
+        int size = contentInfos.size();
         for (ContentInfo contentInfo : contentInfos) {
+            count++;
+            log.info("[post-process][{}/{}] content-info : {}", count, size, contentInfo.getName());
             List<TileInfo> childTileInfos = contentInfo.getTileInfos();
             for (PostProcess postProcessor : postProcesses) {
                 postProcessor.run(contentInfo);
