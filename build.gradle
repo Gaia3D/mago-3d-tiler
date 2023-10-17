@@ -3,11 +3,13 @@ import org.gradle.internal.os.OperatingSystem
 plugins {
     id "java"
     id "com.google.cloud.tools.jib" version "3.1.4"
+    id 'com.github.johnrengelman.shadow' version '7.1.0'
 }
 
 group "com.gaia3d"
-version "1.1.5-windows"
+version "1.2.0"
 project.ext.lwjglVersion = "3.3.1"
+
 switch ( OperatingSystem.current() ) {
     case OperatingSystem.WINDOWS:
         project.ext.lwjglNatives = "natives-windows"
@@ -19,8 +21,9 @@ switch ( OperatingSystem.current() ) {
         project.ext.lwjglNatives = "natives-macos"
         break
 }
+//project.ext.lwjglNatives = "natives-windows"
 //project.ext.lwjglNatives = "natives-linux"
-//project.ext.lwjglNatives = "natives-macos"
+project.ext.lwjglNatives = "natives-macos"
 
 repositories {
     maven { url "https://repo.osgeo.org/repository/release/" }
@@ -84,7 +87,6 @@ dependencies {
     implementation 'com.github.mreutegg:laszip4j:0.15'
 
     implementation files ("libs/plasma-core-1.1.0.jar")
-    //implementation files ("libs/plasma-core-1.0.1-debug.jar")
 
     runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-assimp::$lwjglNatives"
@@ -128,6 +130,7 @@ javadoc {
 }
 
 jar {
+    finalizedBy shadowJar
     manifest {
         attributes "Main-Class": "com.gaia3d.command.TilerMain",
                 "Implementation-Version": project.version
@@ -138,4 +141,20 @@ jar {
         }
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+shadowJar {
+    mergeServiceFiles()
+    manifest {
+        attributes 'Main-Class': 'com.gaia3d.command.TilerMain'
+        attributes 'Implementation-Version': project.version
+        attributes 'Implementation-Title': 'com.sun.media.imageio'
+        attributes 'Implementation-Vendor': 'Sun Microsystems, Inc.'
+        attributes 'Implementation-Vendor-Id': 'com.sun'
+        attributes 'Implementation-URL': 'http://java.sun.com/products/java-media/jai/forDevelopers/jai-imageio/'
+    }
+    archiveFileName = "plasma-3d-tiler-${project.version}-${project.ext.lwjglNatives}.${extension}"
+    //duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    //from sourceSets.main.runtimeClasspath
+    //configurations = [ project.configurations.runtimeClasspath ]
 }
