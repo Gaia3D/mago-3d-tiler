@@ -69,7 +69,7 @@ public class GaiaMaterial {
             if (listTexturesA.size() != listTexturesB.size()) {
                 hasTextureAreEquals = false;
             }
-            for (int i = 0; i < listTexturesA.size(); i++) {
+            for (int i = 0; i < listTexturesA.size() && i < listTexturesB.size(); i++) {
                 GaiaTexture textureA = listTexturesA.get(i);
                 GaiaTexture textureB = listTexturesB.get(i);
                 hasTexture = true;
