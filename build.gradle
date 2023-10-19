@@ -2,7 +2,7 @@ import org.gradle.internal.os.OperatingSystem
 
 plugins {
     id "java"
-    id "com.google.cloud.tools.jib" version "3.1.4"
+    id "com.google.cloud.tools.jib" version "3.4.0"
     id 'com.github.johnrengelman.shadow' version '7.1.0'
 }
 
@@ -106,15 +106,22 @@ test {
 
 jib {
     from {
-        image = "openjdk:11"
+        image = "eclipse-temurin:17-jre"
     }
     to {
-        image = "gaia3d/tiler"
-        tags = ["latest"]
+        image = "gaia3d/plasma-tiler"
+        tags = ["latest", project.version]
     }
     container {
-        jvmFlags = ["-Xms512m", "-Xmx1024m"]
-        mainClass = "command.TilerMain"
+        appRoot = "/plasma-tiler"
+        creationTime = "USE_CURRENT_TIMESTAMP"
+        jvmFlags = [
+            "-Djava.awt.headless=true",
+            "-Dfile.encoding=UTF-8",
+            "-XX:+UseContainerSupport",
+            "-XX:MaxGCPauseMillis=100",
+            "-XX:+UseStringDeduplication"
+        ]
     }
 }
 
