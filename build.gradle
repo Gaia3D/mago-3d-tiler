@@ -23,7 +23,7 @@ switch ( OperatingSystem.current() ) {
 }
 //project.ext.lwjglNatives = "natives-windows"
 //project.ext.lwjglNatives = "natives-linux"
-project.ext.lwjglNatives = "natives-macos"
+//project.ext.lwjglNatives = "natives-macos"
 
 repositories {
     maven { url "https://repo.osgeo.org/repository/release/" }
