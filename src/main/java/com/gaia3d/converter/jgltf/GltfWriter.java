@@ -429,7 +429,6 @@ public class GltfWriter {
         material.setName(gaiaMaterial.getName());
         material.setDoubleSided(false);
 
-
         MaterialPbrMetallicRoughness pbrMetallicRoughness = new MaterialPbrMetallicRoughness();
         //Vector4d diffuseColor = gaiaMaterial.getDiffuseColor();
         //pbrMetallicRoughness.setBaseColorFactor(new float[]{(float) diffuseColor.x, (float) diffuseColor.y, (float) diffuseColor.z, (float) diffuseColor.w});
