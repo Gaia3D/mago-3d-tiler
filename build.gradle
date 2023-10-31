@@ -2,7 +2,7 @@ import org.gradle.internal.os.OperatingSystem
 
 plugins {
     id "java"
-    id "com.google.cloud.tools.jib" version "3.1.4"
+    id "com.google.cloud.tools.jib" version "3.4.0"
     id 'com.github.johnrengelman.shadow' version '7.1.0'
 }
 
