@@ -74,6 +74,7 @@ public class GaiaPrimitive {
     public GaiaBufferDataSet toGaiaBufferSet(Matrix4d transformMatrix) {
         Matrix3d rotationMatrix = new Matrix3d();
         transformMatrix.get3x3(rotationMatrix);
+        rotationMatrix.normal();
         Matrix4d rotationMatrix4 = new Matrix4d(rotationMatrix);
 
         int[] indices = getIndices();
