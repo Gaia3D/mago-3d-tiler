@@ -7,7 +7,15 @@ import org.junit.jupiter.api.Test;
 @Slf4j
 class ConvertUnitTest {
     private static final String INPUT_PATH = "D:\\unit-test\\";
-    private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\plasma\\viewer\\data\\unit-test-output\\";
+    private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\plasma\\viewer\\data\\";
+
+    @Test
+    void test() {
+        String[] args = new String[]{
+                "--help"
+        };
+        TilerMain.main(args);
+    }
 
     @Test
     void test3ds() {
@@ -17,6 +25,59 @@ class ConvertUnitTest {
                 "-it", "3ds",
                 "-o", OUTPUT_PATH + path,
                 "-crs", "5186",
+                "-swapYZ",
+                "-maxCount", "1024",
+                "-minLod", "0",
+                "-maxLod", "3",
+                "-multiThread",
+        };
+        TilerMain.main(args);
+    }
+
+    @Test
+    void testKmlWith3ds() {
+        String path = "kml-with-3ds";
+        String[] args = new String[]{
+                "-i", INPUT_PATH + path,
+                "-it", "kml",
+                "-o", OUTPUT_PATH + path,
+                "-crs", "4326",
+                "-swapYZ",
+                "-maxCount", "1024",
+                "-minLod", "0",
+                "-maxLod", "3",
+                //"-reverseTexCoord",
+                "-multiThread",
+        };
+        TilerMain.main(args);
+    }
+
+    @Test
+    void testColladaDetail() {
+        String path = "collada-detail";
+        String[] args = new String[]{
+                "-i", INPUT_PATH + path,
+                "-it", "kml",
+                "-o", OUTPUT_PATH + path,
+                "-crs", "4326",
+                "-swapYZ",
+                "-maxCount", "1024",
+                "-minLod", "0",
+                "-maxLod", "3",
+                "-gltf",
+                "-multiThread",
+        };
+        TilerMain.main(args);
+    }
+
+    @Test
+    void testIfcWithKml() {
+        String path = "ifc";
+        String[] args = new String[]{
+                "-i", INPUT_PATH + path,
+                "-it", "kml",
+                "-o", OUTPUT_PATH + path,
+                "-crs", "4326",
                 "-swapYZ",
                 "-maxCount", "1024",
                 "-minLod", "0",
@@ -55,7 +116,7 @@ class ConvertUnitTest {
                 "-maxCount", "1024",
                 "-minLod", "0",
                 "-maxLod", "3",
-                "-multiThread",
+                //"-multiThread",
         };
         TilerMain.main(args);
     }
