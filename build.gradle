@@ -166,6 +166,7 @@ shadowJar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from sourceSets.main.runtimeClasspath
     configurations = [ project.configurations.runtimeClasspath ]
+    archiveFileName = "plasma-3d-tiler-${project.version}-${project.ext.lwjglNatives}.jar"
 }
 
 compileJava {
