@@ -186,7 +186,7 @@ public class LittleEndianDataInputStream extends FilterInputStream implements Da
         ByteBuffer byteBuffer = ByteBuffer
                 .wrap(bytes)
                 .order(ByteOrder.LITTLE_ENDIAN);
-        float result = byteBuffer.getFloat();
+        double result = byteBuffer.getDouble();
         byteBuffer.clear();
         return result;
     }
