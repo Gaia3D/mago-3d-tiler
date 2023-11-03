@@ -86,7 +86,10 @@ dependencies {
 
     implementation 'com.github.mreutegg:laszip4j:0.15'
 
-    implementation files ("libs/plasma-core-1.1.0.jar")
+    //compile project('plasma-core')
+    //implementation files ("libs/plasma-core-1.1.0.jar")
+
+    implementation project(":plasma-core")
 
     runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-assimp::$lwjglNatives"
