@@ -5,7 +5,7 @@ plugins {
 group = 'com.gaia3d'
 version = '1.1.0'
 
-project.ext.lwjglVersion = "3.3.1"
+project.ext.lwjglVersion = "3.3.2"
 switch ( org.gradle.internal.os.OperatingSystem.current() ) {
     case org.gradle.internal.os.OperatingSystem.WINDOWS:
         project.ext.lwjglNatives = "natives-windows"
@@ -23,8 +23,8 @@ repositories {
 }
 
 dependencies {
-    compileOnly "org.projectlombok:lombok:1.18.26"
-    annotationProcessor "org.projectlombok:lombok:1.18.26"
+    compileOnly "org.projectlombok:lombok:1.18.30"
+    annotationProcessor "org.projectlombok:lombok:1.18.30"
 
     implementation 'org.slf4j:slf4j-api:1.7.25'
 
@@ -47,8 +47,8 @@ dependencies {
     runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"
 
-    testCompileOnly "org.projectlombok:lombok:1.18.26"
-    testAnnotationProcessor "org.projectlombok:lombok:1.18.26"
+    testCompileOnly "org.projectlombok:lombok:1.18.30"
+    testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.0"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.0"
 }

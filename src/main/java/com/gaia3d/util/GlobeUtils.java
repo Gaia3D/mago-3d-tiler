@@ -97,20 +97,18 @@ public class GlobeUtils {
         double q = z * z * (1.0 - e2) * ra2;
         double r = (p + q - e4) / 6.0;
 
-        //double r = 1.0 / 6.0 * (p - q - e4);
         double evoluteBorderTest = 8 * r * r * r + e4 * p * q;
-
         double h, phi, u, v, w, k, D, sqrtDDpZZ, e, lambda, s2, rad1, rad2, rad3, atan;
 
         if (evoluteBorderTest > 0.0 || q != 0.0) {
             if (evoluteBorderTest > 0) {
                 rad1 = Math.sqrt(evoluteBorderTest);
                 rad2 = Math.sqrt(e4 * p * q);
+                double cbrt = Math.cbrt((rad1 + rad2) * (rad1 + rad2));
                 if (evoluteBorderTest > 10 * e2) {
-                    rad3 = Math.cbrt((rad1 + rad2) * (rad1 + rad2));
-                    u = r + 0.5 * rad3 + 2 * r * r / rad3;
+                    u = r + 0.5 * cbrt + 2 * r * r / cbrt;
                 } else {
-                    u = r + 0.5 * Math.cbrt((rad1 + rad2) * (rad1 + rad2)) + 0.5 * Math.cbrt((rad1 - rad2) * (rad1 - rad2));
+                    u = r + 0.5 * cbrt + 0.5 * Math.cbrt((rad1 - rad2) * (rad1 - rad2));
                 }
             } else {
                 rad1 = Math.sqrt(-evoluteBorderTest);
@@ -132,7 +130,6 @@ public class GlobeUtils {
             rad1 = Math.sqrt(1 - e2);
             rad2 = Math.sqrt(e2 - p);
             e = Math.sqrt(e2);
-
             h = -a * rad1 * rad2 / e;
             phi = rad2 / (e * rad2 + rad1 * Math.sqrt(p));
         }
@@ -147,19 +144,8 @@ public class GlobeUtils {
         }
 
         double factor = 180.0 / Math.PI;
-        /*double[] result = new double[3];
-        result[0] = factor * lambda;
-        result[1] = factor * phi;
-        result[2] = h;*/
         return new Vector3d(factor * lambda, factor * phi, h);
     }
-
-    /*public static ProjCoordinate transform(CoordinateReferenceSystem source, CoordinateReferenceSystem target, ProjCoordinate coordinate) {
-        BasicCoordinateTransform transformer = new BasicCoordinateTransform(source, target);
-        ProjCoordinate result = new ProjCoordinate();
-        transformer.transform(coordinate, result);
-        return result;
-    }*/
 
     public static ProjCoordinate transform(CoordinateReferenceSystem source, ProjCoordinate coordinate) {
         BasicCoordinateTransform transformer = new BasicCoordinateTransform(source, wgs84);
