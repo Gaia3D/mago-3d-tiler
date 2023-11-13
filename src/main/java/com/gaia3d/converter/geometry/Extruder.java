@@ -23,6 +23,7 @@ public class Extruder {
         List<Vector3d> floorPositions = resetPositionHeight(positions, floorHeight);
 
         List<GaiaTriangle> triangleRoof = tessellator.tessellate(roofPositions);
+        List<GaiaTriangle> triangleFloor = tessellator.tessellate(floorPositions);
 
         List<Vector3d> wallPositions = createWallPositions(roofPositions, floorPositions);
         List<GaiaTriangle> wallTriangles = createWallTriangles(wallPositions);
