@@ -127,15 +127,13 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
 
                 Polygon polygon = null;
                 LineString lineString = null;
-                if (geom instanceof MultiPolygon) {
-                    MultiPolygon multiPolygon = (MultiPolygon)geom;
+                if (geom instanceof MultiPolygon multiPolygon) {
                     polygon = (Polygon) multiPolygon.getGeometryN(0);
                     lineString = polygon.getExteriorRing();
                 } else if (geom instanceof Polygon) {
                     polygon = (Polygon) geom;
                     lineString = polygon.getExteriorRing();
-                } else if (geom instanceof MultiLineString) {
-                    MultiLineString multiLineString = (MultiLineString) geom;
+                } else if (geom instanceof MultiLineString multiLineString) {
                     lineString = (LineString) multiLineString.getGeometryN(0);
                 } else if (geom instanceof LineString) {
                     lineString = (LineString) geom;
@@ -211,7 +209,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             iterator.close();
 
             for (GaiaBuilding building : buildings) {
-                GaiaScene scene = initScene();
+                GaiaScene scene = initScene(this.command);
                 scene.setOriginalPath(file.toPath());
 
                 GaiaMaterial material = scene.getMaterials().get(0);

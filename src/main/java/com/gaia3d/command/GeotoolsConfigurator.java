@@ -2,13 +2,10 @@ package com.gaia3d.command;
 
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.metadata.iso.citation.Citations;
-import org.geotools.referencing.CRS;
 import org.geotools.referencing.ReferencingFactoryFinder;
 import org.geotools.referencing.factory.PropertyAuthorityFactory;
 import org.geotools.referencing.factory.ReferencingFactoryContainer;
 import org.geotools.util.factory.Hints;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.io.IOException;
 import java.net.URL;

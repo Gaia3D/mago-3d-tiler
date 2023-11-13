@@ -1,7 +1,6 @@
 package com.gaia3d.process;
 
 import com.gaia3d.converter.FileLoader;
-import com.gaia3d.converter.TriangleFileLoader;
 import com.gaia3d.process.postprocess.PostProcess;
 import com.gaia3d.process.preprocess.PreProcess;
 import com.gaia3d.process.tileprocess.Process;
@@ -73,7 +72,6 @@ public class PointCloudProcessFlow implements Process {
         for (ContentInfo contentInfo : contentInfos) {
             count++;
             log.info("[post-process][{}/{}] content-info : {}", count, size, contentInfo.getName());
-            List<TileInfo> childTileInfos = contentInfo.getTileInfos();
             for (PostProcess postProcessor : postProcesses) {
                 postProcessor.run(contentInfo);
             }

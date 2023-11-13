@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.pointcloud.GaiaPointCloud;
-import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.process.ProcessOptions;
 import com.gaia3d.process.TilerOptions;
 import com.gaia3d.process.tileprocess.Tiler;
@@ -25,13 +24,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class PointCloudTiler implements Tiler {
     private static final int DEFUALT_MAX_COUNT = 20000;
-    private static final int DEFUALT_MIN_LEVEL = 0;
-    private static final int DEFUALT_MAX_LEVEL = 3;
 
     private final CommandLine command;
     private final TilerOptions options;
@@ -111,26 +107,19 @@ public class PointCloudTiler implements Tiler {
     private double calcGeometricError(List<TileInfo> tileInfos) {
         return tileInfos.stream().mapToDouble(tileInfo -> {
             GaiaBoundingBox boundingBox = tileInfo.getPointCloud().getGaiaBoundingBox();
-            double result = boundingBox.getLongestDistance();
-            return result;
+            return boundingBox.getLongestDistance();
         }).max().orElse(0.0d);
     }
 
     private double calcGeometricError(GaiaPointCloud pointCloud) {
         GaiaBoundingBox boundingBox = pointCloud.getGaiaBoundingBox();
-        double result = boundingBox.getLongestDistance();
-        return result;
+        return boundingBox.getLongestDistance();
     }
 
     private GaiaBoundingBox calcBoundingBox(List<TileInfo> tileInfos) {
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         tileInfos.forEach(tileInfo -> {
-            //KmlInfo kmlInfo = tileInfo.getKmlInfo();
-            //Vector3d position = kmlInfo.getPosition();
-            Vector3d position = tileInfo.getPointCloud().getGaiaBoundingBox().getCenter();
-            //GaiaBoundingBox localBoundingBox = tileInfo.getScene().getBoundingBox();
             GaiaBoundingBox localBoundingBox = tileInfo.getPointCloud().getGaiaBoundingBox();
-            //ocalBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(position);
             boundingBox.addBoundingBox(localBoundingBox);
         });
         return boundingBox;
@@ -143,12 +132,10 @@ public class PointCloudTiler implements Tiler {
 
         List<GaiaPointCloud> pointClouds = tileInfos.stream()
                 .map(TileInfo::getPointCloud)
-                .collect(Collectors.toList());
-
+                .toList();
         int index = 0;
         for (GaiaPointCloud pointCloud : pointClouds) {
             pointCloud.setCode((index++) + "");
-            //parentNode.setNodeCode(parentNode.getNodeCode() + index);
             createNode(parentNode, pointCloud, 16.0d);
         }
     }
@@ -156,7 +143,9 @@ public class PointCloudTiler implements Tiler {
     private void createNode(Node parentNode, GaiaPointCloud pointCloud, double geometricError) {
         int vertexLength = pointCloud.getVertices().size();
 
-        List<GaiaPointCloud> divided = pointCloud.divideChunkSize(DEFUALT_MAX_COUNT);
+        int maxPoints = command.hasOption(ProcessOptions.MAX_POINTS.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_POINTS.getArgName())) : DEFUALT_MAX_COUNT;
+
+        List<GaiaPointCloud> divided = pointCloud.divideChunkSize(maxPoints);
         GaiaPointCloud selfPointCloud = divided.get(0);
         GaiaPointCloud remainPointCloud = divided.get(1);
 
@@ -206,173 +195,13 @@ public class PointCloudTiler implements Tiler {
         if (vertexLength > 0) { // vertexLength > DEFUALT_MAX_COUNT
             List<GaiaPointCloud> distributes = remainPointCloud.distributeOct();
             distributes.forEach(distribute -> {
-                if (distribute.getVertices().size() > 0) {
+                if (!distribute.getVertices().isEmpty()) {
                     createNode(childNode, distribute, geometricError/2);
                 }
             });
         } else {
             return;
         }
-    }
-
-    /*private void createNode(Node parentNode, List<TileInfo> tileInfos) throws IOException {
-        BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
-        boolean refineAdd = command.hasOption(ProcessOptions.REFINE_ADD.getArgName());
-        int maxCount = command.hasOption(ProcessOptions.MAX_COUNT.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_COUNT.getArgName())) : DEFUALT_MAX_COUNT;
-        if (tileInfos.size() > maxCount) {
-            List<List<TileInfo>> childrenScenes = parentBoundingVolume.distributeScene(tileInfos);
-            for (int index = 0; index < childrenScenes.size(); index++) {
-                List<TileInfo> childTileInfos = childrenScenes.get(index);
-                Node childNode = createStructNode(parentNode, childTileInfos, index);
-                if (childNode != null) {
-                    parentNode.getChildren().add(childNode);
-                    createNode(childNode, childTileInfos);
-                }
-            }
-        } else if (tileInfos.size() > 1) {
-            List<List<TileInfo>> childrenScenes = parentBoundingVolume.distributeScene(tileInfos);
-            for (int index = 0; index < childrenScenes.size(); index++) {
-                List<TileInfo> childTileInfos = childrenScenes.get(index);
-
-                Node childNode = createContentNode(parentNode, childTileInfos, index);
-                if (childNode != null) {
-                    parentNode.getChildren().add(childNode);
-                    Content content = childNode.getContent();
-                    if (content != null && refineAdd) {
-                        ContentInfo contentInfo = content.getContentInfo();
-                        createNode(childNode, contentInfo.getRemainTileInfos());
-                    } else {
-                        createNode(childNode, childTileInfos);
-                    }
-                }
-            }
-        } else if (tileInfos.size() > 0) {
-            Node childNode = createContentNode(parentNode, tileInfos, 0);
-            if (childNode != null) {
-                parentNode.getChildren().add(childNode);
-                createNode(childNode, tileInfos);
-            }
-        }
-    }*/
-
-    /*private Node createStructNode(Node parentNode, List<TileInfo> tileInfos, int index) {
-        if (tileInfos.size() < 1) {
-            return null;
-        }
-        String nodeCode = parentNode.getNodeCode();
-        nodeCode = nodeCode + index;
-        log.info("[StructNode ][" + nodeCode + "] : {}", tileInfos.size());
-
-        double geometricError = calcGeometricError(tileInfos);
-        GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
-        Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
-        rotateX90(transformMatrix);
-
-        BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
-
-        Node childNode = new Node();
-        childNode.setParent(parentNode);
-        childNode.setTransformMatrix(transformMatrix);
-        childNode.setBoundingVolume(boundingVolume);
-        childNode.setNodeCode(nodeCode);
-        childNode.setGeometricError(geometricError);
-        childNode.setRefine(Node.RefineType.REPLACE);
-        childNode.setChildren(new ArrayList<>());
-        return childNode;
-    }*/
-
-    /*private Node createContentNode(Node parentNode, List<TileInfo> tileInfos, int index) {
-        if (tileInfos.size() < 1) {
-            return null;
-        }
-
-        int minLevel = command.hasOption(ProcessOptions.MIN_LOD.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MIN_LOD.getArgName())) : DEFUALT_MIN_LEVEL;
-        int maxLevel = command.hasOption(ProcessOptions.MAX_LOD.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_LOD.getArgName())) : DEFUALT_MAX_LEVEL;
-        boolean refineAdd = command.hasOption(ProcessOptions.REFINE_ADD.getArgName());
-
-        GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
-        Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
-        rotateX90(transformMatrix);
-
-        BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
-
-        String nodeCode = parentNode.getNodeCode();
-        LevelOfDetail minLod = LevelOfDetail.getByLevel(minLevel);
-        LevelOfDetail maxLod = LevelOfDetail.getByLevel(maxLevel);
-        boolean hasContent = nodeCode.contains("C");
-        if (!hasContent) {
-            nodeCode = nodeCode + "C";
-        }
-        LevelOfDetail lod = getLodByNodeCode(minLod, maxLod, nodeCode);
-        if (lod == LevelOfDetail.NONE) {
-            return null;
-        }
-        nodeCode = nodeCode + index;
-
-        log.info("[ContentNode][" + nodeCode + "][{}] : {}", lod.getLevel(), tileInfos.size());
-
-        int lodError = refineAdd ? lod.getGeometricErrorBlock() : lod.getGeometricError();
-        int lodErrorDouble = lodError * 2;
-
-        List<TileInfo> resultInfos = tileInfos;
-        List<TileInfo> remainInfos = new ArrayList<>();
-        resultInfos = tileInfos.stream().filter(tileInfo -> {
-            double geometricError = tileInfo.getBoundingBox().getLongestDistance();
-            return geometricError >= lodErrorDouble;
-        }).collect(Collectors.toList());
-        remainInfos = tileInfos.stream().filter(tileInfo -> {
-            double geometricError = tileInfo.getBoundingBox().getLongestDistance();
-            return geometricError < lodErrorDouble;
-        }).collect(Collectors.toList());
-
-        Node childNode = new Node();
-        childNode.setParent(parentNode);
-        childNode.setTransformMatrix(transformMatrix);
-        childNode.setBoundingVolume(boundingVolume);
-        childNode.setNodeCode(nodeCode);
-        childNode.setGeometricError(lodError);
-        childNode.setChildren(new ArrayList<>());
-
-        childNode.setRefine(refineAdd ? Node.RefineType.ADD : Node.RefineType.REPLACE);
-        //childNode.setRefine(Node.RefineType.ADD);
-
-        if (resultInfos.size() > 0) {
-            ContentInfo contentInfo = new ContentInfo();
-            contentInfo.setName(nodeCode);
-            contentInfo.setLod(lod);
-            contentInfo.setBoundingBox(childBoundingBox);
-            contentInfo.setNodeCode(nodeCode);
-            contentInfo.setTileInfos(resultInfos);
-            contentInfo.setRemainTileInfos(remainInfos);
-
-            Content content = new Content();
-            content.setUri("data/" + nodeCode + ".b3dm");
-            content.setContentInfo(contentInfo);
-            childNode.setContent(content);
-        } else {
-            log.error("No content : {}", nodeCode);
-        }
-        return childNode;
-    }*/
-
-    private LevelOfDetail getLodByNodeCode(LevelOfDetail minLod, LevelOfDetail maxLod, String nodeCode) {
-        LevelOfDetail levelOfDetail = LevelOfDetail.NONE;
-        int minLevel = minLod.getLevel();
-        int maxLevel = maxLod.getLevel();
-
-        String[] splitCode = nodeCode.split("C");
-        if (splitCode.length > 1) {
-            String contentLevel = nodeCode.split("C")[1];
-            int level = maxLevel - contentLevel.length();
-            if (level < minLevel) {
-                level = -1;
-            }
-            levelOfDetail = LevelOfDetail.getByLevel(level);
-        } else {
-            return maxLod;
-        }
-
-        return levelOfDetail;
     }
 
     private void rotateX90(Matrix4d matrix) {

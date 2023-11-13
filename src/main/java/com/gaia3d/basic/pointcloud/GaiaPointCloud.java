@@ -2,9 +2,6 @@ package com.gaia3d.basic.pointcloud;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.structure.GaiaVertex;
-import com.gaia3d.converter.kml.KmlInfo;
-import com.gaia3d.process.tileprocess.tile.TileInfo;
-import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

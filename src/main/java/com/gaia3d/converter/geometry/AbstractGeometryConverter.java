@@ -3,6 +3,7 @@ package com.gaia3d.converter.geometry;
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.basic.types.TextureType;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.cli.CommandLine;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
@@ -12,6 +13,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.IntStream;
 
 @Slf4j
@@ -19,12 +21,21 @@ public abstract class AbstractGeometryConverter {
 
     abstract protected List<GaiaScene> convert(File file);
 
-    protected GaiaScene initScene() {
+    protected GaiaScene initScene(CommandLine command) {
         GaiaScene scene = new GaiaScene();
         GaiaMaterial material = new GaiaMaterial();
         material.setId(0);
         material.setName("extruded");
-        material.setDiffuseColor(new Vector4d(0.5, 0.5, 0.5, 1));
+
+        if (command.hasOption("debug")) {
+            Random random = new Random();
+            float r = random.nextFloat(1);
+            float g = random.nextFloat(1);
+            float b = random.nextFloat(1);
+            material.setDiffuseColor(new Vector4d(r, g, b, 1));
+        } else {
+            material.setDiffuseColor(new Vector4d(0.9, 0.9, 0.9, 1));
+        }
         Map<TextureType, List<GaiaTexture>> textureTypeListMap = material.getTextures();
         textureTypeListMap.put(TextureType.DIFFUSE, new ArrayList<>());
         scene.getMaterials().add(material);
@@ -118,8 +129,7 @@ public abstract class AbstractGeometryConverter {
             result = result + (Long) heightObject;
         } else if (heightObject instanceof Double) {
             result = result + (double) heightObject;
-        } else if (heightObject instanceof String) {
-            String heightString = (String) heightObject;
+        } else if (heightObject instanceof String heightString) {
             result = Double.parseDouble(heightString);
         }
 
@@ -141,8 +151,7 @@ public abstract class AbstractGeometryConverter {
         }
 
         if (attributeObject instanceof String) {
-            String value = (String) attributeObject;
-            result = value;
+            result = (String) attributeObject;
         } else if (attributeObject instanceof Integer) {
             result = String.valueOf((int) attributeObject);
         } else if (attributeObject instanceof Long) {
@@ -174,8 +183,7 @@ public abstract class AbstractGeometryConverter {
             result = result + (Long) heightObject;
         } else if (heightObject instanceof Double) {
             result = result + (double) heightObject;
-        } else if (heightObject instanceof String) {
-            String heightString = (String) heightObject;
+        } else if (heightObject instanceof String heightString) {
             result = Double.parseDouble(heightString);
         }
         return result;

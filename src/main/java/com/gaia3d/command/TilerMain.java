@@ -16,13 +16,14 @@ import java.io.IOException;
  */
 @Slf4j
 public class TilerMain {
-    private static String VERSION;
+    private static String PROGRAM_INFO;
+    private static String JAVA_INFO;
     private static long START_TIME = System.currentTimeMillis();
     private static long END_TIME = 0;
 
     public static void main(String[] args) {
-        String version = TilerMain.class.getPackage().getImplementationVersion();
-        VERSION = version != null ? version : "DEV";
+        getProgramInfo();
+        getJavaInfo();
 
         Configurator.initConsoleLogger();
         Options options = Configurator.createOptions();
@@ -52,7 +53,7 @@ public class TilerMain {
                 return;
             }
             if (command.hasOption(ProcessOptions.VERSION.getArgName())) {
-                log.info("Gaia3D Tiler version {}", version);
+                log.info("Gaia3D Tiler version {}", PROGRAM_INFO);
                 return;
             }
             if (!command.hasOption(ProcessOptions.INPUT.getArgName())) {
@@ -63,6 +64,9 @@ public class TilerMain {
                 log.error("output file path is not specified.");
                 return;
             }
+            log.info("Input file path : {}", command.getOptionValue(ProcessOptions.INPUT.getArgName()));
+            log.info("Output file path : {}", command.getOptionValue(ProcessOptions.OUTPUT.getArgName()));
+
             GeotoolsConfigurator geotoolsConfigurator = new GeotoolsConfigurator();
             geotoolsConfigurator.setEpsg();
 
@@ -92,12 +96,32 @@ public class TilerMain {
         processFlow.run(command);
     }
 
+    private static void getProgramInfo() {
+        String version = TilerMain.class.getPackage().getImplementationVersion();
+        String title = TilerMain.class.getPackage().getImplementationTitle();
+        String vendor = TilerMain.class.getPackage().getImplementationVendor();
+        version = version == null ? "dev-version" : version;
+        title = title == null ? "3d-tiler" : title;
+        vendor = vendor == null ? "Gaia3D, Inc." : vendor;
+        PROGRAM_INFO = title + "(" + version + ") by " + vendor;
+    }
+
+    private static void getJavaInfo() {
+        String result;
+        String jdkVersion = System.getProperty("java.version");
+        String vendor = System.getProperty("java.vendor");
+        result = "JAVA Version : " + jdkVersion + " (" + vendor + ") ";
+        JAVA_INFO = result;
+    }
+
     private static void start() {
         log.info("\n" +
-                "┏┓┓ ┏┓┏┓┳┳┓┏┓  ┏┳┓┳┓ ┏┓┳┓\n" +
-                "┃┃┃ ┣┫┗┓┃┃┃┣┫━━ ┃ ┃┃ ┣ ┣┫\n" +
-                "┣┛┗┛┛┗┗┛┛ ┗┛┗   ┻ ┻┗┛┗┛┛┗\n" +
-                "VERSION : " + VERSION
+                "┳┳┓      ┏┓┳┓\n" +
+                "┃┃┃┏┓┏┓┏┓ ┫┃┃\n" +
+                "┛ ┗┗┻┗┫┗┛┗┛┻┛\n" +
+                "      ┛      \n" +
+                PROGRAM_INFO + "\n" +
+                JAVA_INFO
         );
         underline();
     }
@@ -109,6 +133,6 @@ public class TilerMain {
     }
 
     private static void underline() {
-        log.info("======================================================");
+        log.info("----------------------------------------");
     }
 }

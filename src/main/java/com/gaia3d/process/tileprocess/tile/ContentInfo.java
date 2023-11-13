@@ -17,7 +17,6 @@ public class ContentInfo {
     private LevelOfDetail lod;
     private List<TileInfo> tileInfos;
     private List<TileInfo> remainTileInfos;
-    //private GaiaUniverse universe;
     private GaiaBoundingBox boundingBox;
     private GaiaSet batchedSet;
 

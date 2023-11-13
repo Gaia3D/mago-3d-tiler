@@ -2,19 +2,14 @@ package com.gaia3d.converter.pointcloud;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.pointcloud.GaiaPointCloud;
-import com.gaia3d.basic.structure.*;
-import com.gaia3d.basic.types.TextureType;
-import com.gaia3d.converter.Converter;
-import com.gaia3d.converter.geometry.GaiaTriangle;
+import com.gaia3d.basic.structure.GaiaVertex;
 import com.gaia3d.util.GlobeUtils;
 import com.github.mreutegg.laszip4j.LASHeader;
 import com.github.mreutegg.laszip4j.LASPoint;
 import com.github.mreutegg.laszip4j.LASReader;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
-import org.joml.Matrix4d;
 import org.joml.Vector3d;
-import org.joml.Vector4d;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 
@@ -23,8 +18,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.IntStream;
 
 @Slf4j
 public class LasConverter {

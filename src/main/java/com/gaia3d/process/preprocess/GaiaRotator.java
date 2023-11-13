@@ -15,10 +15,10 @@ public class GaiaRotator implements PreProcess {
     public TileInfo run(TileInfo tileInfo) {
         GaiaScene gaiaScene = tileInfo.getScene();
         GaiaNode rootNode = gaiaScene.getNodes().get(0);
-        Matrix4d transfrom = rootNode.getTransformMatrix();
-        transfrom.rotateX(Math.toRadians(90));
-        rootNode.setTransformMatrix(transfrom);
-        tileInfo.setTransformMatrix(transfrom);
+        Matrix4d transform = rootNode.getTransformMatrix();
+        transform.rotateX(Math.toRadians(90));
+        rootNode.setTransformMatrix(transform);
+        tileInfo.setTransformMatrix(transform);
         gaiaScene.getBoundingBox();
         return tileInfo;
     }

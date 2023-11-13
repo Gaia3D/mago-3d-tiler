@@ -3,12 +3,12 @@ import org.gradle.internal.os.OperatingSystem
 plugins {
     id "java"
     id "com.google.cloud.tools.jib" version "3.4.0"
-    id 'com.github.johnrengelman.shadow' version '7.1.0'
+    id 'com.github.johnrengelman.shadow' version '8.1.0'
 }
 
 group "com.gaia3d"
-version "1.2.1"
-project.ext.lwjglVersion = "3.3.1"
+version "1.2.2"
+project.ext.lwjglVersion = "3.3.2"
 
 switch ( OperatingSystem.current() ) {
     case OperatingSystem.WINDOWS:
@@ -31,8 +31,8 @@ repositories {
 }
 
 dependencies {
-    compileOnly "org.projectlombok:lombok:1.18.26"
-    annotationProcessor "org.projectlombok:lombok:1.18.26"
+    compileOnly "org.projectlombok:lombok:1.18.30"
+    annotationProcessor "org.projectlombok:lombok:1.18.30"
 
     // logging
     implementation 'org.slf4j:slf4j-api:1.7.25'
@@ -73,21 +73,15 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
 
     // GeoTools (geospatial library)
-    //implementation 'org.geotools:gt-main:21.3'
     implementation 'org.geotools:gt-shapefile:21.3'
     implementation 'org.geotools:gt-geojson:21.3'
     implementation 'org.geotools:gt-geojsondatastore:21.3'
-    //implementation 'org.geotools:gt-referencing:21.3'
-    //implementation 'org.geotools:gt-epsg-wkt:21.3'
 
     // CityGML4J (citygml library)
     implementation 'org.citygml4j:citygml4j-xml:3.0.0'
     implementation 'org.citygml4j:citygml4j-cityjson:3.0.0'
 
     implementation 'com.github.mreutegg:laszip4j:0.15'
-
-    //compile project('plasma-core')
-    //implementation files ("libs/plasma-core-1.1.0.jar")
 
     implementation project(":plasma-core")
 
@@ -98,8 +92,8 @@ dependencies {
     runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-stb::$lwjglNatives"
 
-    testCompileOnly "org.projectlombok:lombok:1.18.26"
-    testAnnotationProcessor "org.projectlombok:lombok:1.18.26"
+    testCompileOnly "org.projectlombok:lombok:1.18.30"
+    testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.0"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.0"
 }
@@ -158,9 +152,9 @@ shadowJar {
     manifest {
         attributes 'Main-Class': 'com.gaia3d.command.TilerMain'
         attributes 'Implementation-Version': project.version
-        attributes 'Implementation-Title': 'com.sun.media.imageio'
-        attributes 'Implementation-Vendor': 'Sun Microsystems, Inc.'
-        attributes 'Implementation-Vendor-Id': 'com.sun'
+        attributes 'Implementation-Title': '3d-tiler'
+        attributes 'Implementation-Vendor': 'Gaia3d, Inc.'
+        attributes 'Implementation-Vendor-Id': 'com.gaia3d'
         attributes 'Implementation-URL': 'http://java.sun.com/products/java-media/jai/forDevelopers/jai-imageio/'
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE

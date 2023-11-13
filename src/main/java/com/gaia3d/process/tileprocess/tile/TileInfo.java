@@ -42,7 +42,9 @@ public class TileInfo {
         this.name = rootNode.getName();
 
         this.tempPath = this.outputPath.resolve("temp");
-        this.tempPath.toFile().mkdir();
+        if (!this.tempPath.toFile().mkdir()) {
+            log.warn("[Warn] Can't create temp directory.");
+        }
         //this.tempPath = this.tempPath.resolve(scenePath.getFileName() + ".set");
     }
 

@@ -21,27 +21,24 @@ import org.joml.Vector3d;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @AllArgsConstructor
 public class PointCloudModel implements TileModel {
-    private static final String MAGIC = "pnts";
-    private static final int VERSION = 1;
     private final CommandLine command;
 
     @Override
     public ContentInfo run(ContentInfo contentInfo) {
-        int featureTableJSONByteLength;
-        int batchTableJSONByteLength;
         String featureTableJson;
         String batchTableJson;
 
         File outputFile = new File(command.getOptionValue(ProcessOptions.OUTPUT.getArgName()));
         Path outputRoot = outputFile.toPath().resolve("data");
-        outputRoot.toFile().mkdir();
+        if (!outputRoot.toFile().mkdir()) {
+            log.error("Failed to create output directory: {}", outputRoot);
+        }
 
         List<TileInfo> tileInfos = contentInfo.getTileInfos();
 
@@ -55,7 +52,6 @@ public class PointCloudModel implements TileModel {
         });
 
         int vertexLength = vertexCount.get();
-        //vertexLength = 100000;
 
         float[] positions = new float[vertexLength * 3];
         Vector3d center = boundingBox.getCenter();
@@ -65,7 +61,6 @@ public class PointCloudModel implements TileModel {
 
         byte[] colors = new byte[vertexLength * 3];
         float[] batchIds = new float[vertexLength];
-        //Arrays.fill(batchIds, (float) 0);
 
         AtomicInteger mainIndex = new AtomicInteger();
         AtomicInteger positionIndex = new AtomicInteger();
@@ -104,14 +99,11 @@ public class PointCloudModel implements TileModel {
         pointCloudBinary.setColors(colors);
         pointCloudBinary.setBatchIds(batchIds);
 
-        //pointCloudBinary.setColor(colors);
-
         byte[] positionBytes = pointCloudBinary.getPositionBytes();
         byte[] colorBytes = pointCloudBinary.getColorBytes();
         byte[] featureTableBytes = new byte[positionBytes.length + colorBytes.length /*+ batchIdBytes.length*/];
         System.arraycopy(positionBytes, 0, featureTableBytes, 0, positionBytes.length);
         System.arraycopy(colorBytes, 0, featureTableBytes, positionBytes.length, colorBytes.length);
-        //System.arraycopy(batchIdBytes, 0, featureTableBytes, positionBytes.length + colorBytes.length, batchIdBytes.length);
 
         byte[] batchIdBytes = pointCloudBinary.getBatchIdBytes();
         byte[] batchTableBytes = new byte[batchIdBytes.length];
@@ -131,24 +123,18 @@ public class PointCloudModel implements TileModel {
         batchTableIds.add("0");
 
         ObjectMapper objectMapper = new ObjectMapper();
-        //objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-        //objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
 
         try {
-            String featureTableText = objectMapper.writeValueAsString(featureTable);
+            StringBuilder featureTableText = new StringBuilder(objectMapper.writeValueAsString(featureTable));
             int featureTableJsonOffset = featureTableText.length() % 8;
-            for (int k = 0; k < featureTableJsonOffset; k++) {
-                featureTableText += " ";
-            }
-            featureTableJson = featureTableText;
+            featureTableText.append(" ".repeat(Math.max(0, featureTableJsonOffset)));
+            featureTableJson = featureTableText.toString();
 
-            String batchTableText = objectMapper.writeValueAsString(batchTable);
+            StringBuilder batchTableText = new StringBuilder(objectMapper.writeValueAsString(batchTable));
             int batchTableJsonOffset = batchTableText.length() % 8;
-            for (int k = 0; k < batchTableJsonOffset; k++) {
-                batchTableText += " ";
-            }
-            batchTableJson = batchTableText;
+            batchTableText.append(" ".repeat(Math.max(0, batchTableJsonOffset)));
+            batchTableJson = batchTableText.toString();
         } catch (JsonProcessingException e) {
             log.error(e.getMessage());
             throw new RuntimeException(e);
