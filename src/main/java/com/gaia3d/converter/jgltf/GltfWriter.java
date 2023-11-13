@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.joml.Matrix4d;
+import org.joml.Vector3d;
 import org.lwjgl.opengl.GL20;
 
 import javax.imageio.ImageIO;
@@ -122,7 +123,9 @@ public class GltfWriter {
     }
 
     private Byte convertNormal(Float normalValue) {
-        return (byte) (normalValue * 127);
+        byte normalByte = (byte) (normalValue * 127);
+
+        return normalByte;
     }
 
     private byte[] convertNormals(float[] normalValues) {
@@ -130,9 +133,17 @@ public class GltfWriter {
         int index = 0;
         byte[] normalBytes = new byte[length];
         for (int i = 0; i < length; i += 4) {
-            normalBytes[i] = convertNormal(normalValues[index++]);
-            normalBytes[i + 1] = convertNormal(normalValues[index++]);
-            normalBytes[i + 2] = convertNormal(normalValues[index++]);
+            float x = normalValues[index++];
+            float y = normalValues[index++];
+            float z = normalValues[index++];
+
+            // Normalize the normal vector
+            Vector3d vector3d = new Vector3d(x, y, z);
+            vector3d.normalize();
+
+            normalBytes[i] = convertNormal((float) vector3d.x);
+            normalBytes[i + 1] = convertNormal((float) vector3d.y);
+            normalBytes[i + 2] = convertNormal((float) vector3d.z);
             normalBytes[i + 3] = (byte) 1;
         }
         return normalBytes;
@@ -146,6 +157,12 @@ public class GltfWriter {
         byte[] colors = gaiaMesh.getColors();
         float[] texcoords = gaiaMesh.getTexcoords();
         float[] batchIds = gaiaMesh.getBatchIds();
+
+        /*normalBytes = new byte[normals.length];
+        //fillNormal 1
+        for (int i = 0; i < normals.length; i++) {
+            normalBytes[i] = (byte) 127;
+        }*/
 
         boolean isIntegerIndices = (gaiaMesh.getPositionsCount() / 3) >= 65535;
         if (isIntegerIndices) {
