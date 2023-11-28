@@ -552,8 +552,10 @@ public class GltfWriter {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             int width = bufferedImage.getWidth();
             int height = bufferedImage.getHeight();
-            if (width != ImageUtils.getNearestPowerOfTwo(width) || height != ImageUtils.getNearestPowerOfTwo(height)) {
-                bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, ImageUtils.getNearestPowerOfTwo(width), ImageUtils.getNearestPowerOfTwo(height));
+            int powerOfTwoWidth = ImageUtils.getNearestPowerOfTwo(width);
+            int powerOfTwoHeight = ImageUtils.getNearestPowerOfTwo(height);
+            if (width != powerOfTwoWidth || height != powerOfTwoHeight) {
+                bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, powerOfTwoWidth, powerOfTwoHeight);
             }
             ImageIO.write(bufferedImage, formatName, baos);
             byte[] bytes = baos.toByteArray();

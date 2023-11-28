@@ -53,7 +53,7 @@ public class GaiaTextureCoordinator {
         }
 
         Path outputPath = file.toPath();
-        Path output = file.toPath().resolve(ATLAS_IMAGE + ".jpg" );
+        Path output = file.toPath().resolve(ATLAS_IMAGE + ".png" );
         if (!outputPath.toFile().exists()) {
             if (!outputPath.toFile().mkdir()) {
                 log.error("Failed to create directory" );
@@ -61,8 +61,8 @@ public class GaiaTextureCoordinator {
         }
         if (this.atlasImage != null) {
             try {
-                ImageIO.write(this.atlasImage, "jpg", output.toFile());
-                ImageWriter jpgWriter = ImageIO.getImageWritersByFormatName("jpg" ).next();
+                ImageIO.write(this.atlasImage, "png", output.toFile());
+                ImageWriter jpgWriter = ImageIO.getImageWritersByFormatName("png" ).next();
                 ImageWriteParam jpgWriteParam = jpgWriter.getDefaultWriteParam();
                 jpgWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
                 jpgWriteParam.setCompressionQuality(0.0f);
@@ -317,7 +317,7 @@ public class GaiaTextureCoordinator {
             texture.setBufferedImage(this.atlasImage);
             texture.setWidth(maxWidth);
             texture.setHeight(maxHeight);
-            texture.setPath(ATLAS_IMAGE + ".jpg" );
+            texture.setPath(ATLAS_IMAGE + ".png" );
 
             List<GaiaBufferDataSet> materialBufferDataSets = bufferDataSets.stream().filter((bufferDataSet) -> bufferDataSet.getMaterialId() == target.getMaterialId()).toList();
 

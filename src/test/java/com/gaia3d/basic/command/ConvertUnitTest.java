@@ -9,7 +9,7 @@ class ConvertUnitTest {
         private static final String INPUT_PATH = "D:\\unit-test\\";
         private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\plasma\\viewer\\data\\";
 
-        //@Test
+        @Test
         void testIfcKitcWithKml() {
             String path = "ifc-kitc";
             String[] args = new String[]{
@@ -19,30 +19,11 @@ class ConvertUnitTest {
                     "-crs", "4326",
                     "-swapYZ",
                     "-maxCount", "1024",
-                    "-minLod", "0",
-                    "-maxLod", "0",
-                    "-refineAdd",
-                    "-glb",
-                    //"-multiThread",
-            };
-            TilerMain.main(args);
-        }
-
-        //@Test
-        void testIfcKitc() {
-            String path = "ifc-kitc";
-            String[] args = new String[]{
-                    "-i", INPUT_PATH + path,
-                    "-it", "ifc",
-                    "-o", OUTPUT_PATH + path,
-                    "-crs", "4326",
-                    //"-swapYZ",
-                    "-maxCount", "1024",
-                    "-minLod", "0",
+                    "-minLod", "3",
                     "-maxLod", "3",
                     "-refineAdd",
                     "-glb",
-                    //"-multiThread",
+                    "-multiThread",
             };
             TilerMain.main(args);
         }

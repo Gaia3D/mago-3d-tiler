@@ -116,10 +116,9 @@ public class TilerMain {
 
     private static void start() {
         log.info("\n" +
-                "┳┳┓      ┏┓┳┓\n" +
-                "┃┃┃┏┓┏┓┏┓ ┫┃┃\n" +
-                "┛ ┗┗┻┗┫┗┛┗┛┻┛\n" +
-                "      ┛      \n" +
+                "┌┬┐┌─┐┌─┐┌─┐  ┌┬┐┬┬  ┌─┐┬─┐\n" +
+                "│││├─┤│ ┬│ │───│ ││  ├┤ ├┬┘\n" +
+                "┴ ┴┴ ┴└─┘└─┘   ┴ ┴┴─┘└─┘┴└─\n" +
                 PROGRAM_INFO + "\n" +
                 JAVA_INFO
         );

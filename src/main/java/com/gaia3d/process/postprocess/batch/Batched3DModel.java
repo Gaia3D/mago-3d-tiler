@@ -66,8 +66,8 @@ public class Batched3DModel implements TileModel {
 
         File outputFile = new File(command.getOptionValue(ProcessOptions.OUTPUT.getArgName()));
         Path outputRoot = outputFile.toPath().resolve("data");
-        if (!outputRoot.toFile().mkdir()) {
-            log.warn("[Warn] Can't create output directory.");
+        if (outputRoot.toFile().mkdir()) {
+            log.info("Create directory: {}", outputRoot);
         }
 
         byte[] glbBytes;

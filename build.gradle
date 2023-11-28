@@ -8,7 +8,7 @@ plugins {
 
 group "com.gaia3d"
 version "1.2.2"
-project.ext.lwjglVersion = "3.3.2"
+project.ext.lwjglVersion = "3.3.3"
 
 switch ( OperatingSystem.current() ) {
     case OperatingSystem.WINDOWS:
@@ -157,6 +157,7 @@ shadowJar {
         attributes 'Implementation-Vendor-Id': 'com.gaia3d'
         attributes 'Implementation-URL': 'http://java.sun.com/products/java-media/jai/forDevelopers/jai-imageio/'
     }
+
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from sourceSets.main.runtimeClasspath
     configurations = [ project.configurations.runtimeClasspath ]
