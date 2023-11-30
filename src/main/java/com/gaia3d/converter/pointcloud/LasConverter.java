@@ -2,19 +2,14 @@ package com.gaia3d.converter.pointcloud;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.pointcloud.GaiaPointCloud;
-import com.gaia3d.basic.structure.*;
-import com.gaia3d.basic.types.TextureType;
-import com.gaia3d.converter.Converter;
-import com.gaia3d.converter.geometry.GaiaTriangle;
+import com.gaia3d.basic.structure.GaiaVertex;
 import com.gaia3d.util.GlobeUtils;
 import com.github.mreutegg.laszip4j.LASHeader;
 import com.github.mreutegg.laszip4j.LASPoint;
 import com.github.mreutegg.laszip4j.LASReader;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
-import org.joml.Matrix4d;
 import org.joml.Vector3d;
-import org.joml.Vector4d;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 
@@ -23,8 +18,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.IntStream;
 
 @Slf4j
 public class LasConverter {
@@ -56,10 +49,10 @@ public class LasConverter {
         LASReader reader = new LASReader(file);
         LASHeader header = reader.getHeader();
 
-        Iterable<LASPoint> pointIterable = reader.getPoints();
+        log.info("[LoadFile] Loading a pointcloud file. : {}", file.getAbsolutePath());
 
+        Iterable<LASPoint> pointIterable = reader.getPoints();
         GaiaBoundingBox boundingBox = pointCloud.getGaiaBoundingBox();
-        log.info("header: {}", header);
 
         double xScaleFactor = header.getXScaleFactor();
         double xOffset = header.getXOffset();
@@ -89,19 +82,23 @@ public class LasConverter {
             rgb[2] = (byte) (blue * 255);
 
             GaiaVertex vertex = new GaiaVertex();
-            vertex.setPosition(new Vector3d(x, y, z));
+            //vertex.setPosition(new Vector3d(x, y, z));
+            vertex.setPosition(position);
             vertex.setColor(rgb);
+            vertex.setBatchId(0);
             vertices.add(vertex);
             boundingBox.addPoint(position);
         });
 
         // BatchId setting
-        for (int i = 0; i < vertices.size(); i++) {
+        /*for (int i = 0; i < vertices.size(); i++) {
             vertices.get(i).setBatchId(i);
-        }
+        }*/
 
         // randomize arrays
         Collections.shuffle(vertices);
+        //var divided = pointCloud.divide();
+        //pointClouds.add(divided.get(0));
 
         pointClouds.add(pointCloud);
         return pointClouds;

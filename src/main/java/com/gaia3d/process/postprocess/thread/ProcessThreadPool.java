@@ -25,17 +25,18 @@ public class ProcessThreadPool {
         ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
         List<Runnable> tasks = new ArrayList<>();
 
+        log.info("[pre-process] Total file counts : {}", fileList.size());
         AtomicInteger count = new AtomicInteger();
         int size = fileList.size();
         for (File file : fileList) {
             Runnable callableTask = () -> {
                 count.getAndIncrement();
-                log.info("[{}/{}] load tile info: {}", count, size, file);
+                log.info("[load] : {}/{} : {}", count, size, file);
                 List<TileInfo> tileInfoResult = fileLoader.loadTileInfo(file);
                 int serial = 0;
                 for (TileInfo tileInfo : tileInfoResult) {
                     if (tileInfo != null) {
-                        log.info("[{}/{}][{}/{}] load sub-tile...", count, size, serial, tileInfoResult.size());
+                        log.info("[{}/{}][{}/{}] load tile...", count, size, serial, tileInfoResult.size());
                         for (PreProcess preProcessor : preProcessors) {
                             preProcessor.run(tileInfo);
                         }
@@ -70,7 +71,7 @@ public class ProcessThreadPool {
         for (ContentInfo contentInfo : contentInfos) {
             Runnable callableTask = () -> {
                 count.getAndIncrement();
-                log.info("[{}/{}] post-process content-info : {}", count, size, contentInfo.getName());
+                log.info("[post-process][{}/{}] content-info : {}", count, size, contentInfo.getName());
                 List<TileInfo> childTileInfos = contentInfo.getTileInfos();
                 List<TileInfo> copiedTileInfos = childTileInfos.stream()
                         .map((childTileInfo) -> TileInfo.builder()

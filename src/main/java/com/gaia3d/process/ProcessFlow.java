@@ -1,7 +1,6 @@
 package com.gaia3d.process;
 
 import com.gaia3d.converter.FileLoader;
-import com.gaia3d.converter.TriangleFileLoader;
 import com.gaia3d.process.postprocess.PostProcess;
 import com.gaia3d.process.preprocess.PreProcess;
 import com.gaia3d.process.tileprocess.Process;
@@ -27,21 +26,10 @@ public class ProcessFlow implements Process {
 
     public void process(FileLoader fileLoader) throws IOException {
         List<TileInfo> tileInfos = new ArrayList<>();
-        log.info("Start loading tile infos.");
-
-        /* PreProcess */
+        log.info("[process] Start loading tile infos.");
         preprocess(fileLoader, tileInfos);
-        //System.gc();
-
-        /* TileProcess */
         Tileset tileset = tileprocess(tileInfos);
-        //System.gc();
-
-        /* PostProcess */
         postprocess(tileset);
-        //System.gc();
-
-        /* Delete Temp Directory */
         if (!tileInfos.isEmpty()) {
             tileInfos.get(0).deleteTemp();
         }
@@ -49,13 +37,12 @@ public class ProcessFlow implements Process {
 
     private void preprocess(FileLoader fileLoader, List<TileInfo> tileInfos) {
         List<File> fileList = fileLoader.loadFiles();
-        log.info("Total file counts : {}", fileList.size());
-
+        log.info("[pre-process] Total file counts : {}", fileList.size());
         int count = 0;
         int size = fileList.size();
         for (File file : fileList) {
             count++;
-            log.info("[File Loading] : {}/{} : {}", count, size, file);
+            log.info("[load] : {}/{} : {}", count, size, file);
             List<TileInfo> tileInfoResult = fileLoader.loadTileInfo(file);
             int serial = 0;
             for (TileInfo tileInfo : tileInfoResult) {
@@ -84,7 +71,7 @@ public class ProcessFlow implements Process {
         int size = contentInfos.size();
         for (ContentInfo contentInfo : contentInfos) {
             count++;
-            log.info("[{}/{}] post-process content-info : {}", count, size, contentInfo.getName());
+            log.info("[post-process][{}/{}] content-info : {}", count, size, contentInfo.getName());
             List<TileInfo> childTileInfos = contentInfo.getTileInfos();
             for (TileInfo tileInfo : childTileInfos) {
                 tileInfo.maximize();

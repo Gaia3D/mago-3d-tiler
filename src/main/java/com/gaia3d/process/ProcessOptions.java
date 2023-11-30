@@ -28,6 +28,7 @@ public enum ProcessOptions {
     MAX_COUNT("maxCount", "mx", "maxCount", true, "max count of nodes (Default: 256)"),
     MAX_LOD("maxLod", "xl", "maxLod", true, "max level of detail (Default: 3)"),
     MIN_LOD("minLod", "nl", "minLod", true, "min level of detail (Default: 0)"),
+    MAX_POINTS("maxPoints", "mp", "maxPoints", true, "max points of node (Default: 20000)"),
 
     // 2D Options
     FLIP_COORDINATE("flipCoordinate", "fc", "flipCoordinate", false, "flip x,y Coordinate."),

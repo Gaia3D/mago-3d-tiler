@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.joml.Matrix4d;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
@@ -41,7 +42,9 @@ public class TileInfo {
         this.name = rootNode.getName();
 
         this.tempPath = this.outputPath.resolve("temp");
-        this.tempPath.toFile().mkdir();
+        if (this.tempPath.toFile().mkdir()) {
+            log.info("Create directory: {}", this.tempPath);
+        }
         //this.tempPath = this.tempPath.resolve(scenePath.getFileName() + ".set");
     }
 
@@ -76,7 +79,19 @@ public class TileInfo {
 
     public void deleteTemp() throws IOException {
         if (this.tempPath != null) {
-            FileUtils.deleteDirectory(this.tempPath.toFile());
+            File file = this.tempPath.toFile();
+            File parent = file.getParentFile();
+
+            log.info("[DeleteTemp] {}", file);
+            if (parent.isDirectory()) {
+                FileUtils.deleteDirectory(parent);
+            } else if (file.isFile()) {
+                FileUtils.delete(file);
+            } else if (file.isDirectory()) {
+                FileUtils.deleteDirectory(file);
+            } else {
+                log.warn("[Warn] Can't delete temp file because it is not file or directory.");
+            }
         }
     }
 }

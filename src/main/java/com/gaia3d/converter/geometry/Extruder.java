@@ -30,11 +30,8 @@ public class Extruder {
 
         resultTriangles.addAll(wallTriangles);
         resultTriangles.addAll(triangleRoof);
-        //resultTriangles.addAll(triangleFloor);
-
         resultPositions.addAll(wallPositions);
         resultPositions.addAll(roofPositions);
-        //resultPositions.addAll(floorPositions);
 
         return result;
     }

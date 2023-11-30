@@ -98,5 +98,4 @@ public class Configurator {
     private static void removeAllAppender(LoggerConfig loggerConfig) {
         loggerConfig.getAppenders().forEach((key, value) -> loggerConfig.removeAppender(key));
     }
-
 }

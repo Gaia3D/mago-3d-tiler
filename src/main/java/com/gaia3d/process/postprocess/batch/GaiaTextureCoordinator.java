@@ -47,17 +47,22 @@ public class GaiaTextureCoordinator {
     }
 
     public void writeBatchedImage() {
-        File file = new File("D:\\MAGO_TEST_FOLDER\\ComplicatedModels\\output\\images\\");
-        file.mkdir();
+        File file = new File("D:\\MAGO_TEST_FOLDER\\ComplicatedModels\\output\\images\\" );
+        if (!file.mkdir()) {
+            log.error("Failed to create directory" );
+        }
+
         Path outputPath = file.toPath();
-        Path output = file.toPath().resolve(ATLAS_IMAGE + ".jpg");
+        Path output = file.toPath().resolve(ATLAS_IMAGE + ".png" );
         if (!outputPath.toFile().exists()) {
-            outputPath.toFile().mkdir();
+            if (!outputPath.toFile().mkdir()) {
+                log.error("Failed to create directory" );
+            }
         }
         if (this.atlasImage != null) {
             try {
-                ImageIO.write(this.atlasImage, "jpg", output.toFile());
-                ImageWriter jpgWriter = ImageIO.getImageWritersByFormatName("jpg").next();
+                ImageIO.write(this.atlasImage, "png", output.toFile());
+                ImageWriter jpgWriter = ImageIO.getImageWritersByFormatName("png" ).next();
                 ImageWriteParam jpgWriteParam = jpgWriter.getDefaultWriteParam();
                 jpgWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
                 jpgWriteParam.setCompressionQuality(0.0f);
@@ -264,7 +269,7 @@ public class GaiaTextureCoordinator {
         int maxHeight = getMaxHeight(splittedImages);
         initBatchImage(maxWidth, maxHeight);
         if (this.atlasImage == null) {
-            log.error("atlasImage is null");
+            log.error("atlasImage is null" );
             return;
         }
 
@@ -283,7 +288,7 @@ public class GaiaTextureCoordinator {
             }
         }
 
-        if (command != null && command.hasOption("debug")) {
+        if (command != null && command.hasOption("debug" )) {
             float[] debugColor = lod.getDebugColor();
             Color color = new Color(debugColor[0], debugColor[1], debugColor[2], 0.5f);
             graphics.setColor(color);
@@ -312,9 +317,9 @@ public class GaiaTextureCoordinator {
             texture.setBufferedImage(this.atlasImage);
             texture.setWidth(maxWidth);
             texture.setHeight(maxHeight);
-            texture.setPath(ATLAS_IMAGE + ".jpg");
+            texture.setPath(ATLAS_IMAGE + ".png" );
 
-            List<GaiaBufferDataSet> materialBufferDataSets = bufferDataSets.stream().filter((bufferDataSet) -> bufferDataSet.getMaterialId() == target.getMaterialId()).collect(Collectors.toList());
+            List<GaiaBufferDataSet> materialBufferDataSets = bufferDataSets.stream().filter((bufferDataSet) -> bufferDataSet.getMaterialId() == target.getMaterialId()).toList();
 
             Double intPart_x = null, intPart_y = null;
             double fractPart_x, fractPart_y;
@@ -363,7 +368,7 @@ public class GaiaTextureCoordinator {
 
     //findMaterial
     private GaiaMaterial findMaterial(int materialId) {
-        return materials.stream().filter(material -> material.getId() == materialId).findFirst().orElseThrow(() -> new RuntimeException("not found material"));
+        return materials.stream().filter(material -> material.getId() == materialId).findFirst().orElseThrow(() -> new RuntimeException("not found material" ));
     }
 
     private int getMaxWidth(List<GaiaBatchImage> compareImages) {

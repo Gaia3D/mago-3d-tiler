@@ -22,7 +22,6 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class Batched3DModel implements TileModel {
@@ -37,37 +36,40 @@ public class Batched3DModel implements TileModel {
     }
 
     @Override
-    public ContentInfo run(ContentInfo batchInfo) {
-        GaiaSet batchedSet = batchInfo.getBatchedSet();
+    public ContentInfo run(ContentInfo contentInfo) {
+        GaiaSet batchedSet = contentInfo.getBatchedSet();
         int featureTableJSONByteLength;
         int batchTableJSONByteLength;
         String featureTableJson;
         String batchTableJson;
-        String nodeCode = batchInfo.getNodeCode();
+        String nodeCode = contentInfo.getNodeCode();
 
-        List<TileInfo> tileInfos = batchInfo.getTileInfos();
+        List<TileInfo> tileInfos = contentInfo.getTileInfos();
         int batchLength = tileInfos.size();
         List<String> projectNames = tileInfos.stream()
                 .map((tileInfo) -> tileInfo.getSet().getProjectName())
-                .collect(Collectors.toList());
+                .toList();
         List<String> nodeNames = tileInfos.stream()
                 .map(TileInfo::getName)
-                .collect(Collectors.toList());
+                .toList();
         List<Double> geometricErrors = tileInfos.stream()
                 .map((tileInfo) -> tileInfo.getBoundingBox().getLongestDistance())
-                .collect(Collectors.toList());
+                .toList();
         List<Double> heights = tileInfos.stream()
                 .map((tileInfo) -> {
                     GaiaBoundingBox boundingBox = tileInfo.getBoundingBox();
                     return boundingBox.getMaxZ() - boundingBox.getMinZ();
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         GaiaScene scene = new GaiaScene(batchedSet);
 
         File outputFile = new File(command.getOptionValue(ProcessOptions.OUTPUT.getArgName()));
         Path outputRoot = outputFile.toPath().resolve("data");
-        outputRoot.toFile().mkdir();
+        if (outputRoot.toFile().mkdir()) {
+            log.info("Create directory: {}", outputRoot);
+        }
+
         byte[] glbBytes;
         if (command.hasOption(ProcessOptions.DEBUG_GLTF.getArgName())) {
             String glbFileName = nodeCode + ".gltf";
@@ -139,7 +141,7 @@ public class Batched3DModel implements TileModel {
         } catch (Exception e) {
             log.error(e.getMessage());
         }
-        return batchInfo;
+        return contentInfo;
     }
 
     private byte[] readGlb(File glbOutputFile) {

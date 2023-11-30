@@ -1,10 +1,7 @@
 package com.gaia3d.converter;
 
 import com.gaia3d.basic.pointcloud.GaiaPointCloud;
-import com.gaia3d.basic.structure.GaiaScene;
 import com.gaia3d.basic.types.FormatType;
-import com.gaia3d.converter.kml.FastKmlReader;
-import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.converter.pointcloud.LasConverter;
 import com.gaia3d.process.ProcessOptions;
 import com.gaia3d.process.tileprocess.tile.TileInfo;

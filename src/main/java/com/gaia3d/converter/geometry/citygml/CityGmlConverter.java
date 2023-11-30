@@ -126,7 +126,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             }
 
             for (GaiaBuilding gaiaBuilding : gaiaBuildings) {
-                GaiaScene scene = initScene();
+                GaiaScene scene = initScene(this.command);
                 scene.setOriginalPath(file.toPath());
                 GaiaMaterial material = scene.getMaterials().get(0);
                 GaiaNode rootNode = scene.getNodes().get(0);

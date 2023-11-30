@@ -2,12 +2,14 @@ import org.gradle.internal.os.OperatingSystem
 
 plugins {
     id "java"
-    id "com.google.cloud.tools.jib" version "3.1.4"
+    id "com.google.cloud.tools.jib" version "3.4.0"
+    id 'com.github.johnrengelman.shadow' version '8.1.0'
 }
 
 group "com.gaia3d"
-version "1.1.4-windows"
-project.ext.lwjglVersion = "3.3.1"
+version "1.2.2"
+project.ext.lwjglVersion = "3.3.3"
+
 switch ( OperatingSystem.current() ) {
     case OperatingSystem.WINDOWS:
         project.ext.lwjglNatives = "natives-windows"
@@ -19,7 +21,9 @@ switch ( OperatingSystem.current() ) {
         project.ext.lwjglNatives = "natives-macos"
         break
 }
+//project.ext.lwjglNatives = "natives-windows"
 //project.ext.lwjglNatives = "natives-linux"
+//project.ext.lwjglNatives = "natives-macos"
 
 repositories {
     maven { url "https://repo.osgeo.org/repository/release/" }
@@ -27,8 +31,8 @@ repositories {
 }
 
 dependencies {
-    compileOnly "org.projectlombok:lombok:1.18.26"
-    annotationProcessor "org.projectlombok:lombok:1.18.26"
+    compileOnly "org.projectlombok:lombok:1.18.30"
+    annotationProcessor "org.projectlombok:lombok:1.18.30"
 
     // logging
     implementation 'org.slf4j:slf4j-api:1.7.25'
@@ -69,10 +73,9 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
 
     // GeoTools (geospatial library)
-    implementation 'org.geotools:gt-main:21.1'
-    implementation 'org.geotools:gt-shapefile:21.1'
-    implementation 'org.geotools:gt-geojson:21.1'
-    implementation 'org.geotools:gt-geojsondatastore:21.1'
+    implementation 'org.geotools:gt-shapefile:21.3'
+    implementation 'org.geotools:gt-geojson:21.3'
+    implementation 'org.geotools:gt-geojsondatastore:21.3'
 
     // CityGML4J (citygml library)
     implementation 'org.citygml4j:citygml4j-xml:3.0.0'
@@ -80,8 +83,7 @@ dependencies {
 
     implementation 'com.github.mreutegg:laszip4j:0.15'
 
-    implementation files ("libs/plasma-core-1.1.0.jar")
-    //implementation files ("libs/plasma-core-1.0.1-debug.jar")
+    implementation project(":plasma-core")
 
     runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-assimp::$lwjglNatives"
@@ -90,8 +92,8 @@ dependencies {
     runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-stb::$lwjglNatives"
 
-    testCompileOnly "org.projectlombok:lombok:1.18.26"
-    testAnnotationProcessor "org.projectlombok:lombok:1.18.26"
+    testCompileOnly "org.projectlombok:lombok:1.18.30"
+    testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.0"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.0"
 }
@@ -101,15 +103,22 @@ test {
 
 jib {
     from {
-        image = "openjdk:11"
+        image = "eclipse-temurin:17-jre"
     }
     to {
-        image = "gaia3d/tiler"
-        tags = ["latest"]
+        image = "gaia3d/plasma-tiler"
+        tags = ["latest", project.version]
     }
     container {
-        jvmFlags = ["-Xms512m", "-Xmx1024m"]
-        mainClass = "command.TilerMain"
+        appRoot = "/plasma-tiler"
+        creationTime = "USE_CURRENT_TIMESTAMP"
+        jvmFlags = [
+                "-Djava.awt.headless=true",
+                "-Dfile.encoding=UTF-8",
+                "-XX:+UseContainerSupport",
+                "-XX:MaxGCPauseMillis=100",
+                "-XX:+UseStringDeduplication"
+        ]
     }
 }
 
@@ -125,6 +134,7 @@ javadoc {
 }
 
 jar {
+    finalizedBy shadowJar
     manifest {
         attributes "Main-Class": "com.gaia3d.command.TilerMain",
                 "Implementation-Version": project.version
@@ -135,4 +145,25 @@ jar {
         }
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+shadowJar {
+    mergeServiceFiles()
+    manifest {
+        attributes 'Main-Class': 'com.gaia3d.command.TilerMain'
+        attributes 'Implementation-Version': project.version
+        attributes 'Implementation-Title': '3d-tiler'
+        attributes 'Implementation-Vendor': 'Gaia3d, Inc.'
+        attributes 'Implementation-Vendor-Id': 'com.gaia3d'
+        attributes 'Implementation-URL': 'http://java.sun.com/products/java-media/jai/forDevelopers/jai-imageio/'
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from sourceSets.main.runtimeClasspath
+    configurations = [ project.configurations.runtimeClasspath ]
+    archiveFileName = "plasma-3d-tiler-${project.version}-${project.ext.lwjglNatives}.jar"
+}
+
+compileJava {
+    options.encoding = 'UTF-8'
 }

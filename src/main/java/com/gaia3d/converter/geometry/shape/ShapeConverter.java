@@ -127,15 +127,13 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
 
                 Polygon polygon = null;
                 LineString lineString = null;
-                if (geom instanceof MultiPolygon) {
-                    MultiPolygon multiPolygon = (MultiPolygon)geom;
+                if (geom instanceof MultiPolygon multiPolygon) {
                     polygon = (Polygon) multiPolygon.getGeometryN(0);
                     lineString = polygon.getExteriorRing();
                 } else if (geom instanceof Polygon) {
                     polygon = (Polygon) geom;
                     lineString = polygon.getExteriorRing();
-                } else if (geom instanceof MultiLineString) {
-                    MultiLineString multiLineString = (MultiLineString) geom;
+                } else if (geom instanceof MultiLineString multiLineString) {
                     lineString = (LineString) multiLineString.getGeometryN(0);
                 } else if (geom instanceof LineString) {
                     lineString = (LineString) geom;
@@ -147,6 +145,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                     log.warn("Invalid : {}", feature.getID());
                     continue;
                 }
+                //log.info("{}", feature.getID());
 
                 GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
                 Coordinate[] coordinates = lineString.getCoordinates();
@@ -208,10 +207,14 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                     log.warn("Invalid Geometry : {}, {}", feature.getID(), name);
                 }
             }
+
             iterator.close();
+            reader.close();
+            shpFiles.dispose();
+            dataStore.dispose();
 
             for (GaiaBuilding building : buildings) {
-                GaiaScene scene = initScene();
+                GaiaScene scene = initScene(this.command);
                 scene.setOriginalPath(file.toPath());
 
                 GaiaMaterial material = scene.getMaterials().get(0);
@@ -240,6 +243,8 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 rootTransformMatrix.translate(center, rootTransformMatrix);
                 rootNode.setTransformMatrix(rootTransformMatrix);
                 scenes.add(scene);
+
+                //log.info("{}", building.getName());
             }
             dataStore.dispose();
             reader.close();

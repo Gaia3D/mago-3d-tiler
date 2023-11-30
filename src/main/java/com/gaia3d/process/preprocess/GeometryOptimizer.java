@@ -1,8 +1,8 @@
 package com.gaia3d.process.preprocess;
 
 import com.gaia3d.basic.structure.*;
-import org.joml.Vector3d;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
+import org.joml.Vector3d;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +15,7 @@ public class GeometryOptimizer implements PreProcess {
     }
 
     public void optimize(List<GaiaScene> gaiaScenes) {
-        System.out.println("Optimize TEST");
+        System.out.println("Optimize TEST" );
 
         // delete faces with normal aprox to (0, 0, -1).
         Vector3d normalReference = new Vector3d(0, 0, -1);
@@ -34,7 +34,7 @@ public class GeometryOptimizer implements PreProcess {
     }
 
     public void deleteFacesWithNormalInNode(GaiaNode gaiaNode, Vector3d normalReference, double error) {
-        if(!gaiaNode.getMeshes().isEmpty()) {
+        if (!gaiaNode.getMeshes().isEmpty()) {
             List<GaiaMesh> meshes = gaiaNode.getMeshes();
             ArrayList<GaiaMesh> meshesToRemove = new ArrayList<>();
             for (GaiaMesh mesh : meshes) {
@@ -50,41 +50,41 @@ public class GeometryOptimizer implements PreProcess {
                         for (GaiaFace face : faces) {
                             Vector3d faceNormal = face.getFaceNormal();
                             double dotProd = faceNormal.dot(normalReference);
-                            if(dotProd > 1 - error) {
+                            if (dotProd > 1 - error) {
                                 facesToRemove.add(face);
                                 faceRemoved = true;
                             }
                         }
-                        if(faceRemoved) {
+                        if (faceRemoved) {
                             // remove faces.
                             for (GaiaFace face : facesToRemove) {
                                 faces.remove(face);
                             }
 
                             // check if the surface has faces.
-                            if(surface.getFaces().isEmpty()) {
+                            if (surface.getFaces().isEmpty()) {
                                 surfacesToRemove.add(surface);
                             }
                         }
                     }
-                    if(faceRemoved) {
+                    if (faceRemoved) {
                         // remove surfaces.
                         for (GaiaSurface surface : surfacesToRemove) {
                             surfaces.remove(surface);
                         }
                         // check if the primitive has surfaces.
-                        if(primitive.getSurfaces().isEmpty()) {
+                        if (primitive.getSurfaces().isEmpty()) {
                             primitivesToRemove.add(primitive);
                         }
                     }
                 }
-                if(faceRemoved) {
+                if (faceRemoved) {
                     // remove primitives.
                     for (GaiaPrimitive primitive : primitivesToRemove) {
                         primitives.remove(primitive);
                     }
                     // check if the mesh has primitives.
-                    if(mesh.getPrimitives().isEmpty()) {
+                    if (mesh.getPrimitives().isEmpty()) {
                         meshesToRemove.add(mesh);
                     }
                 }
@@ -96,7 +96,7 @@ public class GeometryOptimizer implements PreProcess {
         }
 
         // check if exist children.
-        if(!gaiaNode.getChildren().isEmpty()) {
+        if (!gaiaNode.getChildren().isEmpty()) {
             gaiaNode.getChildren().forEach((child) -> deleteFacesWithNormalInNode(child, normalReference, error));
         }
     }
