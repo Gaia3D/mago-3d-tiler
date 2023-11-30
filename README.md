@@ -1,4 +1,3 @@
-
 ![mago_3DTiler_256](https://github.com/Gaia3D/mago-3d-tiler/assets/87691347/792058e4-e41e-4f39-97e5-1a059b8d70b5)
 ==
 mago 3DTiler: The Premier OGC 3D Tiles Solution!
@@ -119,7 +118,8 @@ mago 3DTiler는 Java 기반으로 뛰어난 이식성, 유연함과 함께 빠�
 /tiler/dist/ 디렉토리에는 미리 빌드된 jar가 준비 되어있습니다.
 - mago-3d-tiler-x.x.x-natives-windows.jar   
 - mago-3d-tiler-x.x.x-natives-linux.jar   
-- mago-3d-tiler-x.x.x-natives-macos.jar   
+- mago-3d-tiler-x.x.x-natives-macos.jar
+  
 빌드할  사용된 java 버전은 jdk 17 입니다.
 
 아래는 Help 코드를 실행시킨 예시입니다.
