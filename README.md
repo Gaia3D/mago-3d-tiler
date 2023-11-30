@@ -1,5 +1,5 @@
 
-![mago_3DTiler_white_256](https://github.com/Gaia3D/mago-3d-tiler/assets/87691347/d9d53db6-93fb-4ac2-a953-272be06f6f22)   
+![mago_3DTiler_256](https://github.com/Gaia3D/mago-3d-tiler/assets/87691347/792058e4-e41e-4f39-97e5-1a059b8d70b5)
 ==
 mago 3DTiler: The Premier OGC 3D Tiles Solution!
 --
@@ -97,7 +97,8 @@ JDK23 has been found to be partially available.
 
 ---
 
-![mago_3DTiler_white_256](https://github.com/Gaia3D/mago-3d-tiler/assets/87691347/d9d53db6-93fb-4ac2-a953-272be06f6f22)
+
+![mago_3DTiler_256](https://github.com/Gaia3D/mago-3d-tiler/assets/87691347/792058e4-e41e-4f39-97e5-1a059b8d70b5)
 ==
 mago 3DTiler: The Premier OGC 3D Tiles Solution!
 --
