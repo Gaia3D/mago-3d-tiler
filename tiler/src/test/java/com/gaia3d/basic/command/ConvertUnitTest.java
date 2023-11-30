@@ -7,7 +7,39 @@ import org.junit.jupiter.api.Test;
 @Slf4j
 class ConvertUnitTest {
         private static final String INPUT_PATH = "D:\\unit-test\\";
-        private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\plasma\\viewer\\data\\";
+        private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\mago\\plasma\\viewer\\data\\";
+
+        @Test
+        void testHwangyonggakObj() {
+            String path = "hwangyonggak-obj";
+            String[] args = new String[]{
+                    "-i", INPUT_PATH + path,
+                    "-it", "obj",
+                    "-o", OUTPUT_PATH + path,
+                    "-crs", "32652",
+                    "-swapYZ",
+                    "-maxCount", "1024",
+                    "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
+                    "-multiThread",
+            };
+            TilerMain.main(args);
+        }
+
+        @Test
+        void testHwangyonggakLaz() {
+            String path = "hwangyonggak-laz";
+            String[] args = new String[]{
+                    "-i", INPUT_PATH + path,
+                    "-it", "laz",
+                    "-o", OUTPUT_PATH + path,
+                    "-crs", "32652",
+                    "-maxPoints", "30000",
+                    "-multiThread",
+                    "-refineAdd",
+                    "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
+            };
+            TilerMain.main(args);
+        }
 
         @Test
         void testIfcKitcWithKml() {

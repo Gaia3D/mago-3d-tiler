@@ -36,10 +36,10 @@ public class PointCloudModel implements TileModel {
 
         File outputFile = new File(command.getOptionValue(ProcessOptions.OUTPUT.getArgName()));
         Path outputRoot = outputFile.toPath().resolve("data");
-        if (!outputRoot.toFile().mkdir()) {
-            log.error("Failed to create output directory: {}", outputRoot);
+        File outputRootFile = outputRoot.toFile();
+        if (!outputRootFile.mkdir() && !outputRootFile.exists()) {
+            log.error("Failed to create output directory : {}", outputRoot);
         }
-
         List<TileInfo> tileInfos = contentInfo.getTileInfos();
 
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
