@@ -21,9 +21,6 @@ switch ( OperatingSystem.current() ) {
         project.ext.lwjglNatives = "natives-macos"
         break
 }
-//project.ext.lwjglNatives = "natives-windows"
-//project.ext.lwjglNatives = "natives-linux"
-//project.ext.lwjglNatives = "natives-macos"
 
 repositories {
     maven { url "https://repo.osgeo.org/repository/release/" }
@@ -83,7 +80,7 @@ dependencies {
 
     implementation 'com.github.mreutegg:laszip4j:0.15'
 
-    implementation project(":plasma-core")
+    implementation project(":mago-core")
 
     runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-assimp::$lwjglNatives"
@@ -161,7 +158,7 @@ shadowJar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from sourceSets.main.runtimeClasspath
     configurations = [ project.configurations.runtimeClasspath ]
-    archiveFileName = "plasma-3d-tiler-${project.version}-${project.ext.lwjglNatives}.jar"
+    archiveFileName = "mago-3d-tiler-${project.version}-${project.ext.lwjglNatives}.jar"
 }
 
 compileJava {

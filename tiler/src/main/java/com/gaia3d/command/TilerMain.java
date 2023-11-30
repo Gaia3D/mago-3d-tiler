@@ -60,6 +60,10 @@ public class TilerMain {
                 log.error("Input file path is not specified.");
                 return;
             }
+            if (!command.hasOption(ProcessOptions.INPUT_TYPE.getArgName())) {
+                log.error("InputType is not specified.");
+                return;
+            }
             if (!command.hasOption(ProcessOptions.OUTPUT.getArgName())) {
                 log.error("output file path is not specified.");
                 return;

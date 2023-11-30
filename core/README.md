@@ -1,2 +1,0 @@
-# plasma-core
-plasma-core
