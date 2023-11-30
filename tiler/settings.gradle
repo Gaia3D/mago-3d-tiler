@@ -1,0 +1,3 @@
+rootProject.name = 'plasma-3d-tiler'
+include ':plasma-core'
+project(':plasma-core').projectDir = new File(settingsDir, '../core')
