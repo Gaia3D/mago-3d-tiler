@@ -73,7 +73,7 @@ This is a simple kml/collada -> 3dTiles conversion code with the mandatory argum
 ```
 java -jar mago-3d-tiler-x.x.x-natives-windows.jar --input C:\data\kml-input-dir --inputType kml --output C:\data\kml-output-dir
 ```
-### Supported Java versions
+### Supported Java versions:
 It supports compatibility with long-term support (LTS) versions of the JDK, such as JDK11, JDK17 and JDK23.   
 JDK23 has been found to be partially available.
 
@@ -85,7 +85,7 @@ JDK23 has been found to be partially available.
 - **Freedom to Innovate**: Embrace the flexibility of MPL2.0 licensing(<https://www.mozilla.org/en-US/MPL/2.0/>)​,
   ensuring your freedom to use, modify, and distribute without hindrance.
 
-### Library Dependencies
+### Library Dependencies:
 - **LWJGL3** (Lightweight Java Game Library 3 Opengl, Assimp): <https://github.com/LWJGL/lwjgl3>
 - **JOML** (Java OpenGL Math Library): <https://github.com/JOML-CI/JOML>
 - **jgltf** (Java libraries for glTF): <https://github.com/javagl/JglTF>
@@ -102,7 +102,7 @@ JDK23 has been found to be partially available.
 mago 3DTiler: The Premier OGC 3D Tiles Solution!
 --
 
-### 개요: 
+### 개요
 mago 3DTiler는 오픈소스 기반의 OGC 3D Tiles 변환기입니다.   
 다양한 공간정보 데이터를 디지털트윈 서비스의 근간이 되는 OGC 3D Tiles로 변환해 줍니다.   
 mago 3DTiler는 Java 기반으로 뛰어난 이식성, 유연함과 함께 빠른 속도를 자랑합니다.   
@@ -126,7 +126,7 @@ mago 3DTiler는 Java 기반으로 뛰어난 이식성, 유연함과 함께 빠�
 ```
 java -jar mago-3d-tiler-x.x.x-natives-windows.jar -h
 ```
-출력 결과물:
+출력 결과물: 
 ```
 ┌┬┐┌─┐┌─┐┌─┐  ┌┬┐┬┬  ┌─┐┬─┐
 │││├─┤│ ┬│ │───│ ││  ├┤ ├┬┘
@@ -174,18 +174,18 @@ usage: Gaia3D Tiler
 java -jar mago-3d-tiler-x.x.x-natives-windows.jar --input C:\data\kml-input-dir --inputType kml --output C:\data\kml-output-dir
 ```
 
-### 지원하는 자바 버전:
+### 지원하는 자바 버전: 
 JDK11, JDK17, JDK23 등 JDK의 LTS(Long-term support) 버전의 호환을 지원합니다.   
 JDK23는 부분적으로 사용이 가능한 것을 확인했습니다.
 
-### 샘플 사이트:
+### 샘플 사이트: 
 <https://seoul.gaia3d.com:10903>
 
-### 라이선스:
+### 라이선스: 
 - mago 3DTiler는 MPL2.0 라이선스를 따릅니다. (<https://www.mozilla.org/en-US/MPL/2.0/>)
 - 만약 MPL2.0라이선스에 따라 여러분이 개작, 수정한 코드를 공개하고 싶지 않으면 상업 라이선스를 따르시면 됩니다. 이 경우에는 sales@gaia3d.com 으로 연락 주시기 바랍니다.
 
-### 라이브러리 의존성
+### 라이브러리 의존성: 
 - **LWJGL3** (Lightweight Java Game Library 3 Opengl, Assimp): <https://github.com/LWJGL/lwjgl3>
 - **JOML** (Java OpenGL Math Library): <https://github.com/JOML-CI/JOML>
 - **jgltf** (Java libraries for glTF): <https://github.com/javagl/JglTF>
