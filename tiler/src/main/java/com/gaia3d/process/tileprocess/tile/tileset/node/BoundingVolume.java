@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
+import com.gaia3d.util.DecimalUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 import org.locationtech.proj4j.ProjCoordinate;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,11 +52,7 @@ public class BoundingVolume {
         rootRegion[4] = boundingBox.getMinZ();
         rootRegion[5] = boundingBox.getMaxZ();
         for (int i = 0; i < rootRegion.length; i++) {
-            double value = rootRegion[i];
-            DecimalFormat df = new DecimalFormat("0.00000000");
-            String result = df.format(value);
-            value = Double.parseDouble(result);
-            rootRegion[i] = value;
+            rootRegion[i] = DecimalUtils.cut(rootRegion[i]);
         }
         this.setType(BoundingVolumeType.REGION);
         this.setRegion(rootRegion);

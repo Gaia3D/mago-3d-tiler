@@ -12,6 +12,7 @@ import com.gaia3d.process.tileprocess.tile.tileset.asset.*;
 import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
+import com.gaia3d.util.DecimalUtils;
 import com.gaia3d.util.GlobeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
@@ -44,9 +45,7 @@ public class Gaia3DTiler implements Tiler {
     @Override
     public Tileset run(List<TileInfo> tileInfos) {
         double geometricError = calcGeometricError(tileInfos);
-        DecimalFormat df = new DecimalFormat("0.00000000");
-        String result = df.format(geometricError);
-        geometricError = Double.parseDouble(result);
+        geometricError = DecimalUtils.cut(geometricError);
 
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
         Matrix4d transformMatrix = getTransformMatrix(globalBoundingBox);
@@ -164,10 +163,7 @@ public class Gaia3DTiler implements Tiler {
         rotateX90(transformMatrix);
 
         BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
-
-        DecimalFormat df = new DecimalFormat("0.00000000");
-        String result = df.format(geometricError);
-        geometricError = Double.parseDouble(result);
+        geometricError = DecimalUtils.cut(geometricError);
 
         Node childNode = new Node();
         childNode.setParent(parentNode);

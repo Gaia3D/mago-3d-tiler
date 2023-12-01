@@ -243,8 +243,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 rootTransformMatrix.translate(center, rootTransformMatrix);
                 rootNode.setTransformMatrix(rootTransformMatrix);
                 scenes.add(scene);
-
-                //log.info("{}", building.getName());
             }
             dataStore.dispose();
             reader.close();

@@ -3,6 +3,7 @@ package com.gaia3d.process.tileprocess.tile.tileset.node;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
+import com.gaia3d.util.DecimalUtils;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -56,11 +57,7 @@ public class Node {
         this.transform = transformMatrix.get(new float[16]);
 
         for (int i = 0; i < transform.length; i++) {
-            float value = this.transform[i];
-            DecimalFormat df = new DecimalFormat("0.00000000");
-            String result = df.format(value);
-            value = Float.parseFloat(result);
-            this.transform[i] = value;
+            this.transform[i] = DecimalUtils.cut(this.transform[i]);
         }
     }
 
