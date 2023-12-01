@@ -22,18 +22,20 @@ public enum ProcessOptions {
     SWAP_YZ("swapYZ", "yz", "swapYZ", false, "swap vertices axis YZ"),
     REVERSE_TEXCOORD("reverseTexCoord", "rt", "reverseTexCoord", false, "texture y-axis coordinate reverse"),
     MULTI_THREAD("multiThread", "mt", "multiThread", false, "multi thread mode"),
+    MULTI_THREAD_COUNT("multiThreadCount", "mc", "multiThreadCount", true, "multi thread count (Default: 8)"),
+    PNG_TEXTURE("pngTexture", "pt", "pngTexture", false, "png texture mode"),
 
     // 3D Tiles Options
     REFINE_ADD("refineAdd", "ra", "refineAdd", false, "refine addd mode"),
-    MAX_COUNT("maxCount", "mx", "maxCount", true, "max count of nodes (Default: 256)"),
+    MAX_COUNT("maxCount", "mx", "maxCount", true, "max count of nodes (Default: 1024)"),
     MAX_LOD("maxLod", "xl", "maxLod", true, "max level of detail (Default: 3)"),
     MIN_LOD("minLod", "nl", "minLod", true, "min level of detail (Default: 0)"),
-    MAX_POINTS("maxPoints", "mp", "maxPoints", true, "max points of node (Default: 20000)"),
+    MAX_POINTS("maxPoints", "mp", "maxPoints", true, "max points of pointcloud data (Default: 20000)"),
 
     // 2D Options
     FLIP_COORDINATE("flipCoordinate", "fc", "flipCoordinate", false, "flip x,y Coordinate."),
-    NAME_COLUMN("nameColumn", "nc", "nameColumn", true, "name column setting."),
-    HEIGHT_COLUMN("heightColumn", "hc", "heightColumn", true, "height column setting."),
+    NAME_COLUMN("nameColumn", "nc", "nameColumn", true, "name column setting. (Default: name)"),
+    HEIGHT_COLUMN("heightColumn", "hc", "heightColumn", true, "height column setting. (Default: height)"),
     ALTITUDE_COLUMN("altitudeColumn", "ac", "altitudeColumn", true, "altitude Column setting."),
     MINIMUM_HEIGHT("minimumHeight", "mh", "minimumHeight", true, "minimum height setting."),
     ABSOLUTE_ALTITUDE("absoluteAltitude", "aa", "absoluteAltitude", true, "absolute altitude mode."),

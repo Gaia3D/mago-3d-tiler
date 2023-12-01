@@ -7,18 +7,18 @@ import com.gaia3d.basic.structure.GaiaMaterial;
 import com.gaia3d.basic.structure.GaiaTexture;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.TextureType;
+import com.gaia3d.process.ProcessOptions;
 import com.gaia3d.process.tileprocess.tile.LevelOfDetail;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
 import org.joml.Vector2d;
 
 import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.*;
@@ -43,32 +43,6 @@ public class GaiaTextureCoordinator {
             this.atlasImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         } else {
             this.atlasImage = null;
-        }
-    }
-
-    public void writeBatchedImage() {
-        File file = new File("D:\\MAGO_TEST_FOLDER\\ComplicatedModels\\output\\images\\" );
-        if (!file.mkdir()) {
-            log.error("Failed to create directory" );
-        }
-
-        Path outputPath = file.toPath();
-        Path output = file.toPath().resolve(ATLAS_IMAGE + ".png" );
-        if (!outputPath.toFile().exists()) {
-            if (!outputPath.toFile().mkdir()) {
-                log.error("Failed to create directory" );
-            }
-        }
-        if (this.atlasImage != null) {
-            try {
-                ImageIO.write(this.atlasImage, "png", output.toFile());
-                ImageWriter jpgWriter = ImageIO.getImageWritersByFormatName("png" ).next();
-                ImageWriteParam jpgWriteParam = jpgWriter.getDefaultWriteParam();
-                jpgWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-                jpgWriteParam.setCompressionQuality(0.0f);
-            } catch (IOException e) {
-                log.error(e.getMessage());
-            }
         }
     }
 
@@ -204,6 +178,15 @@ public class GaiaTextureCoordinator {
         return (float) (value - intPart);
     }
 
+    private BufferedImage createShamImage() {
+        BufferedImage bufferedImage = new BufferedImage(8, 8, BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics = bufferedImage.createGraphics();
+        graphics.setColor(Color.WHITE);
+        graphics.fillRect(0, 0, 8, 8);
+        graphics.dispose();
+        return bufferedImage;
+    }
+
     public void batchTextures(LevelOfDetail lod, CommandLine command) {
         // We have MaterialList & BufferDataSetList.********
         // 1- List<GaiaMaterial> this.materials;
@@ -222,13 +205,13 @@ public class GaiaTextureCoordinator {
             BufferedImage bufferedImage;
             if (!textures.isEmpty()) {
                 texture = textures.get(0);
-                bufferedImage = texture.getBufferedImage(lod.getTextureScale());
+                if (command.hasOption(ProcessOptions.DEBUG_IGNORE_TEXTURES.getLongName())) {
+                    bufferedImage = createShamImage();
+                } else {
+                    bufferedImage = texture.getBufferedImage(lod.getTextureScale());
+                }
             } else {
-                bufferedImage = new BufferedImage(32, 32, BufferedImage.TYPE_INT_RGB);
-                Graphics2D graphics = bufferedImage.createGraphics();
-                graphics.setColor(Color.WHITE);
-                graphics.fillRect(0, 0, 32, 32);
-                graphics.dispose();
+                bufferedImage = createShamImage();
             }
 
             Vector2d minPoint = new Vector2d(0, 0);
@@ -288,7 +271,7 @@ public class GaiaTextureCoordinator {
             }
         }
 
-        if (command != null && command.hasOption("debug" )) {
+        if (command != null && command.hasOption("debug")) {
             float[] debugColor = lod.getDebugColor();
             Color color = new Color(debugColor[0], debugColor[1], debugColor[2], 0.5f);
             graphics.setColor(color);
@@ -317,8 +300,12 @@ public class GaiaTextureCoordinator {
             texture.setBufferedImage(this.atlasImage);
             texture.setWidth(maxWidth);
             texture.setHeight(maxHeight);
-            texture.setPath(ATLAS_IMAGE + ".png" );
 
+            if (command.hasOption(ProcessOptions.PNG_TEXTURE.getLongName())) {
+                texture.setPath(ATLAS_IMAGE + ".png");
+            } else {
+                texture.setPath(ATLAS_IMAGE + ".jpg");
+            }
             List<GaiaBufferDataSet> materialBufferDataSets = bufferDataSets.stream().filter((bufferDataSet) -> bufferDataSet.getMaterialId() == target.getMaterialId()).toList();
 
             Double intPart_x = null, intPart_y = null;
@@ -362,6 +349,28 @@ public class GaiaTextureCoordinator {
                     }
                 }
 
+            }
+        }
+    }
+
+    private void writeBatchedImage() {
+        File file = new File("D:\\MAGO_TEST_FOLDER\\ComplicatedModels\\output\\images\\" );
+        if (!file.mkdir()) {
+            log.error("Failed to create directory" );
+        }
+
+        Path outputPath = file.toPath();
+        Path output = file.toPath().resolve(ATLAS_IMAGE + ".jpg" );
+        if (!outputPath.toFile().exists()) {
+            if (!outputPath.toFile().mkdir()) {
+                log.error("Failed to create directory" );
+            }
+        }
+        if (this.atlasImage != null) {
+            try {
+                ImageIO.write(this.atlasImage, "jpg", output.toFile());
+            } catch (IOException e) {
+                log.error(e.getMessage());
             }
         }
     }
