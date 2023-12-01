@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 import org.locationtech.proj4j.ProjCoordinate;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,6 +51,13 @@ public class BoundingVolume {
         rootRegion[3] = Math.toRadians(maxPoint.y);
         rootRegion[4] = boundingBox.getMinZ();
         rootRegion[5] = boundingBox.getMaxZ();
+        for (int i = 0; i < rootRegion.length; i++) {
+            double value = rootRegion[i];
+            DecimalFormat df = new DecimalFormat("0.00000000");
+            String result = df.format(value);
+            value = Double.parseDouble(result);
+            rootRegion[i] = value;
+        }
         this.setType(BoundingVolumeType.REGION);
         this.setRegion(rootRegion);
     }

@@ -22,13 +22,14 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class Gaia3DTiler implements Tiler {
-    private static final int DEFUALT_MAX_COUNT = 512;
+    private static final int DEFUALT_MAX_COUNT = 1024;
     private static final int DEFUALT_MIN_LEVEL = 0;
     private static final int DEFUALT_MAX_LEVEL = 3;
 
@@ -43,6 +44,9 @@ public class Gaia3DTiler implements Tiler {
     @Override
     public Tileset run(List<TileInfo> tileInfos) {
         double geometricError = calcGeometricError(tileInfos);
+        DecimalFormat df = new DecimalFormat("0.00000000");
+        String result = df.format(geometricError);
+        geometricError = Double.parseDouble(result);
 
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
         Matrix4d transformMatrix = getTransformMatrix(globalBoundingBox);
@@ -160,6 +164,10 @@ public class Gaia3DTiler implements Tiler {
         rotateX90(transformMatrix);
 
         BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
+
+        DecimalFormat df = new DecimalFormat("0.00000000");
+        String result = df.format(geometricError);
+        geometricError = Double.parseDouble(result);
 
         Node childNode = new Node();
         childNode.setParent(parentNode);

@@ -9,6 +9,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 @Slf4j
@@ -51,7 +52,16 @@ public class Node {
             this.transformMatrix = transformMatrixAux;
             log.error("Error :: Wrong TransformMatrix");
         }
+
         this.transform = transformMatrix.get(new float[16]);
+
+        for (int i = 0; i < transform.length; i++) {
+            float value = this.transform[i];
+            DecimalFormat df = new DecimalFormat("0.00000000");
+            String result = df.format(value);
+            value = Float.parseFloat(result);
+            this.transform[i] = value;
+        }
     }
 
     public enum RefineType {
