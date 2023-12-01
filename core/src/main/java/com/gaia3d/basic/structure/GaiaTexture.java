@@ -55,8 +55,8 @@ public class GaiaTexture {
     public void loadImage() {
         Path diffusePath = new File(path).toPath();
         String imagePath = parentPath + File.separator + diffusePath;
-        //BufferedImage bufferedImage = readImage(imagePath);
-        BufferedImage bufferedImage = testImage();
+        BufferedImage bufferedImage = readImage(imagePath);
+        //BufferedImage bufferedImage = testImage();
         this.bufferedImage = bufferedImage;
         this.width = bufferedImage.getWidth();
         this.height = bufferedImage.getHeight();
