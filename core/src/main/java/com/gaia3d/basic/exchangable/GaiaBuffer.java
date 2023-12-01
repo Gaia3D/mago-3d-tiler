@@ -2,8 +2,8 @@ package com.gaia3d.basic.exchangable;
 
 import com.gaia3d.basic.types.AccessorType;
 import com.gaia3d.basic.types.AttributeType;
-import com.gaia3d.util.io.LittleEndianDataInputStream;
-import com.gaia3d.util.io.LittleEndianDataOutputStream;
+import com.gaia3d.util.io.BigEndianDataInputStream;
+import com.gaia3d.util.io.BigEndianDataOutputStream;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,7 +37,7 @@ public class GaiaBuffer {
     short[] shorts;
     byte[] bytes;
 
-    public void writeBuffer(LittleEndianDataOutputStream stream) throws IOException {
+    public void writeBuffer(BigEndianDataOutputStream stream) throws IOException {
         stream.writeByte(glDimension);
         stream.writeInt(glType);
         stream.writeInt(glTarget);
@@ -57,7 +57,7 @@ public class GaiaBuffer {
         }
     }
 
-    public void readBuffer(LittleEndianDataInputStream stream) throws IOException {
+    public void readBuffer(BigEndianDataInputStream stream) throws IOException {
         glDimension = stream.readByte();
         glType = stream.readInt();
         glTarget = stream.readInt();

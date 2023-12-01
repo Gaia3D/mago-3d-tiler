@@ -1,8 +1,8 @@
 package com.gaia3d.basic.structure;
 
 import com.gaia3d.basic.types.TextureType;
-import com.gaia3d.util.io.LittleEndianDataInputStream;
-import com.gaia3d.util.io.LittleEndianDataOutputStream;
+import com.gaia3d.util.io.BigEndianDataInputStream;
+import com.gaia3d.util.io.BigEndianDataOutputStream;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -87,7 +87,7 @@ public class GaiaMaterial {
         return hasTextureAreEquals;
     }
 
-    public void write(LittleEndianDataOutputStream stream) throws IOException {
+    public void write(BigEndianDataOutputStream stream) throws IOException {
         stream.writeInt(id);
         stream.writeText(name);
         stream.writeVector4(diffuseColor);
@@ -110,7 +110,7 @@ public class GaiaMaterial {
         }
     }
 
-    public void read(LittleEndianDataInputStream stream, Path parentPath) throws IOException {
+    public void read(BigEndianDataInputStream stream, Path parentPath) throws IOException {
         this.setId(stream.readInt());
         this.setName(stream.readText());
         this.setDiffuseColor(stream.readVector4());

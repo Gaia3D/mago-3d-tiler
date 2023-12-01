@@ -9,8 +9,8 @@ import com.gaia3d.basic.structure.GaiaTexture;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.basic.types.TextureType;
-import com.gaia3d.util.io.LittleEndianDataInputStream;
-import com.gaia3d.util.io.LittleEndianDataOutputStream;
+import com.gaia3d.util.io.BigEndianDataInputStream;
+import com.gaia3d.util.io.BigEndianDataOutputStream;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -84,7 +84,7 @@ public class GaiaSet {
     public Path writeFile(Path path, int serial) {
         String tempFile = projectName + "_" + serial + "." + FormatType.TEMP.getExtension();
         File output = new File(path.toAbsolutePath().toString(), tempFile);
-        try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(output)))) {
+        try (BigEndianDataOutputStream stream = new BigEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(output), 32768))) {
             stream.writeByte(isBigEndian);
             stream.writeText(projectName);
             stream.writeInt(materials.size());
@@ -122,11 +122,12 @@ public class GaiaSet {
     }
 
     public void readFile(Path path) {
+
         File input = path.toFile();
         Path imagesPath = path.getParent().resolve("images");
         imagesPath.toFile().mkdir();
 
-        try (LittleEndianDataInputStream stream = new LittleEndianDataInputStream(new BufferedInputStream(new FileInputStream(input)))) {
+        try (BigEndianDataInputStream stream = new BigEndianDataInputStream(new BufferedInputStream(new FileInputStream(input), 32768))) {
             this.isBigEndian = stream.readByte();
             this.projectName = stream.readText();
             int materialCount = stream.readInt();

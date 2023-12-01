@@ -155,7 +155,7 @@ public class Batched3DModel implements TileModel {
         byte[] glbBytes = null;
         try (LittleEndianDataInputStream stream = new LittleEndianDataInputStream(new BufferedInputStream(new FileInputStream(b3dm)))) {
             // 28-byte header (first 20 bytes)
-            String magic = stream.readUTF(4);
+            String magic = stream.readIntAndUTF(4);
             int version = stream.readInt();
             int byteLength = stream.readInt();
             int featureTableJSONByteLength = stream.readInt();
@@ -163,10 +163,10 @@ public class Batched3DModel implements TileModel {
             // 28-byte header (next 8 bytes)
             int batchTableJSONByteLength = stream.readInt();
             int batchTableBinaryByteLength = stream.readInt();
-            String featureTableJson = stream.readUTF(featureTableJSONByteLength);
-            String batchTableJson = stream.readUTF(batchTableJSONByteLength);
-            String featureTableBinary = stream.readUTF(featureTableBinaryByteLength);
-            String batchTableBinary = stream.readUTF(batchTableBinaryByteLength);
+            String featureTableJson = stream.readIntAndUTF(featureTableJSONByteLength);
+            String batchTableJson = stream.readIntAndUTF(batchTableJSONByteLength);
+            String featureTableBinary = stream.readIntAndUTF(featureTableBinaryByteLength);
+            String batchTableBinary = stream.readIntAndUTF(batchTableBinaryByteLength);
             // body
             int glbSize = byteLength - 28 - featureTableJSONByteLength - batchTableJSONByteLength - featureTableBinaryByteLength - batchTableBinaryByteLength;
             glbBytes = new byte[glbSize];

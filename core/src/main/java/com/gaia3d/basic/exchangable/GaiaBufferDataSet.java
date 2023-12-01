@@ -4,8 +4,8 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.basic.types.AttributeType;
-import com.gaia3d.util.io.LittleEndianDataInputStream;
-import com.gaia3d.util.io.LittleEndianDataOutputStream;
+import com.gaia3d.util.io.BigEndianDataInputStream;
+import com.gaia3d.util.io.BigEndianDataOutputStream;
 import lombok.Getter;
 import lombok.Setter;
 import org.joml.Matrix4d;
@@ -52,7 +52,7 @@ public class GaiaBufferDataSet {
 
     }*/
 
-    public void write(LittleEndianDataOutputStream stream) throws IOException {
+    public void write(BigEndianDataOutputStream stream) throws IOException {
         stream.writeInt(id);
         stream.writeText(guid);
         stream.writeInt(materialId);
@@ -66,7 +66,7 @@ public class GaiaBufferDataSet {
     }
 
     //read
-    public void read(LittleEndianDataInputStream stream) throws IOException {
+    public void read(BigEndianDataInputStream stream) throws IOException {
         this.setId(stream.readInt());
         this.setGuid(stream.readText());
         this.setMaterialId(stream.readInt());

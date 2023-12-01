@@ -3,8 +3,8 @@ package com.gaia3d.basic.structure;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.util.ImageResizer;
 import com.gaia3d.util.ImageUtils;
-import com.gaia3d.util.io.LittleEndianDataInputStream;
-import com.gaia3d.util.io.LittleEndianDataOutputStream;
+import com.gaia3d.util.io.BigEndianDataInputStream;
+import com.gaia3d.util.io.BigEndianDataOutputStream;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -55,8 +55,8 @@ public class GaiaTexture {
     public void loadImage() {
         Path diffusePath = new File(path).toPath();
         String imagePath = parentPath + File.separator + diffusePath;
-        BufferedImage bufferedImage = readImage(imagePath);
-        //BufferedImage bufferedImage = testImage();
+        //BufferedImage bufferedImage = readImage(imagePath);
+        BufferedImage bufferedImage = testImage();
         this.bufferedImage = bufferedImage;
         this.width = bufferedImage.getWidth();
         this.height = bufferedImage.getHeight();
@@ -182,11 +182,11 @@ public class GaiaTexture {
         return areEqual;
     } */
 
-    public void write(LittleEndianDataOutputStream stream) throws IOException {
+    public void write(BigEndianDataOutputStream stream) throws IOException {
         stream.writeText(path);
     }
 
-    public void read(LittleEndianDataInputStream stream) throws IOException {
+    public void read(BigEndianDataInputStream stream) throws IOException {
         this.setPath(stream.readText());
     }
 

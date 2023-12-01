@@ -193,15 +193,28 @@ public class LittleEndianDataInputStream extends FilterInputStream implements Da
 
     @Override
     public String readLine() throws IOException {
-        return readUTF();
+        return readIntAndUTF();
     }
 
     public String readText() throws IOException {
-        return readUTF();
+        return readIntAndUTF();
     }
 
     public Vector4d readVector4() throws IOException {
         return new Vector4d(readFloat(), readFloat(), readFloat(), readFloat());
+    }
+
+    public String readIntAndUTF() throws IOException {
+        int length = readInt();
+        byte[] bytes = new byte[length];
+        read(bytes);
+        return new String(bytes, StandardCharsets.UTF_8);
+    }
+
+    public String readIntAndUTF(int length) throws IOException {
+        byte[] bytes = new byte[length];
+        read(bytes);
+        return new String(bytes, StandardCharsets.UTF_8);
     }
 
     @Override
