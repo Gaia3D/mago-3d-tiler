@@ -97,6 +97,8 @@ In this case, please contact us at sales@gaia3d.com
 - **proj4j** (Converting coordinate reference systems): <https://github.com/locationtech/proj4j>
 - **citygml4j** (The Open Source Java API for CityGML): <https://github.com/citygml4j/citygml4j>
 
+### Note: I3DM is successfully implemented in C++ and is now being ported to Java based mago 3DTiler. Staye tuned!
+
 ---
 
 
