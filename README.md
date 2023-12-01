@@ -85,6 +85,8 @@ JDK23 has been found to be partially available.
 - **Community and Code**: Join our vibrant community on GitHub and contribute to the future of 3D data conversion.​
 - **Freedom to Innovate**: Embrace the flexibility of MPL2.0 licensing(<https://www.mozilla.org/en-US/MPL/2.0/>)​,
   ensuring your freedom to use, modify, and distribute without hindrance.
+- If you prefer not to share your modified or improved code under the MPL2.0 license, you can opt for a commercial license instead.
+In this case, please contact us at sales@gaia3d.com
 
 ### Library Dependencies
 - **LWJGL3** (Lightweight Java Game Library 3 Opengl, Assimp): <https://github.com/LWJGL/lwjgl3>
@@ -174,7 +176,7 @@ java -jar mago-3d-tiler-x.x.x-natives-windows.jar --input C:\data\kml-input-dir 
 ```
 
 ### 지원하는 자바 버전:
-JDK11, JDK17, JDK23 등 JDK의 LTS(Long-term support) 버전의 호환을 지원합니다.   
+JDK11, JDK17, JDK21 등 JDK의 LTS(Long-term support) 버전의 호환을 지원합니다.   
 JDK23는 부분적으로 사용이 가능한 것을 확인했습니다.
 
 ### 샘플 사이트:
@@ -182,7 +184,7 @@ JDK23는 부분적으로 사용이 가능한 것을 확인했습니다.
 
 ### 라이선스:
 - mago 3DTiler는 MPL2.0 라이선스를 따릅니다. (<https://www.mozilla.org/en-US/MPL/2.0/>)
-- 만약 MPL2.0라이선스에 따라 여러분이 개작, 수정한 코드를 공개하고 싶지 않으면 상업 라이선스를 따르시면 됩니다. 이 경우에는 sales@gaia3d.com 으로 연락 주시기 바랍니다.
+- 만약 MPL2.0라이선스에 따라 여러분이 개작, 수정한 코드를 공개하고 싶지 않으면 상업 라이선스를 따르시면 됩니다. 이 경우에는 sales@gaia3d.com으로 연락 주시기 바랍니다.
 
 ### 라이브러리 의존성
 - **LWJGL3** (Lightweight Java Game Library 3 Opengl, Assimp): <https://github.com/LWJGL/lwjgl3>
