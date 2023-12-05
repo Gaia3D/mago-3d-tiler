@@ -245,7 +245,7 @@ public class Gaia3DTiler implements Tiler {
             content.setContentInfo(contentInfo);
             childNode.setContent(content);
         } else {
-            log.error("No content : {}", nodeCode);
+            log.warn("No content : {}", nodeCode);
         }
         return childNode;
     }

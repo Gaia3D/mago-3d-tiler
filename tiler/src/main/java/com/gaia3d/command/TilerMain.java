@@ -24,7 +24,6 @@ public class TilerMain {
     public static void main(String[] args) {
         getProgramInfo();
         getJavaInfo();
-
         Configurator.initConsoleLogger();
         Options options = Configurator.createOptions();
         CommandLineParser parser = new DefaultParser();
@@ -47,7 +46,6 @@ public class TilerMain {
             if (command.hasOption(ProcessOptions.LOG.getArgName())) {
                 Configurator.initFileLogger(null, command.getOptionValue(ProcessOptions.LOG.getArgName()));
             }
-
             if (command.hasOption(ProcessOptions.HELP.getArgName())) {
                 new HelpFormatter().printHelp("Gaia3D Tiler", options);
                 return;
@@ -84,10 +82,6 @@ public class TilerMain {
     private static void execute(CommandLine command) throws IOException {
         String inputExtension = command.getOptionValue(ProcessOptions.INPUT_TYPE.getArgName());
         FormatType formatType = FormatType.fromExtension(inputExtension);
-
-        //String outputExtension = command.getOptionValue(ProcessOptions.OUTPUT_TYPE.getArgName());
-
-        //FormatType outputType = FormatType.fromExtension(outputExtension);
 
         ProcessFlowModel processFlow = null;
         if (formatType == FormatType.LAS || formatType == FormatType.LAZ) {

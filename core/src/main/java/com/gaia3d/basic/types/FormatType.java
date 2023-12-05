@@ -16,36 +16,38 @@ import java.util.Arrays;
 @Getter
 public enum FormatType {
     // 3D Formats
-    FBX("fbx"),
-    KML("kml"),
-    MAX_3DS("3ds"),
-    MAX_ASE("ase"),
-    OBJ("obj"),
-    COLLADA("dae"),
-    IFC("ifc"),
-    GLTF("gltf"),
-    GLB("glb"),
-    CITY_GML("gml"),
-    MODO("lxo"),
-    LWO("lwo"),
-    LWS("lws"),
-    DirectX("x"),
+    FBX("fbx", true),
+    GLTF("gltf", true),
+    GLB("glb", true),
+    KML("kml", false),
+    COLLADA("dae", false),
+    MAX_3DS("3ds", false),
+    MAX_ASE("ase", false),
+    OBJ("obj", false),
+    IFC("ifc", false),
+    CITY_GML("gml", false),
+    MODO("lxo", false),
+    LWO("lwo", false),
+    LWS("lws", false),
+    DirectX("x", false),
     // 2D Formats,
-    SHP("shp"),
-    GEOJSON("geojson"),
-    JSON("json"),
-    LAS("las"),
-    LAZ("laz"),
+    SHP("shp", false),
+    GEOJSON("geojson", false),
+    JSON("json", false),
+    LAS("las", false),
+    LAZ("laz", false),
     // OUTPUT Formats
-    B3DM("b3dm"),
-    I3DM("i3dm"),
-    PNTS("pnts"),
-    TEMP("mgb");
+    B3DM("b3dm", true),
+    I3DM("i3dm", true),
+    PNTS("pnts", true),
+    TEMP("mgb", false);
 
     final String extension;
+    final boolean yUpAxis;
 
-    FormatType(String extension) {
+    FormatType(String extension, boolean yUpAxis) {
         this.extension = extension;
+        this.yUpAxis = yUpAxis;
     }
 
     public static FormatType fromExtension(String extension) {

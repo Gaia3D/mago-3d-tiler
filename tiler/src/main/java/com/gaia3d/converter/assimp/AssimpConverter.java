@@ -1,11 +1,13 @@
 package com.gaia3d.converter.assimp;
 
 import com.gaia3d.basic.structure.*;
+import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.process.ProcessOptions;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
@@ -15,8 +17,8 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
 
-import java.io.File;
-import java.io.IOException;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Files;
@@ -67,7 +69,7 @@ public class AssimpConverter implements Converter {
         AIScene aiScene =  Assimp.aiImportFile(file.getAbsolutePath(), DEFAULT_FLAGS);
 
         assert aiScene != null;
-        GaiaScene gaiaScene = convertScene(aiScene, path);
+        GaiaScene gaiaScene = convertScene(aiScene, path, file.getName());
         aiScene.free();
         gaiaScene.setOriginalPath(file.toPath());
         /*BufferUtils.zeroBuffer(byteBuffer);
@@ -79,39 +81,116 @@ public class AssimpConverter implements Converter {
         return gaiaScenes;
     }
 
-    private Matrix4d convertMatrix4dFromAIMatrix4x4(AIMatrix4x4 aiMatrix4x4) {
+    private Matrix4d convertMatrix4dFromAIMatrix4x4(AIMatrix4x4 aiMatrix4x4, GaiaNode parentNode, FormatType isYUpFormat) {
+        boolean yUpAxis = command.hasOption(ProcessOptions.Y_UP_AXIS.getArgName());
+        boolean isZeroOrigin = command.hasOption(ProcessOptions.ZERO_ORIGIN.getArgName());
+        boolean autoUpAxis = command.hasOption(ProcessOptions.AUTO_UP_AXIS.getArgName());
         Matrix4d matrix4 = new Matrix4d();
-        matrix4.m00(aiMatrix4x4.a1());
-        matrix4.m01(aiMatrix4x4.b1());
-        matrix4.m02(aiMatrix4x4.c1());
-        matrix4.m03(aiMatrix4x4.d1());
-        matrix4.m10(aiMatrix4x4.a2());
-        matrix4.m11(aiMatrix4x4.b2());
-        matrix4.m12(aiMatrix4x4.c2());
-        matrix4.m13(aiMatrix4x4.d2());
-        matrix4.m20(aiMatrix4x4.a3());
-        matrix4.m21(aiMatrix4x4.b3());
-        matrix4.m22(aiMatrix4x4.c3());
-        matrix4.m23(aiMatrix4x4.d3());
-        matrix4.m30(aiMatrix4x4.a4());
-        matrix4.m31(aiMatrix4x4.b4());
-        matrix4.m32(aiMatrix4x4.c4());
-        matrix4.m33(aiMatrix4x4.d4());
+
+        /*boolean isRootNode = parentNode == null;
+        log.debug(isRootNode ? "=======RootTrasformMatrix=======" : "=======TrasformMatrix=======");
+        log.debug("{} {} {} {}", aiMatrix4x4.a1(), aiMatrix4x4.b1(), aiMatrix4x4.c1(), aiMatrix4x4.d1());
+        log.debug("{} {} {} {}", aiMatrix4x4.a2(), aiMatrix4x4.b2(), aiMatrix4x4.c2(), aiMatrix4x4.d2());
+        log.debug("{} {} {} {}", aiMatrix4x4.a3(), aiMatrix4x4.b3(), aiMatrix4x4.c3(), aiMatrix4x4.d3());
+        log.debug("{} {} {} {}", aiMatrix4x4.a4(), aiMatrix4x4.b4(), aiMatrix4x4.c4(), aiMatrix4x4.d4());*/
+
+        if (parentNode == null) {
+            if (yUpAxis) {
+                matrix4.m00(aiMatrix4x4.a1());
+                matrix4.m01(aiMatrix4x4.b1());
+                matrix4.m02(aiMatrix4x4.c1());
+                matrix4.m03(aiMatrix4x4.d1());
+                matrix4.m10(aiMatrix4x4.a2());
+                matrix4.m11(aiMatrix4x4.b2());
+                matrix4.m12(aiMatrix4x4.c2());
+                matrix4.m13(aiMatrix4x4.d2());
+                matrix4.m20(aiMatrix4x4.a3());
+                matrix4.m21(aiMatrix4x4.b3());
+                matrix4.m22(aiMatrix4x4.c3());
+                matrix4.m23(aiMatrix4x4.d3());
+            } else {
+                if (autoUpAxis && isYUpFormat.isYUpAxis()) {
+                    matrix4.m00(1.0d);
+                    matrix4.m01(0.0d);
+                    matrix4.m02(0.0d);
+                    matrix4.m03(0.0d);
+                    matrix4.m10(0.0d);
+                    matrix4.m11(0.0d);
+                    matrix4.m12(-1.0d);
+                    matrix4.m13(0.0d);
+                    matrix4.m20(0.0d);
+                    matrix4.m21(1.0d);
+                    matrix4.m22(0.0d);
+                    matrix4.m23(0.0d);
+                } else {
+                    matrix4.m00(1.0d);
+                    matrix4.m01(0.0d);
+                    matrix4.m02(0.0d);
+                    matrix4.m03(0.0d);
+                    matrix4.m10(0.0d);
+                    matrix4.m11(1.0d);
+                    matrix4.m12(0.0d);
+                    matrix4.m13(0.0d);
+                    matrix4.m20(0.0d);
+                    matrix4.m21(0.0d);
+                    matrix4.m22(1.0d);
+                    matrix4.m23(0.0d);
+                }
+            }
+        } else {
+            matrix4.m00(aiMatrix4x4.a1());
+            matrix4.m01(aiMatrix4x4.b1());
+            matrix4.m02(aiMatrix4x4.c1());
+            matrix4.m03(aiMatrix4x4.d1());
+            matrix4.m10(aiMatrix4x4.a2());
+            matrix4.m11(aiMatrix4x4.b2());
+            matrix4.m12(aiMatrix4x4.c2());
+            matrix4.m13(aiMatrix4x4.d2());
+            matrix4.m20(aiMatrix4x4.a3());
+            matrix4.m21(aiMatrix4x4.b3());
+            matrix4.m22(aiMatrix4x4.c3());
+            matrix4.m23(aiMatrix4x4.d3());
+
+            matrix4.m30(aiMatrix4x4.a4());
+            matrix4.m31(aiMatrix4x4.b4());
+            matrix4.m32(aiMatrix4x4.c4());
+            matrix4.m33(aiMatrix4x4.d4());
+        }
+
+        if (isZeroOrigin) {
+            matrix4.m30(0.0d);
+            matrix4.m31(0.0d);
+            matrix4.m32(0.0d);
+            matrix4.m33(0.0d);
+        } else {
+            matrix4.m30(aiMatrix4x4.a4());
+            matrix4.m31(aiMatrix4x4.b4());
+            matrix4.m32(aiMatrix4x4.c4());
+            matrix4.m33(aiMatrix4x4.d4());
+        }
         return matrix4;
     }
 
-    private GaiaScene convertScene(AIScene aiScene, String filePath) {
+    private GaiaScene convertScene(AIScene aiScene, String filePath, String fileName) {
+        FormatType formatType = FormatType.fromExtension(FilenameUtils.getExtension(fileName));
+
         GaiaScene gaiaScene = new GaiaScene();
         AINode aiNode = aiScene.mRootNode();
+
+        PointerBuffer aiTextures = aiScene.mTextures();
+        List<String> embeddedTextures = getEmbeddedTexturePath(aiScene, filePath, fileName);
+
+        // materials
         int numMaterials = aiScene.mNumMaterials();
         PointerBuffer aiMaterials = aiScene.mMaterials();
         for (int i = 0; i < numMaterials; i++) {
             assert aiMaterials != null;
             AIMaterial aiMaterial = AIMaterial.create(aiMaterials.get(i));
-            gaiaScene.getMaterials().add(processMaterial(aiMaterial, filePath));
+            gaiaScene.getMaterials().add(processMaterial(aiMaterial, filePath, embeddedTextures));
         }
+
         assert aiNode != null;
-        GaiaNode node = processNode(gaiaScene, aiScene, aiNode, null);
+        GaiaNode node = processNode(gaiaScene, aiScene, aiNode, null, formatType);
 
         assert node != null;
         Matrix4d rootTransform = node.getTransformMatrix();
@@ -122,7 +201,36 @@ public class AssimpConverter implements Converter {
         return gaiaScene;
     }
 
-    private GaiaMaterial processMaterial(AIMaterial aiMaterial, String path) {
+    private List<String> getEmbeddedTexturePath(AIScene aiScene, String filePath, String fileName) {
+        List<String> embeddedTextures = new ArrayList<>();
+        // embedded textures
+        PointerBuffer aiTextures = aiScene.mTextures();
+        String fileNameWithoutExtension = FilenameUtils.removeExtension(fileName);
+        int numTextures = aiScene.mNumTextures();
+        for (int i = 0; i < numTextures; i++) {
+            File path = new File(filePath, "embedded_textures");
+            path.mkdirs();
+
+            AITexture aiTexture = AITexture.create(aiTextures.get(i));
+
+            ByteBuffer buffer = aiTexture.pcDataCompressed();
+            String ext = aiTexture.achFormatHintString();
+
+            String filename = fileNameWithoutExtension + "_extracted_" + i + "." + ext;
+            try (BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(new File(path, filename)))) {
+                byte[] bytes = new byte[buffer.capacity()];
+                buffer.get(bytes);
+                stream.write(bytes);
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+            embeddedTextures.add(filename);
+            aiTexture.free();
+        }
+        return embeddedTextures;
+    }
+
+    private GaiaMaterial processMaterial(AIMaterial aiMaterial, String path, List<String> embeddedTextures) {
         GaiaMaterial material = new GaiaMaterial();
 
         Vector4d diffVector4d;
@@ -174,9 +282,16 @@ public class AssimpConverter implements Converter {
             texture.setType(TextureType.DIFFUSE);
             texture.setParentPath(parentPath);
 
+            if (diffTexPath.startsWith("*")) {
+                String embeddedTexturePath = embeddedTextures.get(Integer.parseInt(diffTexPath.substring(1)));
+                log.info("Embedded Texture: " + embeddedTexturePath);
+
+                diffTexPath = "embedded_textures" + File.separator + embeddedTexturePath;
+            }
+
             File file = getTextureFile(parentPath.toFile(), diffTexPath);
             if (file != null && file.exists() && file.isFile()) {
-                texture.setPath(file.getName());
+                texture.setPath(diffTexPath);
                 textures.add(texture);
                 material.getTextures().put(texture.getType(), textures);
             } else {
@@ -245,9 +360,9 @@ public class AssimpConverter implements Converter {
         return material;
     }
 
-    private GaiaNode processNode(GaiaScene gaiaScene, AIScene aiScene, AINode aiNode, GaiaNode parentNode) {
+    private GaiaNode processNode(GaiaScene gaiaScene, AIScene aiScene, AINode aiNode, GaiaNode parentNode, FormatType formatType) {
         AIMatrix4x4 transformation = aiNode.mTransformation();
-        Matrix4d transform = convertMatrix4dFromAIMatrix4x4(transformation);
+        Matrix4d transform = convertMatrix4dFromAIMatrix4x4(transformation, parentNode, formatType);
 
         String name = aiNode.mName().dataString();
         int numMeshes = aiNode.mNumMeshes();
@@ -280,7 +395,7 @@ public class AssimpConverter implements Converter {
         for (int i = 0; i < numChildren; i++) {
             assert childrenBuffer != null;
             AINode aiChildNode = AINode.create(childrenBuffer.get(i));
-            GaiaNode childNode = processNode(gaiaScene, aiScene, aiChildNode, node);
+            GaiaNode childNode = processNode(gaiaScene, aiScene, aiChildNode, node, formatType);
             if (childNode != null) {
                 node.getChildren().add(childNode);
             }
@@ -392,22 +507,18 @@ public class AssimpConverter implements Converter {
         if (file.exists() && file.isFile()) {
             return file;
         }
-
         file = new File(parent, name.toLowerCase() + "." + ext.toLowerCase());
         if (file.exists() && file.isFile()) {
             return file;
         }
-
         file = new File(parent, name.toUpperCase() + "." + ext.toUpperCase());
         if (file.exists() && file.isFile()) {
             return file;
         }
-
         file = new File(parent, name.toLowerCase() + "." + ext.toUpperCase());
         if (file.exists() && file.isFile()) {
             return file;
         }
-
         file = new File(parent, name.toUpperCase() + "." + ext.toLowerCase());
         if (file.exists() && file.isFile()) {
             return file;

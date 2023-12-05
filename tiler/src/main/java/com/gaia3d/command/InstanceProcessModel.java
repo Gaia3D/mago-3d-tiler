@@ -73,7 +73,7 @@ public class InstanceProcessModel implements ProcessFlowModel{
         TriangleFileLoader fileLoader = new TriangleFileLoader(command, converter);
 
         List<PreProcess> preProcessors = new ArrayList<>();
-        if (command.hasOption(ProcessOptions.SWAP_YZ.getArgName())) {
+        if (command.hasOption(ProcessOptions.Y_UP_AXIS.getArgName())) {
             preProcessors.add(new GaiaRotator());
         }
         preProcessors.add(new GaiaTranslator(source, command));

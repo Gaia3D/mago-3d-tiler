@@ -19,11 +19,12 @@ public enum ProcessOptions {
 
     // 3D Options
     RECURSIVE("recursive", "r", "recursive", false, "deep directory exploration"),
-    SWAP_YZ("swapYZ", "yz", "swapYZ", false, "swap vertices axis YZ"),
+    //SWAP_YZ("swapYZ", "yz", "swapYZ", false, "swap vertices axis YZ"),
     REVERSE_TEXCOORD("reverseTexCoord", "rt", "reverseTexCoord", false, "texture y-axis coordinate reverse"),
     MULTI_THREAD("multiThread", "mt", "multiThread", false, "multi thread mode"),
     MULTI_THREAD_COUNT("multiThreadCount", "mc", "multiThreadCount", true, "multi thread count (Default: 8)"),
     PNG_TEXTURE("pngTexture", "pt", "pngTexture", false, "png texture mode"),
+    Y_UP_AXIS("yUpAxis", "ya", "yAxis", false, "Assign 3D root transformed matrix Y-UP axis"),
 
     // 3D Tiles Options
     REFINE_ADD("refineAdd", "ra", "refineAdd", false, "refine addd mode"),
@@ -40,8 +41,10 @@ public enum ProcessOptions {
     MINIMUM_HEIGHT("minimumHeight", "mh", "minimumHeight", true, "minimum height setting."),
     ABSOLUTE_ALTITUDE("absoluteAltitude", "aa", "absoluteAltitude", true, "absolute altitude mode."),
 
-    //Experimental
-    //AUTO_AXIS("autoAxis", "aa", "autoAxis", false, "[Experimental] auto axis"),
+    //Experimental,
+    ZERO_ORIGIN("zeroOrigin", "zo", "zeroOrigin", false, "[Experimental] fix 3d root transformed matrix origin to zero point."),
+    AUTO_UP_AXIS("autoUpAxis", "aa", "autoAxis", false, "[Experimental] automatically Assign 3D Matrix Axes"),
+    //Z_UP_AXIS("zAxis", "ya", "zAxis", false, "[Experimental] Assign 3D root transformed matrix Z-UP axis"),
     //GENERATE_NORMALS("genNormals", "gn", "genNormals", false, "generate normals"),
     //SCALE("scale", "sc", "scale", false, "scale factor"),
     //STRICT("strict", "st", "strict", false, "strict mode"),
