@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
 @Slf4j
-class ConvertUnitTest {
+class UnitTest {
         private static final String INPUT_PATH = "D:\\unit-test\\";
         private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\mago\\mago-3d-tiler\\viewer\\mago-3d-tiler-data\\";
 
@@ -46,49 +46,32 @@ class ConvertUnitTest {
         }
 
     @Test
+    void kmlGltf() {
+        String path = "kml-gltf";
+        String[] args = new String[]{
+                "-i", INPUT_PATH + path,
+                "-it", "kml",
+                "-o", OUTPUT_PATH + path,
+                "-yUpAxis",
+                "-refineAdd",
+                "-multiThread",
+                "-zeroOrigin",
+        };
+        TilerMain.main(args);
+    }
+
+    @Test
     void kmlIfc() {
         String path = "kml-ifc";
         String[] args = new String[]{
                 "-i", INPUT_PATH + path,
                 "-it", "kml",
                 "-o", OUTPUT_PATH + path,
+                //"-zeroOrigin",
                 "-autoUpAxis",
         };
         TilerMain.main(args);
     }
-
-        @Test
-        void testHwangyonggakObj() {
-            String path = "hwangyonggak-obj";
-            String[] args = new String[]{
-                    "-i", INPUT_PATH + path,
-                    "-it", "obj",
-                    "-o", OUTPUT_PATH + path,
-                    "-crs", "32652",
-                    "-autoUpAxis",
-                    "-maxCount", "1024",
-                    "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
-                    "-multiThread",
-            };
-            TilerMain.main(args);
-        }
-
-        @Test
-        void testHwangyonggakLaz() {
-            String path = "hwangyonggak-laz";
-            String[] args = new String[]{
-                    "-i", INPUT_PATH + path,
-                    "-it", "laz",
-                    "-o", OUTPUT_PATH + path,
-                    "-crs", "32652",
-                    "-maxPoints", "30000",
-                    "-autoUpAxis",
-                    "-multiThread",
-                    "-refineAdd",
-                    "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
-            };
-            TilerMain.main(args);
-        }
 
     @Test
     void kml3ds() {
@@ -98,127 +81,26 @@ class ConvertUnitTest {
                 "-it", "kml",
                 "-o", OUTPUT_PATH + path,
                 "-autoUpAxis",
+                "-zeroOrigin",
                 "-multiThread",
         };
         TilerMain.main(args);
     }
 
     //@Test
-
-
     @Test
-    void testJeon() {
+    void kmlJeon() {
         String path = "kml-jeon";
         String[] args = new String[]{
                 "-i", INPUT_PATH + path,
                 "-it", "kml",
                 "-o", OUTPUT_PATH + path,
-                "-crs", "4326",
-                //"-autoUpAxis",
                 "-yUpAxis",
-                "-maxCount", "1024",
                 "-refineAdd",
                 "-multiThread",
         };
         TilerMain.main(args);
     }
-
-        /*@Test
-        void testIfcKitcWithKml() {
-            String path = "ifc-kitc";
-            String[] args = new String[]{
-                    "-i", INPUT_PATH + path,
-                    "-it", "kml",
-                    "-o", OUTPUT_PATH + path,
-                    "-crs", "4326",
-
-                    "-maxCount", "1024",
-                    "-minLod", "3",
-                    "-maxLod", "3",
-                    "-refineAdd",
-                    "-glb",
-                    "-multiThread",
-            };
-            TilerMain.main(args);
-        }*/
-
-        //@Test
-        void testIfcPole() {
-            String path = "ifc-pole";
-            String[] args = new String[]{
-                    "-i", INPUT_PATH + path,
-                    "-it", "ifc",
-                    "-o", OUTPUT_PATH + path,
-                    "-crs", "4326",
-                    "-r",
-                    "-autoUpAxis",
-                    "-maxCount", "1024",
-                    "-minLod", "0",
-                    "-maxLod", "3",
-                    "-glb",
-                    //"-multiThread",
-            };
-            TilerMain.main(args);
-        }
-
-
-        @Test
-        void testDangjinSample() {
-            String path = "dangjin-sample";
-            String[] args = new String[]{
-                    "-i", INPUT_PATH + path,
-                    "-it", "shp",
-                    "-o", OUTPUT_PATH + path,
-                    "-crs", "5186",
-                    "-maxCount", "8192",
-                    "-autoUpAxis",
-                    //"-multiThread",
-                    "-refineAdd",
-            };
-            TilerMain.main(args);
-        }
-
-        //@Test
-        void testIfc4() {
-            String path = "ifc4";
-            String[] args = new String[]{
-                    "-i", INPUT_PATH + path,
-                    "-it", "ifc",
-                    "-o", OUTPUT_PATH + path,
-                    "-crs", "4326",
-                    "-maxCount", "1024",
-                    "-autoUpAxis",
-                    //"-multiThread",
-                    "-refineAdd",
-            };
-            TilerMain.main(args);
-        }
-
-        @Test
-        void test() {
-            String[] args = new String[]{
-                    "--help"
-            };
-            TilerMain.main(args);
-        }
-
-        @Test
-        void testDae() {
-            String path = "dae";
-            String[] args = new String[]{
-                    "-i", INPUT_PATH + path,
-                    "-it", "dae",
-                    "-o", OUTPUT_PATH + path,
-                    "-crs", "4326",
-                    "-autoUpAxis",
-                    "-maxCount", "1024",
-                    "-minLod", "0",
-                    "-maxLod", "3",
-                    "-glb",
-                    //"-multiThread",
-            };
-            TilerMain.main(args);
-        }
 
         @Test
         void test3ds() {
@@ -250,24 +132,6 @@ class ConvertUnitTest {
                     "-minLod", "0",
                     "-maxLod", "3",
                     //"-reverseTexCoord",
-                    "-multiThread",
-            };
-            TilerMain.main(args);
-        }
-
-        @Test
-        void testColladaDetail() {
-            String path = "collada-detail";
-            String[] args = new String[]{
-                    "-i", INPUT_PATH + path,
-                    "-it", "kml",
-                    "-o", OUTPUT_PATH + path,
-                    "-crs", "4326",
-                    "-autoUpAxis",
-                    "-maxCount", "1024",
-                    "-minLod", "0",
-                    "-maxLod", "3",
-                    "-gltf",
                     "-multiThread",
             };
             TilerMain.main(args);
@@ -335,7 +199,7 @@ class ConvertUnitTest {
                     "-flipCoordinate",
                     "-maxCount", "1024",
                     "-multiThread",
-                    //"-refineAdd",
+                    "-refineAdd",
             };
             TilerMain.main(args);
         }
@@ -347,7 +211,6 @@ class ConvertUnitTest {
                     "-i", INPUT_PATH + path,
                     "-it", "shp",
                     "-o", OUTPUT_PATH + path,
-                    //"-crs", "5174",
                     "-proj", "+proj=tmerc +lat_0=38 +lon_0=127.0028902777778 +k=1 +x_0=200000 +y_0=500000 +ellps=bessel +units=m +no_defs +towgs84=-115.80,474.99,674.11,1.16,-2.31,-1.63,6.43",
                     "-maxCount", "4096",
                     "-multiThread",
@@ -365,10 +228,9 @@ class ConvertUnitTest {
                     "-o", OUTPUT_PATH + path,
                     "-crs", "5186",
                     "-maxCount", "1024",
-                    "-minimumHeight", "9.0",
                     "-debug",
                     "-nc", "layer",
-                    //"-multiThread",
+                    "-multiThread",
                     "-refineAdd",
             };
             TilerMain.main(args);
@@ -384,7 +246,6 @@ class ConvertUnitTest {
                     "-crs", "5186",
                     "-maxCount", "1024",
                     "-multiThread",
-                    "-refineAdd",
                     "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
             };
             TilerMain.main(args);

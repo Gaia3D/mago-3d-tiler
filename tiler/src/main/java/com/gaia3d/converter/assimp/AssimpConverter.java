@@ -93,75 +93,61 @@ public class AssimpConverter implements Converter {
         log.debug("{} {} {} {}", aiMatrix4x4.a2(), aiMatrix4x4.b2(), aiMatrix4x4.c2(), aiMatrix4x4.d2());
         log.debug("{} {} {} {}", aiMatrix4x4.a3(), aiMatrix4x4.b3(), aiMatrix4x4.c3(), aiMatrix4x4.d3());
         log.debug("{} {} {} {}", aiMatrix4x4.a4(), aiMatrix4x4.b4(), aiMatrix4x4.c4(), aiMatrix4x4.d4());*/
+        boolean isRootNode = parentNode == null;
 
-        if (parentNode == null) {
-            if (autoUpAxis) {
-                if (isYUpFormat.isYUpAxis()) {
-                    matrix4.m00(1.0d);
-                    matrix4.m01(0.0d);
-                    matrix4.m02(0.0d);
-                    matrix4.m03(0.0d);
-                    matrix4.m10(0.0d);
-                    matrix4.m11(0.0d);
-                    matrix4.m12(-1.0d);
-                    matrix4.m13(0.0d);
-                    matrix4.m20(0.0d);
-                    matrix4.m21(1.0d);
-                    matrix4.m22(0.0d);
-                    matrix4.m23(0.0d);
-                } else {
-                    matrix4.m00(1.0d);
-                    matrix4.m01(0.0d);
-                    matrix4.m02(0.0d);
-                    matrix4.m03(0.0d);
-                    matrix4.m10(0.0d);
-                    matrix4.m11(1.0d);
-                    matrix4.m12(0.0d);
-                    matrix4.m13(0.0d);
-                    matrix4.m20(0.0d);
-                    matrix4.m21(0.0d);
-                    matrix4.m22(1.0d);
-                    matrix4.m23(0.0d);
-                }
-            } else {
-                matrix4.m00(aiMatrix4x4.a1());
-                matrix4.m01(aiMatrix4x4.b1());
-                matrix4.m02(aiMatrix4x4.c1());
-                matrix4.m03(aiMatrix4x4.d1());
-                matrix4.m10(aiMatrix4x4.a2());
-                matrix4.m11(aiMatrix4x4.b2());
-                matrix4.m12(aiMatrix4x4.c2());
-                matrix4.m13(aiMatrix4x4.d2());
-                matrix4.m20(aiMatrix4x4.a3());
-                matrix4.m21(aiMatrix4x4.b3());
-                matrix4.m22(aiMatrix4x4.c3());
-                matrix4.m23(aiMatrix4x4.d3());
-            }
+        // getTransformMatrix
+        matrix4.m00(aiMatrix4x4.a1());
+        matrix4.m01(aiMatrix4x4.b1());
+        matrix4.m02(aiMatrix4x4.c1());
+        matrix4.m03(aiMatrix4x4.d1());
+        matrix4.m10(aiMatrix4x4.a2());
+        matrix4.m11(aiMatrix4x4.b2());
+        matrix4.m12(aiMatrix4x4.c2());
+        matrix4.m13(aiMatrix4x4.d2());
+        matrix4.m20(aiMatrix4x4.a3());
+        matrix4.m21(aiMatrix4x4.b3());
+        matrix4.m22(aiMatrix4x4.c3());
+        matrix4.m23(aiMatrix4x4.d3());
+        matrix4.m30(aiMatrix4x4.a4());
+        matrix4.m31(aiMatrix4x4.b4());
+        matrix4.m32(aiMatrix4x4.c4());
+        matrix4.m33(aiMatrix4x4.d4());
 
-            if (isZeroOrigin) {
-                matrix4.m30(0.0d);
-                matrix4.m31(0.0d);
-                matrix4.m32(0.0d);
-                matrix4.m33(0.0d);
+        if (isRootNode && autoUpAxis) {
+            if (isYUpFormat.isYUpAxis()) {
+                matrix4.m00(1.0d);
+                matrix4.m01(0.0d);
+                matrix4.m02(0.0d);
+                matrix4.m03(0.0d);
+                matrix4.m10(0.0d);
+                matrix4.m11(1.0d);
+                matrix4.m12(0.0d);
+                matrix4.m13(0.0d);
+                matrix4.m20(0.0d);
+                matrix4.m21(0.0d);
+                matrix4.m22(1.0d);
+                matrix4.m23(0.0d);
             } else {
-                matrix4.m30(aiMatrix4x4.a4());
-                matrix4.m31(aiMatrix4x4.b4());
-                matrix4.m32(aiMatrix4x4.c4());
-                matrix4.m33(aiMatrix4x4.d4());
+                matrix4.m00(1.0d);
+                matrix4.m01(0.0d);
+                matrix4.m02(0.0d);
+                matrix4.m03(0.0d);
+                matrix4.m10(0.0d);
+                matrix4.m11(0.0d);
+                matrix4.m12(-1.0d);
+                matrix4.m13(0.0d);
+                matrix4.m20(0.0d);
+                matrix4.m21(1.0d);
+                matrix4.m22(0.0d);
+                matrix4.m23(0.0d);
             }
+        }
+        if (isRootNode && isZeroOrigin) {
+            matrix4.m30(0.0d);
+            matrix4.m31(0.0d);
+            matrix4.m32(0.0d);
+            matrix4.m33(0.0d);
         } else {
-            matrix4.m00(aiMatrix4x4.a1());
-            matrix4.m01(aiMatrix4x4.b1());
-            matrix4.m02(aiMatrix4x4.c1());
-            matrix4.m03(aiMatrix4x4.d1());
-            matrix4.m10(aiMatrix4x4.a2());
-            matrix4.m11(aiMatrix4x4.b2());
-            matrix4.m12(aiMatrix4x4.c2());
-            matrix4.m13(aiMatrix4x4.d2());
-            matrix4.m20(aiMatrix4x4.a3());
-            matrix4.m21(aiMatrix4x4.b3());
-            matrix4.m22(aiMatrix4x4.c3());
-            matrix4.m23(aiMatrix4x4.d3());
             matrix4.m30(aiMatrix4x4.a4());
             matrix4.m31(aiMatrix4x4.b4());
             matrix4.m32(aiMatrix4x4.c4());

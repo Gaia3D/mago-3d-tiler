@@ -59,13 +59,17 @@ public class BatchProcessModel implements ProcessFlowModel{
             source = (crs != null && !crs.isEmpty()) ? factory.createFromName("EPSG:" + crs) : null;
         }
 
+        boolean isYUpAxis = command.hasOption(ProcessOptions.Y_UP_AXIS.getArgName());
         Converter converter;
         if (formatType == FormatType.CITY_GML) {
             converter = new CityGmlConverter(command);
+            isYUpAxis = true;
         } else if (formatType == FormatType.SHP) {
             converter = new ShapeConverter(command, source);
+            isYUpAxis = true;
         } else if (formatType == FormatType.GEOJSON || formatType == FormatType.JSON) {
             converter = new GeoJsonConverter(command, source);
+            isYUpAxis = true;
         } else {
             converter = new AssimpConverter(command);
         }
@@ -73,7 +77,7 @@ public class BatchProcessModel implements ProcessFlowModel{
         TriangleFileLoader fileLoader = new TriangleFileLoader(command, converter);
 
         List<PreProcess> preProcessors = new ArrayList<>();
-        if (command.hasOption(ProcessOptions.Y_UP_AXIS.getArgName())) {
+        if (!isYUpAxis) {
             preProcessors.add(new GaiaRotator());
         }
         preProcessors.add(new GaiaTranslator(source, command));
