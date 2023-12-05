@@ -32,11 +32,12 @@ console output:
 ┌┬┐┌─┐┌─┐┌─┐  ┌┬┐┬┬  ┌─┐┬─┐
 │││├─┤│ ┬│ │───│ ││  ├┤ ├┬┘
 ┴ ┴┴ ┴└─┘└─┘   ┴ ┴┴─┘└─┘┴└─
-3d-tiler(x.x.x) by Gaia3d, Inc.
-JAVA Version : 17 (Oracle Corporation)
+3d-tiler(x.x.x) by Gaia3D, Inc.
+JAVA Version : 17 (Oracle Corporation) 
 ----------------------------------------
 usage: Gaia3D Tiler
- -aa,--absoluteAltitude <arg>   absolute altitude mode.
+ -aa,--autoUpAxis               [Experimental] automatically Assign 3D
+                                Matrix Axes
  -ac,--altitudeColumn <arg>     altitude Column setting.
  -c,--crs <arg>                 Coordinate Reference Systems, only epsg
                                 code (4326, 3857, etc...)
@@ -47,27 +48,33 @@ usage: Gaia3D Tiler
  -glb,--glb                     create glb file.
  -gltf,--gltf                   create gltf file.
  -h,--help                      print this message
- -hc,--heightColumn <arg>       height column setting.
+ -hc,--heightColumn <arg>       height column setting. (Default: height)
  -i,--input <arg>               input file path
  -it,--inputType <arg>          input file type (kml, 3ds, obj, gltf,
                                 etc...)
  -l,--log <arg>                 output log file path
+ -mc,--multiThreadCount <arg>   multi thread count (Default: 8)
  -mh,--minimumHeight <arg>      minimum height setting.
- -mp,--maxPoints <arg>          max points of node (Default: 20000)
+ -mp,--maxPoints <arg>          max points of pointcloud data (Default:
+                                20000)
  -mt,--multiThread              multi thread mode
- -mx,--maxCount <arg>           max count of nodes (Default: 256)
- -nc,--nameColumn <arg>         name column setting.
+ -mx,--maxCount <arg>           max count of nodes (Default: 1024)
+ -nc,--nameColumn <arg>         name column setting. (Default: name)
  -nl,--minLod <arg>             min level of detail (Default: 0)
  -o,--output <arg>              output file path
  -ot,--outputType <arg>         output file type
  -p,--proj <arg>                proj4 parameters (ex: +proj=tmerc +la...)
+ -pt,--pngTexture               png texture mode
  -q,--quiet                     quiet mode
  -r,--recursive                 deep directory exploration
  -ra,--refineAdd                refine addd mode
  -rt,--reverseTexCoord          texture y-axis coordinate reverse
  -v,--version                   print version
  -xl,--maxLod <arg>             max level of detail (Default: 3)
- -yz,--swapYZ                   swap vertices axis YZ
+ -ya,--yUpAxis                  Assign 3D root transformed matrix Y-UP
+                                axis
+ -zo,--zeroOrigin               [Experimental] fix 3d root transformed
+                                matrix origin to zero point.
 ```
 This is a simple kml/collada -> 3dTiles conversion code with the mandatory argument values.    
 ```
@@ -136,11 +143,12 @@ java -jar mago-3d-tiler-x.x.x-natives-windows.jar -h
 ┌┬┐┌─┐┌─┐┌─┐  ┌┬┐┬┬  ┌─┐┬─┐
 │││├─┤│ ┬│ │───│ ││  ├┤ ├┬┘
 ┴ ┴┴ ┴└─┘└─┘   ┴ ┴┴─┘└─┘┴└─
-3d-tiler(x.x.x) by Gaia3d, Inc.
-JAVA Version : 17 (Oracle Corporation)
+3d-tiler(x.x.x) by Gaia3D, Inc.
+JAVA Version : 17 (Oracle Corporation) 
 ----------------------------------------
 usage: Gaia3D Tiler
- -aa,--absoluteAltitude <arg>   absolute altitude mode.
+ -aa,--autoUpAxis               [Experimental] automatically Assign 3D
+                                Matrix Axes
  -ac,--altitudeColumn <arg>     altitude Column setting.
  -c,--crs <arg>                 Coordinate Reference Systems, only epsg
                                 code (4326, 3857, etc...)
@@ -151,17 +159,33 @@ usage: Gaia3D Tiler
  -glb,--glb                     create glb file.
  -gltf,--gltf                   create gltf file.
  -h,--help                      print this message
- -hc,--heightColumn <arg>       height column setting.
+ -hc,--heightColumn <arg>       height column setting. (Default: height)
  -i,--input <arg>               input file path
  -it,--inputType <arg>          input file type (kml, 3ds, obj, gltf,
                                 etc...)
  -l,--log <arg>                 output log file path
+ -mc,--multiThreadCount <arg>   multi thread count (Default: 8)
  -mh,--minimumHeight <arg>      minimum height setting.
- -mp,--maxPoints <arg>          max points of node (Default: 20000)
+ -mp,--maxPoints <arg>          max points of pointcloud data (Default:
+                                20000)
  -mt,--multiThread              multi thread mode
- -mx,--maxCount <arg>           max count of nodes (Default: 256)
- -nc,--nameColumn <arg>         name column setting.
- -nl,--minLod <arg>          은 부분적으로 사용이 가능한 것을 확인했습니다.
+ -mx,--maxCount <arg>           max count of nodes (Default: 1024)
+ -nc,--nameColumn <arg>         name column setting. (Default: name)
+ -nl,--minLod <arg>             min level of detail (Default: 0)
+ -o,--output <arg>              output file path
+ -ot,--outputType <arg>         output file type
+ -p,--proj <arg>                proj4 parameters (ex: +proj=tmerc +la...)
+ -pt,--pngTexture               png texture mode
+ -q,--quiet                     quiet mode
+ -r,--recursive                 deep directory exploration
+ -ra,--refineAdd                refine addd mode
+ -rt,--reverseTexCoord          texture y-axis coordinate reverse
+ -v,--version                   print version
+ -xl,--maxLod <arg>             max level of detail (Default: 3)
+ -ya,--yUpAxis                  Assign 3D root transformed matrix Y-UP
+                                axis
+ -zo,--zeroOrigin               [Experimental] fix 3d root transformed
+                                matrix origin to zero point.
 ```
 
 필수 인자 값으로 작성한 간단한 kml/collada -> 3dTiles 변환코드 입니다.
