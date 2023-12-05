@@ -7,7 +7,55 @@ import org.junit.jupiter.api.Test;
 @Slf4j
 class ConvertUnitTest {
         private static final String INPUT_PATH = "D:\\unit-test\\";
-        private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\mago\\plasma\\viewer\\data\\";
+        private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\mago\\mago-3d-tiler\\viewer\\mago-3d-tiler-data\\";
+
+        @Test
+        void kmlObj() {
+            String path = "kml-obj";
+            String[] args = new String[]{
+                    "-i", INPUT_PATH + path,
+                    "-it", "kml",
+                    "-o", OUTPUT_PATH + path,
+                    "-autoUpAxis",
+            };
+            TilerMain.main(args);
+        }
+
+        @Test
+        void kmlFbx() {
+            String path = "kml-fbx";
+            String[] args = new String[]{
+                    "-i", INPUT_PATH + path,
+                    "-it", "kml",
+                    "-o", OUTPUT_PATH + path,
+                    "-autoUpAxis",
+            };
+            TilerMain.main(args);
+        }
+
+        @Test
+        void kmlCollada() {
+            String path = "kml-collada";
+            String[] args = new String[]{
+                    "-i", INPUT_PATH + path,
+                    "-it", "kml",
+                    "-o", OUTPUT_PATH + path,
+                    "-autoUpAxis",
+            };
+            TilerMain.main(args);
+        }
+
+    @Test
+    void kmlIfc() {
+        String path = "kml-ifc";
+        String[] args = new String[]{
+                "-i", INPUT_PATH + path,
+                "-it", "kml",
+                "-o", OUTPUT_PATH + path,
+                "-autoUpAxis",
+        };
+        TilerMain.main(args);
+    }
 
         @Test
         void testHwangyonggakObj() {
@@ -17,7 +65,7 @@ class ConvertUnitTest {
                     "-it", "obj",
                     "-o", OUTPUT_PATH + path,
                     "-crs", "32652",
-                    "-swapYZ",
+                    "-autoUpAxis",
                     "-maxCount", "1024",
                     "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
                     "-multiThread",
@@ -34,6 +82,7 @@ class ConvertUnitTest {
                     "-o", OUTPUT_PATH + path,
                     "-crs", "32652",
                     "-maxPoints", "30000",
+                    "-autoUpAxis",
                     "-multiThread",
                     "-refineAdd",
                     "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
@@ -41,7 +90,37 @@ class ConvertUnitTest {
             TilerMain.main(args);
         }
 
-        @Test
+    @Test
+    void kml3ds() {
+        String path = "kml-3ds";
+        String[] args = new String[]{
+                "-i", INPUT_PATH + path,
+                "-it", "kml",
+                "-o", OUTPUT_PATH + path,
+                "-autoUpAxis",
+                "-multiThread",
+        };
+        TilerMain.main(args);
+    }
+
+
+    @Test
+    void testJeon() {
+        String path = "kml-jeon";
+        String[] args = new String[]{
+                "-i", INPUT_PATH + path,
+                "-it", "kml",
+                "-o", OUTPUT_PATH + path,
+                "-crs", "4326",
+                "-autoUpAxis",
+                "-maxCount", "1024",
+                "-refineAdd",
+                "-multiThread",
+        };
+        TilerMain.main(args);
+    }
+
+        /*@Test
         void testIfcKitcWithKml() {
             String path = "ifc-kitc";
             String[] args = new String[]{
@@ -49,7 +128,7 @@ class ConvertUnitTest {
                     "-it", "kml",
                     "-o", OUTPUT_PATH + path,
                     "-crs", "4326",
-                    "-swapYZ",
+
                     "-maxCount", "1024",
                     "-minLod", "3",
                     "-maxLod", "3",
@@ -58,7 +137,7 @@ class ConvertUnitTest {
                     "-multiThread",
             };
             TilerMain.main(args);
-        }
+        }*/
 
         //@Test
         void testIfcPole() {
@@ -69,7 +148,7 @@ class ConvertUnitTest {
                     "-o", OUTPUT_PATH + path,
                     "-crs", "4326",
                     "-r",
-                    //"-swapYZ",
+                    "-autoUpAxis",
                     "-maxCount", "1024",
                     "-minLod", "0",
                     "-maxLod", "3",
@@ -89,6 +168,7 @@ class ConvertUnitTest {
                     "-o", OUTPUT_PATH + path,
                     "-crs", "5186",
                     "-maxCount", "8192",
+                    "-autoUpAxis",
                     //"-multiThread",
                     "-refineAdd",
             };
@@ -104,6 +184,7 @@ class ConvertUnitTest {
                     "-o", OUTPUT_PATH + path,
                     "-crs", "4326",
                     "-maxCount", "1024",
+                    "-autoUpAxis",
                     //"-multiThread",
                     "-refineAdd",
             };
@@ -126,7 +207,7 @@ class ConvertUnitTest {
                     "-it", "dae",
                     "-o", OUTPUT_PATH + path,
                     "-crs", "4326",
-                    "-swapYZ",
+                    "-autoUpAxis",
                     "-maxCount", "1024",
                     "-minLod", "0",
                     "-maxLod", "3",
@@ -144,8 +225,8 @@ class ConvertUnitTest {
                     "-it", "3ds",
                     "-o", OUTPUT_PATH + path,
                     "-crs", "5186",
-                    "-swapYZ",
-                    "-maxCount", "1024",
+                    "-autoUpAxis",
+                    "-maxCount", "2048",
                     "-minLod", "0",
                     "-maxLod", "3",
                     "-multiThread",
@@ -161,7 +242,7 @@ class ConvertUnitTest {
                     "-it", "kml",
                     "-o", OUTPUT_PATH + path,
                     "-crs", "4326",
-                    "-swapYZ",
+                    "-autoUpAxis",
                     "-maxCount", "1024",
                     "-minLod", "0",
                     "-maxLod", "3",
@@ -179,7 +260,7 @@ class ConvertUnitTest {
                     "-it", "kml",
                     "-o", OUTPUT_PATH + path,
                     "-crs", "4326",
-                    "-swapYZ",
+                    "-autoUpAxis",
                     "-maxCount", "1024",
                     "-minLod", "0",
                     "-maxLod", "3",
@@ -197,7 +278,7 @@ class ConvertUnitTest {
                     "-it", "kml",
                     "-o", OUTPUT_PATH + path,
                     "-crs", "4326",
-                    "-swapYZ",
+                    "-autoUpAxis",
                     "-maxCount", "1024",
                     "-minLod", "0",
                     "-maxLod", "3",
@@ -214,7 +295,7 @@ class ConvertUnitTest {
                     "-it", "kml",
                     "-o", OUTPUT_PATH + path,
                     "-crs", "4326",
-                    "-swapYZ",
+                    "-autoUpAxis",
                     "-maxCount", "1024",
                     "-minLod", "0",
                     "-maxLod", "3",
@@ -231,7 +312,7 @@ class ConvertUnitTest {
                     "-it", "kml",
                     "-o", OUTPUT_PATH + path,
                     "-crs", "4326",
-                    "-swapYZ",
+                    "-autoUpAxis",
                     "-maxCount", "1024",
                     "-minLod", "0",
                     "-maxLod", "3",

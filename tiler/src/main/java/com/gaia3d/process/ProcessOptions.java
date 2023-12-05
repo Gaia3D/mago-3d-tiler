@@ -43,7 +43,7 @@ public enum ProcessOptions {
 
     //Experimental,
     ZERO_ORIGIN("zeroOrigin", "zo", "zeroOrigin", false, "[Experimental] fix 3d root transformed matrix origin to zero point."),
-    AUTO_UP_AXIS("autoUpAxis", "aa", "autoAxis", false, "[Experimental] automatically Assign 3D Matrix Axes"),
+    AUTO_UP_AXIS("autoUpAxis", "aa", "autoUpAxis", false, "[Experimental] automatically Assign 3D Matrix Axes"),
     //Z_UP_AXIS("zAxis", "ya", "zAxis", false, "[Experimental] Assign 3D root transformed matrix Z-UP axis"),
     //GENERATE_NORMALS("genNormals", "gn", "genNormals", false, "generate normals"),
     //SCALE("scale", "sc", "scale", false, "scale factor"),
