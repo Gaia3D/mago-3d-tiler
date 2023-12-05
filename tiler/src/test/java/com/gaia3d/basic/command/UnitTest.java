@@ -10,6 +10,14 @@ class UnitTest {
         private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\mago\\mago-3d-tiler\\viewer\\mago-3d-tiler-data\\";
 
         @Test
+        void test() {
+            String[] args = new String[]{
+                "-help"
+            };
+            TilerMain.main(args);
+        }
+
+        @Test
         void kmlObj() {
             String path = "kml-obj";
             String[] args = new String[]{
