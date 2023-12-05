@@ -60,18 +60,19 @@ public class AssimpConverter implements Converter {
         }
 
         String path = file.getAbsolutePath().replace(file.getName(), "");
-        ByteBuffer byteBuffer = readFile(file);
+        /*ByteBuffer byteBuffer = readFile(file);
         String hint = FilenameUtils.getExtension(file.getName());
-
         assert byteBuffer != null;
-        AIScene aiScene = Assimp.aiImportFileFromMemory(byteBuffer, DEFAULT_FLAGS, hint);
+        AIScene aiScene = Assimp.aiImportFileFromMemory(byteBuffer, DEFAULT_FLAGS, hint);*/
+        AIScene aiScene =  Assimp.aiImportFile(file.getAbsolutePath(), DEFAULT_FLAGS);
+
         assert aiScene != null;
         GaiaScene gaiaScene = convertScene(aiScene, path);
         aiScene.free();
         gaiaScene.setOriginalPath(file.toPath());
-        BufferUtils.zeroBuffer(byteBuffer);
+        /*BufferUtils.zeroBuffer(byteBuffer);
         byteBuffer.clear();
-        byteBuffer = null;
+        byteBuffer = null;*/
 
         List<GaiaScene> gaiaScenes = new ArrayList<>();
         gaiaScenes.add(gaiaScene);

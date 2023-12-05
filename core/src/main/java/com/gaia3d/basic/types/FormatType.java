@@ -15,22 +15,32 @@ import java.util.Arrays;
  */
 @Getter
 public enum FormatType {
+    // 3D Formats
+    FBX("fbx"),
     KML("kml"),
     MAX_3DS("3ds"),
+    MAX_ASE("ase"),
     OBJ("obj"),
     COLLADA("dae"),
     IFC("ifc"),
     GLTF("gltf"),
     GLB("glb"),
-    B3DM("b3dm"),
-    I3DM("i3dm"),
-    TEMP("mgb"),
     CITY_GML("gml"),
+    MODO("lxo"),
+    LWO("lwo"),
+    LWS("lws"),
+    DirectX("x"),
+    // 2D Formats,
     SHP("shp"),
     GEOJSON("geojson"),
     JSON("json"),
     LAS("las"),
-    LAZ("laz");
+    LAZ("laz"),
+    // OUTPUT Formats
+    B3DM("b3dm"),
+    I3DM("i3dm"),
+    PNTS("pnts"),
+    TEMP("mgb");
 
     final String extension;
 

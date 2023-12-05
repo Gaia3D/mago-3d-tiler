@@ -122,7 +122,6 @@ public class GaiaSet {
     }
 
     public void readFile(Path path) {
-
         File input = path.toFile();
         Path imagesPath = path.getParent().resolve("images");
         imagesPath.toFile().mkdir();

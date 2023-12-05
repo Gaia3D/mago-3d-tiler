@@ -116,8 +116,9 @@ public class GaiaTexture {
         if (byteBuffer != null) {
             byteBuffer.clear();
         }
-        bufferedImage.flush();
-        bufferedImage = null;
+        if (bufferedImage != null) {
+            bufferedImage.flush();
+        }
     }
 
     public boolean isEqualTexture(GaiaTexture compareTexture) {

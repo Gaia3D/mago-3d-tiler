@@ -11,6 +11,7 @@ import com.gaia3d.process.postprocess.TileModel;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
+import com.gaia3d.util.DecimalUtils;
 import com.gaia3d.util.io.LittleEndianDataInputStream;
 import com.gaia3d.util.io.LittleEndianDataOutputStream;
 import lombok.extern.slf4j.Slf4j;
@@ -98,8 +99,8 @@ public class Batched3DModel implements TileModel {
             batchTable.getBatchId().add(String.valueOf(i));
             batchTable.getProejctName().add(projectNames.get(i));
             batchTable.getNodeName().add(nodeNames.get(i));
-            batchTable.getGeometricError().add(geometricErrors.get(i));
-            batchTable.getHeight().add(heights.get(i));
+            batchTable.getGeometricError().add(DecimalUtils.cut(geometricErrors.get(i)));
+            batchTable.getHeight().add(DecimalUtils.cut(heights.get(i)));
         }
 
         ObjectMapper objectMapper = new ObjectMapper();
