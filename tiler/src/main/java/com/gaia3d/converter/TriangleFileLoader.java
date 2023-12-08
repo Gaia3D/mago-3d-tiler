@@ -9,6 +9,8 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.io.FileUtils;
 import com.gaia3d.process.ProcessOptions;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.gce.geotiff.GeoTiffReader;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -21,7 +23,7 @@ import java.util.List;
  * @since 1.0.0
  */
 @Slf4j
-public class TriangleFileLoader implements FileLoader{
+public class TriangleFileLoader implements FileLoader {
     private final Converter converter;
     private final FastKmlReader kmlReader;
     private final CommandLine command;
@@ -34,6 +36,31 @@ public class TriangleFileLoader implements FileLoader{
 
     public List<GaiaScene> loadScene(File input) {
         return converter.load(input);
+    }
+
+    private GridCoverage2D loadGeoTiff(File file) {
+        GridCoverage2D coverage = null;
+        try {
+            GeoTiffReader reader = new GeoTiffReader(file);
+            coverage = reader.read(null);
+            reader.dispose();
+        } catch (Exception e) {
+            log.debug("Failed to load GeoTiff file: {}", file.getAbsolutePath());
+            throw new RuntimeException(e);
+        }
+        return coverage;
+    }
+
+    public List<GridCoverage2D> loadGridCoverages(List<GridCoverage2D> coverages) {
+        File geoTiffPath = new File(command.getOptionValue(ProcessOptions.GEO_TIFF.getArgName()));
+        if (geoTiffPath.isFile()) {
+            log.info("GeoTiff path is file. Loading only the GeoTiff file.");
+            GridCoverage2D coverage = loadGeoTiff(geoTiffPath);
+            coverages.add(coverage);
+        } else if (geoTiffPath.isDirectory()) {
+            log.info("GeoTiff path is directory. Loading all GeoTiff files in the directory.");
+        }
+        return coverages;
     }
 
     public List<File> loadFiles() {

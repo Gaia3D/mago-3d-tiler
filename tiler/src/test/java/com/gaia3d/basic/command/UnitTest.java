@@ -75,7 +75,6 @@ class UnitTest {
                 "-i", INPUT_PATH + path,
                 "-it", "kml",
                 "-o", OUTPUT_PATH + path,
-                //"-zeroOrigin",
                 "-autoUpAxis",
         };
         TilerMain.main(args);
@@ -89,7 +88,6 @@ class UnitTest {
                 "-it", "kml",
                 "-o", OUTPUT_PATH + path,
                 "-autoUpAxis",
-                "-zeroOrigin",
                 "-multiThread",
         };
         TilerMain.main(args);
@@ -119,9 +117,7 @@ class UnitTest {
                     "-o", OUTPUT_PATH + path,
                     "-crs", "5186",
                     "-autoUpAxis",
-                    "-maxCount", "2048",
-                    "-minLod", "0",
-                    "-maxLod", "3",
+                    "-gt", "D:/forTest/ws2_dem.tif",
                     "-multiThread",
             };
             TilerMain.main(args);
@@ -235,10 +231,9 @@ class UnitTest {
                     "-it", "geojson",
                     "-o", OUTPUT_PATH + path,
                     "-crs", "5186",
-                    "-maxCount", "1024",
-                    "-debug",
-                    "-nc", "layer",
-                    "-multiThread",
+                    //"-maxCount", "1024",
+                    //"-debug",
+                    "-gt", "D:/forTest/ws2_dem.tif",
                     "-refineAdd",
             };
             TilerMain.main(args);
@@ -251,7 +246,6 @@ class UnitTest {
                     "-i", INPUT_PATH + path,
                     "-it", "las",
                     "-o", OUTPUT_PATH + path,
-                    "-crs", "5186",
                     "-maxCount", "1024",
                     "-multiThread",
                     "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",

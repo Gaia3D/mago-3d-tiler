@@ -25,6 +25,7 @@ import com.gaia3d.process.tileprocess.tile.Gaia3DTiler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.io.FileExistsException;
+import org.geotools.coverage.grid.GridCoverage2D;
 import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 
@@ -76,11 +77,16 @@ public class BatchProcessModel implements ProcessFlowModel{
 
         TriangleFileLoader fileLoader = new TriangleFileLoader(command, converter);
 
+        List<GridCoverage2D> geoTiffs = new ArrayList<>();
+        if (command.hasOption(ProcessOptions.GEO_TIFF.getArgName())) {
+            geoTiffs = fileLoader.loadGridCoverages(geoTiffs);
+        }
+
         List<PreProcess> preProcessors = new ArrayList<>();
         if (!isYUpAxis) {
             preProcessors.add(new GaiaRotator());
         }
-        preProcessors.add(new GaiaTranslator(source, command));
+        preProcessors.add(new GaiaTranslator(source, command, geoTiffs));
         preProcessors.add(new GaiaScaler());
 
         TilerOptions tilerOptions = TilerOptions.builder()

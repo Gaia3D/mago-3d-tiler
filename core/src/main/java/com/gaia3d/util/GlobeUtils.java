@@ -19,7 +19,6 @@ public class GlobeUtils {
     private static final double polarRadius = 6356752.3142d; // meters.
     private static final double polarRadiusSquared = 40408299984087.05552164d;
     private static final double firstEccentricitySquared = 6.69437999014E-3d;
-
     private static final CRSFactory factory = new CRSFactory();
     private static final CoordinateReferenceSystem wgs84 = factory.createFromParameters("WGS84", "+proj=longlat +datum=WGS84 +no_defs");
 

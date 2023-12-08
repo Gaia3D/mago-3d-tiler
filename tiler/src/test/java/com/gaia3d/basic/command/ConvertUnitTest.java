@@ -367,6 +367,7 @@ class ConvertUnitTest {
                     "-maxCount", "1024",
                     "-minimumHeight", "9.0",
                     "-debug",
+                    "-gt", "D:/forTest/R01_astgdemv3.tif",
                     "-nc", "layer",
                     //"-multiThread",
                     "-refineAdd",
