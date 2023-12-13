@@ -23,6 +23,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class Batched3DModel implements TileModel {
@@ -49,19 +50,19 @@ public class Batched3DModel implements TileModel {
         int batchLength = tileInfos.size();
         List<String> projectNames = tileInfos.stream()
                 .map((tileInfo) -> tileInfo.getSet().getProjectName())
-                .toList();
+                .collect(Collectors.toList());
         List<String> nodeNames = tileInfos.stream()
                 .map(TileInfo::getName)
-                .toList();
+                .collect(Collectors.toList());
         List<Double> geometricErrors = tileInfos.stream()
                 .map((tileInfo) -> tileInfo.getBoundingBox().getLongestDistance())
-                .toList();
+                .collect(Collectors.toList());
         List<Double> heights = tileInfos.stream()
                 .map((tileInfo) -> {
                     GaiaBoundingBox boundingBox = tileInfo.getBoundingBox();
                     return boundingBox.getMaxZ() - boundingBox.getMinZ();
                 })
-                .toList();
+                .collect(Collectors.toList());
 
         GaiaScene scene = new GaiaScene(batchedSet);
 

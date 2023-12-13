@@ -114,14 +114,14 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
 
                 Polygon polygon = null;
                 LineString lineString = null;
-                if (geom instanceof MultiPolygon multiPolygon) {
-                    polygon = (Polygon) multiPolygon.getGeometryN(0);
+                if (geom instanceof MultiPolygon) {
+                    polygon = (Polygon) geom.getGeometryN(0);
                     lineString = polygon.getExteriorRing();
                 } else if (geom instanceof Polygon) {
                     polygon = (Polygon) geom;
                     lineString = polygon.getExteriorRing();
-                } else if (geom instanceof MultiLineString multiLineString) {
-                    lineString = (LineString) multiLineString.getGeometryN(0);
+                } else if (geom instanceof MultiLineString) {
+                    lineString = (LineString) geom.getGeometryN(0);
                 } else if (geom instanceof LineString) {
                     lineString = (LineString) geom;
                 } else {

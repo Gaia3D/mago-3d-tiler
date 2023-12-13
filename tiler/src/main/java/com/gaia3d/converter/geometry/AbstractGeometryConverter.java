@@ -29,9 +29,9 @@ public abstract class AbstractGeometryConverter {
 
         if (command.hasOption("debug")) {
             Random random = new Random();
-            float r = random.nextFloat(1);
-            float g = random.nextFloat(1);
-            float b = random.nextFloat(1);
+            float r = random.nextFloat();
+            float g = random.nextFloat();
+            float b = random.nextFloat();
             material.setDiffuseColor(new Vector4d(r, g, b, 1));
         } else {
             material.setDiffuseColor(new Vector4d(0.9, 0.9, 0.9, 1));
@@ -129,8 +129,8 @@ public abstract class AbstractGeometryConverter {
             result = result + (Long) heightObject;
         } else if (heightObject instanceof Double) {
             result = result + (double) heightObject;
-        } else if (heightObject instanceof String heightString) {
-            result = Double.parseDouble(heightString);
+        } else if (heightObject instanceof String) {
+            result = Double.parseDouble((String) heightObject);
         }
 
         if (result < minimumHeight) {
@@ -183,8 +183,8 @@ public abstract class AbstractGeometryConverter {
             result = result + (Long) heightObject;
         } else if (heightObject instanceof Double) {
             result = result + (double) heightObject;
-        } else if (heightObject instanceof String heightString) {
-            result = Double.parseDouble(heightString);
+        } else if (heightObject instanceof String) {
+            result = Double.parseDouble((String) heightObject);
         }
         return result;
     }

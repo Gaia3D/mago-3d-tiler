@@ -24,6 +24,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class PointCloudTiler implements Tiler {
@@ -132,7 +133,7 @@ public class PointCloudTiler implements Tiler {
 
         List<GaiaPointCloud> pointClouds = tileInfos.stream()
                 .map(TileInfo::getPointCloud)
-                .toList();
+                .collect(Collectors.toList());
         int index = 0;
         for (GaiaPointCloud pointCloud : pointClouds) {
             pointCloud.setCode((index++) + "");

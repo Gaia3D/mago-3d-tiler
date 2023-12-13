@@ -306,7 +306,7 @@ public class GaiaTextureCoordinator {
             } else {
                 texture.setPath(ATLAS_IMAGE + ".jpg");
             }
-            List<GaiaBufferDataSet> materialBufferDataSets = bufferDataSets.stream().filter((bufferDataSet) -> bufferDataSet.getMaterialId() == target.getMaterialId()).toList();
+            List<GaiaBufferDataSet> materialBufferDataSets = bufferDataSets.stream().filter((bufferDataSet) -> bufferDataSet.getMaterialId() == target.getMaterialId()).collect(Collectors.toList());
 
             Double intPart_x = null, intPart_y = null;
             double fractPart_x, fractPart_y;
