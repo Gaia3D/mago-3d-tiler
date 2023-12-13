@@ -49,7 +49,24 @@ public class LasConverter {
         LASReader reader = new LASReader(file);
         LASHeader header = reader.getHeader();
 
+        byte major = header.getVersionMajor();
+        byte minor = header.getVersionMinor();
+        byte recordFormatValue = header.getPointDataRecordFormat();
+        long recordLength = header.getPointDataRecordLength();
+
+        boolean hasRgbColor;
+        LasRecordFormat recordFormat = LasRecordFormat.fromFormatNumber(recordFormatValue);
+        if (recordFormat != null) {
+            hasRgbColor = recordFormat.hasColor;
+        } else {
+            hasRgbColor = false;
+        }
+
         log.info("[LoadFile] Loading a pointcloud file. : {}", file.getAbsolutePath());
+        log.info(" - LAS Version : {}.{}", major, minor);
+        log.info(" - LAS Point Data Record Format : {}", recordFormat);
+        log.info(" - LAS Point Data Record Length : {}", recordLength);
+        log.info(" - LAS Point Data Record has RGB Color : {}", hasRgbColor);
 
         Iterable<LASPoint> pointIterable = reader.getPoints();
         GaiaBoundingBox boundingBox = pointCloud.getGaiaBoundingBox();
@@ -65,24 +82,20 @@ public class LasConverter {
             double x = point.getX() * xScaleFactor + xOffset;
             double y = point.getY() * yScaleFactor + yOffset;
             double z = point.getZ() * zScaleFactor + zOffset;
-            //Vector3d position = new Vector3d(x, y, z);
 
             ProjCoordinate coordinate = new ProjCoordinate(x, y, z);
             ProjCoordinate transformedCoordinate = GlobeUtils.transform(crs, coordinate);
 
             Vector3d position = new Vector3d(transformedCoordinate.x, transformedCoordinate.y, z);
 
-            double red = (double) point.getRed() / 65535;
-            double green = (double) point.getGreen() / 65535;
-            double blue = (double) point.getBlue() / 65535;
-
-            byte[] rgb = new byte[3];
-            rgb[0] = (byte) (red * 255);
-            rgb[1] = (byte) (green * 255);
-            rgb[2] = (byte) (blue * 255);
+            byte[] rgb = null;
+            if (hasRgbColor) {
+                rgb = getColorByRGB(point);
+            } else {
+                rgb = getColorIntensity(point);
+            }
 
             GaiaVertex vertex = new GaiaVertex();
-            //vertex.setPosition(new Vector3d(x, y, z));
             vertex.setPosition(position);
             vertex.setColor(rgb);
             vertex.setBatchId(0);
@@ -97,10 +110,42 @@ public class LasConverter {
 
         // randomize arrays
         Collections.shuffle(vertices);
-        //var divided = pointCloud.divide();
-        //pointClouds.add(divided.get(0));
 
         pointClouds.add(pointCloud);
         return pointClouds;
+    }
+
+    /**
+     * Get color by RGB
+     * @param point LASPoint
+     * @return byte[3]
+     */
+    private byte[] getColorByRGB(LASPoint point) {
+        double red = (double) point.getRed() / 65535;
+        double green = (double) point.getGreen() / 65535;
+        double blue = (double) point.getBlue() / 65535;
+
+        byte[] rgb = new byte[3];
+        rgb[0] = (byte) (red * 255);
+        rgb[1] = (byte) (green * 255);
+        rgb[2] = (byte) (blue * 255);
+        return rgb;
+    }
+
+    /**
+     * Get color by intensity (Gray scale)
+     * @param point LASPoint
+     * @return byte[3]
+     */
+    private byte[] getColorIntensity(LASPoint point) {
+        char intensity = point.getIntensity();
+        double intensityDouble = (double) intensity / 65535;
+
+        byte color = (byte) (intensityDouble * 255);
+        byte[] rgb = new byte[3];
+        rgb[0] = color;
+        rgb[1] = color;
+        rgb[2] = color;
+        return rgb;
     }
 }
