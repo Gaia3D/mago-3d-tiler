@@ -80,6 +80,18 @@ This is a simple kml/collada -> 3dTiles conversion code with the mandatory argum
 ```
 java -jar mago-3d-tiler-x.x.x-natives-windows.jar --input C:\data\kml-input-dir --inputType kml --output C:\data\kml-output-dir
 ```
+
+### How to use Docker version:
+Alternatively, you can easily use mago3dtiler with docker.
+
+Example usage : 
+```
+docker pull gaia3d/mago-3d-tiler
+```
+```
+docker run --rm -v "/workspace:/workspace" gaia3d/mago-3d-tiler -it 3ds -i /workspace/3ds-samples -o /workspace/sample-3d-tiles -crs 5186 -aa
+```
+
 ### Supported Java versions:
 It supports compatibility with long-term support (LTS) versions of the JDK, such as JDK11, JDK17 and JDK21.   
 JDK21 has been found to be partially available.
@@ -191,6 +203,17 @@ usage: Gaia3D Tiler
 필수 인자 값으로 작성한 간단한 kml/collada -> 3dTiles 변환코드 입니다.
 ```
 java -jar mago-3d-tiler-x.x.x-natives-windows.jar --input C:\data\kml-input-dir --inputType kml --output C:\data\kml-output-dir
+```
+
+### 도커 버전 사용법:
+mago 3DTiler 1.3.1 버전부터 도커 버전으로 손쉽게 사용할 수 있습니다.
+
+사용 예시: 
+```
+docker pull gaia3d/mago-3d-tiler
+```
+```
+docker run --rm -v "/workspace:/workspace" gaia3d/mago-3d-tiler -it 3ds -i /workspace/3ds-samples -o /workspace/sample-3d-tiles -crs 5186 -aa
 ```
 
 ### 지원하는 자바 버전:
