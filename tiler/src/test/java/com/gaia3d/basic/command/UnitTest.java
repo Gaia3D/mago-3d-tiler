@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 
 @Slf4j
 class UnitTest {
-        private static final String INPUT_PATH = "D:\\unit-test\\";
-        private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\mago\\mago-3d-tiler\\viewer\\mago-3d-tiler-data\\";
+        private static final String INPUT_PATH = "D:\\data\\unit-test\\";
+        private static final String OUTPUT_PATH = "D:\\Result_mago3dTiler\\";
 
         @Test
         void test() {
@@ -16,6 +16,19 @@ class UnitTest {
             };
             TilerMain.main(args);
         }
+
+    @Test
+    void kmlComplicatedModels() {
+        String path = "ComplicatedModels1";
+        String[] args = new String[]{
+                "-i", INPUT_PATH + path,
+                "-it", "kml",
+                "-o", OUTPUT_PATH + path,
+                "-autoUpAxis",
+                "-glb"
+        };
+        TilerMain.main(args);
+    }
 
         @Test
         void kmlObj() {
@@ -68,7 +81,7 @@ class UnitTest {
         TilerMain.main(args);
     }
 
-    @Test
+    //@Test
     void kmlIfc() {
         String path = "kml-ifc";
         String[] args = new String[]{
@@ -117,7 +130,7 @@ class UnitTest {
                     "-o", OUTPUT_PATH + path,
                     "-crs", "5186",
                     "-autoUpAxis",
-                    "-gt", "D:/forTest/ws2_dem.tif",
+                    //"-gt", "D:/forTest/ws2_dem.tif",
                     "-multiThread",
             };
             TilerMain.main(args);
@@ -141,7 +154,7 @@ class UnitTest {
             TilerMain.main(args);
         }
 
-        @Test
+        //@Test
         void testIfcWithKml() {
             String path = "ifc";
             String[] args = new String[]{
