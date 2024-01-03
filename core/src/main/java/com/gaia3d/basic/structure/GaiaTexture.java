@@ -62,6 +62,13 @@ public class GaiaTexture {
         this.height = bufferedImage.getHeight();
     }
 
+    public String getFullPath()
+    {
+        Path diffusePath = new File(path).toPath();
+        String imagePath = parentPath + File.separator + diffusePath;
+        return imagePath;
+    }
+
     private BufferedImage readImage(String filePath) {
         BufferedImage image = null;
         try (FileInputStream stream = new FileInputStream(filePath)){

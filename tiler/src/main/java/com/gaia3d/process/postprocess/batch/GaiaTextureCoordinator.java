@@ -306,6 +306,10 @@ public class GaiaTextureCoordinator {
             } else {
                 texture.setPath(ATLAS_IMAGE + ".jpg");
             }
+
+            // test save atlasTexture image.***
+            this.writeBatchedImage();
+            // end test.***
             List<GaiaBufferDataSet> materialBufferDataSets = bufferDataSets.stream().filter((bufferDataSet) -> bufferDataSet.getMaterialId() == target.getMaterialId()).collect(Collectors.toList());
 
             Double intPart_x = null, intPart_y = null;
@@ -354,9 +358,12 @@ public class GaiaTextureCoordinator {
     }
 
     private void writeBatchedImage() {
-        File file = new File("D:\\MAGO_TEST_FOLDER\\ComplicatedModels\\output\\images\\" );
-        if (!file.mkdir()) {
-            log.error("Failed to create directory" );
+        File file = new File("D:\\Result_mago3dTiler\\atlasImages\\" );
+        if(!file.exists())
+        {
+            if (!file.mkdirs()) {
+                log.error("Failed to create directory");
+            }
         }
 
         Path outputPath = file.toPath();

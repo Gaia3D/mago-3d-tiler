@@ -32,11 +32,24 @@ public class GaiaBatcher implements Batcher {
 
     private void reassignMaterialsToGaiaBufferDataSetWithSameMaterial(List<GaiaBufferDataSet> dataSets, LevelOfDetail lod) {
         int datasetsCount = dataSets.size();
+        Map<GaiaBufferDataSet, Boolean> visitedMap = new HashMap<>();
         for (int i = 0; i < datasetsCount; i++) {
             GaiaBufferDataSet dataSet = dataSets.get(i);
+            // check if dataset is visited.***
+            if(visitedMap.containsKey(dataSet)) {
+                continue;
+            }
+
             GaiaMaterial material = dataSet.material;
+            int materialId = material.getId();
             for (int j = i + 1; j < datasetsCount; j++) {
                 GaiaBufferDataSet dataSet2 = dataSets.get(j);
+
+                // check if dataset2 is visited.***
+                if(visitedMap.containsKey(dataSet2)) {
+                    continue;
+                }
+
                 if (dataSet == dataSet2) continue;
 
                 if (dataSet2.material == material) {
@@ -46,6 +59,7 @@ public class GaiaBatcher implements Batcher {
                 if (GaiaMaterial.areEqualMaterials(dataSet2.material, material, lod.getTextureScale())) {
                     //dataSet2.material.deleteTextures();
                     dataSet2.material = material;
+                    visitedMap.put(dataSet2, true);
                 }
             }
         }

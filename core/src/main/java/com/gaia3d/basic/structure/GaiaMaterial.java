@@ -73,7 +73,15 @@ public class GaiaMaterial {
                 GaiaTexture textureA = listTexturesA.get(i);
                 GaiaTexture textureB = listTexturesB.get(i);
                 hasTexture = true;
-                if (!textureA.isEqualTexture(textureB, scaleFactor)) {
+
+                // check if the fullPath of the textures are equal.***
+                String fullPathA = textureA.getFullPath();
+                String fullPathB = textureB.getFullPath();
+
+                if(fullPathA.equals(fullPathB)) {
+                    hasTextureAreEquals = true;
+                }
+                else if (!textureA.isEqualTexture(textureB, scaleFactor)) {
                     hasTextureAreEquals = false;
                 }
             }
