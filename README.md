@@ -104,7 +104,7 @@ JDK21 has been found to be partially available.
 - **Community and Code**: Join our vibrant community on GitHub and contribute to the future of 3D data conversion.​
 - **Freedom to Innovate**: Embrace the flexibility of MPL2.0 licensing(<https://www.mozilla.org/en-US/MPL/2.0/>)​,
   ensuring your freedom to use, modify, and distribute without hindrance.
-- If you prefer not to share your modified or improved code under the MPL2.0 license, you can opt for a commercial license instead.
+- **License**: If you prefer not to share your modified or improved code under the MPL2.0 license, you can opt for a commercial license instead.
 In this case, please contact us at sales@gaia3d.com
 
 ### Library Dependencies:
