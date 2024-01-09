@@ -2,6 +2,7 @@ package com.gaia3d.process.preprocess;
 
 import com.gaia3d.basic.structure.GaiaNode;
 import com.gaia3d.basic.structure.GaiaScene;
+import com.gaia3d.converter.kml.KmlInfo;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;

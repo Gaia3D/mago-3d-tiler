@@ -83,11 +83,13 @@ public class BatchProcessModel implements ProcessFlowModel{
         }
 
         List<PreProcess> preProcessors = new ArrayList<>();
+        // scale preprocessor 1rst.***
+        preProcessors.add(new GaiaScaler());
+
         if (!isYUpAxis) {
             preProcessors.add(new GaiaRotator());
         }
         preProcessors.add(new GaiaTranslator(source, command, geoTiffs));
-        preProcessors.add(new GaiaScaler());
 
         TilerOptions tilerOptions = TilerOptions.builder()
                 .inputPath(inputPath)
