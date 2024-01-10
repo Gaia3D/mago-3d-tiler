@@ -53,13 +53,14 @@ public class GaiaBatcher implements Batcher {
                 if (dataSet == dataSet2) continue;
 
                 if (dataSet2.material == material) {
+                    visitedMap.put(dataSet2, true); // set visited.***
                     continue;
                 }
 
                 if (GaiaMaterial.areEqualMaterials(dataSet2.material, material, lod.getTextureScale())) {
                     //dataSet2.material.deleteTextures();
                     dataSet2.material = material;
-                    visitedMap.put(dataSet2, true);
+                    visitedMap.put(dataSet2, true); // set visited.***
                 }
             }
         }

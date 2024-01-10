@@ -62,6 +62,17 @@ public class GaiaTexture {
         this.height = bufferedImage.getHeight();
     }
 
+    public void flipImageY()
+    {
+        for(int i = 0; i < width; i++) {
+            for(int j = 0; j < height / 2; j++) {
+                int tmp = bufferedImage.getRGB(i, j);
+                bufferedImage.setRGB(i, j, bufferedImage.getRGB(i, height - j - 1));
+                bufferedImage.setRGB(i, height - j - 1, tmp);
+            }
+        }
+    }
+
     public String getFullPath()
     {
         Path diffusePath = new File(path).toPath();

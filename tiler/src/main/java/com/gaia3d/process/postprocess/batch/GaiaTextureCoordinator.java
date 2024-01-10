@@ -39,6 +39,9 @@ public class GaiaTextureCoordinator {
     }
 
     private void initBatchImage(int width, int height) {
+        // TYPE_INT_RGB = 1
+        // TYPE_INT_ARGB = 2
+        // TYPE_4BYTE_ABGR = 6
         if (width > 0 || height > 0) {
             this.atlasImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         } else {
@@ -266,8 +269,14 @@ public class GaiaTextureCoordinator {
             List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
             if (!textures.isEmpty()) {
                 GaiaTexture texture = textures.get(0);
+                // Flip image Y.***********************
+                texture.flipImageY();
+                //*************************************
                 BufferedImage source = texture.getBufferedImage();
                 graphics.drawImage(source, (int) splittedRectangle.getMinX(), (int) splittedRectangle.getMinY(), null);
+                // Return image as original.***********
+                texture.flipImageY();
+                //*************************************
             }
         }
 
@@ -307,9 +316,10 @@ public class GaiaTextureCoordinator {
                 texture.setPath(ATLAS_IMAGE + ".jpg");
             }
 
-            // test save atlasTexture image.***
+            // test save atlasTexture image.****
             //this.writeBatchedImage();
-            // end test.***
+            // end test.************************
+            
             List<GaiaBufferDataSet> materialBufferDataSets = bufferDataSets.stream().filter((bufferDataSet) -> bufferDataSet.getMaterialId() == target.getMaterialId()).collect(Collectors.toList());
 
             Double intPart_x = null, intPart_y = null;

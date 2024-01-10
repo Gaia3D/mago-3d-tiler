@@ -19,11 +19,12 @@ class UnitTest {
 
     @Test
     void kmlComplicatedModels() {
-        String path = "ComplicatedModels10";
+        String path = "ComplicatedModels5";
         String[] args = new String[]{
                 "-i", INPUT_PATH + path,
                 "-it", "kml",
                 "-o", OUTPUT_PATH + path,
+                //"-pt", // textures forced to png format.***
                 "-autoUpAxis",
                 "-glb"
         };
