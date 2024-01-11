@@ -41,6 +41,40 @@ public class GaiaMaterial {
     // experimental :: is repeat texture
     private boolean isRepeat = false;
 
+    public boolean isOpaqueMaterial()
+    {
+        boolean isOpaque = true;
+
+        // 1rst check textures.***
+        int texCount = textures.size();
+        for (Map.Entry<TextureType, List<GaiaTexture>> entry : textures.entrySet()) {
+            List<GaiaTexture> gaiaTextures = entry.getValue();
+            for (GaiaTexture gaiaTexture : gaiaTextures) {
+                if (gaiaTexture != null) {
+                    String texPath = gaiaTexture.getPath();
+                    int indicePunto = texPath.lastIndexOf('.');
+                    String extension = texPath.substring(indicePunto + 1);
+                    if(extension.equals("png") || extension.equals("PNG"))
+                    {
+                        isOpaque = false;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // if there are no textures, then check the diffuse color.***
+        if(texCount == 0)
+        {
+            if(diffuseColor.w < 1.0)
+            {
+                isOpaque = false;
+            }
+        }
+
+        return isOpaque;
+    }
+
     public static boolean areEqualMaterials(GaiaMaterial materialA, GaiaMaterial materialB, float scaleFactor) {
         // This function determines if two materials are equal.
         if (materialA == null && materialB == null) {
