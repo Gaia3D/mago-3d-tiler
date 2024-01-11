@@ -19,7 +19,7 @@ class UnitTest {
 
     @Test
     void kmlComplicatedModels() {
-        String path = "ComplicatedModels5";
+        String path = "ComplicatedModels20";
         String[] args = new String[]{
                 "-i", INPUT_PATH + path,
                 "-it", "kml",

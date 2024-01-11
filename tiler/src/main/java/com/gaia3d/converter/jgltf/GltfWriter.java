@@ -28,10 +28,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * GltfWriter is a class that writes the glTF file.
@@ -445,6 +442,14 @@ public class GltfWriter {
         Material material = new Material();
         material.setName(gaiaMaterial.getName());
         material.setDoubleSided(false);
+
+        // Set the alpha mode.***
+        boolean isOpaque = gaiaMaterial.isOpaqueMaterial();
+        if (!isOpaque) {
+            material.setAlphaMode("BLEND"); // "OPAQUE", "MASK", "BLEND"
+        } else {
+            material.setAlphaMode("OPAQUE"); // "OPAQUE", "MASK", "BLEND"
+        }
 
         MaterialPbrMetallicRoughness pbrMetallicRoughness = new MaterialPbrMetallicRoughness();
         //Vector4d diffuseColor = gaiaMaterial.getDiffuseColor();
