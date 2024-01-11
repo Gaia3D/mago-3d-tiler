@@ -1,5 +1,6 @@
 package com.gaia3d.process;
 
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.FileLoader;
 import com.gaia3d.process.postprocess.PostProcess;
 import com.gaia3d.process.postprocess.thread.ProcessThreadPool;
@@ -27,18 +28,15 @@ public class ProcessFlowThread implements Process {
 
     public void process(FileLoader fileLoader) throws IOException {
         List<TileInfo> tileInfos = new ArrayList<>();
-        log.info("[process] Start loading tile infos.");
 
         /* PreProcess */
         preprocess(fileLoader, tileInfos);
-
         /* TileProcess */
         Tileset tileset = tileprocess(tileInfos);
-
         /* PostProcess */
         postprocess(tileset);
 
-        // Delete Temp Directory
+        /* Delete temp files */
         if (!tileInfos.isEmpty()) {
             tileInfos.get(0).deleteTemp();
         }
@@ -46,7 +44,7 @@ public class ProcessFlowThread implements Process {
 
     private void preprocess(FileLoader fileLoader, List<TileInfo> tileInfos) {
         List<File> fileList = fileLoader.loadFiles();
-        log.info("Total {} files.", fileList.size());
+        log.info("[pre-process] Total input file count : {}", fileList.size());
 
         ProcessThreadPool pool = new ProcessThreadPool();
         try {
@@ -66,8 +64,10 @@ public class ProcessFlowThread implements Process {
     }
 
     private void postprocess(Tileset tileset) {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
         ProcessThreadPool pool = new ProcessThreadPool();
         List<ContentInfo> contentInfos = tileset.findAllContentInfo();
+        globalOptions.setTileCount(contentInfos.size());
         try {
             pool.postProcessStart(contentInfos, postProcesses);
         } catch (InterruptedException e) {

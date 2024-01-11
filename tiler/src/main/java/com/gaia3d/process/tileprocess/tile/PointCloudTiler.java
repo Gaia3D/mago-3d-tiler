@@ -4,8 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.pointcloud.GaiaPointCloud;
-import com.gaia3d.process.ProcessOptions;
-import com.gaia3d.process.TilerOptions;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.tileprocess.Tiler;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
 import com.gaia3d.process.tileprocess.tile.tileset.asset.*;
@@ -13,8 +12,8 @@ import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 import com.gaia3d.util.GlobeUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.CommandLine;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
@@ -27,17 +26,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
+@RequiredArgsConstructor
 public class PointCloudTiler implements Tiler {
-    private static final int DEFUALT_MAX_COUNT = 20000;
-
-    private final CommandLine command;
-    private final TilerOptions options;
-
-    public PointCloudTiler(TilerOptions tilerOptions, CommandLine command) {
-        this.options = tilerOptions;
-        this.command = command;
-    }
-
     @Override
     public Tileset run(List<TileInfo> tileInfos) {
         double geometricError = calcGeometricError(tileInfos);
@@ -92,14 +82,18 @@ public class PointCloudTiler implements Tiler {
     }
 
     public void writeTileset(Tileset tileset) {
-        File tilesetFile = this.options.getOutputPath().resolve("tileset.json").toFile();
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        File outputPath = new File(globalOptions.getOutputPath());
+        File tilesetFile = new File(outputPath, "tileset.json");
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(tilesetFile))) {
             String result = objectMapper.writeValueAsString(tileset);
+            log.info("[Tiling][Tileset] Write 'tileset.json' file.");
             writer.write(result);
+            globalOptions.setTilesetSize(result.length());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -142,19 +136,16 @@ public class PointCloudTiler implements Tiler {
     }
 
     private void createNode(Node parentNode, GaiaPointCloud pointCloud, double geometricError) {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
         int vertexLength = pointCloud.getVertices().size();
 
-        int maxPoints = command.hasOption(ProcessOptions.MAX_POINTS.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_POINTS.getArgName())) : DEFUALT_MAX_COUNT;
-
-        List<GaiaPointCloud> divided = pointCloud.divideChunkSize(maxPoints);
+        int pointLimit = globalOptions.getPointLimit();
+        List<GaiaPointCloud> divided = pointCloud.divideChunkSize(pointLimit);
         GaiaPointCloud selfPointCloud = divided.get(0);
         GaiaPointCloud remainPointCloud = divided.get(1);
 
         GaiaBoundingBox childBoundingBox = selfPointCloud.getGaiaBoundingBox();
         Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
-
-        //Matrix4d transformMatrix = new Matrix4d();
-        //transformMatrix.identity();
         rotateX90(transformMatrix);
         BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
 
@@ -191,7 +182,7 @@ public class PointCloudTiler implements Tiler {
         childNode.setContent(content);
 
         parentNode.getChildren().add(childNode);
-        log.info("[ContentNode][{}] Point cloud nodes calculated.",childNode.getNodeCode());
+        log.info("[Tiling][ContentNode][{}] Point cloud nodes calculated.",childNode.getNodeCode());
 
         if (vertexLength > 0) { // vertexLength > DEFUALT_MAX_COUNT
             List<GaiaPointCloud> distributes = remainPointCloud.distributeOct();
@@ -200,8 +191,6 @@ public class PointCloudTiler implements Tiler {
                     createNode(childNode, distribute, geometricError/2);
                 }
             });
-        } else {
-            return;
         }
     }
 

@@ -3,12 +3,13 @@ package com.gaia3d.converter.pointcloud;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.pointcloud.GaiaPointCloud;
 import com.gaia3d.basic.structure.GaiaVertex;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.util.GlobeUtils;
 import com.github.mreutegg.laszip4j.LASHeader;
 import com.github.mreutegg.laszip4j.LASPoint;
 import com.github.mreutegg.laszip4j.LASReader;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.CommandLine;
 import org.joml.Vector3d;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
@@ -20,15 +21,8 @@ import java.util.Collections;
 import java.util.List;
 
 @Slf4j
+@RequiredArgsConstructor
 public class LasConverter {
-    private final CommandLine command;
-    private final CoordinateReferenceSystem crs;
-
-    public LasConverter(CommandLine command, CoordinateReferenceSystem crs) {
-        this.command = command;
-        this.crs = crs;
-    }
-
     public List<GaiaPointCloud> load(String path) {
         return convert(new File(path));
     }
@@ -42,6 +36,7 @@ public class LasConverter {
     }
 
     private List<GaiaPointCloud> convert(File file) {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
         List<GaiaPointCloud> pointClouds = new ArrayList<>();
         GaiaPointCloud pointCloud = new GaiaPointCloud();
         List<GaiaVertex> vertices = pointCloud.getVertices();
@@ -56,6 +51,7 @@ public class LasConverter {
 
         boolean hasRgbColor;
         LasRecordFormat recordFormat = LasRecordFormat.fromFormatNumber(recordFormatValue);
+
         if (recordFormat != null) {
             hasRgbColor = recordFormat.hasColor;
         } else {
@@ -78,6 +74,7 @@ public class LasConverter {
         double zScaleFactor = header.getZScaleFactor();
         double zOffset = header.getZOffset();
 
+        CoordinateReferenceSystem crs = globalOptions.getCrs();
         pointIterable.forEach(point -> {
             double x = point.getX() * xScaleFactor + xOffset;
             double y = point.getY() * yScaleFactor + yOffset;
@@ -88,7 +85,7 @@ public class LasConverter {
 
             Vector3d position = new Vector3d(transformedCoordinate.x, transformedCoordinate.y, z);
 
-            byte[] rgb = null;
+            byte[] rgb;
             if (hasRgbColor) {
                 rgb = getColorByRGB(point);
             } else {
@@ -102,11 +99,6 @@ public class LasConverter {
             vertices.add(vertex);
             boundingBox.addPoint(position);
         });
-
-        // BatchId setting
-        /*for (int i = 0; i < vertices.size(); i++) {
-            vertices.get(i).setBatchId(i);
-        }*/
 
         // randomize arrays
         Collections.shuffle(vertices);

@@ -1,20 +1,20 @@
 package com.gaia3d.basic.command;
 
-import com.gaia3d.command.TilerMain;
+import com.gaia3d.command.mago.Mago3DTilerMain;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
 @Slf4j
 class UnitTest {
-        private static final String INPUT_PATH = "D:\\data\\unit-test\\";
-        private static final String OUTPUT_PATH = "D:\\Result_mago3dTiler\\";
+        private static final String INPUT_PATH = "D:\\unit-test\\";
+        private static final String OUTPUT_PATH = "D:\\unit-test\\";
 
         @Test
         void test() {
             String[] args = new String[]{
                 "-help"
             };
-            TilerMain.main(args);
+            Mago3DTilerMain.main(args);
         }
 
     @Test
@@ -28,7 +28,7 @@ class UnitTest {
                 "-autoUpAxis",
                 "-glb"
         };
-        TilerMain.main(args);
+        Mago3DTilerMain.main(args);
     }
 
         @Test
@@ -40,7 +40,7 @@ class UnitTest {
                     "-o", OUTPUT_PATH + path,
                     "-autoUpAxis",
             };
-            TilerMain.main(args);
+            Mago3DTilerMain.main(args);
         }
 
         @Test
@@ -52,7 +52,7 @@ class UnitTest {
                     "-o", OUTPUT_PATH + path,
                     "-autoUpAxis",
             };
-            TilerMain.main(args);
+            Mago3DTilerMain.main(args);
         }
 
         @Test
@@ -64,7 +64,7 @@ class UnitTest {
                     "-o", OUTPUT_PATH + path,
                     "-autoUpAxis",
             };
-            TilerMain.main(args);
+            Mago3DTilerMain.main(args);
         }
 
     @Test
@@ -79,7 +79,7 @@ class UnitTest {
                 "-multiThread",
                 "-zeroOrigin",
         };
-        TilerMain.main(args);
+        Mago3DTilerMain.main(args);
     }
 
     //@Test
@@ -91,7 +91,7 @@ class UnitTest {
                 "-o", OUTPUT_PATH + path,
                 "-autoUpAxis",
         };
-        TilerMain.main(args);
+        Mago3DTilerMain.main(args);
     }
 
     @Test
@@ -104,7 +104,7 @@ class UnitTest {
                 "-autoUpAxis",
                 "-multiThread",
         };
-        TilerMain.main(args);
+        Mago3DTilerMain.main(args);
     }
 
     //@Test
@@ -119,7 +119,7 @@ class UnitTest {
                 "-refineAdd",
                 "-multiThread",
         };
-        TilerMain.main(args);
+        Mago3DTilerMain.main(args);
     }
 
         @Test
@@ -134,7 +134,7 @@ class UnitTest {
                     //"-gt", "D:/forTest/ws2_dem.tif",
                     "-multiThread",
             };
-            TilerMain.main(args);
+            Mago3DTilerMain.main(args);
         }
 
         @Test
@@ -152,7 +152,7 @@ class UnitTest {
                     //"-reverseTexCoord",
                     "-multiThread",
             };
-            TilerMain.main(args);
+            Mago3DTilerMain.main(args);
         }
 
         //@Test
@@ -169,7 +169,7 @@ class UnitTest {
                     "-maxLod", "3",
                     "-multiThread",
             };
-            TilerMain.main(args);
+            Mago3DTilerMain.main(args);
         }
 
         @Test
@@ -186,7 +186,7 @@ class UnitTest {
                     "-maxLod", "3",
                     "-multiThread",
             };
-            TilerMain.main(args);
+            Mago3DTilerMain.main(args);
         }
 
         @Test
@@ -203,7 +203,7 @@ class UnitTest {
                     "-maxLod", "3",
                     //"-multiThread",
             };
-            TilerMain.main(args);
+            Mago3DTilerMain.main(args);
         }
 
         @Test
@@ -219,7 +219,7 @@ class UnitTest {
                     "-multiThread",
                     "-refineAdd",
             };
-            TilerMain.main(args);
+            Mago3DTilerMain.main(args);
         }
 
         @Test
@@ -234,7 +234,7 @@ class UnitTest {
                     "-multiThread",
                     "-refineAdd",
             };
-            TilerMain.main(args);
+            Mago3DTilerMain.main(args);
         }
 
         @Test
@@ -250,7 +250,7 @@ class UnitTest {
                     "-gt", "D:/forTest/ws2_dem.tif",
                     "-refineAdd",
             };
-            TilerMain.main(args);
+            Mago3DTilerMain.main(args);
         }
 
         @Test
@@ -264,6 +264,6 @@ class UnitTest {
                     "-multiThread",
                     "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
             };
-            TilerMain.main(args);
+            Mago3DTilerMain.main(args);
         }
 }

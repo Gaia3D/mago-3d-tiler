@@ -1,12 +1,14 @@
 package com.gaia3d.command;
 
 import com.gaia3d.basic.types.FormatType;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.PointCloudFileLoader;
 import com.gaia3d.converter.pointcloud.LasConverter;
 import com.gaia3d.process.PointCloudProcessFlow;
 import com.gaia3d.process.ProcessOptions;
 import com.gaia3d.process.TilerOptions;
 import com.gaia3d.process.postprocess.PostProcess;
+import com.gaia3d.process.postprocess.pointcloud.PointCloudModel;
 import com.gaia3d.process.preprocess.PreProcess;
 import com.gaia3d.process.tileprocess.TileProcess;
 import com.gaia3d.process.tileprocess.tile.PointCloudTiler;
@@ -25,44 +27,24 @@ import java.util.List;
 
 @Slf4j
 public class PointCloudProcessModel implements ProcessFlowModel{
-    public void run(CommandLine command) throws IOException {
-        File inputFile = new File(command.getOptionValue(ProcessOptions.INPUT.getArgName()));
-        File outputFile = new File(command.getOptionValue(ProcessOptions.OUTPUT.getArgName()));
-        String crs = command.getOptionValue(ProcessOptions.CRS.getArgName());
-        String proj = command.getOptionValue(ProcessOptions.PROJ4.getArgName());
-        String inputExtension = command.getOptionValue(ProcessOptions.INPUT_TYPE.getArgName());
+    public void run() throws IOException {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        LasConverter converter = new LasConverter();
 
-        Path inputPath = createPath(inputFile);
-        Path outputPath = createPath(outputFile);
-        if (!validate(outputPath)) {
-            return;
-        }
-        FormatType formatType = FormatType.fromExtension(inputExtension);
-
-        CRSFactory factory = new CRSFactory();
-        CoordinateReferenceSystem source = null;
-        if (proj != null && !proj.isEmpty()) {
-            source = factory.createFromParameters("CUSTOM", proj);
-        } else {
-            source = (crs != null && !crs.isEmpty()) ? factory.createFromName("EPSG:" + crs) : null;
-        }
-
-        LasConverter converter = new LasConverter(command, source);
-
-        PointCloudFileLoader fileLoader = new PointCloudFileLoader(command, converter);
+        PointCloudFileLoader fileLoader = new PointCloudFileLoader(converter);
         List<PreProcess> preProcessors = new ArrayList<>();
-        TilerOptions tilerOptions = TilerOptions.builder()
-                .inputPath(inputPath)
-                .outputPath(outputPath)
-                .inputFormatType(formatType)
-                .source(source)
-                .build();
-        TileProcess tileProcess = new PointCloudTiler(tilerOptions, command);
+
+        TileProcess tileProcess = new PointCloudTiler();
         List<PostProcess> postProcessors = new ArrayList<>();
-        postProcessors.add(new com.gaia3d.process.postprocess.pointcloud.PointCloudModel(command));
+        postProcessors.add(new PointCloudModel());
 
         PointCloudProcessFlow processFlow = new PointCloudProcessFlow(preProcessors, tileProcess, postProcessors);
         processFlow.process(fileLoader);
+    }
+
+    @Override
+    public String getModelName() {
+        return "PointCloudProcessModel";
     }
 
     protected static boolean validate(Path outputPath) throws IOException {

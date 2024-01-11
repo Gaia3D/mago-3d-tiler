@@ -6,16 +6,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.pointcloud.GaiaPointCloud;
 import com.gaia3d.basic.structure.GaiaVertex;
-import com.gaia3d.process.ProcessOptions;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.postprocess.TileModel;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTable;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.GlobeUtils;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.CommandLine;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
@@ -25,16 +24,15 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class PointCloudModel implements TileModel {
-    private final CommandLine command;
-
     @Override
     public ContentInfo run(ContentInfo contentInfo) {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
         String featureTableJson;
         String batchTableJson;
 
-        File outputFile = new File(command.getOptionValue(ProcessOptions.OUTPUT.getArgName()));
+        File outputFile = new File(globalOptions.getOutputPath());
         Path outputRoot = outputFile.toPath().resolve("data");
         File outputRootFile = outputRoot.toFile();
         if (!outputRootFile.mkdir() && !outputRootFile.exists()) {
@@ -66,13 +64,12 @@ public class PointCloudModel implements TileModel {
         AtomicInteger positionIndex = new AtomicInteger();
         AtomicInteger colorIndex= new AtomicInteger();
         AtomicInteger batchIdIndex= new AtomicInteger();
-        int finalVertexLength = vertexLength;
         tileInfos.forEach((tileInfo) -> {
             GaiaPointCloud pointCloud = tileInfo.getPointCloud();
             List<GaiaVertex> gaiaVertex = pointCloud.getVertices();
             gaiaVertex.forEach((vertex) -> {
                 int index = mainIndex.getAndIncrement();
-                if (index >= finalVertexLength) {
+                if (index >= vertexLength) {
                     return;
                 }
                 Vector3d position = vertex.getPosition();

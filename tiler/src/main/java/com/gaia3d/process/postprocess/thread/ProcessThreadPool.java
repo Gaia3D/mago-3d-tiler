@@ -71,7 +71,7 @@ public class ProcessThreadPool {
         for (ContentInfo contentInfo : contentInfos) {
             Runnable callableTask = () -> {
                 count.getAndIncrement();
-                log.info("[post-process][{}/{}] content-info : {}", count, size, contentInfo.getName());
+                log.info("[B3DM][{}/{}] post-process : {}", count, size, contentInfo.getName());
                 List<TileInfo> childTileInfos = contentInfo.getTileInfos();
                 List<TileInfo> copiedTileInfos = childTileInfos.stream()
                         .map((childTileInfo) -> TileInfo.builder()

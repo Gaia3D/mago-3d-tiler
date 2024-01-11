@@ -1,13 +1,15 @@
 package com.gaia3d.converter.geometry.shape;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.structure.*;
+import com.gaia3d.basic.structure.GaiaMaterial;
+import com.gaia3d.basic.structure.GaiaNode;
+import com.gaia3d.basic.structure.GaiaScene;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.geometry.*;
-import com.gaia3d.process.ProcessOptions;
 import com.gaia3d.util.GlobeUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.CommandLine;
 import org.geotools.data.DataStore;
 import org.geotools.data.Query;
 import org.geotools.data.shapefile.ShapefileDataStore;
@@ -33,14 +35,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
+@RequiredArgsConstructor
 public class ShapeConverter extends AbstractGeometryConverter implements Converter {
-    private final CommandLine command;
-    private final CoordinateReferenceSystem crs;
-
-    public ShapeConverter(CommandLine command, CoordinateReferenceSystem crs) {
-        this.command = command;
-        this.crs = crs;
-    }
 
     @Override
     public List<GaiaScene> load(String path) {
@@ -61,48 +57,15 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         List<GaiaScene> scenes = new ArrayList<>();
         Tessellator tessellator = new Tessellator();
         Extruder extruder = new Extruder(tessellator);
-        boolean flipCoordinate = this.command.hasOption(ProcessOptions.FLIP_COORDINATE.getArgName());
-        boolean hasNameColumn = this.command.hasOption(ProcessOptions.NAME_COLUMN.getArgName());
-        boolean hasHeightColumn = this.command.hasOption(ProcessOptions.HEIGHT_COLUMN.getArgName());
-        boolean hasAltitudeColumn = this.command.hasOption(ProcessOptions.ALTITUDE_COLUMN.getArgName());
-        boolean hasAbsoluteAltitude = this.command.hasOption(ProcessOptions.ABSOLUTE_ALTITUDE.getArgName());
-        boolean hasMinimumHeight = this.command.hasOption(ProcessOptions.MINIMUM_HEIGHT.getArgName());
 
-        String nameColumnName;
-        if (hasNameColumn) {
-            nameColumnName = this.command.getOptionValue(ProcessOptions.NAME_COLUMN.getArgName());
-        } else {
-            nameColumnName = "ExtrusionBuilding";
-        }
-        String heightColumnName;
-        if (hasHeightColumn) {
-            heightColumnName = this.command.getOptionValue(ProcessOptions.HEIGHT_COLUMN.getArgName());
-        } else {
-            heightColumnName = "height";
-        }
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        boolean flipCoordinate = globalOptions.isFlipCoordinate();
+        String nameColumnName = globalOptions.getNameColumn();
+        String heightColumnName = globalOptions.getHeightColumn();
+        String altitudeColumnName = globalOptions.getAltitudeColumn();
 
-        String altitudeColumnName;
-        if (hasAltitudeColumn) {
-            altitudeColumnName = this.command.getOptionValue(ProcessOptions.ALTITUDE_COLUMN.getArgName());
-        } else {
-            altitudeColumnName = "altitude";
-        }
-
-        double absoluteAltitudeValue;
-        if (hasAbsoluteAltitude) {
-            String absoluteAltitude = this.command.getOptionValue(ProcessOptions.ABSOLUTE_ALTITUDE.getArgName());
-            absoluteAltitudeValue = Double.parseDouble(absoluteAltitude);
-        } else {
-            absoluteAltitudeValue = 0.0d;
-        }
-
-        double minimumHeightValue;
-        if (hasMinimumHeight) {
-            String minimumHeight = this.command.getOptionValue(ProcessOptions.MINIMUM_HEIGHT.getArgName());
-            minimumHeightValue = Double.parseDouble(minimumHeight);
-        } else {
-            minimumHeightValue = 1.0d;
-        }
+        double absoluteAltitudeValue = globalOptions.getAbsoluteAltitude();
+        double minimumHeightValue = globalOptions.getMinimumHeight();
 
         ShpFiles shpFiles = null;
         ShapefileReader reader = null;
@@ -167,6 +130,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                     }
 
                     Vector3d position;
+                    CoordinateReferenceSystem crs = globalOptions.getCrs();
                     if (crs != null) {
                         ProjCoordinate projCoordinate = new ProjCoordinate(x, y, boundingBox.getMinZ());
                         ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
@@ -187,11 +151,9 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 if (positions.size() >= 3) {
                     String name = getAttribute(feature, nameColumnName);
                     double height = getHeight(feature, heightColumnName, minimumHeightValue);
-                    double altitude = 0.0d;
-                    if (hasAbsoluteAltitude) {
-                        altitude = absoluteAltitudeValue;
-                    } else if (hasAltitudeColumn) {
-                        getAltitude(feature, altitudeColumnName, absoluteAltitudeValue);
+                    double altitude = absoluteAltitudeValue;
+                    if (altitudeColumnName != null) {
+                        altitude = getAltitude(feature, altitudeColumnName);
                     }
                     GaiaBuilding building = GaiaBuilding.builder()
                             .id(feature.getID())
@@ -214,7 +176,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             dataStore.dispose();
 
             for (GaiaBuilding building : buildings) {
-                GaiaScene scene = initScene(this.command);
+                GaiaScene scene = initScene();
                 scene.setOriginalPath(file.toPath());
 
                 GaiaMaterial material = scene.getMaterials().get(0);

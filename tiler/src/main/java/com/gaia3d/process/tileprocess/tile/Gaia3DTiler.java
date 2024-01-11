@@ -3,9 +3,8 @@ package com.gaia3d.process.tileprocess.tile;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.KmlInfo;
-import com.gaia3d.process.ProcessOptions;
-import com.gaia3d.process.TilerOptions;
 import com.gaia3d.process.tileprocess.Tiler;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
 import com.gaia3d.process.tileprocess.tile.tileset.asset.*;
@@ -15,7 +14,6 @@ import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 import com.gaia3d.util.DecimalUtils;
 import com.gaia3d.util.GlobeUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.CommandLine;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
@@ -23,24 +21,15 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.DecimalFormat;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class Gaia3DTiler implements Tiler {
-    private static final int DEFUALT_MAX_COUNT = 1024;
-    private static final int DEFUALT_MIN_LEVEL = 0;
-    private static final int DEFUALT_MAX_LEVEL = 3;
 
-    private final CommandLine command;
-    private final TilerOptions options;
-
-    public Gaia3DTiler(TilerOptions tilerOptions, CommandLine command) {
-        this.options = tilerOptions;
-        this.command = command;
-    }
+    public Gaia3DTiler() {}
 
     @Override
     public Tileset run(List<TileInfo> tileInfos) {
@@ -71,14 +60,18 @@ public class Gaia3DTiler implements Tiler {
     }
 
     public void writeTileset(Tileset tileset) {
-        File tilesetFile = this.options.getOutputPath().resolve("tileset.json").toFile();
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        Path outputPath = new File(globalOptions.getOutputPath()).toPath();
+        File tilesetFile = outputPath.resolve("tileset.json").toFile();
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(tilesetFile))) {
             String result = objectMapper.writeValueAsString(tileset);
+            log.info("[Tiling][Tileset] Write 'tileset.json' file.");
             writer.write(result);
+            globalOptions.setTilesetSize(result.length());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -110,14 +103,15 @@ public class Gaia3DTiler implements Tiler {
     }
 
     private void createNode(Node parentNode, List<TileInfo> tileInfos) throws IOException {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
         BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
-        boolean refineAdd = command.hasOption(ProcessOptions.REFINE_ADD.getArgName());
-        int maxCount = command.hasOption(ProcessOptions.MAX_COUNT.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_COUNT.getArgName())) : DEFUALT_MAX_COUNT;
-        if (tileInfos.size() > maxCount) {
+        boolean refineAdd = globalOptions.isRefineAdd();
+        int nodeLimit = globalOptions.getNodeLimit();
+        if (tileInfos.size() > nodeLimit) {
             List<List<TileInfo>> childrenScenes = parentBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
-                Node childNode = createStructNode(parentNode, childTileInfos, index);
+                Node childNode = createLogicalNode(parentNode, childTileInfos, index);
                 if (childNode != null) {
                     parentNode.getChildren().add(childNode);
                     createNode(childNode, childTileInfos);
@@ -140,7 +134,7 @@ public class Gaia3DTiler implements Tiler {
                     }
                 }
             }
-        } else if (tileInfos.size() > 0) {
+        } else if (!tileInfos.isEmpty()) {
             Node childNode = createContentNode(parentNode, tileInfos, 0);
             if (childNode != null) {
                 parentNode.getChildren().add(childNode);
@@ -149,13 +143,13 @@ public class Gaia3DTiler implements Tiler {
         }
     }
 
-    private Node createStructNode(Node parentNode, List<TileInfo> tileInfos, int index) {
-        if (tileInfos.size() < 1) {
+    private Node createLogicalNode(Node parentNode, List<TileInfo> tileInfos, int index) {
+        if (tileInfos.isEmpty()) {
             return null;
         }
         String nodeCode = parentNode.getNodeCode();
         nodeCode = nodeCode + index;
-        log.info("[StructNode ][" + nodeCode + "] : {}", tileInfos.size());
+        log.info("[Tiling][LogicalNode ][" + nodeCode + "] : {}", tileInfos.size());
 
         double geometricError = calcGeometricError(tileInfos);
         GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
@@ -177,13 +171,13 @@ public class Gaia3DTiler implements Tiler {
     }
 
     private Node createContentNode(Node parentNode, List<TileInfo> tileInfos, int index) {
-        if (tileInfos.size() < 1) {
+        if (tileInfos.isEmpty()) {
             return null;
         }
-
-        int minLevel = command.hasOption(ProcessOptions.MIN_LOD.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MIN_LOD.getArgName())) : DEFUALT_MIN_LEVEL;
-        int maxLevel = command.hasOption(ProcessOptions.MAX_LOD.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_LOD.getArgName())) : DEFUALT_MAX_LEVEL;
-        boolean refineAdd = command.hasOption(ProcessOptions.REFINE_ADD.getArgName());
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        int minLevel = globalOptions.getMinLod();
+        int maxLevel = globalOptions.getMaxLod();
+        boolean refineAdd = globalOptions.isRefineAdd();
 
         GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
         Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
@@ -204,7 +198,7 @@ public class Gaia3DTiler implements Tiler {
         }
         nodeCode = nodeCode + index;
 
-        log.info("[ContentNode][" + nodeCode + "][{}] : {}", lod.getLevel(), tileInfos.size());
+        log.info("[Tiling][ContentNode][" + nodeCode + "][{}] : {}", lod.getLevel(), tileInfos.size());
 
         int lodError = refineAdd ? lod.getGeometricErrorBlock() : lod.getGeometricError();
         int lodErrorDouble = lodError * 2;
@@ -229,9 +223,7 @@ public class Gaia3DTiler implements Tiler {
         childNode.setChildren(new ArrayList<>());
 
         childNode.setRefine(refineAdd ? Node.RefineType.ADD : Node.RefineType.REPLACE);
-        //childNode.setRefine(Node.RefineType.ADD);
-
-        if (resultInfos.size() > 0) {
+        if (!resultInfos.isEmpty()) {
             ContentInfo contentInfo = new ContentInfo();
             contentInfo.setName(nodeCode);
             contentInfo.setLod(lod);

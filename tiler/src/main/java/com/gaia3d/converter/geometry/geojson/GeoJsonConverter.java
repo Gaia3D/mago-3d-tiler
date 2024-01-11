@@ -4,12 +4,12 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.structure.GaiaMaterial;
 import com.gaia3d.basic.structure.GaiaNode;
 import com.gaia3d.basic.structure.GaiaScene;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.geometry.*;
-import com.gaia3d.process.ProcessOptions;
 import com.gaia3d.util.GlobeUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.CommandLine;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geojson.feature.FeatureJSON;
@@ -21,21 +21,17 @@ import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 import org.opengis.feature.simple.SimpleFeature;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
+@RequiredArgsConstructor
 public class GeoJsonConverter extends AbstractGeometryConverter implements Converter {
-    private final CommandLine command;
-    private final CoordinateReferenceSystem crs;
-
-    public GeoJsonConverter(CommandLine command, CoordinateReferenceSystem crs) {
-        this.command = command;
-        this.crs = crs;
-    }
 
     @Override
     public List<GaiaScene> load(String path) {
@@ -57,48 +53,15 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
         List<GaiaScene> scenes = new ArrayList<>();
         Tessellator tessellator = new Tessellator();
         Extruder extruder = new Extruder(tessellator);
-        boolean flipCoordinate = this.command.hasOption(ProcessOptions.FLIP_COORDINATE.getArgName());
-        boolean hasNameColumn = this.command.hasOption(ProcessOptions.NAME_COLUMN.getArgName());
-        boolean hasHeightColumn = this.command.hasOption(ProcessOptions.HEIGHT_COLUMN.getArgName());
-        boolean hasAltitudeColumn = this.command.hasOption(ProcessOptions.ALTITUDE_COLUMN.getArgName());
-        boolean hasAbsoluteAltitude = this.command.hasOption(ProcessOptions.ABSOLUTE_ALTITUDE.getArgName());
-        boolean hasMinimumHeight = this.command.hasOption(ProcessOptions.MINIMUM_HEIGHT.getArgName());
 
-        String nameColumnName;
-        if (hasNameColumn) {
-            nameColumnName = this.command.getOptionValue(ProcessOptions.NAME_COLUMN.getArgName());
-        } else {
-            nameColumnName = "ExtrusionBuilding";
-        }
-        String heightColumnName;
-        if (hasHeightColumn) {
-            heightColumnName = this.command.getOptionValue(ProcessOptions.HEIGHT_COLUMN.getArgName());
-        } else {
-            heightColumnName = "height";
-        }
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        boolean flipCoordinate = globalOptions.isFlipCoordinate();
+        String nameColumnName = globalOptions.getNameColumn();
+        String heightColumnName = globalOptions.getHeightColumn();
+        String altitudeColumnName = globalOptions.getAltitudeColumn();
 
-        String altitudeColumnName;
-        if (hasAltitudeColumn) {
-            altitudeColumnName = this.command.getOptionValue(ProcessOptions.ALTITUDE_COLUMN.getArgName());
-        } else {
-            altitudeColumnName = "altitude";
-        }
-
-        double absoluteAltitudeValue;
-        if (hasAbsoluteAltitude) {
-            String absoluteAltitude = this.command.getOptionValue(ProcessOptions.ABSOLUTE_ALTITUDE.getArgName());
-            absoluteAltitudeValue = Double.parseDouble(absoluteAltitude);
-        } else {
-            absoluteAltitudeValue = 0.0d;
-        }
-
-        double minimumHeightValue;
-        if (hasMinimumHeight) {
-            String minimumHeight = this.command.getOptionValue(ProcessOptions.MINIMUM_HEIGHT.getArgName());
-            minimumHeightValue = Double.parseDouble(minimumHeight);
-        } else {
-            minimumHeightValue = 1.0d;
-        }
+        double absoluteAltitudeValue = globalOptions.getAbsoluteAltitude();
+        double minimumHeightValue = globalOptions.getMinimumHeight();
 
         try {
             FeatureJSON gjson = new FeatureJSON();
@@ -152,6 +115,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                     }
 
                     Vector3d position;
+                    CoordinateReferenceSystem crs = globalOptions.getCrs();
                     if (crs != null) {
                         ProjCoordinate projCoordinate = new ProjCoordinate(x, y, boundingBox.getMinZ());
                         ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
@@ -171,11 +135,9 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
 
                 String name = getAttribute(feature, nameColumnName);
                 double height = getHeight(feature, heightColumnName, minimumHeightValue);
-                double altitude = 0.0d;
-                if (hasAbsoluteAltitude) {
-                    altitude = absoluteAltitudeValue;
-                } else if (hasAltitudeColumn) {
-                    altitude = getAltitude(feature, altitudeColumnName, absoluteAltitudeValue);
+                double altitude = absoluteAltitudeValue;
+                if (altitudeColumnName != null) {
+                    altitude = getAltitude(feature, altitudeColumnName);
                 }
                 GaiaBuilding building = GaiaBuilding.builder()
                         .id(feature.getID())
@@ -190,7 +152,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
             iterator.close();
 
             for (GaiaBuilding building : buildings) {
-                GaiaScene scene = initScene(this.command);
+                GaiaScene scene = initScene();
                 scene.setOriginalPath(file.toPath());
 
                 GaiaMaterial material = scene.getMaterials().get(0);

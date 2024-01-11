@@ -42,8 +42,9 @@ public class TileInfo {
         this.name = rootNode.getName();
 
         this.tempPath = this.outputPath.resolve("temp");
-        if (this.tempPath.toFile().mkdir()) {
-            log.info("Create directory: {}", this.tempPath);
+        File tempFile = this.tempPath.toFile();
+        if (!tempFile.exists() && tempFile.mkdir()) {
+            log.info("[Create][temp] Created temp directory: {}", this.tempPath);
         }
         //this.tempPath = this.tempPath.resolve(scenePath.getFileName() + ".set");
     }
@@ -81,17 +82,18 @@ public class TileInfo {
         if (this.tempPath != null) {
             File file = this.tempPath.toFile();
             File parent = file.getParentFile();
-
-            log.info("[DeleteTemp] {}", file);
-            if (parent.isDirectory()) {
-                FileUtils.deleteDirectory(parent);
-            } else if (file.isFile()) {
-                FileUtils.delete(file);
+            if (file.isFile()) {
+                if (parent.isDirectory()) {
+                    log.info("[Delete][temp] {}", parent);
+                    FileUtils.deleteDirectory(parent);
+                    return;
+                }
             } else if (file.isDirectory()) {
+                log.info("[Delete][temp] {}", file);
                 FileUtils.deleteDirectory(file);
-            } else {
-                log.warn("[Warn] Can't delete temp file because it is not file or directory.");
+                return;
             }
+            log.warn("[Warn] Can not delete temp files: {}", file);
         }
     }
 }

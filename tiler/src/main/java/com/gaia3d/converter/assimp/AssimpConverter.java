@@ -3,25 +3,24 @@ package com.gaia3d.converter.assimp;
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.basic.types.TextureType;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
-import com.gaia3d.process.ProcessOptions;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
 
-import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,14 +32,9 @@ import java.util.List;
  * @see Converter
  */
 @Slf4j
+@RequiredArgsConstructor
 public class AssimpConverter implements Converter {
-    private final CommandLine command;
-
-    public AssimpConverter(CommandLine command) {
-        this.command = command;
-    }
-
-    final int DEFAULT_FLAGS =
+    public final int DEFAULT_FLAGS =
             Assimp.aiProcess_GenNormals |
             Assimp.aiProcess_Triangulate|
             Assimp.aiProcess_JoinIdenticalVertices|
@@ -62,19 +56,12 @@ public class AssimpConverter implements Converter {
         }
 
         String path = file.getAbsolutePath().replace(file.getName(), "");
-        /*ByteBuffer byteBuffer = readFile(file);
-        String hint = FilenameUtils.getExtension(file.getName());
-        assert byteBuffer != null;
-        AIScene aiScene = Assimp.aiImportFileFromMemory(byteBuffer, DEFAULT_FLAGS, hint);*/
         AIScene aiScene =  Assimp.aiImportFile(file.getAbsolutePath(), DEFAULT_FLAGS);
 
         assert aiScene != null;
         GaiaScene gaiaScene = convertScene(aiScene, path, file.getName());
         aiScene.free();
         gaiaScene.setOriginalPath(file.toPath());
-        /*BufferUtils.zeroBuffer(byteBuffer);
-        byteBuffer.clear();
-        byteBuffer = null;*/
 
         List<GaiaScene> gaiaScenes = new ArrayList<>();
         gaiaScenes.add(gaiaScene);
@@ -82,9 +69,9 @@ public class AssimpConverter implements Converter {
     }
 
     private Matrix4d convertMatrix4dFromAIMatrix4x4(AIMatrix4x4 aiMatrix4x4, GaiaNode parentNode, FormatType isYUpFormat) {
-        boolean yUpAxis = command.hasOption(ProcessOptions.Y_UP_AXIS.getArgName());
-        boolean isZeroOrigin = command.hasOption(ProcessOptions.ZERO_ORIGIN.getArgName());
-        boolean autoUpAxis = command.hasOption(ProcessOptions.AUTO_UP_AXIS.getArgName());
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        boolean isZeroOrigin = globalOptions.isZeroOrigin();
+        boolean autoUpAxis = globalOptions.isAutoUpAxis();
         Matrix4d matrix4 = new Matrix4d();
 
         /*boolean isRootNode = parentNode == null;
@@ -161,11 +148,9 @@ public class AssimpConverter implements Converter {
 
         GaiaScene gaiaScene = new GaiaScene();
         AINode aiNode = aiScene.mRootNode();
-
-        PointerBuffer aiTextures = aiScene.mTextures();
         List<String> embeddedTextures = getEmbeddedTexturePath(aiScene, filePath, fileName);
 
-        // materials
+        // convert materials
         int numMaterials = aiScene.mNumMaterials();
         PointerBuffer aiMaterials = aiScene.mMaterials();
         for (int i = 0; i < numMaterials; i++) {
@@ -196,6 +181,7 @@ public class AssimpConverter implements Converter {
             File path = new File(filePath, "embedded_textures");
             path.mkdirs();
 
+            assert aiTextures != null;
             AITexture aiTexture = AITexture.create(aiTextures.get(i));
 
             ByteBuffer buffer = aiTexture.pcDataCompressed();
@@ -399,10 +385,8 @@ public class AssimpConverter implements Converter {
     }
 
     private GaiaPrimitive processPrimitive(AIMesh aiMesh, GaiaMaterial material) {
-        boolean reverseTextureCoord = false;
-        if (command != null) {
-            reverseTextureCoord = command.hasOption(ProcessOptions.REVERSE_TEXCOORD.getArgName());
-        }
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        boolean reverseTextureCoord = globalOptions.isReverseTextureCoordinate();
         GaiaSurface surface = processSurface();
 
         GaiaPrimitive primitive = new GaiaPrimitive();
@@ -509,18 +493,5 @@ public class AssimpConverter implements Converter {
             return file;
         }
         return null;
-    }
-
-    public ByteBuffer readFile(File file) {
-        try {
-            byte[] bytes = Files.readAllBytes(file.toPath());
-            ByteBuffer byteBuffer = BufferUtils.createByteBuffer(bytes.length);
-            byteBuffer.put(bytes);
-            byteBuffer.flip();
-            return byteBuffer;
-        } catch (IOException e) {
-            log.error("FileUtils.readBytes: " + e.getMessage());
-            throw new RuntimeException(e);
-        }
     }
 }

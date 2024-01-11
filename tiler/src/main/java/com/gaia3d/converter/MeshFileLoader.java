@@ -2,13 +2,12 @@ package com.gaia3d.converter;
 
 import com.gaia3d.basic.structure.GaiaScene;
 import com.gaia3d.basic.types.FormatType;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.FastKmlReader;
 import com.gaia3d.converter.kml.KmlInfo;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.io.FileUtils;
-import com.gaia3d.process.ProcessOptions;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.gce.geotiff.GeoTiffReader;
 
@@ -23,13 +22,11 @@ import java.util.List;
  * @since 1.0.0
  */
 @Slf4j
-public class TriangleFileLoader implements FileLoader {
+public class MeshFileLoader implements FileLoader {
     private final Converter converter;
     private final FastKmlReader kmlReader;
-    private final CommandLine command;
 
-    public TriangleFileLoader(CommandLine command, Converter converter) {
-        this.command = command;
+    public MeshFileLoader(Converter converter) {
         this.kmlReader = new FastKmlReader();
         this.converter = converter;
     }
@@ -52,7 +49,8 @@ public class TriangleFileLoader implements FileLoader {
     }
 
     public List<GridCoverage2D> loadGridCoverages(List<GridCoverage2D> coverages) {
-        File geoTiffPath = new File(command.getOptionValue(ProcessOptions.GEO_TIFF.getArgName()));
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        File geoTiffPath = new File(globalOptions.getTerrainPath());
         if (geoTiffPath.isFile()) {
             log.info("GeoTiff path is file. Loading only the GeoTiff file.");
             GridCoverage2D coverage = loadGeoTiff(geoTiffPath);
@@ -64,17 +62,19 @@ public class TriangleFileLoader implements FileLoader {
     }
 
     public List<File> loadFiles() {
-        File inputFile = new File(command.getOptionValue(ProcessOptions.INPUT.getArgName()));
-        String inputExtension = command.getOptionValue(ProcessOptions.INPUT_TYPE.getArgName());
-        boolean recursive = command.hasOption(ProcessOptions.RECURSIVE.getArgName());
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        File inputFile = new File(globalOptions.getInputPath());
+        String inputExtension = globalOptions.getInputFormat();
+        boolean recursive = globalOptions.isRecursive();
         FormatType formatType = FormatType.fromExtension(inputExtension);
         String[] extensions = getExtensions(formatType);
         return (List<File>) FileUtils.listFiles(inputFile, extensions, recursive);
     }
 
     public List<TileInfo> loadTileInfo(File file) {
-        Path outputPath = new File(command.getOptionValue(ProcessOptions.OUTPUT.getArgName())).toPath();
-        String inputExtension = command.getOptionValue("inputType");
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        Path outputPath = new File(globalOptions.getOutputPath()).toPath();
+        String inputExtension = globalOptions.getInputFormat();
         FormatType formatType = FormatType.fromExtension(inputExtension);
 
         List<TileInfo> tileInfos = new ArrayList<>();

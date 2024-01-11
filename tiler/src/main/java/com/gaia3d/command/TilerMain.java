@@ -15,6 +15,7 @@ import java.io.IOException;
  * @since 1.0.0
  */
 @Slf4j
+@Deprecated
 public class TilerMain {
     private static String PROGRAM_INFO;
     private static String JAVA_INFO;
@@ -91,7 +92,7 @@ public class TilerMain {
         } */else {
             processFlow = new BatchProcessModel();
         }
-        processFlow.run(command);
+        processFlow.run();
     }
 
     private static void getProgramInfo() {

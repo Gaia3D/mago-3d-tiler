@@ -7,6 +7,7 @@ import com.gaia3d.basic.structure.GaiaMaterial;
 import com.gaia3d.basic.structure.GaiaTexture;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.TextureType;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.ProcessOptions;
 import com.gaia3d.process.tileprocess.tile.LevelOfDetail;
 import lombok.extern.slf4j.Slf4j;
@@ -191,7 +192,8 @@ public class GaiaTextureCoordinator {
         return bufferedImage;
     }
 
-    public void batchTextures(LevelOfDetail lod, CommandLine command) {
+    public void batchTextures(LevelOfDetail lod) {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
         // We have MaterialList & BufferDataSetList.********
         // 1- List<GaiaMaterial> this.materials;
         // 2- List<GaiaBufferDataSet> this.bufferDataSets;
@@ -214,11 +216,7 @@ public class GaiaTextureCoordinator {
                 {
                     existPngTextures = true;
                 }
-                if (command.hasOption(ProcessOptions.DEBUG_IGNORE_TEXTURES.getLongName())) {
-                    bufferedImage = createShamImage();
-                } else {
-                    bufferedImage = texture.getBufferedImage(lod.getTextureScale());
-                }
+                bufferedImage = texture.getBufferedImage(lod.getTextureScale());
             } else {
                 bufferedImage = createShamImage();
             }
@@ -288,7 +286,9 @@ public class GaiaTextureCoordinator {
             }
         }
 
-        if (command != null && command.hasOption("debug")) {
+
+        if (globalOptions.isDebug()) {
+            // TODO : debug color
             float[] debugColor = lod.getDebugColor();
             Color color = new Color(debugColor[0], debugColor[1], debugColor[2], 0.5f);
             graphics.setColor(color);

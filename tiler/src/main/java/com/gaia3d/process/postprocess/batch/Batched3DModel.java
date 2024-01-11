@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.structure.GaiaScene;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.jgltf.GltfWriter;
-import com.gaia3d.process.ProcessOptions;
 import com.gaia3d.process.postprocess.TileModel;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
@@ -15,7 +15,6 @@ import com.gaia3d.util.DecimalUtils;
 import com.gaia3d.util.io.LittleEndianDataInputStream;
 import com.gaia3d.util.io.LittleEndianDataOutputStream;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.CommandLine;
 import org.lwjgl.BufferUtils;
 
 import java.io.*;
@@ -30,11 +29,9 @@ public class Batched3DModel implements TileModel {
     private static final String MAGIC = "b3dm";
     private static final int VERSION = 1;
     private final GltfWriter gltfWriter;
-    private final CommandLine command;
 
-    public Batched3DModel(CommandLine command) {
+    public Batched3DModel() {
         this.gltfWriter = new GltfWriter();
-        this.command = command;
     }
 
     @Override
@@ -66,20 +63,20 @@ public class Batched3DModel implements TileModel {
 
         GaiaScene scene = new GaiaScene(batchedSet);
 
-        File outputFile = new File(command.getOptionValue(ProcessOptions.OUTPUT.getArgName()));
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        File outputFile = new File(globalOptions.getOutputPath());
         Path outputRoot = outputFile.toPath().resolve("data");
-        if (outputRoot.toFile().mkdir()) {
-            log.info("Create directory: {}", outputRoot);
+        if (!outputRoot.toFile().exists() && outputRoot.toFile().mkdir()) {
+            log.info("[Create][data] Created output data directory:", outputRoot);
         }
 
         byte[] glbBytes;
-        if (command.hasOption(ProcessOptions.DEBUG_GLTF.getArgName())) {
+        if (globalOptions.isGltf()) {
             String glbFileName = nodeCode + ".gltf";
             File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
             this.gltfWriter.writeGltf(scene, glbOutputFile);
         }
-
-        if (command.hasOption(ProcessOptions.DEBUG_GLB.getArgName())) {
+        if (globalOptions.isGlb()) {
             String glbFileName = nodeCode + ".glb";
             File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
             this.gltfWriter.writeGlb(scene, glbOutputFile);

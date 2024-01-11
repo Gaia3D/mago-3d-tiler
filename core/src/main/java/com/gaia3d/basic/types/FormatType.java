@@ -51,6 +51,9 @@ public enum FormatType {
     }
 
     public static FormatType fromExtension(String extension) {
+        if (extension == null) {
+            return null;
+        }
         return Arrays.stream(FormatType.values())
                 .filter(type -> type.getExtension().equals(extension.toLowerCase()))
                 .findFirst()

@@ -1,16 +1,15 @@
 package com.gaia3d.command;
 
 import com.gaia3d.basic.types.FormatType;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
-import com.gaia3d.converter.TriangleFileLoader;
+import com.gaia3d.converter.MeshFileLoader;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.geometry.citygml.CityGmlConverter;
 import com.gaia3d.converter.geometry.geojson.GeoJsonConverter;
 import com.gaia3d.converter.geometry.shape.ShapeConverter;
 import com.gaia3d.process.ProcessFlow;
 import com.gaia3d.process.ProcessFlowThread;
-import com.gaia3d.process.ProcessOptions;
-import com.gaia3d.process.TilerOptions;
 import com.gaia3d.process.postprocess.GaiaRelocator;
 import com.gaia3d.process.postprocess.PostProcess;
 import com.gaia3d.process.postprocess.batch.Batched3DModel;
@@ -26,8 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.io.FileExistsException;
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.locationtech.proj4j.CRSFactory;
-import org.locationtech.proj4j.CoordinateReferenceSystem;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,48 +34,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-public class BatchProcessModel implements ProcessFlowModel{
-    public void run(CommandLine command) throws IOException {
-        File inputFile = new File(command.getOptionValue(ProcessOptions.INPUT.getArgName()));
-        File outputFile = new File(command.getOptionValue(ProcessOptions.OUTPUT.getArgName()));
-        String crs = command.getOptionValue(ProcessOptions.CRS.getArgName());
-        String proj = command.getOptionValue(ProcessOptions.PROJ4.getArgName());
-        String inputExtension = command.getOptionValue(ProcessOptions.INPUT_TYPE.getArgName());
-
-        Path inputPath = createPath(inputFile);
-        Path outputPath = createPath(outputFile);
-        if (!validate(outputPath)) {
-            return;
-        }
-        FormatType formatType = FormatType.fromExtension(inputExtension);
-
-        CRSFactory factory = new CRSFactory();
-        CoordinateReferenceSystem source = null;
-        if (proj != null && !proj.isEmpty()) {
-            source = factory.createFromParameters("CUSTOM", proj);
-        } else {
-            source = (crs != null && !crs.isEmpty()) ? factory.createFromName("EPSG:" + crs) : null;
-        }
-
-        boolean isYUpAxis = command.hasOption(ProcessOptions.Y_UP_AXIS.getArgName());
-        Converter converter;
-        if (formatType == FormatType.CITY_GML) {
-            converter = new CityGmlConverter(command);
-            isYUpAxis = true;
-        } else if (formatType == FormatType.SHP) {
-            converter = new ShapeConverter(command, source);
-            isYUpAxis = true;
-        } else if (formatType == FormatType.GEOJSON || formatType == FormatType.JSON) {
-            converter = new GeoJsonConverter(command, source);
-            isYUpAxis = true;
-        } else {
-            converter = new AssimpConverter(command);
-        }
-
-        TriangleFileLoader fileLoader = new TriangleFileLoader(command, converter);
+public class BatchProcessModel implements ProcessFlowModel {
+    public void run() throws IOException {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        String inputExtension = globalOptions.getInputFormat();
+        FormatType inputFormat = FormatType.fromExtension(inputExtension);
+        boolean isYUpAxis = getYUpAxis(inputFormat, globalOptions.isYUpAxis());
+        Converter converter = getConverter(inputFormat);
+        MeshFileLoader fileLoader = new MeshFileLoader(converter);
 
         List<GridCoverage2D> geoTiffs = new ArrayList<>();
-        if (command.hasOption(ProcessOptions.GEO_TIFF.getArgName())) {
+        if (globalOptions.getTerrainPath() != null) {
             geoTiffs = fileLoader.loadGridCoverages(geoTiffs);
         }
 
@@ -89,28 +55,47 @@ public class BatchProcessModel implements ProcessFlowModel{
         if (!isYUpAxis) {
             preProcessors.add(new GaiaRotator());
         }
-        preProcessors.add(new GaiaTranslator(source, command, geoTiffs));
+        preProcessors.add(new GaiaTranslator(geoTiffs));
 
-        TilerOptions tilerOptions = TilerOptions.builder()
-                .inputPath(inputPath)
-                .outputPath(outputPath)
-                .inputFormatType(formatType)
-                .source(source)
-                .build();
-        TileProcess tileProcess = new Gaia3DTiler(tilerOptions, command);
+        TileProcess tileProcess = new Gaia3DTiler();
 
         List<PostProcess> postProcessors = new ArrayList<>();
         postProcessors.add(new GaiaRelocator());
-        postProcessors.add(new GaiaBatcher(command));
-        postProcessors.add(new Batched3DModel(command));
+        postProcessors.add(new GaiaBatcher());
+        postProcessors.add(new Batched3DModel());
 
         Process processFlow;
-        if (command.hasOption(ProcessOptions.MULTI_THREAD.getArgName())) {
+        if (globalOptions.isMultiThread()) {
             processFlow = new ProcessFlowThread(preProcessors, tileProcess, postProcessors);
         } else {
             processFlow = new ProcessFlow(preProcessors, tileProcess, postProcessors);
         }
         processFlow.process(fileLoader);
+    }
+
+    private boolean getYUpAxis(FormatType formatType, boolean isYUpAxis) {
+        if (formatType == FormatType.CITY_GML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON || formatType == FormatType.JSON) {
+            isYUpAxis = true;
+        }
+        return isYUpAxis;
+    }
+    private Converter getConverter(FormatType formatType) {
+        Converter converter;
+        if (formatType == FormatType.CITY_GML) {
+            converter = new CityGmlConverter();
+        } else if (formatType == FormatType.SHP) {
+            converter = new ShapeConverter();
+        } else if (formatType == FormatType.GEOJSON || formatType == FormatType.JSON) {
+            converter = new GeoJsonConverter();
+        } else {
+            converter = new AssimpConverter();
+        }
+        return converter;
+    }
+
+    @Override
+    public String getModelName() {
+        return "BatchProcessModel";
     }
 
     protected static boolean validate(Path outputPath) throws IOException {

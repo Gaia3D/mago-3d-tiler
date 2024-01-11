@@ -49,6 +49,7 @@ public enum ProcessOptions {
     //SCALE("scale", "sc", "scale", false, "scale factor"),
     //STRICT("strict", "st", "strict", false, "strict mode"),
     GEO_TIFF("geoTiff", "gt", "geoTiff", true, "[Experimental] geoTiff file path, 3D Object applied as clampToGround."),
+    TERRAIN("terrain", "te", "terrain", true, "[Experimental] terrain file path, 3D Object applied as clampToGround."),
 
     DEBUG("debug", "d", "debug", false,"debug mode"),
     DEBUG_ALL_DRAWING("debugAllDrawing", "dad", "debugAllDrawing", false,"debug all drawing"),

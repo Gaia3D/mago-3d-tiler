@@ -12,7 +12,6 @@ import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.LevelOfDetail;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.CommandLine;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector4d;
@@ -24,11 +23,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GaiaBatcher implements Batcher {
     private final static int SHORT_LIMIT = 65535;
-    private final CommandLine command;
 
-    public GaiaBatcher(CommandLine command) {
-        this.command = command;
-    }
+    public GaiaBatcher() {}
 
     private void reassignMaterialsToGaiaBufferDataSetWithSameMaterial(List<GaiaBufferDataSet> dataSets, LevelOfDetail lod) {
         int datasetsCount = dataSets.size();
@@ -340,7 +336,7 @@ public class GaiaBatcher implements Batcher {
     // 각 Material의 Texture들을 하나의 이미지로 변경
     private void atlasTextures(LevelOfDetail lod, String codeName, List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials) {
         GaiaTextureCoordinator textureCoordinator = new GaiaTextureCoordinator(codeName, materials, dataSets);
-        textureCoordinator.batchTextures(lod, this.command);
+        textureCoordinator.batchTextures(lod);
     }
 
     private boolean checkRepeat(GaiaMaterial material, GaiaBufferDataSet dataSet) {
