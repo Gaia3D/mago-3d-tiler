@@ -137,4 +137,16 @@ class Mago3DTilerMainTest {
         };
         Mago3DTilerMain.main(args);
     }
+    @Test
+    void multiThreadConvert() {
+        ClassLoader classLoader = getClass().getClassLoader();
+        File input = new File(classLoader.getResource("./sample-kml").getFile());
+        File output = new File(classLoader.getResource("./sample-output").getFile());
+        String args[] = {
+                "-input", input.getAbsolutePath(),
+                "-output", output.getAbsolutePath(),
+                "-multiThread",
+        };
+        Mago3DTilerMain.main(args);
+    }
 }

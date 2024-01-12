@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
+import java.io.Serializable;
+
 /**
  * GaiaBoundingBox is a class to store the bounding box of a geometry.
  * It can be used to calculate the center and volume of the geometry.
@@ -23,7 +25,7 @@ import org.joml.Vector3d;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaBoundingBox {
+public class GaiaBoundingBox implements Serializable {
     private double minX, minY, minZ;
     private double maxX, maxY, maxZ;
     private boolean isInit = false;

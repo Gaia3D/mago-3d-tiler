@@ -2,6 +2,8 @@ package com.gaia3d.basic.types;
 
 import lombok.Getter;
 
+import java.io.Serializable;
+
 /**
  * Enumerates the types of attributes.
  * @Author znkim
@@ -9,7 +11,7 @@ import lombok.Getter;
  * @See GaiaBuffer, GltfWriter, GaiaNode, GaiaPrimitive
  */
 @Getter
-public enum AttributeType {
+public enum AttributeType implements Serializable {
     NONE("NONE", "NONE"),
     INDICE("INDICE", "INDICES"),
     POSITION("POSITION3", "POSITION"),

@@ -10,6 +10,7 @@ import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +26,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaMesh {
+public class GaiaMesh implements Serializable {
     private ArrayList<GaiaPrimitive> primitives = new ArrayList<>();
 
     public GaiaBoundingBox getBoundingBox(Matrix4d transform) {
@@ -41,7 +42,6 @@ public class GaiaMesh {
         return boundingBox;
     }
 
-    // getTotalIndices
     public int[] getIndices() {
         int[] totalIndices = new int[getIndicesCount()];
         int index = 0;
@@ -53,7 +53,6 @@ public class GaiaMesh {
         return totalIndices;
     }
 
-    // getTotalVerticesCount
     public int getPositionsCount() {
         int count = 0;
         for (GaiaPrimitive primitive : primitives) {
@@ -67,7 +66,6 @@ public class GaiaMesh {
         return count;
     }
 
-    // getTotalVertices
     public float[] getPositions() {
         float[] totalVertices = new float[getPositionsCount()];
         int index = 0;
@@ -84,7 +82,6 @@ public class GaiaMesh {
         return totalVertices;
     }
 
-    // getTotalNormalsCount
     public int getNormalsCount() {
         int count = 0;
         for (GaiaPrimitive primitive : primitives) {
@@ -98,7 +95,6 @@ public class GaiaMesh {
         return count;
     }
 
-    // getTotalNormals
     public float[] getNormals() {
         float[] totalNormals = new float[getNormalsCount()];
         int index = 0;
@@ -115,7 +111,6 @@ public class GaiaMesh {
         return totalNormals;
     }
 
-    // getTotalTexCoordsCount
     public int getTexcoordsCount() {
         int count = 0;
         for (GaiaPrimitive primitive : primitives) {
@@ -129,7 +124,6 @@ public class GaiaMesh {
         return count;
     }
 
-    // getTotalTexCoords
     public float[] getTexcoords() {
         float[] totalTexcoords = new float[getTexcoordsCount()];
         int index = 0;
@@ -145,7 +139,6 @@ public class GaiaMesh {
         return totalTexcoords;
     }
 
-    // getBatchIdsCount
     public int getBatchIdsCount() {
         int count = 0;
         for (GaiaPrimitive primitive : primitives) {
@@ -159,7 +152,6 @@ public class GaiaMesh {
         return count;
     }
 
-    // getBatchId
     public float[] getBatchIds() {
         float[] totalBatchIds = new float[getBatchIdsCount()];
         int index = 0;

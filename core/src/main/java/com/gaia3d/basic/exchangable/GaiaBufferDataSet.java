@@ -13,6 +13,7 @@ import org.joml.Vector2d;
 import org.joml.Vector3d;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -24,7 +25,7 @@ import java.util.*;
  */
 @Getter
 @Setter
-public class GaiaBufferDataSet {
+public class GaiaBufferDataSet implements Serializable {
     private Map<AttributeType, GaiaBuffer> buffers;
     private int id = -1;
     private String guid = "no_guid";

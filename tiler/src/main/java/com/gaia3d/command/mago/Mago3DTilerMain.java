@@ -10,13 +10,13 @@ import org.apache.logging.log4j.Level;
 import java.io.IOException;
 
 /**
- * Main class for Gaia3D Tiler.
- *
+ * Main class for mago 3DTiler.
  * @author znkim
- * @since 1.0.0
  */
 @Slf4j
 public class Mago3DTilerMain {
+
+
     public static void main(String[] args) {
         try {
             Options options = Configurator.createOptions();

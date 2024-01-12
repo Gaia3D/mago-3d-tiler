@@ -31,6 +31,7 @@ public class GlobalOptions {
     private static final int DEFAULT_MIN_LOD = 0;
     private static final int DEFAULT_MAX_LOD = 3;
     private static final int DEFAULT_POINT_LIMIT = 20000;
+    private static final byte DEFAULT_MULTI_THREAD_COUNT = 8;
     private static final String DEFAULT_CRS = "4326";
     private static final String DEFAULT_NAME_COLUMN = "name";
     private static final String DEFAULT_HEIGHT_COLUMN = "height";
@@ -70,14 +71,16 @@ public class GlobalOptions {
     private boolean gltf = false; // gltf flag
     private boolean glb = false; // glb flag
 
-    private boolean recursive = false; // recursive flag
-    private boolean multiThread = false; // use multi thread flag
-    private boolean yUpAxis = false; // y up axis flag
-    private boolean refineAdd = false; // refine add flag
-    private boolean flipCoordinate = false; // flip coordinate flag for 2D Data
+    private byte multiThreadCount = 8; // multi thread count
 
-    private boolean zeroOrigin = false; // zero origin flag
-    private boolean autoUpAxis = false; // auto up axis flag
+    /* 3D Data Options */
+    private boolean recursive = false; // recursive flag
+    private boolean useMultiThread = false; // use multi thread flag
+    private boolean yUpAxis = false; // y up axis flag
+    private boolean refineAdd = false; // 3dTiles refine option ADD fix flag
+    private boolean flipCoordinate = false; // flip coordinate flag for 2D Data
+    private boolean zeroOrigin = false; // data origin to zero point flag
+    private boolean autoUpAxis = false; // automatically assign 3D matrix axes flag
     private boolean reverseTextureCoordinate = false; // reverse texture coordinate flag
 
     /* 2D Data Column Options */
@@ -86,7 +89,6 @@ public class GlobalOptions {
     private String altitudeColumn;
     private double absoluteAltitude;
     private double minimumHeight;
-
 
     public static GlobalOptions getInstance() {
         if (instance.javaVersionInfo == null) {
@@ -128,6 +130,7 @@ public class GlobalOptions {
             String proj = command.getOptionValue(ProcessOptions.PROJ4.getArgName());
             CRSFactory factory = new CRSFactory();
             CoordinateReferenceSystem source = null;
+
             // proj code is first priority
             if (proj != null && !proj.isEmpty()) {
                 source = factory.createFromParameters("CUSTOM", proj);
@@ -157,13 +160,14 @@ public class GlobalOptions {
         instance.setDebug(command.hasOption(ProcessOptions.DEBUG.getArgName()));
         instance.setQuiet(command.hasOption(ProcessOptions.QUIET.getArgName()));
         instance.setHelp(command.hasOption(ProcessOptions.HELP.getArgName()));
-        instance.setMultiThread(command.hasOption(ProcessOptions.MULTI_THREAD.getArgName()));
+        instance.setUseMultiThread(command.hasOption(ProcessOptions.MULTI_THREAD.getArgName()));
         instance.setYUpAxis(command.hasOption(ProcessOptions.Y_UP_AXIS.getArgName()));
         instance.setRecursive(command.hasOption(ProcessOptions.RECURSIVE.getArgName()));
         instance.setRefineAdd(command.hasOption(ProcessOptions.REFINE_ADD.getArgName()));
         instance.setGltf(command.hasOption(ProcessOptions.DEBUG_GLTF.getArgName()));
         instance.setGlb(command.hasOption(ProcessOptions.DEBUG_GLB.getArgName()));
         instance.setFlipCoordinate(command.hasOption(ProcessOptions.FLIP_COORDINATE.getArgName()));
+        instance.setMultiThreadCount(command.hasOption(ProcessOptions.MULTI_THREAD_COUNT.getArgName()) ? Byte.parseByte(command.getOptionValue(ProcessOptions.MULTI_THREAD_COUNT.getArgName())) : DEFAULT_MULTI_THREAD_COUNT);
 
         instance.setZeroOrigin(command.hasOption(ProcessOptions.ZERO_ORIGIN.getArgName()));
         instance.setAutoUpAxis(command.hasOption(ProcessOptions.AUTO_UP_AXIS.getArgName()));

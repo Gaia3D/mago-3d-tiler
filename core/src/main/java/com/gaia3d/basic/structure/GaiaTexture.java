@@ -18,6 +18,7 @@ import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -36,7 +37,7 @@ import java.util.Arrays;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaTexture {
+public class GaiaTexture implements Serializable {
     Path parentPath;
     private String name;
     private String path;

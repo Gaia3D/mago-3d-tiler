@@ -69,7 +69,7 @@ public class Gaia3DTiler implements Tiler {
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(tilesetFile))) {
             String result = objectMapper.writeValueAsString(tileset);
-            log.info("[Tiling][Tileset] Write 'tileset.json' file.");
+            log.info("[Tiling][Tileset] write 'tileset.json' file.");
             writer.write(result);
             globalOptions.setTilesetSize(result.length());
         } catch (IOException e) {

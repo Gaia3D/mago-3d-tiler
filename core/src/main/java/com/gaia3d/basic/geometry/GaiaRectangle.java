@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.joml.Vector2d;
 
+import java.io.Serializable;
+
 /**
  * GaiaRectangle is a class to store the bounding rectangle of a geometry.
  * It can be used to calculate the center and volume of the geometry.
@@ -19,7 +21,7 @@ import org.joml.Vector2d;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaRectangle {
+public class GaiaRectangle implements Serializable {
     private double minX;
     private double minY;
     private double maxX;

@@ -7,6 +7,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,14 +24,13 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaFace {
-    //private ArrayList<Integer> indices = new ArrayList<>();
+public class GaiaFace implements Serializable {
     private int[] indices;
     private Vector3d faceNormal = new Vector3d();
 
     public void calculateFaceNormal(List<GaiaVertex> vertices) {
         if (indices.length < 3) {
-            log.error("[calculateFaceNormal Error] : indices.size() < 3");
+            log.error("[Error][calculateFaceNormal] : not enough indices. (indices.length < 3)");
             return;
         }
         for (int i = 0; i < indices.length; i+=3) {

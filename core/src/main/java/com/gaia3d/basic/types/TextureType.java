@@ -2,6 +2,8 @@ package com.gaia3d.basic.types;
 
 import lombok.Getter;
 
+import java.io.Serializable;
+
 /**
  * Enum for the different types of textures that can be used in the application.
  * Each texture has a corresponding extension.
@@ -11,7 +13,7 @@ import lombok.Getter;
  * @See GaiaSet
  */
 @Getter
-public enum TextureType {
+public enum TextureType implements Serializable {
     NONE((byte) 0),
     DIFFUSE((byte) 1),
     SPECULAR((byte) 2),

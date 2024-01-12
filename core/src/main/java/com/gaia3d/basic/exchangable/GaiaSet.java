@@ -40,15 +40,14 @@ import java.util.Map;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaSet {
+public class GaiaSet implements Serializable{
     List<GaiaBufferDataSet> bufferDatas;
     List<GaiaMaterial> materials;
-
-    private Matrix4d transformMatrix;
-
+    
     Vector3d position;
     Vector3d scale;
     Quaterniond quaternion;
+    private Matrix4d transformMatrix;
 
     byte isBigEndian = 0;
     String projectName;

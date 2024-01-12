@@ -11,6 +11,7 @@ import lombok.Setter;
 import org.lwjgl.opengl.GL20;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * GaiaBuffer represents a buffer by attribute, which is a convenient form to convert to gltf.
@@ -22,7 +23,7 @@ import java.io.IOException;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaBuffer {
+public class GaiaBuffer implements Serializable {
     AttributeType attributeType;
     AccessorType accessorType;
 

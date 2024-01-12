@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector4d;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -28,7 +29,7 @@ import java.util.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaMaterial {
+public class GaiaMaterial implements Serializable {
     private Vector4d diffuseColor = new Vector4d(1.0, 1.0, 1.0, 1.0);
     private Vector4d ambientColor = new Vector4d(1.0, 1.0, 1.0, 1.0);
     private Vector4d specularColor = new Vector4d(1.0, 1.0, 1.0, 1.0);
@@ -37,8 +38,6 @@ public class GaiaMaterial {
     private int id = -1;
     private String name = "no_name";
     private Map<TextureType, List<GaiaTexture>> textures = new WeakHashMap<>();
-
-    // experimental :: is repeat texture
     private boolean isRepeat = false;
 
     public boolean isOpaqueMaterial()
@@ -54,8 +53,7 @@ public class GaiaMaterial {
                     String texPath = gaiaTexture.getPath();
                     int indicePunto = texPath.lastIndexOf('.');
                     String extension = texPath.substring(indicePunto + 1);
-                    if(extension.equals("png") || extension.equals("PNG"))
-                    {
+                    if(extension.equals("png") || extension.equals("PNG")) {
                         isOpaque = false;
                         break;
                     }
@@ -64,10 +62,8 @@ public class GaiaMaterial {
         }
 
         // if there are no textures, then check the diffuse color.***
-        if(texCount == 0)
-        {
-            if(diffuseColor.w < 1.0)
-            {
+        if (texCount == 0) {
+            if (diffuseColor.w < 1.0) {
                 isOpaque = false;
             }
         }

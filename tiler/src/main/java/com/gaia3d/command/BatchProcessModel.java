@@ -65,7 +65,7 @@ public class BatchProcessModel implements ProcessFlowModel {
         postProcessors.add(new Batched3DModel());
 
         Process processFlow;
-        if (globalOptions.isMultiThread()) {
+        if (globalOptions.isUseMultiThread()) {
             processFlow = new ProcessFlowThread(preProcessors, tileProcess, postProcessors);
         } else {
             processFlow = new ProcessFlow(preProcessors, tileProcess, postProcessors);
