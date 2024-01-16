@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 
 @Slf4j
 class UnitTest {
-        private static final String INPUT_PATH = "D:\\unit-test\\";
-        private static final String OUTPUT_PATH = "D:\\unit-test\\";
+        private static final String INPUT_PATH = "D:\\data\\unit-test\\";
+        private static final String OUTPUT_PATH = "D:\\Result_mago3dTiler\\";
 
         @Test
         void test() {
@@ -19,13 +19,13 @@ class UnitTest {
 
     @Test
     void kmlComplicatedModels() {
-        String path = "ComplicatedModels20";
+        String path = "ComplicatedModels5";
         String[] args = new String[]{
                 "-i", INPUT_PATH + path,
                 "-it", "kml",
                 "-o", OUTPUT_PATH + path,
-                //"-pt", // textures forced to png format.***
                 "-autoUpAxis",
+                //"-reverseTexCoord",
                 "-glb"
         };
         Mago3DTilerMain.main(args);
@@ -76,7 +76,7 @@ class UnitTest {
                 "-o", OUTPUT_PATH + path,
                 "-yUpAxis",
                 "-refineAdd",
-                "-multiThread",
+                //"-multiThread",
                 "-zeroOrigin",
         };
         Mago3DTilerMain.main(args);

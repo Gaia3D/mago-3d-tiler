@@ -275,14 +275,8 @@ public class GaiaTextureCoordinator {
             List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
             if (!textures.isEmpty()) {
                 GaiaTexture texture = textures.get(0);
-                // Flip image Y.***********************
-                texture.flipImageY();
-                //*************************************
                 BufferedImage source = texture.getBufferedImage();
                 graphics.drawImage(source, (int) splittedRectangle.getMinX(), (int) splittedRectangle.getMinY(), null);
-                // Return image as original.***********
-                texture.flipImageY();
-                //*************************************
             }
         }
 
@@ -332,11 +326,11 @@ public class GaiaTextureCoordinator {
             }
 
             // test save atlasTexture image.****
-//            String extension = "jpg";
-//            if (existPngTextures) {
-//                extension = "png";
-//            }
-//            this.writeBatchedImage(extension);
+            String extension = "jpg";
+            if (existPngTextures) {
+                extension = "png";
+            }
+            this.writeBatchedImage(extension);
             // end test.************************
 
             List<GaiaBufferDataSet> materialBufferDataSets = bufferDataSets.stream().filter((bufferDataSet) -> bufferDataSet.getMaterialId() == target.getMaterialId()).collect(Collectors.toList());

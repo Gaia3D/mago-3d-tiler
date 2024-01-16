@@ -58,6 +58,35 @@ public class GaiaPrimitive implements Serializable {
         return boundingBox;
     }
 
+    public GaiaRectangle getTexcoordBoundingRectangle(GaiaRectangle texcoordBoundingRectangle) {
+        if(texcoordBoundingRectangle == null) {
+            texcoordBoundingRectangle = new GaiaRectangle();
+        }
+        boolean is1rst = true;
+        for (GaiaVertex vertex : vertices) {
+            Vector2d textureCoordinate = vertex.getTexcoords();
+            if (textureCoordinate != null) {
+                if (is1rst) {
+                    texcoordBoundingRectangle.setInit(textureCoordinate);
+                    is1rst = false;
+                } else {
+                    texcoordBoundingRectangle.addPoint(textureCoordinate);
+                }
+            }
+        }
+        return texcoordBoundingRectangle;
+    }
+
+    public void translateTexCoordsToPositiveQuadrant()
+    {
+        int surfacesCount = surfaces.size();
+        for(int i=0; i<surfacesCount; i++)
+        {
+            GaiaSurface surface = surfaces.get(i);
+            surface.translateTexCoordsToPositiveQuadrant(this.vertices);
+        }
+    }
+
     public void calculateNormal() {
         for (GaiaSurface surface : surfaces) {
             surface.calculateNormal(this.vertices);

@@ -1,5 +1,6 @@
 package com.gaia3d.converter.assimp;
 
+import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.basic.types.TextureType;
@@ -41,6 +42,8 @@ public class AssimpConverter implements Converter {
             Assimp.aiProcess_CalcTangentSpace|
             Assimp.aiProcess_SortByPType;
 
+    private boolean invertTexCoordsYAxis = false;
+
     public List<GaiaScene> load(String filePath) {
         return load(new File(filePath));
     }
@@ -58,7 +61,27 @@ public class AssimpConverter implements Converter {
         String path = file.getAbsolutePath().replace(file.getName(), "");
         AIScene aiScene =  Assimp.aiImportFile(file.getAbsolutePath(), DEFAULT_FLAGS);
 
+        // now check the file format of the loaded file.***
+        // if file extension is *.3ds, must invert the y-axis of texCoords.***
+        FormatType formatType = FormatType.fromExtension(FilenameUtils.getExtension(file.getName()));
+        if(formatType == FormatType.MAX_3DS)
+        {
+            this.invertTexCoordsYAxis = true;
+        }
+        else if(formatType == FormatType.COLLADA)
+        {
+            this.invertTexCoordsYAxis = true;
+        }
+        else {
+            this.invertTexCoordsYAxis = false;
+        }
+
         assert aiScene != null;
+        String fileName = file.getName();
+        if(fileName.equals("d_bd014_d.dae"))
+        {
+            int hola = 0;
+        }
         GaiaScene gaiaScene = convertScene(aiScene, path, file.getName());
         aiScene.free();
         gaiaScene.setOriginalPath(file.toPath());
@@ -434,11 +457,18 @@ public class AssimpConverter implements Converter {
                 if (Float.isNaN(textureCoordinate.x()) || Float.isNaN(textureCoordinate.y())) {
                     vertex.setTexcoords(new Vector2d());
                 } else {
-                    if (reverseTextureCoord) {
-                        vertex.setTexcoords(new Vector2d(textureCoordinate.x(), textureCoordinate.y()));
-                    } else {
-                        vertex.setTexcoords(new Vector2d(textureCoordinate.x(), 1.0 - textureCoordinate.y()));
+                    double texCoordY = textureCoordinate.y();
+                    if(texCoordY > 2.0)
+                    {
+                        int holaa = 0;
                     }
+                    vertex.setTexcoords(new Vector2d(textureCoordinate.x(), textureCoordinate.y()));
+                    //vertex.setTexcoords(new Vector2d(textureCoordinate.x(), 1.0 - textureCoordinate.y()));
+//                    if (!reverseTextureCoord) {
+//                        vertex.setTexcoords(new Vector2d(textureCoordinate.x(), textureCoordinate.y()));
+//                    } else {
+//                        vertex.setTexcoords(new Vector2d(textureCoordinate.x(), 1.0 - textureCoordinate.y()));
+//                    }
                 }
             }
 
@@ -448,6 +478,18 @@ public class AssimpConverter implements Converter {
             diffuseColor[3] = (byte) (diffuse.w * 255);
             primitive.getVertices().add(vertex);
         }
+
+        if(this.invertTexCoordsYAxis) {
+            for (GaiaVertex vertex : primitive.getVertices()) {
+                Vector2d texCoord = vertex.getTexcoords();
+
+                if (this.invertTexCoordsYAxis) {
+                    texCoord.y = 1.0 - texCoord.y; // invert the y.***
+                }
+            }
+        }
+
+        primitive.translateTexCoordsToPositiveQuadrant();
 
         primitive.calculateNormal();
         return primitive;

@@ -85,4 +85,15 @@ public class GaiaFace implements Serializable {
         indices = null;
         faceNormal = null;
     }
+
+    public boolean hasCoincidentIndices(GaiaFace face) {
+        for (int i = 0; i < indices.length; i++) {
+            for (int j = 0; j < face.getIndices().length; j++) {
+                if (indices[i] == face.getIndices()[j]) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

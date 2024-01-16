@@ -92,6 +92,13 @@ public class GaiaRectangle implements Serializable {
         }
     }
 
+    public void translate(Vector2d vector2d) {
+        minX += vector2d.x;
+        minY += vector2d.y;
+        maxX += vector2d.x;
+        maxY += vector2d.y;
+    }
+
     //addBoundingBox
     public void addBoundingRectangle(GaiaRectangle boundingRectangle) {
         if (boundingRectangle.minX < minX) {
