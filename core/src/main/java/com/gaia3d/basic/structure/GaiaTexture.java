@@ -160,7 +160,29 @@ public class GaiaTexture implements Serializable {
         byte[] rgbaByteArray = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
         byte[] rgbaByteArray2 = ((DataBufferByte) comparebufferedImage.getRaster().getDataBuffer()).getData();
 
-        return Arrays.equals(rgbaByteArray, rgbaByteArray2);
+        // compare the byte array by difference.***
+        int length = rgbaByteArray.length;
+        float differenceAccum = 0;
+        for(int i=0; i<length; i++)
+        {
+            differenceAccum += Math.abs(rgbaByteArray[i] - rgbaByteArray2[i]);
+            if((differenceAccum/(float)(i+1)) > 2.0)
+            {
+                return false;
+            }
+        }
+
+        float differenceRatio = differenceAccum / (float)length;
+
+        if(differenceRatio < 2.0)
+        {
+            return true;
+        }
+        else {
+            return false;
+        }
+
+        //return Arrays.equals(rgbaByteArray, rgbaByteArray2);
     }
 
     public boolean isEqualTexture(GaiaTexture compareTexture, float scaleFactor) {

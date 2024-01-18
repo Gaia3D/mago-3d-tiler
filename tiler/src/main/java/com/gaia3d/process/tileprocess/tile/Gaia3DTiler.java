@@ -196,6 +196,7 @@ public class Gaia3DTiler implements Tiler {
         if (lod == LevelOfDetail.NONE) {
             return null;
         }
+
         nodeCode = nodeCode + index;
 
         log.info("[Tiling][ContentNode][" + nodeCode + "][{}] : {}", lod.getLevel(), tileInfos.size());
@@ -219,7 +220,7 @@ public class Gaia3DTiler implements Tiler {
         childNode.setTransformMatrix(transformMatrix);
         childNode.setBoundingVolume(boundingVolume);
         childNode.setNodeCode(nodeCode);
-        childNode.setGeometricError(lodError);
+        childNode.setGeometricError(lodError + 0.1); // test.*** test.*** test.*** test.*** test.*** test.*** test.*** test.*** test.*** test.*** test.*** test.***
         childNode.setChildren(new ArrayList<>());
 
         childNode.setRefine(refineAdd ? Node.RefineType.ADD : Node.RefineType.REPLACE);

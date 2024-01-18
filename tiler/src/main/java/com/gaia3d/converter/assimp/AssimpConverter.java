@@ -1,5 +1,6 @@
 package com.gaia3d.converter.assimp;
 
+import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.basic.types.FormatType;
@@ -72,16 +73,15 @@ public class AssimpConverter implements Converter {
         {
             this.invertTexCoordsYAxis = true;
         }
+        else if(formatType == FormatType.GLTF)
+        {
+            this.invertTexCoordsYAxis = true;
+        }
         else {
             this.invertTexCoordsYAxis = false;
         }
 
         assert aiScene != null;
-        String fileName = file.getName();
-        if(fileName.equals("d_bd014_d.dae"))
-        {
-            int hola = 0;
-        }
         GaiaScene gaiaScene = convertScene(aiScene, path, file.getName());
         aiScene.free();
         gaiaScene.setOriginalPath(file.toPath());
@@ -479,6 +479,26 @@ public class AssimpConverter implements Converter {
             primitive.getVertices().add(vertex);
         }
 
+        GaiaRectangle texCoordsRectangle = new GaiaRectangle();
+        primitive.getTexcoordBoundingRectangle(texCoordsRectangle);
+        boolean mustTranslateTexCoordsToPositiveQuadrant = false;
+        if(texCoordsRectangle.getWidth() > 1.0 || texCoordsRectangle.getHeight() > 1.0)
+        {
+            mustTranslateTexCoordsToPositiveQuadrant = true;
+        }
+
+        double minTexCoordX = texCoordsRectangle.getMinX();
+        double minTexCoordY = texCoordsRectangle.getMinY();
+        if(minTexCoordX <0.0 || minTexCoordX > 1.0 || minTexCoordY < 0.0 || minTexCoordY > 1.0)
+        {
+            mustTranslateTexCoordsToPositiveQuadrant = true;
+        }
+
+        if(mustTranslateTexCoordsToPositiveQuadrant)
+        {
+            primitive.translateTexCoordsToPositiveQuadrant();
+        }
+
         if(this.invertTexCoordsYAxis) {
             for (GaiaVertex vertex : primitive.getVertices()) {
                 Vector2d texCoord = vertex.getTexcoords();
@@ -488,8 +508,6 @@ public class AssimpConverter implements Converter {
                 }
             }
         }
-
-        primitive.translateTexCoordsToPositiveQuadrant();
 
         primitive.calculateNormal();
         return primitive;
