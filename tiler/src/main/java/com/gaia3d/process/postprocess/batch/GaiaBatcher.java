@@ -111,11 +111,6 @@ public class GaiaBatcher implements Batcher {
             batchedMaterials.addAll(materials);
         });
 
-        if(contentInfo.getName().equals("RC1032"))
-        {
-            int hola = 0;
-        }
-
         // check if exist equal materials.***
         reassignMaterialsToGaiaBufferDataSetWithSameMaterial(batchedDataSets, contentInfo.getLod());
         List<GaiaMaterial> filteredMaterials = new ArrayList<>();

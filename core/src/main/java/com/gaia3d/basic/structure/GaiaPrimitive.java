@@ -104,6 +104,7 @@ public class GaiaPrimitive implements Serializable {
     public GaiaBufferDataSet toGaiaBufferSet(Matrix4d transformMatrix) {
         Matrix3d rotationMatrix = new Matrix3d();
         transformMatrix.get3x3(rotationMatrix);
+        // normalize the rotation matrix
         rotationMatrix.normal();
         Matrix4d rotationMatrix4 = new Matrix4d(rotationMatrix);
 
