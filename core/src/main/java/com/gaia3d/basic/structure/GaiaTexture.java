@@ -162,6 +162,13 @@ public class GaiaTexture implements Serializable {
 
         // compare the byte array by difference.***
         int length = rgbaByteArray.length;
+        int length2 = rgbaByteArray2.length;
+
+        if(length != length2)
+        {
+            return false;
+        }
+
         float differenceAccum = 0;
         float difference = 0;
         float tolerance = 5.0f;

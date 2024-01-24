@@ -17,7 +17,11 @@ public class GaiaRotator implements PreProcess {
         GaiaScene gaiaScene = tileInfo.getScene();
         GaiaNode rootNode = gaiaScene.getNodes().get(0);
         Matrix4d transform = rootNode.getTransformMatrix();
-        transform.rotateX(Math.toRadians(90));
+
+        Matrix4d xRotMatrix = new Matrix4d();
+        xRotMatrix.rotateX(Math.toRadians(90));
+        xRotMatrix.mul(transform, transform);
+
         rootNode.setTransformMatrix(transform);
         tileInfo.setTransformMatrix(transform);
         gaiaScene.getBoundingBox();
