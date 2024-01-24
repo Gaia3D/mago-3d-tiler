@@ -57,13 +57,11 @@ public class LasConverter {
         } else {
             hasRgbColor = false;
         }
-
-        log.info("[LoadFile] Loading a pointcloud file. : {}", file.getAbsolutePath());
-        log.info(" - LAS Version : {}.{}", major, minor);
-        log.info(" - LAS Point Data Record Format : {}", recordFormat);
-        log.info(" - LAS Point Data Record Length : {}", recordLength);
-        log.info(" - LAS Point Data Record has RGB Color : {}", hasRgbColor);
-
+//        log.info("[Pre][LoadFile] Loading a pointcloud file. : {}", file.getAbsolutePath());
+//        log.info(" - LAS Version : {}.{}", major, minor);
+//        log.info(" - LAS Point Data Record Format : {}", recordFormat);
+//        log.info(" - LAS Point Data Record Length : {}", recordLength);
+//        log.info(" - LAS Point Data Record has RGB Color : {}", hasRgbColor);
         Iterable<LASPoint> pointIterable = reader.getPoints();
         GaiaBoundingBox boundingBox = pointCloud.getGaiaBoundingBox();
 

@@ -2,6 +2,7 @@ package com.gaia3d.process.tileprocess.tile;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.pointcloud.GaiaPointCloud;
 import com.gaia3d.command.mago.GlobalOptions;
@@ -11,7 +12,6 @@ import com.gaia3d.process.tileprocess.tile.tileset.asset.*;
 import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
-import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
-public class PointCloudTiler implements Tiler {
+public class PointCloudTiler extends DefaultTiler implements Tiler {
     @Override
     public Tileset run(List<TileInfo> tileInfos) {
         double geometricError = calcGeometricError(tileInfos);
@@ -70,7 +70,7 @@ public class PointCloudTiler implements Tiler {
         try {
             createRootNode(root, tileInfos);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new TileProcessingException(e.getMessage());
         }
 
         Asset asset = createAsset();
@@ -95,7 +95,7 @@ public class PointCloudTiler implements Tiler {
             writer.write(result);
             globalOptions.setTilesetSize(result.length());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new TileProcessingException(e.getMessage());
         }
     }
 
@@ -192,43 +192,5 @@ public class PointCloudTiler implements Tiler {
                 }
             });
         }
-    }
-
-    private void rotateX90(Matrix4d matrix) {
-        Matrix4d rotationMatrix = new Matrix4d();
-        rotationMatrix.identity();
-        rotationMatrix.rotateX(Math.toRadians(-90));
-        matrix.mul(rotationMatrix, matrix);
-    }
-
-    private Matrix4d getTransformMatrix(GaiaBoundingBox boundingBox) {
-        Vector3d center = boundingBox.getCenter();
-        double[] cartesian = GlobeUtils.geographicToCartesianWgs84(center.x, center.y, center.z);
-        return GlobeUtils.normalAtCartesianPointWgs84(cartesian[0], cartesian[1], cartesian[2]);
-    }
-
-    private Asset createAsset() {
-        Asset asset = new Asset();
-        Extras extras = new Extras();
-        Cesium cesium = new Cesium();
-        Ion ion = new Ion();
-        List<Credit> credits = new ArrayList<>();
-        Credit credit = new Credit();
-        credit.setHtml("<html>Gaia3D</html>");
-        credits.add(credit);
-        cesium.setCredits(credits);
-        extras.setIon(ion);
-        extras.setCesium(cesium);
-        asset.setExtras(extras);
-        return asset;
-    }
-
-    private Node createRoot() {
-        Node root = new Node();
-        root.setParent(root);
-        root.setNodeCode("R");
-        root.setRefine(Node.RefineType.ADD);
-        root.setChildren(new ArrayList<>());
-        return root;
     }
 }

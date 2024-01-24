@@ -44,9 +44,8 @@ public class TileInfo {
         this.tempPath = this.outputPath.resolve("temp");
         File tempFile = this.tempPath.toFile();
         if (!tempFile.exists() && tempFile.mkdir()) {
-            log.info("[Create][temp] Created temp directory: {}", this.tempPath);
+            log.info("[Pre] Created temp directory in {}", this.tempPath);
         }
-        //this.tempPath = this.tempPath.resolve(scenePath.getFileName() + ".set");
     }
 
     public void minimize(int serial) {
@@ -60,12 +59,16 @@ public class TileInfo {
             tempSet = null;
             this.scene.clear();
             this.scene = null;
-        } else {
-            log.warn("[Warn] Can't minimize tile info because scene is null.");
-        }
+        }/* else {
+            log.warn("Can't minimize tile info because scene is null.");
+        }*/
     }
 
     public void maximize() {
+        if (this.tempPath == null) {
+            log.warn("Can't maximize tile info because temp path is null.");
+            return;
+        }
         if (this.set != null) {
             this.set.deleteTextures();
             this.set = null;
@@ -93,7 +96,7 @@ public class TileInfo {
                 FileUtils.deleteDirectory(file);
                 return;
             }
-            log.warn("[Warn] Can not delete temp files: {}", file);
+            log.warn("Can not delete temp files: {}", file);
         }
     }
 }

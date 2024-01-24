@@ -56,7 +56,7 @@ public class AssimpConverter implements Converter {
     public List<GaiaScene> load(File file) throws RuntimeException {
         if (!file.isFile() && !file.exists()) {
             log.error("File does not exist: {}", file.getAbsolutePath());
-            return null;
+            throw new RuntimeException("File does not exist: " + file.getAbsolutePath());
         }
 
         String path = file.getAbsolutePath().replace(file.getName(), "");

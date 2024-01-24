@@ -5,8 +5,7 @@ import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
 
 import java.util.List;
 
-public interface TileProcess {
+public interface TilingProcess {
     Tileset run(List<TileInfo> tileInfo);
-
     public void writeTileset(Tileset tileset);
 }

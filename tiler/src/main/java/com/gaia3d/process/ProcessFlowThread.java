@@ -5,8 +5,8 @@ import com.gaia3d.converter.FileLoader;
 import com.gaia3d.process.postprocess.PostProcess;
 import com.gaia3d.process.postprocess.thread.ProcessThreadPool;
 import com.gaia3d.process.preprocess.PreProcess;
-import com.gaia3d.process.tileprocess.Process;
-import com.gaia3d.process.tileprocess.TileProcess;
+import com.gaia3d.process.tileprocess.Pipeline;
+import com.gaia3d.process.tileprocess.TilingProcess;
 import com.gaia3d.process.tileprocess.Tiler;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
@@ -21,9 +21,10 @@ import java.util.List;
 
 @Slf4j
 @AllArgsConstructor
-public class ProcessFlowThread implements Process {
+@Deprecated
+public class ProcessFlowThread implements Pipeline {
     private List<PreProcess> preProcesses;
-    private TileProcess tileProcess;
+    private TilingProcess tilingProcess;
     private List<PostProcess> postProcesses;
 
     public void process(FileLoader fileLoader) throws IOException {
@@ -57,7 +58,7 @@ public class ProcessFlowThread implements Process {
     }
 
     private Tileset tileprocess(List<TileInfo> tileInfos) {
-        Tiler tiler = (Tiler) tileProcess;
+        Tiler tiler = (Tiler) tilingProcess;
         Tileset tileset = tiler.run(tileInfos);
         tiler.writeTileset(tileset);
         return tileset;

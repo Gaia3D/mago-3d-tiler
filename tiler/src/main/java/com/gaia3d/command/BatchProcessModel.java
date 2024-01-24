@@ -8,8 +8,7 @@ import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.geometry.citygml.CityGmlConverter;
 import com.gaia3d.converter.geometry.geojson.GeoJsonConverter;
 import com.gaia3d.converter.geometry.shape.ShapeConverter;
-import com.gaia3d.process.ProcessFlow;
-import com.gaia3d.process.ProcessFlowThread;
+import com.gaia3d.process.TilingPipeline;
 import com.gaia3d.process.postprocess.GaiaRelocator;
 import com.gaia3d.process.postprocess.PostProcess;
 import com.gaia3d.process.postprocess.batch.Batched3DModel;
@@ -18,11 +17,10 @@ import com.gaia3d.process.preprocess.GaiaRotator;
 import com.gaia3d.process.preprocess.GaiaScaler;
 import com.gaia3d.process.preprocess.GaiaTranslator;
 import com.gaia3d.process.preprocess.PreProcess;
-import com.gaia3d.process.tileprocess.Process;
-import com.gaia3d.process.tileprocess.TileProcess;
-import com.gaia3d.process.tileprocess.tile.Gaia3DTiler;
+import com.gaia3d.process.tileprocess.Pipeline;
+import com.gaia3d.process.tileprocess.TilingProcess;
+import com.gaia3d.process.tileprocess.tile.BatchedModelTiler;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.CommandLine;
 import org.apache.commons.io.FileExistsException;
 import org.geotools.coverage.grid.GridCoverage2D;
 
@@ -57,20 +55,15 @@ public class BatchProcessModel implements ProcessFlowModel {
         }
         preProcessors.add(new GaiaTranslator(geoTiffs));
 
-        TileProcess tileProcess = new Gaia3DTiler();
+        TilingProcess tilingProcess = new BatchedModelTiler();
 
         List<PostProcess> postProcessors = new ArrayList<>();
         postProcessors.add(new GaiaRelocator());
         postProcessors.add(new GaiaBatcher());
         postProcessors.add(new Batched3DModel());
 
-        Process processFlow;
-        if (globalOptions.isUseMultiThread()) {
-            processFlow = new ProcessFlowThread(preProcessors, tileProcess, postProcessors);
-        } else {
-            processFlow = new ProcessFlow(preProcessors, tileProcess, postProcessors);
-        }
-        processFlow.process(fileLoader);
+        Pipeline processPipeline = new TilingPipeline(preProcessors, tilingProcess, postProcessors);
+        processPipeline.process(fileLoader);
     }
 
     private boolean getYUpAxis(FormatType formatType, boolean isYUpAxis) {

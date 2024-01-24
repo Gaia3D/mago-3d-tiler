@@ -2,6 +2,7 @@ package com.gaia3d.process.tileprocess.tile;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.KmlInfo;
@@ -12,7 +13,6 @@ import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 import com.gaia3d.util.DecimalUtils;
-import com.gaia3d.util.GlobeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
@@ -27,9 +27,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class Gaia3DTiler implements Tiler {
+public class BatchedModelTiler extends DefaultTiler implements Tiler {
 
-    public Gaia3DTiler() {}
+    public BatchedModelTiler() {}
 
     @Override
     public Tileset run(List<TileInfo> tileInfos) {
@@ -73,14 +73,13 @@ public class Gaia3DTiler implements Tiler {
             writer.write(result);
             globalOptions.setTilesetSize(result.length());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new TileProcessingException(e.getMessage());
         }
     }
 
     private double calcGeometricError(List<TileInfo> tileInfos) {
         return tileInfos.stream().mapToDouble(tileInfo -> {
             GaiaBoundingBox boundingBox = tileInfo.getBoundingBox();
-            //GaiaBoundingBox boundingBox = tileInfo.getScene().getBoundingBox();
             double result = boundingBox.getLongestDistance();
             if (result > 1000.0d) {
                 log.warn("[Warn]{} is too long distance. check it please. (GeometricError)", result);
@@ -94,7 +93,6 @@ public class Gaia3DTiler implements Tiler {
         tileInfos.forEach(tileInfo -> {
             KmlInfo kmlInfo = tileInfo.getKmlInfo();
             Vector3d position = kmlInfo.getPosition();
-            //GaiaBoundingBox localBoundingBox = tileInfo.getScene().getBoundingBox();
             GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();
             localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(position);
             boundingBox.addBoundingBox(localBoundingBox);
@@ -204,8 +202,8 @@ public class Gaia3DTiler implements Tiler {
         int lodError = refineAdd ? lod.getGeometricErrorBlock() : lod.getGeometricError();
         int lodErrorDouble = lodError * 2;
 
-        List<TileInfo> resultInfos = tileInfos;
-        List<TileInfo> remainInfos = new ArrayList<>();
+        List<TileInfo> resultInfos;
+        List<TileInfo> remainInfos;
         resultInfos = tileInfos.stream().filter(tileInfo -> {
             double geometricError = tileInfo.getBoundingBox().getLongestDistance();
             return geometricError >= lodErrorDouble;
@@ -244,7 +242,7 @@ public class Gaia3DTiler implements Tiler {
     }
 
     private LevelOfDetail getLodByNodeCode(LevelOfDetail minLod, LevelOfDetail maxLod, String nodeCode) {
-        LevelOfDetail levelOfDetail = LevelOfDetail.NONE;
+        LevelOfDetail levelOfDetail;
         int minLevel = minLod.getLevel();
         int maxLevel = maxLod.getLevel();
 
@@ -261,43 +259,5 @@ public class Gaia3DTiler implements Tiler {
         }
 
         return levelOfDetail;
-    }
-
-    private void rotateX90(Matrix4d matrix) {
-        Matrix4d rotationMatrix = new Matrix4d();
-        rotationMatrix.identity();
-        rotationMatrix.rotateX(Math.toRadians(-90));
-        matrix.mul(rotationMatrix, matrix);
-    }
-
-    private Matrix4d getTransformMatrix(GaiaBoundingBox boundingBox) {
-        Vector3d center = boundingBox.getCenter();
-        double[] cartesian = GlobeUtils.geographicToCartesianWgs84(center.x, center.y, center.z);
-        return GlobeUtils.normalAtCartesianPointWgs84(cartesian[0], cartesian[1], cartesian[2]);
-    }
-
-    private Asset createAsset() {
-        Asset asset = new Asset();
-        Extras extras = new Extras();
-        Cesium cesium = new Cesium();
-        Ion ion = new Ion();
-        List<Credit> credits = new ArrayList<>();
-        Credit credit = new Credit();
-        credit.setHtml("<html>Gaia3D</html>");
-        credits.add(credit);
-        cesium.setCredits(credits);
-        extras.setIon(ion);
-        extras.setCesium(cesium);
-        asset.setExtras(extras);
-        return asset;
-    }
-
-    private Node createRoot() {
-        Node root = new Node();
-        root.setParent(root);
-        root.setNodeCode("R");
-        root.setRefine(Node.RefineType.REPLACE);
-        root.setChildren(new ArrayList<>());
-        return root;
     }
 }

@@ -96,7 +96,6 @@ class Mago3DTilerMainTest {
             Mago3DTilerMain.main(args);
         } catch (Exception e) {
             log.debug(e.getMessage());
-            log.debug("success");
         }
     }
     @Test
@@ -112,7 +111,6 @@ class Mago3DTilerMainTest {
             Mago3DTilerMain.main(args);
         } catch (Exception e) {
             log.debug(e.getMessage());
-            log.debug("success");
         }
     }
     @Test
@@ -145,7 +143,20 @@ class Mago3DTilerMainTest {
         String args[] = {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
-                "-multiThread",
+                //"-multiThread",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void multiThreadConvertErrorCase() {
+        ClassLoader classLoader = getClass().getClassLoader();
+        File input = new File(classLoader.getResource("./sample-kml-error-case").getFile());
+        File output = new File(classLoader.getResource("./sample-output").getFile());
+        String args[] = {
+                "-input", input.getAbsolutePath(),
+                "-output", output.getAbsolutePath(),
+                //"-multiThread",
         };
         Mago3DTilerMain.main(args);
     }

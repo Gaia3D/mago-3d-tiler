@@ -23,11 +23,12 @@ import java.nio.file.Path;
 @NoArgsConstructor
 @Slf4j
 public class GlobalOptions {
-    private static final GlobalOptions instance = new GlobalOptions();
+    /* singleton */
+    private static final GlobalOptions instance = new GlobalOptions(); // volatile?
 
     private static final String DEFAULT_INPUT_FORMAT = "kml";
     private static final String DEFAULT_OUTPUT_FORMAT = "b3dm";
-    private static final int DEFAULT_NODE_LIMIT = 1024;
+    private static final int DEFAULT_NODE_LIMIT = 8192;
     private static final int DEFAULT_MIN_LOD = 0;
     private static final int DEFAULT_MAX_LOD = 3;
     private static final int DEFAULT_POINT_LIMIT = 20000;
@@ -47,7 +48,7 @@ public class GlobalOptions {
     private long endTime = 0;
     private long fileCount = 0;
     private long tileCount = 0;
-    private float tilesetSize = 0.0f;
+    private long tilesetSize = 0;
 
     private String inputPath; // input file or dir path
     private String outputPath; // output dir path
@@ -71,7 +72,7 @@ public class GlobalOptions {
     private boolean gltf = false; // gltf flag
     private boolean glb = false; // glb flag
 
-    private byte multiThreadCount = 8; // multi thread count
+    private byte multiThreadCount; // multi thread count
 
     /* 3D Data Options */
     private boolean recursive = false; // recursive flag

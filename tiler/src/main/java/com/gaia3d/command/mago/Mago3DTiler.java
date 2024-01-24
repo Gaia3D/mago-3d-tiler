@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
 import org.apache.logging.log4j.Level;
 
+import java.io.IOException;
+
 /**
  * Mago 3DTiler.
  * @author znkim
@@ -24,7 +26,7 @@ public class Mago3DTiler {
             ProcessFlowModel processFlow = getProcessModel(inputFormat, outputFormat);
             log.info("Starting process flow: {}", processFlow.getModelName());
             processFlow.run();
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new RuntimeException("Failed to run process.", e);
         }
     }

@@ -68,9 +68,9 @@ public class Mago3DTilerMain {
      */
     private static void printStart() {
         log.info("\n" +
-                "┌┬┐┌─┐┌─┐┌─┐  ┌┬┐┬┬  ┌─┐┬─┐\n" +
-                "│││├─┤│ ┬│ │───│ ││  ├┤ ├┬┘\n" +
-                "┴ ┴┴ ┴└─┘└─┘   ┴ ┴┴─┘└─┘┴└─\n" +
+                "┌┬┐┌─┐┌─┐┌─┐  -┐┌┬┐  ┌┬┐┬┬  ┌─┐┬─┐\n" +
+                "│││├─┤│ ┬│ │  -┤ ││   │ ││  ├┤ ├┬┘\n" +
+                "┴ ┴┴ ┴└─┘└─┘  -┘-┴┘   ┴ ┴┴─┘└─┘┴└─\n" +
                 "----------------------------------------"
         );
     }
@@ -97,9 +97,44 @@ public class Mago3DTilerMain {
         long startTime = globalOptions.getStartTime();
         long endTime = System.currentTimeMillis();
         log.info("----------------------------------------");
-        log.info("End Process Time : {}s", (endTime - startTime) / 1000);
+        log.info("End Process Time : {}", millisecondToDisplayTime(endTime - startTime));
         log.info("Total tile contents count : {}", globalOptions.getTileCount());
-        log.info("Total 'tileset.json' File Size : {}KB", globalOptions.getTilesetSize()/1000);
+        log.info("Total 'tileset.json' File Size : {}", byteCountToDisplaySize(globalOptions.getTilesetSize()));
         log.info("----------------------------------------");
+    }
+
+    /**
+     * Converts the byte size to the display size.
+     */
+    private static String byteCountToDisplaySize(long size) {
+        String displaySize;
+        if (size / 1073741824L > 0L) {
+            displaySize = size / 1073741824L + "GB";
+        } else if (size / 1048576L > 0L) {
+            displaySize = size / 1048576L + "MB";
+        } else if (size / 1024L > 0L) {
+            displaySize = size / 1024L + "KB";
+        } else {
+            displaySize = size + "bytes";
+        }
+        return displaySize;
+    }
+
+    /**
+     * Converts the millisecond to the display time.
+     */
+    private static String millisecondToDisplayTime(long millis) {
+        String displayTime = "";
+        if (millis / 3600000L > 0L) {
+            displayTime += millis / 3600000L + "h ";
+        }
+        if (millis / 60000L > 0L) {
+            displayTime += millis / 60000L + "m ";
+        }
+        if (millis / 1000L > 0L) {
+            displayTime += millis / 1000L + "s ";
+        }
+        displayTime += millis % 1000L + "ms";
+        return displayTime;
     }
 }

@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -51,7 +52,13 @@ public class ProcessThreadPool {
         }
 
         for (Runnable task : tasks) {
-            executorService.submit(task);
+            try {
+                Future<?> future = executorService.submit(task);
+                Object result = future.get();
+            } catch (Exception e) {
+                log.error("Error while pre processing.", e);
+                throw new RuntimeException(e);
+            }
         }
         executorService.shutdown();
 
@@ -101,7 +108,13 @@ public class ProcessThreadPool {
         }
 
         for (Runnable task : tasks) {
-            executorService.submit(task);
+            try {
+                Future<?> future = executorService.submit(task);
+                Object result = future.get();
+            } catch (Exception e) {
+                log.error("Error while pre processing.", e);
+                throw new RuntimeException(e);
+            }
         }
         executorService.shutdown();
 
