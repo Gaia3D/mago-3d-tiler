@@ -34,6 +34,9 @@ public class GaiaTranslator implements PreProcess {
         GaiaNode rootNode = gaiaScene.getNodes().get(0);
         Matrix4d transform = rootNode.getTransformMatrix();
 
+        Vector3d scale = new Vector3d();
+        transform.getScale(scale);
+
         Vector3d center = getPosition(inputType, gaiaScene);
         Vector3d translation = getTranslation(gaiaScene);
 
@@ -48,12 +51,20 @@ public class GaiaTranslator implements PreProcess {
         });
 
         KmlInfo kmlInfo = getKmlInfo(tileInfo, center);
-        Matrix4d resultTransfromMatrix = transform.translate(translation, new Matrix4d());
+        Matrix4d translationMatrix = new Matrix4d().translate(translation); // new
+        Matrix4d resultTransfromMatrix = new Matrix4d(); // new
+        translationMatrix.mul(transform, resultTransfromMatrix); // new
+        //Matrix4d resultTransfromMatrix = transform.translate(translation, new Matrix4d()); // original
+
         rootNode.setTransformMatrix(resultTransfromMatrix);
 
-        GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox();
-        gaiaScene.setGaiaBoundingBox(boundingBox);
+//        GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox(); // original.***
+//        gaiaScene.setGaiaBoundingBox(boundingBox); // original.***
         tileInfo.setTransformMatrix(resultTransfromMatrix);
+
+        GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox(); // new
+        gaiaScene.setGaiaBoundingBox(boundingBox); // new
+
         tileInfo.setBoundingBox(boundingBox);
         tileInfo.setKmlInfo(kmlInfo);
         return tileInfo;
