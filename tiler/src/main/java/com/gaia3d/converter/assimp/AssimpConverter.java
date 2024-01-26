@@ -361,10 +361,15 @@ public class AssimpConverter implements Converter {
     }
 
     private GaiaNode processNode(GaiaScene gaiaScene, AIScene aiScene, AINode aiNode, GaiaNode parentNode, FormatType formatType) {
+        String name = aiNode.mName().dataString();
+//        // node's IFC guid = last 22 chars of the node's name.
+//        String guid = "";
+//        if(name.length() > 22)
+//            guid = name.substring(name.length() - 22, name.length());
+
         AIMatrix4x4 transformation = aiNode.mTransformation();
         Matrix4d transform = convertMatrix4dFromAIMatrix4x4(transformation, parentNode, formatType);
 
-        String name = aiNode.mName().dataString();
         int numMeshes = aiNode.mNumMeshes();
         int numChildren = aiNode.mNumChildren();
 
@@ -379,14 +384,10 @@ public class AssimpConverter implements Converter {
         PointerBuffer aiMeshes = aiScene.mMeshes();
 
         IntBuffer nodeMeshes = aiNode.mMeshes();
-        int nodeNum = -1;
-        if (nodeMeshes != null && nodeMeshes.capacity() > 0) {
-            nodeNum = nodeMeshes.get(0);
-        }
 
         for (int i = 0; i < numMeshes; i++) {
             assert aiMeshes != null;
-            AIMesh aiMesh = AIMesh.create(aiMeshes.get(nodeNum));
+            AIMesh aiMesh = AIMesh.create(aiMeshes.get(nodeMeshes.get(i)));
             GaiaMesh mesh = processMesh(aiMesh, gaiaScene.getMaterials());
             node.getMeshes().add(mesh);
         }
