@@ -3,6 +3,7 @@ package com.gaia3d.process.postprocess.instance;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.structure.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.jgltf.GltfWriter;
@@ -35,10 +36,6 @@ public class Instanced3DModel implements TileModel {
 
     public Instanced3DModel() {
         this.gltfWriter = new GltfWriter();
-        int featureTableJSONByteLength;
-        int batchTableJSONByteLength;
-        String featureTableJson;
-        String batchTableJson;
     }
 
     @Override
@@ -116,11 +113,6 @@ public class Instanced3DModel implements TileModel {
         System.arraycopy(normalUpBytes, 0, featureTableBytes, positionBytes.length, normalUpBytes.length);
         System.arraycopy(normalRightBytes, 0, featureTableBytes, positionBytes.length + normalUpBytes.length, normalRightBytes.length);
 
-        //byte[] batchTableBytes = new byte[0];
-        //byte[] batchIdBytes = pointCloudBinary.getBatchIdBytes();
-        //byte[] batchTableBytes = new byte[batchIdBytes.length];
-        //System.arraycopy(batchIdBytes, 0, batchTableBytes, 0, batchIdBytes.length);
-
         GaiaFeatureTable featureTable = new GaiaFeatureTable();
         featureTable.setInstancesLength(instanceLength);
         featureTable.setPosition(new Position(0));
@@ -129,10 +121,6 @@ public class Instanced3DModel implements TileModel {
         featureTable.setNormalRight(new Normal(positionBytes.length + normalUpBytes.length));
 
         GaiaBatchTable batchTable = new GaiaBatchTable();
-        /*int batchLength = tileInfos.size();
-        for (int i = 0; i < batchLength; i++) {
-            batchTable.getBatchId().add(String.valueOf(i));
-        }*/
 
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -157,9 +145,21 @@ public class Instanced3DModel implements TileModel {
         batchTableJSONByteLength = batchTableJson.length();
         int batchTableBinaryByteLength = 0;
 
-        String gltfUrl = "../snowman-1.glb";
+        String gltfUrl = "instance.glb";
         int byteLength = 32 + featureTableJSONByteLength + featureTableBinaryByteLength + batchTableJSONByteLength + batchTableBinaryByteLength + gltfUrl.length();
 
+        File gltfOutputFile = outputRoot.resolve(gltfUrl).toFile();
+        if (!gltfOutputFile.exists()) {
+            try {
+                GaiaScene gaiaScene = tileInfos.get(0).getScene();
+                GaiaSet gaiaSet = new GaiaSet(gaiaScene);
+                GaiaScene gaiaScene2 = new GaiaScene(gaiaSet);
+
+                gltfWriter.writeGlb(gaiaScene2, gltfOutputFile);
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+        }
 
         File b3dmOutputFile = outputRoot.resolve(nodeCode + "." + MAGIC).toFile();
         try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(b3dmOutputFile)))) {

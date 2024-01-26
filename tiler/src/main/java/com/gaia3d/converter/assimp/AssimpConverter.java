@@ -188,12 +188,6 @@ public class AssimpConverter implements Converter {
         assert node != null;
         Matrix4d rootTransform = node.getTransformMatrix();
 
-        // TODO for test ******************************************************
-        Matrix4d rotationXMatrix = new Matrix4d();
-        rotationXMatrix.rotateX(Math.toRadians(90));
-        rotationXMatrix.mul(rootTransform, rootTransform);
-        // ***************************************************************
-
         node.setTransformMatrix(rootTransform);
         node.recalculateTransform();
         gaiaScene.getNodes().add(node);

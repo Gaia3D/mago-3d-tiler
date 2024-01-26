@@ -29,7 +29,6 @@ public class InstancedProcessModel implements ProcessFlowModel{
 
         List<PreProcess> preProcessors = new ArrayList<>();
         preProcessors.add(new GaiaTester());
-        //preProcessors.add(new GaiaRotator());
 
         TilingProcess tilingProcess = new Instanced3DModelTiler();
 

@@ -2,6 +2,7 @@ package com.gaia3d.basic.command;
 
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import lombok.extern.slf4j.Slf4j;
+import org.joml.Vector3d;
 import org.junit.jupiter.api.Test;
 
 @Slf4j

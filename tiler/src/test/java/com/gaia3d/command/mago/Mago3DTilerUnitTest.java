@@ -1,6 +1,8 @@
 package com.gaia3d.command.mago;
 
 import lombok.extern.slf4j.Slf4j;
+import org.joml.Random;
+import org.joml.Vector3d;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -17,10 +19,10 @@ class Mago3DTilerUnitTest {
         File input = new File(INPUT_PATH, path);
         File output = new File(OUTPUT_PATH, path);
         String args[] = {
-            "-input", input.getAbsolutePath(),
-            "-inputType", "3ds",
-            "-crs", "5186",
-            "-output", output.getAbsolutePath(),
+                "-input", input.getAbsolutePath(),
+                "-inputType", "3ds",
+                "-crs", "5186",
+                "-output", output.getAbsolutePath(),
         };
         Mago3DTilerMain.main(args);
     }
@@ -75,8 +77,93 @@ class Mago3DTilerUnitTest {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
                 "-outputType", "i3dm",
+                "-autoUpAxis",
                 "-glb"
         };
         Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void case06() {
+        String path = "auto-created-i3dm";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        String args[] = {
+                "-input", input.getAbsolutePath(),
+                "-output", output.getAbsolutePath(),
+                "-outputType", "i3dm",
+                "-autoUpAxis",
+                "-glb"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void sampleI3dm() {
+        Vector3d min = new Vector3d(126.728563, 37.370850, 0.0);
+        Vector3d max = new Vector3d(126.733563, 37.375850, 0.0);
+
+        File output = new File(INPUT_PATH, "auto-created-i3dm");
+        output.mkdirs();
+
+        int number = 0;
+        int length = 100;
+        Random random = new Random();
+
+        for (int i = 0; i < length; i++) {
+            for (int j = 0; j < length; j++) {
+                //random position in the bounding box
+                double xpos = ((max.x - min.x) * random.nextFloat()) + min.x;
+                double ypos = ((max.y - min.y) * random.nextFloat()) + min.y;
+
+                String path = "sample-i3dm-" + number + ".kml";
+                String xml =
+                        "<?xml version=\"1.0\" encoding=\"UTF - 8\"?>\n" +
+                                "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n" +
+                                "    <Document>\n" +
+                                "        <Placemark name=\"test\">\n" +
+                                "            <name>Instance Optional" + number + "</name>\n" +
+                                "            <description>Optional</description>\n" +
+                                "            <Model>\n" +
+                                "                <altitudeMode>clampToGround</altitudeMode>\n" +
+                                "                <Location>\n" +
+                                "                    <altitude>0.0</altitude>\n" +
+                                "                    <longitude>" + xpos + "</longitude>\n" +
+                                "                    <latitude>" + ypos + "</latitude>\n" +
+                                "                </Location>\n" +
+                                "                <Orientation>\n" +
+                                "                    <heading>0</heading>\n" +
+                                "                    <tilt>0</tilt>\n" +
+                                "                    <roll>0</roll>\n" +
+                                "                </Orientation>\n" +
+                                "                <Scale>\n" +
+                                "                    <x>1</x>\n" +
+                                "                    <y>1</y>\n" +
+                                "                    <z>1</z>\n" +
+                                "                </Scale>\n" +
+                                "                <Link>\n" +
+                                "                    <href>instance.dae</href>\n" +
+                                "                </Link>\n" +
+                                "            </Model>\n" +
+                                "            <ExtendedData>\n" +
+                                "                <Data name=\"Height\">\n" +
+                                "                    <value>3.0</value>\n" +
+                                "                </Data>\n" +
+                                "                <Data name=\"Type\">\n" +
+                                "                    <value>Tree 1</value>\n" +
+                                "                </Data>\n" +
+                                "            </ExtendedData>\n" +
+                                "        </Placemark>\n" +
+                                "    </Document>\n" +
+                                "</kml>";
+                number++;
+                File outputFile = new File(output, path);
+                try {
+                    org.apache.commons.io.FileUtils.writeStringToFile(outputFile, xml, "UTF-8");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }

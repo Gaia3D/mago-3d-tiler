@@ -100,12 +100,14 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
                 if (childNode != null) {
                     parentNode.getChildren().add(childNode);
                     Content content = childNode.getContent();
-                    if (content != null) {
+                    createNode(childNode, childTileInfos);
+
+                    /*if (content != null) {
                         ContentInfo contentInfo = content.getContentInfo();
                         createNode(childNode, contentInfo.getRemainTileInfos());
                     } else {
                         createNode(childNode, childTileInfos);
-                    }
+                    }*/
                 }
             }
         } else if (!tileInfos.isEmpty()) {
@@ -178,16 +180,18 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         int lodError = refineAdd ? lod.getGeometricErrorBlock() : lod.getGeometricError();
         int lodErrorDouble = lodError * 2;
 
-        List<TileInfo> resultInfos;
-        List<TileInfo> remainInfos;
-        resultInfos = tileInfos.stream().filter(tileInfo -> {
-            double geometricError = tileInfo.getBoundingBox().getLongestDistance();
-            return geometricError >= lodErrorDouble;
-        }).collect(Collectors.toList());
-        remainInfos = tileInfos.stream().filter(tileInfo -> {
-            double geometricError = tileInfo.getBoundingBox().getLongestDistance();
-            return geometricError < lodErrorDouble;
-        }).collect(Collectors.toList());
+        List<TileInfo> resultInfos = new ArrayList<>();
+        List<TileInfo> remainInfos = new ArrayList<>();
+//        resultInfos = tileInfos.stream().filter(tileInfo -> {
+//            double geometricError = tileInfo.getBoundingBox().getLongestDistance();
+//            return geometricError >= lodErrorDouble;
+//        }).collect(Collectors.toList());
+//        remainInfos = tileInfos.stream().filter(tileInfo -> {
+//            double geometricError = tileInfo.getBoundingBox().getLongestDistance();
+//            return geometricError < lodErrorDouble;
+//        }).collect(Collectors.toList());
+        resultInfos = tileInfos;
+
 
         Node childNode = new Node();
         childNode.setParent(parentNode);
