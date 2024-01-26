@@ -22,6 +22,8 @@ import java.nio.file.Path;
 @Builder
 @Slf4j
 public class TileInfo {
+    private int serial = -1;
+
     private KmlInfo kmlInfo;
     private GaiaScene scene;
     private GaiaSet set;
@@ -37,9 +39,10 @@ public class TileInfo {
     private void init() {
         GaiaNode rootNode = this.scene.getNodes().get(0);
         this.transformMatrix = rootNode.getTransformMatrix();
+        this.name = rootNode.getName();
+
         this.boundingBox = this.scene.getGaiaBoundingBox();
         this.scenePath = this.scene.getOriginalPath();
-        this.name = rootNode.getName();
 
         this.tempPath = this.outputPath.resolve("temp");
         File tempFile = this.tempPath.toFile();
@@ -49,12 +52,9 @@ public class TileInfo {
     }
 
     public void minimize(int serial) {
-        if (this.scene != null) {
-            init();
-
+        if (this.scene != null && !this.scene.getNodes().isEmpty()) {
             GaiaSet tempSet = new GaiaSet(this.scene);
             this.tempPath = tempSet.writeFile(this.tempPath, serial);
-
             tempSet.clear();
             tempSet = null;
             this.scene.clear();
@@ -66,7 +66,12 @@ public class TileInfo {
 
     public void maximize() {
         if (this.tempPath == null) {
-            log.warn("Can't maximize tile info because temp path is null.");
+            //log.warn("Can't maximize tile info because temp path is null.");
+            return;
+        }
+        File tempFile = this.tempPath.toFile();
+        if (!tempFile.isFile()) {
+            //log.warn("Can't maximize tile info because temp path is null.");
             return;
         }
         if (this.set != null) {

@@ -90,7 +90,7 @@ public class TilerMain {
         } /*else if (outputType == FormatType.I3DM) {
             processFlow = new InstanceProcessModel();
         } */else {
-            processFlow = new BatchProcessModel();
+            processFlow = new BatchedProcessModel();
         }
         processFlow.run();
     }

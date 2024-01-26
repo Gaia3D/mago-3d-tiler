@@ -14,10 +14,23 @@ import lombok.Setter;
 public class GaiaFeatureTable {
     @JsonProperty("BATCH_LENGTH")
     int batchLength;
-    @JsonProperty("RTC_CENTER")
-    float[] rctCenter;
+    @JsonProperty("INSTANCES_LENGTH")
+    int instancesLength;
     @JsonProperty("POINTS_LENGTH")
     int pointsLength;
+
+    @JsonProperty("RTC_CENTER")
+    float[] rctCenter;
+
+    /* Instanced3DModel */
+    @JsonProperty("EAST_NORTH_UP")
+    boolean eastNorthUp;
+    @JsonProperty("NORMAL_RIGHT")
+    Normal normalRight;
+    @JsonProperty("NORMAL_UP")
+    Normal normalUp;
+
+    /* PointCloud */
     @JsonProperty("POSITION")
     Position position;
     @JsonProperty("RGB")

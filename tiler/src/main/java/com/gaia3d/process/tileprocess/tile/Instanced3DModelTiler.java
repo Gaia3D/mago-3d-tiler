@@ -8,7 +8,7 @@ import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.process.tileprocess.Tiler;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
-import com.gaia3d.process.tileprocess.tile.tileset.asset.*;
+import com.gaia3d.process.tileprocess.tile.tileset.asset.Asset;
 import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
@@ -27,9 +27,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class BatchedModelTiler extends DefaultTiler implements Tiler {
+public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
 
-    public BatchedModelTiler() {}
+    private static final GlobalOptions globalOptions = GlobalOptions.getInstance();
+
+    public Instanced3DModelTiler() {}
 
     @Override
     public Tileset run(List<TileInfo> tileInfos) {
@@ -59,8 +61,8 @@ public class BatchedModelTiler extends DefaultTiler implements Tiler {
         return tileset;
     }
 
+    @Override
     public void writeTileset(Tileset tileset) {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
         Path outputPath = new File(globalOptions.getOutputPath()).toPath();
         File tilesetFile = outputPath.resolve("tileset.json").toFile();
         ObjectMapper objectMapper = new ObjectMapper();
@@ -77,33 +79,8 @@ public class BatchedModelTiler extends DefaultTiler implements Tiler {
         }
     }
 
-    private double calcGeometricError(List<TileInfo> tileInfos) {
-        return tileInfos.stream().mapToDouble(tileInfo -> {
-            GaiaBoundingBox boundingBox = tileInfo.getBoundingBox();
-            double result = boundingBox.getLongestDistance();
-            if (result > 1000.0d) {
-                log.warn("[Warn]{} is too long distance. check it please. (GeometricError)", result);
-            }
-            return result;
-        }).max().orElse(0.0d);
-    }
-
-    private GaiaBoundingBox calcBoundingBox(List<TileInfo> tileInfos) {
-        GaiaBoundingBox boundingBox = new GaiaBoundingBox();
-        tileInfos.forEach(tileInfo -> {
-            KmlInfo kmlInfo = tileInfo.getKmlInfo();
-            Vector3d position = kmlInfo.getPosition();
-            GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();
-            localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(position);
-            boundingBox.addBoundingBox(localBoundingBox);
-        });
-        return boundingBox;
-    }
-
     private void createNode(Node parentNode, List<TileInfo> tileInfos) throws IOException {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
         BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
-        boolean refineAdd = globalOptions.isRefineAdd();
         int nodeLimit = globalOptions.getNodeLimit();
         if (tileInfos.size() > nodeLimit) {
             List<List<TileInfo>> childrenScenes = parentBoundingVolume.distributeScene(tileInfos);
@@ -119,12 +96,11 @@ public class BatchedModelTiler extends DefaultTiler implements Tiler {
             List<List<TileInfo>> childrenScenes = parentBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
-
                 Node childNode = createContentNode(parentNode, childTileInfos, index);
                 if (childNode != null) {
                     parentNode.getChildren().add(childNode);
                     Content content = childNode.getContent();
-                    if (content != null && refineAdd) {
+                    if (content != null) {
                         ContentInfo contentInfo = content.getContentInfo();
                         createNode(childNode, contentInfo.getRemainTileInfos());
                     } else {
@@ -147,7 +123,7 @@ public class BatchedModelTiler extends DefaultTiler implements Tiler {
         }
         String nodeCode = parentNode.getNodeCode();
         nodeCode = nodeCode + index;
-        log.info("[Tiling][LogicalNode ][" + nodeCode + "] : {}", tileInfos.size());
+        log.info("[Tiling][LogicalNode ][" + nodeCode + "][OBJECT{}]", tileInfos.size());
 
         double geometricError = calcGeometricError(tileInfos);
         GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
@@ -197,7 +173,7 @@ public class BatchedModelTiler extends DefaultTiler implements Tiler {
 
         nodeCode = nodeCode + index;
 
-        log.info("[Tiling][ContentNode][" + nodeCode + "][{}] : {}", lod.getLevel(), tileInfos.size());
+        log.info("[Tiling][ContentNode][" + nodeCode + "][LOD{}][OBJECT{}]", lod.getLevel(), tileInfos.size());
 
         int lodError = refineAdd ? lod.getGeometricErrorBlock() : lod.getGeometricError();
         int lodErrorDouble = lodError * 2;
@@ -218,7 +194,7 @@ public class BatchedModelTiler extends DefaultTiler implements Tiler {
         childNode.setTransformMatrix(transformMatrix);
         childNode.setBoundingVolume(boundingVolume);
         childNode.setNodeCode(nodeCode);
-        childNode.setGeometricError(lodError + 0.1); // test.*** test.*** test.*** test.*** test.*** test.*** test.*** test.*** test.*** test.*** test.*** test.***
+        childNode.setGeometricError(lodError + 0.1);
         childNode.setChildren(new ArrayList<>());
 
         childNode.setRefine(refineAdd ? Node.RefineType.ADD : Node.RefineType.REPLACE);
@@ -230,9 +206,8 @@ public class BatchedModelTiler extends DefaultTiler implements Tiler {
             contentInfo.setNodeCode(nodeCode);
             contentInfo.setTileInfos(resultInfos);
             contentInfo.setRemainTileInfos(remainInfos);
-
             Content content = new Content();
-            content.setUri("data/" + nodeCode + ".b3dm");
+            content.setUri("data/" + nodeCode + ".i3dm");
             content.setContentInfo(contentInfo);
             childNode.setContent(content);
         } else {

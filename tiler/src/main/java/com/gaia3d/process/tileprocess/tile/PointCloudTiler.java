@@ -99,19 +99,21 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         }
     }
 
-    private double calcGeometricError(List<TileInfo> tileInfos) {
+    private double calcGeometricError(GaiaPointCloud pointCloud) {
+        GaiaBoundingBox boundingBox = pointCloud.getGaiaBoundingBox();
+        return boundingBox.getLongestDistance();
+    }
+
+    @Override
+    protected double calcGeometricError(List<TileInfo> tileInfos) {
         return tileInfos.stream().mapToDouble(tileInfo -> {
             GaiaBoundingBox boundingBox = tileInfo.getPointCloud().getGaiaBoundingBox();
             return boundingBox.getLongestDistance();
         }).max().orElse(0.0d);
     }
 
-    private double calcGeometricError(GaiaPointCloud pointCloud) {
-        GaiaBoundingBox boundingBox = pointCloud.getGaiaBoundingBox();
-        return boundingBox.getLongestDistance();
-    }
-
-    private GaiaBoundingBox calcBoundingBox(List<TileInfo> tileInfos) {
+    @Override
+    protected GaiaBoundingBox calcBoundingBox(List<TileInfo> tileInfos) {
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         tileInfos.forEach(tileInfo -> {
             GaiaBoundingBox localBoundingBox = tileInfo.getPointCloud().getGaiaBoundingBox();
@@ -182,7 +184,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         childNode.setContent(content);
 
         parentNode.getChildren().add(childNode);
-        log.info("[Tiling][ContentNode][{}] Point cloud nodes calculated.",childNode.getNodeCode());
+        log.info("[Tiling][ContentNode][{}]",childNode.getNodeCode());
 
         if (vertexLength > 0) { // vertexLength > DEFUALT_MAX_COUNT
             List<GaiaPointCloud> distributes = remainPointCloud.distributeOct();

@@ -56,11 +56,15 @@ public class GaiaTexture implements Serializable {
     public void loadImage() {
         Path diffusePath = new File(path).toPath();
         String imagePath = parentPath + File.separator + diffusePath;
-        BufferedImage bufferedImage = readImage(imagePath);
-        //BufferedImage bufferedImage = testImage();
-        this.bufferedImage = bufferedImage;
-        this.width = bufferedImage.getWidth();
-        this.height = bufferedImage.getHeight();
+
+        if (this.bufferedImage == null) {
+            BufferedImage bufferedImage = readImage(imagePath);
+            log.info("loadImage: {}", imagePath);
+            //BufferedImage bufferedImage = testImage();
+            this.bufferedImage = bufferedImage;
+            this.width = bufferedImage.getWidth();
+            this.height = bufferedImage.getHeight();
+        }
     }
 
     public void flipImageY()

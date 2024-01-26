@@ -1,6 +1,7 @@
 package com.gaia3d.process.tileprocess.tile;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.process.tileprocess.tile.tileset.asset.*;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 import com.gaia3d.util.GlobeUtils;
@@ -14,6 +15,29 @@ import java.util.List;
 @Slf4j
 public abstract class DefaultTiler {
 
+    protected double calcGeometricError(List<TileInfo> tileInfos) {
+        return tileInfos.stream().mapToDouble(tileInfo -> {
+            GaiaBoundingBox boundingBox = tileInfo.getBoundingBox();
+            double result = boundingBox.getLongestDistance();
+            if (result > 1000.0d) {
+                log.warn("[Warn]{} is too long distance. check it please. (GeometricError)", result);
+            }
+            return result;
+        }).max().orElse(0.0d);
+    }
+
+    protected GaiaBoundingBox calcBoundingBox(List<TileInfo> tileInfos) {
+        GaiaBoundingBox boundingBox = new GaiaBoundingBox();
+        tileInfos.forEach(tileInfo -> {
+            KmlInfo kmlInfo = tileInfo.getKmlInfo();
+            Vector3d position = kmlInfo.getPosition();
+            GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();
+            localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(position);
+            boundingBox.addBoundingBox(localBoundingBox);
+        });
+        return boundingBox;
+    }
+
     protected void rotateX90(Matrix4d matrix) {
         Matrix4d rotationMatrix = new Matrix4d();
         rotationMatrix.identity();
@@ -24,7 +48,7 @@ public abstract class DefaultTiler {
     protected Matrix4d getTransformMatrix(GaiaBoundingBox boundingBox) {
         Vector3d center = boundingBox.getCenter();
         double[] cartesian = GlobeUtils.geographicToCartesianWgs84(center.x, center.y, center.z);
-        return GlobeUtils.normalAtCartesianPointWgs84(cartesian[0], cartesian[1], cartesian[2]);
+        return GlobeUtils.transformMatrixAtCartesianPointWgs84(cartesian[0], cartesian[1], cartesian[2]);
     }
 
     protected Asset createAsset() {

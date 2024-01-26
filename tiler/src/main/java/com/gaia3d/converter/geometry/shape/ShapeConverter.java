@@ -186,7 +186,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 Vector3d center = building.getBoundingBox().getCenter();
 
                 Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
-                Matrix4d transformMatrix = GlobeUtils.normalAtCartesianPointWgs84(centerWorldCoordinate);
+                Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
                 Matrix4d transfromMatrixInv = new Matrix4d(transformMatrix).invert();
 
                 List<Vector3d> localPositions = new ArrayList<>();

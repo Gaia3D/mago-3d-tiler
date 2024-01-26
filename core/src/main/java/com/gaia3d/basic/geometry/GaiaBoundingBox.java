@@ -103,7 +103,7 @@ public class GaiaBoundingBox implements Serializable {
 
     public GaiaBoundingBox convertLocalToLonlatBoundingBox(Vector3d center) {
         Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
-        Matrix4d transformMatrix = GlobeUtils.normalAtCartesianPointWgs84(centerWorldCoordinate);
+        Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
         
         Vector3d minLocalCoordinate = new Vector3d(minX, minY, minZ);
         Matrix4d minTransfromMatrix = transformMatrix.translate(minLocalCoordinate, new Matrix4d());

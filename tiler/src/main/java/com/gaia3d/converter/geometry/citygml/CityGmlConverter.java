@@ -134,7 +134,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                 Vector3d center = boundingBox.getCenter();
 
                 Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
-                Matrix4d transformMatrix = GlobeUtils.normalAtCartesianPointWgs84(centerWorldCoordinate);
+                Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
                 Matrix4d transfromMatrixInv = new Matrix4d(transformMatrix).invert();
 
                 List<Vector3d> localPositions = new ArrayList<>();

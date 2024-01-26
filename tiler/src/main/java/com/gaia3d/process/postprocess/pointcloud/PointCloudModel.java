@@ -54,8 +54,8 @@ public class PointCloudModel implements TileModel {
         float[] positions = new float[vertexLength * 3];
         Vector3d center = boundingBox.getCenter();
         Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
-        Matrix4d transformMatrix = GlobeUtils.normalAtCartesianPointWgs84(centerWorldCoordinate);
-        Matrix4d transfromMatrixInv = new Matrix4d(transformMatrix).invert();
+        Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
+        Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
 
         byte[] colors = new byte[vertexLength * 3];
         float[] batchIds = new float[vertexLength];
@@ -74,7 +74,7 @@ public class PointCloudModel implements TileModel {
                 }
                 Vector3d position = vertex.getPosition();
                 Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
-                Vector3d localPosition = positionWorldCoordinate.mulPosition(transfromMatrixInv, new Vector3d());
+                Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv, new Vector3d());
 
                 float batchId = vertex.getBatchId();
 
@@ -110,7 +110,7 @@ public class PointCloudModel implements TileModel {
         featureTable.setPointsLength(vertexLength);
         featureTable.setPosition(new Position(0));
         featureTable.setColor(new Color(positionBytes.length));
-        featureTable.setBatchLength(1);
+        featureTable.setBatchLength(1); // TODO is it needed?
 
         BatchId batchIdObject = new BatchId(0, "FLOAT");
         featureTable.setBatchId(batchIdObject);

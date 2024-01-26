@@ -188,6 +188,12 @@ public class AssimpConverter implements Converter {
         assert node != null;
         Matrix4d rootTransform = node.getTransformMatrix();
 
+        // TODO for test ******************************************************
+        Matrix4d rotationXMatrix = new Matrix4d();
+        rotationXMatrix.rotateX(Math.toRadians(90));
+        rotationXMatrix.mul(rootTransform, rootTransform);
+        // ***************************************************************
+
         node.setTransformMatrix(rootTransform);
         node.recalculateTransform();
         gaiaScene.getNodes().add(node);
@@ -496,13 +502,15 @@ public class AssimpConverter implements Converter {
 
         if(mustTranslateTexCoordsToPositiveQuadrant)
         {
-            primitive.translateTexCoordsToPositiveQuadrant();
+            //primitive.translateTexCoordsToPositiveQuadrant();
         }
 
-        if(this.invertTexCoordsYAxis) {
+        if (this.invertTexCoordsYAxis) {
             for (GaiaVertex vertex : primitive.getVertices()) {
                 Vector2d texCoord = vertex.getTexcoords();
-
+                if (texCoord == null) {
+                    continue;
+                }
                 if (this.invertTexCoordsYAxis) {
                     texCoord.y = 1.0 - texCoord.y; // invert the y.***
                 }

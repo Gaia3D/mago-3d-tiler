@@ -8,10 +8,12 @@ import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Properties;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Getter
 @Setter
 public class Tileset {
@@ -23,6 +25,12 @@ public class Tileset {
 
     @JsonIgnore
     public List<ContentInfo> findAllContentInfo() {
-        return root.findAllContentInfo(new ArrayList<>());
+        List <ContentInfo> contentInfos = new ArrayList<>();
+        if (root != null) {
+            contentInfos = root.findAllContentInfo(contentInfos);
+        } else {
+            log.warn("root is null");
+        }
+        return contentInfos;
     }
 }

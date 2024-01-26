@@ -2,10 +2,7 @@ package com.gaia3d.command.mago;
 
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.*;
-import com.gaia3d.process.ProcessOptions;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.*;
-import org.apache.logging.log4j.Level;
 
 import java.io.IOException;
 
@@ -40,16 +37,16 @@ public class Mago3DTiler {
     private ProcessFlowModel getProcessModel(FormatType inputFormat, FormatType outputFormat) {
         ProcessFlowModel processFlow;
         if (FormatType.I3DM == outputFormat) {
-            processFlow = new InstanceProcessModel();
+            processFlow = new InstancedProcessModel();
         } else if (FormatType.B3DM == outputFormat) {
-            processFlow = new BatchProcessModel();
+            processFlow = new BatchedProcessModel();
         } else if (FormatType.PNTS == outputFormat) {
             processFlow = new PointCloudProcessModel();
         } else {
             if (FormatType.LAS == inputFormat || FormatType.LAZ == inputFormat) {
                 processFlow = new PointCloudProcessModel();
             } else {
-                processFlow = new BatchProcessModel();
+                processFlow = new BatchedProcessModel();
             }
         }
         return processFlow;

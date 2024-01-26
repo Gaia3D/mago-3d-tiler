@@ -32,7 +32,7 @@ public class GaiaBatcher implements Batcher {
         for (int i = 0; i < datasetsCount; i++) {
             GaiaBufferDataSet dataSet = dataSets.get(i);
             // check if dataset is visited.***
-            if(visitedMap.containsKey(dataSet)) {
+            if (visitedMap.containsKey(dataSet)) {
                 continue;
             }
 

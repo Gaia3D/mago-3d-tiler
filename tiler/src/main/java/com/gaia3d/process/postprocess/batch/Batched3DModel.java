@@ -118,7 +118,7 @@ public class Batched3DModel implements TileModel {
 
         int byteLength = 28 + featureTableJSONByteLength + batchTableJSONByteLength + glbBytes.length;
 
-        File b3dmOutputFile = outputRoot.resolve(nodeCode + ".b3dm").toFile();
+        File b3dmOutputFile = outputRoot.resolve(nodeCode + "." + MAGIC).toFile();
         try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(b3dmOutputFile)))) {
             // 28-byte header (first 20 bytes)
             stream.writePureText(MAGIC);

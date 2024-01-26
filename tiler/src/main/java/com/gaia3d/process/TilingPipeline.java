@@ -82,18 +82,19 @@ public class TilingPipeline implements Pipeline {
                     TileInfo tileInfo = loadedTileInfos.get(index);
                     if (tileInfo != null) {
                         log.info("[Pre][{}/{}][{}/{}] Loading tiles from file.", finalCount + 1, fileCount, index + 1, infoLength);
+                        tileInfo.setSerial(index + 1);
                         for (PreProcess preProcessors : preProcesses) {
                             preProcessors.run(tileInfo);
                         }
                         // TODO : Upcoming improvements to minimize
-                        tileInfo.minimize(index + 1);
+                        //tileInfo.minimize(index + 1);
                         tileInfos.add(tileInfo);
                     }
                 }
             };
             tasks.add(callableTask);
         }
-        excuteThread(executorService, tasks);
+        executeThread(executorService, tasks);
         log.info("[Pre] End the pre-processing.");
     }
 
@@ -127,12 +128,12 @@ public class TilingPipeline implements Pipeline {
                 for (PostProcess postProcessor : postProcesses) {
                     postProcessor.run(contentInfo);
                 }
-                contentInfo.deleteTexture();
+                //contentInfo.deleteTexture();
                 contentInfo.clear();
             };
             tasks.add(callableTask);
         }
-        excuteThread(executorService, tasks);
+        executeThread(executorService, tasks);
         log.info("[Post] End the post-processing.");
     }
 
@@ -144,14 +145,14 @@ public class TilingPipeline implements Pipeline {
         }
     }
 
-    private void excuteThread(ExecutorService executorService, List<Runnable> tasks) throws InterruptedException {
-        for (Runnable task : tasks) {
-            try {
+    private void executeThread(ExecutorService executorService, List<Runnable> tasks) throws InterruptedException {
+        try {
+            for (Runnable task : tasks) {
                 Future<?> future = executorService.submit(task);
-                Object result = future.get();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+                future.get();
             }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
         executorService.shutdown();
         do {

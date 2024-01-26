@@ -1,6 +1,5 @@
 package com.gaia3d.command;
 
-import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.PointCloudFileLoader;
 import com.gaia3d.converter.pointcloud.LasConverter;
 import com.gaia3d.process.TilingPipeline;
@@ -23,7 +22,6 @@ import java.util.List;
 @Slf4j
 public class PointCloudProcessModel implements ProcessFlowModel{
     public void run() throws IOException {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
         LasConverter converter = new LasConverter();
 
         PointCloudFileLoader fileLoader = new PointCloudFileLoader(converter);

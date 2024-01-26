@@ -13,13 +13,10 @@ import com.gaia3d.process.postprocess.GaiaRelocator;
 import com.gaia3d.process.postprocess.PostProcess;
 import com.gaia3d.process.postprocess.batch.Batched3DModel;
 import com.gaia3d.process.postprocess.batch.GaiaBatcher;
-import com.gaia3d.process.preprocess.GaiaRotator;
-import com.gaia3d.process.preprocess.GaiaScaler;
-import com.gaia3d.process.preprocess.GaiaTranslator;
-import com.gaia3d.process.preprocess.PreProcess;
+import com.gaia3d.process.preprocess.*;
 import com.gaia3d.process.tileprocess.Pipeline;
 import com.gaia3d.process.tileprocess.TilingProcess;
-import com.gaia3d.process.tileprocess.tile.BatchedModelTiler;
+import com.gaia3d.process.tileprocess.tile.Batched3DModelTiler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileExistsException;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -32,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-public class BatchProcessModel implements ProcessFlowModel {
+public class BatchedProcessModel implements ProcessFlowModel {
     public void run() throws IOException {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         String inputExtension = globalOptions.getInputFormat();
@@ -45,17 +42,16 @@ public class BatchProcessModel implements ProcessFlowModel {
         if (globalOptions.getTerrainPath() != null) {
             geoTiffs = fileLoader.loadGridCoverages(geoTiffs);
         }
-
         List<PreProcess> preProcessors = new ArrayList<>();
-        // scale preprocessor 1rst.***
+        preProcessors.add(new GaiaTester());
         preProcessors.add(new GaiaScaler());
-
+        preProcessors.add(new GaiaMinimizer());
         if (!isYUpAxis) {
             preProcessors.add(new GaiaRotator());
         }
         preProcessors.add(new GaiaTranslator(geoTiffs));
 
-        TilingProcess tilingProcess = new BatchedModelTiler();
+        TilingProcess tilingProcess = new Batched3DModelTiler();
 
         List<PostProcess> postProcessors = new ArrayList<>();
         postProcessors.add(new GaiaRelocator());
@@ -88,7 +84,7 @@ public class BatchProcessModel implements ProcessFlowModel {
 
     @Override
     public String getModelName() {
-        return "BatchProcessModel";
+        return "BatchedProcessModel";
     }
 
     protected static boolean validate(Path outputPath) throws IOException {
