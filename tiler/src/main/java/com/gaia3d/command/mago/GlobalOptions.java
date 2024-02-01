@@ -1,5 +1,6 @@
 package com.gaia3d.command.mago;
 
+import com.gaia3d.basic.exchangable.GaiaTextureArchive;
 import com.gaia3d.process.ProcessOptions;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -43,6 +44,8 @@ public class GlobalOptions {
     private String version; // version flag
     private String javaVersionInfo; // java version flag
     private String programInfo; // program info flag
+
+    private GaiaTextureArchive textureArchive = new GaiaTextureArchive();
 
     private long startTime = 0;
     private long endTime = 0;

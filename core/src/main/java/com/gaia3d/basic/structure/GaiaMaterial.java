@@ -71,7 +71,8 @@ public class GaiaMaterial implements Serializable {
         return isOpaque;
     }
 
-    public static boolean areEqualMaterials(GaiaMaterial materialA, GaiaMaterial materialB, float scaleFactor) {
+    /*public static boolean areEqualMaterials(GaiaMaterial materialA, GaiaMaterial materialB, float scaleFactor) {
+
         // This function determines if two materials are equal.
         if (materialA == null && materialB == null) {
             return true;
@@ -108,10 +109,9 @@ public class GaiaMaterial implements Serializable {
                 String fullPathA = textureA.getFullPath();
                 String fullPathB = textureB.getFullPath();
 
-                if(fullPathA.equals(fullPathB)) {
+                if (fullPathA.equals(fullPathB)) {
                     hasTextureAreEquals = true;
-                }
-                else if (!textureA.isEqualTexture(textureB, scaleFactor)) {
+                } else if (!textureA.isEqualTexture(textureB, scaleFactor)) {
                     hasTextureAreEquals = false;
                 }
             }
@@ -123,7 +123,7 @@ public class GaiaMaterial implements Serializable {
             return colorA.equals(colorB);
         }
         return hasTextureAreEquals;
-    }
+    }*/
 
     public void write(BigEndianDataOutputStream stream) throws IOException {
         stream.writeInt(id);
@@ -196,5 +196,25 @@ public class GaiaMaterial implements Serializable {
         this.ambientColor = null;
         this.specularColor = null;
         this.textures = null;
+    }
+
+    public GaiaMaterial clone() throws CloneNotSupportedException {
+        GaiaMaterial newMaterial = new GaiaMaterial();
+        newMaterial.setDiffuseColor(new Vector4d(this.diffuseColor));
+        newMaterial.setAmbientColor(new Vector4d(this.ambientColor));
+        newMaterial.setSpecularColor(new Vector4d(this.specularColor));
+        newMaterial.setShininess(this.shininess);
+        newMaterial.setId(this.id);
+        newMaterial.setName(this.name);
+        for (Map.Entry<TextureType, List<GaiaTexture>> entry : this.textures.entrySet()) {
+            TextureType textureType = entry.getKey();
+            List<GaiaTexture> gaiaTextures = entry.getValue();
+            List<GaiaTexture> newGaiaTextures = new ArrayList<>();
+            for (GaiaTexture gaiaTexture : gaiaTextures) {
+                newGaiaTextures.add(gaiaTexture.clone());
+            }
+            newMaterial.textures.put(textureType, newGaiaTextures);
+        }
+        return newMaterial;
     }
 }

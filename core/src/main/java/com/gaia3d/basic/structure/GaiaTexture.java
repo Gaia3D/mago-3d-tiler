@@ -51,19 +51,28 @@ public class GaiaTexture implements Serializable {
     private BufferedImage bufferedImage;
     private ByteBuffer byteBuffer;
 
+    //temp
+    private BufferedImage originalBufferedImage;
+
     private int textureId = -1;
 
     public void loadImage() {
         Path diffusePath = new File(path).toPath();
         String imagePath = parentPath + File.separator + diffusePath;
-
         if (this.bufferedImage == null) {
-            BufferedImage bufferedImage = readImage(imagePath);
-            log.info("loadImage: {}", imagePath);
-            //BufferedImage bufferedImage = testImage();
-            this.bufferedImage = bufferedImage;
-            this.width = bufferedImage.getWidth();
-            this.height = bufferedImage.getHeight();
+            if (this.originalBufferedImage != null) {
+                log.info("reuse Image: {}", imagePath);
+                this.bufferedImage = this.originalBufferedImage;
+                this.width = this.originalBufferedImage.getWidth();
+                this.height = this.originalBufferedImage.getHeight();
+            } else {
+                //log.info("loadImage: {}", imagePath);
+                BufferedImage bufferedImage = readImage(imagePath);
+                this.bufferedImage = bufferedImage;
+                this.width = bufferedImage.getWidth();
+                this.height = bufferedImage.getHeight();
+                this.originalBufferedImage = bufferedImage;
+            }
         }
     }
 
@@ -96,15 +105,18 @@ public class GaiaTexture implements Serializable {
     }
 
     private BufferedImage testImage() {
-        BufferedImage bufferedImage = new BufferedImage(16, 16, BufferedImage.TYPE_BYTE_BINARY);
+        BufferedImage bufferedImage = new BufferedImage(1, 1, BufferedImage.TYPE_3BYTE_BGR);
         Graphics2D graphics = bufferedImage.createGraphics();
-        graphics.setColor(Color.WHITE);
-        graphics.fillRect(0, 0, 16, 16);
+        graphics.setColor(Color.ORANGE);
+        graphics.fillRect(0, 0, 1, 1);
         return bufferedImage;
     }
 
     public void loadImage(float scaleFactor) {
         loadImage();
+        if (scaleFactor >= 1.0f) {
+            return;
+        }
         int resizeWidth = (int) (this.bufferedImage.getWidth() * scaleFactor);
         int resizeHeight = (int) (this.bufferedImage.getHeight() * scaleFactor);
         resizeWidth = ImageUtils.getNearestPowerOfTwo(resizeWidth);
@@ -112,6 +124,7 @@ public class GaiaTexture implements Serializable {
         this.width = resizeWidth;
         this.height = resizeHeight;
         ImageResizer imageResizer = new ImageResizer();
+        log.info("loadImage(resize): {}{}", path, scaleFactor);
         this.bufferedImage = imageResizer.resizeImageGraphic2D(this.bufferedImage, resizeWidth, resizeHeight);
     }
 
@@ -133,9 +146,6 @@ public class GaiaTexture implements Serializable {
 
     public void deleteObjects()
     {
-        //if (textureId != -1) {
-        //    GL20.glDeleteTextures(textureId);
-        //}
         if (byteBuffer != null) {
             byteBuffer.clear();
         }
@@ -144,9 +154,12 @@ public class GaiaTexture implements Serializable {
         }
     }
 
+
     public boolean isEqualTexture(GaiaTexture compareTexture) {
         BufferedImage bufferedImage = this.getBufferedImage();
         BufferedImage comparebufferedImage = compareTexture.getBufferedImage();
+        //BufferedImage bufferedImage = this.getThumbnailImage();
+        //BufferedImage comparebufferedImage = compareTexture.getThumbnailImage();
 
         int width = this.getWidth();
         int height = this.getHeight();
@@ -168,35 +181,59 @@ public class GaiaTexture implements Serializable {
         int length = rgbaByteArray.length;
         int length2 = rgbaByteArray2.length;
 
-        if(length != length2)
-        {
+        if (length != length2) {
             return false;
         }
 
         float differenceAccum = 0;
         float difference = 0;
         float tolerance = 5.0f;
-        for(int i=0; i<length; i++)
-        {
+        for (int i = 0; i < length; i++) {
             difference = Math.abs(rgbaByteArray[i] - rgbaByteArray2[i]);
             differenceAccum += difference;
-            if((differenceAccum/(float)(i+1)) > tolerance)
-            {
+            if((differenceAccum/(float)(i+1)) > tolerance) {
                 return false;
             }
         }
 
         float differenceRatio = differenceAccum / (float)length;
 
-        if(differenceRatio < tolerance)
-        {
+        if (differenceRatio < tolerance) {
             return true;
+        } else {
+            return false;
         }
-        else {
+    }
+
+    public boolean isEqualTexture(BufferedImage textureA, BufferedImage textureB) {
+        byte[] rgbaByteArray = ((DataBufferByte) textureA.getRaster().getDataBuffer()).getData();
+        byte[] rgbaByteArray2 = ((DataBufferByte) textureB.getRaster().getDataBuffer()).getData();
+
+        // compare the byte array by difference.***
+        int length = rgbaByteArray.length;
+        int length2 = rgbaByteArray2.length;
+        if (length != length2) {
             return false;
         }
 
-        //return Arrays.equals(rgbaByteArray, rgbaByteArray2);
+        float differenceAccum = 0;
+        float difference = 0;
+        float tolerance = 5.0f;
+        for (int i = 0; i < length; i++) {
+            difference = Math.abs(rgbaByteArray[i] - rgbaByteArray2[i]);
+            differenceAccum += difference;
+            if((differenceAccum/(float)(i+1)) > tolerance) {
+                return false;
+            }
+        }
+
+        float differenceRatio = differenceAccum / (float)length;
+
+        if (differenceRatio < tolerance) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public boolean isEqualTexture(GaiaTexture compareTexture, float scaleFactor) {
@@ -255,5 +292,9 @@ public class GaiaTexture implements Serializable {
             this.byteBuffer.clear();
             this.byteBuffer = null;
         }
+    }
+
+    public GaiaTexture clone() throws CloneNotSupportedException {
+        return (GaiaTexture) super.clone();
     }
 }

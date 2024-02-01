@@ -99,8 +99,8 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
                 Node childNode = createContentNode(parentNode, childTileInfos, index);
                 if (childNode != null) {
                     parentNode.getChildren().add(childNode);
-                    Content content = childNode.getContent();
                     createNode(childNode, childTileInfos);
+                    //Content content = childNode.getContent();
 
                     /*if (content != null) {
                         ContentInfo contentInfo = content.getContentInfo();

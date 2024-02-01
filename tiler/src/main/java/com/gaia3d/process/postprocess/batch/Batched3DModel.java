@@ -36,7 +36,10 @@ public class Batched3DModel implements TileModel {
 
     @Override
     public ContentInfo run(ContentInfo contentInfo) {
-        GaiaSet batchedSet = contentInfo.getBatchedSet();
+        GaiaBatcher gaiaBatcher = new GaiaBatcher();
+        GaiaSet batchedSet = gaiaBatcher.runBatching(contentInfo.getTileInfos(), contentInfo.getNodeCode(), contentInfo.getLod());
+
+        //GaiaSet batchedSet = contentInfo.getBatchedSet();
         int featureTableJSONByteLength;
         int batchTableJSONByteLength;
         String featureTableJson;

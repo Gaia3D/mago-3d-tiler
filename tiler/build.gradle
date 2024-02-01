@@ -68,6 +68,8 @@ dependencies {
 
     // jackson (json library)
     implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
+    // jackson-xml
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.2'
 
     // GeoTools (geospatial library)
     implementation "org.geotools:gt-geotiff:21.3"

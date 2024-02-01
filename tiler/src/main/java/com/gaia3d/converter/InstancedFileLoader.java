@@ -4,7 +4,9 @@ import com.gaia3d.basic.structure.GaiaScene;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.FastKmlReader;
+import com.gaia3d.converter.kml.JacksonKmlReader;
 import com.gaia3d.converter.kml.KmlInfo;
+import com.gaia3d.converter.kml.KmlReader;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -24,14 +26,14 @@ import java.util.List;
 @Slf4j
 public class InstancedFileLoader implements FileLoader {
     private final Converter converter;
-    private final FastKmlReader kmlReader;
+    private final KmlReader kmlReader;
 
     /* For instanced model */
     private File instanceFile = null;
     private GaiaScene instanceScene = null;
 
     public InstancedFileLoader(Converter converter) {
-        this.kmlReader = new FastKmlReader();
+        this.kmlReader = new JacksonKmlReader();
         this.converter = converter;
     }
     
@@ -76,7 +78,7 @@ public class InstancedFileLoader implements FileLoader {
         return (List<File>) FileUtils.listFiles(inputFile, extensions, recursive);
     }
 
-    @Override
+    /*@Override
     public List<TileInfo> loadTileInfo(File file) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         Path outputPath = new File(globalOptions.getOutputPath()).toPath();
@@ -104,6 +106,39 @@ public class InstancedFileLoader implements FileLoader {
                         .outputPath(outputPath)
                         .build();
                 tileInfos.add(tileInfo);
+            }
+        }
+        return tileInfos;
+    }*/
+
+    @Override
+    public List<TileInfo> loadTileInfo(File file) {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        Path outputPath = new File(globalOptions.getOutputPath()).toPath();
+        String inputExtension = globalOptions.getInputFormat();
+        FormatType formatType = FormatType.fromExtension(inputExtension);
+        List<TileInfo> tileInfos = new ArrayList<>();
+
+        if (FormatType.KML == formatType) {
+            List<KmlInfo> kmlInfos = kmlReader.readAll(file);
+            if (kmlInfos != null) {
+                for (KmlInfo kmlInfo : kmlInfos) {
+                    if (instanceFile == null || instanceScene == null) {
+                        instanceFile = new File(file.getParent(), kmlInfo.getHref());
+                        List<GaiaScene> scenes = loadScene(instanceFile);
+                        for (GaiaScene scene : scenes) {
+                            if (instanceScene == null) {
+                                instanceScene = scene;
+                            }
+                        }
+                    }
+                    TileInfo tileInfo = TileInfo.builder()
+                            .kmlInfo(kmlInfo)
+                            .scene(instanceScene)
+                            .outputPath(outputPath)
+                            .build();
+                    tileInfos.add(tileInfo);
+                }
             }
         }
         return tileInfos;

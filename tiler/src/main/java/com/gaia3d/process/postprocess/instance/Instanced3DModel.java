@@ -10,11 +10,10 @@ import com.gaia3d.converter.jgltf.GltfWriter;
 import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.process.postprocess.TileModel;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTable;
-import com.gaia3d.process.postprocess.pointcloud.Color;
+import com.gaia3d.process.postprocess.batch.GaiaBatcher;
 import com.gaia3d.process.postprocess.pointcloud.Position;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
-import com.gaia3d.util.DecimalUtils;
 import com.gaia3d.util.GlobeUtils;
 import com.gaia3d.util.io.LittleEndianDataOutputStream;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +24,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -71,13 +71,7 @@ public class Instanced3DModel implements TileModel {
             KmlInfo kmlInfo = tileInfo.getKmlInfo();
             Vector3d position = kmlInfo.getPosition();
             Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
-            //Vector3d localPosition = positionWorldCoordinate.sub(centerWorldCoordinate);
-
-
-            //Vecter3d test = new Vecter3d(0,0,0);
             Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv, new Vector3d());
-
-            //Vector3d localPosition = new Vector3d(0, 0, 0);
 
             positions[positionIndex.getAndIncrement()] = (float) localPosition.x;
             positions[positionIndex.getAndIncrement()] = (float) -localPosition.z;
@@ -151,11 +145,15 @@ public class Instanced3DModel implements TileModel {
         File gltfOutputFile = outputRoot.resolve(gltfUrl).toFile();
         if (!gltfOutputFile.exists()) {
             try {
-                GaiaScene gaiaScene = tileInfos.get(0).getScene();
-                GaiaSet gaiaSet = new GaiaSet(gaiaScene);
-                GaiaScene gaiaScene2 = new GaiaScene(gaiaSet);
+                TileInfo firstTileInfo = tileInfos.get(0);
+                GaiaScene firstGaiaScene = tileInfos.get(0).getScene();
+                firstTileInfo.setSet(new GaiaSet(firstGaiaScene));
+                List<TileInfo> tileInfo = new ArrayList<>();
+                tileInfo.add(tileInfos.get(0));
 
-                gltfWriter.writeGlb(gaiaScene2, gltfOutputFile);
+                GaiaBatcher gaiaBatcher = new GaiaBatcher();
+                GaiaSet gaiaSet = gaiaBatcher.runBatching(tileInfo, contentInfo.getNodeCode(), contentInfo.getLod());
+                gltfWriter.writeGlb(new GaiaScene(gaiaSet), gltfOutputFile);
             } catch (Exception e) {
                 log.error(e.getMessage());
             }

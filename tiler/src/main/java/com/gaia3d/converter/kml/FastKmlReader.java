@@ -7,6 +7,7 @@ import org.joml.Vector3d;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.List;
 
 /**
  * KmlReader is a class that reads kml files.
@@ -17,8 +18,9 @@ import java.nio.file.Files;
  */
 @Slf4j
 @NoArgsConstructor
-public class FastKmlReader {
+public class FastKmlReader implements KmlReader{
 
+    @Override
     public KmlInfo read(File file) {
         KmlInfo kmlInfo = null;
         try {
@@ -42,6 +44,11 @@ public class FastKmlReader {
             throw new RuntimeException(e);
         }
         return kmlInfo;
+    }
+
+    @Override
+    public List<KmlInfo> readAll(File file) {
+        return null;
     }
 
     private String findValue(String xml, String tag) {

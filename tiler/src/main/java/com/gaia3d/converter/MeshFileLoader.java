@@ -4,7 +4,9 @@ import com.gaia3d.basic.structure.GaiaScene;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.FastKmlReader;
+import com.gaia3d.converter.kml.JacksonKmlReader;
 import com.gaia3d.converter.kml.KmlInfo;
+import com.gaia3d.converter.kml.KmlReader;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -24,7 +26,7 @@ import java.util.List;
 @Slf4j
 public class MeshFileLoader implements FileLoader {
     private final Converter converter;
-    private final FastKmlReader kmlReader;
+    private final KmlReader kmlReader;
 
     public MeshFileLoader(Converter converter) {
         this.kmlReader = new FastKmlReader();

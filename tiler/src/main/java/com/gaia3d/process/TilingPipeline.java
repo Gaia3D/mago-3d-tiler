@@ -72,7 +72,7 @@ public class TilingPipeline implements Pipeline {
             int finalCount = count;
             Runnable callableTask = () -> {
                 List<TileInfo> loadedTileInfos = fileLoader.loadTileInfo(file);
-                log.warn("[Pre][{}/{}] Loading file : {}", finalCount + 1, fileCount, file.getName());
+                log.info("[Pre][{}/{}] Loading file : {}", finalCount + 1, fileCount, file.getName());
                 if (loadedTileInfos == null) {
                     log.warn("[Pre][{}/{}] Failed to load file : {}.", finalCount + 1, fileCount, file.getName());
                     return;
@@ -120,16 +120,10 @@ public class TilingPipeline implements Pipeline {
         for (ContentInfo contentInfo : contentInfos) {
             Runnable callableTask = () -> {
                 log.info("[Post][{}/{}] post-process in progress. : {}", count.getAndIncrement(), contentCount, contentInfo.getName());
-                List<TileInfo> childTileInfos = contentInfo.getTileInfos();
-                for (TileInfo tileInfo : childTileInfos) {
-                    // TODO : Upcoming improvements to maximize
-                    tileInfo.maximize();
-                }
                 for (PostProcess postProcessor : postProcesses) {
                     postProcessor.run(contentInfo);
                 }
-                //contentInfo.deleteTexture();
-                contentInfo.clear();
+                //contentInfo.clear();
             };
             tasks.add(callableTask);
         }

@@ -212,8 +212,7 @@ public class GaiaTextureCoordinator {
             BufferedImage bufferedImage;
             if (!textures.isEmpty()) {
                 texture = textures.get(0);
-                if(texture.getPath().endsWith(".png") || texture.getPath().endsWith(".PNG"))
-                {
+                if (texture.getPath().endsWith(".png") || texture.getPath().endsWith(".PNG")) {
                     existPngTextures = true;
                 }
                 bufferedImage = texture.getBufferedImage(lod.getTextureScale());
@@ -249,9 +248,7 @@ public class GaiaTextureCoordinator {
                 splittedImage.batchedBoundary.setMinY(bestPosition.y);
                 splittedImage.batchedBoundary.setMaxX(bestPosition.x + originBoundary.getWidth());
                 splittedImage.batchedBoundary.setMaxY(bestPosition.y + originBoundary.getHeight());
-
             }
-
             listProcessSplitDatas.add(splittedImage);
         }
 
@@ -279,7 +276,6 @@ public class GaiaTextureCoordinator {
                 graphics.drawImage(source, (int) splittedRectangle.getMinX(), (int) splittedRectangle.getMinY(), null);
             }
         }
-
 
         if (globalOptions.isDebug()) {
             // TODO : debug color
@@ -312,13 +308,6 @@ public class GaiaTextureCoordinator {
             texture.setWidth(maxWidth);
             texture.setHeight(maxHeight);
 
-            // original.***********************************************************
-//            if (command.hasOption(ProcessOptions.PNG_TEXTURE.getLongName())) {
-//                texture.setPath(ATLAS_IMAGE + ".png");
-//            } else {
-//                texture.setPath(ATLAS_IMAGE + ".jpg");
-//            }
-
             if (existPngTextures) {
                 texture.setPath(ATLAS_IMAGE + ".png");
             } else {
@@ -326,11 +315,11 @@ public class GaiaTextureCoordinator {
             }
 
             // test save atlasTexture image.****
-            String extension = "jpg";
+            /*String extension = "jpg";
             if (existPngTextures) {
                 extension = "png";
             }
-            //this.writeBatchedImage(extension);
+            this.writeBatchedImage(extension);*/
             // end test.************************
 
             List<GaiaBufferDataSet> materialBufferDataSets = bufferDataSets.stream().filter((bufferDataSet) -> bufferDataSet.getMaterialId() == target.getMaterialId()).collect(Collectors.toList());
@@ -381,9 +370,8 @@ public class GaiaTextureCoordinator {
     }
 
     private void writeBatchedImage(String imageExtension) {
-        File file = new File("D:\\Result_mago3dTiler\\atlasImages\\" );
-        if(!file.exists())
-        {
+        File file = new File("D:\\Mago3DTiler-UnitTest\\output\\case01-3ds-ws2\\" );
+        if (!file.exists()) {
             if (!file.mkdirs()) {
                 log.error("Failed to create directory");
             }

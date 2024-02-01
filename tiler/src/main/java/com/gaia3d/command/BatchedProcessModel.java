@@ -9,10 +9,10 @@ import com.gaia3d.converter.geometry.citygml.CityGmlConverter;
 import com.gaia3d.converter.geometry.geojson.GeoJsonConverter;
 import com.gaia3d.converter.geometry.shape.ShapeConverter;
 import com.gaia3d.process.TilingPipeline;
+import com.gaia3d.process.postprocess.GaiaMaximizer;
 import com.gaia3d.process.postprocess.GaiaRelocator;
 import com.gaia3d.process.postprocess.PostProcess;
 import com.gaia3d.process.postprocess.batch.Batched3DModel;
-import com.gaia3d.process.postprocess.batch.GaiaBatcher;
 import com.gaia3d.process.preprocess.*;
 import com.gaia3d.process.tileprocess.Pipeline;
 import com.gaia3d.process.tileprocess.TilingProcess;
@@ -54,8 +54,8 @@ public class BatchedProcessModel implements ProcessFlowModel {
         TilingProcess tilingProcess = new Batched3DModelTiler();
 
         List<PostProcess> postProcessors = new ArrayList<>();
+        postProcessors.add(new GaiaMaximizer());
         postProcessors.add(new GaiaRelocator());
-        postProcessors.add(new GaiaBatcher());
         postProcessors.add(new Batched3DModel());
 
         Pipeline processPipeline = new TilingPipeline(preProcessors, tilingProcess, postProcessors);
