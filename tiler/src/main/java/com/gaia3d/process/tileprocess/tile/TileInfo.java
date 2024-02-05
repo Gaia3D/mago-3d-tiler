@@ -60,7 +60,7 @@ public class TileInfo {
 
         if (this.scene != null && !this.scene.getNodes().isEmpty()) {
             GaiaSet tempSet = new GaiaSet(this.scene);
-            this.tempPath = tempSet.writeFile(options.getTextureArchive(), this.tempPath, serial);
+            this.tempPath = tempSet.writeFile(this.tempPath, serial);
             tempSet.clear();
             tempSet = null;
             this.scene.clear();
@@ -79,15 +79,15 @@ public class TileInfo {
         if (!tempFile.isFile()) {
             return;
         }
-        /*if (this.set != null) {
+        if (this.set != null) {
             this.set.deleteTextures();
             this.set = null;
         }
-        this.set = new GaiaSet(this.tempPath);*/
+        this.set = new GaiaSet(this.tempPath);
 
-        if (this.set == null) {
+        /*if (this.set == null) {
             this.set = new GaiaSet(this.tempPath);
-        }
+        }*/
     }
 
     public void clear() {

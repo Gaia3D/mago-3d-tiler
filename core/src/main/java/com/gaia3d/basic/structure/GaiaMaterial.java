@@ -198,7 +198,7 @@ public class GaiaMaterial implements Serializable {
         this.textures = null;
     }
 
-    public GaiaMaterial clone() throws CloneNotSupportedException {
+    public GaiaMaterial clone() {
         GaiaMaterial newMaterial = new GaiaMaterial();
         newMaterial.setDiffuseColor(new Vector4d(this.diffuseColor));
         newMaterial.setAmbientColor(new Vector4d(this.ambientColor));

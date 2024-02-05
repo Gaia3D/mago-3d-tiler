@@ -83,7 +83,7 @@ public class GaiaSet implements Serializable{
         return boundingBox;
     }
 
-    public Path writeFile(GaiaTextureArchive gaiaTextureArchive, Path path, int serial) {
+    public Path writeFile(Path path, int serial) {
         String tempFile = projectName + "_" + serial + "." + FormatType.TEMP.getExtension();
         File output = new File(path.toAbsolutePath().toString(), tempFile);
         try (BigEndianDataOutputStream stream = new BigEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(output), 32768))) {
@@ -107,12 +107,12 @@ public class GaiaSet implements Serializable{
                     imageTempPath.toFile().mkdir();
 
                     Path outputPath = imageTempPath.resolve(diffusePath);
-                    //outputPath.toFile().getAbsolutePath();
 
+                    /*outputPath.toFile().getAbsolutePath();
                     BufferedImage bufferedImage = ImageIO.read(new File(imagePath));
                     ImageResizer imageResizer = new ImageResizer();
                     BufferedImage resizedImage = imageResizer.resizeImageGraphic2D(bufferedImage, 16, 16);
-                    gaiaTextureArchive.addTexture(outputPath.toFile().getAbsolutePath(), resizedImage);
+                    gaiaTextureArchive.addTexture(outputPath.toFile().getAbsolutePath(), resizedImage);*/
 
                     FileUtils.copyFile(new File(imagePath), outputPath.toFile());
                 }

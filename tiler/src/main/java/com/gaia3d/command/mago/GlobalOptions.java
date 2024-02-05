@@ -29,7 +29,7 @@ public class GlobalOptions {
 
     private static final String DEFAULT_INPUT_FORMAT = "kml";
     private static final String DEFAULT_OUTPUT_FORMAT = "b3dm";
-    private static final int DEFAULT_NODE_LIMIT = 8192;
+    private static final int DEFAULT_NODE_LIMIT = 1024;
     private static final int DEFAULT_MIN_LOD = 0;
     private static final int DEFAULT_MAX_LOD = 3;
     private static final int DEFAULT_POINT_LIMIT = 20000;

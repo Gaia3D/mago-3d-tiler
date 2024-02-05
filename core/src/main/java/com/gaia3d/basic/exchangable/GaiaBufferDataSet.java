@@ -170,10 +170,18 @@ public class GaiaBufferDataSet implements Serializable {
         clone.setGuid(this.guid);
         clone.setMaterialId(this.materialId);
         clone.setMaterial(this.material.clone());
-        clone.setBoundingBox(this.boundingBox.clone());
-        clone.setTexcoordBoundingRectangle(this.texcoordBoundingRectangle.clone());
-        clone.setTransformMatrix((Matrix4d) this.transformMatrix.clone());
-        clone.setPreMultipliedTransformMatrix((Matrix4d) this.preMultipliedTransformMatrix.clone());
+        if (this.boundingBox != null) {
+            clone.setBoundingBox(this.boundingBox.clone());
+        }
+        if (this.texcoordBoundingRectangle != null) {
+            clone.setTexcoordBoundingRectangle(this.texcoordBoundingRectangle.clone());
+        }
+        if (this.transformMatrix != null) {
+            clone.setTransformMatrix((Matrix4d) this.transformMatrix.clone());
+        }
+        if (this.preMultipliedTransformMatrix != null) {
+            clone.setPreMultipliedTransformMatrix((Matrix4d) this.preMultipliedTransformMatrix.clone());
+        }
         for (Map.Entry<AttributeType, GaiaBuffer> entry : this.buffers.entrySet()) {
             clone.buffers.put(entry.getKey(), entry.getValue().clone());
         }

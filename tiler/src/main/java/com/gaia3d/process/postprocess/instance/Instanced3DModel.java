@@ -17,6 +17,7 @@ import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.GlobeUtils;
 import com.gaia3d.util.io.LittleEndianDataOutputStream;
 import lombok.extern.slf4j.Slf4j;
+import org.joml.Matrix3d;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
@@ -67,11 +68,24 @@ public class Instanced3DModel implements TileModel {
             Vector3d normalUp = new Vector3d(0, 0, 1);
             Vector3d normalRight = new Vector3d(1, 0, 0);
 
+
             // GPS Coordinates
             KmlInfo kmlInfo = tileInfo.getKmlInfo();
             Vector3d position = kmlInfo.getPosition();
             Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
             Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv, new Vector3d());
+
+            double headingValue = Math.toRadians(kmlInfo.getHeading());
+
+            Matrix3d rotationMatrix = new Matrix3d();
+            rotationMatrix.rotateY(headingValue);
+
+            normalUp = rotationMatrix.transform(normalUp);
+            normalRight = rotationMatrix.transform(normalRight);
+
+            //Vector3d heading = new Vector3d(Math.cos(headingValue), Math.sin(headingValue), 0);
+            //normalRight = heading;
+            //normalUp = new Vector3d(0, 0, 1);
 
             positions[positionIndex.getAndIncrement()] = (float) localPosition.x;
             positions[positionIndex.getAndIncrement()] = (float) -localPosition.z;
@@ -80,10 +94,17 @@ public class Instanced3DModel implements TileModel {
             normalUps[normalUpIndex.getAndIncrement()] = (float) normalUp.x;
             normalUps[normalUpIndex.getAndIncrement()] = (float) normalUp.y;
             normalUps[normalUpIndex.getAndIncrement()] = (float) normalUp.z;
+            /*normalUps[normalUpIndex.getAndIncrement()] = (float) heading.x;
+            normalUps[normalUpIndex.getAndIncrement()] = (float) heading.y;
+            normalUps[normalUpIndex.getAndIncrement()] = (float) heading.z;*/
 
             normalRights[normalRightIndex.getAndIncrement()] = (float) normalRight.x;
             normalRights[normalRightIndex.getAndIncrement()] = (float) normalRight.y;
             normalRights[normalRightIndex.getAndIncrement()] = (float) normalRight.z;
+
+            /*normalRights[normalRightIndex.getAndIncrement()] = (float) heading.x;
+            normalRights[normalRightIndex.getAndIncrement()] = (float) -heading.y;
+            normalRights[normalRightIndex.getAndIncrement()] = (float) heading.z;*/
         }
 
         Instanced3DModelBinary instanced3DModelBinary = new Instanced3DModelBinary();
@@ -102,6 +123,12 @@ public class Instanced3DModel implements TileModel {
         byte[] normalUpBytes = instanced3DModelBinary.getNormalUpBytes();
         byte[] normalRightBytes = instanced3DModelBinary.getNormalRightBytes();
 
+        int padding = 8;
+        int calculatedLength = positionBytes.length + normalUpBytes.length + normalRightBytes.length;
+        if (calculatedLength % padding != 0) {
+            calculatedLength += padding - (calculatedLength % padding);
+        }
+
         byte[] featureTableBytes = new byte[positionBytes.length + normalUpBytes.length + normalRightBytes.length];
         System.arraycopy(positionBytes, 0, featureTableBytes, 0, positionBytes.length);
         System.arraycopy(normalUpBytes, 0, featureTableBytes, positionBytes.length, normalUpBytes.length);
@@ -109,8 +136,8 @@ public class Instanced3DModel implements TileModel {
 
         GaiaFeatureTable featureTable = new GaiaFeatureTable();
         featureTable.setInstancesLength(instanceLength);
-        featureTable.setPosition(new Position(0));
         featureTable.setEastNorthUp(false);
+        featureTable.setPosition(new Position(0));
         featureTable.setNormalUp(new Normal(positionBytes.length));
         featureTable.setNormalRight(new Normal(positionBytes.length + normalUpBytes.length));
 
@@ -121,12 +148,12 @@ public class Instanced3DModel implements TileModel {
 
         try {
             StringBuilder featureTableText = new StringBuilder(objectMapper.writeValueAsString(featureTable));
-            int featureTableJsonOffset = featureTableText.length() % 8;
+            int featureTableJsonOffset = featureTableText.length() % padding;
             featureTableText.append(" ".repeat(Math.max(0, featureTableJsonOffset)));
             featureTableJson = featureTableText.toString();
 
             StringBuilder batchTableText = new StringBuilder(objectMapper.writeValueAsString(batchTable));
-            int batchTableJsonOffset = batchTableText.length() % 8;
+            int batchTableJsonOffset = batchTableText.length() % padding;
             batchTableText.append(" ".repeat(Math.max(0, batchTableJsonOffset)));
             batchTableJson = batchTableText.toString();
         } catch (JsonProcessingException e) {

@@ -8,10 +8,8 @@ import com.gaia3d.basic.structure.GaiaTexture;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.process.ProcessOptions;
 import com.gaia3d.process.tileprocess.tile.LevelOfDetail;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.CommandLine;
 import org.joml.Vector2d;
 
 import javax.imageio.ImageIO;
@@ -19,7 +17,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.Buffer;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.*;

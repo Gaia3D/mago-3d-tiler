@@ -3,7 +3,6 @@ package com.gaia3d.process.postprocess.batch;
 import com.gaia3d.basic.exchangable.GaiaBuffer;
 import com.gaia3d.basic.exchangable.GaiaBufferDataSet;
 import com.gaia3d.basic.exchangable.GaiaSet;
-import com.gaia3d.basic.exchangable.GaiaTextureArchive;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.structure.GaiaMaterial;
 import com.gaia3d.basic.structure.GaiaTexture;
@@ -19,7 +18,6 @@ import org.joml.Vector2d;
 import org.joml.Vector4d;
 import org.lwjgl.opengl.GL20;
 
-import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -39,11 +37,8 @@ public class GaiaBatcher {
             }
 
             GaiaMaterial material = dataSet.material;
-            int materialId = material.getId();
-            for (int j = i + 1; j < datasetsCount; j++) {
+            for (int  j= i + 1; j < datasetsCount; j++) {
                 GaiaBufferDataSet dataSet2 = dataSets.get(j);
-
-                // check if dataset2 is visited.***
                 if (visitedMap.containsKey(dataSet2)) {
                     continue;
                 }
@@ -87,7 +82,6 @@ public class GaiaBatcher {
         if (materialA == materialB) {
             return true;
         }
-
         Map<TextureType, List<GaiaTexture>> textureMapA = materialA.getTextures();
 
         Set<TextureType> keys = textureMapA.keySet();
@@ -101,9 +95,11 @@ public class GaiaBatcher {
             } else if (listTexturesA == null || listTexturesB == null) {
                 hasTextureAreEquals = false;
             }
+
             if (listTexturesA.size() != listTexturesB.size()) {
                 hasTextureAreEquals = false;
             }
+
             for (int i = 0; i < listTexturesA.size() && i < listTexturesB.size(); i++) {
                 GaiaTexture textureA = listTexturesA.get(i);
                 GaiaTexture textureB = listTexturesB.get(i);
@@ -112,23 +108,11 @@ public class GaiaBatcher {
                 // check if the fullPath of the textures are equal.***
                 String fullPathA = textureA.getFullPath();
                 String fullPathB = textureB.getFullPath();
-
-                GaiaTextureArchive gaiaTextureArchive = options.getTextureArchive();
-                BufferedImage bufferedImageA = gaiaTextureArchive.getTexture(fullPathA);
-                BufferedImage bufferedImageB = gaiaTextureArchive.getTexture(fullPathB);
-
                 if (fullPathA.equals(fullPathB)) {
-                    hasTextureAreEquals = true;
-                } else if (!textureA.isEqualTexture(bufferedImageA, bufferedImageB)) {
-                    hasTextureAreEquals = false;
-                }
-
-
-                /*if (fullPathA.equals(fullPathB)) {
                     hasTextureAreEquals = true;
                 } else if (!textureA.isEqualTexture(textureB, scaleFactor)) {
                     hasTextureAreEquals = false;
-                }*/
+                }
             }
         }
 

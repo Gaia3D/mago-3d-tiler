@@ -88,7 +88,7 @@ class Mago3DTilerUnitTest {
     @Test
     void case06() {
         String path = "auto-created-i3dm";
-        //String path = "auto-created-i3dm-10000";
+
         sampleI3dm(path, 1000, 1);
         File input = new File(INPUT_PATH, path);
         File output = new File("C:\\Workspaces\\GitSources\\mago\\mago-3d-tiler\\viewer\\mago-3d-tiler-data\\i3dm");
@@ -105,12 +105,6 @@ class Mago3DTilerUnitTest {
                 "-glb"
         };
         Mago3DTilerMain.main(args);
-    }
-
-    @Test
-    void sampleI3dmMini() {
-        Vector3d min = new Vector3d(128.451174 , 37.716102, 0.0);
-        Vector3d max = new Vector3d(128.744637, 37.849919, 0.0);
     }
 
     //@Test
@@ -152,6 +146,7 @@ class Mago3DTilerUnitTest {
             System.out.println("path: " + path);
             for (int i = 0; i < length; i++) {
                 for (int j = 0; j < length; j++) {
+                    double scale = random.nextFloat() * 0.5 + 0.5;
                     double xpos = ((max.x - min.x) * random.nextFloat()) + min.x;
                     double ypos = ((max.y - min.y) * random.nextFloat()) + min.y;
                     xmlBodys.append(
@@ -163,14 +158,14 @@ class Mago3DTilerUnitTest {
                             "        <latitude>" + ypos + "</latitude>\n" +
                             "    </Location>\n" +
                             "    <Orientation>\n" +
-                            "        <heading>0</heading>\n" +
+                            "        <heading>"+ random.nextInt(360) +"</heading>\n" +
                             "        <tilt>0</tilt>\n" +
                             "        <roll>0</roll>\n" +
                             "    </Orientation>\n" +
                             "    <Scale>\n" +
-                            "        <x>1</x>\n" +
-                            "        <y>1</y>\n" +
-                            "        <z>1</z>\n" +
+                            "        <x>" + scale + "</x>\n" +
+                            "        <y>" + scale + "</y>\n" +
+                            "        <z>" + scale + "</z>\n" +
                             "    </Scale>\n" +
                             "    <Link>\n" +
                             "        <href>instance.dae</href>\n" +
