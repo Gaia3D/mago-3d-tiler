@@ -40,12 +40,12 @@ public class GaiaTranslator implements PreProcess {
         Vector3d center = getPosition(inputType, gaiaScene);
         Vector3d translation = getTranslation(gaiaScene);
 
+        // set position terrain height
         coverages.forEach((coverage) -> {
             DirectPosition2D memSave_posWorld = new DirectPosition2D(DefaultGeographicCRS.WGS84, center.x, center.y);
             double[] memSave_alt = new double[1];
             memSave_alt[0] = 0;
             coverage.evaluate((DirectPosition) memSave_posWorld, memSave_alt);
-
             log.info("memSave_alt[0] : {}", memSave_alt[0]);
             center.z = memSave_alt[0];
         });
@@ -54,12 +54,8 @@ public class GaiaTranslator implements PreProcess {
         Matrix4d translationMatrix = new Matrix4d().translate(translation); // new
         Matrix4d resultTransfromMatrix = new Matrix4d(); // new
         translationMatrix.mul(transform, resultTransfromMatrix); // new
-        //Matrix4d resultTransfromMatrix = transform.translate(translation, new Matrix4d()); // original
 
         rootNode.setTransformMatrix(resultTransfromMatrix);
-
-//        GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox(); // original.***
-//        gaiaScene.setGaiaBoundingBox(boundingBox); // original.***
         tileInfo.setTransformMatrix(resultTransfromMatrix);
 
         GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox(); // new
