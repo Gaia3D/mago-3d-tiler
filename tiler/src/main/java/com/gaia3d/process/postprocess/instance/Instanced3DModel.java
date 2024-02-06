@@ -55,6 +55,7 @@ public class Instanced3DModel implements TileModel {
         float[] positions = new float[instanceLength * 3];
         float[] normalUps = new float[instanceLength * 3];
         float[] normalRights = new float[instanceLength * 3];
+        float[] scales = new float[instanceLength];
 
         Vector3d center = contentInfo.getBoundingBox().getCenter();
         Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
@@ -64,10 +65,10 @@ public class Instanced3DModel implements TileModel {
         AtomicInteger positionIndex = new AtomicInteger();
         AtomicInteger normalUpIndex = new AtomicInteger();
         AtomicInteger normalRightIndex = new AtomicInteger();
+        AtomicInteger scaleIndex = new AtomicInteger();
         for (TileInfo tileInfo : tileInfos) {
             Vector3d normalUp = new Vector3d(0, 0, 1);
             Vector3d normalRight = new Vector3d(1, 0, 0);
-
 
             // GPS Coordinates
             KmlInfo kmlInfo = tileInfo.getKmlInfo();
@@ -75,17 +76,15 @@ public class Instanced3DModel implements TileModel {
             Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
             Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv, new Vector3d());
 
+            // rotate
             double headingValue = Math.toRadians(kmlInfo.getHeading());
-
             Matrix3d rotationMatrix = new Matrix3d();
             rotationMatrix.rotateY(headingValue);
-
             normalUp = rotationMatrix.transform(normalUp);
             normalRight = rotationMatrix.transform(normalRight);
 
-            //Vector3d heading = new Vector3d(Math.cos(headingValue), Math.sin(headingValue), 0);
-            //normalRight = heading;
-            //normalUp = new Vector3d(0, 0, 1);
+            // scale
+            double scale = kmlInfo.getScaleZ();
 
             positions[positionIndex.getAndIncrement()] = (float) localPosition.x;
             positions[positionIndex.getAndIncrement()] = (float) -localPosition.z;
@@ -94,23 +93,19 @@ public class Instanced3DModel implements TileModel {
             normalUps[normalUpIndex.getAndIncrement()] = (float) normalUp.x;
             normalUps[normalUpIndex.getAndIncrement()] = (float) normalUp.y;
             normalUps[normalUpIndex.getAndIncrement()] = (float) normalUp.z;
-            /*normalUps[normalUpIndex.getAndIncrement()] = (float) heading.x;
-            normalUps[normalUpIndex.getAndIncrement()] = (float) heading.y;
-            normalUps[normalUpIndex.getAndIncrement()] = (float) heading.z;*/
 
             normalRights[normalRightIndex.getAndIncrement()] = (float) normalRight.x;
             normalRights[normalRightIndex.getAndIncrement()] = (float) normalRight.y;
             normalRights[normalRightIndex.getAndIncrement()] = (float) normalRight.z;
 
-            /*normalRights[normalRightIndex.getAndIncrement()] = (float) heading.x;
-            normalRights[normalRightIndex.getAndIncrement()] = (float) -heading.y;
-            normalRights[normalRightIndex.getAndIncrement()] = (float) heading.z;*/
+            scales[scaleIndex.getAndIncrement()] = (float) scale;
         }
 
         Instanced3DModelBinary instanced3DModelBinary = new Instanced3DModelBinary();
         instanced3DModelBinary.setPositions(positions);
         instanced3DModelBinary.setNormalUps(normalUps);
         instanced3DModelBinary.setNormalRights(normalRights);
+        instanced3DModelBinary.setScales(scales);
 
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         File outputFile = new File(globalOptions.getOutputPath());
@@ -122,17 +117,13 @@ public class Instanced3DModel implements TileModel {
         byte[] positionBytes = instanced3DModelBinary.getPositionBytes();
         byte[] normalUpBytes = instanced3DModelBinary.getNormalUpBytes();
         byte[] normalRightBytes = instanced3DModelBinary.getNormalRightBytes();
+        byte[] scaleBytes = instanced3DModelBinary.getScaleBytes();
 
-        int padding = 8;
-        int calculatedLength = positionBytes.length + normalUpBytes.length + normalRightBytes.length;
-        if (calculatedLength % padding != 0) {
-            calculatedLength += padding - (calculatedLength % padding);
-        }
-
-        byte[] featureTableBytes = new byte[positionBytes.length + normalUpBytes.length + normalRightBytes.length];
+        byte[] featureTableBytes = new byte[positionBytes.length + normalUpBytes.length + normalRightBytes.length + scaleBytes.length];
         System.arraycopy(positionBytes, 0, featureTableBytes, 0, positionBytes.length);
         System.arraycopy(normalUpBytes, 0, featureTableBytes, positionBytes.length, normalUpBytes.length);
         System.arraycopy(normalRightBytes, 0, featureTableBytes, positionBytes.length + normalUpBytes.length, normalRightBytes.length);
+        System.arraycopy(scaleBytes, 0, featureTableBytes, positionBytes.length + normalUpBytes.length + normalRightBytes.length, scaleBytes.length);
 
         GaiaFeatureTable featureTable = new GaiaFeatureTable();
         featureTable.setInstancesLength(instanceLength);
@@ -140,6 +131,7 @@ public class Instanced3DModel implements TileModel {
         featureTable.setPosition(new Position(0));
         featureTable.setNormalUp(new Normal(positionBytes.length));
         featureTable.setNormalRight(new Normal(positionBytes.length + normalUpBytes.length));
+        featureTable.setScale(new Scale(positionBytes.length + normalUpBytes.length + normalRightBytes.length));
 
         GaiaBatchTable batchTable = new GaiaBatchTable();
 
@@ -148,13 +140,19 @@ public class Instanced3DModel implements TileModel {
 
         try {
             StringBuilder featureTableText = new StringBuilder(objectMapper.writeValueAsString(featureTable));
-            int featureTableJsonOffset = featureTableText.length() % padding;
-            featureTableText.append(" ".repeat(Math.max(0, featureTableJsonOffset)));
+            int featureTableJsonOffset = featureTableText.length() % 8;
+            if (featureTableJsonOffset != 0) {
+                int padding = 8 - featureTableJsonOffset;
+                featureTableText.append(" ".repeat(Math.max(0, padding)));
+            }
             featureTableJson = featureTableText.toString();
 
             StringBuilder batchTableText = new StringBuilder(objectMapper.writeValueAsString(batchTable));
-            int batchTableJsonOffset = batchTableText.length() % padding;
-            batchTableText.append(" ".repeat(Math.max(0, batchTableJsonOffset)));
+            int batchTableJsonOffset = batchTableText.length() % 8;
+            if (batchTableJsonOffset != 0) {
+                int padding = 8 - batchTableJsonOffset;
+                batchTableText.append(" ".repeat(Math.max(0, padding)));
+            }
             batchTableJson = batchTableText.toString();
         } catch (JsonProcessingException e) {
             log.error(e.getMessage());
@@ -170,7 +168,7 @@ public class Instanced3DModel implements TileModel {
         int byteLength = 32 + featureTableJSONByteLength + featureTableBinaryByteLength + batchTableJSONByteLength + batchTableBinaryByteLength + gltfUrl.length();
 
         File gltfOutputFile = outputRoot.resolve(gltfUrl).toFile();
-        if (!gltfOutputFile.exists()) {
+        if (true/*!gltfOutputFile.exists()*/) {
             try {
                 TileInfo firstTileInfo = tileInfos.get(0);
                 GaiaScene firstGaiaScene = tileInfos.get(0).getScene();
@@ -197,6 +195,7 @@ public class Instanced3DModel implements TileModel {
 
             // 32-byte header (next 12 bytes)
             stream.writeInt(batchTableJSONByteLength);
+            //stream.writeInt(0);
             stream.writeInt(batchTableBinaryByteLength);
             stream.writeInt(gltfFormat);
 
@@ -211,4 +210,5 @@ public class Instanced3DModel implements TileModel {
         }
         return contentInfo;
     }
+
 }

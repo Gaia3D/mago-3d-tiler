@@ -89,7 +89,7 @@ class Mago3DTilerUnitTest {
     void case06() {
         String path = "auto-created-i3dm";
 
-        sampleI3dm(path, 1000, 1);
+        sampleI3dm(path, 10, 1);
         File input = new File(INPUT_PATH, path);
         File output = new File("C:\\Workspaces\\GitSources\\mago\\mago-3d-tiler\\viewer\\mago-3d-tiler-data\\i3dm");
         //File output = new File("F:\\output", path);

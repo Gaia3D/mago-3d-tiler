@@ -125,7 +125,7 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         }
         String nodeCode = parentNode.getNodeCode();
         nodeCode = nodeCode + index;
-        log.info("[Tiling][LogicalNode ][" + nodeCode + "][OBJECT{}]", tileInfos.size());
+        log.info("[Tiling][LogicalNode][" + nodeCode + "][OBJECT{}]", tileInfos.size());
 
         double geometricError = calcGeometricError(tileInfos);
         GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
