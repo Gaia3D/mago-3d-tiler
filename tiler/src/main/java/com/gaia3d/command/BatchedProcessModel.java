@@ -43,12 +43,12 @@ public class BatchedProcessModel implements ProcessFlowModel {
             geoTiffs = fileLoader.loadGridCoverages(geoTiffs);
         }
         List<PreProcess> preProcessors = new ArrayList<>();
-        preProcessors.add(new GaiaTester());
+        preProcessors.add(new GaiaTileInfoinitiator());
         preProcessors.add(new GaiaScaler());
         if (!isYUpAxis) {
             preProcessors.add(new GaiaRotator());
         }
-        preProcessors.add(new GaiaTranslator(geoTiffs)); // original.***
+        preProcessors.add(new GaiaTranslator(geoTiffs));
         preProcessors.add(new GaiaMinimizer());
 
         TilingProcess tilingProcess = new Batched3DModelTiler();

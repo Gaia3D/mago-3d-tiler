@@ -479,7 +479,7 @@ public class AssimpConverter implements Converter {
         }
 
         if (mustTranslateTexCoordsToPositiveQuadrant) {
-            primitive.translateTexCoordsToPositiveQuadrant();
+            //primitive.translateTexCoordsToPositiveQuadrant();
         }
 
         if (this.invertTexCoordsYAxis) {

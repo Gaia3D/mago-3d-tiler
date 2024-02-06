@@ -12,6 +12,7 @@ import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.DecimalUtils;
+import com.gaia3d.util.StringUtils;
 import com.gaia3d.util.io.LittleEndianDataInputStream;
 import com.gaia3d.util.io.LittleEndianDataOutputStream;
 import lombok.extern.slf4j.Slf4j;
@@ -107,11 +108,11 @@ public class Batched3DModel implements TileModel {
         ObjectMapper objectMapper = new ObjectMapper();
 
         try {
-            String featureTableText = objectMapper.writeValueAsString(featureTable);
+            String featureTableText = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(featureTable));
             featureTableJson = featureTableText;
             featureTableJSONByteLength = featureTableText.length();
 
-            String batchTableText = objectMapper.writeValueAsString(batchTable);
+            String batchTableText = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(batchTable));
             batchTableJson = batchTableText;
             batchTableJSONByteLength = batchTableText.length();
         } catch (JsonProcessingException e) {

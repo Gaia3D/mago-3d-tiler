@@ -1,5 +1,6 @@
 package com.gaia3d.command;
 
+import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.FileLoader;
 import com.gaia3d.converter.InstancedFileLoader;
@@ -7,7 +8,7 @@ import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.process.TilingPipeline;
 import com.gaia3d.process.postprocess.PostProcess;
 import com.gaia3d.process.postprocess.instance.Instanced3DModel;
-import com.gaia3d.process.preprocess.GaiaTester;
+import com.gaia3d.process.preprocess.GaiaTileInfoinitiator;
 import com.gaia3d.process.preprocess.PreProcess;
 import com.gaia3d.process.tileprocess.Pipeline;
 import com.gaia3d.process.tileprocess.TilingProcess;
@@ -25,7 +26,7 @@ public class InstancedProcessModel implements ProcessFlowModel{
         FileLoader fileLoader = new InstancedFileLoader(converter);
 
         List<PreProcess> preProcessors = new ArrayList<>();
-        preProcessors.add(new GaiaTester());
+        preProcessors.add(new GaiaTileInfoinitiator());
 
         TilingProcess tilingProcess = new Instanced3DModelTiler();
 
@@ -39,5 +40,12 @@ public class InstancedProcessModel implements ProcessFlowModel{
     @Override
     public String getModelName() {
         return "InstancedProcessModel";
+    }
+
+    private boolean getYUpAxis(FormatType formatType, boolean isYUpAxis) {
+        if (formatType == FormatType.CITY_GML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON || formatType == FormatType.JSON) {
+            isYUpAxis = true;
+        }
+        return isYUpAxis;
     }
 }

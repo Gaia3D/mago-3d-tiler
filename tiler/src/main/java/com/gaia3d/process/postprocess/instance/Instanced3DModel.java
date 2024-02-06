@@ -15,6 +15,7 @@ import com.gaia3d.process.postprocess.pointcloud.Position;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.GlobeUtils;
+import com.gaia3d.util.StringUtils;
 import com.gaia3d.util.io.LittleEndianDataOutputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix3d;
@@ -67,7 +68,8 @@ public class Instanced3DModel implements TileModel {
         AtomicInteger normalRightIndex = new AtomicInteger();
         AtomicInteger scaleIndex = new AtomicInteger();
         for (TileInfo tileInfo : tileInfos) {
-            Vector3d normalUp = new Vector3d(0, 0, 1);
+            //y-up
+            Vector3d normalUp = new Vector3d(0, 1, 0);
             Vector3d normalRight = new Vector3d(1, 0, 0);
 
             // GPS Coordinates
@@ -75,6 +77,9 @@ public class Instanced3DModel implements TileModel {
             Vector3d position = kmlInfo.getPosition();
             Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
             Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv, new Vector3d());
+
+            // local position(Z-UP), gltf position(Y-UP)
+            Vector3d localPositionYUp = new Vector3d(localPosition.x, -localPosition.z, localPosition.y);
 
             // rotate
             double headingValue = Math.toRadians(kmlInfo.getHeading());
@@ -86,9 +91,9 @@ public class Instanced3DModel implements TileModel {
             // scale
             double scale = kmlInfo.getScaleZ();
 
-            positions[positionIndex.getAndIncrement()] = (float) localPosition.x;
-            positions[positionIndex.getAndIncrement()] = (float) -localPosition.z;
-            positions[positionIndex.getAndIncrement()] = (float) localPosition.y;
+            positions[positionIndex.getAndIncrement()] = (float) localPositionYUp.x;
+            positions[positionIndex.getAndIncrement()] = (float) localPositionYUp.y;
+            positions[positionIndex.getAndIncrement()] = (float) localPositionYUp.z;
 
             normalUps[normalUpIndex.getAndIncrement()] = (float) normalUp.x;
             normalUps[normalUpIndex.getAndIncrement()] = (float) normalUp.y;
@@ -139,21 +144,8 @@ public class Instanced3DModel implements TileModel {
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
         try {
-            StringBuilder featureTableText = new StringBuilder(objectMapper.writeValueAsString(featureTable));
-            int featureTableJsonOffset = featureTableText.length() % 8;
-            if (featureTableJsonOffset != 0) {
-                int padding = 8 - featureTableJsonOffset;
-                featureTableText.append(" ".repeat(Math.max(0, padding)));
-            }
-            featureTableJson = featureTableText.toString();
-
-            StringBuilder batchTableText = new StringBuilder(objectMapper.writeValueAsString(batchTable));
-            int batchTableJsonOffset = batchTableText.length() % 8;
-            if (batchTableJsonOffset != 0) {
-                int padding = 8 - batchTableJsonOffset;
-                batchTableText.append(" ".repeat(Math.max(0, padding)));
-            }
-            batchTableJson = batchTableText.toString();
+            featureTableJson = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(featureTable));
+            batchTableJson = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(batchTable));
         } catch (JsonProcessingException e) {
             log.error(e.getMessage());
             throw new RuntimeException(e);
@@ -168,7 +160,7 @@ public class Instanced3DModel implements TileModel {
         int byteLength = 32 + featureTableJSONByteLength + featureTableBinaryByteLength + batchTableJSONByteLength + batchTableBinaryByteLength + gltfUrl.length();
 
         File gltfOutputFile = outputRoot.resolve(gltfUrl).toFile();
-        if (true/*!gltfOutputFile.exists()*/) {
+        if (!gltfOutputFile.exists()) {
             try {
                 TileInfo firstTileInfo = tileInfos.get(0);
                 GaiaScene firstGaiaScene = tileInfos.get(0).getScene();

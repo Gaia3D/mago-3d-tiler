@@ -12,19 +12,37 @@ import java.io.File;
 class Mago3DTilerUnitTest {
 
     private static final String INPUT_PATH = "D:\\Mago3DTiler-UnitTest\\input";
-    private static final String OUTPUT_PATH = "D:\\Mago3DTiler-UnitTest\\output";
+    //private static final String OUTPUT_PATH = "D:\\Mago3DTiler-UnitTest\\output";
+    private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\mago\\mago-3d-tiler\\viewer\\mago-3d-tiler-data\\";
+
+    @Test
+    void case00() {
+        String path = "case00-3ds-gy";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String args[] = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "3ds",
+                "-crs", "5186",
+                "-autoUpAxis",
+                "-output", output.getAbsolutePath(),
+        };
+        Mago3DTilerMain.main(args);
+    }
 
     @Test
     void case01() {
         String path = "case01-3ds-ws2";
         File input = new File(INPUT_PATH, path);
         File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
         String args[] = {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "3ds",
                 "-crs", "5186",
+                "-autoUpAxis",
                 "-output", output.getAbsolutePath(),
-                //"-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -34,9 +52,11 @@ class Mago3DTilerUnitTest {
         String path = "case02-kml-ws2";
         File input = new File(INPUT_PATH, path);
         File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
         String args[] = {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
+                //"-autoUpAxis", // is not supported
         };
         Mago3DTilerMain.main(args);
     }
@@ -46,10 +66,12 @@ class Mago3DTilerUnitTest {
         String path = "case03-shp-seoul";
         File input = new File(INPUT_PATH, path);
         File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
         String args[] = {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "shp",
                 "-output", output.getAbsolutePath(),
+                "-autoUpAxis",
                 "-refineAdd",
                 "-proj", "+proj=tmerc +lat_0=38 +lon_0=127.0028902777778 +k=1 +x_0=200000 +y_0=500000 +ellps=bessel +units=m +no_defs +towgs84=-115.80,474.99,674.11,1.16,-2.31,-1.63,6.43",
         };
@@ -61,9 +83,11 @@ class Mago3DTilerUnitTest {
         String path = "case04-las-mapo";
         File input = new File(INPUT_PATH, path);
         File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
         String args[] = {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "las",
+                "-autoUpAxis",
                 "-output", output.getAbsolutePath(),
                 "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
         };
@@ -75,6 +99,7 @@ class Mago3DTilerUnitTest {
         String path = "case05-kml-trees-instance";
         File input = new File(INPUT_PATH, path);
         File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
         String args[] = {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
@@ -87,14 +112,12 @@ class Mago3DTilerUnitTest {
 
     @Test
     void case06() {
-        String path = "auto-created-i3dm";
-
-        sampleI3dm(path, 10, 1);
+        String path = "case06-kml-auto-instance";
+        sampleI3dm(path, 100, 1);
         File input = new File(INPUT_PATH, path);
-        File output = new File("C:\\Workspaces\\GitSources\\mago\\mago-3d-tiler\\viewer\\mago-3d-tiler-data\\i3dm");
-        //File output = new File("F:\\output", path);
-
-        //File output = new File(OUTPUT_PATH, path);
+        //File output = new File("C:\\Workspaces\\GitSources\\mago\\mago-3d-tiler\\viewer\\mago-3d-tiler-data\\i3dm");
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
         String args[] = {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
@@ -110,7 +133,7 @@ class Mago3DTilerUnitTest {
     //@Test
     void sampleI3dm(String filePath, int length, int fileCount) {
         Vector3d min = new Vector3d(128.451174 , 37.716102, 0.0);
-        Vector3d max = new Vector3d(128.744637, 37.849919, 0.0);
+        Vector3d max = new Vector3d(128.744637, 37.749919, 0.0);
 
         File output = new File(INPUT_PATH, filePath);
         if (output.mkdirs()) {

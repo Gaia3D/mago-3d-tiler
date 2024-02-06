@@ -80,10 +80,12 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
     private void createNode(Node parentNode, List<TileInfo> tileInfos) throws IOException {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
+        BoundingVolume squareBoundingVolume = parentBoundingVolume.createSqureBoundingVolume();
+
         boolean refineAdd = globalOptions.isRefineAdd();
         int nodeLimit = globalOptions.getNodeLimit();
         if (tileInfos.size() > nodeLimit) {
-            List<List<TileInfo>> childrenScenes = parentBoundingVolume.distributeScene(tileInfos);
+            List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
                 Node childNode = createLogicalNode(parentNode, childTileInfos, index);
@@ -93,7 +95,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
                 }
             }
         } else if (tileInfos.size() > 1) {
-            List<List<TileInfo>> childrenScenes = parentBoundingVolume.distributeScene(tileInfos);
+            List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
 

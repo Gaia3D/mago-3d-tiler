@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.process.tileprocess.Tiler;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
 import com.gaia3d.process.tileprocess.tile.tileset.asset.Asset;
@@ -15,7 +14,6 @@ import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 import com.gaia3d.util.DecimalUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
-import org.joml.Vector3d;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -24,7 +22,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
@@ -81,9 +78,11 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
 
     private void createNode(Node parentNode, List<TileInfo> tileInfos) throws IOException {
         BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
+        BoundingVolume squareBoundingVolume = parentBoundingVolume.createSqureBoundingVolume();
+
         int nodeLimit = globalOptions.getNodeLimit();
         if (tileInfos.size() > nodeLimit) {
-            List<List<TileInfo>> childrenScenes = parentBoundingVolume.distributeScene(tileInfos);
+            List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
                 Node childNode = createLogicalNode(parentNode, childTileInfos, index);
@@ -93,21 +92,13 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
                 }
             }
         } else if (tileInfos.size() > 1) {
-            List<List<TileInfo>> childrenScenes = parentBoundingVolume.distributeScene(tileInfos);
+            List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
                 Node childNode = createContentNode(parentNode, childTileInfos, index);
                 if (childNode != null) {
                     parentNode.getChildren().add(childNode);
                     createNode(childNode, childTileInfos);
-                    //Content content = childNode.getContent();
-
-                    /*if (content != null) {
-                        ContentInfo contentInfo = content.getContentInfo();
-                        createNode(childNode, contentInfo.getRemainTileInfos());
-                    } else {
-                        createNode(childNode, childTileInfos);
-                    }*/
                 }
             }
         } else if (!tileInfos.isEmpty()) {
@@ -158,6 +149,8 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
         Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
         rotateX90(transformMatrix);
+
+
 
         BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
 

@@ -57,8 +57,8 @@ public class GaiaTexture implements Serializable {
         Path diffusePath = new File(path).toPath();
         String imagePath = parentPath + File.separator + diffusePath;
         if (this.bufferedImage == null) {
-            //BufferedImage bufferedImage = readImage(imagePath);
-            BufferedImage bufferedImage = testImage();
+            BufferedImage bufferedImage = readImage(imagePath);
+            //BufferedImage bufferedImage = testImage();
             this.bufferedImage = bufferedImage;
             this.width = bufferedImage.getWidth();
             this.height = bufferedImage.getHeight();
@@ -104,9 +104,6 @@ public class GaiaTexture implements Serializable {
 
     public void loadImage(float scaleFactor) {
         loadImage();
-        /*if (scaleFactor >= 1.0f) {
-            return;
-        }*/
         int resizeWidth = (int) (this.bufferedImage.getWidth() * scaleFactor);
         int resizeHeight = (int) (this.bufferedImage.getHeight() * scaleFactor);
         resizeWidth = ImageUtils.getNearestPowerOfTwo(resizeWidth);
@@ -114,7 +111,6 @@ public class GaiaTexture implements Serializable {
         this.width = resizeWidth;
         this.height = resizeHeight;
         ImageResizer imageResizer = new ImageResizer();
-        log.info("loadImage(resize): {} -> {}", path, scaleFactor);
         this.bufferedImage = imageResizer.resizeImageGraphic2D(this.bufferedImage, resizeWidth, resizeHeight);
     }
 

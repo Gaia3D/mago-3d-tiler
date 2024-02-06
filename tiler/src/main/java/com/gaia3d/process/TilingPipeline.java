@@ -22,6 +22,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -67,6 +68,7 @@ public class TilingPipeline implements Pipeline {
         ExecutorService executorService = Executors.newFixedThreadPool(globalOptions.getMultiThreadCount());
         List<Runnable> tasks = new ArrayList<>();
         int fileCount = fileList.size();
+        AtomicLong nodeCount = new AtomicLong(0);
         for (int count = 0; count < fileCount; count++) {
             File file = fileList.get(count);
             int finalCount = count;
@@ -78,6 +80,7 @@ public class TilingPipeline implements Pipeline {
                     return;
                 }
                 int infoLength = loadedTileInfos.size();
+                nodeCount.addAndGet(infoLength);
                 for (int index = 0; index < infoLength; index++) {
                     TileInfo tileInfo = loadedTileInfos.get(index);
                     if (tileInfo != null) {
@@ -95,6 +98,22 @@ public class TilingPipeline implements Pipeline {
             tasks.add(callableTask);
         }
         executeThread(executorService, tasks);
+
+        // Auto set node limit
+        if (globalOptions.getNodeLimit() < 0) {
+            if (fileCount > 1048576) {
+                globalOptions.setNodeLimit(16384);
+            } else if (fileCount > 524288) {
+                globalOptions.setNodeLimit(8192);
+            } else if (fileCount > 262144) {
+                globalOptions.setNodeLimit(4096);
+            } else if (fileCount > 131072) {
+                globalOptions.setNodeLimit(2048);
+            } else {
+                globalOptions.setNodeLimit(1024);
+            }
+        }
+        log.info("[Pre] Total Node Count {}, Auto Node limit : {}", nodeCount, globalOptions.getNodeLimit());
         log.info("[Pre] End the pre-processing.");
     }
 

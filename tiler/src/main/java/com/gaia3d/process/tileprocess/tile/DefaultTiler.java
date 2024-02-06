@@ -26,15 +26,50 @@ public abstract class DefaultTiler {
         }).max().orElse(0.0d);
     }
 
+    /*protected GaiaBoundingBox calcRootBoundingBox(List<TileInfo> tileInfos) {
+        GaiaBoundingBox boundingBox = new GaiaBoundingBox();
+        tileInfos.forEach(tileInfo -> {
+            KmlInfo kmlInfo = tileInfo.getKmlInfo();
+            Vector3d position = kmlInfo.getPosition();
+            GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();
+            // rotate
+            localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(position);
+            boundingBox.addBoundingBox(localBoundingBox);
+        });
+
+        // make square bounding box
+        double xLength = boundingBox.getMaxX() - boundingBox.getMinX();
+        double yLength = boundingBox.getMaxY() - boundingBox.getMinY();
+        double offset = Math.abs(xLength - yLength);
+
+        if (xLength > yLength) {
+            boundingBox.setMaxY(boundingBox.getMaxY() + offset);
+        } else {
+            boundingBox.setMaxX(boundingBox.getMaxX() + offset);
+        }
+        return boundingBox;
+    }*/
+
     protected GaiaBoundingBox calcBoundingBox(List<TileInfo> tileInfos) {
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         tileInfos.forEach(tileInfo -> {
             KmlInfo kmlInfo = tileInfo.getKmlInfo();
             Vector3d position = kmlInfo.getPosition();
             GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();
+            // rotate
             localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(position);
             boundingBox.addBoundingBox(localBoundingBox);
         });
+
+        // make square bounding box
+//        double xLength = boundingBox.getMaxX() - boundingBox.getMinX();
+//        double yLength = boundingBox.getMaxY() - boundingBox.getMinY();
+//        double offset = Math.abs(xLength - yLength);
+//        if (xLength > yLength) {
+//            boundingBox.setMaxY(boundingBox.getMaxY() + offset);
+//        } else {
+//            boundingBox.setMaxX(boundingBox.getMaxX() + offset);
+//        }
         return boundingBox;
     }
 
