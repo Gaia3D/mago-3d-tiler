@@ -116,8 +116,6 @@ In this case, please contact us at sales@gaia3d.com
 - **proj4j** (Converting coordinate reference systems): <https://github.com/locationtech/proj4j>
 - **citygml4j** (The Open Source Java API for CityGML): <https://github.com/citygml4j/citygml4j>
 
-### Note: I3DM is successfully implemented in C++ and is now being ported to Java based mago 3DTiler. So, stay tuned!
-
 ---
 
 
@@ -236,5 +234,3 @@ JDK21는 부분적으로 사용이 가능한 것을 확인했습니다.
 - **geotools** (Geospatial data library): <https://github.com/geotools/geotools>
 - **proj4j** (Converting coordinate reference systems): <https://github.com/locationtech/proj4j>
 - **citygml4j** (The Open Source Java API for CityGML): <https://github.com/citygml4j/citygml4j>
-
-### 참고: I3DM은 현재 C++ 버전에서 구현한 뒤 자바 버전으로 포팅 중입니다. 곧 추가될 예정입니다.
