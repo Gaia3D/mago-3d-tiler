@@ -131,6 +131,39 @@ class Mago3DTilerUnitTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Test
+    void case07() {
+        String path = "case07-shp-seoul";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String args[] = {
+                "-input", input.getAbsolutePath(),
+                "-output", output.getAbsolutePath(),
+                "-inputType", "shp",
+                "-autoUpAxis",
+                "-refineAdd",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void case08() {
+        String path = "case08-geojson-ws2";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String args[] = {
+                "-input", input.getAbsolutePath(),
+                "-output", output.getAbsolutePath(),
+                "-inputType", "geojson",
+                "-crs", "5186",
+                "-autoUpAxis",
+                "-refineAdd",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
     //@Test
     void sampleI3dm(String filePath, int length, int fileCount) {
         Vector3d min = new Vector3d(124 , 33, 0.0);

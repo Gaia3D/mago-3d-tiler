@@ -101,7 +101,11 @@ public class TilingPipeline implements Pipeline {
         long nodeCountValue = nodeCount.get();
         // Auto set node limit
         if (globalOptions.getNodeLimit() < 0) {
-            if (nodeCountValue > 1048576) {
+            if (nodeCountValue > 4194304) {
+                globalOptions.setNodeLimit(65536);
+            } else if (nodeCountValue > 2097152) {
+                globalOptions.setNodeLimit(32768);
+            } else if (nodeCountValue > 1048576) {
                 globalOptions.setNodeLimit(16384);
             } else if (nodeCountValue > 524288) {
                 globalOptions.setNodeLimit(8192);
@@ -147,6 +151,7 @@ public class TilingPipeline implements Pipeline {
                                 .tempPath(childTileInfo.getTempPath())
                                 .transformMatrix(childTileInfo.getTransformMatrix())
                                 .boundingBox(childTileInfo.getBoundingBox())
+                                .pointCloud(childTileInfo.getPointCloud())
                                 .build())
                         .collect(Collectors.toList());
                 contentInfo.setTileInfos(tileInfosClone);
