@@ -84,10 +84,6 @@ public class TileInfo {
             this.set = null;
         }
         this.set = new GaiaSet(this.tempPath);
-
-        /*if (this.set == null) {
-            this.set = new GaiaSet(this.tempPath);
-        }*/
     }
 
     public void clear() {

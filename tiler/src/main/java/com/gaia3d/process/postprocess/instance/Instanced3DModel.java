@@ -85,8 +85,8 @@ public class Instanced3DModel implements TileModel {
             double headingValue = Math.toRadians(kmlInfo.getHeading());
             Matrix3d rotationMatrix = new Matrix3d();
             rotationMatrix.rotateY(headingValue);
-            normalUp = rotationMatrix.transform(normalUp);
-            normalRight = rotationMatrix.transform(normalRight);
+            //normalUp = rotationMatrix.transform(normalUp);
+            //normalRight = rotationMatrix.transform(normalRight);
 
             // scale
             double scale = kmlInfo.getScaleZ();
@@ -103,7 +103,7 @@ public class Instanced3DModel implements TileModel {
             normalRights[normalRightIndex.getAndIncrement()] = (float) normalRight.y;
             normalRights[normalRightIndex.getAndIncrement()] = (float) normalRight.z;
 
-            scales[scaleIndex.getAndIncrement()] = (float) scale;
+            scales[scaleIndex.getAndIncrement()] = (float) 1.0;
         }
 
         Instanced3DModelBinary instanced3DModelBinary = new Instanced3DModelBinary();
@@ -161,19 +161,7 @@ public class Instanced3DModel implements TileModel {
 
         File gltfOutputFile = outputRoot.resolve(gltfUrl).toFile();
         if (!gltfOutputFile.exists()) {
-            try {
-                TileInfo firstTileInfo = tileInfos.get(0);
-                GaiaScene firstGaiaScene = tileInfos.get(0).getScene();
-                firstTileInfo.setSet(new GaiaSet(firstGaiaScene));
-                List<TileInfo> tileInfo = new ArrayList<>();
-                tileInfo.add(tileInfos.get(0));
-
-                GaiaBatcher gaiaBatcher = new GaiaBatcher();
-                GaiaSet gaiaSet = gaiaBatcher.runBatching(tileInfo, contentInfo.getNodeCode(), contentInfo.getLod());
-                gltfWriter.writeGlb(new GaiaScene(gaiaSet), gltfOutputFile);
-            } catch (Exception e) {
-                log.error(e.getMessage());
-            }
+            createInstance(gltfOutputFile, contentInfo, tileInfos.get(0));
         }
 
         File b3dmOutputFile = outputRoot.resolve(nodeCode + "." + MAGIC).toFile();
@@ -203,4 +191,23 @@ public class Instanced3DModel implements TileModel {
         return contentInfo;
     }
 
+    private synchronized void createInstance(File file, ContentInfo contentInfo, TileInfo tileInfo) {
+        try {
+            if (!file.exists())  {
+                log.info("[Create][Instance] Create instance file : {}", file.getName());
+                GaiaScene firstGaiaScene = tileInfo.getScene();
+                tileInfo.setSet(new GaiaSet(firstGaiaScene));
+
+                List<TileInfo> batchTileInfos = new ArrayList<>();
+                batchTileInfos.add(tileInfo);
+
+                GaiaBatcher gaiaBatcher = new GaiaBatcher();
+                GaiaSet gaiaSet = gaiaBatcher.runBatching(batchTileInfos, contentInfo.getNodeCode(), contentInfo.getLod());
+                gltfWriter.writeGlb(new GaiaScene(gaiaSet), file);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
 }
