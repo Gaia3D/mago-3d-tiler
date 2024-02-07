@@ -4,6 +4,7 @@ import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.pointcloud.GaiaPointCloud;
 import com.gaia3d.basic.structure.GaiaNode;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.basic.structure.GaiaScene;
 import lombok.Builder;
@@ -24,11 +25,11 @@ import java.nio.file.Path;
 public class TileInfo {
     private int serial = -1;
 
-    private KmlInfo kmlInfo;
     private GaiaScene scene;
     private GaiaSet set;
     private GaiaPointCloud pointCloud;
     private String name;
+    private KmlInfo kmlInfo;
 
     private Matrix4d transformMatrix;
     private GaiaBoundingBox boundingBox;
@@ -38,9 +39,8 @@ public class TileInfo {
 
     private void init() {
         GaiaNode rootNode = this.scene.getNodes().get(0);
-        this.transformMatrix = rootNode.getTransformMatrix();
         this.name = rootNode.getName();
-
+        this.transformMatrix = rootNode.getTransformMatrix();
         this.boundingBox = this.scene.getGaiaBoundingBox();
         this.scenePath = this.scene.getOriginalPath();
 
@@ -51,7 +51,13 @@ public class TileInfo {
         }
     }
 
+    /**
+     * Write the scene file to the output directory.
+     * @param serial
+     */
     public void minimize(int serial) {
+        GlobalOptions options = GlobalOptions.getInstance();
+
         if (this.scene != null && !this.scene.getNodes().isEmpty()) {
             GaiaSet tempSet = new GaiaSet(this.scene);
             this.tempPath = tempSet.writeFile(this.tempPath, serial);
@@ -59,19 +65,18 @@ public class TileInfo {
             tempSet = null;
             this.scene.clear();
             this.scene = null;
-        }/* else {
-            log.warn("Can't minimize tile info because scene is null.");
-        }*/
+        }
     }
 
+    /**
+     * Load the minimized scene file and create a GaiaSet object.
+     */
     public void maximize() {
         if (this.tempPath == null) {
-            //log.warn("Can't maximize tile info because temp path is null.");
             return;
         }
         File tempFile = this.tempPath.toFile();
         if (!tempFile.isFile()) {
-            //log.warn("Can't maximize tile info because temp path is null.");
             return;
         }
         if (this.set != null) {
@@ -79,6 +84,10 @@ public class TileInfo {
             this.set = null;
         }
         this.set = new GaiaSet(this.tempPath);
+
+        /*if (this.set == null) {
+            this.set = new GaiaSet(this.tempPath);
+        }*/
     }
 
     public void clear() {

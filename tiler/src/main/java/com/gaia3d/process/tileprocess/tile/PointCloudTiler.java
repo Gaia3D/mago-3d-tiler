@@ -56,7 +56,6 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
 
         globalBoundingBox = cubeBoundingBox;
 
-
         Matrix4d transformMatrix = getTransformMatrix(globalBoundingBox);
         rotateX90(transformMatrix);
 

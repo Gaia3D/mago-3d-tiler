@@ -34,24 +34,12 @@ public class GaiaBufferDataSet implements Serializable {
 
     GaiaBoundingBox boundingBox = null;
     GaiaRectangle texcoordBoundingRectangle = null;
-
     Matrix4d transformMatrix = null;
     Matrix4d preMultipliedTransformMatrix = null;
 
     public GaiaBufferDataSet() {
         this.buffers = new WeakHashMap<>();
     }
-
-    /*public static void getMaterialslIstOfBufferDataSet(List<GaiaBufferDataSet> bufferDataSets, List<GaiaMaterial> materials) {
-        // first, make a map to avoid duplicate materials
-        Map<GaiaMaterial, GaiaMaterial> materialMap = new WeakHashMap<>();
-        for (GaiaBufferDataSet bufferDataSet : bufferDataSets) {
-            materialMap.put(bufferDataSet.getMaterial(), bufferDataSet.getMaterial());
-        }
-        // second, make a list from the map
-        materials.addAll(materialMap.values());
-
-    }*/
 
     public void write(BigEndianDataOutputStream stream) throws IOException {
         stream.writeInt(id);
@@ -174,5 +162,29 @@ public class GaiaBufferDataSet implements Serializable {
         texcoordBoundingRectangle = null;
         transformMatrix = null;
         preMultipliedTransformMatrix = null;
+    }
+
+    public GaiaBufferDataSet clone() throws CloneNotSupportedException {
+        GaiaBufferDataSet clone = new GaiaBufferDataSet();
+        clone.setId(this.id);
+        clone.setGuid(this.guid);
+        clone.setMaterialId(this.materialId);
+        clone.setMaterial(this.material.clone());
+        if (this.boundingBox != null) {
+            clone.setBoundingBox(this.boundingBox.clone());
+        }
+        if (this.texcoordBoundingRectangle != null) {
+            clone.setTexcoordBoundingRectangle(this.texcoordBoundingRectangle.clone());
+        }
+        if (this.transformMatrix != null) {
+            clone.setTransformMatrix((Matrix4d) this.transformMatrix.clone());
+        }
+        if (this.preMultipliedTransformMatrix != null) {
+            clone.setPreMultipliedTransformMatrix((Matrix4d) this.preMultipliedTransformMatrix.clone());
+        }
+        for (Map.Entry<AttributeType, GaiaBuffer> entry : this.buffers.entrySet()) {
+            clone.buffers.put(entry.getKey(), entry.getValue().clone());
+        }
+        return clone;
     }
 }

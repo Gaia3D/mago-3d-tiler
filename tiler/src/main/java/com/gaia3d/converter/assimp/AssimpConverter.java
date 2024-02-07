@@ -1,6 +1,5 @@
 package com.gaia3d.converter.assimp;
 
-import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.basic.types.FormatType;
@@ -279,7 +278,6 @@ public class AssimpConverter implements Converter {
             if (diffTexPath.startsWith("*")) {
                 String embeddedTexturePath = embeddedTextures.get(Integer.parseInt(diffTexPath.substring(1)));
                 log.info("Embedded Texture: " + embeddedTexturePath);
-
                 diffTexPath = "embedded_textures" + File.separator + embeddedTexturePath;
             }
 
@@ -409,8 +407,6 @@ public class AssimpConverter implements Converter {
     }
 
     private GaiaPrimitive processPrimitive(AIMesh aiMesh, GaiaMaterial material) {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
-        boolean reverseTextureCoord = globalOptions.isReverseTextureCoordinate();
         GaiaSurface surface = processSurface();
 
         GaiaPrimitive primitive = new GaiaPrimitive();
@@ -460,18 +456,7 @@ public class AssimpConverter implements Converter {
                 if (Float.isNaN(textureCoordinate.x()) || Float.isNaN(textureCoordinate.y())) {
                     vertex.setTexcoords(new Vector2d());
                 } else {
-                    double texCoordY = textureCoordinate.y();
-                    if(texCoordY > 2.0)
-                    {
-                        int holaa = 0;
-                    }
                     vertex.setTexcoords(new Vector2d(textureCoordinate.x(), textureCoordinate.y()));
-                    //vertex.setTexcoords(new Vector2d(textureCoordinate.x(), 1.0 - textureCoordinate.y()));
-//                    if (!reverseTextureCoord) {
-//                        vertex.setTexcoords(new Vector2d(textureCoordinate.x(), textureCoordinate.y()));
-//                    } else {
-//                        vertex.setTexcoords(new Vector2d(textureCoordinate.x(), 1.0 - textureCoordinate.y()));
-//                    }
                 }
             }
 
@@ -497,20 +482,17 @@ public class AssimpConverter implements Converter {
         GaiaRectangle texCoordsRectangle = new GaiaRectangle();
         primitive.getTexcoordBoundingRectangle(texCoordsRectangle);
         boolean mustTranslateTexCoordsToPositiveQuadrant = false;
-        if(texCoordsRectangle.getWidth() > 1.0 || texCoordsRectangle.getHeight() > 1.0)
-        {
+        if (texCoordsRectangle.getWidth() > 1.0 || texCoordsRectangle.getHeight() > 1.0) {
             mustTranslateTexCoordsToPositiveQuadrant = true;
         }
 
         double minTexCoordX = texCoordsRectangle.getMinX();
         double minTexCoordY = texCoordsRectangle.getMinY();
-        if(minTexCoordX <0.0 || minTexCoordX > 1.0 || minTexCoordY < 0.0 || minTexCoordY > 1.0)
-        {
+        if (minTexCoordX <0.0 || minTexCoordX > 1.0 || minTexCoordY < 0.0 || minTexCoordY > 1.0) {
             mustTranslateTexCoordsToPositiveQuadrant = true;
         }
 
-        if(mustTranslateTexCoordsToPositiveQuadrant)
-        {
+        if (mustTranslateTexCoordsToPositiveQuadrant) {
             //primitive.translateTexCoordsToPositiveQuadrant();
         }
 

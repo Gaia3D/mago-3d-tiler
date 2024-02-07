@@ -54,7 +54,7 @@ public class GaiaScene implements Serializable {
         this.gaiaBoundingBox = new GaiaBoundingBox();
         for (GaiaNode node : this.getNodes()) {
             GaiaBoundingBox boundingBox = node.getBoundingBox(null);
-            if(boundingBox != null) {
+            if (boundingBox != null) {
                 gaiaBoundingBox.addBoundingBox(boundingBox);
             }
         }

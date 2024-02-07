@@ -84,4 +84,27 @@ public class GaiaBuffer implements Serializable {
         shorts = null;
         bytes = null;
     }
+
+    public GaiaBuffer clone() {
+        GaiaBuffer clone = new GaiaBuffer();
+        clone.setAttributeType(attributeType);
+        clone.setAccessorType(accessorType);
+        clone.setElementsCount(elementsCount);
+        clone.setGlDimension(glDimension);
+        clone.setGlType(glType);
+        clone.setGlTarget(glTarget);
+        if (floats != null) {
+            clone.setFloats(floats.clone());
+        }
+        if (ints != null) {
+            clone.setInts(ints.clone());
+        }
+        if (shorts != null) {
+            clone.setShorts(shorts.clone());
+        }
+        if (bytes != null) {
+            clone.setBytes(bytes.clone());
+        }
+        return clone;
+    }
 }

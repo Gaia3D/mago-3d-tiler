@@ -81,11 +81,11 @@ public class BoundingVolume {
             for (TileInfo tileInfo : tileInfos) {
                 //GaiaScene scene = tileInfo.getScene();
                 GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();
+
                 KmlInfo kmlInfo = tileInfo.getKmlInfo();
                 localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(kmlInfo.getPosition());
                 BoundingVolume localBoundingVolume = new BoundingVolume(localBoundingBox);
                 Vector3d center = localBoundingVolume.calcCenter();
-
                 if (midX < center.x()) {
                     if (midY < center.y()) {
                         result.get(2).add(tileInfo);
@@ -106,6 +106,29 @@ public class BoundingVolume {
 
     public Vector3d calcCenter() {
         return new Vector3d((region[0] + region[2]) / 2, (region[1] + region[3]) / 2, (region[4] + region[5]) / 2);
+    }
+
+    /**
+     * Create square bounding volume
+     * maximum x or y value is increased to make square bounding volume.
+     * @return square bounding volume
+     */
+    public BoundingVolume createSqureBoundingVolume() {
+        double minX = region[0];
+        double minY = region[1];
+        double maxX = region[2];
+        double maxY = region[3];
+        double xLength = maxX - minX;
+        double yLength = maxY - minY;
+        double offset = Math.abs(xLength - yLength);
+        if (xLength > yLength) {
+            maxY = maxY + offset;
+        } else {
+            maxX = maxX + offset;
+        }
+        BoundingVolume boundingVolume = new BoundingVolume(BoundingVolumeType.REGION);
+        boundingVolume.setRegion(new double[]{minX, minY, maxX, maxY, region[4], region[5]});
+        return boundingVolume;
     }
 }
 

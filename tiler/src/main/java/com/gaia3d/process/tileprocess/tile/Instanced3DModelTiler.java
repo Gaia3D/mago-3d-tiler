@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.process.tileprocess.Tiler;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
 import com.gaia3d.process.tileprocess.tile.tileset.asset.Asset;
@@ -15,7 +14,6 @@ import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 import com.gaia3d.util.DecimalUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
-import org.joml.Vector3d;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -24,7 +22,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
@@ -81,9 +78,11 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
 
     private void createNode(Node parentNode, List<TileInfo> tileInfos) throws IOException {
         BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
+        BoundingVolume squareBoundingVolume = parentBoundingVolume.createSqureBoundingVolume();
+
         int nodeLimit = globalOptions.getNodeLimit();
         if (tileInfos.size() > nodeLimit) {
-            List<List<TileInfo>> childrenScenes = parentBoundingVolume.distributeScene(tileInfos);
+            List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
                 Node childNode = createLogicalNode(parentNode, childTileInfos, index);
@@ -93,19 +92,13 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
                 }
             }
         } else if (tileInfos.size() > 1) {
-            List<List<TileInfo>> childrenScenes = parentBoundingVolume.distributeScene(tileInfos);
+            List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
                 Node childNode = createContentNode(parentNode, childTileInfos, index);
                 if (childNode != null) {
                     parentNode.getChildren().add(childNode);
-                    Content content = childNode.getContent();
-                    if (content != null) {
-                        ContentInfo contentInfo = content.getContentInfo();
-                        createNode(childNode, contentInfo.getRemainTileInfos());
-                    } else {
-                        createNode(childNode, childTileInfos);
-                    }
+                    createNode(childNode, childTileInfos);
                 }
             }
         } else if (!tileInfos.isEmpty()) {
@@ -123,7 +116,7 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         }
         String nodeCode = parentNode.getNodeCode();
         nodeCode = nodeCode + index;
-        log.info("[Tiling][LogicalNode ][" + nodeCode + "][OBJECT{}]", tileInfos.size());
+        log.info("[Tiling][LogicalNode][" + nodeCode + "][OBJECT{}]", tileInfos.size());
 
         double geometricError = calcGeometricError(tileInfos);
         GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
@@ -157,6 +150,8 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
         rotateX90(transformMatrix);
 
+
+
         BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
 
         String nodeCode = parentNode.getNodeCode();
@@ -178,16 +173,18 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         int lodError = refineAdd ? lod.getGeometricErrorBlock() : lod.getGeometricError();
         int lodErrorDouble = lodError * 2;
 
-        List<TileInfo> resultInfos;
-        List<TileInfo> remainInfos;
-        resultInfos = tileInfos.stream().filter(tileInfo -> {
-            double geometricError = tileInfo.getBoundingBox().getLongestDistance();
-            return geometricError >= lodErrorDouble;
-        }).collect(Collectors.toList());
-        remainInfos = tileInfos.stream().filter(tileInfo -> {
-            double geometricError = tileInfo.getBoundingBox().getLongestDistance();
-            return geometricError < lodErrorDouble;
-        }).collect(Collectors.toList());
+        List<TileInfo> resultInfos = new ArrayList<>();
+        List<TileInfo> remainInfos = new ArrayList<>();
+//        resultInfos = tileInfos.stream().filter(tileInfo -> {
+//            double geometricError = tileInfo.getBoundingBox().getLongestDistance();
+//            return geometricError >= lodErrorDouble;
+//        }).collect(Collectors.toList());
+//        remainInfos = tileInfos.stream().filter(tileInfo -> {
+//            double geometricError = tileInfo.getBoundingBox().getLongestDistance();
+//            return geometricError < lodErrorDouble;
+//        }).collect(Collectors.toList());
+        resultInfos = tileInfos;
+
 
         Node childNode = new Node();
         childNode.setParent(parentNode);

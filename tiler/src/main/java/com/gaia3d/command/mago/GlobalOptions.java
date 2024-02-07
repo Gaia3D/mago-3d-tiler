@@ -1,5 +1,6 @@
 package com.gaia3d.command.mago;
 
+import com.gaia3d.basic.exchangable.GaiaTextureArchive;
 import com.gaia3d.process.ProcessOptions;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,7 +29,7 @@ public class GlobalOptions {
 
     private static final String DEFAULT_INPUT_FORMAT = "kml";
     private static final String DEFAULT_OUTPUT_FORMAT = "b3dm";
-    private static final int DEFAULT_NODE_LIMIT = 8192;
+    //private static final int DEFAULT_NODE_LIMIT = 1024;
     private static final int DEFAULT_MIN_LOD = 0;
     private static final int DEFAULT_MAX_LOD = 3;
     private static final int DEFAULT_POINT_LIMIT = 20000;
@@ -43,6 +44,8 @@ public class GlobalOptions {
     private String version; // version flag
     private String javaVersionInfo; // java version flag
     private String programInfo; // program info flag
+
+    private GaiaTextureArchive textureArchive = new GaiaTextureArchive();
 
     private long startTime = 0;
     private long endTime = 0;
@@ -144,7 +147,8 @@ public class GlobalOptions {
         }
 
         /* 3D Data Options */
-        instance.setNodeLimit(command.hasOption(ProcessOptions.MAX_COUNT.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_COUNT.getArgName())) : DEFAULT_NODE_LIMIT);
+        //instance.setNodeLimit(command.hasOption(ProcessOptions.MAX_COUNT.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_COUNT.getArgName())) : DEFAULT_NODE_LIMIT);
+        instance.setNodeLimit(command.hasOption(ProcessOptions.MAX_COUNT.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_COUNT.getArgName())) : -1);
         instance.setMinLod(command.hasOption(ProcessOptions.MIN_LOD.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MIN_LOD.getArgName())) : DEFAULT_MIN_LOD);
         instance.setMaxLod(command.hasOption(ProcessOptions.MAX_LOD.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_LOD.getArgName())) : DEFAULT_MAX_LOD);
 

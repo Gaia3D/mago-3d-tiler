@@ -18,10 +18,10 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public enum FormatType {
     // 3D Formats
+    KML("kml", false),
     GLTF("gltf", true),
     GLB("glb", true),
-    KML("kml", false),
-    COLLADA("dae", false),
+    COLLADA("dae", true),
     MAX_3DS("3ds", false),
     MAX_ASE("ase", false),
     FBX("fbx", true),

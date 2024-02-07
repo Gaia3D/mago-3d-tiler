@@ -13,6 +13,7 @@ import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.GlobeUtils;
+import com.gaia3d.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
@@ -123,15 +124,8 @@ public class PointCloudModel implements TileModel {
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 
         try {
-            StringBuilder featureTableText = new StringBuilder(objectMapper.writeValueAsString(featureTable));
-            int featureTableJsonOffset = featureTableText.length() % 8;
-            featureTableText.append(" ".repeat(Math.max(0, featureTableJsonOffset)));
-            featureTableJson = featureTableText.toString();
-
-            StringBuilder batchTableText = new StringBuilder(objectMapper.writeValueAsString(batchTable));
-            int batchTableJsonOffset = batchTableText.length() % 8;
-            batchTableText.append(" ".repeat(Math.max(0, batchTableJsonOffset)));
-            batchTableJson = batchTableText.toString();
+            featureTableJson = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(featureTable));
+            batchTableJson = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(batchTable));
         } catch (JsonProcessingException e) {
             log.error(e.getMessage());
             throw new RuntimeException(e);

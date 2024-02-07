@@ -1,1 +1,0 @@
-{"asset":{"version":"1.0","extras":{"ion":{"georeferenced":true},"cesium":{"credits":[{"html":"<html>Gaia3D</html>","showOnScreen":true}]}}},"root":{"boundingVolume":{"region":[0.0,0.0,0.0,0.0,0.0,0.0]},"refine":"REPLACE","transform":[0.0,1.0,0.0,0.0,-1.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,6378137.0,0.0,0.0,1.0]}}

@@ -1,7 +1,6 @@
 package com.gaia3d.command.mago;
 
-import com.gaia3d.basic.types.FormatType;
-import com.gaia3d.command.*;
+import com.gaia3d.command.Configurator;
 import com.gaia3d.process.ProcessOptions;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
@@ -15,8 +14,6 @@ import java.io.IOException;
  */
 @Slf4j
 public class Mago3DTilerMain {
-
-
     public static void main(String[] args) {
         try {
             Options options = Configurator.createOptions();
@@ -67,10 +64,13 @@ public class Mago3DTilerMain {
      * Prints the program information and the java version information.
      */
     private static void printStart() {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        String programInfo = globalOptions.getProgramInfo();
         log.info("\n" +
                 "┌┬┐┌─┐┌─┐┌─┐  -┐┌┬┐  ┌┬┐┬┬  ┌─┐┬─┐\n" +
                 "│││├─┤│ ┬│ │  -┤ ││   │ ││  ├┤ ├┬┘\n" +
                 "┴ ┴┴ ┴└─┘└─┘  -┘-┴┘   ┴ ┴┴─┘└─┘┴└─\n" +
+                programInfo + "\n" +
                 "----------------------------------------"
         );
     }

@@ -11,6 +11,7 @@ public class Instanced3DModelBinary {
     private float[] positions;
     private float[] normalUps;
     private float[] normalRights;
+    private float[] scales;
 
     public byte[] getPositionBytes() {
         byte[] positionsBytes = new byte[positions.length * 4];
@@ -46,5 +47,17 @@ public class Instanced3DModelBinary {
             normalRightsBytes[i * 4 + 3] = (byte) ((intBits >> 24) & 0xff);
         }
         return normalRightsBytes;
+    }
+
+    public byte[] getScaleBytes() {
+        byte[] scalesBytes = new byte[scales.length * 4];
+        for (int i = 0; i < scales.length; i++) {
+            int intBits = Float.floatToIntBits(scales[i]);
+            scalesBytes[i * 4] = (byte) (intBits & 0xff);
+            scalesBytes[i * 4 + 1] = (byte) ((intBits >> 8) & 0xff);
+            scalesBytes[i * 4 + 2] = (byte) ((intBits >> 16) & 0xff);
+            scalesBytes[i * 4 + 3] = (byte) ((intBits >> 24) & 0xff);
+        }
+        return scalesBytes;
     }
 }

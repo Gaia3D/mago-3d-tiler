@@ -29,6 +29,8 @@ public class GaiaFeatureTable {
     Normal normalRight;
     @JsonProperty("NORMAL_UP")
     Normal normalUp;
+    @JsonProperty("SCALE")
+    Scale scale;
 
     /* PointCloud */
     @JsonProperty("POSITION")

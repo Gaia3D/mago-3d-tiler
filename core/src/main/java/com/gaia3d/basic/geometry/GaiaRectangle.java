@@ -147,4 +147,8 @@ public class GaiaRectangle implements Serializable {
             return false;
         } else return !(compare.maxY < this.minY + error);
     }
+
+    public GaiaRectangle clone() {
+        return new GaiaRectangle(minX, minY, maxX, maxY);
+    }
 }
