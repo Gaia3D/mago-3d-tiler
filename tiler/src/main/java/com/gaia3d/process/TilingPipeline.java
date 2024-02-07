@@ -23,6 +23,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -89,8 +90,6 @@ public class TilingPipeline implements Pipeline {
                         for (PreProcess preProcessors : preProcesses) {
                             preProcessors.run(tileInfo);
                         }
-                        // TODO : Upcoming improvements to minimize
-                        //tileInfo.minimize(index + 1);
                         tileInfos.add(tileInfo);
                     }
                 }
@@ -99,15 +98,16 @@ public class TilingPipeline implements Pipeline {
         }
         executeThread(executorService, tasks);
 
+        long nodeCountValue = nodeCount.get();
         // Auto set node limit
         if (globalOptions.getNodeLimit() < 0) {
-            if (fileCount > 1048576) {
+            if (nodeCountValue > 1048576) {
                 globalOptions.setNodeLimit(16384);
-            } else if (fileCount > 524288) {
+            } else if (nodeCountValue > 524288) {
                 globalOptions.setNodeLimit(8192);
-            } else if (fileCount > 262144) {
+            } else if (nodeCountValue > 262144) {
                 globalOptions.setNodeLimit(4096);
-            } else if (fileCount > 131072) {
+            } else if (nodeCountValue > 131072) {
                 globalOptions.setNodeLimit(2048);
             } else {
                 globalOptions.setNodeLimit(1024);
@@ -131,7 +131,6 @@ public class TilingPipeline implements Pipeline {
 
         ExecutorService executorService = Executors.newFixedThreadPool(globalOptions.getMultiThreadCount());
         List<Runnable> tasks = new ArrayList<>();
-
         contentInfos = tileset.findAllContentInfo();
         AtomicInteger count = new AtomicInteger(1);
         int contentCount = contentInfos.size();
@@ -139,10 +138,23 @@ public class TilingPipeline implements Pipeline {
         for (ContentInfo contentInfo : contentInfos) {
             Runnable callableTask = () -> {
                 log.info("[Post][{}/{}] post-process in progress. : {}", count.getAndIncrement(), contentCount, contentInfo.getName());
+                List<TileInfo> tileInfos = contentInfo.getTileInfos();
+                List<TileInfo> tileInfosClone = tileInfos.stream()
+                        .map((childTileInfo) -> TileInfo.builder()
+                                .scene(childTileInfo.getScene())
+                                .kmlInfo(childTileInfo.getKmlInfo())
+                                .scenePath(childTileInfo.getScenePath())
+                                .tempPath(childTileInfo.getTempPath())
+                                .transformMatrix(childTileInfo.getTransformMatrix())
+                                .boundingBox(childTileInfo.getBoundingBox())
+                                .build())
+                        .collect(Collectors.toList());
+                contentInfo.setTileInfos(tileInfosClone);
                 for (PostProcess postProcessor : postProcesses) {
                     postProcessor.run(contentInfo);
                 }
-                //contentInfo.clear();
+                contentInfo.deleteTexture();
+                tileInfosClone.clear();
             };
             tasks.add(callableTask);
         }
@@ -161,8 +173,11 @@ public class TilingPipeline implements Pipeline {
     private void executeThread(ExecutorService executorService, List<Runnable> tasks) throws InterruptedException {
         try {
             for (Runnable task : tasks) {
-                Future<?> future = executorService.submit(task);
-                future.get();
+                executorService.submit(task);
+                //Future<?> future = executorService.submit(task);
+                // TODO MultiThead BUG
+                //future.get();
+                //future.isDone();
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -172,6 +187,6 @@ public class TilingPipeline implements Pipeline {
             if (executorService.isTerminated()) {
                 executorService.shutdownNow();
             }
-        } while (!executorService.awaitTermination(3, TimeUnit.SECONDS));
+        } while (!executorService.awaitTermination(2, TimeUnit.SECONDS));
     }
 }
