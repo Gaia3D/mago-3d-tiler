@@ -19,14 +19,14 @@ class UnitTest {
 
     @Test
     void kmlComplicatedModels() {
-        String path = "ComplicatedModels5";
+        String path = "ComplicatedModels10";
         String[] args = new String[]{
                 "-i", INPUT_PATH + path,
                 "-it", "kml",
                 "-o", OUTPUT_PATH + path,
                 "-autoUpAxis",
-                //"-reverseTexCoord",
-                "-glb"
+                //"-glb",
+                "-mc", "1" // multithreadsCount.
         };
         Mago3DTilerMain.main(args);
     }
@@ -39,7 +39,8 @@ class UnitTest {
                 "-it", "3ds",
                 "-o", OUTPUT_PATH + path,
                 "-autoUpAxis",
-                "-crs", "5174"
+                "-crs", "5174",
+                "-mc", "4" // multithreadsCount.
         };
         Mago3DTilerMain.main(args);
     }
@@ -65,7 +66,8 @@ class UnitTest {
                 "-it", "3ds",
                 "-o", OUTPUT_PATH + path,
                 "-autoUpAxis",
-                "-crs", "5174"
+                "-crs", "5174",
+                "-mc", "1"
         };
         Mago3DTilerMain.main(args);
     }
@@ -78,8 +80,8 @@ class UnitTest {
                 "-it", "3ds",
                 "-o", OUTPUT_PATH + path,
                 "-autoUpAxis",
-                "-multiThread",
-                "-crs", "5186"
+                "-crs", "5186",
+                "-mc", "1"
         };
         Mago3DTilerMain.main(args);
     }
@@ -92,8 +94,8 @@ class UnitTest {
                 "-it", "3ds",
                 "-o", OUTPUT_PATH + path,
                 "-autoUpAxis",
-                "-multiThread",
-                "-crs", "5186"
+                "-crs", "5186",
+                "-mc", "1"
         };
         Mago3DTilerMain.main(args);
     }
@@ -106,22 +108,45 @@ class UnitTest {
                 "-it", "3ds",
                 "-o", OUTPUT_PATH + path,
                 "-autoUpAxis",
-                "-multiThread",
-                "-crs", "5186"
+                "-crs", "5186",
+                "-mc", "1"
         };
         Mago3DTilerMain.main(args);
     }
 
     @Test
     void testPoleSouthSejongBase() {
-            // "+proj=tmerc +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=-58.786658 +lat_0=-62.223080"
-        String path = "PoleSouthAllIFC\\110";
+            // "+proj=tmerc +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=-58.789189 +lat_0=-62.223259" // pole south
+        // "+proj=tmerc +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=126.980125 +lat_0=37.521169" // seoul
+        String path = "PoleSouthIFC_5";
+        String[] args = new String[]{
+                "-i", INPUT_PATH + path,
+                "-it", "ifc",
+                "-o", OUTPUT_PATH + path,
+                "-proj", "+proj=tmerc +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=-58.789189 +lat_0=-62.223259",
+                "-refineAdd",
+                "-glb",
+                "-mc", "1",
+                "-r"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testIFC_DuplexApartment() {
+        // "+proj=tmerc +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=126.980125 +lat_0=37.521169" // seoul
+        // Duplex Apartment
+        // Medical-Dental Clinic
+        String path = "IFC 2x3\\Duplex Apartment";
         String[] args = new String[]{
                 "-i", INPUT_PATH + path,
                 "-it", "ifc",
                 "-o", OUTPUT_PATH + path,
                 "-proj", "+proj=tmerc +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=126.980125 +lat_0=37.521169",
-                "-glb"
+                "-refineAdd",
+                "-glb",
+                "-mc", "1",
+                "-r"
         };
         Mago3DTilerMain.main(args);
     }

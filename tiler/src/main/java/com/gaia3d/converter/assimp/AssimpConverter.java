@@ -188,12 +188,6 @@ public class AssimpConverter implements Converter {
         assert node != null;
         Matrix4d rootTransform = node.getTransformMatrix();
 
-        // TODO for test ******************************************************
-        Matrix4d rotationXMatrix = new Matrix4d();
-        rotationXMatrix.rotateX(Math.toRadians(90));
-        rotationXMatrix.mul(rootTransform, rootTransform);
-        // ***************************************************************
-
         node.setTransformMatrix(rootTransform);
         node.recalculateTransform();
         gaiaScene.getNodes().add(node);
@@ -439,6 +433,8 @@ public class AssimpConverter implements Converter {
         AIVector3D.Buffer verticesBuffer = aiMesh.mVertices();
         AIVector3D.Buffer normalsBuffer = aiMesh.mNormals();
         AIVector3D.Buffer textureCoordiantesBuffer = aiMesh.mTextureCoords(0);
+        AIColor4D.Buffer colorsBuffer = aiMesh.mColors(0);
+
         for (int i = 0; i < mNumVertices; i++) {
             GaiaVertex vertex = new GaiaVertex();
             AIVector3D aiVertice = verticesBuffer.get(i);
@@ -478,6 +474,18 @@ public class AssimpConverter implements Converter {
 //                    }
                 }
             }
+
+            if(colorsBuffer != null)
+            {
+                AIColor4D color = colorsBuffer.get(i);
+                int hola = 0;
+            }
+            else
+            {
+                // set the diffuse color.***
+            }
+
+
 
             diffuseColor[0] = (byte) (diffuse.x * 255);
             diffuseColor[1] = (byte) (diffuse.y * 255);
