@@ -5,17 +5,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.structure.GaiaScene;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.jgltf.GltfWriter;
-import com.gaia3d.process.ProcessOptions;
 import com.gaia3d.process.postprocess.TileModel;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.DecimalUtils;
+import com.gaia3d.util.StringUtils;
 import com.gaia3d.util.io.LittleEndianDataInputStream;
 import com.gaia3d.util.io.LittleEndianDataOutputStream;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.CommandLine;
 import org.lwjgl.BufferUtils;
 
 import java.io.*;
@@ -23,22 +23,24 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class Batched3DModel implements TileModel {
     private static final String MAGIC = "b3dm";
     private static final int VERSION = 1;
     private final GltfWriter gltfWriter;
-    private final CommandLine command;
 
-    public Batched3DModel(CommandLine command) {
+    public Batched3DModel() {
         this.gltfWriter = new GltfWriter();
-        this.command = command;
     }
 
     @Override
     public ContentInfo run(ContentInfo contentInfo) {
-        GaiaSet batchedSet = contentInfo.getBatchedSet();
+        GaiaBatcher gaiaBatcher = new GaiaBatcher();
+        GaiaSet batchedSet = gaiaBatcher.runBatching(contentInfo.getTileInfos(), contentInfo.getNodeCode(), contentInfo.getLod());
+
+        //GaiaSet batchedSet = contentInfo.getBatchedSet();
         int featureTableJSONByteLength;
         int batchTableJSONByteLength;
         String featureTableJson;
@@ -49,36 +51,36 @@ public class Batched3DModel implements TileModel {
         int batchLength = tileInfos.size();
         List<String> projectNames = tileInfos.stream()
                 .map((tileInfo) -> tileInfo.getSet().getProjectName())
-                .toList();
+                .collect(Collectors.toList());
         List<String> nodeNames = tileInfos.stream()
                 .map(TileInfo::getName)
-                .toList();
+                .collect(Collectors.toList());
         List<Double> geometricErrors = tileInfos.stream()
                 .map((tileInfo) -> tileInfo.getBoundingBox().getLongestDistance())
-                .toList();
+                .collect(Collectors.toList());
         List<Double> heights = tileInfos.stream()
                 .map((tileInfo) -> {
                     GaiaBoundingBox boundingBox = tileInfo.getBoundingBox();
                     return boundingBox.getMaxZ() - boundingBox.getMinZ();
                 })
-                .toList();
+                .collect(Collectors.toList());
 
         GaiaScene scene = new GaiaScene(batchedSet);
 
-        File outputFile = new File(command.getOptionValue(ProcessOptions.OUTPUT.getArgName()));
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        File outputFile = new File(globalOptions.getOutputPath());
         Path outputRoot = outputFile.toPath().resolve("data");
-        if (outputRoot.toFile().mkdir()) {
-            log.info("Create directory: {}", outputRoot);
+        if (!outputRoot.toFile().exists() && outputRoot.toFile().mkdir()) {
+            log.info("[Create][data] Created output data directory:", outputRoot);
         }
 
         byte[] glbBytes;
-        if (command.hasOption(ProcessOptions.DEBUG_GLTF.getArgName())) {
+        if (globalOptions.isGltf()) {
             String glbFileName = nodeCode + ".gltf";
             File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
             this.gltfWriter.writeGltf(scene, glbOutputFile);
         }
-
-        if (command.hasOption(ProcessOptions.DEBUG_GLB.getArgName())) {
+        if (globalOptions.isGlb()) {
             String glbFileName = nodeCode + ".glb";
             File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
             this.gltfWriter.writeGlb(scene, glbOutputFile);
@@ -106,11 +108,11 @@ public class Batched3DModel implements TileModel {
         ObjectMapper objectMapper = new ObjectMapper();
 
         try {
-            String featureTableText = objectMapper.writeValueAsString(featureTable);
+            String featureTableText = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(featureTable));
             featureTableJson = featureTableText;
             featureTableJSONByteLength = featureTableText.length();
 
-            String batchTableText = objectMapper.writeValueAsString(batchTable);
+            String batchTableText = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(batchTable));
             batchTableJson = batchTableText;
             batchTableJSONByteLength = batchTableText.length();
         } catch (JsonProcessingException e) {
@@ -120,7 +122,7 @@ public class Batched3DModel implements TileModel {
 
         int byteLength = 28 + featureTableJSONByteLength + batchTableJSONByteLength + glbBytes.length;
 
-        File b3dmOutputFile = outputRoot.resolve(nodeCode + ".b3dm").toFile();
+        File b3dmOutputFile = outputRoot.resolve(nodeCode + "." + MAGIC).toFile();
         try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(b3dmOutputFile)))) {
             // 28-byte header (first 20 bytes)
             stream.writePureText(MAGIC);

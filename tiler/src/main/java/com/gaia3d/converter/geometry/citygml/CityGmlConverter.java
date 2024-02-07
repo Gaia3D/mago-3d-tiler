@@ -1,14 +1,15 @@
 package com.gaia3d.converter.geometry.citygml;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.structure.*;
-import com.gaia3d.converter.geometry.AbstractGeometryConverter;
+import com.gaia3d.basic.structure.GaiaMaterial;
+import com.gaia3d.basic.structure.GaiaNode;
+import com.gaia3d.basic.structure.GaiaScene;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.geometry.*;
-import com.gaia3d.process.ProcessOptions;
 import com.gaia3d.util.GlobeUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.CommandLine;
 import org.citygml4j.core.model.building.Building;
 import org.citygml4j.core.model.core.AbstractCityObject;
 import org.citygml4j.core.model.core.AbstractCityObjectProperty;
@@ -25,16 +26,13 @@ import org.xmlobjects.gml.model.geometry.primitives.*;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
 
 @Slf4j
+@RequiredArgsConstructor
 public class CityGmlConverter extends AbstractGeometryConverter implements Converter {
-
-    private final CommandLine command;
-
-    public CityGmlConverter(CommandLine command) {
-        this.command = command;
-    }
 
     @Override
     public List<GaiaScene> load(String path) {
@@ -54,7 +52,8 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
     protected List<GaiaScene> convert(File file) {
         List<GaiaScene> scenes = new ArrayList<>();
 
-        boolean flipCoordnate = this.command.hasOption(ProcessOptions.FLIP_COORDINATE.getArgName());
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        boolean flipCoordinate = globalOptions.isFlipCoordinate();
 
         try {
             Tessellator tessellator = new Tessellator();
@@ -101,7 +100,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                     double value = 0d;
                     for (int i = 0; i < values.size(); i+=3) {
                         double x, y, z;
-                        if (flipCoordnate) {
+                        if (flipCoordinate) {
                             x = values.get(i + 1);
                             y = values.get(i);
                         } else {
@@ -126,7 +125,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             }
 
             for (GaiaBuilding gaiaBuilding : gaiaBuildings) {
-                GaiaScene scene = initScene(this.command);
+                GaiaScene scene = initScene();
                 scene.setOriginalPath(file.toPath());
                 GaiaMaterial material = scene.getMaterials().get(0);
                 GaiaNode rootNode = scene.getNodes().get(0);
@@ -135,7 +134,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                 Vector3d center = boundingBox.getCenter();
 
                 Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
-                Matrix4d transformMatrix = GlobeUtils.normalAtCartesianPointWgs84(centerWorldCoordinate);
+                Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
                 Matrix4d transfromMatrixInv = new Matrix4d(transformMatrix).invert();
 
                 List<Vector3d> localPositions = new ArrayList<>();

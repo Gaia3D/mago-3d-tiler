@@ -12,13 +12,12 @@ import com.gaia3d.process.tileprocess.tile.TileInfo;
 
 @AllArgsConstructor
 public class GaiaRelocator implements PostProcess {
-
     @Override
     public ContentInfo run(ContentInfo contentInfo) {
         GaiaBoundingBox allBoundingBox = contentInfo.getBoundingBox();
         Vector3d center = allBoundingBox.getCenter();
         center = GlobeUtils.geographicToCartesianWgs84(center);
-        Matrix4d transformMatrix = GlobeUtils.normalAtCartesianPointWgs84(center);
+        Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(center);
         Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
         for (TileInfo tileInfo : contentInfo.getTileInfos()) {
             KmlInfo kmlInfo = tileInfo.getKmlInfo();

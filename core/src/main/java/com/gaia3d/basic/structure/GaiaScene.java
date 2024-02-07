@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.joml.Matrix4d;
 
+import java.io.Serializable;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +26,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaScene {
+public class GaiaScene implements Serializable {
     private List<GaiaNode> nodes = new ArrayList<>();
     private List<GaiaMaterial> materials = new ArrayList<>();
     private Path originalPath;
@@ -53,7 +54,7 @@ public class GaiaScene {
         this.gaiaBoundingBox = new GaiaBoundingBox();
         for (GaiaNode node : this.getNodes()) {
             GaiaBoundingBox boundingBox = node.getBoundingBox(null);
-            if(boundingBox != null) {
+            if (boundingBox != null) {
                 gaiaBoundingBox.addBoundingBox(boundingBox);
             }
         }

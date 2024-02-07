@@ -8,11 +8,11 @@ import com.gaia3d.basic.structure.GaiaMaterial;
 import com.gaia3d.basic.structure.GaiaTexture;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.TextureType;
-import com.gaia3d.process.tileprocess.tile.ContentInfo;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.tileprocess.tile.LevelOfDetail;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.CommandLine;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector4d;
@@ -22,33 +22,106 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class GaiaBatcher implements Batcher {
+@NoArgsConstructor
+public class GaiaBatcher {
     private final static int SHORT_LIMIT = 65535;
-    private final CommandLine command;
-
-    public GaiaBatcher(CommandLine command) {
-        this.command = command;
-    }
 
     private void reassignMaterialsToGaiaBufferDataSetWithSameMaterial(List<GaiaBufferDataSet> dataSets, LevelOfDetail lod) {
         int datasetsCount = dataSets.size();
+        Map<GaiaBufferDataSet, Boolean> visitedMap = new HashMap<>();
         for (int i = 0; i < datasetsCount; i++) {
             GaiaBufferDataSet dataSet = dataSets.get(i);
-            GaiaMaterial material = dataSet.material;
-            for (int j = i + 1; j < datasetsCount; j++) {
-                GaiaBufferDataSet dataSet2 = dataSets.get(j);
-                if (dataSet == dataSet2) continue;
+            // check if dataset is visited.***
+            if (visitedMap.containsKey(dataSet)) {
+                continue;
+            }
 
-                if (dataSet2.material == material) {
+            GaiaMaterial material = dataSet.material;
+            for (int  j= i + 1; j < datasetsCount; j++) {
+                GaiaBufferDataSet dataSet2 = dataSets.get(j);
+                if (visitedMap.containsKey(dataSet2)) {
                     continue;
                 }
 
-                if (GaiaMaterial.areEqualMaterials(dataSet2.material, material, lod.getTextureScale())) {
-                    //dataSet2.material.deleteTextures();
+                if (dataSet == dataSet2) continue;
+
+                if (dataSet2.material == material) {
+                    visitedMap.put(dataSet2, true); // set visited.***
+                    continue;
+                }
+
+                if (areEqualMaterials(dataSet2.material, material, lod.getTextureScale())) {
                     dataSet2.material = material;
+                    visitedMap.put(dataSet2, true); // set visited.***
+                }
+
+                /*if (GaiaMaterial.areEqualMaterials(dataSet2.material, material, lod.getTextureScale())) {
+                    dataSet2.material = material;
+                    visitedMap.put(dataSet2, true); // set visited.***
+                }*/
+            }
+        }
+    }
+
+    /** compare two materials.***
+     * @param materialA
+     * @param materialB
+     * @param scaleFactor
+     * @return
+     */
+    public boolean areEqualMaterials(GaiaMaterial materialA, GaiaMaterial materialB, float scaleFactor) {
+        GlobalOptions options = GlobalOptions.getInstance();
+
+        // This function determines if two materials are equal.
+        if (materialA == null && materialB == null) {
+            return true;
+        } else if (materialA == null || materialB == null) {
+            return false;
+        }
+
+        if (materialA == materialB) {
+            return true;
+        }
+        Map<TextureType, List<GaiaTexture>> textureMapA = materialA.getTextures();
+
+        Set<TextureType> keys = textureMapA.keySet();
+        boolean hasTexture = false;
+        boolean hasTextureAreEquals = true;
+        for (TextureType key : keys) {
+            List<GaiaTexture> listTexturesA = textureMapA.get(key);
+            List<GaiaTexture> listTexturesB = materialB.getTextures().get(key);
+            if (listTexturesA == null && listTexturesB == null) {
+                continue;
+            } else if (listTexturesA == null || listTexturesB == null) {
+                hasTextureAreEquals = false;
+            }
+
+            if (listTexturesA.size() != listTexturesB.size()) {
+                hasTextureAreEquals = false;
+            }
+
+            for (int i = 0; i < listTexturesA.size() && i < listTexturesB.size(); i++) {
+                GaiaTexture textureA = listTexturesA.get(i);
+                GaiaTexture textureB = listTexturesB.get(i);
+                hasTexture = true;
+
+                // check if the fullPath of the textures are equal.***
+                String fullPathA = textureA.getFullPath();
+                String fullPathB = textureB.getFullPath();
+                if (fullPathA.equals(fullPathB)) {
+                    hasTextureAreEquals = true;
+                } else if (!textureA.isEqualTexture(textureB, scaleFactor)) {
+                    hasTextureAreEquals = false;
                 }
             }
         }
+
+        if (!hasTexture) {
+            Vector4d colorA = materialA.getDiffuseColor();
+            Vector4d colorB = materialB.getDiffuseColor();
+            return colorA.equals(colorB);
+        }
+        return hasTextureAreEquals;
     }
 
     private void setBatchId(List<GaiaSet> sets) {
@@ -74,8 +147,7 @@ public class GaiaBatcher implements Batcher {
         }
     }
 
-    public ContentInfo run(ContentInfo contentInfo) {
-        List<TileInfo> tileInfos = contentInfo.getTileInfos();
+    public GaiaSet runBatching(List<TileInfo> tileInfos, String nodeCode, LevelOfDetail lod) {
         List<GaiaSet> sets = tileInfos.stream()
                 .map(TileInfo::getSet)
                 .collect(Collectors.toList());
@@ -101,7 +173,7 @@ public class GaiaBatcher implements Batcher {
         });
 
         // check if exist equal materials.***
-        reassignMaterialsToGaiaBufferDataSetWithSameMaterial(batchedDataSets, contentInfo.getLod());
+        reassignMaterialsToGaiaBufferDataSetWithSameMaterial(batchedDataSets, lod);
         List<GaiaMaterial> filteredMaterials = new ArrayList<>();
         getMaterialslIstOfBufferDataSet(batchedDataSets, filteredMaterials);
 
@@ -154,7 +226,7 @@ public class GaiaBatcher implements Batcher {
         List<GaiaBufferDataSet> resultBufferDatas = new ArrayList<>();
         List<GaiaMaterial> resultMaterials = new ArrayList<>();
         if (!clampDataSets.isEmpty() && !clampMaterials.isEmpty()) {
-            atlasTextures(contentInfo.getLod(), contentInfo.getNodeCode(), clampDataSets, clampMaterials);
+            atlasTextures(lod, nodeCode, clampDataSets, clampMaterials);
             List<List<GaiaBufferDataSet>> splitedDataSets = divisionByMaxIndices(clampDataSets);
             List<GaiaBufferDataSet> batchedClampDataSets = batchClampMaterial(splitedDataSets);
             clampMaterials.removeIf((clampMaterial) -> {
@@ -177,7 +249,7 @@ public class GaiaBatcher implements Batcher {
         }
 
         GaiaSet batchedSet = new GaiaSet();
-        batchedSet.setProjectName(contentInfo.getName());
+        batchedSet.setProjectName("BatchedSet");
         batchedSet.setBufferDatas(resultBufferDatas);
         batchedSet.setMaterials(resultMaterials);
 
@@ -187,11 +259,8 @@ public class GaiaBatcher implements Batcher {
 
         Matrix4d transform = new Matrix4d();
         transform.identity();
-
         batchedSet.setTransformMatrix(transform);
-
-        contentInfo.setBatchedSet(batchedSet);
-        return contentInfo;
+        return batchedSet;
     }
 
     public void getMaterialslIstOfBufferDataSet(List<GaiaBufferDataSet> bufferDataSets, List<GaiaMaterial> materials) {
@@ -325,7 +394,7 @@ public class GaiaBatcher implements Batcher {
     // 각 Material의 Texture들을 하나의 이미지로 변경
     private void atlasTextures(LevelOfDetail lod, String codeName, List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials) {
         GaiaTextureCoordinator textureCoordinator = new GaiaTextureCoordinator(codeName, materials, dataSets);
-        textureCoordinator.batchTextures(lod, this.command);
+        textureCoordinator.batchTextures(lod);
     }
 
     private boolean checkRepeat(GaiaMaterial material, GaiaBufferDataSet dataSet) {

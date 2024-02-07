@@ -2,8 +2,8 @@ package com.gaia3d.converter.geometry;
 
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.basic.types.TextureType;
+import com.gaia3d.command.mago.GlobalOptions;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.CommandLine;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
@@ -21,17 +21,19 @@ public abstract class AbstractGeometryConverter {
 
     abstract protected List<GaiaScene> convert(File file);
 
-    protected GaiaScene initScene(CommandLine command) {
+    protected GaiaScene initScene() {
         GaiaScene scene = new GaiaScene();
         GaiaMaterial material = new GaiaMaterial();
         material.setId(0);
         material.setName("extruded");
 
-        if (command.hasOption("debug")) {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        if (globalOptions.isDebug()) {
+            // TODO : random color
             Random random = new Random();
-            float r = random.nextFloat(1);
-            float g = random.nextFloat(1);
-            float b = random.nextFloat(1);
+            float r = random.nextFloat();
+            float g = random.nextFloat();
+            float b = random.nextFloat();
             material.setDiffuseColor(new Vector4d(r, g, b, 1));
         } else {
             material.setDiffuseColor(new Vector4d(0.9, 0.9, 0.9, 1));
@@ -129,8 +131,8 @@ public abstract class AbstractGeometryConverter {
             result = result + (Long) heightObject;
         } else if (heightObject instanceof Double) {
             result = result + (double) heightObject;
-        } else if (heightObject instanceof String heightString) {
-            result = Double.parseDouble(heightString);
+        } else if (heightObject instanceof String) {
+            result = Double.parseDouble((String) heightObject);
         }
 
         if (result < minimumHeight) {
@@ -164,7 +166,7 @@ public abstract class AbstractGeometryConverter {
         return result;
     }
 
-    protected double getAltitude(SimpleFeature feature, String column, double absoluteAltitude) {
+    protected double getAltitude(SimpleFeature feature, String column) {
         double result = 0.0d;
         Object heightLower = feature.getAttribute(column);
         Object heightUpper = feature.getAttribute(column.toUpperCase());
@@ -183,8 +185,8 @@ public abstract class AbstractGeometryConverter {
             result = result + (Long) heightObject;
         } else if (heightObject instanceof Double) {
             result = result + (double) heightObject;
-        } else if (heightObject instanceof String heightString) {
-            result = Double.parseDouble(heightString);
+        } else if (heightObject instanceof String) {
+            result = Double.parseDouble((String) heightObject);
         }
         return result;
     }

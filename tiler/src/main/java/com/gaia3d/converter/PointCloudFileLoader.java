@@ -2,11 +2,11 @@ package com.gaia3d.converter;
 
 import com.gaia3d.basic.pointcloud.GaiaPointCloud;
 import com.gaia3d.basic.types.FormatType;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.pointcloud.LasConverter;
-import com.gaia3d.process.ProcessOptions;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.CommandLine;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -20,30 +20,27 @@ import java.util.List;
  * @since 1.0.0
  */
 @Slf4j
+@RequiredArgsConstructor
 public class PointCloudFileLoader implements FileLoader {
     private final LasConverter converter;
-    private final CommandLine command;
-
-    public PointCloudFileLoader(CommandLine command, LasConverter converter) {
-        this.command = command;
-        this.converter = converter;
-    }
 
     public List<GaiaPointCloud> loadPointCloud(File input) {
         return converter.load(input);
     }
 
     public List<File> loadFiles() {
-        File inputFile = new File(command.getOptionValue(ProcessOptions.INPUT.getArgName()));
-        String inputExtension = command.getOptionValue(ProcessOptions.INPUT_TYPE.getArgName());
-        boolean recursive = command.hasOption(ProcessOptions.RECURSIVE.getArgName());
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        File inputFile = new File(globalOptions.getInputPath());
+        String inputExtension = globalOptions.getInputFormat();
+        boolean recursive = globalOptions.isRecursive();
         FormatType formatType = FormatType.fromExtension(inputExtension);
         String[] extensions = getExtensions(formatType);
         return (ArrayList<File>) FileUtils.listFiles(inputFile, extensions, recursive);
     }
 
     public List<TileInfo> loadTileInfo(File file) {
-        Path outputPath = new File(command.getOptionValue(ProcessOptions.OUTPUT.getArgName())).toPath();
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        Path outputPath = new File(globalOptions.getOutputPath()).toPath();
         List<TileInfo> tileInfos = new ArrayList<>();
         file = new File(file.getParent(), file.getName());
         List<GaiaPointCloud> pointClouds = loadPointCloud(file);

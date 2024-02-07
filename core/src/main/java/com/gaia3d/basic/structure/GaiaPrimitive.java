@@ -17,6 +17,7 @@ import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.lwjgl.opengl.GL20;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -35,7 +36,7 @@ import java.util.Random;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaPrimitive {
+public class GaiaPrimitive implements Serializable {
     private Integer accessorIndices = -1;
     private Integer materialIndex = -1;
     private List<GaiaVertex> vertices = new ArrayList<>();
@@ -57,6 +58,35 @@ public class GaiaPrimitive {
         return boundingBox;
     }
 
+    public GaiaRectangle getTexcoordBoundingRectangle(GaiaRectangle texcoordBoundingRectangle) {
+        if(texcoordBoundingRectangle == null) {
+            texcoordBoundingRectangle = new GaiaRectangle();
+        }
+        boolean is1rst = true;
+        for (GaiaVertex vertex : vertices) {
+            Vector2d textureCoordinate = vertex.getTexcoords();
+            if (textureCoordinate != null) {
+                if (is1rst) {
+                    texcoordBoundingRectangle.setInit(textureCoordinate);
+                    is1rst = false;
+                } else {
+                    texcoordBoundingRectangle.addPoint(textureCoordinate);
+                }
+            }
+        }
+        return texcoordBoundingRectangle;
+    }
+
+    public void translateTexCoordsToPositiveQuadrant()
+    {
+        int surfacesCount = surfaces.size();
+        for(int i=0; i<surfacesCount; i++)
+        {
+            GaiaSurface surface = surfaces.get(i);
+            surface.translateTexCoordsToPositiveQuadrant(this.vertices);
+        }
+    }
+
     public void calculateNormal() {
         for (GaiaSurface surface : surfaces) {
             surface.calculateNormal(this.vertices);
@@ -74,6 +104,7 @@ public class GaiaPrimitive {
     public GaiaBufferDataSet toGaiaBufferSet(Matrix4d transformMatrix) {
         Matrix3d rotationMatrix = new Matrix3d();
         transformMatrix.get3x3(rotationMatrix);
+        // normalize the rotation matrix
         rotationMatrix.normal();
         Matrix4d rotationMatrix4 = new Matrix4d(rotationMatrix);
 
@@ -82,7 +113,7 @@ public class GaiaPrimitive {
         GaiaRectangle texcoordBoundingRectangle = null;
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
 
-        // calculate texcoordBoundingRectangle by indices.
+        // calculate texcoord BoundingRectangle by indices.
         for (int index : indices) {
             GaiaVertex vertex = vertices.get(index);
             Vector2d textureCoordinate = vertex.getTexcoords();
@@ -146,9 +177,6 @@ public class GaiaPrimitive {
                 positionList[positionIndex++] = (float) position.x;
                 positionList[positionIndex++] = (float) position.y;
                 positionList[positionIndex++] = (float) position.z;
-//                positionList = ArrayUtils.add(positionList, (float) position.x);
-//                positionList = ArrayUtils.add(positionList, (float) position.y);
-//                positionList = ArrayUtils.add(positionList, (float) position.z);
             }
             boundingBox.addPoint(position);
             Vector3d normal = vertex.getNormal();
@@ -157,9 +185,6 @@ public class GaiaPrimitive {
                 normalList[normalIndex++] = (float) normal.x;
                 normalList[normalIndex++] = (float) normal.y;
                 normalList[normalIndex++] = (float) normal.z;
-//                normalList = ArrayUtils.add(normalList, (float) normal.x);
-//                normalList = ArrayUtils.add(normalList, (float) normal.y);
-//                normalList = ArrayUtils.add(normalList, (float) normal.z);
             }
             byte[] color = vertex.getColor();
             if (color != null) {
@@ -167,22 +192,14 @@ public class GaiaPrimitive {
                 colorList[colorIndex++] = color[1];
                 colorList[colorIndex++] = color[2];
                 colorList[colorIndex++] = color[3];
-//                colorList = ArrayUtils.add(colorList, color[0]);
-//                colorList = ArrayUtils.add(colorList, color[1]);
-//                colorList = ArrayUtils.add(colorList, color[2]);
-//                colorList = ArrayUtils.add(colorList, color[3]);
             }
-            //float batchId = vertex.getBatchId();
             if (batchIdList.length > 0) {
                 batchIdList[batchIdIndex++] = vertex.getBatchId();
             }
-            //batchIdList = ArrayUtils.add(batchIdList, vertex.getBatchId());
             Vector2d textureCoordinate = vertex.getTexcoords();
             if (textureCoordinate != null) {
                 textureCoordinateList[textureCoordinateIndex++] = (float) textureCoordinate.x;
                 textureCoordinateList[textureCoordinateIndex++] = (float) textureCoordinate.y;
-//                textureCoordinateList = ArrayUtils.add(textureCoordinateList, (float) textureCoordinate.x);
-//                textureCoordinateList = ArrayUtils.add(textureCoordinateList, (float) textureCoordinate.y);
             }
         }
 
@@ -196,8 +213,8 @@ public class GaiaPrimitive {
             indicesBuffer.setInts(indices);
             gaiaBufferDataSet.getBuffers().put(AttributeType.INDICE, indicesBuffer);
         }
-
         /*if (indicesShort.length > 0) {
+            // TODO : if indices size is less than 65536, use short type.
             GaiaBuffer indicesBuffer = new GaiaBuffer();
             indicesBuffer.setGlTarget(GL20.GL_ELEMENT_ARRAY_BUFFER);
             indicesBuffer.setGlType(GL20.GL_UNSIGNED_SHORT);
@@ -206,7 +223,6 @@ public class GaiaPrimitive {
             indicesBuffer.setShorts(indicesShort);
             gaiaBufferDataSet.getBuffers().put(AttributeType.INDICE, indicesBuffer);
         }*/
-
         if (normalList.length > 0) {
             GaiaBuffer normalBuffer = new GaiaBuffer();
             normalBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
@@ -216,7 +232,6 @@ public class GaiaPrimitive {
             normalBuffer.setFloats(normalList);
             gaiaBufferDataSet.getBuffers().put(AttributeType.NORMAL, normalBuffer);
         }
-
         if (colorList.length > 0) {
             GaiaBuffer colorBuffer = new GaiaBuffer();
             colorBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
@@ -226,7 +241,6 @@ public class GaiaPrimitive {
             colorBuffer.setBytes(colorList);
             gaiaBufferDataSet.getBuffers().put(AttributeType.COLOR, colorBuffer);
         }
-
         if (batchIdList.length > 0) {
             GaiaBuffer batchIdBuffer = new GaiaBuffer();
             batchIdBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
@@ -236,7 +250,6 @@ public class GaiaPrimitive {
             batchIdBuffer.setFloats(batchIdList);
             gaiaBufferDataSet.getBuffers().put(AttributeType.BATCHID, batchIdBuffer);
         }
-
         if (positionList.length > 0) {
             GaiaBuffer positionBuffer = new GaiaBuffer();
             positionBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
@@ -246,7 +259,6 @@ public class GaiaPrimitive {
             positionBuffer.setFloats(positionList);
             gaiaBufferDataSet.getBuffers().put(AttributeType.POSITION, positionBuffer);
         }
-
         if (textureCoordinateList.length > 0) {
             GaiaBuffer textureCoordinateBuffer = new GaiaBuffer();
             textureCoordinateBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
@@ -256,13 +268,11 @@ public class GaiaPrimitive {
             textureCoordinateBuffer.setFloats(textureCoordinateList);
             gaiaBufferDataSet.getBuffers().put(AttributeType.TEXCOORD, textureCoordinateBuffer);
         }
-
         gaiaBufferDataSet.setTexcoordBoundingRectangle(texcoordBoundingRectangle);
         gaiaBufferDataSet.setBoundingBox(boundingBox);
 
         //assign material. Son 2023.07.17
         gaiaBufferDataSet.setMaterial(this.material);
-
         return gaiaBufferDataSet;
     }
 

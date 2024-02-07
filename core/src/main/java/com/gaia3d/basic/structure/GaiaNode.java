@@ -12,6 +12,7 @@ import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,9 +30,9 @@ import java.util.Map;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaNode {
-    private GaiaNode parent = null;
+public class GaiaNode implements Serializable {
     private String name = "";
+    private GaiaNode parent = null;
     private List<GaiaMesh> meshes = new ArrayList<>();
     private List<GaiaNode> children = new ArrayList<>();
 
@@ -41,7 +42,6 @@ public class GaiaNode {
 
     public GaiaNode(GaiaBufferDataSet bufferDataSet) {
         GaiaMesh mesh = new GaiaMesh();
-
         GaiaPrimitive primitive = bufferDataSet.toPrimitive();
         primitive.setMaterialIndex(bufferDataSet.getMaterialId());
 

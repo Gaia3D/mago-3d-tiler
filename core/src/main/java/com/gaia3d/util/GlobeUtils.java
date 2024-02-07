@@ -19,7 +19,6 @@ public class GlobeUtils {
     private static final double polarRadius = 6356752.3142d; // meters.
     private static final double polarRadiusSquared = 40408299984087.05552164d;
     private static final double firstEccentricitySquared = 6.69437999014E-3d;
-
     private static final CRSFactory factory = new CRSFactory();
     private static final CoordinateReferenceSystem wgs84 = factory.createFromParameters("WGS84", "+proj=longlat +datum=WGS84 +no_defs");
 
@@ -44,7 +43,7 @@ public class GlobeUtils {
         return new Vector3d(result[0], result[1], result[2]);
     }
 
-    public static Matrix4d normalAtCartesianPointWgs84(double x, double y, double z) {
+    public static Matrix4d transformMatrixAtCartesianPointWgs84(double x, double y, double z) {
         Vector3d zAxis = new Vector3d(x / equatorialRadiusSquared, y / equatorialRadiusSquared, z / polarRadiusSquared);
         zAxis.normalize();
         Vector3d xAxis = new Vector3d(-y, +x, 0.0);
@@ -78,8 +77,18 @@ public class GlobeUtils {
         return transfromMatrix;
     }
 
-    public static Matrix4d normalAtCartesianPointWgs84(Vector3d position) {
-        return normalAtCartesianPointWgs84(position.x, position.y, position.z);
+    public static Vector3d normalAtCartesianPointWgs84(Vector3d cartesian) {
+        return normalAtCartesianPointWgs84(cartesian.x, cartesian.y, cartesian.z);
+    }
+
+    public static Vector3d normalAtCartesianPointWgs84(double x, double y, double z) {
+        Vector3d zAxis = new Vector3d(x / equatorialRadiusSquared, y / equatorialRadiusSquared, z / polarRadiusSquared);
+        zAxis.normalize();
+        return zAxis;
+    }
+
+    public static Matrix4d transformMatrixAtCartesianPointWgs84(Vector3d position) {
+        return transformMatrixAtCartesianPointWgs84(position.x, position.y, position.z);
     }
 
     public static Vector3d cartesianToGeographicWgs84(Vector3d position) {

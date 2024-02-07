@@ -2,19 +2,18 @@ package com.gaia3d.process.tileprocess.tile;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.pointcloud.GaiaPointCloud;
-import com.gaia3d.process.ProcessOptions;
-import com.gaia3d.process.TilerOptions;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.tileprocess.Tiler;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
 import com.gaia3d.process.tileprocess.tile.tileset.asset.*;
 import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
-import com.gaia3d.util.GlobeUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.CommandLine;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
@@ -24,19 +23,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
-public class PointCloudTiler implements Tiler {
-    private static final int DEFUALT_MAX_COUNT = 20000;
-
-    private final CommandLine command;
-    private final TilerOptions options;
-
-    public PointCloudTiler(TilerOptions tilerOptions, CommandLine command) {
-        this.options = tilerOptions;
-        this.command = command;
-    }
-
+@RequiredArgsConstructor
+public class PointCloudTiler extends DefaultTiler implements Tiler {
     @Override
     public Tileset run(List<TileInfo> tileInfos) {
         double geometricError = calcGeometricError(tileInfos);
@@ -65,7 +56,6 @@ public class PointCloudTiler implements Tiler {
 
         globalBoundingBox = cubeBoundingBox;
 
-
         Matrix4d transformMatrix = getTransformMatrix(globalBoundingBox);
         rotateX90(transformMatrix);
 
@@ -79,7 +69,7 @@ public class PointCloudTiler implements Tiler {
         try {
             createRootNode(root, tileInfos);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new TileProcessingException(e.getMessage());
         }
 
         Asset asset = createAsset();
@@ -91,24 +81,21 @@ public class PointCloudTiler implements Tiler {
     }
 
     public void writeTileset(Tileset tileset) {
-        File tilesetFile = this.options.getOutputPath().resolve("tileset.json").toFile();
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        File outputPath = new File(globalOptions.getOutputPath());
+        File tilesetFile = new File(outputPath, "tileset.json");
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(tilesetFile))) {
             String result = objectMapper.writeValueAsString(tileset);
+            log.info("[Tiling][Tileset] write 'tileset.json' file.");
             writer.write(result);
+            globalOptions.setTilesetSize(result.length());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new TileProcessingException(e.getMessage());
         }
-    }
-
-    private double calcGeometricError(List<TileInfo> tileInfos) {
-        return tileInfos.stream().mapToDouble(tileInfo -> {
-            GaiaBoundingBox boundingBox = tileInfo.getPointCloud().getGaiaBoundingBox();
-            return boundingBox.getLongestDistance();
-        }).max().orElse(0.0d);
     }
 
     private double calcGeometricError(GaiaPointCloud pointCloud) {
@@ -116,7 +103,16 @@ public class PointCloudTiler implements Tiler {
         return boundingBox.getLongestDistance();
     }
 
-    private GaiaBoundingBox calcBoundingBox(List<TileInfo> tileInfos) {
+    @Override
+    protected double calcGeometricError(List<TileInfo> tileInfos) {
+        return tileInfos.stream().mapToDouble(tileInfo -> {
+            GaiaBoundingBox boundingBox = tileInfo.getPointCloud().getGaiaBoundingBox();
+            return boundingBox.getLongestDistance();
+        }).max().orElse(0.0d);
+    }
+
+    @Override
+    protected GaiaBoundingBox calcBoundingBox(List<TileInfo> tileInfos) {
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         tileInfos.forEach(tileInfo -> {
             GaiaBoundingBox localBoundingBox = tileInfo.getPointCloud().getGaiaBoundingBox();
@@ -132,7 +128,7 @@ public class PointCloudTiler implements Tiler {
 
         List<GaiaPointCloud> pointClouds = tileInfos.stream()
                 .map(TileInfo::getPointCloud)
-                .toList();
+                .collect(Collectors.toList());
         int index = 0;
         for (GaiaPointCloud pointCloud : pointClouds) {
             pointCloud.setCode((index++) + "");
@@ -141,19 +137,16 @@ public class PointCloudTiler implements Tiler {
     }
 
     private void createNode(Node parentNode, GaiaPointCloud pointCloud, double geometricError) {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
         int vertexLength = pointCloud.getVertices().size();
 
-        int maxPoints = command.hasOption(ProcessOptions.MAX_POINTS.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_POINTS.getArgName())) : DEFUALT_MAX_COUNT;
-
-        List<GaiaPointCloud> divided = pointCloud.divideChunkSize(maxPoints);
+        int pointLimit = globalOptions.getPointLimit();
+        List<GaiaPointCloud> divided = pointCloud.divideChunkSize(pointLimit);
         GaiaPointCloud selfPointCloud = divided.get(0);
         GaiaPointCloud remainPointCloud = divided.get(1);
 
         GaiaBoundingBox childBoundingBox = selfPointCloud.getGaiaBoundingBox();
         Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
-
-        //Matrix4d transformMatrix = new Matrix4d();
-        //transformMatrix.identity();
         rotateX90(transformMatrix);
         BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
 
@@ -190,7 +183,7 @@ public class PointCloudTiler implements Tiler {
         childNode.setContent(content);
 
         parentNode.getChildren().add(childNode);
-        log.info("[ContentNode][{}] Point cloud nodes calculated.",childNode.getNodeCode());
+        log.info("[Tiling][ContentNode][{}]",childNode.getNodeCode());
 
         if (vertexLength > 0) { // vertexLength > DEFUALT_MAX_COUNT
             List<GaiaPointCloud> distributes = remainPointCloud.distributeOct();
@@ -199,46 +192,6 @@ public class PointCloudTiler implements Tiler {
                     createNode(childNode, distribute, geometricError/2);
                 }
             });
-        } else {
-            return;
         }
-    }
-
-    private void rotateX90(Matrix4d matrix) {
-        Matrix4d rotationMatrix = new Matrix4d();
-        rotationMatrix.identity();
-        rotationMatrix.rotateX(Math.toRadians(-90));
-        matrix.mul(rotationMatrix, matrix);
-    }
-
-    private Matrix4d getTransformMatrix(GaiaBoundingBox boundingBox) {
-        Vector3d center = boundingBox.getCenter();
-        double[] cartesian = GlobeUtils.geographicToCartesianWgs84(center.x, center.y, center.z);
-        return GlobeUtils.normalAtCartesianPointWgs84(cartesian[0], cartesian[1], cartesian[2]);
-    }
-
-    private Asset createAsset() {
-        Asset asset = new Asset();
-        Extras extras = new Extras();
-        Cesium cesium = new Cesium();
-        Ion ion = new Ion();
-        List<Credit> credits = new ArrayList<>();
-        Credit credit = new Credit();
-        credit.setHtml("<html>Gaia3D</html>");
-        credits.add(credit);
-        cesium.setCredits(credits);
-        extras.setIon(ion);
-        extras.setCesium(cesium);
-        asset.setExtras(extras);
-        return asset;
-    }
-
-    private Node createRoot() {
-        Node root = new Node();
-        root.setParent(root);
-        root.setNodeCode("R");
-        root.setRefine(Node.RefineType.ADD);
-        root.setChildren(new ArrayList<>());
-        return root;
     }
 }

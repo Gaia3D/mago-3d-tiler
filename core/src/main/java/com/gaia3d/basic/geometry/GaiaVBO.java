@@ -3,6 +3,8 @@ package com.gaia3d.basic.geometry;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 /**
  * A class that represents a VBO (Vertex Buffer Object) for a Gaia object.
  * It is used for opengl rendering.
@@ -13,7 +15,7 @@ import lombok.Setter;
  */
 @Setter
 @Getter
-public class GaiaVBO {
+public class GaiaVBO implements Serializable {
     private int indicesLength;
     private int indicesVbo;
     private int positionVbo;

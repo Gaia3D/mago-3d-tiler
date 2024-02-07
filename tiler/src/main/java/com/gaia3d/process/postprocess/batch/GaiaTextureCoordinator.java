@@ -7,10 +7,9 @@ import com.gaia3d.basic.structure.GaiaMaterial;
 import com.gaia3d.basic.structure.GaiaTexture;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.TextureType;
-import com.gaia3d.process.ProcessOptions;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.tileprocess.tile.LevelOfDetail;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.CommandLine;
 import org.joml.Vector2d;
 
 import javax.imageio.ImageIO;
@@ -18,7 +17,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.Buffer;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.*;
@@ -35,12 +33,16 @@ public class GaiaTextureCoordinator {
         this.ATLAS_IMAGE = name;
         this.materials = materials;
         this.bufferDataSets = bufferDataSets;
-        this.initBatchImage(0, 0);
+        this.initBatchImage(0, 0, BufferedImage.TYPE_INT_ARGB);
     }
 
-    private void initBatchImage(int width, int height) {
+    private void initBatchImage(int width, int height, int imageType) {
+        // imageType :
+        // TYPE_INT_RGB = 1
+        // TYPE_INT_ARGB = 2
+        // TYPE_4BYTE_ABGR = 6
         if (width > 0 || height > 0) {
-            this.atlasImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            this.atlasImage = new BufferedImage(width, height, imageType);
         } else {
             this.atlasImage = null;
         }
@@ -187,7 +189,8 @@ public class GaiaTextureCoordinator {
         return bufferedImage;
     }
 
-    public void batchTextures(LevelOfDetail lod, CommandLine command) {
+    public void batchTextures(LevelOfDetail lod) {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
         // We have MaterialList & BufferDataSetList.********
         // 1- List<GaiaMaterial> this.materials;
         // 2- List<GaiaBufferDataSet> this.bufferDataSets;
@@ -198,6 +201,7 @@ public class GaiaTextureCoordinator {
 
         // 1rst, make a list of GaiaBatchImage (splittedImage).********
         List<GaiaBatchImage> splittedImages = new ArrayList<>();
+        boolean existPngTextures = false;
         for (GaiaMaterial material : materials) {
             Map<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
             List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
@@ -205,11 +209,10 @@ public class GaiaTextureCoordinator {
             BufferedImage bufferedImage;
             if (!textures.isEmpty()) {
                 texture = textures.get(0);
-                if (command.hasOption(ProcessOptions.DEBUG_IGNORE_TEXTURES.getLongName())) {
-                    bufferedImage = createShamImage();
-                } else {
-                    bufferedImage = texture.getBufferedImage(lod.getTextureScale());
+                if (texture.getPath().endsWith(".png") || texture.getPath().endsWith(".PNG")) {
+                    existPngTextures = true;
                 }
+                bufferedImage = texture.getBufferedImage(lod.getTextureScale());
             } else {
                 bufferedImage = createShamImage();
             }
@@ -242,15 +245,15 @@ public class GaiaTextureCoordinator {
                 splittedImage.batchedBoundary.setMinY(bestPosition.y);
                 splittedImage.batchedBoundary.setMaxX(bestPosition.x + originBoundary.getWidth());
                 splittedImage.batchedBoundary.setMaxY(bestPosition.y + originBoundary.getHeight());
-
             }
-
             listProcessSplitDatas.add(splittedImage);
         }
 
         int maxWidth = getMaxWidth(splittedImages);
         int maxHeight = getMaxHeight(splittedImages);
-        initBatchImage(maxWidth, maxHeight);
+        int imageType = existPngTextures ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
+        // existPngTextures
+        initBatchImage(maxWidth, maxHeight, imageType);
         if (this.atlasImage == null) {
             log.error("atlasImage is null" );
             return;
@@ -271,7 +274,8 @@ public class GaiaTextureCoordinator {
             }
         }
 
-        if (command != null && command.hasOption("debug")) {
+        if (globalOptions.isDebug()) {
+            // TODO : debug color
             float[] debugColor = lod.getDebugColor();
             Color color = new Color(debugColor[0], debugColor[1], debugColor[2], 0.5f);
             graphics.setColor(color);
@@ -301,12 +305,21 @@ public class GaiaTextureCoordinator {
             texture.setWidth(maxWidth);
             texture.setHeight(maxHeight);
 
-            if (command.hasOption(ProcessOptions.PNG_TEXTURE.getLongName())) {
+            if (existPngTextures) {
                 texture.setPath(ATLAS_IMAGE + ".png");
             } else {
                 texture.setPath(ATLAS_IMAGE + ".jpg");
             }
-            List<GaiaBufferDataSet> materialBufferDataSets = bufferDataSets.stream().filter((bufferDataSet) -> bufferDataSet.getMaterialId() == target.getMaterialId()).toList();
+
+            // test save atlasTexture image.****
+            /*String extension = "jpg";
+            if (existPngTextures) {
+                extension = "png";
+            }
+            this.writeBatchedImage(extension);*/
+            // end test.************************
+
+            List<GaiaBufferDataSet> materialBufferDataSets = bufferDataSets.stream().filter((bufferDataSet) -> bufferDataSet.getMaterialId() == target.getMaterialId()).collect(Collectors.toList());
 
             Double intPart_x = null, intPart_y = null;
             double fractPart_x, fractPart_y;
@@ -353,14 +366,16 @@ public class GaiaTextureCoordinator {
         }
     }
 
-    private void writeBatchedImage() {
-        File file = new File("D:\\MAGO_TEST_FOLDER\\ComplicatedModels\\output\\images\\" );
-        if (!file.mkdir()) {
-            log.error("Failed to create directory" );
+    private void writeBatchedImage(String imageExtension) {
+        File file = new File("D:\\Mago3DTiler-UnitTest\\output\\case01-3ds-ws2\\" );
+        if (!file.exists()) {
+            if (!file.mkdirs()) {
+                log.error("Failed to create directory");
+            }
         }
 
         Path outputPath = file.toPath();
-        Path output = file.toPath().resolve(ATLAS_IMAGE + ".jpg" );
+        Path output = file.toPath().resolve(ATLAS_IMAGE + "." + imageExtension);
         if (!outputPath.toFile().exists()) {
             if (!outputPath.toFile().mkdir()) {
                 log.error("Failed to create directory" );
@@ -368,7 +383,7 @@ public class GaiaTextureCoordinator {
         }
         if (this.atlasImage != null) {
             try {
-                ImageIO.write(this.atlasImage, "jpg", output.toFile());
+                ImageIO.write(this.atlasImage, imageExtension, output.toFile());
             } catch (IOException e) {
                 log.error(e.getMessage());
             }

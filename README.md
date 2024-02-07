@@ -29,11 +29,10 @@ java -jar mago-3d-tiler-x.x.x-natives-windows.jar --help
 ```
 console output:
 ```
-┌┬┐┌─┐┌─┐┌─┐  ┌┬┐┬┬  ┌─┐┬─┐
-│││├─┤│ ┬│ │───│ ││  ├┤ ├┬┘
-┴ ┴┴ ┴└─┘└─┘   ┴ ┴┴─┘└─┘┴└─
+┌┬┐┌─┐┌─┐┌─┐  -┐┌┬┐  ┌┬┐┬┬  ┌─┐┬─┐
+│││├─┤│ ┬│ │  -┤ ││   │ ││  ├┤ ├┬┘
+┴ ┴┴ ┴└─┘└─┘  -┘-┴┘   ┴ ┴┴─┘└─┘┴└─
 3d-tiler(x.x.x) by Gaia3D, Inc.
-JAVA Version : 17 (Oracle Corporation) 
 ----------------------------------------
 usage: Gaia3D Tiler
  -aa,--autoUpAxis               [Experimental] automatically Assign 3D
@@ -47,6 +46,8 @@ usage: Gaia3D Tiler
  -fc,--flipCoordinate           flip x,y Coordinate.
  -glb,--glb                     create glb file.
  -gltf,--gltf                   create gltf file.
+ -gt,--geoTiff <arg>            [Experimental] geoTiff file path, 3D
+                                Object applied as clampToGround.
  -h,--help                      print this message
  -hc,--heightColumn <arg>       height column setting. (Default: height)
  -i,--input <arg>               input file path
@@ -69,6 +70,8 @@ usage: Gaia3D Tiler
  -r,--recursive                 deep directory exploration
  -ra,--refineAdd                refine addd mode
  -rt,--reverseTexCoord          texture y-axis coordinate reverse
+ -te,--terrain <arg>            [Experimental] terrain file path, 3D
+                                Object applied as clampToGround.
  -v,--version                   print version
  -xl,--maxLod <arg>             max level of detail (Default: 3)
  -ya,--yUpAxis                  Assign 3D root transformed matrix Y-UP
@@ -152,11 +155,10 @@ java -jar mago-3d-tiler-x.x.x-natives-windows.jar -h
 ```
 출력 결과물: 
 ```
-┌┬┐┌─┐┌─┐┌─┐  ┌┬┐┬┬  ┌─┐┬─┐
-│││├─┤│ ┬│ │───│ ││  ├┤ ├┬┘
-┴ ┴┴ ┴└─┘└─┘   ┴ ┴┴─┘└─┘┴└─
+┌┬┐┌─┐┌─┐┌─┐  -┐┌┬┐  ┌┬┐┬┬  ┌─┐┬─┐
+│││├─┤│ ┬│ │  -┤ ││   │ ││  ├┤ ├┬┘
+┴ ┴┴ ┴└─┘└─┘  -┘-┴┘   ┴ ┴┴─┘└─┘┴└─
 3d-tiler(x.x.x) by Gaia3D, Inc.
-JAVA Version : 17 (Oracle Corporation) 
 ----------------------------------------
 usage: Gaia3D Tiler
  -aa,--autoUpAxis               [Experimental] automatically Assign 3D
@@ -170,6 +172,8 @@ usage: Gaia3D Tiler
  -fc,--flipCoordinate           flip x,y Coordinate.
  -glb,--glb                     create glb file.
  -gltf,--gltf                   create gltf file.
+ -gt,--geoTiff <arg>            [Experimental] geoTiff file path, 3D
+                                Object applied as clampToGround.
  -h,--help                      print this message
  -hc,--heightColumn <arg>       height column setting. (Default: height)
  -i,--input <arg>               input file path
@@ -192,6 +196,8 @@ usage: Gaia3D Tiler
  -r,--recursive                 deep directory exploration
  -ra,--refineAdd                refine addd mode
  -rt,--reverseTexCoord          texture y-axis coordinate reverse
+ -te,--terrain <arg>            [Experimental] terrain file path, 3D
+                                Object applied as clampToGround.
  -v,--version                   print version
  -xl,--maxLod <arg>             max level of detail (Default: 3)
  -ya,--yUpAxis                  Assign 3D root transformed matrix Y-UP

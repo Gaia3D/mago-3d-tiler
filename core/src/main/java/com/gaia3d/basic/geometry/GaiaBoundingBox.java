@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
+import java.io.Serializable;
+
 /**
  * GaiaBoundingBox is a class to store the bounding box of a geometry.
  * It can be used to calculate the center and volume of the geometry.
@@ -23,7 +25,7 @@ import org.joml.Vector3d;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaBoundingBox {
+public class GaiaBoundingBox implements Serializable {
     private double minX, minY, minZ;
     private double maxX, maxY, maxZ;
     private boolean isInit = false;
@@ -101,7 +103,7 @@ public class GaiaBoundingBox {
 
     public GaiaBoundingBox convertLocalToLonlatBoundingBox(Vector3d center) {
         Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
-        Matrix4d transformMatrix = GlobeUtils.normalAtCartesianPointWgs84(centerWorldCoordinate);
+        Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
         
         Vector3d minLocalCoordinate = new Vector3d(minX, minY, minZ);
         Matrix4d minTransfromMatrix = transformMatrix.translate(minLocalCoordinate, new Matrix4d());
@@ -122,5 +124,9 @@ public class GaiaBoundingBox {
     public double getLongestDistance() {
         Vector3d volume = getVolume();
         return Math.sqrt(volume.x * volume.x + volume.y * volume.y + volume.z * volume.z);
+    }
+
+    public GaiaBoundingBox clone() {
+        return new GaiaBoundingBox(minX, minY, minZ, maxX, maxY, maxZ, isInit);
     }
 }

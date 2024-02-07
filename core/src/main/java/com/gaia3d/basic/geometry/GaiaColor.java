@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 /**
  * GaiaColor is a class to store the color of a geometry.
  */
@@ -12,7 +14,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class GaiaColor {
+public class GaiaColor implements Serializable {
     float r;
     float g;
     float b;

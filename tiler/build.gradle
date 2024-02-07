@@ -7,7 +7,7 @@ plugins {
 }
 
 group "com.gaia3d"
-version "1.3.0"
+version "1.4.1"
 project.ext.lwjglVersion = "3.3.3"
 
 switch ( OperatingSystem.current() ) {
@@ -68,11 +68,22 @@ dependencies {
 
     // jackson (json library)
     implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
+    // jackson-xml
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.2'
 
     // GeoTools (geospatial library)
+    implementation "org.geotools:gt-geotiff:21.3"
     implementation 'org.geotools:gt-shapefile:21.3'
     implementation 'org.geotools:gt-geojson:21.3'
     implementation 'org.geotools:gt-geojsondatastore:21.3'
+    implementation "org.geotools:gt-coverage:21.3"
+    implementation "org.geotools:gt-main:21.3"
+    implementation "org.geotools:gt-image:21.3"
+
+    // org.geotools.gce.geotiff
+    implementation "javax.media:jai_core:1.1.3"
+    implementation "javax.media:jai_imageio:1.1"
+    implementation "org.jdom:jdom2:2.0.6"
 
     // CityGML4J (citygml library)
     implementation 'org.citygml4j:citygml4j-xml:3.0.0'
@@ -147,7 +158,7 @@ jar {
 shadowJar {
     mergeServiceFiles()
     manifest {
-        attributes 'Main-Class': 'com.gaia3d.command.TilerMain'
+        attributes 'Main-Class': 'com.gaia3d.command.mago.Mago3DTilerMain'
         attributes 'Implementation-Version': project.version
         attributes 'Implementation-Title': '3d-tiler'
         attributes 'Implementation-Vendor': 'Gaia3d, Inc.'

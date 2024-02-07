@@ -1,21 +1,156 @@
 package com.gaia3d.basic.command;
 
-import com.gaia3d.command.TilerMain;
+import com.gaia3d.command.mago.Mago3DTilerMain;
 import lombok.extern.slf4j.Slf4j;
+import org.joml.Vector3d;
 import org.junit.jupiter.api.Test;
 
 @Slf4j
 class UnitTest {
-        private static final String INPUT_PATH = "D:\\unit-test\\";
-        private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\mago\\mago-3d-tiler\\viewer\\mago-3d-tiler-data\\";
+        private static final String INPUT_PATH = "D:\\data\\unit-test\\";
+        private static final String OUTPUT_PATH = "D:\\Result_mago3dTiler\\";
 
         @Test
         void test() {
             String[] args = new String[]{
                 "-help"
             };
-            TilerMain.main(args);
+            Mago3DTilerMain.main(args);
         }
+
+    @Test
+    void kmlComplicatedModels() {
+        String path = "ComplicatedModels10";
+        String[] args = new String[]{
+                "-i", INPUT_PATH + path,
+                "-it", "kml",
+                "-o", OUTPUT_PATH + path,
+                "-autoUpAxis",
+                //"-glb",
+                "-mc", "1" // multithreadsCount.
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testHanamKyosan3ds() {
+        String path = "Data_HanamKyosan\\건물";
+        String[] args = new String[]{
+                "-i", INPUT_PATH + path,
+                "-it", "3ds",
+                "-o", OUTPUT_PATH + path,
+                "-autoUpAxis",
+                "-crs", "5174",
+                "-mc", "4" // multithreadsCount.
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testHanamKyosanRoads3ds() {
+        String path = "Data_HanamKyosan\\교량";
+        String[] args = new String[]{
+                "-i", INPUT_PATH + path,
+                "-it", "3ds",
+                "-o", OUTPUT_PATH + path,
+                "-autoUpAxis",
+                "-crs", "5174"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testLH_gs3ds() {
+        String path = "LH_Data\\gs-3ds";
+        String[] args = new String[]{
+                "-i", INPUT_PATH + path,
+                "-it", "3ds",
+                "-o", OUTPUT_PATH + path,
+                "-autoUpAxis",
+                "-crs", "5174",
+                "-mc", "1"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testLH_icgy3ds() {
+        String path = "LH_Data\\icgy-3ds";
+        String[] args = new String[]{
+                "-i", INPUT_PATH + path,
+                "-it", "3ds",
+                "-o", OUTPUT_PATH + path,
+                "-autoUpAxis",
+                "-crs", "5186",
+                "-mc", "1"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testLH_ws13ds() {
+        String path = "LH_Data\\ws1-3ds";
+        String[] args = new String[]{
+                "-i", INPUT_PATH + path,
+                "-it", "3ds",
+                "-o", OUTPUT_PATH + path,
+                "-autoUpAxis",
+                "-crs", "5186",
+                "-mc", "1"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testLH_ws23ds() {
+        String path = "LH_Data\\ws2-3ds";
+        String[] args = new String[]{
+                "-i", INPUT_PATH + path,
+                "-it", "3ds",
+                "-o", OUTPUT_PATH + path,
+                "-autoUpAxis",
+                "-crs", "5186",
+                "-mc", "1"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testPoleSouthSejongBase() {
+            // "+proj=tmerc +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=-58.789189 +lat_0=-62.223259" // pole south
+        // "+proj=tmerc +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=126.980125 +lat_0=37.521169" // seoul
+        String path = "PoleSouthIFC_5";
+        String[] args = new String[]{
+                "-i", INPUT_PATH + path,
+                "-it", "ifc",
+                "-o", OUTPUT_PATH + path,
+                "-proj", "+proj=tmerc +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=-58.789189 +lat_0=-62.223259",
+                "-refineAdd",
+                "-glb",
+                "-mc", "1",
+                "-r"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testIFC_DuplexApartment() {
+        // "+proj=tmerc +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=126.980125 +lat_0=37.521169" // seoul
+        // Duplex Apartment
+        // Medical-Dental Clinic
+        String path = "IFC 2x3\\Duplex Apartment";
+        String[] args = new String[]{
+                "-i", INPUT_PATH + path,
+                "-it", "ifc",
+                "-o", OUTPUT_PATH + path,
+                "-proj", "+proj=tmerc +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=126.980125 +lat_0=37.521169",
+                "-refineAdd",
+                "-glb",
+                "-mc", "1",
+                "-r"
+        };
+        Mago3DTilerMain.main(args);
+    }
 
         @Test
         void kmlObj() {
@@ -26,7 +161,7 @@ class UnitTest {
                     "-o", OUTPUT_PATH + path,
                     "-autoUpAxis",
             };
-            TilerMain.main(args);
+            Mago3DTilerMain.main(args);
         }
 
         @Test
@@ -38,7 +173,7 @@ class UnitTest {
                     "-o", OUTPUT_PATH + path,
                     "-autoUpAxis",
             };
-            TilerMain.main(args);
+            Mago3DTilerMain.main(args);
         }
 
         @Test
@@ -50,7 +185,7 @@ class UnitTest {
                     "-o", OUTPUT_PATH + path,
                     "-autoUpAxis",
             };
-            TilerMain.main(args);
+            Mago3DTilerMain.main(args);
         }
 
     @Test
@@ -62,23 +197,22 @@ class UnitTest {
                 "-o", OUTPUT_PATH + path,
                 "-yUpAxis",
                 "-refineAdd",
-                "-multiThread",
+                //"-multiThread",
                 "-zeroOrigin",
         };
-        TilerMain.main(args);
+        Mago3DTilerMain.main(args);
     }
 
-    @Test
+    //@Test
     void kmlIfc() {
         String path = "kml-ifc";
         String[] args = new String[]{
                 "-i", INPUT_PATH + path,
                 "-it", "kml",
                 "-o", OUTPUT_PATH + path,
-                //"-zeroOrigin",
                 "-autoUpAxis",
         };
-        TilerMain.main(args);
+        Mago3DTilerMain.main(args);
     }
 
     @Test
@@ -89,10 +223,9 @@ class UnitTest {
                 "-it", "kml",
                 "-o", OUTPUT_PATH + path,
                 "-autoUpAxis",
-                "-zeroOrigin",
                 "-multiThread",
         };
-        TilerMain.main(args);
+        Mago3DTilerMain.main(args);
     }
 
     //@Test
@@ -107,7 +240,7 @@ class UnitTest {
                 "-refineAdd",
                 "-multiThread",
         };
-        TilerMain.main(args);
+        Mago3DTilerMain.main(args);
     }
 
         @Test
@@ -119,12 +252,10 @@ class UnitTest {
                     "-o", OUTPUT_PATH + path,
                     "-crs", "5186",
                     "-autoUpAxis",
-                    "-maxCount", "2048",
-                    "-minLod", "0",
-                    "-maxLod", "3",
+                    //"-gt", "D:/forTest/ws2_dem.tif",
                     "-multiThread",
             };
-            TilerMain.main(args);
+            Mago3DTilerMain.main(args);
         }
 
         @Test
@@ -142,10 +273,10 @@ class UnitTest {
                     //"-reverseTexCoord",
                     "-multiThread",
             };
-            TilerMain.main(args);
+            Mago3DTilerMain.main(args);
         }
 
-        @Test
+        //@Test
         void testIfcWithKml() {
             String path = "ifc";
             String[] args = new String[]{
@@ -159,7 +290,7 @@ class UnitTest {
                     "-maxLod", "3",
                     "-multiThread",
             };
-            TilerMain.main(args);
+            Mago3DTilerMain.main(args);
         }
 
         @Test
@@ -174,9 +305,9 @@ class UnitTest {
                     "-maxCount", "1024",
                     "-minLod", "0",
                     "-maxLod", "3",
-                    "-multiThread",
+                    //"-multiThread",
             };
-            TilerMain.main(args);
+            Mago3DTilerMain.main(args);
         }
 
         @Test
@@ -193,7 +324,7 @@ class UnitTest {
                     "-maxLod", "3",
                     //"-multiThread",
             };
-            TilerMain.main(args);
+            Mago3DTilerMain.main(args);
         }
 
         @Test
@@ -209,7 +340,7 @@ class UnitTest {
                     "-multiThread",
                     "-refineAdd",
             };
-            TilerMain.main(args);
+            Mago3DTilerMain.main(args);
         }
 
         @Test
@@ -224,7 +355,7 @@ class UnitTest {
                     "-multiThread",
                     "-refineAdd",
             };
-            TilerMain.main(args);
+            Mago3DTilerMain.main(args);
         }
 
         @Test
@@ -235,13 +366,12 @@ class UnitTest {
                     "-it", "geojson",
                     "-o", OUTPUT_PATH + path,
                     "-crs", "5186",
-                    "-maxCount", "1024",
-                    "-debug",
-                    "-nc", "layer",
-                    "-multiThread",
+                    //"-maxCount", "1024",
+                    //"-debug",
+                    "-gt", "D:/forTest/ws2_dem.tif",
                     "-refineAdd",
             };
-            TilerMain.main(args);
+            Mago3DTilerMain.main(args);
         }
 
         @Test
@@ -251,11 +381,10 @@ class UnitTest {
                     "-i", INPUT_PATH + path,
                     "-it", "las",
                     "-o", OUTPUT_PATH + path,
-                    "-crs", "5186",
                     "-maxCount", "1024",
                     "-multiThread",
                     "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
             };
-            TilerMain.main(args);
+            Mago3DTilerMain.main(args);
         }
 }

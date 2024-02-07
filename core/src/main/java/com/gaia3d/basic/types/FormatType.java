@@ -1,6 +1,7 @@
 package com.gaia3d.basic.types;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
 
@@ -14,15 +15,16 @@ import java.util.Arrays;
  * @See GaiaSet
  */
 @Getter
+@RequiredArgsConstructor
 public enum FormatType {
     // 3D Formats
-    FBX("fbx", true),
+    KML("kml", false),
     GLTF("gltf", true),
     GLB("glb", true),
-    KML("kml", false),
-    COLLADA("dae", false),
+    COLLADA("dae", true),
     MAX_3DS("3ds", false),
     MAX_ASE("ase", false),
+    FBX("fbx", true),
     OBJ("obj", false),
     IFC("ifc", false),
     CITY_GML("gml", false),
@@ -42,15 +44,13 @@ public enum FormatType {
     PNTS("pnts", true),
     TEMP("mgb", false);
 
-    final String extension;
-    final boolean yUpAxis;
-
-    FormatType(String extension, boolean yUpAxis) {
-        this.extension = extension;
-        this.yUpAxis = yUpAxis;
-    }
+    private final String extension;
+    private final boolean yUpAxis;
 
     public static FormatType fromExtension(String extension) {
+        if (extension == null) {
+            return null;
+        }
         return Arrays.stream(FormatType.values())
                 .filter(type -> type.getExtension().equals(extension.toLowerCase()))
                 .findFirst()

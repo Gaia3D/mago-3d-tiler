@@ -9,6 +9,7 @@ import com.gaia3d.basic.structure.GaiaTexture;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.basic.types.TextureType;
+import com.gaia3d.util.ImageResizer;
 import com.gaia3d.util.io.BigEndianDataInputStream;
 import com.gaia3d.util.io.BigEndianDataOutputStream;
 import lombok.AllArgsConstructor;
@@ -23,6 +24,8 @@ import org.joml.Quaterniond;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -40,15 +43,14 @@ import java.util.Map;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaSet {
+public class GaiaSet implements Serializable{
     List<GaiaBufferDataSet> bufferDatas;
     List<GaiaMaterial> materials;
-
-    private Matrix4d transformMatrix;
 
     Vector3d position;
     Vector3d scale;
     Quaterniond quaternion;
+    private Matrix4d transformMatrix;
 
     byte isBigEndian = 0;
     String projectName;
@@ -88,11 +90,9 @@ public class GaiaSet {
             stream.writeByte(isBigEndian);
             stream.writeText(projectName);
             stream.writeInt(materials.size());
-
             if (materials.isEmpty()) {
                 log.error("material size is 0");
             }
-
             for (GaiaMaterial material : materials) {
                 Map<TextureType, List<GaiaTexture>> materialTextures = material.getTextures();
                 List<GaiaTexture> diffuseTextures = materialTextures.get(TextureType.DIFFUSE);
@@ -107,6 +107,13 @@ public class GaiaSet {
                     imageTempPath.toFile().mkdir();
 
                     Path outputPath = imageTempPath.resolve(diffusePath);
+
+                    /*outputPath.toFile().getAbsolutePath();
+                    BufferedImage bufferedImage = ImageIO.read(new File(imagePath));
+                    ImageResizer imageResizer = new ImageResizer();
+                    BufferedImage resizedImage = imageResizer.resizeImageGraphic2D(bufferedImage, 16, 16);
+                    gaiaTextureArchive.addTexture(outputPath.toFile().getAbsolutePath(), resizedImage);*/
+
                     FileUtils.copyFile(new File(imagePath), outputPath.toFile());
                 }
                 material.write(stream);

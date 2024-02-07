@@ -6,16 +6,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.pointcloud.GaiaPointCloud;
 import com.gaia3d.basic.structure.GaiaVertex;
-import com.gaia3d.process.ProcessOptions;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.postprocess.TileModel;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTable;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.GlobeUtils;
-import lombok.AllArgsConstructor;
+import com.gaia3d.util.StringUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.CommandLine;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
@@ -25,16 +25,15 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class PointCloudModel implements TileModel {
-    private final CommandLine command;
-
     @Override
     public ContentInfo run(ContentInfo contentInfo) {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
         String featureTableJson;
         String batchTableJson;
 
-        File outputFile = new File(command.getOptionValue(ProcessOptions.OUTPUT.getArgName()));
+        File outputFile = new File(globalOptions.getOutputPath());
         Path outputRoot = outputFile.toPath().resolve("data");
         File outputRootFile = outputRoot.toFile();
         if (!outputRootFile.mkdir() && !outputRootFile.exists()) {
@@ -56,8 +55,8 @@ public class PointCloudModel implements TileModel {
         float[] positions = new float[vertexLength * 3];
         Vector3d center = boundingBox.getCenter();
         Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
-        Matrix4d transformMatrix = GlobeUtils.normalAtCartesianPointWgs84(centerWorldCoordinate);
-        Matrix4d transfromMatrixInv = new Matrix4d(transformMatrix).invert();
+        Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
+        Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
 
         byte[] colors = new byte[vertexLength * 3];
         float[] batchIds = new float[vertexLength];
@@ -66,18 +65,17 @@ public class PointCloudModel implements TileModel {
         AtomicInteger positionIndex = new AtomicInteger();
         AtomicInteger colorIndex= new AtomicInteger();
         AtomicInteger batchIdIndex= new AtomicInteger();
-        int finalVertexLength = vertexLength;
         tileInfos.forEach((tileInfo) -> {
             GaiaPointCloud pointCloud = tileInfo.getPointCloud();
             List<GaiaVertex> gaiaVertex = pointCloud.getVertices();
             gaiaVertex.forEach((vertex) -> {
                 int index = mainIndex.getAndIncrement();
-                if (index >= finalVertexLength) {
+                if (index >= vertexLength) {
                     return;
                 }
                 Vector3d position = vertex.getPosition();
                 Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
-                Vector3d localPosition = positionWorldCoordinate.mulPosition(transfromMatrixInv, new Vector3d());
+                Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv, new Vector3d());
 
                 float batchId = vertex.getBatchId();
 
@@ -113,7 +111,7 @@ public class PointCloudModel implements TileModel {
         featureTable.setPointsLength(vertexLength);
         featureTable.setPosition(new Position(0));
         featureTable.setColor(new Color(positionBytes.length));
-        featureTable.setBatchLength(1);
+        featureTable.setBatchLength(1); // TODO is it needed?
 
         BatchId batchIdObject = new BatchId(0, "FLOAT");
         featureTable.setBatchId(batchIdObject);
@@ -126,15 +124,8 @@ public class PointCloudModel implements TileModel {
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 
         try {
-            StringBuilder featureTableText = new StringBuilder(objectMapper.writeValueAsString(featureTable));
-            int featureTableJsonOffset = featureTableText.length() % 8;
-            featureTableText.append(" ".repeat(Math.max(0, featureTableJsonOffset)));
-            featureTableJson = featureTableText.toString();
-
-            StringBuilder batchTableText = new StringBuilder(objectMapper.writeValueAsString(batchTable));
-            int batchTableJsonOffset = batchTableText.length() % 8;
-            batchTableText.append(" ".repeat(Math.max(0, batchTableJsonOffset)));
-            batchTableJson = batchTableText.toString();
+            featureTableJson = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(featureTable));
+            batchTableJson = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(batchTable));
         } catch (JsonProcessingException e) {
             log.error(e.getMessage());
             throw new RuntimeException(e);

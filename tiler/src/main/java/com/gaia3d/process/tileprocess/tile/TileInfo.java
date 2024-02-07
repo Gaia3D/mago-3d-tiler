@@ -4,6 +4,7 @@ import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.pointcloud.GaiaPointCloud;
 import com.gaia3d.basic.structure.GaiaNode;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.basic.structure.GaiaScene;
 import lombok.Builder;
@@ -22,11 +23,13 @@ import java.nio.file.Path;
 @Builder
 @Slf4j
 public class TileInfo {
-    private KmlInfo kmlInfo;
+    private int serial = -1;
+
     private GaiaScene scene;
     private GaiaSet set;
     private GaiaPointCloud pointCloud;
     private String name;
+    private KmlInfo kmlInfo;
 
     private Matrix4d transformMatrix;
     private GaiaBoundingBox boundingBox;
@@ -36,35 +39,46 @@ public class TileInfo {
 
     private void init() {
         GaiaNode rootNode = this.scene.getNodes().get(0);
+        this.name = rootNode.getName();
         this.transformMatrix = rootNode.getTransformMatrix();
         this.boundingBox = this.scene.getGaiaBoundingBox();
         this.scenePath = this.scene.getOriginalPath();
-        this.name = rootNode.getName();
 
         this.tempPath = this.outputPath.resolve("temp");
-        if (this.tempPath.toFile().mkdir()) {
-            log.info("Create directory: {}", this.tempPath);
+        File tempFile = this.tempPath.toFile();
+        if (!tempFile.exists() && tempFile.mkdir()) {
+            log.info("[Pre] Created temp directory in {}", this.tempPath);
         }
-        //this.tempPath = this.tempPath.resolve(scenePath.getFileName() + ".set");
     }
 
+    /**
+     * Write the scene file to the output directory.
+     * @param serial
+     */
     public void minimize(int serial) {
-        if (this.scene != null) {
-            init();
+        GlobalOptions options = GlobalOptions.getInstance();
 
+        if (this.scene != null && !this.scene.getNodes().isEmpty()) {
             GaiaSet tempSet = new GaiaSet(this.scene);
             this.tempPath = tempSet.writeFile(this.tempPath, serial);
-
             tempSet.clear();
             tempSet = null;
             this.scene.clear();
             this.scene = null;
-        } else {
-            log.warn("[Warn] Can't minimize tile info because scene is null.");
         }
     }
 
+    /**
+     * Load the minimized scene file and create a GaiaSet object.
+     */
     public void maximize() {
+        if (this.tempPath == null) {
+            return;
+        }
+        File tempFile = this.tempPath.toFile();
+        if (!tempFile.isFile()) {
+            return;
+        }
         if (this.set != null) {
             this.set.deleteTextures();
             this.set = null;
@@ -81,17 +95,18 @@ public class TileInfo {
         if (this.tempPath != null) {
             File file = this.tempPath.toFile();
             File parent = file.getParentFile();
-
-            log.info("[DeleteTemp] {}", file);
-            if (parent.isDirectory()) {
-                FileUtils.deleteDirectory(parent);
-            } else if (file.isFile()) {
-                FileUtils.delete(file);
+            if (file.isFile()) {
+                if (parent.isDirectory()) {
+                    log.info("[Delete][temp] {}", parent);
+                    FileUtils.deleteDirectory(parent);
+                    return;
+                }
             } else if (file.isDirectory()) {
+                log.info("[Delete][temp] {}", file);
                 FileUtils.deleteDirectory(file);
-            } else {
-                log.warn("[Warn] Can't delete temp file because it is not file or directory.");
+                return;
             }
+            log.warn("Can not delete temp files: {}", file);
         }
     }
 }

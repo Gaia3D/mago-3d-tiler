@@ -18,6 +18,7 @@ import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -36,7 +37,7 @@ import java.util.Arrays;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaTexture {
+public class GaiaTexture implements Serializable {
     Path parentPath;
     private String name;
     private String path;
@@ -55,11 +56,32 @@ public class GaiaTexture {
     public void loadImage() {
         Path diffusePath = new File(path).toPath();
         String imagePath = parentPath + File.separator + diffusePath;
-        BufferedImage bufferedImage = readImage(imagePath);
-        //BufferedImage bufferedImage = testImage();
-        this.bufferedImage = bufferedImage;
-        this.width = bufferedImage.getWidth();
-        this.height = bufferedImage.getHeight();
+        if (this.bufferedImage == null) {
+            BufferedImage bufferedImage = readImage(imagePath);
+            //BufferedImage bufferedImage = testImage();
+            this.bufferedImage = bufferedImage;
+            this.width = bufferedImage.getWidth();
+            this.height = bufferedImage.getHeight();
+            this.format = bufferedImage.getType();
+        }
+    }
+
+    public void flipImageY()
+    {
+        for(int i = 0; i < width; i++) {
+            for(int j = 0; j < height / 2; j++) {
+                int tmp = bufferedImage.getRGB(i, j);
+                bufferedImage.setRGB(i, j, bufferedImage.getRGB(i, height - j - 1));
+                bufferedImage.setRGB(i, height - j - 1, tmp);
+            }
+        }
+    }
+
+    public String getFullPath()
+    {
+        Path diffusePath = new File(path).toPath();
+        String imagePath = parentPath + File.separator + diffusePath;
+        return imagePath;
     }
 
     private BufferedImage readImage(String filePath) {
@@ -73,10 +95,10 @@ public class GaiaTexture {
     }
 
     private BufferedImage testImage() {
-        BufferedImage bufferedImage = new BufferedImage(16, 16, BufferedImage.TYPE_BYTE_BINARY);
+        BufferedImage bufferedImage = new BufferedImage(1, 1, BufferedImage.TYPE_3BYTE_BGR);
         Graphics2D graphics = bufferedImage.createGraphics();
-        graphics.setColor(Color.WHITE);
-        graphics.fillRect(0, 0, 16, 16);
+        graphics.setColor(Color.ORANGE);
+        graphics.fillRect(0, 0, 1, 1);
         return bufferedImage;
     }
 
@@ -110,9 +132,6 @@ public class GaiaTexture {
 
     public void deleteObjects()
     {
-        //if (textureId != -1) {
-        //    GL20.glDeleteTextures(textureId);
-        //}
         if (byteBuffer != null) {
             byteBuffer.clear();
         }
@@ -121,6 +140,11 @@ public class GaiaTexture {
         }
     }
 
+    /**
+     * It's a slow comparison of two textures, but it's accurate.
+     * @param compareTexture
+     * @return
+     */
     public boolean isEqualTexture(GaiaTexture compareTexture) {
         BufferedImage bufferedImage = this.getBufferedImage();
         BufferedImage comparebufferedImage = compareTexture.getBufferedImage();
@@ -141,7 +165,32 @@ public class GaiaTexture {
         byte[] rgbaByteArray = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
         byte[] rgbaByteArray2 = ((DataBufferByte) comparebufferedImage.getRaster().getDataBuffer()).getData();
 
-        return Arrays.equals(rgbaByteArray, rgbaByteArray2);
+        // compare the byte array by difference.***
+        int length = rgbaByteArray.length;
+        int length2 = rgbaByteArray2.length;
+
+        if (length != length2) {
+            return false;
+        }
+
+        float differenceAccum = 0;
+        float difference = 0;
+        float tolerance = 5.0f;
+        for (int i = 0; i < length; i++) {
+            difference = Math.abs(rgbaByteArray[i] - rgbaByteArray2[i]);
+            differenceAccum += difference;
+            if((differenceAccum/(float)(i+1)) > tolerance) {
+                return false;
+            }
+        }
+
+        float differenceRatio = differenceAccum / (float)length;
+
+        if (differenceRatio < tolerance) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public boolean isEqualTexture(GaiaTexture compareTexture, float scaleFactor) {
@@ -149,39 +198,6 @@ public class GaiaTexture {
         compareTexture.getBufferedImage(scaleFactor);
         return isEqualTexture(compareTexture);
     }
-
-    /*public static boolean areEqualTextures(GaiaTexture textureA, GaiaTexture textureB) throws IOException {
-        if (textureA == null || textureB == null) {
-            return false;
-        }
-
-        if(textureA == textureB) {
-            return true;
-        }
-
-        BufferedImage bufferedImageA = textureA.getBufferedImage();
-        BufferedImage bufferedImageB = textureB.getBufferedImage();
-
-        if (textureA.getWidth() != textureB.getWidth()) {
-            return false;
-        }
-        if (textureA.getHeight() != textureB.getHeight()) {
-            return false;
-        }
-        if (textureA.getFormat() != textureB.getFormat()) {
-            return false;
-        }
-        // now, compare the pixels
-        int width = textureA.getWidth();
-        int height = textureA.getHeight();
-
-        byte[] rgbaByteArray = ((DataBufferByte) bufferedImageA.getRaster().getDataBuffer()).getData();
-        byte[] rgbaByteArray2 = ((DataBufferByte) bufferedImageB.getRaster().getDataBuffer()).getData();
-
-        boolean areEqual = Arrays.equals(rgbaByteArray, rgbaByteArray2);
-
-        return areEqual;
-    } */
 
     public void write(BigEndianDataOutputStream stream) throws IOException {
         stream.writeText(path);
@@ -200,5 +216,19 @@ public class GaiaTexture {
             this.byteBuffer.clear();
             this.byteBuffer = null;
         }
+    }
+
+    public GaiaTexture clone() {
+        GaiaTexture clonedTexture = new GaiaTexture();
+        clonedTexture.setName(this.name);
+        clonedTexture.setPath(this.path);
+        clonedTexture.setType(this.type);
+        clonedTexture.setWidth(this.width);
+        clonedTexture.setHeight(this.height);
+        clonedTexture.setFormat(this.format);
+        clonedTexture.setByteBuffer(this.byteBuffer);
+        clonedTexture.setTextureId(this.textureId);
+        clonedTexture.setParentPath(this.parentPath);
+        return clonedTexture;
     }
 }

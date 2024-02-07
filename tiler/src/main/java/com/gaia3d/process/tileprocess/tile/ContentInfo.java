@@ -23,7 +23,12 @@ public class ContentInfo {
     public void deleteTexture() {
         for (TileInfo tileInfo : tileInfos) {
             GaiaSet set = tileInfo.getSet();
-            set.deleteTextures();
+            if (set != null) {
+                set.deleteTextures();
+            }
+        }
+        if (remainTileInfos == null) {
+            return;
         }
         for (TileInfo tileInfo : remainTileInfos) {
             GaiaSet set = tileInfo.getSet();
@@ -37,9 +42,13 @@ public class ContentInfo {
         this.name = null;
         this.boundingBox = null;
         this.batchedSet = null;
-        this.tileInfos.forEach(TileInfo::clear);
-        this.tileInfos = null;
-        this.remainTileInfos.forEach(TileInfo::clear);
-        this.remainTileInfos = null;
+        if (this.tileInfos != null) {
+            this.tileInfos.forEach(TileInfo::clear);
+            this.tileInfos = null;
+        }
+        if (this.remainTileInfos != null) {
+            this.remainTileInfos.forEach(TileInfo::clear);
+            this.remainTileInfos = null;
+        }
     }
 }
