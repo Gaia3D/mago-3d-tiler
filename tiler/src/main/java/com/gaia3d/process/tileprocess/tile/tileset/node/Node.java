@@ -3,10 +3,12 @@ package com.gaia3d.process.tileprocess.tile.tileset.node;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.util.DecimalUtils;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
@@ -17,6 +19,7 @@ import java.util.List;
 @Slf4j
 @Getter
 @Setter
+@RequiredArgsConstructor
 public class Node {
     @JsonIgnore
     private String nodeCode;
@@ -32,6 +35,7 @@ public class Node {
     private RefineType refine = RefineType.ADD;
     @JsonInclude(JsonInclude.Include.USE_DEFAULTS)
     private double geometricError = 0.0d;
+    //@JsonIgnore
     private float[] transform;
     private List<Node> children;
     private Content content;
@@ -39,26 +43,30 @@ public class Node {
     // TransfromMatrix
     public void setTransformMatrix(Matrix4d transformMatrixAux) {
         this.transformMatrixAux = transformMatrixAux;
-        if (parent == this) { // root
-            this.transformMatrix = transformMatrixAux;
-        } else if (parent.getTransformMatrixAux() != null) {
-            Matrix4d resultTransfromMatrix = new Matrix4d();
-            Matrix4d parentTransformMatrix = parent.getTransformMatrixAux();
-            Matrix4d parentTransformMatrixInv = new Matrix4d(parentTransformMatrix).invert();
 
-            parentTransformMatrixInv.mul(transformMatrixAux, resultTransfromMatrix);
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        if (globalOptions.isClassicTransformMatrix()) {
+            if (parent == this) { // root
+                this.transformMatrix = transformMatrixAux;
+            } else if (parent.getTransformMatrixAux() != null) {
+                Matrix4d resultTransfromMatrix = new Matrix4d();
+                Matrix4d parentTransformMatrix = parent.getTransformMatrixAux();
+                Matrix4d parentTransformMatrixInv = new Matrix4d(parentTransformMatrix).invert();
 
-            this.transformMatrix = resultTransfromMatrix;
-            this.transformMatrixAux = transformMatrixAux;
-        } else {
-            this.transformMatrix = transformMatrixAux;
-            log.error("Error :: Wrong TransformMatrix");
-        }
+                parentTransformMatrixInv.mul(transformMatrixAux, resultTransfromMatrix);
 
-        this.transform = transformMatrix.get(new float[16]);
+                this.transformMatrix = resultTransfromMatrix;
+                this.transformMatrixAux = transformMatrixAux;
+            } else {
+                this.transformMatrix = transformMatrixAux;
+                log.error("Error :: Wrong TransformMatrix");
+            }
 
-        for (int i = 0; i < transform.length; i++) {
-            this.transform[i] = DecimalUtils.cut(this.transform[i]);
+            this.transform = transformMatrix.get(new float[16]);
+
+            for (int i = 0; i < transform.length; i++) {
+                this.transform[i] = DecimalUtils.cut(this.transform[i]);
+            }
         }
     }
 

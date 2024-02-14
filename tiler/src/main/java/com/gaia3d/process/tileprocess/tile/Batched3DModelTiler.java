@@ -29,6 +29,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class Batched3DModelTiler extends DefaultTiler implements Tiler {
 
+    public static final GlobalOptions globalOptions = GlobalOptions.getInstance();
+
     public Batched3DModelTiler() {}
 
     @Override
@@ -38,7 +40,9 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
 
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
         Matrix4d transformMatrix = getTransformMatrix(globalBoundingBox);
-        rotateX90(transformMatrix);
+        if (globalOptions.isClassicTransformMatrix()) {
+            rotateX90(transformMatrix);
+        }
 
         Node root = createRoot();
         root.setBoundingVolume(new BoundingVolume(globalBoundingBox));
@@ -131,7 +135,9 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         double geometricError = calcGeometricError(tileInfos);
         GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
         Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
-        rotateX90(transformMatrix);
+        if (globalOptions.isClassicTransformMatrix()) {
+            rotateX90(transformMatrix);
+        }
 
         BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
         geometricError = DecimalUtils.cut(geometricError);
@@ -158,7 +164,9 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
 
         GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
         Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
-        rotateX90(transformMatrix);
+        if (globalOptions.isClassicTransformMatrix()) {
+            rotateX90(transformMatrix);
+        }
 
         BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
 
@@ -209,6 +217,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
             contentInfo.setNodeCode(nodeCode);
             contentInfo.setTileInfos(resultInfos);
             contentInfo.setRemainTileInfos(remainInfos);
+            contentInfo.setTransformMatrix(transformMatrix);
 
             Content content = new Content();
             content.setUri("data/" + nodeCode + ".b3dm");

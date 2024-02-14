@@ -74,6 +74,7 @@ public class GlobalOptions {
 
     private boolean gltf = false; // gltf flag
     private boolean glb = false; // glb flag
+    private boolean classicTransformMatrix = false; // classic transform matrix flag
 
     private byte multiThreadCount; // multi thread count
 

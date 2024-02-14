@@ -5,6 +5,7 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.joml.Matrix4d;
 
 import java.util.List;
 
@@ -19,6 +20,7 @@ public class ContentInfo {
     private List<TileInfo> remainTileInfos;
     private GaiaBoundingBox boundingBox;
     private GaiaSet batchedSet;
+    private Matrix4d transformMatrix;
 
     public void deleteTexture() {
         for (TileInfo tileInfo : tileInfos) {
