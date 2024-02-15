@@ -113,7 +113,7 @@ class Mago3DTilerUnitTest {
     @Test
     void case06() {
         String path = "case06-kml-auto-instance";
-        sampleI3dm(path, 100, 10);
+        sampleI3dm(path, 40 , 100);
         File input = new File(INPUT_PATH, path);
         File output = new File(OUTPUT_PATH, path);
         FileUtils.deleteQuietly(output);
@@ -124,12 +124,11 @@ class Mago3DTilerUnitTest {
                 "-autoUpAxis",
                 "-minLod", "3",
                 "-maxLod", "3",
-                //"-debug"
         };
         Mago3DTilerMain.main(args);
     }
 
-    @Test
+    //@Test
     void case07() {
         String path = "case07-shp-seoul";
         File input = new File(INPUT_PATH, path);
@@ -162,17 +161,47 @@ class Mago3DTilerUnitTest {
         Mago3DTilerMain.main(args);
     }
 
-    //@Test
-    void case011() {
-        String path = "case11-kml-seoul";
+    @Test
+    void case09() {
+        String path = "case09-obj-hwangyonggak";
         File input = new File(INPUT_PATH, path);
         File output = new File(OUTPUT_PATH, path);
         FileUtils.deleteQuietly(output);
         String args[] = {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
-                //"-autoUpAxis",
-                "-maxCount", "65536",
+                "-inputType", "kml",
+                "-autoUpAxis",
+                //"-crs", "32652"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void case10() {
+        String path = "case10-laz-hwangyonggak";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String args[] = {
+                "-input", input.getAbsolutePath(),
+                "-output", output.getAbsolutePath(),
+                "-inputType", "laz",
+                "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    //@Test
+    void case011() {
+        String path = "case11-shp-jeju";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String args[] = {
+                "-input", input.getAbsolutePath(),
+                "-output", output.getAbsolutePath(),
+                "-inputType", "shp",
                 "-refineAdd",
         };
         Mago3DTilerMain.main(args);
@@ -196,8 +225,8 @@ class Mago3DTilerUnitTest {
 
     //@Test
     void sampleI3dm(String filePath, int length, int fileCount) {
-        Vector3d min = new Vector3d(127.833026 , 37.089308, 0.0);
-        Vector3d max = new Vector3d(128.695049, 38.034924, 0.0);
+        Vector3d min = new Vector3d(128.4602 , 37.7214, 0.0);
+        Vector3d max = new Vector3d(128.4802, 37.7414, 0.0);
 
         File output = new File(INPUT_PATH, filePath);
         if (output.mkdirs()) {
@@ -258,9 +287,9 @@ class Mago3DTilerUnitTest {
                             "        <href>instance.dae</href>\n" +
                             "    </Link>\n" +
                             "</Model>\n");
-                    number++;
                 }
             }
+            number++;
             xml += xmlHeader;
             xml += xmlBodys.toString();
             xml += xmlFooter;
@@ -270,7 +299,6 @@ class Mago3DTilerUnitTest {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            number++;
         }
     }
 }

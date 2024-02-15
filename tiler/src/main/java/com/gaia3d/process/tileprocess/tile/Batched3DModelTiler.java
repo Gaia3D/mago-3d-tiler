@@ -83,7 +83,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         BoundingVolume squareBoundingVolume = parentBoundingVolume.createSqureBoundingVolume();
 
         boolean refineAdd = globalOptions.isRefineAdd();
-        int nodeLimit = globalOptions.getNodeLimit();
+        int nodeLimit = globalOptions.getNodeLimit() * 4; // for quadtree node limit
         if (tileInfos.size() > nodeLimit) {
             // logical node distribute
             List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
