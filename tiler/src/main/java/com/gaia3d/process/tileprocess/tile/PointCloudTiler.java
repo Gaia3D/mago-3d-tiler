@@ -63,7 +63,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         root.setBoundingBox(globalBoundingBox);
         // root만 큐브로
         root.setBoundingVolume(new BoundingVolume(globalBoundingBox));
-        root.setTransformMatrix(transformMatrix);
+        root.setTransformMatrix(transformMatrix, true);
         root.setGeometricError(geometricError);
 
         try {
@@ -154,7 +154,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
 
         Node childNode = new Node();
         childNode.setParent(parentNode);
-        childNode.setTransformMatrix(transformMatrix);
+        childNode.setTransformMatrix(transformMatrix, true);
         childNode.setBoundingBox(childBoundingBox);
         childNode.setBoundingVolume(boundingVolume);
         childNode.setRefine(Node.RefineType.ADD);

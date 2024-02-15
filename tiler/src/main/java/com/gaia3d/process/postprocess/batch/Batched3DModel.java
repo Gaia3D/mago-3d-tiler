@@ -45,7 +45,6 @@ public class Batched3DModel implements TileModel {
         GaiaBatcher gaiaBatcher = new GaiaBatcher();
         GaiaSet batchedSet = gaiaBatcher.runBatching(contentInfo.getTileInfos(), contentInfo.getNodeCode(), contentInfo.getLod());
 
-        //GaiaSet batchedSet = contentInfo.getBatchedSet();
         int featureTableJSONByteLength;
         int batchTableJSONByteLength;
         String featureTableJson;
@@ -69,7 +68,6 @@ public class Batched3DModel implements TileModel {
                     return boundingBox.getMaxZ() - boundingBox.getMinZ();
                 })
                 .collect(Collectors.toList());
-
         GaiaScene scene = new GaiaScene(batchedSet);
 
         /* FeatureTable */
@@ -124,11 +122,12 @@ public class Batched3DModel implements TileModel {
         /* BatchTable */
         GaiaBatchTable batchTable = new GaiaBatchTable();
         for (int i = 0; i < batchLength; i++) {
-            batchTable.getBatchId().add(String.valueOf(i));
             batchTable.getProejctName().add(projectNames.get(i));
             batchTable.getNodeName().add(nodeNames.get(i));
-            batchTable.getGeometricError().add(DecimalUtils.cut(geometricErrors.get(i)));
-            batchTable.getHeight().add(DecimalUtils.cut(heights.get(i)));
+            batchTable.getBatchName().add(nodeCode);
+            batchTable.getBatchId().add(i + "/" + batchLength);
+            batchTable.getGeometricError().add(DecimalUtils.cut(geometricErrors.get(i), 2));
+            batchTable.getHeight().add(DecimalUtils.cut(heights.get(i), 2));
         }
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -165,7 +164,6 @@ public class Batched3DModel implements TileModel {
             // body
             stream.write(glbBytes);
             glbBytes = null;
-            // delete glb file
         } catch (Exception e) {
             log.error(e.getMessage());
         }

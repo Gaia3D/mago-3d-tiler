@@ -24,10 +24,11 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class GaiaTextureCoordinator {
-    final private String ATLAS_IMAGE;
+    private final String ATLAS_IMAGE;
     private final List<GaiaMaterial> materials;
     private final List<GaiaBufferDataSet> bufferDataSets;
     private BufferedImage atlasImage;
+    private final GlobalOptions globalOptions = GlobalOptions.getInstance();
 
     public GaiaTextureCoordinator(String name, List<GaiaMaterial> materials, List<GaiaBufferDataSet> bufferDataSets) {
         this.ATLAS_IMAGE = name;

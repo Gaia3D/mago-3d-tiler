@@ -41,7 +41,7 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
 
         Node root = createRoot();
         root.setBoundingVolume(new BoundingVolume(globalBoundingBox));
-        root.setTransformMatrix(transformMatrix);
+        root.setTransformMatrix(transformMatrix, true);
         root.setGeometricError(geometricError);
 
         try {
@@ -128,7 +128,7 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
 
         Node childNode = new Node();
         childNode.setParent(parentNode);
-        childNode.setTransformMatrix(transformMatrix);
+        childNode.setTransformMatrix(transformMatrix, true);
         childNode.setBoundingVolume(boundingVolume);
         childNode.setNodeCode(nodeCode);
         childNode.setGeometricError(geometricError);
@@ -149,8 +149,6 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
         Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
         rotateX90(transformMatrix);
-
-
 
         BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
 
@@ -188,7 +186,7 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
 
         Node childNode = new Node();
         childNode.setParent(parentNode);
-        childNode.setTransformMatrix(transformMatrix);
+        childNode.setTransformMatrix(transformMatrix, true);
         childNode.setBoundingVolume(boundingVolume);
         childNode.setNodeCode(nodeCode);
         childNode.setGeometricError(lodError + 0.1);

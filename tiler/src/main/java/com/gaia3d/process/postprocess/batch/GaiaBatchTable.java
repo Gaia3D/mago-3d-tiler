@@ -21,6 +21,8 @@ public class GaiaBatchTable {
     private final List<String> nodeName = new ArrayList<>();
     @JsonProperty("GeometricError")
     private final List<Double> geometricError = new ArrayList<>();
+    @JsonProperty("BatchName")
+    private final List<String> batchName = new ArrayList<>();
     @JsonProperty("BatchId")
     private final List<String> batchId = new ArrayList<>();
     @JsonProperty("Height")

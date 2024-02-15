@@ -27,7 +27,6 @@ class Mago3DTilerUnitTest {
                 "-crs", "5186",
                 "-autoUpAxis",
                 "-output", output.getAbsolutePath(),
-                //"-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -114,9 +113,8 @@ class Mago3DTilerUnitTest {
     @Test
     void case06() {
         String path = "case06-kml-auto-instance";
-        sampleI3dm(path, 1000, 10);
+        sampleI3dm(path, 100, 10);
         File input = new File(INPUT_PATH, path);
-        //File output = new File("C:\\Workspaces\\GitSources\\mago\\mago-3d-tiler\\viewer\\mago-3d-tiler-data\\i3dm");
         File output = new File(OUTPUT_PATH, path);
         FileUtils.deleteQuietly(output);
         String args[] = {
@@ -165,9 +163,41 @@ class Mago3DTilerUnitTest {
     }
 
     //@Test
+    void case011() {
+        String path = "case11-kml-seoul";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String args[] = {
+                "-input", input.getAbsolutePath(),
+                "-output", output.getAbsolutePath(),
+                //"-autoUpAxis",
+                "-maxCount", "65536",
+                "-refineAdd",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    //@Test
+    void case012() {
+        String path = "case12-kml-seoul";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        //FileUtils.deleteQuietly(output);
+        String args[] = {
+                "-input", input.getAbsolutePath(),
+                "-output", output.getAbsolutePath(),
+                //"-autoUpAxis",
+                "-maxCount", "131072",
+                "-refineAdd",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    //@Test
     void sampleI3dm(String filePath, int length, int fileCount) {
-        Vector3d min = new Vector3d(124 , 33, 0.0);
-        Vector3d max = new Vector3d(132, 43, 0.0);
+        Vector3d min = new Vector3d(127.833026 , 37.089308, 0.0);
+        Vector3d max = new Vector3d(128.695049, 38.034924, 0.0);
 
         File output = new File(INPUT_PATH, filePath);
         if (output.mkdirs()) {
