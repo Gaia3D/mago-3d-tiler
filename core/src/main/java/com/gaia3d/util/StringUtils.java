@@ -2,6 +2,9 @@ package com.gaia3d.util;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Optional;
+import java.util.Vector;
+
 @Slf4j
 public class StringUtils {
     private static String doPaddingBytes(String text, int byteSize, String paddingChar) {
@@ -21,5 +24,33 @@ public class StringUtils {
 
     public static String doPadding4Bytes(String text) {
         return doPaddingBytes(text, 8, " ").toString();
+    }
+
+    public static void splitString(String wordToSplit, String delimiter, Vector<String> resultSplittedStrings, boolean skipEmptyStrings) {
+        String[] splittedStrings = wordToSplit.split(delimiter);
+
+        // discard strings with length zero.***
+        Integer stringsCount = splittedStrings.length;
+        for (Integer i = 0; i < stringsCount; i++) {
+            String word = splittedStrings[i];
+
+            if(skipEmptyStrings) {
+                if (word.length() != 0) {
+                    resultSplittedStrings.add(word);
+                }
+            } else {
+                resultSplittedStrings.add(word);
+            }
+        }
+    }
+
+    public static String getRawFileName(String fileName) {
+        String rawFileName = fileName.substring(0, fileName.lastIndexOf('.'));
+        return rawFileName;
+    }
+
+    public static Optional<String> getExtensionByStringHandling(String filename) {
+        // https://www.baeldung.com/java-file-extension
+        return Optional.ofNullable(filename).filter(f -> f.contains(".")).map(f -> f.substring(filename.lastIndexOf(".") + 1));
     }
 }

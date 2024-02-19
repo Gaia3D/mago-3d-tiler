@@ -43,6 +43,7 @@ public class BatchedProcessModel implements ProcessFlowModel {
             geoTiffs = fileLoader.loadGridCoverages(geoTiffs);
         }
         List<PreProcess> preProcessors = new ArrayList<>();
+        preProcessors.add(new GaiaTexCoordCorrector()); // new.*******************************************
         preProcessors.add(new GaiaTileInfoinitiator());
         preProcessors.add(new GaiaScaler());
         if (!isYUpAxis) {

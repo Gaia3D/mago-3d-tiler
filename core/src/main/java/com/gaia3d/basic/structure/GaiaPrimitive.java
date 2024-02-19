@@ -18,9 +18,7 @@ import org.joml.Vector3d;
 import org.lwjgl.opengl.GL20;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * A class that represents a primitive of a Gaia object.
@@ -75,16 +73,6 @@ public class GaiaPrimitive implements Serializable {
             }
         }
         return texcoordBoundingRectangle;
-    }
-
-    public void translateTexCoordsToPositiveQuadrant()
-    {
-        int surfacesCount = surfaces.size();
-        for(int i=0; i<surfacesCount; i++)
-        {
-            GaiaSurface surface = surfaces.get(i);
-            surface.translateTexCoordsToPositiveQuadrant(this.vertices);
-        }
     }
 
     public void calculateNormal() {

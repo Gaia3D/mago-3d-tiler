@@ -155,6 +155,7 @@ public class GaiaNode implements Serializable {
     }
 
     public void toGaiaBufferSets(List<GaiaBufferDataSet> bufferSets, Matrix4d parentTransformMatrix) {
+        // TODO: external implement
         Matrix4d transformMatrix = new Matrix4d(this.transformMatrix);
         if (parentTransformMatrix != null) {
             parentTransformMatrix.mul(transformMatrix, transformMatrix);
@@ -186,5 +187,12 @@ public class GaiaNode implements Serializable {
         this.children.forEach(GaiaNode::clear);
         this.meshes.clear();
         this.children.clear();
+    }
+
+    public void extractMeshes(List<GaiaMesh> resultMeshes) {
+        resultMeshes.addAll(this.getMeshes());
+        for (GaiaNode child : this.getChildren()) {
+            child.extractMeshes(resultMeshes);
+        }
     }
 }
