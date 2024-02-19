@@ -41,11 +41,9 @@ public class Node {
     private Content content;
 
     // TransfromMatrix
-    public void setTransformMatrix(Matrix4d transformMatrixAux) {
+    public void setTransformMatrix(Matrix4d transformMatrixAux, boolean useTransform) {
         this.transformMatrixAux = transformMatrixAux;
-
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
-        if (globalOptions.isClassicTransformMatrix()) {
+        if (useTransform) {
             if (parent == this) { // root
                 this.transformMatrix = transformMatrixAux;
             } else if (parent.getTransformMatrixAux() != null) {

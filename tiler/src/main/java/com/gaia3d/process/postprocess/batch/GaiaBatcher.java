@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 public class GaiaBatcher {
     private final static int SHORT_LIMIT = 65535;
 
+    private final GlobalOptions globalOptions = GlobalOptions.getInstance();
+
     private void reassignMaterialsToGaiaBufferDataSetWithSameMaterial(List<GaiaBufferDataSet> dataSets, LevelOfDetail lod) {
         int datasetsCount = dataSets.size();
         Map<GaiaBufferDataSet, Boolean> visitedMap = new HashMap<>();
@@ -70,8 +72,6 @@ public class GaiaBatcher {
      * @return
      */
     public boolean areEqualMaterials(GaiaMaterial materialA, GaiaMaterial materialB, float scaleFactor) {
-        GlobalOptions options = GlobalOptions.getInstance();
-
         // This function determines if two materials are equal.
         if (materialA == null && materialB == null) {
             return true;

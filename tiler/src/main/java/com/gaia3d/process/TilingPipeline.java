@@ -85,7 +85,7 @@ public class TilingPipeline implements Pipeline {
                 for (int index = 0; index < infoLength; index++) {
                     TileInfo tileInfo = loadedTileInfos.get(index);
                     if (tileInfo != null) {
-                        log.info("[Pre][{}/{}][{}/{}] Loading tiles from file.", finalCount + 1, fileCount, index + 1, infoLength);
+                        //log.info("[Pre][{}/{}][{}/{}] Loading tiles from file.", finalCount + 1, fileCount, index + 1, infoLength);
                         tileInfo.setSerial(index + 1);
                         for (PreProcess preProcessors : preProcesses) {
                             preProcessors.run(tileInfo);
@@ -101,20 +101,20 @@ public class TilingPipeline implements Pipeline {
         long nodeCountValue = nodeCount.get();
         // Auto set node limit
         if (globalOptions.getNodeLimit() < 0) {
-            if (nodeCountValue > 4194304) {
-                globalOptions.setNodeLimit(65536);
-            } else if (nodeCountValue > 2097152) {
+            if (nodeCountValue > 524288) {
                 globalOptions.setNodeLimit(32768);
-            } else if (nodeCountValue > 1048576) {
-                globalOptions.setNodeLimit(16384);
-            } else if (nodeCountValue > 524288) {
-                globalOptions.setNodeLimit(8192);
             } else if (nodeCountValue > 262144) {
-                globalOptions.setNodeLimit(4096);
+                globalOptions.setNodeLimit(16384);
             } else if (nodeCountValue > 131072) {
+                globalOptions.setNodeLimit(8192);
+            } else if (nodeCountValue > 65536) {
+                globalOptions.setNodeLimit(4096);
+            } else if (nodeCountValue > 32768) {
                 globalOptions.setNodeLimit(2048);
-            } else {
+            } else if (nodeCountValue > 16384) {
                 globalOptions.setNodeLimit(1024);
+            } else {
+                globalOptions.setNodeLimit(512);
             }
         }
         log.info("[Pre] Total Node Count {}, Auto Node limit : {}", nodeCount, globalOptions.getNodeLimit());

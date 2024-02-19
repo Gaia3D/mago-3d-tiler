@@ -60,16 +60,6 @@ public abstract class DefaultTiler {
             localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(position);
             boundingBox.addBoundingBox(localBoundingBox);
         });
-
-        // make square bounding box
-//        double xLength = boundingBox.getMaxX() - boundingBox.getMinX();
-//        double yLength = boundingBox.getMaxY() - boundingBox.getMinY();
-//        double offset = Math.abs(xLength - yLength);
-//        if (xLength > yLength) {
-//            boundingBox.setMaxY(boundingBox.getMaxY() + offset);
-//        } else {
-//            boundingBox.setMaxX(boundingBox.getMaxX() + offset);
-//        }
         return boundingBox;
     }
 
