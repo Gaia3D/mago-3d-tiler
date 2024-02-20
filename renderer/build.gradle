@@ -1,0 +1,177 @@
+import org.gradle.internal.os.OperatingSystem
+
+plugins {
+    id "java"
+    id "com.google.cloud.tools.jib" version "3.4.0"
+    id 'com.github.johnrengelman.shadow' version '8.1.0'
+}
+
+group "com.gaia3d"
+version "1.0.0"
+project.ext.lwjglVersion = "3.3.3"
+
+switch ( OperatingSystem.current() ) {
+    case OperatingSystem.WINDOWS:
+        project.ext.lwjglNatives = "natives-windows"
+        break
+    case OperatingSystem.LINUX:
+        project.ext.lwjglNatives = "natives-linux"
+        break
+    case OperatingSystem.MAC_OS:
+        project.ext.lwjglNatives = "natives-macos"
+        break
+}
+
+repositories {
+    maven { url "https://repo.osgeo.org/repository/release/" }
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly "org.projectlombok:lombok:1.18.30"
+    annotationProcessor "org.projectlombok:lombok:1.18.30"
+
+    // logging
+    implementation 'org.slf4j:slf4j-api:1.7.25'
+    // log4j
+    implementation 'org.apache.logging.log4j:log4j-core:2.17.1'
+    implementation 'org.apache.logging.log4j:log4j-api:2.14.0'
+    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.14.0'
+
+    // commons library (apache)
+    implementation 'commons-logging:commons-logging:1.2'
+    implementation 'commons-io:commons-io:2.11.0'
+    implementation 'commons-cli:commons-cli:1.5.0'
+    implementation 'commons-collections:commons-collections:3.2.2'
+    implementation 'org.apache.commons:commons-text:1.10.0'
+
+    // lwjgl (lightweight java game library)
+    implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
+    implementation "org.lwjgl:lwjgl"
+    implementation "org.lwjgl:lwjgl-opengl"
+    implementation "org.lwjgl:lwjgl-assimp"
+    implementation "org.lwjgl:lwjgl-stb"
+    implementation "org.lwjgl:lwjgl-glfw"
+    //implementation "org.lwjgl:lwjgl-openal"
+
+    // joml (java opengl math library)
+    implementation "org.joml:joml:1.10.5"
+
+    // jgltf (java gltf library)
+    implementation "de.javagl:jgltf-obj:2.0.3"
+    implementation "de.javagl:jgltf-model:2.0.3"
+    implementation "de.javagl:jgltf-validator:2.0.3"
+
+    // proj4j (java projection library)
+    implementation "org.locationtech.proj4j:proj4j:1.2.3"
+    implementation "org.locationtech.proj4j:proj4j-epsg:1.2.3"
+
+    // jackson (json library)
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
+    // jackson-xml
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.2'
+
+    // GeoTools (geospatial library)
+    implementation "org.geotools:gt-geotiff:21.3"
+    implementation 'org.geotools:gt-shapefile:21.3'
+    implementation 'org.geotools:gt-geojson:21.3'
+    implementation 'org.geotools:gt-geojsondatastore:21.3'
+    implementation "org.geotools:gt-coverage:21.3"
+    implementation "org.geotools:gt-main:21.3"
+    implementation "org.geotools:gt-image:21.3"
+
+    // org.geotools.gce.geotiff
+    implementation "javax.media:jai_core:1.1.3"
+    implementation "javax.media:jai_imageio:1.1"
+    implementation "org.jdom:jdom2:2.0.6"
+
+    // CityGML4J (citygml library)
+    implementation 'org.citygml4j:citygml4j-xml:3.0.0'
+    implementation 'org.citygml4j:citygml4j-cityjson:3.0.0'
+
+    implementation 'com.github.mreutegg:laszip4j:0.15'
+
+    //implementation project(":mago-core")
+
+    runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-assimp::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-openal::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-stb::$lwjglNatives"
+
+    testCompileOnly "org.projectlombok:lombok:1.18.30"
+    testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.0"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.0"
+}
+test {
+    //useJUnitPlatform()
+}
+
+jib {
+    from {
+        image = "eclipse-temurin:17-jre"
+    }
+    to {
+        image = "gaia3d/plasma-tiler"
+        tags = ["latest", project.version]
+    }
+    container {
+        appRoot = "/plasma-tiler"
+        creationTime = "USE_CURRENT_TIMESTAMP"
+        jvmFlags = [
+                "-Djava.awt.headless=true",
+                "-Dfile.encoding=UTF-8",
+                "-XX:+UseContainerSupport",
+                "-XX:MaxGCPauseMillis=100",
+                "-XX:+UseStringDeduplication"
+        ]
+    }
+}
+
+java {
+    //withJavadocJar()
+}
+
+javadoc {
+    options.addStringOption("locale","ko_KR");
+    options.addStringOption("encoding","UTF-8");
+    options.addStringOption("charset","UTF-8");
+    options.addStringOption("docencoding","UTF-8");
+}
+
+jar {
+    finalizedBy shadowJar
+    manifest {
+        attributes "Main-Class": "com.gaia3d.command.TilerMain",
+                "Implementation-Version": project.version
+    }
+    from {
+        configurations.runtimeClasspath.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+shadowJar {
+    mergeServiceFiles()
+    manifest {
+        attributes 'Main-Class': 'com.gaia3d.command.mago.Mago3DTilerMain'
+        attributes 'Implementation-Version': project.version
+        attributes 'Implementation-Title': '3d-tiler'
+        attributes 'Implementation-Vendor': 'Gaia3d, Inc.'
+        attributes 'Implementation-Vendor-Id': 'com.gaia3d'
+        attributes 'Implementation-URL': 'http://java.sun.com/products/java-media/jai/forDevelopers/jai-imageio/'
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from sourceSets.main.runtimeClasspath
+    configurations = [ project.configurations.runtimeClasspath ]
+    archiveFileName = "mago-3d-tiler-${project.version}-${project.ext.lwjglNatives}.jar"
+}
+
+compileJava {
+    options.encoding = 'UTF-8'
+}

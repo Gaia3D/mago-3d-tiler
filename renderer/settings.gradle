@@ -1,0 +1,3 @@
+rootProject.name = 'mago-3d-renderer'
+include ':mago-core'
+project(':mago-core').projectDir = new File(settingsDir, '../core')
