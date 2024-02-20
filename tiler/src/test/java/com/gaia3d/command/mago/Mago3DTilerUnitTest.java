@@ -7,6 +7,7 @@ import org.joml.Vector3d;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.io.IOException;
 
 @Slf4j
 class Mago3DTilerUnitTest {
@@ -25,7 +26,7 @@ class Mago3DTilerUnitTest {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "3ds",
                 "-crs", "5186",
-                "-autoUpAxis",
+                //"-autoUpAxis",
                 "-output", output.getAbsolutePath(),
         };
         Mago3DTilerMain.main(args);
@@ -41,7 +42,7 @@ class Mago3DTilerUnitTest {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "3ds",
                 "-crs", "5186",
-                "-autoUpAxis",
+                //"-autoUpAxis",
                 "-output", output.getAbsolutePath(),
         };
         Mago3DTilerMain.main(args);
@@ -105,7 +106,7 @@ class Mago3DTilerUnitTest {
                 "-output", output.getAbsolutePath(),
                 "-outputType", "i3dm",
                 "-autoUpAxis",
-                "-glb"
+                "-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -113,7 +114,7 @@ class Mago3DTilerUnitTest {
     @Test
     void case06() {
         String path = "case06-kml-auto-instance";
-        sampleI3dm(path, 40 , 100);
+        sampleI3dm(path, 20 , 100);
         File input = new File(INPUT_PATH, path);
         File output = new File(OUTPUT_PATH, path);
         FileUtils.deleteQuietly(output);
@@ -122,22 +123,21 @@ class Mago3DTilerUnitTest {
                 "-output", output.getAbsolutePath(),
                 "-outputType", "i3dm",
                 "-autoUpAxis",
-                "-minLod", "3",
-                "-maxLod", "3",
         };
         Mago3DTilerMain.main(args);
     }
 
-    //@Test
+    @Test
     void case07() {
         String path = "case07-shp-seoul";
         File input = new File(INPUT_PATH, path);
         File output = new File(OUTPUT_PATH, path);
-        FileUtils.deleteQuietly(output);
+        //FileUtils.deleteQuietly(output);
         String args[] = {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
                 "-inputType", "shp",
+                "-crs", "5181",
                 "-autoUpAxis",
                 "-refineAdd",
         };
@@ -161,7 +161,7 @@ class Mago3DTilerUnitTest {
         Mago3DTilerMain.main(args);
     }
 
-    @Test
+    //@Test
     void case09() {
         String path = "case09-obj-hwangyonggak";
         File input = new File(INPUT_PATH, path);
@@ -216,8 +216,6 @@ class Mago3DTilerUnitTest {
         String args[] = {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
-                //"-autoUpAxis",
-                "-maxCount", "131072",
                 "-refineAdd",
         };
         Mago3DTilerMain.main(args);
@@ -284,7 +282,7 @@ class Mago3DTilerUnitTest {
                             "        <z>" + scale + "</z>\n" +
                             "    </Scale>\n" +
                             "    <Link>\n" +
-                            "        <href>instance.dae</href>\n" +
+                            "        <href>tree.glb</href>\n" +
                             "    </Link>\n" +
                             "</Model>\n");
                 }
@@ -301,4 +299,15 @@ class Mago3DTilerUnitTest {
             }
         }
     }
+
+    /*@Test
+    void createTemp() throws IOException {
+        int fileCount = 2000000;
+        for (int count = 0; count < fileCount; count++) {
+            File tempFile = new File("C:\\Workspaces\\GitSources\\mago\\mago-3d-tiler\\viewer\\mago-3d-tiler-data\\case07-shp-seoul\\temp", "building_" + count + ".mgb");
+            // write temp file
+            tempFile.createNewFile();
+        }
+
+    }*/
 }

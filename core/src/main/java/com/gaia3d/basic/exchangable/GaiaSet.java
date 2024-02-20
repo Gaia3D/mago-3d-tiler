@@ -47,10 +47,10 @@ public class GaiaSet implements Serializable{
     List<GaiaBufferDataSet> bufferDatas;
     List<GaiaMaterial> materials;
 
-    Vector3d position;
-    Vector3d scale;
-    Quaterniond quaternion;
-    private Matrix4d transformMatrix;
+    //Vector3d position;
+    //Vector3d scale;
+    //Quaterniond quaternion;
+    //private Matrix4d transformMatrix;
 
     byte isBigEndian = 0;
     String projectName;
@@ -61,8 +61,8 @@ public class GaiaSet implements Serializable{
 
     public GaiaSet(Path path) {
         readFile(path);
-        this.transformMatrix = new Matrix4d();
-        this.transformMatrix.identity();
+        //this.transformMatrix = new Matrix4d();
+        //this.transformMatrix.identity();
     }
 
     public GaiaSet(GaiaScene gaiaScene) {
@@ -84,9 +84,13 @@ public class GaiaSet implements Serializable{
     }
 
     public Path writeFile(Path path, int serial) {
-        String tempFile = projectName + "_" + serial + "." + FormatType.TEMP.getExtension();
-        File output = new File(path.toAbsolutePath().toString(), tempFile);
-        try (BigEndianDataOutputStream stream = new BigEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(output), 32768))) {
+        String tempFileName = projectName + "_" + serial + "." + FormatType.TEMP.getExtension();
+
+        int dividedNumber = serial / 10000;
+        Path tempDir = path.resolve(this.projectName).resolve(String.valueOf(dividedNumber));
+        tempDir.toFile().mkdirs();
+        File tempFile = tempDir.resolve(tempFileName).toFile();
+        try (BigEndianDataOutputStream stream = new BigEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(tempFile), 32768))) {
             stream.writeByte(isBigEndian);
             stream.writeText(projectName);
             stream.writeInt(materials.size());
@@ -100,20 +104,13 @@ public class GaiaSet implements Serializable{
                     GaiaTexture texture = materialTextures.get(TextureType.DIFFUSE).get(0);
                     Path parentPath = texture.getParentPath();
                     String diffusePath = texture.getPath();
-                    texture.setPath(this.projectName + File.separator + diffusePath);
+                    texture.setPath(diffusePath);
                     String imagePath = parentPath + File.separator + diffusePath;
 
-                    Path imageTempPath = path.resolve("images").resolve(this.projectName);
+                    Path imageTempPath = tempDir.resolve("images");
                     imageTempPath.toFile().mkdir();
 
                     Path outputPath = imageTempPath.resolve(diffusePath);
-
-                    /*outputPath.toFile().getAbsolutePath();
-                    BufferedImage bufferedImage = ImageIO.read(new File(imagePath));
-                    ImageResizer imageResizer = new ImageResizer();
-                    BufferedImage resizedImage = imageResizer.resizeImageGraphic2D(bufferedImage, 16, 16);
-                    gaiaTextureArchive.addTexture(outputPath.toFile().getAbsolutePath(), resizedImage);*/
-
                     FileUtils.copyFile(new File(imagePath), outputPath.toFile());
                 }
                 material.write(stream);
@@ -125,7 +122,7 @@ public class GaiaSet implements Serializable{
         } catch (Exception e) {
             log.error(e.getMessage());
         }
-        return output.toPath();
+        return tempFile.toPath();
     }
 
     public void readFile(Path path) {
@@ -160,7 +157,7 @@ public class GaiaSet implements Serializable{
                 GaiaMaterial materialById = materials.stream()
                         .filter(material -> material.getId() == materialId)
                         .findFirst().orElseThrow();
-                bufferDataSet.setMaterial(materialById);
+                bufferDataSet.setMaterialId(materialById.getId());
                 GaiaRectangle texcoordBoundingRectangle = calcTexcoordBoundingRectangle(bufferDataSet);
                 bufferDataSet.setTexcoordBoundingRectangle(texcoordBoundingRectangle);
                 bufferDataSets.add(bufferDataSet);
@@ -208,6 +205,25 @@ public class GaiaSet implements Serializable{
     public void deleteTextures() {
         List<GaiaMaterial> materials = getMaterials();
         materials.forEach(GaiaMaterial::deleteTextures);
+    }
+
+    public GaiaSet clone(){
+        GaiaSet gaiaSet = new GaiaSet();
+        gaiaSet.setBufferDatas(new ArrayList<>());
+        for (GaiaBufferDataSet bufferData : this.bufferDatas) {
+            gaiaSet.getBufferDatas().add(bufferData.clone());
+        }
+        gaiaSet.setMaterials(new ArrayList<>());
+        for (GaiaMaterial material : this.materials) {
+            gaiaSet.getMaterials().add(material.clone());
+        }
+        gaiaSet.setIsBigEndian(this.isBigEndian);
+        gaiaSet.setProjectName(this.projectName);
+        gaiaSet.setFilePath(this.filePath);
+        gaiaSet.setFolderPath(this.folderPath);
+        gaiaSet.setProjectFolderPath(this.projectFolderPath);
+        gaiaSet.setOutputDir(this.outputDir);
+        return gaiaSet;
     }
 
     public void clear() {

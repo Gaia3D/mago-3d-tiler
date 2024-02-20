@@ -64,7 +64,6 @@ public abstract class AbstractGeometryConverter {
         GaiaPrimitive primitive = new GaiaPrimitive();
         List<GaiaSurface> surfaces = new ArrayList<>();
         List<GaiaVertex> vertices = new ArrayList<>();
-        primitive.setMaterial(material);
         primitive.setMaterialIndex(0);
         primitive.setSurfaces(surfaces);
         primitive.setVertices(vertices);

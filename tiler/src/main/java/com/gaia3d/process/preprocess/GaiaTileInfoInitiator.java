@@ -10,7 +10,7 @@ import java.io.File;
 
 @Slf4j
 @AllArgsConstructor
-public class GaiaTileInfoinitiator implements PreProcess {
+public class GaiaTileInfoInitiator implements PreProcess {
 
     @Override
     public TileInfo run(TileInfo tileInfo) {
@@ -23,10 +23,10 @@ public class GaiaTileInfoinitiator implements PreProcess {
         tileInfo.setScenePath(tileInfo.getScene().getOriginalPath());
         tileInfo.setTempPath(tileInfo.getOutputPath().resolve("temp"));
 
-        File tempFile = tileInfo.getTempPath().toFile();
+        /*File tempFile = tileInfo.getTempPath().toFile();
         if (!tempFile.exists() && tempFile.mkdir()) {
             log.info("[Pre] Created temp directory in {}", tileInfo.getTempPath());
-        }
+        }*/
         return tileInfo;
     }
 }

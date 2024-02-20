@@ -178,9 +178,10 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         }
         nodeCode = nodeCode + index;
         log.info("[Tiling][ContentNode][" + nodeCode + "][LOD{}][OBJECT{}]", lod.getLevel(), tileInfos.size());
+
         int lodError = refineAdd ? lod.getGeometricErrorBlock() : lod.getGeometricError();
 
-        int lodErrorDouble = lodError * 2;
+        int lodErrorDouble = lodError;
         List<TileInfo> resultInfos;
         List<TileInfo> remainInfos;
         resultInfos = tileInfos.stream().filter(tileInfo -> {
@@ -191,10 +192,6 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
             double geometricError = tileInfo.getBoundingBox().getLongestDistance();
             return geometricError < lodErrorDouble;
         }).collect(Collectors.toList());
-
-        // force to use the original tileInfos
-//        List<TileInfo> resultInfos = tileInfos;
-//        List<TileInfo> remainInfos = new ArrayList<>();
 
         Node childNode = new Node();
         childNode.setParent(parentNode);

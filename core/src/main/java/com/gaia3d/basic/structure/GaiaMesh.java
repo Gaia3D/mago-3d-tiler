@@ -223,4 +223,13 @@ public class GaiaMesh implements Serializable {
         this.primitives.forEach(GaiaPrimitive::clear);
         this.primitives.clear();
     }
+
+    public GaiaMesh clone() {
+        GaiaMesh gaiaMesh = new GaiaMesh();
+        gaiaMesh.setPrimitives(new ArrayList<>());
+        for (GaiaPrimitive primitive : this.primitives) {
+            gaiaMesh.getPrimitives().add(primitive.clone());
+        }
+        return gaiaMesh;
+    }
 }

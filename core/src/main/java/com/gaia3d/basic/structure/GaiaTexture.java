@@ -97,7 +97,7 @@ public class GaiaTexture implements Serializable {
     private BufferedImage testImage() {
         BufferedImage bufferedImage = new BufferedImage(1, 1, BufferedImage.TYPE_3BYTE_BGR);
         Graphics2D graphics = bufferedImage.createGraphics();
-        graphics.setColor(Color.ORANGE);
+        graphics.setColor(Color.WHITE);
         graphics.fillRect(0, 0, 1, 1);
         return bufferedImage;
     }

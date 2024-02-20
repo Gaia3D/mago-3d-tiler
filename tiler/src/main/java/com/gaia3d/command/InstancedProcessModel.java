@@ -8,7 +8,7 @@ import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.process.TilingPipeline;
 import com.gaia3d.process.postprocess.PostProcess;
 import com.gaia3d.process.postprocess.instance.Instanced3DModel;
-import com.gaia3d.process.preprocess.GaiaTileInfoinitiator;
+import com.gaia3d.process.preprocess.GaiaTileInfoInitiator;
 import com.gaia3d.process.preprocess.PreProcess;
 import com.gaia3d.process.tileprocess.Pipeline;
 import com.gaia3d.process.tileprocess.TilingProcess;
@@ -26,7 +26,7 @@ public class InstancedProcessModel implements ProcessFlowModel{
         FileLoader fileLoader = new InstancedFileLoader(converter);
 
         List<PreProcess> preProcessors = new ArrayList<>();
-        preProcessors.add(new GaiaTileInfoinitiator());
+        preProcessors.add(new GaiaTileInfoInitiator());
 
         TilingProcess tilingProcess = new Instanced3DModelTiler();
 

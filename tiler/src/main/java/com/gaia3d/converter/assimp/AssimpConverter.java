@@ -72,7 +72,7 @@ public class AssimpConverter implements Converter {
         {
             this.invertTexCoordsYAxis = true;
         }
-        else if(formatType == FormatType.GLTF)
+        else if(formatType == FormatType.GLTF || formatType == FormatType.GLB)
         {
             this.invertTexCoordsYAxis = true;
         }
@@ -96,13 +96,12 @@ public class AssimpConverter implements Converter {
         boolean autoUpAxis = globalOptions.isAutoUpAxis();
         Matrix4d matrix4 = new Matrix4d();
 
-        /*boolean isRootNode = parentNode == null;
-        log.debug(isRootNode ? "=======RootTrasformMatrix=======" : "=======TrasformMatrix=======");
-        log.debug("{} {} {} {}", aiMatrix4x4.a1(), aiMatrix4x4.b1(), aiMatrix4x4.c1(), aiMatrix4x4.d1());
-        log.debug("{} {} {} {}", aiMatrix4x4.a2(), aiMatrix4x4.b2(), aiMatrix4x4.c2(), aiMatrix4x4.d2());
-        log.debug("{} {} {} {}", aiMatrix4x4.a3(), aiMatrix4x4.b3(), aiMatrix4x4.c3(), aiMatrix4x4.d3());
-        log.debug("{} {} {} {}", aiMatrix4x4.a4(), aiMatrix4x4.b4(), aiMatrix4x4.c4(), aiMatrix4x4.d4());*/
         boolean isRootNode = parentNode == null;
+//        log.debug(isRootNode ? "=======RootTrasformMatrix=======" : "=======TrasformMatrix=======");
+//        log.debug("{} {} {} {}", aiMatrix4x4.a1(), aiMatrix4x4.b1(), aiMatrix4x4.c1(), aiMatrix4x4.d1());
+//        log.debug("{} {} {} {}", aiMatrix4x4.a2(), aiMatrix4x4.b2(), aiMatrix4x4.c2(), aiMatrix4x4.d2());
+//        log.debug("{} {} {} {}", aiMatrix4x4.a3(), aiMatrix4x4.b3(), aiMatrix4x4.c3(), aiMatrix4x4.d3());
+//        log.debug("{} {} {} {}", aiMatrix4x4.a4(), aiMatrix4x4.b4(), aiMatrix4x4.c4(), aiMatrix4x4.d4());
 
         // getTransformMatrix
         matrix4.m00(aiMatrix4x4.a1());
@@ -137,18 +136,18 @@ public class AssimpConverter implements Converter {
                 matrix4.m22(1.0d);
                 matrix4.m23(0.0d);
             } else {
-                matrix4.m00(1.0d);
-                matrix4.m01(0.0d);
-                matrix4.m02(0.0d);
-                matrix4.m03(0.0d);
-                matrix4.m10(0.0d);
-                matrix4.m11(0.0d);
-                matrix4.m12(-1.0d);
-                matrix4.m13(0.0d);
-                matrix4.m20(0.0d);
-                matrix4.m21(1.0d);
-                matrix4.m22(0.0d);
-                matrix4.m23(0.0d);
+//                matrix4.m00(1.0d);
+//                matrix4.m01(0.0d);
+//                matrix4.m02(0.0d);
+//                matrix4.m03(0.0d);
+//                matrix4.m10(0.0d);
+//                matrix4.m11(0.0d);
+//                matrix4.m12(-1.0d);
+//                matrix4.m13(0.0d);
+//                matrix4.m20(0.0d);
+//                matrix4.m21(1.0d);
+//                matrix4.m22(0.0d);
+//                matrix4.m23(0.0d);
             }
         }
         if (isRootNode && isZeroOrigin) {
@@ -167,6 +166,25 @@ public class AssimpConverter implements Converter {
 
     private GaiaScene convertScene(AIScene aiScene, String filePath, String fileName) {
         FormatType formatType = FormatType.fromExtension(FilenameUtils.getExtension(fileName));
+
+        /*
+        //READ METADATA
+        AIMetaData aiMetaData = aiScene.mMetaData();
+        assert aiMetaData != null;
+        if (aiMetaData != null) {
+            // UnitScaleFactor
+            var keys = aiMetaData.mKeys();
+            var values = aiMetaData.mValues();
+            int length = aiMetaData.mNumProperties();
+            for (int i = 0; i < length; i++) {
+                AIString keyAiString = keys.get(i);
+                String key = keyAiString.dataString();
+                AIMetaDataEntry dataEntry = values.get(i);
+                int type = dataEntry.mType();
+                ByteBuffer buffer = dataEntry.mData(0);
+                log.info("Key: " + key);
+            }
+        }*/
 
         GaiaScene gaiaScene = new GaiaScene();
         AINode aiNode = aiScene.mRootNode();
@@ -411,7 +429,6 @@ public class AssimpConverter implements Converter {
 
         GaiaPrimitive primitive = new GaiaPrimitive();
         primitive.getSurfaces().add(surface);
-        primitive.setMaterial(material);
         primitive.setMaterialIndex(material.getId());
 
         Vector4d diffuse = material.getDiffuseColor();

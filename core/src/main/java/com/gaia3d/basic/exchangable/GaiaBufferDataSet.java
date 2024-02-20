@@ -30,7 +30,6 @@ public class GaiaBufferDataSet implements Serializable {
     private int id = -1;
     private String guid = "no_guid";
     private int materialId;
-    public GaiaMaterial material = null;
 
     GaiaBoundingBox boundingBox = null;
     GaiaRectangle texcoordBoundingRectangle = null;
@@ -155,21 +154,17 @@ public class GaiaBufferDataSet implements Serializable {
     public void clear() {
         buffers.forEach((key, value) -> value.clear());
         buffers.clear();
-
-        material.clear();
-        material = null;
         boundingBox = null;
         texcoordBoundingRectangle = null;
         transformMatrix = null;
         preMultipliedTransformMatrix = null;
     }
 
-    public GaiaBufferDataSet clone() throws CloneNotSupportedException {
+    public GaiaBufferDataSet clone() {
         GaiaBufferDataSet clone = new GaiaBufferDataSet();
         clone.setId(this.id);
         clone.setGuid(this.guid);
         clone.setMaterialId(this.materialId);
-        clone.setMaterial(this.material.clone());
         if (this.boundingBox != null) {
             clone.setBoundingBox(this.boundingBox.clone());
         }
@@ -177,13 +172,15 @@ public class GaiaBufferDataSet implements Serializable {
             clone.setTexcoordBoundingRectangle(this.texcoordBoundingRectangle.clone());
         }
         if (this.transformMatrix != null) {
-            clone.setTransformMatrix((Matrix4d) this.transformMatrix.clone());
+            clone.setTransformMatrix(new Matrix4d(this.transformMatrix));
         }
         if (this.preMultipliedTransformMatrix != null) {
-            clone.setPreMultipliedTransformMatrix((Matrix4d) this.preMultipliedTransformMatrix.clone());
+            clone.setPreMultipliedTransformMatrix(new Matrix4d(this.preMultipliedTransformMatrix));
         }
         for (Map.Entry<AttributeType, GaiaBuffer> entry : this.buffers.entrySet()) {
-            clone.buffers.put(entry.getKey(), entry.getValue().clone());
+            GaiaBuffer buffer = entry.getValue();
+            GaiaBuffer clonedBuffer = buffer.clone();
+            clone.buffers.put(entry.getKey(), clonedBuffer);
         }
         return clone;
     }

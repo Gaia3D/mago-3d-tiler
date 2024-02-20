@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
@@ -169,18 +170,18 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         log.info("[Tiling][ContentNode][" + nodeCode + "][LOD{}][OBJECT{}]", lod.getLevel(), tileInfos.size());
 
         int lodError = refineAdd ? lod.getGeometricErrorBlock() : lod.getGeometricError();
-        int lodErrorDouble = lodError * 2;
+        int lodErrorDouble = lodError;
 
         List<TileInfo> resultInfos = new ArrayList<>();
         List<TileInfo> remainInfos = new ArrayList<>();
-//        resultInfos = tileInfos.stream().filter(tileInfo -> {
-//            double geometricError = tileInfo.getBoundingBox().getLongestDistance();
-//            return geometricError >= lodErrorDouble;
-//        }).collect(Collectors.toList());
-//        remainInfos = tileInfos.stream().filter(tileInfo -> {
-//            double geometricError = tileInfo.getBoundingBox().getLongestDistance();
-//            return geometricError < lodErrorDouble;
-//        }).collect(Collectors.toList());
+        resultInfos = tileInfos.stream().filter(tileInfo -> {
+            double geometricError = tileInfo.getBoundingBox().getLongestDistance();
+            return geometricError >= lodErrorDouble;
+        }).collect(Collectors.toList());
+        remainInfos = tileInfos.stream().filter(tileInfo -> {
+            double geometricError = tileInfo.getBoundingBox().getLongestDistance();
+            return geometricError < lodErrorDouble;
+        }).collect(Collectors.toList());
         resultInfos = tileInfos;
 
 

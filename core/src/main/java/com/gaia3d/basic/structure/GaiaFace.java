@@ -86,6 +86,10 @@ public class GaiaFace implements Serializable {
         faceNormal = null;
     }
 
+    public GaiaFace clone() {
+        return new GaiaFace(indices.clone(), new Vector3d(faceNormal));
+    }
+
     public boolean hasCoincidentIndices(GaiaFace face) {
         for (int i = 0; i < indices.length; i++) {
             for (int j = 0; j < face.getIndices().length; j++) {

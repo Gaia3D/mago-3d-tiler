@@ -63,6 +63,14 @@ public class GaiaSurface implements Serializable {
         faces.clear();
     }
 
+    public GaiaSurface clone() {
+        GaiaSurface clonedSurface = new GaiaSurface();
+        for (GaiaFace face : faces) {
+            clonedSurface.getFaces().add(face.clone());
+        }
+        return clonedSurface;
+    }
+
     private boolean getFacesWeldedWithFace(GaiaFace face, List<GaiaFace> resultFaces) {
         boolean newFaceAdded = false;
         for (GaiaFace f : faces) {
