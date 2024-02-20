@@ -202,4 +202,11 @@ public class GaiaNode implements Serializable {
         this.meshes.clear();
         this.children.clear();
     }
+
+    public void extractMeshes(List<GaiaMesh> resultMeshes) {
+        resultMeshes.addAll(this.getMeshes());
+        for (GaiaNode child : this.getChildren()) {
+            child.extractMeshes(resultMeshes);
+        }
+    }
 }

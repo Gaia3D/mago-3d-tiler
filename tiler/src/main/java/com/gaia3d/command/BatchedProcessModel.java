@@ -44,6 +44,7 @@ public class BatchedProcessModel implements ProcessFlowModel {
         }
         List<PreProcess> preProcessors = new ArrayList<>();
         preProcessors.add(new GaiaTileInfoInitiator());
+        preProcessors.add(new GaiaTexCoordCorrector()); // new.*******************************************
         preProcessors.add(new GaiaScaler());
         if (!isYUpAxis) {
             preProcessors.add(new GaiaRotator());

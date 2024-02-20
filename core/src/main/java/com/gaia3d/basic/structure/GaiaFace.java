@@ -1,5 +1,6 @@
 package com.gaia3d.basic.structure;
 
+import com.gaia3d.util.GeometryUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -99,5 +100,19 @@ public class GaiaFace implements Serializable {
             }
         }
         return false;
+    }
+
+    public double calculateArea(List<GaiaVertex> vertices) {
+        double area = 0.0;
+        for (int i = 0; i < indices.length; i+=3) {
+            int indices1 = indices[i];
+            int indices2 = indices[i + 1];
+            int indices3 = indices[i + 2];
+            GaiaVertex vertex1 = vertices.get(indices1);
+            GaiaVertex vertex2 = vertices.get(indices2);
+            GaiaVertex vertex3 = vertices.get(indices3);
+            area += GeometryUtils.getTriangleArea(vertex1, vertex2, vertex3);
+        }
+        return area;
     }
 }

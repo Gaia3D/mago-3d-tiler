@@ -313,11 +313,11 @@ public class GaiaTextureCoordinator {
             }
 
             // test save atlasTexture image.****
-            /*String extension = "jpg";
+            String extension = "jpg";
             if (existPngTextures) {
                 extension = "png";
             }
-            this.writeBatchedImage(extension);*/
+            this.writeBatchedImage(extension);
             // end test.************************
 
             List<GaiaBufferDataSet> materialBufferDataSets = bufferDataSets.stream().filter((bufferDataSet) -> bufferDataSet.getMaterialId() == target.getMaterialId()).collect(Collectors.toList());

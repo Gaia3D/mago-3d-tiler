@@ -61,25 +61,6 @@ public class AssimpConverter implements Converter {
         String path = file.getAbsolutePath().replace(file.getName(), "");
         AIScene aiScene =  Assimp.aiImportFile(file.getAbsolutePath(), DEFAULT_FLAGS);
 
-        // now check the file format of the loaded file.***
-        // if file extension is *.3ds, must invert the y-axis of texCoords.***
-        FormatType formatType = FormatType.fromExtension(FilenameUtils.getExtension(file.getName()));
-        if(formatType == FormatType.MAX_3DS)
-        {
-            this.invertTexCoordsYAxis = true;
-        }
-        else if(formatType == FormatType.COLLADA)
-        {
-            this.invertTexCoordsYAxis = true;
-        }
-        else if(formatType == FormatType.GLTF || formatType == FormatType.GLB)
-        {
-            this.invertTexCoordsYAxis = true;
-        }
-        else {
-            this.invertTexCoordsYAxis = false;
-        }
-
         assert aiScene != null;
         GaiaScene gaiaScene = convertScene(aiScene, path, file.getName());
         aiScene.free();
@@ -494,35 +475,6 @@ public class AssimpConverter implements Converter {
             diffuseColor[2] = (byte) (diffuse.z * 255);
             diffuseColor[3] = (byte) (diffuse.w * 255);
             primitive.getVertices().add(vertex);
-        }
-
-        GaiaRectangle texCoordsRectangle = new GaiaRectangle();
-        primitive.getTexcoordBoundingRectangle(texCoordsRectangle);
-        boolean mustTranslateTexCoordsToPositiveQuadrant = false;
-        if (texCoordsRectangle.getWidth() > 1.0 || texCoordsRectangle.getHeight() > 1.0) {
-            mustTranslateTexCoordsToPositiveQuadrant = true;
-        }
-
-        double minTexCoordX = texCoordsRectangle.getMinX();
-        double minTexCoordY = texCoordsRectangle.getMinY();
-        if (minTexCoordX <0.0 || minTexCoordX > 1.0 || minTexCoordY < 0.0 || minTexCoordY > 1.0) {
-            mustTranslateTexCoordsToPositiveQuadrant = true;
-        }
-
-        if (mustTranslateTexCoordsToPositiveQuadrant) {
-            //primitive.translateTexCoordsToPositiveQuadrant();
-        }
-
-        if (this.invertTexCoordsYAxis) {
-            for (GaiaVertex vertex : primitive.getVertices()) {
-                Vector2d texCoord = vertex.getTexcoords();
-                if (texCoord == null) {
-                    continue;
-                }
-                if (this.invertTexCoordsYAxis) {
-                    texCoord.y = 1.0 - texCoord.y; // invert the y.***
-                }
-            }
         }
 
         primitive.calculateNormal();
