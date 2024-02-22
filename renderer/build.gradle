@@ -10,6 +10,9 @@ group "com.gaia3d"
 version "1.0.0"
 project.ext.lwjglVersion = "3.3.3"
 
+//project.ext.jomlVersion = "1.10.2" //  * new added
+//project.ext.lwjglNatives = "natives-windows" //  * new added
+
 switch ( OperatingSystem.current() ) {
     case OperatingSystem.WINDOWS:
         project.ext.lwjglNatives = "natives-windows"
@@ -30,6 +33,9 @@ repositories {
 dependencies {
     compileOnly "org.projectlombok:lombok:1.18.30"
     annotationProcessor "org.projectlombok:lombok:1.18.30"
+
+    implementation("org.tinylog:tinylog-api:2.7.0")
+    implementation("org.tinylog:tinylog-impl:2.7.0")
 
     // logging
     implementation 'org.slf4j:slf4j-api:1.7.25'
@@ -91,7 +97,7 @@ dependencies {
 
     implementation 'com.github.mreutegg:laszip4j:0.15'
 
-    //implementation project(":mago-core")
+    implementation project(":mago-core")
 
     runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-assimp::$lwjglNatives"
