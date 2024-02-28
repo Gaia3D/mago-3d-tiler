@@ -26,8 +26,7 @@ class UnitTest {
                 "-it", "kml",
                 "-o", OUTPUT_PATH + path,
                 "-autoUpAxis",
-                //"-glb",
-                "-mc", "1" // multithreadsCount.
+                "-glb"
         };
         Mago3DTilerMain.main(args);
     }
@@ -41,7 +40,7 @@ class UnitTest {
                 "-o", OUTPUT_PATH + path,
                 "-autoUpAxis",
                 "-crs", "5174",
-                "-mc", "4" // multithreadsCount.
+                "-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -67,8 +66,7 @@ class UnitTest {
                 "-it", "3ds",
                 "-o", OUTPUT_PATH + path,
                 "-autoUpAxis",
-                "-crs", "5174",
-                "-mc", "1"
+                "-crs", "5174"
         };
         Mago3DTilerMain.main(args);
     }
@@ -95,8 +93,7 @@ class UnitTest {
                 "-it", "3ds",
                 "-o", OUTPUT_PATH + path,
                 "-autoUpAxis",
-                "-crs", "5186",
-                "-mc", "1"
+                "-crs", "5186"
         };
         Mago3DTilerMain.main(args);
     }
@@ -109,8 +106,7 @@ class UnitTest {
                 "-it", "3ds",
                 "-o", OUTPUT_PATH + path,
                 "-autoUpAxis",
-                "-crs", "5186",
-                "-mc", "1"
+                "-crs", "5186"
         };
         Mago3DTilerMain.main(args);
     }
@@ -224,6 +220,7 @@ class UnitTest {
                 "-o", OUTPUT_PATH + path,
                 "-autoUpAxis",
                 "-multiThread",
+
         };
         Mago3DTilerMain.main(args);
     }
@@ -251,9 +248,7 @@ class UnitTest {
                     "-it", "3ds",
                     "-o", OUTPUT_PATH + path,
                     "-crs", "5186",
-                    "-autoUpAxis",
-                    //"-gt", "D:/forTest/ws2_dem.tif",
-                    "-multiThread",
+                    "-autoUpAxis"
             };
             Mago3DTilerMain.main(args);
         }

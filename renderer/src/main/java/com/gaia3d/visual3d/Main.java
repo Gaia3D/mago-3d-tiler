@@ -5,6 +5,7 @@ import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.engine.IAppLogic;
 import com.gaia3d.engine.dataStructure.GaiaScenesContainer;
+import com.gaia3d.renderable.RenderableGaiaScene;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
@@ -33,8 +34,12 @@ public class Main implements IAppLogic {
         Converter assimpConverter = new AssimpConverter();
         List<GaiaScene> gaiaScenes = assimpConverter.load(filePath);
 
+
+
         Main main = new Main();
         Engine gameEng = new Engine("MagoVisual3D", new Window.WindowOptions(), main);
+
+        RenderableGaiaScene renderableGaiaScene = InternDataConverter.getRenderableGaiaScene(gaiaScenes.get(0));
 
         GaiaScenesContainer gaiaScenesContainer = gameEng.getGaiaScenesContainer();
         for (GaiaScene gaiaScene : gaiaScenes) {

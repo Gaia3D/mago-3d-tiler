@@ -39,7 +39,6 @@ public class GaiaPrimitive implements Serializable {
     private Integer materialIndex = -1;
     private List<GaiaVertex> vertices = new ArrayList<>();
     private List<GaiaSurface> surfaces = new ArrayList<>();
-
     private GaiaMaterial material = null;
 
     public GaiaBoundingBox getBoundingBox(Matrix4d transform) {
@@ -202,7 +201,8 @@ public class GaiaPrimitive implements Serializable {
             gaiaBufferDataSet.getBuffers().put(AttributeType.INDICE, indicesBuffer);
         }
         /*if (indicesShort.length > 0) {
-            // TODO : if indices size is less than 65536, use short type.
+            // TODO : if indices size is less than 65536, use short type. <- no correct.
+            // correct TODO : if vertex size is less than 65536, use short type.
             GaiaBuffer indicesBuffer = new GaiaBuffer();
             indicesBuffer.setGlTarget(GL20.GL_ELEMENT_ARRAY_BUFFER);
             indicesBuffer.setGlType(GL20.GL_UNSIGNED_SHORT);

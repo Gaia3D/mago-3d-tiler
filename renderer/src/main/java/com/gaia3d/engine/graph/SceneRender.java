@@ -1,5 +1,6 @@
 package com.gaia3d.engine.graph;
 
+import com.gaia3d.basic.structure.GaiaScene;
 import com.gaia3d.engine.Window;
 
 import com.gaia3d.engine.scene.Entity;
@@ -33,6 +34,11 @@ public class SceneRender {
 
     public void cleanup() {
         shaderProgram.cleanup();
+    }
+
+    public void renderGaiaScene(GaiaScene gaiaScene)
+    {
+
     }
 
     public void render(Scene scene) {

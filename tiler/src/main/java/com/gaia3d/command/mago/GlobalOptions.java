@@ -33,7 +33,7 @@ public class GlobalOptions {
     private static final int DEFAULT_MIN_LOD = 0;
     private static final int DEFAULT_MAX_LOD = 3;
     private static final int DEFAULT_POINT_LIMIT = 20000;
-    private static final byte DEFAULT_MULTI_THREAD_COUNT = 8;
+    private static final byte DEFAULT_MULTI_THREAD_COUNT = 1;
     private static final String DEFAULT_CRS = "4326";
     private static final String DEFAULT_NAME_COLUMN = "name";
     private static final String DEFAULT_HEIGHT_COLUMN = "height";

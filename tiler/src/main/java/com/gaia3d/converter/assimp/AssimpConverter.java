@@ -451,8 +451,6 @@ public class AssimpConverter implements Converter {
                 // set the diffuse color.***
             }
 
-
-
             diffuseColor[0] = (byte) (diffuse.x * 255);
             diffuseColor[1] = (byte) (diffuse.y * 255);
             diffuseColor[2] = (byte) (diffuse.z * 255);
