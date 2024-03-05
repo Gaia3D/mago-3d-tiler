@@ -9,7 +9,7 @@ import com.gaia3d.basic.structure.GaiaTexture;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.basic.types.TextureType;
-import com.gaia3d.util.ImageResizer;
+import com.gaia3d.util.ImageUtils;
 import com.gaia3d.util.io.BigEndianDataInputStream;
 import com.gaia3d.util.io.BigEndianDataOutputStream;
 import lombok.AllArgsConstructor;
@@ -19,13 +19,9 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.joml.Matrix4d;
-import org.joml.Quaterniond;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -100,7 +96,7 @@ public class GaiaSet implements Serializable{
             for (GaiaMaterial material : materials) {
                 Map<TextureType, List<GaiaTexture>> materialTextures = material.getTextures();
                 List<GaiaTexture> diffuseTextures = materialTextures.get(TextureType.DIFFUSE);
-                if (!diffuseTextures.isEmpty()) {
+                if (diffuseTextures != null && !diffuseTextures.isEmpty()) {
                     GaiaTexture texture = materialTextures.get(TextureType.DIFFUSE).get(0);
                     Path parentPath = texture.getParentPath();
                     String diffusePath = texture.getPath();
@@ -111,10 +107,11 @@ public class GaiaSet implements Serializable{
                     imageTempPath.toFile().mkdir();
 
                     Path outputPath = imageTempPath.resolve(diffusePath);
-
+                    File inputPathFile = new File(imagePath);
+                    inputPathFile = ImageUtils.getChildFile(parentPath.toFile(), diffusePath);
                     File outputPathFile = outputPath.toFile();
                     if (!outputPathFile.exists()) {
-                        FileUtils.copyFile(new File(imagePath), outputPath.toFile());
+                        FileUtils.copyFile(inputPathFile, outputPath.toFile());
                     }
                 }
                 material.write(stream);
@@ -125,6 +122,7 @@ public class GaiaSet implements Serializable{
             }
         } catch (Exception e) {
             log.error(e.getMessage());
+            e.printStackTrace();
         }
         return tempFile.toPath();
     }

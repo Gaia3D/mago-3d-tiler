@@ -112,12 +112,16 @@ public class TilingPipeline implements Pipeline {
         if (globalOptions.getNodeLimit() < 0) {
             /*if (nodeCountValue > 262144) {
                 globalOptions.setNodeLimit(16384);
-            } else */ if (nodeCountValue > 131072) {
+            } else */
+
+            if (nodeCountValue > 131072) {
                 globalOptions.setNodeLimit(8192);
             } else if (nodeCountValue > 65536) {
                 globalOptions.setNodeLimit(4096);
-            } else {
+            } else if (nodeCountValue > 32768) {
                 globalOptions.setNodeLimit(2048);
+            } else {
+                globalOptions.setNodeLimit(1024);
             }
 
            /* if (nodeCountValue > 262144) {
@@ -160,14 +164,14 @@ public class TilingPipeline implements Pipeline {
                 List<TileInfo> tileInfos = contentInfo.getTileInfos();
                 List<TileInfo> tileInfosClone = tileInfos.stream()
                         .map((childTileInfo) -> TileInfo.builder()
-                                .scene(childTileInfo.getScene())
-                                .kmlInfo(childTileInfo.getKmlInfo())
-                                .scenePath(childTileInfo.getScenePath())
-                                .tempPath(childTileInfo.getTempPath())
-                                .transformMatrix(childTileInfo.getTransformMatrix())
-                                .boundingBox(childTileInfo.getBoundingBox())
-                                .pointCloud(childTileInfo.getPointCloud())
-                                .build())
+                            .scene(childTileInfo.getScene())
+                            .kmlInfo(childTileInfo.getKmlInfo())
+                            .scenePath(childTileInfo.getScenePath())
+                            .tempPath(childTileInfo.getTempPath())
+                            .transformMatrix(childTileInfo.getTransformMatrix())
+                            .boundingBox(childTileInfo.getBoundingBox())
+                            .pointCloud(childTileInfo.getPointCloud())
+                            .build())
                         .collect(Collectors.toList());
                 contentInfo.setTileInfos(tileInfosClone);
                 for (PostProcess postProcessor : postProcesses) {

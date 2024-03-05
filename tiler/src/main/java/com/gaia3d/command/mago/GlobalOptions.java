@@ -88,6 +88,7 @@ public class GlobalOptions {
     private boolean flipCoordinate = false; // flip coordinate flag for 2D Data
     private boolean zeroOrigin = false; // data origin to zero point flag
     private boolean autoUpAxis = false; // automatically assign 3D matrix axes flag
+    private boolean ignoreTextures = false; // ignore textures flag
     private boolean reverseTextureCoordinate = false; // reverse texture coordinate flag
 
     /* 2D Data Column Options */
@@ -143,8 +144,6 @@ public class GlobalOptions {
                 source = factory.createFromParameters("CUSTOM", proj);
             } else if (crsString != null && !crsString.isEmpty()) {
                 source = factory.createFromName("EPSG:" + crsString);
-            } else {
-                //source = factory.createFromName("EPSG:4326");
             }
             instance.setCrs(source);
         }
@@ -154,6 +153,7 @@ public class GlobalOptions {
         instance.setNodeLimit(command.hasOption(ProcessOptions.MAX_COUNT.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_COUNT.getArgName())) : -1);
         instance.setMinLod(command.hasOption(ProcessOptions.MIN_LOD.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MIN_LOD.getArgName())) : DEFAULT_MIN_LOD);
         instance.setMaxLod(command.hasOption(ProcessOptions.MAX_LOD.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_LOD.getArgName())) : DEFAULT_MAX_LOD);
+        instance.setIgnoreTextures(command.hasOption(ProcessOptions.IGNORE_TEXTURES.getArgName()));
 
         /* Point Cloud Options */
         instance.setPointLimit(command.hasOption(ProcessOptions.MAX_POINTS.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_POINTS.getArgName())) : DEFAULT_POINT_LIMIT);

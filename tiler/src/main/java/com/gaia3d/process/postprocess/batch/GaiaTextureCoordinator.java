@@ -191,7 +191,6 @@ public class GaiaTextureCoordinator {
     }
 
     public void batchTextures(LevelOfDetail lod) {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
         // We have MaterialList & BufferDataSetList.********
         // 1- List<GaiaMaterial> this.materials;
         // 2- List<GaiaBufferDataSet> this.bufferDataSets;

@@ -5,6 +5,7 @@ import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
+import com.gaia3d.util.ImageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
@@ -279,13 +280,15 @@ public class AssimpConverter implements Converter {
                 diffTexPath = "embedded_textures" + File.separator + embeddedTexturePath;
             }
 
-            File file = getTextureFile(parentPath.toFile(), diffTexPath);
+            File file = ImageUtils.getChildFile(parentPath.toFile(), diffTexPath);
             if (file != null && file.exists() && file.isFile()) {
-                texture.setPath(diffTexPath);
+                texture.setPath(file.getName());
                 textures.add(texture);
                 material.getTextures().put(texture.getType(), textures);
             } else {
                 log.error("Diffuse Texture not found: " + diffTexPath);
+                //material.setName("MissingTexture");
+                //material.getTextures().put(texture.getType(), textures);
             }
         } else {
             material.setName("NoTexture");
@@ -494,31 +497,5 @@ public class AssimpConverter implements Converter {
         }
         face.setIndices(indicesArray);
         return face;
-    }
-
-    private File getTextureFile(File parent, String path) {
-        File file = new File(parent, path);
-        String name = FilenameUtils.getBaseName(path);
-        String ext = FilenameUtils.getExtension(path);
-        if (file.exists() && file.isFile()) {
-            return file;
-        }
-        file = new File(parent, name.toLowerCase() + "." + ext.toLowerCase());
-        if (file.exists() && file.isFile()) {
-            return file;
-        }
-        file = new File(parent, name.toUpperCase() + "." + ext.toUpperCase());
-        if (file.exists() && file.isFile()) {
-            return file;
-        }
-        file = new File(parent, name.toLowerCase() + "." + ext.toUpperCase());
-        if (file.exists() && file.isFile()) {
-            return file;
-        }
-        file = new File(parent, name.toUpperCase() + "." + ext.toLowerCase());
-        if (file.exists() && file.isFile()) {
-            return file;
-        }
-        return null;
     }
 }

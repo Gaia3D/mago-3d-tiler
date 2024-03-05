@@ -1,6 +1,7 @@
 package com.gaia3d.util;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
 import org.lwjgl.BufferUtils;
 
 import java.io.BufferedInputStream;
@@ -116,6 +117,32 @@ public class ImageUtils {
             return byteBuffer;
         } catch (IOException e) {
             log.error("FileUtils.readBytes: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public static File getChildFile(File parent, String path) {
+        File file = new File(parent, path);
+        String name = FilenameUtils.getBaseName(path);
+        String ext = FilenameUtils.getExtension(path);
+        if (file.exists() && file.isFile()) {
+            return file;
+        }
+        file = new File(parent, name.toLowerCase() + "." + ext.toLowerCase());
+        if (file.exists() && file.isFile()) {
+            return file;
+        }
+        file = new File(parent, name.toUpperCase() + "." + ext.toUpperCase());
+        if (file.exists() && file.isFile()) {
+            return file;
+        }
+        file = new File(parent, name.toLowerCase() + "." + ext.toUpperCase());
+        if (file.exists() && file.isFile()) {
+            return file;
+        }
+        file = new File(parent, name.toUpperCase() + "." + ext.toLowerCase());
+        if (file.exists() && file.isFile()) {
+            return file;
         }
         return null;
     }

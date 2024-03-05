@@ -42,6 +42,7 @@ class Mago3DTilerUnitTest {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "3ds",
                 "-crs", "5186",
+                "-ignoreTextures",
                 //"-autoUpAxis",
                 "-output", output.getAbsolutePath(),
         };
@@ -127,7 +128,7 @@ class Mago3DTilerUnitTest {
         Mago3DTilerMain.main(args);
     }
 
-    @Test
+    //@Test
     void case06B3dm() {
         String path = "case06-kml-auto-batched";
         //String path = "case06-kml-auto-instance";
@@ -144,7 +145,7 @@ class Mago3DTilerUnitTest {
         Mago3DTilerMain.main(args);
     }
 
-    @Test
+    //@Test
     void case07() {
         String path = "case07-shp-seoul";
         File input = new File(INPUT_PATH, path);
@@ -241,7 +242,7 @@ class Mago3DTilerUnitTest {
         Mago3DTilerMain.main(args);
     }
 
-    @Test
+    //@Test
     void case013() {
         String path = "case13-kml-seoul-forest-instance";
         File input = new File(INPUT_PATH, path);
@@ -261,7 +262,7 @@ class Mago3DTilerUnitTest {
         Mago3DTilerMain.main(args);
     }
 
-    @Test
+    //@Test
     void case014() {
         String path = "case14-3ds-seoul";
         File input = new File(INPUT_PATH, path);

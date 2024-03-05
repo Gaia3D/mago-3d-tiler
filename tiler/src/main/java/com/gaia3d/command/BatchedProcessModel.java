@@ -8,6 +8,7 @@ import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.geometry.citygml.CityGmlConverter;
 import com.gaia3d.converter.geometry.geojson.GeoJsonConverter;
 import com.gaia3d.converter.geometry.shape.ShapeConverter;
+import com.gaia3d.converter.kml.FastKmlReader;
 import com.gaia3d.converter.kml.JacksonKmlReader;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.process.TilingPipeline;
@@ -39,6 +40,7 @@ public class BatchedProcessModel implements ProcessFlowModel {
         boolean isYUpAxis = getYUpAxis(inputFormat, globalOptions.isYUpAxis());
         Converter converter = getConverter(inputFormat);
         AttributeReader kmlReader = new JacksonKmlReader();
+        kmlReader = new FastKmlReader();
         BatchedFileLoader fileLoader = new BatchedFileLoader(converter, kmlReader);
 
         List<GridCoverage2D> geoTiffs = new ArrayList<>();
