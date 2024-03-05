@@ -275,13 +275,12 @@ public class GaiaTextureCoordinator {
             }
         }
 
-        if (globalOptions.isDebug()) {
-            // TODO : debug color
+        /*if (globalOptions.isDebugLod()) {
             float[] debugColor = lod.getDebugColor();
             Color color = new Color(debugColor[0], debugColor[1], debugColor[2], 0.5f);
             graphics.setColor(color);
             graphics.fillRect(0, 0, maxWidth, maxHeight);
-        }
+        }*/
 
         for (GaiaBatchImage target : splittedImages) {
             GaiaRectangle splittedRectangle = target.getBatchedBoundary();

@@ -168,7 +168,7 @@ public class GaiaBatcher {
         // batch dataSets with same material.***
         List<GaiaBufferDataSet> filteredDataSets = batchDataSetsWithTheSameMaterial(batchedDataSets, filteredMaterials);
         setMaterialsIndexInList(filteredMaterials, filteredDataSets);
-        checkIsRepeatMaterial(filteredDataSets);
+        checkIsRepeatMaterial(filteredMaterials, filteredDataSets);
 
         /* only diffuse-color use materials */
         List<GaiaMaterial> colorMaterials = filteredMaterials.stream().filter((material) -> {
@@ -180,7 +180,7 @@ public class GaiaBatcher {
             GaiaMaterial material = findMaterial(filteredMaterials, bufferDataSet.getMaterialId());
             Map<TextureType, List<GaiaTexture>> textures = material.getTextures();
             List<GaiaTexture> diffuseTextures = textures.get(TextureType.DIFFUSE);
-            createColorBuffer(bufferDataSet, lod);
+            createColorBuffer(filteredMaterials, bufferDataSet, lod);
             return diffuseTextures.isEmpty();
         }).collect(Collectors.toList());
         setMaterialsIndexInList(colorMaterials, colorDataSet);
@@ -260,7 +260,7 @@ public class GaiaBatcher {
         Map<Integer, GaiaMaterial> materialMap = new WeakHashMap<>();
         for (GaiaBufferDataSet bufferDataSet : bufferDataSets) {
             Integer materialId = bufferDataSet.getMaterialId();
-            GaiaMaterial material = batchedMaterials.get(bufferDataSet.getMaterialId());
+            GaiaMaterial material = findMaterial(batchedMaterials, bufferDataSet.getMaterialId());
             materialMap.put(materialId, material);
         }
         // second, make a list from the map
@@ -361,9 +361,9 @@ public class GaiaBatcher {
         return filterdBufferDataList;
     }
 
-    private void checkIsRepeatMaterial(List<GaiaBufferDataSet> dataSets) {
+    private void checkIsRepeatMaterial(List<GaiaMaterial> materials, List<GaiaBufferDataSet> dataSets) {
         for (GaiaBufferDataSet dataSet : dataSets) {
-            GaiaMaterial material = batchedMaterials.get(dataSet.getMaterialId());
+            GaiaMaterial material = findMaterial(materials, dataSet.getMaterialId());
             if (material != null) {
                 Map<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
                 List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
@@ -408,15 +408,17 @@ public class GaiaBatcher {
         return false;
     }
 
-    private void createColorBuffer(GaiaBufferDataSet bufferDataSet, LevelOfDetail lod) {
-        GaiaMaterial material = batchedMaterials.get(bufferDataSet.getMaterialId());
+    private void createColorBuffer(List<GaiaMaterial> materials, GaiaBufferDataSet bufferDataSet, LevelOfDetail lod) {
+        GaiaMaterial material = findMaterial(materials, bufferDataSet.getMaterialId());
         Vector4d diffuseColor = material.getDiffuseColor();
 
-        float[] debugColor = lod.getDebugColor();
-        diffuseColor.x = debugColor[0];
-        diffuseColor.y = debugColor[1];
-        diffuseColor.z = debugColor[2];
-        diffuseColor.w = 1.0f;
+        if (globalOptions.isDebugLod()) {
+            float[] debugColor = lod.getDebugColor();
+            diffuseColor.x = debugColor[0];
+            diffuseColor.y = debugColor[1];
+            diffuseColor.z = debugColor[2];
+            diffuseColor.w = 1.0f;
+        }
 
         Map<AttributeType, GaiaBuffer> bufferMap = bufferDataSet.getBuffers();
         GaiaBuffer positionBuffer = bufferMap.get(AttributeType.POSITION);
@@ -429,10 +431,14 @@ public class GaiaBatcher {
             colorList[i + 2] = (byte) (diffuseColor.z * 255);
             colorList[i + 3] = (byte) (diffuseColor.w * 255);
 
-            colorList[i] = colorList[i] < 0 ? (byte) (colorList[i] + 256) : colorList[i];
-            colorList[i + 1] = colorList[i + 1] < 0 ? (byte) (colorList[i + 1] + 256) : colorList[i + 1];
-            colorList[i + 2] = colorList[i + 2] < 0 ? (byte) (colorList[i + 2] + 256) : colorList[i + 2];
-            colorList[i + 3] = colorList[i + 3] < 0 ? (byte) (colorList[i + 3] + 256) : colorList[i + 3];
+//            colorList[i] = colorList[i] < 0 ? (byte) (colorList[i] + 255) : colorList[i];
+//            colorList[i + 1] = colorList[i + 1] < 0 ? (byte) (colorList[i + 1] + 255) : colorList[i + 1];
+//            colorList[i + 2] = colorList[i + 2] < 0 ? (byte) (colorList[i + 2] + 255) : colorList[i + 2];
+//            colorList[i + 3] = colorList[i + 3] < 0 ? (byte) (colorList[i + 3] + 255) : colorList[i + 3];
+            //colorList[i] = (byte) 100;
+            //colorList[i + 1] = (byte) 100;
+            //colorList[i + 2] = (byte) 100;
+            //colorList[i + 3] = (byte) 100;
         }
 
         GaiaBuffer colorBuffer = new GaiaBuffer();

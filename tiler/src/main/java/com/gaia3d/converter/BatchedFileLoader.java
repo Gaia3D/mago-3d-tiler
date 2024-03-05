@@ -3,10 +3,8 @@ package com.gaia3d.converter;
 import com.gaia3d.basic.structure.GaiaScene;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.kml.FastKmlReader;
-import com.gaia3d.converter.kml.JacksonKmlReader;
 import com.gaia3d.converter.kml.KmlInfo;
-import com.gaia3d.converter.kml.KmlReader;
+import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -24,13 +22,13 @@ import java.util.List;
  * @since 1.0.0
  */
 @Slf4j
-public class MeshFileLoader implements FileLoader {
+public class BatchedFileLoader implements FileLoader {
     private final Converter converter;
-    private final KmlReader kmlReader;
+    private final AttributeReader kmlReader;
 
-    public MeshFileLoader(Converter converter) {
-        this.kmlReader = new FastKmlReader();
+    public BatchedFileLoader(Converter converter, AttributeReader kmlReader) {
         this.converter = converter;
+        this.kmlReader = kmlReader;
     }
 
     public List<GaiaScene> loadScene(File input) {
@@ -84,21 +82,28 @@ public class MeshFileLoader implements FileLoader {
         List<TileInfo> tileInfos = new ArrayList<>();
         KmlInfo kmlInfo = null;
         if (FormatType.KML == formatType) {
-            kmlInfo = kmlReader.read(file);
-            if (kmlInfo != null) {
-                file = new File(file.getParent(), kmlInfo.getHref());
-                List<GaiaScene> scenes = loadScene(file);
-                for (GaiaScene scene : scenes) {
-                    if (scene == null) {
-                        log.error("Failed to load scene: {}", file.getAbsolutePath());
-                        return null;
+            List<KmlInfo> kmlInfos = kmlReader.readAll(file);
+            if (kmlInfos != null) {
+                for (KmlInfo info : kmlInfos) {
+                    kmlInfo = info;
+                    if (kmlInfo != null) {
+                        file = new File(file.getParent(), kmlInfo.getHref());
+                        List<GaiaScene> scenes = loadScene(file);
+                        for (GaiaScene scene : scenes) {
+                            if (scene == null) {
+                                log.error("Failed to load scene: {}", file.getAbsolutePath());
+                                return null;
+                            } else {
+                                TileInfo tileInfo = TileInfo.builder()
+                                        .kmlInfo(kmlInfo)
+                                        .scene(scene)
+                                        .outputPath(outputPath)
+                                        .build();
+                                tileInfos.add(tileInfo);
+                            }
+                        }
                     } else {
-                        TileInfo tileInfo = TileInfo.builder()
-                                .kmlInfo(kmlInfo)
-                                .scene(scene)
-                                .outputPath(outputPath)
-                                .build();
-                        tileInfos.add(tileInfo);
+                        file = null;
                     }
                 }
             } else {

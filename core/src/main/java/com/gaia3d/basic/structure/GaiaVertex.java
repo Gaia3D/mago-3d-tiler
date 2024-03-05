@@ -37,13 +37,21 @@ public class GaiaVertex implements Serializable {
 
     public GaiaVertex clone() {
         GaiaVertex vertex = new GaiaVertex();
-        vertex.setTexcoords(new Vector2d(texcoords));
-        vertex.setPosition(new Vector3d(position));
-        vertex.setNormal(new Vector3d(normal));
+        if (texcoords != null) {
+            vertex.setTexcoords(new Vector2d(texcoords));
+        }
+        if (position != null) {
+            vertex.setPosition(new Vector3d(position));
+        }
+        if (normal != null) {
+            vertex.setNormal(new Vector3d(normal));
+        }
         if (color != null) {
             vertex.setColor(color.clone());
         }
-        vertex.setBatchId(batchId);
+        if (batchId != 0) {
+            vertex.setBatchId(batchId);
+        }
         return vertex;
     }
 }

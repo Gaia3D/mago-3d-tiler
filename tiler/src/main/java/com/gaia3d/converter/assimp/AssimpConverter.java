@@ -1,6 +1,5 @@
 package com.gaia3d.converter.assimp;
 
-import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.basic.types.TextureType;

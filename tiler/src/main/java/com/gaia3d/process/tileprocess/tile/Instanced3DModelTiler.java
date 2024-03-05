@@ -81,7 +81,7 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
         BoundingVolume squareBoundingVolume = parentBoundingVolume.createSqureBoundingVolume();
 
-        int nodeLimit = globalOptions.getNodeLimit();
+        int nodeLimit = globalOptions.getNodeLimit() * 4;
         if (tileInfos.size() > nodeLimit) {
             List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
@@ -96,17 +96,30 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
             List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
+
                 Node childNode = createContentNode(parentNode, childTileInfos, index);
                 if (childNode != null) {
                     parentNode.getChildren().add(childNode);
-                    createNode(childNode, childTileInfos);
+                    Content content = childNode.getContent();
+                    if (content != null) {
+                        ContentInfo contentInfo = content.getContentInfo();
+                        createNode(childNode, contentInfo.getRemainTileInfos());
+                    } else {
+                        createNode(childNode, childTileInfos);
+                    }
                 }
             }
         } else if (!tileInfos.isEmpty()) {
             Node childNode = createContentNode(parentNode, tileInfos, 0);
             if (childNode != null) {
                 parentNode.getChildren().add(childNode);
-                createNode(childNode, tileInfos);
+                Content content = childNode.getContent();
+                if (content != null) {
+                    ContentInfo contentInfo = content.getContentInfo();
+                    createNode(childNode, contentInfo.getRemainTileInfos());
+                } else {
+                    createNode(childNode, tileInfos);
+                }
             }
         }
     }
@@ -182,8 +195,6 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
             double geometricError = tileInfo.getBoundingBox().getLongestDistance();
             return geometricError < lodErrorDouble;
         }).collect(Collectors.toList());
-        resultInfos = tileInfos;
-
 
         Node childNode = new Node();
         childNode.setParent(parentNode);
@@ -193,7 +204,8 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         childNode.setGeometricError(lodError + 0.1);
         childNode.setChildren(new ArrayList<>());
 
-        childNode.setRefine(refineAdd ? Node.RefineType.ADD : Node.RefineType.REPLACE);
+        //childNode.setRefine(refineAdd ? Node.RefineType.ADD : Node.RefineType.REPLACE);
+        childNode.setRefine(Node.RefineType.ADD);
         if (!resultInfos.isEmpty()) {
             ContentInfo contentInfo = new ContentInfo();
             contentInfo.setName(nodeCode);

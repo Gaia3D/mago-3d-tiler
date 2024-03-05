@@ -28,7 +28,7 @@ public abstract class AbstractGeometryConverter {
         material.setName("extruded");
 
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-        if (globalOptions.isDebug()) {
+        if (globalOptions.isDebugLod()) {
             // TODO : random color
             Random random = new Random();
             float r = random.nextFloat();

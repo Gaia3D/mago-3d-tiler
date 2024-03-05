@@ -110,9 +110,9 @@ public class TilingPipeline implements Pipeline {
 
     private void calcNodeLimit(long nodeCountValue) {
         if (globalOptions.getNodeLimit() < 0) {
-            if (nodeCountValue > 262144) {
+            /*if (nodeCountValue > 262144) {
                 globalOptions.setNodeLimit(16384);
-            } else if (nodeCountValue > 131072) {
+            } else */ if (nodeCountValue > 131072) {
                 globalOptions.setNodeLimit(8192);
             } else if (nodeCountValue > 65536) {
                 globalOptions.setNodeLimit(4096);
@@ -120,7 +120,7 @@ public class TilingPipeline implements Pipeline {
                 globalOptions.setNodeLimit(2048);
             }
 
-            if (nodeCountValue > 262144) {
+           /* if (nodeCountValue > 262144) {
                 globalOptions.setNodeLimit(16384);
             } else if (nodeCountValue > 131072) {
                 globalOptions.setNodeLimit(8192);
@@ -132,7 +132,7 @@ public class TilingPipeline implements Pipeline {
                 globalOptions.setNodeLimit(1024);
             } else {
                 globalOptions.setNodeLimit(512);
-            }
+            }*/
         }
     }
 

@@ -111,7 +111,11 @@ public class GaiaSet implements Serializable{
                     imageTempPath.toFile().mkdir();
 
                     Path outputPath = imageTempPath.resolve(diffusePath);
-                    FileUtils.copyFile(new File(imagePath), outputPath.toFile());
+
+                    File outputPathFile = outputPath.toFile();
+                    if (!outputPathFile.exists()) {
+                        FileUtils.copyFile(new File(imagePath), outputPath.toFile());
+                    }
                 }
                 material.write(stream);
             }

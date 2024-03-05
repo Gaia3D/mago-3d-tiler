@@ -22,11 +22,6 @@ public class GaiaTileInfoInitiator implements PreProcess {
         tileInfo.setBoundingBox(scene.getBoundingBox());
         tileInfo.setScenePath(tileInfo.getScene().getOriginalPath());
         tileInfo.setTempPath(tileInfo.getOutputPath().resolve("temp"));
-
-        /*File tempFile = tileInfo.getTempPath().toFile();
-        if (!tempFile.exists() && tempFile.mkdir()) {
-            log.info("[Pre] Created temp directory in {}", tileInfo.getTempPath());
-        }*/
         return tileInfo;
     }
 }

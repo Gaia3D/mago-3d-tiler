@@ -14,7 +14,7 @@ class Mago3DTilerUnitTest {
 
     private static final String INPUT_PATH = "D:\\Mago3DTiler-UnitTest\\input";
     //private static final String OUTPUT_PATH = "D:\\Mago3DTiler-UnitTest\\output";
-    private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\mago\\mago-3d-tiler\\viewer\\mago-3d-tiler-data\\";
+    private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\mago-viewer\\data\\tilesets\\";
 
     @Test
     void case00() {
@@ -106,7 +106,7 @@ class Mago3DTilerUnitTest {
                 "-output", output.getAbsolutePath(),
                 "-outputType", "i3dm",
                 "-autoUpAxis",
-                "-debug"
+                //"-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -128,16 +128,36 @@ class Mago3DTilerUnitTest {
     }
 
     @Test
+    void case06B3dm() {
+        String path = "case06-kml-auto-batched";
+        //String path = "case06-kml-auto-instance";
+        //sampleI3dm(path, 20 , 100);
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String args[] = {
+                "-input", input.getAbsolutePath(),
+                "-output", output.getAbsolutePath(),
+                //"-autoUpAxis",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
     void case07() {
         String path = "case07-shp-seoul";
         File input = new File(INPUT_PATH, path);
         File output = new File(OUTPUT_PATH, path);
+        File terrain = new File(input, "terrain.tif");
         //FileUtils.deleteQuietly(output);
         String args[] = {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
+                "-terrain", terrain.getAbsolutePath(),
                 "-inputType", "shp",
                 "-crs", "5181",
+                "-maxCount", "32768",
                 "-autoUpAxis",
                 "-refineAdd",
         };
@@ -221,6 +241,46 @@ class Mago3DTilerUnitTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Test
+    void case013() {
+        String path = "case13-kml-seoul-forest-instance";
+        File input = new File(INPUT_PATH, path);
+        File terrain = new File(input, "terrain.tif");
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String args[] = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "shp",
+                "-output", output.getAbsolutePath(),
+                "-outputType", "i3dm",
+                "-terrain", terrain.getAbsolutePath(),
+                //"-crs", "5179",
+                "-autoUpAxis",
+                "-refineAdd",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void case014() {
+        String path = "case14-3ds-seoul";
+        File input = new File(INPUT_PATH, path);
+        File terrain = new File(input, "terrain.tif");
+        File output = new File(OUTPUT_PATH, path);
+        //FileUtils.deleteQuietly(output);
+        String args[] = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "3ds",
+                "-output", output.getAbsolutePath(),
+                "-refineAdd",
+                //"-terrain", terrain.getAbsolutePath(),
+                "-crs", "5186",
+                "-r",
+                "-autoUpAxis",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
     //@Test
     void sampleI3dm(String filePath, int length, int fileCount) {
         Vector3d min = new Vector3d(128.4602 , 37.7214, 0.0);
@@ -261,6 +321,7 @@ class Mago3DTilerUnitTest {
             for (int i = 0; i < length; i++) {
                 for (int j = 0; j < length; j++) {
                     double scale = random.nextFloat() * 0.5 + 0.5;
+                    //scale = 1.0f;
                     double xpos = ((max.x - min.x) * random.nextFloat()) + min.x;
                     double ypos = ((max.y - min.y) * random.nextFloat()) + min.y;
                     xmlBodys.append(
@@ -282,7 +343,7 @@ class Mago3DTilerUnitTest {
                             "        <z>" + scale + "</z>\n" +
                             "    </Scale>\n" +
                             "    <Link>\n" +
-                            "        <href>tree.glb</href>\n" +
+                            "        <href>tree.dae</href>\n" +
                             "    </Link>\n" +
                             "</Model>\n");
                 }

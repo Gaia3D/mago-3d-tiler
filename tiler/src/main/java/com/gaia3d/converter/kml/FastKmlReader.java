@@ -18,7 +18,7 @@ import java.util.List;
  */
 @Slf4j
 @NoArgsConstructor
-public class FastKmlReader implements KmlReader{
+public class FastKmlReader implements AttributeReader {
 
     @Override
     public KmlInfo read(File file) {

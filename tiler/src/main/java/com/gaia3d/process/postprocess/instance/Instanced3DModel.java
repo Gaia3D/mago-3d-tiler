@@ -103,7 +103,7 @@ public class Instanced3DModel implements TileModel {
             normalRights[normalRightIndex.getAndIncrement()] = (float) normalRight.y;
             normalRights[normalRightIndex.getAndIncrement()] = (float) normalRight.z;
 
-            scales[scaleIndex.getAndIncrement()] = (float) 1.0;
+            scales[scaleIndex.getAndIncrement()] = (float) scale;
         }
 
         Instanced3DModelBinary instanced3DModelBinary = new Instanced3DModelBinary();

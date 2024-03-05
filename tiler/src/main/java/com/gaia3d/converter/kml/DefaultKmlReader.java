@@ -24,7 +24,7 @@ import java.util.List;
  * @see DefaultKmlReader , KmlInfo
  */
 @Slf4j
-public class DefaultKmlReader implements KmlReader {
+public class DefaultKmlReader implements AttributeReader {
     public DefaultKmlReader() {
 
     }
