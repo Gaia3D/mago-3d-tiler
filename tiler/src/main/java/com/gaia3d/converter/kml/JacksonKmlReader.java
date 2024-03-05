@@ -9,7 +9,6 @@ import org.joml.Vector3d;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +21,7 @@ import java.util.List;
  */
 @Slf4j
 @NoArgsConstructor
-public class JacksonKmlReader implements KmlReader {
+public class JacksonKmlReader implements AttributeReader {
 
     @Override
     public KmlInfo read(File file) {

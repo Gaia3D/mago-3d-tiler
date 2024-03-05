@@ -1,7 +1,9 @@
 package com.gaia3d.util;
 
 import com.gaia3d.basic.geometry.GaiaRectangle;
+import com.gaia3d.basic.structure.GaiaFace;
 import com.gaia3d.basic.structure.GaiaVertex;
+import org.joml.Vector3d;
 
 import java.util.List;
 
@@ -42,5 +44,59 @@ public class GeometryUtils {
         }
 
         return boundingRectangle;
+    }
+
+    public static GaiaRectangle getTexCoordsBoundingRectangleOfFaces(List<GaiaFace> faces, List<GaiaVertex> vertices, GaiaRectangle boundingRectangle) {
+        if(boundingRectangle == null)
+        {
+            boundingRectangle = new GaiaRectangle();
+        }
+
+        int facesCount = faces.size();
+        boolean is1rst = true;
+        for (int i = 0; i < facesCount; i++)
+        {
+            GaiaFace face = faces.get(i);
+            int [] indices = face.getIndices();
+            int indicesCount = indices.length;
+            for (int j = 0; j < indicesCount; j++)
+            {
+                GaiaVertex vertex = vertices.get(indices[j]);
+                if(is1rst)
+                {
+                    boundingRectangle.setInit(vertex.getTexcoords());
+                    is1rst = false;
+                }
+                else
+                {
+                    boundingRectangle.addPoint(vertex.getTexcoords());
+                }
+            }
+        }
+        return boundingRectangle;
+    }
+
+    public static double getTriangleArea(GaiaVertex vertexA, GaiaVertex vertexB, GaiaVertex vertexC)
+    {
+        double area = 0.0;
+        Vector3d vectorA = vertexA.getPosition();
+        Vector3d vectorB = vertexB.getPosition();
+        Vector3d vectorC = vertexC.getPosition();
+
+        Vector3d vectorAB = new Vector3d();
+        vectorAB.x = vectorB.x - vectorA.x;
+        vectorAB.y = vectorB.y - vectorA.y;
+        vectorAB.z = vectorB.z - vectorA.z;
+
+        Vector3d vectorAC = new Vector3d();
+        vectorAC.x = vectorC.x - vectorA.x;
+        vectorAC.y = vectorC.y - vectorA.y;
+        vectorAC.z = vectorC.z - vectorA.z;
+
+        Vector3d crossProduct = new Vector3d();
+        vectorAB.cross(vectorAC, crossProduct);
+
+        area = crossProduct.length() / 2.0;
+        return area;
     }
 }

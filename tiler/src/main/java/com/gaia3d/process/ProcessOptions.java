@@ -41,7 +41,7 @@ public enum ProcessOptions {
     MINIMUM_HEIGHT("minimumHeight", "mh", "minimumHeight", true, "minimum height setting."),
     ABSOLUTE_ALTITUDE("absoluteAltitude", "aa", "absoluteAltitude", true, "absolute altitude mode."),
 
-    //Experimental,
+    IGNORE_TEXTURES("ignoreTextures", "igtx", "ignoreTextures", false,"Ignore diffuse textures."),
     ZERO_ORIGIN("zeroOrigin", "zo", "zeroOrigin", false, "[Experimental] fix 3d root transformed matrix origin to zero point."),
     AUTO_UP_AXIS("autoUpAxis", "aa", "autoUpAxis", false, "[Experimental] automatically Assign 3D Matrix Axes"),
     //Z_UP_AXIS("zAxis", "ya", "zAxis", false, "[Experimental] Assign 3D root transformed matrix Z-UP axis"),
@@ -53,7 +53,6 @@ public enum ProcessOptions {
 
     DEBUG("debug", "d", "debug", false,"debug mode"),
     DEBUG_ALL_DRAWING("debugAllDrawing", "dad", "debugAllDrawing", false,"debug all drawing"),
-    DEBUG_IGNORE_TEXTURES("debugIgnoreTextures", "dit", "debugIgnoreTextures", false,"debug ignore textures"),
     DEBUG_GLTF("gltf", "gltf", "gltf", false, "create gltf file."),
     DEBUG_GLB("glb", "glb", "glb", false, "create glb file.");
 

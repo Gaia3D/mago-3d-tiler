@@ -5,17 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.process.tileprocess.Tiler;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
-import com.gaia3d.process.tileprocess.tile.tileset.asset.*;
+import com.gaia3d.process.tileprocess.tile.tileset.asset.Asset;
 import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 import com.gaia3d.util.DecimalUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
-import org.joml.Vector3d;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -29,6 +27,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class Batched3DModelTiler extends DefaultTiler implements Tiler {
 
+    public final GlobalOptions globalOptions = GlobalOptions.getInstance();
+
     public Batched3DModelTiler() {}
 
     @Override
@@ -38,11 +38,13 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
 
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
         Matrix4d transformMatrix = getTransformMatrix(globalBoundingBox);
-        rotateX90(transformMatrix);
+        if (globalOptions.isClassicTransformMatrix()) {
+            rotateX90(transformMatrix);
+        }
 
         Node root = createRoot();
         root.setBoundingVolume(new BoundingVolume(globalBoundingBox));
-        root.setTransformMatrix(transformMatrix);
+        root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
         root.setGeometricError(geometricError);
 
         try {
@@ -60,7 +62,6 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
     }
 
     public void writeTileset(Tileset tileset) {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
         Path outputPath = new File(globalOptions.getOutputPath()).toPath();
         File tilesetFile = outputPath.resolve("tileset.json").toFile();
         ObjectMapper objectMapper = new ObjectMapper();
@@ -78,13 +79,13 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
     }
 
     private void createNode(Node parentNode, List<TileInfo> tileInfos) throws IOException {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
         BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
         BoundingVolume squareBoundingVolume = parentBoundingVolume.createSqureBoundingVolume();
 
         boolean refineAdd = globalOptions.isRefineAdd();
-        int nodeLimit = globalOptions.getNodeLimit();
+        int nodeLimit = globalOptions.getNodeLimit() * 4; // for quadtree node limit
         if (tileInfos.size() > nodeLimit) {
+            // logical node distribute
             List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
@@ -95,6 +96,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
                 }
             }
         } else if (tileInfos.size() > 1) {
+            // phiysical node distribute
             List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
@@ -129,16 +131,17 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         log.info("[Tiling][LogicalNode][" + nodeCode + "][OBJECT{}]", tileInfos.size());
 
         double geometricError = calcGeometricError(tileInfos);
-        GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
-        Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
-        rotateX90(transformMatrix);
-
-        BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
+        GaiaBoundingBox boundingBox = calcBoundingBox(tileInfos);
+        Matrix4d transformMatrix = getTransformMatrix(boundingBox);
+        if (globalOptions.isClassicTransformMatrix()) {
+            rotateX90(transformMatrix);
+        }
+        BoundingVolume boundingVolume = new BoundingVolume(boundingBox);
         geometricError = DecimalUtils.cut(geometricError);
 
         Node childNode = new Node();
         childNode.setParent(parentNode);
-        childNode.setTransformMatrix(transformMatrix);
+        childNode.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
         childNode.setBoundingVolume(boundingVolume);
         childNode.setNodeCode(nodeCode);
         childNode.setGeometricError(geometricError);
@@ -151,15 +154,15 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         if (tileInfos.isEmpty()) {
             return null;
         }
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
         int minLevel = globalOptions.getMinLod();
         int maxLevel = globalOptions.getMaxLod();
         boolean refineAdd = globalOptions.isRefineAdd();
 
         GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
         Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
-        rotateX90(transformMatrix);
-
+        if (globalOptions.isClassicTransformMatrix()) {
+            rotateX90(transformMatrix);
+        }
         BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
 
         String nodeCode = parentNode.getNodeCode();
@@ -173,14 +176,12 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         if (lod == LevelOfDetail.NONE) {
             return null;
         }
-
         nodeCode = nodeCode + index;
-
         log.info("[Tiling][ContentNode][" + nodeCode + "][LOD{}][OBJECT{}]", lod.getLevel(), tileInfos.size());
 
         int lodError = refineAdd ? lod.getGeometricErrorBlock() : lod.getGeometricError();
-        int lodErrorDouble = lodError * 2;
 
+        int lodErrorDouble = lodError;
         List<TileInfo> resultInfos;
         List<TileInfo> remainInfos;
         resultInfos = tileInfos.stream().filter(tileInfo -> {
@@ -194,10 +195,10 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
 
         Node childNode = new Node();
         childNode.setParent(parentNode);
-        childNode.setTransformMatrix(transformMatrix);
+        childNode.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
         childNode.setBoundingVolume(boundingVolume);
         childNode.setNodeCode(nodeCode);
-        childNode.setGeometricError(lodError + 0.1); // test.*** test.*** test.*** test.*** test.*** test.*** test.*** test.*** test.*** test.*** test.*** test.***
+        childNode.setGeometricError(lodError + 0.1);
         childNode.setChildren(new ArrayList<>());
 
         childNode.setRefine(refineAdd ? Node.RefineType.ADD : Node.RefineType.REPLACE);
@@ -209,6 +210,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
             contentInfo.setNodeCode(nodeCode);
             contentInfo.setTileInfos(resultInfos);
             contentInfo.setRemainTileInfos(remainInfos);
+            contentInfo.setTransformMatrix(transformMatrix);
 
             Content content = new Content();
             content.setUri("data/" + nodeCode + ".b3dm");
@@ -221,10 +223,8 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
     }
 
     private LevelOfDetail getLodByNodeCode(LevelOfDetail minLod, LevelOfDetail maxLod, String nodeCode) {
-        LevelOfDetail levelOfDetail;
         int minLevel = minLod.getLevel();
         int maxLevel = maxLod.getLevel();
-
         String[] splitCode = nodeCode.split("C");
         if (splitCode.length > 1) {
             String contentLevel = nodeCode.split("C")[1];
@@ -232,11 +232,9 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
             if (level < minLevel) {
                 level = -1;
             }
-            levelOfDetail = LevelOfDetail.getByLevel(level);
+            return LevelOfDetail.getByLevel(level);
         } else {
             return maxLod;
         }
-
-        return levelOfDetail;
     }
 }

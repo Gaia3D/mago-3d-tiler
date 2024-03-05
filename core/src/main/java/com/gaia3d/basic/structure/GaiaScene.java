@@ -36,10 +36,8 @@ public class GaiaScene implements Serializable {
         List<GaiaBufferDataSet> bufferDataSets = gaiaSet.getBufferDatas();
         List<GaiaMaterial> materials = gaiaSet.getMaterials();
 
-        //Matrix4d transformMatrix = gaiaSet.getTransformMatrix();
         Matrix4d transformMatrix = new Matrix4d();
         transformMatrix.identity();
-        //transformMatrix.rotateX(Math.toRadians(-90)); // y and z axis swap
 
         GaiaNode rootNode = new GaiaNode();
         rootNode.setName("BatchedRootNode");
@@ -68,5 +66,18 @@ public class GaiaScene implements Serializable {
         this.gaiaBoundingBox = null;
         this.nodes.clear();
         this.materials.clear();
+    }
+
+    public GaiaScene clone() {
+        GaiaScene clone = new GaiaScene();
+        for (GaiaNode node : this.nodes) {
+            clone.getNodes().add(node.clone());
+        }
+        for (GaiaMaterial material : this.materials) {
+            clone.getMaterials().add(material.clone());
+        }
+        clone.setOriginalPath(this.originalPath);
+        clone.setGaiaBoundingBox(this.gaiaBoundingBox);
+        return clone;
     }
 }

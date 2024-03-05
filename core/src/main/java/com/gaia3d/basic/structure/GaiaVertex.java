@@ -34,4 +34,24 @@ public class GaiaVertex implements Serializable {
         color = null;
         batchId = 0;
     }
+
+    public GaiaVertex clone() {
+        GaiaVertex vertex = new GaiaVertex();
+        if (texcoords != null) {
+            vertex.setTexcoords(new Vector2d(texcoords));
+        }
+        if (position != null) {
+            vertex.setPosition(new Vector3d(position));
+        }
+        if (normal != null) {
+            vertex.setNormal(new Vector3d(normal));
+        }
+        if (color != null) {
+            vertex.setColor(color.clone());
+        }
+        if (batchId != 0) {
+            vertex.setBatchId(batchId);
+        }
+        return vertex;
+    }
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.structure.GaiaNode;
 import com.gaia3d.basic.structure.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.jgltf.GltfWriter;
@@ -16,6 +17,8 @@ import com.gaia3d.util.StringUtils;
 import com.gaia3d.util.io.LittleEndianDataInputStream;
 import com.gaia3d.util.io.LittleEndianDataOutputStream;
 import lombok.extern.slf4j.Slf4j;
+import org.joml.Matrix3d;
+import org.joml.Matrix4d;
 import org.lwjgl.BufferUtils;
 
 import java.io.*;
@@ -37,10 +40,11 @@ public class Batched3DModel implements TileModel {
 
     @Override
     public ContentInfo run(ContentInfo contentInfo) {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+
         GaiaBatcher gaiaBatcher = new GaiaBatcher();
         GaiaSet batchedSet = gaiaBatcher.runBatching(contentInfo.getTileInfos(), contentInfo.getNodeCode(), contentInfo.getLod());
 
-        //GaiaSet batchedSet = contentInfo.getBatchedSet();
         int featureTableJSONByteLength;
         int batchTableJSONByteLength;
         String featureTableJson;
@@ -64,10 +68,32 @@ public class Batched3DModel implements TileModel {
                     return boundingBox.getMaxZ() - boundingBox.getMinZ();
                 })
                 .collect(Collectors.toList());
-
         GaiaScene scene = new GaiaScene(batchedSet);
 
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        /* FeatureTable */
+        GaiaFeatureTable featureTable = new GaiaFeatureTable();
+        featureTable.setBatchLength(batchLength);
+        if (!globalOptions.isClassicTransformMatrix()) {
+            /* relative to center */
+            Matrix4d worldTransformMatrix = contentInfo.getTransformMatrix();
+            Matrix3d rotationMatrix3d = worldTransformMatrix.get3x3(new Matrix3d());
+            Matrix3d xRotationMatrix3d = new Matrix3d();
+            xRotationMatrix3d.identity();
+            xRotationMatrix3d.rotateX(Math.toRadians(-90));
+            xRotationMatrix3d.mul(rotationMatrix3d, rotationMatrix3d);
+            Matrix4d rotationMatrix4d = new Matrix4d(rotationMatrix3d);
+
+            GaiaNode rootNode = scene.getNodes().get(0); // z-up
+            Matrix4d sceneTransformMatrix = rootNode.getTransformMatrix();
+            rotationMatrix4d.mul(sceneTransformMatrix, sceneTransformMatrix);
+
+            double[] rtcCenter = new double[3];
+            rtcCenter[0] = worldTransformMatrix.m30();
+            rtcCenter[1] = worldTransformMatrix.m31();
+            rtcCenter[2] = worldTransformMatrix.m32();
+            featureTable.setRctCenter(rtcCenter);
+        }
+
         File outputFile = new File(globalOptions.getOutputPath());
         Path outputRoot = outputFile.toPath().resolve("data");
         if (!outputRoot.toFile().exists() && outputRoot.toFile().mkdir()) {
@@ -90,23 +116,21 @@ public class Batched3DModel implements TileModel {
             this.gltfWriter.writeGlb(scene, byteArrayOutputStream);
             glbBytes = byteArrayOutputStream.toByteArray();
         }
-        scene = null;
         //this.gltfWriter = null;
+        scene = null;
 
-        GaiaFeatureTable featureTable = new GaiaFeatureTable();
-        featureTable.setBatchLength(batchLength);
-
+        /* BatchTable */
         GaiaBatchTable batchTable = new GaiaBatchTable();
         for (int i = 0; i < batchLength; i++) {
-            batchTable.getBatchId().add(String.valueOf(i));
             batchTable.getProejctName().add(projectNames.get(i));
             batchTable.getNodeName().add(nodeNames.get(i));
-            batchTable.getGeometricError().add(DecimalUtils.cut(geometricErrors.get(i)));
-            batchTable.getHeight().add(DecimalUtils.cut(heights.get(i)));
+            batchTable.getBatchName().add(nodeCode);
+            batchTable.getBatchId().add(i + "/" + batchLength);
+            batchTable.getGeometricError().add(DecimalUtils.cut(geometricErrors.get(i), 2));
+            batchTable.getHeight().add(DecimalUtils.cut(heights.get(i), 2));
         }
 
         ObjectMapper objectMapper = new ObjectMapper();
-
         try {
             String featureTableText = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(featureTable));
             featureTableJson = featureTableText;
@@ -140,7 +164,6 @@ public class Batched3DModel implements TileModel {
             // body
             stream.write(glbBytes);
             glbBytes = null;
-            // delete glb file
         } catch (Exception e) {
             log.error(e.getMessage());
         }

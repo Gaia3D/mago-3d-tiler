@@ -16,14 +16,17 @@ public class GaiaMinimizer implements PreProcess {
 
     @Override
     public TileInfo run(TileInfo tileInfo) {
-        GlobalOptions options = GlobalOptions.getInstance();
         GaiaScene scene = tileInfo.getScene();
         if (scene != null) {
             GaiaSet tempSet = new GaiaSet(scene);
             tileInfo.setTempPath(tempSet.writeFile(tileInfo.getTempPath(), tileInfo.getSerial()));
-            tempSet.clear();
+            if (tempSet != null) {
+                tempSet.clear();
+            }
             tempSet = null;
-            scene.clear();
+            if (scene != null) {
+                scene.clear();
+            }
             scene = null;
         }
         return tileInfo;

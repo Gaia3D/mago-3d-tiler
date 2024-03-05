@@ -24,10 +24,11 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class GaiaTextureCoordinator {
-    final private String ATLAS_IMAGE;
+    private final String ATLAS_IMAGE;
     private final List<GaiaMaterial> materials;
     private final List<GaiaBufferDataSet> bufferDataSets;
     private BufferedImage atlasImage;
+    private final GlobalOptions globalOptions = GlobalOptions.getInstance();
 
     public GaiaTextureCoordinator(String name, List<GaiaMaterial> materials, List<GaiaBufferDataSet> bufferDataSets) {
         this.ATLAS_IMAGE = name;
@@ -190,7 +191,6 @@ public class GaiaTextureCoordinator {
     }
 
     public void batchTextures(LevelOfDetail lod) {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
         // We have MaterialList & BufferDataSetList.********
         // 1- List<GaiaMaterial> this.materials;
         // 2- List<GaiaBufferDataSet> this.bufferDataSets;
@@ -274,13 +274,12 @@ public class GaiaTextureCoordinator {
             }
         }
 
-        if (globalOptions.isDebug()) {
-            // TODO : debug color
+        /*if (globalOptions.isDebugLod()) {
             float[] debugColor = lod.getDebugColor();
             Color color = new Color(debugColor[0], debugColor[1], debugColor[2], 0.5f);
             graphics.setColor(color);
             graphics.fillRect(0, 0, maxWidth, maxHeight);
-        }
+        }*/
 
         for (GaiaBatchImage target : splittedImages) {
             GaiaRectangle splittedRectangle = target.getBatchedBoundary();
@@ -312,11 +311,11 @@ public class GaiaTextureCoordinator {
             }
 
             // test save atlasTexture image.****
-            /*String extension = "jpg";
+            String extension = "jpg";
             if (existPngTextures) {
                 extension = "png";
             }
-            this.writeBatchedImage(extension);*/
+            this.writeBatchedImage(extension);
             // end test.************************
 
             List<GaiaBufferDataSet> materialBufferDataSets = bufferDataSets.stream().filter((bufferDataSet) -> bufferDataSet.getMaterialId() == target.getMaterialId()).collect(Collectors.toList());

@@ -6,37 +6,39 @@ import com.gaia3d.process.postprocess.pointcloud.BatchId;
 import com.gaia3d.process.postprocess.pointcloud.Color;
 import com.gaia3d.process.postprocess.pointcloud.Position;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@RequiredArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class GaiaFeatureTable {
     @JsonProperty("BATCH_LENGTH")
-    int batchLength;
+    private int batchLength;
     @JsonProperty("INSTANCES_LENGTH")
-    int instancesLength;
+    private int instancesLength;
     @JsonProperty("POINTS_LENGTH")
-    int pointsLength;
+    private int pointsLength;
 
     @JsonProperty("RTC_CENTER")
-    float[] rctCenter;
+    private double[] rctCenter = new double[3];
 
     /* Instanced3DModel */
     @JsonProperty("EAST_NORTH_UP")
-    boolean eastNorthUp;
+    private boolean eastNorthUp;
     @JsonProperty("NORMAL_RIGHT")
-    Normal normalRight;
+    private Normal normalRight;
     @JsonProperty("NORMAL_UP")
-    Normal normalUp;
+    private Normal normalUp;
     @JsonProperty("SCALE")
-    Scale scale;
+    private Scale scale;
 
     /* PointCloud */
     @JsonProperty("POSITION")
-    Position position;
+    private Position position;
     @JsonProperty("RGB")
-    Color color;
+    private Color color;
     @JsonProperty("BATCH_ID")
-    BatchId batchId;
+    private BatchId batchId;
 }

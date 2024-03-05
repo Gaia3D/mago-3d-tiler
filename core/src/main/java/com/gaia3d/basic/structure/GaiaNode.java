@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
@@ -26,6 +27,7 @@ import java.util.Map;
  * @since 1.0.0
  * @see <a href="https://en.wikipedia.org/wiki/Scene_graph">Scene graph</a>
  */
+@Slf4j
 @Getter
 @Setter
 @NoArgsConstructor
@@ -155,15 +157,15 @@ public class GaiaNode implements Serializable {
     }
 
     public void toGaiaBufferSets(List<GaiaBufferDataSet> bufferSets, Matrix4d parentTransformMatrix) {
-        Matrix4d transformMatrix = new Matrix4d(this.transformMatrix);
+        Matrix4d sumTransformMatrix = new Matrix4d(this.transformMatrix);
         if (parentTransformMatrix != null) {
-            parentTransformMatrix.mul(transformMatrix, transformMatrix);
+            parentTransformMatrix.mul(sumTransformMatrix, sumTransformMatrix);
         }
         for (GaiaMesh mesh : this.getMeshes()) {
-            mesh.toGaiaBufferSets(bufferSets, transformMatrix);
+            mesh.clone().toGaiaBufferSets(bufferSets, sumTransformMatrix);
         }
         for (GaiaNode child : this.getChildren()) {
-            child.toGaiaBufferSets(bufferSets, transformMatrix);
+            child.toGaiaBufferSets(bufferSets, sumTransformMatrix);
         }
     }
 
@@ -176,6 +178,19 @@ public class GaiaNode implements Serializable {
         }
     }
 
+    public GaiaNode clone() {
+        GaiaNode clone = new GaiaNode();
+        clone.setName(this.name);
+        clone.setTransformMatrix(new Matrix4d(this.transformMatrix));
+        for (GaiaMesh mesh : this.meshes) {
+            clone.getMeshes().add(mesh.clone());
+        }
+        for (GaiaNode child : this.children) {
+            clone.getChildren().add(child.clone());
+        }
+        return clone;
+    }
+
     public void clear() {
         this.parent = null;
         this.name = null;
@@ -186,5 +201,12 @@ public class GaiaNode implements Serializable {
         this.children.forEach(GaiaNode::clear);
         this.meshes.clear();
         this.children.clear();
+    }
+
+    public void extractMeshes(List<GaiaMesh> resultMeshes) {
+        resultMeshes.addAll(this.getMeshes());
+        for (GaiaNode child : this.getChildren()) {
+            child.extractMeshes(resultMeshes);
+        }
     }
 }

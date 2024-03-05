@@ -19,8 +19,8 @@ import java.util.Arrays;
 public enum FormatType {
     // 3D Formats
     KML("kml", false),
-    GLTF("gltf", true),
-    GLB("glb", true),
+    GLTF("gltf", false),
+    GLB("glb", false),
     COLLADA("dae", true),
     MAX_3DS("3ds", false),
     MAX_ASE("ase", false),
@@ -42,7 +42,7 @@ public enum FormatType {
     B3DM("b3dm", true),
     I3DM("i3dm", true),
     PNTS("pnts", true),
-    TEMP("mgb", false);
+    TEMP("tmp", false);
 
     private final String extension;
     private final boolean yUpAxis;

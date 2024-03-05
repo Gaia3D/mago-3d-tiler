@@ -18,9 +18,7 @@ import org.joml.Vector3d;
 import org.lwjgl.opengl.GL20;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * A class that represents a primitive of a Gaia object.
@@ -42,7 +40,7 @@ public class GaiaPrimitive implements Serializable {
     private List<GaiaVertex> vertices = new ArrayList<>();
     private List<GaiaSurface> surfaces = new ArrayList<>();
 
-    private GaiaMaterial material = null;
+    //private GaiaMaterial material = null;
 
     public GaiaBoundingBox getBoundingBox(Matrix4d transform) {
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
@@ -77,16 +75,6 @@ public class GaiaPrimitive implements Serializable {
         return texcoordBoundingRectangle;
     }
 
-    public void translateTexCoordsToPositiveQuadrant()
-    {
-        int surfacesCount = surfaces.size();
-        for(int i=0; i<surfacesCount; i++)
-        {
-            GaiaSurface surface = surfaces.get(i);
-            surface.translateTexCoordsToPositiveQuadrant(this.vertices);
-        }
-    }
-
     public void calculateNormal() {
         for (GaiaSurface surface : surfaces) {
             surface.calculateNormal(this.vertices);
@@ -101,7 +89,8 @@ public class GaiaPrimitive implements Serializable {
         return resultIndices;
     }
 
-    public GaiaBufferDataSet toGaiaBufferSet(Matrix4d transformMatrix) {
+    public GaiaBufferDataSet toGaiaBufferSet(Matrix4d transformMatrixOrigin) {
+        Matrix4d transformMatrix = new Matrix4d(transformMatrixOrigin);
         Matrix3d rotationMatrix = new Matrix3d();
         transformMatrix.get3x3(rotationMatrix);
         // normalize the rotation matrix
@@ -272,7 +261,7 @@ public class GaiaPrimitive implements Serializable {
         gaiaBufferDataSet.setBoundingBox(boundingBox);
 
         //assign material. Son 2023.07.17
-        gaiaBufferDataSet.setMaterial(this.material);
+        //gaiaBufferDataSet.setMaterial(this.material);
         return gaiaBufferDataSet;
     }
 
@@ -290,5 +279,18 @@ public class GaiaPrimitive implements Serializable {
         this.surfaces.forEach(GaiaSurface::clear);
         this.vertices.clear();
         this.surfaces.clear();
+    }
+
+    public GaiaPrimitive clone() {
+        GaiaPrimitive gaiaPrimitive = new GaiaPrimitive();
+        gaiaPrimitive.setAccessorIndices(this.accessorIndices);
+        gaiaPrimitive.setMaterialIndex(this.materialIndex);
+        for (GaiaVertex vertex : this.vertices) {
+            gaiaPrimitive.getVertices().add(vertex.clone());
+        }
+        for (GaiaSurface surface : this.surfaces) {
+            gaiaPrimitive.getSurfaces().add(surface.clone());
+        }
+        return gaiaPrimitive;
     }
 }

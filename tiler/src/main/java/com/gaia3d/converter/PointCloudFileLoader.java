@@ -8,6 +8,7 @@ import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.geotools.coverage.grid.GridCoverage2D;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -36,6 +37,11 @@ public class PointCloudFileLoader implements FileLoader {
         FormatType formatType = FormatType.fromExtension(inputExtension);
         String[] extensions = getExtensions(formatType);
         return (ArrayList<File>) FileUtils.listFiles(inputFile, extensions, recursive);
+    }
+
+    @Override
+    public List<GridCoverage2D> loadGridCoverages(List<GridCoverage2D> coverages) {
+        return null;
     }
 
     public List<TileInfo> loadTileInfo(File file) {

@@ -37,6 +37,8 @@ public class TileInfo {
     private Path outputPath;
     private Path tempPath;
 
+    private boolean isI3dm = false;
+
     private void init() {
         GaiaNode rootNode = this.scene.getNodes().get(0);
         this.name = rootNode.getName();
@@ -44,6 +46,7 @@ public class TileInfo {
         this.boundingBox = this.scene.getGaiaBoundingBox();
         this.scenePath = this.scene.getOriginalPath();
 
+        this.outputPath = this.outputPath.resolve(this.name).resolve("temp");
         this.tempPath = this.outputPath.resolve("temp");
         File tempFile = this.tempPath.toFile();
         if (!tempFile.exists() && tempFile.mkdir()) {

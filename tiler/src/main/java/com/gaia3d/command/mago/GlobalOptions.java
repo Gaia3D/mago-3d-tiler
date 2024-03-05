@@ -40,6 +40,7 @@ public class GlobalOptions {
     private static final String DEFAULT_ALTITUDE_COLUMN = "altitude";
     private static final double DEFAULT_ABSOLUTE_ALTITUDE = 0.0d;
     private static final double DEFAULT_MINIMUM_HEIGHT = 1.0d;
+    private static final boolean DEFAULT_DEBUG_LOD = false;
 
     private String version; // version flag
     private String javaVersionInfo; // java version flag
@@ -69,11 +70,13 @@ public class GlobalOptions {
     private int maxLod; // maximum level of detail
 
     private boolean debug = false; // debug mode flag
+    private boolean debugLod = false; // debug lod flag
     private boolean quiet = false; // quiet mode flag
     private boolean help = false; // help flag
 
     private boolean gltf = false; // gltf flag
     private boolean glb = false; // glb flag
+    private boolean classicTransformMatrix = false; // classic transform matrix flag
 
     private byte multiThreadCount; // multi thread count
 
@@ -85,6 +88,7 @@ public class GlobalOptions {
     private boolean flipCoordinate = false; // flip coordinate flag for 2D Data
     private boolean zeroOrigin = false; // data origin to zero point flag
     private boolean autoUpAxis = false; // automatically assign 3D matrix axes flag
+    private boolean ignoreTextures = false; // ignore textures flag
     private boolean reverseTextureCoordinate = false; // reverse texture coordinate flag
 
     /* 2D Data Column Options */
@@ -140,8 +144,6 @@ public class GlobalOptions {
                 source = factory.createFromParameters("CUSTOM", proj);
             } else if (crsString != null && !crsString.isEmpty()) {
                 source = factory.createFromName("EPSG:" + crsString);
-            } else {
-                //source = factory.createFromName("EPSG:4326");
             }
             instance.setCrs(source);
         }
@@ -151,6 +153,7 @@ public class GlobalOptions {
         instance.setNodeLimit(command.hasOption(ProcessOptions.MAX_COUNT.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_COUNT.getArgName())) : -1);
         instance.setMinLod(command.hasOption(ProcessOptions.MIN_LOD.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MIN_LOD.getArgName())) : DEFAULT_MIN_LOD);
         instance.setMaxLod(command.hasOption(ProcessOptions.MAX_LOD.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_LOD.getArgName())) : DEFAULT_MAX_LOD);
+        instance.setIgnoreTextures(command.hasOption(ProcessOptions.IGNORE_TEXTURES.getArgName()));
 
         /* Point Cloud Options */
         instance.setPointLimit(command.hasOption(ProcessOptions.MAX_POINTS.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_POINTS.getArgName())) : DEFAULT_POINT_LIMIT);
@@ -163,6 +166,8 @@ public class GlobalOptions {
         instance.setMinimumHeight(command.hasOption(ProcessOptions.MINIMUM_HEIGHT.getArgName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.MINIMUM_HEIGHT.getArgName())) : DEFAULT_MINIMUM_HEIGHT);
 
         instance.setDebug(command.hasOption(ProcessOptions.DEBUG.getArgName()));
+        instance.setDebugLod(DEFAULT_DEBUG_LOD);
+
         instance.setQuiet(command.hasOption(ProcessOptions.QUIET.getArgName()));
         instance.setHelp(command.hasOption(ProcessOptions.HELP.getArgName()));
         instance.setUseMultiThread(command.hasOption(ProcessOptions.MULTI_THREAD.getArgName()));

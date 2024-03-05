@@ -1,11 +1,11 @@
 package com.gaia3d.converter.assimp;
 
-import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
+import com.gaia3d.util.ImageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
@@ -61,25 +61,6 @@ public class AssimpConverter implements Converter {
         String path = file.getAbsolutePath().replace(file.getName(), "");
         AIScene aiScene =  Assimp.aiImportFile(file.getAbsolutePath(), DEFAULT_FLAGS);
 
-        // now check the file format of the loaded file.***
-        // if file extension is *.3ds, must invert the y-axis of texCoords.***
-        FormatType formatType = FormatType.fromExtension(FilenameUtils.getExtension(file.getName()));
-        if(formatType == FormatType.MAX_3DS)
-        {
-            this.invertTexCoordsYAxis = true;
-        }
-        else if(formatType == FormatType.COLLADA)
-        {
-            this.invertTexCoordsYAxis = true;
-        }
-        else if(formatType == FormatType.GLTF)
-        {
-            this.invertTexCoordsYAxis = true;
-        }
-        else {
-            this.invertTexCoordsYAxis = false;
-        }
-
         assert aiScene != null;
         GaiaScene gaiaScene = convertScene(aiScene, path, file.getName());
         aiScene.free();
@@ -96,13 +77,12 @@ public class AssimpConverter implements Converter {
         boolean autoUpAxis = globalOptions.isAutoUpAxis();
         Matrix4d matrix4 = new Matrix4d();
 
-        /*boolean isRootNode = parentNode == null;
-        log.debug(isRootNode ? "=======RootTrasformMatrix=======" : "=======TrasformMatrix=======");
-        log.debug("{} {} {} {}", aiMatrix4x4.a1(), aiMatrix4x4.b1(), aiMatrix4x4.c1(), aiMatrix4x4.d1());
-        log.debug("{} {} {} {}", aiMatrix4x4.a2(), aiMatrix4x4.b2(), aiMatrix4x4.c2(), aiMatrix4x4.d2());
-        log.debug("{} {} {} {}", aiMatrix4x4.a3(), aiMatrix4x4.b3(), aiMatrix4x4.c3(), aiMatrix4x4.d3());
-        log.debug("{} {} {} {}", aiMatrix4x4.a4(), aiMatrix4x4.b4(), aiMatrix4x4.c4(), aiMatrix4x4.d4());*/
         boolean isRootNode = parentNode == null;
+//        log.debug(isRootNode ? "=======RootTrasformMatrix=======" : "=======TrasformMatrix=======");
+//        log.debug("{} {} {} {}", aiMatrix4x4.a1(), aiMatrix4x4.b1(), aiMatrix4x4.c1(), aiMatrix4x4.d1());
+//        log.debug("{} {} {} {}", aiMatrix4x4.a2(), aiMatrix4x4.b2(), aiMatrix4x4.c2(), aiMatrix4x4.d2());
+//        log.debug("{} {} {} {}", aiMatrix4x4.a3(), aiMatrix4x4.b3(), aiMatrix4x4.c3(), aiMatrix4x4.d3());
+//        log.debug("{} {} {} {}", aiMatrix4x4.a4(), aiMatrix4x4.b4(), aiMatrix4x4.c4(), aiMatrix4x4.d4());
 
         // getTransformMatrix
         matrix4.m00(aiMatrix4x4.a1());
@@ -137,18 +117,18 @@ public class AssimpConverter implements Converter {
                 matrix4.m22(1.0d);
                 matrix4.m23(0.0d);
             } else {
-                matrix4.m00(1.0d);
-                matrix4.m01(0.0d);
-                matrix4.m02(0.0d);
-                matrix4.m03(0.0d);
-                matrix4.m10(0.0d);
-                matrix4.m11(0.0d);
-                matrix4.m12(-1.0d);
-                matrix4.m13(0.0d);
-                matrix4.m20(0.0d);
-                matrix4.m21(1.0d);
-                matrix4.m22(0.0d);
-                matrix4.m23(0.0d);
+//                matrix4.m00(1.0d);
+//                matrix4.m01(0.0d);
+//                matrix4.m02(0.0d);
+//                matrix4.m03(0.0d);
+//                matrix4.m10(0.0d);
+//                matrix4.m11(0.0d);
+//                matrix4.m12(-1.0d);
+//                matrix4.m13(0.0d);
+//                matrix4.m20(0.0d);
+//                matrix4.m21(1.0d);
+//                matrix4.m22(0.0d);
+//                matrix4.m23(0.0d);
             }
         }
         if (isRootNode && isZeroOrigin) {
@@ -167,6 +147,25 @@ public class AssimpConverter implements Converter {
 
     private GaiaScene convertScene(AIScene aiScene, String filePath, String fileName) {
         FormatType formatType = FormatType.fromExtension(FilenameUtils.getExtension(fileName));
+
+        /*
+        //READ METADATA
+        AIMetaData aiMetaData = aiScene.mMetaData();
+        assert aiMetaData != null;
+        if (aiMetaData != null) {
+            // UnitScaleFactor
+            var keys = aiMetaData.mKeys();
+            var values = aiMetaData.mValues();
+            int length = aiMetaData.mNumProperties();
+            for (int i = 0; i < length; i++) {
+                AIString keyAiString = keys.get(i);
+                String key = keyAiString.dataString();
+                AIMetaDataEntry dataEntry = values.get(i);
+                int type = dataEntry.mType();
+                ByteBuffer buffer = dataEntry.mData(0);
+                log.info("Key: " + key);
+            }
+        }*/
 
         GaiaScene gaiaScene = new GaiaScene();
         AINode aiNode = aiScene.mRootNode();
@@ -281,13 +280,15 @@ public class AssimpConverter implements Converter {
                 diffTexPath = "embedded_textures" + File.separator + embeddedTexturePath;
             }
 
-            File file = getTextureFile(parentPath.toFile(), diffTexPath);
+            File file = ImageUtils.getChildFile(parentPath.toFile(), diffTexPath);
             if (file != null && file.exists() && file.isFile()) {
-                texture.setPath(diffTexPath);
+                texture.setPath(file.getName());
                 textures.add(texture);
                 material.getTextures().put(texture.getType(), textures);
             } else {
                 log.error("Diffuse Texture not found: " + diffTexPath);
+                //material.setName("MissingTexture");
+                //material.getTextures().put(texture.getType(), textures);
             }
         } else {
             material.setName("NoTexture");
@@ -411,7 +412,6 @@ public class AssimpConverter implements Converter {
 
         GaiaPrimitive primitive = new GaiaPrimitive();
         primitive.getSurfaces().add(surface);
-        primitive.setMaterial(material);
         primitive.setMaterialIndex(material.getId());
 
         Vector4d diffuse = material.getDiffuseColor();
@@ -479,35 +479,6 @@ public class AssimpConverter implements Converter {
             primitive.getVertices().add(vertex);
         }
 
-        GaiaRectangle texCoordsRectangle = new GaiaRectangle();
-        primitive.getTexcoordBoundingRectangle(texCoordsRectangle);
-        boolean mustTranslateTexCoordsToPositiveQuadrant = false;
-        if (texCoordsRectangle.getWidth() > 1.0 || texCoordsRectangle.getHeight() > 1.0) {
-            mustTranslateTexCoordsToPositiveQuadrant = true;
-        }
-
-        double minTexCoordX = texCoordsRectangle.getMinX();
-        double minTexCoordY = texCoordsRectangle.getMinY();
-        if (minTexCoordX <0.0 || minTexCoordX > 1.0 || minTexCoordY < 0.0 || minTexCoordY > 1.0) {
-            mustTranslateTexCoordsToPositiveQuadrant = true;
-        }
-
-        if (mustTranslateTexCoordsToPositiveQuadrant) {
-            //primitive.translateTexCoordsToPositiveQuadrant();
-        }
-
-        if (this.invertTexCoordsYAxis) {
-            for (GaiaVertex vertex : primitive.getVertices()) {
-                Vector2d texCoord = vertex.getTexcoords();
-                if (texCoord == null) {
-                    continue;
-                }
-                if (this.invertTexCoordsYAxis) {
-                    texCoord.y = 1.0 - texCoord.y; // invert the y.***
-                }
-            }
-        }
-
         primitive.calculateNormal();
         return primitive;
     }
@@ -526,31 +497,5 @@ public class AssimpConverter implements Converter {
         }
         face.setIndices(indicesArray);
         return face;
-    }
-
-    private File getTextureFile(File parent, String path) {
-        File file = new File(parent, path);
-        String name = FilenameUtils.getBaseName(path);
-        String ext = FilenameUtils.getExtension(path);
-        if (file.exists() && file.isFile()) {
-            return file;
-        }
-        file = new File(parent, name.toLowerCase() + "." + ext.toLowerCase());
-        if (file.exists() && file.isFile()) {
-            return file;
-        }
-        file = new File(parent, name.toUpperCase() + "." + ext.toUpperCase());
-        if (file.exists() && file.isFile()) {
-            return file;
-        }
-        file = new File(parent, name.toLowerCase() + "." + ext.toUpperCase());
-        if (file.exists() && file.isFile()) {
-            return file;
-        }
-        file = new File(parent, name.toUpperCase() + "." + ext.toLowerCase());
-        if (file.exists() && file.isFile()) {
-            return file;
-        }
-        return null;
     }
 }
