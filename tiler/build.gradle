@@ -7,7 +7,7 @@ plugins {
 }
 
 group "com.gaia3d"
-version "1.4.1"
+version "1.4.4"
 project.ext.lwjglVersion = "3.3.3"
 
 switch ( OperatingSystem.current() ) {
@@ -114,11 +114,11 @@ jib {
         image = "eclipse-temurin:17-jre"
     }
     to {
-        image = "gaia3d/plasma-tiler"
+        image = "gaia3d/mago-3d-tiler"
         tags = ["latest", project.version]
     }
     container {
-        appRoot = "/plasma-tiler"
+        appRoot = "/mago-3d-tiler"
         creationTime = "USE_CURRENT_TIMESTAMP"
         jvmFlags = [
                 "-Djava.awt.headless=true",
@@ -144,7 +144,7 @@ javadoc {
 jar {
     finalizedBy shadowJar
     manifest {
-        attributes "Main-Class": "com.gaia3d.command.TilerMain",
+        attributes "Main-Class": "com.gaia3d.command.mago.Mago3DTilerMain",
                 "Implementation-Version": project.version
     }
     from {
