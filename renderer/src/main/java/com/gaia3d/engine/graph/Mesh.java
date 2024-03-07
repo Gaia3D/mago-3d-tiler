@@ -1,13 +1,12 @@
 package com.gaia3d.engine.graph;
 
-import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.*;
 
-import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL20.*;
 public class Mesh {
     private int numVertices;
     private int vaoId;
@@ -17,9 +16,6 @@ public class Mesh {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             numVertices = indices.length;
             vboIdList = new ArrayList<>();
-
-            vaoId = glGenVertexArrays();
-            glBindVertexArray(vaoId);
 
             // Positions VBO
             int vboId = glGenBuffers();
@@ -50,13 +46,11 @@ public class Mesh {
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW);
 
             glBindBuffer(GL_ARRAY_BUFFER, 0);
-            glBindVertexArray(0);
         }
     }
 
     public void cleanup() {
-        vboIdList.forEach(GL30::glDeleteBuffers);
-        glDeleteVertexArrays(vaoId);
+        /*vboIdList.forEach(GL30::glDeleteBuffers);*/
     }
 
     public int getNumVertices() {

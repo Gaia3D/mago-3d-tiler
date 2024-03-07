@@ -1,14 +1,14 @@
 package com.gaia3d.engine;
 
-import com.gaia3d.engine.graph.Render;
-import com.gaia3d.engine.scene.Scene;
+import com.gaia3d.engine.dataStructure.GaiaScenesContainer;
 
 public interface IAppLogic {
     void cleanup();
 
-    void init(Window window, Scene scene, Render render);
+    void init(Window window, GaiaScenesContainer gaiaScenesContainer);
 
-    void input(Window window, Scene scene, long diffTimeMillis);
+    //void input(Window window, Scene scene, long diffTimeMillis);
+    void input(Window window, GaiaScenesContainer gaiaScenesContainer, long diffTimeMillis);
 
-    void update(Window window, Scene scene, long diffTimeMillis);
+    void update(Window window, GaiaScenesContainer gaiaScenesContainer, long diffTimeMillis);
 }

@@ -14,7 +14,6 @@ import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL20.GL_FRAGMENT_SHADER;
 import static org.lwjgl.opengl.GL20.GL_VERTEX_SHADER;
-import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
 public class GaiaSceneRender {
     private ShaderProgram shaderProgram;
@@ -67,7 +66,6 @@ public class GaiaSceneRender {
 //            }
 //        }
 
-        glBindVertexArray(0);
 
         shaderProgram.unbind();
     }

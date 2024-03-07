@@ -2,8 +2,10 @@ package com.gaia3d.renderable;
 
 import com.gaia3d.basic.types.AccessorType;
 import com.gaia3d.basic.types.AttributeType;
+import lombok.Getter;
 import lombok.Setter;
-
+@Getter
+@Setter
 public class RenderableBuffer {
     AttributeType attributeType;
     int elementsCount = -1;

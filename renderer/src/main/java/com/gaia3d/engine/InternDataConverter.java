@@ -22,10 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
-import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
-import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 
 public class InternDataConverter {
 
@@ -65,6 +61,8 @@ public class InternDataConverter {
         // check for children.
         List<GaiaNode> children = gaiaNode.getChildren();
         int childrenCount = children.size();
+//        if(childrenCount > 30)
+//        { childrenCount = 30;} // test.***
         for (int i = 0; i < childrenCount; i++) {
             GaiaNode child = children.get(i);
             RenderableNode renderableChildNode = getRenderableNode(child);
@@ -109,138 +107,164 @@ public class InternDataConverter {
     }
 
     public static RenderableBuffer getRenderableBuffer(GaiaBuffer buffer) {
-        //try (MemoryStack stack = MemoryStack.stackPush()) {
+        RenderableBuffer renderableBuffer;
 
-            AttributeType attributeType = buffer.getAttributeType();
-            int glType = buffer.getGlType();
-            byte glDimension = buffer.getGlDimension();
-            int elemsCount = buffer.getElementsCount();
-            int glTarget = buffer.getGlTarget();
+        AttributeType attributeType = buffer.getAttributeType();
+        int glType = buffer.getGlType();
+        byte glDimension = buffer.getGlDimension();
+        int elemsCount = buffer.getElementsCount();
+        int glTarget = buffer.getGlTarget();
 
-            RenderableBuffer renderableBuffer = new RenderableBuffer(attributeType, glType, glDimension, elemsCount, glTarget);
+        renderableBuffer = new RenderableBuffer(attributeType, elemsCount, glDimension, glType, glTarget);
 
-            if (attributeType == AttributeType.POSITION) {
-                float[] positions = buffer.getFloats();
-                // Positions VBO
-                int vboId = glGenBuffers();
-                FloatBuffer positionsBuffer = BufferUtils.createFloatBuffer(positions.length);
-                //FloatBuffer positionsBuffer = stack.callocFloat(positions.length);
-                positionsBuffer.put(0, positions);
-                glBindBuffer(GL_ARRAY_BUFFER, vboId);
-                glBufferData(GL_ARRAY_BUFFER, positionsBuffer, GL_STATIC_DRAW);
-                glEnableVertexAttribArray(0);
-                glVertexAttribPointer(0, glDimension, glType, false, 0, 0);
 
-                renderableBuffer.setVboId(vboId);
+        if (attributeType == AttributeType.POSITION) {
+            float[] positions = buffer.getFloats();
+            // Positions VBO
+            int[] vboId = new int[1];
+            GL20.glGenBuffers(vboId);
+            // test scale positions.
+            for (int i = 0; i < positions.length; i++) {
+                positions[i] *= 0.01;
+            }
+            //FloatBuffer positionsBuffer = org.lwjgl.system.MemoryUtil.memAllocFloat(positions.length);
+            //FloatBuffer positionsBuffer = stack.callocFloat(positionsTEST.length);
 
-            } else if (attributeType == AttributeType.NORMAL) {
+            //positionsBuffer.put(0, positionsTEST);
+            //FloatBuffer positionsBuffer = FloatBuffer.wrap(positions);
+            GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId[0]);
+            GL20.glBufferData(GL20.GL_ARRAY_BUFFER, positions, GL20.GL_STATIC_DRAW);
+            GL20.glEnableVertexAttribArray(0);
+            GL20.glVertexAttribPointer(0, glDimension, glType, false, 0, 0);
 
-                // Normal VBO
-                int vboId = glGenBuffers();
+            renderableBuffer.setVboId(vboId[0]);
 
-                if (glType == GL20.GL_FLOAT) {
-                    float[] normals = buffer.getFloats();
-                    FloatBuffer normalsBuffer = BufferUtils.createFloatBuffer(normals.length);
-                    normalsBuffer.put(0, normals);
-                    glBindBuffer(GL_ARRAY_BUFFER, vboId);
-                    glBufferData(GL_ARRAY_BUFFER, normalsBuffer, GL_STATIC_DRAW);
-                    glEnableVertexAttribArray(1);
-                    glVertexAttribPointer(1, glDimension, glType, false, 0, 0);
-                } else if (glType == GL20.GL_SHORT || glType == GL20.GL_UNSIGNED_SHORT) {
-                    // TODO :
-                } else if (glType == GL20.GL_BYTE || glType == GL20.GL_UNSIGNED_BYTE) {
-                    byte[] normals = buffer.getBytes();
-                    ByteBuffer normalsBuffer = BufferUtils.createByteBuffer(normals.length);
-                    normalsBuffer.put(0, normals);
-                    glBindBuffer(GL_ARRAY_BUFFER, vboId);
-                    glBufferData(GL_ARRAY_BUFFER, normalsBuffer, GL_STATIC_DRAW);
-                    glEnableVertexAttribArray(1);
-                    glVertexAttribPointer(1, glDimension, glType, true, 0, 0);
-                }
+        } else if (attributeType == AttributeType.NORMAL) {
 
-                renderableBuffer.setVboId(vboId);
+            // Normal VBO
+            int[] vboId = new int[1];
+            GL20.glGenBuffers(vboId);
 
-            } else if (attributeType == AttributeType.TEXCOORD) {
-                // Texture coordinates VBO
-                int vboId = glGenBuffers();
+            if (glType == GL20.GL_FLOAT) {
+                float[] normals = buffer.getFloats();
+                //FloatBuffer normalsBuffer = org.lwjgl.system.MemoryUtil.memAllocFloat(normals.length);
+                //FloatBuffer normalsBuffer = stack.callocFloat(normals.length);
+                //normalsBuffer.put(0, normals);
+                GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId[0]);
+                GL20.glBufferData(GL20.GL_ARRAY_BUFFER, normals, GL20.GL_STATIC_DRAW);
+                GL20.glEnableVertexAttribArray(1);
+                GL20.glVertexAttribPointer(1, glDimension, glType, false, 0, 0);
 
-                if (glType == GL20.GL_FLOAT) {
-                    float[] texcoords = buffer.getFloats();
-                    FloatBuffer normalsBuffer = BufferUtils.createFloatBuffer(texcoords.length);
-                    normalsBuffer.put(0, texcoords);
-                    glBindBuffer(GL_ARRAY_BUFFER, vboId);
-                    glBufferData(GL_ARRAY_BUFFER, normalsBuffer, GL_STATIC_DRAW);
-                    glEnableVertexAttribArray(1);
-                    glVertexAttribPointer(1, glDimension, glType, false, 0, 0);
-                } else if (glType == GL20.GL_SHORT || glType == GL20.GL_UNSIGNED_SHORT) {
-                    // TODO :
-                } else if (glType == GL20.GL_BYTE || glType == GL20.GL_UNSIGNED_BYTE) {
-                    byte[] texcoords = buffer.getBytes();
-                    ByteBuffer normalsBuffer = BufferUtils.createByteBuffer(texcoords.length);
-                    normalsBuffer.put(0, texcoords);
-                    glBindBuffer(GL_ARRAY_BUFFER, vboId);
-                    glBufferData(GL_ARRAY_BUFFER, normalsBuffer, GL_STATIC_DRAW);
-                    glEnableVertexAttribArray(1);
-                    glVertexAttribPointer(1, glDimension, glType, true, 0, 0);
-                }
-
-                renderableBuffer.setVboId(vboId);
-
-            } else if (attributeType == AttributeType.COLOR) {
-                // Color VBO
-                int vboId = glGenBuffers();
-
-                if (glType == GL20.GL_FLOAT) {
-                    float[] colors = buffer.getFloats();
-                    FloatBuffer normalsBuffer = BufferUtils.createFloatBuffer(colors.length);
-                    normalsBuffer.put(0, colors);
-                    glBindBuffer(GL_ARRAY_BUFFER, vboId);
-                    glBufferData(GL_ARRAY_BUFFER, normalsBuffer, GL_STATIC_DRAW);
-                    glEnableVertexAttribArray(1);
-                    glVertexAttribPointer(1, glDimension, glType, false, 0, 0);
-                } else if (glType == GL20.GL_SHORT || glType == GL20.GL_UNSIGNED_SHORT) {
-                    // TODO :
-                } else if (glType == GL20.GL_BYTE || glType == GL20.GL_UNSIGNED_BYTE) {
-                    byte[] colors = buffer.getBytes();
-                    ByteBuffer normalsBuffer = BufferUtils.createByteBuffer(colors.length);
-                    normalsBuffer.put(0, colors);
-                    glBindBuffer(GL_ARRAY_BUFFER, vboId);
-                    glBufferData(GL_ARRAY_BUFFER, normalsBuffer, GL_STATIC_DRAW);
-                    glEnableVertexAttribArray(1);
-                    glVertexAttribPointer(1, glDimension, glType, true, 0, 0);
-                }
-
-                renderableBuffer.setVboId(vboId);
-
-            } else if (attributeType == AttributeType.INDICE) {
-                // Index VBO
-                int vboId = glGenBuffers();
-
-                if (glType == GL20.GL_INT || glType == GL20.GL_UNSIGNED_INT) {
-                    int[] indices = buffer.getInts();
-                    IntBuffer indicesBuffer = BufferUtils.createIntBuffer(indices.length);
-                    indicesBuffer.put(0, indices);
-                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboId);
-                    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW);
-                } else if (glType == GL20.GL_SHORT || glType == GL20.GL_UNSIGNED_SHORT) {
-                    short[] indices = buffer.getShorts();
-                    ShortBuffer indicesBuffer = BufferUtils.createShortBuffer(indices.length);
-                    indicesBuffer.put(0, indices);
-                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboId);
-                    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW);
-                } else if (glType == GL20.GL_BYTE || glType == GL20.GL_UNSIGNED_BYTE) {
-                    byte[] indices = buffer.getBytes();
-                    ByteBuffer indicesBuffer = BufferUtils.createByteBuffer(indices.length);
-                    indicesBuffer.put(0, indices);
-                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboId);
-                    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW);
-                }
-
-                renderableBuffer.setVboId(vboId);
+            } else if (glType == GL20.GL_SHORT || glType == GL20.GL_UNSIGNED_SHORT) {
+                // TODO :
+            } else if (glType == GL20.GL_BYTE || glType == GL20.GL_UNSIGNED_BYTE) {
+                byte[] normals = buffer.getBytes();
+                //ByteBuffer normalsBuffer = org.lwjgl.system.MemoryUtil.memAlloc(normals.length);
+                //ByteBuffer normalsBuffer = stack.calloc(normals.length);
+                //normalsBuffer.put(0, normals);
+                GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId[0]);
+                GL20.glBufferData(GL20.GL_ARRAY_BUFFER, ByteBuffer.wrap(normals), GL20.GL_STATIC_DRAW);
+                GL20.glEnableVertexAttribArray(1);
+                GL20.glVertexAttribPointer(1, glDimension, glType, true, 0, 0);
             }
 
-            return renderableBuffer;
-        //}
+            renderableBuffer.setVboId(vboId[0]);
+
+        } else if (attributeType == AttributeType.TEXCOORD) {
+            // Texture coordinates VBO
+            int[] vboId = new int[1];
+            GL20.glGenBuffers(vboId);
+
+            if (glType == GL20.GL_FLOAT) {
+                float[] texcoords = buffer.getFloats();
+                //FloatBuffer texcoordsBuffer = org.lwjgl.system.MemoryUtil.memAllocFloat(texcoords.length);
+                //FloatBuffer texcoordsBuffer = stack.callocFloat(texcoords.length);
+                //texcoordsBuffer.put(0, texcoords);
+                GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId[0]);
+                GL20.glBufferData(GL20.GL_ARRAY_BUFFER, texcoords, GL20.GL_STATIC_DRAW);
+                GL20.glEnableVertexAttribArray(2);
+                GL20.glVertexAttribPointer(2, glDimension, glType, false, 0, 0);
+
+            } else if (glType == GL20.GL_SHORT || glType == GL20.GL_UNSIGNED_SHORT) {
+                // TODO :
+            } else if (glType == GL20.GL_BYTE || glType == GL20.GL_UNSIGNED_BYTE) {
+                byte[] texcoords = buffer.getBytes();
+                //ByteBuffer texcoordsBuffer = org.lwjgl.system.MemoryUtil.memAlloc(texcoords.length);
+                //ByteBuffer texcoordsBuffer = stack.calloc(texcoords.length);
+                //texcoordsBuffer.put(0, texcoords);
+                GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId[0]);
+                GL20.glBufferData(GL20.GL_ARRAY_BUFFER, ByteBuffer.wrap(texcoords), GL20.GL_STATIC_DRAW);
+                GL20.glEnableVertexAttribArray(2);
+                GL20.glVertexAttribPointer(2, glDimension, glType, true, 0, 0);
+            }
+
+            renderableBuffer.setVboId(vboId[0]);
+
+        } else if (attributeType == AttributeType.COLOR) {
+            // Color VBO
+            int[] vboId = new int[1];
+            GL20.glGenBuffers(vboId);
+
+            if (glType == GL20.GL_FLOAT) {
+                float[] colors = buffer.getFloats();
+                //FloatBuffer colorsBuffer = org.lwjgl.system.MemoryUtil.memAllocFloat(colors.length);
+                //FloatBuffer colorsBuffer = stack.callocFloat(colors.length);
+                //colorsBuffer.put(0, colors);
+                GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId[0]);
+                GL20.glBufferData(GL20.GL_ARRAY_BUFFER, colors, GL20.GL_STATIC_DRAW);
+                GL20.glEnableVertexAttribArray(3);
+                GL20.glVertexAttribPointer(3, glDimension, glType, false, 0, 0);
+
+            } else if (glType == GL20.GL_SHORT || glType == GL20.GL_UNSIGNED_SHORT) {
+                // TODO :
+            } else if (glType == GL20.GL_BYTE || glType == GL20.GL_UNSIGNED_BYTE) {
+                byte[] colors = buffer.getBytes();
+                //ByteBuffer colorsBuffer = org.lwjgl.system.MemoryUtil.memAlloc(colors.length);
+                //ByteBuffer colorsBuffer = stack.calloc(colors.length);
+                //colorsBuffer.put(0, colors);
+                GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId[0]);
+                GL20.glBufferData(GL20.GL_ARRAY_BUFFER, ByteBuffer.wrap(colors), GL20.GL_STATIC_DRAW);
+                GL20.glEnableVertexAttribArray(3);
+                GL20.glVertexAttribPointer(3, glDimension, glType, true, 0, 0);
+            }
+
+            renderableBuffer.setVboId(vboId[0]);
+
+        } else if (attributeType == AttributeType.INDICE) {
+            // Index VBO
+            int[] vboId = new int[1];
+            GL20.glGenBuffers(vboId);
+
+            if (glType == GL20.GL_INT || glType == GL20.GL_UNSIGNED_INT) {
+                int[] indices = buffer.getInts();
+                //IntBuffer indicesBuffer = org.lwjgl.system.MemoryUtil.memAllocInt(indices.length);
+                //IntBuffer indicesBuffer = stack.callocInt(indicesTEST.length);
+                //indicesBuffer.put(0, indicesTEST).flip();
+                //IntBuffer indicesBuffer = IntBuffer.wrap(indices);
+                GL20.glBindBuffer(GL20.GL_ELEMENT_ARRAY_BUFFER, vboId[0]);
+                GL20.glBufferData(GL20.GL_ELEMENT_ARRAY_BUFFER, indices, GL20.GL_STATIC_DRAW);
+
+            } else if (glType == GL20.GL_SHORT || glType == GL20.GL_UNSIGNED_SHORT) {
+                short[] indices = buffer.getShorts();
+                //ShortBuffer indicesBuffer = org.lwjgl.system.MemoryUtil.memAllocShort(indices.length);
+                //ShortBuffer indicesBuffer = stack.callocShort(indices.length);
+                //indicesBuffer.put(0, indices);
+                GL20.glBindBuffer(GL20.GL_ELEMENT_ARRAY_BUFFER, vboId[0]);
+                GL20.glBufferData(GL20.GL_ELEMENT_ARRAY_BUFFER, indices, GL20.GL_STATIC_DRAW);
+
+            } else if (glType == GL20.GL_BYTE || glType == GL20.GL_UNSIGNED_BYTE) {
+                byte[] indices = buffer.getBytes();
+                //ByteBuffer indicesBuffer = org.lwjgl.system.MemoryUtil.memAlloc(indices.length);
+                //ByteBuffer indicesBuffer = stack.calloc(indices.length);
+                //indicesBuffer.put(0, indices);
+                GL20.glBindBuffer(GL20.GL_ELEMENT_ARRAY_BUFFER, vboId[0]);
+                GL20.glBufferData(GL20.GL_ELEMENT_ARRAY_BUFFER, ByteBuffer.wrap(indices), GL20.GL_STATIC_DRAW);
+            }
+
+            renderableBuffer.setVboId(vboId[0]);
+        }
+
+        return renderableBuffer;
 
     }
 }

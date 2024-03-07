@@ -10,7 +10,7 @@ import java.util.concurrent.Callable;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
 public class Window {
     private final long windowHandle;
@@ -24,7 +24,7 @@ public class Window {
         public boolean compatibleProfile;
         public int fps;
         public int height;
-        public int ups = Engine.TARGET_UPS;
+        //public int ups = Engine.TARGET_UPS;
         public int width;
     }
 
@@ -38,14 +38,16 @@ public class Window {
         glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-        if (opts.compatibleProfile) {
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
-        } else {
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-        }
+        // The next code make NO render in the window.******************************************************************
+//        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+//        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+//        if (opts.compatibleProfile) {
+//            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+//        } else {
+//            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+//            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+//        }
+        //-------------------------------------------------------------------------------------------------------------
 
         if (opts.width > 0 && opts.height > 0) {
             this.width = opts.width;

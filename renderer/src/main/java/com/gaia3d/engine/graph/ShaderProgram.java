@@ -1,13 +1,19 @@
 package com.gaia3d.engine.graph;
 
-import org.lwjgl.opengl.GL30;
+import lombok.Getter;
+import org.lwjgl.opengl.GL20;
 import com.gaia3d.engine.Utils;
+import org.lwjgl.opengl.GL30;
 
 import java.util.*;
 
-import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL20.*;
+
+@Getter
 public class ShaderProgram {
+    @Getter
     private final int programId;
+    private UniformsMap uniformsMap;
 
     public ShaderProgram(List<ShaderModuleData> shaderModuleDataList) {
         programId = glCreateProgram();
@@ -19,6 +25,9 @@ public class ShaderProgram {
         shaderModuleDataList.forEach(s -> shaderModules.add(createShader(Utils.readFile(s.shaderFile), s.shaderType)));
 
         link(shaderModules);
+    }
+
+    public record ShaderModuleData(String shaderFile, int shaderType) {
     }
 
     public void bind() {
@@ -50,10 +59,6 @@ public class ShaderProgram {
         return shaderId;
     }
 
-    public int getProgramId() {
-        return programId;
-    }
-
     private void link(List<Integer> shaderModules) {
         glLinkProgram(programId);
         if (glGetProgrami(programId, GL_LINK_STATUS) == 0) {
@@ -75,6 +80,10 @@ public class ShaderProgram {
         }
     }
 
-    public record ShaderModuleData(String shaderFile, int shaderType) {
+
+
+    public void createUniforms(List<String> uniformNames) {
+        uniformsMap = new UniformsMap(programId);
+        uniformNames.forEach(uniformsMap::createUniform);
     }
 }
