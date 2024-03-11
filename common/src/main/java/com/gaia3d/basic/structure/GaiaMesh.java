@@ -42,6 +42,14 @@ public class GaiaMesh implements Serializable {
         return boundingBox;
     }
 
+    public long getTriangleCount() {
+        long count = 0;
+        for (GaiaPrimitive primitive : primitives) {
+            count += getIndicesCount() / 3;
+        }
+        return count;
+    }
+
     public int[] getIndices() {
         int[] totalIndices = new int[getIndicesCount()];
         int index = 0;

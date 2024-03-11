@@ -83,8 +83,14 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         BoundingVolume squareBoundingVolume = parentBoundingVolume.createSqureBoundingVolume();
 
         boolean refineAdd = globalOptions.isRefineAdd();
-        int nodeLimit = globalOptions.getNodeLimit() * 4; // for quadtree node limit
-        if (tileInfos.size() > nodeLimit) {
+        //int nodeLimit = globalOptions.getNodeLimit() * 4; // for quadtree node limit
+
+        long triangleLimit = 65536 * 4;
+        long totalTriangleCount = tileInfos.stream().mapToLong(TileInfo::getTriangleCount).sum();
+        log.info("[TriangleCount] Total : {}", totalTriangleCount);
+
+        if (totalTriangleCount > triangleLimit) {
+        //if (tileInfos.size() > nodeLimit) {
             // logical node distribute
             List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
@@ -95,7 +101,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
                     createNode(childNode, childTileInfos);
                 }
             }
-        } else if (tileInfos.size() > 1) {
+        } else if (totalTriangleCount > 1) {
             // phiysical node distribute
             List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {

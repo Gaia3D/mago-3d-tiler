@@ -161,7 +161,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         childNode.setChildren(new ArrayList<>());
         childNode.setNodeCode(parentNode.getNodeCode() + pointCloud.getCode());
         childNode.setGeometricError(geometricErrorCalc/2);
-        childNode.setGeometricError(geometricError);
+        //childNode.setGeometricError(geometricError);
 
         TileInfo selfTileInfo = TileInfo.builder()
                 .pointCloud(selfPointCloud)

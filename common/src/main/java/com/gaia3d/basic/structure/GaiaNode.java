@@ -169,6 +169,17 @@ public class GaiaNode implements Serializable {
         }
     }
 
+    public long getTriangleCount() {
+        long count = 0;
+        for (GaiaMesh mesh : this.getMeshes()) {
+            count += mesh.getTriangleCount();
+        }
+        for (GaiaNode child : this.getChildren()) {
+            count += child.getTriangleCount();
+        }
+        return count;
+    }
+
     public void translate(Vector3d translation) {
         for (GaiaMesh mesh : this.getMeshes()) {
             mesh.translate(translation);

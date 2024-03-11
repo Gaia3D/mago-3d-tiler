@@ -80,4 +80,12 @@ public class GaiaScene implements Serializable {
         clone.setGaiaBoundingBox(this.gaiaBoundingBox);
         return clone;
     }
+
+    public long calcTriangleCount() {
+        long triangleCount = 0;
+        for (GaiaNode node : this.nodes) {
+            triangleCount += node.getTriangleCount();
+        }
+        return triangleCount;
+    }
 }

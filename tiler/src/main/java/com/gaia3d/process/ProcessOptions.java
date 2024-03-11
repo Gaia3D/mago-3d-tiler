@@ -40,6 +40,7 @@ public enum ProcessOptions {
     ALTITUDE_COLUMN("altitudeColumn", "ac", "altitudeColumn", true, "altitude Column setting."),
     MINIMUM_HEIGHT("minimumHeight", "mh", "minimumHeight", true, "minimum height setting."),
     ABSOLUTE_ALTITUDE("absoluteAltitude", "aa", "absoluteAltitude", true, "absolute altitude mode."),
+    SKIRT_HEIGHT("skirtHeight", "sh", "skirtHeight", true, "extrusion skirt height setting."),
 
     IGNORE_TEXTURES("ignoreTextures", "igtx", "ignoreTextures", false,"Ignore diffuse textures."),
     ZERO_ORIGIN("zeroOrigin", "zo", "zeroOrigin", false, "[Experimental] fix 3d root transformed matrix origin to zero point."),

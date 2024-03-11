@@ -37,6 +37,7 @@ public class TileInfo {
     private Path outputPath;
     private Path tempPath;
 
+    private long triangleCount = 0;
     private boolean isI3dm = false;
 
     private void init() {
@@ -58,7 +59,7 @@ public class TileInfo {
      * Write the scene file to the output directory.
      * @param serial
      */
-    public void minimize(int serial) {
+    /*public void minimize(int serial) {
         GlobalOptions options = GlobalOptions.getInstance();
 
         if (this.scene != null && !this.scene.getNodes().isEmpty()) {
@@ -69,7 +70,7 @@ public class TileInfo {
             this.scene.clear();
             this.scene = null;
         }
-    }
+    }*/
 
     /**
      * Load the minimized scene file and create a GaiaSet object.
