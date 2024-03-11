@@ -64,6 +64,8 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             CityGMLReader reader = factory.createCityGMLReader(file);
             CityModel cityModel = (CityModel) reader.next();
 
+            double skirtHeight = globalOptions.getSkirtHeight();
+
             List<GaiaBuilding> gaiaBuildings = new ArrayList<>();
 
             List<AbstractCityObjectProperty> cityObjectMembers = cityModel.getCityObjectMembers();
@@ -117,7 +119,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                     double floorHeight = value / values.size();
                     gaiaBuilding.setPositions(polygon);
                     gaiaBuilding.setFloorHeight(floorHeight);
-                    gaiaBuilding.setRoofHeight(floorHeight + height);
+                    gaiaBuilding.setRoofHeight(floorHeight + height + skirtHeight);
                     break;
                 }
                 gaiaBuilding.setBoundingBox(boundingBox);
@@ -132,6 +134,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
 
                 GaiaBoundingBox boundingBox = gaiaBuilding.getBoundingBox();
                 Vector3d center = boundingBox.getCenter();
+                center.z = center.z - skirtHeight;
 
                 Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
                 Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);

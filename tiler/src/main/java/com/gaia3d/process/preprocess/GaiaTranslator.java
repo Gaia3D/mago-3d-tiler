@@ -46,7 +46,7 @@ public class GaiaTranslator implements PreProcess {
             double[] memSave_alt = new double[1];
             memSave_alt[0] = 0;
             coverage.evaluate((DirectPosition) memSave_posWorld, memSave_alt);
-            log.info("memSave_alt[0] : {}", memSave_alt[0]);
+            //log.info("memSave_alt[0] : {}", memSave_alt[0]);
             center.z = memSave_alt[0];
         });
 

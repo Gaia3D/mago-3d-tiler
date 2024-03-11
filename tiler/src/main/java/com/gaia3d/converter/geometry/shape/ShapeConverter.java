@@ -66,6 +66,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
 
         double absoluteAltitudeValue = globalOptions.getAbsoluteAltitude();
         double minimumHeightValue = globalOptions.getMinimumHeight();
+        double skirtHeight = globalOptions.getSkirtHeight();
 
         ShpFiles shpFiles = null;
         ShapefileReader reader = null;
@@ -160,7 +161,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                             .name(name)
                             .boundingBox(boundingBox)
                             .floorHeight(altitude)
-                            .roofHeight(height)
+                            .roofHeight(height/* + skirtHeight*/)
                             .positions(positions)
                             .build();
                     buildings.add(building);
@@ -184,6 +185,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 rootNode.setName(building.getName());
 
                 Vector3d center = building.getBoundingBox().getCenter();
+                center.z = center.z/* - skirtHeight*/;
 
                 Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
                 Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);

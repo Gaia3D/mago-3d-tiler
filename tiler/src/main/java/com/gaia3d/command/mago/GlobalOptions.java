@@ -32,7 +32,7 @@ public class GlobalOptions {
     //private static final int DEFAULT_NODE_LIMIT = 1024;
     private static final int DEFAULT_MIN_LOD = 0;
     private static final int DEFAULT_MAX_LOD = 3;
-    private static final int DEFAULT_POINT_LIMIT = 20000;
+    private static final int DEFAULT_POINT_LIMIT = 65536 * 4;
     private static final byte DEFAULT_MULTI_THREAD_COUNT = 8;
     private static final String DEFAULT_CRS = "4326";
     private static final String DEFAULT_NAME_COLUMN = "name";
@@ -40,7 +40,9 @@ public class GlobalOptions {
     private static final String DEFAULT_ALTITUDE_COLUMN = "altitude";
     private static final double DEFAULT_ABSOLUTE_ALTITUDE = 0.0d;
     private static final double DEFAULT_MINIMUM_HEIGHT = 1.0d;
+    private static final double DEFAULT_SKIRT_HEIGHT = 10.0d;
     private static final boolean DEFAULT_DEBUG_LOD = false;
+
 
     private String version; // version flag
     private String javaVersionInfo; // java version flag
@@ -97,6 +99,7 @@ public class GlobalOptions {
     private String altitudeColumn;
     private double absoluteAltitude;
     private double minimumHeight;
+    private double skirtHeight;
 
     public static GlobalOptions getInstance() {
         if (instance.javaVersionInfo == null) {
@@ -164,6 +167,7 @@ public class GlobalOptions {
         instance.setAltitudeColumn(command.hasOption(ProcessOptions.ALTITUDE_COLUMN.getArgName()) ? command.getOptionValue(ProcessOptions.ALTITUDE_COLUMN.getArgName()) : DEFAULT_ALTITUDE_COLUMN);
         instance.setAbsoluteAltitude(command.hasOption(ProcessOptions.ABSOLUTE_ALTITUDE.getArgName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.ABSOLUTE_ALTITUDE.getArgName())) : DEFAULT_ABSOLUTE_ALTITUDE);
         instance.setMinimumHeight(command.hasOption(ProcessOptions.MINIMUM_HEIGHT.getArgName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.MINIMUM_HEIGHT.getArgName())) : DEFAULT_MINIMUM_HEIGHT);
+        instance.setSkirtHeight(command.hasOption(ProcessOptions.SKIRT_HEIGHT.getArgName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.SKIRT_HEIGHT.getArgName())) : DEFAULT_SKIRT_HEIGHT);
 
         instance.setDebug(command.hasOption(ProcessOptions.DEBUG.getArgName()));
         instance.setDebugLod(DEFAULT_DEBUG_LOD);
