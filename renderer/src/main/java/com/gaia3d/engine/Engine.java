@@ -1,8 +1,9 @@
 package com.gaia3d.engine;
 
+//import com.gaia3d.converter.*;
 import com.gaia3d.basic.structure.GaiaScene;
 import com.gaia3d.converter.Converter;
-import com.gaia3d.converter.assimp.AssimpConverter;
+import com.gaia3d.converter.AssimpConverter;
 import com.gaia3d.engine.dataStructure.GaiaScenesContainer;
 import com.gaia3d.engine.graph.RenderEngine;
 import com.gaia3d.engine.graph.ShaderManager;
@@ -47,13 +48,24 @@ public class Engine {
 
     private double xpos = 0;
     private double ypos = 0;
-    private boolean clicked = false;
+    private boolean midButtonClicked = false;
+
+    private boolean checkGlError()
+    {
+        int glError = GL20.glGetError();
+        if(glError != GL20.GL_NO_ERROR) {
+            System.out.println("glError: " + glError);
+            return true;
+        }
+        return false;
+    }
 
     public Engine(String windowTitle, Window.WindowOptions opts, IAppLogic appLogic) {
         window = new Window(windowTitle, opts, () -> {
             resize();
             return null;
         });
+
     }
 
     private void resize() {
@@ -83,10 +95,11 @@ public class Engine {
         // 에러 콜백을 설정합니다. System.err의 에러 메세지를 출력 기본으로 구현합니다.
         GLFWErrorCallback.createPrint(System.err).set();
 
+
         long windowHandle = window.getWindowHandle();
         // 마우스 위치 콜백
         glfwSetCursorPosCallback(windowHandle, (window, xpos, ypos) -> {
-            if (this.clicked) {
+            if (this.midButtonClicked) {
                 Vector3d pivot = new Vector3d(0.0d,0.0d,-1.0d);
                 float xoffset = (float) (this.xpos - xpos) * 0.01f;
                 float yoffset = (float) (this.ypos - ypos) * 0.01f;
@@ -95,14 +108,22 @@ public class Engine {
             this.xpos = xpos;
             this.ypos = ypos;
         });
+
+
         // 마우스 버튼 이벤트
         glfwSetMouseButtonCallback(windowHandle, (window, key, action, mode) -> {
-            if (key == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
-                this.clicked = true;
-            } else if (key == GLFW_MOUSE_BUTTON_1 && action == GLFW_RELEASE) {
-                this.clicked = false;
+            if (key == GLFW_MOUSE_BUTTON_3 && action == GLFW_PRESS) {
+                this.midButtonClicked = true;
+            } else if (key == GLFW_MOUSE_BUTTON_3 && action == GLFW_RELEASE) {
+                this.midButtonClicked = false;
             }
+
         });
+
+        glfwSetScrollCallback(windowHandle, (window, xoffset, yoffset) -> {
+            camera.moveFront((float)yoffset * 0.2f);
+        });
+
         // 키보드 콜백 이벤트를 설정합니다. 키를 눌렀을 때, 누르고 있을 때, 떼었을 때에 따라 바꿔줍니다.
         glfwSetKeyCallback(windowHandle, (window, key, scancode, action, mods) -> {
             if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
@@ -112,7 +133,8 @@ public class Engine {
             float rotationOffset = 0.1f;
             Vector3d pivot = new Vector3d(0.0d,0.0d,-1.0d);
             if (key == GLFW_KEY_W) {
-                camera.rotationOrbit(0, -rotationOffset, pivot);
+                //camera.rotationOrbit(0, -rotationOffset, pivot);
+                camera.moveFront(-0.1f);
             }
             if (key == GLFW_KEY_A) {
                 camera.rotationOrbit(rotationOffset, 0, pivot);
@@ -125,13 +147,12 @@ public class Engine {
             }
         });
 
+
         shaderManager = new ShaderManager();
         setupShader();
 
         renderer = new RenderEngine();
 
-        //gaiaScenesContainer.setCamera(new Camera());
-        //Camera camera = gaiaScenesContainer.getCamera();
         camera = new Camera();
         camera.rotationOrbit(-1.0f, 1.0f, new Vector3d(0.0d,0.0d,-1.0d));
 
@@ -145,10 +166,12 @@ public class Engine {
         List<GaiaScene> gaiaScenes = assimpConverter.load(filePath);
         RenderableGaiaScene renderableGaiaScene = InternDataConverter.getRenderableGaiaScene(gaiaScenes.get(0));
         gaiaScenesContainer.addRenderableGaiaScene(renderableGaiaScene);
+
     }
 
     private void setupShader() {
         GL.createCapabilities();
+
 
         // create a basic shader program
         List<ShaderProgram.ShaderModuleData> shaderModuleDataList = new ArrayList<>();
@@ -161,20 +184,27 @@ public class Engine {
         uniformNames.add("uModelRotationMatrix");
         uniformNames.add("uObjectRotationMatrix");
         shaderBasic.createUniforms(uniformNames);
+        shaderBasic.validate();
+
 
         // create a scene shader program
         shaderModuleDataList = new ArrayList<>();
-        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData("D:/Java_Projects/mago-3d-tiler/renderer/src/main/resources/shaders/scene.vert", GL20.GL_VERTEX_SHADER));
-        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData("D:/Java_Projects/mago-3d-tiler/renderer/src/main/resources/shaders/scene.frag", GL20.GL_FRAGMENT_SHADER));
+        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData("D:/Java_Projects/mago-3d-tiler/renderer/src/main/resources/shaders/sceneV330.vert", GL20.GL_VERTEX_SHADER));
+        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData("D:/Java_Projects/mago-3d-tiler/renderer/src/main/resources/shaders/sceneV330.frag", GL20.GL_FRAGMENT_SHADER));
         ShaderProgram sceneShaderProgram = shaderManager.createShaderProgram("scene", shaderModuleDataList);
+
 
         uniformNames = new ArrayList<>();
         uniformNames.add("uProjectionMatrix");
         uniformNames.add("uModelViewMatrix");
         uniformNames.add("uObjectMatrix");
+        uniformNames.add("texture0");
+        uniformNames.add("uColorMode");
+        uniformNames.add("uOneColor");
         sceneShaderProgram.createUniforms(uniformNames);
+        sceneShaderProgram.validate();
+        //sceneShaderProgram.getUniformsMap().setUniform1i("texture0", 0); // texture channel 0
 
-        int hola = 0;
     }
 
     private void draw() {
@@ -187,7 +217,8 @@ public class Engine {
         basicShaderProgram.bind();
         int programId = basicShaderProgram.getProgramId();
 
-        camera.rotationOrbit(0.0002f, -0.0000f, new Vector3d(0.0d,0.0d,-1.0d));
+
+        //camera.rotationOrbit(0.0002f, -0.0000f, new Vector3d(0.0d,0.0d,-1.0d));
 
         Matrix4d modelViewMatrix = this.camera.getModelViewMatrix();
 
@@ -207,8 +238,6 @@ public class Engine {
         // render scene objects.***
         ShaderProgram sceneShaderProgram = shaderManager.getShaderProgram("scene");
         sceneShaderProgram.bind();
-        int sceneProgramId = sceneShaderProgram.getProgramId();
-
         renderer.render(gaiaScenesContainer, sceneShaderProgram);
 
         sceneShaderProgram.unbind();
@@ -234,7 +263,7 @@ public class Engine {
             glEnable(GL_DEPTH_TEST);
             glPointSize(5.0f);
             // 클리어 컬러를 적용합니다.
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
             glClearDepth(1.0f);
             // 프레임 버퍼 클리어
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

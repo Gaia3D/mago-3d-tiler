@@ -3,6 +3,7 @@ package com.gaia3d.engine;
 import com.gaia3d.engine.MouseInput;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryUtil;
 import org.tinylog.Logger;
 
@@ -28,6 +29,16 @@ public class Window {
         public int width;
     }
 
+    private boolean checkGlError()
+    {
+        int glError = GL20.glGetError();
+        if(glError != GL20.GL_NO_ERROR) {
+            System.out.println("glError: " + glError);
+            return true;
+        }
+        return false;
+    }
+
     public Window(String title, WindowOptions opts, Callable<Void> resizeFunc) {
         this.resizeFunc = resizeFunc;
         if (!glfwInit()) {
@@ -35,10 +46,30 @@ public class Window {
         }
 
         glfwDefaultWindowHints();
-        glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
-        glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+        glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
+        //glfwWindowHint(GLFW_SAMPLES, 4);
+        glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
+        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 
-        // The next code make NO render in the window.******************************************************************
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+
+//        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_FALSE);
+//        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
+
+//        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE); // error
+//        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // error
+
+        glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE);
+
+        glfwWindowHint(GLFW_RED_BITS, 8);
+        glfwWindowHint(GLFW_GREEN_BITS, 8);
+        glfwWindowHint(GLFW_BLUE_BITS, 8);
+        glfwWindowHint(GLFW_ALPHA_BITS, 8);
+
+                // The next code make NO render in the window.******************************************************************
 //        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 //        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 //        if (opts.compatibleProfile) {

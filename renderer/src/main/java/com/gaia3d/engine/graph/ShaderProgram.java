@@ -27,6 +27,10 @@ public class ShaderProgram {
         link(shaderModules);
     }
 
+    public int getAttribLocation(String attribName) {
+        return GL20.glGetAttribLocation(programId, attribName);
+    }
+
     public record ShaderModuleData(String shaderFile, int shaderType) {
     }
 
@@ -85,5 +89,23 @@ public class ShaderProgram {
     public void createUniforms(List<String> uniformNames) {
         uniformsMap = new UniformsMap(programId);
         uniformNames.forEach(uniformsMap::createUniform);
+    }
+
+    public int enableVertexLocation(String attribName) {
+        int location = getAttribLocation(attribName);
+        if (location >= 0) {
+            glEnableVertexAttribArray(location);
+        }
+
+        return location;
+    }
+
+    public boolean disableVertexLocation(String attribName) {
+        int location = getAttribLocation(attribName);
+        if (location == -1) {
+            return false;
+        }
+        glDisableVertexAttribArray(location);
+        return true;
     }
 }

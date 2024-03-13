@@ -1,8 +1,10 @@
 package com.gaia3d.engine.graph;
 
 import org.joml.Matrix4f;
+import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 
+import java.nio.FloatBuffer;
 import java.util.*;
 
 import static org.lwjgl.opengl.GL20.*;
@@ -15,7 +17,7 @@ public class UniformsMap {
         uniforms = new HashMap<>();
     }
 
-    private int getUniformLocation(String uniformName) {
+    public int getUniformLocation(String uniformName) {
         Integer location = uniforms.get(uniformName);
         if (location == null) {
             throw new RuntimeException("Could not find uniform [" + uniformName + "]");
@@ -34,6 +36,12 @@ public class UniformsMap {
 
     public void setUniform1i(String uniformName, int value) {
         glUniform1i(getUniformLocation(uniformName), value);
+    }
+
+    public void setUniform4fv(String uniformName, Vector4f value) {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            glUniform4fv(getUniformLocation(uniformName), value.get(stack.mallocFloat(4)));
+        }
     }
 
     public void setUniformMatrix4fv(String uniformName, Matrix4f value) {

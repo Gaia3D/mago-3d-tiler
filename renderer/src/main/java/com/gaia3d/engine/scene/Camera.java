@@ -59,6 +59,13 @@ public class Camera {
         return this.modelViewMatrix;
     }
 
+    public void moveFront(float value) {
+        Vector3d front = new Vector3d(this.direction);
+        front.mul(value);
+        this.position.add(front);
+        this.dirty = true;
+    }
+
     public void rotationOrbit(float xValue, float yValue, Vector3d pivotPosition) {
         Vector3d pitchAxis = this.right;
 
