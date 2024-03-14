@@ -66,9 +66,13 @@ public class Camera {
         this.dirty = true;
     }
 
+    public void translate(Vector3d translation) {
+        this.position.add(translation);
+        this.dirty = true;
+    }
+
     public void rotationOrbit(float xValue, float yValue, Vector3d pivotPosition) {
         Vector3d pitchAxis = this.right;
-
 
         Matrix4d headingMatrix = new Matrix4d();
         headingMatrix.rotationZ(xValue);
@@ -110,7 +114,7 @@ public class Camera {
         this.right = rotatedRight;
         this.position = returnedCameraPosition;
 
-        // do cross product to get right and up
+        // do cross product to correct right and up
         rotatedDirection = new Vector3d(this.direction);
         rotatedDirection.cross(this.up); // dir cross up = right
         rotatedDirection.normalize();

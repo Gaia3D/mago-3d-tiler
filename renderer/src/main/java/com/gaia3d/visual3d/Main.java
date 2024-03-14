@@ -2,11 +2,9 @@ package com.gaia3d.visual3d;
 
 import com.gaia3d.engine.IAppLogic;
 import com.gaia3d.engine.dataStructure.GaiaScenesContainer;
-import org.joml.Vector4f;
 
 import com.gaia3d.engine.*;
 import com.gaia3d.engine.scene.Camera;
-import com.gaia3d.engine.scene.Entity;
 
 
 public class Main implements IAppLogic {

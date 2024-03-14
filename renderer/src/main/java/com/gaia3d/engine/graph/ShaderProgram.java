@@ -11,7 +11,6 @@ import static org.lwjgl.opengl.GL20.*;
 
 @Getter
 public class ShaderProgram {
-    @Getter
     private final int programId;
     private UniformsMap uniformsMap;
 

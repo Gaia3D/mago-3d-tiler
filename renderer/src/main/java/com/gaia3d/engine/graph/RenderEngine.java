@@ -8,36 +8,20 @@ import com.gaia3d.engine.RenderableTexturesUtils;
 import com.gaia3d.engine.dataStructure.GaiaScenesContainer;
 import com.gaia3d.engine.scene.Camera;
 import com.gaia3d.renderable.*;
-import com.gaia3d.util.ImageResizer;
-import com.gaia3d.util.ImageUtils;
+
 import org.joml.Matrix4d;
 import org.joml.Matrix4f;
+import org.joml.Vector4d;
 import org.joml.Vector4f;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GLUtil;
 
-import java.awt.*;
-import java.awt.color.ColorSpace;
-import java.awt.geom.AffineTransform;
+import org.lwjgl.opengl.GL20;
+
 import java.awt.image.*;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.IntBuffer;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import static java.awt.image.BufferedImage.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
-import static org.lwjgl.opengl.GL13C.GL_TEXTURE0;
-import static org.lwjgl.opengl.GL13C.glActiveTexture;
-import static org.lwjgl.opengl.GL20.glGetUniformLocation;
-import static org.lwjgl.opengl.GL30.glGenerateMipmap;
-import static org.lwjgl.opengl.GL45.glCreateTextures;
+
 
 public class RenderEngine {
 
@@ -111,6 +95,7 @@ public class RenderEngine {
         for (RenderablePrimitive renderablePrimitive : renderablePrimitives) {
             GaiaMaterial material = renderablePrimitive.getMaterial();
 
+            boolean textureBinded = false;
             // colorMode = 0: oneColor, 1: vertexColor, 2: textureColor
             uniformsMap.setUniform1i("uColorMode", 0);
             Map<TextureType, List<GaiaTexture>> mapTextures = material.getTextures();
@@ -135,7 +120,15 @@ public class RenderEngine {
                     GL20.glEnable(GL20.GL_TEXTURE_2D);
                     GL20.glActiveTexture(GL20.GL_TEXTURE0);
                     GL20.glBindTexture(GL20.GL_TEXTURE_2D, diffuseTexture.getTextureId());
+                    textureBinded = true;
                 }
+            }
+
+            if(!textureBinded) {
+                // get diffuse color from material
+                Vector4d diffuseColor = material.getDiffuseColor();
+                uniformsMap.setUniform1i("uColorMode", 0);
+                uniformsMap.setUniform4fv("uOneColor", new Vector4f((float)diffuseColor.x, (float)diffuseColor.y, (float)diffuseColor.z, (float)diffuseColor.w));
             }
 
             GL20.glDisableVertexAttribArray(0);
@@ -177,11 +170,11 @@ public class RenderEngine {
             }
         }
         else if (attributeType == AttributeType.NORMAL) {
-//            int location = shaderProgram.enableAttribLocation("aNormal");
-//            if(location >= 0) {
-//                GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId);
-//                GL20.glVertexAttribPointer(location, glDimension, glType, false, 0, 0);
-//            }
+            int location = shaderProgram.enableAttribLocation("aNormal");
+            if(location >= 0) {
+                GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId);
+                GL20.glVertexAttribPointer(location, glDimension, glType, false, 0, 0);
+            }
         }
         else if (attributeType == AttributeType.COLOR) {
 //            int location = shaderProgram.enableAttribLocation("aColor");

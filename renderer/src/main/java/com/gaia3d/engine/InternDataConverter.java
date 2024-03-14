@@ -59,9 +59,9 @@ public class InternDataConverter {
         Matrix4d preMultipliedTransformMatrix = gaiaNode.getPreMultipliedTransformMatrix();
 
         // compare transformMatrix and preMultipliedTransformMatrix
-        if (!transformMatrix.equals(preMultipliedTransformMatrix)) {
-            System.out.println("transformMatrix and preMultipliedTransformMatrix are not equal");
-        }
+//        if (!transformMatrix.equals(preMultipliedTransformMatrix)) {
+//            System.out.println("transformMatrix and preMultipliedTransformMatrix are not equal");
+//        }
         GaiaBoundingBox gaiaBoundingBox = gaiaNode.getGaiaBoundingBox();
 
         renderableNode.setName(name);

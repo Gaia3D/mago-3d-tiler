@@ -5,10 +5,13 @@ import com.gaia3d.basic.structure.GaiaScene;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.AssimpConverter;
 import com.gaia3d.engine.dataStructure.GaiaScenesContainer;
+import com.gaia3d.engine.fbo.Fbo;
+import com.gaia3d.engine.fbo.FboManager;
 import com.gaia3d.engine.graph.RenderEngine;
 import com.gaia3d.engine.graph.ShaderManager;
 import com.gaia3d.engine.graph.ShaderProgram;
 import com.gaia3d.engine.scene.Camera;
+import com.gaia3d.engine.screen.ScreenQuad;
 import com.gaia3d.renderable.RenderableGaiaScene;
 import lombok.Getter;
 import org.joml.Vector3d;
@@ -30,13 +33,18 @@ public class Engine {
     private Window window;
     private ShaderManager shaderManager;
     private RenderEngine renderer;
+    private FboManager fboManager;
+    private ScreenQuad screenQuad;
 
     private Camera camera;
 
     GaiaScenesContainer gaiaScenesContainer;
 
-    private double xpos = 0;
-    private double ypos = 0;
+    private double midButtonXpos = 0;
+    private double midButtonYpos = 0;
+    private double leftButtonXpos = 0;
+    private double leftButtonYpos = 0;
+    private boolean leftButtonClicked = false;
     private boolean midButtonClicked = false;
 
     private boolean checkGlError()
@@ -87,12 +95,23 @@ public class Engine {
         glfwSetCursorPosCallback(windowHandle, (window, xpos, ypos) -> {
             if (this.midButtonClicked) {
                 Vector3d pivot = new Vector3d(0.0d,0.0d,-1.0d);
-                float xoffset = (float) (this.xpos - xpos) * 0.01f;
-                float yoffset = (float) (this.ypos - ypos) * 0.01f;
+                float xoffset = (float) (this.midButtonXpos - xpos) * 0.01f;
+                float yoffset = (float) (this.midButtonYpos - ypos) * 0.01f;
                 camera.rotationOrbit(xoffset, yoffset, pivot);
             }
-            this.xpos = xpos;
-            this.ypos = ypos;
+            this.midButtonXpos = xpos;
+            this.midButtonYpos = ypos;
+
+            if(this.leftButtonClicked)
+            {
+                // translate camera
+                Vector3d translation = new Vector3d((xpos - this.leftButtonXpos) * 0.01f, (ypos - this.leftButtonYpos) * 0.01f, 0);
+                //translation.y *= -1;
+                camera.translate(translation);
+            }
+
+            this.leftButtonXpos = xpos;
+            this.leftButtonYpos = ypos;
         });
 
 
@@ -102,6 +121,13 @@ public class Engine {
                 this.midButtonClicked = true;
             } else if (key == GLFW_MOUSE_BUTTON_3 && action == GLFW_RELEASE) {
                 this.midButtonClicked = false;
+            }
+
+            // check left button
+            if (key == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
+                this.leftButtonClicked = true;
+            } else if (key == GLFW_MOUSE_BUTTON_1 && action == GLFW_RELEASE) {
+                this.leftButtonClicked = false;
             }
 
         });
@@ -141,14 +167,22 @@ public class Engine {
 
         camera = new Camera();
 
-        //camera.rotationOrbit(-1.0f, 1.0f, new Vector3d(0.0d,0.0d,-1.0d));
+        fboManager = new FboManager();
+
+        int windowWidth = window.getWidth();
+        int windowHeight = window.getHeight();
+        fboManager.createFbo("colorRender", windowWidth, windowHeight);
+
+        screenQuad = new ScreenQuad();
 
 
-        gaiaScenesContainer = new GaiaScenesContainer(1280, 800);
+        gaiaScenesContainer = new GaiaScenesContainer(windowWidth, windowHeight);
         gaiaScenesContainer.setCamera(camera);
 
         // Test load a 3d file.***
-        String filePath = "D:\\data\\unit-test\\ComplicatedModels1\\DC_library_del_3DS\\DC_library_del.3ds";
+        String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\DC_library_del_3DS\\DC_library_del.3ds";
+        //String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\CK_del_3DS\\CK_del.3ds";
+        //String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\dogok_library_del_3DS\\dogok_library_del.3ds";
         Converter assimpConverter = new AssimpConverter();
         List<GaiaScene> gaiaScenes = assimpConverter.load(filePath);
         RenderableGaiaScene renderableGaiaScene = InternDataConverter.getRenderableGaiaScene(gaiaScenes.get(0));
@@ -177,15 +211,44 @@ public class Engine {
         sceneShaderProgram.validate();
         //sceneShaderProgram.getUniformsMap().setUniform1i("texture0", 0); // texture channel 0
 
+        // create a screen shader program
+        shaderModuleDataList = new ArrayList<>();
+        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData("D:/Java_Projects/mago-3d-tiler/renderer/src/main/resources/shaders/screenV330.vert", GL20.GL_VERTEX_SHADER));
+        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData("D:/Java_Projects/mago-3d-tiler/renderer/src/main/resources/shaders/screenV330.frag", GL20.GL_FRAGMENT_SHADER));
+        ShaderProgram screenShaderProgram = shaderManager.createShaderProgram("screen", shaderModuleDataList);
+
+        uniformNames = new ArrayList<>();
+        uniformNames.add("texture0");
+        screenShaderProgram.createUniforms(uniformNames);
+        screenShaderProgram.validate();
+
     }
 
     private void draw() {
+        // render into frame buffer.***
+        Fbo colorRenderFbo = fboManager.getFbo("colorRender");
+        colorRenderFbo.bind();
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         // render scene objects.***
         ShaderProgram sceneShaderProgram = shaderManager.getShaderProgram("scene");
         sceneShaderProgram.bind();
         renderer.render(gaiaScenesContainer, sceneShaderProgram);
-
         sceneShaderProgram.unbind();
+
+        colorRenderFbo.unbind();
+
+        // now render to windows.***
+        int colorRenderTextureId = colorRenderFbo.getColorTextureId();
+        GL20.glEnable(GL20.GL_TEXTURE_2D);
+        GL20.glActiveTexture(GL20.GL_TEXTURE0);
+        GL20.glBindTexture(GL20.GL_TEXTURE_2D, colorRenderTextureId);
+
+        ShaderProgram screenShaderProgram = shaderManager.getShaderProgram("screen");
+        screenShaderProgram.bind();
+        screenQuad.render();
+
+        screenShaderProgram.unbind();
     }
 
     private void loop() {
@@ -194,8 +257,6 @@ public class Engine {
         // LWJGL detects the context that is current in the current thread,
         // creates the GLCapabilities instance and makes the OpenGL
         // bindings available for use.
-        //GL.createCapabilities();
-        //GL20.glUseProgram();
 
         // 사용자가 창을 닫거다 esc키를 누를 때까지 랜더링 루프를 실행합니다.
         long windowHandle = window.getWindowHandle();

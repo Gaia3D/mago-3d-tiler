@@ -105,7 +105,7 @@ public class Window {
             keyCallBack(key, action);
         });
 
-        glfwMakeContextCurrent(windowHandle);
+        glfwMakeContextCurrent(windowHandle); // all drawing happens in the current context
 
         if (opts.fps > 0) {
             glfwSwapInterval(0);
@@ -122,6 +122,10 @@ public class Window {
         height = arrHeight[0];
 
         mouseInput = new MouseInput(windowHandle);
+    }
+
+    public void glMakeContextCurrent() {
+        glfwMakeContextCurrent(windowHandle);
     }
 
     public void keyCallBack(int key, int action) {

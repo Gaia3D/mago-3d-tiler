@@ -55,13 +55,13 @@ public class RenderableTexturesUtils {
         int format = bufferedImage.getType();
         // end resize image to nearest power of two.***
 
-        //format :
-        // 1 = TYPE_INT_RGB,
-        // 2 = TYPE_INT_ARGB,
-        // 3 = TYPE_INT_ARGB_PRE,
-        // 4 = TYPE_INT_BGR,
-        // 5 = TYPE_3BYTE_BGR,
-        // 6 = TYPE_4BYTE_ABGR,
+        // BufferedImage format :
+        // TYPE_INT_RGB,
+        // TYPE_INT_ARGB,
+        // TYPE_INT_ARGB_PRE,
+        // TYPE_INT_BGR,
+        // TYPE_3BYTE_BGR,
+        // TYPE_4BYTE_ABGR,
         // TYPE_4BYTE_ABGR_PRE,
         // TYPE_BYTE_GRAY,
         // TYPE_BYTE_BINARY,
@@ -70,7 +70,7 @@ public class RenderableTexturesUtils {
         // TYPE_USHORT_565_RGB,
         // TYPE_USHORT_555_RGB,
         // TYPE_CUSTOM
-        //int format = diffuseTexture.getFormat();
+
         int glFormat = -1; // GL_RGB, GL_RGBA, etc.
         if(format == TYPE_INT_RGB)
         {
@@ -93,9 +93,45 @@ public class RenderableTexturesUtils {
             int hola = 0;
         }
 
-
-
         byte[] rgbaByteArray = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
+        if(format == TYPE_INT_ARGB)
+        {
+            // change byte order.***
+            byte temp;
+            for(int i=0; i<rgbaByteArray.length; i+=4)
+            {
+                temp = rgbaByteArray[i];
+                rgbaByteArray[i] = rgbaByteArray[i+1];
+                rgbaByteArray[i+1] = rgbaByteArray[i+2];
+                rgbaByteArray[i+2] = rgbaByteArray[i+3];
+                rgbaByteArray[i+3] = temp;
+            }
+        }
+        else if(format == TYPE_4BYTE_ABGR)
+        {
+            // change byte order.***
+            byte temp;
+            for(int i=0; i<rgbaByteArray.length; i+=4)
+            {
+                temp = rgbaByteArray[i];
+                rgbaByteArray[i] = rgbaByteArray[i+3];
+                rgbaByteArray[i+3] = temp;
+                temp = rgbaByteArray[i+1];
+                rgbaByteArray[i+1] = rgbaByteArray[i+2];
+                rgbaByteArray[i+2] = temp;
+            }
+        }
+        else if(format == TYPE_3BYTE_BGR)
+        {
+            // change byte order.***
+            byte temp;
+            for(int i=0; i<rgbaByteArray.length; i+=3)
+            {
+                temp = rgbaByteArray[i];
+                rgbaByteArray[i] = rgbaByteArray[i+2];
+                rgbaByteArray[i+2] = temp;
+            }
+        }
         int textureId = createGlTextureFromByteArray(rgbaByteArray, width, height, glFormat, minFilter, magFilter, wrapS, wrapT);
 
         return textureId;
