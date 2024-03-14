@@ -8,25 +8,15 @@ import com.gaia3d.engine.dataStructure.GaiaScenesContainer;
 import com.gaia3d.engine.graph.RenderEngine;
 import com.gaia3d.engine.graph.ShaderManager;
 import com.gaia3d.engine.graph.ShaderProgram;
-import com.gaia3d.engine.graph.UniformsMap;
 import com.gaia3d.engine.scene.Camera;
-import com.gaia3d.renderable.CubeObject;
 import com.gaia3d.renderable.RenderableGaiaScene;
-import com.gaia3d.renderable.RenderableObject;
 import lombok.Getter;
-import org.joml.Matrix4d;
-import org.joml.Matrix4f;
 import org.joml.Vector3d;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL20;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.net.URL;
-import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,7 +32,6 @@ public class Engine {
     private RenderEngine renderer;
 
     private Camera camera;
-    private ArrayList<RenderableObject> renderableObjects; // old. delete this.***
 
     GaiaScenesContainer gaiaScenesContainer;
 
@@ -74,9 +63,6 @@ public class Engine {
 
     public void run() {
         System.out.println("Hello LWJGL " + Version.getVersion() + "!");
-        renderableObjects = new ArrayList<RenderableObject>();
-        renderableObjects.add(new CubeObject());
-        //renderableObjects.add(new BaseObject());
 
         init();
         loop();
@@ -103,7 +89,7 @@ public class Engine {
                 Vector3d pivot = new Vector3d(0.0d,0.0d,-1.0d);
                 float xoffset = (float) (this.xpos - xpos) * 0.01f;
                 float yoffset = (float) (this.ypos - ypos) * 0.01f;
-                camera.rotationOrbit(-xoffset, -yoffset, pivot);
+                camera.rotationOrbit(xoffset, yoffset, pivot);
             }
             this.xpos = xpos;
             this.ypos = ypos;
@@ -154,7 +140,8 @@ public class Engine {
         renderer = new RenderEngine();
 
         camera = new Camera();
-        camera.rotationOrbit(-1.0f, 1.0f, new Vector3d(0.0d,0.0d,-1.0d));
+
+        //camera.rotationOrbit(-1.0f, 1.0f, new Vector3d(0.0d,0.0d,-1.0d));
 
 
         gaiaScenesContainer = new GaiaScenesContainer(1280, 800);
@@ -172,29 +159,14 @@ public class Engine {
     private void setupShader() {
         GL.createCapabilities();
 
-
-        // create a basic shader program
-        List<ShaderProgram.ShaderModuleData> shaderModuleDataList = new ArrayList<>();
-        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData("D:/Java_Projects/mago-3d-tiler/renderer/src/main/resources/shaders/basic.vert", GL20.GL_VERTEX_SHADER));
-        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData("D:/Java_Projects/mago-3d-tiler/renderer/src/main/resources/shaders/basic.frag", GL20.GL_FRAGMENT_SHADER));
-        ShaderProgram shaderBasic = shaderManager.createShaderProgram("basic", shaderModuleDataList);
-
-        List<String> uniformNames = new ArrayList<>();
-        uniformNames.add("uProjectionMatrix");
-        uniformNames.add("uModelRotationMatrix");
-        uniformNames.add("uObjectRotationMatrix");
-        shaderBasic.createUniforms(uniformNames);
-        shaderBasic.validate();
-
-
         // create a scene shader program
-        shaderModuleDataList = new ArrayList<>();
+        List<ShaderProgram.ShaderModuleData> shaderModuleDataList = new ArrayList<>();
         shaderModuleDataList.add(new ShaderProgram.ShaderModuleData("D:/Java_Projects/mago-3d-tiler/renderer/src/main/resources/shaders/sceneV330.vert", GL20.GL_VERTEX_SHADER));
         shaderModuleDataList.add(new ShaderProgram.ShaderModuleData("D:/Java_Projects/mago-3d-tiler/renderer/src/main/resources/shaders/sceneV330.frag", GL20.GL_FRAGMENT_SHADER));
         ShaderProgram sceneShaderProgram = shaderManager.createShaderProgram("scene", shaderModuleDataList);
 
 
-        uniformNames = new ArrayList<>();
+        List<String> uniformNames = new ArrayList<>();
         uniformNames.add("uProjectionMatrix");
         uniformNames.add("uModelViewMatrix");
         uniformNames.add("uObjectMatrix");
@@ -208,33 +180,6 @@ public class Engine {
     }
 
     private void draw() {
-//        System.out.println("position : " + camera.position);
-//        System.out.println("right : " + camera.right);
-//        System.out.println("up : " + camera.up);
-//        System.out.println("dir : " + camera.direction);
-        ShaderProgram basicShaderProgram = shaderManager.getShaderProgram("basic");
-        UniformsMap uniformsMap = basicShaderProgram.getUniformsMap();
-        basicShaderProgram.bind();
-        int programId = basicShaderProgram.getProgramId();
-
-
-        //camera.rotationOrbit(0.0002f, -0.0000f, new Vector3d(0.0d,0.0d,-1.0d));
-
-        Matrix4d modelViewMatrix = this.camera.getModelViewMatrix();
-
-        float[] modelViewMatrixBuffer = new float[16];
-        modelViewMatrix.get(modelViewMatrixBuffer);
-
-        Matrix4f projectionMatrix = gaiaScenesContainer.getProjection().getProjMatrix();
-
-        uniformsMap.setUniformMatrix4fv("uProjectionMatrix", projectionMatrix);
-        uniformsMap.setUniformMatrix4fv("uModelRotationMatrix", new Matrix4f(modelViewMatrix));
-        renderableObjects.forEach(renderableObject -> {
-            renderableObject.render(programId);
-        });
-
-        basicShaderProgram.unbind();
-
         // render scene objects.***
         ShaderProgram sceneShaderProgram = shaderManager.getShaderProgram("scene");
         sceneShaderProgram.bind();

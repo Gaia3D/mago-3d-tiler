@@ -34,34 +34,46 @@ public class InternDataConverter {
         List<GaiaMaterial> materials = gaiaScene.getMaterials();
         renderableGaiaScene.setMaterials(materials);
 
+        // 90deg rot matrix in x axis
+        Matrix4d rotMatrix = new Matrix4d();
+        rotMatrix.rotateX(Math.toRadians(90));
+
         // nodes
         List<GaiaNode> nodes = gaiaScene.getNodes();
         for (GaiaNode node : nodes) {
-            RenderableNode renderableNode = getRenderableNode(node);
+            RenderableNode renderableNode = getRenderableNode(node, rotMatrix);
             renderableGaiaScene.addRenderableNode(renderableNode);
         }
 
         return renderableGaiaScene;
     }
 
-    public static RenderableNode getRenderableNode(GaiaNode gaiaNode) {
+    public static RenderableNode getRenderableNode(GaiaNode gaiaNode, Matrix4d parentTransformMatrix) {
         RenderableNode renderableNode = new RenderableNode();
 
         String name = gaiaNode.getName();
-        Matrix4d transformMatrix = gaiaNode.getTransformMatrix();
+        Matrix4d transformMatrix = new Matrix4d(gaiaNode.getTransformMatrix());
+        if (parentTransformMatrix != null) {
+            parentTransformMatrix.mul(transformMatrix, transformMatrix);
+        }
         Matrix4d preMultipliedTransformMatrix = gaiaNode.getPreMultipliedTransformMatrix();
+
+        // compare transformMatrix and preMultipliedTransformMatrix
+        if (!transformMatrix.equals(preMultipliedTransformMatrix)) {
+            System.out.println("transformMatrix and preMultipliedTransformMatrix are not equal");
+        }
         GaiaBoundingBox gaiaBoundingBox = gaiaNode.getGaiaBoundingBox();
 
         renderableNode.setName(name);
         renderableNode.setTransformMatrix(transformMatrix);
-        renderableNode.setPreMultipliedTransformMatrix(preMultipliedTransformMatrix);
+        renderableNode.setPreMultipliedTransformMatrix(transformMatrix);
         renderableNode.setGaiaBoundingBox(gaiaBoundingBox);
 
         List<GaiaMesh> meshes = gaiaNode.getMeshes();
         int meshesCount = meshes.size();
         for (int i = 0; i < meshesCount; i++) {
             GaiaMesh gaiaMesh = meshes.get(i);
-            RenderableMesh renderableMesh = getRenderableMesh(gaiaMesh);
+            RenderableMesh renderableMesh = getRenderableMesh(gaiaMesh, transformMatrix);
             renderableNode.addRenderableMesh(renderableMesh);
         }
 
@@ -70,20 +82,20 @@ public class InternDataConverter {
         int childrenCount = children.size();
         for (int i = 0; i < childrenCount; i++) {
             GaiaNode child = children.get(i);
-            RenderableNode renderableChildNode = getRenderableNode(child);
+            RenderableNode renderableChildNode = getRenderableNode(child, transformMatrix);
             renderableNode.addChild(renderableChildNode);
         }
 
         return renderableNode;
     }
 
-    public static RenderableMesh getRenderableMesh(GaiaMesh gaiaMesh) {
+    public static RenderableMesh getRenderableMesh(GaiaMesh gaiaMesh, Matrix4d transformMatrix) {
         RenderableMesh renderableMesh = new RenderableMesh();
 
         List<GaiaPrimitive> primitives = gaiaMesh.getPrimitives();
         int primitivesCount = primitives.size();
-        Matrix4d transformMatrix = new Matrix4d();
-        transformMatrix.identity();
+        //Matrix4d identityMatrix = new Matrix4d();
+        //identityMatrix.identity();
 
         for (int i = 0; i < primitivesCount; i++) {
             GaiaPrimitive gaiaPrimitive = primitives.get(i);
@@ -130,15 +142,15 @@ public class InternDataConverter {
             int[] vboId = new int[1];
             GL20.glGenBuffers(vboId);
             // test scale positions.
-            for (int i = 0; i < positions.length; i++) {
-                positions[i] *= 0.01;
+            int pointsCount = positions.length / 3;
+            for (int i = 0; i < pointsCount; i++) {
+                positions[i*3] *= 0.01;
+                positions[i*3+1] *= 0.01;
+                positions[i*3+2] *= 0.01;
             }
 
             GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId[0]);
             GL20.glBufferData(GL20.GL_ARRAY_BUFFER, positions, GL20.GL_STATIC_DRAW);
-//            GL20.glEnableVertexAttribArray(0);
-//            GL20.glVertexAttribPointer(0, glDimension, glType, false, 0, 0);
-
             renderableBuffer.setVboId(vboId[0]);
 
         } else if (attributeType == AttributeType.NORMAL) {
@@ -151,17 +163,12 @@ public class InternDataConverter {
                 float[] normals = buffer.getFloats();
                 GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId[0]);
                 GL20.glBufferData(GL20.GL_ARRAY_BUFFER, normals, GL20.GL_STATIC_DRAW);
-//                GL20.glEnableVertexAttribArray(1);
-//                GL20.glVertexAttribPointer(1, glDimension, glType, false, 0, 0);
-
             } else if (glType == GL20.GL_SHORT || glType == GL20.GL_UNSIGNED_SHORT) {
                 // TODO :
             } else if (glType == GL20.GL_BYTE || glType == GL20.GL_UNSIGNED_BYTE) {
                 byte[] normals = buffer.getBytes();
                 GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId[0]);
                 GL20.glBufferData(GL20.GL_ARRAY_BUFFER, ByteBuffer.wrap(normals), GL20.GL_STATIC_DRAW);
-//                GL20.glEnableVertexAttribArray(1);
-//                GL20.glVertexAttribPointer(1, glDimension, glType, true, 0, 0);
             }
 
             renderableBuffer.setVboId(vboId[0]);
@@ -175,17 +182,12 @@ public class InternDataConverter {
                 float[] texcoords = buffer.getFloats();
                 GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId[0]);
                 GL20.glBufferData(GL20.GL_ARRAY_BUFFER, texcoords, GL20.GL_STATIC_DRAW);
-//                GL20.glEnableVertexAttribArray(2);
-//                GL20.glVertexAttribPointer(2, glDimension, glType, false, 0, 0);
-
             } else if (glType == GL20.GL_SHORT || glType == GL20.GL_UNSIGNED_SHORT) {
                 // TODO :
             } else if (glType == GL20.GL_BYTE || glType == GL20.GL_UNSIGNED_BYTE) {
                 byte[] texcoords = buffer.getBytes();
                 GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId[0]);
                 GL20.glBufferData(GL20.GL_ARRAY_BUFFER, ByteBuffer.wrap(texcoords), GL20.GL_STATIC_DRAW);
-//                GL20.glEnableVertexAttribArray(2);
-//                GL20.glVertexAttribPointer(2, glDimension, glType, true, 0, 0);
             }
 
             renderableBuffer.setVboId(vboId[0]);
@@ -199,17 +201,12 @@ public class InternDataConverter {
                 float[] colors = buffer.getFloats();
                 GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId[0]);
                 GL20.glBufferData(GL20.GL_ARRAY_BUFFER, colors, GL20.GL_STATIC_DRAW);
-//                GL20.glEnableVertexAttribArray(3);
-//                GL20.glVertexAttribPointer(3, glDimension, glType, false, 0, 0);
-
             } else if (glType == GL20.GL_SHORT || glType == GL20.GL_UNSIGNED_SHORT) {
                 // TODO :
             } else if (glType == GL20.GL_BYTE || glType == GL20.GL_UNSIGNED_BYTE) {
                 byte[] colors = buffer.getBytes();
                 GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId[0]);
                 GL20.glBufferData(GL20.GL_ARRAY_BUFFER, ByteBuffer.wrap(colors), GL20.GL_STATIC_DRAW);
-//                GL20.glEnableVertexAttribArray(3);
-//                GL20.glVertexAttribPointer(3, glDimension, glType, true, 0, 0);
             }
 
             renderableBuffer.setVboId(vboId[0]);

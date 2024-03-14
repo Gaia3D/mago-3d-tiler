@@ -15,14 +15,14 @@ import java.util.List;
 @Setter
 public class GaiaScenesContainer {
     private Projection projection;
-    private TextureCache textureCache;
+    //private TextureCache textureCache;
     private Camera camera;
     private List<RenderableGaiaScene> renderableGaiaScenes;
 
     public GaiaScenesContainer(int width, int height) {
         renderableGaiaScenes = new ArrayList<>();
         projection = new Projection(width, height);
-        textureCache = new TextureCache();
+        //textureCache = new TextureCache();
         //camera = new Camera();
     }
 

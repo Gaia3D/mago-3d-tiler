@@ -31,7 +31,7 @@ public class Camera {
         this.modelViewMatrix = null;
         this.rotationMatrix = null;
 
-        this.position = new Vector3d(0, 0, 0);
+        this.position = new Vector3d(0, 0, 40);
         this.rotation = new Vector3d(0, 0, 0);
 
         this.direction = new Vector3d(0, 0, -1);
@@ -69,6 +69,7 @@ public class Camera {
     public void rotationOrbit(float xValue, float yValue, Vector3d pivotPosition) {
         Vector3d pitchAxis = this.right;
 
+
         Matrix4d headingMatrix = new Matrix4d();
         headingMatrix.rotationZ(xValue);
 
@@ -96,35 +97,28 @@ public class Camera {
         rotatedDirection.mul(totalRotationMatrix3);
         rotatedDirection.normalize();
 
-        double dotResult = Math.abs(rotatedDirection.dot(0, 0, 1));
-        Vector3d rotatedRight, rotatedUp;
-        rotatedRight = new Vector3d(new Vector3d(0, 0, 1));
-        rotatedRight.cross(rotatedDirection);
+        Vector3d rotatedRight = new Vector3d(this.right);
+        rotatedRight.mul(totalRotationMatrix3);
         rotatedRight.normalize();
 
-        rotatedUp = new Vector3d(rotatedDirection);
-        rotatedUp.cross(rotatedRight);
+        Vector3d rotatedUp = new Vector3d(this.up);
+        rotatedUp.mul(totalRotationMatrix3);
         rotatedUp.normalize();
 
-        if (dotResult > 0.995d || Double.isNaN(rotatedRight.x)) {
-            rotatedUp = new Vector3d(this.up);
-            rotatedUp.mul(totalRotationMatrix3);
-            rotatedUp.normalize();
+        this.direction = rotatedDirection;
+        this.up = rotatedUp;
+        this.right = rotatedRight;
+        this.position = returnedCameraPosition;
 
-            rotatedRight = new Vector3d(rotatedDirection);
-            rotatedRight.cross(rotatedUp);
-            rotatedRight.normalize();
-
-            this.direction = rotatedDirection;
-            this.up = rotatedUp;
-            this.right = rotatedRight;
-            this.position = returnedCameraPosition;
-        } else {
-            this.direction = rotatedDirection;
-            this.up = rotatedUp;
-            this.right = rotatedRight;
-            this.position = returnedCameraPosition;
-        }
+        // do cross product to get right and up
+        rotatedDirection = new Vector3d(this.direction);
+        rotatedDirection.cross(this.up); // dir cross up = right
+        rotatedDirection.normalize();
+        this.right = rotatedDirection;
+        rotatedRight = new Vector3d(this.right);
+        rotatedRight.cross(this.direction); // right cross dir = up
+        rotatedRight.normalize();
+        this.up = rotatedRight;
 
         this.dirty = true;
     }

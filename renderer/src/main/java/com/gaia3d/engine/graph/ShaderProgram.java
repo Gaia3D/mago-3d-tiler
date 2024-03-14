@@ -84,14 +84,12 @@ public class ShaderProgram {
         }
     }
 
-
-
     public void createUniforms(List<String> uniformNames) {
         uniformsMap = new UniformsMap(programId);
         uniformNames.forEach(uniformsMap::createUniform);
     }
 
-    public int enableVertexLocation(String attribName) {
+    public int enableAttribLocation(String attribName) {
         int location = getAttribLocation(attribName);
         if (location >= 0) {
             glEnableVertexAttribArray(location);
@@ -100,7 +98,7 @@ public class ShaderProgram {
         return location;
     }
 
-    public boolean disableVertexLocation(String attribName) {
+    public boolean disableAttribLocation(String attribName) {
         int location = getAttribLocation(attribName);
         if (location == -1) {
             return false;

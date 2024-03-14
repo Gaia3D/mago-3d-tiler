@@ -4,6 +4,7 @@ import com.gaia3d.basic.structure.GaiaMaterial;
 import com.gaia3d.basic.structure.GaiaTexture;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.TextureType;
+import com.gaia3d.engine.RenderableTexturesUtils;
 import com.gaia3d.engine.dataStructure.GaiaScenesContainer;
 import com.gaia3d.engine.scene.Camera;
 import com.gaia3d.renderable.*;
@@ -29,6 +30,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
+import static java.awt.image.BufferedImage.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL13C.GL_TEXTURE0;
@@ -73,7 +75,11 @@ public class RenderEngine {
     private void renderGaiaNode(RenderableNode renderableNode, ShaderProgram shaderProgram) {
         UniformsMap uniformsMap = shaderProgram.getUniformsMap();
         Matrix4d transformMatrix = renderableNode.getPreMultipliedTransformMatrix();
-        uniformsMap.setUniformMatrix4fv("uObjectMatrix", new Matrix4f(transformMatrix));
+        Matrix4f identityMatrix = new Matrix4f();
+        identityMatrix.identity();
+
+        //uniformsMap.setUniformMatrix4fv("uObjectMatrix", new Matrix4f(transformMatrix));
+        uniformsMap.setUniformMatrix4fv("uObjectMatrix", identityMatrix);
 
         List<RenderableMesh> renderableMeshes = renderableNode.getRenderableMeshes();
         for (RenderableMesh renderableMesh : renderableMeshes) {
@@ -114,99 +120,12 @@ public class RenderEngine {
                     GaiaTexture diffuseTexture = diffuseTextures.get(0);
                     if(diffuseTexture.getTextureId() < 0)
                     {
+                        int minFilter = GL_LINEAR; // GL_LINEAR, GL_NEAREST
+                        int magFilter = GL_LINEAR;
+                        int wrapS = GL_REPEAT; // GL_CLAMP_TO_EDGE
+                        int wrapT = GL_REPEAT;
                         BufferedImage bufferedImage = diffuseTexture.getBufferedImage();
-                        int width = diffuseTexture.getWidth();
-                        int height = diffuseTexture.getHeight();
-
-                        // resize image to nearest power of two.***
-                        int resizeWidth = width;
-                        int resizeHeight = height;
-                        resizeWidth = ImageUtils.getNearestPowerOfTwo(resizeWidth);
-                        resizeHeight = ImageUtils.getNearestPowerOfTwo(resizeHeight);
-                        width = resizeWidth;
-                        height = resizeHeight;
-                        ImageResizer imageResizer = new ImageResizer();
-                        bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight);
-                        // end resize image to nearest power of two.***
-
-
-                        //format :
-                        // 1 = TYPE_INT_RGB,
-                        // 2 = TYPE_INT_ARGB,
-                        // 3 = TYPE_INT_ARGB_PRE,
-                        // 4 = TYPE_INT_BGR,
-                        // 5 = TYPE_3BYTE_BGR,
-                        // 6 = TYPE_4BYTE_ABGR,
-                        // TYPE_4BYTE_ABGR_PRE,
-                        // TYPE_BYTE_GRAY,
-                        // TYPE_BYTE_BINARY,
-                        // TYPE_BYTE_INDEXED,
-                        // TYPE_USHORT_GRAY,
-                        // TYPE_USHORT_565_RGB,
-                        // TYPE_USHORT_555_RGB,
-                        // TYPE_CUSTOM
-                        int format = diffuseTexture.getFormat();
-                        int glFormat = -1; // GL_RGB, GL_RGBA, GL_BGR, GL_BGRA
-                        if(format == 0)
-                        {
-                            glFormat = GL_RGB;
-                        }
-                        else if(format == 1)
-                        {
-                            glFormat = GL_RGBA;
-                        }
-                        else if(format == 5)
-                        {
-                            glFormat = GL_RGB;
-                        }
-                        else if(format == 6)
-                        {
-                            glFormat = GL_RGBA;
-                        }
-                        else
-                        {
-                            int hola = 0;
-                        }
-
-
-                        byte[] rgbaByteArray = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
-
-                        byte[] data = new byte[rgbaByteArray.length];
-                        for(int i = 0; i < rgbaByteArray.length; i += 1) {
-                            data[i] = rgbaByteArray[i];
-                        }
-
-                        ByteBuffer buffer = ByteBuffer.allocateDirect(rgbaByteArray.length);
-                        buffer.put(data);
-                        buffer.flip();
-                        buffer.position(0);
-
-
-
-
-                        int texLoc = shaderProgram.getUniformsMap().getUniformLocation("texture0");
-                        int testuniformLocation = glGetUniformLocation(shaderProgram.getProgramId(), "texture0");
-
-                        //diffuseTexture.flipImageY();
-
-                        GL20.glEnable(GL20.GL_TEXTURE_2D);
-                        GL20.glEnable(GL20.GL_BLEND);
-                        GL20.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-                        GL20.glDisable(GL_CULL_FACE);
-
-                        int textureId = GL20.glGenTextures();
-
-                        GL20.glActiveTexture(GL20.GL_TEXTURE0);
-                        GL20.glBindTexture(GL20.GL_TEXTURE_2D, textureId);
-                        GL20.glPixelStorei(GL20.GL_UNPACK_ALIGNMENT, 1);
-
-                        GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_MIN_FILTER, GL20.GL_NEAREST); // GL_LINEAR
-                        GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_MAG_FILTER, GL20.GL_NEAREST);
-                        GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_WRAP_S, GL20.GL_REPEAT);
-                        GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_WRAP_T, GL20.GL_REPEAT);
-
-                        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
-                                glFormat, GL_UNSIGNED_BYTE, buffer);
+                        int textureId = RenderableTexturesUtils.createGlTextureFromBufferedImage(bufferedImage, minFilter, magFilter, wrapS, wrapT);
 
                         diffuseTexture.setTextureId(textureId);
                     }
@@ -251,28 +170,28 @@ public class RenderEngine {
         int glType = renderableBuffer.getGlType();
 
         if (attributeType == AttributeType.POSITION) {
-            int location = shaderProgram.enableVertexLocation("aPosition");
+            int location = shaderProgram.enableAttribLocation("aPosition");
             if(location >= 0) {
                 GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId);
                 GL20.glVertexAttribPointer(location, glDimension, glType, false, 0, 0);
             }
         }
         else if (attributeType == AttributeType.NORMAL) {
-//            int location = shaderProgram.enableVertexLocation("aNormal");
+//            int location = shaderProgram.enableAttribLocation("aNormal");
 //            if(location >= 0) {
 //                GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId);
 //                GL20.glVertexAttribPointer(location, glDimension, glType, false, 0, 0);
 //            }
         }
         else if (attributeType == AttributeType.COLOR) {
-//            int location = shaderProgram.enableVertexLocation("aColor");
+//            int location = shaderProgram.enableAttribLocation("aColor");
 //            if(location >= 0) {
 //                GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId);
 //                GL20.glVertexAttribPointer(location, glDimension, glType, false, 0, 0);
 //            }
         }
         else if (attributeType == AttributeType.TEXCOORD) {
-            int location = shaderProgram.enableVertexLocation("aTexCoord");
+            int location = shaderProgram.enableAttribLocation("aTexCoord");
             if(location >= 0) {
                 GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId);
                 GL20.glVertexAttribPointer(location, glDimension, glType, false, 0, 0);

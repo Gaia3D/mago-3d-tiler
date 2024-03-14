@@ -15,9 +15,6 @@ public class RenderablePrimitive {
     Map<AttributeType, RenderableBuffer> mapAttribTypeRenderableBuffer;
     GaiaMaterial material;
 
-    @Setter
-    private int vaoId = -1;
-
     public RenderablePrimitive() {
         id = -1;
         guid = "no_guid";
