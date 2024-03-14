@@ -159,14 +159,10 @@ public class Engine {
             }
         });
 
-
-        shaderManager = new ShaderManager();
         setupShader();
 
         renderer = new RenderEngine();
-
         camera = new Camera();
-
         fboManager = new FboManager();
 
         int windowWidth = window.getWidth();
@@ -180,9 +176,13 @@ public class Engine {
         gaiaScenesContainer.setCamera(camera);
 
         // Test load a 3d file.***
-        String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\DC_library_del_3DS\\DC_library_del.3ds";
+        //String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\DC_library_del_3DS\\DC_library_del.3ds";
         //String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\CK_del_3DS\\CK_del.3ds";
         //String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\dogok_library_del_3DS\\dogok_library_del.3ds";
+        //String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\Dongdaemoongu_center_del_3DS\\Dongdaemoongu_center_del.3ds";
+        //String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\Edumuseum_del_150417_02_3DS\\Edumuseum_del_150417_02.3ds";
+        //String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\gangbuk_cultur_del_3DS\\gangbuk_cultur_del.3ds";
+        String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\gangil_del_3DS\\gangil_del.3ds";
         Converter assimpConverter = new AssimpConverter();
         List<GaiaScene> gaiaScenes = assimpConverter.load(filePath);
         RenderableGaiaScene renderableGaiaScene = InternDataConverter.getRenderableGaiaScene(gaiaScenes.get(0));
@@ -191,6 +191,8 @@ public class Engine {
     }
 
     private void setupShader() {
+        shaderManager = new ShaderManager();
+
         GL.createCapabilities();
 
         // create a scene shader program
@@ -238,7 +240,7 @@ public class Engine {
 
         colorRenderFbo.unbind();
 
-        // now render to windows.***
+        // now render to windows using screenQuad.***
         int colorRenderTextureId = colorRenderFbo.getColorTextureId();
         GL20.glEnable(GL20.GL_TEXTURE_2D);
         GL20.glActiveTexture(GL20.GL_TEXTURE0);
@@ -247,6 +249,7 @@ public class Engine {
         ShaderProgram screenShaderProgram = shaderManager.getShaderProgram("screen");
         screenShaderProgram.bind();
         screenQuad.render();
+        GL20.glBindTexture(GL20.GL_TEXTURE_2D, 0);
 
         screenShaderProgram.unbind();
     }
@@ -273,6 +276,9 @@ public class Engine {
             glClearDepth(1.0f);
             // 프레임 버퍼 클리어
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
             draw();
             // 색상버퍼 교체
