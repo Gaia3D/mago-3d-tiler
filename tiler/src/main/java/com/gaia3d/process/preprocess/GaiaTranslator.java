@@ -45,7 +45,11 @@ public class GaiaTranslator implements PreProcess {
             DirectPosition2D memSave_posWorld = new DirectPosition2D(DefaultGeographicCRS.WGS84, center.x, center.y);
             double[] memSave_alt = new double[1];
             memSave_alt[0] = 0;
-            coverage.evaluate((DirectPosition) memSave_posWorld, memSave_alt);
+            try {
+                coverage.evaluate((DirectPosition) memSave_posWorld, memSave_alt);
+            } catch (Exception e) {
+                log.warn("Failed to evaluate terrain height", e);
+            }
             //log.info("memSave_alt[0] : {}", memSave_alt[0]);
             center.z = memSave_alt[0];
         });

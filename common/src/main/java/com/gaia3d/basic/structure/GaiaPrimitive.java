@@ -275,10 +275,14 @@ public class GaiaPrimitive implements Serializable {
     }
 
     public void clear() {
-        this.vertices.forEach(GaiaVertex::clear);
-        this.surfaces.forEach(GaiaSurface::clear);
-        this.vertices.clear();
-        this.surfaces.clear();
+        if (this.vertices != null) {
+            this.vertices.forEach(GaiaVertex::clear);
+            this.vertices.clear();
+        }
+        if (this.surfaces != null) {
+            this.surfaces.forEach(GaiaSurface::clear);
+            this.surfaces.clear();
+        }
     }
 
     public GaiaPrimitive clone() {

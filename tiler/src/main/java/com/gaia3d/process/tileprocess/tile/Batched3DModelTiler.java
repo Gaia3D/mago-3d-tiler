@@ -89,7 +89,13 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         long totalTriangleCount = tileInfos.stream().mapToLong(TileInfo::getTriangleCount).sum();
         log.info("[TriangleCount] Total : {}", totalTriangleCount);
 
-        if (totalTriangleCount > triangleLimit) {
+        if (tileInfos.size() <= 1) {
+            Node childNode = createContentNode(parentNode, tileInfos, 0);
+            if (childNode != null) {
+                parentNode.getChildren().add(childNode);
+                createNode(childNode, tileInfos);
+            }
+        } else if (totalTriangleCount > triangleLimit) {
         //if (tileInfos.size() > nodeLimit) {
             // logical node distribute
             List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
@@ -119,7 +125,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
                     }
                 }
             }
-        } else if (!tileInfos.isEmpty()) {
+        } else if (tileInfos.size() <= 4 || !tileInfos.isEmpty()) {
             Node childNode = createContentNode(parentNode, tileInfos, 0);
             if (childNode != null) {
                 parentNode.getChildren().add(childNode);

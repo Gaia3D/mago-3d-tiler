@@ -32,8 +32,9 @@ public class GlobalOptions {
     //private static final int DEFAULT_NODE_LIMIT = 1024;
     private static final int DEFAULT_MIN_LOD = 0;
     private static final int DEFAULT_MAX_LOD = 3;
-    private static final int DEFAULT_POINT_LIMIT = 65536 * 4;
-    private static final byte DEFAULT_MULTI_THREAD_COUNT = 8;
+    private static final int DEFAULT_POINT_LIMIT = 65536;
+    private static final int DEFAULT_POINT_SCALE = 2;
+    private static final byte DEFAULT_MULTI_THREAD_COUNT = 4;
     private static final String DEFAULT_CRS = "4326";
     private static final String DEFAULT_NAME_COLUMN = "name";
     private static final String DEFAULT_HEIGHT_COLUMN = "height";
@@ -67,6 +68,8 @@ public class GlobalOptions {
     private String proj; // default projection
 
     private int pointLimit; // point limit per tile
+    private int pointScale; // point scale
+
     private int nodeLimit; // node limit per tile
     private int minLod; // minimum level of detail
     private int maxLod; // maximum level of detail
@@ -160,6 +163,7 @@ public class GlobalOptions {
 
         /* Point Cloud Options */
         instance.setPointLimit(command.hasOption(ProcessOptions.MAX_POINTS.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_POINTS.getArgName())) : DEFAULT_POINT_LIMIT);
+        instance.setPointScale(/*command.hasOption(ProcessOptions.POINT_SCALE.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.POINT_SCALE.getArgName())) : */DEFAULT_POINT_SCALE);
 
         /* 2D Data Column Options */
         instance.setNameColumn(command.hasOption(ProcessOptions.NAME_COLUMN.getArgName()) ? command.getOptionValue(ProcessOptions.NAME_COLUMN.getArgName()) : DEFAULT_NAME_COLUMN);

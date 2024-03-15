@@ -25,8 +25,29 @@ public class GaiaPointCloud implements Serializable {
     private GaiaBoundingBox gaiaBoundingBox = new GaiaBoundingBox();
     List<GaiaVertex> vertices = new ArrayList<>();
 
-    // Quarter based on the bounding box
     public List<GaiaPointCloud> distribute() {
+        double minX = gaiaBoundingBox.getMinX();
+        double minY = gaiaBoundingBox.getMinY();
+        double minZ = gaiaBoundingBox.getMinZ();
+        double maxX = gaiaBoundingBox.getMaxX();
+        double maxY = gaiaBoundingBox.getMaxY();
+        double maxZ = gaiaBoundingBox.getMaxZ();
+
+        double offsetX = maxX - minX;
+        double offsetY = maxY - minY;
+        double offsetZ = maxZ - minZ;
+
+        if (offsetZ < offsetX || offsetZ < offsetY) {
+            log.info("Distribute based on the bounding box: Quarter");
+            return distributeQuad();
+        } else {
+            log.info("Distribute based on the bounding box: Octree");
+            return distributeOct();
+        }
+    }
+
+    // Quarter based on the bounding box
+    public List<GaiaPointCloud> distributeQuad() {
         List<GaiaPointCloud> pointClouds = new ArrayList<>();
 
         GaiaBoundingBox gaiaBoundingBoxA = new GaiaBoundingBox();

@@ -21,6 +21,7 @@ import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.util.factory.Hints;
 import org.joml.Matrix4d;
+import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.locationtech.jts.geom.*;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
@@ -33,6 +34,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -57,6 +59,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         List<GaiaScene> scenes = new ArrayList<>();
         Tessellator tessellator = new Tessellator();
         Extruder extruder = new Extruder(tessellator);
+        InnerRingRemover innerRingRemover = new InnerRingRemover();
 
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         boolean flipCoordinate = globalOptions.isFlipCoordinate();
@@ -107,18 +110,57 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 }
                 if (!lineString.isValid()) {
                     log.warn("Invalid : {}", feature.getID());
-                    continue;
+                    //continue;
                 }
                 //log.info("{}", feature.getID());
 
+
+
                 GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
-                Coordinate[] coordinates = lineString.getCoordinates();
+                Coordinate[] outerCoordinates = lineString.getCoordinates();
+
+
+
+
+                int innerRingCount = polygon.getNumInteriorRing();
+
+                List<Coordinate[]> innerCoordinates = new ArrayList<>();
+                //for (int i = 0; i < 1; i++) {
+                for (int i = 0; i < innerRingCount; i++) {
+                    /*if (i > 1) {
+                        continue;
+                    }*/
+
+                    LineString innerRing = polygon.getInteriorRingN(i);
+                    innerCoordinates.add(innerRing.getCoordinates());
+                }
+
+                /*innerCoordinates = innerCoordinates.stream().sorted((a, b) -> {
+
+                    Coordinate[] inneringLeftDown = List.of(a).stream().sorted((a, b) -> {
+                        double positionA = a.x + a.y;
+                        double positionB = b.x + b.y;
+                        return Double.compare(positionA, positionB);
+                    }).findFirst().orElse(null);
+
+                    double minA = aEnvelope.getMinX() + aEnvelope.getMinY();
+                    double minB = bEnvelope.getMinX() + bEnvelope.getMinY();
+
+                    return -Double.compare(minA, minB);
+                }).collect(Collectors.toList());*/
+
+                outerCoordinates = innerRingRemover.removeAll(outerCoordinates, innerCoordinates);
+
+                /*for (Coordinate[] innerCoordinate : innerCoordinates) {
+                    outerCoordinates = innerRingRemover.remove(outerCoordinates, innerCoordinate);
+                }*/
 
                 GaiaBoundingBox boundingBox = new GaiaBoundingBox();
                 List<Vector3d> positions = new ArrayList<>();
 
                 Vector3d firstPosition = null;
-                for (Coordinate coordinate : coordinates) {
+                Coordinate previousCoordinate = null;
+                for (Coordinate coordinate : outerCoordinates) {
                     Point point = geometryFactory.createPoint(coordinate);
 
                     double x, y;
@@ -140,11 +182,14 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                         position = new Vector3d(x, y, 0.0d);
                     }
 
-                    if (firstPosition == null) {
-                        firstPosition = position;
-                    } else if (firstPosition.equals(position)) {
-                        break;
-                    }
+//                    if (previousCoordinate != null) {
+//                        if (previousCoordinate.equals2D(coordinate)) {
+//                            log.warn("same coordinate point : {} {}", previousCoordinate, coordinate);
+//                            continue;
+//                        }
+//                    }
+//                    previousCoordinate = coordinate;
+
                     positions.add(position);
                     boundingBox.addPoint(position);
                 }
@@ -161,7 +206,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                             .name(name)
                             .boundingBox(boundingBox)
                             .floorHeight(altitude)
-                            .roofHeight(height/* + skirtHeight*/)
+                            .roofHeight(height + skirtHeight)
                             .positions(positions)
                             .build();
                     buildings.add(building);
@@ -185,7 +230,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 rootNode.setName(building.getName());
 
                 Vector3d center = building.getBoundingBox().getCenter();
-                center.z = center.z/* - skirtHeight*/;
+                center.z = center.z - skirtHeight;
 
                 Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
                 Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
@@ -216,4 +261,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         shpFiles.dispose();
         return scenes;
     }
+
+
+
 }

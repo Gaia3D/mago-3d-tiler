@@ -39,7 +39,7 @@ public class GeometryOptimizer implements PreProcess {
             ArrayList<GaiaMesh> meshesToRemove = new ArrayList<>();
             for (GaiaMesh mesh : meshes) {
                 boolean faceRemoved = false;
-                ArrayList<GaiaPrimitive> primitives = mesh.getPrimitives();
+                List<GaiaPrimitive> primitives = mesh.getPrimitives();
                 ArrayList<GaiaPrimitive> primitivesToRemove = new ArrayList<>();
                 for (GaiaPrimitive primitive : primitives) {
                     List<GaiaSurface> surfaces = primitive.getSurfaces();

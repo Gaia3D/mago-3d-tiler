@@ -141,7 +141,9 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         int vertexLength = pointCloud.getVertices().size();
 
         int pointLimit = globalOptions.getPointLimit();
-        List<GaiaPointCloud> divided = pointCloud.divideChunkSize(pointLimit);
+        int pointScale = globalOptions.getPointScale();
+
+        List<GaiaPointCloud> divided = pointCloud.divideChunkSize(pointLimit * pointScale);
         GaiaPointCloud selfPointCloud = divided.get(0);
         GaiaPointCloud remainPointCloud = divided.get(1);
 
@@ -151,6 +153,8 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
 
         double geometricErrorCalc = calcGeometricError(selfPointCloud);
+        double calculatedGeometricError = geometricErrorCalc / pointScale / 12;
+        log.info("[Tiling][ContentNode][{}] geometricError : {}", parentNode.getNodeCode(), calculatedGeometricError);
 
         Node childNode = new Node();
         childNode.setParent(parentNode);
@@ -160,8 +164,10 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         childNode.setRefine(Node.RefineType.ADD);
         childNode.setChildren(new ArrayList<>());
         childNode.setNodeCode(parentNode.getNodeCode() + pointCloud.getCode());
-        childNode.setGeometricError(geometricErrorCalc/2);
-        //childNode.setGeometricError(geometricError);
+
+        childNode.setGeometricError(calculatedGeometricError);
+        //calculatedGeometricError = Math.round(calculatedGeometricError);
+        //childNode.setGeometricError(geometricError * 2);
 
         TileInfo selfTileInfo = TileInfo.builder()
                 .pointCloud(selfPointCloud)
@@ -171,7 +177,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         tileInfos.add(selfTileInfo);
 
         ContentInfo contentInfo = new ContentInfo();
-        contentInfo.setName("gaiaPointcloud");
+        contentInfo.setName("points-cloud");
         contentInfo.setLod(LevelOfDetail.LOD0);
         contentInfo.setBoundingBox(childBoundingBox);
         contentInfo.setNodeCode(childNode.getNodeCode());
@@ -186,10 +192,10 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         log.info("[Tiling][ContentNode][{}]",childNode.getNodeCode());
 
         if (vertexLength > 0) { // vertexLength > DEFUALT_MAX_COUNT
-            List<GaiaPointCloud> distributes = remainPointCloud.distributeOct();
+            List<GaiaPointCloud> distributes = remainPointCloud.distribute();
             distributes.forEach(distribute -> {
                 if (!distribute.getVertices().isEmpty()) {
-                    createNode(childNode, distribute, geometricError/2);
+                    createNode(childNode, distribute, geometricError / 2);
                 }
             });
         }

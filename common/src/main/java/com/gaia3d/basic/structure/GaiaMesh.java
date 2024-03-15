@@ -27,7 +27,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GaiaMesh implements Serializable {
-    private ArrayList<GaiaPrimitive> primitives = new ArrayList<>();
+    private List<GaiaPrimitive> primitives = new ArrayList<>();
 
     public GaiaBoundingBox getBoundingBox(Matrix4d transform) {
         GaiaBoundingBox boundingBox = null;
@@ -229,7 +229,7 @@ public class GaiaMesh implements Serializable {
 
     public void clear() {
         this.primitives.forEach(GaiaPrimitive::clear);
-        this.primitives.clear();
+        //this.primitives.clear();
     }
 
     public GaiaMesh clone() {

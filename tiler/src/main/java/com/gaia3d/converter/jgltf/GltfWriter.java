@@ -161,11 +161,12 @@ public class GltfWriter {
             normalBytes[i] = (byte) 127;
         }*/
 
-        boolean isIntegerIndices = (gaiaMesh.getPositionsCount() / 3) >= 65535;
+        boolean isIntegerIndices = gaiaMesh.getIndicesCount() >= 65535;
+        //boolean isIntegerIndices = (gaiaMesh.getPositionsCount() / 3) >= 65535;
         if (isIntegerIndices) {
-            log.warn("Integer indices are used. The number of indices is greater than {}/65535", gaiaMesh.getPositionsCount() / 3);
+            log.warn("Integer indices are used. The number of indices is greater than {}/65535", gaiaMesh.getIndicesCount());
         }
-        //boolean isIntegerIndices = true;
+        //isIntegerIndices = true;
 
         GltfNodeBuffer nodeBuffer = initNodeBuffer(gaiaMesh, isIntegerIndices);
         createBuffer(gltf, nodeBuffer);
