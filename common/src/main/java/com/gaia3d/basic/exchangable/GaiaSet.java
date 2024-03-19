@@ -110,7 +110,12 @@ public class GaiaSet implements Serializable{
                     File inputPathFile = new File(imagePath);
                     inputPathFile = ImageUtils.getChildFile(parentPath.toFile(), diffusePath);
                     File outputPathFile = outputPath.toFile();
-                    if (!outputPathFile.exists()) {
+
+                    if (inputPathFile == null) {
+                        log.error("Texture Image Path is null. {}", imagePath);
+                    } else if (outputPathFile.exists()) {
+                        log.error("already outputPathFile exists");
+                    } else {
                         FileUtils.copyFile(inputPathFile, outputPath.toFile());
                     }
                 }

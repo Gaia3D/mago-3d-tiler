@@ -193,13 +193,14 @@ public class AssimpConverter implements Converter {
     }
 
     private List<String> getEmbeddedTexturePath(AIScene aiScene, String filePath, String fileName) {
+        String EMBEDDED_TEXTURES_DIR = "embedded_textures";
         List<String> embeddedTextures = new ArrayList<>();
         // embedded textures
         PointerBuffer aiTextures = aiScene.mTextures();
         String fileNameWithoutExtension = FilenameUtils.removeExtension(fileName);
         int numTextures = aiScene.mNumTextures();
         for (int i = 0; i < numTextures; i++) {
-            File path = new File(filePath, "embedded_textures");
+            File path = new File(filePath, EMBEDDED_TEXTURES_DIR);
             path.mkdirs();
 
             assert aiTextures != null;
@@ -282,7 +283,7 @@ public class AssimpConverter implements Converter {
 
             File file = ImageUtils.getChildFile(parentPath.toFile(), diffTexPath);
             if (file != null && file.exists() && file.isFile()) {
-                texture.setPath(file.getName());
+                texture.setPath(diffTexPath);
                 textures.add(texture);
                 material.getTextures().put(texture.getType(), textures);
             } else {
@@ -458,19 +459,9 @@ public class AssimpConverter implements Converter {
                 } else {
                     vertex.setTexcoords(new Vector2d(textureCoordinate.x(), textureCoordinate.y()));
                 }
+            } else {
+                vertex.setTexcoords(new Vector2d());
             }
-
-            if(colorsBuffer != null)
-            {
-                AIColor4D color = colorsBuffer.get(i);
-                int hola = 0;
-            }
-            else
-            {
-                // set the diffuse color.***
-            }
-
-
 
             diffuseColor[0] = (byte) (diffuse.x * 255);
             diffuseColor[1] = (byte) (diffuse.y * 255);
