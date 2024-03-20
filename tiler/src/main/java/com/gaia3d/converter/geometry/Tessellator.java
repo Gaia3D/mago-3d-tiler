@@ -16,7 +16,6 @@ public class Tessellator {
 
         boolean isCCW = this.validateAngle(positions);
         if (!isCCW) {
-            log.warn("IS CCW POLYGON");
             Collections.reverse(positions);
         }
 
