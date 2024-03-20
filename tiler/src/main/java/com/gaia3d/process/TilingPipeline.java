@@ -187,11 +187,10 @@ public class TilingPipeline implements Pipeline {
     private void executeThread(ExecutorService executorService, List<Runnable> tasks) throws InterruptedException {
         try {
             for (Runnable task : tasks) {
-                //executorService.submit(task);
                 Future<?> future = executorService.submit(task);
-                // TODO MultiThead BUG
-                future.get();
-                //future.isDone();
+                if (globalOptions.isDebug()) {
+                    future.get();
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

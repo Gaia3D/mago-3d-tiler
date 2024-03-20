@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class StringUtils {
@@ -52,5 +53,13 @@ public class StringUtils {
     public static Optional<String> getExtensionByStringHandling(String filename) {
         // https://www.baeldung.com/java-file-extension
         return Optional.ofNullable(filename).filter(f -> f.contains(".")).map(f -> f.substring(filename.lastIndexOf(".") + 1));
+    }
+
+    public static String convertUTF8(String ascii) {
+        return ascii.chars()
+                .mapToObj(c -> (char) c)
+                .map(c -> c < 128 ? c : '_')
+                .map(String::valueOf)
+                .collect(Collectors.joining());
     }
 }

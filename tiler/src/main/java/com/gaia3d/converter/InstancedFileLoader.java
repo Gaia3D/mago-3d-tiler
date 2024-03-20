@@ -112,16 +112,13 @@ public class InstancedFileLoader implements FileLoader {
                 }
             }
         } else {
-            Path meshPath = file.toPath().getParent();
-            File meshData = meshPath.resolve("tree.dae").toFile(); // TODO
-
+            File meshData = new File(globalOptions.getInstancePath());
             List<GaiaScene> scenes = loadScene(meshData);
             for (GaiaScene scene : scenes) {
                 if (instanceScene == null) {
                     instanceScene = scene;
                 }
             }
-
             // geojson, shape type
             List<KmlInfo> kmlInfos = kmlReader.readAll(file);
             if (kmlInfos != null) {
