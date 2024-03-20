@@ -108,7 +108,7 @@ public class LasConverter {
                 byte[] rgb;
                 if (hasRgbColor) {
                     rgb = getColorByRGB(point);
-                    //rgb = getColorByByteRGB(point);
+                    //rgb = getColorByByteRGB(point); // only for test
                 } else {
                     rgb = getColorIntensity(point);
                 }

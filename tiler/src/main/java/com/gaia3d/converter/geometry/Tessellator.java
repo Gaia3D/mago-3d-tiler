@@ -27,8 +27,6 @@ public class Tessellator {
             result.addAll(triangles);
         });
 
-
-
         return result;
     }
 
@@ -56,7 +54,6 @@ public class Tessellator {
         if (result == null) {
             result = new ArrayList<>();
         }
-        //log.warn("new");
         if (isConvex(positions)) {
             result.add(positions);
         } else {
@@ -68,19 +65,17 @@ public class Tessellator {
             int clockWiseIndex = positions.indexOf(clockWisePosition);
             List<Vector3d> nearestPositions = sortNearest(positions, clockWiseIndex);
 
-            boolean isSuccessful = false;
             for (Vector3d nearestPosition : nearestPositions) {
                 log.warn("NEAREST: {}:{}:{}", clockWisePosition, nearestPosition, positions.size());
                 List<List<Vector3d>> polygons = splitConvex(positions, clockWisePosition, nearestPosition);
 
                 int resultA = polygons.get(0).size();
                 int resultB = polygons.get(1).size();
-                if (positions.size() != resultA + resultB - 2) {
+                if (positions.size() < resultA + resultB - 2) {
                     log.warn("SPLIT ERROR {}:{}:{}", resultA, resultB, positions.size());
                 } else {
                     log.warn("SPLIT SUCCESS {}:{}:{}", resultA, resultB, positions.size());
                 }
-
 
                 boolean isIntersection = findIntersection(positions, clockWisePosition, nearestPosition);
                 if (!isIntersection) {
@@ -89,19 +84,11 @@ public class Tessellator {
                     if (angleA == angleB) {
                         convertConvex(result, polygons.get(0));
                         convertConvex(result, polygons.get(1));
-                        isSuccessful = true;
                         break;
                     }
                 }
             }
-
-            if (!isSuccessful) {
-                log.warn("is FAILED");
-            }
         }
-
-        //List<Vector3d> convex = positions; // temp only convex for test
-        //result.add(convex);
         return result;
     }
 
@@ -109,16 +96,6 @@ public class Tessellator {
         List<List<Vector3d>> result = new ArrayList<>();
         result.add(createSplits(positions, positionA, positionB));
         result.add(createSplits(positions, positionB, positionA));
-
-//        int resultA = result.get(0).size();
-//        int resultB = result.get(1).size();
-//
-//        if (positions.size() != resultA + resultB - 2) {
-//            log.warn("SPLIT ERROR");
-//        } else {
-//            log.warn("SPLIT SUCCESS");
-//        }
-
         return result;
     }
 
@@ -139,7 +116,6 @@ public class Tessellator {
             }
             index++;
         }
-        result.add(startPosition);
         return result;
     }
 
@@ -226,6 +202,8 @@ public class Tessellator {
         Vector3d v2 = new Vector3d();
         b.sub(a, v1);
         c.sub(b, v2);
+        v1.normalize();
+        v2.normalize();
         return Math.toDegrees(v1.angle(v2));
     }
 
@@ -247,42 +225,18 @@ public class Tessellator {
         return c1;
     }
 
-    private boolean compare(Vector3d a, Vector3d b) {
-        return a.x == b.x && a.y == b.y && a.z == b.z;
-    }
-
     private boolean findIntersection(List<Vector3d> positions, Vector3d startPosition, Vector3d endPosition) {
         for (int index = 0; index < positions.size(); index++) {
             int next = (index + 1) % positions.size();
             Vector3d crntPosition = positions.get(index);
             Vector3d nextPosition = positions.get(next);
 
-//            // Same Line
             if (startPosition.equals(crntPosition) && endPosition.equals(nextPosition)) {
-                log.info("SAME INTERSECT1, {}:{}:{}:{}", startPosition, endPosition, crntPosition, nextPosition);
                 return true;
             }
             if (startPosition.equals(nextPosition) && endPosition.equals(crntPosition)) {
-                log.info("SAME INTERSECT2, {}:{}:{}:{}", startPosition, endPosition, crntPosition, nextPosition);
                 return true;
             }
-//            if (startPosition.equals(endPosition) || crntPosition.equals(nextPosition) || startPosition.equals(crntPosition) || endPosition.equals(nextPosition)) {
-//                log.info("SAME INTERSECT3, {}:{}:{}:{}", startPosition, endPosition, crntPosition, nextPosition);
-//                return true;
-//            }
-
-            /*boolean containsBoundary = containsBoundary(startPosition, endPosition, crntPosition, nextPosition);
-            if (!containsBoundary) {
-                continue;
-            }
-*/
-//            if ((compare(startPosition, crntPosition) && compare(endPosition, nextPosition)) || (compare(startPosition, nextPosition) && compare(endPosition, crntPosition))) {
-//                return true;
-//            }
-
-            /*if (startPosition.equals(endPosition) || crntPosition.equals(nextPosition)) {
-                return true;
-            }*/
 
             if (isIntersection(startPosition, endPosition, crntPosition, nextPosition)) {
                 return true;
@@ -292,19 +246,6 @@ public class Tessellator {
             }
         }
         return false;
-    }
-
-
-    private boolean containsBoundary(Vector3d a1, Vector3d a2, Vector3d b1, Vector3d b2) {
-        GaiaBoundingBox box = new GaiaBoundingBox();
-        box.addPoint(a1);
-        box.addPoint(a2);
-
-        GaiaBoundingBox box2 = new GaiaBoundingBox();
-        box2.addPoint(b1);
-        box2.addPoint(b2);
-
-        return box.contains(box2);
     }
 
     private boolean isIntersection(Vector3d a1, Vector3d a2, Vector3d b1, Vector3d b2) {
