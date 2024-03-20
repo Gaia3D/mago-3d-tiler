@@ -124,29 +124,12 @@ class Mago3DTilerUnitTest {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
                 "-outputType", "i3dm",
-                //"-autoUpAxis",
+                "-autoUpAxis",
         };
         Mago3DTilerMain.main(args);
     }
 
-    //@Test
-    void case06B3dm() {
-        String path = "case06-kml-auto-batched";
-        //String path = "case06-kml-auto-instance";
-        //sampleI3dm(path, 20 , 100);
-        File input = new File(INPUT_PATH, path);
-        File output = new File(OUTPUT_PATH, path);
-        FileUtils.deleteQuietly(output);
-        String[] args = {
-                "-input", input.getAbsolutePath(),
-                "-output", output.getAbsolutePath(),
-                //"-autoUpAxis",
-                "-debug"
-        };
-        Mago3DTilerMain.main(args);
-    }
-
-    //@Test
+    @Test
     void case07() {
         String path = "case07-shp-seoul";
         File input = new File(INPUT_PATH, path);

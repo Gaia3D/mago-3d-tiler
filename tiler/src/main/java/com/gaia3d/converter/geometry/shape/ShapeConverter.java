@@ -116,12 +116,12 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
                 Coordinate[] outerCoordinates = lineString.getCoordinates();
 
-                int innerRingCount = polygon.getNumInteriorRing();
+                /*int innerRingCount = polygon.getNumInteriorRing();
                 List<Coordinate[]> innerCoordinates = new ArrayList<>();
                 for (int i = 0; i < innerRingCount; i++) {
                     LineString innerRing = polygon.getInteriorRingN(i);
                     innerCoordinates.add(innerRing.getCoordinates());
-                }
+                }*/
                 //outerCoordinates = innerRingRemover.removeAll(outerCoordinates, innerCoordinates);
 
                 GaiaBoundingBox boundingBox = new GaiaBoundingBox();

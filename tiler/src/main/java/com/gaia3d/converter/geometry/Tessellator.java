@@ -66,16 +66,7 @@ public class Tessellator {
             List<Vector3d> nearestPositions = sortNearest(positions, clockWiseIndex);
 
             for (Vector3d nearestPosition : nearestPositions) {
-                log.warn("NEAREST: {}:{}:{}", clockWisePosition, nearestPosition, positions.size());
                 List<List<Vector3d>> polygons = splitConvex(positions, clockWisePosition, nearestPosition);
-
-                int resultA = polygons.get(0).size();
-                int resultB = polygons.get(1).size();
-                if (positions.size() < resultA + resultB - 2) {
-                    log.warn("SPLIT ERROR {}:{}:{}", resultA, resultB, positions.size());
-                } else {
-                    log.warn("SPLIT SUCCESS {}:{}:{}", resultA, resultB, positions.size());
-                }
 
                 boolean isIntersection = findIntersection(positions, clockWisePosition, nearestPosition);
                 if (!isIntersection) {
