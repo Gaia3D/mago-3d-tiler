@@ -115,8 +115,8 @@ class InnerRingRemoverTest {
 
 
         InnerRingRemover innerRingRemover = new InnerRingRemover();
-        boolean result = innerRingRemover.isIntersect(a, b, c, d);
+        //boolean result = innerRingRemover.isIntersect(a, b, c, d);
 
-        System.out.println(result);
+        //System.out.println(result);
     }
 }

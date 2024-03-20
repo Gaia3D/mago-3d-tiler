@@ -112,54 +112,21 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                     log.warn("Invalid : {}", feature.getID());
                     //continue;
                 }
-                //log.info("{}", feature.getID());
-
-
 
                 GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
                 Coordinate[] outerCoordinates = lineString.getCoordinates();
 
-
-
-
                 int innerRingCount = polygon.getNumInteriorRing();
-
                 List<Coordinate[]> innerCoordinates = new ArrayList<>();
-                //for (int i = 0; i < 1; i++) {
                 for (int i = 0; i < innerRingCount; i++) {
-                    /*if (i > 1) {
-                        continue;
-                    }*/
-
                     LineString innerRing = polygon.getInteriorRingN(i);
                     innerCoordinates.add(innerRing.getCoordinates());
                 }
-
-                /*innerCoordinates = innerCoordinates.stream().sorted((a, b) -> {
-
-                    Coordinate[] inneringLeftDown = List.of(a).stream().sorted((a, b) -> {
-                        double positionA = a.x + a.y;
-                        double positionB = b.x + b.y;
-                        return Double.compare(positionA, positionB);
-                    }).findFirst().orElse(null);
-
-                    double minA = aEnvelope.getMinX() + aEnvelope.getMinY();
-                    double minB = bEnvelope.getMinX() + bEnvelope.getMinY();
-
-                    return -Double.compare(minA, minB);
-                }).collect(Collectors.toList());*/
-
-                outerCoordinates = innerRingRemover.removeAll(outerCoordinates, innerCoordinates);
-
-                /*for (Coordinate[] innerCoordinate : innerCoordinates) {
-                    outerCoordinates = innerRingRemover.remove(outerCoordinates, innerCoordinate);
-                }*/
+                //outerCoordinates = innerRingRemover.removeAll(outerCoordinates, innerCoordinates);
 
                 GaiaBoundingBox boundingBox = new GaiaBoundingBox();
                 List<Vector3d> positions = new ArrayList<>();
 
-                Vector3d firstPosition = null;
-                Coordinate previousCoordinate = null;
                 for (Coordinate coordinate : outerCoordinates) {
                     Point point = geometryFactory.createPoint(coordinate);
 
@@ -181,14 +148,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                     } else {
                         position = new Vector3d(x, y, 0.0d);
                     }
-
-//                    if (previousCoordinate != null) {
-//                        if (previousCoordinate.equals2D(coordinate)) {
-//                            log.warn("same coordinate point : {} {}", previousCoordinate, coordinate);
-//                            continue;
-//                        }
-//                    }
-//                    previousCoordinate = coordinate;
 
                     positions.add(position);
                     boundingBox.addPoint(position);
@@ -261,7 +220,4 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         shpFiles.dispose();
         return scenes;
     }
-
-
-
 }

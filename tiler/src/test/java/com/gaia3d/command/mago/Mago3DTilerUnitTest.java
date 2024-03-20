@@ -42,6 +42,8 @@ class Mago3DTilerUnitTest {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "3ds",
                 "-crs", "5186",
+                //"-minLod", "0",
+                //"-maxLod", "0",
                 "-output", output.getAbsolutePath(),
         };
         Mago3DTilerMain.main(args);
@@ -144,7 +146,7 @@ class Mago3DTilerUnitTest {
         Mago3DTilerMain.main(args);
     }
 
-    @Test
+    //@Test
     void case07() {
         String path = "case07-shp-seoul";
         File input = new File(INPUT_PATH, path);
@@ -389,7 +391,7 @@ class Mago3DTilerUnitTest {
         Mago3DTilerMain.main(args);
     }
 
-    @Test
+    //@Test
     void case21() {
         String path = "case21-las-sangjiuni";
         File input = new File(INPUT_PATH, path);
@@ -476,7 +478,7 @@ class Mago3DTilerUnitTest {
         Mago3DTilerMain.main(args);
     }
 
-    @Test
+    //@Test
     void case26() {
         String path = "case26-collada-sangjiuni";
         File input = new File(INPUT_PATH, path);

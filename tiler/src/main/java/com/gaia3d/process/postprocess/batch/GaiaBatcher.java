@@ -240,7 +240,6 @@ public class GaiaBatcher {
             GaiaMaterial material = findMaterial(textureMaterials, bufferDataSet.getMaterialId());
             return !material.isRepeat();
         }).collect(Collectors.toList());
-        setMaterialsIndexInList(clampMaterials, clampDataSets);
 
         /* 2. repeat pattern texture use materials */
         List<GaiaMaterial> repeatMaterials = textureMaterials.stream().filter(GaiaMaterial::isRepeat).collect(Collectors.toList());
@@ -248,6 +247,8 @@ public class GaiaBatcher {
             GaiaMaterial material = findMaterial(textureMaterials, bufferDataSet.getMaterialId());
             return material.isRepeat();
         }).collect(Collectors.toList());
+
+        setMaterialsIndexInList(clampMaterials, clampDataSets);
         setMaterialsIndexInList(repeatMaterials, repeatDataSets);
 
         /* batching textures for clamp texture material */
