@@ -29,18 +29,18 @@ public class GlobalOptions {
 
     private static final String DEFAULT_INPUT_FORMAT = "kml";
     private static final String DEFAULT_OUTPUT_FORMAT = "b3dm";
-    private static final String DEFAULT_INSTANCE_FILE = "instance.dae";
+    //private static final int DEFAULT_NODE_LIMIT = 1024;
     private static final int DEFAULT_MIN_LOD = 0;
     private static final int DEFAULT_MAX_LOD = 3;
-    private static final int DEFAULT_POINT_LIMIT = 262144;
-    private static final byte DEFAULT_MULTI_THREAD_COUNT = 4;
+    private static final int DEFAULT_POINT_LIMIT = 65536 * 4;
+    private static final byte DEFAULT_MULTI_THREAD_COUNT = 8;
     private static final String DEFAULT_CRS = "4326";
     private static final String DEFAULT_NAME_COLUMN = "name";
     private static final String DEFAULT_HEIGHT_COLUMN = "height";
     private static final String DEFAULT_ALTITUDE_COLUMN = "altitude";
     private static final double DEFAULT_ABSOLUTE_ALTITUDE = 0.0d;
     private static final double DEFAULT_MINIMUM_HEIGHT = 1.0d;
-    private static final double DEFAULT_SKIRT_HEIGHT = 4.0d;
+    private static final double DEFAULT_SKIRT_HEIGHT = 10.0d;
     private static final boolean DEFAULT_DEBUG_LOD = false;
 
 
@@ -59,10 +59,7 @@ public class GlobalOptions {
     private String inputPath; // input file or dir path
     private String outputPath; // output dir path
     private String logPath; // log file path
-
     private String terrainPath; // terrain file path
-    private String instancePath; // instance file path
-
     private String inputFormat; // input file format
     private String outputFormat; // output file format
 
@@ -131,13 +128,6 @@ public class GlobalOptions {
             instance.setTerrainPath(command.getOptionValue(ProcessOptions.TERRAIN.getArgName()));
             validateInputPath(new File(instance.getTerrainPath()).toPath());
         }
-
-        if (command.hasOption(ProcessOptions.INSTANCE_FILE.getArgName())) {
-            instance.setInstancePath(command.getOptionValue(ProcessOptions.INSTANCE_FILE.getArgName()));
-        } else {
-            instance.setInstancePath(instance.getInputPath() + File.separator + DEFAULT_INSTANCE_FILE);
-        }
-
         if (command.hasOption(ProcessOptions.PROJ4.getArgName())) {
             instance.setProj(command.hasOption(ProcessOptions.PROJ4.getArgName()) ? command.getOptionValue(ProcessOptions.PROJ4.getArgName()) : null);
             CoordinateReferenceSystem crs = null;
