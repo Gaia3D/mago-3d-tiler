@@ -25,7 +25,7 @@ class Mago3DTilerFormatTest {
                 "-output", output.getAbsolutePath(),
                 "-inputType", "3ds",
                 "-crs", "5186",
-                "-gltf",
+                //"-gltf",
                 //"-autoUpAxis",
         };
         Mago3DTilerMain.main(args);
@@ -122,7 +122,7 @@ class Mago3DTilerFormatTest {
                 "-output", output.getAbsolutePath(),
                 "-inputType", "obj",
                 "-crs", "5186",
-                "-glb"
+                //"-glb"
                 //"-autoUpAxis",
         };
         Mago3DTilerMain.main(args);

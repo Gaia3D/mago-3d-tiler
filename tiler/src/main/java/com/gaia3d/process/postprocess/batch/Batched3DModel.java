@@ -60,19 +60,16 @@ public class Batched3DModel implements TileModel {
         List<String> nodeNames = new ArrayList<>();
         List<Double> geometricErrors = new ArrayList<>();
         List<Double> heights = new ArrayList<>();
-        AtomicInteger atomicInteger = new AtomicInteger(0);
         tileInfos.forEach((tileInfo) -> {
             GaiaSet set = tileInfo.getSet();
             String projectName = set.getProjectName();
             // convert utf-8 to ascii
             String asciiProjectName = StringUtils.convertUTF8(projectName);
             projectNames.add(asciiProjectName);
-            //projectNames.add("BATCHED_" + atomicInteger.getAndIncrement());
             nodeNames.add(tileInfo.getName());
             geometricErrors.add(tileInfo.getBoundingBox().getLongestDistance());
             GaiaBoundingBox boundingBox = tileInfo.getBoundingBox();
             heights.add(boundingBox.getMaxZ() - boundingBox.getMinZ());
-            atomicInteger.getAndIncrement();
         });
 
 

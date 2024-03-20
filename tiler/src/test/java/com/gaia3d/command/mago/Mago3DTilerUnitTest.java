@@ -123,7 +123,7 @@ class Mago3DTilerUnitTest {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
                 "-outputType", "i3dm",
-                "-autoUpAxis",
+                //"-autoUpAxis",
         };
         Mago3DTilerMain.main(args);
     }
