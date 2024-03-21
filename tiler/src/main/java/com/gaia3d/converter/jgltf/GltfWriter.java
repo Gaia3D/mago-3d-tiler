@@ -161,11 +161,12 @@ public class GltfWriter {
             normalBytes[i] = (byte) 127;
         }*/
 
-        boolean isIntegerIndices = (gaiaMesh.getPositionsCount() / 3) >= 65535;
+        boolean isIntegerIndices = gaiaMesh.getIndicesCount() >= 65535;
+        //boolean isIntegerIndices = (gaiaMesh.getPositionsCount() / 3) >= 65535;
         if (isIntegerIndices) {
-            log.warn("Integer indices are used. The number of indices is greater than {}/65535", gaiaMesh.getPositionsCount() / 3);
+            log.warn("Integer indices are used. The number of indices is greater than {}/65535", gaiaMesh.getIndicesCount());
         }
-        //boolean isIntegerIndices = true;
+        //isIntegerIndices = true;
 
         GltfNodeBuffer nodeBuffer = initNodeBuffer(gaiaMesh, isIntegerIndices);
         createBuffer(gltf, nodeBuffer);
@@ -446,7 +447,8 @@ public class GltfWriter {
         // Set the alpha mode.***
         boolean isOpaque = gaiaMaterial.isOpaqueMaterial();
         if (!isOpaque) {
-            material.setAlphaMode("BLEND"); // "OPAQUE", "MASK", "BLEND"
+            material.setAlphaMode("MASK"); // "OPAQUE", "MASK", "BLEND"
+            material.setAlphaCutoff(0.0f);
         } else {
             material.setAlphaMode("OPAQUE"); // "OPAQUE", "MASK", "BLEND"
         }
@@ -462,11 +464,11 @@ public class GltfWriter {
             pbrMetallicRoughness.setBaseColorTexture(textureInfo);
             pbrMetallicRoughness.setBaseColorFactor(new float[]{1.0f, 1.0f, 1.0f, 1.0f});
             pbrMetallicRoughness.setMetallicFactor(0.0f);
-            pbrMetallicRoughness.setRoughnessFactor(0.0f);
+            pbrMetallicRoughness.setRoughnessFactor(0.5f);
         } else {
             pbrMetallicRoughness.setBaseColorFactor(new float[]{1.0f, 1.0f, 1.0f, 1.0f});
             pbrMetallicRoughness.setMetallicFactor(0.0f);
-            pbrMetallicRoughness.setRoughnessFactor(0.0f);
+            pbrMetallicRoughness.setRoughnessFactor(0.5f);
         }
 
         material.setPbrMetallicRoughness(pbrMetallicRoughness);

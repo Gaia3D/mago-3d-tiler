@@ -7,25 +7,26 @@ import org.joml.Vector3d;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.io.IOException;
 
 @Slf4j
 class Mago3DTilerUnitTest {
 
     private static final String INPUT_PATH = "D:\\Mago3DTiler-UnitTest\\input";
     //private static final String OUTPUT_PATH = "D:\\Mago3DTiler-UnitTest\\output";
-    private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\mago\\mago-3d-tiler\\viewer\\mago-3d-tiler-data\\";
+    private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\mago-viewer\\data\\tilesets\\";
 
     @Test
     void case00() {
-        String path = "case00-3ds-gy";
+        String path = "case00-3ds-icgy";
         File input = new File(INPUT_PATH, path);
         File output = new File(OUTPUT_PATH, path);
         FileUtils.deleteQuietly(output);
-        String args[] = {
+        String[] args = {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "3ds",
                 "-crs", "5186",
-                "-autoUpAxis",
+                //"-autoUpAxis",
                 "-output", output.getAbsolutePath(),
         };
         Mago3DTilerMain.main(args);
@@ -33,15 +34,16 @@ class Mago3DTilerUnitTest {
 
     @Test
     void case01() {
-        String path = "case01-3ds-ws2";
+        String path = "case01-3ds-nyjws2";
         File input = new File(INPUT_PATH, path);
         File output = new File(OUTPUT_PATH, path);
         FileUtils.deleteQuietly(output);
-        String args[] = {
+        String[] args = {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "3ds",
                 "-crs", "5186",
-                "-autoUpAxis",
+                //"-minLod", "0",
+                //"-maxLod", "0",
                 "-output", output.getAbsolutePath(),
         };
         Mago3DTilerMain.main(args);
@@ -53,9 +55,10 @@ class Mago3DTilerUnitTest {
         File input = new File(INPUT_PATH, path);
         File output = new File(OUTPUT_PATH, path);
         FileUtils.deleteQuietly(output);
-        String args[] = {
+        String[] args = {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
+                //"-ignoreTextures",
                 //"-autoUpAxis", // is not supported
         };
         Mago3DTilerMain.main(args);
@@ -67,7 +70,7 @@ class Mago3DTilerUnitTest {
         File input = new File(INPUT_PATH, path);
         File output = new File(OUTPUT_PATH, path);
         FileUtils.deleteQuietly(output);
-        String args[] = {
+        String[] args = {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "shp",
                 "-output", output.getAbsolutePath(),
@@ -84,7 +87,7 @@ class Mago3DTilerUnitTest {
         File input = new File(INPUT_PATH, path);
         File output = new File(OUTPUT_PATH, path);
         FileUtils.deleteQuietly(output);
-        String args[] = {
+        String[] args = {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "las",
                 "-autoUpAxis",
@@ -100,12 +103,12 @@ class Mago3DTilerUnitTest {
         File input = new File(INPUT_PATH, path);
         File output = new File(OUTPUT_PATH, path);
         FileUtils.deleteQuietly(output);
-        String args[] = {
+        String[] args = {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
                 "-outputType", "i3dm",
                 "-autoUpAxis",
-                "-glb"
+                //"-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -113,31 +116,32 @@ class Mago3DTilerUnitTest {
     @Test
     void case06() {
         String path = "case06-kml-auto-instance";
-        sampleI3dm(path, 40 , 100);
+        sampleI3dm(path, 100, 100);
         File input = new File(INPUT_PATH, path);
         File output = new File(OUTPUT_PATH, path);
         FileUtils.deleteQuietly(output);
-        String args[] = {
+        String[] args = {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
                 "-outputType", "i3dm",
                 "-autoUpAxis",
-                "-minLod", "3",
-                "-maxLod", "3",
         };
         Mago3DTilerMain.main(args);
     }
 
-    //@Test
+    @Test
     void case07() {
         String path = "case07-shp-seoul";
         File input = new File(INPUT_PATH, path);
         File output = new File(OUTPUT_PATH, path);
-        FileUtils.deleteQuietly(output);
-        String args[] = {
+        File terrain = new File(input, "terrain.tif");
+        //FileUtils.deleteQuietly(output);
+        String[] args = {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
+                "-terrain", terrain.getAbsolutePath(),
                 "-inputType", "shp",
+                "-crs", "5181",
                 "-autoUpAxis",
                 "-refineAdd",
         };
@@ -148,12 +152,14 @@ class Mago3DTilerUnitTest {
     void case08() {
         String path = "case08-geojson-ws2";
         File input = new File(INPUT_PATH, path);
+        File terrain = new File(input, "terrain.tif");
         File output = new File(OUTPUT_PATH, path);
         FileUtils.deleteQuietly(output);
-        String args[] = {
+        String[] args = {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
                 "-inputType", "geojson",
+                "-terrain", terrain.getAbsolutePath(),
                 "-crs", "5186",
                 "-autoUpAxis",
                 "-refineAdd",
@@ -161,13 +167,13 @@ class Mago3DTilerUnitTest {
         Mago3DTilerMain.main(args);
     }
 
-    @Test
+    //@Test
     void case09() {
         String path = "case09-obj-hwangyonggak";
         File input = new File(INPUT_PATH, path);
         File output = new File(OUTPUT_PATH, path);
         FileUtils.deleteQuietly(output);
-        String args[] = {
+        String[] args = {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
                 "-inputType", "kml",
@@ -183,7 +189,7 @@ class Mago3DTilerUnitTest {
         File input = new File(INPUT_PATH, path);
         File output = new File(OUTPUT_PATH, path);
         FileUtils.deleteQuietly(output);
-        String args[] = {
+        String[] args = {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
                 "-inputType", "laz",
@@ -192,33 +198,298 @@ class Mago3DTilerUnitTest {
         Mago3DTilerMain.main(args);
     }
 
-    //@Test
-    void case011() {
+    @Test
+    void case11() {
         String path = "case11-shp-jeju";
         File input = new File(INPUT_PATH, path);
         File output = new File(OUTPUT_PATH, path);
-        FileUtils.deleteQuietly(output);
-        String args[] = {
+        //FileUtils.deleteQuietly(output);
+        String[] args = {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
                 "-inputType", "shp",
+                "-c", "4326",
+                "-hc", "B_Height_m",
                 "-refineAdd",
         };
         Mago3DTilerMain.main(args);
     }
 
     //@Test
-    void case012() {
+    void case12() {
         String path = "case12-kml-seoul";
         File input = new File(INPUT_PATH, path);
         File output = new File(OUTPUT_PATH, path);
         //FileUtils.deleteQuietly(output);
-        String args[] = {
+        String[] args = {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
-                //"-autoUpAxis",
-                "-maxCount", "131072",
                 "-refineAdd",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    //@Test
+    void case13() {
+        String path = "case13-kml-seoul-forest-instance";
+        File input = new File(INPUT_PATH, path);
+        File terrain = new File(input, "terrain.tif");
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "shp",
+                "-output", output.getAbsolutePath(),
+                "-outputType", "i3dm",
+                "-terrain", terrain.getAbsolutePath(),
+                //"-crs", "5179",
+                "-autoUpAxis",
+                "-refineAdd",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    //@Test
+    void case14() {
+        String path = "case14-3ds-seoul";
+        File input = new File(INPUT_PATH, path);
+        File terrain = new File(input, "terrain.tif");
+        File output = new File(OUTPUT_PATH, path);
+        //FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "3ds",
+                "-output", output.getAbsolutePath(),
+                "-refineAdd",
+                //"-terrain", terrain.getAbsolutePath(),
+                "-crs", "5186",
+                "-r",
+                "-autoUpAxis",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void case15() {
+        String path = "case15-3ds-nyjws1";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "3ds",
+                "-crs", "5186",
+                "-output", output.getAbsolutePath(),
+                /*"-ignoreTextures",
+                "-refineAdd",*/
+                "-r"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    //@Test
+    void case16() {
+        String path = "case16-3ds-hngs";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "3ds",
+                "-crs", "5186",
+                "-output", output.getAbsolutePath(),
+                /*"-ignoreTextures",
+                "-refineAdd",*/
+                "-r"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void case17() {
+        String path = "case17-3ds-gggy";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "3ds",
+                "-crs", "5186",
+                "-output", output.getAbsolutePath(),
+                /*"-ignoreTextures",
+                "-refineAdd",*/
+                "-r"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void case18() {
+        String path = "case18-3ds-gcgc";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "3ds",
+                "-crs", "5186",
+                "-output", output.getAbsolutePath(),
+                /*"-ignoreTextures",
+                "-refineAdd",*/
+                "-r"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void case19() {
+        String path = "case19-3ds-bcdj";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "3ds",
+                "-crs", "5186",
+                "-output", output.getAbsolutePath(),
+                /*"-ignoreTextures",
+                "-refineAdd",*/
+                "-r"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void case20() {
+        String path = "case20-3ds-complicated";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "kml",
+                "-output", output.getAbsolutePath(),
+                "-r"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    //@Test
+    void case21() {
+        String path = "case21-las-sangjiuni";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "las",
+                "-autoUpAxis",
+                "-output", output.getAbsolutePath(),
+                "-r",
+                "-crs", "5186"
+                //"-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void case22() {
+        String path = "case22-las-sewoon";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "las",
+                "-autoUpAxis",
+                "-output", output.getAbsolutePath(),
+                "-r",
+                //"-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
+                "-crs", "5186",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void case23() {
+        String path = "case23-las-sangam";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "las",
+                "-autoUpAxis",
+                "-output", output.getAbsolutePath(),
+                "-r",
+                "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void case24() {
+        String path = "case24-las-ndtp";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "las",
+                "-autoUpAxis",
+                "-output", output.getAbsolutePath(),
+                "-r",
+                "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void case25() {
+        String path = "case25-las-sinchon";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "las",
+                "-autoUpAxis",
+                "-output", output.getAbsolutePath(),
+                "-r",
+                "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    //@Test
+    void case26() {
+        String path = "case26-collada-sangjiuni";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "dae",
+                //"-autoUpAxis",
+                "-refineAdd",
+                "-output", output.getAbsolutePath(),
+                "-r",
+                "-crs", "5186",
+                "-glb",
+                //"-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
+                //+proj=tmerc +lat_0=38 +lon_0=127 +k=1 +x_0=200000 +y_0=600000 +ellps=GRS80 +units=m +no_defs
+                "-proj", "+proj=tmerc +lat_0=38 +lon_0=127 +k=1 +x_0=-82345 +y_0=-69494 +ellps=GRS80 +units=m +no_defs",
+
+
+                /*
+                    <?xml version="1.0" encoding="utf-8"?>
+                    <ModelMetadata version="1">
+                        <!--Spatial Reference System-->
+                        <SRS>EPSG:5186</SRS>
+                        <!--Origin in Spatial Reference System-->
+                        <SRSOrigin>282345,530506,0</SRSOrigin>
+                    </ModelMetadata>
+                 */
         };
         Mago3DTilerMain.main(args);
     }
@@ -226,7 +497,7 @@ class Mago3DTilerUnitTest {
     //@Test
     void sampleI3dm(String filePath, int length, int fileCount) {
         Vector3d min = new Vector3d(128.4602 , 37.7214, 0.0);
-        Vector3d max = new Vector3d(128.4802, 37.7414, 0.0);
+        Vector3d max = new Vector3d(128.5602, 37.8214, 0.0);
 
         File output = new File(INPUT_PATH, filePath);
         if (output.mkdirs()) {
@@ -263,6 +534,7 @@ class Mago3DTilerUnitTest {
             for (int i = 0; i < length; i++) {
                 for (int j = 0; j < length; j++) {
                     double scale = random.nextFloat() * 0.5 + 0.5;
+                    //scale = 1.0f;
                     double xpos = ((max.x - min.x) * random.nextFloat()) + min.x;
                     double ypos = ((max.y - min.y) * random.nextFloat()) + min.y;
                     xmlBodys.append(
@@ -284,7 +556,7 @@ class Mago3DTilerUnitTest {
                             "        <z>" + scale + "</z>\n" +
                             "    </Scale>\n" +
                             "    <Link>\n" +
-                            "        <href>instance.dae</href>\n" +
+                            "        <href>tree.dae</href>\n" +
                             "    </Link>\n" +
                             "</Model>\n");
                 }

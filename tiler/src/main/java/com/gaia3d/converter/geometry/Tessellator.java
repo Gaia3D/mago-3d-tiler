@@ -1,5 +1,6 @@
 package com.gaia3d.converter.geometry;
 
+import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 
@@ -15,7 +16,6 @@ public class Tessellator {
 
         boolean isCCW = this.validateAngle(positions);
         if (!isCCW) {
-            // reverse array
             Collections.reverse(positions);
         }
 
@@ -25,6 +25,7 @@ public class Tessellator {
             List<GaiaTriangle> triangles = convertTriangles(convex);
             result.addAll(triangles);
         });
+
         return result;
     }
 
@@ -52,20 +53,17 @@ public class Tessellator {
         if (result == null) {
             result = new ArrayList<>();
         }
-        //log.warn("new");
         if (isConvex(positions)) {
-            //log.warn("isConvex");
             result.add(positions);
         } else {
-            //log.warn("isConcave");
             Vector3d clockWisePosition = getClockWisePosition(positions);
             if (clockWisePosition == null) {
                 return result;
             }
 
             int clockWiseIndex = positions.indexOf(clockWisePosition);
-
             List<Vector3d> nearestPositions = sortNearest(positions, clockWiseIndex);
+
             for (Vector3d nearestPosition : nearestPositions) {
                 List<List<Vector3d>> polygons = splitConvex(positions, clockWisePosition, nearestPosition);
 
@@ -81,9 +79,6 @@ public class Tessellator {
                 }
             }
         }
-
-        //List<Vector3d> convex = positions; // temp only convex for test
-        //result.add(convex);
         return result;
     }
 
@@ -127,17 +122,6 @@ public class Tessellator {
             }
         }
 
-        /*Collections.sort(result, (p1, p2) -> {
-            double d1 = clockWisePosition.distanceSquared(p1);
-            double d2 = clockWisePosition.distanceSquared(p2);
-            if (d1 < d2) {
-                return -1;
-            } else if (d1 > d2) {
-                return 1;
-            } else {
-                return 0;
-            }
-        });*/
         result.sort((p1, p2) -> {
             double d1 = clockWisePosition.distanceSquared(p1);
             double d2 = clockWisePosition.distanceSquared(p2);
@@ -168,11 +152,11 @@ public class Tessellator {
             int index1 = (i - 1) % positions.size() < 0 ? positions.size() - 1 : (i - 1) % positions.size();
             int index2 = i % positions.size();
             int index3 = (i + 1) % positions.size();
-            //log.info("index1: {}, index2: {}, index3: {}", index1, index2, index3);
 
             Vector3d position1 = positions.get(index1);
             Vector3d position2 = positions.get(index2);
             Vector3d position3 = positions.get(index3);
+
             Vector3d normal = calcNormal(position1, position2, position3);
             if (isClockWise(normal)) {
                 return false;
@@ -208,6 +192,8 @@ public class Tessellator {
         Vector3d v2 = new Vector3d();
         b.sub(a, v1);
         c.sub(b, v2);
+        v1.normalize();
+        v2.normalize();
         return Math.toDegrees(v1.angle(v2));
     }
 
@@ -222,6 +208,8 @@ public class Tessellator {
         Vector3d v2 = new Vector3d();
         b.sub(a, v1);
         c.sub(b, v2);
+        v1.normalize();
+        v2.normalize();
         Vector3d c1 = new Vector3d();
         v1.cross(v2, c1);
         return c1;
@@ -232,10 +220,17 @@ public class Tessellator {
             int next = (index + 1) % positions.size();
             Vector3d crntPosition = positions.get(index);
             Vector3d nextPosition = positions.get(next);
-            if (isIntersection(startPosition, endPosition, crntPosition, nextPosition)) {
+
+            if (startPosition.equals(crntPosition) && endPosition.equals(nextPosition)) {
+                return true;
+            }
+            if (startPosition.equals(nextPosition) && endPosition.equals(crntPosition)) {
                 return true;
             }
 
+            if (isIntersection(startPosition, endPosition, crntPosition, nextPosition)) {
+                return true;
+            }
             if (isIntersection(startPosition, endPosition, crntPosition)) {
                 return true;
             }
@@ -250,6 +245,7 @@ public class Tessellator {
         Vector3d c4 = cross(b1, b2, a2);
         double d1 = c1.dot(c2);
         double d2 = c3.dot(c4);
+
         if (d1 == 0 && d2 == 0) {
             return false;
         } else {
@@ -264,5 +260,14 @@ public class Tessellator {
         }
         Vector3d c1 = cross(a1, a2, p1);
         return c1.z() == 0;
+    }
+
+    private double dot(Vector3d v1, Vector3d v2) {
+        return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+    }
+
+
+    private Vector3d subtract(Vector3d v1, Vector3d v2) {
+        return new Vector3d(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
     }
 }

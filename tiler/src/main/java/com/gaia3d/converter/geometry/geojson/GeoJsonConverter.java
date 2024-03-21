@@ -62,6 +62,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
 
         double absoluteAltitudeValue = globalOptions.getAbsoluteAltitude();
         double minimumHeightValue = globalOptions.getMinimumHeight();
+        double skirtHeight = globalOptions.getSkirtHeight();
 
         try {
             FeatureJSON gjson = new FeatureJSON();
@@ -144,7 +145,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                         .name(name)
                         .boundingBox(boundingBox)
                         .floorHeight(altitude)
-                        .roofHeight(altitude + height)
+                        .roofHeight(altitude + height + skirtHeight)
                         .positions(positions)
                         .build();
                 buildings.add(building);
@@ -160,6 +161,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                 rootNode.setName(building.getName());
 
                 Vector3d center = building.getBoundingBox().getCenter();
+                center.z = center.z - skirtHeight;
 
                 Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
                 Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);

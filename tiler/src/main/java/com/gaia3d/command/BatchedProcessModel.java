@@ -3,11 +3,14 @@ package com.gaia3d.command;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
-import com.gaia3d.converter.MeshFileLoader;
+import com.gaia3d.converter.BatchedFileLoader;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.geometry.citygml.CityGmlConverter;
 import com.gaia3d.converter.geometry.geojson.GeoJsonConverter;
 import com.gaia3d.converter.geometry.shape.ShapeConverter;
+import com.gaia3d.converter.kml.FastKmlReader;
+import com.gaia3d.converter.kml.JacksonKmlReader;
+import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.process.TilingPipeline;
 import com.gaia3d.process.postprocess.GaiaMaximizer;
 import com.gaia3d.process.postprocess.GaiaRelocator;
@@ -36,15 +39,17 @@ public class BatchedProcessModel implements ProcessFlowModel {
         FormatType inputFormat = FormatType.fromExtension(inputExtension);
         boolean isYUpAxis = getYUpAxis(inputFormat, globalOptions.isYUpAxis());
         Converter converter = getConverter(inputFormat);
-        MeshFileLoader fileLoader = new MeshFileLoader(converter);
+        AttributeReader kmlReader = new JacksonKmlReader();
+        kmlReader = new FastKmlReader();
+        BatchedFileLoader fileLoader = new BatchedFileLoader(converter, kmlReader);
 
         List<GridCoverage2D> geoTiffs = new ArrayList<>();
         if (globalOptions.getTerrainPath() != null) {
             geoTiffs = fileLoader.loadGridCoverages(geoTiffs);
         }
         List<PreProcess> preProcessors = new ArrayList<>();
-        preProcessors.add(new GaiaTexCoordCorrector()); // new.*******************************************
-        preProcessors.add(new GaiaTileInfoinitiator());
+        preProcessors.add(new GaiaTileInfoInitiator());
+        preProcessors.add(new GaiaTexCoordCorrector());
         preProcessors.add(new GaiaScaler());
         if (!isYUpAxis) {
             preProcessors.add(new GaiaRotator());

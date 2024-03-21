@@ -83,8 +83,20 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         BoundingVolume squareBoundingVolume = parentBoundingVolume.createSqureBoundingVolume();
 
         boolean refineAdd = globalOptions.isRefineAdd();
-        int nodeLimit = globalOptions.getNodeLimit() * 4; // for quadtree node limit
-        if (tileInfos.size() > nodeLimit) {
+        //int nodeLimit = globalOptions.getNodeLimit() * 4; // for quadtree node limit
+
+        long triangleLimit = 65536 * 4;
+        long totalTriangleCount = tileInfos.stream().mapToLong(TileInfo::getTriangleCount).sum();
+        log.info("[TriangleCount] Total : {}", totalTriangleCount);
+
+        if (tileInfos.size() <= 1) {
+            Node childNode = createContentNode(parentNode, tileInfos, 0);
+            if (childNode != null) {
+                parentNode.getChildren().add(childNode);
+                createNode(childNode, tileInfos);
+            }
+        } else if (totalTriangleCount > triangleLimit) {
+        //if (tileInfos.size() > nodeLimit) {
             // logical node distribute
             List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
@@ -95,7 +107,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
                     createNode(childNode, childTileInfos);
                 }
             }
-        } else if (tileInfos.size() > 1) {
+        } else if (totalTriangleCount > 1) {
             // phiysical node distribute
             List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
@@ -113,7 +125,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
                     }
                 }
             }
-        } else if (!tileInfos.isEmpty()) {
+        } else if (tileInfos.size() <= 4 || !tileInfos.isEmpty()) {
             Node childNode = createContentNode(parentNode, tileInfos, 0);
             if (childNode != null) {
                 parentNode.getChildren().add(childNode);
@@ -178,9 +190,10 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         }
         nodeCode = nodeCode + index;
         log.info("[Tiling][ContentNode][" + nodeCode + "][LOD{}][OBJECT{}]", lod.getLevel(), tileInfos.size());
+
         int lodError = refineAdd ? lod.getGeometricErrorBlock() : lod.getGeometricError();
 
-        int lodErrorDouble = lodError * 2;
+        int lodErrorDouble = lodError;
         List<TileInfo> resultInfos;
         List<TileInfo> remainInfos;
         resultInfos = tileInfos.stream().filter(tileInfo -> {
@@ -191,10 +204,6 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
             double geometricError = tileInfo.getBoundingBox().getLongestDistance();
             return geometricError < lodErrorDouble;
         }).collect(Collectors.toList());
-
-        // force to use the original tileInfos
-//        List<TileInfo> resultInfos = tileInfos;
-//        List<TileInfo> remainInfos = new ArrayList<>();
 
         Node childNode = new Node();
         childNode.setParent(parentNode);

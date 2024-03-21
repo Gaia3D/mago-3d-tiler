@@ -62,7 +62,6 @@ class ExtruderTest {
 
         GaiaMesh mesh = new GaiaMesh();
         GaiaPrimitive primitive = new GaiaPrimitive();
-        primitive.setMaterial(material);
         primitive.setMaterialIndex(0);
 
         List<GaiaSurface> surfaces = new ArrayList<>();

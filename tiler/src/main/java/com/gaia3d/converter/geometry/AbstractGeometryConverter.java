@@ -28,7 +28,7 @@ public abstract class AbstractGeometryConverter {
         material.setName("extruded");
 
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-        if (globalOptions.isDebug()) {
+        if (globalOptions.isDebugLod()) {
             // TODO : random color
             Random random = new Random();
             float r = random.nextFloat();
@@ -64,7 +64,6 @@ public abstract class AbstractGeometryConverter {
         GaiaPrimitive primitive = new GaiaPrimitive();
         List<GaiaSurface> surfaces = new ArrayList<>();
         List<GaiaVertex> vertices = new ArrayList<>();
-        primitive.setMaterial(material);
         primitive.setMaterialIndex(0);
         primitive.setSurfaces(surfaces);
         primitive.setVertices(vertices);

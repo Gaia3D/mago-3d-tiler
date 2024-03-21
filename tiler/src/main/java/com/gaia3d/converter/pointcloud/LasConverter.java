@@ -5,12 +5,15 @@ import com.gaia3d.basic.pointcloud.GaiaPointCloud;
 import com.gaia3d.basic.structure.GaiaVertex;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.util.GlobeUtils;
+import com.github.mreutegg.laszip4j.CloseablePointIterable;
 import com.github.mreutegg.laszip4j.LASHeader;
 import com.github.mreutegg.laszip4j.LASPoint;
 import com.github.mreutegg.laszip4j.LASReader;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
+import org.locationtech.proj4j.BasicCoordinateTransform;
+import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 
@@ -18,7 +21,9 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -57,12 +62,12 @@ public class LasConverter {
         } else {
             hasRgbColor = false;
         }
-//        log.info("[Pre][LoadFile] Loading a pointcloud file. : {}", file.getAbsolutePath());
-//        log.info(" - LAS Version : {}.{}", major, minor);
-//        log.info(" - LAS Point Data Record Format : {}", recordFormat);
-//        log.info(" - LAS Point Data Record Length : {}", recordLength);
-//        log.info(" - LAS Point Data Record has RGB Color : {}", hasRgbColor);
-        Iterable<LASPoint> pointIterable = reader.getPoints();
+        /*log.info("[Pre] Loading a pointcloud file. : {}", file.getAbsolutePath());
+        log.info(" - LAS Version : {}.{}", major, minor);
+        log.info(" - LAS Point Data Record Format : {}", recordFormat);
+        log.info(" - LAS Point Data Record Length : {}", recordLength);
+        log.info(" - LAS Point Data Record has RGB Color : {}", hasRgbColor);*/
+        //Iterable<LASPoint> pointIterable = reader.getPoints();
         GaiaBoundingBox boundingBox = pointCloud.getGaiaBoundingBox();
 
         double xScaleFactor = header.getXScaleFactor();
@@ -72,38 +77,75 @@ public class LasConverter {
         double zScaleFactor = header.getZScaleFactor();
         double zOffset = header.getZOffset();
 
+        CRSFactory factory = new CRSFactory();
         CoordinateReferenceSystem crs = globalOptions.getCrs();
-        pointIterable.forEach(point -> {
-            double x = point.getX() * xScaleFactor + xOffset;
-            double y = point.getY() * yScaleFactor + yOffset;
-            double z = point.getZ() * zScaleFactor + zOffset;
+        CoordinateReferenceSystem wgs84 = factory.createFromParameters("WGS84", "+proj=longlat +datum=WGS84 +no_defs");
+        BasicCoordinateTransform transformer = new BasicCoordinateTransform(crs, wgs84);
+        ProjCoordinate result = new ProjCoordinate();
+        //transformer.transform(coordinate, result);
+        //return result;
 
-            ProjCoordinate coordinate = new ProjCoordinate(x, y, z);
-            ProjCoordinate transformedCoordinate = GlobeUtils.transform(crs, coordinate);
+        CloseablePointIterable pointIterable = reader.getCloseablePoints();
+        //pointIterable.close();
 
-            Vector3d position = new Vector3d(transformedCoordinate.x, transformedCoordinate.y, z);
+        int splitSize = 4;
+        AtomicInteger pointIndex = new AtomicInteger();
+        AtomicInteger maxColorValue = new AtomicInteger();
+        //for (LASPoint point : reader.getPoints()) {
+        for (LASPoint point : pointIterable) {
+            if (pointIndex.get() % splitSize == 0) {
+                double x = point.getX() * xScaleFactor + xOffset;
+                double y = point.getY() * yScaleFactor + yOffset;
+                double z = point.getZ() * zScaleFactor + zOffset;
 
-            byte[] rgb;
-            if (hasRgbColor) {
-                rgb = getColorByRGB(point);
-            } else {
-                rgb = getColorIntensity(point);
+                ProjCoordinate coordinate = new ProjCoordinate(x, y, z);
+                ProjCoordinate transformedCoordinate = transformer.transform(coordinate, new ProjCoordinate());
+
+                Vector3d position = new Vector3d(transformedCoordinate.x, transformedCoordinate.y, z);
+                transformedCoordinate = null;
+                coordinate = null;
+
+                byte[] rgb;
+                if (hasRgbColor) {
+                    rgb = getColorByRGB(point);
+                    //rgb = getColorByByteRGB(point); // only for test
+                } else {
+                    rgb = getColorIntensity(point);
+                }
+
+                GaiaVertex vertex = new GaiaVertex();
+                vertex.setPosition(position);
+                vertex.setColor(rgb);
+                vertex.setBatchId(0);
+                vertices.add(vertex);
+                boundingBox.addPoint(position);
             }
+            pointIndex.getAndIncrement();
+        }
 
-            GaiaVertex vertex = new GaiaVertex();
-            vertex.setPosition(position);
-            vertex.setColor(rgb);
-            vertex.setBatchId(0);
-            vertices.add(vertex);
-            boundingBox.addPoint(position);
-        });
+        pointIterable.close();
 
         // randomize arrays
         Collections.shuffle(vertices);
 
+        pointCloud.setVertices(vertices);
         pointClouds.add(pointCloud);
+        System.gc();
+
         return pointClouds;
     }
+
+    private void trasnformPostions(List<GaiaVertex> vertices) {
+        vertices.forEach((vertex) -> {
+            Vector3d positions = vertex.getPosition();
+            ProjCoordinate coordinate = new ProjCoordinate(positions.x, positions.y, positions.z);
+            ProjCoordinate transformedCoordinate = GlobeUtils.transform(GlobalOptions.getInstance().getCrs(), coordinate);
+            positions.x = transformedCoordinate.x;
+            positions.y = transformedCoordinate.y;
+            positions.z = transformedCoordinate.z;
+        });
+    }
+
 
     /**
      * Get color by RGB
@@ -119,6 +161,20 @@ public class LasConverter {
         rgb[0] = (byte) (red * 255);
         rgb[1] = (byte) (green * 255);
         rgb[2] = (byte) (blue * 255);
+        return rgb;
+    }
+
+    /**
+     * Get color by RGB
+     * @param point LASPoint
+     * @return byte[3]
+     */
+    private byte[] getColorByByteRGB(LASPoint point) {
+        byte[] rgb = new byte[3];
+        rgb[0] = (byte) point.getRed();
+        rgb[1] = (byte) point.getGreen();
+        rgb[2] = (byte) point.getBlue();
+
         return rgb;
     }
 

@@ -69,7 +69,7 @@ public class Instanced3DModel implements TileModel {
         AtomicInteger scaleIndex = new AtomicInteger();
         for (TileInfo tileInfo : tileInfos) {
             //y-up
-            Vector3d normalUp = new Vector3d(0, 1, 0);
+            Vector3d normalUp = new Vector3d(0, 0, 1);
             Vector3d normalRight = new Vector3d(1, 0, 0);
 
             // GPS Coordinates
@@ -85,8 +85,8 @@ public class Instanced3DModel implements TileModel {
             double headingValue = Math.toRadians(kmlInfo.getHeading());
             Matrix3d rotationMatrix = new Matrix3d();
             rotationMatrix.rotateY(headingValue);
-            //normalUp = rotationMatrix.transform(normalUp);
-            //normalRight = rotationMatrix.transform(normalRight);
+            normalUp = rotationMatrix.transform(normalUp);
+            normalRight = rotationMatrix.transform(normalRight);
 
             // scale
             double scale = kmlInfo.getScaleZ();
@@ -103,7 +103,7 @@ public class Instanced3DModel implements TileModel {
             normalRights[normalRightIndex.getAndIncrement()] = (float) normalRight.y;
             normalRights[normalRightIndex.getAndIncrement()] = (float) normalRight.z;
 
-            scales[scaleIndex.getAndIncrement()] = (float) 1.0;
+            scales[scaleIndex.getAndIncrement()] = (float) scale;
         }
 
         Instanced3DModelBinary instanced3DModelBinary = new Instanced3DModelBinary();
@@ -156,7 +156,8 @@ public class Instanced3DModel implements TileModel {
         batchTableJSONByteLength = batchTableJson.length();
         int batchTableBinaryByteLength = 0;
 
-        String gltfUrl = "instance.glb";
+        String lod = contentInfo.getLod().toString();
+        String gltfUrl = "instance-" + lod + ".glb";
         int byteLength = 32 + featureTableJSONByteLength + featureTableBinaryByteLength + batchTableJSONByteLength + batchTableBinaryByteLength + gltfUrl.length();
 
         File gltfOutputFile = outputRoot.resolve(gltfUrl).toFile();
@@ -196,16 +197,24 @@ public class Instanced3DModel implements TileModel {
             if (!file.exists())  {
                 log.info("[Create][Instance] Create instance file : {}", file.getName());
                 GaiaScene firstGaiaScene = tileInfo.getScene();
-                tileInfo.setSet(new GaiaSet(firstGaiaScene));
+                firstGaiaScene = firstGaiaScene.clone();
+
+                GaiaSet set = new GaiaSet(firstGaiaScene);
+                //GaiaSet clonedSet = set.clone();
+                tileInfo.setSet(set);
 
                 List<TileInfo> batchTileInfos = new ArrayList<>();
                 batchTileInfos.add(tileInfo);
 
                 GaiaBatcher gaiaBatcher = new GaiaBatcher();
                 GaiaSet gaiaSet = gaiaBatcher.runBatching(batchTileInfos, contentInfo.getNodeCode(), contentInfo.getLod());
-                gltfWriter.writeGlb(new GaiaScene(gaiaSet), file);
+                GaiaScene resultGaiaScene = new GaiaScene(gaiaSet);
+                Matrix4d transformMatrix = resultGaiaScene.getNodes().get(0).getTransformMatrix();
+                transformMatrix.rotateX(Math.toRadians(-90));
+                gltfWriter.writeGlb(resultGaiaScene, file);
             }
         } catch (Exception e) {
+            e.printStackTrace();
             log.error(e.getMessage());
             throw new RuntimeException(e);
         }

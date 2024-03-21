@@ -12,9 +12,11 @@ import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -42,10 +44,9 @@ public class TilingPipeline implements Pipeline {
 
     @Override
     public void process(FileLoader fileLoader) throws IOException {
-        tileInfos = new ArrayList<>();
-
         /* Pre-process */
         try {
+            createTemp();
             startPreProcesses(fileLoader);
             /* Main-process */
             startTilingProcess();
@@ -60,6 +61,7 @@ public class TilingPipeline implements Pipeline {
 
     private void startPreProcesses(FileLoader fileLoader) throws InterruptedException {
         log.info("[Pre] Start the pre-processing.");
+        tileInfos = new ArrayList<>();
 
         /* loading all file list */
         log.info("[Pre] Loading all files.");
@@ -85,7 +87,7 @@ public class TilingPipeline implements Pipeline {
                 for (int index = 0; index < infoLength; index++) {
                     TileInfo tileInfo = loadedTileInfos.get(index);
                     if (tileInfo != null) {
-                        //log.info("[Pre][{}/{}][{}/{}] Loading tiles from file.", finalCount + 1, fileCount, index + 1, infoLength);
+                        log.info("[Pre][{}/{}][{}/{}] Loading tiles from file.", finalCount + 1, fileCount, index + 1, infoLength);
                         tileInfo.setSerial(index + 1);
                         for (PreProcess preProcessors : preProcesses) {
                             preProcessors.run(tileInfo);
@@ -100,25 +102,24 @@ public class TilingPipeline implements Pipeline {
 
         long nodeCountValue = nodeCount.get();
         // Auto set node limit
+        calcNodeLimit(nodeCountValue);
+
+        log.info("[Pre] Total Node Count {}, Auto Node limit : {}", nodeCount, globalOptions.getNodeLimit());
+        log.info("[Pre] End the pre-processing.");
+    }
+
+    private void calcNodeLimit(long nodeCountValue) {
         if (globalOptions.getNodeLimit() < 0) {
-            if (nodeCountValue > 524288) {
-                globalOptions.setNodeLimit(32768);
-            } else if (nodeCountValue > 262144) {
-                globalOptions.setNodeLimit(16384);
-            } else if (nodeCountValue > 131072) {
+            if (nodeCountValue > 131072) {
                 globalOptions.setNodeLimit(8192);
             } else if (nodeCountValue > 65536) {
                 globalOptions.setNodeLimit(4096);
             } else if (nodeCountValue > 32768) {
                 globalOptions.setNodeLimit(2048);
-            } else if (nodeCountValue > 16384) {
-                globalOptions.setNodeLimit(1024);
             } else {
-                globalOptions.setNodeLimit(512);
+                globalOptions.setNodeLimit(1024);
             }
         }
-        log.info("[Pre] Total Node Count {}, Auto Node limit : {}", nodeCount, globalOptions.getNodeLimit());
-        log.info("[Pre] End the pre-processing.");
     }
 
     private void startTilingProcess() {
@@ -145,14 +146,14 @@ public class TilingPipeline implements Pipeline {
                 List<TileInfo> tileInfos = contentInfo.getTileInfos();
                 List<TileInfo> tileInfosClone = tileInfos.stream()
                         .map((childTileInfo) -> TileInfo.builder()
-                                .scene(childTileInfo.getScene())
-                                .kmlInfo(childTileInfo.getKmlInfo())
-                                .scenePath(childTileInfo.getScenePath())
-                                .tempPath(childTileInfo.getTempPath())
-                                .transformMatrix(childTileInfo.getTransformMatrix())
-                                .boundingBox(childTileInfo.getBoundingBox())
-                                .pointCloud(childTileInfo.getPointCloud())
-                                .build())
+                            .scene(childTileInfo.getScene())
+                            .kmlInfo(childTileInfo.getKmlInfo())
+                            .scenePath(childTileInfo.getScenePath())
+                            .tempPath(childTileInfo.getTempPath())
+                            .transformMatrix(childTileInfo.getTransformMatrix())
+                            .boundingBox(childTileInfo.getBoundingBox())
+                            .pointCloud(childTileInfo.getPointCloud())
+                            .build())
                         .collect(Collectors.toList());
                 contentInfo.setTileInfos(tileInfosClone);
                 for (PostProcess postProcessor : postProcesses) {
@@ -167,22 +168,29 @@ public class TilingPipeline implements Pipeline {
         log.info("[Post] End the post-processing.");
     }
 
+    private void createTemp() throws IOException {
+        /* create temp directory */
+        File tempFile = new File(globalOptions.getOutputPath(), "temp");
+        if (!tempFile.exists() && tempFile.mkdirs()) {
+            log.info("[Pre] Created temp directory in {}", tempFile.getAbsolutePath());
+        }
+    }
+
     private void deleteTemp() throws IOException {
-        if (!tileInfos.isEmpty()) {
-            tileInfos.get(0).deleteTemp();
-        } else {
-            log.warn("No tile info to delete temp files.");
+        /* delete temp directory */
+        File tempFile = new File(globalOptions.getOutputPath(), "temp");
+        if (tempFile.exists() && tempFile.isDirectory()) {
+            FileUtils.deleteDirectory(tempFile);
         }
     }
 
     private void executeThread(ExecutorService executorService, List<Runnable> tasks) throws InterruptedException {
         try {
             for (Runnable task : tasks) {
-                executorService.submit(task);
-                //Future<?> future = executorService.submit(task);
-                // TODO MultiThead BUG
-                //future.get();
-                //future.isDone();
+                Future<?> future = executorService.submit(task);
+                if (globalOptions.isDebug()) {
+                    future.get();
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -192,6 +200,6 @@ public class TilingPipeline implements Pipeline {
             if (executorService.isTerminated()) {
                 executorService.shutdownNow();
             }
-        } while (!executorService.awaitTermination(2, TimeUnit.SECONDS));
+        } while (!executorService.awaitTermination(1, TimeUnit.SECONDS));
     }
 }

@@ -21,6 +21,7 @@ import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.util.factory.Hints;
 import org.joml.Matrix4d;
+import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.locationtech.jts.geom.*;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
@@ -33,6 +34,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -57,6 +59,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         List<GaiaScene> scenes = new ArrayList<>();
         Tessellator tessellator = new Tessellator();
         Extruder extruder = new Extruder(tessellator);
+        InnerRingRemover innerRingRemover = new InnerRingRemover();
 
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         boolean flipCoordinate = globalOptions.isFlipCoordinate();
@@ -66,6 +69,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
 
         double absoluteAltitudeValue = globalOptions.getAbsoluteAltitude();
         double minimumHeightValue = globalOptions.getMinimumHeight();
+        double skirtHeight = globalOptions.getSkirtHeight();
 
         ShpFiles shpFiles = null;
         ShapefileReader reader = null;
@@ -106,18 +110,24 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 }
                 if (!lineString.isValid()) {
                     log.warn("Invalid : {}", feature.getID());
-                    continue;
+                    //continue;
                 }
-                //log.info("{}", feature.getID());
 
                 GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
-                Coordinate[] coordinates = lineString.getCoordinates();
+                Coordinate[] outerCoordinates = lineString.getCoordinates();
+
+                /*int innerRingCount = polygon.getNumInteriorRing();
+                List<Coordinate[]> innerCoordinates = new ArrayList<>();
+                for (int i = 0; i < innerRingCount; i++) {
+                    LineString innerRing = polygon.getInteriorRingN(i);
+                    innerCoordinates.add(innerRing.getCoordinates());
+                }*/
+                //outerCoordinates = innerRingRemover.removeAll(outerCoordinates, innerCoordinates);
 
                 GaiaBoundingBox boundingBox = new GaiaBoundingBox();
                 List<Vector3d> positions = new ArrayList<>();
 
-                Vector3d firstPosition = null;
-                for (Coordinate coordinate : coordinates) {
+                for (Coordinate coordinate : outerCoordinates) {
                     Point point = geometryFactory.createPoint(coordinate);
 
                     double x, y;
@@ -139,11 +149,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                         position = new Vector3d(x, y, 0.0d);
                     }
 
-                    if (firstPosition == null) {
-                        firstPosition = position;
-                    } else if (firstPosition.equals(position)) {
-                        break;
-                    }
                     positions.add(position);
                     boundingBox.addPoint(position);
                 }
@@ -160,7 +165,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                             .name(name)
                             .boundingBox(boundingBox)
                             .floorHeight(altitude)
-                            .roofHeight(height)
+                            .roofHeight(height + skirtHeight)
                             .positions(positions)
                             .build();
                     buildings.add(building);
@@ -184,6 +189,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 rootNode.setName(building.getName());
 
                 Vector3d center = building.getBoundingBox().getCenter();
+                center.z = center.z - skirtHeight;
 
                 Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
                 Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
