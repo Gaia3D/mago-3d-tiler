@@ -1,11 +1,8 @@
-package com.gaia3d.converter.assimp;
+package com.gaia3d.converter;
 
-import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.basic.types.TextureType;
-import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.Converter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
@@ -72,9 +69,8 @@ public class AssimpConverter implements Converter {
     }
 
     private Matrix4d convertMatrix4dFromAIMatrix4x4(AIMatrix4x4 aiMatrix4x4, GaiaNode parentNode, FormatType isYUpFormat) {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
-        boolean isZeroOrigin = globalOptions.isZeroOrigin();
-        boolean autoUpAxis = globalOptions.isAutoUpAxis();
+        boolean isZeroOrigin = false;
+        boolean autoUpAxis = false;
         Matrix4d matrix4 = new Matrix4d();
 
         /*boolean isRootNode = parentNode == null;

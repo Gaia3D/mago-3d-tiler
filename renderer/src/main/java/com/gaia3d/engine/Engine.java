@@ -182,7 +182,9 @@ public class Engine {
         //String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\Dongdaemoongu_center_del_3DS\\Dongdaemoongu_center_del.3ds";
         //String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\Edumuseum_del_150417_02_3DS\\Edumuseum_del_150417_02.3ds";
         //String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\gangbuk_cultur_del_3DS\\gangbuk_cultur_del.3ds";
-        String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\gangil_del_3DS\\gangil_del.3ds";
+        //String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\gangil_del_3DS\\gangil_del.3ds";
+        //String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\gangnam_del_3DS\\gangnam_del.3ds";
+        String filePath = "D:\\data\\military\\LAS제외\\3DS\\8_전주고속버스터미널.3ds";
         Converter assimpConverter = new AssimpConverter();
         List<GaiaScene> gaiaScenes = assimpConverter.load(filePath);
         RenderableGaiaScene renderableGaiaScene = InternDataConverter.getRenderableGaiaScene(gaiaScenes.get(0));
