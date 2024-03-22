@@ -23,6 +23,8 @@ import java.nio.file.Path;
 @Builder
 @Slf4j
 public class TileInfo {
+
+    @Builder.Default
     private int serial = -1;
 
     private GaiaScene scene;
@@ -37,7 +39,9 @@ public class TileInfo {
     private Path outputPath;
     private Path tempPath;
 
+    @Builder.Default
     private long triangleCount = 0;
+    @Builder.Default
     private boolean isI3dm = false;
 
     private void init() {
