@@ -97,9 +97,6 @@ public abstract class AbstractGeometryConverter {
 
             GaiaVertex vertex = new GaiaVertex();
             vertex.setPosition(new Vector3d(position.x, position.y, position.z));
-            if (normal == null) {
-                log.error("why");
-            }
             vertex.setNormal(normal);
             vertices.add(vertex);
         }
@@ -108,7 +105,14 @@ public abstract class AbstractGeometryConverter {
     }
 
     protected int indexOf(List<Vector3d> positions, Vector3d item) {
-        return IntStream.range(0, positions.size()).filter(i -> positions.get(i) == item).findFirst().orElse(-1);
+        //return positions.indexOf(item);
+        IntStream intStream = IntStream.range(0, positions.size());
+        int result = intStream
+                .filter(i -> positions.get(i) == item)
+                .findFirst()
+                .orElse(-1);
+        intStream.close();
+        return result;
     }
 
     protected double getHeight(SimpleFeature feature, String column, double minimumHeight) {

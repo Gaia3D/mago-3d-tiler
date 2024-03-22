@@ -212,6 +212,8 @@ public class Tessellator {
         v2.normalize();
         Vector3d c1 = new Vector3d();
         v1.cross(v2, c1);
+        v1 = null;
+        v2 = null;
         return c1;
     }
 
