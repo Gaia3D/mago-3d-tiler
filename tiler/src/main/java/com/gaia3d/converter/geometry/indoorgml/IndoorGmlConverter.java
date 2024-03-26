@@ -1,12 +1,11 @@
 package com.gaia3d.converter.geometry.indoorgml;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.structure.GaiaMaterial;
-import com.gaia3d.basic.structure.GaiaNode;
-import com.gaia3d.basic.structure.GaiaScene;
+import com.gaia3d.basic.structure.*;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.geometry.*;
+import com.gaia3d.converter.geometry.tessellator.GaiaTessellator;
 import com.gaia3d.util.GlobeUtils;
 import edu.stem.indoor.IndoorFeatures;
 import edu.stem.space.*;
@@ -21,7 +20,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 public class IndoorGmlConverter extends AbstractGeometryConverter implements Converter {
@@ -44,7 +45,8 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
     protected List<GaiaScene> convert(File file) {
         List<GaiaScene> scenes = new ArrayList<>();
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-        ConvexHullTessellator tessellator = new ConvexHullTessellator();
+        //ConvexHullTessellator tessellator = new ConvexHullTessellator();
+        GaiaTessellator tessellator = new GaiaTessellator();
 
         try {
             JAXBContext context = JAXBContext.newInstance(IndoorFeatures.class);
@@ -58,7 +60,7 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
             List<CellSpaceMember> cellSpaceMembers = primalSpaceFeaturesChild.getCellSpaceMember();
             for (CellSpaceMember cellSpaceMember : cellSpaceMembers) {
 
-                log.info("CellSpaceMember: {}", cellSpaceMember.getCellSpace().getId());
+                //log.info("CellSpaceMember: {}", cellSpaceMember.getCellSpace().getId());
                 CellSpace cellSpace = cellSpaceMember.getCellSpace();
                 CellSpaceGeometry cellSpaceGeometry = cellSpace.getCellSpaceGeometry();
                 Geometry3D geometry3D = cellSpaceGeometry.getGeometry3d();
@@ -75,7 +77,6 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                     Polygon polygon = surfaceMember.getPolygon();
                     List<Pos> posList = polygon.getExterior().getPos();
                     for (Pos pos : posList) {
-                        System.out.println(pos.getVector());
                         String[] vectors = pos.getVector().split(" ");
 
                         double scale = 0.0254d;
@@ -83,7 +84,6 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                         double y = Double.parseDouble(vectors[1]) * scale;
                         double z = Double.parseDouble(vectors[2]) * scale;
 
-                        //Vector3d originalPosition = new Vector3d(x, y, z);
                         Vector3d wgs84Position = new Vector3d(x, y, z);
                         CoordinateReferenceSystem crs = globalOptions.getCrs();
                         if (crs != null) {
@@ -93,16 +93,15 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                         }
                         vertices.add(wgs84Position);
                         boundingBox.addPoint(wgs84Position);
-                        log.info("x: {}, y: {}, z: {}", x, y, z);
-                        log.info("wgs84 x: {}, y: {}, z: {}", wgs84Position.x, wgs84Position.y, wgs84Position.z);
                     }
 
-                    GaiaBuildingSurface buildingSurface = GaiaBuildingSurface.builder()
-                            .id(cellSpace.getId())
-                            .name(cellSpace.getName())
-                            .boundingBox(boundingBox)
-                            .positions(vertices)
-                            .build();
+                    // use the first point as the last point to close the polygon
+                    if (!vertices.get(0).equals(vertices.get(vertices.size() - 1))) {
+                        vertices.add(vertices.get(0));
+                        log.info("Polygon is not closed. Adding the first point to the end of the list.");
+                    }
+
+                    GaiaBuildingSurface buildingSurface = GaiaBuildingSurface.builder().id(cellSpace.getId()).name(cellSpace.getName()).boundingBox(boundingBox).positions(vertices).build();
 
                     gaiaBuildingSurfaces.add(buildingSurface);
                 }
@@ -112,9 +111,8 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                 }
             }
 
-            ConvexHullTessellator convexHullTessellator = new ConvexHullTessellator();
             for (List<GaiaBuildingSurface> surfaces : buildingSurfacesList) {
-                log.info("Building Surface Size: {}", surfaces.size());
+                //log.info("Building Surface Size: {}", surfaces.size());
 
                 GaiaScene scene = initScene();
                 scene.setOriginalPath(file.toPath());
@@ -131,20 +129,46 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                 Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
                 Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
                 Matrix4d transfromMatrixInv = new Matrix4d(transformMatrix).invert();
+
+
+//                GaiaNode node = new GaiaNode();
+//                node.setTransformMatrix(new Matrix4d().identity());
+//                GaiaMesh mesh = new GaiaMesh();
+//                node.getMeshes().add(mesh);
+
+
+
+                List<List<Vector3d>> polygons = new ArrayList<>();
                 for (GaiaBuildingSurface buildingSurface : surfaces) {
+                    List<Vector3d> polygon = new ArrayList<>();
+
                     List<Vector3d> localPositions = new ArrayList<>();
                     for (Vector3d position : buildingSurface.getPositions()) {
                         Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
                         Vector3d localPosition = positionWorldCoordinate.mulPosition(transfromMatrixInv);
                         localPosition.z = position.z;
                         localPositions.add(localPosition);
+                        polygon.add(new OnlyHashEqualsVector3d(localPosition));
                     }
 
-                   List<GaiaTriangle> triangles = convexHullTessellator.tessellate(localPositions);
-
-                    GaiaNode node = createNode(material, localPositions, triangles);
-                    rootNode.getChildren().add(node);
+//                    List<List<Vector3d>> polygons = new ArrayList<>();
+                    polygons.add(polygon);
+//
+//                    GaiaPrimitive primitive = createPrimitiveFromPolygons(polygons);
+//                    primitive.setMaterialIndex(0);
+//                    mesh.getPrimitives().add(primitive);
                 }
+
+                GaiaNode node = new GaiaNode();
+                node.setTransformMatrix(new Matrix4d().identity());
+                GaiaMesh mesh = new GaiaMesh();
+                node.getMeshes().add(mesh);
+
+                GaiaPrimitive primitive = createPrimitiveFromPolygons(polygons);
+                primitive.setMaterialIndex(0);
+                mesh.getPrimitives().add(primitive);
+
+                rootNode.getChildren().add(node);
 
                 Matrix4d rootTransformMatrix = new Matrix4d().identity();
                 rootTransformMatrix.translate(center, rootTransformMatrix);
@@ -157,5 +181,80 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
         }
 
         return scenes;
+    }
+
+    protected GaiaPrimitive createPrimitiveFromPolygons(List<List<Vector3d>> polygons) {
+        GaiaTessellator tessellator = new GaiaTessellator();
+
+        GaiaPrimitive primitive = new GaiaPrimitive();
+        List<GaiaVertex> vertexList = new ArrayList<>();
+        //Map<GaiaVertex, Integer> vertexMap = new HashMap<>();
+        Map<Vector3d, Integer> pointsMap = new HashMap<>();
+
+        int polygonCount = polygons.size();
+        for (List<Vector3d> polygon : polygons) {
+
+            Vector3d normal = new Vector3d();
+            tessellator.calculateNormal3D(polygon, normal);
+
+            for (Vector3d vector3d : polygon) {
+                GaiaVertex vertex = new GaiaVertex();
+                vertex.setPosition(vector3d);
+                vertex.setNormal(normal);
+
+                //vertex.setNormal(new Vector3d(0, 0, 1));
+                vertexList.add(vertex);
+            }
+        }
+
+        int vertexCount = vertexList.size();
+        for (int m = 0; m < vertexCount; m++) {
+            GaiaVertex vertex = vertexList.get(m);
+            //vertexMap.put(vertex, m);
+            pointsMap.put(vertex.getPosition(), m);
+        }
+
+        primitive.setVertices(vertexList); // total vertex list.***
+
+        List<Integer> resultTrianglesIndices = new ArrayList<>();
+
+        for (int m = 0; m < polygonCount; m++) {
+            GaiaSurface surface = new GaiaSurface();
+            primitive.getSurfaces().add(surface);
+
+            int idx1Local = -1;
+            int idx2Local = -1;
+            int idx3Local = -1;
+
+            List<Vector3d> polygon = polygons.get(m);
+            resultTrianglesIndices.clear();
+            tessellator.tessellate3D(polygon, resultTrianglesIndices);
+
+            int indicesCount = resultTrianglesIndices.size();
+            int trianglesCount = indicesCount / 3;
+            for (int n = 0; n < trianglesCount; n++) {
+                idx1Local = resultTrianglesIndices.get(n * 3);
+                idx2Local = resultTrianglesIndices.get(n * 3 + 1);
+                idx3Local = resultTrianglesIndices.get(n * 3 + 2);
+
+                Vector3d point1 = polygon.get(idx1Local);
+                Vector3d point2 = polygon.get(idx2Local);
+                Vector3d point3 = polygon.get(idx3Local);
+
+                int idx1 = pointsMap.get(point1);
+                int idx2 = pointsMap.get(point2);
+                int idx3 = pointsMap.get(point3);
+
+                GaiaFace face = new GaiaFace();
+                int[] indicesArray = new int[3];
+                indicesArray[0] = idx1;
+                indicesArray[1] = idx2;
+                indicesArray[2] = idx3;
+                face.setIndices(indicesArray);
+                surface.getFaces().add(face);
+            }
+        }
+
+        return primitive;
     }
 }

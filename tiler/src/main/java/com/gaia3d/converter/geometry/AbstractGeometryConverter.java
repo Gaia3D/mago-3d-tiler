@@ -50,6 +50,7 @@ public abstract class AbstractGeometryConverter {
         return scene;
     }
 
+
     protected GaiaNode createNode(GaiaMaterial material, List<Vector3d> positions, List<GaiaTriangle> triangles) {
         GaiaNode node = new GaiaNode();
         node.setTransformMatrix(new Matrix4d().identity());

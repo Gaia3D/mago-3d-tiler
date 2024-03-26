@@ -14,6 +14,7 @@ public class ConvexHullTessellator {
         int start = 1;
         int size = positions.size() - 1;
         Vector3d p0 = positions.get(0);
+        Vector3d normal = null;
         for (int i = start; i < size; i ++) {
             Vector3d p1 = positions.get(i);
             Vector3d p2 = positions.get(i + 1);
