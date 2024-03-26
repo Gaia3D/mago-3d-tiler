@@ -34,6 +34,8 @@ public class GlobalOptions {
     private static final int DEFAULT_MAX_LOD = 3;
     private static final int DEFAULT_POINT_LIMIT = 65536;
     private static final int DEFAULT_POINT_SCALE = 2;
+    private static final int DEFAULT_POINT_SKIP = 4;
+
     private static final byte DEFAULT_MULTI_THREAD_COUNT = 4;
     private static final String DEFAULT_CRS = "4326";
     private static final String DEFAULT_NAME_COLUMN = "name";
@@ -72,6 +74,7 @@ public class GlobalOptions {
 
     private int pointLimit; // point limit per tile
     private int pointScale; // point scale
+    private int pointSkip; // skip points value
 
     private int nodeLimit; // node limit per tile
     private int minLod; // minimum level of detail
@@ -173,7 +176,8 @@ public class GlobalOptions {
 
         /* Point Cloud Options */
         instance.setPointLimit(command.hasOption(ProcessOptions.MAX_POINTS.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_POINTS.getArgName())) : DEFAULT_POINT_LIMIT);
-        instance.setPointScale(/*command.hasOption(ProcessOptions.POINT_SCALE.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.POINT_SCALE.getArgName())) : */DEFAULT_POINT_SCALE);
+        instance.setPointScale(command.hasOption(ProcessOptions.POINT_SCALE.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.POINT_SCALE.getArgName())) : DEFAULT_POINT_SCALE);
+        instance.setPointSkip(command.hasOption(ProcessOptions.POINT_SKIP.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.POINT_SKIP.getArgName())) : DEFAULT_POINT_SKIP);
 
         /* 2D Data Column Options */
         instance.setNameColumn(command.hasOption(ProcessOptions.NAME_COLUMN.getArgName()) ? command.getOptionValue(ProcessOptions.NAME_COLUMN.getArgName()) : DEFAULT_NAME_COLUMN);

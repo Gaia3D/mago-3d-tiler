@@ -18,41 +18,48 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public enum FormatType {
     // 3D Formats
-    KML("kml", false),
-    GLTF("gltf", false),
-    GLB("glb", false),
-    COLLADA("dae", true),
-    MAX_3DS("3ds", false),
-    MAX_ASE("ase", false),
-    FBX("fbx", true),
-    OBJ("obj", false),
-    IFC("ifc", false),
-    CITY_GML("gml", false),
-    MODO("lxo", false),
-    LWO("lwo", false),
-    LWS("lws", false),
-    DirectX("x", false),
+    KML("kml", "kml", false),
+    GLTF("gltf", "glb", false),
+    GLB("glb", "gltf", false),
+    COLLADA("dae", "dae", true),
+    MAX_3DS("3ds", "3ds",false),
+    MAX_ASE("ase", "ase", false),
+    FBX("fbx", "fbx", true),
+    OBJ("obj","obj", false),
+    IFC("ifc", "ifc",false),
+    CITYGML("gml","xml", false),
+    INDOORGML("gml","xml", false),
+    MODO("lxo", "lxo", false),
+    LWO("lwo", "lwo", false),
+    LWS("lws", "lws", false),
+    DirectX("x", "x", false),
     // 2D Formats,
-    SHP("shp", false),
-    GEOJSON("geojson", false),
-    JSON("json", false),
-    LAS("las", false),
-    LAZ("laz", false),
+    SHP("shp", "shp",false),
+    GEOJSON("geojson", "json", false),
+    //JSON("json", "", false),
+    LAS("las", "laz", false),
+    LAZ("laz", "las", false),
     // OUTPUT Formats
-    B3DM("b3dm", true),
-    I3DM("i3dm", true),
-    PNTS("pnts", true),
-    TEMP("tmp", false);
+    B3DM("b3dm", "gltf", true),
+    I3DM("i3dm", "gltf",true),
+    PNTS("pnts", "gltf",true),
+    TEMP("tmp", "tmp", false);
 
     private final String extension;
+    private final String subExtension;
     private final boolean yUpAxis;
 
     public static FormatType fromExtension(String extension) {
-        if (extension == null) {
+        if (extension == null || extension.isEmpty()) {
             return null;
         }
         return Arrays.stream(FormatType.values())
-                .filter(type -> type.getExtension().equals(extension.toLowerCase()))
+                .filter((type) -> {
+                    boolean compareName = type.name().equalsIgnoreCase(extension);
+                    boolean compareExtension = type.getExtension().equals(extension.toLowerCase());
+                    boolean compareSubExtension = type.getSubExtension().equals(extension.toLowerCase());
+                    return compareName || compareExtension || compareSubExtension;
+                })
                 .findFirst()
                 .orElse(null);
     }

@@ -34,6 +34,8 @@ public enum ProcessOptions {
     MAX_LOD("maxLod", "xl", "maxLod", true, "max level of detail (Default: 3)"),
     MIN_LOD("minLod", "nl", "minLod", true, "min level of detail (Default: 0)"),
     MAX_POINTS("maxPoints", "mp", "maxPoints", true, "max points of pointcloud data (Default: 20000)"),
+    POINT_SCALE("pointScale", "ps", "pointScale", true, "point scale setting (Default: 2)"),
+    POINT_SKIP("pointSkip", "pk", "pointSkip", true, "point skip setting (Default: 4)"),
 
     // 2D Options
     FLIP_COORDINATE("flipCoordinate", "fc", "flipCoordinate", false, "flip x,y Coordinate. (Default: false)"),

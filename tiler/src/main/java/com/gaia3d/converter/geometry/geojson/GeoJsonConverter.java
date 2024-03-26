@@ -71,7 +71,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
             SimpleFeatureCollection featureCollection = (SimpleFeatureCollection) gjson.readFeatureCollection(new StringReader(json));
             FeatureIterator<SimpleFeature> iterator = featureCollection.features();
 
-            List<GaiaBuilding> buildings = new ArrayList<>();
+            List<GaiaExtrusionBuilding> buildings = new ArrayList<>();
             while (iterator.hasNext()) {
                 SimpleFeature feature = iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
@@ -140,7 +140,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                 if (altitudeColumnName != null) {
                     altitude = getAltitude(feature, altitudeColumnName);
                 }
-                GaiaBuilding building = GaiaBuilding.builder()
+                GaiaExtrusionBuilding building = GaiaExtrusionBuilding.builder()
                         .id(feature.getID())
                         .name(name)
                         .boundingBox(boundingBox)
@@ -152,7 +152,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
             }
             iterator.close();
 
-            for (GaiaBuilding building : buildings) {
+            for (GaiaExtrusionBuilding building : buildings) {
                 GaiaScene scene = initScene();
                 scene.setOriginalPath(file.toPath());
 

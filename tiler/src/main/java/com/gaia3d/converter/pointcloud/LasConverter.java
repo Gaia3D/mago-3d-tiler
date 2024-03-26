@@ -88,12 +88,13 @@ public class LasConverter {
         CloseablePointIterable pointIterable = reader.getCloseablePoints();
         //pointIterable.close();
 
-        int splitSize = 4;
+        int pointSkip = globalOptions.getPointSkip();
         AtomicInteger pointIndex = new AtomicInteger();
         AtomicInteger maxColorValue = new AtomicInteger();
         //for (LASPoint point : reader.getPoints()) {
+
         for (LASPoint point : pointIterable) {
-            if (pointIndex.get() % splitSize == 0) {
+            if (pointIndex.get() % pointSkip == 0) {
                 double x = point.getX() * xScaleFactor + xOffset;
                 double y = point.getY() * yScaleFactor + yOffset;
                 double z = point.getZ() * zScaleFactor + zOffset;

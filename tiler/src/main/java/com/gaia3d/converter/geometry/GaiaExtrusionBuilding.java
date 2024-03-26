@@ -11,8 +11,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-public class GaiaBuilding {
-
+public class GaiaExtrusionBuilding {
     private String id;
     private String name;
     private double roofHeight;

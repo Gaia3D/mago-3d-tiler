@@ -40,24 +40,4 @@ public class PointCloudProcessModel implements ProcessFlowModel{
         return "PointCloudProcessModel";
     }
 
-    protected static boolean validate(Path outputPath) throws IOException {
-        File output = outputPath.toFile();
-        if (!output.exists()) {
-            throw new FileExistsException("Output path is not exist.");
-        } else if (!output.isDirectory()) {
-            throw new NotDirectoryException("Output path is not directory.");
-        } else if (!output.canWrite()) {
-            throw new IOException("Output path is not writable.");
-        }
-        return true;
-    }
-
-    protected static Path createPath(File file) {
-        Path path = file.toPath();
-        boolean result = file.mkdir();
-        if (result) {
-            log.info("Created new directory: {}", path);
-        }
-        return path;
-    }
 }

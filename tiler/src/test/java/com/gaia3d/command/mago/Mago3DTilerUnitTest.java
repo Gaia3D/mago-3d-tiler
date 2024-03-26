@@ -45,6 +45,7 @@ class Mago3DTilerUnitTest {
                 //"-minLod", "0",
                 //"-maxLod", "0",
                 "-output", output.getAbsolutePath(),
+                "-glb",
         };
         Mago3DTilerMain.main(args);
     }
@@ -513,6 +514,42 @@ class Mago3DTilerUnitTest {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "las",
                 "-autoUpAxis",
+                "-output", output.getAbsolutePath(),
+                "-r",
+                "-crs", "5186"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void case29() {
+        String path = "case29-indoor-gml";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "indoorgml",
+                //"-autoUpAxis",
+                "-output", output.getAbsolutePath(),
+                "-crs", "5186",
+                "-glb",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void case30() {
+        String path = "case30-big-points";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        //FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "las",
+                "-autoUpAxis",
+                "-pointSkip", "256",
                 "-output", output.getAbsolutePath(),
                 "-r",
                 "-crs", "5186"
