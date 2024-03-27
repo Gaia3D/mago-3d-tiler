@@ -1,9 +1,9 @@
 package com.gaia3d.engine;
 
 //import com.gaia3d.converter.*;
-import com.gaia3d.basic.structure.GaiaScene;
-import com.gaia3d.converter.Converter;
-import com.gaia3d.converter.AssimpConverter;
+import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.structure.*;
+
 import com.gaia3d.engine.dataStructure.GaiaScenesContainer;
 import com.gaia3d.engine.fbo.Fbo;
 import com.gaia3d.engine.fbo.FboManager;
@@ -13,16 +13,25 @@ import com.gaia3d.engine.graph.ShaderProgram;
 import com.gaia3d.engine.scene.Camera;
 import com.gaia3d.engine.screen.ScreenQuad;
 import com.gaia3d.renderable.RenderableGaiaScene;
+import edu.stem.indoor.IndoorFeatures;
+import edu.stem.space.*;
 import lombok.Getter;
+import org.joml.Matrix4d;
 import org.joml.Vector3d;
+import org.joml.Vector4d;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL20;
 
+import javax.xml.bind.JAXBException;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import static edu.stem.debug.Main.unmarshall;
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -69,7 +78,7 @@ public class Engine {
         //scene.resize(window.getWidth(), window.getHeight());
     }
 
-    public void run() {
+    public void run() throws JAXBException, IOException {
         System.out.println("Hello LWJGL " + Version.getVersion() + "!");
 
         init();
@@ -85,7 +94,7 @@ public class Engine {
         glfwSetErrorCallback(null).free();
     }
 
-    private void init() {
+    private void init() throws JAXBException, IOException {
         // 에러 콜백을 설정합니다. System.err의 에러 메세지를 출력 기본으로 구현합니다.
         GLFWErrorCallback.createPrint(System.err).set();
 
@@ -184,13 +193,18 @@ public class Engine {
         //String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\gangbuk_cultur_del_3DS\\gangbuk_cultur_del.3ds";
         //String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\gangil_del_3DS\\gangil_del.3ds";
         //String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\gangnam_del_3DS\\gangnam_del.3ds";
-        String filePath = "D:\\data\\military\\LAS제외\\3DS\\8_전주고속버스터미널.3ds";
-        Converter assimpConverter = new AssimpConverter();
-        List<GaiaScene> gaiaScenes = assimpConverter.load(filePath);
-        RenderableGaiaScene renderableGaiaScene = InternDataConverter.getRenderableGaiaScene(gaiaScenes.get(0));
-        gaiaScenesContainer.addRenderableGaiaScene(renderableGaiaScene);
+//        String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\Gangseo_cultural_del_3DS\\Gangseo_cultural_del.3ds";
+//
+//        Converter assimpConverter = new AssimpConverter();
+//        List<GaiaScene> gaiaScenes = assimpConverter.load(filePath);
+//        RenderableGaiaScene renderableGaiaScene = InternDataConverter.getRenderableGaiaScene(gaiaScenes.get(0));
+//        gaiaScenesContainer.addRenderableGaiaScene(renderableGaiaScene);
+        // end test load a 3d file.***
 
+
+        int hola = 0;
     }
+
 
     private void setupShader() {
         shaderManager = new ShaderManager();

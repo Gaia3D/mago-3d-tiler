@@ -97,7 +97,8 @@ dependencies {
 
     implementation 'com.github.mreutegg:laszip4j:0.15'
 
-    implementation project(":mago-core")
+    implementation project(":mago-common")
+    implementation files('libs/Indoor4J.jar')
 
     runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-assimp::$lwjglNatives"

@@ -41,14 +41,14 @@ public class InternDataConverter {
         // nodes
         List<GaiaNode> nodes = gaiaScene.getNodes();
         for (GaiaNode node : nodes) {
-            RenderableNode renderableNode = getRenderableNode(node, rotMatrix);
+            RenderableNode renderableNode = getRenderableNode(node, rotMatrix, gaiaScene);
             renderableGaiaScene.addRenderableNode(renderableNode);
         }
 
         return renderableGaiaScene;
     }
 
-    public static RenderableNode getRenderableNode(GaiaNode gaiaNode, Matrix4d parentTransformMatrix) {
+    public static RenderableNode getRenderableNode(GaiaNode gaiaNode, Matrix4d parentTransformMatrix, GaiaScene scene) {
         RenderableNode renderableNode = new RenderableNode();
 
         String name = gaiaNode.getName();
@@ -73,7 +73,7 @@ public class InternDataConverter {
         int meshesCount = meshes.size();
         for (int i = 0; i < meshesCount; i++) {
             GaiaMesh gaiaMesh = meshes.get(i);
-            RenderableMesh renderableMesh = getRenderableMesh(gaiaMesh, transformMatrix);
+            RenderableMesh renderableMesh = getRenderableMesh(gaiaMesh, transformMatrix, scene);
             renderableNode.addRenderableMesh(renderableMesh);
         }
 
@@ -82,14 +82,14 @@ public class InternDataConverter {
         int childrenCount = children.size();
         for (int i = 0; i < childrenCount; i++) {
             GaiaNode child = children.get(i);
-            RenderableNode renderableChildNode = getRenderableNode(child, transformMatrix);
+            RenderableNode renderableChildNode = getRenderableNode(child, transformMatrix, scene);
             renderableNode.addChild(renderableChildNode);
         }
 
         return renderableNode;
     }
 
-    public static RenderableMesh getRenderableMesh(GaiaMesh gaiaMesh, Matrix4d transformMatrix) {
+    public static RenderableMesh getRenderableMesh(GaiaMesh gaiaMesh, Matrix4d transformMatrix, GaiaScene scene) {
         RenderableMesh renderableMesh = new RenderableMesh();
 
         List<GaiaPrimitive> primitives = gaiaMesh.getPrimitives();
@@ -100,14 +100,15 @@ public class InternDataConverter {
         for (int i = 0; i < primitivesCount; i++) {
             GaiaPrimitive gaiaPrimitive = primitives.get(i);
             GaiaBufferDataSet bufferDataSet = gaiaPrimitive.toGaiaBufferSet(transformMatrix);
-            RenderablePrimitive renderablePrimitive = getRenderablePrimitive(bufferDataSet);
+            bufferDataSet.setMaterialId(gaiaPrimitive.getMaterialIndex());
+            RenderablePrimitive renderablePrimitive = getRenderablePrimitive(bufferDataSet, scene);
             renderableMesh.addRenderablePrimitive(renderablePrimitive);
         }
 
         return renderableMesh;
     }
 
-    public static RenderablePrimitive getRenderablePrimitive(GaiaBufferDataSet bufferDataSet) {
+    public static RenderablePrimitive getRenderablePrimitive(GaiaBufferDataSet bufferDataSet, GaiaScene scene) {
         RenderablePrimitive renderablePrimitive = new RenderablePrimitive();
 
         Map<AttributeType, GaiaBuffer> buffers = bufferDataSet.getBuffers();
@@ -117,7 +118,16 @@ public class InternDataConverter {
             buffer.setAttributeType(attributeType); // set the attribute type to the buffer.***
             RenderableBuffer renderableBuffer = getRenderableBuffer(buffer);
             renderablePrimitive.setAttribTypeRenderableBuffer(attributeType, renderableBuffer);
-            renderablePrimitive.setMaterial(bufferDataSet.getMaterial());
+            int matId = bufferDataSet.getMaterialId();
+            GaiaMaterial material = null;
+
+            if(matId >= 0) {
+                material = scene.getMaterials().stream().filter((materialToFind) -> {
+                    return materialToFind.getId() == matId;
+                }).findFirst().get();
+            }
+
+            renderablePrimitive.setMaterial(material);
         }
 
         return renderablePrimitive;

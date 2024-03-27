@@ -6,6 +6,9 @@ import com.gaia3d.engine.dataStructure.GaiaScenesContainer;
 import com.gaia3d.engine.*;
 import com.gaia3d.engine.scene.Camera;
 
+import javax.xml.bind.JAXBException;
+import java.io.IOException;
+
 
 public class Main implements IAppLogic {
     private static final float MOUSE_SENSITIVITY = 0.1f;
@@ -14,7 +17,7 @@ public class Main implements IAppLogic {
 //    private Vector4f displInc = new Vector4f();
 //    private float rotation;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws JAXBException, IOException {
         Main main = new Main();
         Engine gameEng = new Engine("MagoVisual3D", new Window.WindowOptions(), main);
         gameEng.run();
