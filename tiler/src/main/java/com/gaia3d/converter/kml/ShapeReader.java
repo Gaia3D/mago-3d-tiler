@@ -1,14 +1,7 @@
 package com.gaia3d.converter.kml;
 
-import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.structure.GaiaMaterial;
-import com.gaia3d.basic.structure.GaiaNode;
-import com.gaia3d.basic.structure.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.geometry.Extruder;
-import com.gaia3d.converter.geometry.Extrusion;
-import com.gaia3d.converter.geometry.GaiaBuilding;
-import com.gaia3d.converter.geometry.Tessellator;
+import com.gaia3d.converter.geometry.GaiaExtrusionBuilding;
 import com.gaia3d.util.GlobeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.data.DataStore;
@@ -19,24 +12,14 @@ import org.geotools.data.shapefile.shp.ShapefileReader;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.FeatureIterator;
-import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.util.factory.Hints;
-import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.locationtech.jts.geom.*;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.Filter;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -82,7 +65,7 @@ public class ShapeReader implements AttributeReader {
             SimpleFeatureCollection features = source.getFeatures(query);
 
             FeatureIterator<SimpleFeature> iterator = features.features();
-            List<GaiaBuilding> buildings = new ArrayList<>();
+            List<GaiaExtrusionBuilding> buildings = new ArrayList<>();
             while (iterator.hasNext()) {
                 SimpleFeature feature = iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();

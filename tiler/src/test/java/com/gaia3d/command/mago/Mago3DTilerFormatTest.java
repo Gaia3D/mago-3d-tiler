@@ -128,4 +128,56 @@ class Mago3DTilerFormatTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Test
+    void CITYGML() {
+        String path = "CITYGML";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-output", output.getAbsolutePath(),
+                "-inputType", "citygml",
+                "-crs", "5186",
+                "-glb",
+                //"-glb"
+                //"-autoUpAxis",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void LAS() {
+        String path = "LAS";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-output", output.getAbsolutePath(),
+                "-inputType", "las",
+                "-skipPoints", "256",
+                "-crs", "5186",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void INDOORGML() {
+        String path = "INDOORGML";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-output", output.getAbsolutePath(),
+                "-inputType", "indoorgml",
+                "-crs", "5186",
+                "-glb",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
 }

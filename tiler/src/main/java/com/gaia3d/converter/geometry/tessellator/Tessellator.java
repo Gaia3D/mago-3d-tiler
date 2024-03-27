@@ -1,6 +1,5 @@
-package com.gaia3d.converter.geometry;
+package com.gaia3d.converter.geometry.tessellator;
 
-import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 
@@ -212,8 +211,6 @@ public class Tessellator {
         v2.normalize();
         Vector3d c1 = new Vector3d();
         v1.cross(v2, c1);
-        v1 = null;
-        v2 = null;
         return c1;
     }
 

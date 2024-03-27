@@ -128,6 +128,11 @@ public class BatchedFileLoader implements FileLoader {
     }
 
     private String[] getExtensions(FormatType formatType) {
-        return new String[]{formatType.getExtension().toLowerCase(), formatType.getExtension().toUpperCase()};
+        String[] extensions = new String[4];
+        extensions[0] = formatType.getExtension().toLowerCase();
+        extensions[1] = formatType.getExtension().toUpperCase();
+        extensions[2] = formatType.getSubExtension().toLowerCase();
+        extensions[3] = formatType.getSubExtension().toUpperCase();
+        return extensions;
     }
 }

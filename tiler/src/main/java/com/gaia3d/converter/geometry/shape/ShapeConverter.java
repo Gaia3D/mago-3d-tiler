@@ -21,7 +21,6 @@ import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.util.factory.Hints;
 import org.joml.Matrix4d;
-import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.locationtech.jts.geom.*;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
@@ -34,7 +33,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -87,7 +85,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             SimpleFeatureCollection features = source.getFeatures(query);
 
             FeatureIterator<SimpleFeature> iterator = features.features();
-            List<GaiaBuilding> buildings = new ArrayList<>();
+            List<GaiaExtrusionBuilding> buildings = new ArrayList<>();
             while (iterator.hasNext()) {
                 SimpleFeature feature = iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
@@ -160,7 +158,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                     if (altitudeColumnName != null) {
                         altitude = getAltitude(feature, altitudeColumnName);
                     }
-                    GaiaBuilding building = GaiaBuilding.builder()
+                    GaiaExtrusionBuilding building = GaiaExtrusionBuilding.builder()
                             .id(feature.getID())
                             .name(name)
                             .boundingBox(boundingBox)
@@ -180,7 +178,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             shpFiles.dispose();
             dataStore.dispose();
 
-            for (GaiaBuilding building : buildings) {
+            for (GaiaExtrusionBuilding building : buildings) {
                 GaiaScene scene = initScene();
                 scene.setOriginalPath(file.toPath());
 

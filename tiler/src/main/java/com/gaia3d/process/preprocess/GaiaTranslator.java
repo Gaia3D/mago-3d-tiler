@@ -73,6 +73,7 @@ public class GaiaTranslator implements PreProcess {
     private Vector3d getTranslation(GaiaScene gaiaScene) {
         GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox();
         Vector3d center = boundingBox.getCenter();
+        //Vector3d traslation = new Vector3d(center.x, center.y, 0.0d);
         Vector3d traslation = new Vector3d(center.x, center.y, 0.0d);
         traslation.negate();
         return traslation;
@@ -81,7 +82,7 @@ public class GaiaTranslator implements PreProcess {
     private Vector3d getPosition(FormatType formatType, GaiaScene gaiaScene) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         Vector3d position;
-        if (formatType == FormatType.CITY_GML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON) {
+        if (formatType == FormatType.CITYGML|| formatType == FormatType.INDOORGML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON) {
             GaiaNode rootNode = gaiaScene.getNodes().get(0);
             Matrix4d transform = rootNode.getTransformMatrix();
             Vector3d center = new Vector3d(transform.get(3,0), transform.get(3,1), 0.0d);
