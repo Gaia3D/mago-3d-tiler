@@ -28,7 +28,7 @@ public class GaiaTranslator implements PreProcess {
     @Override
     public TileInfo run(TileInfo tileInfo) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-        FormatType inputType = FormatType.fromExtension(globalOptions.getInputFormat());
+        FormatType inputType = globalOptions.getInputFormat();
 
         GaiaScene gaiaScene = tileInfo.getScene();
         GaiaNode rootNode = gaiaScene.getNodes().get(0);

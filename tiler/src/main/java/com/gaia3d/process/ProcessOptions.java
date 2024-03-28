@@ -9,23 +9,24 @@ public enum ProcessOptions {
     HELP("help", "h", "help", false, "print this message"),
     VERSION("version", "v", "version", false, "print version"),
     QUIET("quiet", "q", "quiet", false, "quiet mode"),
-    LOG("log", "l", "log", true, "output log file path"),
+
     INPUT("input", "i", "input", true, "input file path"),
     OUTPUT("output", "o", "output", true, "output file path"),
     INPUT_TYPE("inputType", "it", "inputType", true, "input file type (kml, 3ds, obj, gltf, etc...)"),
     OUTPUT_TYPE("outputType", "ot", "outputType", true, "output file type"),
-    CRS("crs", "c", "crs", true,"Coordinate Reference Systems, only epsg code (4326, 3857, etc...)"),
-    PROJ4("proj", "p", "proj", true, "proj4 parameters (ex: +proj=tmerc +la...)"),
+    LOG("log", "l", "log", true, "output log file path"),
     RECURSIVE("recursive", "r", "recursive", false, "deep directory exploration"),
 
-    // 3D Options,
-    INSTANCE_FILE("instance", "in", "instance", true, "instance file path. (Default: {OUTPUT}/instance.dae)"),
+    CRS("crs", "c", "crs", true,"Coordinate Reference Systems, only epsg code (4326, 3857, etc...)"),
+    PROJ4("proj", "p", "proj", true, "proj4 parameters (ex: +proj=tmerc +la...)"),
+
+    INSTANCE_FILE("instance", "if", "instance", true, "instance file path. (Default: {OUTPUT}/instance.dae)"),
 
     //SWAP_YZ("swapYZ", "yz", "swapYZ", false, "swap vertices axis YZ"),
-    REVERSE_TEXCOORD("reverseTexCoord", "rt", "reverseTexCoord", false, "texture y-axis coordinate reverse"),
+    //REVERSE_TEXCOORD("reverseTexCoord", "rt", "reverseTexCoord", false, "texture y-axis coordinate reverse"),
     MULTI_THREAD("multiThread", "mt", "multiThread", false, "multi thread mode"),
     MULTI_THREAD_COUNT("multiThreadCount", "mc", "multiThreadCount", true, "multi thread count (Default: 8)"),
-    PNG_TEXTURE("pngTexture", "pt", "pngTexture", false, "png texture mode"),
+    //PNG_TEXTURE("pngTexture", "pt", "pngTexture", false, "png texture mode"),
     Y_UP_AXIS("yUpAxis", "ya", "yAxis", false, "Assign 3D root transformed matrix Y-UP axis"),
 
     // 3D Tiles Options
@@ -52,7 +53,6 @@ public enum ProcessOptions {
     TERRAIN("terrain", "te", "terrain", true, "terrain file path, 3D Object applied as clampToGround. Currently, we only support the geotiff extension."),
 
     DEBUG("debug", "d", "debug", false,"output more detailed log and stuck on a multi-thread bug."),
-    DEBUG_GLTF("gltf", "gltf", "gltf", false, "create gltf with b3dm."),
     DEBUG_GLB("glb", "glb", "glb", false, "create glb file with b3dm.");
 
     private final String longName;

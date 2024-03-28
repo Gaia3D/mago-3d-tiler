@@ -49,7 +49,7 @@ public class InnerRing {
         result.addAll(list.subList(0, index));
 
         if (!result.isEmpty()) {
-            result.add(result.get(0));
+            result.add(new Vector2d(result.get(0)));
         }
         return result;
     }

@@ -4,7 +4,10 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
-import com.gaia3d.converter.geometry.*;
+import com.gaia3d.converter.geometry.AbstractGeometryConverter;
+import com.gaia3d.converter.geometry.GaiaExtrusionBuilding;
+import com.gaia3d.converter.geometry.InnerRingRemover;
+import com.gaia3d.converter.geometry.Vector3dsOnlyHashEquals;
 import com.gaia3d.converter.geometry.tessellator.GaiaExtruder;
 import com.gaia3d.converter.geometry.tessellator.GaiaExtrusionSurface;
 import com.gaia3d.util.GlobeUtils;
@@ -52,10 +55,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
     @Override
     protected List<GaiaScene> convert(File file) {
         List<GaiaScene> scenes = new ArrayList<>();
-        //Tessellator tessellator = new Tessellator();
-        //Extruder extruder = new Extruder(tessellator);
         GaiaExtruder gaiaExtruder = new GaiaExtruder();
-
         InnerRingRemover innerRingRemover = new InnerRingRemover();
 
         GlobalOptions globalOptions = GlobalOptions.getInstance();
@@ -80,116 +80,96 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                 SimpleFeature feature = iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
 
-                Polygon polygon = null;
-                LineString lineString = null;
+                if (geom == null) {
+                    log.warn("Is Null Geometry : {}", feature.getID());
+                    continue;
+                }
+
+                List<Polygon> polygons = new ArrayList<>();
                 if (geom instanceof MultiPolygon) {
-                    polygon = (Polygon) geom.getGeometryN(0);
-                    lineString = polygon.getExteriorRing();
+                    int count = geom.getNumGeometries();
+                    for (int i = 0; i < count; i++) {
+                        Polygon polygon = (Polygon) geom.getGeometryN(i);
+                        polygons.add(polygon);
+                    }
                 } else if (geom instanceof Polygon) {
-                    polygon = (Polygon) geom;
-                    lineString = polygon.getExteriorRing();
-                } else if (geom instanceof MultiLineString) {
-                    lineString = (LineString) geom.getGeometryN(0);
-                } else if (geom instanceof LineString) {
-                    lineString = (LineString) geom;
+                    polygons.add((Polygon) geom);
                 } else {
                     log.warn("Is Not Supported Geometry Type : {}", geom.getGeometryType());
                     continue;
                 }
-                if (!lineString.isValid()) {
-                    log.warn("Invalid : {}", feature.getID());
-                    continue;
-                }
 
-                GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
-                Coordinate[] coordinates = lineString.getCoordinates();
+                for (Polygon polygon : polygons) {
+                    if (!polygon.isValid()) {
+                        log.warn("Is Invalid Polygon. : {}", feature.getID());
+                        continue;
+                    }
 
-                coordinates = innerRingRemover.removeAll(coordinates, new ArrayList<>());
+                    LineString lineString = polygon.getExteriorRing();
+                    GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
+                    Coordinate[] outerCoordinates = lineString.getCoordinates();
 
-                GaiaBoundingBox boundingBox = new GaiaBoundingBox();
-                List<Vector3d> positions = new ArrayList<>();
+                    int innerRingCount = polygon.getNumInteriorRing();
+                    List<Coordinate[]> innerCoordinates = new ArrayList<>();
+                    for (int i = 0; i < innerRingCount; i++) {
+                        LineString innerRing = polygon.getInteriorRingN(i);
+                        Coordinate[] innerCoordinatesArray = innerRing.getCoordinates();
+                        innerCoordinates.add(innerCoordinatesArray);
+                    }
 
-                Vector3d firstPosition = null;
-                for (Coordinate coordinate : coordinates) {
-                    Point point = geometryFactory.createPoint(coordinate);
-                    double x, y;
-                    if (flipCoordinate) {
-                        x = point.getY();
-                        y = point.getX();
+                    outerCoordinates = innerRingRemover.removeAll(outerCoordinates, innerCoordinates);
+                    GaiaBoundingBox boundingBox = new GaiaBoundingBox();
+                    List<Vector3d> positions = new ArrayList<>();
+
+                    for (Coordinate coordinate : outerCoordinates) {
+                        Point point = geometryFactory.createPoint(coordinate);
+
+                        double x, y;
+                        if (flipCoordinate) {
+                            x = point.getY();
+                            y = point.getX();
+                        } else {
+                            x = point.getX();
+                            y = point.getY();
+                        }
+
+                        Vector3d position;
+                        CoordinateReferenceSystem crs = globalOptions.getCrs();
+                        if (crs != null && !crs.getName().equals("EPSG:4326")) {
+                            ProjCoordinate projCoordinate = new ProjCoordinate(x, y, boundingBox.getMinZ());
+                            ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
+                            position = new Vector3d(centerWgs84.x, centerWgs84.y, 0.0d);
+                        } else {
+                            position = new Vector3d(x, y, 0.0d);
+                        }
+
+                        positions.add(position);
+                        boundingBox.addPoint(position);
+                    }
+
+                    if (positions.size() >= 3) {
+                        String name = getAttribute(feature, nameColumnName);
+                        double height = getHeight(feature, heightColumnName, minimumHeightValue);
+                        double altitude = absoluteAltitudeValue;
+                        if (altitudeColumnName != null) {
+                            altitude = getAltitude(feature, altitudeColumnName);
+                        }
+                        GaiaExtrusionBuilding building = GaiaExtrusionBuilding.builder()
+                                .id(feature.getID())
+                                .name(name)
+                                .boundingBox(boundingBox)
+                                .floorHeight(altitude)
+                                .roofHeight(height + skirtHeight)
+                                .positions(positions)
+                                .build();
+                        buildings.add(building);
                     } else {
-                        x = point.getX();
-                        y = point.getY();
+                        String name = getAttribute(feature, nameColumnName);
+                        log.warn("Invalid Geometry : {}, {}", feature.getID(), name);
                     }
-
-                    Vector3d position;
-                    CoordinateReferenceSystem crs = globalOptions.getCrs();
-                    if (crs != null) {
-                        ProjCoordinate projCoordinate = new ProjCoordinate(x, y, boundingBox.getMinZ());
-                        ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
-                        position = new Vector3d(centerWgs84.x, centerWgs84.y, 0.0d);
-                    } else {
-                        position = new Vector3d(x, y, 0.0d);
-                    }
-
-                    if (firstPosition == null) {
-                        firstPosition = position;
-                    } else if (firstPosition.equals(position)) {
-                        break;
-                    }
-                    positions.add(position);
-                    boundingBox.addPoint(position);
                 }
-
-                String name = getAttribute(feature, nameColumnName);
-                double height = getHeight(feature, heightColumnName, minimumHeightValue);
-                double altitude = absoluteAltitudeValue;
-                if (altitudeColumnName != null) {
-                    altitude = getAltitude(feature, altitudeColumnName);
-                }
-                GaiaExtrusionBuilding building = GaiaExtrusionBuilding.builder()
-                        .id(feature.getID())
-                        .name(name)
-                        .boundingBox(boundingBox)
-                        .floorHeight(altitude)
-                        .roofHeight(altitude + height + skirtHeight)
-                        .positions(positions)
-                        .build();
-                buildings.add(building);
             }
             iterator.close();
-
-            /*for (GaiaExtrusionBuilding building : buildings) {
-                GaiaScene scene = initScene();
-                scene.setOriginalPath(file.toPath());
-
-                GaiaMaterial material = scene.getMaterials().get(0);
-                GaiaNode rootNode = scene.getNodes().get(0);
-                rootNode.setName(building.getName());
-
-                Vector3d center = building.getBoundingBox().getCenter();
-                center.z = center.z - skirtHeight;
-
-                Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
-                Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
-                Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
-
-                List<Vector3d> localPositions = new ArrayList<>();
-                for (Vector3d position : building.getPositions()) {
-                    Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
-                    Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv, new Vector3d());
-                    localPosition.z = 0.0d;
-                    localPositions.add(localPosition);
-                }
-
-                Extrusion extrusion = extruder.extrude(localPositions, building.getRoofHeight(), building.getFloorHeight());
-                GaiaNode node = createNode(material, extrusion.getPositions(), extrusion.getTriangles());
-                rootNode.getChildren().add(node);
-
-                Matrix4d rootTransformMatrix = new Matrix4d().identity();
-                rootTransformMatrix.translate(center, rootTransformMatrix);
-                rootNode.setTransformMatrix(rootTransformMatrix);
-                scenes.add(scene);
-            }*/
 
             for (GaiaExtrusionBuilding building : buildings) {
                 GaiaScene scene = initScene();

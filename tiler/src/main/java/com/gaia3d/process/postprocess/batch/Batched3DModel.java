@@ -106,11 +106,6 @@ public class Batched3DModel implements TileModel {
         }
 
         byte[] glbBytes;
-        if (globalOptions.isGltf()) {
-            String glbFileName = nodeCode + ".gltf";
-            File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
-            this.gltfWriter.writeGltf(scene, glbOutputFile);
-        }
         if (globalOptions.isGlb()) {
             String glbFileName = nodeCode + ".glb";
             File glbOutputFile = outputRoot.resolve(glbFileName).toFile();

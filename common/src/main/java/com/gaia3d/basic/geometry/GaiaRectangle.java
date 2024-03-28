@@ -60,6 +60,10 @@ public class GaiaRectangle implements Serializable {
         return (maxX * maxY);
     }*/
 
+    public Vector2d getCenter() {
+        return new Vector2d((minX + maxX) / 2, (minY + maxY) / 2);
+    }
+
     public double getArea() {
         return ((maxX - minX) * (maxY - minY));
     }

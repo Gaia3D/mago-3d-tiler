@@ -14,7 +14,6 @@ public class GaiaTessellator {
     // tessellate.***
     public void tessellate3D(List<Vector3d> points3dArray, List<Integer> resultTrianglesIndices) {
         // 1rst, must know the normal of the polygon to project the polygon to a plane and resilve the tessellation in 2d.***
-        List<Integer> concaveIndices = new ArrayList<>();
         Vector3d normal = new Vector3d();
         calculateFastNormal3D(points3dArray, normal); // the normal can be reversed.***
 
@@ -67,6 +66,9 @@ public class GaiaTessellator {
                 resultTrianglesIndices.add(parentVertexIndex);
             }
         }
+
+        polygon2D = null;
+        resultConvexPolygons.clear();
     }
 
     public void getPointsIdxSortedByDistToPoint(Point2DTess point, List<Point2DTess> points, List<Integer> resultIndices) {
@@ -171,13 +173,9 @@ public class GaiaTessellator {
                     break;
                 }
             }
-
             i++;
         }
-
-        int hola = 0;
     }
-
 
     private String getBestPlaneToProject(Vector3d normal) {
         float absX = Math.abs((float) normal.x);

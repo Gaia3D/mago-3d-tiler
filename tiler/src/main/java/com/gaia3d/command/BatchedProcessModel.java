@@ -32,8 +32,7 @@ import java.util.List;
 public class BatchedProcessModel implements ProcessFlowModel {
     public void run() throws IOException {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-        String inputExtension = globalOptions.getInputFormat();
-        FormatType inputFormat = FormatType.fromExtension(inputExtension);
+        FormatType inputFormat = globalOptions.getInputFormat();
         boolean isYUpAxis = getYUpAxis(inputFormat, globalOptions.isYUpAxis());
         Converter converter = getConverter(inputFormat);
         AttributeReader kmlReader = new JacksonKmlReader();

@@ -42,8 +42,6 @@ class Mago3DTilerUnitTest {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "3ds",
                 "-crs", "5186",
-                //"-minLod", "0",
-                //"-maxLod", "0",
                 "-output", output.getAbsolutePath(),
                 "-glb",
         };
@@ -59,8 +57,6 @@ class Mago3DTilerUnitTest {
         String[] args = {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
-                //"-ignoreTextures",
-                //"-autoUpAxis", // is not supported
         };
         Mago3DTilerMain.main(args);
     }
@@ -75,8 +71,6 @@ class Mago3DTilerUnitTest {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "shp",
                 "-output", output.getAbsolutePath(),
-                "-autoUpAxis",
-                "-refineAdd",
                 "-proj", "+proj=tmerc +lat_0=38 +lon_0=127.0028902777778 +k=1 +x_0=200000 +y_0=500000 +ellps=bessel +units=m +no_defs +towgs84=-115.80,474.99,674.11,1.16,-2.31,-1.63,6.43",
         };
         Mago3DTilerMain.main(args);
@@ -109,7 +103,6 @@ class Mago3DTilerUnitTest {
                 "-output", output.getAbsolutePath(),
                 "-outputType", "i3dm",
                 "-autoUpAxis",
-                //"-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -143,8 +136,9 @@ class Mago3DTilerUnitTest {
                 "-terrain", terrain.getAbsolutePath(),
                 "-inputType", "shp",
                 "-crs", "5181",
-                "-autoUpAxis",
-                "-refineAdd",
+                //"-autoUpAxis",
+                //"-refineAdd",
+                "-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -199,7 +193,7 @@ class Mago3DTilerUnitTest {
         Mago3DTilerMain.main(args);
     }
 
-    //@Test
+    @Test
     void case11() {
         String path = "case11-shp-jeju";
         File input = new File(INPUT_PATH, path);
@@ -208,10 +202,11 @@ class Mago3DTilerUnitTest {
         String[] args = {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
-                "-inputType", "shp",
+                "-inputType", "json",
                 "-c", "4326",
                 "-hc", "B_Height_m",
                 "-refineAdd",
+                "-debug"
         };
         Mago3DTilerMain.main(args);
     }

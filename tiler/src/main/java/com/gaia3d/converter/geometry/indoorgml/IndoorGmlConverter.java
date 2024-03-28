@@ -79,7 +79,8 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                     for (Pos pos : posList) {
                         String[] vectors = pos.getVector().split(" ");
 
-                        double scale = 0.0254d;
+                        //double scale = 0.0254d; // inch to meter
+                        double scale = 1.0d;
                         double x = Double.parseDouble(vectors[0]) * scale;
                         double y = Double.parseDouble(vectors[1]) * scale;
                         double z = Double.parseDouble(vectors[2]) * scale;
@@ -111,33 +112,23 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                 }
             }
 
+            GaiaScene scene = initScene();
+            scene.setOriginalPath(file.toPath());
+            GaiaNode rootNode = scene.getNodes().get(0);
+
+            GaiaBoundingBox globalBoundingBox = new GaiaBoundingBox();
             for (List<GaiaBuildingSurface> surfaces : buildingSurfacesList) {
-                //log.info("Building Surface Size: {}", surfaces.size());
-
-                GaiaScene scene = initScene();
-                scene.setOriginalPath(file.toPath());
-                GaiaMaterial material = scene.getMaterials().get(0);
-                GaiaNode rootNode = scene.getNodes().get(0);
-
-                GaiaBoundingBox globalBoundingBox = new GaiaBoundingBox();
                 for (GaiaBuildingSurface buildingSurface : surfaces) {
                     GaiaBoundingBox localBoundingBox = buildingSurface.getBoundingBox();
                     globalBoundingBox.addBoundingBox(localBoundingBox);
                 }
+            }
+            Vector3d center = globalBoundingBox.getCenter();
+            Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
+            Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
+            Matrix4d transfromMatrixInv = new Matrix4d(transformMatrix).invert();
 
-                Vector3d center = globalBoundingBox.getCenter();
-                Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
-                Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
-                Matrix4d transfromMatrixInv = new Matrix4d(transformMatrix).invert();
-
-
-//                GaiaNode node = new GaiaNode();
-//                node.setTransformMatrix(new Matrix4d().identity());
-//                GaiaMesh mesh = new GaiaMesh();
-//                node.getMeshes().add(mesh);
-
-
-
+            for (List<GaiaBuildingSurface> surfaces : buildingSurfacesList) {
                 List<List<Vector3d>> polygons = new ArrayList<>();
                 for (GaiaBuildingSurface buildingSurface : surfaces) {
                     List<Vector3d> polygon = new ArrayList<>();
@@ -150,13 +141,7 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                         localPositions.add(localPosition);
                         polygon.add(new Vector3dsOnlyHashEquals(localPosition));
                     }
-
-//                    List<List<Vector3d>> polygons = new ArrayList<>();
                     polygons.add(polygon);
-//
-//                    GaiaPrimitive primitive = createPrimitiveFromPolygons(polygons);
-//                    primitive.setMaterialIndex(0);
-//                    mesh.getPrimitives().add(primitive);
                 }
 
                 GaiaNode node = new GaiaNode();
@@ -169,12 +154,11 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                 mesh.getPrimitives().add(primitive);
 
                 rootNode.getChildren().add(node);
-
-                Matrix4d rootTransformMatrix = new Matrix4d().identity();
-                rootTransformMatrix.translate(center, rootTransformMatrix);
-                rootNode.setTransformMatrix(rootTransformMatrix);
-                scenes.add(scene);
             }
+            Matrix4d rootTransformMatrix = new Matrix4d().identity();
+            rootTransformMatrix.translate(center, rootTransformMatrix);
+            rootNode.setTransformMatrix(rootTransformMatrix);
+            scenes.add(scene);
         } catch (Exception e) {
             log.info("Failed to load IndoorGML file: {}", file.getAbsolutePath());
             e.printStackTrace();

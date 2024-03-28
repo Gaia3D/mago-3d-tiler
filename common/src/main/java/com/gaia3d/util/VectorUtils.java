@@ -24,13 +24,13 @@ public class VectorUtils {
         GaiaRectangle rect1 = new GaiaRectangle(a, b);
         GaiaRectangle rect2 = new GaiaRectangle(u, v);
         if (!rect1.intersects(rect2, 0.0)) {
-            log.info("Not intersect");
+            // Intersection check with bounding box
             return false;
         } else if (a.equals(u) && b.equals(v) || a.equals(v) && b.equals(u)){
-            log.info("Same Line");
+            // Same line case;
             return true;
         } else if (a.equals(u) || a.equals(v) || b.equals(u) || b.equals(v)) {
-            log.info("Same point");
+            // Same point case;
             return false;
         }
 
@@ -48,16 +48,6 @@ public class VectorUtils {
             return true;
         }
         boolean isIntersectB = cross3 * cross4 < 0;
-
-        /*double dot1 = a.dot(b);
-        double dot2 = u.dot(v);
-        if (dot1 == 0 && dot2 == 0) {
-            return false;
-        } else {
-            return dot1 <= 0 && dot2 <= 0;
-        }*/
-
-        //return dot1 <= 0 && dot2 <= 0;
         return isIntersectA == isIntersectB;
     }
 

@@ -41,7 +41,7 @@ public class PolygonFilter {
             result.add(crnt);
         }
         if (!result.isEmpty()) {
-            result.add(result.get(0));
+            result.add(new Vector2d(result.get(0)));
         }
         return result;
     }

@@ -32,9 +32,8 @@ public class PointCloudFileLoader implements FileLoader {
     public List<File> loadFiles() {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         File inputFile = new File(globalOptions.getInputPath());
-        String inputExtension = globalOptions.getInputFormat();
         boolean recursive = globalOptions.isRecursive();
-        FormatType formatType = FormatType.fromExtension(inputExtension);
+        FormatType formatType = globalOptions.getInputFormat();
         String[] extensions = getExtensions(formatType);
         return (ArrayList<File>) FileUtils.listFiles(inputFile, extensions, recursive);
     }
