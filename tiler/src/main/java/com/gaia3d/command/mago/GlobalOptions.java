@@ -2,8 +2,6 @@ package com.gaia3d.command.mago;
 
 import com.gaia3d.basic.exchangable.GaiaTextureArchive;
 import com.gaia3d.basic.types.FormatType;
-import com.gaia3d.command.BatchedProcessModel;
-import com.gaia3d.command.PointCloudProcessModel;
 import com.gaia3d.process.ProcessOptions;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,7 +36,7 @@ public class GlobalOptions {
     private static final int DEFAULT_POINT_SCALE = 2;
     private static final int DEFAULT_POINT_SKIP = 4;
 
-    private static final byte DEFAULT_MULTI_THREAD_COUNT = 8;
+    private static final byte DEFAULT_MULTI_THREAD_COUNT = 4;
     private static final String DEFAULT_CRS = "4326";
     private static final String DEFAULT_NAME_COLUMN = "name";
     private static final String DEFAULT_HEIGHT_COLUMN = "height";
