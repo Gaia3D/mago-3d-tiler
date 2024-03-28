@@ -25,7 +25,9 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -53,21 +55,24 @@ public class Batched3DModel implements TileModel {
 
         List<TileInfo> tileInfos = contentInfo.getTileInfos();
         int batchLength = tileInfos.size();
-        List<String> projectNames = tileInfos.stream()
-                .map((tileInfo) -> tileInfo.getSet().getProjectName())
-                .collect(Collectors.toList());
-        List<String> nodeNames = tileInfos.stream()
-                .map(TileInfo::getName)
-                .collect(Collectors.toList());
-        List<Double> geometricErrors = tileInfos.stream()
-                .map((tileInfo) -> tileInfo.getBoundingBox().getLongestDistance())
-                .collect(Collectors.toList());
-        List<Double> heights = tileInfos.stream()
-                .map((tileInfo) -> {
-                    GaiaBoundingBox boundingBox = tileInfo.getBoundingBox();
-                    return boundingBox.getMaxZ() - boundingBox.getMinZ();
-                })
-                .collect(Collectors.toList());
+
+        List<String> projectNames = new ArrayList<>();
+        List<String> nodeNames = new ArrayList<>();
+        List<Double> geometricErrors = new ArrayList<>();
+        List<Double> heights = new ArrayList<>();
+        tileInfos.forEach((tileInfo) -> {
+            GaiaSet set = tileInfo.getSet();
+            String projectName = set.getProjectName();
+            // convert utf-8 to ascii
+            String asciiProjectName = StringUtils.convertUTF8(projectName);
+            projectNames.add(asciiProjectName);
+            nodeNames.add(tileInfo.getName());
+            geometricErrors.add(tileInfo.getBoundingBox().getLongestDistance());
+            GaiaBoundingBox boundingBox = tileInfo.getBoundingBox();
+            heights.add(boundingBox.getMaxZ() - boundingBox.getMinZ());
+        });
+
+
         GaiaScene scene = new GaiaScene(batchedSet);
 
         /* FeatureTable */
@@ -101,11 +106,6 @@ public class Batched3DModel implements TileModel {
         }
 
         byte[] glbBytes;
-        if (globalOptions.isGltf()) {
-            String glbFileName = nodeCode + ".gltf";
-            File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
-            this.gltfWriter.writeGltf(scene, glbOutputFile);
-        }
         if (globalOptions.isGlb()) {
             String glbFileName = nodeCode + ".glb";
             File glbOutputFile = outputRoot.resolve(glbFileName).toFile();

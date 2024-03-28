@@ -28,7 +28,7 @@ public class GaiaTranslator implements PreProcess {
     @Override
     public TileInfo run(TileInfo tileInfo) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-        FormatType inputType = FormatType.fromExtension(globalOptions.getInputFormat());
+        FormatType inputType = globalOptions.getInputFormat();
 
         GaiaScene gaiaScene = tileInfo.getScene();
         GaiaNode rootNode = gaiaScene.getNodes().get(0);
@@ -45,8 +45,12 @@ public class GaiaTranslator implements PreProcess {
             DirectPosition2D memSave_posWorld = new DirectPosition2D(DefaultGeographicCRS.WGS84, center.x, center.y);
             double[] memSave_alt = new double[1];
             memSave_alt[0] = 0;
-            coverage.evaluate((DirectPosition) memSave_posWorld, memSave_alt);
-            log.info("memSave_alt[0] : {}", memSave_alt[0]);
+            try {
+                coverage.evaluate((DirectPosition) memSave_posWorld, memSave_alt);
+            } catch (Exception e) {
+                log.warn("Failed to evaluate terrain height", e);
+            }
+            //log.info("memSave_alt[0] : {}", memSave_alt[0]);
             center.z = memSave_alt[0];
         });
 
@@ -69,6 +73,7 @@ public class GaiaTranslator implements PreProcess {
     private Vector3d getTranslation(GaiaScene gaiaScene) {
         GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox();
         Vector3d center = boundingBox.getCenter();
+        //Vector3d traslation = new Vector3d(center.x, center.y, 0.0d);
         Vector3d traslation = new Vector3d(center.x, center.y, 0.0d);
         traslation.negate();
         return traslation;
@@ -77,7 +82,7 @@ public class GaiaTranslator implements PreProcess {
     private Vector3d getPosition(FormatType formatType, GaiaScene gaiaScene) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         Vector3d position;
-        if (formatType == FormatType.CITY_GML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON) {
+        if (formatType == FormatType.CITYGML|| formatType == FormatType.INDOORGML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON) {
             GaiaNode rootNode = gaiaScene.getNodes().get(0);
             Matrix4d transform = rootNode.getTransformMatrix();
             Vector3d center = new Vector3d(transform.get(3,0), transform.get(3,1), 0.0d);

@@ -74,9 +74,8 @@ public class InstancedFileLoader implements FileLoader {
     public List<File> loadFiles() {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         File inputFile = new File(globalOptions.getInputPath());
-        String inputExtension = globalOptions.getInputFormat();
         boolean recursive = globalOptions.isRecursive();
-        FormatType formatType = FormatType.fromExtension(inputExtension);
+        FormatType formatType = globalOptions.getInputFormat();
         String[] extensions = getExtensions(formatType);
         return (List<File>) FileUtils.listFiles(inputFile, extensions, recursive);
     }
@@ -85,8 +84,7 @@ public class InstancedFileLoader implements FileLoader {
     public List<TileInfo> loadTileInfo(File file) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         Path outputPath = new File(globalOptions.getOutputPath()).toPath();
-        String inputExtension = globalOptions.getInputFormat();
-        FormatType formatType = FormatType.fromExtension(inputExtension);
+        FormatType formatType = globalOptions.getInputFormat();
         List<TileInfo> tileInfos = new ArrayList<>();
 
         if (FormatType.KML == formatType) {
@@ -112,16 +110,13 @@ public class InstancedFileLoader implements FileLoader {
                 }
             }
         } else {
-            Path meshPath = file.toPath().getParent();
-            File meshData = meshPath.resolve("tree.dae").toFile(); // TODO
-
+            File meshData = new File(globalOptions.getInstancePath());
             List<GaiaScene> scenes = loadScene(meshData);
             for (GaiaScene scene : scenes) {
                 if (instanceScene == null) {
                     instanceScene = scene;
                 }
             }
-
             // geojson, shape type
             List<KmlInfo> kmlInfos = kmlReader.readAll(file);
             if (kmlInfos != null) {

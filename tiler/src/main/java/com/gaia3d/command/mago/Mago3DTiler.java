@@ -15,10 +15,9 @@ import java.io.IOException;
 public class Mago3DTiler {
 
     public void execute() {
-        String inputType = GlobalOptions.getInstance().getInputFormat();
-        String outputType = GlobalOptions.getInstance().getOutputFormat();
-        FormatType inputFormat = FormatType.fromExtension(inputType);
-        FormatType outputFormat = FormatType.fromExtension(outputType);
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        FormatType inputFormat = globalOptions.getInputFormat();
+        FormatType outputFormat = globalOptions.getOutputFormat();
         try {
             ProcessFlowModel processFlow = getProcessModel(inputFormat, outputFormat);
             log.info("Starting process flow: {}", processFlow.getModelName());
@@ -43,11 +42,7 @@ public class Mago3DTiler {
         } else if (FormatType.PNTS == outputFormat) {
             processFlow = new PointCloudProcessModel();
         } else {
-            if (FormatType.LAS == inputFormat || FormatType.LAZ == inputFormat) {
-                processFlow = new PointCloudProcessModel();
-            } else {
-                processFlow = new BatchedProcessModel();
-            }
+            throw new IllegalArgumentException("Unsupported output format: " + outputFormat);
         }
         return processFlow;
     }

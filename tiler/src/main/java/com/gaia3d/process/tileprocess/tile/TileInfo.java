@@ -23,6 +23,8 @@ import java.nio.file.Path;
 @Builder
 @Slf4j
 public class TileInfo {
+
+    @Builder.Default
     private int serial = -1;
 
     private GaiaScene scene;
@@ -37,6 +39,9 @@ public class TileInfo {
     private Path outputPath;
     private Path tempPath;
 
+    @Builder.Default
+    private long triangleCount = 0;
+    @Builder.Default
     private boolean isI3dm = false;
 
     private void init() {
@@ -58,7 +63,7 @@ public class TileInfo {
      * Write the scene file to the output directory.
      * @param serial
      */
-    public void minimize(int serial) {
+    /*public void minimize(int serial) {
         GlobalOptions options = GlobalOptions.getInstance();
 
         if (this.scene != null && !this.scene.getNodes().isEmpty()) {
@@ -69,7 +74,7 @@ public class TileInfo {
             this.scene.clear();
             this.scene = null;
         }
-    }
+    }*/
 
     /**
      * Load the minimized scene file and create a GaiaSet object.

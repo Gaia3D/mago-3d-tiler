@@ -85,8 +85,8 @@ public class Instanced3DModel implements TileModel {
             double headingValue = Math.toRadians(kmlInfo.getHeading());
             Matrix3d rotationMatrix = new Matrix3d();
             rotationMatrix.rotateY(headingValue);
-            //normalUp = rotationMatrix.transform(normalUp);
-            //normalRight = rotationMatrix.transform(normalRight);
+            normalUp = rotationMatrix.transform(normalUp);
+            normalRight = rotationMatrix.transform(normalRight);
 
             // scale
             double scale = kmlInfo.getScaleZ();

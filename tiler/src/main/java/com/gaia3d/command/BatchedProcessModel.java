@@ -7,6 +7,7 @@ import com.gaia3d.converter.BatchedFileLoader;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.geometry.citygml.CityGmlConverter;
 import com.gaia3d.converter.geometry.geojson.GeoJsonConverter;
+import com.gaia3d.converter.geometry.indoorgml.IndoorGmlConverter;
 import com.gaia3d.converter.geometry.shape.ShapeConverter;
 import com.gaia3d.converter.kml.FastKmlReader;
 import com.gaia3d.converter.kml.JacksonKmlReader;
@@ -21,13 +22,9 @@ import com.gaia3d.process.tileprocess.Pipeline;
 import com.gaia3d.process.tileprocess.TilingProcess;
 import com.gaia3d.process.tileprocess.tile.Batched3DModelTiler;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileExistsException;
 import org.geotools.coverage.grid.GridCoverage2D;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.NotDirectoryException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,8 +32,7 @@ import java.util.List;
 public class BatchedProcessModel implements ProcessFlowModel {
     public void run() throws IOException {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-        String inputExtension = globalOptions.getInputFormat();
-        FormatType inputFormat = FormatType.fromExtension(inputExtension);
+        FormatType inputFormat = globalOptions.getInputFormat();
         boolean isYUpAxis = getYUpAxis(inputFormat, globalOptions.isYUpAxis());
         Converter converter = getConverter(inputFormat);
         AttributeReader kmlReader = new JacksonKmlReader();
@@ -69,18 +65,20 @@ public class BatchedProcessModel implements ProcessFlowModel {
     }
 
     private boolean getYUpAxis(FormatType formatType, boolean isYUpAxis) {
-        if (formatType == FormatType.CITY_GML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON || formatType == FormatType.JSON) {
+        if (formatType == FormatType.CITYGML || formatType == FormatType.INDOORGML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON) {
             isYUpAxis = true;
         }
         return isYUpAxis;
     }
     private Converter getConverter(FormatType formatType) {
         Converter converter;
-        if (formatType == FormatType.CITY_GML) {
+        if (formatType == FormatType.CITYGML) {
             converter = new CityGmlConverter();
+        } else if (formatType == FormatType.INDOORGML) {
+            converter = new IndoorGmlConverter();
         } else if (formatType == FormatType.SHP) {
             converter = new ShapeConverter();
-        } else if (formatType == FormatType.GEOJSON || formatType == FormatType.JSON) {
+        } else if (formatType == FormatType.GEOJSON) {
             converter = new GeoJsonConverter();
         } else {
             converter = new AssimpConverter();
@@ -91,26 +89,5 @@ public class BatchedProcessModel implements ProcessFlowModel {
     @Override
     public String getModelName() {
         return "BatchedProcessModel";
-    }
-
-    protected static boolean validate(Path outputPath) throws IOException {
-        File output = outputPath.toFile();
-        if (!output.exists()) {
-            throw new FileExistsException("Output path is not exist.");
-        } else if (!output.isDirectory()) {
-            throw new NotDirectoryException("Output path is not directory.");
-        } else if (!output.canWrite()) {
-            throw new IOException("Output path is not writable.");
-        }
-        return true;
-    }
-
-    protected static Path createPath(File file) {
-        Path path = file.toPath();
-        boolean result = file.mkdir();
-        if (result) {
-            log.info("Created new directory: {}", path);
-        }
-        return path;
     }
 }

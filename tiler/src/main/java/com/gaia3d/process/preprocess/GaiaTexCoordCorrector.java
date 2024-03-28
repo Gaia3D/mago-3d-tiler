@@ -45,12 +45,13 @@ public class GaiaTexCoordCorrector implements PreProcess {
         List<GaiaMesh> allMeshes = new ArrayList<>();
         rootNode.extractMeshes(allMeshes);
 
-        for (GaiaMesh mesh : allMeshes) {
+        // TODO ToPositveQuadrant Option coming soon.
+        /*for (GaiaMesh mesh : allMeshes) {
             List<GaiaPrimitive> allPrimitives = mesh.getPrimitives();
             for (GaiaPrimitive primitive : allPrimitives) {
                 translatePrimitiveTexCoordsToPositiveQuadrant(primitive);
             }
-        }
+        }*/
 
         if (invertTexCoordsYAxis) {
             for (GaiaMesh mesh : allMeshes) {
@@ -102,7 +103,6 @@ public class GaiaTexCoordCorrector implements PreProcess {
                 translateSurfaceTexCoordsToPositiveQuadrant(surface, primitive.getVertices());
             }
         }
-
     }
 
     private void translateSurfaceTexCoordsToPositiveQuadrant(GaiaSurface surface, List<GaiaVertex> vertices) {

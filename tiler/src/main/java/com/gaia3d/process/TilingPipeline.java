@@ -110,10 +110,6 @@ public class TilingPipeline implements Pipeline {
 
     private void calcNodeLimit(long nodeCountValue) {
         if (globalOptions.getNodeLimit() < 0) {
-            /*if (nodeCountValue > 262144) {
-                globalOptions.setNodeLimit(16384);
-            } else */
-
             if (nodeCountValue > 131072) {
                 globalOptions.setNodeLimit(8192);
             } else if (nodeCountValue > 65536) {
@@ -123,20 +119,6 @@ public class TilingPipeline implements Pipeline {
             } else {
                 globalOptions.setNodeLimit(1024);
             }
-
-           /* if (nodeCountValue > 262144) {
-                globalOptions.setNodeLimit(16384);
-            } else if (nodeCountValue > 131072) {
-                globalOptions.setNodeLimit(8192);
-            } else if (nodeCountValue > 65536) {
-                globalOptions.setNodeLimit(4096);
-            } else if (nodeCountValue > 32768) {
-                globalOptions.setNodeLimit(2048);
-            } else if (nodeCountValue > 16384) {
-                globalOptions.setNodeLimit(1024);
-            } else {
-                globalOptions.setNodeLimit(512);
-            }*/
         }
     }
 
@@ -205,11 +187,10 @@ public class TilingPipeline implements Pipeline {
     private void executeThread(ExecutorService executorService, List<Runnable> tasks) throws InterruptedException {
         try {
             for (Runnable task : tasks) {
-                executorService.submit(task);
-                //Future<?> future = executorService.submit(task);
-                // TODO MultiThead BUG
-                //future.get();
-                //future.isDone();
+                Future<?> future = executorService.submit(task);
+                if (globalOptions.isDebug()) {
+                    future.get();
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -219,6 +200,6 @@ public class TilingPipeline implements Pipeline {
             if (executorService.isTerminated()) {
                 executorService.shutdownNow();
             }
-        } while (!executorService.awaitTermination(2, TimeUnit.SECONDS));
+        } while (!executorService.awaitTermination(1, TimeUnit.SECONDS));
     }
 }

@@ -6,9 +6,6 @@ import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.FileLoader;
 import com.gaia3d.converter.InstancedFileLoader;
 import com.gaia3d.converter.assimp.AssimpConverter;
-import com.gaia3d.converter.geometry.citygml.CityGmlConverter;
-import com.gaia3d.converter.geometry.geojson.GeoJsonConverter;
-import com.gaia3d.converter.geometry.shape.ShapeConverter;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.JacksonKmlReader;
 import com.gaia3d.converter.kml.ShapeReader;
@@ -30,10 +27,9 @@ import java.util.List;
 public class InstancedProcessModel implements ProcessFlowModel{
     public void run() throws IOException {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-        String inputExtension = globalOptions.getInputFormat();
-        FormatType inputFormat = FormatType.fromExtension(inputExtension);
+        FormatType inputFormat = globalOptions.getInputFormat();
         boolean isYUpAxis = getYUpAxis(inputFormat, globalOptions.isYUpAxis());
-        Converter converter = new AssimpConverter();
+        Converter converter = getConverter(inputFormat);
         AttributeReader kmlReader = getAttributeReader(inputFormat);
         FileLoader fileLoader = new InstancedFileLoader(converter, kmlReader);
 
@@ -58,11 +54,11 @@ public class InstancedProcessModel implements ProcessFlowModel{
 
     private AttributeReader getAttributeReader(FormatType formatType) {
         AttributeReader reader = null;
-        if (formatType == FormatType.CITY_GML) {
+        if (formatType == FormatType.CITYGML) {
             //reader = new CityGmlConverter();
         } else if (formatType == FormatType.SHP) {
             reader = new ShapeReader();
-        } else if (formatType == FormatType.GEOJSON || formatType == FormatType.JSON) {
+        } else if (formatType == FormatType.GEOJSON) {
             //reader = new GeoJsonConverter();
         } else {
             reader = new JacksonKmlReader();
@@ -71,16 +67,7 @@ public class InstancedProcessModel implements ProcessFlowModel{
     }
 
     private Converter getConverter(FormatType formatType) {
-        Converter converter;
-        if (formatType == FormatType.CITY_GML) {
-            converter = new CityGmlConverter();
-        } else if (formatType == FormatType.SHP) {
-            converter = new ShapeConverter();
-        } else if (formatType == FormatType.GEOJSON || formatType == FormatType.JSON) {
-            converter = new GeoJsonConverter();
-        } else {
-            converter = new AssimpConverter();
-        }
+        Converter converter = new AssimpConverter();
         return converter;
     }
 
@@ -90,7 +77,7 @@ public class InstancedProcessModel implements ProcessFlowModel{
     }
 
     private boolean getYUpAxis(FormatType formatType, boolean isYUpAxis) {
-        if (formatType == FormatType.CITY_GML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON || formatType == FormatType.JSON) {
+        if (formatType == FormatType.CITYGML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON) {
             isYUpAxis = true;
         }
         return isYUpAxis;

@@ -65,9 +65,8 @@ public class BatchedFileLoader implements FileLoader {
     public List<File> loadFiles() {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         File inputFile = new File(globalOptions.getInputPath());
-        String inputExtension = globalOptions.getInputFormat();
         boolean recursive = globalOptions.isRecursive();
-        FormatType formatType = FormatType.fromExtension(inputExtension);
+        FormatType formatType = globalOptions.getInputFormat();
         String[] extensions = getExtensions(formatType);
         return (List<File>) FileUtils.listFiles(inputFile, extensions, recursive);
     }
@@ -76,8 +75,7 @@ public class BatchedFileLoader implements FileLoader {
     public List<TileInfo> loadTileInfo(File file) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         Path outputPath = new File(globalOptions.getOutputPath()).toPath();
-        String inputExtension = globalOptions.getInputFormat();
-        FormatType formatType = FormatType.fromExtension(inputExtension);
+        FormatType formatType = globalOptions.getInputFormat();
 
         List<TileInfo> tileInfos = new ArrayList<>();
         KmlInfo kmlInfo = null;
@@ -128,6 +126,11 @@ public class BatchedFileLoader implements FileLoader {
     }
 
     private String[] getExtensions(FormatType formatType) {
-        return new String[]{formatType.getExtension().toLowerCase(), formatType.getExtension().toUpperCase()};
+        String[] extensions = new String[4];
+        extensions[0] = formatType.getExtension().toLowerCase();
+        extensions[1] = formatType.getExtension().toUpperCase();
+        extensions[2] = formatType.getSubExtension().toLowerCase();
+        extensions[3] = formatType.getSubExtension().toUpperCase();
+        return extensions;
     }
 }

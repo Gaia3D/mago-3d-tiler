@@ -121,7 +121,6 @@ public class GltfWriter {
 
     private Byte convertNormal(Float normalValue) {
         byte normalByte = (byte) (normalValue * 127);
-
         return normalByte;
     }
 
@@ -150,22 +149,15 @@ public class GltfWriter {
         int[] indices = gaiaMesh.getIndices();
         float[] positions = gaiaMesh.getPositions();
         float[] normals = gaiaMesh.getNormals();
-        byte[] normalBytes = convertNormals(normals);
+        //byte[] normalBytes = convertNormals(normals);
         byte[] colors = gaiaMesh.getColors();
         float[] texcoords = gaiaMesh.getTexcoords();
         float[] batchIds = gaiaMesh.getBatchIds();
 
-        /*normalBytes = new byte[normals.length];
-        //fillNormal 1
-        for (int i = 0; i < normals.length; i++) {
-            normalBytes[i] = (byte) 127;
-        }*/
-
-        boolean isIntegerIndices = (gaiaMesh.getPositionsCount() / 3) >= 65535;
+        boolean isIntegerIndices = gaiaMesh.getIndicesCount() >= 65535;
         if (isIntegerIndices) {
-            log.warn("Integer indices are used. The number of indices is greater than {}/65535", gaiaMesh.getPositionsCount() / 3);
+            log.warn("Integer indices are used. The number of indices is greater than {}/65535", gaiaMesh.getIndicesCount());
         }
-        //boolean isIntegerIndices = true;
 
         GltfNodeBuffer nodeBuffer = initNodeBuffer(gaiaMesh, isIntegerIndices);
         createBuffer(gltf, nodeBuffer);
@@ -200,8 +192,8 @@ public class GltfWriter {
             }
         }
         if (normalsBuffer != null) {
-            for (Byte normal: normalBytes) {
-                normalsBuffer.put(normal);
+            for (Float normal: normals) {
+                normalsBuffer.putFloat(normal);
             }
         }
         if (colorsBuffer != null) {
@@ -233,9 +225,8 @@ public class GltfWriter {
             int verticesAccessorId = createAccessor(gltf, positionsBufferViewId, 0, positions.length / 3, GltfConstants.GL_FLOAT, AccessorType.VEC3, false);
             nodeBuffer.setPositionsAccessorId(verticesAccessorId);
         }
-        if (normalsBufferViewId > -1 && normalBytes.length > 0) {
-            //int normalsAccessorId = createAccessor(gltf, normalsBufferViewId, 0, normals.size() / 3, GltfConstants.GL_FLOAT, AccessorType.VEC3, false);
-            int normalsAccessorId = createAccessor(gltf, normalsBufferViewId, 0, normals.length / 3, GltfConstants.GL_BYTE, AccessorType.VEC3, true);
+        if (normalsBufferViewId > -1 && normals.length > 0) {
+            int normalsAccessorId = createAccessor(gltf, normalsBufferViewId, 0, normals.length / 3, GltfConstants.GL_FLOAT, AccessorType.VEC3, false);
             nodeBuffer.setNormalsAccessorId(normalsAccessorId);
         }
         if (colorsBufferViewId > -1 && colors.length > 0) {
@@ -259,6 +250,14 @@ public class GltfWriter {
         return nodeBuffer;
     }
 
+    private int padMultiple4(int value) {
+        int remainder = value % 4;
+        if (remainder == 0) {
+            return value;
+        }
+        return value + (4 - remainder);
+    }
+
     private GltfNodeBuffer initNodeBuffer(GaiaMesh gaiaMesh, boolean isIntegerIndices) {
         GltfNodeBuffer nodeBuffer = new GltfNodeBuffer();
         int SHORT_SIZE = 2;
@@ -267,10 +266,17 @@ public class GltfWriter {
 
         int indicesCapacity = gaiaMesh.getIndicesCount() * (isIntegerIndices ? INT_SIZE : SHORT_SIZE);
         int positionsCapacity = gaiaMesh.getPositionsCount() * FLOAT_SIZE;
-        int normalsCapacity = gaiaMesh.getNormalsCount() / 3 * 4;
+        int normalsCapacity = gaiaMesh.getPositionsCount() * FLOAT_SIZE;
         int colorsCapacity = gaiaMesh.getColorsCount();
         int texcoordCapacity = gaiaMesh.getTexcoordsCount() * FLOAT_SIZE;
         int batchIdCapacity = gaiaMesh.getBatchIdsCount() * FLOAT_SIZE;
+
+        indicesCapacity = padMultiple4(indicesCapacity);
+        positionsCapacity = padMultiple4(positionsCapacity);
+        normalsCapacity = padMultiple4(normalsCapacity);
+        colorsCapacity = padMultiple4(colorsCapacity);
+        texcoordCapacity = padMultiple4(texcoordCapacity);
+        batchIdCapacity = padMultiple4(batchIdCapacity);
 
         int bodyLength = 0;
         bodyLength += indicesCapacity;
@@ -373,8 +379,7 @@ public class GltfWriter {
         }
         if (nodeBuffer.getNormalsBuffer() != null) {
             ByteBuffer normalsBuffer = nodeBuffer.getNormalsBuffer();
-            int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, normalsBuffer.capacity(), 4, GL20.GL_ARRAY_BUFFER);
-            //int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, normalsBuffer.capacity(), 12, GL20.GL_ARRAY_BUFFER);
+            int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, normalsBuffer.capacity(), 12, GL20.GL_ARRAY_BUFFER);
             nodeBuffer.setNormalsBufferViewId(bufferViewId);
             BufferView bufferView = gltf.getBufferViews().get(bufferViewId);
             bufferView.setName("normals");
@@ -423,7 +428,7 @@ public class GltfWriter {
     private Node createNode(GlTF gltf, Node parentNode, GaiaNode gaiaNode) {
         Node node;
         if (parentNode == null) {
-            node = gltf.getNodes().get(0); // root node
+            node = gltf.getNodes().get(0);
         } else {
             node = new Node();
             gltf.addNodes(node);
@@ -453,8 +458,6 @@ public class GltfWriter {
         }
 
         MaterialPbrMetallicRoughness pbrMetallicRoughness = new MaterialPbrMetallicRoughness();
-        //Vector4d diffuseColor = gaiaMaterial.getDiffuseColor();
-        //pbrMetallicRoughness.setBaseColorFactor(new float[]{(float) diffuseColor.x, (float) diffuseColor.y, (float) diffuseColor.z, (float) diffuseColor.w});
         if (!diffuseTextures.isEmpty()) {
             GaiaTexture gaiaTexture = diffuseTextures.get(0);
             int textureId = createTexture(gltf, gaiaTexture);

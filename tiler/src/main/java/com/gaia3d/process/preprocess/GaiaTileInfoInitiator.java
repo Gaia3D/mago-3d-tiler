@@ -6,8 +6,6 @@ import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.File;
-
 @Slf4j
 @AllArgsConstructor
 public class GaiaTileInfoInitiator implements PreProcess {
@@ -22,6 +20,7 @@ public class GaiaTileInfoInitiator implements PreProcess {
         tileInfo.setBoundingBox(scene.getBoundingBox());
         tileInfo.setScenePath(tileInfo.getScene().getOriginalPath());
         tileInfo.setTempPath(tileInfo.getOutputPath().resolve("temp"));
+        tileInfo.setTriangleCount(tileInfo.getScene().calcTriangleCount());
         return tileInfo;
     }
 }
