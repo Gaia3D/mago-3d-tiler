@@ -4,10 +4,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 
 @Slf4j
-
-public class OnlyHashEqualsVector3d extends Vector3d {
-    public OnlyHashEqualsVector3d(Vector3d localPosition) {
+public class Vector3dsOnlyHashEquals extends Vector3d {
+    public Vector3dsOnlyHashEquals(Vector3d localPosition) {
         super(localPosition);
+    }
+
+    public Vector3dsOnlyHashEquals() {
+        super();
     }
 
     @Override
@@ -19,7 +22,6 @@ public class OnlyHashEqualsVector3d extends Vector3d {
         } else if (this.getClass() != obj.getClass()) {
             return false;
         } else {
-            log.debug("This is a test log message");
             return false;
         }
     }

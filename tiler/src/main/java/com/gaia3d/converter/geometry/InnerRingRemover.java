@@ -1,6 +1,6 @@
 package com.gaia3d.converter.geometry;
 
-import com.gaia3d.converter.geometry.PolygonFilter;
+import com.gaia3d.converter.PolygonFilter;
 import com.gaia3d.util.VectorUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector2d;
@@ -100,13 +100,22 @@ public class InnerRingRemover {
         result.addAll(outerRing);
         //result.add(outerRing.get(0));
         result.addAll(innerRing);
+        //result.add(innerRing.get(0));
         result.add(outerRing.get(0));
         return result;
     }
 
     public List<Vector2d> changeOrder(List<Vector2d> list, int index) {
+        if (list.get(0).equals(list.get(list.size() - 1))) {
+            list.remove(list.size() - 1);
+        }
+
         List<Vector2d> result = list.subList(index, list.size());
         result.addAll(list.subList(0, index));
+
+        if (!result.isEmpty()) {
+            result.add(result.get(0));
+        }
         return result;
     }
 

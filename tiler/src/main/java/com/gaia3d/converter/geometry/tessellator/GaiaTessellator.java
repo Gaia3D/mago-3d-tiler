@@ -1,5 +1,6 @@
 package com.gaia3d.converter.geometry.tessellator;
 
+import lombok.NoArgsConstructor;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
@@ -8,11 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@NoArgsConstructor
 public class GaiaTessellator {
-    // constructor.***
-    public GaiaTessellator() {
-    }
-
     // tessellate.***
     public void tessellate3D(List<Vector3d> points3dArray, List<Integer> resultTrianglesIndices) {
         // 1rst, must know the normal of the polygon to project the polygon to a plane and resilve the tessellation in 2d.***
@@ -32,12 +30,12 @@ public class GaiaTessellator {
         List<Point2DTess> projectedPoints2D = new ArrayList<>();
         String bestPlane = getBestPlaneToProject(normal);
 
-        if (bestPlane == "YZ") {
+        if (bestPlane.equals("YZ")) {
             // the best plane is the YZ plane.***
             for (Vector3d vertex : points3dArray) {
                 projectedPoints2D.add(new Point2DTess(new Vector2d(vertex.y, vertex.z), vertex));
             }
-        } else if (bestPlane == "XZ") {
+        } else if (bestPlane.equals("XZ")) {
             // the best plane is the XZ plane.***
             for (Vector3d vertex : points3dArray) {
                 projectedPoints2D.add(new Point2DTess(new Vector2d(vertex.x, vertex.z), vertex));
@@ -51,13 +49,13 @@ public class GaiaTessellator {
 
         // now, must resolve the tessellation in 2d.***
         Polygon2DTess polygon2D = new Polygon2DTess(projectedPoints2D);
-        List<Polygon2DTess> resultConvexPolygons = new java.util.ArrayList<>();
+        List<Polygon2DTess> resultConvexPolygons = new ArrayList<>();
         tessellate2D(polygon2D, resultConvexPolygons);
 
         int convexPolygonsCount = resultConvexPolygons.size();
         for (int i = 0; i < convexPolygonsCount; i++) {
             Polygon2DTess convexPolygon = resultConvexPolygons.get(i);
-            List<Integer> convexIndices = new java.util.ArrayList<>();
+            List<Integer> convexIndices = new ArrayList<>();
             convexPolygon.getTrianglesIndicesAsConvexPolygon(convexIndices);
 
             int convexIndicesCount = convexIndices.size();
@@ -69,8 +67,6 @@ public class GaiaTessellator {
                 resultTrianglesIndices.add(parentVertexIndex);
             }
         }
-
-        int hola = 0;
     }
 
     public void getPointsIdxSortedByDistToPoint(Point2DTess point, List<Point2DTess> points, List<Integer> resultIndices) {
@@ -97,7 +93,7 @@ public class GaiaTessellator {
 
     public void tessellate2D(Polygon2DTess polygon2D, List<Polygon2DTess> resultConvexPolygons) {
         // 1rst, must know the normal of the polygon to project the polygon to a plane and resolve the tessellation in 2d.***
-        List<Integer> concaveIndices = new java.util.ArrayList<>();
+        List<Integer> concaveIndices = new ArrayList<>();
         float normal = polygon2D.calculateNormal2D(concaveIndices);
 
         int concaveIndicesCount = concaveIndices.size();
@@ -117,7 +113,7 @@ public class GaiaTessellator {
             int idxA = concaveIndices.get(i);
             Point2DTess pointA = polygon2D.getPoint(idxA);
 
-            List<Integer> sortedIndices = new java.util.ArrayList<>();
+            List<Integer> sortedIndices = new ArrayList<>();
             getPointsIdxSortedByDistToPoint(pointA, polygon2D.getPoints(), sortedIndices);
 
             int sortedIndicesCount = sortedIndices.size();
@@ -140,7 +136,7 @@ public class GaiaTessellator {
                     continue;
                 }
 
-                List<Polygon2DTess> resultSplittedPolygons = new java.util.ArrayList<>();
+                List<Polygon2DTess> resultSplittedPolygons = new ArrayList<>();
                 polygon2D.splitPolygon(idxA, idxB, resultSplittedPolygons);
 
                 if (resultSplittedPolygons.size() < 2) {
@@ -150,8 +146,8 @@ public class GaiaTessellator {
 
                 Polygon2DTess polygonA = resultSplittedPolygons.get(0);
                 Polygon2DTess polygonB = resultSplittedPolygons.get(1);
-                List<Integer> concaveIndicesA = new java.util.ArrayList<>();
-                List<Integer> concaveIndicesB = new java.util.ArrayList<>();
+                List<Integer> concaveIndicesA = new ArrayList<>();
+                List<Integer> concaveIndicesB = new ArrayList<>();
                 float normalA = polygonA.calculateNormal2D(concaveIndicesA);
                 float normalB = polygonB.calculateNormal2D(concaveIndicesB);
 
@@ -312,6 +308,12 @@ public class GaiaTessellator {
 
             Vector3d cross = new Vector3d();
             v1.cross(v2, cross);
+
+            if (!isValidVector(cross)) {
+                // cross is invalid.***
+                continue;
+            }
+
             cross.normalize();
 
             double dotProd = v1.dot(v2);

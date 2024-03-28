@@ -1,12 +1,13 @@
 package com.gaia3d.converter.geometry.shape;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.structure.GaiaMaterial;
-import com.gaia3d.basic.structure.GaiaNode;
-import com.gaia3d.basic.structure.GaiaScene;
+import com.gaia3d.basic.structure.*;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.geometry.*;
+import com.gaia3d.converter.geometry.tessellator.GaiaExtruder;
+import com.gaia3d.converter.geometry.tessellator.GaiaExtrusionSurface;
+import com.gaia3d.converter.geometry.tessellator.GaiaTessellator;
 import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,8 +32,7 @@ import org.opengis.filter.Filter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -57,6 +57,10 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         List<GaiaScene> scenes = new ArrayList<>();
         Tessellator tessellator = new Tessellator();
         Extruder extruder = new Extruder(tessellator);
+
+        //GaiaTessellator gaiaTessellator = new GaiaTessellator();
+        GaiaExtruder gaiaExtruder = new GaiaExtruder();
+
         InnerRingRemover innerRingRemover = new InnerRingRemover();
 
         GlobalOptions globalOptions = GlobalOptions.getInstance();
@@ -108,19 +112,19 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 }
                 if (!lineString.isValid()) {
                     log.warn("Invalid : {}", feature.getID());
-                    //continue;
+                    continue;
                 }
 
                 GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
                 Coordinate[] outerCoordinates = lineString.getCoordinates();
 
-                /*int innerRingCount = polygon.getNumInteriorRing();
+                int innerRingCount = polygon.getNumInteriorRing();
                 List<Coordinate[]> innerCoordinates = new ArrayList<>();
                 for (int i = 0; i < innerRingCount; i++) {
                     LineString innerRing = polygon.getInteriorRingN(i);
                     innerCoordinates.add(innerRing.getCoordinates());
-                }*/
-                //outerCoordinates = innerRingRemover.removeAll(outerCoordinates, innerCoordinates);
+                }
+                outerCoordinates = innerRingRemover.removeAll(outerCoordinates, innerCoordinates);
 
                 GaiaBoundingBox boundingBox = new GaiaBoundingBox();
                 List<Vector3d> positions = new ArrayList<>();
@@ -178,7 +182,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             shpFiles.dispose();
             dataStore.dispose();
 
-            for (GaiaExtrusionBuilding building : buildings) {
+            /*for (GaiaExtrusionBuilding building : buildings) {
                 GaiaScene scene = initScene();
                 scene.setOriginalPath(file.toPath());
 
@@ -201,6 +205,10 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                     localPositions.add(localPosition);
                 }
 
+
+                List<GaiaExtrusionSurface> extrusionSurface = gaiaExtruder.extrude(localPositions, building.getRoofHeight(), building.getFloorHeight());
+
+
                 Extrusion extrusion = extruder.extrude(localPositions, building.getRoofHeight(), building.getFloorHeight());
                 GaiaNode node = createNode(material, extrusion.getPositions(), extrusion.getTriangles());
                 rootNode.getChildren().add(node);
@@ -209,7 +217,53 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 rootTransformMatrix.translate(center, rootTransformMatrix);
                 rootNode.setTransformMatrix(rootTransformMatrix);
                 scenes.add(scene);
+            }*/
+
+
+            for (GaiaExtrusionBuilding building : buildings) {
+                GaiaScene scene = initScene();
+                scene.setOriginalPath(file.toPath());
+
+                GaiaMaterial material = scene.getMaterials().get(0);
+                GaiaNode rootNode = scene.getNodes().get(0);
+                rootNode.setName(building.getName());
+
+                Vector3d center = building.getBoundingBox().getCenter();
+                center.z = center.z - skirtHeight;
+
+                Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
+                Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
+                Matrix4d transfromMatrixInv = new Matrix4d(transformMatrix).invert();
+
+                List<Vector3d> localPositions = new ArrayList<>();
+                for (Vector3d position : building.getPositions()) {
+                    Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
+                    Vector3d localPosition = positionWorldCoordinate.mulPosition(transfromMatrixInv);
+                    localPosition.z = 0.0d;
+                    localPositions.add(new Vector3dsOnlyHashEquals(localPosition));
+                }
+                Collections.reverse(localPositions);
+
+                List<GaiaExtrusionSurface> extrusionSurfaces = gaiaExtruder.extrude(localPositions, building.getRoofHeight(), building.getFloorHeight());
+
+                GaiaNode node = new GaiaNode();
+                node.setTransformMatrix(new Matrix4d().identity());
+                GaiaMesh mesh = new GaiaMesh();
+                node.getMeshes().add(mesh);
+
+                GaiaPrimitive primitive = createPrimitiveFromGaiaExtrusionSurfaces(extrusionSurfaces);
+
+                primitive.setMaterialIndex(0);
+                mesh.getPrimitives().add(primitive);
+
+                rootNode.getChildren().add(node);
+
+                Matrix4d rootTransformMatrix = new Matrix4d().identity();
+                rootTransformMatrix.translate(center, rootTransformMatrix);
+                rootNode.setTransformMatrix(rootTransformMatrix);
+                scenes.add(scene);
             }
+
             dataStore.dispose();
             reader.close();
         } catch (IOException e) {
