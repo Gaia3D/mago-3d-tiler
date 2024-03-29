@@ -144,6 +144,15 @@ public class RenderEngine {
             }
 
             RenderableBuffer renderableBuffer = mapAttribTypeRenderableBuffer.get(AttributeType.INDICE);
+            if(renderableBuffer == null) {
+                // use glDrawArrays.***
+                GL20.glEnable(GL20.GL_POLYGON_OFFSET_FILL);
+                GL20.glPolygonOffset(1.0f, 1.0f);
+                uniformsMap.setUniform1i("uColorMode", 0);
+                uniformsMap.setUniform4fv("uOneColor", new Vector4f(0.0f, 0.0f, 0.0f, 1.0f));
+                GL20.glDrawArrays(GL_LINE_STRIP, 0, 16);
+                return;
+            }
             int elemsCount = renderableBuffer.getElementsCount();
             int type = renderableBuffer.getGlType();
 
@@ -161,6 +170,11 @@ public class RenderEngine {
             GL20.glEnable(GL20.GL_POLYGON_OFFSET_FILL);
             GL20.glPolygonOffset(1.0f, 1.0f);
             GL20.glDrawElements(GL20.GL_TRIANGLES, elemsCount, type, 0);
+
+            // render the 1rst point of the primitive
+            GL20.glPointSize(10.0f);
+            GL20.glDrawArrays(GL20.GL_POINTS, 0, 1);
+
 
             // return polygonMode to fill
             GL20.glPolygonMode(GL20.GL_FRONT_AND_BACK, GL20.GL_FILL);

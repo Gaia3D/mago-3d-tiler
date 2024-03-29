@@ -11,8 +11,8 @@ import java.io.File;
 @Slf4j
 class Mago3DTilerFormatTest {
 
-    private static final String INPUT_PATH = "D:\\DT\\";
-    private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\mago-viewer\\data\\tilesets\\DT\\";
+    private static final String INPUT_PATH = "D:\\";
+    private static final String OUTPUT_PATH = "D:\\Result_mago3dTiler\\";
 
     @Test
     void THREEDS() {
@@ -165,7 +165,7 @@ class Mago3DTilerFormatTest {
 
     @Test
     void INDOORGML() {
-        String path = "INDOORGML";
+        String path = "data\\military\\withOutLAS\\IndoorGML\\B00100000005WM8IR.gml";
         File input = new File(INPUT_PATH, path);
         File output = new File(OUTPUT_PATH, path);
         FileUtils.deleteQuietly(output);

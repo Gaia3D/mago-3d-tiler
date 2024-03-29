@@ -49,11 +49,11 @@ public class GaiaRectangle implements Serializable {
     }
 
     public Vector2d getLeftBottomPoint() {
-        return new Vector2d(minX, maxY);
+        return new Vector2d(minX, minY);
     }
 
     public Vector2d getRightTopPoint() {
-        return new Vector2d(maxX, minY);
+        return new Vector2d(maxX, maxY);
     }
 
     /*public double getBoundingArea() {

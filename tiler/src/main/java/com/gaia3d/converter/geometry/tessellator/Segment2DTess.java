@@ -33,6 +33,11 @@ public class Segment2DTess
         return resultLine;
     }
 
+    public double getLengthSquared()
+    {
+        return this.startPoint.squareDistanceTo(this.endPoint);
+    }
+
     public double getLength()
     {
         return this.startPoint.distanceTo(this.endPoint);
@@ -42,9 +47,10 @@ public class Segment2DTess
     {
         //****************************************************
         // 0 = no intersection,
-        // 1 = intersection point is inside the segment,
-        // 2 = intersection point is the start point,
-        // 3 = intersection point is the end point.
+        // 1 = point is inside the segment,
+        // 2 = point is the start point,
+        // 3 = point is the end point.
+        //****************************************************
 
         double distance1 = this.startPoint.distanceTo(point);
         double distance2 = this.endPoint.distanceTo(point);
@@ -75,6 +81,7 @@ public class Segment2DTess
         // 3 = intersection point is the end point of this segment,
         // 4 = intersection point is the start point of the segment,
         // 5 = intersection point is the end point of the segment.
+        // 6 = lines are collinear with intersection.
         //*********************************************************************
 
         Line2D line1 = new Line2D(null, null);
@@ -113,6 +120,69 @@ public class Segment2DTess
             {
                 return 5;
             }
+        }
+        else
+        {
+            // lines are paralel.***
+            // check if any point of the segment is inside the this segment.***
+            //****************************************************
+            // 0 = no intersection,
+            // 1 = point is inside the segment,
+            // 2 = point is the start point,
+            // 3 = point is the end point.
+            //****************************************************
+            if(this.intersectionWithPointByDistances(segment.startPoint, error) == 1)
+            {
+                return 6;
+            }
+            else if(this.intersectionWithPointByDistances(segment.endPoint, error) == 1)
+            {
+                return 6;
+            }
+            else if(segment.intersectionWithPointByDistances(this.startPoint, error) == 1)
+            {
+                return 6;
+            }
+            else if(segment.intersectionWithPointByDistances(this.endPoint, error) == 1)
+            {
+                return 6;
+            }
+
+            // check total coincidence.***
+            if(this.startPoint.point.equals(segment.startPoint.point) && this.endPoint.point.equals(segment.endPoint.point))
+            {
+                return 6;
+            }
+            else if(this.startPoint.point.equals(segment.endPoint.point) && this.endPoint.point.equals(segment.startPoint.point))
+            {
+                return 6;
+            }
+
+            // check if are collinear.***
+//            Vector2d p1 = this.startPoint.point;
+//            double error2 = 1.0e-7;
+//            if(line2.pointBelongsToLine(p1, error2))
+//            {
+//                // are colineals.***
+//                // check if any point of this segment is inside the segment.***
+//                //****************************************************
+//                // 0 = no intersection,
+//                // 1 = point is inside the segment,
+//                // 2 = point is the start point,
+//                // 3 = point is the end point.
+//                //****************************************************
+//                int intersectionType1 = segment.intersectionWithPointByDistances(this.startPoint, error);
+//                if(intersectionType1 == 1)
+//                {
+//                    return 6;
+//                }
+//                int intersectionType2 = segment.intersectionWithPointByDistances(this.endPoint, error);
+//                if(intersectionType2 == 1)
+//                {
+//                    return 6;
+//                }
+//
+//            }
         }
 
         return 0;
