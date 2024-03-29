@@ -14,6 +14,7 @@ import java.util.List;
 public class GaiaExtrusionBuilding {
     private String id;
     private String name;
+    private Classification classification;
     private double roofHeight;
     private double floorHeight;
     private GaiaBoundingBox boundingBox;

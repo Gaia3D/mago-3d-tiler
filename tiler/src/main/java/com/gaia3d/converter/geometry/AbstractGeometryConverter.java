@@ -22,24 +22,28 @@ public abstract class AbstractGeometryConverter {
 
     protected GaiaScene initScene() {
         GaiaScene scene = new GaiaScene();
-        GaiaMaterial material = new GaiaMaterial();
-        material.setId(0);
-        material.setName("extruded");
-
         GlobalOptions globalOptions = GlobalOptions.getInstance();
+
+        Vector4d color = new Vector4d(0.9, 0.9, 0.9, 1);
         if (globalOptions.isDebugLod()) {
             // TODO : random color
             Random random = new Random();
             float r = random.nextFloat();
             float g = random.nextFloat();
             float b = random.nextFloat();
-            material.setDiffuseColor(new Vector4d(r, g, b, 1));
-        } else {
-            material.setDiffuseColor(new Vector4d(0.9, 0.9, 0.9, 1));
+            color = new Vector4d(r, g, b, 1);
         }
-        Map<TextureType, List<GaiaTexture>> textureTypeListMap = material.getTextures();
-        textureTypeListMap.put(TextureType.DIFFUSE, new ArrayList<>());
-        scene.getMaterials().add(material);
+        GaiaMaterial defaultMaterial = createMaterial(0, color);
+        GaiaMaterial doorMaterial = createMaterial(1, Classification.DOOR.getColor());
+        GaiaMaterial windowMaterial = createMaterial(2, Classification.WINDOW.getColor());
+        GaiaMaterial floorMaterial = createMaterial(2, Classification.FLOOR.getColor());
+        GaiaMaterial roofMaterial = createMaterial(3, Classification.ROOF.getColor());
+
+        scene.getMaterials().add(defaultMaterial);
+        scene.getMaterials().add(doorMaterial);
+        scene.getMaterials().add(windowMaterial);
+        scene.getMaterials().add(floorMaterial);
+        scene.getMaterials().add(roofMaterial);
 
         GaiaNode rootNode = new GaiaNode();
         Matrix4d transformMatrix = new Matrix4d();
@@ -49,6 +53,15 @@ public abstract class AbstractGeometryConverter {
         return scene;
     }
 
+    protected GaiaMaterial createMaterial(int id, Vector4d color) {
+        GaiaMaterial material = new GaiaMaterial();
+        material.setId(id);
+        material.setName("extrusion-model-material");
+        material.setDiffuseColor(color);
+        Map<TextureType, List<GaiaTexture>> textureTypeListMap = material.getTextures();
+        textureTypeListMap.put(TextureType.DIFFUSE, new ArrayList<>());
+        return material;
+    }
 
     protected GaiaNode createNode(GaiaMaterial material, List<Vector3d> positions, List<GaiaTriangle> triangles) {
         GaiaNode node = new GaiaNode();
@@ -64,7 +77,7 @@ public abstract class AbstractGeometryConverter {
         GaiaPrimitive primitive = new GaiaPrimitive();
         List<GaiaSurface> surfaces = new ArrayList<>();
         List<GaiaVertex> vertices = new ArrayList<>();
-        primitive.setMaterialIndex(0);
+        primitive.setMaterialIndex(material.getId());
         primitive.setSurfaces(surfaces);
         primitive.setVertices(vertices);
 
@@ -334,5 +347,22 @@ public abstract class AbstractGeometryConverter {
         }
 
         return primitive;
+    }
+
+
+    protected GaiaMaterial getMaterialByClassification(List<GaiaMaterial> gaiaMaterials, Classification classification) {
+        if (classification.equals(Classification.DOOR)) {
+            return gaiaMaterials.get(1);
+        } else if (classification.equals(Classification.WINDOW)) {
+            return gaiaMaterials.get(2);
+        } else if (classification.equals(Classification.CEILING)) {
+            return gaiaMaterials.get(3);
+        } else if (classification.equals(Classification.STAIRS)) {
+            return gaiaMaterials.get(3);
+        } else if (classification.equals(Classification.ROOF)) {
+            return gaiaMaterials.get(4);
+        } else {
+            return gaiaMaterials.get(0);
+        }
     }
 }
