@@ -100,23 +100,32 @@ public class GaiaSet implements Serializable{
                     GaiaTexture texture = materialTextures.get(TextureType.DIFFUSE).get(0);
                     Path parentPath = texture.getParentPath();
                     String diffusePath = texture.getPath();
-                    texture.setPath(diffusePath);
-                    String imagePath = parentPath + File.separator + diffusePath;
+                    File diffusePathFile = new File(diffusePath);
+                    File diffusePathParent = diffusePathFile.getParentFile();
+                    String diffuseFileName = diffusePathFile.getName();
 
-                    Path imageTempPath = tempDir.resolve("images");
-                    imageTempPath.toFile().mkdir();
 
-                    Path outputPath = imageTempPath.resolve(diffusePath);
-                    File inputPathFile = new File(imagePath);
-                    inputPathFile = ImageUtils.getChildFile(parentPath.toFile(), diffusePath);
-                    File outputPathFile = outputPath.toFile();
+                    File inputDiffuseFile = ImageUtils.getChildFile(diffusePathParent, diffuseFileName);
+                    if (!diffusePathFile.exists() || !diffusePathFile.isFile()) {
+                        log.warn("Diffuse Texture is not exists. {}", diffusePathFile.getAbsolutePath());
+                        inputDiffuseFile = ImageUtils.getChildFile(parentPath.toFile(), diffusePath);
+                        texture.setPath(diffuseFileName);
+                        log.warn("Diffuse Texture is changed. {}", inputDiffuseFile.getAbsolutePath());
+                    }
 
-                    if (inputPathFile == null) {
+                    String imagePath = parentPath + File.separator + diffuseFileName;
+                    Path outputImageTempPath = tempDir.resolve("images");
+                    outputImageTempPath.toFile().mkdirs();
+                    Path outputPath = outputImageTempPath.resolve(diffuseFileName);
+                    File outputDiffuseFile = outputPath.toFile();
+
+
+                    if (inputDiffuseFile == null) {
                         log.error("Texture Image Path is null. {}", imagePath);
-                    } else if (outputPathFile.exists()) {
+                    } else if (outputDiffuseFile.exists()) {
                         log.error("already outputPathFile exists");
                     } else {
-                        FileUtils.copyFile(inputPathFile, outputPath.toFile());
+                        FileUtils.copyFile(inputDiffuseFile, outputPath.toFile());
                     }
                 }
                 material.write(stream);
