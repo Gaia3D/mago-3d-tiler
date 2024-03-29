@@ -38,10 +38,8 @@ public class GaiaPointCloud implements Serializable {
         double offsetZ = maxZ - minZ;
 
         if (offsetZ < offsetX || offsetZ < offsetY) {
-            log.info("Distribute based on the bounding box: Quarter");
             return distributeQuad();
         } else {
-            log.info("Distribute based on the bounding box: Octree");
             return distributeOct();
         }
     }

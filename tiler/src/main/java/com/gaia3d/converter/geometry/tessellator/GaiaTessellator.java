@@ -1,6 +1,7 @@
 package com.gaia3d.converter.geometry.tessellator;
 
 import com.gaia3d.basic.geometry.GaiaRectangle;
+import lombok.NoArgsConstructor;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
@@ -9,15 +10,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@NoArgsConstructor
 public class GaiaTessellator {
-    // constructor.***
-    public GaiaTessellator() {
-    }
-
     // tessellate.***
     public void tessellate3D(List<Vector3d> points3dArray, List<Integer> resultTrianglesIndices) {
         // 1rst, must know the normal of the polygon to project the polygon to a plane and resilve the tessellation in 2d.***
-        List<Integer> concaveIndices = new ArrayList<>();
         Vector3d normal = new Vector3d();
         calculateFastNormal3D(points3dArray, normal); // the normal can be reversed.***
 
@@ -58,13 +55,13 @@ public class GaiaTessellator {
 
         // now, must resolve the tessellation in 2d.***
         Polygon2DTess polygon2D = new Polygon2DTess(projectedPoints2D);
-        List<Polygon2DTess> resultConvexPolygons = new java.util.ArrayList<>();
+        List<Polygon2DTess> resultConvexPolygons = new ArrayList<>();
         tessellate2D(polygon2D, resultConvexPolygons);
 
         int convexPolygonsCount = resultConvexPolygons.size();
         for (int i = 0; i < convexPolygonsCount; i++) {
             Polygon2DTess convexPolygon = resultConvexPolygons.get(i);
-            List<Integer> convexIndices = new java.util.ArrayList<>();
+            List<Integer> convexIndices = new ArrayList<>();
             convexPolygon.getTrianglesIndicesAsConvexPolygon(convexIndices);
 
             int convexIndicesCount = convexIndices.size();
@@ -77,7 +74,8 @@ public class GaiaTessellator {
             }
         }
 
-        int hola = 0;
+        polygon2D = null;
+        resultConvexPolygons.clear();
     }
 
     public List<Point2DTess> getCleanPoints2DTessArray(List<Point2DTess> points2DArray, List<Point2DTess> ResultPoints2DArray, double error)
@@ -446,7 +444,7 @@ public class GaiaTessellator {
 
     public void tessellate2D(Polygon2DTess polygon2D, List<Polygon2DTess> resultConvexPolygons) {
         // 1rst, must know the normal of the polygon to project the polygon to a plane and resolve the tessellation in 2d.***
-        List<Integer> concaveIndices = new java.util.ArrayList<>();
+        List<Integer> concaveIndices = new ArrayList<>();
         float normal = polygon2D.calculateNormal2D(concaveIndices);
 
         int concaveIndicesCount = concaveIndices.size();
@@ -466,7 +464,7 @@ public class GaiaTessellator {
             int idxA = concaveIndices.get(i);
             Point2DTess pointA = polygon2D.getPoint(idxA);
 
-            List<Integer> sortedIndices = new java.util.ArrayList<>();
+            List<Integer> sortedIndices = new ArrayList<>();
             getPointsIdxSortedByDistToPoint(pointA, polygon2D.getPoints(), sortedIndices);
 
             int sortedIndicesCount = sortedIndices.size();
@@ -495,7 +493,7 @@ public class GaiaTessellator {
                     continue;
                 }
 
-                List<Polygon2DTess> resultSplittedPolygons = new java.util.ArrayList<>();
+                List<Polygon2DTess> resultSplittedPolygons = new ArrayList<>();
                 polygon2D.splitPolygon(idxA, idxB, resultSplittedPolygons);
 
                 if (resultSplittedPolygons.size() < 2) {
@@ -505,8 +503,8 @@ public class GaiaTessellator {
 
                 Polygon2DTess polygonA = resultSplittedPolygons.get(0);
                 Polygon2DTess polygonB = resultSplittedPolygons.get(1);
-                List<Integer> concaveIndicesA = new java.util.ArrayList<>();
-                List<Integer> concaveIndicesB = new java.util.ArrayList<>();
+                List<Integer> concaveIndicesA = new ArrayList<>();
+                List<Integer> concaveIndicesB = new ArrayList<>();
                 float normalA = polygonA.calculateNormal2D(concaveIndicesA);
                 float normalB = polygonB.calculateNormal2D(concaveIndicesB);
 
@@ -530,13 +528,9 @@ public class GaiaTessellator {
                     break;
                 }
             }
-
             i++;
         }
-
-        int hola = 0;
     }
-
 
     private String getBestPlaneToProject(Vector3d normal) {
         float absX = Math.abs((float) normal.x);
@@ -667,10 +661,13 @@ public class GaiaTessellator {
 
             Vector3d cross = new Vector3d();
             v1.cross(v2, cross);
+
+
             if (!isValidVector(cross)) {
                 // cross is invalid.***
                 continue;
             }
+
             cross.normalize();
 
             double dotProd = v1.dot(v2);

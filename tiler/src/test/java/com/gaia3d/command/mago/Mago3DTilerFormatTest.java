@@ -25,8 +25,6 @@ class Mago3DTilerFormatTest {
                 "-output", output.getAbsolutePath(),
                 "-inputType", "3ds",
                 "-crs", "5186",
-                //"-gltf",
-                //"-autoUpAxis",
         };
         Mago3DTilerMain.main(args);
     }
@@ -42,7 +40,6 @@ class Mago3DTilerFormatTest {
                 "-output", output.getAbsolutePath(),
                 "-inputType", "dae",
                 "-crs", "5186",
-                //"-autoUpAxis",
         };
         Mago3DTilerMain.main(args);
     }
@@ -58,7 +55,6 @@ class Mago3DTilerFormatTest {
                 "-output", output.getAbsolutePath(),
                 "-inputType", "fbx",
                 "-crs", "5186",
-                "-autoUpAxis",
         };
         Mago3DTilerMain.main(args);
     }
@@ -74,7 +70,6 @@ class Mago3DTilerFormatTest {
                 "-output", output.getAbsolutePath(),
                 "-inputType", "gml",
                 "-crs", "5186",
-                //"-autoUpAxis",
         };
         Mago3DTilerMain.main(args);
     }
@@ -90,7 +85,6 @@ class Mago3DTilerFormatTest {
                 "-output", output.getAbsolutePath(),
                 "-inputType", "gltf",
                 "-crs", "5186",
-                //"-autoUpAxis",
         };
         Mago3DTilerMain.main(args);
     }
@@ -106,7 +100,6 @@ class Mago3DTilerFormatTest {
                 "-output", output.getAbsolutePath(),
                 "-inputType", "ifc",
                 "-crs", "5186",
-                //"-autoUpAxis",
         };
         Mago3DTilerMain.main(args);
     }
@@ -122,8 +115,6 @@ class Mago3DTilerFormatTest {
                 "-output", output.getAbsolutePath(),
                 "-inputType", "obj",
                 "-crs", "5186",
-                //"-glb"
-                //"-autoUpAxis",
         };
         Mago3DTilerMain.main(args);
     }
@@ -139,9 +130,6 @@ class Mago3DTilerFormatTest {
                 "-output", output.getAbsolutePath(),
                 "-inputType", "citygml",
                 "-crs", "5186",
-                "-glb",
-                //"-glb"
-                //"-autoUpAxis",
                 "-debug"
         };
         Mago3DTilerMain.main(args);
@@ -157,7 +145,7 @@ class Mago3DTilerFormatTest {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
                 "-inputType", "las",
-                "-skipPoints", "256",
+                "-pointSkip", "256",
                 "-crs", "5186",
         };
         Mago3DTilerMain.main(args);

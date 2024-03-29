@@ -8,6 +8,7 @@ import org.joml.Vector2d;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -64,8 +65,8 @@ public class Polygon2DTess {
         }
 
         float normal = 0.0f;
-        List<Integer> positivePoints = new java.util.ArrayList<>();
-        List<Integer> negativePoints = new java.util.ArrayList<>();
+        List<Integer> positivePoints = new ArrayList<>();
+        List<Integer> negativePoints = new ArrayList<>();
 
         double error = 1.0e-10;
 
@@ -248,10 +249,10 @@ public class Polygon2DTess {
             return;
         }
 
-        List<Point2DTess> pointsA = new java.util.ArrayList<>();
+        List<Point2DTess> pointsA = new ArrayList<>();
         pointsA.add(points.get(idx1));
         pointsA.add(points.get(idx2));
-        List<Point2DTess> pointsB = new java.util.ArrayList<>();
+        List<Point2DTess> pointsB = new ArrayList<>();
         pointsB.add(points.get(idx2));
         pointsB.add(points.get(idx1));
 

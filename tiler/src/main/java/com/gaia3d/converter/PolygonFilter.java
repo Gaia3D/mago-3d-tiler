@@ -1,4 +1,4 @@
-package com.gaia3d.converter.geometry;
+package com.gaia3d.converter;
 
 import com.gaia3d.util.VectorUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -35,12 +35,14 @@ public class PolygonFilter {
                 continue;
             } else if (cross == 0) {
                 continue;
-            } else if (Math.abs(cross) < 0.01) {
+            } else if (Math.abs(cross) < 0.000001) {
                 continue;
             }
             result.add(crnt);
         }
-        result.add(result.get(0));
+        if (!result.isEmpty()) {
+            result.add(new Vector2d(result.get(0)));
+        }
         return result;
     }
 }
