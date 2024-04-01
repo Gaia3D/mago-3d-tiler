@@ -102,8 +102,12 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                         log.info("Polygon is not closed. Adding the first point to the end of the list.");
                     }
 
-                    GaiaBuildingSurface buildingSurface = GaiaBuildingSurface.builder().id(cellSpace.getId()).name(cellSpace.getName()).boundingBox(boundingBox).positions(vertices).build();
-
+                    GaiaBuildingSurface buildingSurface = GaiaBuildingSurface.builder()
+                            .id(cellSpace.getId())
+                            .name(cellSpace.getName())
+                            .boundingBox(boundingBox)
+                            .positions(vertices)
+                            .build();
                     gaiaBuildingSurfaces.add(buildingSurface);
                 }
 
@@ -137,7 +141,6 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                     for (Vector3d position : buildingSurface.getPositions()) {
                         Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
                         Vector3d localPosition = positionWorldCoordinate.mulPosition(transfromMatrixInv);
-                        localPosition.z = position.z;
                         localPositions.add(localPosition);
                         polygon.add(new Vector3dsOnlyHashEquals(localPosition));
                     }
