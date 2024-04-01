@@ -125,12 +125,12 @@ public class BatchedFileLoader implements FileLoader {
         return tileInfos;
     }
 
-    private String[] getExtensions(FormatType formatType) {
+    /*private String[] getExtensions(FormatType formatType) {
         String[] extensions = new String[4];
         extensions[0] = formatType.getExtension().toLowerCase();
         extensions[1] = formatType.getExtension().toUpperCase();
         extensions[2] = formatType.getSubExtension().toLowerCase();
         extensions[3] = formatType.getSubExtension().toUpperCase();
         return extensions;
-    }
+    }*/
 }
