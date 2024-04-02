@@ -1,14 +1,44 @@
 package com.gaia3d.basic.command;
 
 import com.gaia3d.command.mago.Mago3DTilerMain;
+import com.gaia3d.util.GlobeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 import org.junit.jupiter.api.Test;
+import org.locationtech.proj4j.BasicCoordinateTransform;
+import org.locationtech.proj4j.CRSFactory;
+import org.locationtech.proj4j.CoordinateReferenceSystem;
+import org.locationtech.proj4j.ProjCoordinate;
 
 @Slf4j
 class UnitTest {
         private static final String INPUT_PATH = "D:\\data\\unit-test\\";
         private static final String OUTPUT_PATH = "D:\\Result_mago3dTiler\\";
+
+        @Test
+        void sample() {
+            Vector3d a = GlobeUtils.geographicToCartesianWgs84(new Vector3d(126.980125, 37.521169, 0));
+            System.out.println(a);
+
+
+            Vector3d b = GlobeUtils.cartesianToGeographicWgs84(new Vector3d(-3124798.1188322213,4127332.474398493,3713347.7041680403));
+            System.out.println(b);
+
+            Vector3d c = GlobeUtils.cartesianToGeographicWgs84(new Vector3d(-3075909.5, 4414039.0, 3414263.0));
+            System.out.println(c);
+
+
+            CRSFactory factory = new CRSFactory();
+            CoordinateReferenceSystem crs = factory.createFromName("EPSG:5186");
+            CoordinateReferenceSystem wgs84 = factory.createFromParameters("WGS84", "+proj=longlat +datum=WGS84 +no_defs");
+            BasicCoordinateTransform transformer = new BasicCoordinateTransform(wgs84, crs);
+
+            ProjCoordinate coordinate = new ProjCoordinate(b.x, b.y, b.z);
+            ProjCoordinate transformedCoordinate = transformer.transform(coordinate, new ProjCoordinate());
+
+            System.out.println(transformedCoordinate);
+        }
+
 
         @Test
         void test() {

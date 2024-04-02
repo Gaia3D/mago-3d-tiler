@@ -19,10 +19,7 @@ import org.locationtech.proj4j.ProjCoordinate;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
@@ -62,12 +59,6 @@ public class LasConverter {
         } else {
             hasRgbColor = false;
         }
-        /*log.info("[Pre] Loading a pointcloud file. : {}", file.getAbsolutePath());
-        log.info(" - LAS Version : {}.{}", major, minor);
-        log.info(" - LAS Point Data Record Format : {}", recordFormat);
-        log.info(" - LAS Point Data Record Length : {}", recordLength);
-        log.info(" - LAS Point Data Record has RGB Color : {}", hasRgbColor);*/
-        //Iterable<LASPoint> pointIterable = reader.getPoints();
         GaiaBoundingBox boundingBox = pointCloud.getGaiaBoundingBox();
 
         double xScaleFactor = header.getXScaleFactor();
@@ -78,25 +69,45 @@ public class LasConverter {
         double zOffset = header.getZOffset();
 
         CRSFactory factory = new CRSFactory();
-        CoordinateReferenceSystem crs = globalOptions.getCrs();
-        CoordinateReferenceSystem wgs84 = factory.createFromParameters("WGS84", "+proj=longlat +datum=WGS84 +no_defs");
-        BasicCoordinateTransform transformer = new BasicCoordinateTransform(crs, wgs84);
-        ProjCoordinate result = new ProjCoordinate();
-        //transformer.transform(coordinate, result);
-        //return result;
+        CoordinateReferenceSystem wgs84 = globalOptions.getCrs();
+        CoordinateReferenceSystem crs = factory.createFromParameters("WGS84", "+proj=longlat +datum=WGS84 +no_defs");
+        BasicCoordinateTransform transformer = new BasicCoordinateTransform(wgs84, crs);
 
-        CloseablePointIterable pointIterable = reader.getCloseablePoints();
-        //pointIterable.close();
+        // test
+        /*xOffset = 0;
+        yOffset = 0;
+        zOffset = 0;
+        xOffset += 211683.99411230165;
+        yOffset += 359695.8569415757;
+        zOffset += 38.118513375329805;
+        xOffset += 24.0;
+        yOffset += -4.0;
+        zOffset += 1.7;*/
 
         int pointSkip = globalOptions.getPointSkip();
-        AtomicInteger pointIndex = new AtomicInteger();
-        AtomicInteger maxColorValue = new AtomicInteger();
-        //for (LASPoint point : reader.getPoints()) {
+        CloseablePointIterable pointIterable = reader.getCloseablePoints();
+        long pointRecords = header.getNumberOfPointRecords();
+        long legacyPointRecords = header.getLegacyNumberOfPointRecords();
 
+        long totalPointRecords = pointRecords + legacyPointRecords;
+        long totalPointRecords1percent = totalPointRecords / 100;
+
+        log.info("[Pre] Loading a pointcloud file. : {}", file.getAbsolutePath());
+        log.debug(" - LAS Version : {}.{}", major, minor);
+        log.debug(" - LAS Point Data Record Format : {}", recordFormat);
+        log.debug(" - LAS Point Data Record Length : {}", recordLength);
+        log.debug(" - LAS Point Data Record has RGB Color : {}", hasRgbColor);
+        log.debug(" - LAS Total Point Records : {}", pointRecords);
+        log.debug(" - LAS Total Legacy Point Records : {}", legacyPointRecords);
+        log.debug(" - LAS Total Record size : {}", totalPointRecords * recordLength);
+        long pointIndex = 0;
         for (LASPoint point : pointIterable) {
-            if (pointIndex.get() % pointSkip == 0) {
-                double x = point.getX() * xScaleFactor + xOffset;
-                double y = point.getY() * yScaleFactor + yOffset;
+            if (pointIndex % totalPointRecords1percent == 0) {
+                log.info(" - Las Records Loading progress. ({}/100)%", pointIndex / totalPointRecords1percent);
+            }
+            if (pointIndex % pointSkip == 0) {
+                double x = point.getY() * xScaleFactor + xOffset;
+                double y = -point.getX() * yScaleFactor + yOffset;
                 double z = point.getZ() * zScaleFactor + zOffset;
 
                 ProjCoordinate coordinate = new ProjCoordinate(x, y, z);
@@ -121,7 +132,7 @@ public class LasConverter {
                 vertices.add(vertex);
                 boundingBox.addPoint(position);
             }
-            pointIndex.getAndIncrement();
+            pointIndex++;
         }
 
         pointIterable.close();

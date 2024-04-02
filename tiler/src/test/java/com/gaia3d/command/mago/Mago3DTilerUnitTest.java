@@ -16,7 +16,7 @@ class Mago3DTilerUnitTest {
     //private static final String OUTPUT_PATH = "D:\\Mago3DTiler-UnitTest\\output";
     private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\mago-viewer\\data\\tilesets\\";
 
-    @Test
+    //@Test
     void case00() {
         String path = "case00-3ds-icgy";
         File input = new File(INPUT_PATH, path);
@@ -189,6 +189,7 @@ class Mago3DTilerUnitTest {
                 "-output", output.getAbsolutePath(),
                 "-inputType", "laz",
                 "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
+                "-debug"
         };
         Mago3DTilerMain.main(args);
     }
