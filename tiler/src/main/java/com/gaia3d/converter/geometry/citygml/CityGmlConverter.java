@@ -5,7 +5,6 @@ import com.gaia3d.basic.structure.*;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.geometry.*;
-import com.gaia3d.converter.geometry.tessellator.GaiaTessellator;
 import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -140,10 +139,6 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                 Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
                 Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
                 Matrix4d transfromMatrixInv = new Matrix4d(transformMatrix).invert();
-
-                //List<List<Vector3d>> polygons = new ArrayList<>();
-
-
 
                 for (GaiaBuildingSurface buildingSurface : surfaces) {
                     GaiaMaterial material = getMaterialByClassification(scene.getMaterials(), buildingSurface.getClassification());

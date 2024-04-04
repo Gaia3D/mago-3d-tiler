@@ -1,4 +1,4 @@
-package com.gaia3d.converter.geometry.tessellator;
+package com.gaia3d.basic.geometry.tessellator;
 
 import lombok.Getter;
 import lombok.Setter;

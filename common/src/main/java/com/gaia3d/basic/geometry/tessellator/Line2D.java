@@ -1,4 +1,4 @@
-package com.gaia3d.converter.geometry.tessellator;
+package com.gaia3d.basic.geometry.tessellator;
 
 import org.joml.Vector2d;
 
@@ -21,6 +21,16 @@ public class Line2D {
     public boolean isParallel(Line2D line) {
         double error = 1.0e-10;
         return Math.abs(this.direction.x * line.direction.y - this.direction.y * line.direction.x) < error;
+    }
+
+    public boolean pointBelongsToLine(Vector2d point, double error) {
+
+        double error2 = error * error;
+        double dx = point.x - this.point.x;
+        double dy = point.y - this.point.y;
+        double dotProduct = dx * this.direction.x + dy * this.direction.y;
+        double squareDistance = dx * dx + dy * dy - dotProduct * dotProduct;
+        return squareDistance < error2;
     }
 
     public boolean intersectionWithLine(Line2D line, Vector2d intersectionPoint) {

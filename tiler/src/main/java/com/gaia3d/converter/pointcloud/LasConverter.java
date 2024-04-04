@@ -106,8 +106,8 @@ public class LasConverter {
                 log.info(" - Las Records Loading progress. ({}/100)%", pointIndex / totalPointRecords1percent);
             }
             if (pointIndex % pointSkip == 0) {
-                double x = point.getY() * xScaleFactor + xOffset;
-                double y = -point.getX() * yScaleFactor + yOffset;
+                double x = point.getX() * xScaleFactor + xOffset;
+                double y = point.getY() * yScaleFactor + yOffset;
                 double z = point.getZ() * zScaleFactor + zOffset;
 
                 ProjCoordinate coordinate = new ProjCoordinate(x, y, z);

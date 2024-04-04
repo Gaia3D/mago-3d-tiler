@@ -1,16 +1,19 @@
-package com.gaia3d.converter.geometry.tessellator;
+package com.gaia3d.basic.geometry.tessellator;
 
+import com.gaia3d.basic.geometry.GaiaRectangle;
 import lombok.Getter;
 import lombok.Setter;
 import org.joml.Vector2d;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Getter
 @Setter
 public class Polygon2DTess {
     public List<Point2DTess> points;
+    public GaiaRectangle boundingRect;
 
     public Polygon2DTess(List<Point2DTess> points) {
         this.points = points;
@@ -35,6 +38,14 @@ public class Polygon2DTess {
         }
     }
 
+    public void setPointsIdxInList()
+    {
+        int pointsCount = points.size();
+        for (int i = 0; i < pointsCount; i++) {
+            points.get(i).setIdxInList(i);
+        }
+    }
+
     private boolean isValidVector(Vector2d vector) {
         boolean valid = true;
         if (!Double.isNaN(vector.get(0)) && !Double.isNaN(vector.get(1))) {
@@ -45,6 +56,11 @@ public class Polygon2DTess {
         }
 
         return valid;
+    }
+
+    public void reverse()
+    {
+        Collections.reverse(points);
     }
 
     public float calculateNormal2D(List<Integer> resultConcaveIndices) {
@@ -95,13 +111,22 @@ public class Polygon2DTess {
 
             double cross = v1.x * v2.y - v1.y * v2.x;
             if (cross < 0) {
+                cross = -1.0;
                 negativePoints.add(i);
             } else {
+                cross = 1.0;
                 positivePoints.add(i);
             }
 
             double angRad = Math.acos(dot); // because v1 and v2 are normalized.***
             normal += (float) (angRad * cross);
+        }
+
+        if(Math.abs(normal) < 1e-5) // 1e-6 works ok.***
+        {
+            // probably the polygon is a line, or a self-intersecting polygon (butterfly polygon).***
+            normal = 0.0f;
+            return normal;
         }
 
         if (normal > 0.0f) {
@@ -147,21 +172,23 @@ public class Polygon2DTess {
         }
 
         int intersectionsCount = 0;
-        Point2DTess intersectionPoint = new Point2DTess(null, null);
+        Point2DTess intersectionPoint = new Point2DTess(null, null, null);
         Segment2DTess polygonSegment = new Segment2DTess(null, null);
         for (int i = 0; i < pointsCount; i++) {
             //*********************************************************************
-            // segments intersection type.***
             // 0 = no intersection,
             // 1 = intersection point is inside the both segments,
-            // 2 = intersection point is the start point of segmentA,
-            // 3 = intersection point is the end point of segmentA,
-            // 4 = intersection point is the start point of segmentB,
-            // 5 = intersection point is the end point segmentB.
+            // 2 = intersection point is the start point of this segment,
+            // 3 = intersection point is the end point of this segment,
+            // 4 = intersection point is the start point of the segment,
+            // 5 = intersection point is the end point of the segment.
+            // 6 = lines are collinear.
             //*********************************************************************
 
             getSegment2DTess(i, polygonSegment);
-            if (polygonSegment.intersectionWithSegment(segment, intersectionPoint, error) == 1) {
+            int intersectionType = polygonSegment.intersectionWithSegment(segment, intersectionPoint, error);
+            if (intersectionType == 1 || intersectionType == 6)
+            {
                 return true;
             }
         }
@@ -177,6 +204,47 @@ public class Polygon2DTess {
     public int getPrevIdx(int currIdx) {
         int pointsCount = points.size();
         return (currIdx - 1 + pointsCount) % pointsCount;
+    }
+
+    public GaiaRectangle getBoundingRectangle()
+    {
+        if(boundingRect == null)
+        {
+            boundingRect = new GaiaRectangle();
+
+            int pointsCount = points.size();
+            for (int i = 0; i < pointsCount; i++) {
+                Vector2d currPoint = points.get(i).getPoint();
+                if (i == 0) {
+                    boundingRect.setInit(currPoint);
+                } else {
+                    boundingRect.addPoint(currPoint);
+                }
+            }
+        }
+        return boundingRect;
+    }
+
+    public int getMostLeftDownPoint2DIdx()
+    {
+        // the most leftDown point is the point that is closest to the leftDownPoint of the boundingRectangle.***
+        GaiaRectangle boundingRect = getBoundingRectangle();
+        Vector2d leftDownPoint = boundingRect.getLeftBottomPoint();
+        Point2DTess mostLeftDownPoint = null;
+        int resultIdx= -1;
+        double minDist = Double.MAX_VALUE;
+        int pointsCount = points.size();
+        for (int i = 0; i < pointsCount; i++) {
+            Point2DTess point = points.get(i);
+            Vector2d point2D = point.getPoint();
+            double dist = leftDownPoint.distanceSquared(point2D);
+            if (dist < minDist) {
+                minDist = dist;
+                resultIdx = i;
+            }
+        }
+
+        return resultIdx;
     }
 
     public void splitPolygon(int idx1, int idx2, List<Polygon2DTess> resultSplittedPolygons) {
@@ -231,5 +299,13 @@ public class Polygon2DTess {
 
         resultSplittedPolygons.add(polygonA);
         resultSplittedPolygons.add(polygonB);
+    }
+
+    public void addPoint(Point2DTess point2DTess) {
+        points.add(point2DTess);
+    }
+
+    public void removePoint(int i) {
+        points.remove(i);
     }
 }

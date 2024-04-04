@@ -1,10 +1,10 @@
 package com.gaia3d.converter.geometry;
 
+import com.gaia3d.basic.geometry.tessellator.GaiaExtrusionSurface;
+import com.gaia3d.basic.geometry.tessellator.GaiaTessellator;
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.geometry.tessellator.GaiaExtrusionSurface;
-import com.gaia3d.converter.geometry.tessellator.GaiaTessellator;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;

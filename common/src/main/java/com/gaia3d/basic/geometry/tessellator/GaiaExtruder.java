@@ -1,6 +1,5 @@
-package com.gaia3d.converter.geometry.tessellator;
+package com.gaia3d.basic.geometry.tessellator;
 
-import com.gaia3d.converter.geometry.Vector3dsOnlyHashEquals;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
@@ -37,17 +36,17 @@ public class GaiaExtruder {
             Vector3d floorTriangleNext = floorPosition.get(nextIndex);
 
             List<Vector3d> wallPositions = new ArrayList<>();
-            wallPositions.add(new Vector3dsOnlyHashEquals(roofTriangle));
-            wallPositions.add(new Vector3dsOnlyHashEquals(floorTriangle));
-            wallPositions.add(new Vector3dsOnlyHashEquals(floorTriangleNext));
-            wallPositions.add(new Vector3dsOnlyHashEquals(roofTriangleNext));
-            //wallPositions.add(new Vector3dsOnlyHashEquals(roofTriangle));
+            wallPositions.add(new Vector3dOnlyHashEquals(roofTriangle));
+            wallPositions.add(new Vector3dOnlyHashEquals(floorTriangle));
+            wallPositions.add(new Vector3dOnlyHashEquals(floorTriangleNext));
+            wallPositions.add(new Vector3dOnlyHashEquals(roofTriangleNext));
+            //wallPositions.add(new Vector3dOnlyHashEquals(roofTriangle));
             result.add(new GaiaExtrusionSurface(wallPositions));
         }
         return result;
     }
 
     private List<Vector3d> resetHeight(List<Vector3d> positions, double height) {
-        return positions.stream().map(position -> new Vector3dsOnlyHashEquals(new Vector3d(position.x, position.y, height))).collect(Collectors.toList());
+        return positions.stream().map(position -> new Vector3dOnlyHashEquals(new Vector3d(position.x, position.y, height))).collect(Collectors.toList());
     }
 }
