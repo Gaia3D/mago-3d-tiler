@@ -1,3 +1,4 @@
+
 package com.gaia3d.basic.geometry.tessellator;
 
 import lombok.extern.slf4j.Slf4j;
@@ -25,4 +26,5 @@ public class Vector2dOnlyHashEquals extends Vector2d {
             return false;
         }
     }
+
 }

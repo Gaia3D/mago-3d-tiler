@@ -39,6 +39,7 @@ public class Mago3DTilerMain {
                 if (hasLogPath) {
                     Configurator.initFileLogger(null, command.getOptionValue(ProcessOptions.LOG.getArgName()));
                 }
+                Configurator.setLevel(Level.INFO);
             }
 
             printStart();

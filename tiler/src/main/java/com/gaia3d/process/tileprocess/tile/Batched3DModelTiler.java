@@ -87,7 +87,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
 
         long triangleLimit = 65536 * 4;
         long totalTriangleCount = tileInfos.stream().mapToLong(TileInfo::getTriangleCount).sum();
-        log.info("[TriangleCount] Total : {}", totalTriangleCount);
+        log.debug("[TriangleCount] Total : {}", totalTriangleCount);
 
         if (tileInfos.size() <= 1) {
             Node childNode = createContentNode(parentNode, tileInfos, 0);

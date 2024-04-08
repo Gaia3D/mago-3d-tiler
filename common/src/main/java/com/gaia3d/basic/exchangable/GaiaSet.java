@@ -84,7 +84,8 @@ public class GaiaSet implements Serializable{
 
         int dividedNumber = serial / 10000;
         Path tempDir = path.resolve(this.projectName).resolve(String.valueOf(dividedNumber));
-        tempDir.toFile().mkdirs();
+        File tempDirFile = tempDir.toFile();
+        tempDirFile.mkdirs();
         File tempFile = tempDir.resolve(tempFileName).toFile();
         try (BigEndianDataOutputStream stream = new BigEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(tempFile), 32768))) {
             stream.writeByte(isBigEndian);
@@ -99,24 +100,24 @@ public class GaiaSet implements Serializable{
                 if (diffuseTextures != null && !diffuseTextures.isEmpty()) {
                     GaiaTexture texture = materialTextures.get(TextureType.DIFFUSE).get(0);
                     Path parentPath = texture.getParentPath();
+                    File parentFile = parentPath.toFile();
                     String diffusePath = texture.getPath();
-                    texture.setPath(diffusePath);
-                    String imagePath = parentPath + File.separator + diffusePath;
+                    File diffuseFile = new File(diffusePath);
 
-                    Path imageTempPath = tempDir.resolve("images");
-                    imageTempPath.toFile().mkdir();
+                    File imageFile = ImageUtils.correctPath(parentFile, diffuseFile);
 
-                    Path outputPath = imageTempPath.resolve(diffusePath);
-                    File inputPathFile = new File(imagePath);
-                    inputPathFile = ImageUtils.getChildFile(parentPath.toFile(), diffusePath);
-                    File outputPathFile = outputPath.toFile();
+                    Path imagesFolderPath = tempDir.resolve("images");
+                    imagesFolderPath.toFile().mkdirs();
 
-                    if (inputPathFile == null) {
-                        log.error("Texture Image Path is null. {}", imagePath);
-                    } else if (outputPathFile.exists()) {
-                        log.error("already outputPathFile exists");
+                    Path outputImagePath = imagesFolderPath.resolve(imageFile.getName());
+                    File outputImageFile = outputImagePath.toFile();
+
+                    texture.setPath(imageFile.getName());
+
+                    if (!imageFile.exists()) {
+                        log.error("Texture Input Image Path is not exists. {}", diffusePath);
                     } else {
-                        FileUtils.copyFile(inputPathFile, outputPath.toFile());
+                        FileUtils.copyFile(imageFile, outputImageFile);
                     }
                 }
                 material.write(stream);
@@ -128,6 +129,7 @@ public class GaiaSet implements Serializable{
         } catch (Exception e) {
             log.error(e.getMessage());
             e.printStackTrace();
+            tempFile.delete();
         }
         return tempFile.toPath();
     }

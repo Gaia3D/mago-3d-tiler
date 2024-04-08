@@ -1,6 +1,8 @@
 package com.gaia3d.converter.geometry.geojson;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.tessellator.GaiaExtruder;
+import com.gaia3d.basic.geometry.tessellator.GaiaExtrusionSurface;
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
@@ -8,8 +10,7 @@ import com.gaia3d.converter.geometry.AbstractGeometryConverter;
 import com.gaia3d.converter.geometry.GaiaExtrusionBuilding;
 import com.gaia3d.converter.geometry.InnerRingRemover;
 import com.gaia3d.converter.geometry.Vector3dOnlyHashEquals;
-import com.gaia3d.converter.geometry.tessellator.GaiaExtruder;
-import com.gaia3d.converter.geometry.tessellator.GaiaExtrusionSurface;
+
 import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

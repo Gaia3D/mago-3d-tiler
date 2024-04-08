@@ -14,6 +14,7 @@ import java.util.List;
 public class GaiaBuildingSurface {
     private String id;
     private String name;
+    private Classification classification;
     List<Vector3d> positions;
     private GaiaBoundingBox boundingBox;
 }

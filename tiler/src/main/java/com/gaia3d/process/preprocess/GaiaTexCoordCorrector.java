@@ -32,11 +32,7 @@ public class GaiaTexCoordCorrector implements PreProcess {
         FormatType formatType = FormatType.fromExtension(fileExtension);
 
         boolean invertTexCoordsYAxis = false;
-        if (formatType == FormatType.MAX_3DS) {
-            invertTexCoordsYAxis = true;
-        } else if (formatType == FormatType.COLLADA) {
-            invertTexCoordsYAxis = true;
-        } else if (formatType == FormatType.GLTF || formatType == FormatType.GLB) {
+        if (formatType == FormatType.MAX_3DS || formatType == FormatType.COLLADA || formatType == FormatType.FBX || formatType == FormatType.OBJ || formatType == FormatType.GLTF || formatType == FormatType.GLB) {
             invertTexCoordsYAxis = true;
         }
 

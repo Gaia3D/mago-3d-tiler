@@ -10,9 +10,9 @@ import java.io.File;
 
 @Slf4j
 class Mago3DTilerFormatTest {
-
-    private static final String INPUT_PATH = "D:\\";
-    private static final String OUTPUT_PATH = "D:\\Result_mago3dTiler\\";
+    
+    private static final String INPUT_PATH = "D:\\DT0401\\";
+    private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\mago-viewer\\data\\tilesets\\DT\\";
 
     @Test
     void THREEDS() {
@@ -90,6 +90,21 @@ class Mago3DTilerFormatTest {
     }
 
     @Test
+    void TEST() {
+        String path = "TEST";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-output", output.getAbsolutePath(),
+                "-inputType", "gltf",
+                "-crs", "4326",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
     void IFC() {
         String path = "IFC";
         File input = new File(INPUT_PATH, path);
@@ -129,6 +144,7 @@ class Mago3DTilerFormatTest {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
                 "-inputType", "citygml",
+                //"-crs", "25832",
                 "-crs", "5186",
                 "-debug"
         };
@@ -145,7 +161,7 @@ class Mago3DTilerFormatTest {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
                 "-inputType", "las",
-                "-pointSkip", "256",
+                "-pointSkip", "32",
                 "-crs", "5186",
         };
         Mago3DTilerMain.main(args);
@@ -162,7 +178,6 @@ class Mago3DTilerFormatTest {
                 "-output", output.getAbsolutePath(),
                 "-inputType", "indoorgml",
                 "-crs", "5186",
-                "-glb",
                 "-debug"
         };
         Mago3DTilerMain.main(args);
