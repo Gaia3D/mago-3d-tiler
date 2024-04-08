@@ -202,9 +202,9 @@ public class Engine {
         selectionColorManager = new SelectionColorManager();
 
 
-        //TEST_Load3dsFile();
+        TEST_Load3dsFile();
 
-        TEST_Loft();
+        //TEST_Loft();
 
         //TEST_TessellateHoles();
 
