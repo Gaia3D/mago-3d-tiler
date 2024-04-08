@@ -17,9 +17,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A class that represents a face of a Gaia object.
- * It contains the indices and the face normal.
- * The face normal is calculated by the indices and the vertices.
+ * A class that represents a surface of a Gaia object.
+ * It contains faces.
  * @author znkim
  * @since 1.0.0
  * @see <a href="https://en.wikipedia.org/wiki/Face_normal">Face normal</a>

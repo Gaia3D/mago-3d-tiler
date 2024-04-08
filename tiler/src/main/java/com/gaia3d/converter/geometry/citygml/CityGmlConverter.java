@@ -5,7 +5,6 @@ import com.gaia3d.basic.structure.*;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.geometry.*;
-import com.gaia3d.converter.geometry.tessellator.GaiaTessellator;
 import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -182,7 +181,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                         Vector3d localPosition = positionWorldCoordinate.mulPosition(transfromMatrixInv);
                         //localPosition.z = position.z;
                         localPositions.add(localPosition);
-                        polygon.add(new Vector3dsOnlyHashEquals(localPosition));
+                        polygon.add(new Vector3dOnlyHashEquals(localPosition));
                     }
                     polygons.add(polygon);
                 }

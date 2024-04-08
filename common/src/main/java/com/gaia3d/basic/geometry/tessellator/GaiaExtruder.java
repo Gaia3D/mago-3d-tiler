@@ -1,6 +1,5 @@
-package com.gaia3d.converter.geometry.tessellator;
+package com.gaia3d.basic.geometry.tessellator;
 
-import com.gaia3d.converter.geometry.Vector3dOnlyHashEquals;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
@@ -41,7 +40,7 @@ public class GaiaExtruder {
             wallPositions.add(new Vector3dOnlyHashEquals(floorTriangle));
             wallPositions.add(new Vector3dOnlyHashEquals(floorTriangleNext));
             wallPositions.add(new Vector3dOnlyHashEquals(roofTriangleNext));
-            //wallPositions.add(new Vector3dsOnlyHashEquals(roofTriangle));
+            //wallPositions.add(new Vector3dOnlyHashEquals(roofTriangle));
             result.add(new GaiaExtrusionSurface(wallPositions));
         }
         return result;

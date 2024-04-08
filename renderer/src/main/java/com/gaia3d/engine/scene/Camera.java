@@ -71,6 +71,38 @@ public class Camera {
         this.dirty = true;
     }
 
+    public void calculateCameraXYPlane(Vector3d camPos, Vector3d camTarget)
+    {
+        Vector3d camDirection = new Vector3d(camTarget);
+        camDirection.sub(camPos);
+        camDirection.normalize();
+
+        // if the camDir is perpendicular to planeXY, then the camRight and camUp will be the same as the world right and up
+        if (Math.abs(camDirection.dot(new Vector3d(0, 0, 1))) > 0.9999) {
+            this.position = camPos;
+            this.direction = camDirection;
+            this.right = new Vector3d(1, 0, 0);
+            this.up = new Vector3d(0, 1, 0);
+            this.dirty = true;
+            return;
+        }
+
+        // calculate the right and up vectors
+        // do cross product to correct right and up
+        this.position = camPos;
+        this.direction = camDirection;
+        Vector3d currDir = new Vector3d(this.direction);
+        this.up = new Vector3d(0, 0, 1);
+        currDir.cross(this.up); // dir cross up = right
+        currDir.normalize();
+        this.right = currDir;
+        Vector3d currRight = new Vector3d(this.right);
+        currRight.cross(this.direction); // right cross dir = up
+        currRight.normalize();
+        this.up = currRight;
+        this.dirty = true;
+    }
+
     public void rotationOrbit(float xValue, float yValue, Vector3d pivotPosition) {
         Vector3d pitchAxis = this.right;
 

@@ -11,9 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 @Getter
 @Setter
-public class RenderableNode {
+public class RenderableNode  extends RenderableObject{
     private String name = "";
-    private GaiaNode parent = null;
+    private GaiaNode originalGaiaNode = null;
     private List<RenderableMesh> renderableMeshes = new ArrayList<>();
     private List<RenderableNode> children = new ArrayList<>();
 
@@ -32,5 +32,15 @@ public class RenderableNode {
 
     public void addChild(RenderableNode child) {
         children.add(child);
+    }
+
+    public void extractRenderablePrimitives(List<RenderablePrimitive> resultRenderablePrimitives) {
+        for (RenderableMesh renderableMesh : renderableMeshes) {
+            renderableMesh.extractRenderablePrimitives(resultRenderablePrimitives);
+        }
+
+        for (RenderableNode child : children) {
+            child.extractRenderablePrimitives(resultRenderablePrimitives);
+        }
     }
 }

@@ -26,6 +26,8 @@ public class InternDataConverter {
     public static RenderableGaiaScene getRenderableGaiaScene(GaiaScene gaiaScene) {
         RenderableGaiaScene renderableGaiaScene = new RenderableGaiaScene();
 
+        renderableGaiaScene.setOriginalGaiaScene(gaiaScene);
+
         // original path
         Path originalPath = gaiaScene.getOriginalPath();
         renderableGaiaScene.setOriginalPath(originalPath);
@@ -34,14 +36,10 @@ public class InternDataConverter {
         List<GaiaMaterial> materials = gaiaScene.getMaterials();
         renderableGaiaScene.setMaterials(materials);
 
-        // 90deg rot matrix in x axis
-        Matrix4d rotMatrix = new Matrix4d();
-        rotMatrix.rotateX(Math.toRadians(90));
-
         // nodes
         List<GaiaNode> nodes = gaiaScene.getNodes();
         for (GaiaNode node : nodes) {
-            RenderableNode renderableNode = getRenderableNode(node, rotMatrix, gaiaScene);
+            RenderableNode renderableNode = getRenderableNode(node, null, gaiaScene);
             renderableGaiaScene.addRenderableNode(renderableNode);
         }
 
@@ -52,18 +50,10 @@ public class InternDataConverter {
         RenderableNode renderableNode = new RenderableNode();
 
         String name = gaiaNode.getName();
-        Matrix4d transformMatrix = new Matrix4d(gaiaNode.getTransformMatrix());
-        if (parentTransformMatrix != null) {
-            parentTransformMatrix.mul(transformMatrix, transformMatrix);
-        }
-        Matrix4d preMultipliedTransformMatrix = gaiaNode.getPreMultipliedTransformMatrix();
+        GaiaBoundingBox gaiaBoundingBox = gaiaNode.getBoundingBox(parentTransformMatrix);
 
-        // compare transformMatrix and preMultipliedTransformMatrix
-//        if (!transformMatrix.equals(preMultipliedTransformMatrix)) {
-//            System.out.println("transformMatrix and preMultipliedTransformMatrix are not equal");
-//        }
-        GaiaBoundingBox gaiaBoundingBox = gaiaNode.getGaiaBoundingBox();
-
+        Matrix4d transformMatrix = gaiaNode.getTransformMatrix();
+        renderableNode.setOriginalGaiaNode(gaiaNode);
         renderableNode.setName(name);
         renderableNode.setTransformMatrix(transformMatrix);
         renderableNode.setPreMultipliedTransformMatrix(transformMatrix);
@@ -91,25 +81,27 @@ public class InternDataConverter {
 
     public static RenderableMesh getRenderableMesh(GaiaMesh gaiaMesh, Matrix4d transformMatrix, GaiaScene scene) {
         RenderableMesh renderableMesh = new RenderableMesh();
+        renderableMesh.setOriginalGaiaMesh(gaiaMesh);
 
         List<GaiaPrimitive> primitives = gaiaMesh.getPrimitives();
         int primitivesCount = primitives.size();
-        //Matrix4d identityMatrix = new Matrix4d();
-        //identityMatrix.identity();
 
         for (int i = 0; i < primitivesCount; i++) {
             GaiaPrimitive gaiaPrimitive = primitives.get(i);
             GaiaBufferDataSet bufferDataSet = gaiaPrimitive.toGaiaBufferSet(transformMatrix);
             bufferDataSet.setMaterialId(gaiaPrimitive.getMaterialIndex());
-            RenderablePrimitive renderablePrimitive = getRenderablePrimitive(bufferDataSet, scene);
+            RenderablePrimitive renderablePrimitive = getRenderablePrimitive(gaiaPrimitive, bufferDataSet, scene);
             renderableMesh.addRenderablePrimitive(renderablePrimitive);
         }
 
         return renderableMesh;
     }
 
-    public static RenderablePrimitive getRenderablePrimitive(GaiaBufferDataSet bufferDataSet, GaiaScene scene) {
+    public static RenderablePrimitive getRenderablePrimitive(GaiaPrimitive gaiaPrimitive, GaiaBufferDataSet bufferDataSet, GaiaScene scene)
+    {
         RenderablePrimitive renderablePrimitive = new RenderablePrimitive();
+        renderablePrimitive.setOriginalBufferDataSet(bufferDataSet);
+        renderablePrimitive.setOriginalGaiaPrimitive(gaiaPrimitive);
 
         Map<AttributeType, GaiaBuffer> buffers = bufferDataSet.getBuffers();
         for (Map.Entry<AttributeType, GaiaBuffer> entry : buffers.entrySet()) {
@@ -131,7 +123,6 @@ public class InternDataConverter {
         }
 
         return renderablePrimitive;
-
     }
 
     public static RenderableBuffer getRenderableBuffer(GaiaBuffer buffer) {
@@ -151,13 +142,6 @@ public class InternDataConverter {
             // Positions VBO
             int[] vboId = new int[1];
             GL20.glGenBuffers(vboId);
-            // test scale positions.
-            int pointsCount = positions.length / 3;
-            for (int i = 0; i < pointsCount; i++) {
-                positions[i*3] *= 0.01;
-                positions[i*3+1] *= 0.01;
-                positions[i*3+2] *= 0.01;
-            }
 
             GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId[0]);
             GL20.glBufferData(GL20.GL_ARRAY_BUFFER, positions, GL20.GL_STATIC_DRAW);

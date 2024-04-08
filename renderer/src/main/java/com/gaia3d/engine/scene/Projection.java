@@ -23,4 +23,5 @@ public class Projection {
     public void updateProjMatrix(int width, int height) {
         projMatrix.setPerspective(FOV, (float) width / height, Z_NEAR, Z_FAR);
     }
+
 }

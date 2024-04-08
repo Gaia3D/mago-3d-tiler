@@ -7,7 +7,7 @@ import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.geometry.AbstractGeometryConverter;
 import com.gaia3d.converter.geometry.GaiaExtrusionBuilding;
 import com.gaia3d.converter.geometry.InnerRingRemover;
-import com.gaia3d.converter.geometry.Vector3dsOnlyHashEquals;
+import com.gaia3d.converter.geometry.Vector3dOnlyHashEquals;
 import com.gaia3d.converter.geometry.tessellator.GaiaExtruder;
 import com.gaia3d.converter.geometry.tessellator.GaiaExtrusionSurface;
 import com.gaia3d.util.GlobeUtils;
@@ -191,7 +191,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                     Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
                     Vector3d localPosition = positionWorldCoordinate.mulPosition(transfromMatrixInv);
                     localPosition.z = 0.0d;
-                    localPositions.add(new Vector3dsOnlyHashEquals(localPosition));
+                    localPositions.add(new Vector3dOnlyHashEquals(localPosition));
                 }
                 Collections.reverse(localPositions);
 

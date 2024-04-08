@@ -1,42 +1,49 @@
 package com.gaia3d.engine;
 
 //import com.gaia3d.converter.*;
+
+import com.gaia3d.basic.exchangable.GaiaBufferDataSet;
+import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
+import com.gaia3d.basic.geometry.tessellator.GaiaTessellator;
+import com.gaia3d.basic.geometry.tessellator.Point2DTess;
+import com.gaia3d.basic.geometry.tessellator.Polygon2DTess;
 import com.gaia3d.basic.structure.*;
-
-import com.gaia3d.converter.geometry.OnlyHashEqualsVector3d;
-import com.gaia3d.converter.geometry.indoorgml.IndoorGmlConverter;
-import com.gaia3d.converter.geometry.tessellator.GaiaTessellator;
-import com.gaia3d.converter.geometry.tessellator.Point2DTess;
-import com.gaia3d.converter.geometry.tessellator.Polygon2DTess;
+import com.gaia3d.converter.Converter;
+import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.engine.dataStructure.GaiaScenesContainer;
 import com.gaia3d.engine.fbo.Fbo;
 import com.gaia3d.engine.fbo.FboManager;
 import com.gaia3d.engine.graph.RenderEngine;
 import com.gaia3d.engine.graph.ShaderManager;
 import com.gaia3d.engine.graph.ShaderProgram;
+import com.gaia3d.engine.graph.UniformsMap;
+import com.gaia3d.engine.modeler.Modeler3D;
+import com.gaia3d.engine.modeler.TNetwork;
+import com.gaia3d.engine.pipes.PipeElbow;
 import com.gaia3d.engine.scene.Camera;
 import com.gaia3d.engine.screen.ScreenQuad;
 import com.gaia3d.renderable.RenderableGaiaScene;
-import edu.stem.indoor.IndoorFeatures;
-import edu.stem.space.*;
+import com.gaia3d.renderable.RenderablePrimitive;
+import com.gaia3d.renderable.SelectionColorManager;
 import lombok.Getter;
-import org.joml.Matrix4d;
-import org.joml.Vector2d;
-import org.joml.Vector3d;
-import org.joml.Vector4d;
+import org.joml.*;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL30;
 
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.lang.Math;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static edu.stem.debug.Main.unmarshall;
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -53,6 +60,7 @@ public class Engine {
     private Camera camera;
 
     GaiaScenesContainer gaiaScenesContainer;
+    SelectionColorManager selectionColorManager;
 
     private double midButtonXpos = 0;
     private double midButtonYpos = 0;
@@ -147,7 +155,7 @@ public class Engine {
         });
 
         glfwSetScrollCallback(windowHandle, (window, xoffset, yoffset) -> {
-            camera.moveFront((float)yoffset * 0.2f);
+            camera.moveFront((float)yoffset * 10.0f);
         });
 
         // 키보드 콜백 이벤트를 설정합니다. 키를 눌렀을 때, 누르고 있을 때, 떼었을 때에 따라 바꿔줍니다.
@@ -183,12 +191,38 @@ public class Engine {
         int windowHeight = window.getHeight();
         fboManager.createFbo("colorRender", windowWidth, windowHeight);
 
-        screenQuad = new ScreenQuad();
+        // now, create a 500 x 500 fbo for colorCode render.***
+        fboManager.createFbo("colorCodeRender", 500, 500);
 
+        screenQuad = new ScreenQuad();
 
         gaiaScenesContainer = new GaiaScenesContainer(windowWidth, windowHeight);
         gaiaScenesContainer.setCamera(camera);
 
+        selectionColorManager = new SelectionColorManager();
+
+
+        //TEST_Load3dsFile();
+
+        TEST_Loft();
+
+        //TEST_TessellateHoles();
+
+//        IndoorGmlConverter indoorGmlConverter = new IndoorGmlConverter();
+//        String indoorGMLPath = "D:\\data\\military\\withOutLAS\\IndoorGML\\B00100000005WM8IR.gml";
+//        List<GaiaScene> gaiaScenes = indoorGmlConverter.load(indoorGMLPath);
+//        int scenesCount = gaiaScenes.size();
+//        for(int i=0; i<scenesCount; i++)
+//        {
+//            RenderableGaiaScene renderableGaiaScene = InternDataConverter.getRenderableGaiaScene(gaiaScenes.get(i));
+//            gaiaScenesContainer.addRenderableGaiaScene(renderableGaiaScene);
+//            break;
+//        }
+        int hola2 = 0;
+    }
+
+    private void TEST_Load3dsFile()
+    {
         // Test load a 3d file.***
         //String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\DC_library_del_3DS\\DC_library_del.3ds";
         //String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\CK_del_3DS\\CK_del.3ds";
@@ -198,14 +232,78 @@ public class Engine {
         //String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\gangbuk_cultur_del_3DS\\gangbuk_cultur_del.3ds";
         //String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\gangil_del_3DS\\gangil_del.3ds";
         //String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\gangnam_del_3DS\\gangnam_del.3ds";
-//        String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\Gangseo_cultural_del_3DS\\Gangseo_cultural_del.3ds";
-//
-//        Converter assimpConverter = new AssimpConverter();
-//        List<GaiaScene> gaiaScenes = assimpConverter.load(filePath);
-//        RenderableGaiaScene renderableGaiaScene = InternDataConverter.getRenderableGaiaScene(gaiaScenes.get(0));
-//        gaiaScenesContainer.addRenderableGaiaScene(renderableGaiaScene);
-        // end test load a 3d file.***
+        String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\Gangseo_cultural_del_3DS\\Gangseo_cultural_del.3ds";
+        //String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\Gangsu_office_del_3DS\\Gangsu_office_del.3ds";
 
+        Converter assimpConverter = new AssimpConverter();
+        List<GaiaScene> gaiaScenes = assimpConverter.load(filePath);
+        GaiaScene gaiaScene = gaiaScenes.get(0);
+        List<GaiaNode> gaiaRootNodes = gaiaScene.getNodes();
+        double scale = 0.01;
+        // 90deg rot matrix in x axis
+        Matrix4d rotMatrix = new Matrix4d();
+        rotMatrix.rotateX(Math.toRadians(90));
+
+        int rootNodesCount = gaiaRootNodes.size();
+        for(int i=0; i<rootNodesCount; i++)
+        {
+            GaiaNode gaiaNode = gaiaRootNodes.get(i);
+            Matrix4d transformMatrix = gaiaNode.getTransformMatrix();
+            transformMatrix.mul(rotMatrix, transformMatrix);
+            transformMatrix.scale(scale);
+            gaiaNode.setTransformMatrix(transformMatrix);
+        }
+        //RenderableGaiaScene renderableGaiaScene = InternDataConverter.getRenderableGaiaScene(gaiaScene);
+        //gaiaScenesContainer.addRenderableGaiaScene(renderableGaiaScene);
+        // end test load a 3d file.***
+        List<GaiaSet> exteriorGaiaSets = new ArrayList<>();
+        List<GaiaSet> interiorGaiaSets = new ArrayList<>();
+        getExteriorAndInteriorGaiaSets(gaiaScene, exteriorGaiaSets, interiorGaiaSets);
+    }
+
+    private void TEST_Loft()
+    {
+        // make a mesh by a shape & a path.***
+
+        float pipeRadius = 0.5f; // test value.***
+
+        // 1rst create elbows.
+        float elbowRadius = pipeRadius * 1.5f; // test value.***
+
+        List<PipeElbow> pipeElbows = new ArrayList<>();
+        PipeElbow pipeElbow = new PipeElbow(new Vector3d(0, 0, 0), elbowRadius, pipeRadius); pipeElbows.add(pipeElbow);
+        pipeElbow = new PipeElbow(new Vector3d(0, 0, 10), elbowRadius, pipeRadius); pipeElbows.add(pipeElbow);
+        pipeElbow = new PipeElbow(new Vector3d(10, 0, 10), elbowRadius, pipeRadius); pipeElbows.add(pipeElbow);
+        pipeElbow = new PipeElbow(new Vector3d(10, 5, 3), elbowRadius, pipeRadius); pipeElbows.add(pipeElbow);
+        pipeElbow = new PipeElbow(new Vector3d(20, 0, 3), elbowRadius * 3.0f, pipeRadius); pipeElbows.add(pipeElbow);
+        pipeElbow = new PipeElbow(new Vector3d(20, 5, 0), elbowRadius, pipeRadius); pipeElbows.add(pipeElbow);
+        pipeElbow = new PipeElbow(new Vector3d(20, 20, 0), elbowRadius, pipeRadius); pipeElbows.add(pipeElbow);
+        pipeElbow = new PipeElbow(new Vector3d(20, 20, 10), elbowRadius, pipeRadius); pipeElbows.add(pipeElbow);
+        pipeElbow = new PipeElbow(new Vector3d(0, 20, 10), elbowRadius, pipeRadius); pipeElbows.add(pipeElbow);
+        pipeElbow = new PipeElbow(new Vector3d(16, 25, 5), elbowRadius, pipeRadius); pipeElbows.add(pipeElbow);
+
+
+        Modeler3D modeler3D = new Modeler3D();
+        TNetwork tNetwork = modeler3D.TEST_getPipeNetworkFromPipeElbows(pipeElbows);
+        GaiaNode gaiaNode = modeler3D.makeGeometry(tNetwork);
+        GaiaNode gaiaRootNode = new GaiaNode();
+        gaiaRootNode.getChildren().add(gaiaNode);
+
+        GaiaScene gaiaScene = new GaiaScene();
+        GaiaMaterial gaiaMaterial = new GaiaMaterial();
+        gaiaMaterial.setDiffuseColor(new Vector4d(0.2, 0.95, 0.2, 1.0));
+        gaiaScene.getMaterials().add(gaiaMaterial);
+        gaiaMaterial.setId(gaiaScene.getMaterials().size());
+
+        gaiaScene.getNodes().add(gaiaRootNode);
+
+        RenderableGaiaScene renderableGaiaScene = InternDataConverter.getRenderableGaiaScene(gaiaScene);
+        gaiaScenesContainer.addRenderableGaiaScene(renderableGaiaScene);
+        int hola = 0;
+    }
+
+    private void TEST_TessellateHoles()
+    {
         // tessellation test.***************
         List<Vector2d> point2dArray = new ArrayList<>();
         Vector2d pos;
@@ -342,7 +440,7 @@ public class Engine {
             pos2d.mul(20000.0, 20000.0);
         }
 
-        
+
 
         GaiaTessellator gaiaTessellator = new GaiaTessellator();
         List<Polygon2DTess> exteriorPolygons = new ArrayList<>();
@@ -352,31 +450,13 @@ public class Engine {
         List<Integer> resultIndices = new ArrayList<>();
         Polygon2DTess resultPolygon = gaiaTessellator.tessellateHoles(exteriorPolygons.get(0), interiorPolygons, resultIndices);
 
-        int hola = 0;
 
-//        point3dArray = point3dArray.stream().map(p -> new OnlyHashEqualsVector3d(p)).collect(Collectors.toList());
-//
         //gaiaTessellator.tessellate3D(point3dArray, resultIndices);
         //GaiaScene scene = makeGaiaSceneFromPoint3dArray(point3dArray, resultIndices);
         GaiaScene scene = makeGaiaSceneFromPolygon2DTess(resultPolygon, resultIndices);
         RenderableGaiaScene renderableGaiaScene = InternDataConverter.getRenderableGaiaScene(scene);
         gaiaScenesContainer.addRenderableGaiaScene(renderableGaiaScene);
         // end tessellation test.***************
-
-
-
-
-//        IndoorGmlConverter indoorGmlConverter = new IndoorGmlConverter();
-//        String indoorGMLPath = "D:\\data\\military\\withOutLAS\\IndoorGML\\B00100000005WM8IR.gml";
-//        List<GaiaScene> gaiaScenes = indoorGmlConverter.load(indoorGMLPath);
-//        int scenesCount = gaiaScenes.size();
-//        for(int i=0; i<scenesCount; i++)
-//        {
-//            RenderableGaiaScene renderableGaiaScene = InternDataConverter.getRenderableGaiaScene(gaiaScenes.get(i));
-//            gaiaScenesContainer.addRenderableGaiaScene(renderableGaiaScene);
-//            break;
-//        }
-        int hola2 = 0;
     }
 
     private GaiaScene makeGaiaSceneFromPolygon2DTess(Polygon2DTess polygon, List<Integer> indices)
@@ -472,7 +552,7 @@ public class Engine {
         {
             Vector3d vertex = points.get(i);
             GaiaVertex gaiaVertex = new GaiaVertex();
-            gaiaVertex.setPosition(new Vector3d(vertex.x * scale, vertex.y * scale, vertex.z * 1.0));
+            gaiaVertex.setPosition(new Vector3d(vertex.x * scale, vertex.y * scale, vertex.z));
             gaiaPrimitive.getVertices().add(gaiaVertex);
         }
 
@@ -542,6 +622,376 @@ public class Engine {
         screenShaderProgram.createUniforms(uniformNames);
         screenShaderProgram.validate();
 
+        // create a colorCode shader program.***
+        // colorCode.vert : "#version 330
+        //layout (location = 0) in vec3 aPosition;
+        //
+        //uniform mat4 uProjectionMatrix;
+        //uniform mat4 uModelViewMatrix;
+        //uniform mat4 uObjectMatrix;
+        //uniform int uColorCode;
+        //
+        //out vec4 vColor;
+        //
+        //vec4 decodeColor4(int colorCode) {
+        //  int r = (colorCode >> 24) & 0xFF;
+        //  int g = (colorCode >> 16) & 0xFF;
+        //  int b = (colorCode >> 8) & 0xFF;
+        //  int a = colorCode & 0xFF;
+        //  return vec4(r / 255.0, g / 255.0, b / 255.0, a / 255.0);
+        //}
+        //
+        //vec4 getOrthoPosition() {
+        //  vec4 transformedPosition = uObjectMatrix * vec4(aPosition, 1.0);
+        //  vec4 orthoPosition = uModelViewMatrix * transformedPosition;
+        //  return orthoPosition;
+        //}
+        //
+        //void main(void) {
+        //  vec4 orthoPosition = getOrthoPosition();
+        //  vColor = decodeColor4(uColorCode);
+        //  gl_Position = uProjectionMatrix * orthoPosition;
+        //
+        //}"
+        // colorCode.grag : "#version 330
+        ////precision highp float;
+        //// colorMode = 0: oneColor, 1: vertexColor, 2: textureColor
+        //in vec4 vColor;
+        //
+        //layout (location = 0) out vec4 fragColor;
+        //
+        //void main(void) {
+        //    fragColor = vColor;
+        //}"
+        shaderModuleDataList = new ArrayList<>();
+        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData("D:/Java_Projects/mago-3d-tiler/renderer/src/main/resources/shaders/colorCodeV330.vert", GL20.GL_VERTEX_SHADER));
+        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData("D:/Java_Projects/mago-3d-tiler/renderer/src/main/resources/shaders/colorCodeV330.frag", GL20.GL_FRAGMENT_SHADER));
+        ShaderProgram colorCodeShaderProgram = shaderManager.createShaderProgram("colorCode", shaderModuleDataList);
+
+        uniformNames = new ArrayList<>();
+        uniformNames.add("uProjectionMatrix");
+        uniformNames.add("uModelViewMatrix");
+        uniformNames.add("uObjectMatrix");
+        uniformNames.add("uColorCode");
+        colorCodeShaderProgram.createUniforms(uniformNames);
+        colorCodeShaderProgram.validate();
+
+
+
+    }
+
+    private void takeColorCodedPhoto(RenderableGaiaScene renderableGaiaScene, Fbo fbo, ShaderProgram shaderProgram)
+    {
+        fbo.bind();
+        glViewport(0, 0, fbo.getFboWidth(), fbo.getFboHeight()); // 500 x 500
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
+
+        // render scene objects.***
+        shaderProgram.bind();
+
+        Camera camera = gaiaScenesContainer.getCamera();
+        Matrix4d modelViewMatrix = camera.getModelViewMatrix();
+        UniformsMap uniformsMap = shaderProgram.getUniformsMap();
+        uniformsMap.setUniformMatrix4fv("uModelViewMatrix", new Matrix4f(modelViewMatrix));
+
+        // disable cull face.***
+        glDisable(GL_CULL_FACE);
+        renderer.renderColorCoded(renderableGaiaScene, selectionColorManager, shaderProgram);
+        shaderProgram.unbind();
+
+        fbo.unbind();
+
+        // return the viewport to window size.***
+        int windowWidth = window.getWidth();
+        int windowHeight = window.getHeight();
+        glViewport(0, 0, windowWidth, windowHeight);
+    }
+
+    private void determineExteriorAndInteriorObjects(Fbo fbo)
+    {
+        // bind the fbo.***
+        fbo.bind();
+
+        // read pixels from fbo.***
+        int fboWidth = fbo.getFboWidth();
+        int fboHeight = fbo.getFboHeight();
+        ByteBuffer pixels = ByteBuffer.allocateDirect(fboWidth * fboHeight * 4);
+        glReadPixels(0, 0, fboWidth, fboHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+        // unbind the fbo.***
+        fbo.unbind();
+
+        // determine exterior and interior objects.***
+        int pixelsCount = fboWidth * fboHeight;
+        for(int i=0; i<pixelsCount; i++)
+        {
+            int colorCode = pixels.getInt(i * 4);
+            // background color is (1, 1, 1, 1). skip background color.***
+            if(colorCode == 0xFFFFFFFF)
+            {
+                continue;
+            }
+            RenderablePrimitive renderablePrimitive = (RenderablePrimitive) selectionColorManager.mapColorRenderable.get(colorCode);
+            if(renderablePrimitive != null)
+            {
+                // determine exterior or interior.***
+                // 0 = interior, 1 = exterior, -1 = unknown.***
+                renderablePrimitive.setStatus(1);
+            }
+        }
+    }
+
+    private RenderableGaiaScene processExteriorInterior(GaiaScene gaiaScene)
+    {
+        RenderableGaiaScene renderableGaiaScene = InternDataConverter.getRenderableGaiaScene(gaiaScene);
+        gaiaScenesContainer.addRenderableGaiaScene(renderableGaiaScene);
+        GaiaBoundingBox bbox = gaiaScene.getBoundingBox();
+        float maxLength = (float)bbox.getLongestDistance();
+        float bboxHight = (float)bbox.getMaxZ() - (float)bbox.getMinZ();
+        float semiMaxLength = maxLength / 2.0f;
+        semiMaxLength *= 150.0f;
+
+        // render into frame buffer.***
+        Fbo colorRenderFbo = fboManager.getFbo("colorCodeRender");
+
+        // render scene objects.***
+        ShaderProgram sceneShaderProgram = shaderManager.getShaderProgram("colorCode");
+        sceneShaderProgram.bind();
+        Matrix4f projectionOrthoMatrix = new Matrix4f().ortho(-semiMaxLength, semiMaxLength, -semiMaxLength, semiMaxLength, -semiMaxLength * 10.0f, semiMaxLength * 10.0f);
+
+        // make colorRenderableMap.***
+        List<RenderablePrimitive> allRenderablePrimitives = new ArrayList<>();
+        renderableGaiaScene.extractRenderablePrimitives(allRenderablePrimitives);
+        int renderablePrimitivesCount = allRenderablePrimitives.size();
+        for(int i=0; i<renderablePrimitivesCount; i++)
+        {
+            RenderablePrimitive renderablePrimitive = allRenderablePrimitives.get(i);
+            renderablePrimitive.setStatus(0); // init as interior.***
+            int colorCode = selectionColorManager.getAvailableColor();
+            renderablePrimitive.setColorCode(colorCode);
+            selectionColorManager.mapColorRenderable.put(colorCode, renderablePrimitive);
+        }
+
+        UniformsMap uniformsMap = sceneShaderProgram.getUniformsMap();
+        uniformsMap.setUniformMatrix4fv("uProjectionMatrix", projectionOrthoMatrix);
+
+        // take 8 photos at the top, 8 photos at lateral, 8 photos at the bottom.***
+        // top photos.***
+        Camera camera = gaiaScenesContainer.getCamera();
+        double increAngRad = Math.toRadians(360.0 / 8.0);
+        Matrix4d rotMat = new Matrix4d();
+        rotMat.rotateZ(increAngRad);
+        Vector3d cameraPosition = new Vector3d(0, -semiMaxLength, semiMaxLength);
+        Vector3d cameraTarget = new Vector3d(0, 0, 0);
+
+        for(int i=0; i<8; i++)
+        {
+            // set camera position.***
+            camera.calculateCameraXYPlane(cameraPosition, cameraTarget);
+
+            takeColorCodedPhoto(renderableGaiaScene, colorRenderFbo, sceneShaderProgram);
+            determineExteriorAndInteriorObjects(colorRenderFbo);
+
+            // rotate camPos.
+            rotMat.transformPosition(cameraPosition.x, cameraPosition.y, cameraPosition.z, cameraPosition);
+        }
+
+        // lateral photos.***
+        cameraPosition = new Vector3d(0, -semiMaxLength, 0);
+        cameraTarget = new Vector3d(0, 0, 0);
+        for(int i=0; i<8; i++)
+        {
+            // set camera position.***
+            camera.calculateCameraXYPlane(cameraPosition, cameraTarget);
+
+            takeColorCodedPhoto(renderableGaiaScene, colorRenderFbo, sceneShaderProgram);
+            determineExteriorAndInteriorObjects(colorRenderFbo);
+
+            // rotate camPos.
+            rotMat.transformPosition(cameraPosition.x, cameraPosition.y, cameraPosition.z, cameraPosition);
+        }
+
+        // bottom photos.***
+        cameraPosition = new Vector3d(0, -semiMaxLength, -semiMaxLength);
+        cameraTarget = new Vector3d(0, 0, 0);
+        for(int i=0; i<8; i++)
+        {
+            // set camera position.***
+            camera.calculateCameraXYPlane(cameraPosition, cameraTarget);
+
+            takeColorCodedPhoto(renderableGaiaScene, colorRenderFbo, sceneShaderProgram);
+            determineExteriorAndInteriorObjects(colorRenderFbo);
+
+            // rotate camPos.
+            rotMat.transformPosition(cameraPosition.x, cameraPosition.y, cameraPosition.z, cameraPosition);
+        }
+
+        // return camera position.***
+        cameraPosition = new Vector3d(0, 0, -semiMaxLength);
+        cameraTarget = new Vector3d(0, 0, 0);
+
+        // set camera position.***
+        camera.calculateCameraXYPlane(cameraPosition, cameraTarget);
+
+
+        return renderableGaiaScene;
+    }
+
+    public Map<GaiaPrimitive, Integer> getExteriorAndInteriorGaiaPrimitivesMap(GaiaScene gaiaScene, Map<GaiaPrimitive, Integer> mapPrimitiveStatus)
+    {
+        RenderableGaiaScene renderableGaiaScene = processExteriorInterior(gaiaScene);
+
+        List<RenderablePrimitive> allRenderablePrimitives = new ArrayList<>();
+        renderableGaiaScene.extractRenderablePrimitives(allRenderablePrimitives);
+        int renderablePrimitivesCount = allRenderablePrimitives.size();
+
+        // finally make exteriorGaiaSet & interiorGaiaSet.***
+        if(mapPrimitiveStatus == null)
+        {
+            mapPrimitiveStatus = new HashMap<>();
+        }
+        else
+        {
+            mapPrimitiveStatus.clear();
+        }
+
+        for(int i=0; i<renderablePrimitivesCount; i++)
+        {
+            RenderablePrimitive renderablePrimitive = allRenderablePrimitives.get(i);
+            int status = renderablePrimitive.getStatus();
+            if(status == 1)
+            {
+                mapPrimitiveStatus.put(renderablePrimitive.getOriginalGaiaPrimitive(), 1);
+            }
+            else if(status == 0)
+            {
+                mapPrimitiveStatus.put(renderablePrimitive.getOriginalGaiaPrimitive(), 0);
+            }
+        }
+
+        return mapPrimitiveStatus;
+    }
+
+    private void deletePrimitivesByStatus(GaiaNode gaiaNode, int statusToDelete, Map<GaiaPrimitive, Integer> mapPrimitiveStatus)
+    {
+        List<GaiaMesh> gaiaMeshes = gaiaNode.getMeshes();
+        int meshesCount = gaiaMeshes.size();
+        for(int i=0; i<meshesCount; i++)
+        {
+            GaiaMesh gaiaMesh = gaiaMeshes.get(i);
+            List<GaiaPrimitive> gaiaPrimitives = gaiaMesh.getPrimitives();
+            int primitivesCount = gaiaPrimitives.size();
+            for(int j=0; j<primitivesCount; j++)
+            {
+                GaiaPrimitive gaiaPrimitive = gaiaPrimitives.get(j);
+                int status = mapPrimitiveStatus.get(gaiaPrimitive);
+                if(status == statusToDelete)
+                {
+                    gaiaPrimitives.remove(j);
+                    j--;
+                    primitivesCount--;
+                }
+            }
+
+            // check if the gaiaMesh has no primitives.***
+            if(gaiaPrimitives.size() == 0)
+            {
+                gaiaMeshes.remove(i);
+                i--;
+                meshesCount--;
+            }
+        }
+
+        List<GaiaNode> children = gaiaNode.getChildren();
+        int childrenCount = children.size();
+        for(int i=0; i<childrenCount; i++)
+        {
+            GaiaNode child = children.get(i);
+            deletePrimitivesByStatus(child, statusToDelete, mapPrimitiveStatus);
+        }
+    }
+
+
+    public void getExteriorAndInteriorGaiaScenes(GaiaScene gaiaScene, List<GaiaScene> resultExteriorGaiaScenes, List<GaiaScene> resultInteriorGaiaScenes) {
+        Map<GaiaPrimitive, Integer> mapPrimitiveStatus = getExteriorAndInteriorGaiaPrimitivesMap(gaiaScene, null);
+
+        // finally make exteriorGaiaSet & interiorGaiaSet.***
+        GaiaScene exteriorGaiaScene = gaiaScene.clone();
+        GaiaScene interiorGaiaScene = gaiaScene.clone();
+        resultExteriorGaiaScenes.add(exteriorGaiaScene);
+        resultInteriorGaiaScenes.add(interiorGaiaScene);
+
+        // delete interior primitives from exteriorGaiaScene, and delete exterior primitives from interiorGaiaScene.***
+        List<GaiaNode> exteriorNodes = exteriorGaiaScene.getNodes();
+        int extNodesCount = exteriorNodes.size();
+        for(int i=0; i<extNodesCount; i++)
+        {
+            GaiaNode gaiaNode = exteriorNodes.get(i);
+            deletePrimitivesByStatus(gaiaNode, 0, mapPrimitiveStatus);
+        }
+
+        List<GaiaNode> interiorNodes = interiorGaiaScene.getNodes();
+        int intNodesCount = interiorNodes.size();
+        for(int i=0; i<intNodesCount; i++)
+        {
+            GaiaNode gaiaNode = interiorNodes.get(i);
+            deletePrimitivesByStatus(gaiaNode, 1, mapPrimitiveStatus);
+        }
+    }
+
+    public void getExteriorAndInteriorGaiaSets(GaiaScene gaiaScene, List<GaiaSet> resultExteriorGaiaSets, List<GaiaSet> resultInteriorGaiaSets)
+    {
+        RenderableGaiaScene renderableGaiaScene = processExteriorInterior(gaiaScene);
+
+        List<RenderablePrimitive> allRenderablePrimitives = new ArrayList<>();
+        renderableGaiaScene.extractRenderablePrimitives(allRenderablePrimitives);
+        int renderablePrimitivesCount = allRenderablePrimitives.size();
+
+        // finally make exteriorGaiaSet & interiorGaiaSet.***
+        GaiaSet exteriorGaiaSet = new GaiaSet();
+        GaiaSet interiorGaiaSet = new GaiaSet();
+        resultExteriorGaiaSets.add(exteriorGaiaSet);
+        resultInteriorGaiaSets.add(interiorGaiaSet);
+        List<GaiaBufferDataSet> exteriorBufferDatas = new ArrayList<>();
+        List<GaiaBufferDataSet> interiorBufferDatas = new ArrayList<>();
+        exteriorGaiaSet.setBufferDatas(exteriorBufferDatas);
+        interiorGaiaSet.setBufferDatas(interiorBufferDatas);
+        for(int i=0; i<renderablePrimitivesCount; i++)
+        {
+            RenderablePrimitive renderablePrimitive = allRenderablePrimitives.get(i);
+            int status = renderablePrimitive.getStatus();
+            if(status == 1)
+            {
+                GaiaBufferDataSet gaiaBufferDataSet = renderablePrimitive.getOriginalBufferDataSet();
+                exteriorBufferDatas.add(gaiaBufferDataSet);
+            }
+            else if(status == 0)
+            {
+                GaiaBufferDataSet gaiaBufferDataSet = renderablePrimitive.getOriginalBufferDataSet();
+                interiorBufferDatas.add(gaiaBufferDataSet);
+            }
+        }
+    }
+
+    private void renderScreenQuad(int texId)
+    {
+        // render to windows using screenQuad.***
+        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0); // any frame buffer binded.***
+
+        int windowWidth = window.getWidth();
+        int windowHeight = window.getHeight();
+        glViewport(0, 0, windowWidth, windowHeight);
+
+        GL20.glEnable(GL20.GL_TEXTURE_2D);
+        GL20.glActiveTexture(GL20.GL_TEXTURE0);
+        GL20.glBindTexture(GL20.GL_TEXTURE_2D, texId);
+
+        ShaderProgram screenShaderProgram = shaderManager.getShaderProgram("screen");
+        screenShaderProgram.bind();
+        screenQuad.render();
+        screenShaderProgram.unbind();
     }
 
     private void draw() {
@@ -553,6 +1003,7 @@ public class Engine {
         // render scene objects.***
         ShaderProgram sceneShaderProgram = shaderManager.getShaderProgram("scene");
         sceneShaderProgram.bind();
+        renderer.renderAxis(sceneShaderProgram);
         renderer.render(gaiaScenesContainer, sceneShaderProgram);
         sceneShaderProgram.unbind();
 
@@ -560,16 +1011,13 @@ public class Engine {
 
         // now render to windows using screenQuad.***
         int colorRenderTextureId = colorRenderFbo.getColorTextureId();
-        GL20.glEnable(GL20.GL_TEXTURE_2D);
-        GL20.glActiveTexture(GL20.GL_TEXTURE0);
-        GL20.glBindTexture(GL20.GL_TEXTURE_2D, colorRenderTextureId);
+        renderScreenQuad(colorRenderTextureId);
 
-        ShaderProgram screenShaderProgram = shaderManager.getShaderProgram("screen");
-        screenShaderProgram.bind();
-        screenQuad.render();
-        GL20.glBindTexture(GL20.GL_TEXTURE_2D, 0);
 
-        screenShaderProgram.unbind();
+        // render colorCoded fbo.***
+//        int colorCodeRenderTextureId = fboManager.getFbo("colorCodeRender").getColorTextureId();
+//        renderScreenQuad(colorCodeRenderTextureId);
+
     }
 
     private void loop() {
@@ -580,10 +1028,11 @@ public class Engine {
         // bindings available for use.
 
         // 사용자가 창을 닫거다 esc키를 누를 때까지 랜더링 루프를 실행합니다.
+        int[] width = new int[1];
+        int[] height = new int[1];
         long windowHandle = window.getWindowHandle();
         while (!glfwWindowShouldClose(windowHandle)) {
-            int[] width = new int[1];
-            int[] height = new int[1];
+
             glfwGetWindowSize(windowHandle, width, height);
             glViewport(0, 0, width[0], height[0]);
 

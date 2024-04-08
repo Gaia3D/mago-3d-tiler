@@ -20,9 +20,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 public class IndoorGmlConverter extends AbstractGeometryConverter implements Converter {
@@ -139,7 +137,7 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                         Vector3d localPosition = positionWorldCoordinate.mulPosition(transfromMatrixInv);
                         localPosition.z = position.z;
                         localPositions.add(localPosition);
-                        polygon.add(new Vector3dsOnlyHashEquals(localPosition));
+                        polygon.add(new Vector3dOnlyHashEquals(localPosition));
                     }
                     polygons.add(polygon);
                 }
