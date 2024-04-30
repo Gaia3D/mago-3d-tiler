@@ -1,5 +1,8 @@
 package com.gaia3d.converter.geometry;
 
+import com.gaia3d.basic.geometry.networkStructure.modeler.Modeler3D;
+import com.gaia3d.basic.geometry.networkStructure.modeler.TNetwork;
+import com.gaia3d.basic.geometry.networkStructure.pipes.PipeElbow;
 import com.gaia3d.basic.geometry.tessellator.GaiaExtrusionSurface;
 import com.gaia3d.basic.geometry.tessellator.GaiaTessellator;
 import com.gaia3d.basic.structure.*;
@@ -277,6 +280,63 @@ public abstract class AbstractGeometryConverter {
         }
 
         return primitive;
+    }
+
+    protected GaiaNode createPrimitiveFromPipeLineString(GaiaPipeLineString pipeLineString, GaiaNode resultGaiaNode) {
+        int pointsCount = pipeLineString.getPositions().size();
+        if (pointsCount < 2) {
+            return null;
+        }
+
+        int pipeProfileType = pipeLineString.getPipeProfileType();
+        if(pipeProfileType == 1)
+        {
+            // circular pipe.
+            float pipeRadius = (float) (pipeLineString.getDiameterCm() / 200.0f); // cm to meter.***
+
+            // 1rst create elbows.
+            float elbowRadius = pipeRadius * 1.5f; // test value.***
+            List<PipeElbow> pipeElbows = new ArrayList<>();
+
+            for(int i=0; i<pointsCount; i++)
+            {
+                Vector3d point = pipeLineString.getPositions().get(i);
+                PipeElbow pipeElbow = new PipeElbow(new Vector3d(point), pipeProfileType, elbowRadius);
+                pipeElbow.setPipeRadius(pipeRadius);
+                pipeElbow.setPipeProfileType(pipeProfileType);
+                pipeElbows.add(pipeElbow);
+            }
+
+            Modeler3D modeler3D = new Modeler3D();
+            TNetwork tNetwork = modeler3D.TEST_getPipeNetworkFromPipeElbows(pipeElbows);
+            resultGaiaNode = modeler3D.makeGeometry(tNetwork, resultGaiaNode);
+        }
+        else if(pipeProfileType == 2)
+        {
+            // rectangular pipe.
+            float pipeWidth = pipeLineString.getPipeRectangularSize()[0];
+            float pipeHeight = pipeLineString.getPipeRectangularSize()[1];
+
+            // 1rst create elbows.
+            float elbowRadius = Math.max(pipeWidth, pipeHeight) * 1.5f; // test value.***
+            List<PipeElbow> pipeElbows = new ArrayList<>();
+
+            for(int i=0; i<pointsCount; i++)
+            {
+                Vector3d point = pipeLineString.getPositions().get(i);
+                PipeElbow pipeElbow = new PipeElbow(new Vector3d(point), pipeProfileType, elbowRadius);
+                pipeElbow.setPipeRectangularSize(new float[]{pipeWidth, pipeHeight});
+                pipeElbow.setPipeProfileType(pipeProfileType);
+                pipeElbows.add(pipeElbow);
+            }
+
+            Modeler3D modeler3D = new Modeler3D();
+            TNetwork tNetwork = modeler3D.TEST_getPipeNetworkFromPipeElbows(pipeElbows);
+            resultGaiaNode = modeler3D.makeGeometry(tNetwork, resultGaiaNode);
+        }
+
+
+        return resultGaiaNode;
     }
 
     protected GaiaPrimitive createPrimitiveFromGaiaExtrusionSurfaces(List<GaiaExtrusionSurface> surfaces) {

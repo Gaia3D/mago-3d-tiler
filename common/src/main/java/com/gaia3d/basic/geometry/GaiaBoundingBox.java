@@ -70,6 +70,33 @@ public class GaiaBoundingBox implements Serializable {
         }
     }
 
+    public boolean intersects(GaiaBoundingBox bbox)
+    {
+        if (maxX < bbox.minX || minX > bbox.maxX) {
+            return false;
+        }
+        if (maxY < bbox.minY || minY > bbox.maxY) {
+            return false;
+        }
+        if (maxZ < bbox.minZ || minZ > bbox.maxZ) {
+            return false;
+        }
+        return true;
+    }
+
+    public boolean intersects(GaiaBoundingBox bbox, double tolerance) {
+        if (maxX + tolerance < bbox.minX || minX - tolerance > bbox.maxX) {
+            return false;
+        }
+        if (maxY + tolerance < bbox.minY || minY - tolerance > bbox.maxY) {
+            return false;
+        }
+        if (maxZ + tolerance < bbox.minZ || minZ - tolerance > bbox.maxZ) {
+            return false;
+        }
+        return true;
+    }
+
     public void addBoundingBox(GaiaBoundingBox boundingBox) {
         if (isInit) {
             if (boundingBox.minX < minX) {
