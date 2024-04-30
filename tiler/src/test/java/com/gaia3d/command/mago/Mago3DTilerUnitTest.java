@@ -564,6 +564,8 @@ class Mago3DTilerUnitTest {
                 "-inputType", "shp",
                 "-output", output.getAbsolutePath(),
                 "-crs", "5186",
+                "-mg", "32",
+                "-debug"
         };
         Mago3DTilerMain.main(args);
     }

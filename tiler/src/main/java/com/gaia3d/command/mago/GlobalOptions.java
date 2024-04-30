@@ -32,9 +32,15 @@ public class GlobalOptions {
     private static final String DEFAULT_INSTANCE_FILE = "instance.dae";
     private static final int DEFAULT_MIN_LOD = 0;
     private static final int DEFAULT_MAX_LOD = 3;
+    private static final int DEFAULT_MIN_GEOMETRIC_ERROR = 16;
+    private static final int DEFAULT_MAX_GEOMETRIC_ERROR = Integer.MAX_VALUE;
+
+    private static final int DEFAULT_MAX_TRIANGLES = 65536 * 8;
+
     private static final int DEFAULT_POINT_LIMIT = 65536;
     private static final int DEFAULT_POINT_SCALE = 2;
     private static final int DEFAULT_POINT_SKIP = 4;
+
 
     private static final byte DEFAULT_MULTI_THREAD_COUNT = 4;
     private static final String DEFAULT_CRS = "4326";
@@ -79,6 +85,9 @@ public class GlobalOptions {
     private int nodeLimit; // node limit per tile
     private int minLod; // minimum level of detail
     private int maxLod; // maximum level of detail
+    private int minGeometricError; // minimum geometric error
+    private int maxGeometricError; // maximum geometric error
+    private int maxTriangles; // maximum triangles per tile
 
     private boolean debug = false; // debug mode flag
     private boolean debugLod = false; // debug lod flag
@@ -193,7 +202,10 @@ public class GlobalOptions {
         instance.setNodeLimit(command.hasOption(ProcessOptions.MAX_COUNT.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_COUNT.getArgName())) : -1);
         instance.setMinLod(command.hasOption(ProcessOptions.MIN_LOD.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MIN_LOD.getArgName())) : DEFAULT_MIN_LOD);
         instance.setMaxLod(command.hasOption(ProcessOptions.MAX_LOD.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_LOD.getArgName())) : DEFAULT_MAX_LOD);
+        instance.setMinGeometricError(command.hasOption(ProcessOptions.MIN_GEOMETRIC_ERROR.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MIN_GEOMETRIC_ERROR.getArgName())) : DEFAULT_MIN_GEOMETRIC_ERROR);
+        instance.setMaxGeometricError(command.hasOption(ProcessOptions.MAX_GEOMETRIC_ERROR.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_GEOMETRIC_ERROR.getArgName())) : DEFAULT_MAX_GEOMETRIC_ERROR);
         instance.setIgnoreTextures(command.hasOption(ProcessOptions.IGNORE_TEXTURES.getArgName()));
+        instance.setMaxTriangles(DEFAULT_MAX_TRIANGLES);
 
         /* Point Cloud Options */
         instance.setPointLimit(command.hasOption(ProcessOptions.MAX_POINTS.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_POINTS.getArgName())) : DEFAULT_POINT_LIMIT);

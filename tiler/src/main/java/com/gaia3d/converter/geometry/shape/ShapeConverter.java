@@ -144,18 +144,21 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                     }
 
                     if (positions.size() >= 2) {
-                        String columnName = "LOW_DEP";
-                        String lowerDepthText = getAttribute(feature, columnName);
+                        //String columnName = "LOW_DEP";
+                        //String lowerDepthText = getAttribute(feature, columnName);
                         //Double lowerDepth = Double.parseDouble(lowerDepthText);
 
-                        columnName = "HGH_DEP";
-                        String higherDepthText = getAttribute(feature, columnName);
+                        //columnName = "HGH_DEP";
+                        //String higherDepthText = getAttribute(feature, columnName);
                         //Double higherDepth = Double.parseDouble(higherDepthText);
-
-                        columnName = "PIP_LBL";
+                        String columnName = "PIP_LBL";
                         String pipeLabel = getAttribute(feature, columnName);
                         String separator = "/";
                         String[] pipeLabelTokens = pipeLabel.split(separator);
+
+                        if (pipeLabelTokens.length < 3) {
+                            continue;
+                        }
                         String diameterCmString = pipeLabelTokens[2];
                         int pipeProfileType = 0; // 1 = circular, 2 = rectangular.***
                         float rectangleWidth = 0.0f;
