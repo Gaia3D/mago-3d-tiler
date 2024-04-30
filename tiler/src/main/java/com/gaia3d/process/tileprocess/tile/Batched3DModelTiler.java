@@ -85,7 +85,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         boolean refineAdd = globalOptions.isRefineAdd();
         //int nodeLimit = globalOptions.getNodeLimit() * 4; // for quadtree node limit
 
-        long triangleLimit = 65536 * 4;
+        long triangleLimit = 65536 * 8;
         long totalTriangleCount = tileInfos.stream().mapToLong(TileInfo::getTriangleCount).sum();
         log.debug("[TriangleCount] Total : {}", totalTriangleCount);
 

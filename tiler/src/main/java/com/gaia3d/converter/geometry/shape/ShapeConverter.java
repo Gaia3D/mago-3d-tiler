@@ -26,7 +26,7 @@ import org.geotools.geometry.jts.JTSFactoryFinder;
 
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
-import org.joml.Vector4d;
+
 import org.locationtech.jts.geom.*;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
@@ -89,7 +89,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             FeatureIterator<SimpleFeature> iterator = features.features();
             List<GaiaExtrusionBuilding> buildings = new ArrayList<>();
             List<GaiaPipeLineString> pipeLineStrings = new ArrayList<>();
-            int counterAux = 0;
             while (iterator.hasNext()) {
                 SimpleFeature feature = iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
@@ -189,10 +188,10 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                             // is possible that the diameterCmString is a rectangle "width X height" or "2@ width X height".***
                             // check if the 2nd char is "@".***
                             char secondChar = diameterCmString.charAt(1);
-                            if (secondChar == 64) // @ = 64.***
-                            {
+                            // @ = 64.***
+                            if (secondChar == 64) {
                                 // 2@ width X height.***
-                                separator = "[@Xx]";
+                                separator = "@|X|x";
                                 String[] diameterCmStringTokens = diameterCmString.split(separator);
                                 String widthString = diameterCmStringTokens[1];
                                 String heightString = diameterCmStringTokens[2];
@@ -218,8 +217,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                                     continue;
                                 }
                             }
-
-                            //continue;
                         }
                         // delete the 1rst character of the string.***
                         //diameterCmString = diameterCmString.substring(1, diameterCmString.length());
@@ -230,17 +227,27 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                             float[] pipeRectangularSize = new float[2];
                             pipeRectangularSize[0] = rectangleWidth;
                             pipeRectangularSize[1] = rectangleHeight;
-                            GaiaPipeLineString pipeLineString = GaiaPipeLineString.builder().id(feature.getID()).name(pipeLabel).pipeProfileType(pipeProfileType).pipeRectangularSize(pipeRectangularSize).positions(positions).build();
+                            GaiaPipeLineString pipeLineString = GaiaPipeLineString.builder()
+                                    .id(feature.getID())
+                                    .name(pipeLabel)
+                                    .pipeProfileType(pipeProfileType)
+                                    .pipeRectangularSize(pipeRectangularSize)
+                                    .positions(positions)
+                                    .build();
                             pipeLineString.setOriginalFilePath(file.getPath());
                             pipeLineStrings.add(pipeLineString);
                         } else {
                             // is a circular pipe.***
                             double diameterCm = Double.parseDouble(diameterCmString);
                             // create a pipe with a circular profile.***
-                            GaiaPipeLineString pipeLineString = GaiaPipeLineString.builder().id(feature.getID()).name(pipeLabel).pipeProfileType(pipeProfileType).diameterCm(diameterCm).positions(positions).build();
+                            GaiaPipeLineString pipeLineString = GaiaPipeLineString.builder()
+                                    .id(feature.getID())
+                                    .name(pipeLabel)
+                                    .pipeProfileType(pipeProfileType)
+                                    .diameterCm(diameterCm)
+                                    .positions(positions).build();
                             pipeLineString.setOriginalFilePath(file.getPath());
                             pipeLineStrings.add(pipeLineString);
-                            continue;
                         }
                     } else {
                         log.warn("Invalid Geometry : has no points. : {}", feature.getID());
@@ -309,16 +316,13 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                         log.warn("Invalid Geometry : {}, {}", feature.getID(), name);
                     }
                 }
-                counterAux++;
             }
             iterator.close();
             reader.close();
             shpFiles.dispose();
             dataStore.dispose();
 
-
             this.convertPipeLineStrings(pipeLineStrings, scenes);
-
 
             // check if there are buildings.***
             for (GaiaExtrusionBuilding building : buildings) {
@@ -380,7 +384,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         }
 
         Modeler3D modeler3d = new Modeler3D();
-        modeler3d.concatenateGaiaPipeLines(pipeLineStrings);
+        //modeler3d.concatenateGaiaPipeLines(pipeLineStrings);
 
         GlobalOptions globalOptions = GlobalOptions.getInstance();
 
@@ -397,7 +401,16 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 if (crs != null && !crs.getName().equals("EPSG:4326")) {
                     ProjCoordinate projCoordinate = new ProjCoordinate(point.x, point.y, point.z);
                     ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
-                    point.set(centerWgs84.x, centerWgs84.y, point.z);
+
+                    double defaultHeight = 2.0;
+                    double heightOffset = 0.0;
+                    if (pipeLineString.getPipeProfileType() == 1) {
+                        heightOffset = pipeLineString.getDiameterCm() / 100 / 2;
+                    } else if (pipeLineString.getPipeProfileType() == 2) {
+                        heightOffset = pipeLineString.getPipeRectangularSize()[1] / 100 / 2;
+                    }
+
+                    point.set(centerWgs84.x, centerWgs84.y, point.z - heightOffset - defaultHeight);
                     bbox.addPoint(point);
                     //position = new Vector3d(centerWgs84.x, centerWgs84.y, point.z);
                 }
@@ -406,20 +419,16 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
 
 
         for (GaiaPipeLineString pipeLineString : pipeLineStrings) {
-//          if (i >= 4000)
-//          {
-//               break;
-//          }
             GaiaScene scene = initScene(); // here creates materials.***
             GaiaMaterial mat = scene.getMaterials().get(0);
             // create random color4.***
-            Vector4d randomColor = new Vector4d(Math.random(), Math.random(), Math.random(), 1.0);
-//            Vector4d waterColor = new Vector4d(0.25, 0.5, 1.0, 1.0);
-//            Vector4d dirtyColor = new Vector4d(0.9, 0.5, 0.25, 1.0);
+            //Vector4d randomColor = new Vector4d(Math.random(), Math.random(), Math.random(), 1.0);
+            //Vector4d waterColor = new Vector4d(0.25, 0.5, 1.0, 1.0);
+            //Vector4d dirtyColor = new Vector4d(1.0, 0.0, 1.0, 1.0);
 //            Vector4d yellow = new Vector4d(0.8, 0.8, 0.0, 1.0);
 //            Vector4d red = new Vector4d(0.8, 0.01, 0.0, 1.0);
 //            Vector4d green = new Vector4d(0.01, 0.8, 0.0, 1.0);
-            mat.setDiffuseColor(randomColor);
+            //mat.setDiffuseColor(dirtyColor);
             Path path = new File(pipeLineString.getOriginalFilePath()).toPath();
             scene.setOriginalPath(path);
 

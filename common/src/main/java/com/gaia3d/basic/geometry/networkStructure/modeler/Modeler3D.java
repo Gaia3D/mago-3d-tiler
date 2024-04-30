@@ -92,12 +92,12 @@ public class Modeler3D {
         }
 
         // 2nd, check pipes.***
-        for (int i = 0; i < network.getEdges().size(); i++) {
+        /*for (int i = 0; i < network.getEdges().size(); i++) {
             TEdge edge = network.getEdges().get(i);
             if (edge instanceof Pipe pipe) {
 
             }
-        }
+        }*/
 
         for (int i = 0; i < network.getNodes().size(); i++) {
             TNode node = network.getNodes().get(i);
@@ -106,8 +106,6 @@ public class Modeler3D {
                 GaiaMesh elbowMesh = elbow.makeGeometry();
                 if (elbowMesh != null) {
                     resultGaiaNode.getMeshes().add(elbowMesh);
-                } else {
-                    int hola = 0;
                 }
             }
         }
@@ -184,7 +182,6 @@ public class Modeler3D {
 
         if (!isSmooth) {
             //GaiaSegment segment = new GaiaSegment();
-
         }
 
         // 1rst, create all transversal vertices.***
