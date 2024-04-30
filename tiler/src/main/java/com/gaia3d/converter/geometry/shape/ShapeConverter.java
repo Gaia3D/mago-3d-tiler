@@ -1,6 +1,7 @@
 package com.gaia3d.converter.geometry.shape;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.GaiaPipeLineString;
 import com.gaia3d.basic.geometry.networkStructure.modeler.Modeler3D;
 import com.gaia3d.basic.geometry.tessellator.GaiaExtruder;
 import com.gaia3d.basic.geometry.tessellator.GaiaExtrusionSurface;
@@ -10,7 +11,6 @@ import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.geometry.*;
 
-import com.gaia3d.converter.geometry.GaiaPipeLineString;
 import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.store.ContentFeatureSource;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.jts.JTSFactoryFinder;
-import org.geotools.util.factory.Hints;
+
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
@@ -109,9 +109,9 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                     }
                 } else if (geom instanceof Polygon) {
                     polygons.add((Polygon) geom);
-                }else if (geom instanceof LineString) {
-                        LineStrings.add((LineString) geom);
-                }else if (geom instanceof MultiLineString) {
+                } else if (geom instanceof LineString) {
+                    LineStrings.add((LineString) geom);
+                } else if (geom instanceof MultiLineString) {
                     int count = geom.getNumGeometries();
                     for (int i = 0; i < count; i++) {
                         LineString lineString = (LineString) geom.getGeometryN(i);
@@ -124,8 +124,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
 
                 // Check lineStrings. Convert to pipes.***
                 int lineStringsCount = LineStrings.size();
-                for(int i = 0; i < lineStringsCount; i++) {
-                    LineString lineString = LineStrings.get(i);
+                for (LineString lineString : LineStrings) {
                     Coordinate[] coordinates = lineString.getCoordinates();
                     List<Vector3d> positions = new ArrayList<>();
                     for (Coordinate coordinate : coordinates) {
@@ -163,7 +162,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                         float rectangleWidth = 0.0f;
                         float rectangleHeight = 0.0f;
 
-                        if(diameterCmString.length() == 0) {
+                        if (diameterCmString.isEmpty()) {
                             continue;
                         }
 
@@ -171,48 +170,45 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                         char firstChar = diameterCmString.charAt(0);
                         // '⌀' = 248.***
                         // '?' = 63.***
-                        if(firstChar == 248 || firstChar == 63) {
+                        if (firstChar == 248 || firstChar == 63) {
                             // delete the 1rst character of the string.***
-                            diameterCmString = diameterCmString.substring(1, diameterCmString.length());
-                            if(diameterCmString.length() == 0) {
+                            diameterCmString = diameterCmString.substring(1);
+                            if (diameterCmString.isEmpty()) {
                                 continue;
                             }
 
                             // finally check if the diameterCmString is "number X number".***
                             separator = "X|x";
                             String[] diameterCmStringTokens = diameterCmString.split(separator);
-                            if(diameterCmStringTokens.length == 2) {
+                            if (diameterCmStringTokens.length == 2) {
                                 diameterCmString = diameterCmStringTokens[0];
                             }
 
                             pipeProfileType = 1;  // 1 = circular.***
-                        }
-                        else
-                        {
+                        } else {
                             // is possible that the diameterCmString is a rectangle "width X height" or "2@ width X height".***
                             // check if the 2nd char is "@".***
                             char secondChar = diameterCmString.charAt(1);
-                            if(secondChar == 64) // @ = 64.***
+                            if (secondChar == 64) // @ = 64.***
                             {
                                 // 2@ width X height.***
-                                separator = "@|X|x";
+                                separator = "[@Xx]";
                                 String[] diameterCmStringTokens = diameterCmString.split(separator);
                                 String widthString = diameterCmStringTokens[1];
                                 String heightString = diameterCmStringTokens[2];
-                                if (widthString.length() == 0 || heightString.length() == 0) {
+                                if (widthString.isEmpty() || heightString.isEmpty()) {
                                     continue;
                                 }
                                 rectangleWidth = Float.parseFloat(widthString);
                                 rectangleHeight = Float.parseFloat(heightString);
                                 pipeProfileType = 2; // 2 = rectangular.***
-                            }
-                            else {
+                            } else {
                                 separator = "X|x";
                                 String[] diameterCmStringTokens = diameterCmString.split(separator);
                                 if (diameterCmStringTokens.length == 2) {
                                     String widthString = diameterCmStringTokens[0];
                                     String heightString = diameterCmStringTokens[1];
-                                    if (widthString.length() == 0 || heightString.length() == 0) {
+                                    if (widthString.isEmpty() || heightString.isEmpty()) {
                                         continue;
                                     }
                                     rectangleWidth = Float.parseFloat(widthString);
@@ -228,47 +224,27 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                         // delete the 1rst character of the string.***
                         //diameterCmString = diameterCmString.substring(1, diameterCmString.length());
 
-                        if(pipeProfileType == 2)
-                        {
+                        if (pipeProfileType == 2) {
                             // is a rectangular pipe.***
                             // create a pipe with a rectangular profile.***
                             float[] pipeRectangularSize = new float[2];
                             pipeRectangularSize[0] = rectangleWidth;
                             pipeRectangularSize[1] = rectangleHeight;
-                            GaiaPipeLineString pipeLineString = GaiaPipeLineString.builder()
-                                    .id(feature.getID())
-                                    .name(pipeLabel)
-                                    .pipeProfileType(pipeProfileType)
-                                    .pipeRectangularSize(pipeRectangularSize)
-                                    .positions(positions)
-                                    .build();
+                            GaiaPipeLineString pipeLineString = GaiaPipeLineString.builder().id(feature.getID()).name(pipeLabel).pipeProfileType(pipeProfileType).pipeRectangularSize(pipeRectangularSize).positions(positions).build();
                             pipeLineString.setOriginalFilePath(file.getPath());
                             pipeLineStrings.add(pipeLineString);
-                        }
-                        else {
+                        } else {
                             // is a circular pipe.***
-                            Double diameterCm = Double.parseDouble(diameterCmString);
+                            double diameterCm = Double.parseDouble(diameterCmString);
                             // create a pipe with a circular profile.***
-                            GaiaPipeLineString pipeLineString = GaiaPipeLineString.builder()
-                                    .id(feature.getID())
-                                    .name(pipeLabel)
-                                    .pipeProfileType(pipeProfileType)
-                                    .diameterCm(diameterCm)
-                                    .positions(positions)
-                                    .build();
+                            GaiaPipeLineString pipeLineString = GaiaPipeLineString.builder().id(feature.getID()).name(pipeLabel).pipeProfileType(pipeProfileType).diameterCm(diameterCm).positions(positions).build();
                             pipeLineString.setOriginalFilePath(file.getPath());
                             pipeLineStrings.add(pipeLineString);
                             continue;
                         }
-                        int hola = 0;
-
                     } else {
                         log.warn("Invalid Geometry : has no points. : {}", feature.getID());
                     }
-                }
-
-                if(counterAux >= 40) {
-                    int hola = 0;
                 }
 
                 for (Polygon polygon : polygons) {
@@ -326,14 +302,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                         if (altitudeColumnName != null) {
                             altitude = getAltitude(feature, altitudeColumnName);
                         }
-                        GaiaExtrusionBuilding building = GaiaExtrusionBuilding.builder()
-                                .id(feature.getID())
-                                .name(name)
-                                .boundingBox(boundingBox)
-                                .floorHeight(altitude)
-                                .roofHeight(height + skirtHeight)
-                                .positions(positions)
-                                .build();
+                        GaiaExtrusionBuilding building = GaiaExtrusionBuilding.builder().id(feature.getID()).name(name).boundingBox(boundingBox).floorHeight(altitude).roofHeight(height + skirtHeight).positions(positions).build();
                         buildings.add(building);
                     } else {
                         String name = getAttribute(feature, nameColumnName);
@@ -349,7 +318,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
 
 
             this.convertPipeLineStrings(pipeLineStrings, scenes);
-
 
 
             // check if there are buildings.***
@@ -407,7 +375,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
     }
 
     private void convertPipeLineStrings(List<GaiaPipeLineString> pipeLineStrings, List<GaiaScene> resultScenes) {
-        if (pipeLineStrings.size() == 0) {
+        if (pipeLineStrings.isEmpty()) {
             return;
         }
 
@@ -417,15 +385,12 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         GlobalOptions globalOptions = GlobalOptions.getInstance();
 
         int pipeLineStringsCount = pipeLineStrings.size();
-        for(int i=0; i<pipeLineStringsCount; i++)
-        {
-            GaiaPipeLineString pipeLineString = pipeLineStrings.get(i);
+        for (GaiaPipeLineString pipeLineString : pipeLineStrings) {
             int pointsCount = pipeLineString.getPositions().size();
-            pipeLineString.boundingBox = new GaiaBoundingBox();
+            pipeLineString.setBoundingBox(new GaiaBoundingBox());
             GaiaBoundingBox bbox = pipeLineString.getBoundingBox();
             bbox.setInit(false);
-            for(int j=0; j<pointsCount; j++)
-            {
+            for (int j = 0; j < pointsCount; j++) {
                 Vector3d point = pipeLineString.getPositions().get(j);
                 //Vector3d position = new Vector3d(x, y, z);
                 CoordinateReferenceSystem crs = globalOptions.getCrs();
@@ -440,24 +405,20 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         }
 
 
-
-
-        for (int i=0; i<pipeLineStrings.size(); i++)
-        {
+        for (GaiaPipeLineString pipeLineString : pipeLineStrings) {
 //          if (i >= 4000)
 //          {
 //               break;
 //          }
-            GaiaPipeLineString pipeLineString = pipeLineStrings.get(i);
             GaiaScene scene = initScene(); // here creates materials.***
             GaiaMaterial mat = scene.getMaterials().get(0);
             // create random color4.***
             Vector4d randomColor = new Vector4d(Math.random(), Math.random(), Math.random(), 1.0);
-            Vector4d waterColor = new Vector4d(0.25, 0.5, 1.0, 1.0);
-            Vector4d dirtyColor = new Vector4d(0.9, 0.5, 0.25, 1.0);
-            Vector4d yellow = new Vector4d(0.8, 0.8, 0.0, 1.0);
-            Vector4d red = new Vector4d(0.8, 0.01, 0.0, 1.0);
-            Vector4d green = new Vector4d(0.01, 0.8, 0.0, 1.0);
+//            Vector4d waterColor = new Vector4d(0.25, 0.5, 1.0, 1.0);
+//            Vector4d dirtyColor = new Vector4d(0.9, 0.5, 0.25, 1.0);
+//            Vector4d yellow = new Vector4d(0.8, 0.8, 0.0, 1.0);
+//            Vector4d red = new Vector4d(0.8, 0.01, 0.0, 1.0);
+//            Vector4d green = new Vector4d(0.01, 0.8, 0.0, 1.0);
             mat.setDiffuseColor(randomColor);
             Path path = new File(pipeLineString.getOriginalFilePath()).toPath();
             scene.setOriginalPath(path);
@@ -485,15 +446,13 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             //pipeLineString.TEST_Check();
             pipeLineString.deleteDuplicatedPoints();
 
-            GaiaNode node = createPrimitiveFromPipeLineString(pipeLineString, null);
+            GaiaNode node = createPrimitiveFromPipeLineString(pipeLineString);
             node.setName(pipeLineString.getName());
             node.setTransformMatrix(new Matrix4d().identity());
 
             // for all primitives set the material index.***
-            for (GaiaMesh mesh : node.getMeshes())
-            {
-                for (GaiaPrimitive primitive : mesh.getPrimitives())
-                {
+            for (GaiaMesh mesh : node.getMeshes()) {
+                for (GaiaPrimitive primitive : mesh.getPrimitives()) {
                     primitive.setMaterialIndex(0);
                 }
             }

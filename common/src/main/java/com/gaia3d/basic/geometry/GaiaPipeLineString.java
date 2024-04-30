@@ -1,51 +1,33 @@
 package com.gaia3d.basic.geometry;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.joml.Vector3d;
 
 import java.util.List;
 
+@Builder
 @Getter
 @Setter
-public class GaiaPipeLineString
-{
+public class GaiaPipeLineString {
     private String id;
     private String name;
     private double diameterCm;
-    private float[] pipeRectangularSize = new float[2]; // for rectangular pipe.
-    private GaiaBoundingBox boundingBox = new GaiaBoundingBox();
-    int pipeProfileType = 0; // 0 = unknown, 1 = circular, 2 = rectangular, 3 = oval, 4 = irregular, etc.
-    String originalFilePath;
-
-    List<Vector3d> positions;
-
-    public void TEST_Check() {
-        // check if there are points with same positions.
-        for (int i = 0; i < positions.size(); i++) {
-            Vector3d point = positions.get(i);
-            for (int j = i + 1; j < positions.size(); j++) {
-                Vector3d point2 = positions.get(j);
-                double error = point.distance(point2);
-                if (error < 0.001) {
-                    System.out.println("Error: there are points with same positions.");
-                }
-            }
-        }
-    }
+    private float[] pipeRectangularSize; // for rectangular pipe.
+    private GaiaBoundingBox boundingBox;
+    private int pipeProfileType = 0; // 0 = unknown, 1 = circular, 2 = rectangular, 3 = oval, 4 = irregular, etc.
+    private String originalFilePath;
+    private List<Vector3d> positions;
 
     public boolean isSameProfile(GaiaPipeLineString pipeLineString) {
         if (pipeProfileType != pipeLineString.pipeProfileType) {
             return false;
         }
         if (pipeProfileType == 1) {
-            if (diameterCm != pipeLineString.diameterCm) {
-                return false;
-            }
+            return diameterCm == pipeLineString.diameterCm;
         } else if (pipeProfileType == 2) {
-            if (pipeRectangularSize[0] != pipeLineString.pipeRectangularSize[0] || pipeRectangularSize[1] != pipeLineString.pipeRectangularSize[1]) {
-                return false;
-            }
+            return pipeRectangularSize[0] == pipeLineString.pipeRectangularSize[0] && pipeRectangularSize[1] == pipeLineString.pipeRectangularSize[1];
         }
         return true;
     }
@@ -68,11 +50,9 @@ public class GaiaPipeLineString
             Vector3d point2 = positions.get(i + 1);
             double error = point.distance(point2);
             if (error < 0.01) {
-                if(i > 0)
-                {
+                if (i > 0) {
                     positions.remove(i);
-                }
-                else {
+                } else {
                     positions.remove(i + 1);
                 }
                 i--;
@@ -82,37 +62,31 @@ public class GaiaPipeLineString
         return deleted;
     }
 
-    public boolean intersects(GaiaPipeLineString pipeLine, double tolerance)
-    {
-        if(this.boundingBox == null)
-        {
+    public boolean intersects(GaiaPipeLineString pipeLine, double tolerance) {
+        if (this.boundingBox == null) {
             this.calculateBoundingBox();
         }
-        if(pipeLine.boundingBox == null)
-        {
+        if (pipeLine.boundingBox == null) {
             pipeLine.calculateBoundingBox();
         }
 
         return this.boundingBox.intersects(pipeLine.boundingBox, tolerance);
     }
 
-    public void calculateBoundingBox()
-    {
-        if(boundingBox == null) {
+    public void calculateBoundingBox() {
+        if (boundingBox == null) {
             boundingBox = new GaiaBoundingBox();
         }
         for (int i = 0; i < positions.size(); i++) {
             Vector3d point = positions.get(i);
-            if(i == 0)
-            {
+            if (i == 0) {
                 boundingBox.setMinX(point.x);
                 boundingBox.setMinY(point.y);
                 boundingBox.setMinZ(point.z);
                 boundingBox.setMaxX(point.x);
                 boundingBox.setMaxY(point.y);
                 boundingBox.setMaxZ(point.z);
-            }
-            else {
+            } else {
                 boundingBox.addPoint(point);
             }
         }

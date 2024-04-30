@@ -1,5 +1,6 @@
 package com.gaia3d.converter.geometry;
 
+import com.gaia3d.basic.geometry.GaiaPipeLineString;
 import com.gaia3d.basic.geometry.networkStructure.modeler.Modeler3D;
 import com.gaia3d.basic.geometry.networkStructure.modeler.TNetwork;
 import com.gaia3d.basic.geometry.networkStructure.pipes.PipeElbow;
@@ -87,7 +88,7 @@ public abstract class AbstractGeometryConverter {
         GaiaSurface surface = new GaiaSurface();
         Vector3d[] normals = new Vector3d[positions.size()];
         for (int i = 0; i < normals.length; i++) {
-            normals[i] = new Vector3d(0,0,0);
+            normals[i] = new Vector3d(0, 0, 0);
         }
 
         for (GaiaTriangle triangle : triangles) {
@@ -123,10 +124,7 @@ public abstract class AbstractGeometryConverter {
     protected int indexOf(List<Vector3d> positions, Vector3d item) {
         //return positions.indexOf(item);
         IntStream intStream = IntStream.range(0, positions.size());
-        int result = intStream
-                .filter(i -> positions.get(i) == item)
-                .findFirst()
-                .orElse(-1);
+        int result = intStream.filter(i -> positions.get(i) == item).findFirst().orElse(-1);
         intStream.close();
         return result;
     }
@@ -176,7 +174,7 @@ public abstract class AbstractGeometryConverter {
         } else if (attributeObject instanceof Integer) {
             result = String.valueOf((int) attributeObject);
         } else if (attributeObject instanceof Long) {
-            result = String.valueOf((Long) attributeObject);
+            result = String.valueOf(attributeObject);
         } else if (attributeObject instanceof Double) {
             result = String.valueOf((double) attributeObject);
         } else if (attributeObject instanceof Short) {
@@ -282,15 +280,15 @@ public abstract class AbstractGeometryConverter {
         return primitive;
     }
 
-    protected GaiaNode createPrimitiveFromPipeLineString(GaiaPipeLineString pipeLineString, GaiaNode resultGaiaNode) {
+    protected GaiaNode createPrimitiveFromPipeLineString(GaiaPipeLineString pipeLineString) {
+        GaiaNode resultGaiaNode = null;
         int pointsCount = pipeLineString.getPositions().size();
         if (pointsCount < 2) {
             return null;
         }
 
         int pipeProfileType = pipeLineString.getPipeProfileType();
-        if(pipeProfileType == 1)
-        {
+        if (pipeProfileType == 1) {
             // circular pipe.
             float pipeRadius = (float) (pipeLineString.getDiameterCm() / 200.0f); // cm to meter.***
 
@@ -298,8 +296,7 @@ public abstract class AbstractGeometryConverter {
             float elbowRadius = pipeRadius * 1.5f; // test value.***
             List<PipeElbow> pipeElbows = new ArrayList<>();
 
-            for(int i=0; i<pointsCount; i++)
-            {
+            for (int i = 0; i < pointsCount; i++) {
                 Vector3d point = pipeLineString.getPositions().get(i);
                 PipeElbow pipeElbow = new PipeElbow(new Vector3d(point), pipeProfileType, elbowRadius);
                 pipeElbow.setPipeRadius(pipeRadius);
@@ -309,10 +306,8 @@ public abstract class AbstractGeometryConverter {
 
             Modeler3D modeler3D = new Modeler3D();
             TNetwork tNetwork = modeler3D.TEST_getPipeNetworkFromPipeElbows(pipeElbows);
-            resultGaiaNode = modeler3D.makeGeometry(tNetwork, resultGaiaNode);
-        }
-        else if(pipeProfileType == 2)
-        {
+            resultGaiaNode = modeler3D.makeGeometry(tNetwork);
+        } else if (pipeProfileType == 2) {
             // rectangular pipe.
             float pipeWidth = pipeLineString.getPipeRectangularSize()[0];
             float pipeHeight = pipeLineString.getPipeRectangularSize()[1];
@@ -321,8 +316,7 @@ public abstract class AbstractGeometryConverter {
             float elbowRadius = Math.max(pipeWidth, pipeHeight) * 1.5f; // test value.***
             List<PipeElbow> pipeElbows = new ArrayList<>();
 
-            for(int i=0; i<pointsCount; i++)
-            {
+            for (int i = 0; i < pointsCount; i++) {
                 Vector3d point = pipeLineString.getPositions().get(i);
                 PipeElbow pipeElbow = new PipeElbow(new Vector3d(point), pipeProfileType, elbowRadius);
                 pipeElbow.setPipeRectangularSize(new float[]{pipeWidth, pipeHeight});
@@ -332,10 +326,8 @@ public abstract class AbstractGeometryConverter {
 
             Modeler3D modeler3D = new Modeler3D();
             TNetwork tNetwork = modeler3D.TEST_getPipeNetworkFromPipeElbows(pipeElbows);
-            resultGaiaNode = modeler3D.makeGeometry(tNetwork, resultGaiaNode);
+            resultGaiaNode = modeler3D.makeGeometry(tNetwork);
         }
-
-
         return resultGaiaNode;
     }
 

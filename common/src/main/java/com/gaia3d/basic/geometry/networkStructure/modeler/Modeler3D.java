@@ -13,8 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Modeler3D
-{
+public class Modeler3D {
     public Modeler3D() {
 
     }
@@ -80,57 +79,42 @@ public class Modeler3D
         return network;
     }
 
-    public GaiaNode makeGeometry(TNetwork network, GaiaNode resultGaiaNode) {
-        if(resultGaiaNode == null)
-        {
-            resultGaiaNode = new GaiaNode();
-        }
+    public GaiaNode makeGeometry(TNetwork network) {
+        GaiaNode resultGaiaNode = new GaiaNode();
 
         // 1rst, calculate elbows.***
         for (int i = 0; i < network.getNodes().size(); i++) {
             TNode node = network.getNodes().get(i);
-            if (node instanceof PipeElbow) {
-                PipeElbow elbow = (PipeElbow)node;
+            if (node instanceof PipeElbow elbow) {
                 // make geometry for this elbow.
                 elbow.calculateElbowPositions();
             }
         }
 
         // 2nd, check pipes.***
-        for (int i = 0; i < network.getEdges().size(); i++)
-        {
+        for (int i = 0; i < network.getEdges().size(); i++) {
             TEdge edge = network.getEdges().get(i);
-            if (edge instanceof Pipe)
-            {
-                Pipe pipe = (Pipe)edge;
+            if (edge instanceof Pipe pipe) {
 
             }
         }
 
         for (int i = 0; i < network.getNodes().size(); i++) {
             TNode node = network.getNodes().get(i);
-            if (node instanceof PipeElbow)
-            {
-                PipeElbow elbow = (PipeElbow)node;
+            if (node instanceof PipeElbow elbow) {
                 // make geometry for this elbow.
                 GaiaMesh elbowMesh = elbow.makeGeometry();
-                if(elbowMesh != null)
-                {
+                if (elbowMesh != null) {
                     resultGaiaNode.getMeshes().add(elbowMesh);
-                }
-                else
-                {
+                } else {
                     int hola = 0;
                 }
             }
         }
 
-        for (int i = 0; i < network.getEdges().size(); i++)
-        {
+        for (int i = 0; i < network.getEdges().size(); i++) {
             TEdge edge = network.getEdges().get(i);
-            if (edge instanceof Pipe)
-            {
-                Pipe pipe = (Pipe)edge;
+            if (edge instanceof Pipe pipe) {
                 // make geometry for this pipe.
                 GaiaMesh pipeMesh = pipe.makeGeometry();
                 resultGaiaNode.getMeshes().add(pipeMesh);
@@ -155,29 +139,28 @@ public class Modeler3D
         //        +-----------------+-----------------+-----------------+-----------------+-----------------+
         //        vertex_0A         vertex_1A         vertex_2A         vertex_3A            ...      vertex_nA
 
-        if(lateralSurface == null)
-        {
+        if (lateralSurface == null) {
             lateralSurface = new GaiaSurface();
         }
 
         // make the lateral surface.
         int vertexCount = vertexListA.size();
-        for(int i=0; i<vertexCount; i++) {
+        for (int i = 0; i < vertexCount; i++) {
 
-            if(i == vertexCount - 1 && !isClosed) {
+            if (i == vertexCount - 1 && !isClosed) {
                 break;
             }
 
             GaiaVertex vertexA = vertexListA.get(i);
             GaiaVertex vertexB = vertexListB.get(i);
-            GaiaVertex vertexANext = vertexListA.get((i+1)%vertexCount);
-            GaiaVertex vertexBNext = vertexListB.get((i+1)%vertexCount);
+            GaiaVertex vertexANext = vertexListA.get((i + 1) % vertexCount);
+            GaiaVertex vertexBNext = vertexListB.get((i + 1) % vertexCount);
 
             // create 2 gaiaFaces.***
             // face1 : vertexA, vertexANext, vertexBNext.
             // face2 : vertexA, vertexBNext, vertexB.
             GaiaFace face1 = new GaiaFace();
-            int indices[] = new int[3];
+            int[] indices = new int[3];
             indices[0] = mapVertexIndex.get(vertexA);
             indices[1] = mapVertexIndex.get(vertexANext);
             indices[2] = mapVertexIndex.get(vertexBNext);
@@ -196,12 +179,10 @@ public class Modeler3D
         return lateralSurface;
     }
 
-    public GaiaPrimitive getPrimitiveFromMultipleProfiles(List<List<Vector3d>> profiles, boolean bottomCap, boolean topCap, boolean isClosed, boolean isSmooth)
-    {
+    public GaiaPrimitive getPrimitiveFromMultipleProfiles(List<List<Vector3d>> profiles, boolean bottomCap, boolean topCap, boolean isClosed, boolean isSmooth) {
         GaiaPrimitive primitive = new GaiaPrimitive();
 
-        if(!isSmooth)
-        {
+        if (!isSmooth) {
             //GaiaSegment segment = new GaiaSegment();
 
         }
@@ -209,13 +190,11 @@ public class Modeler3D
         // 1rst, create all transversal vertices.***
         List<List<GaiaVertex>> transversalVerticesList = new ArrayList<List<GaiaVertex>>();
         int profilesCount = profiles.size();
-        for(int i=0; i<profilesCount; i++)
-        {
+        for (int i = 0; i < profilesCount; i++) {
             List<GaiaVertex> transversalVertices = new ArrayList<GaiaVertex>();
             List<Vector3d> profile = profiles.get(i);
             int pointsCount = profile.size();
-            for(int j=0; j<pointsCount; j++)
-            {
+            for (int j = 0; j < pointsCount; j++) {
                 GaiaVertex vertex = new GaiaVertex();
                 vertex.setPosition(profile.get(j));
                 transversalVertices.add(vertex);
@@ -227,46 +206,43 @@ public class Modeler3D
 
         // make mapVertexIndex.
         Map<GaiaVertex, Integer> mapVertexIndex = new HashMap<GaiaVertex, Integer>();
-        for(int i=0; i<primitive.getVertices().size(); i++) {
+        for (int i = 0; i < primitive.getVertices().size(); i++) {
             GaiaVertex vertex = primitive.getVertices().get(i);
             mapVertexIndex.put(vertex, i);
         }
 
         // create lateral surface using 2 profiles for all pair of profiles.
         GaiaSurface lateralSurface = new GaiaSurface();
-        for(int i=0; i<profilesCount-1; i++)
-        {
+        for (int i = 0; i < profilesCount - 1; i++) {
             List<GaiaVertex> transversalVerticesA = transversalVerticesList.get(i);
-            List<GaiaVertex> transversalVerticesB = transversalVerticesList.get((i+1));
+            List<GaiaVertex> transversalVerticesB = transversalVerticesList.get((i + 1));
             getLateralSurface(transversalVerticesA, transversalVerticesB, isClosed, mapVertexIndex, lateralSurface, isSmooth);
         }
 
         primitive.getSurfaces().add(lateralSurface);
 
-        if(bottomCap)
-        {
+        if (bottomCap) {
             // must copy the 1rst profile vertices to the bottom cap vertices.
             List<GaiaVertex> bottomCapVertices = transversalVerticesList.get(0);
             List<GaiaVertex> bottomCapVerticesCopy = new ArrayList<GaiaVertex>();
             GaiaSurface bottomCapSurface = new GaiaSurface();
-            for(int i=bottomCapVertices.size()-1; i>= 0; i--) // bottom vertices must be in reverse order.
+            for (int i = bottomCapVertices.size() - 1; i >= 0; i--) // bottom vertices must be in reverse order.
             {
                 GaiaVertex vertex = bottomCapVertices.get(i);
                 GaiaVertex bottomCapVertex = new GaiaVertex();
                 bottomCapVertex.setPosition(vertex.getPosition());
                 primitive.getVertices().add(bottomCapVertex);
-                mapVertexIndex.put(bottomCapVertex, primitive.getVertices().size()-1);
+                mapVertexIndex.put(bottomCapVertex, primitive.getVertices().size() - 1);
                 bottomCapVerticesCopy.add(bottomCapVertex);
             }
 
             int trianglesCount = bottomCapVerticesCopy.size() - 2;
-            for(int i=0; i<trianglesCount; i++)
-            {
+            for (int i = 0; i < trianglesCount; i++) {
                 GaiaFace face = new GaiaFace();
-                int indices[] = new int[3];
+                int[] indices = new int[3];
                 indices[0] = mapVertexIndex.get(bottomCapVerticesCopy.get(0));
-                indices[1] = mapVertexIndex.get(bottomCapVerticesCopy.get(i+1));
-                indices[2] = mapVertexIndex.get(bottomCapVerticesCopy.get(i+2));
+                indices[1] = mapVertexIndex.get(bottomCapVerticesCopy.get(i + 1));
+                indices[2] = mapVertexIndex.get(bottomCapVerticesCopy.get(i + 2));
                 face.setIndices(indices);
                 bottomCapSurface.getFaces().add(face);
             }
@@ -274,30 +250,27 @@ public class Modeler3D
             primitive.getSurfaces().add(bottomCapSurface);
         }
 
-        if(topCap)
-        {
+        if (topCap) {
             // must copy the last profile vertices to the top cap vertices.
-            List<GaiaVertex> topCapVertices = transversalVerticesList.get(profilesCount-1);
+            List<GaiaVertex> topCapVertices = transversalVerticesList.get(profilesCount - 1);
             List<GaiaVertex> topCapVerticesCopy = new ArrayList<GaiaVertex>();
             GaiaSurface topCapSurface = new GaiaSurface();
-            for(int i=0; i<topCapVertices.size(); i++)
-            {
+            for (int i = 0; i < topCapVertices.size(); i++) {
                 GaiaVertex vertex = topCapVertices.get(i);
                 GaiaVertex topCapVertex = new GaiaVertex();
                 topCapVertex.setPosition(vertex.getPosition());
                 primitive.getVertices().add(topCapVertex);
-                mapVertexIndex.put(topCapVertex, primitive.getVertices().size()-1);
+                mapVertexIndex.put(topCapVertex, primitive.getVertices().size() - 1);
                 topCapVerticesCopy.add(topCapVertex);
             }
 
             int trianglesCount = topCapVerticesCopy.size() - 2;
-            for(int i=0; i<trianglesCount; i++)
-            {
+            for (int i = 0; i < trianglesCount; i++) {
                 GaiaFace face = new GaiaFace();
-                int indices[] = new int[3];
+                int[] indices = new int[3];
                 indices[0] = mapVertexIndex.get(topCapVerticesCopy.get(0));
-                indices[1] = mapVertexIndex.get(topCapVerticesCopy.get(i+1));
-                indices[2] = mapVertexIndex.get(topCapVerticesCopy.get(i+2));
+                indices[1] = mapVertexIndex.get(topCapVerticesCopy.get(i + 1));
+                indices[2] = mapVertexIndex.get(topCapVerticesCopy.get(i + 2));
                 face.setIndices(indices);
                 topCapSurface.getFaces().add(face);
             }
@@ -308,49 +281,40 @@ public class Modeler3D
         return primitive;
     }
 
-    private boolean getConcatenableGaiaPipeLines(GaiaPipeLineString pipeLine, List<GaiaPipeLineString> pipeLines, List<GaiaPipeLineString> resultPipeLinePrev, List<GaiaPipeLineString> resultPipeLineNext)
-    {
+    private boolean getConcatenableGaiaPipeLines(GaiaPipeLineString pipeLine, List<GaiaPipeLineString> pipeLines, List<GaiaPipeLineString> resultPipeLinePrev, List<GaiaPipeLineString> resultPipeLineNext) {
         // check if there are pipeLines that can be concatenated with the position.
         boolean concatenated = false;
         Vector3d masterFirstPoint = pipeLine.getPositions().get(0);
-        Vector3d masterLastPoint = pipeLine.getPositions().get(pipeLine.getPositions().size()-1);
+        Vector3d masterLastPoint = pipeLine.getPositions().get(pipeLine.getPositions().size() - 1);
 
         int pipeLinesCount = pipeLines.size();
         double tolerance = 2.0;
-        for(int i=0; i<pipeLinesCount; i++)
-        {
+        for (int i = 0; i < pipeLinesCount; i++) {
             GaiaPipeLineString currPipeLine = pipeLines.get(i);
-            if(currPipeLine == pipeLine)
-            {
+            if (currPipeLine == pipeLine) {
                 continue;
             }
-            if(!currPipeLine.intersects(pipeLine, tolerance))
-            {
+            if (!currPipeLine.intersects(pipeLine, tolerance)) {
                 continue;
             }
-            if(!currPipeLine.isSameProfile(pipeLine))
-            {
+            if (!currPipeLine.isSameProfile(pipeLine)) {
                 continue;
             }
             Vector3d firstPoint = currPipeLine.getPositions().get(0);
-            Vector3d lastPoint = currPipeLine.getPositions().get(currPipeLine.getPositions().size()-1);
+            Vector3d lastPoint = currPipeLine.getPositions().get(currPipeLine.getPositions().size() - 1);
             double minDistance = 0.5;
-            if(firstPoint.distance(masterLastPoint) < minDistance)
-            {
+            if (firstPoint.distance(masterLastPoint) < minDistance) {
                 // the first point of the pipeLine is the same as the position.
                 concatenated = true;
                 resultPipeLineNext.add(currPipeLine);
-            }
-            else if(lastPoint.distance(masterFirstPoint) < minDistance)
-            {
+            } else if (lastPoint.distance(masterFirstPoint) < minDistance) {
                 // the last point of the pipeLine is the same as the position.
                 concatenated = true;
                 resultPipeLinePrev.add(currPipeLine);
             }
 
             // break if the resultPipeLines.size is > 1.
-            if(resultPipeLinePrev.size() > 1 && resultPipeLineNext.size() > 1)
-            {
+            if (resultPipeLinePrev.size() > 1 && resultPipeLineNext.size() > 1) {
                 break;
             }
         }
@@ -358,8 +322,7 @@ public class Modeler3D
         return concatenated;
     }
 
-    private boolean concatenatePipeLineWithPipeLines(GaiaPipeLineString pipeLine, List<GaiaPipeLineString> pipeLines)
-    {
+    private boolean concatenatePipeLineWithPipeLines(GaiaPipeLineString pipeLine, List<GaiaPipeLineString> pipeLines) {
         boolean concatenated = false;
         GaiaPipeLineString pipeLinePrev = null;
         GaiaPipeLineString pipeLineNext = null;
@@ -367,25 +330,20 @@ public class Modeler3D
         List<GaiaPipeLineString> concatenablesNext = new ArrayList<GaiaPipeLineString>();
 
         // check 1rst point.
-        if(getConcatenableGaiaPipeLines(pipeLine, pipeLines, concatenablesPrev, concatenablesNext))
-        {
-            if(concatenablesPrev.size() == 1)
-            {
+        if (getConcatenableGaiaPipeLines(pipeLine, pipeLines, concatenablesPrev, concatenablesNext)) {
+            if (concatenablesPrev.size() == 1) {
                 GaiaPipeLineString pipeLinePrevCandidate = concatenablesPrev.get(0);
                 // check if the radius is the same.
-                if(pipeLinePrevCandidate.isSameProfile(pipeLine))
-                {
+                if (pipeLinePrevCandidate.isSameProfile(pipeLine)) {
                     pipeLinePrev = pipeLinePrevCandidate;
                     concatenated = true;
                 }
             }
 
-            if(concatenablesNext.size() == 1)
-            {
+            if (concatenablesNext.size() == 1) {
                 GaiaPipeLineString pipeLineNextCandidate = concatenablesNext.get(0);
                 // check if the radius is the same.
-                if(pipeLineNextCandidate.isSameProfile(pipeLine))
-                {
+                if (pipeLineNextCandidate.isSameProfile(pipeLine)) {
                     pipeLineNext = pipeLineNextCandidate;
                     concatenated = true;
                 }
@@ -393,20 +351,18 @@ public class Modeler3D
         }
 
 
-        if(pipeLinePrev != null)
-        {
+        if (pipeLinePrev != null) {
             // concatenate the pipeLine with the pipeLinePrev.
             // remove the last point of pipeLinePrev.
             List<Vector3d> positions = pipeLinePrev.getPositions();
-            positions.remove(positions.size()-1);
+            positions.remove(positions.size() - 1);
             pipeLine.pushFrontPoints(positions);
 
             // remove the pipeLine from the pipeLines.
             pipeLines.remove(pipeLinePrev);
         }
 
-        if(pipeLineNext != null)
-        {
+        if (pipeLineNext != null) {
             // concatenate the pipeLine with the pipeLineNext.
             // remove the first point of pipeLineNext.
             List<Vector3d> positions = pipeLineNext.getPositions();
@@ -417,8 +373,7 @@ public class Modeler3D
             pipeLines.remove(pipeLineNext);
         }
 
-        if(concatenated)
-        {
+        if (concatenated) {
             pipeLine.calculateBoundingBox();
         }
 
@@ -429,13 +384,11 @@ public class Modeler3D
         //
         boolean finished = false;
         int pipeLinesCount = pipeLines.size();
-        int i=0;
-        while(!finished && i<pipeLinesCount)
-        {
+        int i = 0;
+        while (!finished && i < pipeLinesCount) {
             GaiaPipeLineString pipeLine = pipeLines.get(i);
             boolean concatenated = concatenatePipeLineWithPipeLines(pipeLine, pipeLines);
-            if(concatenated)
-            {
+            if (concatenated) {
                 i = 0;
                 pipeLinesCount = pipeLines.size();
             }
@@ -450,7 +403,7 @@ public class Modeler3D
         // lateral surface.
         // make the bottom vertices.
         List<GaiaVertex> bottomVertices = new ArrayList<GaiaVertex>();
-        for(int i=0; i<positions.size(); i++) {
+        for (int i = 0; i < positions.size(); i++) {
             Vector3d position = positions.get(i);
             GaiaVertex lateralVertex = new GaiaVertex();
             lateralVertex.setPosition(position);
@@ -461,7 +414,7 @@ public class Modeler3D
 
         // make the top vertices.
         List<GaiaVertex> topVertices = new ArrayList<GaiaVertex>();
-        for(int i=0; i<positions.size(); i++) {
+        for (int i = 0; i < positions.size(); i++) {
             Vector3d position = new Vector3d(positions.get(i));
             position.add(extrusionVector);
             GaiaVertex lateralVertex = new GaiaVertex();
@@ -473,7 +426,7 @@ public class Modeler3D
 
         // make mapVertexIndex.
         Map<GaiaVertex, Integer> mapVertexIndex = new HashMap<GaiaVertex, Integer>();
-        for(int i=0; i<primitive.getVertices().size(); i++) {
+        for (int i = 0; i < primitive.getVertices().size(); i++) {
             GaiaVertex vertex = primitive.getVertices().get(i);
             mapVertexIndex.put(vertex, i);
         }
@@ -481,8 +434,7 @@ public class Modeler3D
         GaiaSurface lateralSurface = getLateralSurface(bottomVertices, topVertices, isClosed, mapVertexIndex, null, isLateralSurfaceSmooth);
         primitive.getSurfaces().add(lateralSurface);
 
-        if(bottomCap)
-        {
+        if (bottomCap) {
 //            // make the bottom cap.
 //            GaiaSurface bottomCapSurface = new GaiaSurface();
 //            primitive.getSurfaces().add(bottomCapSurface);
@@ -499,38 +451,21 @@ public class Modeler3D
         return primitive;
     }
 
-    public double vector2dCross(Vector2d a, Vector2d b)
-    {
+    public double vector2dCross(Vector2d a, Vector2d b) {
         return a.x * b.y - a.y * b.x;
     }
 
-    public Matrix4d getMatrix4FromZDir(Vector3d zDir)
-    {
+    public Matrix4d getMatrix4FromZDir(Vector3d zDir) {
         // Note : the zDir is the direction of the zAxis of the transformation matrix, and must be normalized.
         Matrix4d matrix = new Matrix4d();
 
         // if zDir is parallel to zAxis, then return the identity matrix.
-        if(zDir.z == 1.0)
-        {
-            matrix.set(new double[] {
-                    1.0, 0.0, 0.0, 0.0,
-                    0.0, 1.0, 0.0, 0.0,
-                    0.0, 0.0, 1.0, 0.0,
-                    0.0, 0.0, 0.0, 1.0
-            });
-        }
-        else if(zDir.z == -1.0)
-        {
+        if (zDir.z == 1.0) {
+            matrix.set(new double[]{1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0});
+        } else if (zDir.z == -1.0) {
             // return rotated in xAxis 180 degrees.
-            matrix.set(new double[] {
-                    1.0, 0.0, 0.0, 0.0,
-                    0.0, -1.0, 0.0, 0.0,
-                    0.0, 0.0, -1.0, 0.0,
-                    0.0, 0.0, 0.0, 1.0
-            });
-        }
-        else
-        {
+            matrix.set(new double[]{1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 1.0});
+        } else {
             // Direct calculation.*******************************************************
 //            // calculate the rotation angle.
 //            double rotationAngle = Math.acos(zDir.z);
