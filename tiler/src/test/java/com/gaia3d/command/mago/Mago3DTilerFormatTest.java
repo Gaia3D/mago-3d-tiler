@@ -10,7 +10,7 @@ import java.io.File;
 
 @Slf4j
 class Mago3DTilerFormatTest {
-    
+
     private static final String INPUT_PATH = "D:\\DT0401\\";
     private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\mago-viewer\\data\\tilesets\\DT\\";
 

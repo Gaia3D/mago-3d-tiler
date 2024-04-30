@@ -1,4 +1,4 @@
-package com.gaia3d.engine.modeler;
+package com.gaia3d.basic.geometry.networkStructure.modeler;
 
 import lombok.Getter;
 import org.joml.Vector3d;

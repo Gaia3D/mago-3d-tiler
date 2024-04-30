@@ -51,10 +51,12 @@ class UnitTest {
     @Test
     void kmlComplicatedModels() {
         String path = "ComplicatedModels10";
+        String inputPath = "D:\\data\\unit-test\\";
+        String outputPath = "D:\\Result_mago3dTiler\\";
         String[] args = new String[]{
-                "-i", INPUT_PATH + path,
+                "-i", inputPath + path,
                 "-it", "kml",
-                "-o", OUTPUT_PATH + path,
+                "-o", outputPath + path,
                 "-autoUpAxis",
                 "-glb"
         };
@@ -368,6 +370,34 @@ class UnitTest {
             Mago3DTilerMain.main(args);
         }
 
+    @Test
+    void testCityGml_SejongCity() {
+        String path = "sejeong_citygml";
+        String inputPath = "D:\\3D_DATA\\PROJECTS\\SejongCityGML_ParkJinWoo_20191101\\";
+        String outputPath = "D:\\Result_mago3dTiler\\";
+        String[] args = new String[]{
+                "-i", inputPath + path,
+                "-it", "gml",
+                "-o", outputPath + path,
+                "-crs", "3857",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void test3ds_SejongCity() {
+        String path = "SejongBuildings_3ds";
+        String inputPath = "D:\\3D_DATA\\PROJECTS\\SejongCity\\SejongBuildings.vol1\\3ds\\";
+        String outputPath = "D:\\Result_mago3dTiler\\";
+        String[] args = new String[]{
+                "-i", inputPath + path,
+                "-it", "3ds",
+                "-o", outputPath + path,
+                "-crs", "5186",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
         @Test
         void testShape() {
             String path = "shape";
@@ -382,6 +412,92 @@ class UnitTest {
             };
             Mago3DTilerMain.main(args);
         }
+
+    @Test
+    void testShapePipe() {
+        String path = "WTL_PIPE_LM-4dep.shp";
+        String inputPath = "D:\\data\\unit-test\\2. 17년도 성과\\01.상수\\01. 상수관로_3DS\\shp\\";
+        String outputPath = "D:\\Result_mago3dTiler\\";
+        String[] args = new String[]{
+                "-i", inputPath + path,
+                "-it", "shp",
+                "-o", outputPath + path,
+                "-crs", "5186",
+                "-maxCount", "4096",
+                "-multiThreadCount", "1",
+                "-refineAdd",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testShapePipeUnderground() {
+        String path = "SWL_PIPE_LM-4dep.shp";
+        String inputPath = "D:\\data\\unit-test\\2. 17년도 성과\\02.하수\\01. 하수관로_3DS\\shp\\";
+        String outputPath = "D:\\Result_mago3dTiler\\";
+        String[] args = new String[]{
+                "-i", inputPath + path,
+                "-it", "shp",
+                "-o", outputPath + path,
+                "-crs", "5186",
+                "-maxCount", "4096",
+                "-multiThreadCount", "1",
+                "-refineAdd",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testShapeCommunicationCables() {
+        String path = "UFL_KPIP_LS-4dep.shp";
+        String inputPath = "D:\\data\\unit-test\\2. 17년도 성과\\03.통신\\01. 통신선로_3DS\\shp\\";
+        String outputPath = "D:\\Result_mago3dTiler\\";
+        String[] args = new String[]{
+                "-i", inputPath + path,
+                "-it", "shp",
+                "-o", outputPath + path,
+                "-crs", "5186",
+                "-maxCount", "4096",
+                "-multiThreadCount", "1",
+                "-refineAdd",
+        };
+        Mago3DTilerMain.main(args);
+    }
+    @Test
+    void testShapeBasura() {
+        String path = "RBL_PIPE_LM-4dep.shp";
+        String inputPath = "D:\\data\\unit-test\\2. 17년도 성과\\04.쓰레기\\01. 쓰레기수송관로_3DS\\shp\\";
+        String outputPath = "D:\\Result_mago3dTiler\\";
+        String[] args = new String[]{
+                "-i", inputPath + path,
+                "-it", "shp",
+                "-o", outputPath + path,
+                "-crs", "5186",
+                "-maxCount", "4096",
+                "-multiThreadCount", "1",
+                "-refineAdd",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testShapeCalefaction() {
+        String path = "UFL_HPIP_LM-4dep.shp";
+        String inputPath = "D:\\data\\unit-test\\2. 17년도 성과\\05.난방\\01. 열배관_3DS\\shp\\";
+        String outputPath = "D:\\Result_mago3dTiler\\";
+        String[] args = new String[]{
+                "-i", inputPath + path,
+                "-it", "shp",
+                "-o", outputPath + path,
+                "-crs", "5186",
+                "-maxCount", "4096",
+                "-multiThreadCount", "1",
+                "-refineAdd",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+
 
         @Test
         void testGeojson() {

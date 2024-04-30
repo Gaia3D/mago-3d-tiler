@@ -1,6 +1,9 @@
 package com.gaia3d.converter.geometry.tessellator;
 
 import com.gaia3d.basic.geometry.GaiaRectangle;
+import com.gaia3d.basic.geometry.tessellator.Point2DTess;
+import com.gaia3d.basic.geometry.tessellator.Polygon2DTess;
+import com.gaia3d.basic.geometry.tessellator.Segment2DTess;
 import lombok.NoArgsConstructor;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
@@ -36,17 +39,17 @@ public class GaiaTessellator {
         if (bestPlane.equals("YZ")) {
             // the best plane is the YZ plane.***
             for (Vector3d vertex : points3dArray) {
-                projectedPoints2D.add(new Point2DTess(new Vector2d(vertex.y, vertex.z), vertex));
+                projectedPoints2D.add(new Point2DTess(new Vector2d(vertex.y, vertex.z), vertex, null));
             }
         } else if (bestPlane.equals("XZ")) {
             // the best plane is the XZ plane.***
             for (Vector3d vertex : points3dArray) {
-                projectedPoints2D.add(new Point2DTess(new Vector2d(vertex.x, vertex.z), vertex));
+                projectedPoints2D.add(new Point2DTess(new Vector2d(vertex.x, vertex.z), vertex, null));
             }
         } else {
             // the best plane is the XY plane.***
             for (Vector3d vertex : points3dArray) {
-                projectedPoints2D.add(new Point2DTess(new Vector2d(vertex.x, vertex.y), vertex));
+                projectedPoints2D.add(new Point2DTess(new Vector2d(vertex.x, vertex.y), vertex, null));
             }
         }
 
@@ -172,13 +175,13 @@ public class GaiaTessellator {
             {
                 firstPoint = point;
                 points = new ArrayList<>();
-                currPolygon.addPoint(new Point2DTess(point, null));
+                currPolygon.addPoint(new Point2DTess(point, null, null));
             }
             else
             {
                 if(!firstPoint.equals(point))
                 {
-                    currPolygon.addPoint(new Point2DTess(point, null));
+                    currPolygon.addPoint(new Point2DTess(point, null, null));
                 }
                 else
                 {
@@ -234,7 +237,7 @@ public class GaiaTessellator {
                 // must add the 1rst point.***
                 point = exteriorPolygon.getPoint(currIdx);
                 Vector2d newPoint = new Vector2d(point.getPoint().x, point.getPoint().y);
-                Point2DTess newPoint2dtess = new Point2DTess(newPoint, point.getParentPoint());
+                Point2DTess newPoint2dtess = new Point2DTess(newPoint, point.getParentPoint(), null);
                 resultPolygon.addPoint(newPoint2dtess);
             }
             i++;
@@ -256,7 +259,7 @@ public class GaiaTessellator {
                 // must add the 1rst point.***
                 point = hole.getPoint(currIdx);
                 Vector2d newPoint = new Vector2d(point.getPoint().x, point.getPoint().y);
-                Point2DTess newPoint2dtess = new Point2DTess(newPoint, point.getParentPoint());
+                Point2DTess newPoint2dtess = new Point2DTess(newPoint, point.getParentPoint(), null);
                 resultPolygon.addPoint(newPoint2dtess);
 
             }

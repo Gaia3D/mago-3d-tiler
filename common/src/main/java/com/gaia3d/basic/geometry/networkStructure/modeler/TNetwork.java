@@ -1,4 +1,4 @@
-package com.gaia3d.engine.modeler;
+package com.gaia3d.basic.geometry.networkStructure.modeler;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -11,7 +11,7 @@ import com.gaia3d.basic.geometry.tessellator.Point2DTess;
 import com.gaia3d.basic.geometry.tessellator.Polygon2DTess;
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.converter.Converter;
-import com.gaia3d.converter.assimp.AssimpConverter;
+import com.gaia3d.converter.AssimpConverter;
 import com.gaia3d.engine.dataStructure.GaiaScenesContainer;
 import com.gaia3d.engine.fbo.Fbo;
 import com.gaia3d.engine.fbo.FboManager;
@@ -19,9 +19,9 @@ import com.gaia3d.engine.graph.RenderEngine;
 import com.gaia3d.engine.graph.ShaderManager;
 import com.gaia3d.engine.graph.ShaderProgram;
 import com.gaia3d.engine.graph.UniformsMap;
-import com.gaia3d.engine.modeler.Modeler3D;
-import com.gaia3d.engine.modeler.TNetwork;
-import com.gaia3d.engine.pipes.PipeElbow;
+import com.gaia3d.basic.geometry.networkStructure.modeler.Modeler3D;
+import com.gaia3d.basic.geometry.networkStructure.modeler.TNetwork;
+import com.gaia3d.basic.geometry.networkStructure.pipes.PipeElbow;
 import com.gaia3d.engine.scene.Camera;
 import com.gaia3d.engine.screen.ScreenQuad;
 import com.gaia3d.renderable.RenderableGaiaScene;
@@ -202,11 +202,13 @@ public class Engine {
         selectionColorManager = new SelectionColorManager();
 
 
-        TEST_Load3dsFile();
+        //TEST_Load3dsFile();
 
-        //TEST_Loft();
+        TEST_Loft();
 
         //TEST_TessellateHoles();
+
+        //TEST_LoadSHP_pipeFile();
 
 //        IndoorGmlConverter indoorGmlConverter = new IndoorGmlConverter();
 //        String indoorGMLPath = "D:\\data\\military\\withOutLAS\\IndoorGML\\B00100000005WM8IR.gml";
@@ -219,6 +221,14 @@ public class Engine {
 //            break;
 //        }
         int hola2 = 0;
+    }
+
+    private void TEST_LoadSHP_pipeFile()
+    {
+        String folderPath = "D:\\data\\unit-test\\2. 17년도 성과\\01.상수\\01. 상수관로_3DS\\shp";
+        String fileName = "WTL_PIPE_LM-4dep.shp";
+
+        //ShapePipeCoverter shapePipeCoverter = new ShapePipeCoverter();
     }
 
     private void TEST_Load3dsFile()
@@ -234,9 +244,10 @@ public class Engine {
         //String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\gangnam_del_3DS\\gangnam_del.3ds";
         String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\Gangseo_cultural_del_3DS\\Gangseo_cultural_del.3ds";
         //String filePath = "D:\\data\\unit-test\\ComplicatedModels25\\Gangsu_office_del_3DS\\Gangsu_office_del.3ds";
+        String filePathPipe = "D:\\data\\unit-test\\2. 17년도 성과\\01.상수\\01. 상수관로_3DS\\WTL_PIPE_LM-4dep_0.3ds";
 
         Converter assimpConverter = new AssimpConverter();
-        List<GaiaScene> gaiaScenes = assimpConverter.load(filePath);
+        List<GaiaScene> gaiaScenes = assimpConverter.load(filePathPipe);
         GaiaScene gaiaScene = gaiaScenes.get(0);
         List<GaiaNode> gaiaRootNodes = gaiaScene.getNodes();
         double scale = 0.01;
@@ -285,7 +296,7 @@ public class Engine {
 
         Modeler3D modeler3D = new Modeler3D();
         TNetwork tNetwork = modeler3D.TEST_getPipeNetworkFromPipeElbows(pipeElbows);
-        GaiaNode gaiaNode = modeler3D.makeGeometry(tNetwork);
+        GaiaNode gaiaNode = modeler3D.makeGeometry(tNetwork, null);
         GaiaNode gaiaRootNode = new GaiaNode();
         gaiaRootNode.getChildren().add(gaiaNode);
 
