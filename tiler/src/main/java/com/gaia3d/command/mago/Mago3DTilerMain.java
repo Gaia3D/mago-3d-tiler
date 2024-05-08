@@ -68,9 +68,9 @@ public class Mago3DTilerMain {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         String programInfo = globalOptions.getProgramInfo();
         log.info("\n" +
-                "┌┬┐┌─┐┌─┐┌─┐  -┐┌┬┐  ┌┬┐┬┬  ┌─┐┬─┐\n" +
-                "│││├─┤│ ┬│ │  -┤ ││   │ ││  ├┤ ├┬┘\n" +
-                "┴ ┴┴ ┴└─┘└─┘  -┘-┴┘   ┴ ┴┴─┘└─┘┴└─\n" +
+                "┳┳┓┏┓┏┓┏┓  ┏┓┳┓  ┏┳┓┳┓ ┏┓┳┓\n" +
+                "┃┃┃┣┫┃┓┃┃   ┫┃┃   ┃ ┃┃ ┣ ┣┫\n" +
+                "┛ ┗┛┗┗┛┗┛  ┗┛┻┛   ┻ ┻┗┛┗┛┛┗\n" +
                 programInfo + "\n" +
                 "----------------------------------------"
         );

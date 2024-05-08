@@ -36,6 +36,7 @@ public class GlobalOptions {
     private static final int DEFAULT_MAX_GEOMETRIC_ERROR = Integer.MAX_VALUE;
 
     private static final int DEFAULT_MAX_TRIANGLES = 65536 * 8;
+    private static final int DEFAULT_MAX_NODE_DEPTH = 32;
 
     private static final int DEFAULT_POINT_LIMIT = 65536;
     private static final int DEFAULT_POINT_SCALE = 2;
@@ -88,6 +89,7 @@ public class GlobalOptions {
     private int minGeometricError; // minimum geometric error
     private int maxGeometricError; // maximum geometric error
     private int maxTriangles; // maximum triangles per tile
+    private int maxNodeDepth; // maximum node depth
 
     private boolean debug = false; // debug mode flag
     private boolean debugLod = false; // debug lod flag
@@ -206,6 +208,7 @@ public class GlobalOptions {
         instance.setMaxGeometricError(command.hasOption(ProcessOptions.MAX_GEOMETRIC_ERROR.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_GEOMETRIC_ERROR.getArgName())) : DEFAULT_MAX_GEOMETRIC_ERROR);
         instance.setIgnoreTextures(command.hasOption(ProcessOptions.IGNORE_TEXTURES.getArgName()));
         instance.setMaxTriangles(DEFAULT_MAX_TRIANGLES);
+        instance.setMaxNodeDepth(DEFAULT_MAX_NODE_DEPTH);
 
         /* Point Cloud Options */
         instance.setPointLimit(command.hasOption(ProcessOptions.MAX_POINTS.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_POINTS.getArgName())) : DEFAULT_POINT_LIMIT);
@@ -231,6 +234,7 @@ public class GlobalOptions {
         } else {
             if (instance.getInputFormat().equals(FormatType.GEOJSON) || instance.getInputFormat().equals(FormatType.SHP) || instance.getInputFormat().equals(FormatType.CITYGML) || instance.getInputFormat().equals(FormatType.INDOORGML)) {
                 instance.setRefineAdd(true);
+                instance.setMaxGeometricError(100);
             }
         }
         instance.setGlb(command.hasOption(ProcessOptions.DEBUG_GLB.getArgName()));

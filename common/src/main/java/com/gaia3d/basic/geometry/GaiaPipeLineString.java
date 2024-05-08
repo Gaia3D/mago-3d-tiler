@@ -16,7 +16,7 @@ public class GaiaPipeLineString {
     private double diameterCm;
     private float[] pipeRectangularSize; // for rectangular pipe.
     private GaiaBoundingBox boundingBox;
-    private int pipeProfileType = 0; // 0 = unknown, 1 = circular, 2 = rectangular, 3 = oval, 4 = irregular, etc.
+    private int pipeProfileType; // 0 = unknown, 1 = circular, 2 = rectangular, 3 = oval, 4 = irregular, etc.
     private String originalFilePath;
     private List<Vector3d> positions;
 
