@@ -504,14 +504,12 @@ public class Modeler3D {
     }
 
     public int getCircleInterpolationByRadius(double radius) {
-        if (radius <= 0.2) {
+        if (radius <= 0.4) {
             return 4;
-        } else if (radius <= 0.6) {
+        } else if (radius <= 0.8) {
             return 6;
-        } else if (radius <= 1.0) {
-            return 8;
         } else {
-            return 10;
+            return 8;
         }
     }
 
