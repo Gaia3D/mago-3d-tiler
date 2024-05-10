@@ -24,6 +24,8 @@ public class Pipe extends TEdge {
     private float[] pipeRectangularSize = new float[2]; // for rectangular pipe.
     private int interpolationCount = 10; // 360 degrees / 10 = 36 degrees.***
     private boolean dirty = true;
+    private boolean bottomCap = false;
+    private boolean topCap = false;
 
     // note : the startPosition & the endPosition are the link positions of the pipe, that are different from the startNode & the endNode.
     public Pipe(TNode startNode, TNode endNode) {
@@ -146,7 +148,7 @@ public class Pipe extends TEdge {
 
         Vector3d extrusionVector = new Vector3d(endLinkPos).sub(startLinkPos);
         boolean isLateralSurfaceSmooth = true;
-        GaiaPrimitive primitive = modeler3D.getExtrudedPrimitive(transformedCirclePoints, extrusionVector, true, true, true, isLateralSurfaceSmooth);
+        GaiaPrimitive primitive = modeler3D.getExtrudedPrimitive(transformedCirclePoints, extrusionVector, this.bottomCap, this.topCap, true, isLateralSurfaceSmooth);
         primitive.calculateNormal();
 
         GaiaMesh mesh = new GaiaMesh();

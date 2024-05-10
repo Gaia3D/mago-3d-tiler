@@ -113,6 +113,14 @@ public class Modeler3D {
         for (int i = 0; i < network.getEdges().size(); i++) {
             TEdge edge = network.getEdges().get(i);
             if (edge instanceof Pipe pipe) {
+                if(i == 0 || i == network.getEdges().size() - 1) {
+                    pipe.setBottomCap(true);
+                    pipe.setTopCap(true);
+                }
+                else {
+                    pipe.setBottomCap(false);
+                    pipe.setTopCap(false);
+                }
                 // make geometry for this pipe.
                 GaiaMesh pipeMesh = pipe.makeGeometry();
                 resultGaiaNode.getMeshes().add(pipeMesh);
@@ -432,17 +440,60 @@ public class Modeler3D {
         primitive.getSurfaces().add(lateralSurface);
 
         if (bottomCap) {
-//            // make the bottom cap.
-//            GaiaSurface bottomCapSurface = new GaiaSurface();
-//            primitive.getSurfaces().add(bottomCapSurface);
-//
-//            // make the bottom cap vertices.
-//            for(int i=0; i<positions.size(); i++) {
-//                Vector3d position = positions.get(i);
-//                GaiaVertex bottomCapVertex = new GaiaVertex();
-//                bottomCapVertex.setPosition(position);
-//
-//            }
+            // must copy the 1rst profile vertices to the bottom cap vertices.
+            List<GaiaVertex> bottomCapVertices = bottomVertices;
+            List<GaiaVertex> bottomCapVerticesCopy = new ArrayList<GaiaVertex>();
+            GaiaSurface bottomCapSurface = new GaiaSurface();
+            for (int i = bottomCapVertices.size() - 1; i >= 0; i--) // bottom vertices must be in reverse order.
+            {
+                GaiaVertex vertex = bottomCapVertices.get(i);
+                GaiaVertex bottomCapVertex = new GaiaVertex();
+                bottomCapVertex.setPosition(vertex.getPosition());
+                primitive.getVertices().add(bottomCapVertex);
+                mapVertexIndex.put(bottomCapVertex, primitive.getVertices().size() - 1);
+                bottomCapVerticesCopy.add(bottomCapVertex);
+            }
+
+            int trianglesCount = bottomCapVerticesCopy.size() - 2;
+            for (int i = 0; i < trianglesCount; i++) {
+                GaiaFace face = new GaiaFace();
+                int[] indices = new int[3];
+                indices[0] = mapVertexIndex.get(bottomCapVerticesCopy.get(0));
+                indices[1] = mapVertexIndex.get(bottomCapVerticesCopy.get(i + 1));
+                indices[2] = mapVertexIndex.get(bottomCapVerticesCopy.get(i + 2));
+                face.setIndices(indices);
+                bottomCapSurface.getFaces().add(face);
+            }
+
+            primitive.getSurfaces().add(bottomCapSurface);
+        }
+
+        if (topCap) {
+            // must copy the last profile vertices to the top cap vertices.
+            List<GaiaVertex> topCapVertices = topVertices;
+            List<GaiaVertex> topCapVerticesCopy = new ArrayList<GaiaVertex>();
+            GaiaSurface topCapSurface = new GaiaSurface();
+            for (int i = 0; i < topCapVertices.size(); i++) {
+                GaiaVertex vertex = topCapVertices.get(i);
+                GaiaVertex topCapVertex = new GaiaVertex();
+                topCapVertex.setPosition(vertex.getPosition());
+                primitive.getVertices().add(topCapVertex);
+                mapVertexIndex.put(topCapVertex, primitive.getVertices().size() - 1);
+                topCapVerticesCopy.add(topCapVertex);
+            }
+
+            int trianglesCount = topCapVerticesCopy.size() - 2;
+            for (int i = 0; i < trianglesCount; i++) {
+                GaiaFace face = new GaiaFace();
+                int[] indices = new int[3];
+                indices[0] = mapVertexIndex.get(topCapVerticesCopy.get(0));
+                indices[1] = mapVertexIndex.get(topCapVerticesCopy.get(i + 1));
+                indices[2] = mapVertexIndex.get(topCapVerticesCopy.get(i + 2));
+                face.setIndices(indices);
+                topCapSurface.getFaces().add(face);
+            }
+
+            primitive.getSurfaces().add(topCapSurface);
         }
 
         return primitive;
