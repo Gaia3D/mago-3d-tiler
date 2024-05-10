@@ -452,6 +452,26 @@ public class Modeler3D {
         return a.x * b.y - a.y * b.x;
     }
 
+    public int getCircleInterpolationByRadius(double radius)
+    {
+        if(radius <= 0.2)
+        {
+            return 4;
+        }
+        else if(radius <= 0.6)
+        {
+            return 6;
+        }
+        else if(radius <= 1.0)
+        {
+            return 8;
+        }
+        else
+        {
+            return 10;
+        }
+    }
+
     public Matrix4d getMatrix4FromZDir(Vector3d zDir) {
         // Note : the zDir is the direction of the zAxis of the transformation matrix, and must be normalized.
         Matrix4d matrix = new Matrix4d();

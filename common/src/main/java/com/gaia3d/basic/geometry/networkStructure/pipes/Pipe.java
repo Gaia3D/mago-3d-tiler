@@ -92,13 +92,19 @@ public class Pipe extends TEdge {
         return true;
     }
 
+
+
     private void getPipeProfilePoints(List<Vector3d> resultPoints)
     {
         if(this.getPipeProfileType() == 1)
         {
+            Modeler3D modeler3D = new Modeler3D();
+            interpolationCount = modeler3D.getCircleInterpolationByRadius(pipeRadius);
+
             // circle profile.***
             for(int i=0; i<interpolationCount; i++)
             {
+
                 double angle = 2.0 * Math.PI * i / interpolationCount;
                 double x = pipeRadius * Math.cos(angle);
                 double y = pipeRadius * Math.sin(angle);

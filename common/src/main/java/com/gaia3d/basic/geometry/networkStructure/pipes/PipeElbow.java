@@ -267,6 +267,9 @@ public class PipeElbow extends TNode {
     {
         if(this.getPipeProfileType() == 1)
         {
+            Modeler3D modeler3D = new Modeler3D();
+            pipeRadiusInterpolationCount = modeler3D.getCircleInterpolationByRadius(pipeRadius);
+
             // circle profile.***
             for(int i=0; i<pipeRadiusInterpolationCount; i++)
             {
@@ -510,16 +513,12 @@ public class PipeElbow extends TNode {
         //                          linkNormal2
 
         Matrix4d elbowAxisRotMat = new Matrix4d();
-        this.elbowRadiusInterpolationCount = (int)(Math.toDegrees(this.sweepAngRad)/10.0);
+        this.elbowRadiusInterpolationCount = (int)(Math.toDegrees(this.sweepAngRad)/15.0);
         if(this.elbowRadiusInterpolationCount < 2)
         {
             this.elbowRadiusInterpolationCount = 2;
         }
 
-        if(this.sweepAngRad < Math.toRadians(2.0))
-        {
-            int hola = 0;
-        }
         double increSweepAngRad = this.sweepAngRad / this.elbowRadiusInterpolationCount;
         elbowAxisRotMat.rotate(-increSweepAngRad, elbowAxis);
 
