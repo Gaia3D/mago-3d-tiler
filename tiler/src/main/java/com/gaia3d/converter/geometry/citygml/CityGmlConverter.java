@@ -1,5 +1,6 @@
 package com.gaia3d.converter.geometry.citygml;
 
+import com.gaia3d.basic.geometry.Classification;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.command.mago.GlobalOptions;

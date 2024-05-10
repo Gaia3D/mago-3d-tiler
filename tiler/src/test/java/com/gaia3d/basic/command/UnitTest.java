@@ -180,6 +180,22 @@ class UnitTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Test
+    void testIFC_SejongBridge() {
+        String path = "IFC_Data\\BIM\\개별파일(ifc)_by IDM\\";
+        String[] args = new String[]{
+                "-i", INPUT_PATH + path,
+                "-it", "ifc",
+                "-o", OUTPUT_PATH + path,
+                "-crs", "5186",
+                "-refineAdd",
+                "-glb",
+                "-mc", "1",
+                "-r"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
         @Test
         void kmlObj() {
             String path = "kml-obj";

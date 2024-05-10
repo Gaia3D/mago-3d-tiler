@@ -1,22 +1,19 @@
-package com.gaia3d.converter.geometry;
-import com.gaia3d.basic.geometry.GaiaBoundingBox;
+package com.gaia3d.basic.geometry;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.joml.Vector3d;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Setter
 @Builder
-
 public class GaiaPipeLineString
 {
     private String id;
     private String name;
-    private Classification classification;
+    //private Classification classification;
     private double diameterCm;
     float[] pipeRectangularSize = new float[2]; // for rectangular pipe.
     public GaiaBoundingBox boundingBox = new GaiaBoundingBox();

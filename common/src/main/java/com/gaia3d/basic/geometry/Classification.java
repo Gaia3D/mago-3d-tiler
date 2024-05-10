@@ -1,4 +1,4 @@
-package com.gaia3d.converter.geometry;
+package com.gaia3d.basic.geometry;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

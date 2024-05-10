@@ -1,5 +1,7 @@
 package com.gaia3d.converter.geometry;
 
+import com.gaia3d.basic.geometry.Classification;
+import com.gaia3d.basic.geometry.GaiaPipeLineString;
 import com.gaia3d.basic.geometry.networkStructure.modeler.Modeler3D;
 import com.gaia3d.basic.geometry.networkStructure.modeler.TNetwork;
 import com.gaia3d.basic.geometry.networkStructure.pipes.PipeElbow;

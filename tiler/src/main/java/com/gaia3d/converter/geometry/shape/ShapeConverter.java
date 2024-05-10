@@ -1,6 +1,7 @@
 package com.gaia3d.converter.geometry.shape;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.GaiaPipeLineString;
 import com.gaia3d.basic.geometry.networkStructure.modeler.Modeler3D;
 import com.gaia3d.basic.geometry.tessellator.GaiaExtruder;
 import com.gaia3d.basic.geometry.tessellator.GaiaExtrusionSurface;

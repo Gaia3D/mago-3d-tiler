@@ -3,7 +3,7 @@ package com.gaia3d.basic.geometry.networkStructure.modeler;
 import com.gaia3d.basic.geometry.networkStructure.pipes.Pipe;
 import com.gaia3d.basic.geometry.networkStructure.pipes.PipeElbow;
 import com.gaia3d.basic.structure.*;
-import com.gaia3d.converter.geometry.GaiaPipeLineString;
+import com.gaia3d.basic.geometry.GaiaPipeLineString;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
