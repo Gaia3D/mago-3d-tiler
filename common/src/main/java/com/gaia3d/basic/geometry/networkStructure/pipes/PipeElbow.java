@@ -33,6 +33,8 @@ public class PipeElbow extends TNode {
     private int pipeRadiusInterpolationCount = 10; // 360 degrees / 10 = 36 degrees.***
     private int elbowRadiusInterpolationCount = 10; // 360 degrees / 10 = 36 degrees.***
     private boolean dirty = true;
+    private boolean bottomCap = false;
+    private boolean topCap = false;
 
     //, float pipeRadius, float[] pipeRectangularSize)
     public PipeElbow(Vector3d vector3d, int pipeProfileType, float elbowRadius) {
@@ -337,8 +339,6 @@ public class PipeElbow extends TNode {
 
             transversalCircles.add(transversalCircle);
         }
-        boolean bottomCap = true;
-        boolean topCap = true;
         boolean isClosed = true;
         boolean isLateralSurfaceSmooth = true;
         GaiaPrimitive primitive = modeler3D.getPrimitiveFromMultipleProfiles(transversalCircles, bottomCap, topCap, isClosed, isLateralSurfaceSmooth);
@@ -515,8 +515,7 @@ public class PipeElbow extends TNode {
 
             transversalCircles.add(transversalCircle);
         }
-        boolean bottomCap = true;
-        boolean topCap = true;
+
         boolean isClosed = true;
         boolean isLateralSurfaceSmooth = true;
         GaiaPrimitive primitive = modeler3D.getPrimitiveFromMultipleProfiles(transversalCircles, bottomCap, topCap, isClosed, isLateralSurfaceSmooth);
