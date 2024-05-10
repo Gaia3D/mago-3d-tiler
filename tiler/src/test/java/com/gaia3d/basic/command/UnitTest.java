@@ -442,6 +442,8 @@ class UnitTest {
                 "-maxCount", "4096",
                 "-multiThreadCount", "1",
                 "-refineAdd",
+                "-glb",
+                "-d"
         };
         Mago3DTilerMain.main(args);
     }

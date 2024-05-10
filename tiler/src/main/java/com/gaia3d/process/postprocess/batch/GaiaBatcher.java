@@ -256,7 +256,7 @@ public class GaiaBatcher {
         List<GaiaMaterial> resultMaterials = new ArrayList<>();
         if (!clampDataSets.isEmpty() && !clampMaterials.isEmpty()) {
             atlasTextures(lod, nodeCode, clampDataSets, clampMaterials);
-            List<List<GaiaBufferDataSet>> splitedDataSets = divisionByMaxIndices(clampDataSets);
+            List<List<GaiaBufferDataSet>> splitedDataSets = divisionByMaxVerticesCount(clampDataSets);
             List<GaiaBufferDataSet> batchedClampDataSets = batchClampMaterial(splitedDataSets);
             clampMaterials.removeIf((clampMaterial) -> {
                 return clampMaterial.getId() > 0;
@@ -342,25 +342,24 @@ public class GaiaBatcher {
         }
     }
 
-    // Indices 최대 값 만큼 객체를 나눔
-    private List<List<GaiaBufferDataSet>> divisionByMaxIndices(List<GaiaBufferDataSet> dataSets) {
+    private List<List<GaiaBufferDataSet>> divisionByMaxVerticesCount(List<GaiaBufferDataSet> dataSets) {
         int count = 0;
         List<List<GaiaBufferDataSet>> result = new ArrayList<>();
         List<GaiaBufferDataSet> splitList = new ArrayList<>();
         result.add(splitList);
         for (GaiaBufferDataSet dataSet : dataSets) {
             Map<AttributeType, GaiaBuffer> buffers = dataSet.getBuffers();
-            GaiaBuffer indicesBuffer = buffers.get(AttributeType.INDICE);
-            if (indicesBuffer != null) {
-                int indicesLength = indicesBuffer.getInts().length;
-                if ((count + indicesLength) >= SHORT_LIMIT) {
+            GaiaBuffer posBuffer = buffers.get(AttributeType.POSITION);
+            if (posBuffer != null) {
+                int posLength = posBuffer.getFloats().length / 3;
+                if ((count + posLength) >= SHORT_LIMIT) {
                     if (!splitList.isEmpty()) {
                         splitList = new ArrayList<>();
                     }
                     result.add(splitList);
-                    count = indicesLength;
+                    count = posLength;
                 } else {
-                    count += indicesLength;
+                    count += posLength;
                 }
                 splitList.add(dataSet);
             }
@@ -386,7 +385,7 @@ public class GaiaBatcher {
         }
         // make batched buffer data.
         dataSetsMap.forEach((material, bufferDataSetDataList) -> {
-            List<List<GaiaBufferDataSet>> splitedDataSets = divisionByMaxIndices(bufferDataSetDataList);
+            List<List<GaiaBufferDataSet>> splitedDataSets = divisionByMaxVerticesCount(bufferDataSetDataList);
             splitedDataSets.forEach((splitedDataSet) -> {
                 GaiaBufferDataSet batchedBufferData = batchVertices(splitedDataSet);
                 batchedBufferData.setMaterialId(material.getId());
