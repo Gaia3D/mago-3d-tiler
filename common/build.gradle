@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'com.gaia3d'
-version "1.4.4"
+version "1.6.2"
 
 project.ext.lwjglVersion = "3.3.2"
 switch ( org.gradle.internal.os.OperatingSystem.current() ) {

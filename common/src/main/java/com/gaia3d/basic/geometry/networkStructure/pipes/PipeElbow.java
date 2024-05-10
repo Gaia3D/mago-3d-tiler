@@ -15,48 +15,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Getter
+@Setter
 public class PipeElbow extends TNode {
-    @Getter
-    @Setter
-    int pipeProfileType = 0; // 0 = unknown, 1 = circular, 2 = rectangular, 3 = oval, 4 = irregular, etc.
-
-    @Getter
-    @Setter
-    float elbowRadius = 0.0f;
-    @Getter
-    @Setter
-    float pipeRadius = 0.0f;
-    @Getter
-    @Setter
-    float[] pipeRectangularSize = new float[2]; // for rectangular pipe.
-
-    double sweepAngRad = 0.0;
-    Vector3d elbowAxis = new Vector3d(0.0, 0.0, 1.0);
-    Vector3d elbowCenterPosition = new Vector3d(); // this is NOT the position of the TNode's position.***
-    @Getter
-    @Setter
-    int elbowType = 1; // 0 = unknown, 1 = straight, 2 = toroidal, 3 = spherical.***
+    private int pipeProfileType = 0; // 0 = unknown, 1 = circular, 2 = rectangular, 3 = oval, 4 = irregular, etc.
+    private float elbowRadius = 0.0f;
+    private float pipeRadius = 0.0f;
+    private float[] pipeRectangularSize = new float[2]; // for rectangular pipe.
+    private double sweepAngRad = 0.0;
+    private Vector3d elbowAxis = new Vector3d(0.0, 0.0, 1.0);
+    private Vector3d elbowCenterPosition = new Vector3d(); // this is NOT the position of the TNode's position.***
+    private int elbowType = 1; // 0 = unknown, 1 = straight, 2 = toroidal, 3 = spherical.***
 
     // linkPositions.***
-    Map<TEdge, Vector3d> mapEdgeLinkPositions;
-    Map<TEdge, Vector3d> mapEdgeLinkNormals;
+    private Map<TEdge, Vector3d> mapEdgeLinkPositions;
+    private Map<TEdge, Vector3d> mapEdgeLinkNormals;
+    private int pipeRadiusInterpolationCount = 10; // 360 degrees / 10 = 36 degrees.***
+    private int elbowRadiusInterpolationCount = 10; // 360 degrees / 10 = 36 degrees.***
+    private boolean dirty = true;
 
-    int pipeRadiusInterpolationCount = 10; // 360 degrees / 10 = 36 degrees.***
-    int elbowRadiusInterpolationCount = 10; // 360 degrees / 10 = 36 degrees.***
-
-    boolean dirty = true;
-
-//    public PipeElbow(Vector3d vector3d, float elbowRadius, float pipeRadius)
-//    {
-//        super(vector3d);
-//        this.elbowRadius = elbowRadius;
-//        this.pipeRadius = pipeRadius;
-//        mapEdgeLinkPositions = new HashMap<TEdge, Vector3d>();
-//        mapEdgeLinkNormals = new HashMap<TEdge, Vector3d>();
-//    }
-
-    public PipeElbow(Vector3d vector3d, int pipeProfileType, float elbowRadius)//, float pipeRadius, float[] pipeRectangularSize)
-    {
+    //, float pipeRadius, float[] pipeRectangularSize)
+    public PipeElbow(Vector3d vector3d, int pipeProfileType, float elbowRadius) {
         super(vector3d);
         this.pipeProfileType = pipeProfileType;
         this.elbowRadius = elbowRadius;
@@ -66,8 +45,7 @@ public class PipeElbow extends TNode {
         mapEdgeLinkNormals = new HashMap<TEdge, Vector3d>();
     }
 
-    private void calculateElbowPositionsIfExistOnlyOneTEdge()
-    {
+    private void calculateElbowPositionsIfExistOnlyOneTEdge() {
         TEdge edge1 = this.getEdge(0);
         TEdge edge2 = null;
 
@@ -110,19 +88,16 @@ public class PipeElbow extends TNode {
         dirty = false;
     }
 
-    public void calculateElbowPositions()
-    {
+    public void calculateElbowPositions() {
         int tNodesCount = this.getEdges().size();
 
         // if the tNodesCount is different from 2, then return.
-        if (tNodesCount == 0)
-        {
+        if (tNodesCount == 0) {
             return;
         }
 
-        if(tNodesCount == 1)
-        {
-            // if this TNode has only 1 edge, then return the position of the TNode.
+        // if this TNode has only 1 edge, then return the position of the TNode.
+        if (tNodesCount == 1) {
             return;
         }
 
@@ -177,8 +152,7 @@ public class PipeElbow extends TNode {
         double minSweepAngRad = Math.toRadians(0.1);
         double maxSweepAngRad = Math.toRadians(179.0);
 
-        if(this.sweepAngRad < minSweepAngRad || this.sweepAngRad > maxSweepAngRad)
-        {
+        if (this.sweepAngRad < minSweepAngRad || this.sweepAngRad > maxSweepAngRad) {
             // if the sweep angle is less than 0.1 deg, then this elbow has no mesh.
             elbowCenterPosition = new Vector3d(posCenter);
 
@@ -229,12 +203,6 @@ public class PipeElbow extends TNode {
         elbowAxis.cross(dirPosCenterToLinkB);
         elbowAxis.normalize();
 
-        // check if the elbowAxis has nan components.
-        if(Double.isNaN(elbowAxis.x) || Double.isNaN(elbowAxis.y) || Double.isNaN(elbowAxis.z))
-        {
-            int hola = 0;
-        }
-
         mapEdgeLinkPositions.put(edge1, linkPosA);
         mapEdgeLinkPositions.put(edge2, linkPosB);
 
@@ -244,17 +212,14 @@ public class PipeElbow extends TNode {
         dirty = false;
     }
 
-    public Vector3d getLinkPosition(Pipe pipe)
-    {
+    public Vector3d getLinkPosition(Pipe pipe) {
         // if this TNode has only 1 edge, then return the position of the TNode.
-        if (this.getEdges().size() == 1)
-        {
+        if (this.getEdges().size() == 1) {
             return this.getPosition();
         }
 
         // 1rst, calculate the elbow center position.
-        if(dirty)
-        {
+        if (dirty) {
             this.calculateElbowPositions();
         }
 
@@ -263,16 +228,13 @@ public class PipeElbow extends TNode {
         return linkPosition;
     }
 
-    private void getPipeProfilePoints(List<Vector3d> resultPoints)
-    {
-        if(this.getPipeProfileType() == 1)
-        {
+    private void getPipeProfilePoints(List<Vector3d> resultPoints) {
+        if (this.getPipeProfileType() == 1) {
             Modeler3D modeler3D = new Modeler3D();
             pipeRadiusInterpolationCount = modeler3D.getCircleInterpolationByRadius(pipeRadius);
 
             // circle profile.***
-            for(int i=0; i<pipeRadiusInterpolationCount; i++)
-            {
+            for (int i = 0; i < pipeRadiusInterpolationCount; i++) {
                 double angle = 2.0 * Math.PI * i / pipeRadiusInterpolationCount;
                 double x = pipeRadius * Math.cos(angle);
                 double y = pipeRadius * Math.sin(angle);
@@ -282,9 +244,7 @@ public class PipeElbow extends TNode {
                 Vector3d circlePoint = new Vector3d(x, y, z);
                 resultPoints.add(circlePoint);
             }
-        }
-        else if(this.getPipeProfileType() == 2)
-        {
+        } else if (this.getPipeProfileType() == 2) {
             // rectangular profile.***
             double halfWidth = pipeRectangularSize[0] / 2.0;
             double halfHeight = pipeRectangularSize[1] / 2.0;
@@ -299,15 +259,9 @@ public class PipeElbow extends TNode {
             resultPoints.add(point3);
             resultPoints.add(point4);
         }
-        else
-        {
-            // unknown profile.***
-            return;
-        }
     }
 
-    private GaiaMesh makeStraightElbowGeometry()
-    {
+    private GaiaMesh makeStraightElbowGeometry() {
         GaiaMesh gaiaMesh = new GaiaMesh();
 
         // make the circle points in local coordinates.
@@ -330,16 +284,11 @@ public class PipeElbow extends TNode {
         Modeler3D modeler3D = new Modeler3D();
 
         Matrix4d elbowAxisRotMat = new Matrix4d();
-        this.elbowRadiusInterpolationCount = (int)(Math.toDegrees(this.sweepAngRad)/10.0);
-        if(this.elbowRadiusInterpolationCount < 2)
-        {
+        this.elbowRadiusInterpolationCount = (int) (Math.toDegrees(this.sweepAngRad) / 10.0);
+        if (this.elbowRadiusInterpolationCount < 2) {
             this.elbowRadiusInterpolationCount = 2;
         }
 
-        if(this.sweepAngRad < Math.toRadians(2.0))
-        {
-            int hola = 0;
-        }
         double increSweepAngRad = this.sweepAngRad / this.elbowRadiusInterpolationCount;
         elbowAxisRotMat.rotate(-increSweepAngRad, elbowAxis);
 
@@ -367,8 +316,7 @@ public class PipeElbow extends TNode {
 
         Vector3d currentDir = new Vector3d(dir1);
         Vector3d currentPos = new Vector3d(linkPos1);
-        for(int i=0; i<this.elbowRadiusInterpolationCount; i++)
-        {
+        for (int i = 0; i < this.elbowRadiusInterpolationCount; i++) {
             List<Vector3d> transversalCircle = new ArrayList<Vector3d>();
             for (int j = 0; j < circlePoints.size(); j++) {
                 Vector3d circlePoint = transversalCircle1.get(j);
@@ -376,10 +324,6 @@ public class PipeElbow extends TNode {
                 transformedPoint.sub(thisNodePos);
                 elbowAxisRotMat.transformPosition(transformedPoint, transformedPoint);
                 transformedPoint.add(thisNodePos);
-                if(Double.isNaN(transformedPoint.x) || Double.isNaN(transformedPoint.y) || Double.isNaN(transformedPoint.z))
-                {
-                    int hola = 0;
-                }
                 transversalCircle.add(transformedPoint);
             }
             transversalCircle1 = transversalCircle;
@@ -394,7 +338,7 @@ public class PipeElbow extends TNode {
             transversalCircles.add(transversalCircle);
         }
         boolean bottomCap = true;
-        boolean topCap  = true;
+        boolean topCap = true;
         boolean isClosed = true;
         boolean isLateralSurfaceSmooth = true;
         GaiaPrimitive primitive = modeler3D.getPrimitiveFromMultipleProfiles(transversalCircles, bottomCap, topCap, isClosed, isLateralSurfaceSmooth);
@@ -405,29 +349,25 @@ public class PipeElbow extends TNode {
     }
 
     public GaiaMesh makeGeometry() {
-        if(dirty)
-        {
+        if (dirty) {
             this.calculateElbowPositions();
         }
 
-        if(this.getEdges().size() < 2)
-        {
+        if (this.getEdges().size() < 2) {
             // an elbow needs at least 2 edges.
             return null;
         }
 
-        if(this.getElbowType() == 0)
-        {
+        if (this.getElbowType() == 0) {
             // if the elbowType is unknown, then this elbow has no mesh.
             return null;
         }
 
         // check if the 2 pipes are isPhysicallyBuildable.
-        Pipe pipe1 = (Pipe)this.getEdges().get(0);
-        Pipe pipe2 = (Pipe)this.getEdges().get(1);
+        Pipe pipe1 = (Pipe) this.getEdges().get(0);
+        Pipe pipe2 = (Pipe) this.getEdges().get(1);
 
-        if(!pipe1.isPhysicallyBuildable() || !pipe2.isPhysicallyBuildable())
-        {
+        if (!pipe1.isPhysicallyBuildable() || !pipe2.isPhysicallyBuildable()) {
             // if the 2 pipes are not physically buildable, then this elbow has no mesh.
             // make a straight elbow.***
             // if the sweep angle is less than 0.1 deg, then this elbow has no mesh.
@@ -471,8 +411,7 @@ public class PipeElbow extends TNode {
         double minSweepAngRad = Math.toRadians(0.1);
         double maxSweepAngRad = Math.toRadians(179.0);
 
-        if(this.sweepAngRad < minSweepAngRad || this.sweepAngRad > maxSweepAngRad)
-        {
+        if (this.sweepAngRad < minSweepAngRad || this.sweepAngRad > maxSweepAngRad) {
             // if the sweep angle is less than 0.1 deg, then this elbow has no mesh.
             return null;
         }
@@ -513,9 +452,8 @@ public class PipeElbow extends TNode {
         //                          linkNormal2
 
         Matrix4d elbowAxisRotMat = new Matrix4d();
-        this.elbowRadiusInterpolationCount = (int)(Math.toDegrees(this.sweepAngRad)/15.0);
-        if(this.elbowRadiusInterpolationCount < 2)
-        {
+        this.elbowRadiusInterpolationCount = (int) (Math.toDegrees(this.sweepAngRad) / 15.0);
+        if (this.elbowRadiusInterpolationCount < 2) {
             this.elbowRadiusInterpolationCount = 2;
         }
 
@@ -535,7 +473,6 @@ public class PipeElbow extends TNode {
 //        }
 
 
-
         // calculate the 1rst transversal circle.***********************************************
         List<Vector3d> transversalCircle1 = new ArrayList<Vector3d>();
         Matrix4d tMat = modeler3D.getMatrix4FromZDir(dir1);
@@ -544,8 +481,7 @@ public class PipeElbow extends TNode {
         translationMat.mul(tMat, tMat);
 
         // transform the points of the circle.
-        for (int j = 0; j < circlePoints.size(); j++) {
-            Vector3d circlePoint = circlePoints.get(j);
+        for (Vector3d circlePoint : circlePoints) {
             Vector3d transformedPoint = new Vector3d();
             tMat.transformPosition(circlePoint, transformedPoint);
             transversalCircle1.add(transformedPoint);
@@ -558,8 +494,7 @@ public class PipeElbow extends TNode {
 
         Vector3d currentDir = new Vector3d(dir1);
         Vector3d currentPos = new Vector3d(linkPos1);
-        for(int i=0; i<this.elbowRadiusInterpolationCount; i++)
-        {
+        for (int i = 0; i < this.elbowRadiusInterpolationCount; i++) {
             List<Vector3d> transversalCircle = new ArrayList<Vector3d>();
             for (int j = 0; j < circlePoints.size(); j++) {
                 Vector3d circlePoint = transversalCircle1.get(j);
@@ -567,10 +502,6 @@ public class PipeElbow extends TNode {
                 transformedPoint.sub(elbowCenterPosition);
                 elbowAxisRotMat.transformPosition(transformedPoint, transformedPoint);
                 transformedPoint.add(elbowCenterPosition);
-                if(Double.isNaN(transformedPoint.x) || Double.isNaN(transformedPoint.y) || Double.isNaN(transformedPoint.z))
-                {
-                    int hola = 0;
-                }
                 transversalCircle.add(transformedPoint);
             }
             transversalCircle1 = transversalCircle;
@@ -585,7 +516,7 @@ public class PipeElbow extends TNode {
             transversalCircles.add(transversalCircle);
         }
         boolean bottomCap = true;
-        boolean topCap  = true;
+        boolean topCap = true;
         boolean isClosed = true;
         boolean isLateralSurfaceSmooth = true;
         GaiaPrimitive primitive = modeler3D.getPrimitiveFromMultipleProfiles(transversalCircles, bottomCap, topCap, isClosed, isLateralSurfaceSmooth);

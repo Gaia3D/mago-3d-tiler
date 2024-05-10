@@ -35,7 +35,7 @@ public class GlobalOptions {
     private static final int DEFAULT_MIN_GEOMETRIC_ERROR = 16;
     private static final int DEFAULT_MAX_GEOMETRIC_ERROR = Integer.MAX_VALUE;
 
-    private static final int DEFAULT_MAX_TRIANGLES = 65536 * 8;
+    private static final int DEFAULT_MAX_TRIANGLES = 65536 * 16;
     private static final int DEFAULT_MAX_NODE_DEPTH = 32;
 
     private static final int DEFAULT_POINT_LIMIT = 65536;

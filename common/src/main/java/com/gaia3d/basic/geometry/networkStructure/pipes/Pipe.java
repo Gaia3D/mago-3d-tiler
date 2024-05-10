@@ -13,35 +13,27 @@ import org.joml.Vector3d;
 import java.util.ArrayList;
 import java.util.List;
 
+@Setter
+@Getter
 public class Pipe extends TEdge {
-    @Getter
-    @Setter
-    int pipeProfileType = 0; // 0 = unknown, 1 = circular, 2 = rectangular, 3 = oval, 4 = irregular, etc.
-    Vector3d startLinkPosition;
-    Vector3d endLinkPosition;
-
+    private int pipeProfileType = 0; // 0 = unknown, 1 = circular, 2 = rectangular, 3 = oval, 4 = irregular, etc.
+    private Vector3d startLinkPosition;
+    private Vector3d endLinkPosition;
     // set pipeRadius.
-    @Setter
-    float pipeRadius = 0.0f;
-    @Getter
-    @Setter
-    float[] pipeRectangularSize = new float[2]; // for rectangular pipe.
-
-    int interpolationCount = 10; // 360 degrees / 10 = 36 degrees.***
-
-    boolean dirty = true;
+    private float pipeRadius = 0.0f;
+    private float[] pipeRectangularSize = new float[2]; // for rectangular pipe.
+    private int interpolationCount = 10; // 360 degrees / 10 = 36 degrees.***
+    private boolean dirty = true;
 
     // note : the startPosition & the endPosition are the link positions of the pipe, that are different from the startNode & the endNode.
     public Pipe(TNode startNode, TNode endNode) {
-
         super(startNode, endNode);
     }
 
     public Vector3d getStartLinkPosition() {
         TNode startNode = getStartNode();
         Vector3d startLinkPos = null;
-        if (startNode instanceof PipeElbow) {
-            PipeElbow startElbow = (PipeElbow)startNode;
+        if (startNode instanceof PipeElbow startElbow) {
             startLinkPos = startElbow.getLinkPosition(this);
         }
         return startLinkPos;
@@ -50,15 +42,13 @@ public class Pipe extends TEdge {
     public Vector3d getEndLinkPosition() {
         TNode endNode = getEndNode();
         Vector3d endLinkPos = null;
-        if (endNode instanceof PipeElbow) {
-            PipeElbow endElbow = (PipeElbow)endNode;
+        if (endNode instanceof PipeElbow endElbow) {
             endLinkPos = endElbow.getLinkPosition(this);
         }
         return endLinkPos;
     }
 
-    public Vector3d getDirection()
-    {
+    public Vector3d getDirection() {
         Vector3d startNodePos = this.getStartNode().getPosition();
         Vector3d endNodePos = this.getEndNode().getPosition();
         Vector3d direction = new Vector3d(endNodePos).sub(startNodePos);
@@ -66,8 +56,7 @@ public class Pipe extends TEdge {
         return direction;
     }
 
-    public boolean isPhysicallyBuildable()
-    {
+    public boolean isPhysicallyBuildable() {
         // startNodePos +----------------+-------------------+-----------------+ endNodePos
         //                               ^                   ^
         //                               |                   |
@@ -85,25 +74,17 @@ public class Pipe extends TEdge {
 
         Vector3d edgeDir = this.getDirection();
 
-        if (pipeDir.dot(edgeDir) < 0.0) {
-            return false;
-        }
-
-        return true;
+        return !(pipeDir.dot(edgeDir) < 0.0);
     }
 
 
-
-    private void getPipeProfilePoints(List<Vector3d> resultPoints)
-    {
-        if(this.getPipeProfileType() == 1)
-        {
+    private void getPipeProfilePoints(List<Vector3d> resultPoints) {
+        if (this.getPipeProfileType() == 1) {
             Modeler3D modeler3D = new Modeler3D();
             interpolationCount = modeler3D.getCircleInterpolationByRadius(pipeRadius);
 
             // circle profile.***
-            for(int i=0; i<interpolationCount; i++)
-            {
+            for (int i = 0; i < interpolationCount; i++) {
 
                 double angle = 2.0 * Math.PI * i / interpolationCount;
                 double x = pipeRadius * Math.cos(angle);
@@ -114,9 +95,7 @@ public class Pipe extends TEdge {
                 Vector3d circlePoint = new Vector3d(x, y, z);
                 resultPoints.add(circlePoint);
             }
-        }
-        else if(this.getPipeProfileType() == 2)
-        {
+        } else if (this.getPipeProfileType() == 2) {
             // rectangular profile.***
             double halfWidth = pipeRectangularSize[0] / 2.0;
             double halfHeight = pipeRectangularSize[1] / 2.0;
@@ -130,11 +109,6 @@ public class Pipe extends TEdge {
             resultPoints.add(point2);
             resultPoints.add(point3);
             resultPoints.add(point4);
-        }
-        else
-        {
-            // unknown profile.***
-            return;
         }
     }
 
@@ -163,9 +137,7 @@ public class Pipe extends TEdge {
 
         // transform the points of the circle.
         List<Vector3d> transformedCirclePoints = new ArrayList<Vector3d>();
-        for(int i=0; i<circlePoints.size(); i++)
-        {
-            Vector3d circlePoint = circlePoints.get(i);
+        for (Vector3d circlePoint : circlePoints) {
             Vector3d transformedPoint = new Vector3d();
             tMat.transformPosition(circlePoint, transformedPoint);
             transformedCirclePoints.add(transformedPoint);
