@@ -84,7 +84,6 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         BoundingVolume squareBoundingVolume = parentBoundingVolume.createSqureBoundingVolume();
 
         boolean refineAdd = globalOptions.isRefineAdd();
-
         long triangleLimit = globalOptions.getMaxTriangles();
         long totalTriangleCount = tileInfos.stream().mapToLong(TileInfo::getTriangleCount).sum();
         log.debug("[TriangleCount] Total : {}", totalTriangleCount);

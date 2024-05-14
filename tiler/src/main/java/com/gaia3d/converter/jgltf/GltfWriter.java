@@ -154,12 +154,20 @@ public class GltfWriter {
         float[] texcoords = gaiaMesh.getTexcoords();
         float[] batchIds = gaiaMesh.getBatchIds();
 
-        boolean isIntegerIndices = gaiaMesh.getIndicesCount() >= 65535;
+        /*boolean isIntegerIndices = gaiaMesh.getIndicesCount() >= 65535;
         if (isIntegerIndices) {
             log.warn("Integer indices are used. The number of indices is greater than {}/65535", gaiaMesh.getIndicesCount());
+        }*/
+
+
+        int vertexCount = gaiaMesh.getPositionsCount() / 3;
+        boolean isOverShortVertices = vertexCount / 3 >= 65535;
+        if (isOverShortVertices) {
+            log.warn("[Warning] The number of vertices count than 65535 ({})", vertexCount);
         }
 
-        GltfNodeBuffer nodeBuffer = initNodeBuffer(gaiaMesh, isIntegerIndices);
+
+        GltfNodeBuffer nodeBuffer = initNodeBuffer(gaiaMesh, isOverShortVertices);
         createBuffer(gltf, nodeBuffer);
 
         ByteBuffer indicesBuffer = nodeBuffer.getIndicesBuffer();
@@ -178,7 +186,7 @@ public class GltfWriter {
 
         if (indicesBuffer != null) {
             for (int indicesValue: indices) {
-                if (isIntegerIndices) {
+                if (isOverShortVertices) {
                     indicesBuffer.putInt(indicesValue);
                 } else {
                     short indicesValueShort = (short) indicesValue;
@@ -213,7 +221,7 @@ public class GltfWriter {
         }
 
         if (indicesBufferViewId > -1 && indices.length > 0) {
-            if (isIntegerIndices) {
+            if (isOverShortVertices) {
                 int indicesAccessorId = createAccessor(gltf, indicesBufferViewId, 0, indices.length, GltfConstants.GL_UNSIGNED_INT, AccessorType.SCALAR, false);
                 nodeBuffer.setIndicesAccessorId(indicesAccessorId);
             } else {

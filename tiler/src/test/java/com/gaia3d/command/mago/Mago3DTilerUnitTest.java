@@ -11,12 +11,10 @@ import java.io.IOException;
 
 @Slf4j
 class Mago3DTilerUnitTest {
-
-    private static final String INPUT_PATH = "D:\\Mago3DTiler-UnitTest\\input";
-    //private static final String OUTPUT_PATH = "D:\\Mago3DTiler-UnitTest\\output";
+    private static final String INPUT_PATH = "D:\\data\\mago-tiler-data\\input";
     private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\mago-viewer\\data\\tilesets\\";
 
-    //@Test
+    @Test
     void case00() {
         String path = "case00-3ds-icgy";
         File input = new File(INPUT_PATH, path);
@@ -43,7 +41,7 @@ class Mago3DTilerUnitTest {
                 "-inputType", "3ds",
                 "-crs", "5186",
                 "-output", output.getAbsolutePath(),
-                "-glb",
+                //"-glb",
         };
         Mago3DTilerMain.main(args);
     }
@@ -536,7 +534,7 @@ class Mago3DTilerUnitTest {
         Mago3DTilerMain.main(args);
     }
 
-    @Test
+    //@Test
     void case30() {
         String path = "case30-big-points";
         File input = new File(INPUT_PATH, path);
