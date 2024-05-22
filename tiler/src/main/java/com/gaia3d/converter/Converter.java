@@ -18,3 +18,4 @@ public interface Converter {
     List<GaiaScene> load(File file);
     List<GaiaScene> load(Path path);
 }
+

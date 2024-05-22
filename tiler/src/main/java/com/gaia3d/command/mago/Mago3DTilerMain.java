@@ -54,8 +54,10 @@ public class Mago3DTilerMain {
             Mago3DTiler mago3DTiler = new Mago3DTiler();
             mago3DTiler.execute();
         } catch (ParseException e) {
+            log.error("Failed to parse command line options, Please check the arguments.", e);
             throw new RuntimeException("Failed to parse command line options, Please check the arguments.", e);
         } catch (IOException e) {
+            log.error("Failed to run process, Please check the arguments.", e);
             throw new RuntimeException("Failed to run process, Please check the arguments.", e);
         }
         printEnd();

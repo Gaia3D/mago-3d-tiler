@@ -55,6 +55,7 @@ public class TilingPipeline implements Pipeline {
             /* Delete temp files */
             deleteTemp();
         } catch (InterruptedException e) {
+            log.error("Error : {}", e.getMessage());
             throw new RuntimeException(e);
         }
     }
@@ -193,6 +194,7 @@ public class TilingPipeline implements Pipeline {
                 }
             }
         } catch (Exception e) {
+            log.error("Failed to execute thread.", e);
             throw new RuntimeException(e);
         }
         executorService.shutdown();

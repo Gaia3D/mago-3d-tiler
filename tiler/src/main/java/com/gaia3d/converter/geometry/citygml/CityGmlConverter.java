@@ -179,6 +179,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             }
 
         } catch (CityGMLContextException | CityGMLReadException e) {
+            log.error("Failed to read citygml file: {}", file.getName());
             throw new RuntimeException(e);
         }
 

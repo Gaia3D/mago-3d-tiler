@@ -23,6 +23,7 @@ public class Mago3DTiler {
             log.info("Starting process flow: {}", processFlow.getModelName());
             processFlow.run();
         } catch (IOException e) {
+            log.error("Failed to run process.", e);
             throw new RuntimeException("Failed to run process.", e);
         }
     }

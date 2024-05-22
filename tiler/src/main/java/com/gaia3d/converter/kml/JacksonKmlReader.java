@@ -58,6 +58,7 @@ public class JacksonKmlReader implements AttributeReader {
                     .scaleZ(z)
                     .build();
         } catch (IOException e) {
+            log.error("Error : {}", e.getMessage());
             throw new RuntimeException(e);
         }
         return kmlInfo;
@@ -101,6 +102,7 @@ public class JacksonKmlReader implements AttributeReader {
                 kmlInfos.add(kmlInfo);
             }
         } catch (IOException e) {
+            log.error("Error : {}", e.getMessage());
             throw new RuntimeException(e);
         }
         return kmlInfos;

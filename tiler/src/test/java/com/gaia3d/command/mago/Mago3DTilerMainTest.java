@@ -117,6 +117,7 @@ class Mago3DTilerMainTest {
         try {
             Mago3DTilerMain.main(args);
         } catch (Exception e) {
+            log.error("Error : {}", e.getMessage());
             log.debug(e.getMessage());
         }
     }

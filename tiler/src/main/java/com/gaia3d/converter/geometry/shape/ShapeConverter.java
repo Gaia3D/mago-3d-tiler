@@ -375,6 +375,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             dataStore.dispose();
             reader.close();
         } catch (IOException e) {
+            log.error("Error while reading shapefile", e);
             throw new RuntimeException(e);
         }
         shpFiles.dispose();

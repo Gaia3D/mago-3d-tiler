@@ -11,7 +11,11 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 /**
  * Class for setting up logs.
@@ -47,7 +51,7 @@ public class Configurator {
         consoleAppender.start();
     }
 
-    public static void initFileLogger(String pattern, String path) {
+    public static void initFileLogger(String pattern, String path) throws IOException {
         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
         Configuration config = ctx.getConfiguration();
         LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
@@ -84,9 +88,14 @@ public class Configurator {
         return PatternLayout.newBuilder().withPattern(pattern).withCharset(StandardCharsets.UTF_8).build();
     }
 
-    private static FileAppender createRollingFileAppender(PatternLayout layout, String path) {
+    private static FileAppender createRollingFileAppender(PatternLayout layout, String path) throws IOException {
         if (path == null) {
             path = "logs/gaia3d-tiler.log";
+        }
+        File file = new File(path);
+        if (file.exists() && file.isFile()) {
+            File backup = new File(path + "_" + file.lastModified());
+            Files.move(file.toPath(), backup.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
         return FileAppender.newBuilder().setName("FileLogger").withFileName(path).withAppend(true).withImmediateFlush(true).withBufferedIo(true).withBufferSize(8192).setLayout(layout).build();
     }

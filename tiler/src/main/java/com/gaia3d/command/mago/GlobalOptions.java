@@ -242,7 +242,6 @@ public class GlobalOptions {
         } else {
             if (instance.getInputFormat().equals(FormatType.GEOJSON) || instance.getInputFormat().equals(FormatType.SHP) || instance.getInputFormat().equals(FormatType.CITYGML) || instance.getInputFormat().equals(FormatType.INDOORGML)) {
                 instance.setRefineAdd(true);
-                instance.setMaxGeometricError(100);
             }
         }
         instance.setGlb(command.hasOption(ProcessOptions.DEBUG_GLB.getArgName()));
