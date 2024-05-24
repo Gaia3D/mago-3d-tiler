@@ -69,6 +69,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         try {
             createRootNode(root, tileInfos);
         } catch (IOException e) {
+            log.error("Error : {}", e.getMessage());
             throw new TileProcessingException(e.getMessage());
         }
 
@@ -94,6 +95,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
             writer.write(result);
             globalOptions.setTilesetSize(result.length());
         } catch (IOException e) {
+            log.error(e.getMessage());
             throw new TileProcessingException(e.getMessage());
         }
     }

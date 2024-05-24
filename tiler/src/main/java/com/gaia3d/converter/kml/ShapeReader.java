@@ -207,6 +207,7 @@ public class ShapeReader implements AttributeReader {
             dataStore.dispose();
             reader.close();
         } catch (IOException e) {
+            log.error("Error : {}", e.getMessage());
             throw new RuntimeException(e);
         }
         shpFiles.dispose();

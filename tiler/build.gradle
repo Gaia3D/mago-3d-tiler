@@ -7,7 +7,7 @@ plugins {
 }
 
 group "com.gaia3d"
-version "1.5.0"
+version "1.6.4"
 project.ext.lwjglVersion = "3.3.3"
 
 switch ( OperatingSystem.current() ) {
@@ -72,13 +72,13 @@ dependencies {
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.2'
 
     // GeoTools (geospatial library)
-    implementation "org.geotools:gt-geotiff:21.3"
-    implementation 'org.geotools:gt-shapefile:21.3'
-    implementation 'org.geotools:gt-geojson:21.3'
-    implementation 'org.geotools:gt-geojsondatastore:21.3'
-    implementation "org.geotools:gt-coverage:21.3"
-    implementation "org.geotools:gt-main:21.3"
-    implementation "org.geotools:gt-image:21.3"
+    implementation "org.geotools:gt-geotiff:26.5"
+    implementation 'org.geotools:gt-shapefile:26.5'
+    implementation 'org.geotools:gt-geojson:26.5'
+    implementation 'org.geotools:gt-geojsondatastore:26.5'
+    implementation "org.geotools:gt-coverage:26.5"
+    implementation "org.geotools:gt-main:26.5"
+    implementation "org.geotools:gt-image:26.5"
 
     // org.geotools.gce.geotiff
     implementation "javax.media:jai_core:1.1.3"

@@ -1,10 +1,14 @@
 package com.gaia3d.converter.geometry;
 
+import com.gaia3d.basic.geometry.GaiaPipeLineString;
+import com.gaia3d.basic.geometry.networkStructure.modeler.Modeler3D;
+import com.gaia3d.basic.geometry.networkStructure.modeler.TNetwork;
+import com.gaia3d.basic.geometry.networkStructure.pipes.PipeElbow;
+import com.gaia3d.basic.geometry.tessellator.GaiaExtrusionSurface;
+import com.gaia3d.basic.geometry.tessellator.GaiaTessellator;
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.geometry.tessellator.GaiaExtrusionSurface;
-import com.gaia3d.converter.geometry.tessellator.GaiaTessellator;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
@@ -22,24 +26,28 @@ public abstract class AbstractGeometryConverter {
 
     protected GaiaScene initScene() {
         GaiaScene scene = new GaiaScene();
-        GaiaMaterial material = new GaiaMaterial();
-        material.setId(0);
-        material.setName("extruded");
-
         GlobalOptions globalOptions = GlobalOptions.getInstance();
+
+        Vector4d color = new Vector4d(0.9, 0.9, 0.9, 1);
         if (globalOptions.isDebugLod()) {
             // TODO : random color
             Random random = new Random();
             float r = random.nextFloat();
             float g = random.nextFloat();
             float b = random.nextFloat();
-            material.setDiffuseColor(new Vector4d(r, g, b, 1));
-        } else {
-            material.setDiffuseColor(new Vector4d(0.9, 0.9, 0.9, 1));
+            color = new Vector4d(r, g, b, 1);
         }
-        Map<TextureType, List<GaiaTexture>> textureTypeListMap = material.getTextures();
-        textureTypeListMap.put(TextureType.DIFFUSE, new ArrayList<>());
-        scene.getMaterials().add(material);
+        GaiaMaterial defaultMaterial = createMaterial(0, color);
+        GaiaMaterial doorMaterial = createMaterial(1, Classification.DOOR.getColor());
+        GaiaMaterial windowMaterial = createMaterial(2, Classification.WINDOW.getColor());
+        GaiaMaterial floorMaterial = createMaterial(2, Classification.FLOOR.getColor());
+        GaiaMaterial roofMaterial = createMaterial(3, Classification.ROOF.getColor());
+
+        scene.getMaterials().add(defaultMaterial);
+        scene.getMaterials().add(doorMaterial);
+        scene.getMaterials().add(windowMaterial);
+        scene.getMaterials().add(floorMaterial);
+        scene.getMaterials().add(roofMaterial);
 
         GaiaNode rootNode = new GaiaNode();
         Matrix4d transformMatrix = new Matrix4d();
@@ -49,6 +57,15 @@ public abstract class AbstractGeometryConverter {
         return scene;
     }
 
+    protected GaiaMaterial createMaterial(int id, Vector4d color) {
+        GaiaMaterial material = new GaiaMaterial();
+        material.setId(id);
+        material.setName("extrusion-model-material");
+        material.setDiffuseColor(color);
+        Map<TextureType, List<GaiaTexture>> textureTypeListMap = material.getTextures();
+        textureTypeListMap.put(TextureType.DIFFUSE, new ArrayList<>());
+        return material;
+    }
 
     protected GaiaNode createNode(GaiaMaterial material, List<Vector3d> positions, List<GaiaTriangle> triangles) {
         GaiaNode node = new GaiaNode();
@@ -64,14 +81,14 @@ public abstract class AbstractGeometryConverter {
         GaiaPrimitive primitive = new GaiaPrimitive();
         List<GaiaSurface> surfaces = new ArrayList<>();
         List<GaiaVertex> vertices = new ArrayList<>();
-        primitive.setMaterialIndex(0);
+        primitive.setMaterialIndex(material.getId());
         primitive.setSurfaces(surfaces);
         primitive.setVertices(vertices);
 
         GaiaSurface surface = new GaiaSurface();
         Vector3d[] normals = new Vector3d[positions.size()];
         for (int i = 0; i < normals.length; i++) {
-            normals[i] = new Vector3d(0,0,0);
+            normals[i] = new Vector3d(0, 0, 0);
         }
 
         for (GaiaTriangle triangle : triangles) {
@@ -107,10 +124,7 @@ public abstract class AbstractGeometryConverter {
     protected int indexOf(List<Vector3d> positions, Vector3d item) {
         //return positions.indexOf(item);
         IntStream intStream = IntStream.range(0, positions.size());
-        int result = intStream
-                .filter(i -> positions.get(i) == item)
-                .findFirst()
-                .orElse(-1);
+        int result = intStream.filter(i -> positions.get(i) == item).findFirst().orElse(-1);
         intStream.close();
         return result;
     }
@@ -160,7 +174,7 @@ public abstract class AbstractGeometryConverter {
         } else if (attributeObject instanceof Integer) {
             result = String.valueOf((int) attributeObject);
         } else if (attributeObject instanceof Long) {
-            result = String.valueOf((Long) attributeObject);
+            result = String.valueOf(attributeObject);
         } else if (attributeObject instanceof Double) {
             result = String.valueOf((double) attributeObject);
         } else if (attributeObject instanceof Short) {
@@ -266,6 +280,57 @@ public abstract class AbstractGeometryConverter {
         return primitive;
     }
 
+    protected GaiaNode createPrimitiveFromPipeLineString(GaiaPipeLineString pipeLineString) {
+        GaiaNode resultGaiaNode = null;
+        int pointsCount = pipeLineString.getPositions().size();
+        if (pointsCount < 2) {
+            return null;
+        }
+
+        int pipeProfileType = pipeLineString.getPipeProfileType();
+        if (pipeProfileType == 1) {
+            // circular pipe.
+            float pipeRadius = (float) (pipeLineString.getDiameterCm() / 200.0f); // cm to meter.***
+
+            // 1rst create elbows.
+            float elbowRadius = pipeRadius * 1.5f; // test value.***
+            List<PipeElbow> pipeElbows = new ArrayList<>();
+
+            for (int i = 0; i < pointsCount; i++) {
+                Vector3d point = pipeLineString.getPositions().get(i);
+                PipeElbow pipeElbow = new PipeElbow(new Vector3d(point), pipeProfileType, elbowRadius);
+                pipeElbow.setPipeRadius(pipeRadius);
+                pipeElbow.setPipeProfileType(pipeProfileType);
+                pipeElbows.add(pipeElbow);
+            }
+
+            Modeler3D modeler3D = new Modeler3D();
+            TNetwork tNetwork = modeler3D.TEST_getPipeNetworkFromPipeElbows(pipeElbows);
+            resultGaiaNode = modeler3D.makeGeometry(tNetwork);
+        } else if (pipeProfileType == 2) {
+            // rectangular pipe.
+            float pipeWidth = pipeLineString.getPipeRectangularSize()[0];
+            float pipeHeight = pipeLineString.getPipeRectangularSize()[1];
+
+            // 1rst create elbows.
+            float elbowRadius = Math.max(pipeWidth, pipeHeight) * 1.5f; // test value.***
+            List<PipeElbow> pipeElbows = new ArrayList<>();
+
+            for (int i = 0; i < pointsCount; i++) {
+                Vector3d point = pipeLineString.getPositions().get(i);
+                PipeElbow pipeElbow = new PipeElbow(new Vector3d(point), pipeProfileType, elbowRadius);
+                pipeElbow.setPipeRectangularSize(new float[]{pipeWidth, pipeHeight});
+                pipeElbow.setPipeProfileType(pipeProfileType);
+                pipeElbows.add(pipeElbow);
+            }
+
+            Modeler3D modeler3D = new Modeler3D();
+            TNetwork tNetwork = modeler3D.TEST_getPipeNetworkFromPipeElbows(pipeElbows);
+            resultGaiaNode = modeler3D.makeGeometry(tNetwork);
+        }
+        return resultGaiaNode;
+    }
+
     protected GaiaPrimitive createPrimitiveFromGaiaExtrusionSurfaces(List<GaiaExtrusionSurface> surfaces) {
         GaiaTessellator tessellator = new GaiaTessellator();
         GaiaPrimitive primitive = new GaiaPrimitive();
@@ -334,5 +399,22 @@ public abstract class AbstractGeometryConverter {
         }
 
         return primitive;
+    }
+
+
+    protected GaiaMaterial getMaterialByClassification(List<GaiaMaterial> gaiaMaterials, Classification classification) {
+        if (classification.equals(Classification.DOOR)) {
+            return gaiaMaterials.get(1);
+        } else if (classification.equals(Classification.WINDOW)) {
+            return gaiaMaterials.get(2);
+        } else if (classification.equals(Classification.CEILING)) {
+            return gaiaMaterials.get(3);
+        } else if (classification.equals(Classification.STAIRS)) {
+            return gaiaMaterials.get(3);
+        } else if (classification.equals(Classification.ROOF)) {
+            return gaiaMaterials.get(4);
+        } else {
+            return gaiaMaterials.get(0);
+        }
     }
 }

@@ -33,6 +33,8 @@ public enum ProcessOptions {
     MAX_COUNT("maxCount", "mx", "maxCount", true, "Maximum number of triangles per node."),
     MIN_LOD("minLod", "nl", "minLod", true, "min level of detail (Default: 0)"),
     MAX_LOD("maxLod", "xl", "maxLod", true, "Max Level of detail (Default: 3)"),
+    MIN_GEOMETRIC_ERROR("minGeometricError", "ng", "minGeometricError", true, "Minimum geometric error (Default: 16.0)"),
+    MAX_GEOMETRIC_ERROR("maxGeometricError", "mg", "maxGeometricError", true, "Maximum geometric error (Default: Integer max value)"),
     MAX_POINTS("maxPoints", "mp", "maxPoints", true, "Limiting the maximum number of points in point cloud data. (Default: 65536)"),
     POINT_SCALE("pointScale", "ps", "pointScale", true, "Pointscloud geometryError scale setting (Default: 2)"),
     POINT_SKIP("pointSkip", "pk", "pointSkip", true, "Number of pointcloud omissions (ex: 1/4)(Default: 4)"),

@@ -11,9 +11,7 @@ import java.io.IOException;
 
 @Slf4j
 class Mago3DTilerUnitTest {
-
-    private static final String INPUT_PATH = "D:\\Mago3DTiler-UnitTest\\input";
-    //private static final String OUTPUT_PATH = "D:\\Mago3DTiler-UnitTest\\output";
+    private static final String INPUT_PATH = "D:\\data\\mago-tiler-data\\input";
     private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\mago-viewer\\data\\tilesets\\";
 
     @Test
@@ -43,7 +41,7 @@ class Mago3DTilerUnitTest {
                 "-inputType", "3ds",
                 "-crs", "5186",
                 "-output", output.getAbsolutePath(),
-                "-glb",
+                //"-glb",
         };
         Mago3DTilerMain.main(args);
     }
@@ -188,7 +186,9 @@ class Mago3DTilerUnitTest {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
                 "-inputType", "laz",
-                "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
+                //"-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
+                "-crs", "32652",
+                "-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -202,7 +202,7 @@ class Mago3DTilerUnitTest {
         String[] args = {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
-                "-inputType", "json",
+                "-inputType", "shp",
                 "-c", "4326",
                 "-hc", "B_Height_m",
                 "-refineAdd",
@@ -534,7 +534,7 @@ class Mago3DTilerUnitTest {
         Mago3DTilerMain.main(args);
     }
 
-    @Test
+    //@Test
     void case30() {
         String path = "case30-big-points";
         File input = new File(INPUT_PATH, path);
@@ -551,6 +551,52 @@ class Mago3DTilerUnitTest {
         };
         Mago3DTilerMain.main(args);
     }
+
+    @Test
+    void case31() {
+        String path = "case31-shp-wtl-pipe";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        String[] args = new String[]{
+                "-input", input.getAbsolutePath(),
+                "-inputType", "shp",
+                "-output", output.getAbsolutePath(),
+                "-crs", "5186",
+                //"-mg", "32",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void case32() {
+        String path = "case32-shp-swl-pipe";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        String[] args = new String[]{
+                "-input", input.getAbsolutePath(),
+                "-inputType", "shp",
+                "-output", output.getAbsolutePath(),
+                "-crs", "5186",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void case33() {
+        String path = "case33-ifc-sejong-bridge";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        String[] args = new String[]{
+                "-input", input.getAbsolutePath(),
+                "-inputType", "ifc",
+                "-output", output.getAbsolutePath(),
+                "-crs", "5186",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
 
     //@Test
     void sampleI3dm(String filePath, int length, int fileCount) {
@@ -627,6 +673,7 @@ class Mago3DTilerUnitTest {
             try {
                 FileUtils.writeStringToFile(outputFile, xml, "UTF-8");
             } catch (Exception e) {
+                log.error("Error : {}", e.getMessage());
                 e.printStackTrace();
             }
         }

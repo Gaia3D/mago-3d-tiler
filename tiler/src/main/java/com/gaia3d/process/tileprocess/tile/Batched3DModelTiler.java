@@ -29,6 +29,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
 
     public final GlobalOptions globalOptions = GlobalOptions.getInstance();
 
+
     public Batched3DModelTiler() {}
 
     @Override
@@ -48,8 +49,9 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         root.setGeometricError(geometricError);
 
         try {
-            createNode(root, tileInfos);
+            createNode(root, tileInfos, 0);
         } catch (IOException e) {
+            log.error("Error : {}", e.getMessage());
             throw new RuntimeException(e);
         }
 
@@ -74,41 +76,48 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
             writer.write(result);
             globalOptions.setTilesetSize(result.length());
         } catch (IOException e) {
+            log.error("Error : {}", e.getMessage());
             throw new TileProcessingException(e.getMessage());
         }
     }
 
-    private void createNode(Node parentNode, List<TileInfo> tileInfos) throws IOException {
+    private void createNode(Node parentNode, List<TileInfo> tileInfos, int nodeDepth) throws IOException {
         BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
         BoundingVolume squareBoundingVolume = parentBoundingVolume.createSqureBoundingVolume();
 
         boolean refineAdd = globalOptions.isRefineAdd();
-        //int nodeLimit = globalOptions.getNodeLimit() * 4; // for quadtree node limit
-
-        long triangleLimit = 65536 * 4;
+        long triangleLimit = globalOptions.getMaxTriangles();
         long totalTriangleCount = tileInfos.stream().mapToLong(TileInfo::getTriangleCount).sum();
-        log.info("[TriangleCount] Total : {}", totalTriangleCount);
+        log.debug("[TriangleCount] Total : {}", totalTriangleCount);
+
+        log.debug("[Tiling][ContentNode][OBJECT] : {}", tileInfos.size());
+
+        if (nodeDepth > globalOptions.getMaxNodeDepth()) {
+            log.warn("[Tiling] Node depth limit exceeded : {}", nodeDepth);
+            Node childNode = createContentNode(parentNode, tileInfos, 0);
+            if (childNode != null) {
+                parentNode.getChildren().add(childNode);
+            }
+            return;
+        }
 
         if (tileInfos.size() <= 1) {
             Node childNode = createContentNode(parentNode, tileInfos, 0);
             if (childNode != null) {
                 parentNode.getChildren().add(childNode);
-                createNode(childNode, tileInfos);
+                createNode(childNode, tileInfos, nodeDepth + 1);
             }
         } else if (totalTriangleCount > triangleLimit) {
-        //if (tileInfos.size() > nodeLimit) {
-            // logical node distribute
             List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
                 Node childNode = createLogicalNode(parentNode, childTileInfos, index);
                 if (childNode != null) {
                     parentNode.getChildren().add(childNode);
-                    createNode(childNode, childTileInfos);
+                    createNode(childNode, childTileInfos, nodeDepth + 1);
                 }
             }
         } else if (totalTriangleCount > 1) {
-            // phiysical node distribute
             List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
@@ -119,9 +128,9 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
                     Content content = childNode.getContent();
                     if (content != null && refineAdd) {
                         ContentInfo contentInfo = content.getContentInfo();
-                        createNode(childNode, contentInfo.getRemainTileInfos());
+                        createNode(childNode, contentInfo.getRemainTileInfos(), nodeDepth + 1);
                     } else {
-                        createNode(childNode, childTileInfos);
+                        createNode(childNode, childTileInfos, nodeDepth + 1);
                     }
                 }
             }
@@ -129,7 +138,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
             Node childNode = createContentNode(parentNode, tileInfos, 0);
             if (childNode != null) {
                 parentNode.getChildren().add(childNode);
-                createNode(childNode, tileInfos);
+                createNode(childNode, tileInfos, nodeDepth + 1);
             }
         }
     }
@@ -229,7 +238,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
             content.setContentInfo(contentInfo);
             childNode.setContent(content);
         } else {
-            log.warn("No content : {}", nodeCode);
+            log.debug("[Tiling][ContentNode][{}] No Contents", nodeCode);
         }
         return childNode;
     }

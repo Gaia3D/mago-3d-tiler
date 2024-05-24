@@ -29,3 +29,5 @@ build/
 out/
 src/test/resources/sample-external/
 .gradle
+/build/tmp/compileJava/
+/build/tmp/jar/

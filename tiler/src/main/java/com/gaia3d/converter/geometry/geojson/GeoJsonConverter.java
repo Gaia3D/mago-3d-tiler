@@ -1,6 +1,8 @@
 package com.gaia3d.converter.geometry.geojson;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.tessellator.GaiaExtruder;
+import com.gaia3d.basic.geometry.tessellator.GaiaExtrusionSurface;
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
@@ -8,8 +10,6 @@ import com.gaia3d.converter.geometry.AbstractGeometryConverter;
 import com.gaia3d.converter.geometry.GaiaExtrusionBuilding;
 import com.gaia3d.converter.geometry.InnerRingRemover;
 import com.gaia3d.converter.geometry.Vector3dsOnlyHashEquals;
-import com.gaia3d.converter.geometry.tessellator.GaiaExtruder;
-import com.gaia3d.converter.geometry.tessellator.GaiaExtrusionSurface;
 import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -215,6 +215,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                 scenes.add(scene);
             }
         } catch (IOException e) {
+            log.error("Failed to read GeoJSON file : {}", file.getAbsolutePath(), e);
             throw new RuntimeException(e);
         }
         return scenes;

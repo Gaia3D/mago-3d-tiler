@@ -63,8 +63,4 @@ public class PointCloudFileLoader implements FileLoader {
         }
         return tileInfos;
     }
-
-    private String[] getExtensions(FormatType formatType) {
-        return new String[]{formatType.getExtension().toLowerCase(), formatType.getExtension().toUpperCase()};
-    }
 }

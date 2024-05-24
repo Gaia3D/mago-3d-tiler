@@ -1,6 +1,7 @@
 package com.gaia3d.process.tileprocess.tile;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.process.tileprocess.tile.tileset.asset.*;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
@@ -15,13 +16,16 @@ import java.util.List;
 @Slf4j
 public abstract class DefaultTiler {
 
+
     protected double calcGeometricError(List<TileInfo> tileInfos) {
-        double minimumGeometricError = 16.0d;
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        double minimumGeometricError = globalOptions.getMinGeometricError();
+        double maximumGeometricError = globalOptions.getMaxGeometricError();
         double calculatedGeometricError = tileInfos.stream().mapToDouble(tileInfo -> {
             GaiaBoundingBox boundingBox = tileInfo.getBoundingBox();
             return boundingBox.getLongestDistance();
         }).max().orElse(0.0d);
-        return Math.max(minimumGeometricError, calculatedGeometricError);
+        return Math.min(Math.max(minimumGeometricError, calculatedGeometricError), maximumGeometricError);
     }
 
     protected GaiaBoundingBox calcBoundingBox(List<TileInfo> tileInfos) {

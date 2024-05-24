@@ -39,6 +39,7 @@ public class Mago3DTilerMain {
                 if (hasLogPath) {
                     Configurator.initFileLogger(null, command.getOptionValue(ProcessOptions.LOG.getArgName()));
                 }
+                Configurator.setLevel(Level.INFO);
             }
 
             printStart();
@@ -53,11 +54,14 @@ public class Mago3DTilerMain {
             Mago3DTiler mago3DTiler = new Mago3DTiler();
             mago3DTiler.execute();
         } catch (ParseException e) {
+            log.error("Failed to parse command line options, Please check the arguments.", e);
             throw new RuntimeException("Failed to parse command line options, Please check the arguments.", e);
         } catch (IOException e) {
+            log.error("Failed to run process, Please check the arguments.", e);
             throw new RuntimeException("Failed to run process, Please check the arguments.", e);
         }
         printEnd();
+        Configurator.destroyLogger();
     }
 
     /**
@@ -67,9 +71,9 @@ public class Mago3DTilerMain {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         String programInfo = globalOptions.getProgramInfo();
         log.info("\n" +
-                "┌┬┐┌─┐┌─┐┌─┐  -┐┌┬┐  ┌┬┐┬┬  ┌─┐┬─┐\n" +
-                "│││├─┤│ ┬│ │  -┤ ││   │ ││  ├┤ ├┬┘\n" +
-                "┴ ┴┴ ┴└─┘└─┘  -┘-┴┘   ┴ ┴┴─┘└─┘┴└─\n" +
+                "┳┳┓┏┓┏┓┏┓  ┏┓┳┓  ┏┳┓┳┓ ┏┓┳┓\n" +
+                "┃┃┃┣┫┃┓┃┃   ┫┃┃   ┃ ┃┃ ┣ ┣┫\n" +
+                "┛ ┗┛┗┗┛┗┛  ┗┛┻┛   ┻ ┻┗┛┗┛┛┗\n" +
                 programInfo + "\n" +
                 "----------------------------------------"
         );

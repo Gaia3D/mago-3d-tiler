@@ -1,11 +1,16 @@
 package com.gaia3d.converter.geometry.indoorgml;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.structure.*;
+import com.gaia3d.basic.geometry.tessellator.GaiaTessellator;
+import com.gaia3d.basic.structure.GaiaMesh;
+import com.gaia3d.basic.structure.GaiaNode;
+import com.gaia3d.basic.structure.GaiaPrimitive;
+import com.gaia3d.basic.structure.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
-import com.gaia3d.converter.geometry.*;
-import com.gaia3d.converter.geometry.tessellator.GaiaTessellator;
+import com.gaia3d.converter.geometry.AbstractGeometryConverter;
+import com.gaia3d.converter.geometry.GaiaBuildingSurface;
+import com.gaia3d.converter.geometry.Vector3dsOnlyHashEquals;
 import com.gaia3d.util.GlobeUtils;
 import edu.stem.indoor.IndoorFeatures;
 import edu.stem.space.*;
@@ -20,9 +25,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 public class IndoorGmlConverter extends AbstractGeometryConverter implements Converter {
@@ -45,7 +48,7 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
     protected List<GaiaScene> convert(File file) {
         List<GaiaScene> scenes = new ArrayList<>();
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-        //ConvexHullTessellator tessellator = new ConvexHullTessellator();
+
         GaiaTessellator tessellator = new GaiaTessellator();
 
         try {
@@ -102,8 +105,12 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                         log.info("Polygon is not closed. Adding the first point to the end of the list.");
                     }
 
-                    GaiaBuildingSurface buildingSurface = GaiaBuildingSurface.builder().id(cellSpace.getId()).name(cellSpace.getName()).boundingBox(boundingBox).positions(vertices).build();
-
+                    GaiaBuildingSurface buildingSurface = GaiaBuildingSurface.builder()
+                            .id(cellSpace.getId())
+                            .name(cellSpace.getName())
+                            .boundingBox(boundingBox)
+                            .positions(vertices)
+                            .build();
                     gaiaBuildingSurfaces.add(buildingSurface);
                 }
 
@@ -137,7 +144,6 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                     for (Vector3d position : buildingSurface.getPositions()) {
                         Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
                         Vector3d localPosition = positionWorldCoordinate.mulPosition(transfromMatrixInv);
-                        localPosition.z = position.z;
                         localPositions.add(localPosition);
                         polygon.add(new Vector3dsOnlyHashEquals(localPosition));
                     }
