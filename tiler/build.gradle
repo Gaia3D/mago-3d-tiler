@@ -21,7 +21,6 @@ switch ( OperatingSystem.current() ) {
         project.ext.lwjglNatives = "natives-macos"
         break
 }
-project.ext.lwjglNatives = "natives-linux"
 
 repositories {
     maven { url "https://repo.osgeo.org/repository/release/" }
