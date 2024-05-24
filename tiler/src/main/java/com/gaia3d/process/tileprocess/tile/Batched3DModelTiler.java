@@ -238,7 +238,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
             content.setContentInfo(contentInfo);
             childNode.setContent(content);
         } else {
-            log.warn("No content : {}", nodeCode);
+            log.debug("[Tiling][ContentNode][{}] No Contents", nodeCode);
         }
         return childNode;
     }

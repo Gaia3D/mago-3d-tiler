@@ -61,6 +61,7 @@ public class Mago3DTilerMain {
             throw new RuntimeException("Failed to run process, Please check the arguments.", e);
         }
         printEnd();
+        Configurator.destroyLogger();
     }
 
     /**

@@ -4,6 +4,7 @@ import com.gaia3d.process.ProcessOptions;
 import org.apache.commons.cli.Options;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.ConsoleAppender;
 import org.apache.logging.log4j.core.appender.FileAppender;
@@ -66,6 +67,20 @@ public class Configurator {
         loggerConfig.addAppender(fileAppender, LEVEL, null);
         ctx.updateLoggers();
         fileAppender.start();
+    }
+
+    public static void destroyLogger() {
+        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+        Configuration config = ctx.getConfiguration();
+        LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+
+        Appender appender = loggerConfig.getAppenders().get("FileLogger");
+        if (appender != null) {
+            appender.stop();
+        }
+
+        removeAllAppender(loggerConfig);
+        ctx.updateLoggers();
     }
 
     public static Options createOptions() {
