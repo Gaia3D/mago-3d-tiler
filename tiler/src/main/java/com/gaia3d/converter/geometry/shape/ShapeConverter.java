@@ -1,8 +1,6 @@
 package com.gaia3d.converter.geometry.shape;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.geometry.GaiaPipeLineString;
-import com.gaia3d.basic.geometry.networkStructure.modeler.Modeler3D;
 import com.gaia3d.basic.geometry.tessellator.GaiaExtruder;
 import com.gaia3d.basic.geometry.tessellator.GaiaExtrusionSurface;
 import com.gaia3d.basic.geometry.tessellator.Vector3dOnlyHashEquals;
@@ -11,6 +9,9 @@ import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.geometry.*;
 
+import com.gaia3d.converter.geometry.pipe.GaiaPipeLineString;
+import com.gaia3d.converter.geometry.pipe.Modeler3D;
+import com.gaia3d.converter.geometry.pipe.PipeType;
 import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +45,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ShapeConverter extends AbstractGeometryConverter implements Converter {
 
+    private GlobalOptions globalOptions = GlobalOptions.getInstance();
+
     @Override
     public List<GaiaScene> load(String path) {
         return convert(new File(path));
@@ -64,11 +67,11 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         GaiaExtruder gaiaExtruder = new GaiaExtruder();
         InnerRingRemover innerRingRemover = new InnerRingRemover();
 
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
         boolean flipCoordinate = globalOptions.isFlipCoordinate();
         String nameColumnName = globalOptions.getNameColumn();
         String heightColumnName = globalOptions.getHeightColumn();
         String altitudeColumnName = globalOptions.getAltitudeColumn();
+        String radiusColumnName = globalOptions.getRadiusColumn();
 
         double absoluteAltitudeValue = globalOptions.getAbsoluteAltitude();
         double minimumHeightValue = globalOptions.getMinimumHeight();
@@ -85,16 +88,26 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             var query = new Query(typeName, Filter.INCLUDE);
             //query.getHints().add(new Hints(Hints.FEATURE_2D, true));
 
+            int totalCount = source.getCount(query);
+            int totalCountBy100 = totalCount / 100;
+            int progressCount = 0;
+            log.info(" - Total Shape Feature Count : {}", totalCount);
+
             SimpleFeatureCollection features = source.getFeatures(query);
             FeatureIterator<SimpleFeature> iterator = features.features();
             List<GaiaExtrusionBuilding> buildings = new ArrayList<>();
             List<GaiaPipeLineString> pipeLineStrings = new ArrayList<>();
             while (iterator.hasNext()) {
+                if (progressCount % totalCountBy100 == 0) {
+                    log.info(" - Shape Feature Loading progress. ({}/100)%", progressCount / totalCountBy100);
+                }
+                progressCount++;
+
                 SimpleFeature feature = iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
 
                 if (geom == null) {
-                    log.warn("Is Null Geometry : {}", feature.getID());
+                    log.debug("Is Null Geometry : {}", feature.getID());
                     continue;
                 }
 
@@ -117,7 +130,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                         LineStrings.add(lineString);
                     }
                 } else {
-                    log.warn("Is Not Supported Geometry Type : {}", geom.getGeometryType());
+                    log.debug("Is Not Supported Geometry Type : {}", geom.getGeometryType());
                     continue;
                 }
 
@@ -151,27 +164,31 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                         //columnName = "HGH_DEP";
                         //String higherDepthText = getAttribute(feature, columnName);
                         //Double higherDepth = Double.parseDouble(higherDepthText);
-                        String columnName = "PIP_LBL";
-                        String pipeLabel = getAttribute(feature, columnName);
-                        String separator = "/";
-                        String[] pipeLabelTokens = pipeLabel.split(separator);
+                        //String columnName = "PIP_LBL";
+                        //String pipeLabel = getAttribute(feature, columnName);
+                        //String separator = "/";
+                        //String[] pipeLabelTokens = pipeLabel.split(separator);
 
-                        if (pipeLabelTokens.length < 3) {
+                        /*if (pipeLabelTokens.length < 3) {
                             continue;
                         }
                         String diameterCmString = pipeLabelTokens[2];
-                        int pipeProfileType = 0; // 1 = circular, 2 = rectangular.***
+
+                        // 1 = circular, 2 = rectangular.***
+                        PipeType pipeProfileType = PipeType.CIRCULAR;
                         float rectangleWidth = 0.0f;
-                        float rectangleHeight = 0.0f;
+                        float rectangleHeight = 0.0f;*/
 
-                        if (diameterCmString.isEmpty()) {
+                        /*if (diameterCmString.isEmpty()) {
                             continue;
-                        }
+                        }*/
 
-                        // check the 1rst character of the string.***
+                        /*// check the 1rst character of the string.***
                         char firstChar = diameterCmString.charAt(0);
                         // '⌀' = 248.***
                         // '?' = 63.***
+
+
                         if (firstChar == 248 || firstChar == 63) {
                             // delete the 1rst character of the string.***
                             diameterCmString = diameterCmString.substring(1);
@@ -220,11 +237,28 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                                     continue;
                                 }
                             }
-                        }
+                        }*/
                         // delete the 1rst character of the string.***
                         //diameterCmString = diameterCmString.substring(1, diameterCmString.length());
 
-                        if (pipeProfileType == 2) {
+                        double diameter = getRadius(feature, radiusColumnName);
+                        GaiaPipeLineString pipeLineString = GaiaPipeLineString.builder()
+                                .id(feature.getID())
+                                //.name(pipeLabel)
+
+                                //.profileType(PipeType.CIRCULAR)
+                                //.diameter(diameter)
+
+                                .profileType(PipeType.RECTANGULAR)
+                                .rectangularSize(new float[]{(float) diameter / 100, (float) diameter / 100})
+
+                                .positions(positions).build();
+                        pipeLineString.setOriginalFilePath(file.getPath());
+                        pipeLineStrings.add(pipeLineString);
+
+
+
+                        /*if (pipeProfileType == 2) {
                             // is a rectangular pipe.***
                             // create a pipe with a rectangular profile.***
                             float[] pipeRectangularSize = new float[2];
@@ -251,17 +285,17 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                                     .positions(positions).build();
                             pipeLineString.setOriginalFilePath(file.getPath());
                             pipeLineStrings.add(pipeLineString);
-                        }
+                        }*/
                     } else {
                         log.warn("Invalid Geometry : has no points. : {}", feature.getID());
                     }
                 }
 
                 for (Polygon polygon : polygons) {
-                    if (!polygon.isValid()) {
-                        log.warn("Is Invalid Polygon. : {}", feature.getID());
+                    /*if (!polygon.isValid()) {
+                        log.debug("Is Invalid Polygon. : {}", feature.getID());
                         continue;
-                    }
+                    }*/
 
                     LineString lineString = polygon.getExteriorRing();
                     GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
@@ -274,8 +308,10 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                         Coordinate[] innerCoordinatesArray = innerRing.getCoordinates();
                         innerCoordinates.add(innerCoordinatesArray);
                     }
+                    if (innerRingCount > 0) {
+                        outerCoordinates = innerRingRemover.removeAll(outerCoordinates, innerCoordinates);
+                    }
 
-                    outerCoordinates = innerRingRemover.removeAll(outerCoordinates, innerCoordinates);
                     GaiaBoundingBox boundingBox = new GaiaBoundingBox();
                     List<Vector3d> positions = new ArrayList<>();
 
@@ -305,17 +341,24 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                         boundingBox.addPoint(position);
                     }
 
+                    String name = getAttributeValue(feature, nameColumnName);
                     if (positions.size() >= 3) {
-                        String name = getAttribute(feature, nameColumnName);
                         double height = getHeight(feature, heightColumnName, minimumHeightValue);
                         double altitude = absoluteAltitudeValue;
                         if (altitudeColumnName != null) {
                             altitude = getAltitude(feature, altitudeColumnName);
                         }
-                        GaiaExtrusionBuilding building = GaiaExtrusionBuilding.builder().id(feature.getID()).name(name).boundingBox(boundingBox).floorHeight(altitude).roofHeight(height + skirtHeight).positions(positions).build();
+                        GaiaExtrusionBuilding building = GaiaExtrusionBuilding.builder()
+                                .id(feature.getID())
+                                .name(name)
+                                .boundingBox(boundingBox)
+                                .floorHeight(altitude)
+                                .roofHeight(height + skirtHeight)
+                                .positions(positions)
+                                .originalFilePath(file.getPath())
+                                .build();
                         buildings.add(building);
                     } else {
-                        String name = getAttribute(feature, nameColumnName);
                         log.warn("Invalid Geometry : {}, {}", feature.getID(), name);
                     }
                 }
@@ -325,10 +368,10 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             shpFiles.dispose();
             dataStore.dispose();
 
-            this.convertPipeLineStrings(pipeLineStrings, scenes);
+            convertPipeLineStrings(pipeLineStrings, scenes);
+            convertExtrusionBuildings(buildings, scenes);
 
-            // check if there are buildings.***
-            for (GaiaExtrusionBuilding building : buildings) {
+            /*for (GaiaExtrusionBuilding building : buildings) {
                 GaiaScene scene = initScene();
                 scene.setOriginalPath(file.toPath());
 
@@ -371,15 +414,63 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 rootNode.setTransformMatrix(rootTransformMatrix);
                 scenes.add(scene);
             }
-
-            dataStore.dispose();
-            reader.close();
+*/
         } catch (IOException e) {
             log.error("Error while reading shapefile", e);
             throw new RuntimeException(e);
         }
         shpFiles.dispose();
         return scenes;
+    }
+    //convertPipeLineStrings(pipeLineStrings, scenes);
+    private void convertExtrusionBuildings(List<GaiaExtrusionBuilding> buildings, List<GaiaScene> resultScenes) {
+        double skirtHeight = globalOptions.getSkirtHeight();
+        GaiaExtruder gaiaExtruder = new GaiaExtruder();
+
+        for (GaiaExtrusionBuilding building : buildings) {
+            GaiaScene scene = initScene();
+            Path path = new File(building.getOriginalFilePath()).toPath();
+            scene.setOriginalPath(path);
+
+            GaiaNode rootNode = scene.getNodes().get(0);
+            rootNode.setName(building.getName());
+
+            Vector3d center = building.getBoundingBox().getCenter();
+            center.z = center.z - skirtHeight;
+
+            Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
+            Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
+            Matrix4d transfromMatrixInv = new Matrix4d(transformMatrix).invert();
+
+            List<Vector3d> localPositions = new ArrayList<>();
+            for (Vector3d position : building.getPositions()) {
+                Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
+                Vector3d localPosition = positionWorldCoordinate.mulPosition(transfromMatrixInv);
+                localPosition.z = 0.0d;
+                localPositions.add(new Vector3dOnlyHashEquals(localPosition));
+            }
+            Collections.reverse(localPositions);
+            localPositions.remove(localPositions.size() - 1);
+
+            List<GaiaExtrusionSurface> extrusionSurfaces = gaiaExtruder.extrude(localPositions, building.getRoofHeight(), building.getFloorHeight());
+
+            GaiaNode node = new GaiaNode();
+            node.setTransformMatrix(new Matrix4d().identity());
+            GaiaMesh mesh = new GaiaMesh();
+            node.getMeshes().add(mesh);
+
+            GaiaPrimitive primitive = createPrimitiveFromGaiaExtrusionSurfaces(extrusionSurfaces);
+
+            primitive.setMaterialIndex(0);
+            mesh.getPrimitives().add(primitive);
+
+            rootNode.getChildren().add(node);
+
+            Matrix4d rootTransformMatrix = new Matrix4d().identity();
+            rootTransformMatrix.translate(center, rootTransformMatrix);
+            rootNode.setTransformMatrix(rootTransformMatrix);
+            resultScenes.add(scene);
+        }
     }
 
     private void convertPipeLineStrings(List<GaiaPipeLineString> pipeLineStrings, List<GaiaScene> resultScenes) {
@@ -391,8 +482,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         //modeler3d.concatenateGaiaPipeLines(pipeLineStrings);
 
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-
-        int pipeLineStringsCount = pipeLineStrings.size();
         for (GaiaPipeLineString pipeLineString : pipeLineStrings) {
             int pointsCount = pipeLineString.getPositions().size();
             pipeLineString.setBoundingBox(new GaiaBoundingBox());
@@ -408,10 +497,11 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
 
                     double defaultHeight = 2.0;
                     double heightOffset = 0.0;
-                    if (pipeLineString.getPipeProfileType() == 1) {
-                        heightOffset = pipeLineString.getDiameterCm() / 100 / 2;
-                    } else if (pipeLineString.getPipeProfileType() == 2) {
-                        heightOffset = pipeLineString.getPipeRectangularSize()[1] / 100 / 2;
+
+                    if (pipeLineString.getProfileType() == PipeType.CIRCULAR) {
+                        heightOffset = pipeLineString.getDiameter() / 100 / 2;
+                    } else if (pipeLineString.getProfileType() == PipeType.RECTANGULAR) {
+                        heightOffset = pipeLineString.getRectangularSize()[1] / 100 / 2;
                     }
 
                     point.set(centerWgs84.x, centerWgs84.y, point.z - heightOffset - defaultHeight);

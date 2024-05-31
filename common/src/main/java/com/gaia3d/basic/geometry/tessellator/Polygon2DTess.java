@@ -120,10 +120,16 @@ public class Polygon2DTess {
 
             double angRad = Math.acos(dot); // because v1 and v2 are normalized.***
             normal += (float) (angRad * cross);
+
+            // TODO: check if this is necessary.***
+            if (Math.abs(normal) < 1e-5) {
+                normal = 0.0f;
+                return normal;
+            }
         }
 
-        if(Math.abs(normal) < 1e-5) // 1e-6 works ok.***
-        {
+        if (Math.abs(normal) < 1e-5) {
+            // 1e-6 works ok.***
             // probably the polygon is a line, or a self-intersecting polygon (butterfly polygon).***
             normal = 0.0f;
             return normal;

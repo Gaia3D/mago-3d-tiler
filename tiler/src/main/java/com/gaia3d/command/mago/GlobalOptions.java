@@ -46,6 +46,7 @@ public class GlobalOptions {
     private static final String DEFAULT_NAME_COLUMN = "name";
     private static final String DEFAULT_HEIGHT_COLUMN = "height";
     private static final String DEFAULT_ALTITUDE_COLUMN = "altitude";
+    private static final String DEFAULT_RADIUS_COLUMN = "radius";
     private static final double DEFAULT_ABSOLUTE_ALTITUDE = 0.0d;
     private static final double DEFAULT_MINIMUM_HEIGHT = 1.0d;
     private static final double DEFAULT_SKIRT_HEIGHT = 4.0d;
@@ -121,6 +122,7 @@ public class GlobalOptions {
     private String nameColumn;
     private String heightColumn;
     private String altitudeColumn;
+    private String radiusColumn;
     private double absoluteAltitude;
     private double minimumHeight;
     private double skirtHeight;
@@ -227,6 +229,7 @@ public class GlobalOptions {
         instance.setNameColumn(command.hasOption(ProcessOptions.NAME_COLUMN.getArgName()) ? command.getOptionValue(ProcessOptions.NAME_COLUMN.getArgName()) : DEFAULT_NAME_COLUMN);
         instance.setHeightColumn(command.hasOption(ProcessOptions.HEIGHT_COLUMN.getArgName()) ? command.getOptionValue(ProcessOptions.HEIGHT_COLUMN.getArgName()) : DEFAULT_HEIGHT_COLUMN);
         instance.setAltitudeColumn(command.hasOption(ProcessOptions.ALTITUDE_COLUMN.getArgName()) ? command.getOptionValue(ProcessOptions.ALTITUDE_COLUMN.getArgName()) : DEFAULT_ALTITUDE_COLUMN);
+        instance.setRadiusColumn(command.hasOption(ProcessOptions.RADIUS_COLUMN.getArgName()) ? command.getOptionValue(ProcessOptions.RADIUS_COLUMN.getArgName()) : DEFAULT_RADIUS_COLUMN);
         instance.setAbsoluteAltitude(command.hasOption(ProcessOptions.ABSOLUTE_ALTITUDE.getArgName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.ABSOLUTE_ALTITUDE.getArgName())) : DEFAULT_ABSOLUTE_ALTITUDE);
         instance.setMinimumHeight(command.hasOption(ProcessOptions.MINIMUM_HEIGHT.getArgName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.MINIMUM_HEIGHT.getArgName())) : DEFAULT_MINIMUM_HEIGHT);
         instance.setSkirtHeight(command.hasOption(ProcessOptions.SKIRT_HEIGHT.getArgName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.SKIRT_HEIGHT.getArgName())) : DEFAULT_SKIRT_HEIGHT);

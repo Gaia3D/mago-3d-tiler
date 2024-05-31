@@ -1,6 +1,5 @@
-package com.gaia3d.basic.geometry.networkStructure.pipes;
+package com.gaia3d.converter.geometry.pipe;
 
-import com.gaia3d.basic.geometry.networkStructure.modeler.Modeler3D;
 import com.gaia3d.basic.geometry.networkStructure.modeler.TEdge;
 import com.gaia3d.basic.geometry.networkStructure.modeler.TNode;
 import com.gaia3d.basic.structure.GaiaMesh;
@@ -18,14 +17,14 @@ import java.util.Map;
 @Getter
 @Setter
 public class PipeElbow extends TNode {
-    private int pipeProfileType = 0; // 0 = unknown, 1 = circular, 2 = rectangular, 3 = oval, 4 = irregular, etc.
+    private PipeType profileType = PipeType.UNKNOWN;
     private float elbowRadius = 0.0f;
     private float pipeRadius = 0.0f;
     private float[] pipeRectangularSize = new float[2]; // for rectangular pipe.
     private double sweepAngRad = 0.0;
     private Vector3d elbowAxis = new Vector3d(0.0, 0.0, 1.0);
     private Vector3d elbowCenterPosition = new Vector3d(); // this is NOT the position of the TNode's position.***
-    private int elbowType = 1; // 0 = unknown, 1 = straight, 2 = toroidal, 3 = spherical.***
+    private PipeElbowType elbowType = PipeElbowType.STRAIGHT; // 0 = unknown, 1 = straight, 2 = toroidal, 3 = spherical.***
 
     // linkPositions.***
     private Map<TEdge, Vector3d> mapEdgeLinkPositions;
@@ -37,9 +36,9 @@ public class PipeElbow extends TNode {
     private boolean topCap = false;
 
     //, float pipeRadius, float[] pipeRectangularSize)
-    public PipeElbow(Vector3d vector3d, int pipeProfileType, float elbowRadius) {
+    public PipeElbow(Vector3d vector3d, PipeType profileType, float elbowRadius) {
         super(vector3d);
-        this.pipeProfileType = pipeProfileType;
+        this.profileType = profileType;
         this.elbowRadius = elbowRadius;
         this.pipeRadius = pipeRadius;
         this.pipeRectangularSize = pipeRectangularSize;
@@ -231,7 +230,7 @@ public class PipeElbow extends TNode {
     }
 
     private void getPipeProfilePoints(List<Vector3d> resultPoints) {
-        if (this.getPipeProfileType() == 1) {
+        if (profileType == PipeType.CIRCULAR) {
             Modeler3D modeler3D = new Modeler3D();
             pipeRadiusInterpolationCount = modeler3D.getCircleInterpolationByRadius(pipeRadius);
 
@@ -246,7 +245,7 @@ public class PipeElbow extends TNode {
                 Vector3d circlePoint = new Vector3d(x, y, z);
                 resultPoints.add(circlePoint);
             }
-        } else if (this.getPipeProfileType() == 2) {
+        } else if (profileType == PipeType.RECTANGULAR) {
             // rectangular profile.***
             double halfWidth = pipeRectangularSize[0] / 2.0;
             double halfHeight = pipeRectangularSize[1] / 2.0;
@@ -297,7 +296,7 @@ public class PipeElbow extends TNode {
         Vector3d thisNodePos = new Vector3d(this.getPosition());
 
         // calculate the 1rst transversal circle.***********************************************
-        List<Vector3d> transversalCircle1 = new ArrayList<Vector3d>();
+        List<Vector3d> transversalCircle1 = new ArrayList<>();
         Matrix4d tMat = modeler3D.getMatrix4FromZDir(dir1);
         Matrix4d translationMat = new Matrix4d();
         translationMat.translate(thisNodePos);
@@ -313,13 +312,13 @@ public class PipeElbow extends TNode {
 
         // end calculating the 1rst transversal circle.-----------------------------------------
 
-        List<List<Vector3d>> transversalCircles = new ArrayList<List<Vector3d>>();
+        List<List<Vector3d>> transversalCircles = new ArrayList<>();
         transversalCircles.add(transversalCircle1); // add the 1rst transversal circle.
 
         Vector3d currentDir = new Vector3d(dir1);
         Vector3d currentPos = new Vector3d(linkPos1);
         for (int i = 0; i < this.elbowRadiusInterpolationCount; i++) {
-            List<Vector3d> transversalCircle = new ArrayList<Vector3d>();
+            List<Vector3d> transversalCircle = new ArrayList<>();
             for (int j = 0; j < circlePoints.size(); j++) {
                 Vector3d circlePoint = transversalCircle1.get(j);
                 Vector3d transformedPoint = new Vector3d(circlePoint);
@@ -358,7 +357,7 @@ public class PipeElbow extends TNode {
             return null;
         }
 
-        if (this.getElbowType() == 0) {
+        if (elbowType == PipeElbowType.UNKNOWN) {
             // if the elbowType is unknown, then this elbow has no mesh.
             return null;
         }
@@ -489,13 +488,13 @@ public class PipeElbow extends TNode {
 
         // end calculating the 1rst transversal circle.-----------------------------------------
 
-        List<List<Vector3d>> transversalCircles = new ArrayList<List<Vector3d>>();
+        List<List<Vector3d>> transversalCircles = new ArrayList<>();
         transversalCircles.add(transversalCircle1); // add the 1rst transversal circle.
 
         Vector3d currentDir = new Vector3d(dir1);
         Vector3d currentPos = new Vector3d(linkPos1);
         for (int i = 0; i < this.elbowRadiusInterpolationCount; i++) {
-            List<Vector3d> transversalCircle = new ArrayList<Vector3d>();
+            List<Vector3d> transversalCircle = new ArrayList<>();
             for (int j = 0; j < circlePoints.size(); j++) {
                 Vector3d circlePoint = transversalCircle1.get(j);
                 Vector3d transformedPoint = new Vector3d(circlePoint);

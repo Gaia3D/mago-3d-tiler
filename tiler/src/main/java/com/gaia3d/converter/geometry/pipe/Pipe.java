@@ -1,6 +1,5 @@
-package com.gaia3d.basic.geometry.networkStructure.pipes;
+package com.gaia3d.converter.geometry.pipe;
 
-import com.gaia3d.basic.geometry.networkStructure.modeler.Modeler3D;
 import com.gaia3d.basic.geometry.networkStructure.modeler.TEdge;
 import com.gaia3d.basic.geometry.networkStructure.modeler.TNode;
 import com.gaia3d.basic.structure.GaiaMesh;
@@ -16,7 +15,7 @@ import java.util.List;
 @Setter
 @Getter
 public class Pipe extends TEdge {
-    private int pipeProfileType = 0; // 0 = unknown, 1 = circular, 2 = rectangular, 3 = oval, 4 = irregular, etc.
+    private PipeType profileType = PipeType.UNKNOWN;
     private Vector3d startLinkPosition;
     private Vector3d endLinkPosition;
     // set pipeRadius.
@@ -81,7 +80,7 @@ public class Pipe extends TEdge {
 
 
     private void getPipeProfilePoints(List<Vector3d> resultPoints) {
-        if (this.getPipeProfileType() == 1) {
+        if (profileType == PipeType.CIRCULAR) {
             Modeler3D modeler3D = new Modeler3D();
             interpolationCount = modeler3D.getCircleInterpolationByRadius(pipeRadius);
 
@@ -97,7 +96,7 @@ public class Pipe extends TEdge {
                 Vector3d circlePoint = new Vector3d(x, y, z);
                 resultPoints.add(circlePoint);
             }
-        } else if (this.getPipeProfileType() == 2) {
+        } else if (profileType == PipeType.RECTANGULAR) {
             // rectangular profile.***
             double halfWidth = pipeRectangularSize[0] / 2.0;
             double halfHeight = pipeRectangularSize[1] / 2.0;

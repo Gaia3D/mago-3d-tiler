@@ -1,5 +1,6 @@
-package com.gaia3d.basic.geometry;
+package com.gaia3d.converter.geometry.pipe;
 
+import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,21 +14,24 @@ import java.util.List;
 public class GaiaPipeLineString {
     private String id;
     private String name;
-    private double diameterCm;
-    private float[] pipeRectangularSize; // for rectangular pipe.
+
+    private double diameter; // M
+    private float[] rectangularSize;
+
     private GaiaBoundingBox boundingBox;
-    private int pipeProfileType; // 0 = unknown, 1 = circular, 2 = rectangular, 3 = oval, 4 = irregular, etc.
+    private PipeType profileType; // 0 = unknown, 1 = circular, 2 = rectangular, 3 = oval, 4 = irregular, etc.
     private String originalFilePath;
     private List<Vector3d> positions;
 
     public boolean isSameProfile(GaiaPipeLineString pipeLineString) {
-        if (pipeProfileType != pipeLineString.pipeProfileType) {
+        if (profileType != pipeLineString.profileType) {
             return false;
         }
-        if (pipeProfileType == 1) {
-            return diameterCm == pipeLineString.diameterCm;
-        } else if (pipeProfileType == 2) {
-            return pipeRectangularSize[0] == pipeLineString.pipeRectangularSize[0] && pipeRectangularSize[1] == pipeLineString.pipeRectangularSize[1];
+
+        if (profileType == PipeType.CIRCULAR) {
+            return diameter == pipeLineString.diameter;
+        } else if (profileType == PipeType.RECTANGULAR) {
+            return rectangularSize[0] == pipeLineString.rectangularSize[0] && rectangularSize[1] == pipeLineString.rectangularSize[1];
         }
         return true;
     }

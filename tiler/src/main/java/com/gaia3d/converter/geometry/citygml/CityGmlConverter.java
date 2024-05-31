@@ -5,6 +5,7 @@ import com.gaia3d.basic.structure.*;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.geometry.*;
+import com.gaia3d.converter.geometry.extrusion.Extruder;
 import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +30,6 @@ import org.xmlobjects.gml.model.geometry.complexes.CompositeSurface;
 import org.xmlobjects.gml.model.geometry.primitives.*;
 import org.xmlobjects.gml.model.geometry.primitives.Polygon;
 
-import java.awt.*;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.*;

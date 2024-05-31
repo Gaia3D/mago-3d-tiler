@@ -81,7 +81,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
 
                 if (geom == null) {
-                    log.warn("Is Null Geometry : {}", feature.getID());
+                    log.debug("Is Null Geometry : {}", feature.getID());
                     continue;
                 }
 
@@ -95,13 +95,13 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                 } else if (geom instanceof Polygon) {
                     polygons.add((Polygon) geom);
                 } else {
-                    log.warn("Is Not Supported Geometry Type : {}", geom.getGeometryType());
+                    log.debug("Is Not Supported Geometry Type : {}", geom.getGeometryType());
                     continue;
                 }
 
                 for (Polygon polygon : polygons) {
                     if (!polygon.isValid()) {
-                        log.warn("Is Invalid Polygon. : {}", feature.getID());
+                        log.debug("Is Invalid Polygon. : {}", feature.getID());
                         continue;
                     }
 
@@ -148,7 +148,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                     }
 
                     if (positions.size() >= 3) {
-                        String name = getAttribute(feature, nameColumnName);
+                        String name = getAttributeValue(feature, nameColumnName);
                         double height = getHeight(feature, heightColumnName, minimumHeightValue);
                         double altitude = absoluteAltitudeValue;
                         if (altitudeColumnName != null) {
@@ -164,7 +164,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                                 .build();
                         buildings.add(building);
                     } else {
-                        String name = getAttribute(feature, nameColumnName);
+                        String name = getAttributeValue(feature, nameColumnName);
                         log.warn("Invalid Geometry : {}, {}", feature.getID(), name);
                     }
                 }

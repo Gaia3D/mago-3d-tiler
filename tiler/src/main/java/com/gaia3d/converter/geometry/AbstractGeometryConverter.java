@@ -1,14 +1,15 @@
 package com.gaia3d.converter.geometry;
 
-import com.gaia3d.basic.geometry.GaiaPipeLineString;
-import com.gaia3d.basic.geometry.networkStructure.modeler.Modeler3D;
 import com.gaia3d.basic.geometry.networkStructure.modeler.TNetwork;
-import com.gaia3d.basic.geometry.networkStructure.pipes.PipeElbow;
 import com.gaia3d.basic.geometry.tessellator.GaiaExtrusionSurface;
 import com.gaia3d.basic.geometry.tessellator.GaiaTessellator;
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
+import com.gaia3d.converter.geometry.pipe.GaiaPipeLineString;
+import com.gaia3d.converter.geometry.pipe.Modeler3D;
+import com.gaia3d.converter.geometry.pipe.PipeElbow;
+import com.gaia3d.converter.geometry.pipe.PipeType;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
@@ -22,7 +23,7 @@ import java.util.stream.IntStream;
 @Slf4j
 public abstract class AbstractGeometryConverter {
 
-    abstract protected List<GaiaScene> convert(File file);
+    protected abstract List<GaiaScene> convert(File file);
 
     protected GaiaScene initScene() {
         GaiaScene scene = new GaiaScene();
@@ -158,7 +159,7 @@ public abstract class AbstractGeometryConverter {
         return result;
     }
 
-    protected String getAttribute(SimpleFeature feature, String column) {
+    protected String getAttributeValue(SimpleFeature feature, String column) {
         String result = "default";
         Object LowerObject = feature.getAttribute(column);
         Object UpperObject = feature.getAttribute(column.toUpperCase());
@@ -179,6 +180,31 @@ public abstract class AbstractGeometryConverter {
             result = String.valueOf((double) attributeObject);
         } else if (attributeObject instanceof Short) {
             result = String.valueOf((short) attributeObject);
+        }
+        return result;
+    }
+
+    protected double getNumberAttribute(SimpleFeature feature, String column) {
+        double result = 0.0d;
+        Object attributeLower = feature.getAttribute(column);
+        Object attributeUpper = feature.getAttribute(column.toUpperCase());
+        Object attributeObject = null;
+        if (attributeLower != null) {
+            attributeObject = attributeLower;
+        } else if (attributeUpper != null) {
+            attributeObject = attributeUpper;
+        }
+
+        if (attributeObject instanceof Short) {
+            result = result + (short) attributeObject;
+        } else if (attributeObject instanceof Integer) {
+            result = result + (int) attributeObject;
+        } else if (attributeObject instanceof Long) {
+            result = result + (Long) attributeObject;
+        } else if (attributeObject instanceof Double) {
+            result = result + (double) attributeObject;
+        } else if (attributeObject instanceof String) {
+            result = Double.parseDouble((String) attributeObject);
         }
         return result;
     }
@@ -204,6 +230,31 @@ public abstract class AbstractGeometryConverter {
             result = result + (double) heightObject;
         } else if (heightObject instanceof String) {
             result = Double.parseDouble((String) heightObject);
+        }
+        return result;
+    }
+
+    protected double getRadius(SimpleFeature feature, String column) {
+        double result = 1.0d;
+        Object attributeLower = feature.getAttribute(column);
+        Object attributeUpper = feature.getAttribute(column.toUpperCase());
+        Object attributeObject = null;
+        if (attributeLower != null) {
+            attributeObject = attributeLower;
+        } else if (attributeUpper != null) {
+            attributeObject = attributeUpper;
+        }
+
+        if (attributeObject instanceof Short) {
+            result = result + (short) attributeObject;
+        } else if (attributeObject instanceof Integer) {
+            result = result + (int) attributeObject;
+        } else if (attributeObject instanceof Long) {
+            result = result + (Long) attributeObject;
+        } else if (attributeObject instanceof Double) {
+            result = result + (double) attributeObject;
+        } else if (attributeObject instanceof String) {
+            result = Double.parseDouble((String) attributeObject);
         }
         return result;
     }
@@ -287,10 +338,10 @@ public abstract class AbstractGeometryConverter {
             return null;
         }
 
-        int pipeProfileType = pipeLineString.getPipeProfileType();
-        if (pipeProfileType == 1) {
+        PipeType profileType = pipeLineString.getProfileType();
+        if (profileType == PipeType.CIRCULAR) {
             // circular pipe.
-            float pipeRadius = (float) (pipeLineString.getDiameterCm() / 200.0f); // cm to meter.***
+            float pipeRadius = (float) (pipeLineString.getDiameter() / 200.0f); // cm to meter.***
 
             // 1rst create elbows.
             float elbowRadius = pipeRadius * 1.5f; // test value.***
@@ -298,19 +349,20 @@ public abstract class AbstractGeometryConverter {
 
             for (int i = 0; i < pointsCount; i++) {
                 Vector3d point = pipeLineString.getPositions().get(i);
-                PipeElbow pipeElbow = new PipeElbow(new Vector3d(point), pipeProfileType, elbowRadius);
+                PipeElbow pipeElbow = new PipeElbow(new Vector3d(point), profileType, elbowRadius);
                 pipeElbow.setPipeRadius(pipeRadius);
-                pipeElbow.setPipeProfileType(pipeProfileType);
+                pipeElbow.setProfileType(profileType);
                 pipeElbows.add(pipeElbow);
             }
 
             Modeler3D modeler3D = new Modeler3D();
-            TNetwork tNetwork = modeler3D.TEST_getPipeNetworkFromPipeElbows(pipeElbows);
+            TNetwork tNetwork = modeler3D.getPipeNetworkFromPipeElbows(pipeElbows);
             resultGaiaNode = modeler3D.makeGeometry(tNetwork);
-        } else if (pipeProfileType == 2) {
+        } else if (profileType == PipeType.RECTANGULAR) {
             // rectangular pipe.
-            float pipeWidth = pipeLineString.getPipeRectangularSize()[0];
-            float pipeHeight = pipeLineString.getPipeRectangularSize()[1];
+            float[] pipeRectangularSize = pipeLineString.getRectangularSize();
+            float pipeWidth = pipeRectangularSize[0];
+            float pipeHeight = pipeRectangularSize[1];
 
             // 1rst create elbows.
             float elbowRadius = Math.max(pipeWidth, pipeHeight) * 1.5f; // test value.***
@@ -318,14 +370,14 @@ public abstract class AbstractGeometryConverter {
 
             for (int i = 0; i < pointsCount; i++) {
                 Vector3d point = pipeLineString.getPositions().get(i);
-                PipeElbow pipeElbow = new PipeElbow(new Vector3d(point), pipeProfileType, elbowRadius);
+                PipeElbow pipeElbow = new PipeElbow(new Vector3d(point), profileType, elbowRadius);
                 pipeElbow.setPipeRectangularSize(new float[]{pipeWidth, pipeHeight});
-                pipeElbow.setPipeProfileType(pipeProfileType);
+                pipeElbow.setProfileType(profileType);
                 pipeElbows.add(pipeElbow);
             }
 
             Modeler3D modeler3D = new Modeler3D();
-            TNetwork tNetwork = modeler3D.TEST_getPipeNetworkFromPipeElbows(pipeElbows);
+            TNetwork tNetwork = modeler3D.getPipeNetworkFromPipeElbows(pipeElbows);
             resultGaiaNode = modeler3D.makeGeometry(tNetwork);
         }
         return resultGaiaNode;

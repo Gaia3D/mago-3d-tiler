@@ -1,5 +1,8 @@
-package com.gaia3d.converter.geometry;
+package com.gaia3d.converter.geometry.extrusion;
 
+import com.gaia3d.converter.geometry.Extrusion;
+import com.gaia3d.converter.geometry.GaiaTriangle;
+import com.gaia3d.converter.geometry.Tessellator;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
@@ -10,9 +13,9 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @AllArgsConstructor
-public class Extruder2D {
+public class Extruder {
 
-    private final Tessellator2D tessellator;
+    private final Tessellator tessellator;
 
     public Extrusion extrude(List<Vector3d> positions, double roofHeight, double floorHeight) {
         List<GaiaTriangle> resultTriangles = new ArrayList<>();
@@ -22,8 +25,8 @@ public class Extruder2D {
         List<Vector3d> roofPositions = resetPositionHeight(positions, roofHeight);
         List<Vector3d> floorPositions = resetPositionHeight(positions, floorHeight);
 
-        List<GaiaTriangle> triangleRoof = tessellator.tessellate(roofPositions, roofHeight);
-        List<GaiaTriangle> triangleFloor = tessellator.tessellate(floorPositions, floorHeight);
+        List<GaiaTriangle> triangleRoof = tessellator.tessellate(roofPositions);
+        List<GaiaTriangle> triangleFloor = tessellator.tessellate(floorPositions);
 
         List<Vector3d> wallPositions = createWallPositions(roofPositions, floorPositions);
         List<GaiaTriangle> wallTriangles = createWallTriangles(wallPositions);

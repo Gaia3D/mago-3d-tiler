@@ -18,6 +18,7 @@ public class GaiaExtrusionBuilding {
     private double roofHeight;
     private double floorHeight;
     private GaiaBoundingBox boundingBox;
+    private String originalFilePath;
 
     List<Vector3d> positions;
 }

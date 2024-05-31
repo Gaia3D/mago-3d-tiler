@@ -15,8 +15,6 @@ public class TNode {
     // a pipe pump, a pipe tank, a pipe reservoir, a pipe junction, a pipe source, a pipe sink, a pipe pipe, etc.
     private int id = -1;
     private String guid = "";
-    @Setter
-    @Getter
     private Vector3d position;
     private List<TEdge> edges = new ArrayList<TEdge>();
 

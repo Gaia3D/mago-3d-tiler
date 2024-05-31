@@ -8,9 +8,9 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 
 @Slf4j
-class ReleaseUnitTest {
-    private static final String INPUT_PATH = "D:\\data\\mago-tiler-data\\release-unit-test-input";
-    private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\mago-viewer\\data\\release-unit-test-output";
+class ReleaseTest {
+    private static final String INPUT_PATH = "D:\\data\\mago-tiler-data\\release-test-input";
+    private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\mago-viewer\\data\\release-unit-output";
 
     @Test
     void testKmlWithCollada() {
@@ -42,6 +42,20 @@ class ReleaseUnitTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-crs", "32652"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testPointCloudImmdi() {
+        String path = "HWANGYONGGAK-LAS";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath() + File.separator + "Hwangyounggak_group1_densified_point_cloud.laz",
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "las",
+                "-ot", "pnts",
+                "-crs", "32652",
+                //-i las/pcmc_building.las -it las -o las/output/ -ot pnts
         };
         Mago3DTilerMain.main(args);
     }

@@ -202,6 +202,6 @@ public class TilingPipeline implements Pipeline {
             if (executorService.isTerminated()) {
                 executorService.shutdownNow();
             }
-        } while (!executorService.awaitTermination(1, TimeUnit.SECONDS));
+        } while (!executorService.awaitTermination(2, TimeUnit.SECONDS));
     }
 }

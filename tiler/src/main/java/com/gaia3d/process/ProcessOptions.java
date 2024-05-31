@@ -26,7 +26,7 @@ public enum ProcessOptions {
     PROJ4("proj", "p", "proj", true, "Proj4 parameters (ex: +proj=tmerc +la...)"),
 
     // Execution Options
-    MULTI_THREAD_COUNT("multiThreadCount", "mc", "multiThreadCount", true, "Multi-Thread count (Default: 4)"),
+    MULTI_THREAD_COUNT("multiThreadCount", "mc", "multiThreadCount", true, "set Multi-Thread count"),
 
     // 3DTiles Options
     REFINE_ADD("refineAdd", "ra", "refineAdd", false, "Set 3D Tiles Refine 'ADD' mode"),
@@ -48,6 +48,8 @@ public enum ProcessOptions {
     NAME_COLUMN("nameColumn", "nc", "nameColumn", true, "Name column setting for extrusion model (Default: name)"),
     HEIGHT_COLUMN("heightColumn", "hc", "heightColumn", true, "Height column setting for extrusion model (Default: height)"),
     ALTITUDE_COLUMN("altitudeColumn", "ac", "altitudeColumn", true, "Altitude Column setting for extrusion model (Default: altitude)"),
+    RADIUS_COLUMN("radiusColumn", "rc", "radiusColumn", true, "Radius column setting for extrusion model (Default: radius)"),
+
     MINIMUM_HEIGHT("minimumHeight", "mh", "minimumHeight", true, "Minimum height value for extrusion model (Default: 1.0)"),
     ABSOLUTE_ALTITUDE("absoluteAltitude", "aa", "absoluteAltitude", true, "Absolute altitude value for extrusion model"),
     SKIRT_HEIGHT("skirtHeight", "sh", "skirtHeight", true, "Building Skirt height setting for extrusion model (Default: 4.0)"),
