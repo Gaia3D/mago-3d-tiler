@@ -49,6 +49,7 @@ public class StressTest {
                 "-rotateUpAxis",
                 //"-rotateUpAxis",
                 //"-glb",
+                "-largeMesh",
                 "-debug"
         };
         Mago3DTilerMain.main(args);

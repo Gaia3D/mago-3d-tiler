@@ -39,54 +39,32 @@ public class LargeMeshConverter implements Converter {
         return separateScenes(scenes);
     }
 
-    private GaiaScene createNewScene(GaiaScene scene, GaiaNode node, GaiaPrimitive primitive) {
-        GaiaScene newScene = new GaiaScene();
-        List<GaiaNode> rootNode = new ArrayList<>();
-        List<GaiaMaterial> materials = scene.getMaterials()
-                .stream().map(GaiaMaterial::clone)
-                .collect(Collectors.toList());
+    private List<GaiaScene> separateScenes(List<GaiaScene> scenes) {
+        int size = scenes.size();
+        List<GaiaScene> removedScenes = new ArrayList<>();
+        List <GaiaScene> separatedScenes = new ArrayList<>();
+        for (GaiaScene scene : scenes) {
+            List<GaiaScene> separatedMeshes = separateScene(scene);
+            if (!separatedMeshes.isEmpty()) {
+                removedScenes.add(scene);
+                separatedScenes.addAll(separatedMeshes);
+            }
+        }
 
-        newScene.setNodes(rootNode);
-        newScene.setMaterials(materials);
-        newScene.setOriginalPath(scene.getOriginalPath());
+        scenes.removeAll(removedScenes);
+        scenes.addAll(separatedScenes);
 
-        //String newPath = "NEW_PATH" + new Date().getTime() + "_" + new Random().nextInt();
-        //Path path = Path.of(newPath);
-        //newScene.setOriginalPath(path);
-
-        GaiaNode newNode = new GaiaNode();
-        List<GaiaMesh> newMeshes = new ArrayList<>();
-        rootNode.add(newNode);
-        newNode.setTransformMatrix(new Matrix4d(node.getTransformMatrix()));
-        newNode.setMeshes(newMeshes);
-        //newNode.setName(node.getName() + "_separated");
-
-        GaiaMesh newMesh = new GaiaMesh();
-        List<GaiaPrimitive> newPrimitives = new ArrayList<>();
-        newPrimitives.add(primitive);
-
-        newMesh.setPrimitives(newPrimitives);
-        newMeshes.add(newMesh);
-        return newScene;
+        log.info("[LargeMeshConverter] Before Scenes : {}, After Scenes : {}", size, scenes.size());
+        return scenes;
     }
 
-
-    private List<GaiaScene> separateMesh(GaiaScene scene, GaiaNode node, GaiaMesh mesh) {
-        List<GaiaPrimitive> newPrimitives = new ArrayList<>();
-        List<GaiaPrimitive> primitives = mesh.getPrimitives();
-        primitives.forEach(primitive -> {
-            PrimitiveSeparator separator = new PrimitiveSeparator();
-            List<GaiaPrimitive> separatedPrimitives = separator.separatePrimitives(primitive, THRES_HOLD);
-
-            newPrimitives.addAll(separatedPrimitives);
+    private List<GaiaScene> separateScene(GaiaScene scene) {
+        List<GaiaScene> separatedScenes = new ArrayList<>();
+        List<GaiaNode> nodes = scene.getNodes();
+        nodes.forEach(node -> {
+            separateNode(separatedScenes, scene, node);
         });
-
-        List<GaiaScene> newScenes = new ArrayList<>();
-        newPrimitives.forEach(primitive -> {
-            GaiaScene newScene = createNewScene(scene, node, primitive);
-            newScenes.add(newScene);
-        });
-        return newScenes;
+        return separatedScenes;
     }
 
     private void separateNode(List<GaiaScene> newScenes, GaiaScene scene, GaiaNode node) {
@@ -120,33 +98,46 @@ public class LargeMeshConverter implements Converter {
         meshes.removeAll(removedMeshes);
     }
 
-    private List<GaiaScene> separateScene(GaiaScene scene) {
-        List<GaiaScene> separatedScenes = new ArrayList<>();
-        List<GaiaNode> nodes = scene.getNodes();
-        nodes.forEach(node -> {
-            separateNode(separatedScenes, scene, node);
+    private List<GaiaScene> separateMesh(GaiaScene scene, GaiaNode node, GaiaMesh mesh) {
+        List<GaiaPrimitive> newPrimitives = new ArrayList<>();
+        List<GaiaPrimitive> primitives = mesh.getPrimitives();
+        primitives.forEach(primitive -> {
+            PrimitiveSeparator separator = new PrimitiveSeparator();
+            List<GaiaPrimitive> separatedPrimitives = separator.separatePrimitives(primitive, THRES_HOLD);
+            newPrimitives.addAll(separatedPrimitives);
         });
-        return separatedScenes;
+
+        List<GaiaScene> newScenes = new ArrayList<>();
+        newPrimitives.forEach(primitive -> {
+            GaiaScene newScene = createNewScene(scene, node, primitive);
+            newScenes.add(newScene);
+        });
+        return newScenes;
     }
 
-    private List<GaiaScene> separateScenes(List<GaiaScene> scenes) {
-        int size = scenes.size();
-        List<GaiaScene> removedScenes = new ArrayList<>();
-        List <GaiaScene> separatedScenes = new ArrayList<>();
-        for (GaiaScene scene : scenes) {
-            List<GaiaScene> separatedMeshes = separateScene(scene);
-            if (!separatedMeshes.isEmpty()) {
-                removedScenes.add(scene);
-                separatedScenes.addAll(separatedMeshes);
-            }
-        }
+    private GaiaScene createNewScene(GaiaScene scene, GaiaNode node, GaiaPrimitive primitive) {
+        GaiaScene newScene = new GaiaScene();
+        List<GaiaNode> rootNode = new ArrayList<>();
+        List<GaiaMaterial> materials = scene.getMaterials()
+                .stream().map(GaiaMaterial::clone)
+                .collect(Collectors.toList());
 
-        scenes.removeAll(removedScenes);
-        scenes.addAll(separatedScenes);
+        newScene.setNodes(rootNode);
+        newScene.setMaterials(materials);
+        newScene.setOriginalPath(scene.getOriginalPath());
 
-        log.info("[LargeMeshConverter] Before Scenes : {}, After Scenes : {}", size, scenes.size());
-        return scenes;
+        GaiaNode newNode = new GaiaNode();
+        List<GaiaMesh> newMeshes = new ArrayList<>();
+        rootNode.add(newNode);
+        newNode.setTransformMatrix(new Matrix4d(node.getTransformMatrix()));
+        newNode.setMeshes(newMeshes);
+
+        GaiaMesh newMesh = new GaiaMesh();
+        List<GaiaPrimitive> newPrimitives = new ArrayList<>();
+        newPrimitives.add(primitive);
+
+        newMesh.setPrimitives(newPrimitives);
+        newMeshes.add(newMesh);
+        return newScene;
     }
-
-
 }
