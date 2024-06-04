@@ -45,7 +45,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ShapeConverter extends AbstractGeometryConverter implements Converter {
 
-    private GlobalOptions globalOptions = GlobalOptions.getInstance();
+    private final GlobalOptions globalOptions = GlobalOptions.getInstance();
 
     @Override
     public List<GaiaScene> load(String path) {
@@ -156,146 +156,23 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                         positions.add(position);
                     }
 
-                    if (positions.size() >= 2) {
-                        //String columnName = "LOW_DEP";
-                        //String lowerDepthText = getAttribute(feature, columnName);
-                        //Double lowerDepth = Double.parseDouble(lowerDepthText);
-
-                        //columnName = "HGH_DEP";
-                        //String higherDepthText = getAttribute(feature, columnName);
-                        //Double higherDepth = Double.parseDouble(higherDepthText);
-                        //String columnName = "PIP_LBL";
-                        //String pipeLabel = getAttribute(feature, columnName);
-                        //String separator = "/";
-                        //String[] pipeLabelTokens = pipeLabel.split(separator);
-
-                        /*if (pipeLabelTokens.length < 3) {
-                            continue;
-                        }
-                        String diameterCmString = pipeLabelTokens[2];
-
-                        // 1 = circular, 2 = rectangular.***
-                        PipeType pipeProfileType = PipeType.CIRCULAR;
-                        float rectangleWidth = 0.0f;
-                        float rectangleHeight = 0.0f;*/
-
-                        /*if (diameterCmString.isEmpty()) {
-                            continue;
-                        }*/
-
-                        /*// check the 1rst character of the string.***
-                        char firstChar = diameterCmString.charAt(0);
-                        // '⌀' = 248.***
-                        // '?' = 63.***
-
-
-                        if (firstChar == 248 || firstChar == 63) {
-                            // delete the 1rst character of the string.***
-                            diameterCmString = diameterCmString.substring(1);
-                            if (diameterCmString.isEmpty()) {
-                                continue;
-                            }
-
-                            // finally check if the diameterCmString is "number X number".***
-                            separator = "X|x";
-                            String[] diameterCmStringTokens = diameterCmString.split(separator);
-                            if (diameterCmStringTokens.length == 2) {
-                                diameterCmString = diameterCmStringTokens[0];
-                            }
-
-                            pipeProfileType = 1;  // 1 = circular.***
-                        } else {
-                            // is possible that the diameterCmString is a rectangle "width X height" or "2@ width X height".***
-                            // check if the 2nd char is "@".***
-                            char secondChar = diameterCmString.charAt(1);
-                            // @ = 64.***
-                            if (secondChar == 64) {
-                                // 2@ width X height.***
-                                separator = "@|X|x";
-                                String[] diameterCmStringTokens = diameterCmString.split(separator);
-                                String widthString = diameterCmStringTokens[1];
-                                String heightString = diameterCmStringTokens[2];
-                                if (widthString.isEmpty() || heightString.isEmpty()) {
-                                    continue;
-                                }
-                                rectangleWidth = Float.parseFloat(widthString);
-                                rectangleHeight = Float.parseFloat(heightString);
-                                pipeProfileType = 2; // 2 = rectangular.***
-                            } else {
-                                separator = "X|x";
-                                String[] diameterCmStringTokens = diameterCmString.split(separator);
-                                if (diameterCmStringTokens.length == 2) {
-                                    String widthString = diameterCmStringTokens[0];
-                                    String heightString = diameterCmStringTokens[1];
-                                    if (widthString.isEmpty() || heightString.isEmpty()) {
-                                        continue;
-                                    }
-                                    rectangleWidth = Float.parseFloat(widthString);
-                                    rectangleHeight = Float.parseFloat(heightString);
-                                    pipeProfileType = 2; // 2 = rectangular.***
-                                } else {
-                                    continue;
-                                }
-                            }
-                        }*/
-                        // delete the 1rst character of the string.***
-                        //diameterCmString = diameterCmString.substring(1, diameterCmString.length());
-
-                        double diameter = getRadius(feature, radiusColumnName);
-                        GaiaPipeLineString pipeLineString = GaiaPipeLineString.builder()
-                                .id(feature.getID())
-                                //.name(pipeLabel)
-
-                                //.profileType(PipeType.CIRCULAR)
-                                //.diameter(diameter)
-
-                                .profileType(PipeType.RECTANGULAR)
-                                .rectangularSize(new float[]{(float) diameter / 100, (float) diameter / 100})
-
-                                .positions(positions).build();
-                        pipeLineString.setOriginalFilePath(file.getPath());
-                        pipeLineStrings.add(pipeLineString);
-
-
-
-                        /*if (pipeProfileType == 2) {
-                            // is a rectangular pipe.***
-                            // create a pipe with a rectangular profile.***
-                            float[] pipeRectangularSize = new float[2];
-                            pipeRectangularSize[0] = rectangleWidth;
-                            pipeRectangularSize[1] = rectangleHeight;
-                            GaiaPipeLineString pipeLineString = GaiaPipeLineString.builder()
-                                    .id(feature.getID())
-                                    .name(pipeLabel)
-                                    .pipeProfileType(pipeProfileType)
-                                    .pipeRectangularSize(pipeRectangularSize)
-                                    .positions(positions)
-                                    .build();
-                            pipeLineString.setOriginalFilePath(file.getPath());
-                            pipeLineStrings.add(pipeLineString);
-                        } else {
-                            // is a circular pipe.***
-                            double diameterCm = Double.parseDouble(diameterCmString);
-                            // create a pipe with a circular profile.***
-                            GaiaPipeLineString pipeLineString = GaiaPipeLineString.builder()
-                                    .id(feature.getID())
-                                    .name(pipeLabel)
-                                    .pipeProfileType(pipeProfileType)
-                                    .diameterCm(diameterCm)
-                                    .positions(positions).build();
-                            pipeLineString.setOriginalFilePath(file.getPath());
-                            pipeLineStrings.add(pipeLineString);
-                        }*/
-                    } else {
-                        log.warn("Invalid Geometry : has no points. : {}", feature.getID());
-                    }
+                    double diameter = getRadius(feature, radiusColumnName);
+                    GaiaPipeLineString pipeLineString = GaiaPipeLineString.builder()
+                            .id(feature.getID())
+                            .profileType(PipeType.CIRCULAR)
+                            .diameter(diameter)
+                            //profileType(PipeType.RECTANGULAR)
+                            //.rectangularSize(new float[]{(float) diameter / 100, (float) diameter / 100})
+                            .positions(positions).build();
+                    pipeLineString.setOriginalFilePath(file.getPath());
+                    pipeLineStrings.add(pipeLineString);
                 }
 
                 for (Polygon polygon : polygons) {
-                    /*if (!polygon.isValid()) {
-                        log.debug("Is Invalid Polygon. : {}", feature.getID());
+                    if (!polygon.isValid()) {
+                        log.warn("{} Is Invalid Polygon.", feature.getID());
                         continue;
-                    }*/
+                    }
 
                     LineString lineString = polygon.getExteriorRing();
                     GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();

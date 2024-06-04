@@ -9,6 +9,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.io.FileExistsException;
+import org.apache.commons.lang3.StringUtils;
 import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 
@@ -42,7 +43,7 @@ public class GlobalOptions {
     private static final int DEFAULT_POINT_SCALE = 2;
     private static final int DEFAULT_POINT_SKIP = 4;
 
-    private static final String DEFAULT_CRS = "4326";
+    private static final String DEFAULT_CRS = "3857"; // 4326 -> 3857
     private static final String DEFAULT_NAME_COLUMN = "name";
     private static final String DEFAULT_HEIGHT_COLUMN = "height";
     private static final String DEFAULT_ALTITUDE_COLUMN = "altitude";
@@ -93,8 +94,6 @@ public class GlobalOptions {
     private int minGeometricError;
     private int maxGeometricError;
 
-    // Node Limit
-    private int nodeLimit;
     private int maxTriangles;
     private int maxNodeDepth;
 
@@ -111,12 +110,15 @@ public class GlobalOptions {
 
     /* 3D Data Options */
     private boolean recursive = false; // recursive flag
-    private boolean yUpAxis = false; // y up axis flag
+    private boolean autoUpAxis = false; // automatically assign 3D matrix axes flag
+    private boolean rotateUpAxis = false; // y up axis flag
     private boolean refineAdd = false; // 3dTiles refine option ADD fix flag
     private boolean flipCoordinate = false; // flip coordinate flag for 2D Data
     private boolean zeroOrigin = false; // data origin to zero point flag
-    private boolean autoUpAxis = false; // automatically assign 3D matrix axes flag
     private boolean ignoreTextures = false; // ignore textures flag
+
+    private boolean largeMesh = false; // [Experimental]large mesh splitting mode flag
+    private boolean texCoordCorrection = false; // [Experimental] texture coordinate correction flag, to PositiveQuadrant
 
     /* 2D Data Column Options */
     private String nameColumn;
@@ -135,36 +137,48 @@ public class GlobalOptions {
     }
 
     public static void init(CommandLine command) throws IOException {
+        File input = new File(command.getOptionValue(ProcessOptions.INPUT.getArgName()));
+        File output = new File(command.getOptionValue(ProcessOptions.OUTPUT.getArgName()));
+
         if (command.hasOption(ProcessOptions.INPUT.getArgName())) {
             instance.setInputPath(command.getOptionValue(ProcessOptions.INPUT.getArgName()));
-            validateInputPath(new File(instance.getInputPath()).toPath());
+            OptionsCorrector.isExistInputPath(input);
         } else {
             throw new IllegalArgumentException("Please enter the value of the input argument.");
         }
 
         if (command.hasOption(ProcessOptions.OUTPUT.getArgName())) {
             instance.setOutputPath(command.getOptionValue(ProcessOptions.OUTPUT.getArgName()));
-            validateOutputPath(new File(instance.getOutputPath()).toPath());
+            OptionsCorrector.isExistOutput(output);
         } else {
             throw new IllegalArgumentException("Please enter the value of the output argument.");
         }
 
-        String inputType = command.hasOption(ProcessOptions.INPUT_TYPE.getArgName()) ? command.getOptionValue(ProcessOptions.INPUT_TYPE.getArgName()) : DEFAULT_INPUT_FORMAT;
-        FormatType formatType = FormatType.fromExtension(inputType);
-        if (formatType == null) {
-            throw new IllegalArgumentException("Invalid input format: " + inputType);
+        boolean isRecursive;
+        if (command.hasOption(ProcessOptions.RECURSIVE.getArgName())) {
+            isRecursive = true;
         } else {
-            instance.setInputFormat(formatType);
+            isRecursive = OptionsCorrector.isRecursive(input);
         }
+        instance.setRecursive(isRecursive);
 
-        FormatType outputFormat = null;
+        FormatType inputFormat;
+        String inputType = command.hasOption(ProcessOptions.INPUT_TYPE.getArgName()) ? command.getOptionValue(ProcessOptions.INPUT_TYPE.getArgName()) : null;
+        if (inputType == null || StringUtils.isEmpty(inputType)) {
+            inputFormat = OptionsCorrector.findInputFormatType(new File(instance.getInputPath()), isRecursive);
+        } else {
+            inputFormat = FormatType.fromExtension(inputType);
+        }
+        inputFormat = inputFormat == null ? FormatType.fromExtension(DEFAULT_INPUT_FORMAT) : inputFormat;
+        instance.setInputFormat(inputFormat);
+
+        FormatType outputFormat;
         String outputType = command.hasOption(ProcessOptions.OUTPUT_TYPE.getArgName()) ? command.getOptionValue(ProcessOptions.OUTPUT_TYPE.getArgName()) : null;
         if (outputType == null) {
-            outputFormat = inferOutputFormat(instance.getInputFormat());
+            outputFormat = OptionsCorrector.findOutputFormatType(instance.getInputFormat());
         } else {
             outputFormat = FormatType.fromExtension(outputType);
         }
-
         if (outputFormat == null) {
             throw new IllegalArgumentException("Invalid output format: " + outputType);
         } else {
@@ -175,16 +189,15 @@ public class GlobalOptions {
 
         if (command.hasOption(ProcessOptions.TERRAIN.getArgName())) {
             instance.setTerrainPath(command.getOptionValue(ProcessOptions.TERRAIN.getArgName()));
-            validateInputPath(new File(instance.getTerrainPath()).toPath());
+            OptionsCorrector.isExistInputPath(new File(instance.getTerrainPath()));
         }
 
         if (command.hasOption(ProcessOptions.INSTANCE_FILE.getArgName())) {
             instance.setInstancePath(command.getOptionValue(ProcessOptions.INSTANCE_FILE.getArgName()));
-            validateInputPath(new File(instance.getInstancePath()).toPath());
+            OptionsCorrector.isExistInputPath(new File(instance.getInstancePath()));
         } else {
             String instancePath = instance.getInputPath() + File.separator + DEFAULT_INSTANCE_FILE;
             instance.setInstancePath(instancePath);
-            //validateInputPath(new File(instancePath).toPath());
         }
 
         if (command.hasOption(ProcessOptions.PROJ4.getArgName())) {
@@ -195,23 +208,32 @@ public class GlobalOptions {
             }
             instance.setCrs(crs);
         }
+
+        CRSFactory factory = new CRSFactory();
         if (command.hasOption(ProcessOptions.CRS.getArgName()) || command.hasOption(ProcessOptions.PROJ4.getArgName())) {
             String crsString = command.getOptionValue(ProcessOptions.CRS.getArgName());
             String proj = command.getOptionValue(ProcessOptions.PROJ4.getArgName());
-            CRSFactory factory = new CRSFactory();
             CoordinateReferenceSystem source = null;
 
-            // proj code is first priority
             if (proj != null && !proj.isEmpty()) {
                 source = factory.createFromParameters("CUSTOM_CRS_PROJ", proj);
             } else if (crsString != null && !crsString.isEmpty()) {
                 source = factory.createFromName("EPSG:" + crsString);
+            } else {
+                source = factory.createFromName("EPSG:" + DEFAULT_CRS);
+            }
+            instance.setCrs(source);
+        } else {
+            CoordinateReferenceSystem source = factory.createFromName("EPSG:" + DEFAULT_CRS);
+
+            // GeoJSON Default CRS
+            if (instance.getInputFormat().equals(FormatType.GEOJSON)) {
+                source = factory.createFromName("EPSG:4326");
             }
             instance.setCrs(source);
         }
 
         /* 3D Data Options */
-        instance.setNodeLimit(command.hasOption(ProcessOptions.MAX_COUNT.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_COUNT.getArgName())) : -1);
         instance.setMinLod(command.hasOption(ProcessOptions.MIN_LOD.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MIN_LOD.getArgName())) : DEFAULT_MIN_LOD);
         instance.setMaxLod(command.hasOption(ProcessOptions.MAX_LOD.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_LOD.getArgName())) : DEFAULT_MAX_LOD);
         instance.setMinGeometricError(command.hasOption(ProcessOptions.MIN_GEOMETRIC_ERROR.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MIN_GEOMETRIC_ERROR.getArgName())) : DEFAULT_MIN_GEOMETRIC_ERROR);
@@ -219,6 +241,7 @@ public class GlobalOptions {
         instance.setIgnoreTextures(command.hasOption(ProcessOptions.IGNORE_TEXTURES.getArgName()));
         instance.setMaxTriangles(DEFAULT_MAX_TRIANGLES);
         instance.setMaxNodeDepth(DEFAULT_MAX_NODE_DEPTH);
+        instance.setLargeMesh(command.hasOption(ProcessOptions.LARGE_MESH.getArgName()));
 
         /* Point Cloud Options */
         instance.setPointLimit(command.hasOption(ProcessOptions.MAX_POINTS.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_POINTS.getArgName())) : DEFAULT_POINT_LIMIT);
@@ -237,8 +260,18 @@ public class GlobalOptions {
         instance.setDebug(command.hasOption(ProcessOptions.DEBUG.getArgName()));
         instance.setDebugLod(DEFAULT_DEBUG_LOD);
 
-        instance.setYUpAxis(command.hasOption(ProcessOptions.Y_UP_AXIS.getArgName()));
-        instance.setRecursive(command.hasOption(ProcessOptions.RECURSIVE.getArgName()));
+        //instance.setRotateUpAxis(command.hasOption(ProcessOptions.ROTATE_UP_AXIS.getArgName()));
+        boolean isRotateUpAxis;
+        if (instance.getInputFormat().equals(FormatType.GEOJSON) || instance.getInputFormat().equals(FormatType.SHP) || instance.getInputFormat().equals(FormatType.CITYGML) || instance.getInputFormat().equals(FormatType.INDOORGML)) {
+            isRotateUpAxis = false;
+        } else {
+            isRotateUpAxis = true;
+        }
+        if (command.hasOption(ProcessOptions.ROTATE_UP_AXIS.getArgName())) {
+            isRotateUpAxis = !isRotateUpAxis;
+        }
+        instance.setRotateUpAxis(isRotateUpAxis);
+
 
         if (command.hasOption(ProcessOptions.REFINE_ADD.getArgName())) {
             instance.setRefineAdd(true);
@@ -254,7 +287,7 @@ public class GlobalOptions {
             instance.setMultiThreadCount(Byte.parseByte(command.getOptionValue(ProcessOptions.MULTI_THREAD_COUNT.getArgName())));
         } else {
             int processorCount = Runtime.getRuntime().availableProcessors();
-            int threadCount = processorCount > 1 ? processorCount - 1 : 1;
+            int threadCount = processorCount > 1 ? processorCount / 2 : 1;
             instance.setMultiThreadCount((byte) threadCount);
         }
 
@@ -281,44 +314,10 @@ public class GlobalOptions {
         instance.setJavaVersionInfo(javaVersionInfo);
     }
 
-    protected static void validateInputPath(Path path) throws IOException {
-        File output = path.toFile();
-        if (!output.exists()) {
-            throw new FileExistsException(String.format("%s Path is not exist.", path));
-        } else if (!output.canWrite()) {
-            throw new IOException(String.format("%s path is not writable.", path));
-        }
-    }
-
-    protected static void validateOutputPath(Path path) throws IOException {
-        File output = path.toFile();
-        if (!output.exists()) {
-            boolean isSuccess = output.mkdirs();
-            if (!isSuccess) {
-                throw new FileExistsException(String.format("%s Path is not exist.", path));
-            } else {
-                log.info("Created new output directory: {}", path);
-            }
-        } else if (!output.isDirectory()) {
-            throw new NotDirectoryException(String.format("%s Path is not directory.", path));
-        } else if (!output.canWrite()) {
-            throw new IOException(String.format("%s path is not writable.", path));
-        }
-    }
-
-    private static FormatType inferOutputFormat(FormatType inputFormat) {
-        if (FormatType.LAS == inputFormat || FormatType.LAZ == inputFormat) {
-            return FormatType.PNTS;
-        } else {
-            return FormatType.B3DM;
-        }
-    }
-
     public void printDebugOptions() {
         if (!debug) {
             return;
         }
-
         log.debug("========================================");
         log.debug("inputPath: {}", inputPath);
         log.debug("outputPath: {}", outputPath);
@@ -334,7 +333,6 @@ public class GlobalOptions {
         log.debug("pointLimit: {}", pointLimit);
         log.debug("pointScale: {}", pointScale);
         log.debug("pointSkip: {}", pointSkip);
-        log.debug("nodeLimit: {}", nodeLimit);
         log.debug("minLod: {}", minLod);
         log.debug("maxLod: {}", maxLod);
         log.debug("debug: {}", debug);
@@ -343,12 +341,13 @@ public class GlobalOptions {
         log.debug("classicTransformMatrix: {}", classicTransformMatrix);
         log.debug("multiThreadCount: {}", multiThreadCount);
         log.debug("recursive: {}", recursive);
-        log.debug("yUpAxis: {}", yUpAxis);
+        log.debug("rotateUpAxis: {}", rotateUpAxis);
         log.debug("refineAdd: {}", refineAdd);
         log.debug("flipCoordinate: {}", flipCoordinate);
         log.debug("zeroOrigin: {}", zeroOrigin);
         log.debug("autoUpAxis: {}", autoUpAxis);
         log.debug("ignoreTextures: {}", ignoreTextures);
+        log.debug("largeMesh: {}", largeMesh);
         log.debug("nameColumn: {}", nameColumn);
         log.debug("heightColumn: {}", heightColumn);
         log.debug("altitudeColumn: {}", altitudeColumn);

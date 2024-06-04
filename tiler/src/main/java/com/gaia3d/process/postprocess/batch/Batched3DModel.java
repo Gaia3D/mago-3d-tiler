@@ -73,6 +73,10 @@ public class Batched3DModel implements TileModel {
         });
 
 
+        if (batchedSet == null) {
+            log.error("BatchedSet is null, return null.");
+            return contentInfo;
+        }
         GaiaScene scene = new GaiaScene(batchedSet);
 
         /* FeatureTable */

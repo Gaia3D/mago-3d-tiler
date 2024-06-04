@@ -228,7 +228,7 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
             content.setContentInfo(contentInfo);
             childNode.setContent(content);
         } else {
-            log.warn("No content : {}", nodeCode);
+            log.warn("[Tiling][ContentNode][{}] No content", nodeCode);
         }
         return childNode;
     }

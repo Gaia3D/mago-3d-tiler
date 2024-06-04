@@ -101,26 +101,8 @@ public class TilingPipeline implements Pipeline {
         }
         executeThread(executorService, tasks);
 
-        long nodeCountValue = nodeCount.get();
-        // Auto set node limit
-        calcNodeLimit(nodeCountValue);
-
-        log.info("[Pre] Total Node Count {}, Auto Node limit : {}", nodeCount, globalOptions.getNodeLimit());
+        log.info("[Pre] Total Node Count {}", nodeCount);
         log.info("[Pre] End the pre-processing.");
-    }
-
-    private void calcNodeLimit(long nodeCountValue) {
-        if (globalOptions.getNodeLimit() < 0) {
-            if (nodeCountValue > 131072) {
-                globalOptions.setNodeLimit(8192);
-            } else if (nodeCountValue > 65536) {
-                globalOptions.setNodeLimit(4096);
-            } else if (nodeCountValue > 32768) {
-                globalOptions.setNodeLimit(2048);
-            } else {
-                globalOptions.setNodeLimit(1024);
-            }
-        }
     }
 
     private void startTilingProcess() {

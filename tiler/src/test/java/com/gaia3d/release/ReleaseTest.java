@@ -10,7 +10,7 @@ import java.io.File;
 @Slf4j
 class ReleaseTest {
     private static final String INPUT_PATH = "D:\\data\\mago-tiler-data\\release-test-input";
-    private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\mago-viewer\\data\\release-unit-output";
+    private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\mago-viewer\\data\\release-test-output";
 
     @Test
     void testKmlWithCollada() {
@@ -29,7 +29,18 @@ class ReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "3ds",
-                "-crs", "5186"
+                //"-crs", "5186"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testDcLibrary() {
+        String path = "DC-LIBRARY-3DS";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                //"-crs", "5186"
         };
         Mago3DTilerMain.main(args);
     }
@@ -41,7 +52,65 @@ class ReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
-                "-crs", "32652"
+                //"-crs", "32652"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testKoreaHouseGlb() {
+        String path = "KOREA-HOUSE-GLB";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                //"-it", "glb",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testSejongPoleIfc() {
+        String path = "SEJONG-POLE-IFC";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                //"-crs", "5186",
+                //"-it", "ifc",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testAraon() {
+        String path = "ARAON-IFC";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                //"-crs", "5186",
+                "-it", "ifc",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testKoryoSoftIfc() {
+        String path = "KORYO-SOFT-IFC";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                //"-crs", "5186",
+                //"-it", "ifc",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testDuckGlb() {
+        String path = "DUCK-GLB";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                //"-it", "glb",
         };
         Mago3DTilerMain.main(args);
     }
@@ -52,9 +121,9 @@ class ReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath() + File.separator + "Hwangyounggak_group1_densified_point_cloud.laz",
                 "-o", getOutputPath(path).getAbsolutePath(),
-                "-it", "las",
-                "-ot", "pnts",
-                "-crs", "32652",
+                //"-it", "las",
+                //"-ot", "pnts",
+                //"-crs", "32652",
                 //-i las/pcmc_building.las -it las -o las/output/ -ot pnts
         };
         Mago3DTilerMain.main(args);
@@ -66,9 +135,7 @@ class ReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                "-it", "las",
-                "-crs", "5186",
-                "-r"
+                //"-crs", "5186",
         };
         Mago3DTilerMain.main(args);
     }
@@ -81,7 +148,7 @@ class ReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "kml",
                 "-ot", "i3dm",
-                "-autoUpAxis",
+                //"-autoUpAxis",
         };
         Mago3DTilerMain.main(args);
     }
@@ -93,7 +160,7 @@ class ReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "shp",
-                "-crs", "5186"
+                //"-crs", "5186"
         };
         Mago3DTilerMain.main(args);
     }
@@ -105,7 +172,6 @@ class ReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "geojson",
-                //"-crs", "5186"
         };
         Mago3DTilerMain.main(args);
     }
@@ -120,7 +186,20 @@ class ReleaseTest {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "kml",
                 "-output", output.getAbsolutePath(),
-                "-r"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testSejongBridge() {
+        String path = "SEJONG-BRIDGE-IFC";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "ifc",
+                "-output", output.getAbsolutePath(),
         };
         Mago3DTilerMain.main(args);
     }

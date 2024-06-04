@@ -3,6 +3,7 @@ package com.gaia3d.process.preprocess;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.basic.types.FormatType;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.GeometryUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -16,38 +17,34 @@ import java.util.Map;
 
 public class GaiaTexCoordCorrector implements PreProcess {
 
-    private boolean usedFlag = false;
+    private GaiaScene recentScene = null;
 
     @Override
     public synchronized TileInfo run(TileInfo tileInfo) {
-        boolean checkI3dm = tileInfo.isI3dm() && usedFlag;
-        if (checkI3dm) {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        GaiaScene gaiaScene = tileInfo.getScene();
+
+        if (recentScene == gaiaScene) {
             return tileInfo;
         }
-        usedFlag = true;
+        recentScene = gaiaScene;
 
-        GaiaScene gaiaScene = tileInfo.getScene();
-        Path originalFilePath = gaiaScene.getOriginalPath();
-        String fileExtension = FilenameUtils.getExtension(String.valueOf(originalFilePath.getFileName()));
-        FormatType formatType = FormatType.fromExtension(fileExtension);
-
-        boolean invertTexCoordsYAxis = false;
-        if (formatType == FormatType.MAX_3DS || formatType == FormatType.COLLADA || formatType == FormatType.FBX || formatType == FormatType.OBJ || formatType == FormatType.GLTF || formatType == FormatType.GLB) {
-            invertTexCoordsYAxis = true;
-        }
-
+        FormatType formatType = getFormatTypeFromScene(gaiaScene);
+        boolean invertTexCoordsYAxis = isInvertTexCoordsYAxis(formatType);
         GaiaNode rootNode = gaiaScene.getNodes().get(0);
 
         List<GaiaMesh> allMeshes = new ArrayList<>();
         rootNode.extractMeshes(allMeshes);
 
-        // TODO ToPositveQuadrant Option coming soon.
-        /*for (GaiaMesh mesh : allMeshes) {
-            List<GaiaPrimitive> allPrimitives = mesh.getPrimitives();
-            for (GaiaPrimitive primitive : allPrimitives) {
-                translatePrimitiveTexCoordsToPositiveQuadrant(primitive);
+        boolean toPositiveQuadrant = globalOptions.isTexCoordCorrection();
+        if (toPositiveQuadrant) {
+            for (GaiaMesh mesh : allMeshes) {
+                List<GaiaPrimitive> allPrimitives = mesh.getPrimitives();
+                for (GaiaPrimitive primitive : allPrimitives) {
+                    translatePrimitiveTexCoordsToPositiveQuadrant(primitive);
+                }
             }
-        }*/
+        }
 
         if (invertTexCoordsYAxis) {
             for (GaiaMesh mesh : allMeshes) {
@@ -59,6 +56,16 @@ public class GaiaTexCoordCorrector implements PreProcess {
         }
 
         return tileInfo;
+    }
+
+    private FormatType getFormatTypeFromScene(GaiaScene gaiaScene) {
+        Path scenePath = gaiaScene.getOriginalPath();
+        String extension = FilenameUtils.getExtension(scenePath.toString());
+        return FormatType.fromExtension(extension);
+    }
+
+    private boolean isInvertTexCoordsYAxis(FormatType formatType) {
+        return formatType == FormatType.MAX_3DS || formatType == FormatType.COLLADA || formatType == FormatType.FBX || formatType == FormatType.OBJ || formatType == FormatType.GLTF || formatType == FormatType.GLB;
     }
 
     private void invertTexCoordsYAxis(GaiaPrimitive primitive) {
@@ -105,10 +112,7 @@ public class GaiaTexCoordCorrector implements PreProcess {
         List<List<GaiaFace>> resultWeldedFaces = new ArrayList<>();
         surface.getWeldedFaces(resultWeldedFaces);
 
-        int groupsCount = resultWeldedFaces.size();
-        for (int i = 0; i < groupsCount; i++) {
-            List<GaiaFace> groupFaces = resultWeldedFaces.get(i);
-
+        for (List<GaiaFace> groupFaces : resultWeldedFaces) {
             GaiaRectangle texCoordRectangle = new GaiaRectangle();
             GeometryUtils.getTexCoordsBoundingRectangleOfFaces(groupFaces, vertices, texCoordRectangle);
 

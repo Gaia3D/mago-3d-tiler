@@ -154,18 +154,11 @@ public class GltfWriter {
         float[] texcoords = gaiaMesh.getTexcoords();
         float[] batchIds = gaiaMesh.getBatchIds();
 
-        /*boolean isIntegerIndices = gaiaMesh.getIndicesCount() >= 65535;
-        if (isIntegerIndices) {
-            log.warn("Integer indices are used. The number of indices is greater than {}/65535", gaiaMesh.getIndicesCount());
-        }*/
-
-
         int vertexCount = gaiaMesh.getPositionsCount() / 3;
-        boolean isOverShortVertices = vertexCount / 3 >= 65535;
+        boolean isOverShortVertices = vertexCount >= 65535;
         if (isOverShortVertices) {
             log.warn("[Warning] The number of vertices count than 65535 ({})", vertexCount);
         }
-
 
         GltfNodeBuffer nodeBuffer = initNodeBuffer(gaiaMesh, isOverShortVertices);
         createBuffer(gltf, nodeBuffer);

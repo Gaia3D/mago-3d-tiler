@@ -68,21 +68,13 @@ public class LasConverter {
         double zScaleFactor = header.getZScaleFactor();
         double zOffset = header.getZOffset();
 
+
+
+
         CRSFactory factory = new CRSFactory();
         CoordinateReferenceSystem wgs84 = globalOptions.getCrs();
         CoordinateReferenceSystem crs = factory.createFromParameters("WGS84", "+proj=longlat +datum=WGS84 +no_defs");
         BasicCoordinateTransform transformer = new BasicCoordinateTransform(wgs84, crs);
-
-        // test
-        /*xOffset = 0;
-        yOffset = 0;
-        zOffset = 0;
-        xOffset += 211683.99411230165;
-        yOffset += 359695.8569415757;
-        zOffset += 38.118513375329805;
-        xOffset += 24.0;
-        yOffset += -4.0;
-        zOffset += 1.7;*/
 
         int pointSkip = globalOptions.getPointSkip();
         CloseablePointIterable pointIterable = reader.getCloseablePoints();

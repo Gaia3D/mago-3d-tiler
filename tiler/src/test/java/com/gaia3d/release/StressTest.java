@@ -30,7 +30,46 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "shp",
                 "-crs", "5186",
-                //"-radiusColumn", "STD_DIP",
+                "-radiusColumn", "STD_DIP",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testLargeBuildingFbxFromHayashiSang() {
+        String path = "LARGE-BUILDING-FBX";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "fbx",
+                "-crs", "6674",
+                "-minLod", "0",
+                "-maxLod", "0",
+                "-refineAdd",
+                "-rotateUpAxis",
+                //"-rotateUpAxis",
+                //"-glb",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testSangJiUni() {
+        String path = "SANGJI-UNI-DAE";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                //"-it", "dae",
+                //"-crs", "5186",
+                "-minLod", "0",
+                "-maxLod", "0",
+                //"-autoUpAxis",
+                //"-rotateUpAxis",
+                "-refineAdd",
+                //"-glb",
+                //"-recursive",
+                "-debug"
         };
         Mago3DTilerMain.main(args);
     }

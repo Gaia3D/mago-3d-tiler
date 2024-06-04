@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @AllArgsConstructor
 public class GaiaInstanceTranslator implements PreProcess {
     private final List<GridCoverage2D> coverages;
+
     @Override
     public TileInfo run(TileInfo tileInfo) {
         KmlInfo kmlInfo = tileInfo.getKmlInfo();
