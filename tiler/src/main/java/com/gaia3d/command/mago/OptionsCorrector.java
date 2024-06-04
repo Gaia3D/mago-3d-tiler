@@ -78,8 +78,6 @@ public class OptionsCorrector {
                     if (Objects.nonNull(formatType)) {
                         log.info("Auto Selected Format type: {}", formatType);
                         return formatType;
-                    } else {
-                        throw new IllegalArgumentException("Unsupported format: " + extension);
                     }
                 }
             }
