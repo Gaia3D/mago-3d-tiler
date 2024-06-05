@@ -15,7 +15,6 @@ class DefaultTest {
         };
         Mago3DTilerMain.main(args);
     }
-
     @Test
     void version() {
         String args[] = {
