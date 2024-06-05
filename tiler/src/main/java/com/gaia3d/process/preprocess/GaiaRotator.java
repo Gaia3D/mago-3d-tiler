@@ -3,8 +3,6 @@ package com.gaia3d.process.preprocess;
 import com.gaia3d.basic.structure.GaiaNode;
 import com.gaia3d.basic.structure.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.kml.KmlInfo;
-import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
@@ -20,7 +18,7 @@ public class GaiaRotator implements PreProcess {
     public TileInfo run(TileInfo tileInfo) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         boolean isSwapUpAxis = globalOptions.isSwapUpAxis();
-        boolean isReverseUpAxis = globalOptions.isReverseUpAxis();
+        boolean isFlipUpAxis = globalOptions.isFlipUpAxis();
 
         GaiaScene gaiaScene = tileInfo.getScene();
         if (recentScene == gaiaScene) {
@@ -31,7 +29,7 @@ public class GaiaRotator implements PreProcess {
         // 90 degree rotation
         double rotateX = isSwapUpAxis ? 90 : 0;
         // Reverse the rotation direction
-        rotateX = isReverseUpAxis ? rotateX + 180 : rotateX;
+        rotateX = isFlipUpAxis ? rotateX + 180 : rotateX;
 
         GaiaNode rootNode = gaiaScene.getNodes().get(0);
         Matrix4d transform = rootNode.getTransformMatrix();

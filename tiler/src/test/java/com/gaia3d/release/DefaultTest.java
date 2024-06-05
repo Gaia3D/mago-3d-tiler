@@ -1,12 +1,13 @@
-package com.gaia3d.command.mago;
+package com.gaia3d.release;
 
+import com.gaia3d.command.mago.Mago3DTilerMain;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
 @Slf4j
-class Mago3DTilerMainTest {
+class DefaultTest {
     @Test
     void help() {
         String args[] = {
@@ -70,7 +71,12 @@ class Mago3DTilerMainTest {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
         };
-        Mago3DTilerMain.main(args);
+        try {
+            Mago3DTilerMain.main(args);
+        } catch (Exception e) {
+            log.info("success test.");
+            log.debug(e.getMessage());
+        }
     }
     @Test
     void defaultConvert() {

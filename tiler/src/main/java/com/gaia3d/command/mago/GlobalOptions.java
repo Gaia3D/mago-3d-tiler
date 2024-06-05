@@ -8,15 +8,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.io.FileExistsException;
 import org.apache.commons.lang3.StringUtils;
 import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.NotDirectoryException;
-import java.nio.file.Path;
 
 /**
  * Global options for Gaia3D Tiler.
@@ -114,7 +111,7 @@ public class GlobalOptions {
     //private boolean rotateUpAxis = false; // y up axis flag
 
     private boolean swapUpAxis = false; // swap up axis flag
-    private boolean reverseUpAxis = false; // reverse up axis flag
+    private boolean flipUpAxis = false; // reverse up axis flag
 
     private boolean refineAdd = false; // 3dTiles refine option ADD fix flag
     private boolean flipCoordinate = false; // flip coordinate flag for 2D Data
@@ -265,11 +262,11 @@ public class GlobalOptions {
         instance.setDebugLod(DEFAULT_DEBUG_LOD);
 
         boolean isSwapUpAxis = true;
-        boolean isReverseUpAxis = false;
+        boolean isFlipUpAxis = false;
         boolean isRefineAdd = false;
 
-        if (command.hasOption(ProcessOptions.REVERSE_UP_AXIS.getArgName())) {
-            isReverseUpAxis = true;
+        if (command.hasOption(ProcessOptions.FLIP_UP_AXIS.getArgName())) {
+            isFlipUpAxis = true;
         }
         if (command.hasOption(ProcessOptions.REFINE_ADD.getArgName())) {
             isRefineAdd = true;
@@ -281,7 +278,7 @@ public class GlobalOptions {
                 instance.getInputFormat().equals(FormatType.CITYGML) ||
                 instance.getInputFormat().equals(FormatType.INDOORGML)) {
             isSwapUpAxis = false;
-            isReverseUpAxis = false;
+            isFlipUpAxis = false;
             isRefineAdd = true;
         }
 
@@ -290,7 +287,7 @@ public class GlobalOptions {
         }
 
         instance.setSwapUpAxis(isSwapUpAxis);
-        instance.setReverseUpAxis(isReverseUpAxis);
+        instance.setFlipUpAxis(isFlipUpAxis);
         instance.setRefineAdd(isRefineAdd);
         instance.setGlb(command.hasOption(ProcessOptions.DEBUG_GLB.getArgName()));
         instance.setFlipCoordinate(command.hasOption(ProcessOptions.FLIP_COORDINATE.getArgName()));
@@ -359,7 +356,7 @@ public class GlobalOptions {
         // 3D Data Options
         log.debug("========================================");
         log.debug("Swap Up-Axis: {}", swapUpAxis);
-        log.debug("Reverse Up-Axis: {}", reverseUpAxis);
+        log.debug("Flip Up-Axis: {}", flipUpAxis);
         log.debug("RefineAdd: {}", refineAdd);
         log.debug("Flip Coordinate: {}", flipCoordinate);
         log.debug("Zero Origin: {}", zeroOrigin);

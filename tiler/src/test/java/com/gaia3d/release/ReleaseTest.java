@@ -103,7 +103,7 @@ class ReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 //"-it", "glb",
                 //"-swapUpAxis",
-                //"-reverseUpAxis",
+                //"-flipUpAxis",
         };
         Mago3DTilerMain.main(args);
     }
@@ -116,7 +116,7 @@ class ReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 //"-it", "glb",
                 //"-swapUpAxis",
-                //"-reverseUpAxis",
+                //"-flipUpAxis",
         };
         Mago3DTilerMain.main(args);
     }
@@ -128,12 +128,37 @@ class ReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 //"-it", "glb",
-                //"-swapUpAxis",
-                //"-reverseUpAxis",
+                "-swapUpAxis",
+                //"-flipUpAxis",
         };
         Mago3DTilerMain.main(args);
     }
 
+    @Test
+    void testFlipYUpAxis() {
+        String path = "FLIP-Y-Up-AXIS";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                //"-it", "glb",
+                //"-swapUpAxis",
+                "-flipUpAxis",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testFlipZUpAxis() {
+        String path = "FLIP-Z-Up-AXIS";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                //"-it", "glb",
+                "-swapUpAxis",
+                "-flipUpAxis",
+        };
+        Mago3DTilerMain.main(args);
+    }
 
     @Test
     void testKoryoSoftIfc() {
@@ -144,7 +169,7 @@ class ReleaseTest {
                 //"-crs", "5186",
                 //"-it", "ifc",
                 //"-swapUpAxis",
-                //"-reverseUpAxis",
+                //"-flipUpAxis",
                 "-debug"
         };
         Mago3DTilerMain.main(args);
