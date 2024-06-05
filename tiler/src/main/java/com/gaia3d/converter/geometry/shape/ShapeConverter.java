@@ -156,7 +156,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                         positions.add(position);
                     }
 
-                    double diameter = getRadius(feature, radiusColumnName);
+                    double diameter = getRadius(feature, radiusColumnName) * 2;
                     GaiaPipeLineString pipeLineString = GaiaPipeLineString.builder()
                             .id(feature.getID())
                             .profileType(PipeType.CIRCULAR)
