@@ -95,7 +95,7 @@ public class LasConverter {
         long pointIndex = 0;
         for (LASPoint point : pointIterable) {
             if (pointIndex % totalPointRecords1percent == 0) {
-                log.info(" - Las Records Loading progress. ({}/100)%", pointIndex / totalPointRecords1percent);
+                log.debug(" - Las Records Loading progress. ({}/100)%", pointIndex / totalPointRecords1percent);
             }
             if (pointIndex % pointSkip == 0) {
                 double x = point.getX() * xScaleFactor + xOffset;

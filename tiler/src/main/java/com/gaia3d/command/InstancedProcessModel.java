@@ -28,7 +28,7 @@ public class InstancedProcessModel implements ProcessFlowModel{
     public void run() throws IOException {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         FormatType inputFormat = globalOptions.getInputFormat();
-        boolean isRotateUpAxis = globalOptions.isRotateUpAxis();
+        boolean isRotateUpAxis = globalOptions.isSwapUpAxis();
 
         Converter converter = getConverter(inputFormat);
         AttributeReader kmlReader = getAttributeReader(inputFormat);

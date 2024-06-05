@@ -41,15 +41,16 @@ public class StressTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                "-it", "fbx",
+                //"-it", "fbx",
                 "-crs", "6674",
                 "-minLod", "0",
                 "-maxLod", "0",
-                "-refineAdd",
-                "-rotateUpAxis",
+                //"-refineAdd",
+                "-swapUpAxis",
+                //"-reverseUpAxis",
                 //"-rotateUpAxis",
                 //"-glb",
-                "-largeMesh",
+                //"-largeMesh",
                 "-debug"
         };
         Mago3DTilerMain.main(args);
@@ -66,7 +67,7 @@ public class StressTest {
                 "-minLod", "0",
                 "-maxLod", "0",
                 //"-autoUpAxis",
-                //"-rotateUpAxis",
+                // "-rotateUpAxis",
                 "-refineAdd",
                 //"-glb",
                 //"-recursive",

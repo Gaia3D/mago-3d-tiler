@@ -195,7 +195,7 @@ public class Modeler3D {
         }
 
         // make mapVertexIndex.
-        Map<GaiaVertex, Integer> mapVertexIndex = new HashMap<GaiaVertex, Integer>();
+        Map<GaiaVertex, Integer> mapVertexIndex = new HashMap<>();
         for (int i = 0; i < primitive.getVertices().size(); i++) {
             GaiaVertex vertex = primitive.getVertices().get(i);
             mapVertexIndex.put(vertex, i);
@@ -214,7 +214,7 @@ public class Modeler3D {
         if (bottomCap) {
             // must copy the 1rst profile vertices to the bottom cap vertices.
             List<GaiaVertex> bottomCapVertices = transversalVerticesList.get(0);
-            List<GaiaVertex> bottomCapVerticesCopy = new ArrayList<GaiaVertex>();
+            List<GaiaVertex> bottomCapVerticesCopy = new ArrayList<>();
             GaiaSurface bottomCapSurface = new GaiaSurface();
             for (int i = bottomCapVertices.size() - 1; i >= 0; i--) // bottom vertices must be in reverse order.
             {
@@ -313,8 +313,8 @@ public class Modeler3D {
         boolean concatenated = false;
         GaiaPipeLineString pipeLinePrev = null;
         GaiaPipeLineString pipeLineNext = null;
-        List<GaiaPipeLineString> concatenablesPrev = new ArrayList<GaiaPipeLineString>();
-        List<GaiaPipeLineString> concatenablesNext = new ArrayList<GaiaPipeLineString>();
+        List<GaiaPipeLineString> concatenablesPrev = new ArrayList<>();
+        List<GaiaPipeLineString> concatenablesNext = new ArrayList<>();
 
         // check 1rst point.
         if (getConcatenableGaiaPipeLines(pipeLine, pipeLines, concatenablesPrev, concatenablesNext)) {

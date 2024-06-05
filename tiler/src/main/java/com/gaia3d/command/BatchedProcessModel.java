@@ -35,9 +35,7 @@ public class BatchedProcessModel implements ProcessFlowModel {
 
     public void run() throws IOException {
         FormatType inputFormat = globalOptions.getInputFormat();
-        //boolean isYUpAxis = getYUpAxis(inputFormat, globalOptions.isRotateUpAxis());
-        //boolean isRotateUpAxis = getYUpAxis(inputFormat, globalOptions.isRotateUpAxis());
-        boolean isRotateUpAxis = globalOptions.isRotateUpAxis();
+        boolean isRotateUpAxis = globalOptions.isSwapUpAxis();
 
         Converter converter = getConverter(inputFormat);
         AttributeReader kmlReader = new JacksonKmlReader();
@@ -52,9 +50,10 @@ public class BatchedProcessModel implements ProcessFlowModel {
         preProcessors.add(new GaiaTileInfoInitiator());
         preProcessors.add(new GaiaTexCoordCorrector());
         preProcessors.add(new GaiaScaler());
-        if (isRotateUpAxis) {
+        /*if (isRotateUpAxis) {
             preProcessors.add(new GaiaRotator());
-        }
+        }*/
+        preProcessors.add(new GaiaRotator());
         preProcessors.add(new GaiaTranslator(geoTiffs));
         preProcessors.add(new GaiaMinimizer());
 

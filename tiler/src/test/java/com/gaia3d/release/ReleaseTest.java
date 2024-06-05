@@ -29,7 +29,7 @@ class ReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "3ds",
-                //"-crs", "5186"
+                "-crs", "5186"
         };
         Mago3DTilerMain.main(args);
     }
@@ -40,7 +40,7 @@ class ReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                //"-crs", "5186"
+                "-crs", "5186"
         };
         Mago3DTilerMain.main(args);
     }
@@ -51,8 +51,8 @@ class ReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                "-it", "las",
-                //"-crs", "32652"
+                //"-it", "las",
+                "-crs", "32652"
         };
         Mago3DTilerMain.main(args);
     }
@@ -75,7 +75,9 @@ class ReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 //"-crs", "5186",
-                //"-it", "ifc",
+                "-it", "ifc",
+                //"-swapUpAxis",
+                "-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -87,10 +89,51 @@ class ReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 //"-crs", "5186",
-                "-it", "ifc",
+                //"-it", "ifc",
+                "-debug"
         };
         Mago3DTilerMain.main(args);
     }
+
+    @Test
+    void testMonkey() {
+        String path = "MONKEY-GLB";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                //"-it", "glb",
+                //"-swapUpAxis",
+                //"-reverseUpAxis",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testYUpAxis() {
+        String path = "Y-Up-AXIS";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                //"-it", "glb",
+                //"-swapUpAxis",
+                //"-reverseUpAxis",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testZUpAxis() {
+        String path = "Z-Up-AXIS";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                //"-it", "glb",
+                //"-swapUpAxis",
+                //"-reverseUpAxis",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
 
     @Test
     void testKoryoSoftIfc() {
@@ -100,6 +143,9 @@ class ReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 //"-crs", "5186",
                 //"-it", "ifc",
+                //"-swapUpAxis",
+                //"-reverseUpAxis",
+                "-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -124,7 +170,6 @@ class ReleaseTest {
                 //"-it", "las",
                 //"-ot", "pnts",
                 //"-crs", "32652",
-                //-i las/pcmc_building.las -it las -o las/output/ -ot pnts
         };
         Mago3DTilerMain.main(args);
     }
@@ -135,7 +180,7 @@ class ReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                //"-crs", "5186",
+                "-crs", "5186",
         };
         Mago3DTilerMain.main(args);
     }
@@ -160,7 +205,7 @@ class ReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "shp",
-                //"-crs", "5186"
+                "-crs", "5186"
         };
         Mago3DTilerMain.main(args);
     }

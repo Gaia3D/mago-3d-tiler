@@ -42,8 +42,8 @@ public class PipeElbow extends TNode {
         this.elbowRadius = elbowRadius;
         this.pipeRadius = pipeRadius;
         this.pipeRectangularSize = pipeRectangularSize;
-        mapEdgeLinkPositions = new HashMap<TEdge, Vector3d>();
-        mapEdgeLinkNormals = new HashMap<TEdge, Vector3d>();
+        mapEdgeLinkPositions = new HashMap<>();
+        mapEdgeLinkNormals = new HashMap<>();
     }
 
     private void calculateElbowPositionsIfExistOnlyOneTEdge() {

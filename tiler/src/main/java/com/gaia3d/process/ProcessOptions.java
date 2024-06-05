@@ -39,7 +39,10 @@ public enum ProcessOptions {
     MAX_POINTS("maxPoints", "mp", "maxPoints", true, "Limiting the maximum number of points in point cloud data. (Default: 65536)"),
     POINT_SCALE("pointScale", "ps", "pointScale", true, "Pointscloud geometryError scale setting (Default: 2)"),
     POINT_SKIP("pointSkip", "pk", "pointSkip", true, "Number of pointcloud omissions (ex: 1/4)(Default: 4)"),
-    ROTATE_UP_AXIS("rotateUpAxis", "ru", "rotateUpAxis", false, "Rotate 3D model up-axis to Y-axis (Default: false)"),
+
+    SWAP_UP_AXIS("swapUpAxis", "su", "swapUpAxis", false, "Rotate the matrix -90 degrees about the X-axis. (Default: false)"),
+    REVERSE_UP_AXIS("reverseUpAxis", "ru", "reverseUpAxis", false, "Rotates the matrix 180 degrees about the X-axis. (Default: false)"),
+
     ZERO_ORIGIN("zeroOrigin", "zo", "zeroOrigin", false, "[Experimental] fix 3d root transformed matrix origin to zero point."),
     IGNORE_TEXTURES("ignoreTextures", "igtx", "ignoreTextures", false,"Ignore diffuse textures. "),
     AUTO_UP_AXIS("autoUpAxis", "aa", "autoUpAxis", false, "Automatically Assign 3D Matrix Axes. If your 3D data up-axis is incorrect, try this option."),

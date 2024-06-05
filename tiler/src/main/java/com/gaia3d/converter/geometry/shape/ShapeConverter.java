@@ -99,7 +99,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             List<GaiaPipeLineString> pipeLineStrings = new ArrayList<>();
             while (iterator.hasNext()) {
                 if (progressCount % totalCountBy100 == 0) {
-                    log.info(" - Shape Feature Loading progress. ({}/100)%", progressCount / totalCountBy100);
+                    log.debug(" - Shape Feature Loading progress. ({}/100)%", progressCount / totalCountBy100);
                 }
                 progressCount++;
 

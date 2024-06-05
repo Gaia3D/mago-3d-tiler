@@ -140,10 +140,10 @@ public class GaiaBufferDataSet implements Serializable {
             indicesInt[i] = indices[i];
         }
         face.setIndices(indicesInt);
-        surface.setFaces(new ArrayList<GaiaFace>() {{
+        surface.setFaces(new ArrayList<>() {{
             add(face);
         }});
-        primitive.setSurfaces(new ArrayList<GaiaSurface>() {{
+        primitive.setSurfaces(new ArrayList<>() {{
             add(surface);
         }});
         ////primitive.setIndices(indices); // old. indices are now in faces of surface of the primitive

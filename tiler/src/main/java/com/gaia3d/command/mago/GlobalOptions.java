@@ -111,7 +111,11 @@ public class GlobalOptions {
     /* 3D Data Options */
     private boolean recursive = false; // recursive flag
     private boolean autoUpAxis = false; // automatically assign 3D matrix axes flag
-    private boolean rotateUpAxis = false; // y up axis flag
+    //private boolean rotateUpAxis = false; // y up axis flag
+
+    private boolean swapUpAxis = false; // swap up axis flag
+    private boolean reverseUpAxis = false; // reverse up axis flag
+
     private boolean refineAdd = false; // 3dTiles refine option ADD fix flag
     private boolean flipCoordinate = false; // flip coordinate flag for 2D Data
     private boolean zeroOrigin = false; // data origin to zero point flag
@@ -260,26 +264,34 @@ public class GlobalOptions {
         instance.setDebug(command.hasOption(ProcessOptions.DEBUG.getArgName()));
         instance.setDebugLod(DEFAULT_DEBUG_LOD);
 
-        //instance.setRotateUpAxis(command.hasOption(ProcessOptions.ROTATE_UP_AXIS.getArgName()));
-        boolean isRotateUpAxis;
-        if (instance.getInputFormat().equals(FormatType.GEOJSON) || instance.getInputFormat().equals(FormatType.SHP) || instance.getInputFormat().equals(FormatType.CITYGML) || instance.getInputFormat().equals(FormatType.INDOORGML)) {
-            isRotateUpAxis = false;
-        } else {
-            isRotateUpAxis = true;
-        }
-        if (command.hasOption(ProcessOptions.ROTATE_UP_AXIS.getArgName())) {
-            isRotateUpAxis = !isRotateUpAxis;
-        }
-        instance.setRotateUpAxis(isRotateUpAxis);
+        boolean isSwapUpAxis = true;
+        boolean isReverseUpAxis = false;
+        boolean isRefineAdd = false;
 
-
+        if (command.hasOption(ProcessOptions.REVERSE_UP_AXIS.getArgName())) {
+            isReverseUpAxis = true;
+        }
         if (command.hasOption(ProcessOptions.REFINE_ADD.getArgName())) {
-            instance.setRefineAdd(true);
-        } else {
-            if (instance.getInputFormat().equals(FormatType.GEOJSON) || instance.getInputFormat().equals(FormatType.SHP) || instance.getInputFormat().equals(FormatType.CITYGML) || instance.getInputFormat().equals(FormatType.INDOORGML)) {
-                instance.setRefineAdd(true);
-            }
+            isRefineAdd = true;
         }
+
+        // force setting
+        if (instance.getInputFormat().equals(FormatType.GEOJSON) ||
+                instance.getInputFormat().equals(FormatType.SHP) ||
+                instance.getInputFormat().equals(FormatType.CITYGML) ||
+                instance.getInputFormat().equals(FormatType.INDOORGML)) {
+            isSwapUpAxis = false;
+            isReverseUpAxis = false;
+            isRefineAdd = true;
+        }
+
+        if (command.hasOption(ProcessOptions.SWAP_UP_AXIS.getArgName())) {
+            isSwapUpAxis = !isSwapUpAxis;
+        }
+
+        instance.setSwapUpAxis(isSwapUpAxis);
+        instance.setReverseUpAxis(isReverseUpAxis);
+        instance.setRefineAdd(isRefineAdd);
         instance.setGlb(command.hasOption(ProcessOptions.DEBUG_GLB.getArgName()));
         instance.setFlipCoordinate(command.hasOption(ProcessOptions.FLIP_COORDINATE.getArgName()));
 
@@ -319,41 +331,50 @@ public class GlobalOptions {
             return;
         }
         log.debug("========================================");
-        log.debug("inputPath: {}", inputPath);
-        log.debug("outputPath: {}", outputPath);
-        log.debug("inputFormat: {}", inputFormat);
-        log.debug("outputFormat: {}", outputFormat);
-        log.debug("terrainPath: {}", terrainPath);
-        log.debug("instancePath: {}", instancePath);
-        log.debug("logPath: {}", logPath);
-        log.debug("crs: {}", crs);
-        log.debug("proj: {}", proj);
-        log.debug("tileCount: {}", tileCount);
-        log.debug("fileCount: {}", fileCount);
-        log.debug("pointLimit: {}", pointLimit);
-        log.debug("pointScale: {}", pointScale);
-        log.debug("pointSkip: {}", pointSkip);
-        log.debug("minLod: {}", minLod);
-        log.debug("maxLod: {}", maxLod);
-        log.debug("debug: {}", debug);
-        log.debug("debugLod: {}", debugLod);
-        log.debug("glb: {}", glb);
+        log.debug("Input Path: {}", inputPath);
+        log.debug("Output Path: {}", outputPath);
+        log.debug("Input Format: {}", inputFormat);
+        log.debug("Output Format: {}", outputFormat);
+        log.debug("Terrain File Path: {}", terrainPath);
+        log.debug("Instance File Path: {}", instancePath);
+        log.debug("Log Path: {}", logPath);
+        log.debug("Recursive Path Search: {}", recursive);
+
+        log.debug("========================================");
+        log.debug("Coordinate Reference System: {}", crs);
+        log.debug("Proj4 Code: {}", proj);
+        log.debug("Minimum LOD: {}", minLod);
+        log.debug("Maximum LOD: {}", maxLod);
+        log.debug("Minimum GeometricError: {}", minGeometricError);
+        log.debug("Maximum GeometricError: {}", maxGeometricError);
+        log.debug("PointCloud Point Limit: {}", pointLimit);
+        log.debug("PointCloud Scale: {}", pointScale);
+        log.debug("PointCloud Skip Interval: {}", pointSkip);
+        log.debug("Debug Mode: {}", debug);
+        log.debug("Debug LOD: {}", debugLod);
+        log.debug("Debug GLB: {}", glb);
         log.debug("classicTransformMatrix: {}", classicTransformMatrix);
-        log.debug("multiThreadCount: {}", multiThreadCount);
-        log.debug("recursive: {}", recursive);
-        log.debug("rotateUpAxis: {}", rotateUpAxis);
-        log.debug("refineAdd: {}", refineAdd);
-        log.debug("flipCoordinate: {}", flipCoordinate);
-        log.debug("zeroOrigin: {}", zeroOrigin);
-        log.debug("autoUpAxis: {}", autoUpAxis);
-        log.debug("ignoreTextures: {}", ignoreTextures);
-        log.debug("largeMesh: {}", largeMesh);
-        log.debug("nameColumn: {}", nameColumn);
-        log.debug("heightColumn: {}", heightColumn);
-        log.debug("altitudeColumn: {}", altitudeColumn);
-        log.debug("absoluteAltitude: {}", absoluteAltitude);
-        log.debug("minimumHeight: {}", minimumHeight);
-        log.debug("skirtHeight: {}", skirtHeight);
+        log.debug("Multi-Thread Count: {}", multiThreadCount);
+
+        // 3D Data Options
+        log.debug("========================================");
+        log.debug("Swap Up-Axis: {}", swapUpAxis);
+        log.debug("Reverse Up-Axis: {}", reverseUpAxis);
+        log.debug("RefineAdd: {}", refineAdd);
+        log.debug("Flip Coordinate: {}", flipCoordinate);
+        log.debug("Zero Origin: {}", zeroOrigin);
+        log.debug("Auto Up-Axis: {}", autoUpAxis);
+        log.debug("Ignore Textures: {}", ignoreTextures);
+        log.debug("LargeMesh: {}", largeMesh);
+
+        // 2D Data Column Options
+        log.debug("========================================");
+        log.debug("Name Column: {}", nameColumn);
+        log.debug("Height Column: {}", heightColumn);
+        log.debug("Altitude Column: {}", altitudeColumn);
+        log.debug("Absolute Altitude: {}", absoluteAltitude);
+        log.debug("Minimum Height: {}", minimumHeight);
+        log.debug("Skirt Height: {}", skirtHeight);
         log.debug("========================================");
     }
 }

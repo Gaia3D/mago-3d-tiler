@@ -16,7 +16,7 @@ public class TNode {
     private int id = -1;
     private String guid = "";
     private Vector3d position;
-    private List<TEdge> edges = new ArrayList<TEdge>();
+    private List<TEdge> edges = new ArrayList<>();
 
     public TNode() {
         position = new Vector3d();
