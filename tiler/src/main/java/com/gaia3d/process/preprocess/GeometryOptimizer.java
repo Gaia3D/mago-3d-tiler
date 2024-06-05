@@ -45,8 +45,8 @@ public class GeometryOptimizer implements PreProcess {
                     List<GaiaSurface> surfaces = primitive.getSurfaces();
                     ArrayList<GaiaSurface> surfacesToRemove = new ArrayList<>();
                     for (GaiaSurface surface : surfaces) {
-                        ArrayList<GaiaFace> faces = surface.getFaces();
-                        ArrayList<GaiaFace> facesToRemove = new ArrayList<>();
+                        List<GaiaFace> faces = surface.getFaces();
+                        List<GaiaFace> facesToRemove = new ArrayList<>();
                         for (GaiaFace face : faces) {
                             Vector3d faceNormal = face.getFaceNormal();
                             double dotProd = faceNormal.dot(normalReference);

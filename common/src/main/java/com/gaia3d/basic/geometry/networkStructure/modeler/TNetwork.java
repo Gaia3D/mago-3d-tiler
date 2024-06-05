@@ -16,8 +16,8 @@ public class TNetwork {
     private List<TEdge> edges;
 
     public TNetwork() {
-        nodes = new ArrayList<TNode>();
-        edges = new ArrayList<TEdge>();
+        nodes = new ArrayList<>();
+        edges = new ArrayList<>();
     }
 
     public void makeTEdgesListForTNodes() {

@@ -40,8 +40,7 @@ public class GaiaMaterial implements Serializable {
     private Map<TextureType, List<GaiaTexture>> textures = new WeakHashMap<>();
     private boolean isRepeat = false;
 
-    public boolean isOpaqueMaterial()
-    {
+    public boolean isOpaqueMaterial() {
         boolean isOpaque = true;
 
         // 1rst check textures.***
@@ -70,60 +69,6 @@ public class GaiaMaterial implements Serializable {
 
         return isOpaque;
     }
-
-    /*public static boolean areEqualMaterials(GaiaMaterial materialA, GaiaMaterial materialB, float scaleFactor) {
-
-        // This function determines if two materials are equal.
-        if (materialA == null && materialB == null) {
-            return true;
-        } else if (materialA == null || materialB == null) {
-            return false;
-        }
-
-        if (materialA == materialB) {
-            return true;
-        }
-
-        Map<TextureType, List<GaiaTexture>> textureMapA = materialA.getTextures();
-
-        Set<TextureType> keys = textureMapA.keySet();
-        boolean hasTexture = false;
-        boolean hasTextureAreEquals = true;
-        for (TextureType key : keys) {
-            List<GaiaTexture> listTexturesA = textureMapA.get(key);
-            List<GaiaTexture> listTexturesB = materialB.getTextures().get(key);
-            if (listTexturesA == null && listTexturesB == null) {
-                continue;
-            } else if (listTexturesA == null || listTexturesB == null) {
-                hasTextureAreEquals = false;
-            }
-            if (listTexturesA.size() != listTexturesB.size()) {
-                hasTextureAreEquals = false;
-            }
-            for (int i = 0; i < listTexturesA.size() && i < listTexturesB.size(); i++) {
-                GaiaTexture textureA = listTexturesA.get(i);
-                GaiaTexture textureB = listTexturesB.get(i);
-                hasTexture = true;
-
-                // check if the fullPath of the textures are equal.***
-                String fullPathA = textureA.getFullPath();
-                String fullPathB = textureB.getFullPath();
-
-                if (fullPathA.equals(fullPathB)) {
-                    hasTextureAreEquals = true;
-                } else if (!textureA.isEqualTexture(textureB, scaleFactor)) {
-                    hasTextureAreEquals = false;
-                }
-            }
-        }
-
-        if (!hasTexture) {
-            Vector4d colorA = materialA.getDiffuseColor();
-            Vector4d colorB = materialB.getDiffuseColor();
-            return colorA.equals(colorB);
-        }
-        return hasTextureAreEquals;
-    }*/
 
     public void write(BigEndianDataOutputStream stream) throws IOException {
         stream.writeInt(id);

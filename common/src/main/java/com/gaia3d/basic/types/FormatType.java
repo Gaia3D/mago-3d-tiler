@@ -10,9 +10,6 @@ import java.util.Arrays;
  * Each format has a corresponding extension.
  * The extension is used to determine the type of the file.
  * The extension is also used to determine the type of the file that is being downloaded.
- * @Author znkim
- * @Since 1.0.1
- * @See GaiaSet
  */
 @Getter
 @RequiredArgsConstructor
@@ -24,7 +21,7 @@ public enum FormatType {
     COLLADA("dae", "dae", true),
     MAX_3DS("3ds", "3ds",false),
     MAX_ASE("ase", "ase", false),
-    FBX("fbx", "fbx", true),
+    FBX("fbx", "fbx", false),
     OBJ("obj","obj", false),
     IFC("ifc", "ifc",false),
     CITYGML("gml","xml", false),
@@ -56,8 +53,8 @@ public enum FormatType {
         return Arrays.stream(FormatType.values())
                 .filter((type) -> {
                     boolean compareName = type.name().equalsIgnoreCase(extension);
-                    boolean compareExtension = type.getExtension().equals(extension.toLowerCase());
-                    boolean compareSubExtension = type.getSubExtension().equals(extension.toLowerCase());
+                    boolean compareExtension = type.getExtension().equalsIgnoreCase(extension.toLowerCase());
+                    boolean compareSubExtension = type.getSubExtension().equalsIgnoreCase(extension.toLowerCase());
                     return compareName || compareExtension || compareSubExtension;
                 })
                 .findFirst()

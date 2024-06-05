@@ -30,7 +30,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GaiaSurface implements Serializable {
-    private ArrayList<GaiaFace> faces = new ArrayList<>();
+    private List<GaiaFace> faces = new ArrayList<>();
 
     public void calculateNormal(List<GaiaVertex> vertices) {
         for (GaiaFace face : faces) {

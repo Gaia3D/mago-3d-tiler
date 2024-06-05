@@ -63,7 +63,6 @@ public class GaiaBatcher {
      * @param materialA
      * @param materialB
      * @param scaleFactor
-     * @return
      */
     public boolean areEqualMaterials(GaiaMaterial materialA, GaiaMaterial materialB, float scaleFactor) {
         // This function determines if two materials are equal.
@@ -153,6 +152,20 @@ public class GaiaBatcher {
         List<GaiaSet> sets = tileInfos.stream()
                 .map(TileInfo::getSet)
                 .collect(Collectors.toList());
+
+        sets = sets.stream().filter((set -> {
+            List<GaiaBufferDataSet> dataSets = set.getBufferDatas();
+            for (GaiaBufferDataSet dataSet : dataSets) {
+                Map<AttributeType, GaiaBuffer> buffers = dataSet.getBuffers();
+                GaiaBuffer positionBuffer = buffers.get(AttributeType.POSITION);
+                if (positionBuffer == null) {
+                    log.error("Position buffer is null");
+                    return false;
+                }
+            }
+            return true;
+        })).collect(Collectors.toList());
+
         setBatchId(sets);
 
         sets.forEach((set) -> {
@@ -283,6 +296,7 @@ public class GaiaBatcher {
         batchedSet.setMaterials(resultMaterials);
         if (resultBufferDatas.isEmpty() || resultMaterials.isEmpty()) {
             log.error("Batched Set is empty");
+            batchedSet = null;
         }
 
         Matrix4d transform = new Matrix4d();
@@ -355,8 +369,8 @@ public class GaiaBatcher {
                 if ((count + posLength) >= SHORT_LIMIT) {
                     if (!splitList.isEmpty()) {
                         splitList = new ArrayList<>();
+                        result.add(splitList);
                     }
-                    result.add(splitList);
                     count = posLength;
                 } else {
                     count += posLength;

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.command.mago.GlobalOptions;
+import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.process.tileprocess.Tiler;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
 import com.gaia3d.process.tileprocess.tile.tileset.asset.Asset;
@@ -14,6 +15,8 @@ import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 import com.gaia3d.util.DecimalUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
+import org.joml.Vector3d;
+import org.opengis.geometry.BoundingBox;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -89,8 +92,22 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         long triangleLimit = globalOptions.getMaxTriangles();
         long totalTriangleCount = tileInfos.stream().mapToLong(TileInfo::getTriangleCount).sum();
         log.debug("[TriangleCount] Total : {}", totalTriangleCount);
-
         log.debug("[Tiling][ContentNode][OBJECT] : {}", tileInfos.size());
+
+
+        /*GaiaBoundingBox centerBoundingBox = new GaiaBoundingBox();
+        for (TileInfo tileInfo : tileInfos) {
+            GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();
+            KmlInfo kmlInfo = tileInfo.getKmlInfo();
+            localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(kmlInfo.getPosition());
+            BoundingVolume localBoundingVolume = new BoundingVolume(localBoundingBox);
+            Vector3d center = localBoundingVolume.calcCenter();
+            centerBoundingBox.addPoint(center);
+        }
+        double area = centerBoundingBox.getVolume().x * centerBoundingBox.getVolume().y;
+        boolean isSmallArea = area < 0.1; // 1.0 m^2
+        log.debug("[CenterBoundingBox] : {}", centerBoundingBox);
+        log.debug("[CenterBoundingBox] : {}", area);*/
 
         if (nodeDepth > globalOptions.getMaxNodeDepth()) {
             log.warn("[Tiling] Node depth limit exceeded : {}", nodeDepth);

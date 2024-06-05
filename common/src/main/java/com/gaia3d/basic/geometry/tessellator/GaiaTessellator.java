@@ -497,8 +497,8 @@ public class GaiaTessellator {
             getPointsIdxSortedByDistToPoint(pointA, polygon2D.getPoints(), sortedIndices);
 
             int sortedIndicesCount = sortedIndices.size();
-            for (int j = 0; j < sortedIndicesCount; j++) {
-                idxB = sortedIndices.get(j);
+            for (Integer sortedIndex : sortedIndices) {
+                idxB = sortedIndex;
                 if (idxA == idxB) {
                     // skip the same point.***
                     continue;
@@ -511,8 +511,7 @@ public class GaiaTessellator {
 
                 Point2DTess pointB = polygon2D.getPoint(idxB);
                 Segment2DTess segment = new Segment2DTess(pointA, pointB);
-                if(segment.getLengthSquared() < error)
-                {
+                if (segment.getLengthSquared() < error) {
                     // the segment is too short.***
                     continue;
                 }

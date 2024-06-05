@@ -42,8 +42,6 @@ public class AssimpConverter implements Converter {
             Assimp.aiProcess_CalcTangentSpace|
             Assimp.aiProcess_SortByPType;
 
-    private boolean invertTexCoordsYAxis = false;
-
     public List<GaiaScene> load(String filePath) {
         return load(new File(filePath));
     }
@@ -209,7 +207,15 @@ public class AssimpConverter implements Converter {
             ByteBuffer buffer = aiTexture.pcDataCompressed();
             String ext = aiTexture.achFormatHintString();
 
-            String filename = fileNameWithoutExtension + "_extracted_" + i + "." + ext;
+            AIString pathName = aiTexture.mFilename();
+            String filename = pathName.dataString();
+            if (filename.isEmpty()) {
+                filename = fileNameWithoutExtension + "_extracted_" + i + "." + ext;
+            } else {
+                File file = new File(filename);
+                filename = file.getName();
+            }
+
             try (BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(new File(path, filename)))) {
                 byte[] bytes = new byte[buffer.capacity()];
                 buffer.get(bytes);
@@ -275,10 +281,22 @@ public class AssimpConverter implements Converter {
             texture.setType(TextureType.DIFFUSE);
             texture.setParentPath(parentPath);
 
+            // embedded texture check
             if (diffTexPath.startsWith("*")) {
                 String embeddedTexturePath = embeddedTextures.get(Integer.parseInt(diffTexPath.substring(1)));
-                log.info("Embedded Texture: " + embeddedTexturePath);
+                log.debug("Original Texture Path: " + diffTexPath);
+                log.debug("Embedded Texture Path: " + embeddedTexturePath);
                 diffTexPath = "embedded_textures" + File.separator + embeddedTexturePath;
+            } else {
+                File filePath = new File(diffTexPath);
+                String fileName = filePath.getName();
+                String embeddedTexturePath = "embedded_textures" + File.separator + fileName;
+                File inputFile = new File(parentPath.toFile(), embeddedTexturePath);
+                if (inputFile.exists() && inputFile.isFile()) {
+                    log.debug("Original Texture Path: " + diffTexPath);
+                    log.debug("Corrected Texture Path: " + embeddedTexturePath);
+                    diffTexPath = embeddedTexturePath;
+                }
             }
 
             File file = ImageUtils.getChildFile(parentPath.toFile(), diffTexPath);
@@ -287,10 +305,9 @@ public class AssimpConverter implements Converter {
                 textures.add(texture);
                 material.getTextures().put(texture.getType(), textures);
             } else {
-                log.error("Diffuse Texture not found: " + diffTexPath);
-                //material.setName("MissingTexture");
-                //material.getTextures().put(texture.getType(), textures);
+                log.error("Diffuse Texture is not found: {}", diffTexPath);
             }
+
         } else {
             material.setName("NoTexture");
             List<GaiaTexture> textures = new ArrayList<>();
@@ -306,7 +323,7 @@ public class AssimpConverter implements Converter {
             texture.setParentPath(parentPath);
             File file = new File(parentPath.toFile(), ambientTexPath);
             if (!(file.exists() && file.isFile())) {
-                log.error("Ambient Texture not found: " + file.getAbsolutePath());
+                log.error("Ambient Texture is not found: {}", file.getAbsolutePath());
             } else {
                 textures.add(texture);
                 material.getTextures().put(texture.getType(), textures);
@@ -324,7 +341,7 @@ public class AssimpConverter implements Converter {
             texture.setParentPath(parentPath);
             File file = new File(parentPath.toFile(), specularTexPath);
             if (!(file.exists() && file.isFile())) {
-                log.error("Specular Texture not found: " + file.getAbsolutePath());
+                log.error("Specular Texture is not found: {}", file.getAbsolutePath());
             } else {
                 textures.add(texture);
                 material.getTextures().put(texture.getType(), textures);
@@ -342,7 +359,7 @@ public class AssimpConverter implements Converter {
             texture.setParentPath(parentPath);
             File file = new File(parentPath.toFile(), specularTexPath);
             if (!(file.exists() && file.isFile())) {
-                log.error("Shininess Texture not found: " + file.getAbsolutePath());
+                log.error("Shininess Texture is not found: {}", file.getAbsolutePath());
             } else {
                 textures.add(texture);
                 material.getTextures().put(texture.getType(), textures);
@@ -356,10 +373,6 @@ public class AssimpConverter implements Converter {
 
     private GaiaNode processNode(GaiaScene gaiaScene, AIScene aiScene, AINode aiNode, GaiaNode parentNode, FormatType formatType) {
         String name = aiNode.mName().dataString();
-//        // node's IFC guid = last 22 chars of the node's name.
-//        String guid = "";
-//        if(name.length() > 22)
-//            guid = name.substring(name.length() - 22, name.length());
 
         AIMatrix4x4 transformation = aiNode.mTransformation();
         Matrix4d transform = convertMatrix4dFromAIMatrix4x4(transformation, parentNode, formatType);
@@ -381,6 +394,7 @@ public class AssimpConverter implements Converter {
 
         for (int i = 0; i < numMeshes; i++) {
             assert aiMeshes != null;
+            assert nodeMeshes != null;
             AIMesh aiMesh = AIMesh.create(aiMeshes.get(nodeMeshes.get(i)));
             GaiaMesh mesh = processMesh(aiMesh, gaiaScene.getMaterials());
             node.getMeshes().add(mesh);
@@ -430,7 +444,7 @@ public class AssimpConverter implements Converter {
         AIVector3D.Buffer verticesBuffer = aiMesh.mVertices();
         AIVector3D.Buffer normalsBuffer = aiMesh.mNormals();
         AIVector3D.Buffer textureCoordiantesBuffer = aiMesh.mTextureCoords(0);
-        AIColor4D.Buffer colorsBuffer = aiMesh.mColors(0);
+        //AIColor4D.Buffer colorsBuffer = aiMesh.mColors(0);
 
         for (int i = 0; i < mNumVertices; i++) {
             GaiaVertex vertex = new GaiaVertex();

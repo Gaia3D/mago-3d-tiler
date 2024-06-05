@@ -86,6 +86,7 @@ public class BoundingVolume {
                 localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(kmlInfo.getPosition());
                 BoundingVolume localBoundingVolume = new BoundingVolume(localBoundingBox);
                 Vector3d center = localBoundingVolume.calcCenter();
+
                 if (midX < center.x()) {
                     if (midY < center.y()) {
                         result.get(2).add(tileInfo);

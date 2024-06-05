@@ -20,13 +20,14 @@ public enum ProcessOptions {
     TERRAIN("terrain", "te", "terrain", true, "GeoTiff Terrain file path, 3D Object applied as clampToGround (Supports geotiff format)"),
     INSTANCE_FILE("instance", "if", "instance", true, "Instance file path for I3DM (Default: {OUTPUT}/instance.dae)"),
     RECURSIVE("recursive", "r", "recursive", false, "Tree directory deep navigation."),
+    LARGE_MESH("largeMesh", "lm", "largeMesh", false, "[Experimental] Large Mesh Splitting Mode (Default: false)"),
 
     // Coordinate Options
     CRS("crs", "c", "crs", true,"Coordinate Reference Systems, EPSG Code(4326, 3857, 32652, 5186...)"),
     PROJ4("proj", "p", "proj", true, "Proj4 parameters (ex: +proj=tmerc +la...)"),
 
     // Execution Options
-    MULTI_THREAD_COUNT("multiThreadCount", "mc", "multiThreadCount", true, "Multi-Thread count (Default: 4)"),
+    MULTI_THREAD_COUNT("multiThreadCount", "mc", "multiThreadCount", true, "set Multi-Thread count"),
 
     // 3DTiles Options
     REFINE_ADD("refineAdd", "ra", "refineAdd", false, "Set 3D Tiles Refine 'ADD' mode"),
@@ -38,7 +39,10 @@ public enum ProcessOptions {
     MAX_POINTS("maxPoints", "mp", "maxPoints", true, "Limiting the maximum number of points in point cloud data. (Default: 65536)"),
     POINT_SCALE("pointScale", "ps", "pointScale", true, "Pointscloud geometryError scale setting (Default: 2)"),
     POINT_SKIP("pointSkip", "pk", "pointSkip", true, "Number of pointcloud omissions (ex: 1/4)(Default: 4)"),
-    Y_UP_AXIS("yUpAxis", "ya", "yAxis", false, "Assign 3D root transformed matrix Y-UP axis"),
+
+    SWAP_UP_AXIS("swapUpAxis", "su", "swapUpAxis", false, "Rotate the matrix -90 degrees about the X-axis. (Default: false)"),
+    FLIP_UP_AXIS("flipUpAxis", "ru", "flipUpAxis", false, "Rotate the matrix 180 degrees about the X-axis. (Default: false)"),
+
     ZERO_ORIGIN("zeroOrigin", "zo", "zeroOrigin", false, "[Experimental] fix 3d root transformed matrix origin to zero point."),
     IGNORE_TEXTURES("ignoreTextures", "igtx", "ignoreTextures", false,"Ignore diffuse textures. "),
     AUTO_UP_AXIS("autoUpAxis", "aa", "autoUpAxis", false, "Automatically Assign 3D Matrix Axes. If your 3D data up-axis is incorrect, try this option."),
@@ -48,6 +52,8 @@ public enum ProcessOptions {
     NAME_COLUMN("nameColumn", "nc", "nameColumn", true, "Name column setting for extrusion model (Default: name)"),
     HEIGHT_COLUMN("heightColumn", "hc", "heightColumn", true, "Height column setting for extrusion model (Default: height)"),
     ALTITUDE_COLUMN("altitudeColumn", "ac", "altitudeColumn", true, "Altitude Column setting for extrusion model (Default: altitude)"),
+    RADIUS_COLUMN("radiusColumn", "rc", "radiusColumn", true, "Radius column setting for extrusion model (Default: radius)"),
+
     MINIMUM_HEIGHT("minimumHeight", "mh", "minimumHeight", true, "Minimum height value for extrusion model (Default: 1.0)"),
     ABSOLUTE_ALTITUDE("absoluteAltitude", "aa", "absoluteAltitude", true, "Absolute altitude value for extrusion model"),
     SKIRT_HEIGHT("skirtHeight", "sh", "skirtHeight", true, "Building Skirt height setting for extrusion model (Default: 4.0)"),

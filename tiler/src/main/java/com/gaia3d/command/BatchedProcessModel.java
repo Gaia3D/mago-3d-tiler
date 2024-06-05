@@ -5,6 +5,7 @@ import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.BatchedFileLoader;
 import com.gaia3d.converter.assimp.AssimpConverter;
+import com.gaia3d.converter.assimp.LargeMeshConverter;
 import com.gaia3d.converter.geometry.citygml.CityGmlConverter;
 import com.gaia3d.converter.geometry.geojson.GeoJsonConverter;
 import com.gaia3d.converter.geometry.indoorgml.IndoorGmlConverter;
@@ -30,10 +31,12 @@ import java.util.List;
 
 @Slf4j
 public class BatchedProcessModel implements ProcessFlowModel {
+    private final GlobalOptions globalOptions = GlobalOptions.getInstance();
+
     public void run() throws IOException {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
         FormatType inputFormat = globalOptions.getInputFormat();
-        boolean isYUpAxis = getYUpAxis(inputFormat, globalOptions.isYUpAxis());
+        boolean isRotateUpAxis = globalOptions.isSwapUpAxis();
+
         Converter converter = getConverter(inputFormat);
         AttributeReader kmlReader = new JacksonKmlReader();
         kmlReader = new FastKmlReader();
@@ -47,9 +50,10 @@ public class BatchedProcessModel implements ProcessFlowModel {
         preProcessors.add(new GaiaTileInfoInitiator());
         preProcessors.add(new GaiaTexCoordCorrector());
         preProcessors.add(new GaiaScaler());
-        if (!isYUpAxis) {
+        /*if (isRotateUpAxis) {
             preProcessors.add(new GaiaRotator());
-        }
+        }*/
+        preProcessors.add(new GaiaRotator());
         preProcessors.add(new GaiaTranslator(geoTiffs));
         preProcessors.add(new GaiaMinimizer());
 
@@ -66,6 +70,7 @@ public class BatchedProcessModel implements ProcessFlowModel {
 
     private boolean getYUpAxis(FormatType formatType, boolean isYUpAxis) {
         if (formatType == FormatType.CITYGML || formatType == FormatType.INDOORGML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON) {
+            // Z-UP
             isYUpAxis = true;
         }
         return isYUpAxis;
@@ -81,7 +86,11 @@ public class BatchedProcessModel implements ProcessFlowModel {
         } else if (formatType == FormatType.GEOJSON) {
             converter = new GeoJsonConverter();
         } else {
-            converter = new AssimpConverter();
+            if (globalOptions.isLargeMesh()) {
+                converter = new LargeMeshConverter(new AssimpConverter());
+            } else {
+                converter = new AssimpConverter();
+            }
         }
         return converter;
     }

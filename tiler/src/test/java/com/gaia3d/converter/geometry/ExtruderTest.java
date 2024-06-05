@@ -3,6 +3,7 @@ package com.gaia3d.converter.geometry;
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.Configurator;
+import com.gaia3d.converter.geometry.extrusion.Extruder;
 import com.gaia3d.converter.jgltf.GltfWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
@@ -14,8 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
 class ExtruderTest {

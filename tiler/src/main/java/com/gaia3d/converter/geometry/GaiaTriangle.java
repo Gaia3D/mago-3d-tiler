@@ -20,9 +20,19 @@ public class GaiaTriangle {
         calcNormal();
     }
 
+    /* get Triangle Center */
+    public Vector3d getCenter() {
+        Vector3d center = new Vector3d();
+        center.add(positions[0], center);
+        center.add(positions[1], center);
+        center.add(positions[2], center);
+        center.mul(1.0 / 3.0);
+        return center;
+    }
+
     private void calcNormal() {
         if (positions[0].equals(positions[1]) || positions[1].equals(positions[2]) || positions[2].equals(positions[0])) {
-            log.warn("Degenerate triangle detected");
+            //log.warn("Degenerate triangle detected");
             this.normal = new Vector3d(0, 0, 1);
             return;
         }
@@ -42,6 +52,6 @@ public class GaiaTriangle {
 
         this.normal.normalize();
 
-        log.debug("Normal: {}", this.normal.z());
+        //log.debug("Normal: {}", this.normal.z());
     }
 }

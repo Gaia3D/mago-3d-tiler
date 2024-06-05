@@ -202,6 +202,12 @@ public class GaiaSet implements Serializable{
     public void translate(Vector3d translation) {
         for (GaiaBufferDataSet bufferData : this.bufferDatas) {
             GaiaBuffer positionBuffer = bufferData.getBuffers().get(AttributeType.POSITION);
+
+            if (positionBuffer == null) {
+                log.error("Position buffer is null");
+                return;
+            }
+
             float[] positions = positionBuffer.getFloats();
             for (int i = 0; i < positions.length; i += 3) {
                 positions[i] += (float) translation.x;

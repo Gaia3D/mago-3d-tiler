@@ -56,7 +56,9 @@ usage: Gaia3D Tiler
                                  gltf, glb, las, laz, citygml, indoorgml,
                                  shp, geojson)(Default: kml)
  -l,--log <arg>                  Output log file path.
- -mc,--multiThreadCount <arg>    Multi-Thread count (Default: 4)
+ -lm,--largeMesh                 [Experimental] Large Mesh Splitting Mode
+                                 (Default: false)
+ -mc,--multiThreadCount <arg>    set Multi-Thread count
  -mg,--maxGeometricError <arg>   Maximum geometric error (Default: Integer
                                  max value)
  -mh,--minimumHeight <arg>       Minimum height value for extrusion model
@@ -79,15 +81,19 @@ usage: Gaia3D Tiler
  -q,--quiet                      Quiet mode/Silent mode
  -r,--recursive                  Tree directory deep navigation.
  -ra,--refineAdd                 Set 3D Tiles Refine 'ADD' mode
+ -rc,--radiusColumn <arg>        Radius column setting for extrusion model
+                                 (Default: radius)
+ -ru,--flipUpAxis                Rotate the matrix 180 degrees about the
+                                 X-axis. (Default: false)
  -sh,--skirtHeight <arg>         Building Skirt height setting for
                                  extrusion model (Default: 4.0)
+ -su,--swapUpAxis                Rotate the matrix -90 degrees about the
+                                 X-axis. (Default: false)
  -te,--terrain <arg>             GeoTiff Terrain file path, 3D Object
                                  applied as clampToGround (Supports
                                  geotiff format)
  -v,--version                    Print Version Info
  -xl,--maxLod <arg>              Max Level of detail (Default: 3)
- -ya,--yUpAxis                   Assign 3D root transformed matrix Y-UP
-                                 axis
  -zo,--zeroOrigin                [Experimental] fix 3d root transformed
                                  matrix origin to zero point.
 ```
@@ -108,7 +114,7 @@ Example usage :
 docker pull gaia3d/mago-3d-tiler
 ```
 ```
-docker run --rm -v "/workspace:/workspace" gaia3d/mago-3d-tiler -it 3ds -i /workspace/3ds-samples -o /workspace/sample-3d-tiles -crs 5186 -aa
+docker run --rm -v "/workspace:/workspace" gaia3d/mago-3d-tiler -it 3ds -i /workspace/3ds-samples -o /workspace/sample-3d-tiles -crs 5186
 ```
 
 ### Supported Java versions:
@@ -160,8 +166,7 @@ mago 3DTiler는 Java 기반으로 뛰어난 이식성, 유연함과 함께 빠�
 - mago-3d-tiler-x.x.x-natives-windows.jar   
 - mago-3d-tiler-x.x.x-natives-linux.jar   
 - mago-3d-tiler-x.x.x-natives-macos.jar
-  
-빌드할  사용된 java 버전은 jdk 17 입니다.
+빌드 시 사용된 java 버전은 jdk 17 입니다.
 
 아래는 Help 코드를 실행시킨 예시입니다.
 ```
@@ -196,7 +201,9 @@ usage: Gaia3D Tiler
                                  gltf, glb, las, laz, citygml, indoorgml,
                                  shp, geojson)(Default: kml)
  -l,--log <arg>                  Output log file path.
- -mc,--multiThreadCount <arg>    Multi-Thread count (Default: 4)
+ -lm,--largeMesh                 [Experimental] Large Mesh Splitting Mode
+                                 (Default: false)
+ -mc,--multiThreadCount <arg>    set Multi-Thread count
  -mg,--maxGeometricError <arg>   Maximum geometric error (Default: Integer
                                  max value)
  -mh,--minimumHeight <arg>       Minimum height value for extrusion model
@@ -219,15 +226,19 @@ usage: Gaia3D Tiler
  -q,--quiet                      Quiet mode/Silent mode
  -r,--recursive                  Tree directory deep navigation.
  -ra,--refineAdd                 Set 3D Tiles Refine 'ADD' mode
+ -rc,--radiusColumn <arg>        Radius column setting for extrusion model
+                                 (Default: radius)
+ -ru,--flipUpAxis                Rotate the matrix 180 degrees about the
+                                 X-axis. (Default: false)
  -sh,--skirtHeight <arg>         Building Skirt height setting for
                                  extrusion model (Default: 4.0)
+ -su,--swapUpAxis                Rotate the matrix -90 degrees about the
+                                 X-axis. (Default: false)
  -te,--terrain <arg>             GeoTiff Terrain file path, 3D Object
                                  applied as clampToGround (Supports
                                  geotiff format)
  -v,--version                    Print Version Info
  -xl,--maxLod <arg>              Max Level of detail (Default: 3)
- -ya,--yUpAxis                   Assign 3D root transformed matrix Y-UP
-                                 axis
  -zo,--zeroOrigin                [Experimental] fix 3d root transformed
                                  matrix origin to zero point.
 ```
@@ -249,7 +260,7 @@ mago 3DTiler 1.3.1 버전부터 도커 버전으로 손쉽게 사용할 수 있�
 docker pull gaia3d/mago-3d-tiler
 ```
 ```
-docker run --rm -v "/workspace:/workspace" gaia3d/mago-3d-tiler -it 3ds -i /workspace/3ds-samples -o /workspace/sample-3d-tiles -crs 5186 -aa
+docker run --rm -v "/workspace:/workspace" gaia3d/mago-3d-tiler -it 3ds -i /workspace/3ds-samples -o /workspace/sample-3d-tiles -crs 5186
 ```
 
 ### 지원하는 자바 버전:
