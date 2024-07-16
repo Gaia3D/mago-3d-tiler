@@ -66,10 +66,12 @@ class UnitTest {
     @Test
     void testHanamKyosan3ds() {
         String path = "Data_HanamKyosan\\건물";
+        String inputPath = "D:\\data\\unit-test\\";
+        String outputPath = "D:\\Result_mago3dTiler\\";
         String[] args = new String[]{
-                "-i", INPUT_PATH + path,
+                "-i", inputPath + path,
                 "-it", "3ds",
-                "-o", OUTPUT_PATH + path,
+                "-o", outputPath + path,
                 "-autoUpAxis",
                 "-crs", "5174",
                 "-debug"
@@ -546,4 +548,23 @@ class UnitTest {
             };
             Mago3DTilerMain.main(args);
         }
+
+    @Test
+    void testColladaLargeMesh() {
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\";
+        String outputPath = "D:\\Result_mago3dTiler\\";
+        //String path = "Tile_+000_+000_+000";
+        //String path = "splittedTile";
+        String path = "(20240712)상지대 콜라다 데이터";
+
+        String[] args = new String[]{
+                "-i", inputPath + path,
+                "-it", "dae",
+                "-o", outputPath + path,
+                "-crs", "2096",
+                "-multiThreadCount", "1",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
 }
