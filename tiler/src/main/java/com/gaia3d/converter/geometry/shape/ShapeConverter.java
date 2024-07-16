@@ -247,51 +247,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
 
             convertPipeLineStrings(pipeLineStrings, scenes);
             convertExtrusionBuildings(buildings, scenes);
-
-            /*for (GaiaExtrusionBuilding building : buildings) {
-                GaiaScene scene = initScene();
-                scene.setOriginalPath(file.toPath());
-
-                GaiaNode rootNode = scene.getNodes().get(0);
-                rootNode.setName(building.getName());
-
-                Vector3d center = building.getBoundingBox().getCenter();
-                center.z = center.z - skirtHeight;
-
-                Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
-                Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
-                Matrix4d transfromMatrixInv = new Matrix4d(transformMatrix).invert();
-
-                List<Vector3d> localPositions = new ArrayList<>();
-                for (Vector3d position : building.getPositions()) {
-                    Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
-                    Vector3d localPosition = positionWorldCoordinate.mulPosition(transfromMatrixInv);
-                    localPosition.z = 0.0d;
-                    localPositions.add(new Vector3dOnlyHashEquals(localPosition));
-                }
-                Collections.reverse(localPositions);
-                localPositions.remove(localPositions.size() - 1);
-
-                List<GaiaExtrusionSurface> extrusionSurfaces = gaiaExtruder.extrude(localPositions, building.getRoofHeight(), building.getFloorHeight());
-
-                GaiaNode node = new GaiaNode();
-                node.setTransformMatrix(new Matrix4d().identity());
-                GaiaMesh mesh = new GaiaMesh();
-                node.getMeshes().add(mesh);
-
-                GaiaPrimitive primitive = createPrimitiveFromGaiaExtrusionSurfaces(extrusionSurfaces);
-
-                primitive.setMaterialIndex(0);
-                mesh.getPrimitives().add(primitive);
-
-                rootNode.getChildren().add(node);
-
-                Matrix4d rootTransformMatrix = new Matrix4d().identity();
-                rootTransformMatrix.translate(center, rootTransformMatrix);
-                rootNode.setTransformMatrix(rootTransformMatrix);
-                scenes.add(scene);
-            }
-*/
         } catch (IOException e) {
             log.error("Error while reading shapefile", e);
             throw new RuntimeException(e);
