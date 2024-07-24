@@ -9,6 +9,20 @@ public class StressTest {
     private static final String INPUT_PATH = "D:\\data\\mago-tiler-data\\stress-test-input";
     private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\mago-viewer\\data\\stress-test-output";
 
+
+    //
+    @Test
+    void testIfcMep() {
+        String path = "LARGE-MEP-IFC";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "ifc",
+                //"-crs", "5186",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
     @Test
     void testSouthKoreaShape() {
         String path = "SOUTH-KOREA-SHP";

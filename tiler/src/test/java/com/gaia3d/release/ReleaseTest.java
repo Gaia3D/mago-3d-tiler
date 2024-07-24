@@ -229,8 +229,9 @@ class ReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
+                "-nameColumn", "PNU",
                 "-it", "shp",
-                "-crs", "5186"
+                "-crs", "5174"
         };
         Mago3DTilerMain.main(args);
     }
@@ -242,6 +243,7 @@ class ReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "geojson",
+                "-nameColumn", "layer",
         };
         Mago3DTilerMain.main(args);
     }

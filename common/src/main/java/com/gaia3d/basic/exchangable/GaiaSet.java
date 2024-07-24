@@ -43,11 +43,6 @@ public class GaiaSet implements Serializable{
     List<GaiaBufferDataSet> bufferDatas;
     List<GaiaMaterial> materials;
 
-    //Vector3d position;
-    //Vector3d scale;
-    //Quaterniond quaternion;
-    //private Matrix4d transformMatrix;
-
     byte isBigEndian = 0;
     String projectName;
     String filePath;
@@ -57,12 +52,18 @@ public class GaiaSet implements Serializable{
 
     public GaiaSet(Path path) {
         readFile(path);
-        //this.transformMatrix = new Matrix4d();
-        //this.transformMatrix.identity();
     }
 
     public GaiaSet(GaiaScene gaiaScene) {
-        this.projectName = FilenameUtils.removeExtension(gaiaScene.getOriginalPath().getFileName().toString());
+        String name;
+        if (gaiaScene == null) {
+            name = "File is not loaded";
+        } else if (gaiaScene.getNodes().isEmpty()) {
+            name = FilenameUtils.removeExtension(gaiaScene.getOriginalPath().getFileName().toString());
+        } else {
+            name = gaiaScene.getNodes().get(0).getName();
+        }
+        this.projectName = name;
         List<GaiaBufferDataSet> bufferDataSets = new ArrayList<>();
         for (GaiaNode node : gaiaScene.getNodes()) {
             node.toGaiaBufferSets(bufferDataSets, null);
