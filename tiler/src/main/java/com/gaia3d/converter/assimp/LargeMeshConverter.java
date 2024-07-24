@@ -2,11 +2,16 @@ package com.gaia3d.converter.assimp;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.structure.*;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
-import com.gaia3d.converter.geometry.GaiaTriangle;
+import com.gaia3d.basic.structure.GaiaSceneSplitter;
+import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
+import org.joml.Vector3d;
+import org.locationtech.proj4j.CoordinateReferenceSystem;
+import org.locationtech.proj4j.ProjCoordinate;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -30,7 +35,53 @@ public class LargeMeshConverter implements Converter {
     @Override
     public List<GaiaScene> load(File file) {
         List<GaiaScene> scenes = converter.load(file);
-        return separateScenes(scenes);
+
+        // as a test, calculate the geoCoord of the center of the scene.***
+        GaiaScene originalScene = scenes.get(0);
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        GaiaBoundingBox originalBBox = originalScene.getBoundingBox();
+        CoordinateReferenceSystem source = globalOptions.getCrs();
+        Vector3d center = originalBBox.getCenter();
+        Vector3d originalCenterGeoCoord = new Vector3d();
+        if (source != null) {
+            ProjCoordinate centerSource = new ProjCoordinate(center.x, center.y, originalBBox.getMinZ());
+            ProjCoordinate centerWgs84 = GlobeUtils.transform(source, centerSource);
+            Vector3d geoCoord = new Vector3d(centerWgs84.x, centerWgs84.y, 0.0d);
+            originalCenterGeoCoord.set(geoCoord);
+            int hola = 0;
+        }
+        // End test.------------------------------------------------------------
+
+        // Test new scene splitter.*****************************************
+        GaiaSceneSplitter splitter = new GaiaSceneSplitter();
+        List<GaiaScene> resultGaiaScenes = new ArrayList<>();
+        splitter.splitScenes(scenes, resultGaiaScenes);
+        // End test new scene splitter.-------------------------------------
+
+        // as a test, calculate the geoCoord of the center of the scenes.***
+        GaiaBoundingBox totalBoundingBox = new GaiaBoundingBox();
+
+        int splittedScenesCount = resultGaiaScenes.size();
+        for (int i = 0; i < splittedScenesCount; i++) {
+            GaiaScene scene = resultGaiaScenes.get(i);
+            GaiaBoundingBox sceneBoundingBox = scene.getBoundingBox();
+            totalBoundingBox.addBoundingBox(sceneBoundingBox);
+        }
+
+        Vector3d splittedCenter = totalBoundingBox.getCenter();
+
+        Vector3d splittedCenterGeoCoord = new Vector3d();
+        if (source != null) {
+            ProjCoordinate centerSourceSplitted = new ProjCoordinate(splittedCenter.x, splittedCenter.y, totalBoundingBox.getMinZ());
+            ProjCoordinate centerWgs84Splitted = GlobeUtils.transform(source, centerSourceSplitted);
+            Vector3d geoCoord = new Vector3d(centerWgs84Splitted.x, centerWgs84Splitted.y, 0.0d);
+            splittedCenterGeoCoord.set(geoCoord);
+            int hola = 0;
+        }
+        // End test.------------------------------------------------------------
+
+        return resultGaiaScenes; // new.***
+        //return separateScenes(scenes); // original.***
     }
 
     @Override

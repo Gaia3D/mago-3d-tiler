@@ -44,8 +44,6 @@ public class GaiaTranslatorExact  implements PreProcess {
         GaiaBoundingBox bboxLC = new GaiaBoundingBox();
         this.transformSceneVertexPositionsToLocalCoords(gaiaScene, centerGeoCoord, bboxLC);
 
-        Vector3d translation = getTranslation(gaiaScene);
-
         // set position terrain height
         coverages.forEach((coverage) -> {
             DirectPosition2D memSave_posWorld = new DirectPosition2D(DefaultGeographicCRS.WGS84, centerGeoCoord.x, centerGeoCoord.y);
@@ -62,12 +60,8 @@ public class GaiaTranslatorExact  implements PreProcess {
         });
 
         KmlInfo kmlInfo = getKmlInfo(tileInfo, centerGeoCoord);
-        Matrix4d translationMatrix = new Matrix4d().translate(translation); // new
-        Matrix4d resultTransfromMatrix = new Matrix4d(); // new
-        translationMatrix.mul(transform, resultTransfromMatrix); // new
-
-        rootNode.setTransformMatrix(resultTransfromMatrix);
-        tileInfo.setTransformMatrix(resultTransfromMatrix);
+        rootNode.setTransformMatrix(transform);
+        tileInfo.setTransformMatrix(transform);
 
         GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox(); // new
         gaiaScene.setGaiaBoundingBox(boundingBox); // new

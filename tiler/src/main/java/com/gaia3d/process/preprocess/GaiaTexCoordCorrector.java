@@ -65,7 +65,8 @@ public class GaiaTexCoordCorrector implements PreProcess {
     }
 
     private boolean isInvertTexCoordsYAxis(FormatType formatType) {
-        return formatType == FormatType.MAX_3DS || formatType == FormatType.COLLADA || formatType == FormatType.FBX || formatType == FormatType.OBJ || formatType == FormatType.GLTF || formatType == FormatType.GLB;
+        // formatType == FormatType.FBX || (it seems that this is not necessary)
+        return formatType == FormatType.MAX_3DS || formatType == FormatType.COLLADA || formatType == FormatType.OBJ || formatType == FormatType.GLTF || formatType == FormatType.GLB;
     }
 
     private void invertTexCoordsYAxis(GaiaPrimitive primitive) {
