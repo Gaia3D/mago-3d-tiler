@@ -36,49 +36,9 @@ public class LargeMeshConverter implements Converter {
     public List<GaiaScene> load(File file) {
         List<GaiaScene> scenes = converter.load(file);
 
-        // as a test, calculate the geoCoord of the center of the scene.***
-        GaiaScene originalScene = scenes.get(0);
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
-        GaiaBoundingBox originalBBox = originalScene.getBoundingBox();
-        CoordinateReferenceSystem source = globalOptions.getCrs();
-        Vector3d center = originalBBox.getCenter();
-        Vector3d originalCenterGeoCoord = new Vector3d();
-        if (source != null) {
-            ProjCoordinate centerSource = new ProjCoordinate(center.x, center.y, originalBBox.getMinZ());
-            ProjCoordinate centerWgs84 = GlobeUtils.transform(source, centerSource);
-            Vector3d geoCoord = new Vector3d(centerWgs84.x, centerWgs84.y, 0.0d);
-            originalCenterGeoCoord.set(geoCoord);
-            int hola = 0;
-        }
-        // End test.------------------------------------------------------------
-
-        // Test new scene splitter.*****************************************
         GaiaSceneSplitter splitter = new GaiaSceneSplitter();
         List<GaiaScene> resultGaiaScenes = new ArrayList<>();
         splitter.splitScenes(scenes, resultGaiaScenes);
-        // End test new scene splitter.-------------------------------------
-
-        // as a test, calculate the geoCoord of the center of the scenes.***
-        GaiaBoundingBox totalBoundingBox = new GaiaBoundingBox();
-
-        int splittedScenesCount = resultGaiaScenes.size();
-        for (int i = 0; i < splittedScenesCount; i++) {
-            GaiaScene scene = resultGaiaScenes.get(i);
-            GaiaBoundingBox sceneBoundingBox = scene.getBoundingBox();
-            totalBoundingBox.addBoundingBox(sceneBoundingBox);
-        }
-
-        Vector3d splittedCenter = totalBoundingBox.getCenter();
-
-        Vector3d splittedCenterGeoCoord = new Vector3d();
-        if (source != null) {
-            ProjCoordinate centerSourceSplitted = new ProjCoordinate(splittedCenter.x, splittedCenter.y, totalBoundingBox.getMinZ());
-            ProjCoordinate centerWgs84Splitted = GlobeUtils.transform(source, centerSourceSplitted);
-            Vector3d geoCoord = new Vector3d(centerWgs84Splitted.x, centerWgs84Splitted.y, 0.0d);
-            splittedCenterGeoCoord.set(geoCoord);
-            int hola = 0;
-        }
-        // End test.------------------------------------------------------------
 
         return resultGaiaScenes; // new.***
         //return separateScenes(scenes); // original.***
