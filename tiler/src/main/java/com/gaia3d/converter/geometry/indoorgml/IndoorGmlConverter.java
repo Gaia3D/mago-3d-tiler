@@ -55,7 +55,6 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
             JAXBContext context = JAXBContext.newInstance(IndoorFeatures.class);
             IndoorFeatures indoorFeatures = (IndoorFeatures) context.createUnmarshaller().unmarshal(new FileReader(file));
 
-
             List<List<GaiaBuildingSurface>> buildingSurfacesList = new ArrayList<>();
 
             PrimalSpaceFeatures primalSpaceFeatures = indoorFeatures.getPrimalSpaceFeatures();
@@ -119,7 +118,7 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                 }
             }
 
-            GaiaScene scene = initScene();
+            GaiaScene scene = initScene(file);
             scene.setOriginalPath(file.toPath());
             GaiaNode rootNode = scene.getNodes().get(0);
 

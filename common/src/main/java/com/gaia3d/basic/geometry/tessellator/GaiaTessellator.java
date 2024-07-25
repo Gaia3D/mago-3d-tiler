@@ -78,11 +78,9 @@ public class GaiaTessellator {
         resultConvexPolygons.clear();
     }
 
-    public List<Point2DTess> getCleanPoints2DTessArray(List<Point2DTess> points2DArray, List<Point2DTess> ResultPoints2DArray, double error)
-    {
+    public List<Point2DTess> getCleanPoints2DTessArray(List<Point2DTess> points2DArray, List<Point2DTess> ResultPoints2DArray, double error) {
         // this function eliminates colineal points, same position points and check uroborus.***
-        if(ResultPoints2DArray == null)
-        {
+        if (ResultPoints2DArray == null) {
             ResultPoints2DArray = new ArrayList<>();
         }
 
@@ -90,31 +88,24 @@ public class GaiaTessellator {
         int pointsCount = points2DArray.size();
         Point2DTess firstPoint = null;
         Point2DTess lastPoint = null;
-        for(int i=0; i<pointsCount; i++)
-        {
+        for (int i = 0; i < pointsCount; i++) {
             Point2DTess currPoint = points2DArray.get(i);
-            if(i == 0)
-            {
+            if (i == 0) {
                 ResultPoints2DArray.add(currPoint);
                 firstPoint = currPoint;
                 lastPoint = currPoint;
                 continue;
             }
 
-            if(!currPoint.equals(firstPoint) && !currPoint.equals(lastPoint))
-            {
+            if (!currPoint.equals(firstPoint) && !currPoint.equals(lastPoint)) {
                 ResultPoints2DArray.add(currPoint);
                 lastPoint = currPoint;
-            }
-            else {
-                int hola = 0;
             }
         }
 
         // now, erase colineal points.***
         pointsCount = ResultPoints2DArray.size();
-        for(int i=0; i<pointsCount; i++)
-        {
+        for (int i = 0; i < pointsCount; i++) {
             int idxPrev = getPrevIdx(i, pointsCount);
             int idxNext = getNextIdx(i, pointsCount);
             Point2DTess prevPoint = ResultPoints2DArray.get(idxPrev);
@@ -129,8 +120,7 @@ public class GaiaTessellator {
             v2.normalize();
 
             double dotProd = v1.dot(v2);
-            if(Math.abs(dotProd) > 1.0 - error)
-            {
+            if (Math.abs(dotProd) > 1.0 - error) {
                 // the points are colineal.***
                 ResultPoints2DArray.remove(i);
                 i--;
@@ -142,11 +132,9 @@ public class GaiaTessellator {
 
     }
 
-    public Polygon2DTess getCleanPolygon2DTess(Polygon2DTess polygon, Polygon2DTess resultCleanPolygon, double error)
-    {
+    public Polygon2DTess getCleanPolygon2DTess(Polygon2DTess polygon, Polygon2DTess resultCleanPolygon, double error) {
         // this function eliminates colineal points, same position points and check uroborus.***
-        if(resultCleanPolygon == null)
-        {
+        if (resultCleanPolygon == null) {
             resultCleanPolygon = new Polygon2DTess(new ArrayList<>());
         }
 
@@ -155,8 +143,7 @@ public class GaiaTessellator {
         return resultCleanPolygon;
     }
 
-    public void getExteriorAndInteriorsPolygons_TEST(List<Vector2d> pointsArray, List<Polygon2DTess> exteriorPolygons,List<Polygon2DTess> interiorPolygons, double error )
-    {
+    public void getExteriorAndInteriorsPolygons_TEST(List<Vector2d> pointsArray, List<Polygon2DTess> exteriorPolygons, List<Polygon2DTess> interiorPolygons, double error) {
         int pointsCount = pointsArray.size();
         List<Point2DTess> points = new ArrayList<>();
         Polygon2DTess currPolygon = new Polygon2DTess(points);
@@ -164,24 +151,17 @@ public class GaiaTessellator {
 
         List<Polygon2DTess> tempPolygons = new ArrayList<>();
 
-        for(int i=0; i<pointsCount; i++)
-        {
+        for (int i = 0; i < pointsCount; i++) {
             Vector2d point = pointsArray.get(i);
 
-            if(firstPoint == null)
-            {
+            if (firstPoint == null) {
                 firstPoint = point;
                 points = new ArrayList<>();
                 currPolygon.addPoint(new Point2DTess(point, null, null));
-            }
-            else
-            {
-                if(!firstPoint.equals(point))
-                {
+            } else {
+                if (!firstPoint.equals(point)) {
                     currPolygon.addPoint(new Point2DTess(point, null, null));
-                }
-                else
-                {
+                } else {
                     tempPolygons.add(currPolygon);
                     currPolygon = new Polygon2DTess(points);
                     firstPoint = null;
@@ -191,25 +171,19 @@ public class GaiaTessellator {
         }
 
         int tempPolygonsCount = tempPolygons.size();
-        for(int i=0; i<tempPolygonsCount; i++)
-        {
+        for (int i = 0; i < tempPolygonsCount; i++) {
             Polygon2DTess polygon = tempPolygons.get(i);
             Polygon2DTess cleanPolygon = getCleanPolygon2DTess(polygon, null, error);
-            if(i == 0)
-            {
+            if (i == 0) {
                 exteriorPolygons.add(cleanPolygon);
-            }
-            else
-            {
+            } else {
                 interiorPolygons.add(cleanPolygon);
             }
         }
     }
 
-    private Polygon2DTess eliminateHoleBySplitSegment(Polygon2DTess exteriorPolygon, Polygon2DTess hole, int extPointIdx, int holePointIdx, Polygon2DTess resultPolygon)
-    {
-        if(resultPolygon == null)
-        {
+    private Polygon2DTess eliminateHoleBySplitSegment(Polygon2DTess exteriorPolygon, Polygon2DTess hole, int extPointIdx, int holePointIdx, Polygon2DTess resultPolygon) {
+        if (resultPolygon == null) {
             resultPolygon = new Polygon2DTess(new ArrayList<>());
         }
 
@@ -220,15 +194,13 @@ public class GaiaTessellator {
 
         // 1rst, copy the extPolygon into resultPolygon, starting from extPointIdx.***
         boolean finished = false;
-        int i=0;
+        int i = 0;
         int currIdx = extPointIdx;
-        while(!finished && i<extPointsCount)
-        {
+        while (!finished && i < extPointsCount) {
             Point2DTess point = extPoints.get(currIdx);
             resultPolygon.addPoint(point);
             currIdx = getNextIdx(currIdx, extPointsCount);
-            if(currIdx == extPointIdx)
-            {
+            if (currIdx == extPointIdx) {
                 finished = true;
 
                 // must add the 1rst point.***
@@ -242,15 +214,13 @@ public class GaiaTessellator {
 
         // now copy the holePolygon into resultPolygon, starting from holePointIdx.***
         finished = false;
-        i=0;
+        i = 0;
         currIdx = holePointIdx;
-        while(!finished && i<holePointsCount)
-        {
+        while (!finished && i < holePointsCount) {
             Point2DTess point = holePoints.get(currIdx);
             resultPolygon.addPoint(point);
             currIdx = getNextIdx(currIdx, holePointsCount);
-            if(currIdx == holePointIdx)
-            {
+            if (currIdx == holePointIdx) {
                 finished = true;
 
                 // must add the 1rst point.***
@@ -267,10 +237,8 @@ public class GaiaTessellator {
         return resultPolygon;
     }
 
-    private Polygon2DTess eliminateHole(Polygon2DTess exteriorPolygon, Polygon2DTess hole, Polygon2DTess resultPolygon)
-    {
-        if(resultPolygon == null)
-        {
+    private Polygon2DTess eliminateHole(Polygon2DTess exteriorPolygon, Polygon2DTess hole, Polygon2DTess resultPolygon) {
+        if (resultPolygon == null) {
             resultPolygon = new Polygon2DTess(new ArrayList<>());
         }
 
@@ -281,15 +249,13 @@ public class GaiaTessellator {
 
         int extPointsCount = exteriorSortedIndices.size();
         boolean finished = false;
-        int i=0;
+        int i = 0;
         double error = 1E-10;
-        while(!finished && i < extPointsCount)
-        {
+        while (!finished && i < extPointsCount) {
             int extPointIdx = exteriorSortedIndices.get(i);
             Point2DTess extPoint = exteriorPolygon.getPoint(extPointIdx);
             Segment2DTess segment = new Segment2DTess(extPoint, holeLeftDownPoint);
-            if(exteriorPolygon.isSegmentIntersectingPolygon(segment, error))
-            {
+            if (exteriorPolygon.isSegmentIntersectingPolygon(segment, error)) {
                 // the segment is intersecting the polygon.***
                 i++;
                 continue;
@@ -297,8 +263,7 @@ public class GaiaTessellator {
 
             // the segment is not intersecting the polygon.***
             // now, check if the segment is intersecting the hole.***
-            if(!hole.isSegmentIntersectingPolygon(segment, error))
-            {
+            if (!hole.isSegmentIntersectingPolygon(segment, error)) {
                 // the segment is intersecting the hole.***
                 // eliminate the hole by split the segment.***
                 eliminateHoleBySplitSegment(exteriorPolygon, hole, extPointIdx, holePointIdx, resultPolygon);
@@ -309,32 +274,21 @@ public class GaiaTessellator {
             i++;
         }
 
-        if(!finished)
-        {
-            // the hole is not intersecting the exteriorPolygon.***
-            // so, must return the exteriorPolygon.***
-            int hola = 0;
-        }
-
         return resultPolygon;
     }
 
-    private void getPointsIdxSortedByDistToPoint(Polygon2DTess polygon, Point2DTess point, List<Integer> resultSortedIndices)
-    {
+    private void getPointsIdxSortedByDistToPoint(Polygon2DTess polygon, Point2DTess point, List<Integer> resultSortedIndices) {
         // get the points sorted by distance to the point.***
         List<Point2DTess> points = polygon.getPoints();
         int pointsCount = points.size();
-        if(pointsCount == 0)
-        {
+        if (pointsCount == 0) {
             return;
         }
 
         Map<Integer, Double> mapIdxDist = new HashMap<>();
-        for(int i=0; i<pointsCount; i++)
-        {
+        for (int i = 0; i < pointsCount; i++) {
             Point2DTess point2D = points.get(i);
-            if(point2D == point)
-            {
+            if (point2D == point) {
                 // skip the same point.***
                 continue;
             }
@@ -346,24 +300,20 @@ public class GaiaTessellator {
         mapIdxDist.entrySet().stream().sorted(Map.Entry.comparingByValue()).forEachOrdered(x -> resultSortedIndices.add(x.getKey()));
     }
 
-    public void tessellateHoles2D(List<Vector2d> exteriorPoints, List<List<Vector2d>> interiorPoints, List<Vector2d> resultPositions, List<Integer> resultIndices)
-    {
+    public void tessellateHoles2D(List<Vector2d> exteriorPoints, List<List<Vector2d>> interiorPoints, List<Vector2d> resultPositions, List<Integer> resultIndices) {
         // make exteriorPolygon2DTess.***
         List<Point2DTess> points = new ArrayList<>();
-        for(Vector2d point : exteriorPoints)
-        {
+        for (Vector2d point : exteriorPoints) {
             points.add(new Point2DTess(point, null, null));
         }
 
         Polygon2DTess exteriorPolygon = new Polygon2DTess(points);
         List<Polygon2DTess> interiorPolygons = new ArrayList<>();
         int holesCount = interiorPoints.size();
-        for(int i=0; i<holesCount; i++)
-        {
+        for (int i = 0; i < holesCount; i++) {
             List<Vector2d> holePoints = interiorPoints.get(i);
             points = new ArrayList<>();
-            for(Vector2d point : holePoints)
-            {
+            for (Vector2d point : holePoints) {
                 points.add(new Point2DTess(point, null, null));
             }
             Polygon2DTess hole = new Polygon2DTess(points);
@@ -374,8 +324,7 @@ public class GaiaTessellator {
         Polygon2DTess resultPolygon = tessellateHoles(exteriorPolygon, interiorPolygons, resultIndices2);
 
         int pointsCount = resultPolygon.getPoints().size();
-        for(int i=0; i<pointsCount; i++)
-        {
+        for (int i = 0; i < pointsCount; i++) {
             Point2DTess point = resultPolygon.getPoint(i);
             Vector2d point2D = point.getPoint();
             resultPositions.add(point2D);
@@ -385,8 +334,7 @@ public class GaiaTessellator {
 
     }
 
-    public Polygon2DTess tessellateHoles(Polygon2DTess exteriorPolygon, List<Polygon2DTess> interiorPolygons, List<Integer> resultIndices)
-    {
+    public Polygon2DTess tessellateHoles(Polygon2DTess exteriorPolygon, List<Polygon2DTess> interiorPolygons, List<Integer> resultIndices) {
         // check polygons sense.***
         List<Integer> concaveIndices = new ArrayList<>();
         GaiaRectangle exteriorBRect = exteriorPolygon.getBoundingRectangle();
@@ -394,8 +342,7 @@ public class GaiaTessellator {
         Map<Double, Polygon2DTess> mapDistHolePolygon = new HashMap<>();
 
         int holesCount = interiorPolygons.size();
-        for(int i=0; i<holesCount; i++)
-        {
+        for (int i = 0; i < holesCount; i++) {
             Polygon2DTess hole = interiorPolygons.get(i);
 
             GaiaRectangle rect = hole.getBoundingRectangle();
@@ -413,8 +360,7 @@ public class GaiaTessellator {
         // traverse map.
         int keysCount = sortedPolygons.size();
 
-        for(int i=0; i<keysCount; i++)
-        {
+        for (int i = 0; i < keysCount; i++) {
             Polygon2DTess hole = sortedPolygons.get(i);
             Polygon2DTess resultPolygon = eliminateHole(exteriorPolygon, hole, null);
             exteriorPolygon = resultPolygon;
@@ -430,15 +376,13 @@ public class GaiaTessellator {
         resultPolygon.getPoints().addAll(exteriorPolygon.getPoints());
 
         int convexPolygonsCount = resultConvexPolygons.size();
-        for(int i=0; i<convexPolygonsCount; i++)
-        {
+        for (int i = 0; i < convexPolygonsCount; i++) {
             Polygon2DTess convexPolygon = resultConvexPolygons.get(i);
             List<Integer> convexIndices = new ArrayList<>();
             convexPolygon.getTrianglesIndicesAsConvexPolygon(convexIndices);
 
             int convexIndicesCount = convexIndices.size();
-            for(int j=0; j<convexIndicesCount; j+=1)
-            {
+            for (int j = 0; j < convexIndicesCount; j += 1) {
                 int idx = convexIndices.get(j);
                 Point2DTess point2D = convexPolygon.getPoint(idx);
                 int idxInList = point2D.getIdxInList();

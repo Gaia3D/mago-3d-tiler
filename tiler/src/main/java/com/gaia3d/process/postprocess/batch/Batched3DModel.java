@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.structure.GaiaAttribute;
 import com.gaia3d.basic.structure.GaiaNode;
 import com.gaia3d.basic.structure.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
@@ -27,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -56,20 +58,45 @@ public class Batched3DModel implements TileModel {
         List<TileInfo> tileInfos = contentInfo.getTileInfos();
         int batchLength = tileInfos.size();
 
-        List<String> projectNames = new ArrayList<>();
+        List<String> uuidList = new ArrayList<>();
+        List<String> nameList = new ArrayList<>();
+        List<String> fileNameList = new ArrayList<>();
+        List<String> nodeNameList = new ArrayList<>();
+
+
+
+        /*List<String> projectNames = new ArrayList<>();
         List<String> nodeNames = new ArrayList<>();
         List<Double> geometricErrors = new ArrayList<>();
-        List<Double> heights = new ArrayList<>();
+        List<Double> heights = new ArrayList<>();*/
+
+
         tileInfos.forEach((tileInfo) -> {
+            GaiaAttribute attribute = tileInfo.getScene().getAttribute();
+            Map<String, String> attributes = attribute.getAttributes();
+
             GaiaSet set = tileInfo.getSet();
             String projectName = set.getProjectName();
-            // convert utf-8 to ascii
             String asciiProjectName = StringUtils.convertUTF8(projectName);
-            projectNames.add(asciiProjectName);
-            nodeNames.add(tileInfo.getName());
-            geometricErrors.add(tileInfo.getBoundingBox().getLongestDistance());
-            GaiaBoundingBox boundingBox = tileInfo.getBoundingBox();
-            heights.add(boundingBox.getMaxZ() - boundingBox.getMinZ());
+
+            //String uuid = attribute.getIdentifier().toString();
+
+            String uuid = attributes.getOrDefault("geometry", "DefaultName");
+            String name = attributes.getOrDefault("name", "DefaultName");
+            String fileName = attribute.getFileName();
+            String nodeName = attribute.getNodeName();
+
+            uuidList.add(uuid);
+            nameList.add(name);
+            fileNameList.add(fileName);
+            nodeNameList.add(nodeName);
+
+            //projectNames.add(asciiProjectName);
+            //nodeNames.add(tileInfo.getName());
+            //geometricErrors.add(tileInfo.getBoundingBox().getLongestDistance());
+            //GaiaBoundingBox boundingBox = tileInfo.getBoundingBox();
+            //heights.add(boundingBox.getMaxZ() - boundingBox.getMinZ());
+            //uuids.add(tileInfo.getScene().getAttribute().getIdentifier().toString());
         });
 
 
@@ -124,15 +151,42 @@ public class Batched3DModel implements TileModel {
         scene = null;
 
         /* BatchTable */
-        GaiaBatchTable batchTable = new GaiaBatchTable();
-        for (int i = 0; i < batchLength; i++) {
-            batchTable.getProejctName().add(projectNames.get(i));
-            batchTable.getNodeName().add(nodeNames.get(i));
-            batchTable.getBatchName().add(nodeCode);
-            batchTable.getBatchId().add(i + "/" + batchLength);
-            batchTable.getGeometricError().add(DecimalUtils.cut(geometricErrors.get(i), 2));
-            batchTable.getHeight().add(DecimalUtils.cut(heights.get(i), 2));
-        }
+        GaiaBatchTableMap<String, List<String>> batchTableMap = new GaiaBatchTableMap<>();
+        AtomicInteger batchIdIndex = new AtomicInteger(0);
+        tileInfos.forEach((tileInfo) -> {
+            GaiaAttribute attribute = tileInfo.getScene().getAttribute();
+            Map<String, String> attributes = attribute.getAttributes();
+            GaiaSet set = tileInfo.getSet();
+
+            String UUID = attribute.getIdentifier().toString();
+            String FileName = attribute.getFileName();
+            String NodeName = attribute.getNodeName();
+
+            UUID = StringUtils.convertUTF8(UUID);
+            FileName = StringUtils.convertUTF8(FileName);
+            NodeName = StringUtils.convertUTF8(NodeName);
+
+            batchTableMap.computeIfAbsent("UUID", k -> new ArrayList<>());
+
+            batchTableMap.get("UUID").add(UUID);
+
+            batchTableMap.computeIfAbsent("FileName", k -> new ArrayList<>());
+            batchTableMap.get("FileName").add(FileName);
+
+            batchTableMap.computeIfAbsent("NodeName", k -> new ArrayList<>());
+            batchTableMap.get("NodeName").add(NodeName);
+
+            batchTableMap.computeIfAbsent("BatchId", k -> new ArrayList<>());
+            batchTableMap.get("BatchId").add(String.valueOf(batchIdIndex.getAndIncrement()));
+
+            attributes.forEach((key, value) -> {
+                String utf8Value = StringUtils.convertUTF8(value);
+
+                batchTableMap.computeIfAbsent(key, k -> new ArrayList<>());
+                batchTableMap.get(key).add(utf8Value);
+            });
+        });
+
 
         ObjectMapper objectMapper = new ObjectMapper();
         try {
@@ -140,7 +194,7 @@ public class Batched3DModel implements TileModel {
             featureTableJson = featureTableText;
             featureTableJSONByteLength = featureTableText.length();
 
-            String batchTableText = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(batchTable));
+            String batchTableText = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(batchTableMap));
             batchTableJson = batchTableText;
             batchTableJSONByteLength = batchTableText.length();
         } catch (JsonProcessingException e) {

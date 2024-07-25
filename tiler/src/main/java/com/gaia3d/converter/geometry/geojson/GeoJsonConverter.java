@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
+import org.geotools.feature.simple.SimpleFeatureImpl;
 import org.geotools.geojson.feature.FeatureJSON;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.joml.Matrix4d;
@@ -23,15 +24,16 @@ import org.locationtech.jts.geom.*;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.type.FeatureType;
+import org.opengis.feature.type.PropertyDescriptor;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -77,7 +79,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
 
             List<GaiaExtrusionBuilding> buildings = new ArrayList<>();
             while (iterator.hasNext()) {
-                SimpleFeature feature = iterator.next();
+                SimpleFeatureImpl feature = (SimpleFeatureImpl) iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
 
                 if (geom == null) {
@@ -98,6 +100,21 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                     log.debug("Is Not Supported Geometry Type : {}", geom.getGeometryType());
                     continue;
                 }
+
+                Map<String, String> attributes = new HashMap<>();
+                FeatureType featureType = feature.getFeatureType();
+                Collection<PropertyDescriptor> featureDescriptors = featureType.getDescriptors();
+                AtomicInteger index = new AtomicInteger(0);
+                featureDescriptors.forEach(attributeDescriptor -> {
+                    Object attribute = feature.getAttribute(index.getAndIncrement());
+                    if (attribute instanceof Geometry) {
+                        return;
+                    }
+                    String attributeString = castStringFromObject(attribute, "Null");
+                    //log.debug("{} : {}", attributeDescriptor.getName(), attributeString);
+                    attributes.put(attributeDescriptor.getName().getLocalPart(), attributeString);
+                });
+
 
                 for (Polygon polygon : polygons) {
                     if (!polygon.isValid()) {
@@ -147,8 +164,8 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                         boundingBox.addPoint(position);
                     }
 
+                    String name = getAttributeValueOfDefault(feature, nameColumnName, "Extrusion-Building");
                     if (positions.size() >= 3) {
-                        String name = getAttributeValue(feature, nameColumnName);
                         double height = getHeight(feature, heightColumnName, minimumHeightValue);
                         double altitude = absoluteAltitudeValue;
                         if (altitudeColumnName != null) {
@@ -161,10 +178,10 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                                 .floorHeight(altitude)
                                 .roofHeight(height + skirtHeight)
                                 .positions(positions)
+                                .properties(attributes)
                                 .build();
                         buildings.add(building);
                     } else {
-                        String name = getAttributeValue(feature, nameColumnName);
                         log.warn("Invalid Geometry : {}, {}", feature.getID(), name);
                     }
                 }
@@ -172,12 +189,17 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
             iterator.close();
 
             for (GaiaExtrusionBuilding building : buildings) {
-                GaiaScene scene = initScene();
+                GaiaScene scene = initScene(file);
                 scene.setOriginalPath(file.toPath());
 
                 GaiaMaterial material = scene.getMaterials().get(0);
                 GaiaNode rootNode = scene.getNodes().get(0);
-                rootNode.setName(building.getName());
+
+                GaiaAttribute gaiaAttribute = scene.getAttribute();
+                gaiaAttribute.setAttributes(building.getProperties());
+                Map<String, String> attributes = gaiaAttribute.getAttributes();
+                gaiaAttribute.setNodeName(rootNode.getName());
+                attributes.put("name", building.getName());
 
                 Vector3d center = building.getBoundingBox().getCenter();
                 center.z = center.z - skirtHeight;

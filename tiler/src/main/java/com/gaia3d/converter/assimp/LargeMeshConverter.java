@@ -41,7 +41,6 @@ public class LargeMeshConverter implements Converter {
         splitter.splitScenes(scenes, resultGaiaScenes);
 
         return resultGaiaScenes; // new.***
-        //return separateScenes(scenes); // original.***
     }
 
     @Override

@@ -231,7 +231,8 @@ class ReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-nameColumn", "PNU",
                 "-it", "shp",
-                "-crs", "5174"
+                "-crs", "5174",
+                "-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -244,6 +245,7 @@ class ReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "geojson",
                 "-nameColumn", "layer",
+                "-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -272,6 +274,40 @@ class ReleaseTest {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "ifc",
                 "-output", output.getAbsolutePath(),
+                "-debug",
+                "-glb"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testCityGmlLod1() {
+        String path = "JAPAN-MORAN-CITYGML-LOD1";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "citygml",
+                "-crs", "4326",
+                "-flipCoordinate",
+                "-output", output.getAbsolutePath(),
+                "-debug",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testCityGmlLod4() {
+        String path = "RAIL-WAY-CITYGML3";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "citygml",
+                "-output", output.getAbsolutePath(),
+                "-debug",
         };
         Mago3DTilerMain.main(args);
     }

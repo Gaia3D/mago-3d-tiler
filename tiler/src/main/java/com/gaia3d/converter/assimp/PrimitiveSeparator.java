@@ -28,12 +28,6 @@ public class PrimitiveSeparator {
         GaiaBoundingBox boundingBox = getBoundingBox(totalTriangles);
 
         distributeTrianglesAtOctree(totalTriangles, boundingBox, threshold * 10);
-
-        /*if (totalTriangles.size() <= threshold) {
-            distributeTriangles(totalTriangles, boundingBox, threshold);
-        } else {
-            newPrimitives.add(createPrimitive(totalTriangles));
-        }*/
         return newPrimitives;
     }
 

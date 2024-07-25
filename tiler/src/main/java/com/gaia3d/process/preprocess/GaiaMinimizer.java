@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.nio.file.Path;
 
 @Slf4j
 @AllArgsConstructor
@@ -19,7 +20,8 @@ public class GaiaMinimizer implements PreProcess {
         GaiaScene scene = tileInfo.getScene();
         if (scene != null) {
             GaiaSet tempSet = new GaiaSet(scene);
-            tileInfo.setTempPath(tempSet.writeFile(tileInfo.getTempPath(), tileInfo.getSerial()));
+            Path tempPath = tempSet.writeFile(tileInfo.getTempPath(), tileInfo.getSerial(), tempSet.getAttribute());
+            tileInfo.setTempPath(tempPath);
             if (tempSet != null) {
                 tempSet.clear();
             }

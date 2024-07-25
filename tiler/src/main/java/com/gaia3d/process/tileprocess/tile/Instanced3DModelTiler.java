@@ -12,6 +12,7 @@ import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 import com.gaia3d.util.DecimalUtils;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 
@@ -25,11 +26,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
+@NoArgsConstructor
 public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
 
     private static final GlobalOptions globalOptions = GlobalOptions.getInstance();
-
-    public Instanced3DModelTiler() {}
 
     @Override
     public Tileset run(List<TileInfo> tileInfos) {

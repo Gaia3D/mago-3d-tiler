@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.joml.Vector3d;
 
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -21,4 +22,5 @@ public class GaiaExtrusionBuilding {
     private String originalFilePath;
 
     List<Vector3d> positions;
+    Map<String, String> properties;
 }

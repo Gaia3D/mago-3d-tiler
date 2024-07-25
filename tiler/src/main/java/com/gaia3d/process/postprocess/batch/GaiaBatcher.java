@@ -35,7 +35,6 @@ public class GaiaBatcher {
         Map<GaiaBufferDataSet, Boolean> visitedMap = new HashMap<>();
         for (int i = 0; i < datasetsCount; i++) {
             GaiaBufferDataSet dataSet = dataSets.get(i);
-            // check if dataset is visited.***
             if (visitedMap.containsKey(dataSet)) {
                 continue;
             }
@@ -64,7 +63,7 @@ public class GaiaBatcher {
      * @param materialB
      * @param scaleFactor
      */
-    public boolean areEqualMaterials(GaiaMaterial materialA, GaiaMaterial materialB, float scaleFactor) {
+    private boolean areEqualMaterials(GaiaMaterial materialA, GaiaMaterial materialB, float scaleFactor) {
         // This function determines if two materials are equal.
         if (materialA == null && materialB == null) {
             return true;
@@ -304,7 +303,7 @@ public class GaiaBatcher {
         return batchedSet;
     }
 
-    public List<GaiaMaterial> getMaterialsListOfBufferDataSet(List<GaiaBufferDataSet> bufferDataSets, List<GaiaMaterial> materials) {
+    private List<GaiaMaterial> getMaterialsListOfBufferDataSet(List<GaiaBufferDataSet> bufferDataSets, List<GaiaMaterial> materials) {
         // first, make a map to avoid duplicate materials
         Map<Integer, GaiaMaterial> materialMap = new WeakHashMap<>();
         for (GaiaBufferDataSet bufferDataSet : bufferDataSets) {

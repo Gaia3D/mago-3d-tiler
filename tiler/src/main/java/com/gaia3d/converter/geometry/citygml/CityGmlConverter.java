@@ -9,11 +9,24 @@ import com.gaia3d.converter.geometry.extrusion.Extruder;
 import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.citygml4j.core.model.bridge.Bridge;
+import org.citygml4j.core.model.bridge.BridgePart;
 import org.citygml4j.core.model.building.*;
+import org.citygml4j.core.model.cityfurniture.CityFurniture;
+import org.citygml4j.core.model.cityobjectgroup.CityObjectGroup;
 import org.citygml4j.core.model.construction.*;
 import org.citygml4j.core.model.core.*;
+import org.citygml4j.core.model.generics.GenericOccupiedSpace;
+import org.citygml4j.core.model.relief.ReliefFeature;
+import org.citygml4j.core.model.transportation.Railway;
+import org.citygml4j.core.model.tunnel.Tunnel;
+import org.citygml4j.core.model.vegetation.SolitaryVegetationObject;
+import org.citygml4j.core.model.waterbody.WaterBody;
+import org.citygml4j.core.model.waterbody.WaterSurface;
 import org.citygml4j.xml.CityGMLContext;
 import org.citygml4j.xml.CityGMLContextException;
+import org.citygml4j.xml.module.citygml.ReliefModule;
+import org.citygml4j.xml.module.citygml.TransportationModule;
 import org.citygml4j.xml.reader.CityGMLInputFactory;
 import org.citygml4j.xml.reader.CityGMLReadException;
 import org.citygml4j.xml.reader.CityGMLReader;
@@ -29,6 +42,7 @@ import org.xmlobjects.gml.model.geometry.aggregates.MultiSurfaceProperty;
 import org.xmlobjects.gml.model.geometry.complexes.CompositeSurface;
 import org.xmlobjects.gml.model.geometry.primitives.*;
 import org.xmlobjects.gml.model.geometry.primitives.Polygon;
+import org.xmlobjects.model.Child;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -89,10 +103,13 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             }
 
             for (GaiaExtrusionBuilding gaiaBuilding : buildingList) {
-                GaiaScene scene = initScene();
+                GaiaScene scene = initScene(file);
                 scene.setOriginalPath(file.toPath());
                 GaiaMaterial material = getMaterialByClassification(scene.getMaterials(), gaiaBuilding.getClassification());
                 GaiaNode rootNode = scene.getNodes().get(0);
+
+                GaiaAttribute attribute = scene.getAttribute();
+                attribute.setAttributes(gaiaBuilding.getProperties());
 
                 GaiaBoundingBox boundingBox = gaiaBuilding.getBoundingBox();
                 Vector3d center = boundingBox.getCenter();
@@ -125,9 +142,12 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                     continue;
                 }
 
-                GaiaScene scene = initScene();
+                GaiaScene scene = initScene(file);
                 scene.setOriginalPath(file.toPath());
                 GaiaNode rootNode = scene.getNodes().get(0);
+
+                GaiaAttribute attribute = scene.getAttribute();
+                //attribute.setAttributes(surfaces.getProperties());
 
                 GaiaBoundingBox globalBoundingBox = new GaiaBoundingBox();
                 for (GaiaBuildingSurface buildingSurface : surfaces) {
@@ -163,21 +183,12 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                     mesh.getPrimitives().add(primitive);
                     rootNode.getChildren().add(node);
                 }
-                /*GaiaNode node = new GaiaNode();
-                node.setTransformMatrix(new Matrix4d().identity());
-                GaiaMesh mesh = new GaiaMesh();
-                node.getMeshes().add(mesh);
-                GaiaPrimitive primitive = createPrimitiveFromPolygons(polygons);
-                primitive.setMaterialIndex(material.getId());
-                mesh.getPrimitives().add(primitive);
-                rootNode.getChildren().add(node);*/
 
                 Matrix4d rootTransformMatrix = new Matrix4d().identity();
                 rootTransformMatrix.translate(center, rootTransformMatrix);
                 rootNode.setTransformMatrix(rootTransformMatrix);
                 scenes.add(scene);
             }
-
         } catch (CityGMLContextException | CityGMLReadException e) {
             log.error("Failed to read citygml file: {}", file.getName());
             throw new RuntimeException(e);
@@ -198,11 +209,15 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
 
         for (SurfaceProperty surfaceProperty : surfaceProperties) {
             GaiaBoundingBox boundingBox = new GaiaBoundingBox();
+
+            Map<String, String> properties = new HashMap<>();
+            properties.put("name", cityObject.getId());
             GaiaExtrusionBuilding gaiaBuilding = GaiaExtrusionBuilding.builder()
                     .id(cityObject.getId())
                     .name(cityObject.getId())
                     .floorHeight(0)
                     .roofHeight(height)
+                    .properties(properties)
                     .build();
 
             List<Vector3d> polygon = new Vector<>();
@@ -260,7 +275,14 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             return buildingSurfaces;
         }
 
-        Classification classification = getClassification((AbstractSpaceBoundary) multiSurfaceProperty.getParent());
+        Classification classification = getClassification(cityObject);
+        Child parent = multiSurfaceProperty.getParent();
+        if (parent instanceof AbstractSpaceBoundary) {
+            classification = getClassification((AbstractSpaceBoundary) parent);
+        } else if (parent instanceof AbstractCityObject) {
+            classification = getClassification((AbstractCityObject) parent);
+        }
+        //Classification classification = getClassification((AbstractSpaceBoundary) multiSurfaceProperty.getParent());
         buildingSurfaces = convertSurfaceProperty(cityObject, classification, surfaceProperties);
         return buildingSurfaces;
     }
@@ -305,12 +327,16 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                         vec3Polygon.add(position);
                         boundingBox.addPoint(position);
                     }
+
+                    Map<String, String> properties = new HashMap<>();
+                    properties.put("name", cityObject.getId());
                     GaiaBuildingSurface gaiaBuildingSurface = GaiaBuildingSurface.builder()
                             .id(cityObject.getId())
                             .name(cityObject.getId())
                             .positions(vec3Polygon)
                             .boundingBox(boundingBox)
                             .classification(classification)
+                            .properties(properties)
                             .build();
                     buildingSurfaces.add(gaiaBuildingSurface);
                 }
@@ -336,12 +362,15 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                     vec3Polygon.add(position);
                     boundingBox.addPoint(position);
                 }
+                Map<String, String> properties = new HashMap<>();
+                properties.put("name", cityObject.getId());
                 GaiaBuildingSurface gaiaBuildingSurface = GaiaBuildingSurface.builder()
                         .id(cityObject.getId())
                         .name(cityObject.getId())
                         .positions(vec3Polygon)
                         .boundingBox(boundingBox)
-                        .classification(getClassification(cityObject))
+                        .classification(classification)
+                        .properties(properties)
                         .build();
                 buildingSurfaces.add(gaiaBuildingSurface);
             }
@@ -373,21 +402,55 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
         List<BuildingRoomProperty> buildingRoomProperties = null;
         List<BuildingPartProperty> buildingPartProperties = null;
 
-        if (cityObject instanceof Building building) {
-            lod1Solid = building.getLod1Solid();
-            lod2Solid = building.getLod2Solid();
-            lod3Solid = building.getLod3Solid();
-            buildingRoomProperties = building.getBuildingRooms();
-            buildingPartProperties = building.getBuildingParts();
-        } else if (cityObject instanceof BuildingPart buildingPart) {
-            lod1Solid = buildingPart.getLod1Solid();
-            lod2Solid = buildingPart.getLod2Solid();
-            lod3Solid = buildingPart.getLod3Solid();
-            buildingRoomProperties = buildingPart.getBuildingRooms();
-        } else if (cityObject instanceof BuildingRoom buildingRoom) {
-            lod1Solid = buildingRoom.getLod1Solid();
-            lod2Solid = buildingRoom.getLod2Solid();
-            lod3Solid = buildingRoom.getLod3Solid();
+        if (cityObject instanceof Building object) {
+            lod1Solid = object.getLod1Solid();
+            lod2Solid = object.getLod2Solid();
+            lod3Solid = object.getLod3Solid();
+            buildingRoomProperties = object.getBuildingRooms();
+            buildingPartProperties = object.getBuildingParts();
+        } else if (cityObject instanceof BuildingPart object) {
+            lod1Solid = object.getLod1Solid();
+            lod2Solid = object.getLod2Solid();
+            lod3Solid = object.getLod3Solid();
+            buildingRoomProperties = object.getBuildingRooms();
+        } else if (cityObject instanceof BuildingRoom object) {
+            lod1Solid = object.getLod1Solid();
+            lod2Solid = object.getLod2Solid();
+            lod3Solid = object.getLod3Solid();
+        } else if (cityObject instanceof Bridge object) {
+            lod1Solid = object.getLod1Solid();
+            lod2Solid = object.getLod2Solid();
+            lod3Solid = object.getLod3Solid();
+        } else if (cityObject instanceof SolitaryVegetationObject object) {
+            lod1Solid = object.getLod1Solid();
+            lod2Solid = object.getLod2Solid();
+            lod3Solid = object.getLod3Solid();
+        } else if (cityObject instanceof CityObjectGroup object) {
+            lod1Solid = object.getLod1Solid();
+            lod2Solid = object.getLod2Solid();
+            lod3Solid = object.getLod3Solid();
+        } else if (cityObject instanceof Tunnel object) {
+            lod1Solid = object.getLod1Solid();
+            lod2Solid = object.getLod2Solid();
+            lod3Solid = object.getLod3Solid();
+        } else if (cityObject instanceof WaterBody object) {
+            lod1Solid = object.getLod1Solid();
+            lod2Solid = object.getLod2Solid();
+            lod3Solid = object.getLod3Solid();
+        } else if (cityObject instanceof Railway object) {
+            lod1Solid = object.getLod1Solid();
+            lod2Solid = object.getLod2Solid();
+            lod3Solid = object.getLod3Solid();
+        } else if (cityObject instanceof CityFurniture object) {
+            lod1Solid = object.getLod1Solid();
+            lod2Solid = object.getLod2Solid();
+            lod3Solid = object.getLod3Solid();
+        } else if (cityObject instanceof GenericOccupiedSpace object) {
+            lod1Solid = object.getLod1Solid();
+            lod2Solid = object.getLod2Solid();
+            lod3Solid = object.getLod3Solid();
+        } else {
+            log.debug("Unsupported city object type: {}", cityObject.getClass().getSimpleName());
         }
 
         if (lod1Solid != null) {
@@ -424,76 +487,178 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
         MultiSurfaceProperty lod1MultiSurface = null;
         MultiSurfaceProperty lod2MultiSurface = null;
         MultiSurfaceProperty lod3MultiSurface = null;
-        List<AbstractSpaceBoundaryProperty> boundaries = null;
-        List<BuildingRoomProperty> buildingRoomProperties = null;
-        List<BuildingPartProperty> buildingPartProperties = null;
 
-        if (cityObject instanceof Building building) {
-            lod0MultiSurface = building.getLod0MultiSurface();
-            lod2MultiSurface = building.getLod2MultiSurface();
-            lod3MultiSurface = building.getLod3MultiSurface();
-            boundaries = building.getBoundaries();
-            buildingRoomProperties = building.getBuildingRooms();
-            buildingPartProperties = building.getBuildingParts();
-        } else if (cityObject instanceof BuildingPart buildingPart) {
-            lod0MultiSurface = buildingPart.getLod0MultiSurface();
-            lod2MultiSurface = buildingPart.getLod2MultiSurface();
-            lod3MultiSurface = buildingPart.getLod3MultiSurface();
-            boundaries = buildingPart.getBoundaries();
-            buildingRoomProperties = buildingPart.getBuildingRooms();
-        } else if (cityObject instanceof BuildingRoom buildingRoom) {
-            lod0MultiSurface = buildingRoom.getLod0MultiSurface();
-            lod2MultiSurface = buildingRoom.getLod2MultiSurface();
-            lod3MultiSurface = buildingRoom.getLod3MultiSurface();
-            boundaries = buildingRoom.getBoundaries();
-        } else if (cityObject instanceof DoorSurface doorSurface) {
-            lod0MultiSurface = doorSurface.getLod0MultiSurface();
-            lod1MultiSurface = doorSurface.getLod1MultiSurface();
-            lod2MultiSurface = doorSurface.getLod2MultiSurface();
-            lod3MultiSurface = doorSurface.getLod3MultiSurface();
-        } else if (cityObject instanceof WindowSurface windowSurface) {
-            lod0MultiSurface = windowSurface.getLod0MultiSurface();
-            lod1MultiSurface = windowSurface.getLod1MultiSurface();
-            lod2MultiSurface = windowSurface.getLod2MultiSurface();
-            lod3MultiSurface = windowSurface.getLod3MultiSurface();
-        } else if (cityObject instanceof ClosureSurface closureSurface) {
-            lod0MultiSurface = closureSurface.getLod0MultiSurface();
-            lod1MultiSurface = closureSurface.getLod1MultiSurface();
-            lod2MultiSurface = closureSurface.getLod2MultiSurface();
-            lod3MultiSurface = closureSurface.getLod3MultiSurface();
-        } else if (cityObject instanceof CeilingSurface ceilingSurface) {
-            lod0MultiSurface = ceilingSurface.getLod0MultiSurface();
-            lod1MultiSurface = ceilingSurface.getLod1MultiSurface();
-            lod2MultiSurface = ceilingSurface.getLod2MultiSurface();
-            lod3MultiSurface = ceilingSurface.getLod3MultiSurface();
-        } else if (cityObject instanceof InteriorWallSurface interiorWallSurface) {
-            lod0MultiSurface = interiorWallSurface.getLod0MultiSurface();
-            lod1MultiSurface = interiorWallSurface.getLod1MultiSurface();
-            lod2MultiSurface = interiorWallSurface.getLod2MultiSurface();
-            lod3MultiSurface = interiorWallSurface.getLod3MultiSurface();
-        } else if (cityObject instanceof FloorSurface floorSurface) {
-            lod0MultiSurface = floorSurface.getLod0MultiSurface();
-            lod1MultiSurface = floorSurface.getLod1MultiSurface();
-            lod2MultiSurface = floorSurface.getLod2MultiSurface();
-            lod3MultiSurface = floorSurface.getLod3MultiSurface();
-        } else if (cityObject instanceof GroundSurface groundSurface) {
-            lod0MultiSurface = groundSurface.getLod0MultiSurface();
-            lod1MultiSurface = groundSurface.getLod1MultiSurface();
-            lod2MultiSurface = groundSurface.getLod2MultiSurface();
-            lod3MultiSurface = groundSurface.getLod3MultiSurface();
-        } else if (cityObject instanceof RoofSurface roofSurface) {
-            lod0MultiSurface = roofSurface.getLod0MultiSurface();
-            lod1MultiSurface = roofSurface.getLod1MultiSurface();
-            lod2MultiSurface = roofSurface.getLod2MultiSurface();
-            lod3MultiSurface = roofSurface.getLod3MultiSurface();
-        } else if (cityObject instanceof WallSurface wallSurface) {
-            lod0MultiSurface = wallSurface.getLod0MultiSurface();
-            lod1MultiSurface = wallSurface.getLod1MultiSurface();
-            lod2MultiSurface = wallSurface.getLod2MultiSurface();
-            lod3MultiSurface = wallSurface.getLod3MultiSurface();
-        } else if (cityObject instanceof AbstractSpaceBoundary abstractSpaceBoundary) {
-            List<MultiSurfaceProperty> multiSurfaceProperties = extractMultiSurfaceProperty(abstractSpaceBoundary);
+        List<AbstractSpaceBoundary> boundaries = new ArrayList<>();
+        List<AbstractCityObject> childCityObjects = new ArrayList<>();
+
+        if (cityObject instanceof Building object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+            object.getBoundaries().forEach(childProperty -> {
+                boundaries.add(childProperty.getObject());
+            });
+            object.getBuildingRooms().forEach(childProperty -> {
+                childCityObjects.add(childProperty.getObject());
+            });
+            object.getBuildingParts().forEach(childProperty -> {
+                childCityObjects.add(childProperty.getObject());
+            });
+        } else if (cityObject instanceof BuildingPart object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+            object.getBoundaries().forEach(childProperty -> {
+                boundaries.add(childProperty.getObject());
+            });
+            object.getBuildingRooms().forEach(childProperty -> {
+                childCityObjects.add(childProperty.getObject());
+            });
+            object.getBoundaries().forEach(childProperty -> {
+                childCityObjects.add(childProperty.getObject());
+            });
+        } else if (cityObject instanceof BuildingRoom object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+            object.getBoundaries().forEach(childProperty -> {
+                boundaries.add(childProperty.getObject());
+            });
+            object.getBuildingFurniture().forEach(childProperty -> {
+                childCityObjects.add(childProperty.getObject());
+            });
+            object.getBuildingInstallations().forEach(childProperty -> {
+                childCityObjects.add(childProperty.getObject());
+            });
+            object.getBoundaries().forEach(childProperty -> {
+                childCityObjects.add(childProperty.getObject());
+            });
+        } else if (cityObject instanceof DoorSurface object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod1MultiSurface = object.getLod1MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+        } else if (cityObject instanceof WindowSurface object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod1MultiSurface = object.getLod1MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+        } else if (cityObject instanceof ClosureSurface object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod1MultiSurface = object.getLod1MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+        } else if (cityObject instanceof CeilingSurface object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod1MultiSurface = object.getLod1MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+        } else if (cityObject instanceof InteriorWallSurface object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod1MultiSurface = object.getLod1MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+        } else if (cityObject instanceof FloorSurface object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod1MultiSurface = object.getLod1MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+        } else if (cityObject instanceof GroundSurface object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod1MultiSurface = object.getLod1MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+        } else if (cityObject instanceof RoofSurface object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod1MultiSurface = object.getLod1MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+        } else if (cityObject instanceof WallSurface object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod1MultiSurface = object.getLod1MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+        } else if (cityObject instanceof AbstractSpaceBoundary object) {
+            List<MultiSurfaceProperty> multiSurfaceProperties = extractMultiSurfaceProperty(object);
             multiSurfaces.addAll(multiSurfaceProperties);
+        } else if (cityObject instanceof SolitaryVegetationObject object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+            object.getBoundaries().forEach(childProperty -> {
+                boundaries.add(childProperty.getObject());
+            });
+        } else if (cityObject instanceof Bridge object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+            object.getBridgeParts().forEach(childProperty -> {
+                childCityObjects.add(childProperty.getObject());
+            });
+            object.getBoundaries().forEach(childProperty -> {
+                boundaries.add(childProperty.getObject());
+            });
+        } else if (cityObject instanceof Tunnel object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+            object.getTunnelParts().forEach(childProperty -> {
+                childCityObjects.add(childProperty.getObject());
+            });
+            object.getBoundaries().forEach(childProperty -> {
+                boundaries.add(childProperty.getObject());
+            });
+        } else if (cityObject instanceof Railway object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+            object.getBoundaries().forEach(childProperty -> {
+                boundaries.add(childProperty.getObject());
+            });
+        } else if (cityObject instanceof CityObjectGroup object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+            object.getBoundaries().forEach(childProperty -> {
+                boundaries.add(childProperty.getObject());
+            });
+        } else if (cityObject instanceof GenericOccupiedSpace object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+            object.getBoundaries().forEach(childProperty -> {
+                boundaries.add(childProperty.getObject());
+            });
+        } else if (cityObject instanceof CityFurniture object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+            object.getBoundaries().forEach(childProperty -> {
+                childCityObjects.add(childProperty.getObject());
+            });
+        } else if (cityObject instanceof OtherConstruction object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+            object.getBoundaries().forEach(childProperty -> {
+                childCityObjects.add(childProperty.getObject());
+            });
+        } else if (cityObject instanceof WaterBody object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+            object.getBoundaries().forEach(childProperty -> {
+                boundaries.add(childProperty.getObject());
+            });
+        } else if (cityObject instanceof AbstractSpace object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+            object.getBoundaries().forEach(childProperty -> {
+                boundaries.add(childProperty.getObject());
+            });
+        } else {
+            log.debug("Unsupported city object type: {}", cityObject.getClass().getSimpleName());
         }
 
         if (lod0MultiSurface != null) {
@@ -509,28 +674,14 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             multiSurfaces.add(lod3MultiSurface);
         }
 
-        if (boundaries != null && !boundaries.isEmpty()) {
-            for (AbstractSpaceBoundaryProperty boundary : boundaries) {
-                AbstractSpaceBoundary spaceBoundary = boundary.getObject();
-                List<MultiSurfaceProperty> multiSurfaceProperties = extractMultiSurfaceProperty(spaceBoundary);
-                multiSurfaces.addAll(multiSurfaceProperties);
-            }
+        for (AbstractSpaceBoundary spaceBoundary : boundaries) {
+            List<MultiSurfaceProperty> childMultiSurfaces = extractMultiSurfaceProperty(spaceBoundary);
+            multiSurfaces.addAll(childMultiSurfaces);
         }
 
-        if (buildingRoomProperties != null && !buildingRoomProperties.isEmpty()) {
-            for (BuildingRoomProperty buildingRoomProperty : buildingRoomProperties) {
-                BuildingRoom buildingRoom = buildingRoomProperty.getObject();
-                List<MultiSurfaceProperty> multiSurfaceProperties = extractMultiSurfaceProperty(buildingRoom);
-                multiSurfaces.addAll(multiSurfaceProperties);
-            }
-        }
-
-        if (buildingPartProperties != null && !buildingPartProperties.isEmpty()) {
-            for (BuildingPartProperty buildingPartProperty : buildingPartProperties) {
-                BuildingPart buildingPart = buildingPartProperty.getObject();
-                List<MultiSurfaceProperty> multiSurfaceProperties = extractMultiSurfaceProperty(buildingPart);
-                multiSurfaces.addAll(multiSurfaceProperties);
-            }
+        for (AbstractCityObject childCityObject : childCityObjects) {
+            List<MultiSurfaceProperty> childMultiSurfaces = extractMultiSurfaceProperty(childCityObject);
+            multiSurfaces.addAll(childMultiSurfaces);
         }
 
         return multiSurfaces;
@@ -546,66 +697,80 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
 
         List<AbstractFillingSurfaceProperty> fillingSurfaceProperties = null;
 
-        if (spaceBoundary instanceof CeilingSurface ceilingSurface) {
-            lod0MultiSurface = ceilingSurface.getLod0MultiSurface();
-            lod1MultiSurface = ceilingSurface.getLod1MultiSurface();
-            lod2MultiSurface = ceilingSurface.getLod2MultiSurface();
-            lod3MultiSurface = ceilingSurface.getLod3MultiSurface();
-            lod4MultiSurface = ceilingSurface.getDeprecatedProperties().getLod4MultiSurface();
-            fillingSurfaceProperties = ceilingSurface.getFillingSurfaces();
-        } else if (spaceBoundary instanceof InteriorWallSurface interiorWallSurface) {
-            lod0MultiSurface = interiorWallSurface.getLod0MultiSurface();
-            lod1MultiSurface = interiorWallSurface.getLod1MultiSurface();
-            lod2MultiSurface = interiorWallSurface.getLod2MultiSurface();
-            lod3MultiSurface = interiorWallSurface.getLod3MultiSurface();
-            lod4MultiSurface = interiorWallSurface.getDeprecatedProperties().getLod4MultiSurface();
-            fillingSurfaceProperties = interiorWallSurface.getFillingSurfaces();
-        } else if (spaceBoundary instanceof FloorSurface floorSurface) {
-            lod0MultiSurface = floorSurface.getLod0MultiSurface();
-            lod1MultiSurface = floorSurface.getLod1MultiSurface();
-            lod2MultiSurface = floorSurface.getLod2MultiSurface();
-            lod3MultiSurface = floorSurface.getLod3MultiSurface();
-            lod4MultiSurface = floorSurface.getDeprecatedProperties().getLod4MultiSurface();
-            fillingSurfaceProperties = floorSurface.getFillingSurfaces();
-        } else if (spaceBoundary instanceof GroundSurface groundSurface) {
-            lod0MultiSurface = groundSurface.getLod0MultiSurface();
-            lod1MultiSurface = groundSurface.getLod1MultiSurface();
-            lod2MultiSurface = groundSurface.getLod2MultiSurface();
-            lod3MultiSurface = groundSurface.getLod3MultiSurface();
-            lod4MultiSurface = groundSurface.getDeprecatedProperties().getLod4MultiSurface();
-            fillingSurfaceProperties = groundSurface.getFillingSurfaces();
-        } else if (spaceBoundary instanceof RoofSurface roofSurface) {
-            lod0MultiSurface = roofSurface.getLod0MultiSurface();
-            lod1MultiSurface = roofSurface.getLod1MultiSurface();
-            lod2MultiSurface = roofSurface.getLod2MultiSurface();
-            lod3MultiSurface = roofSurface.getLod3MultiSurface();
-            lod4MultiSurface = roofSurface.getDeprecatedProperties().getLod4MultiSurface();
-            fillingSurfaceProperties = roofSurface.getFillingSurfaces();
-        } else if (spaceBoundary instanceof WallSurface wallSurface) {
-            lod0MultiSurface = wallSurface.getLod0MultiSurface();
-            lod1MultiSurface = wallSurface.getLod1MultiSurface();
-            lod2MultiSurface = wallSurface.getLod2MultiSurface();
-            lod3MultiSurface = wallSurface.getLod3MultiSurface();
-            lod4MultiSurface = wallSurface.getDeprecatedProperties().getLod4MultiSurface();
-            fillingSurfaceProperties = wallSurface.getFillingSurfaces();
-        } else if (spaceBoundary instanceof ClosureSurface closureSurface) {
-            lod0MultiSurface = closureSurface.getLod0MultiSurface();
-            lod1MultiSurface = closureSurface.getLod1MultiSurface();
-            lod2MultiSurface = closureSurface.getLod2MultiSurface();
-            lod3MultiSurface = closureSurface.getLod3MultiSurface();
-            lod4MultiSurface = closureSurface.getDeprecatedProperties().getLod4MultiSurface();
-        } else if (spaceBoundary instanceof DoorSurface doorSurface) {
-            lod0MultiSurface = doorSurface.getLod0MultiSurface();
-            lod1MultiSurface = doorSurface.getLod1MultiSurface();
-            lod2MultiSurface = doorSurface.getLod2MultiSurface();
-            lod3MultiSurface = doorSurface.getLod3MultiSurface();
-            lod4MultiSurface = doorSurface.getDeprecatedProperties().getLod4MultiSurface();
-        } else if (spaceBoundary instanceof WindowSurface windowSurface) {
-            lod0MultiSurface = windowSurface.getLod0MultiSurface();
-            lod1MultiSurface = windowSurface.getLod1MultiSurface();
-            lod2MultiSurface = windowSurface.getLod2MultiSurface();
-            lod3MultiSurface = windowSurface.getLod3MultiSurface();
-            lod4MultiSurface = windowSurface.getDeprecatedProperties().getLod4MultiSurface();
+        List<AbstractCityObject> childCityObjects = new ArrayList<>();
+
+        if (spaceBoundary instanceof CeilingSurface object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod1MultiSurface = object.getLod1MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+            lod4MultiSurface = object.getDeprecatedProperties().getLod4MultiSurface();
+            fillingSurfaceProperties = object.getFillingSurfaces();
+        } else if (spaceBoundary instanceof InteriorWallSurface object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod1MultiSurface = object.getLod1MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+            lod4MultiSurface = object.getDeprecatedProperties().getLod4MultiSurface();
+            fillingSurfaceProperties = object.getFillingSurfaces();
+        } else if (spaceBoundary instanceof FloorSurface object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod1MultiSurface = object.getLod1MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+            lod4MultiSurface = object.getDeprecatedProperties().getLod4MultiSurface();
+            fillingSurfaceProperties = object.getFillingSurfaces();
+        } else if (spaceBoundary instanceof GroundSurface object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod1MultiSurface = object.getLod1MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+            lod4MultiSurface = object.getDeprecatedProperties().getLod4MultiSurface();
+            fillingSurfaceProperties = object.getFillingSurfaces();
+        } else if (spaceBoundary instanceof RoofSurface object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod1MultiSurface = object.getLod1MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+            lod4MultiSurface = object.getDeprecatedProperties().getLod4MultiSurface();
+            fillingSurfaceProperties = object.getFillingSurfaces();
+        } else if (spaceBoundary instanceof WallSurface object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod1MultiSurface = object.getLod1MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+            lod4MultiSurface = object.getDeprecatedProperties().getLod4MultiSurface();
+            fillingSurfaceProperties = object.getFillingSurfaces();
+        } else if (spaceBoundary instanceof ClosureSurface object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod1MultiSurface = object.getLod1MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+            lod4MultiSurface = object.getDeprecatedProperties().getLod4MultiSurface();
+        } else if (spaceBoundary instanceof DoorSurface object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod1MultiSurface = object.getLod1MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+            lod4MultiSurface = object.getDeprecatedProperties().getLod4MultiSurface();
+        } else if (spaceBoundary instanceof WindowSurface object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod1MultiSurface = object.getLod1MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+            lod4MultiSurface = object.getDeprecatedProperties().getLod4MultiSurface();
+        } else if (spaceBoundary instanceof WaterSurface object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod1MultiSurface = object.getLod1MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+        } else if (spaceBoundary instanceof OuterCeilingSurface object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod1MultiSurface = object.getLod1MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+        } else {
+            log.debug("Unsupported space boundary type: {}", spaceBoundary.getClass().getSimpleName());
         }
 
         if (lod0MultiSurface != null) {
@@ -643,7 +808,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
         } else if (abstractSpaceBoundary instanceof FloorSurface) {
             return Classification.FLOOR;
         } else if (abstractSpaceBoundary instanceof GroundSurface) {
-            return Classification.FLOOR;
+            return Classification.GROUND;
         } else if (abstractSpaceBoundary instanceof RoofSurface) {
             return Classification.ROOF;
         } else if (abstractSpaceBoundary instanceof WallSurface) {
@@ -654,6 +819,8 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             return Classification.DOOR;
         } else if (abstractSpaceBoundary instanceof WindowSurface) {
             return Classification.WINDOW;
+        } else if (abstractSpaceBoundary instanceof WaterSurface) {
+            return Classification.WATER;
         } else {
             return Classification.UNKNOWN;
         }
@@ -684,8 +851,8 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             return Classification.ROOF;
         } else if (cityObject instanceof WallSurface) {
             return Classification.WALL;
-        } else if (cityObject instanceof AbstractSpaceBoundary) {
-            return Classification.WALL;
+        } else if (cityObject instanceof AbstractSpaceBoundary abstractSpaceBoundary) {
+            return getClassification(abstractSpaceBoundary);
         }
         return Classification.UNKNOWN;
     }

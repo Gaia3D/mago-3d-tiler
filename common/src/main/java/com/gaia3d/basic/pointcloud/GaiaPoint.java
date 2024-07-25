@@ -13,7 +13,7 @@ import java.io.Serializable;
 @Getter
 @Setter
 public class GaiaPoint implements Serializable {
-    Vector3d position;
-    Vector3d color;
+    private Vector3d position;
+    private Vector3d color;
 }
 

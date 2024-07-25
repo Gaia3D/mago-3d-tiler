@@ -13,6 +13,7 @@ import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 import com.gaia3d.util.DecimalUtils;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
@@ -28,12 +29,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
+@NoArgsConstructor
 public class Batched3DModelTiler extends DefaultTiler implements Tiler {
 
     public final GlobalOptions globalOptions = GlobalOptions.getInstance();
-
-
-    public Batched3DModelTiler() {}
 
     @Override
     public Tileset run(List<TileInfo> tileInfos) {
@@ -93,21 +92,6 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         long totalTriangleCount = tileInfos.stream().mapToLong(TileInfo::getTriangleCount).sum();
         log.debug("[TriangleCount] Total : {}", totalTriangleCount);
         log.debug("[Tiling][ContentNode][OBJECT] : {}", tileInfos.size());
-
-
-        /*GaiaBoundingBox centerBoundingBox = new GaiaBoundingBox();
-        for (TileInfo tileInfo : tileInfos) {
-            GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();
-            KmlInfo kmlInfo = tileInfo.getKmlInfo();
-            localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(kmlInfo.getPosition());
-            BoundingVolume localBoundingVolume = new BoundingVolume(localBoundingBox);
-            Vector3d center = localBoundingVolume.calcCenter();
-            centerBoundingBox.addPoint(center);
-        }
-        double area = centerBoundingBox.getVolume().x * centerBoundingBox.getVolume().y;
-        boolean isSmallArea = area < 0.1; // 1.0 m^2
-        log.debug("[CenterBoundingBox] : {}", centerBoundingBox);
-        log.debug("[CenterBoundingBox] : {}", area);*/
 
         if (nodeDepth > globalOptions.getMaxNodeDepth()) {
             log.warn("[Tiling] Node depth limit exceeded : {}", nodeDepth);

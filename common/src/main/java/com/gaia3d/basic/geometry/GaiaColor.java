@@ -15,9 +15,9 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GaiaColor implements Serializable {
-    float r;
-    float g;
-    float b;
-    float a;
+    private float r;
+    private float g;
+    private float b;
+    private float a;
 }
 

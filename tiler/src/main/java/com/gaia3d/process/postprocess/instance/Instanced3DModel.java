@@ -4,12 +4,14 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exchangable.GaiaSet;
+import com.gaia3d.basic.structure.GaiaAttribute;
 import com.gaia3d.basic.structure.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.jgltf.GltfWriter;
 import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.process.postprocess.TileModel;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTable;
+import com.gaia3d.process.postprocess.batch.GaiaBatchTableMap;
 import com.gaia3d.process.postprocess.batch.GaiaBatcher;
 import com.gaia3d.process.postprocess.pointcloud.Position;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
@@ -28,6 +30,7 @@ import java.io.FileOutputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
@@ -57,6 +60,7 @@ public class Instanced3DModel implements TileModel {
         float[] normalUps = new float[instanceLength * 3];
         float[] normalRights = new float[instanceLength * 3];
         float[] scales = new float[instanceLength];
+        short[] batchId = new short[instanceLength];
 
         Vector3d center = contentInfo.getBoundingBox().getCenter();
         Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
@@ -67,6 +71,7 @@ public class Instanced3DModel implements TileModel {
         AtomicInteger normalUpIndex = new AtomicInteger();
         AtomicInteger normalRightIndex = new AtomicInteger();
         AtomicInteger scaleIndex = new AtomicInteger();
+        AtomicInteger batchIdIndex = new AtomicInteger();
         for (TileInfo tileInfo : tileInfos) {
             //y-up
             Vector3d normalUp = new Vector3d(0, 0, 1);
@@ -104,6 +109,8 @@ public class Instanced3DModel implements TileModel {
             normalRights[normalRightIndex.getAndIncrement()] = (float) normalRight.z;
 
             scales[scaleIndex.getAndIncrement()] = (float) scale;
+
+            batchId[batchIdIndex.get()] = (short) batchIdIndex.getAndIncrement();
         }
 
         Instanced3DModelBinary instanced3DModelBinary = new Instanced3DModelBinary();
@@ -138,14 +145,48 @@ public class Instanced3DModel implements TileModel {
         featureTable.setNormalRight(new Normal(positionBytes.length + normalUpBytes.length));
         featureTable.setScale(new Scale(positionBytes.length + normalUpBytes.length + normalRightBytes.length));
 
-        GaiaBatchTable batchTable = new GaiaBatchTable();
+        GaiaBatchTableMap<String, List<String>> batchTableMap = new GaiaBatchTableMap<>();
+        AtomicInteger finalBatchIdIndex = new AtomicInteger();
+        tileInfos.forEach((tileInfo) -> {
+            GaiaAttribute attribute = tileInfo.getScene().getAttribute();
+            Map<String, String> attributes = attribute.getAttributes();
+            GaiaSet set = tileInfo.getSet();
+
+            String UUID = attribute.getIdentifier().toString();
+            String FileName = attribute.getFileName();
+            String NodeName = attribute.getNodeName();
+
+            UUID = StringUtils.convertUTF8(UUID);
+            FileName = StringUtils.convertUTF8(FileName);
+            NodeName = StringUtils.convertUTF8(NodeName);
+
+            batchTableMap.computeIfAbsent("UUID", k -> new ArrayList<>());
+
+            batchTableMap.get("UUID").add(UUID);
+
+            batchTableMap.computeIfAbsent("FileName", k -> new ArrayList<>());
+            batchTableMap.get("FileName").add(FileName);
+
+            batchTableMap.computeIfAbsent("NodeName", k -> new ArrayList<>());
+            batchTableMap.get("NodeName").add(NodeName);
+
+            batchTableMap.computeIfAbsent("BatchId", k -> new ArrayList<>());
+            batchTableMap.get("BatchId").add(String.valueOf(batchId[finalBatchIdIndex.getAndIncrement()]));
+
+            attributes.forEach((key, value) -> {
+                String utf8Value = StringUtils.convertUTF8(value);
+                batchTableMap.computeIfAbsent(key, k -> new ArrayList<>());
+                batchTableMap.get(key).add(utf8Value);
+            });
+        });
+
 
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
         try {
             featureTableJson = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(featureTable));
-            batchTableJson = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(batchTable));
+            batchTableJson = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(batchTableMap));
         } catch (JsonProcessingException e) {
             log.error(e.getMessage());
             throw new RuntimeException(e);

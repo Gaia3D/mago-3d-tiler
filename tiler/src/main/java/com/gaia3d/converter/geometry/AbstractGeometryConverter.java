@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
+import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeature;
 
 import java.io.File;
@@ -23,11 +24,19 @@ import java.util.stream.IntStream;
 @Slf4j
 public abstract class AbstractGeometryConverter {
 
+    private final String ROOT_NODE_NAME = "Extruded Root Node";
+
     protected abstract List<GaiaScene> convert(File file);
 
-    protected GaiaScene initScene() {
+    protected GaiaScene initScene(File file) {
         GaiaScene scene = new GaiaScene();
         GlobalOptions globalOptions = GlobalOptions.getInstance();
+
+        GaiaAttribute attribute = new GaiaAttribute();
+        attribute.setIdentifier(UUID.randomUUID());
+        attribute.setFileName(file.getName());
+        attribute.setNodeName(ROOT_NODE_NAME);
+        scene.setAttribute(attribute);
 
         Vector4d color = new Vector4d(0.9, 0.9, 0.9, 1);
         if (globalOptions.isDebugLod()) {
@@ -43,18 +52,24 @@ public abstract class AbstractGeometryConverter {
         GaiaMaterial windowMaterial = createMaterial(2, Classification.WINDOW.getColor());
         GaiaMaterial floorMaterial = createMaterial(2, Classification.FLOOR.getColor());
         GaiaMaterial roofMaterial = createMaterial(3, Classification.ROOF.getColor());
+        GaiaMaterial waterMaterial = createMaterial(4, Classification.WATER.getColor());
+        GaiaMaterial groundMaterial = createMaterial(5, Classification.GROUND.getColor());
 
         scene.getMaterials().add(defaultMaterial);
         scene.getMaterials().add(doorMaterial);
         scene.getMaterials().add(windowMaterial);
         scene.getMaterials().add(floorMaterial);
         scene.getMaterials().add(roofMaterial);
+        scene.getMaterials().add(waterMaterial);
+        scene.getMaterials().add(groundMaterial);
 
         GaiaNode rootNode = new GaiaNode();
         Matrix4d transformMatrix = new Matrix4d();
         transformMatrix.identity();
         rootNode.setTransformMatrix(transformMatrix);
+        rootNode.setName(ROOT_NODE_NAME);
         scene.getNodes().add(rootNode);
+
         return scene;
     }
 
@@ -161,6 +176,51 @@ public abstract class AbstractGeometryConverter {
 
     protected String getAttributeValue(SimpleFeature feature, String column) {
         String result = "default";
+        Object LowerObject = feature.getAttribute(column);
+        Object UpperObject = feature.getAttribute(column.toUpperCase());
+        Object attributeObject = null;
+        if (LowerObject != null) {
+            attributeObject = LowerObject;
+        } else if (UpperObject != null) {
+            attributeObject = UpperObject;
+        }
+
+        if (attributeObject instanceof String) {
+            result = (String) attributeObject;
+        } else if (attributeObject instanceof Integer) {
+            result = String.valueOf((int) attributeObject);
+        } else if (attributeObject instanceof Long) {
+            result = String.valueOf(attributeObject);
+        } else if (attributeObject instanceof Double) {
+            result = String.valueOf((double) attributeObject);
+        } else if (attributeObject instanceof Short) {
+            result = String.valueOf((short) attributeObject);
+        }
+        return result;
+    }
+
+    protected String castStringFromObject(Object object, String defaultValue) {
+        String result;
+        if (object == null) {
+            result = defaultValue;
+        } else if (object instanceof String) {
+            result = (String) object;
+        } else if (object instanceof Integer) {
+            result = String.valueOf((int) object);
+        } else if (object instanceof Long) {
+            result = String.valueOf(object);
+        } else if (object instanceof Double) {
+            result = String.valueOf((double) object);
+        } else if (object instanceof Short) {
+            result = String.valueOf((short) object);
+        } else {
+            result = object.toString();
+        }
+        return result;
+    }
+
+    protected String getAttributeValueOfDefault(SimpleFeature feature, String column, String defaultValue) {
+        String result = defaultValue;
         Object LowerObject = feature.getAttribute(column);
         Object UpperObject = feature.getAttribute(column.toUpperCase());
         Object attributeObject = null;
@@ -465,6 +525,10 @@ public abstract class AbstractGeometryConverter {
             return gaiaMaterials.get(3);
         } else if (classification.equals(Classification.ROOF)) {
             return gaiaMaterials.get(4);
+        } else if (classification.equals(Classification.WATER)) {
+            return gaiaMaterials.get(5);
+        } else if (classification.equals(Classification.GROUND)) {
+            return gaiaMaterials.get(6);
         } else {
             return gaiaMaterials.get(0);
         }

@@ -32,14 +32,15 @@ import org.locationtech.jts.geom.*;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.type.FeatureType;
+import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.filter.Filter;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -168,6 +169,21 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                     pipeLineStrings.add(pipeLineString);
                 }
 
+
+                Map<String, String> attributes = new HashMap<>();
+                FeatureType featureType = feature.getFeatureType();
+                Collection<PropertyDescriptor> featureDescriptors = featureType.getDescriptors();
+                AtomicInteger index = new AtomicInteger(0);
+                featureDescriptors.forEach(attributeDescriptor -> {
+                    Object attribute = feature.getAttribute(index.getAndIncrement());
+                    if (attribute instanceof Geometry) {
+                        return;
+                    }
+                    String attributeString = castStringFromObject(attribute, "null");
+                    //log.debug("{} : {}", attributeDescriptor.getName(), attributeString);
+                    attributes.put(attributeDescriptor.getName().getLocalPart(), attributeString);
+                });
+
                 for (Polygon polygon : polygons) {
                     if (!polygon.isValid()) {
                         log.warn("{} Is Invalid Polygon.", feature.getID());
@@ -218,7 +234,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                         boundingBox.addPoint(position);
                     }
 
-                    String name = getAttributeValue(feature, nameColumnName);
+                    String name = getAttributeValueOfDefault(feature, nameColumnName, "Extrusion-Building");
                     if (positions.size() >= 3) {
                         double height = getHeight(feature, heightColumnName, minimumHeightValue);
                         double altitude = absoluteAltitudeValue;
@@ -233,6 +249,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                                 .roofHeight(height + skirtHeight)
                                 .positions(positions)
                                 .originalFilePath(file.getPath())
+                                .properties(attributes)
                                 .build();
                         buildings.add(building);
                     } else {
@@ -245,8 +262,8 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             shpFiles.dispose();
             dataStore.dispose();
 
-            convertPipeLineStrings(pipeLineStrings, scenes);
-            convertExtrusionBuildings(buildings, scenes);
+            convertPipeLineStrings(pipeLineStrings, scenes, file);
+            convertExtrusionBuildings(buildings, scenes, file);
         } catch (IOException e) {
             log.error("Error while reading shapefile", e);
             throw new RuntimeException(e);
@@ -255,17 +272,23 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         return scenes;
     }
     //convertPipeLineStrings(pipeLineStrings, scenes);
-    private void convertExtrusionBuildings(List<GaiaExtrusionBuilding> buildings, List<GaiaScene> resultScenes) {
+    private void convertExtrusionBuildings(List<GaiaExtrusionBuilding> buildings, List<GaiaScene> resultScenes, File file) {
         double skirtHeight = globalOptions.getSkirtHeight();
         GaiaExtruder gaiaExtruder = new GaiaExtruder();
 
         for (GaiaExtrusionBuilding building : buildings) {
-            GaiaScene scene = initScene();
+            GaiaScene scene = initScene(file);
             Path path = new File(building.getOriginalFilePath()).toPath();
             scene.setOriginalPath(path);
 
             GaiaNode rootNode = scene.getNodes().get(0);
             rootNode.setName(building.getName());
+
+            GaiaAttribute gaiaAttribute = scene.getAttribute();
+            gaiaAttribute.setAttributes(building.getProperties());
+            Map<String, String> attributes = gaiaAttribute.getAttributes();
+            gaiaAttribute.setNodeName(rootNode.getName());
+            attributes.put("name", building.getName());
 
             Vector3d center = building.getBoundingBox().getCenter();
             center.z = center.z - skirtHeight;
@@ -305,13 +328,12 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         }
     }
 
-    private void convertPipeLineStrings(List<GaiaPipeLineString> pipeLineStrings, List<GaiaScene> resultScenes) {
+    private void convertPipeLineStrings(List<GaiaPipeLineString> pipeLineStrings, List<GaiaScene> resultScenes, File file) {
         if (pipeLineStrings.isEmpty()) {
             return;
         }
 
         Modeler3D modeler3d = new Modeler3D();
-        //modeler3d.concatenateGaiaPipeLines(pipeLineStrings);
 
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         for (GaiaPipeLineString pipeLineString : pipeLineStrings) {
@@ -345,16 +367,9 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
 
 
         for (GaiaPipeLineString pipeLineString : pipeLineStrings) {
-            GaiaScene scene = initScene(); // here creates materials.***
+            GaiaScene scene = initScene(file);
             GaiaMaterial mat = scene.getMaterials().get(0);
-            // create random color4.***
-            //Vector4d randomColor = new Vector4d(Math.random(), Math.random(), Math.random(), 1.0);
-            //Vector4d waterColor = new Vector4d(0.25, 0.5, 1.0, 1.0);
-            //Vector4d dirtyColor = new Vector4d(1.0, 0.0, 1.0, 1.0);
-//            Vector4d yellow = new Vector4d(0.8, 0.8, 0.0, 1.0);
-//            Vector4d red = new Vector4d(0.8, 0.01, 0.0, 1.0);
-//            Vector4d green = new Vector4d(0.01, 0.8, 0.0, 1.0);
-            //mat.setDiffuseColor(dirtyColor);
+
             Path path = new File(pipeLineString.getOriginalFilePath()).toPath();
             scene.setOriginalPath(path);
 

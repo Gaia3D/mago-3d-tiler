@@ -25,6 +25,7 @@ import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * A class that converts a file to a GaiaScene object using Assimp.
@@ -63,6 +64,13 @@ public class AssimpConverter implements Converter {
         GaiaScene gaiaScene = convertScene(aiScene, path, file.getName());
         aiScene.free();
         gaiaScene.setOriginalPath(file.toPath());
+
+        GaiaAttribute attribute = new GaiaAttribute();
+        attribute.setIdentifier(UUID.randomUUID());
+        attribute.setFileName(file.getName());
+        attribute.setNodeName(gaiaScene.getNodes().get(0).getName());
+
+        gaiaScene.setAttribute(attribute);
 
         List<GaiaScene> gaiaScenes = new ArrayList<>();
         gaiaScenes.add(gaiaScene);

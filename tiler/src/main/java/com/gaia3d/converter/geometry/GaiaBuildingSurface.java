@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.joml.Vector3d;
 
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -17,4 +18,5 @@ public class GaiaBuildingSurface {
     private Classification classification;
     List<Vector3d> positions;
     private GaiaBoundingBox boundingBox;
+    Map<String, String> properties;
 }
