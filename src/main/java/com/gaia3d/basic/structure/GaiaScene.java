@@ -31,6 +31,7 @@ public class GaiaScene implements Serializable {
     private List<GaiaMaterial> materials = new ArrayList<>();
     private Path originalPath;
     private GaiaBoundingBox gaiaBoundingBox;
+    private GaiaAttribute attribute;
 
     public GaiaScene(GaiaSet gaiaSet) {
         List<GaiaBufferDataSet> bufferDataSets = gaiaSet.getBufferDatas();
@@ -44,6 +45,7 @@ public class GaiaScene implements Serializable {
         rootNode.setTransformMatrix(transformMatrix);
         this.materials = materials;
         this.nodes.add(rootNode);
+        this.attribute = gaiaSet.getAttribute();
 
         bufferDataSets.forEach((bufferDataSet) -> rootNode.getChildren().add(new GaiaNode(bufferDataSet)));
     }

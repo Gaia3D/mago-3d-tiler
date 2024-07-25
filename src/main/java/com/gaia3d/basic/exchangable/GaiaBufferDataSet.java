@@ -31,10 +31,10 @@ public class GaiaBufferDataSet implements Serializable {
     private String guid = "no_guid";
     private int materialId;
 
-    GaiaBoundingBox boundingBox = null;
-    GaiaRectangle texcoordBoundingRectangle = null;
-    Matrix4d transformMatrix = null;
-    Matrix4d preMultipliedTransformMatrix = null;
+    private GaiaBoundingBox boundingBox = null;
+    private GaiaRectangle texcoordBoundingRectangle = null;
+    private Matrix4d transformMatrix = null;
+    private Matrix4d preMultipliedTransformMatrix = null;
 
     public GaiaBufferDataSet() {
         this.buffers = new WeakHashMap<>();

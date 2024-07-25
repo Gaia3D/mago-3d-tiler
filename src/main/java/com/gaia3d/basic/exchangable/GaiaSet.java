@@ -2,10 +2,7 @@ package com.gaia3d.basic.exchangable;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
-import com.gaia3d.basic.structure.GaiaMaterial;
-import com.gaia3d.basic.structure.GaiaNode;
-import com.gaia3d.basic.structure.GaiaScene;
-import com.gaia3d.basic.structure.GaiaTexture;
+import com.gaia3d.basic.structure.*;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.basic.types.TextureType;
@@ -40,15 +37,16 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GaiaSet implements Serializable{
-    List<GaiaBufferDataSet> bufferDatas;
-    List<GaiaMaterial> materials;
+    private List<GaiaBufferDataSet> bufferDatas;
+    private List<GaiaMaterial> materials;
+    private GaiaAttribute attribute;
 
-    byte isBigEndian = 0;
-    String projectName;
-    String filePath;
-    String folderPath;
-    String projectFolderPath;
-    String outputDir;
+    private byte isBigEndian = 0;
+    private String projectName;
+    private String filePath;
+    private String folderPath;
+    private String projectFolderPath;
+    private String outputDir;
 
     public GaiaSet(Path path) {
         readFile(path);
@@ -56,13 +54,17 @@ public class GaiaSet implements Serializable{
 
     public GaiaSet(GaiaScene gaiaScene) {
         String name;
-        if (gaiaScene == null) {
+        /*if (gaiaScene == null) {
             name = "File is not loaded";
         } else if (gaiaScene.getNodes().isEmpty()) {
             name = FilenameUtils.removeExtension(gaiaScene.getOriginalPath().getFileName().toString());
         } else {
             name = gaiaScene.getNodes().get(0).getName();
-        }
+        }*/
+
+        name = FilenameUtils.removeExtension(gaiaScene.getOriginalPath().getFileName().toString());
+
+
         this.projectName = name;
         List<GaiaBufferDataSet> bufferDataSets = new ArrayList<>();
         for (GaiaNode node : gaiaScene.getNodes()) {
@@ -70,6 +72,7 @@ public class GaiaSet implements Serializable{
         }
         this.materials = gaiaScene.getMaterials();
         this.bufferDatas = bufferDataSets;
+        this.attribute = gaiaScene.getAttribute();
     }
 
     public GaiaBoundingBox getBoundingBox() {
@@ -80,10 +83,17 @@ public class GaiaSet implements Serializable{
         return boundingBox;
     }
 
-    public Path writeFile(Path path, int serial) {
-        String tempFileName = projectName + "_" + serial + "." + FormatType.TEMP.getExtension();
+    public Path writeFile(Path path, int serial, GaiaAttribute gaiaAttribute) {
+        //String tempFileName = projectName + "_" + serial + "." + FormatType.TEMP.getExtension();
 
-        int dividedNumber = serial / 10000;
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(gaiaAttribute.getIdentifier().toString())
+                .append(".")
+                .append(FormatType.TEMP.getExtension());
+
+        String tempFileName = stringBuilder.toString();
+
+        int dividedNumber = serial / 50000;
         Path tempDir = path.resolve(this.projectName).resolve(String.valueOf(dividedNumber));
         File tempDirFile = tempDir.toFile();
         tempDirFile.mkdirs();
@@ -127,6 +137,7 @@ public class GaiaSet implements Serializable{
             for (GaiaBufferDataSet bufferData : bufferDatas) {
                 bufferData.write(stream);
             }
+            attribute.write(stream);
         } catch (Exception e) {
             log.error(e.getMessage());
             e.printStackTrace();
@@ -173,6 +184,9 @@ public class GaiaSet implements Serializable{
                 bufferDataSets.add(bufferDataSet);
             }
             this.bufferDatas = bufferDataSets;
+
+            GaiaAttribute attribute = new GaiaAttribute();
+            attribute.read(stream);
         } catch (IOException e) {
             e.printStackTrace();
             log.error(e.getMessage());

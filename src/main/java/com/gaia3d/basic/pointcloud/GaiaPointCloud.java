@@ -20,10 +20,10 @@ import java.util.List;
 @Getter
 @Setter
 public class GaiaPointCloud implements Serializable {
-    String code = "A";
+    private String code = "A";
     private Path originalPath;
     private GaiaBoundingBox gaiaBoundingBox = new GaiaBoundingBox();
-    List<GaiaVertex> vertices = new ArrayList<>();
+    private List<GaiaVertex> vertices = new ArrayList<>();
 
     public List<GaiaPointCloud> distribute() {
         double minX = gaiaBoundingBox.getMinX();

@@ -24,19 +24,19 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GaiaBuffer implements Serializable {
-    AttributeType attributeType;
-    AccessorType accessorType;
+    private AttributeType attributeType;
+    private AccessorType accessorType;
 
-    int elementsCount = -1;
+    private int elementsCount = -1;
 
-    byte glDimension;
-    int glType;
-    int glTarget;
+    private byte glDimension;
+    private int glType;
+    private int glTarget;
 
-    float[] floats;
-    int[] ints;
-    short[] shorts;
-    byte[] bytes;
+    private float[] floats;
+    private int[] ints;
+    private short[] shorts;
+    private byte[] bytes;
 
     public void writeBuffer(BigEndianDataOutputStream stream) throws IOException {
         stream.writeByte(glDimension);
