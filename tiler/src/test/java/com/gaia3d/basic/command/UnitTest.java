@@ -74,6 +74,8 @@ class UnitTest {
                 "-o", outputPath + path,
                 "-autoUpAxis",
                 "-crs", "5174",
+                "-minLod", "0", // test
+                "-maxLod", "0", // test
                 "-debug"
         };
         Mago3DTilerMain.main(args);
@@ -550,19 +552,44 @@ class UnitTest {
         }
 
     @Test
+    void testFbxHayashiSan() {
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\workspace\\";
+        String outputPath = "D:\\Result_mago3dTiler\\";
+        String path = "fbx";
+
+        String[] args = new String[]{
+                "-i", inputPath + path,
+                "-it", "fbx",
+                "-o", outputPath + path,
+                "-crs", "6674",
+                "-minLod", "0",
+                "-maxLod", "0",
+                "-multiThreadCount", "1",
+                "-largeMesh",
+                "-glb",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
     void testColladaLargeMesh() {
         String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\";
         String outputPath = "D:\\Result_mago3dTiler\\";
         //String path = "Tile_+000_+000_+000";
         //String path = "splittedTile";
-        String path = "(20240712)상지대 콜라다 데이터";
+        String path = "(20240712)상지대 콜라다 데이터_6buildings";
 
         String[] args = new String[]{
                 "-i", inputPath + path,
                 "-it", "dae",
                 "-o", outputPath + path,
                 "-crs", "2096",
+                "-minLod", "0",
+                "-maxLod", "0",
                 "-multiThreadCount", "1",
+                "-rotateUpAxis",
+                //"-largeMesh",
                 "-debug"
         };
         Mago3DTilerMain.main(args);

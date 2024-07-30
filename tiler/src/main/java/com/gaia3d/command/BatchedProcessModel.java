@@ -53,10 +53,11 @@ public class BatchedProcessModel implements ProcessFlowModel {
         /*if (isRotateUpAxis) {
             preProcessors.add(new GaiaRotator());
         }*/
-        //preProcessors.add(new GaiaRotator());
-
+        // TODO rotXAngleDegree
         if (globalOptions.isLargeMesh()) {
-            preProcessors.add(new GaiaRotator());
+            if (isRotateUpAxis) {
+                preProcessors.add(new GaiaRotator());
+            }
             preProcessors.add(new GaiaTranslatorExact(geoTiffs));
 
         } else {

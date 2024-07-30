@@ -4,10 +4,7 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class GaiaSceneSplitter {
@@ -72,6 +69,9 @@ public class GaiaSceneSplitter {
         for (String octreeName : resultMapOctreeNameMeshes.keySet()) {
             List<GaiaMesh> meshesList = resultMapOctreeNameMeshes.get(octreeName);
             GaiaScene newScene = new GaiaScene();
+
+            GaiaAttribute newAttribute = new GaiaAttribute();
+            newScene.setAttribute(newAttribute);
 
             // copy the materials.***
             List<GaiaMaterial> materials = originalScene.getMaterials().stream().map(GaiaMaterial::clone).collect(Collectors.toList());

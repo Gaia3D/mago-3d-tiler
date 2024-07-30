@@ -18,8 +18,8 @@ import java.util.UUID;
 @AllArgsConstructor*/
 public class GaiaAttribute {
     private UUID identifier = UUID.randomUUID();
-    private String fileName;
-    private String nodeName;
+    private String fileName = "unknown";
+    private String nodeName = "unknown";
     private Map<String, String> attributes = new HashMap<>();
 
     public void write(BigEndianDataOutputStream stream) throws IOException {
