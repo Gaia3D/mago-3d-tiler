@@ -30,11 +30,13 @@ import java.util.stream.Collectors;
 public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
 
     private static final GlobalOptions globalOptions = GlobalOptions.getInstance();
+    private double instanceGeometricError = 1.0;
 
     @Override
     public Tileset run(List<TileInfo> tileInfos) {
-        double geometricError = calcGeometricError(tileInfos);
-        geometricError = DecimalUtils.cut(geometricError);
+        if (!tileInfos.isEmpty()) {
+            instanceGeometricError = calcGeometricError(List.of(tileInfos.get(0)));
+        }
 
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
         Matrix4d transformMatrix = getTransformMatrix(globalBoundingBox);
@@ -43,7 +45,7 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         Node root = createRoot();
         root.setBoundingVolume(new BoundingVolume(globalBoundingBox));
         root.setTransformMatrix(transformMatrix, true);
-        root.setGeometricError(geometricError);
+        root.setGeometricError(instanceGeometricError);
 
         try {
             createNode(root, tileInfos);
@@ -54,7 +56,7 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
 
         Asset asset = createAsset();
         Tileset tileset = new Tileset();
-        tileset.setGeometricError(geometricError);
+        tileset.setGeometricError(instanceGeometricError);
         tileset.setAsset(asset);
         tileset.setRoot(root);
         return tileset;
@@ -83,14 +85,10 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
         BoundingVolume squareBoundingVolume = parentBoundingVolume.createSqureBoundingVolume();
 
-        //int nodeLimit = globalOptions.getNodeLimit() * 4;
+        long instanceLimit = globalOptions.getMaxInstance() * 4;
+        long instanceCount = tileInfos.size();
 
-        long triangleLimit = 65536 * 8;
-        long totalTriangleCount = tileInfos.stream().mapToLong(TileInfo::getTriangleCount).sum();
-        log.info("[TriangleCount] Total : {}", totalTriangleCount);
-
-        if (totalTriangleCount > triangleLimit) {
-            //if (tileInfos.size() > nodeLimit) {
+        if (instanceCount > instanceLimit) {
             List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
@@ -100,8 +98,7 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
                     createNode(childNode, childTileInfos);
                 }
             }
-        } else if (totalTriangleCount > 1) {
-        //} else if (tileInfos.size() > 1) {
+        } else if (instanceCount > 1) {
             List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
@@ -141,7 +138,7 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         nodeCode = nodeCode + index;
         log.info("[Tiling][LogicalNode][" + nodeCode + "][OBJECT{}]", tileInfos.size());
 
-        double geometricError = calcGeometricError(tileInfos);
+        double geometricError = instanceGeometricError;
         GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
         Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
         rotateX90(transformMatrix);

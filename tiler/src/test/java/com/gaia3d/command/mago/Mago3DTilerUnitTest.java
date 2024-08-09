@@ -491,7 +491,6 @@ class Mago3DTilerUnitTest {
         String[] args = {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "las",
-                "-autoUpAxis",
                 "-output", output.getAbsolutePath(),
                 "-r",
                 "-crs", "5186"
@@ -508,7 +507,22 @@ class Mago3DTilerUnitTest {
         String[] args = {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "las",
-                "-autoUpAxis",
+                "-output", output.getAbsolutePath(),
+                "-r",
+                "-crs", "5186"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void case28_2() {
+        String path = "case28-las-gis-2";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "las",
                 "-output", output.getAbsolutePath(),
                 "-r",
                 "-crs", "5186"

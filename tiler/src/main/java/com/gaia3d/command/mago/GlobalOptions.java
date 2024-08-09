@@ -35,6 +35,7 @@ public class GlobalOptions {
 
     private static final int DEFAULT_MAX_TRIANGLES = 65536 * 8;
     private static final int DEFAULT_MAX_NODE_DEPTH = 32;
+    private static final int DEFAULT_MAX_INSTANCE = 512;
 
     private static final int DEFAULT_POINT_LIMIT = 65536;
     private static final int DEFAULT_POINT_SCALE = 2;
@@ -92,6 +93,7 @@ public class GlobalOptions {
     private int maxGeometricError;
 
     private int maxTriangles;
+    private int maxInstance;
     private int maxNodeDepth;
 
     // Debug Mode
@@ -241,6 +243,7 @@ public class GlobalOptions {
         instance.setMaxGeometricError(command.hasOption(ProcessOptions.MAX_GEOMETRIC_ERROR.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_GEOMETRIC_ERROR.getArgName())) : DEFAULT_MAX_GEOMETRIC_ERROR);
         instance.setIgnoreTextures(command.hasOption(ProcessOptions.IGNORE_TEXTURES.getArgName()));
         instance.setMaxTriangles(DEFAULT_MAX_TRIANGLES);
+        instance.setMaxInstance(DEFAULT_MAX_INSTANCE);
         instance.setMaxNodeDepth(DEFAULT_MAX_NODE_DEPTH);
         instance.setLargeMesh(command.hasOption(ProcessOptions.LARGE_MESH.getArgName()));
 
@@ -362,6 +365,9 @@ public class GlobalOptions {
         log.debug("Zero Origin: {}", zeroOrigin);
         log.debug("Auto Up-Axis: {}", autoUpAxis);
         log.debug("Ignore Textures: {}", ignoreTextures);
+        log.debug("Max Triangles: {}", maxTriangles);
+        log.debug("Max Instance Size: {}", maxInstance);
+        log.debug("Max Node Depth: {}", maxNodeDepth);
         log.debug("LargeMesh: {}", largeMesh);
 
         // 2D Data Column Options
