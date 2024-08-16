@@ -1,6 +1,7 @@
 package com.gaia3d.basic.pointcloud;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.structure.GaiaAttribute;
 import com.gaia3d.basic.structure.GaiaVertex;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,6 +25,7 @@ public class GaiaPointCloud implements Serializable {
     private Path originalPath;
     private GaiaBoundingBox gaiaBoundingBox = new GaiaBoundingBox();
     private List<GaiaVertex> vertices = new ArrayList<>();
+    private GaiaAttribute gaiaAttribute = new GaiaAttribute();
 
     public List<GaiaPointCloud> distribute() {
         double minX = gaiaBoundingBox.getMinX();
@@ -43,6 +45,8 @@ public class GaiaPointCloud implements Serializable {
             return distributeOct();
         }
     }
+
+
 
     // Quarter based on the bounding box
     public List<GaiaPointCloud> distributeQuad() {
