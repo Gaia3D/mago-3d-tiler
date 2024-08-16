@@ -17,11 +17,7 @@ class KmlRootTest {
     @Test
     void case01() {
         XmlMapper xmlMapper = new XmlMapper();
-        //xmlMapper.enable(SerializationFeature.INDENT_OUTPUT);
-
         String path = "D:\\Mago3DTiler-UnitTest\\input\\auto-created-i3dm\\sample-instances.kml";
-
-        //String xmlHeader = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
         try {
              KmlRoot root = xmlMapper.readValue(new File(path), KmlRoot.class);
              log.info("{}", xmlMapper.writeValueAsString(root));

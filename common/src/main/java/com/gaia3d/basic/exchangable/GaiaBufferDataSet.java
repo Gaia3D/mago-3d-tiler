@@ -136,9 +136,7 @@ public class GaiaBufferDataSet implements Serializable {
         GaiaFace face = new GaiaFace();
         
         int[] indicesInt = new int[indices.length];
-        for (int i = 0; i < indices.length; i++) {
-            indicesInt[i] = indices[i];
-        }
+        System.arraycopy(indices, 0, indicesInt, 0, indices.length);
         face.setIndices(indicesInt);
         surface.setFaces(new ArrayList<>() {{
             add(face);

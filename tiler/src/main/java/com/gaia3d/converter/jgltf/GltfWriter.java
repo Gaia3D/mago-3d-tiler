@@ -568,6 +568,7 @@ public class GltfWriter {
             if (width != powerOfTwoWidth || height != powerOfTwoHeight) {
                 bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, powerOfTwoWidth, powerOfTwoHeight);
             }
+            assert formatName != null;
             ImageIO.write(bufferedImage, formatName, baos);
             byte[] bytes = baos.toByteArray();
             imageString = "data:" + mimeType +";base64," + Base64.getEncoder().encodeToString(bytes);

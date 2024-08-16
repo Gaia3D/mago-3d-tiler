@@ -1,4 +1,4 @@
-package com.gaia3d.converter;
+package com.gaia3d.converter.loader;
 
 import com.gaia3d.basic.pointcloud.GaiaPointCloud;
 import com.gaia3d.basic.types.FormatType;

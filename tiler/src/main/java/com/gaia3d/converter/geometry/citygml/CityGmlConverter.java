@@ -10,14 +10,12 @@ import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.citygml4j.core.model.bridge.Bridge;
-import org.citygml4j.core.model.bridge.BridgePart;
 import org.citygml4j.core.model.building.*;
 import org.citygml4j.core.model.cityfurniture.CityFurniture;
 import org.citygml4j.core.model.cityobjectgroup.CityObjectGroup;
 import org.citygml4j.core.model.construction.*;
 import org.citygml4j.core.model.core.*;
 import org.citygml4j.core.model.generics.GenericOccupiedSpace;
-import org.citygml4j.core.model.relief.ReliefFeature;
 import org.citygml4j.core.model.transportation.Railway;
 import org.citygml4j.core.model.tunnel.Tunnel;
 import org.citygml4j.core.model.vegetation.SolitaryVegetationObject;
@@ -25,8 +23,6 @@ import org.citygml4j.core.model.waterbody.WaterBody;
 import org.citygml4j.core.model.waterbody.WaterSurface;
 import org.citygml4j.xml.CityGMLContext;
 import org.citygml4j.xml.CityGMLContextException;
-import org.citygml4j.xml.module.citygml.ReliefModule;
-import org.citygml4j.xml.module.citygml.TransportationModule;
 import org.citygml4j.xml.reader.CityGMLInputFactory;
 import org.citygml4j.xml.reader.CityGMLReadException;
 import org.citygml4j.xml.reader.CityGMLReader;
@@ -270,7 +266,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
 
         MultiSurface multiSurface = multiSurfaceProperty.getObject();
         List<SurfaceProperty> surfaceProperties = multiSurface.getSurfaceMember();
-        if (surfaceProperties.size() < 1) {
+        if (surfaceProperties.isEmpty()) {
             log.error("No surface properties found for city object: {}", cityObject.getId());
             return buildingSurfaces;
         }
@@ -387,7 +383,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
     }
 
     protected double getHeight(BuildingRoom buildingRoom) {
-        if (buildingRoom.getRoomHeights().size() > 0) {
+        if (!buildingRoom.getRoomHeights().isEmpty()) {
             return buildingRoom.getRoomHeights().get(0).getObject().getValue().getValue();
         } else {
             return 0.0d;

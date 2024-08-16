@@ -12,9 +12,6 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * LittleEndianDataOutputStream
- * @author znkim
- * @since 1.0.0
- * @see FilterOutputStream
  */
 public class LittleEndianDataOutputStream extends FilterOutputStream implements DataOutput {
 

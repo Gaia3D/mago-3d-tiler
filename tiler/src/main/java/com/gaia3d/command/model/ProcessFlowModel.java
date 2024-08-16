@@ -1,6 +1,5 @@
-package com.gaia3d.command;
+package com.gaia3d.command.model;
 
-import org.apache.commons.cli.CommandLine;
 import java.io.IOException;
 
 public interface ProcessFlowModel {

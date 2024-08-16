@@ -192,7 +192,6 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                 GaiaScene scene = initScene(file);
                 scene.setOriginalPath(file.toPath());
 
-                GaiaMaterial material = scene.getMaterials().get(0);
                 GaiaNode rootNode = scene.getNodes().get(0);
 
                 GaiaAttribute gaiaAttribute = scene.getAttribute();

@@ -1,7 +1,7 @@
 package com.gaia3d.process;
 
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.FileLoader;
+import com.gaia3d.converter.loader.FileLoader;
 import com.gaia3d.process.postprocess.PostProcess;
 import com.gaia3d.process.preprocess.PreProcess;
 import com.gaia3d.process.tileprocess.Pipeline;
@@ -16,7 +16,6 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;

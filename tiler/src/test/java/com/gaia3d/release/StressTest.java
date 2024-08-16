@@ -90,6 +90,19 @@ public class StressTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Test
+    void testSaehanCollada() {
+        String path = "SEAHAN-DAE";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "kml",
+                "-crs", "5186",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
     private File getInputPath(String path) {
         return new File(INPUT_PATH, path);
     }

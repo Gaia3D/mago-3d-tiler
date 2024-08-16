@@ -18,42 +18,15 @@ public class Modeler3D {
 
     }
 
-    /*public TNetwork getPipeTNetworkFromPointsArray(List<Vector3d> points) {
-        TNetwork network = new TNetwork();
-
-        float pipeRadius = 0.5f;
-        PipeType profileType = PipeType.CIRCULAR;
-
-        // 1rst create elbows.
-        float elbowRadius = pipeRadius * 1.5f; // test value.***
-        for (Vector3d point : points) {
-            PipeElbow elbow = new PipeElbow(point, profileType, elbowRadius);
-            elbow.setProfileType(profileType);
-            elbow.setElbowRadius(elbowRadius);
-            elbow.setPipeRadius(pipeRadius);
-            network.getNodes().add(elbow);
-        }
-
-        // 2nd create pipes.
-        for (int i = 0; i < points.size() - 1; i++) {
-            TNode startNode = network.getNodes().get(i);
-            TNode endNode = network.getNodes().get(i + 1);
-            Pipe pipe = new Pipe(startNode, endNode);
-            pipe.setProfileType(profileType);
-            pipe.setPipeRadius(pipeRadius);
-            network.getEdges().add(pipe);
-        }
-
-        network.makeTEdgesListForTNodes();
-        return network;
-    }*/
-
     public TNetwork getPipeNetworkFromPipeElbows(List<PipeElbow> pipeElbows) {
         TNetwork network = new TNetwork();
 
-        float pipeRadius = 0.5f; // test value.***
-        float[] pipeRectangularSize = new float[2]; // for rectangular pipe.
-        PipeType pipeProfileType = PipeType.UNKNOWN; // 0 = unknown, 1 = circular, 2 = rectangular, 3 = oval, 4 = irregular, etc.
+        // test value.***
+        float pipeRadius = 0.5f;
+        // for rectangular pipe.
+        float[] pipeRectangularSize = new float[2];
+        // 0 = unknown, 1 = circular, 2 = rectangular, 3 = oval, 4 = irregular, etc.
+        PipeType pipeProfileType = PipeType.UNKNOWN;
 
         // 1rst create elbows.
         for (PipeElbow elbow : pipeElbows) {

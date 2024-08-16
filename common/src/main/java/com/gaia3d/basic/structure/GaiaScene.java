@@ -34,7 +34,7 @@ public class GaiaScene implements Serializable {
     private GaiaAttribute attribute;
 
     public GaiaScene(GaiaSet gaiaSet) {
-        List<GaiaBufferDataSet> bufferDataSets = gaiaSet.getBufferDatas();
+        List<GaiaBufferDataSet> bufferDataSets = gaiaSet.getBufferDataList();
         List<GaiaMaterial> materials = gaiaSet.getMaterials();
 
         Matrix4d transformMatrix = new Matrix4d();

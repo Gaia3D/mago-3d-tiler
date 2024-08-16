@@ -22,7 +22,6 @@ import java.nio.file.StandardCopyOption;
  * Class for setting up logs.
  *
  * @author znkim
- * @see <a href="https://logging.apache.org/log4j/2.x/manual/configuration.html">Log4j2 Configuration</a>
  * @since 1.0.0
  */
 public class Configurator {

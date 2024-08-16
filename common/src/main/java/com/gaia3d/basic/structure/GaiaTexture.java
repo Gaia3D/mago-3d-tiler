@@ -21,16 +21,16 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
-import java.util.Arrays;
 
 /**
  * A class that represents a texture of a Gaia object.
  * It contains the texture name, path, type, width, height, format, byteLength, and byteBuffer.
  * The byteBuffer is used to create a texture.
  * The byteBuffer is created by reading the texture file.
+ *
  * @author znkim
- * @since 1.0.0
  * @see <a href="https://en.wikipedia.org/wiki/Texture_mapping">Texture mapping</a>
+ * @since 1.0.0
  */
 @Slf4j
 @Getter
@@ -66,10 +66,9 @@ public class GaiaTexture implements Serializable {
         }
     }
 
-    public void flipImageY()
-    {
-        for(int i = 0; i < width; i++) {
-            for(int j = 0; j < height / 2; j++) {
+    public void flipImageY() {
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height / 2; j++) {
                 int tmp = bufferedImage.getRGB(i, j);
                 bufferedImage.setRGB(i, j, bufferedImage.getRGB(i, height - j - 1));
                 bufferedImage.setRGB(i, height - j - 1, tmp);
@@ -77,16 +76,14 @@ public class GaiaTexture implements Serializable {
         }
     }
 
-    public String getFullPath()
-    {
+    public String getFullPath() {
         Path diffusePath = new File(path).toPath();
-        String imagePath = parentPath + File.separator + diffusePath;
-        return imagePath;
+        return parentPath + File.separator + diffusePath;
     }
 
     private BufferedImage readImage(String filePath) {
         BufferedImage image = null;
-        try (FileInputStream stream = new FileInputStream(filePath)){
+        try (FileInputStream stream = new FileInputStream(filePath)) {
             image = ImageIO.read(stream);
         } catch (IOException e) {
             log.error(e.getMessage());
@@ -130,8 +127,7 @@ public class GaiaTexture implements Serializable {
         return this.bufferedImage;
     }
 
-    public void deleteObjects()
-    {
+    public void deleteObjects() {
         if (byteBuffer != null) {
             byteBuffer.clear();
         }
@@ -142,8 +138,6 @@ public class GaiaTexture implements Serializable {
 
     /**
      * It's a slow comparison of two textures, but it's accurate.
-     * @param compareTexture
-     * @return
      */
     public boolean isEqualTexture(GaiaTexture compareTexture) {
         BufferedImage bufferedImage = this.getBufferedImage();
@@ -179,18 +173,14 @@ public class GaiaTexture implements Serializable {
         for (int i = 0; i < length; i++) {
             difference = Math.abs(rgbaByteArray[i] - rgbaByteArray2[i]);
             differenceAccum += difference;
-            if((differenceAccum/(float)(i+1)) > tolerance) {
+            if ((differenceAccum / (float) (i + 1)) > tolerance) {
                 return false;
             }
         }
 
-        float differenceRatio = differenceAccum / (float)length;
+        float differenceRatio = differenceAccum / (float) length;
 
-        if (differenceRatio < tolerance) {
-            return true;
-        } else {
-            return false;
-        }
+        return differenceRatio < tolerance;
     }
 
     public boolean isEqualTexture(GaiaTexture compareTexture, float scaleFactor) {

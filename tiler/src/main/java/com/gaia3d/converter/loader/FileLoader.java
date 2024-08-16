@@ -1,4 +1,4 @@
-package com.gaia3d.converter;
+package com.gaia3d.converter.loader;
 
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
@@ -8,9 +8,9 @@ import java.io.File;
 import java.util.List;
 
 public interface FileLoader {
-    public List<TileInfo> loadTileInfo(File file);
-    public List<File> loadFiles();
-    public List<GridCoverage2D> loadGridCoverages(List<GridCoverage2D> coverages);
+    List<TileInfo> loadTileInfo(File file);
+    List<File> loadFiles();
+    List<GridCoverage2D> loadGridCoverages(List<GridCoverage2D> coverages);
 
     default String[] getExtensions(FormatType formatType) {
         String[] extensions = new String[4];

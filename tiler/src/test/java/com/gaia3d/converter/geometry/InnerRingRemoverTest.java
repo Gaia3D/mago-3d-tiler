@@ -19,7 +19,6 @@ class InnerRingRemoverTest {
         System.out.println(result);
         // 2.3946318491139483E-11
         //0.000000000023946318491139483
-
     }
 
     @Test

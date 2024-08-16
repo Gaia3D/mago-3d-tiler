@@ -10,7 +10,6 @@ import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.geometry.*;
 
 import com.gaia3d.converter.geometry.pipe.GaiaPipeLineString;
-import com.gaia3d.converter.geometry.pipe.Modeler3D;
 import com.gaia3d.converter.geometry.pipe.PipeType;
 import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
@@ -65,7 +64,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
 
     protected List<GaiaScene> convert(File file) {
         List<GaiaScene> scenes = new ArrayList<>();
-        GaiaExtruder gaiaExtruder = new GaiaExtruder();
         InnerRingRemover innerRingRemover = new InnerRingRemover();
 
         boolean flipCoordinate = globalOptions.isFlipCoordinate();
@@ -135,8 +133,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                     continue;
                 }
 
-                // Check lineStrings. Convert to pipes.***
-                int lineStringsCount = LineStrings.size();
                 for (LineString lineString : LineStrings) {
                     Coordinate[] coordinates = lineString.getCoordinates();
                     List<Vector3d> positions = new ArrayList<>();
@@ -333,8 +329,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             return;
         }
 
-        Modeler3D modeler3d = new Modeler3D();
-
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         for (GaiaPipeLineString pipeLineString : pipeLineStrings) {
             int pointsCount = pipeLineString.getPositions().size();
@@ -368,7 +362,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
 
         for (GaiaPipeLineString pipeLineString : pipeLineStrings) {
             GaiaScene scene = initScene(file);
-            GaiaMaterial mat = scene.getMaterials().get(0);
 
             Path path = new File(pipeLineString.getOriginalFilePath()).toPath();
             scene.setOriginalPath(path);

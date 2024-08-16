@@ -3,11 +3,9 @@ package com.gaia3d.converter;
 import com.gaia3d.util.VectorUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector2d;
-import org.locationtech.jts.geom.Coordinate;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class PolygonFilter {

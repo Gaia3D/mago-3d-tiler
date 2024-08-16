@@ -37,7 +37,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GaiaSet implements Serializable{
-    private List<GaiaBufferDataSet> bufferDatas;
+    private List<GaiaBufferDataSet> bufferDataList;
     private List<GaiaMaterial> materials;
     private GaiaAttribute attribute;
 
@@ -54,16 +54,7 @@ public class GaiaSet implements Serializable{
 
     public GaiaSet(GaiaScene gaiaScene) {
         String name;
-        /*if (gaiaScene == null) {
-            name = "File is not loaded";
-        } else if (gaiaScene.getNodes().isEmpty()) {
-            name = FilenameUtils.removeExtension(gaiaScene.getOriginalPath().getFileName().toString());
-        } else {
-            name = gaiaScene.getNodes().get(0).getName();
-        }*/
-
         name = FilenameUtils.removeExtension(gaiaScene.getOriginalPath().getFileName().toString());
-
 
         this.projectName = name;
         List<GaiaBufferDataSet> bufferDataSets = new ArrayList<>();
@@ -71,13 +62,13 @@ public class GaiaSet implements Serializable{
             node.toGaiaBufferSets(bufferDataSets, null);
         }
         this.materials = gaiaScene.getMaterials();
-        this.bufferDatas = bufferDataSets;
+        this.bufferDataList = bufferDataSets;
         this.attribute = gaiaScene.getAttribute();
     }
 
     public GaiaBoundingBox getBoundingBox() {
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
-        for (GaiaBufferDataSet bufferDataSet : bufferDatas) {
+        for (GaiaBufferDataSet bufferDataSet : bufferDataList) {
             boundingBox.addBoundingBox(bufferDataSet.getBoundingBox());
         }
         return boundingBox;
@@ -86,12 +77,7 @@ public class GaiaSet implements Serializable{
     public Path writeFile(Path path, int serial, GaiaAttribute gaiaAttribute) {
         //String tempFileName = projectName + "_" + serial + "." + FormatType.TEMP.getExtension();
 
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(gaiaAttribute.getIdentifier().toString())
-                .append(".")
-                .append(FormatType.TEMP.getExtension());
-
-        String tempFileName = stringBuilder.toString();
+        String tempFileName = gaiaAttribute.getIdentifier().toString() + "." + FormatType.TEMP.getExtension();
 
         int dividedNumber = serial / 50000;
         Path tempDir = path.resolve(this.projectName).resolve(String.valueOf(dividedNumber));
@@ -133,14 +119,13 @@ public class GaiaSet implements Serializable{
                 }
                 material.write(stream);
             }
-            stream.writeInt(bufferDatas.size());
-            for (GaiaBufferDataSet bufferData : bufferDatas) {
+            stream.writeInt(bufferDataList.size());
+            for (GaiaBufferDataSet bufferData : bufferDataList) {
                 bufferData.write(stream);
             }
             attribute.write(stream);
         } catch (Exception e) {
             log.error(e.getMessage());
-            e.printStackTrace();
             tempFile.delete();
         }
         return tempFile.toPath();
@@ -183,12 +168,11 @@ public class GaiaSet implements Serializable{
                 bufferDataSet.setTexcoordBoundingRectangle(texcoordBoundingRectangle);
                 bufferDataSets.add(bufferDataSet);
             }
-            this.bufferDatas = bufferDataSets;
+            this.bufferDataList = bufferDataSets;
 
             GaiaAttribute attribute = new GaiaAttribute();
             attribute.read(stream);
         } catch (IOException e) {
-            e.printStackTrace();
             log.error(e.getMessage());
         }
     }
@@ -215,7 +199,7 @@ public class GaiaSet implements Serializable{
     }
 
     public void translate(Vector3d translation) {
-        for (GaiaBufferDataSet bufferData : this.bufferDatas) {
+        for (GaiaBufferDataSet bufferData : this.bufferDataList) {
             GaiaBuffer positionBuffer = bufferData.getBuffers().get(AttributeType.POSITION);
 
             if (positionBuffer == null) {
@@ -239,9 +223,9 @@ public class GaiaSet implements Serializable{
 
     public GaiaSet clone(){
         GaiaSet gaiaSet = new GaiaSet();
-        gaiaSet.setBufferDatas(new ArrayList<>());
-        for (GaiaBufferDataSet bufferData : this.bufferDatas) {
-            gaiaSet.getBufferDatas().add(bufferData.clone());
+        gaiaSet.setBufferDataList(new ArrayList<>());
+        for (GaiaBufferDataSet bufferData : this.bufferDataList) {
+            gaiaSet.getBufferDataList().add(bufferData.clone());
         }
         gaiaSet.setMaterials(new ArrayList<>());
         for (GaiaMaterial material : this.materials) {
@@ -257,8 +241,8 @@ public class GaiaSet implements Serializable{
     }
 
     public void clear() {
-        this.bufferDatas.forEach(GaiaBufferDataSet::clear);
-        this.bufferDatas.clear();
+        this.bufferDataList.forEach(GaiaBufferDataSet::clear);
+        this.bufferDataList.clear();
         this.materials.clear();
     }
 }

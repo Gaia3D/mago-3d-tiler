@@ -6,7 +6,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum PipeElbowType {
-    //0 = unknown, 1 = straight, 2 = toroidal, 3 = spherical.***
     UNKNOWN(0),
     STRAIGHT(1),
     TOROIDAL(2),

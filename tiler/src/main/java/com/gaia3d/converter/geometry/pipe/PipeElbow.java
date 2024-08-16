@@ -40,21 +40,19 @@ public class PipeElbow extends TNode {
         super(vector3d);
         this.profileType = profileType;
         this.elbowRadius = elbowRadius;
-        this.pipeRadius = pipeRadius;
-        this.pipeRectangularSize = pipeRectangularSize;
         mapEdgeLinkPositions = new HashMap<>();
         mapEdgeLinkNormals = new HashMap<>();
     }
 
     private void calculateElbowPositionsIfExistOnlyOneTEdge() {
         TEdge edge1 = this.getEdge(0);
-        TEdge edge2 = null;
+        //TEdge edge2 = null;
 
         TNode tNodeA = edge1.getTheAnotherNode(this);
-        TNode tNodeB = null;
+        //TNode tNodeB = null;
 
         Vector3d posA = new Vector3d(tNodeA.getPosition());
-        Vector3d posB = null;
+        //Vector3d posB = null;
         Vector3d posCenter = new Vector3d(this.getPosition());
 
         //                                             posCenter
@@ -224,9 +222,7 @@ public class PipeElbow extends TNode {
             this.calculateElbowPositions();
         }
 
-        Vector3d linkPosition = mapEdgeLinkPositions.get(pipe);
-
-        return linkPosition;
+        return mapEdgeLinkPositions.get(pipe);
     }
 
     private void getPipeProfilePoints(List<Vector3d> resultPoints) {
@@ -266,7 +262,7 @@ public class PipeElbow extends TNode {
         GaiaMesh gaiaMesh = new GaiaMesh();
 
         // make the circle points in local coordinates.
-        List<Vector3d> circlePoints = new ArrayList<Vector3d>();
+        List<Vector3d> circlePoints = new ArrayList<>();
         this.getPipeProfilePoints(circlePoints);
 
         // take the 1rst edge.
@@ -277,9 +273,9 @@ public class PipeElbow extends TNode {
         Vector3d linkPos1 = mapEdgeLinkPositions.get(edge1);
 
         // take the 2nd edge.
-        TEdge edge2 = this.getEdges().get(1);
-        Vector3d dir2 = mapEdgeLinkNormals.get(edge2);
-        Vector3d linkPos2 = mapEdgeLinkPositions.get(edge2);
+        //TEdge edge2 = this.getEdges().get(1);
+        //Vector3d dir2 = mapEdgeLinkNormals.get(edge2);
+        //Vector3d linkPos2 = mapEdgeLinkPositions.get(edge2);
 
         // starting from linkPos1, calculate the circle points.
         Modeler3D modeler3D = new Modeler3D();
@@ -303,8 +299,7 @@ public class PipeElbow extends TNode {
         translationMat.mul(tMat, tMat);
 
         // transform the points of the circle.
-        for (int j = 0; j < circlePoints.size(); j++) {
-            Vector3d circlePoint = circlePoints.get(j);
+        for (Vector3d circlePoint : circlePoints) {
             Vector3d transformedPoint = new Vector3d();
             tMat.transformPosition(circlePoint, transformedPoint);
             transversalCircle1.add(transformedPoint);
@@ -427,9 +422,9 @@ public class PipeElbow extends TNode {
         Vector3d linkPos1 = mapEdgeLinkPositions.get(edge1);
 
         // take the 2nd edge.
-        TEdge edge2 = this.getEdges().get(1);
-        Vector3d dir2 = mapEdgeLinkNormals.get(edge2);
-        Vector3d linkPos2 = mapEdgeLinkPositions.get(edge2);
+        //TEdge edge2 = this.getEdges().get(1);
+        //Vector3d dir2 = mapEdgeLinkNormals.get(edge2);
+        //Vector3d linkPos2 = mapEdgeLinkPositions.get(edge2);
 
         // starting from linkPos1, calculate the circle points.
         Modeler3D modeler3D = new Modeler3D();

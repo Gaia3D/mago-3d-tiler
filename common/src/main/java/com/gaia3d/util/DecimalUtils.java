@@ -12,11 +12,7 @@ public class DecimalUtils {
     }
 
     public static double cut(double value, int digit) {
-        String format = "0.";
-        for (int i = 0; i < digit; i++) {
-            format += "0";
-        }
-        DecimalFormat decimalFormat = new DecimalFormat(format);
+        DecimalFormat decimalFormat = new DecimalFormat("0." + "0".repeat(Math.max(0, digit)));
         return Double.parseDouble(decimalFormat.format(value));
     }
 
@@ -26,11 +22,7 @@ public class DecimalUtils {
     }
 
     public static float cut(float value, int digit) {
-        String format = "0.";
-        for (int i = 0; i < digit; i++) {
-            format += "0";
-        }
-        DecimalFormat decimalFormat = new DecimalFormat(format);
+        DecimalFormat decimalFormat = new DecimalFormat("0." + "0".repeat(Math.max(0, digit)));
         return Float.parseFloat(decimalFormat.format(value));
     }
 }

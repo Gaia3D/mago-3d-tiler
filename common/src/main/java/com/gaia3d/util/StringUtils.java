@@ -8,7 +8,15 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class StringUtils {
-    private static String doPaddingBytes(String text, int byteSize, String paddingChar) {
+    public static String doPadding4Bytes(String text) {
+        return doPaddingBytes(text, 4);
+    }
+
+    public static String doPadding8Bytes(String text) {
+        return doPaddingBytes(text, 8);
+    }
+
+    private static String doPaddingBytes(String text, int byteSize) {
         int length = text.length();
         StringBuilder featureTableText = new StringBuilder(text);
         int featureTableJsonOffset = length % byteSize;
@@ -19,24 +27,13 @@ public class StringUtils {
         return featureTableText.toString();
     }
 
-    public static String doPadding8Bytes(String text) {
-        return doPaddingBytes(text, 8, " ").toString();
-    }
 
-    public static String doPadding4Bytes(String text) {
-        return doPaddingBytes(text, 8, " ").toString();
-    }
 
     public static void splitString(String wordToSplit, String delimiter, Vector<String> resultSplittedStrings, boolean skipEmptyStrings) {
-        String[] splittedStrings = wordToSplit.split(delimiter);
-
-        // discard strings with length zero.***
-        Integer stringsCount = splittedStrings.length;
-        for (Integer i = 0; i < stringsCount; i++) {
-            String word = splittedStrings[i];
-
-            if(skipEmptyStrings) {
-                if (word.length() != 0) {
+        String[] splitStrings = wordToSplit.split(delimiter);
+        for (String word : splitStrings) {
+            if (skipEmptyStrings) {
+                if (!word.isEmpty()) {
                     resultSplittedStrings.add(word);
                 }
             } else {
@@ -46,13 +43,13 @@ public class StringUtils {
     }
 
     public static String getRawFileName(String fileName) {
-        String rawFileName = fileName.substring(0, fileName.lastIndexOf('.'));
-        return rawFileName;
+        return fileName.substring(0, fileName.lastIndexOf('.'));
     }
 
     public static Optional<String> getExtensionByStringHandling(String filename) {
-        // https://www.baeldung.com/java-file-extension
-        return Optional.ofNullable(filename).filter(f -> f.contains(".")).map(f -> f.substring(filename.lastIndexOf(".") + 1));
+        return Optional.ofNullable(filename)
+                .filter(f -> f.contains("."))
+                .map(f -> f.substring(filename.lastIndexOf(".") + 1));
     }
 
     public static String convertUTF8(String ascii) {

@@ -21,7 +21,7 @@ public class GaiaSceneSplitter {
         return null;
     }
 
-    public static void splitScenes(List<GaiaScene> scenes, List<GaiaScene> splittedScenes) {
+    public static void splitScenes(List<GaiaScene> scenes, List<GaiaScene> splitScenes) {
         GaiaBoundingBox boundingBox = getBoundingBox(scenes);
         if (boundingBox == null) {
             return;
@@ -38,7 +38,7 @@ public class GaiaSceneSplitter {
 
         for (String octreeName : mapOctreeNameScenes.keySet()) {
             List<GaiaScene> scenesList = mapOctreeNameScenes.get(octreeName);
-            splittedScenes.addAll(scenesList);
+            splitScenes.addAll(scenesList);
         }
     }
 
@@ -55,7 +55,6 @@ public class GaiaSceneSplitter {
 
         Map<String, List<GaiaMesh>> resultMapOctreeNameMeshes = new HashMap<>();
 
-        int nodesCount = nodes.size();
         for (GaiaNode node : nodes) {
             Matrix4d transformMatrix = new Matrix4d(node.getTransformMatrix()); // must be pre-multiplied (TODO).***
             transformMatrix.mul(rootTMatrix, transformMatrix);
@@ -86,11 +85,7 @@ public class GaiaSceneSplitter {
             newScene.setOriginalPath(originalScene.getOriginalPath());
 
             // finally insert the new scene into the mapOctreeNameScenes.***
-            List<GaiaScene> scenesList = mapOctreeNameScenes.get(octreeName);
-            if (scenesList == null) {
-                scenesList = new ArrayList<>();
-                mapOctreeNameScenes.put(octreeName, scenesList);
-            }
+            List<GaiaScene> scenesList = mapOctreeNameScenes.computeIfAbsent(octreeName, k -> new ArrayList<>());
             scenesList.add(newScene);
         }
     }
@@ -141,11 +136,7 @@ public class GaiaSceneSplitter {
             newMesh.getPrimitives().addAll(primitivesList);
 
             // finally insert the new mesh into the resultMapOctreeNameMeshes.***
-            List<GaiaMesh> meshesList = resultMapOctreeNameMeshes.get(octreeName);
-            if (meshesList == null) {
-                meshesList = new ArrayList<>();
-                resultMapOctreeNameMeshes.put(octreeName, meshesList);
-            }
+            List<GaiaMesh> meshesList = resultMapOctreeNameMeshes.computeIfAbsent(octreeName, k -> new ArrayList<>());
             meshesList.add(newMesh);
         }
     }
@@ -218,7 +209,6 @@ public class GaiaSceneSplitter {
 
         Map<String, List<GaiaSurface>> resultMapOctreeNameSurfaces = new HashMap<>();
 
-        int surfacesCount = originalSurfaces.size();
         for (GaiaSurface surface : originalSurfaces) {
             splitSurface(surface, originalVertices, transformMatrix, octree, resultMapOctreeNameSurfaces);
         }
@@ -232,11 +222,7 @@ public class GaiaSceneSplitter {
             newPrimitive.setMaterialIndex(originalPrimitive.getMaterialIndex());
 
             // finally insert the new primitive into the resultMapOctreeNamePrimitives.***
-            List<GaiaPrimitive> primitivesList = resultMapOctreeNamePrimitives.get(octreeName);
-            if (primitivesList == null) {
-                primitivesList = new ArrayList<>();
-                resultMapOctreeNamePrimitives.put(octreeName, primitivesList);
-            }
+            List<GaiaPrimitive> primitivesList = resultMapOctreeNamePrimitives.computeIfAbsent(octreeName, k -> new ArrayList<>());
             primitivesList.add(newPrimitive);
         }
     }
@@ -250,13 +236,11 @@ public class GaiaSceneSplitter {
 
         List<GaiaVertex> faceVertices = new ArrayList<>();
         List<GaiaFace> faces = surface.getFaces();
-        int facesCount = faces.size();
         double testMaxY = 0.0;
         Map<GaiaFace, Vector3d> mapFaceTransformedCenterPos = new HashMap<>();
         for (GaiaFace gaiaFace : faces) {
             faceVertices.clear();
-            GaiaFace face = gaiaFace;
-            int[] indices = face.getIndices();
+            int[] indices = gaiaFace.getIndices();
             for (int index : indices) {
                 GaiaVertex vertex = vertices.get(index);
                 faceVertices.add(vertex);
@@ -266,11 +250,11 @@ public class GaiaSceneSplitter {
                 }
             }
 
-            octreeCopy.addFace(face);
+            octreeCopy.addFace(gaiaFace);
             Vector3d faceCenterPos = getCenterPositionOfVertices(faceVertices);
             Vector3d transformedCenterPos = new Vector3d(faceCenterPos);
             transformMatrix.transformPosition(transformedCenterPos);
-            mapFaceTransformedCenterPos.put(face, transformedCenterPos);
+            mapFaceTransformedCenterPos.put(gaiaFace, transformedCenterPos);
         }
 
         octreeCopy.setVertices(vertices);
@@ -295,11 +279,7 @@ public class GaiaSceneSplitter {
                 splittedSurface.getFaces().addAll(splittedFaces);
 
                 // now insert the splitted surface into the resultMapOctreeNameSurfaces.***
-                List<GaiaSurface> surfacesList = resultMapOctreeNameSurfaces.get(octreeName);
-                if (surfacesList == null) {
-                    surfacesList = new ArrayList<>();
-                    resultMapOctreeNameSurfaces.put(octreeName, surfacesList);
-                }
+                List<GaiaSurface> surfacesList = resultMapOctreeNameSurfaces.computeIfAbsent(octreeName, k -> new ArrayList<>());
                 surfacesList.add(splittedSurface);
             }
         }

@@ -1,10 +1,10 @@
-package com.gaia3d.command;
+package com.gaia3d.command.model;
 
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
-import com.gaia3d.converter.FileLoader;
-import com.gaia3d.converter.InstancedFileLoader;
+import com.gaia3d.converter.loader.FileLoader;
+import com.gaia3d.converter.loader.InstancedFileLoader;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.JacksonKmlReader;

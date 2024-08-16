@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
+@Deprecated
 @RequiredArgsConstructor
 public class GaiaTextureArchive {
     private final Map<String, BufferedImage> textures = new HashMap<>();

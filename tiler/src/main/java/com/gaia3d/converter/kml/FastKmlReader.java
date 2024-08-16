@@ -30,13 +30,13 @@ public class FastKmlReader implements AttributeReader {
                     .name(findValue(xml, "name"))
                     .position(position)
                     .altitudeMode(findValue(xml, "altitudeMode"))
-                    .heading(Double.parseDouble(findValue(xml, "heading")))
-                    .tilt(Double.parseDouble(findValue(xml, "tilt")))
-                    .roll(Double.parseDouble(findValue(xml, "roll")))
+                    .heading(parseDouble(findValue(xml, "heading")))
+                    .tilt(parseDouble(findValue(xml, "tilt")))
+                    .roll(parseDouble(findValue(xml, "roll")))
                     .href(findValue(xml, "href"))
-                    .scaleX(Double.parseDouble(findValue(xml, "x")))
-                    .scaleY(Double.parseDouble(findValue(xml, "y")))
-                    .scaleZ(Double.parseDouble(findValue(xml, "z")))
+                    .scaleX(parseDouble(findValue(xml, "x")))
+                    .scaleY(parseDouble(findValue(xml, "y")))
+                    .scaleZ(parseDouble(findValue(xml, "z")))
                     .build();
             xml = null;
         } catch (IOException e) {
@@ -51,6 +51,14 @@ public class FastKmlReader implements AttributeReader {
         KmlInfo kmlInfo = read(file);
         List<KmlInfo> kmlInfos = List.of(kmlInfo);
         return kmlInfos;
+    }
+
+    private double parseDouble(String value) {
+        if (value == null || value.isEmpty()) {
+            return 0;
+        } else {
+            return Double.parseDouble(value);
+        }
     }
 
     private String findValue(String xml, String tag) {

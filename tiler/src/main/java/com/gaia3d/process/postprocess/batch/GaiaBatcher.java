@@ -127,7 +127,7 @@ public class GaiaBatcher {
     private void setBatchId(List<GaiaSet> sets) {
         for (int i = 0; i < sets.size(); i++) {
             GaiaSet set = sets.get(i);
-            List<GaiaBufferDataSet> dataSets = set.getBufferDatas();
+            List<GaiaBufferDataSet> dataSets = set.getBufferDataList();
             for (GaiaBufferDataSet dataSet : dataSets) {
                 Map<AttributeType, GaiaBuffer> buffers = dataSet.getBuffers();
                 GaiaBuffer positionBuffer = buffers.get(AttributeType.POSITION);
@@ -153,7 +153,7 @@ public class GaiaBatcher {
                 .collect(Collectors.toList());
 
         sets = sets.stream().filter((set -> {
-            List<GaiaBufferDataSet> dataSets = set.getBufferDatas();
+            List<GaiaBufferDataSet> dataSets = set.getBufferDataList();
             for (GaiaBufferDataSet dataSet : dataSets) {
                 Map<AttributeType, GaiaBuffer> buffers = dataSet.getBuffers();
                 GaiaBuffer positionBuffer = buffers.get(AttributeType.POSITION);
@@ -168,7 +168,7 @@ public class GaiaBatcher {
         setBatchId(sets);
 
         sets.forEach((set) -> {
-            List<GaiaBufferDataSet> dataSets = set.getBufferDatas();
+            List<GaiaBufferDataSet> dataSets = set.getBufferDataList();
             List<GaiaMaterial> materials = set.getMaterials();
             int materialIdOffset = batchedMaterials.size();
             dataSets.forEach((dataSet) -> {
@@ -291,7 +291,7 @@ public class GaiaBatcher {
 
         GaiaSet batchedSet = new GaiaSet();
         batchedSet.setProjectName("BatchedSet");
-        batchedSet.setBufferDatas(resultBufferDatas);
+        batchedSet.setBufferDataList(resultBufferDatas);
         batchedSet.setMaterials(resultMaterials);
         if (resultBufferDatas.isEmpty() || resultMaterials.isEmpty()) {
             log.error("Batched Set is empty");

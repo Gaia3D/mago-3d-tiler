@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @AllArgsConstructor
+@Deprecated
 public class Extruder2D {
 
     private final Tessellator2D tessellator;

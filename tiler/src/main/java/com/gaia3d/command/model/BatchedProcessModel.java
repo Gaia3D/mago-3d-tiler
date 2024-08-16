@@ -1,9 +1,9 @@
-package com.gaia3d.command;
+package com.gaia3d.command.model;
 
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
-import com.gaia3d.converter.BatchedFileLoader;
+import com.gaia3d.converter.loader.BatchedFileLoader;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.assimp.LargeMeshConverter;
 import com.gaia3d.converter.geometry.citygml.CityGmlConverter;

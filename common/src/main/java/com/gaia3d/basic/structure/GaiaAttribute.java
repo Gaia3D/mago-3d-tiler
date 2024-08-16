@@ -2,7 +2,6 @@ package com.gaia3d.basic.structure;
 
 import com.gaia3d.util.io.BigEndianDataInputStream;
 import com.gaia3d.util.io.BigEndianDataOutputStream;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,8 +13,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-/*@NoArgsConstructor
-@AllArgsConstructor*/
+@NoArgsConstructor
 public class GaiaAttribute {
     private UUID identifier = UUID.randomUUID();
     private String fileName = "unknown";

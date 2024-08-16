@@ -1,9 +1,9 @@
-package com.gaia3d.converter;
+package com.gaia3d.converter.loader;
 
 import com.gaia3d.basic.structure.GaiaScene;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.assimp.AssimpConverter;
+import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.process.tileprocess.tile.TileInfo;

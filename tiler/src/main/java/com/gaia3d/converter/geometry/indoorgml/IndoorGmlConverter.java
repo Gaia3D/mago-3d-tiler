@@ -132,18 +132,15 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
             Vector3d center = globalBoundingBox.getCenter();
             Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
             Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
-            Matrix4d transfromMatrixInv = new Matrix4d(transformMatrix).invert();
+            Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
 
             for (List<GaiaBuildingSurface> surfaces : buildingSurfacesList) {
                 List<List<Vector3d>> polygons = new ArrayList<>();
                 for (GaiaBuildingSurface buildingSurface : surfaces) {
                     List<Vector3d> polygon = new ArrayList<>();
-
-                    List<Vector3d> localPositions = new ArrayList<>();
                     for (Vector3d position : buildingSurface.getPositions()) {
                         Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
-                        Vector3d localPosition = positionWorldCoordinate.mulPosition(transfromMatrixInv);
-                        localPositions.add(localPosition);
+                        Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv);
                         polygon.add(new Vector3dsOnlyHashEquals(localPosition));
                     }
                     polygons.add(polygon);
@@ -166,9 +163,8 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
             scenes.add(scene);
         } catch (Exception e) {
             log.info("Failed to load IndoorGML file: {}", file.getAbsolutePath());
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
-
         return scenes;
     }
 }

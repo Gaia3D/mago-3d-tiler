@@ -21,6 +21,6 @@ public class GaiaExtrusionBuilding {
     private GaiaBoundingBox boundingBox;
     private String originalFilePath;
 
-    List<Vector3d> positions;
-    Map<String, String> properties;
+    private List<Vector3d> positions;
+    private Map<String, String> properties;
 }

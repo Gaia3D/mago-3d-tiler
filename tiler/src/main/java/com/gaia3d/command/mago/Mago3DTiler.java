@@ -1,7 +1,10 @@
 package com.gaia3d.command.mago;
 
 import com.gaia3d.basic.types.FormatType;
-import com.gaia3d.command.*;
+import com.gaia3d.command.model.BatchedProcessModel;
+import com.gaia3d.command.model.InstancedProcessModel;
+import com.gaia3d.command.model.PointCloudProcessModel;
+import com.gaia3d.command.model.ProcessFlowModel;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;

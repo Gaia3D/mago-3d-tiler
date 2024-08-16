@@ -4,8 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.joml.Vector2d;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Getter

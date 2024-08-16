@@ -38,67 +38,32 @@ public class ImageUtils {
     }
 
     public static String getFormatNameByMimeType(String mimeType) {
-        String formatName = null;
-        switch (mimeType) {
-            case "image/png":
-                formatName = "png";
-                break;
-            case "image/jpeg":
-                formatName = "jpeg";
-                break;
-            case "image/gif":
-                formatName = "gif";
-                break;
-            case "image/bmp":
-                formatName = "bmp";
-                break;
-            case "image/tiff":
-                formatName = "tiff";
-                break;
-            case "image/x-icon":
-                formatName = "ico";
-                break;
-            case "image/svg+xml":
-                formatName = "svg";
-                break;
-            case "image/webp":
-                formatName = "webp";
-                break;
-        }
-        return formatName;
+        return switch (mimeType) {
+            case "image/png" -> "png";
+            case "image/jpeg" -> "jpeg";
+            case "image/gif" -> "gif";
+            case "image/bmp" -> "bmp";
+            case "image/tiff" -> "tiff";
+            case "image/x-icon" -> "ico";
+            case "image/svg+xml" -> "svg";
+            case "image/webp" -> "webp";
+            default -> null;
+        };
     }
 
     public static String getMimeTypeByExtension(String extension) {
         String mimeType;
         extension = extension.toLowerCase();
-        switch (extension) {
-            case "jpg":
-            case "jpeg":
-                mimeType = "image/jpeg";
-                break;
-            case "gif":
-                mimeType = "image/gif";
-                break;
-            case "bmp":
-                mimeType = "image/bmp";
-                break;
-            case "tiff":
-            case "tif":
-                mimeType = "image/tiff";
-                break;
-            case "ico":
-                mimeType = "image/x-icon";
-                break;
-            case "svg":
-                mimeType = "image/svg+xml";
-                break;
-            case "webp":
-                mimeType = "image/webp";
-                break;
-            default:
-                mimeType = "image/png";
-                break;
-        }
+        mimeType = switch (extension) {
+            case "jpg", "jpeg" -> "image/jpeg";
+            case "gif" -> "image/gif";
+            case "bmp" -> "image/bmp";
+            case "tiff", "tif" -> "image/tiff";
+            case "ico" -> "image/x-icon";
+            case "svg" -> "image/svg+xml";
+            case "webp" -> "image/webp";
+            default -> "image/png";
+        };
         return mimeType;
     }
 
@@ -121,7 +86,7 @@ public class ImageUtils {
                 byteBuffer.flip();
             return byteBuffer;
         } catch (IOException e) {
-            log.error("FileUtils.readBytes: " + e.getMessage());
+            log.error("FileUtils.readBytes: {}", e.getMessage());
         }
         return null;
     }
@@ -189,24 +154,24 @@ public class ImageUtils {
         File input = file;
         File result = correctFile(file);
         if (result != null && result.exists() && result.isFile()) {
-            log.debug("Original Path: " + file.getPath());
-            log.debug("Corrected Path: " + result.getPath());
+            log.debug("Original Path: {}", file.getPath());
+            log.debug("Corrected Path: {}", result.getPath());
             return result;
         }
 
         input = new File(parent, file.getPath());
         result = correctFile(input);
         if (result != null && result.exists() && result.isFile()) {
-            log.debug("Original Path: " + file.getPath());
-            log.debug("Corrected Path: " + result.getPath());
+            log.debug("Original Path: {}", file.getPath());
+            log.debug("Corrected Path: {}", result.getPath());
             return result;
         }
 
         input = new File(parent, file.getName());
         result = correctFile(input);
         if (result != null && result.exists() && result.isFile()) {
-            log.debug("Original Path: " + file.getPath());
-            log.debug("Corrected Path: " + result.getPath());
+            log.debug("Original Path: {}", file.getPath());
+            log.debug("Corrected Path: {}", result.getPath());
             return result;
         }
 
@@ -260,7 +225,7 @@ public class ImageUtils {
                 System.err.println("No se encontró un lector para el formato de la imagen.");
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Error reading image size: {}", e.getMessage());
         }
 
         return result;
