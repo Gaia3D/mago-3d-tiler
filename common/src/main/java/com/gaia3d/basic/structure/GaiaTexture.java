@@ -1,5 +1,6 @@
 package com.gaia3d.basic.structure;
 
+import com.gaia3d.basic.structure.interfaces.TextureStructure;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.util.ImageResizer;
 import com.gaia3d.util.ImageUtils;
@@ -37,7 +38,7 @@ import java.nio.file.Path;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaTexture implements Serializable {
+public class GaiaTexture extends TextureStructure implements Serializable {
     Path parentPath;
     private String name;
     private String path;

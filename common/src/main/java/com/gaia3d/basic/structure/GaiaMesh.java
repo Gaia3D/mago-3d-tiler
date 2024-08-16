@@ -2,6 +2,7 @@ package com.gaia3d.basic.structure;
 
 import com.gaia3d.basic.exchangable.GaiaBufferDataSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.structure.interfaces.MeshStructure;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,7 +27,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaMesh implements Serializable {
+public class GaiaMesh extends MeshStructure implements Serializable {
     private List<GaiaPrimitive> primitives = new ArrayList<>();
 
     public GaiaBoundingBox getBoundingBox(Matrix4d transform) {

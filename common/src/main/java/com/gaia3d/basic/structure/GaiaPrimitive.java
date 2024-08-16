@@ -4,6 +4,7 @@ import com.gaia3d.basic.exchangable.GaiaBuffer;
 import com.gaia3d.basic.exchangable.GaiaBufferDataSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
+import com.gaia3d.basic.structure.interfaces.PrimitiveStructure;
 import com.gaia3d.basic.types.AttributeType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -34,7 +35,7 @@ import java.util.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaPrimitive implements Serializable {
+public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
     private Integer accessorIndices = -1;
     private Integer materialIndex = -1;
     private List<GaiaVertex> vertices = new ArrayList<>();

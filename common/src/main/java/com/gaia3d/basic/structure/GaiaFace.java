@@ -1,5 +1,6 @@
 package com.gaia3d.basic.structure;
 
+import com.gaia3d.basic.structure.interfaces.FaceStructure;
 import com.gaia3d.util.GeometryUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,7 +25,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaFace implements Serializable {
+public class GaiaFace extends FaceStructure implements Serializable {
     private int[] indices;
     private Vector3d faceNormal = new Vector3d();
 
@@ -44,6 +45,7 @@ public class GaiaFace implements Serializable {
         }
         Vector3d firstNormal = vertices.get(0).getNormal();
         this.faceNormal = new Vector3d(firstNormal);
+        this.faceNormal = this.faceNormal.set(firstNormal);
     }
 
     public boolean validateNormal(Vector3d normal) {

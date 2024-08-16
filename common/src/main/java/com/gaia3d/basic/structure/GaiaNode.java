@@ -3,6 +3,7 @@ package com.gaia3d.basic.structure;
 import com.gaia3d.basic.exchangable.GaiaBuffer;
 import com.gaia3d.basic.exchangable.GaiaBufferDataSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.structure.interfaces.NodeStructure;
 import com.gaia3d.basic.types.AttributeType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -32,7 +33,7 @@ import java.util.Map;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaNode implements Serializable {
+public class GaiaNode extends NodeStructure implements Serializable {
     private String name = "node";
     private GaiaNode parent = null;
     private List<GaiaMesh> meshes = new ArrayList<>();

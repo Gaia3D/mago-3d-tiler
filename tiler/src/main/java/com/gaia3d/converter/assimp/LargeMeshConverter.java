@@ -2,9 +2,9 @@ package com.gaia3d.converter.assimp;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.structure.*;
+import com.gaia3d.basic.structure.splitter.GaiaSceneSplitter;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
-import com.gaia3d.basic.structure.GaiaSceneSplitter;
 import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

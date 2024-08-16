@@ -1,5 +1,6 @@
 package com.gaia3d.basic.structure;
 
+import com.gaia3d.basic.structure.interfaces.SurfaceStructure;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,7 +27,7 @@ import java.util.Map;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaSurface implements Serializable {
+public class GaiaSurface extends SurfaceStructure implements Serializable {
     private List<GaiaFace> faces = new ArrayList<>();
 
     public void calculateNormal(List<GaiaVertex> vertices) {

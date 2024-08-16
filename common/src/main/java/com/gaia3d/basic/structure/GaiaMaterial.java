@@ -1,5 +1,6 @@
 package com.gaia3d.basic.structure;
 
+import com.gaia3d.basic.structure.interfaces.MaterialStructure;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.util.io.BigEndianDataInputStream;
 import com.gaia3d.util.io.BigEndianDataOutputStream;
@@ -29,7 +30,7 @@ import java.util.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaMaterial implements Serializable {
+public class GaiaMaterial extends MaterialStructure implements Serializable {
     private Vector4d diffuseColor = new Vector4d(1.0, 1.0, 1.0, 1.0);
     private Vector4d ambientColor = new Vector4d(1.0, 1.0, 1.0, 1.0);
     private Vector4d specularColor = new Vector4d(1.0, 1.0, 1.0, 1.0);

@@ -1,5 +1,6 @@
 package com.gaia3d.basic.structure;
 
+import com.gaia3d.basic.structure.interfaces.VertexStructure;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,7 +21,7 @@ import java.io.Serializable;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaVertex implements Serializable {
+public class GaiaVertex extends VertexStructure implements Serializable {
     private Vector2d texcoords;
     private Vector3d position;
     private Vector3d normal;
