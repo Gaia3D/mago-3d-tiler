@@ -1,10 +1,8 @@
 package com.gaia3d.util;
 
-import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector2d;
-import org.joml.Vector3d;
 
 @Slf4j
 public class VectorUtils {

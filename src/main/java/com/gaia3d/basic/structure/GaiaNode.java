@@ -33,7 +33,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GaiaNode implements Serializable {
-    private String name = "";
+    private String name = "node";
     private GaiaNode parent = null;
     private List<GaiaMesh> meshes = new ArrayList<>();
     private List<GaiaNode> children = new ArrayList<>();
@@ -222,7 +222,7 @@ public class GaiaNode implements Serializable {
     }
 
     public void extractNodesWithContents(List<GaiaNode> resultNodes) {
-        if(this.meshes.size() > 0) {
+        if(!this.meshes.isEmpty()) {
             resultNodes.add(this);
         }
 

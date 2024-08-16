@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -92,9 +91,9 @@ public class GaiaFace implements Serializable {
     }
 
     public boolean hasCoincidentIndices(GaiaFace face) {
-        for (int i = 0; i < indices.length; i++) {
+        for (int index : indices) {
             for (int j = 0; j < face.getIndices().length; j++) {
-                if (indices[i] == face.getIndices()[j]) {
+                if (index == face.getIndices()[j]) {
                     return true;
                 }
             }

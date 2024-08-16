@@ -4,8 +4,6 @@ import java.io.Serializable;
 
 /**
  * Enumerates the types of accessors.
- * @author znkim
- * @since 1.0.0
  */
 public enum AccessorType implements Serializable {
     SCALAR,

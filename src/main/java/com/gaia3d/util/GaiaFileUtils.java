@@ -8,10 +8,10 @@ import java.io.IOException;
 
 @Slf4j
 public class GaiaFileUtils {
-    public static void deleteAll(String path) throws IOException {
+    public static void deleteAll(String path) {
         FileUtils.deleteQuietly(new File(path));
     }
-    public static void deleteAll(File file) throws IOException {
+    public static void deleteAll(File file) {
         FileUtils.deleteQuietly(file);
     }
     public static void copyAll(File srcDir, File destDir) throws IOException {

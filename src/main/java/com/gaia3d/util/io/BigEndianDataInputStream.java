@@ -3,8 +3,6 @@ package com.gaia3d.util.io;
 import org.joml.Vector4d;
 
 import java.io.*;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -75,13 +73,17 @@ public class BigEndianDataInputStream extends DataInputStream implements DataInp
     public String readIntAndUTF() throws IOException {
         int length = readInt();
         byte[] bytes = new byte[length];
-        read(bytes);
+        if (read(bytes) != length) {
+            throw new EOFException();
+        }
         return new String(bytes, StandardCharsets.UTF_8);
     }
 
     public String readIntAndUTF(int length) throws IOException {
         byte[] bytes = new byte[length];
-        read(bytes);
+        if (read(bytes) != length) {
+            throw new EOFException();
+        }
         return new String(bytes, StandardCharsets.UTF_8);
     }
 }

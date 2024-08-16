@@ -9,6 +9,5 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 public class GaiaExtrusionSurface {
-    //private final List<Integer> indices = new ArrayList<>();
     private final List<Vector3d> vertices;
 }
