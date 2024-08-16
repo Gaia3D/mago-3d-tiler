@@ -25,10 +25,8 @@ import java.util.List;
  */
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class GaiaMesh extends MeshStructure implements Serializable {
-    private List<GaiaPrimitive> primitives = new ArrayList<>();
+public class GaiaMesh extends MeshStructure {
+    //private List<GaiaPrimitive> primitives = new ArrayList<>();
 
     public GaiaBoundingBox getBoundingBox(Matrix4d transform) {
         GaiaBoundingBox boundingBox = null;

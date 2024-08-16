@@ -27,9 +27,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaScene extends SceneStructure implements Serializable {
-    private List<GaiaNode> nodes = new ArrayList<>();
-    private List<GaiaMaterial> materials = new ArrayList<>();
+public class GaiaScene extends SceneStructure {
     private Path originalPath;
     private GaiaBoundingBox gaiaBoundingBox;
     private GaiaAttribute attribute;

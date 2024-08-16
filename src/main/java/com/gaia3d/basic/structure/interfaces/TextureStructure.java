@@ -1,5 +1,12 @@
 package com.gaia3d.basic.structure.interfaces;
 
-public  abstract class TextureStructure {
+import lombok.Getter;
+import lombok.Setter;
+
+import java.io.Serializable;
+
+@Getter
+@Setter
+public abstract class TextureStructure implements Serializable {
 
 }

@@ -48,22 +48,19 @@ public class GaiaSet implements Serializable{
     private String projectFolderPath;
     private String outputDir;
 
-    public GaiaSet(Path path) {
-        readFile(path);
-    }
-
-    public GaiaSet(GaiaScene gaiaScene) {
-        String name;
-        name = FilenameUtils.removeExtension(gaiaScene.getOriginalPath().getFileName().toString());
-
-        this.projectName = name;
+    public static GaiaSet fromGaiaScene(GaiaScene gaiaScene) {
+        GaiaSet newGaiaSet = new GaiaSet();
+        String name = FilenameUtils.removeExtension(gaiaScene.getOriginalPath().getFileName().toString());
+        newGaiaSet.projectName = name;
+        newGaiaSet.materials = gaiaScene.getMaterials();
+        newGaiaSet.attribute = gaiaScene.getAttribute();
         List<GaiaBufferDataSet> bufferDataSets = new ArrayList<>();
         for (GaiaNode node : gaiaScene.getNodes()) {
             node.toGaiaBufferSets(bufferDataSets, null);
         }
-        this.materials = gaiaScene.getMaterials();
-        this.bufferDataList = bufferDataSets;
-        this.attribute = gaiaScene.getAttribute();
+        newGaiaSet.bufferDataList = bufferDataSets;
+
+        return newGaiaSet;
     }
 
     public GaiaBoundingBox getBoundingBox() {
@@ -75,106 +72,82 @@ public class GaiaSet implements Serializable{
     }
 
     public Path writeFile(Path path, int serial, GaiaAttribute gaiaAttribute) {
-        //String tempFileName = projectName + "_" + serial + "." + FormatType.TEMP.getExtension();
-
-        String tempFileName = gaiaAttribute.getIdentifier().toString() + "." + FormatType.TEMP.getExtension();
-
         int dividedNumber = serial / 50000;
+
+        String tempFileName = this.attribute.getIdentifier().toString() + "." + FormatType.TEMP.getExtension();
         Path tempDir = path.resolve(this.projectName).resolve(String.valueOf(dividedNumber));
         File tempDirFile = tempDir.toFile();
-        tempDirFile.mkdirs();
+        if (tempDirFile.mkdirs()) {
+            log.debug("Directory created: {}", tempDir);
+        }
         File tempFile = tempDir.resolve(tempFileName).toFile();
-        try (BigEndianDataOutputStream stream = new BigEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(tempFile), 32768))) {
-            stream.writeByte(isBigEndian);
-            stream.writeText(projectName);
-            stream.writeInt(materials.size());
-            if (materials.isEmpty()) {
-                log.error("material size is 0");
-            }
+        try (ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(tempFile))) {
+            outputStream.writeObject(this);
+
+            // Copy images to the temp directory
             for (GaiaMaterial material : materials) {
-                Map<TextureType, List<GaiaTexture>> materialTextures = material.getTextures();
-                List<GaiaTexture> diffuseTextures = materialTextures.get(TextureType.DIFFUSE);
-                if (diffuseTextures != null && !diffuseTextures.isEmpty()) {
-                    GaiaTexture texture = materialTextures.get(TextureType.DIFFUSE).get(0);
-                    Path parentPath = texture.getParentPath();
-                    File parentFile = parentPath.toFile();
-                    String diffusePath = texture.getPath();
-                    File diffuseFile = new File(diffusePath);
-
-                    File imageFile = ImageUtils.correctPath(parentFile, diffuseFile);
-
-                    Path imagesFolderPath = tempDir.resolve("images");
-                    imagesFolderPath.toFile().mkdirs();
-
-                    Path outputImagePath = imagesFolderPath.resolve(imageFile.getName());
-                    File outputImageFile = outputImagePath.toFile();
-
-                    texture.setPath(imageFile.getName());
-
-                    if (!imageFile.exists()) {
-                        log.error("Texture Input Image Path is not exists. {}", diffusePath);
-                    } else {
-                        FileUtils.copyFile(imageFile, outputImageFile);
-                    }
-                }
-                material.write(stream);
+                copyTextures(material, tempDir);
             }
-            stream.writeInt(bufferDataList.size());
-            for (GaiaBufferDataSet bufferData : bufferDataList) {
-                bufferData.write(stream);
-            }
-            attribute.write(stream);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error("GaiaSet Write Error : ", e);
             tempFile.delete();
         }
         return tempFile.toPath();
     }
 
-    public void readFile(Path path) {
+    private void copyTextures(GaiaMaterial material, Path copyDirectory) throws IOException {
+        Map<TextureType, List<GaiaTexture>> materialTextures = material.getTextures();
+        List<GaiaTexture> diffuseTextures = materialTextures.get(TextureType.DIFFUSE);
+        if (diffuseTextures != null && !diffuseTextures.isEmpty()) {
+            GaiaTexture texture = materialTextures.get(TextureType.DIFFUSE).get(0);
+            String parentPath = texture.getParentPath();
+            File parentFile = new File(parentPath);
+            String diffusePath = texture.getPath();
+            File diffuseFile = new File(diffusePath);
+
+            File imageFile = ImageUtils.correctPath(parentFile, diffuseFile);
+
+            Path imagesFolderPath = copyDirectory.resolve("images");
+            if (imagesFolderPath.toFile().mkdirs()) {
+                log.debug("Images Directory created: {}", imagesFolderPath);
+            }
+
+            Path outputImagePath = imagesFolderPath.resolve(imageFile.getName());
+            File outputImageFile = outputImagePath.toFile();
+
+            texture.setPath(imageFile.getName());
+
+            if (!imageFile.exists()) {
+                log.error("Texture Input Image Path is not exists. {}", diffusePath);
+            } else {
+                FileUtils.copyFile(imageFile, outputImageFile);
+            }
+        }
+    }
+
+    public static GaiaSet readFile(Path path) throws FileNotFoundException {
         File input = path.toFile();
         Path imagesPath = path.getParent().resolve("images");
-        imagesPath.toFile().mkdir();
+        try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(input))) {
+            GaiaSet gaiaSet = (GaiaSet) inputStream.readObject();
+            for (GaiaMaterial material : gaiaSet.getMaterials()) {
+                material.getTextures().forEach((textureType, textures) -> {
+                    for (GaiaTexture texture : textures) {
+                        String texturePath = texture.getPath();
+                        File file = new File (texturePath);
+                        String fileName = file.getName();
+                        //Path imagePath = imagesPath.resolve(fileName);
 
-        try (BigEndianDataInputStream stream = new BigEndianDataInputStream(new BufferedInputStream(new FileInputStream(input), 32768))) {
-            this.isBigEndian = stream.readByte();
-            this.projectName = stream.readText();
-            int materialCount = stream.readInt();
-            List<GaiaMaterial> materials = new ArrayList<>();
-
-            for (int i = 0; i < materialCount; i++) {
-                GaiaMaterial material = new GaiaMaterial();
-                material.read(stream, imagesPath);
-                materials.add(material);
+                        texture.setParentPath(imagesPath.toString());
+                        texture.setPath(fileName);
+                    }
+                });
             }
-
-            if (materials.isEmpty()) {
-                log.error("material size is 0");
-            }
-
-            this.materials = materials;
-            int bufferDataCount = stream.readInt();
-            List<GaiaBufferDataSet> bufferDataSets = new ArrayList<>();
-            for (int i = 0; i < bufferDataCount; i++) {
-                GaiaBufferDataSet bufferDataSet = new GaiaBufferDataSet();
-                bufferDataSet.read(stream);
-
-                int materialId = bufferDataSet.getMaterialId();
-                GaiaMaterial materialById = materials.stream()
-                        .filter(material -> material.getId() == materialId)
-                        .findFirst().orElseThrow();
-                bufferDataSet.setMaterialId(materialById.getId());
-                GaiaRectangle texcoordBoundingRectangle = calcTexcoordBoundingRectangle(bufferDataSet);
-                bufferDataSet.setTexcoordBoundingRectangle(texcoordBoundingRectangle);
-                bufferDataSets.add(bufferDataSet);
-            }
-            this.bufferDataList = bufferDataSets;
-
-            GaiaAttribute attribute = new GaiaAttribute();
-            attribute.read(stream);
-        } catch (IOException e) {
-            log.error(e.getMessage());
+            return gaiaSet;
+        } catch (Exception e) {
+            log.error("GaiaSet Write Error : ", e);
         }
+        return null;
     }
 
     private GaiaRectangle calcTexcoordBoundingRectangle(GaiaBufferDataSet bufferDataSet) {

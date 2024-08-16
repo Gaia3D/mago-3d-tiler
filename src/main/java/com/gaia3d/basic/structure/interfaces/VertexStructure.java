@@ -1,5 +1,10 @@
 package com.gaia3d.basic.structure.interfaces;
 
-public  abstract class VertexStructure {
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public abstract class VertexStructure {
 
 }

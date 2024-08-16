@@ -27,9 +27,9 @@ import java.util.*;
 @Setter
 public class GaiaBufferDataSet implements Serializable {
     private Map<AttributeType, GaiaBuffer> buffers;
+    private int materialId;
     private int id = -1;
     private String guid = "no_guid";
-    private int materialId;
 
     private GaiaBoundingBox boundingBox = null;
     private GaiaRectangle texcoordBoundingRectangle = null;
@@ -37,7 +37,7 @@ public class GaiaBufferDataSet implements Serializable {
     private Matrix4d preMultipliedTransformMatrix = null;
 
     public GaiaBufferDataSet() {
-        this.buffers = new WeakHashMap<>();
+        this.buffers = new HashMap<>();
     }
 
     public void write(BigEndianDataOutputStream stream) throws IOException {
