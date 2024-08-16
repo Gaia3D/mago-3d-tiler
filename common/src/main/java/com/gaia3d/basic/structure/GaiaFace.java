@@ -23,11 +23,7 @@ import java.util.List;
 @Slf4j
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class GaiaFace extends FaceStructure implements Serializable {
-    private int[] indices;
-    private Vector3d faceNormal = new Vector3d();
+public class GaiaFace extends FaceStructure {
 
     public void calculateFaceNormal(List<GaiaVertex> vertices) {
         if (indices.length < 3) {
@@ -45,7 +41,6 @@ public class GaiaFace extends FaceStructure implements Serializable {
         }
         Vector3d firstNormal = vertices.get(0).getNormal();
         this.faceNormal = new Vector3d(firstNormal);
-        this.faceNormal = this.faceNormal.set(firstNormal);
     }
 
     public boolean validateNormal(Vector3d normal) {
@@ -89,7 +84,10 @@ public class GaiaFace extends FaceStructure implements Serializable {
     }
 
     public GaiaFace clone() {
-        return new GaiaFace(indices.clone(), new Vector3d(faceNormal));
+        GaiaFace cloneGaiaFace = new GaiaFace();
+        cloneGaiaFace.setIndices(indices.clone());
+        cloneGaiaFace.setFaceNormal(new Vector3d(faceNormal));
+        return cloneGaiaFace;
     }
 
     public boolean hasCoincidentIndices(GaiaFace face) {

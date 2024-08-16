@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -15,12 +16,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
-public class GaiaAttribute extends AttributeStructure {
-    private UUID identifier = UUID.randomUUID();
-    private String fileName = "unknown";
-    private String nodeName = "unknown";
-    private Map<String, String> attributes = new HashMap<>();
-
+public class GaiaAttribute extends AttributeStructure implements Serializable {
     public void write(BigEndianDataOutputStream stream) throws IOException {
         stream.writeText(identifier.toString());
         stream.writeText(fileName);

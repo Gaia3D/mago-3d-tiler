@@ -15,6 +15,7 @@ import org.apache.commons.io.FileUtils;
 import org.joml.Matrix4d;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 
@@ -67,7 +68,7 @@ public class TileInfo {
         GlobalOptions options = GlobalOptions.getInstance();
 
         if (this.scene != null && !this.scene.getNodes().isEmpty()) {
-            GaiaSet tempSet = new GaiaSet(this.scene);
+            GaiaSet tempSet = GaiaSet.fromGaiaScene(this.scene);
             this.tempPath = tempSet.writeFile(this.tempPath, serial);
             tempSet.clear();
             tempSet = null;
@@ -91,7 +92,13 @@ public class TileInfo {
             this.set.deleteTextures();
             this.set = null;
         }
-        this.set = new GaiaSet(this.tempPath);
+        //this.set = GaiaSet.fromGaiaScene(this.tempPath);
+        try {
+            this.set = GaiaSet.readFile(this.tempPath);
+        } catch (IOException e) {
+            log.error("Failed to read the temp file: {}", this.tempPath);
+            //throw new FileNotFoundException();
+        }
     }
 
     public void clear() {

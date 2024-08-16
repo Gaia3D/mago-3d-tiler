@@ -25,10 +25,8 @@ import java.util.Map;
 @Slf4j
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class GaiaSurface extends SurfaceStructure implements Serializable {
-    private List<GaiaFace> faces = new ArrayList<>();
+public class GaiaSurface extends SurfaceStructure {
+    /*private List<GaiaFace> faces = new ArrayList<>();*/
 
     public void calculateNormal(List<GaiaVertex> vertices) {
         for (GaiaFace face : faces) {

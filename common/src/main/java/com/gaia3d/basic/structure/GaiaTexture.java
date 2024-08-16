@@ -39,7 +39,7 @@ import java.nio.file.Path;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GaiaTexture extends TextureStructure implements Serializable {
-    Path parentPath;
+    private String parentPath;
     private String name;
     private String path;
     private TextureType type;

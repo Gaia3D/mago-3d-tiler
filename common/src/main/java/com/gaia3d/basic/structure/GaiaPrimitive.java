@@ -35,11 +35,11 @@ import java.util.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
+public class GaiaPrimitive extends PrimitiveStructure {
     private Integer accessorIndices = -1;
     private Integer materialIndex = -1;
-    private List<GaiaVertex> vertices = new ArrayList<>();
-    private List<GaiaSurface> surfaces = new ArrayList<>();
+    /*private List<GaiaVertex> vertices = new ArrayList<>();
+    private List<GaiaSurface> surfaces = new ArrayList<>();*/
 
     //private GaiaMaterial material = null;
 

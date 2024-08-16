@@ -280,14 +280,15 @@ public class AssimpConverter implements Converter {
         Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_SHININESS, 0, shininessPath, (IntBuffer) null, null, null, null, null, null);
         String shininessTexPath = shininessPath.dataString();
 
-        Path parentPath = new File(path).toPath();
+        //Path parentPath = new File(path).toPath();
+        File parentPath = new File(path);
         if (!diffTexPath.isEmpty()) {
             material.setName(diffTexPath);
 
             List<GaiaTexture> textures = new ArrayList<>();
             GaiaTexture texture = new GaiaTexture();
             texture.setType(TextureType.DIFFUSE);
-            texture.setParentPath(parentPath);
+            texture.setParentPath(path);
 
             // embedded texture check
             if (diffTexPath.startsWith("*")) {
@@ -299,7 +300,7 @@ public class AssimpConverter implements Converter {
                 File filePath = new File(diffTexPath);
                 String fileName = filePath.getName();
                 String embeddedTexturePath = "embedded_textures" + File.separator + fileName;
-                File inputFile = new File(parentPath.toFile(), embeddedTexturePath);
+                File inputFile = new File(parentPath, embeddedTexturePath);
                 if (inputFile.exists() && inputFile.isFile()) {
                     log.debug("Original Texture Path: " + diffTexPath);
                     log.debug("Corrected Texture Path: " + embeddedTexturePath);
@@ -307,7 +308,7 @@ public class AssimpConverter implements Converter {
                 }
             }
 
-            File file = ImageUtils.getChildFile(parentPath.toFile(), diffTexPath);
+            File file = ImageUtils.getChildFile(parentPath, diffTexPath);
             if (file != null && file.exists() && file.isFile()) {
                 texture.setPath(diffTexPath);
                 textures.add(texture);
@@ -328,8 +329,8 @@ public class AssimpConverter implements Converter {
             GaiaTexture texture = new GaiaTexture();
             texture.setType(TextureType.AMBIENT);
             texture.setPath(ambientTexPath);
-            texture.setParentPath(parentPath);
-            File file = new File(parentPath.toFile(), ambientTexPath);
+            texture.setParentPath(path);
+            File file = new File(parentPath, ambientTexPath);
             if (!(file.exists() && file.isFile())) {
                 log.error("Ambient Texture is not found: {}", file.getAbsolutePath());
             } else {
@@ -346,8 +347,8 @@ public class AssimpConverter implements Converter {
             GaiaTexture texture = new GaiaTexture();
             texture.setPath(specularTexPath);
             texture.setType(TextureType.SPECULAR);
-            texture.setParentPath(parentPath);
-            File file = new File(parentPath.toFile(), specularTexPath);
+            texture.setParentPath(path);
+            File file = new File(parentPath, specularTexPath);
             if (!(file.exists() && file.isFile())) {
                 log.error("Specular Texture is not found: {}", file.getAbsolutePath());
             } else {
@@ -364,8 +365,8 @@ public class AssimpConverter implements Converter {
             GaiaTexture texture = new GaiaTexture();
             texture.setPath(shininessTexPath);
             texture.setType(TextureType.SHININESS);
-            texture.setParentPath(parentPath);
-            File file = new File(parentPath.toFile(), specularTexPath);
+            texture.setParentPath(path);
+            File file = new File(parentPath, specularTexPath);
             if (!(file.exists() && file.isFile())) {
                 log.error("Shininess Texture is not found: {}", file.getAbsolutePath());
             } else {

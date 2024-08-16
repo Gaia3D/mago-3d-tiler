@@ -31,14 +31,15 @@ import java.util.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GaiaMaterial extends MaterialStructure implements Serializable {
+    private int id = -1;
+    private String name = "no_name";
+
+    //private Map<TextureType, List<GaiaTexture>> textures = new HashMap<>();
+
     private Vector4d diffuseColor = new Vector4d(1.0, 1.0, 1.0, 1.0);
     private Vector4d ambientColor = new Vector4d(1.0, 1.0, 1.0, 1.0);
     private Vector4d specularColor = new Vector4d(1.0, 1.0, 1.0, 1.0);
     private float shininess = 0.0f;
-
-    private int id = -1;
-    private String name = "no_name";
-    private Map<TextureType, List<GaiaTexture>> textures = new WeakHashMap<>();
     private boolean isRepeat = false;
 
     public boolean isOpaqueMaterial() {
@@ -94,7 +95,7 @@ public class GaiaMaterial extends MaterialStructure implements Serializable {
         }
     }
 
-    public void read(BigEndianDataInputStream stream, Path parentPath) throws IOException {
+    public void read(BigEndianDataInputStream stream, String parentPath) throws IOException {
         this.setId(stream.readInt());
         this.setName(stream.readText());
         this.setDiffuseColor(stream.readVector4());

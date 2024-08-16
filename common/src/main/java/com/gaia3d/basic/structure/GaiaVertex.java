@@ -21,10 +21,10 @@ import java.io.Serializable;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaVertex extends VertexStructure implements Serializable {
-    private Vector2d texcoords;
+public class GaiaVertex extends VertexStructure{
     private Vector3d position;
     private Vector3d normal;
+    private Vector2d texcoords;
     private byte[] color;
     private float batchId;
 

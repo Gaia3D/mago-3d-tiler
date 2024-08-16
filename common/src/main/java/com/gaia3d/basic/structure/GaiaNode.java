@@ -33,11 +33,11 @@ import java.util.Map;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaNode extends NodeStructure implements Serializable {
+public class GaiaNode extends NodeStructure {
     private String name = "node";
-    private GaiaNode parent = null;
+    /*private GaiaNode parent = null;
     private List<GaiaMesh> meshes = new ArrayList<>();
-    private List<GaiaNode> children = new ArrayList<>();
+    private List<GaiaNode> children = new ArrayList<>();*/
 
     private Matrix4d transformMatrix = new Matrix4d();
     private Matrix4d preMultipliedTransformMatrix = new Matrix4d();

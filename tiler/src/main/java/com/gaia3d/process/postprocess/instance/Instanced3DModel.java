@@ -240,7 +240,7 @@ public class Instanced3DModel implements TileModel {
                 GaiaScene firstGaiaScene = tileInfo.getScene();
                 firstGaiaScene = firstGaiaScene.clone();
 
-                GaiaSet set = new GaiaSet(firstGaiaScene);
+                GaiaSet set = GaiaSet.fromGaiaScene(firstGaiaScene);
                 //GaiaSet clonedSet = set.clone();
                 tileInfo.setSet(set);
 

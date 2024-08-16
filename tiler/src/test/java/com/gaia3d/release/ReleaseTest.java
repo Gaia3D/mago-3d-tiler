@@ -181,6 +181,7 @@ class ReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
+                "-d",
                 //"-it", "glb",
         };
         Mago3DTilerMain.main(args);
