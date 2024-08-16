@@ -7,8 +7,6 @@ import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.util.ImageUtils;
-import com.gaia3d.util.io.BigEndianDataInputStream;
-import com.gaia3d.util.io.BigEndianDataOutputStream;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,7 +39,6 @@ public class GaiaSet implements Serializable{
     private List<GaiaMaterial> materials;
     private GaiaAttribute attribute;
 
-    private byte isBigEndian = 0;
     private String projectName;
     private String filePath;
     private String folderPath;
@@ -204,7 +201,6 @@ public class GaiaSet implements Serializable{
         for (GaiaMaterial material : this.materials) {
             gaiaSet.getMaterials().add(material.clone());
         }
-        gaiaSet.setIsBigEndian(this.isBigEndian);
         gaiaSet.setProjectName(this.projectName);
         gaiaSet.setFilePath(this.filePath);
         gaiaSet.setFolderPath(this.folderPath);

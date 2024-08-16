@@ -4,8 +4,6 @@ import com.gaia3d.basic.structure.interfaces.TextureStructure;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.util.ImageResizer;
 import com.gaia3d.util.ImageUtils;
-import com.gaia3d.util.io.BigEndianDataInputStream;
-import com.gaia3d.util.io.BigEndianDataOutputStream;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -188,14 +186,6 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         getBufferedImage(scaleFactor);
         compareTexture.getBufferedImage(scaleFactor);
         return isEqualTexture(compareTexture);
-    }
-
-    public void write(BigEndianDataOutputStream stream) throws IOException {
-        stream.writeText(path);
-    }
-
-    public void read(BigEndianDataInputStream stream) throws IOException {
-        this.setPath(stream.readText());
     }
 
     public void clear() {

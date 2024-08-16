@@ -2,8 +2,6 @@ package com.gaia3d.basic.structure;
 
 import com.gaia3d.basic.structure.interfaces.MaterialStructure;
 import com.gaia3d.basic.types.TextureType;
-import com.gaia3d.util.io.BigEndianDataInputStream;
-import com.gaia3d.util.io.BigEndianDataOutputStream;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,9 +9,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector4d;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -70,56 +66,6 @@ public class GaiaMaterial extends MaterialStructure implements Serializable {
         }
 
         return isOpaque;
-    }
-
-    public void write(BigEndianDataOutputStream stream) throws IOException {
-        stream.writeInt(id);
-        stream.writeText(name);
-        stream.writeVector4(diffuseColor);
-        stream.writeVector4(ambientColor);
-        stream.writeVector4(specularColor);
-        stream.writeFloat(shininess);
-        stream.writeInt(textures.size());
-        for (Map.Entry<TextureType, List<GaiaTexture>> entry : textures.entrySet()) {
-            TextureType gaiaMaterialType = entry.getKey();
-            List<GaiaTexture> gaiaTextures = entry.getValue();
-            stream.writeByte(gaiaMaterialType.getValue());
-            stream.writeInt(gaiaTextures.size());
-            for (GaiaTexture gaiaTexture : gaiaTextures) {
-                boolean isExist = gaiaTexture != null;
-                stream.writeBoolean(isExist);
-                if (isExist) {
-                    gaiaTexture.write(stream);
-                }
-            }
-        }
-    }
-
-    public void read(BigEndianDataInputStream stream, String parentPath) throws IOException {
-        this.setId(stream.readInt());
-        this.setName(stream.readText());
-        this.setDiffuseColor(stream.readVector4());
-        this.setAmbientColor(stream.readVector4());
-        this.setSpecularColor(stream.readVector4());
-        this.setShininess(stream.readFloat());
-        int texturesSize = stream.readInt();
-        for (int i = 0; i < texturesSize; i++) {
-            List<GaiaTexture> gaiaTextures = new ArrayList<>();
-            byte textureType = stream.readByte();
-            int gaiaTexturesSize = stream.readInt();
-            TextureType gaiaMaterialType = TextureType.fromValue(textureType);
-
-            for (int j = 0; j < gaiaTexturesSize; j++) {
-                boolean isExist = stream.readBoolean();
-                if (isExist) {
-                    GaiaTexture gaiaTexture = new GaiaTexture();
-                    gaiaTexture.setParentPath(parentPath);
-                    gaiaTexture.read(stream);
-                    gaiaTextures.add(gaiaTexture);
-                }
-            }
-            this.textures.put(gaiaMaterialType, gaiaTextures);
-        }
     }
 
     public void deleteTextures() {
