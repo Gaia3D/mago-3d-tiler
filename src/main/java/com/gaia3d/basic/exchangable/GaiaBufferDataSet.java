@@ -4,15 +4,13 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.basic.types.AttributeType;
-import com.gaia3d.util.io.BigEndianDataInputStream;
-import com.gaia3d.util.io.BigEndianDataOutputStream;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
@@ -38,34 +36,6 @@ public class GaiaBufferDataSet implements Serializable {
 
     public GaiaBufferDataSet() {
         this.buffers = new HashMap<>();
-    }
-
-    public void write(BigEndianDataOutputStream stream) throws IOException {
-        stream.writeInt(id);
-        stream.writeText(guid);
-        stream.writeInt(materialId);
-        stream.writeInt(buffers.size());
-        for (Map.Entry<AttributeType, GaiaBuffer> entry : buffers.entrySet()) {
-            AttributeType attributeType = entry.getKey();
-            GaiaBuffer buffer = entry.getValue();
-            stream.writeText(attributeType.getGaia());
-            buffer.writeBuffer(stream);
-        }
-    }
-
-    //read
-    public void read(BigEndianDataInputStream stream) throws IOException {
-        this.setId(stream.readInt());
-        this.setGuid(stream.readText());
-        this.setMaterialId(stream.readInt());
-        int size = stream.readInt();
-        for (int i = 0; i < size; i++) {
-            String gaiaAttribute = stream.readText();
-            AttributeType attributeType = AttributeType.getGaiaAttribute(gaiaAttribute);
-            GaiaBuffer buffer = new GaiaBuffer();
-            buffer.readBuffer(stream);
-            buffers.put(attributeType, buffer);
-        }
     }
 
     public GaiaPrimitive toPrimitive() {
