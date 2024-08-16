@@ -3,6 +3,7 @@ package com.gaia3d.basic.structure;
 import com.gaia3d.basic.exchangable.GaiaBufferDataSet;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.structure.interfaces.SceneStructure;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,7 +27,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaScene implements Serializable {
+public class GaiaScene extends SceneStructure implements Serializable {
     private List<GaiaNode> nodes = new ArrayList<>();
     private List<GaiaMaterial> materials = new ArrayList<>();
     private Path originalPath;
