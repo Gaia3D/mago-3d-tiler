@@ -3,6 +3,7 @@ package com.gaia3d.util;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.structure.GaiaFace;
 import com.gaia3d.basic.structure.GaiaVertex;
+import org.joml.Vector2d;
 import org.joml.Vector3d;
 
 import java.util.List;
@@ -78,5 +79,9 @@ public class GeometryUtils {
 
         area = crossProduct.length() / 2.0;
         return area;
+    }
+
+    public static boolean areAproxEqualsPoints2d(Vector2d pointA, Vector2d pointB, double epsilon) {
+        return Math.abs(pointA.x - pointB.x) < epsilon && Math.abs(pointA.y - pointB.y) < epsilon;
     }
 }
