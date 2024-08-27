@@ -136,6 +136,10 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 for (LineString lineString : LineStrings) {
                     Coordinate[] coordinates = lineString.getCoordinates();
                     List<Vector3d> positions = new ArrayList<>();
+                    if(coordinates.length < 2) {
+                        log.warn("Invalid LineString : {}", feature.getID());
+                        continue;
+                    }
                     for (Coordinate coordinate : coordinates) {
                         Point point = new GeometryFactory().createPoint(coordinate);
                         double x, y, z;
@@ -361,6 +365,12 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
 
 
         for (GaiaPipeLineString pipeLineString : pipeLineStrings) {
+            int pointsCount = pipeLineString.getPositions().size();
+            if(pointsCount < 2) {
+                log.warn("Invalid PipeLineString : {}", pipeLineString.getId());
+                continue;
+            }
+
             GaiaScene scene = initScene(file);
 
             Path path = new File(pipeLineString.getOriginalFilePath()).toPath();
@@ -387,9 +397,22 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             pipeLineString.setPositions(localPositions);
 
             //pipeLineString.TEST_Check();
-            pipeLineString.deleteDuplicatedPoints();
+            if(localPositions.size() > 2) {
+                pipeLineString.deleteDuplicatedPoints();
+            }
+
+            // once deleted duplicatedPoints, check pointsCount again.***
+            pointsCount = pipeLineString.getPositions().size();
+            if(pointsCount < 2) {
+                log.warn("Invalid PipeLineString POINTS COUNT LESS THAN 2: {}", pipeLineString.getId());
+                continue;
+            }
 
             GaiaNode node = createPrimitiveFromPipeLineString(pipeLineString);
+            if(node == null) {
+                log.warn("Invalid PipeLineString NULL NODE: {}", pipeLineString.getId());
+                continue;
+            }
             node.setName(pipeLineString.getName());
             node.setTransformMatrix(new Matrix4d().identity());
 

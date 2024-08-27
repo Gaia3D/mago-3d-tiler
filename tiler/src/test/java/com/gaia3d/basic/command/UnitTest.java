@@ -594,4 +594,71 @@ class UnitTest {
         };
         Mago3DTilerMain.main(args);
     }
+
+    @Test
+    void testGoyangChangRung() {
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\고양창릉데이터\\abs\\";
+        String outputPath = "D:\\Result_mago3dTiler\\";
+        String path = "bridge";
+
+        String[] args = new String[]{
+                "-i", inputPath + path,
+                "-it", "3ds",
+                "-o", outputPath + path,
+                "-crs", "5186",
+                "-multiThreadCount", "1",
+                "-rotateUpAxis",
+                //"-largeMesh",
+                "-debug",
+                "-glb"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testRailWayGML() {
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\";
+        String outputPath = "D:\\Result_mago3dTiler\\";
+        String path = "RailWay";
+
+        String[] args = new String[]{
+                "-i", inputPath + path,
+                "-it", "gml",
+                "-o", outputPath + path,
+                "-crs", "3857",
+                "-multiThreadCount", "1",
+                "-rotateUpAxis",
+                //"-largeMesh",
+                "-debug",
+                "-glb"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    // -input "/input_path/i3dm"
+    // -output "/output_path/i3dm"
+    // -inputType "shp"
+    // -outputType "i3dm"
+    // -instance "/input_path/instance.gltf"
+    @Test
+    void test_I3dm_GoyangChangRung_trees() {
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\고양창릉데이터\\abs\\tree_shp\\";
+        String outputPath = "D:\\Result_mago3dTiler\\";
+        String path = "tree";
+
+        String[] args = new String[]{
+                "-i", inputPath,
+                "-it", "shp",
+                "-o", outputPath + path,
+                "-crs", "5186",
+                "-outputType", "i3dm",
+                "-instance", inputPath + "tree-map.3ds",
+                //"-multiThreadCount", "1",
+                //"-rotateUpAxis",
+                //"-largeMesh",
+                "-debug",
+                "-glb"
+        };
+        Mago3DTilerMain.main(args);
+    }
 }
