@@ -3,6 +3,7 @@ package com.gaia3d.command.model;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
+import com.gaia3d.converter.geometry.geojson.GeoJsonSurfaceConverter;
 import com.gaia3d.converter.loader.BatchedFileLoader;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.assimp.LargeMeshConverter;
@@ -50,21 +51,15 @@ public class BatchedProcessModel implements ProcessFlowModel {
         preProcessors.add(new GaiaTileInfoInitiator());
         preProcessors.add(new GaiaTexCoordCorrector());
         preProcessors.add(new GaiaScaler());
-        /*if (isRotateUpAxis) {
-            preProcessors.add(new GaiaRotator());
-        }*/
-        // TODO rotXAngleDegree
         if (globalOptions.isLargeMesh()) {
             if (isRotateUpAxis) {
                 preProcessors.add(new GaiaRotator());
             }
             preProcessors.add(new GaiaTranslatorExact(geoTiffs));
-
         } else {
             preProcessors.add(new GaiaRotator());
-            preProcessors.add(new GaiaTranslator(geoTiffs)); // original
+            preProcessors.add(new GaiaTranslator(geoTiffs));
         }
-
         preProcessors.add(new GaiaMinimizer());
 
         TilingProcess tilingProcess = new Batched3DModelTiler();
@@ -95,6 +90,7 @@ public class BatchedProcessModel implements ProcessFlowModel {
             converter = new ShapeConverter();
         } else if (formatType == FormatType.GEOJSON) {
             converter = new GeoJsonConverter();
+            //converter = new GeoJsonSurfaceConverter();
         } else {
             if (globalOptions.isLargeMesh()) {
                 converter = new LargeMeshConverter(new AssimpConverter());
