@@ -46,7 +46,7 @@ public class GaiaRectangle implements Serializable {
     }
 
     public Vector2d getLeftBottomPoint() {
-        return new Vector2d(minX, maxY);
+        return new Vector2d(minX, minY);
     }
 
     public Vector2d getRightTopPoint() {

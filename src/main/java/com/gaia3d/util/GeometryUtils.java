@@ -84,4 +84,16 @@ public class GeometryUtils {
     public static boolean areAproxEqualsPoints2d(Vector2d pointA, Vector2d pointB, double epsilon) {
         return Math.abs(pointA.x - pointB.x) < epsilon && Math.abs(pointA.y - pointB.y) < epsilon;
     }
+
+    public static boolean areAproxEqualsPoints3d(Vector3d pointA, Vector3d pointB, double epsilon) {
+        return Math.abs(pointA.x - pointB.x) < epsilon && Math.abs(pointA.y - pointB.y) < epsilon && Math.abs(pointA.z - pointB.z) < epsilon;
+    }
+
+    public static int getNextIdx(int idx, int pointsCount) {
+        return (idx + 1) % pointsCount;
+    }
+
+    public static int getPrevIdx(int idx, int pointsCount) {
+        return (idx + pointsCount - 1) % pointsCount;
+    }
 }

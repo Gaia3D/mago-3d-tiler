@@ -19,7 +19,8 @@ public class Line2D {
     }
 
     public boolean isParallel(Line2D line) {
-        double error = 1.0e-10;
+        //double error = 1.0e-10;
+        double error = 1.0e-7; // works better with this value.***
         return Math.abs(this.direction.x * line.direction.y - this.direction.y * line.direction.x) < error;
     }
 
@@ -33,8 +34,7 @@ public class Line2D {
         return squareDistance < error2;
     }
 
-    public boolean intersectionWithLine(Line2D line, Vector2d intersectionPoint) {
-        double error = 1.0e-10;
+    public boolean intersectionWithLine(Line2D line, Vector2d intersectionPoint, double error) {
         if (this.isParallel(line)) {
             return false;
         }
