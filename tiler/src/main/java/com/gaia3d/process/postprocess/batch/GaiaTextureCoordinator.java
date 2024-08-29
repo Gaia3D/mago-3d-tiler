@@ -274,12 +274,15 @@ public class GaiaTextureCoordinator {
             }
         }
 
-        /*if (globalOptions.isDebugLod()) {
+        // Test.****************************************************************************
+        //if (globalOptions.isDebugLod())
+        {
             float[] debugColor = lod.getDebugColor();
             Color color = new Color(debugColor[0], debugColor[1], debugColor[2], 0.5f);
             graphics.setColor(color);
             graphics.fillRect(0, 0, maxWidth, maxHeight);
-        }*/
+        }
+        // End test.-------------------------------------------------------------------------
 
         for (GaiaBatchImage target : splittedImages) {
             GaiaRectangle splittedRectangle = target.getBatchedBoundary();
@@ -311,12 +314,13 @@ public class GaiaTextureCoordinator {
             }
 
             // test save atlasTexture image.****
+            // Test.**************************************************
             String extension = "jpg";
             if (existPngTextures) {
                 extension = "png";
             }
-            //this.writeBatchedImage(extension);
-            // end test.************************
+            this.writeBatchedImage(extension);
+            // end test.----------------------------------------------
 
             List<GaiaBufferDataSet> materialBufferDataSets = bufferDataSets.stream().filter((bufferDataSet) -> bufferDataSet.getMaterialId() == target.getMaterialId()).collect(Collectors.toList());
 
@@ -366,7 +370,7 @@ public class GaiaTextureCoordinator {
     }
 
     private void writeBatchedImage(String imageExtension) {
-        File file = new File("D:\\Mago3DTiler-UnitTest\\output\\case01-3ds-ws2\\" );
+        File file = new File("D:\\Result_mago3dTiler\\atlasImages\\" );
         if (!file.exists()) {
             if (!file.mkdirs()) {
                 log.error("Failed to create directory");

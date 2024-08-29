@@ -16,7 +16,10 @@ public class GaiaBuildingSurface {
     private String id;
     private String name;
     private Classification classification;
-    private List<Vector3d> positions;
+
+    private List<Vector3d> exteriorPositions;
+    private List<List<Vector3d>> interiorPositions;
+
     private GaiaBoundingBox boundingBox;
     private Map<String, String> properties;
 }

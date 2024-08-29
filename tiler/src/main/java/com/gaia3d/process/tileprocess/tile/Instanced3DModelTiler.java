@@ -87,6 +87,14 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
 
         long instanceLimit = globalOptions.getMaxInstance() * 4;
         long instanceCount = tileInfos.size();
+//=======
+//        //int nodeLimit = globalOptions.getNodeLimit() * 4;
+//
+//        //long triangleLimit = 65536 * 8; // original.***
+//        long triangleLimit = 65536 * 1024;
+//        long totalTriangleCount = tileInfos.stream().mapToLong(TileInfo::getTriangleCount).sum();
+//        log.info("[TriangleCount] Total : {}", totalTriangleCount);
+//>>>>>>> Stashed changes
 
         if (instanceCount > instanceLimit) {
             List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
@@ -183,6 +191,14 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         if (lod == LevelOfDetail.NONE) {
             return null;
         }
+
+        // Test.*****************************************************************
+        int lodValue = lod.getLevel();
+        if(lodValue == 3)
+        {
+            int hola = 0;
+        }
+        // End test.--------------------------------------------------------------
 
         nodeCode = nodeCode + index;
 

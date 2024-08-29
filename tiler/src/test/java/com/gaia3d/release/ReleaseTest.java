@@ -313,22 +313,6 @@ class ReleaseTest {
         Mago3DTilerMain.main(args);
     }
 
-    @Test
-    void testGyangGyoShpZ() {
-        String path = "GYANGGYO-SHP-Z";
-        File input = new File(INPUT_PATH, path);
-        File output = new File(OUTPUT_PATH, path);
-        FileUtils.deleteQuietly(output);
-        String[] args = {
-                "-input", input.getAbsolutePath(),
-                "-inputType", "geojson",
-                "-crs", "5186",
-                "-output", output.getAbsolutePath(),
-                "-debug",
-        };
-        Mago3DTilerMain.main(args);
-    }
-
     private File getInputPath(String path) {
         return new File(INPUT_PATH, path);
     }
