@@ -39,8 +39,7 @@ public class BatchedProcessModel implements ProcessFlowModel {
         boolean isRotateUpAxis = globalOptions.isSwapUpAxis();
 
         Converter converter = getConverter(inputFormat);
-        AttributeReader kmlReader = new JacksonKmlReader();
-        kmlReader = new FastKmlReader();
+        AttributeReader kmlReader = new FastKmlReader();
         BatchedFileLoader fileLoader = new BatchedFileLoader(converter, kmlReader);
 
         List<GridCoverage2D> geoTiffs = new ArrayList<>();

@@ -49,10 +49,10 @@ public enum ProcessOptions {
 
     // Extrusion Options
     FLIP_COORDINATE("flipCoordinate", "fc", "flipCoordinate", false, "Flip x, y Coordinate (Default: false)"),
-    NAME_COLUMN("nameColumn", "nc", "nameColumn", true, "Name column setting for extrusion model (Default: name)"),
-    HEIGHT_COLUMN("heightColumn", "hc", "heightColumn", true, "Height column setting for extrusion model (Default: height)"),
-    ALTITUDE_COLUMN("altitudeColumn", "ac", "altitudeColumn", true, "Altitude Column setting for extrusion model (Default: altitude)"),
-    RADIUS_COLUMN("radiusColumn", "rc", "radiusColumn", true, "Radius column setting for extrusion model (Default: radius)"),
+    NAME_COLUMN("nameColumn", "nc", "nameColumn", true, "Name column setting for extrusion model (Default Column: name)"),
+    HEIGHT_COLUMN("heightColumn", "hc", "heightColumn", true, "Height column setting for extrusion model ((Default Column: height)"),
+    ALTITUDE_COLUMN("altitudeColumn", "ac", "altitudeColumn", true, "Altitude Column setting for extrusion model ((Default Column: altitude)"),
+    DIAMETER_COLUMN("diameterColumn", "dc", "diameterColumn", true, "Diameter column setting for extrusion model, Specify a length unit for Diameter in millimeters(mm) (Default Column: diameter)"),
 
     MINIMUM_HEIGHT("minimumHeight", "mh", "minimumHeight", true, "Minimum height value for extrusion model (Default: 1.0)"),
     ABSOLUTE_ALTITUDE("absoluteAltitude", "aa", "absoluteAltitude", true, "Absolute altitude value for extrusion model"),

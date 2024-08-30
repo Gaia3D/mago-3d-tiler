@@ -7,6 +7,7 @@ import com.gaia3d.basic.geometry.tessellator.Vector3dOnlyHashEquals;
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
+import com.gaia3d.converter.EasySceneCreator;
 import com.gaia3d.converter.geometry.*;
 
 import com.gaia3d.converter.geometry.pipe.GaiaPipeLineString;
@@ -70,7 +71,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         String nameColumnName = globalOptions.getNameColumn();
         String heightColumnName = globalOptions.getHeightColumn();
         String altitudeColumnName = globalOptions.getAltitudeColumn();
-        String radiusColumnName = globalOptions.getRadiusColumn();
+        String diameterColumnName = globalOptions.getDiameterColumn();
 
         double absoluteAltitudeValue = globalOptions.getAbsoluteAltitude();
         double minimumHeightValue = globalOptions.getMinimumHeight();
@@ -157,13 +158,11 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                         positions.add(position);
                     }
 
-                    double diameter = getRadius(feature, radiusColumnName) * 2;
+                    double diameter = getDiameter(feature, diameterColumnName);
                     GaiaPipeLineString pipeLineString = GaiaPipeLineString.builder()
                             .id(feature.getID())
                             .profileType(PipeType.CIRCULAR)
                             .diameter(diameter)
-                            //profileType(PipeType.RECTANGULAR)
-                            //.rectangularSize(new float[]{(float) diameter / 100, (float) diameter / 100})
                             .positions(positions).build();
                     pipeLineString.setOriginalFilePath(file.getPath());
                     pipeLineStrings.add(pipeLineString);
@@ -191,7 +190,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                     }
 
                     LineString lineString = polygon.getExteriorRing();
-                    GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
                     Coordinate[] outerCoordinates = lineString.getCoordinates();
 
                     int innerRingCount = polygon.getNumInteriorRing();
@@ -209,16 +207,15 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                     List<Vector3d> positions = new ArrayList<>();
 
                     for (Coordinate coordinate : outerCoordinates) {
-                        Point point = geometryFactory.createPoint(coordinate);
-
-                        double x, y;
+                        double x, y, z;
                         if (flipCoordinate) {
-                            x = point.getY();
-                            y = point.getX();
+                            x = coordinate.getY();
+                            y = coordinate.getX();
                         } else {
-                            x = point.getX();
-                            y = point.getY();
+                            x = coordinate.getX();
+                            y = coordinate.getY();
                         }
+                        z = coordinate.getZ();
 
                         Vector3d position;
                         CoordinateReferenceSystem crs = globalOptions.getCrs();
@@ -276,10 +273,9 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         double skirtHeight = globalOptions.getSkirtHeight();
         GaiaExtruder gaiaExtruder = new GaiaExtruder();
 
+        EasySceneCreator easySceneCreator = new EasySceneCreator();
         for (GaiaExtrusionBuilding building : buildings) {
-            GaiaScene scene = initScene(file);
-            Path path = new File(building.getOriginalFilePath()).toPath();
-            scene.setOriginalPath(path);
+            GaiaScene scene = easySceneCreator.createScene(file);
 
             GaiaNode rootNode = scene.getNodes().get(0);
             rootNode.setName(building.getName());
@@ -351,19 +347,18 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                     double heightOffset = 0.0;
 
                     if (pipeLineString.getProfileType() == PipeType.CIRCULAR) {
-                        heightOffset = pipeLineString.getDiameter() / 100 / 2;
+                        heightOffset = pipeLineString.getDiameter() / 1000 / 2;
                     } else if (pipeLineString.getProfileType() == PipeType.RECTANGULAR) {
-                        heightOffset = pipeLineString.getRectangularSize()[1] / 100 / 2;
+                        heightOffset = pipeLineString.getRectangularSize()[1] / 1000 / 2;
                     }
 
                     point.set(centerWgs84.x, centerWgs84.y, point.z - heightOffset - defaultHeight);
                     bbox.addPoint(point);
-                    //position = new Vector3d(centerWgs84.x, centerWgs84.y, point.z);
                 }
             }
         }
 
-
+        EasySceneCreator easySceneCreator = new EasySceneCreator();
         for (GaiaPipeLineString pipeLineString : pipeLineStrings) {
             int pointsCount = pipeLineString.getPositions().size();
             if(pointsCount < 2) {
@@ -371,11 +366,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 continue;
             }
 
-            GaiaScene scene = initScene(file);
-
-            Path path = new File(pipeLineString.getOriginalFilePath()).toPath();
-            scene.setOriginalPath(path);
-
+            GaiaScene scene = easySceneCreator.createScene(file);
             GaiaNode rootNode = scene.getNodes().get(0);
             rootNode.setName("PipeLineStrings");
 

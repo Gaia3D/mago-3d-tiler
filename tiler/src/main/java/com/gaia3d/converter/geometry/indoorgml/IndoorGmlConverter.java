@@ -8,6 +8,7 @@ import com.gaia3d.basic.structure.GaiaPrimitive;
 import com.gaia3d.basic.structure.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
+import com.gaia3d.converter.EasySceneCreator;
 import com.gaia3d.converter.geometry.AbstractGeometryConverter;
 import com.gaia3d.converter.geometry.GaiaBuildingSurface;
 import com.gaia3d.converter.geometry.Vector3dsOnlyHashEquals;
@@ -48,8 +49,7 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
     protected List<GaiaScene> convert(File file) {
         List<GaiaScene> scenes = new ArrayList<>();
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-
-        GaiaTessellator tessellator = new GaiaTessellator();
+        EasySceneCreator easySceneCreator = new EasySceneCreator();
 
         try {
             JAXBContext context = JAXBContext.newInstance(IndoorFeatures.class);
@@ -118,8 +118,7 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                 }
             }
 
-            GaiaScene scene = initScene(file);
-            scene.setOriginalPath(file.toPath());
+            GaiaScene scene = easySceneCreator.createScene(file);
             GaiaNode rootNode = scene.getNodes().get(0);
 
             GaiaBoundingBox globalBoundingBox = new GaiaBoundingBox();

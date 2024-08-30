@@ -172,39 +172,6 @@ public class ShapeReader implements AttributeReader {
             reader.close();
             shpFiles.dispose();
             dataStore.dispose();
-
-            /*for (GaiaBuilding building : buildings) {
-                GaiaScene scene = initScene();
-                scene.setOriginalPath(file.toPath());
-
-                GaiaMaterial material = scene.getMaterials().get(0);
-                GaiaNode rootNode = scene.getNodes().get(0);
-                rootNode.setName(building.getName());
-
-                Vector3d center = building.getBoundingBox().getCenter();
-
-                Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
-                Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
-                Matrix4d transfromMatrixInv = new Matrix4d(transformMatrix).invert();
-
-                List<Vector3d> localPositions = new ArrayList<>();
-                for (Vector3d position : building.getPositions()) {
-                    Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
-                    Vector3d localPosition = positionWorldCoordinate.mulPosition(transfromMatrixInv);
-                    localPosition.z = 0.0d;
-                    localPositions.add(localPosition);
-                }
-
-                Extrusion extrusion = extruder.extrude(localPositions, building.getRoofHeight(), building.getFloorHeight());
-                GaiaNode node = createNode(material, extrusion.getPositions(), extrusion.getTriangles());
-                rootNode.getChildren().add(node);
-
-                Matrix4d rootTransformMatrix = new Matrix4d().identity();
-                rootTransformMatrix.translate(center, rootTransformMatrix);
-                rootNode.setTransformMatrix(rootTransformMatrix);
-                scenes.add(scene);
-            }*/
-            dataStore.dispose();
             reader.close();
         } catch (IOException e) {
             log.error("Error : {}", e.getMessage());

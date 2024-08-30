@@ -6,6 +6,7 @@ import com.gaia3d.basic.geometry.tessellator.GaiaExtrusionSurface;
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
+import com.gaia3d.converter.EasySceneCreator;
 import com.gaia3d.converter.geometry.*;
 import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
@@ -104,26 +105,10 @@ public class GeoJsonSurfaceConverter extends AbstractGeometryConverter implement
 
 
                 for (Polygon polygon : polygons) {
-                    /*if (!polygon.isValid()) {
-                        log.debug("Is Invalid Polygon. : {}", feature.getID());
-                        continue;
-                    }*/
                     log.debug("Polygon : {}", polygon);
-
                     LineString lineString = polygon.getExteriorRing();
-                    GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
                     Coordinate[] outerCoordinates = lineString.getCoordinates();
 
-
-                    /*int innerRingCount = polygon.getNumInteriorRing();
-                    List<Coordinate[]> innerCoordinates = new ArrayList<>();
-                    for (int i = 0; i < innerRingCount; i++) {
-                        LineString innerRing = polygon.getInteriorRingN(i);
-                        Coordinate[] innerCoordinatesArray = innerRing.getCoordinates();
-                        innerCoordinates.add(innerCoordinatesArray);
-                    }
-
-                    outerCoordinates = innerRingRemover.removeAll(outerCoordinates, innerCoordinates);*/
                     GaiaBoundingBox boundingBox = new GaiaBoundingBox();
                     List<Vector3d> positions = new ArrayList<>();
 
@@ -132,12 +117,11 @@ public class GeoJsonSurfaceConverter extends AbstractGeometryConverter implement
                         if (flipCoordinate) {
                             x = coordinate.getY();
                             y = coordinate.getX();
-                            z = coordinate.getZ();
                         } else {
                             x = coordinate.getX();
                             y = coordinate.getY();
-                            z = coordinate.getZ();
                         }
+                        z = coordinate.getZ();
 
                         Vector3d position;
                         CoordinateReferenceSystem crs = globalOptions.getCrs();
@@ -175,17 +159,14 @@ public class GeoJsonSurfaceConverter extends AbstractGeometryConverter implement
         }
 
 
+        EasySceneCreator easySceneCreator = new EasySceneCreator();
         for (List<GaiaBuildingSurface> surfaces : buildingSurfacesList) {
             if (surfaces.isEmpty()) {
                 continue;
             }
 
-            GaiaScene scene = initScene(file);
-            scene.setOriginalPath(file.toPath());
+            GaiaScene scene = easySceneCreator.createScene(file);
             GaiaNode rootNode = scene.getNodes().get(0);
-
-            GaiaAttribute attribute = scene.getAttribute();
-            //attribute.setAttributes(surfaces.getProperties());
 
             GaiaBoundingBox globalBoundingBox = new GaiaBoundingBox();
             for (GaiaBuildingSurface buildingSurface : surfaces) {
