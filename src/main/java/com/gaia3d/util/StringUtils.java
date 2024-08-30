@@ -53,6 +53,9 @@ public class StringUtils {
     }
 
     public static String convertUTF8(String ascii) {
+        if (ascii == null) {
+            return "";
+        }
         return ascii.chars()
                 .mapToObj(c -> (char) c)
                 .map(c -> c < 128 ? c : '_')
