@@ -275,7 +275,7 @@ public class GaiaTextureCoordinator {
         }
 
         // Test.****************************************************************************
-        //if (globalOptions.isDebugLod())
+        if (globalOptions.isDebugLod())
         {
             float[] debugColor = lod.getDebugColor();
             Color color = new Color(debugColor[0], debugColor[1], debugColor[2], 0.5f);

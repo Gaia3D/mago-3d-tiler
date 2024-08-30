@@ -94,8 +94,8 @@ public class BatchedProcessModel implements ProcessFlowModel {
         } else if (formatType == FormatType.SHP) {
             converter = new ShapeConverter();
         } else if (formatType == FormatType.GEOJSON) {
-            //converter = new GeoJsonConverter();
-            converter = new GeoJsonSurfaceConverter();
+            converter = new GeoJsonConverter();
+            //converter = new GeoJsonSurfaceConverter();
         } else {
             if (globalOptions.isLargeMesh()) {
                 converter = new LargeMeshConverter(new AssimpConverter());

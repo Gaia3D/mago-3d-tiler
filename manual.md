@@ -67,7 +67,8 @@ java -jar mago-3d-tiler.jar -input "/input_path/geojson" -inputType "geojson" -o
 ```
 
 ### Converting 2D GIS Polyline Data (Shp)
-Convert polyline data to pipe. Polyline data with a z-axis can be converted via the `radius` property.
+Convert polyline data to pipe. Polyline data with a z-axis can be converted via the `diameter` property.
+The default dimension for a pipe in mago 3DTiler is diameter and The length is in millimeters (mm)
 ```
 java -jar mago-3d-tiler.jar -input "/input_path/shp" -inputType "shp" -output "/output_path/shp" -crs "5186"
 ```
