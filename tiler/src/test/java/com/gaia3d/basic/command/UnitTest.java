@@ -635,7 +635,7 @@ class UnitTest {
     }
 
     @Test
-    void testRailWayGML() {
+    void test_CityGML_RailWayGML() {
         String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\";
         String outputPath = "D:\\Result_mago3dTiler\\";
         String path = "RailWay";
@@ -645,6 +645,27 @@ class UnitTest {
                 "-it", "gml",
                 "-o", outputPath + path,
                 "-crs", "3857",
+                "-multiThreadCount", "1",
+                "-rotateUpAxis",
+                //"-largeMesh",
+                "-debug",
+                "-glb"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void test_CityGML_RailWayWithTextures() {
+            // No tested yet.***
+        String inputPath = "D:\\data\\CityGML\\";
+        String outputPath = "D:\\Result_mago3dTiler\\";
+        String path = "RailWayWithTextures";
+
+        String[] args = new String[]{
+                "-i", inputPath + path,
+                "-it", "gml",
+                "-o", outputPath + path,
+                "-crs", "5186",
                 "-multiThreadCount", "1",
                 "-rotateUpAxis",
                 //"-largeMesh",
