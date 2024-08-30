@@ -134,6 +134,19 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                     continue;
                 }
 
+                Map<String, String> attributes = new HashMap<>();
+                FeatureType featureType = feature.getFeatureType();
+                Collection<PropertyDescriptor> featureDescriptors = featureType.getDescriptors();
+                AtomicInteger index = new AtomicInteger(0);
+                featureDescriptors.forEach(attributeDescriptor -> {
+                    Object attribute = feature.getAttribute(index.getAndIncrement());
+                    if (attribute instanceof Geometry) {
+                        return;
+                    }
+                    String attributeString = castStringFromObject(attribute, "null");
+                    attributes.put(attributeDescriptor.getName().getLocalPart(), attributeString);
+                });
+
                 for (LineString lineString : LineStrings) {
                     Coordinate[] coordinates = lineString.getCoordinates();
                     List<Vector3d> positions = new ArrayList<>();
@@ -163,25 +176,11 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                             .id(feature.getID())
                             .profileType(PipeType.CIRCULAR)
                             .diameter(diameter)
+                            .properties(attributes)
                             .positions(positions).build();
                     pipeLineString.setOriginalFilePath(file.getPath());
                     pipeLineStrings.add(pipeLineString);
                 }
-
-
-                Map<String, String> attributes = new HashMap<>();
-                FeatureType featureType = feature.getFeatureType();
-                Collection<PropertyDescriptor> featureDescriptors = featureType.getDescriptors();
-                AtomicInteger index = new AtomicInteger(0);
-                featureDescriptors.forEach(attributeDescriptor -> {
-                    Object attribute = feature.getAttribute(index.getAndIncrement());
-                    if (attribute instanceof Geometry) {
-                        return;
-                    }
-                    String attributeString = castStringFromObject(attribute, "null");
-                    //log.debug("{} : {}", attributeDescriptor.getName(), attributeString);
-                    attributes.put(attributeDescriptor.getName().getLocalPart(), attributeString);
-                });
 
                 for (Polygon polygon : polygons) {
                     if (!polygon.isValid()) {
@@ -369,6 +368,12 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             GaiaScene scene = easySceneCreator.createScene(file);
             GaiaNode rootNode = scene.getNodes().get(0);
             rootNode.setName("PipeLineStrings");
+
+            GaiaAttribute gaiaAttribute = scene.getAttribute();
+            gaiaAttribute.setAttributes(pipeLineString.getProperties());
+            Map<String, String> attributes = gaiaAttribute.getAttributes();
+            gaiaAttribute.setNodeName(rootNode.getName());
+            attributes.put("name", pipeLineString.getName());
 
             GaiaBoundingBox boundingBox = pipeLineString.getBoundingBox();
             Vector3d bboxCenter = boundingBox.getCenter();
