@@ -108,7 +108,7 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                             .id(cellSpace.getId())
                             .name(cellSpace.getName())
                             .boundingBox(boundingBox)
-                            .positions(vertices)
+                            .exteriorPositions(vertices)
                             .build();
                     gaiaBuildingSurfaces.add(buildingSurface);
                 }
@@ -137,7 +137,8 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                 List<List<Vector3d>> polygons = new ArrayList<>();
                 for (GaiaBuildingSurface buildingSurface : surfaces) {
                     List<Vector3d> polygon = new ArrayList<>();
-                    for (Vector3d position : buildingSurface.getPositions()) {
+
+                    for (Vector3d position : buildingSurface.getExteriorPositions()) {
                         Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
                         Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv);
                         polygon.add(new Vector3dsOnlyHashEquals(localPosition));

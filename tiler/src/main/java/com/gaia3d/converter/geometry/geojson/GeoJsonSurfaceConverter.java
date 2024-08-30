@@ -109,6 +109,40 @@ public class GeoJsonSurfaceConverter extends AbstractGeometryConverter implement
                     LineString lineString = polygon.getExteriorRing();
                     Coordinate[] outerCoordinates = lineString.getCoordinates();
 
+                    int interiorRingLength = polygon.getNumInteriorRing();
+                    List<List<Vector3d>> vec3InteriorPolygons = new ArrayList<>();
+                    for (int i = 0; i < interiorRingLength; i++) {
+                        GaiaBoundingBox boundingBox = new GaiaBoundingBox();
+                        List<Vector3d> positions = new ArrayList<>();
+                        LineString interiorRingLineString= polygon.getInteriorRingN(i);
+                        Coordinate[] interiorCoordinates = interiorRingLineString.getCoordinates();
+
+                        for (Coordinate coordinate : interiorCoordinates) {
+                            double x, y, z;
+                            if (flipCoordinate) {
+                                x = coordinate.getY();
+                                y = coordinate.getX();
+                            } else {
+                                x = coordinate.getX();
+                                y = coordinate.getY();
+                            }
+                            z = coordinate.getZ();
+
+                            Vector3d position;
+                            CoordinateReferenceSystem crs = globalOptions.getCrs();
+                            if (crs != null && !crs.getName().equals("EPSG:4326")) {
+                                ProjCoordinate projCoordinate = new ProjCoordinate(x, y, boundingBox.getMinZ());
+                                ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
+                                position = new Vector3d(centerWgs84.x, centerWgs84.y, z);
+                            } else {
+                                position = new Vector3d(x, y, z);
+                            }
+                            positions.add(position);
+                            boundingBox.addPoint(position);
+                        }
+                        vec3InteriorPolygons.add(positions);
+                    }
+
                     GaiaBoundingBox boundingBox = new GaiaBoundingBox();
                     List<Vector3d> positions = new ArrayList<>();
 
@@ -142,7 +176,8 @@ public class GeoJsonSurfaceConverter extends AbstractGeometryConverter implement
                                 .id(feature.getID())
                                 .name(name)
                                 .boundingBox(boundingBox)
-                                .positions(positions)
+                                .exteriorPositions(positions)
+                                .interiorPositions(vec3InteriorPolygons)
                                 .properties(attributes)
                                 .build();
                         buildingSurfaces.add(buildingSurface);
@@ -184,21 +219,54 @@ public class GeoJsonSurfaceConverter extends AbstractGeometryConverter implement
                 List<List<Vector3d>> polygons = new ArrayList<>();
                 List<Vector3d> polygon = new ArrayList<>();
 
-                List<Vector3d> localPositions = new ArrayList<>();
-                Collections.reverse(buildingSurface.getPositions());
-                for (Vector3d position : buildingSurface.getPositions()) {
+
+
+
+                // Has holes.***
+                List<Vector3d> ExteriorPolygon = buildingSurface.getExteriorPositions();
+                Collections.reverse(ExteriorPolygon);
+
+                List<List<Vector3d>> interiorPolygons = buildingSurface.getInteriorPositions();
+
+                // convert points to local coordinates.***
+                List<Vector3d> ExteriorPolygonLocal = new ArrayList<>();
+                for (Vector3d position : ExteriorPolygon) {
+                    Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
+                    Vector3d localPosition = positionWorldCoordinate.mulPosition(transfromMatrixInv);
+                    ExteriorPolygonLocal.add(localPosition);
+                }
+
+                // interior points.***
+                List<List<Vector3d>> interiorPolygonsLocal = new ArrayList<>();
+                for(List<Vector3d> interiorPolygon : interiorPolygons)
+                {
+                    List<Vector3d> interiorPolygonLocal = new ArrayList<>();
+                    for (Vector3d position : interiorPolygon) {
+                        Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
+                        Vector3d localPosition = positionWorldCoordinate.mulPosition(transfromMatrixInv);
+                        interiorPolygonLocal.add(localPosition);
+                    }
+                    interiorPolygonsLocal.add(interiorPolygonLocal);
+                }
+                GaiaPrimitive primitive = createSurfaceFromExteriorAndInteriorPolygons(ExteriorPolygonLocal, interiorPolygonsLocal);
+
+
+               /* List<Vector3d> localPositions = new ArrayList<>();
+                Collections.reverse(buildingSurface.getExteriorPositions());
+                for (Vector3d position : buildingSurface.getExteriorPositions()) {
                     Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
                     Vector3d localPosition = positionWorldCoordinate.mulPosition(transfromMatrixInv);
                     localPositions.add(localPosition);
                     polygon.add(new Vector3dsOnlyHashEquals(localPosition));
                 }
                 polygons.add(polygon);
+                GaiaPrimitive primitive = createPrimitiveFromPolygons(polygons);*/
 
                 GaiaNode node = new GaiaNode();
                 node.setTransformMatrix(new Matrix4d().identity());
                 GaiaMesh mesh = new GaiaMesh();
                 node.getMeshes().add(mesh);
-                GaiaPrimitive primitive = createPrimitiveFromPolygons(polygons);
+
                 primitive.setMaterialIndex(material.getId());
                 mesh.getPrimitives().add(primitive);
                 rootNode.getChildren().add(node);

@@ -122,6 +122,7 @@ public class TilingPipeline implements Pipeline {
         AtomicInteger count = new AtomicInteger(1);
         int contentCount = contentInfos.size();
         globalOptions.setTileCount(contentCount);
+
         for (ContentInfo contentInfo : contentInfos) {
             Runnable callableTask = () -> {
                 log.info("[Post][{}/{}] post-process in progress. : {}", count.getAndIncrement(), contentCount, contentInfo.getName());

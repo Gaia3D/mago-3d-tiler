@@ -1,8 +1,10 @@
 package com.gaia3d.converter.geometry;
 
+import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.geometry.networkStructure.modeler.TNetwork;
 import com.gaia3d.basic.geometry.tessellator.GaiaExtrusionSurface;
 import com.gaia3d.basic.geometry.tessellator.GaiaTessellator;
+import com.gaia3d.basic.geometry.tessellator.Point2DTess;
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
@@ -10,10 +12,17 @@ import com.gaia3d.converter.geometry.pipe.GaiaPipeLineString;
 import com.gaia3d.converter.geometry.pipe.Modeler3D;
 import com.gaia3d.converter.geometry.pipe.PipeElbow;
 import com.gaia3d.converter.geometry.pipe.PipeType;
+import com.gaia3d.util.GeometryUtils;
+import com.gaia3d.util.GlobeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
+import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
+import org.locationtech.proj4j.BasicCoordinateTransform;
+import org.locationtech.proj4j.CRSFactory;
+import org.locationtech.proj4j.CoordinateReferenceSystem;
+import org.locationtech.proj4j.ProjCoordinate;
 import org.opengis.feature.simple.SimpleFeature;
 
 import java.io.File;
@@ -318,7 +327,305 @@ public abstract class AbstractGeometryConverter {
         return result;
     }
 
+    protected GaiaPrimitive createSurfaceFromExteriorAndInteriorPolygons(List<Vector3d> ExteriorPolygon, List<List<Vector3d>> interiorPolygons) {
+        GaiaTessellator tessellator = new GaiaTessellator();
+
+        GaiaPrimitive primitive = new GaiaPrimitive();
+        GaiaSurface surface = new GaiaSurface();
+        List<GaiaVertex> vertexList = new ArrayList<>();
+
+        Vector3d normal = new Vector3d();
+        tessellator.calculateNormal3D(ExteriorPolygon, normal);
+
+        List<Integer> resultTrianglesIndices = new ArrayList<>();
+        List<Vector3d> resultPolygonPoints = new ArrayList<>();
+        tessellator.tessellate3D(ExteriorPolygon, interiorPolygons, resultPolygonPoints, resultTrianglesIndices);
+
+        vertexList.clear();
+        int resultPointsCount = resultPolygonPoints.size();
+        for(int i=0; i<resultPointsCount; i++)
+        {
+            Vector3d point = resultPolygonPoints.get(i);
+            GaiaVertex vertex = new GaiaVertex();
+            vertex.setPosition(point);
+            vertex.setNormal(normal);
+            vertexList.add(vertex);
+        }
+        primitive.setVertices(vertexList); // total vertex list.***
+        primitive.getSurfaces().add(surface);
+
+        int idx1Local = -1;
+        int idx2Local = -1;
+        int idx3Local = -1;
+        int indicesCount = resultTrianglesIndices.size();
+        int trianglesCount = indicesCount / 3;
+        for (int n = 0; n < trianglesCount; n++) {
+            idx1Local = resultTrianglesIndices.get(n * 3);
+            idx2Local = resultTrianglesIndices.get(n * 3 + 1);
+            idx3Local = resultTrianglesIndices.get(n * 3 + 2);
+
+            GaiaFace face = new GaiaFace();
+            int[] indicesArray = new int[3];
+            indicesArray[0] = idx1Local;
+            indicesArray[1] = idx2Local;
+            indicesArray[2] = idx3Local;
+            face.setIndices(indicesArray);
+            face.setFaceNormal(normal);
+            surface.getFaces().add(face);
+        }
+
+        primitive.deleteNoUsedVertices();
+
+        return primitive;
+    }
+    protected GaiaPrimitive createSurfaceFromExteriorAndInteriorPolygons_original(List<Vector3d> ExteriorPolygon, List<List<Vector3d>> interiorPolygons) {
+        GaiaTessellator tessellator = new GaiaTessellator();
+
+        GaiaPrimitive primitive = new GaiaPrimitive();
+        GaiaSurface surface = new GaiaSurface();
+        List<GaiaVertex> vertexList = new ArrayList<>();
+        Map<Vector3d, Integer> pointsMap = new HashMap<>();
+
+
+        Vector3d normal = new Vector3d();
+        tessellator.calculateNormal3D(ExteriorPolygon, normal);
+
+//        for (Vector3d vector3d : ExteriorPolygon) {
+//            GaiaVertex vertex = new GaiaVertex();
+//            vertex.setPosition(vector3d);
+//            vertex.setNormal(normal);
+//            vertexList.add(vertex);
+//        }
+//
+//        // Now, the interior polygons.***
+//        for (List<Vector3d> interiorPolygon : interiorPolygons) {
+//            Vector3d normal2 = new Vector3d();
+//            tessellator.calculateNormal3D(interiorPolygon, normal2);
+//
+//            for (Vector3d vector3d : interiorPolygon) {
+//                GaiaVertex vertex = new GaiaVertex();
+//                vertex.setPosition(vector3d);
+//                vertex.setNormal(normal2);
+//                vertexList.add(vertex);
+//            }
+//        }
+//
+//        int vertexCount = vertexList.size();
+//        for (int m = 0; m < vertexCount; m++) {
+//            GaiaVertex vertex = vertexList.get(m);
+//            pointsMap.put(vertex.getPosition(), m);
+//        }
+
+
+        List<Integer> resultTrianglesIndices = new ArrayList<>();
+        List<Vector3d> resultPolygonPoints = new ArrayList<>();
+        tessellator.tessellate3D(ExteriorPolygon, interiorPolygons, resultPolygonPoints, resultTrianglesIndices);
+
+        vertexList.clear();
+        int resultPointsCount = resultPolygonPoints.size();
+        for(int i=0; i<resultPointsCount; i++)
+        {
+            Vector3d point = resultPolygonPoints.get(i);
+            GaiaVertex vertex = new GaiaVertex();
+            vertex.setPosition(point);
+            vertex.setNormal(normal);
+            vertexList.add(vertex);
+        }
+        primitive.setVertices(vertexList); // total vertex list.***
+        primitive.getSurfaces().add(surface);
+
+        int idx1Local = -1;
+        int idx2Local = -1;
+        int idx3Local = -1;
+        int indicesCount = resultTrianglesIndices.size();
+        int trianglesCount = indicesCount / 3;
+        for (int n = 0; n < trianglesCount; n++) {
+            idx1Local = resultTrianglesIndices.get(n * 3);
+            idx2Local = resultTrianglesIndices.get(n * 3 + 1);
+            idx3Local = resultTrianglesIndices.get(n * 3 + 2);
+
+//            Vector3d point1 = resultPolygonPoints.get(idx1Local);
+//            Vector3d point2 = resultPolygonPoints.get(idx2Local);
+//            Vector3d point3 = resultPolygonPoints.get(idx3Local);
+//
+//            int idx1 = pointsMap.get(point1);
+//            int idx2 = pointsMap.get(point2);
+//            int idx3 = pointsMap.get(point3);
+
+            GaiaFace face = new GaiaFace();
+            int[] indicesArray = new int[3];
+            indicesArray[0] = idx1Local;
+            indicesArray[1] = idx2Local;
+            indicesArray[2] = idx3Local;
+            face.setIndices(indicesArray);
+            face.setFaceNormal(normal);
+            surface.getFaces().add(face);
+        }
+
+        return primitive;
+    }
+
+    private List<Vector3d> getCleanPoints3dArray(List<Vector3d> pointsArray, List<Vector3d> cleanPointsArray, double error) {
+        // Here checks uroborus, and check if there are adjacent points in the same position.***
+        if(cleanPointsArray == null)
+        {
+            cleanPointsArray = new ArrayList<>();
+        }
+        else
+        {
+            cleanPointsArray.clear();
+        }
+
+        int pointsCount = pointsArray.size();
+        Vector3d firstPoint = null;
+        Vector3d lastPoint = null;
+        for(int i=0; i<pointsCount; i++)
+        {
+            Vector3d currPoint = pointsArray.get(i);
+            if(i == 0)
+            {
+                firstPoint = currPoint;
+                lastPoint = currPoint;
+                cleanPointsArray.add(currPoint);
+                continue;
+            }
+
+            if (!currPoint.equals(firstPoint) && !currPoint.equals(lastPoint)) {
+
+                if(GeometryUtils.areAproxEqualsPoints3d(currPoint, firstPoint, error))
+                {
+                    // the polygon is uroborus.***
+                    continue;
+                }
+
+                if(GeometryUtils.areAproxEqualsPoints3d(currPoint, lastPoint, error))
+                {
+                    // the point is the same as the last point.***
+                    continue;
+                }
+
+                cleanPointsArray.add(currPoint);
+                lastPoint = currPoint;
+            }
+
+        }
+
+        // now, erase colineal points.***
+        double dotProdError = 1.0 - 1e-10;
+        pointsCount = cleanPointsArray.size();
+        for (int i = 0; i < pointsCount; i++) {
+            int idxPrev = GeometryUtils.getPrevIdx(i, pointsCount);
+            int idxNext = GeometryUtils.getNextIdx(i, pointsCount);
+            Vector3d prevPoint = cleanPointsArray.get(idxPrev);
+            Vector3d currPoint = cleanPointsArray.get(i);
+            Vector3d nextPoint = cleanPointsArray.get(idxNext);
+
+            Vector3d v1 = new Vector3d();
+            Vector3d v2 = new Vector3d();
+            currPoint.sub(prevPoint, v1);
+            nextPoint.sub(currPoint, v2);
+            v1.normalize();
+            v2.normalize();
+
+            double dotProd = v1.dot(v2);
+            if (Math.abs(dotProd) >= dotProdError)
+            {
+                // the points are colineal.***
+                cleanPointsArray.remove(i);
+                i--;
+                pointsCount--;
+            }
+        }
+
+        return cleanPointsArray;
+    }
+
     protected GaiaPrimitive createPrimitiveFromPolygons(List<List<Vector3d>> polygons) {
+        GaiaTessellator tessellator = new GaiaTessellator();
+
+        GaiaPrimitive primitive = new GaiaPrimitive();
+        List<GaiaVertex> vertexList = new ArrayList<>();
+        Map<Vector3d, Integer> pointsMap = new HashMap<>();
+
+        List<List<Vector3d>> polygonsClean = new ArrayList<>();
+        double error = 1e-10;
+
+        int polygonCount = polygons.size();
+        for (List<Vector3d> polygon : polygons) {
+
+            // check uroborus.***
+            List<Vector3d> cleanPolygon = new ArrayList<>();
+            cleanPolygon = getCleanPoints3dArray(polygon, cleanPolygon, error);
+            polygonsClean.add(cleanPolygon);
+
+            Vector3d normal = new Vector3d();
+            tessellator.calculateNormal3D(cleanPolygon, normal);
+
+            for (Vector3d vector3d : cleanPolygon) {
+                GaiaVertex vertex = new GaiaVertex();
+                vertex.setPosition(vector3d);
+                vertex.setNormal(normal);
+                vertexList.add(vertex);
+            }
+        }
+
+        int vertexCount = vertexList.size();
+        for (int m = 0; m < vertexCount; m++) {
+            GaiaVertex vertex = vertexList.get(m);
+            pointsMap.put(vertex.getPosition(), m);
+        }
+
+        primitive.setVertices(vertexList); // total vertex list.***
+
+        List<Integer> resultTrianglesIndices = new ArrayList<>();
+
+        for (int m = 0; m < polygonCount; m++) {
+            GaiaSurface surface = new GaiaSurface();
+            primitive.getSurfaces().add(surface);
+
+            int idx1Local = -1;
+            int idx2Local = -1;
+            int idx3Local = -1;
+
+            List<Vector3d> polygon = polygonsClean.get(m);
+            resultTrianglesIndices.clear();
+
+            // Note : in "tessellator.tessellate3D(polygon, resultTrianglesIndices);" is possible to loss some points (deleting collinear points).***
+            // So, in the end of this method, delete no used vertices.***
+            tessellator.tessellate3D(polygon, resultTrianglesIndices);
+
+            int indicesCount = resultTrianglesIndices.size();
+            int trianglesCount = indicesCount / 3;
+            for (int n = 0; n < trianglesCount; n++) {
+                idx1Local = resultTrianglesIndices.get(n * 3);
+                idx2Local = resultTrianglesIndices.get(n * 3 + 1);
+                idx3Local = resultTrianglesIndices.get(n * 3 + 2);
+
+                Vector3d point1 = polygon.get(idx1Local);
+                Vector3d point2 = polygon.get(idx2Local);
+                Vector3d point3 = polygon.get(idx3Local);
+
+                int idx1 = pointsMap.get(point1);
+                int idx2 = pointsMap.get(point2);
+                int idx3 = pointsMap.get(point3);
+
+                GaiaFace face = new GaiaFace();
+                int[] indicesArray = new int[3];
+                indicesArray[0] = idx1;
+                indicesArray[1] = idx2;
+                indicesArray[2] = idx3;
+                face.setIndices(indicesArray);
+                surface.getFaces().add(face);
+            }
+        }
+
+        // now, delete no used vertices (bcos possible loss of some points).***
+        primitive.deleteNoUsedVertices();
+
+        return primitive;
+    }
+
+    protected GaiaPrimitive createPrimitiveFromPolygons_original(List<List<Vector3d>> polygons) {
         GaiaTessellator tessellator = new GaiaTessellator();
 
         GaiaPrimitive primitive = new GaiaPrimitive();
@@ -400,7 +707,7 @@ public abstract class AbstractGeometryConverter {
         PipeType profileType = pipeLineString.getProfileType();
         if (profileType == PipeType.CIRCULAR) {
             // circular pipe.
-            float pipeRadius = (float) (pipeLineString.getDiameter() / 1000.0f); // convert to meters from millimeters.
+            float pipeRadius = (float) (pipeLineString.getDiameter() / 2000.0f); // convert to meters from millimeters.
 
             // 1rst create elbows.
             float elbowRadius = pipeRadius * 1.5f; // test value.***
@@ -523,11 +830,11 @@ public abstract class AbstractGeometryConverter {
         } else if (classification.equals(Classification.STAIRS)) {
             return gaiaMaterials.get(3);
         } else if (classification.equals(Classification.ROOF)) {
-            return gaiaMaterials.get(4);
+            return gaiaMaterials.get(3);
         } else if (classification.equals(Classification.WATER)) {
-            return gaiaMaterials.get(5);
+            return gaiaMaterials.get(4);
         } else if (classification.equals(Classification.GROUND)) {
-            return gaiaMaterials.get(6);
+            return gaiaMaterials.get(5);
         } else {
             return gaiaMaterials.get(0);
         }

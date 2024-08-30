@@ -324,7 +324,7 @@ class ReleaseTest {
                 "-inputType", "geojson",
                 "-crs", "5186",
                 "-output", output.getAbsolutePath(),
-                //"-hc", "Z_Min",
+                "-hc", "Z_Min",
                 "-debug",
         };
         Mago3DTilerMain.main(args);

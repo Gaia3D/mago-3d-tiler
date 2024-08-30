@@ -222,7 +222,7 @@ public class ImageUtils {
 
                 return result;
             } else {
-                System.err.println("No se encontró un lector para el formato de la imagen.");
+                System.err.println("No ImageReader found for the given format.");
             }
         } catch (IOException e) {
             log.error("Error reading image size: {}", e.getMessage());

@@ -519,6 +519,25 @@ class UnitTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Test
+    void testShapePipeLinesIndia() {
+        String path = "water_pipelines.shp";
+        String inputPath = "D:\\data\\GitHub_Issues_data\\water_pipelines\\";
+        String outputPath = "D:\\Result_mago3dTiler\\";
+        String[] args = new String[]{
+                "-i", inputPath + path,
+                "-it", "shp",
+                "-o", outputPath + path,
+                "-crs", "32643",
+                "-maxCount", "4096",
+                "-multiThreadCount", "1",
+                "-refineAdd",
+                "-debug",
+                "-glb"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
 
 
         @Test

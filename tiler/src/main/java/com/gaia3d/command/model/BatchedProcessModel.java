@@ -50,15 +50,21 @@ public class BatchedProcessModel implements ProcessFlowModel {
         preProcessors.add(new GaiaTileInfoInitiator());
         preProcessors.add(new GaiaTexCoordCorrector());
         preProcessors.add(new GaiaScaler());
+        /*if (isRotateUpAxis) {
+            preProcessors.add(new GaiaRotator());
+        }*/
+        // TODO rotXAngleDegree
         if (globalOptions.isLargeMesh()) {
             if (isRotateUpAxis) {
                 preProcessors.add(new GaiaRotator());
             }
             preProcessors.add(new GaiaTranslatorExact(geoTiffs));
+
         } else {
             preProcessors.add(new GaiaRotator());
-            preProcessors.add(new GaiaTranslator(geoTiffs));
+            preProcessors.add(new GaiaTranslator(geoTiffs)); // original
         }
+
         preProcessors.add(new GaiaMinimizer());
 
         TilingProcess tilingProcess = new Batched3DModelTiler();
@@ -88,8 +94,8 @@ public class BatchedProcessModel implements ProcessFlowModel {
         } else if (formatType == FormatType.SHP) {
             converter = new ShapeConverter();
         } else if (formatType == FormatType.GEOJSON) {
-            converter = new GeoJsonConverter();
-            //converter = new GeoJsonSurfaceConverter();
+            //converter = new GeoJsonConverter();
+            converter = new GeoJsonSurfaceConverter();
         } else {
             if (globalOptions.isLargeMesh()) {
                 converter = new LargeMeshConverter(new AssimpConverter());

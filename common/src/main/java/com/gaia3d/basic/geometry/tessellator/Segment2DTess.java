@@ -83,7 +83,7 @@ public class Segment2DTess {
             intersectionPoint.point = new Vector2d();
         }
 
-        if (line1.intersectionWithLine(line2, intersectionPoint.point)) {
+        if (line1.intersectionWithLine(line2, intersectionPoint.point, error)) {
             int intersectionType1 = this.intersectionWithPointByDistances(intersectionPoint, error);
             int intersectionType2 = segment.intersectionWithPointByDistances(intersectionPoint, error);
 

@@ -73,6 +73,7 @@ public class Polygon2DTess {
         }
 
         float normal = 0.0f;
+        float angRadSum = 0.0f;
         List<Integer> positivePoints = new ArrayList<>();
         List<Integer> negativePoints = new ArrayList<>();
 
@@ -110,7 +111,7 @@ public class Polygon2DTess {
                 continue;
             }
 
-
+            // if cross > 0 => CCW, if cross < 0 => CW.***
             double cross = v1.x * v2.y - v1.y * v2.x;
             if (cross < 0) {
                 cross = -1.0;
@@ -121,21 +122,24 @@ public class Polygon2DTess {
             }
 
             double angRad = Math.acos(dot); // because v1 and v2 are normalized.***
-            normal += (float) (angRad * cross);
+            angRadSum += (float) (angRad * cross);
 
-            // TODO: check if this is necessary.***
-            if (Math.abs(normal) < 1e-5) {
-                normal = 0.0f;
-                return normal;
-            }
+//            // TODO: check if this is necessary.***
+//            if (Math.abs(normal) < 1e-5) {
+//                normal = 0.0f;
+//                return normal;
+//            }
         }
 
-        if (Math.abs(normal) < 1e-5) {
+        float angRadSumError = 1e-4F;
+        if (Math.abs(angRadSum) < angRadSumError) {
             // 1e-6 works ok.***
             // probably the polygon is a line, or a self-intersecting polygon (butterfly polygon).***
             normal = 0.0f;
             return normal;
         }
+
+        normal = angRadSum / Math.abs(angRadSum);
 
         if (normal > 0.0f) {
             normal = 1.0f;
