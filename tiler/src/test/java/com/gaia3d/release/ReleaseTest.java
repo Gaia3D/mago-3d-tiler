@@ -313,6 +313,40 @@ class ReleaseTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Test
+    void testGyangGyoShpZ() {
+        String path = "GYANGGYO-SHP-Z";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "geojson",
+                "-crs", "5186",
+                "-output", output.getAbsolutePath(),
+                "-hc", "Z_Min",
+                "-debug",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testIndiaPipeShp() {
+        String path = "INDIA-PIPE-SHP";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "shp",
+                "-crs", "32643",
+                "-output", output.getAbsolutePath(),
+                "-dc", "Diameter",
+                "-debug",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
     private File getInputPath(String path) {
         return new File(INPUT_PATH, path);
     }

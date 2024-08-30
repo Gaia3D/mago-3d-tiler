@@ -15,7 +15,7 @@ public class GaiaPipeLineString {
     private String id;
     private String name;
 
-    private double diameter; // M
+    private double diameter; // mm
     private float[] rectangularSize;
 
     private GaiaBoundingBox boundingBox;

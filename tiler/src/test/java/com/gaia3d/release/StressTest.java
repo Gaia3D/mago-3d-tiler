@@ -44,7 +44,7 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "shp",
                 "-crs", "5186",
-                "-radiusColumn", "STD_DIP",
+                "-dc", "STD_DIP",
         };
         Mago3DTilerMain.main(args);
     }

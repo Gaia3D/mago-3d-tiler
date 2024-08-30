@@ -6,6 +6,7 @@ import com.gaia3d.basic.geometry.tessellator.GaiaExtrusionSurface;
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
+import com.gaia3d.converter.EasySceneCreator;
 import com.gaia3d.converter.geometry.AbstractGeometryConverter;
 import com.gaia3d.converter.geometry.GaiaExtrusionBuilding;
 import com.gaia3d.converter.geometry.InnerRingRemover;
@@ -123,7 +124,6 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                     }
 
                     LineString lineString = polygon.getExteriorRing();
-                    GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
                     Coordinate[] outerCoordinates = lineString.getCoordinates();
 
                     int innerRingCount = polygon.getNumInteriorRing();
@@ -139,16 +139,15 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                     List<Vector3d> positions = new ArrayList<>();
 
                     for (Coordinate coordinate : outerCoordinates) {
-                        Point point = geometryFactory.createPoint(coordinate);
-
-                        double x, y;
+                        double x, y, z;
                         if (flipCoordinate) {
-                            x = point.getY();
-                            y = point.getX();
+                            x = coordinate.getY();
+                            y = coordinate.getX();
                         } else {
-                            x = point.getX();
-                            y = point.getY();
+                            x = coordinate.getX();
+                            y = coordinate.getY();
                         }
+                        z = coordinate.getZ();
 
                         Vector3d position;
                         CoordinateReferenceSystem crs = globalOptions.getCrs();
@@ -188,10 +187,9 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
             }
             iterator.close();
 
+            EasySceneCreator easySceneCreator = new EasySceneCreator();
             for (GaiaExtrusionBuilding building : buildings) {
-                GaiaScene scene = initScene(file);
-                scene.setOriginalPath(file.toPath());
-
+                GaiaScene scene = easySceneCreator.createScene(file);
                 GaiaNode rootNode = scene.getNodes().get(0);
 
                 GaiaAttribute gaiaAttribute = scene.getAttribute();

@@ -302,7 +302,7 @@ public abstract class AbstractGeometryConverter {
         return result;
     }
 
-    protected double getRadius(SimpleFeature feature, String column) {
+    protected double getDiameter(SimpleFeature feature, String column) {
         double result = 1.0d;
         Object attributeLower = feature.getAttribute(column);
         Object attributeUpper = feature.getAttribute(column.toUpperCase());
@@ -373,6 +373,8 @@ public abstract class AbstractGeometryConverter {
             face.setFaceNormal(normal);
             surface.getFaces().add(face);
         }
+
+        primitive.deleteNoUsedVertices();
 
         return primitive;
     }
@@ -705,8 +707,7 @@ public abstract class AbstractGeometryConverter {
         PipeType profileType = pipeLineString.getProfileType();
         if (profileType == PipeType.CIRCULAR) {
             // circular pipe.
-            float pipeRadius = (float) (pipeLineString.getDiameter() / 200.0f); // cm to meter.***
-            //float pipeRadius = (float) (pipeLineString.getDiameter() / 2.0f); // meter.***
+            float pipeRadius = (float) (pipeLineString.getDiameter() / 2000.0f); // convert to meters from millimeters.
 
             // 1rst create elbows.
             float elbowRadius = pipeRadius * 1.5f; // test value.***
@@ -829,11 +830,11 @@ public abstract class AbstractGeometryConverter {
         } else if (classification.equals(Classification.STAIRS)) {
             return gaiaMaterials.get(3);
         } else if (classification.equals(Classification.ROOF)) {
-            return gaiaMaterials.get(4);
+            return gaiaMaterials.get(3);
         } else if (classification.equals(Classification.WATER)) {
-            return gaiaMaterials.get(5);
+            return gaiaMaterials.get(4);
         } else if (classification.equals(Classification.GROUND)) {
-            return gaiaMaterials.get(6);
+            return gaiaMaterials.get(5);
         } else {
             return gaiaMaterials.get(0);
         }

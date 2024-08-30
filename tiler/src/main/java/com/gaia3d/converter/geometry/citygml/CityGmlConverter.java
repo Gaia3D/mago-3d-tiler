@@ -4,6 +4,7 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.structure.*;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
+import com.gaia3d.converter.EasySceneCreator;
 import com.gaia3d.converter.geometry.*;
 import com.gaia3d.converter.geometry.extrusion.Extruder;
 import com.gaia3d.util.GlobeUtils;
@@ -99,9 +100,9 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                 }
             }
 
+            EasySceneCreator easySceneCreator = new EasySceneCreator();
             for (GaiaExtrusionBuilding gaiaBuilding : buildingList) {
-                GaiaScene scene = initScene(file);
-                scene.setOriginalPath(file.toPath());
+                GaiaScene scene = easySceneCreator.createScene(file);
                 GaiaMaterial material = getMaterialByClassification(scene.getMaterials(), gaiaBuilding.getClassification());
                 GaiaNode rootNode = scene.getNodes().get(0);
 
@@ -139,8 +140,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                     continue;
                 }
 
-                GaiaScene scene = initScene(file);
-                scene.setOriginalPath(file.toPath());
+                GaiaScene scene = easySceneCreator.createScene(file);
                 GaiaNode rootNode = scene.getNodes().get(0);
 
                 GaiaAttribute attribute = scene.getAttribute();
