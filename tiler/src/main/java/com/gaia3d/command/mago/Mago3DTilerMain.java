@@ -25,6 +25,8 @@ public class Mago3DTilerMain {
             boolean isDebug = command.hasOption(ProcessOptions.DEBUG.getArgName());
             boolean isVersion = command.hasOption(ProcessOptions.VERSION.getArgName());
 
+            System.out.println(System.getProperty("java.library.path"));
+
             // Logging configuration
             if (isQuiet) {
                 Configurator.setLevel(Level.OFF);

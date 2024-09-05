@@ -260,13 +260,13 @@ public class Instanced3DModel implements TileModel {
                 // End test.---------------------------------------------------------
 
 //                int lod = contentInfo.getLod().getLevel();
-//                if(lod > 0)
+//                if(lod > -1)
 //                {
 //                    float octreeMinSize = 4.0f;
 //
 //                    if(lod == 0)
 //                    {
-//                        octreeMinSize = 0.5f;
+//                        octreeMinSize = 4.0f;
 //                    }
 //                    else if(lod == 1)
 //                    {
@@ -283,7 +283,7 @@ public class Instanced3DModel implements TileModel {
 //                }
 
                 Matrix4d transformMatrix = resultGaiaScene.getNodes().get(0).getTransformMatrix();
-                //transformMatrix.rotateX(Math.toRadians(-90));
+                transformMatrix.rotateX(Math.toRadians(-90));
                 gltfWriter.writeGlb(resultGaiaScene, file);
             }
         } catch (Exception e) {
