@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.joml.Vector3d;
 
 import java.util.List;
+import java.util.Map;
 
 @Builder
 @Getter
@@ -15,13 +16,16 @@ public class GaiaPipeLineString {
     private String id;
     private String name;
 
-    private double diameter; // mm
+    /* only millimeter */
+    private double diameter;
     private float[] rectangularSize;
 
     private GaiaBoundingBox boundingBox;
-    private PipeType profileType; // 0 = unknown, 1 = circular, 2 = rectangular, 3 = oval, 4 = irregular, etc.
+    private PipeType profileType;
     private String originalFilePath;
     private List<Vector3d> positions;
+
+    private Map<String, String> properties;
 
     public boolean isSameProfile(GaiaPipeLineString pipeLineString) {
         if (profileType != pipeLineString.profileType) {

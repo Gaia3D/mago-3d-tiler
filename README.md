@@ -38,16 +38,20 @@ usage: Gaia3D Tiler
  -aa,--absoluteAltitude <arg>    Absolute altitude value for extrusion
                                  model
  -ac,--altitudeColumn <arg>      Altitude Column setting for extrusion
-                                 model (Default: altitude)
+                                 model ((Default Column: altitude)
  -c,--crs <arg>                  Coordinate Reference Systems, EPSG
                                  Code(4326, 3857, 32652, 5186...)
  -d,--debug                      More detailed log output and stops on
                                  Multi-Thread bugs.
+ -dc,--diameterColumn <arg>      Diameter column setting for extrusion
+                                 model, Specify a length unit for Diameter
+                                 in millimeters(mm) (Default Column:
+                                 diameter)
  -fc,--flipCoordinate            Flip x, y Coordinate (Default: false)
  -glb,--glb                      Create glb file with B3DM.
  -h,--help                       Print Gelp
  -hc,--heightColumn <arg>        Height column setting for extrusion model
-                                 (Default: height)
+                                 ((Default Column: height)
  -i,--input <arg>                Input directory path
  -if,--instance <arg>            Instance file path for I3DM (Default:
                                  {OUTPUT}/instance.dae)
@@ -67,7 +71,7 @@ usage: Gaia3D Tiler
                                  point cloud data. (Default: 65536)
  -mx,--maxCount <arg>            Maximum number of triangles per node.
  -nc,--nameColumn <arg>          Name column setting for extrusion model
-                                 (Default: name)
+                                 (Default Column: name)
  -ng,--minGeometricError <arg>   Minimum geometric error (Default: 16.0)
  -nl,--minLod <arg>              min level of detail (Default: 0)
  -o,--output <arg>               Output directory file path
@@ -81,8 +85,6 @@ usage: Gaia3D Tiler
  -q,--quiet                      Quiet mode/Silent mode
  -r,--recursive                  Tree directory deep navigation.
  -ra,--refineAdd                 Set 3D Tiles Refine 'ADD' mode
- -rc,--radiusColumn <arg>        Radius column setting for extrusion model
-                                 (Default: radius)
  -ru,--flipUpAxis                Rotate the matrix 180 degrees about the
                                  X-axis. (Default: false)
  -sh,--skirtHeight <arg>         Building Skirt height setting for
@@ -183,16 +185,20 @@ usage: Gaia3D Tiler
  -aa,--absoluteAltitude <arg>    Absolute altitude value for extrusion
                                  model
  -ac,--altitudeColumn <arg>      Altitude Column setting for extrusion
-                                 model (Default: altitude)
+                                 model ((Default Column: altitude)
  -c,--crs <arg>                  Coordinate Reference Systems, EPSG
                                  Code(4326, 3857, 32652, 5186...)
  -d,--debug                      More detailed log output and stops on
                                  Multi-Thread bugs.
+ -dc,--diameterColumn <arg>      Diameter column setting for extrusion
+                                 model, Specify a length unit for Diameter
+                                 in millimeters(mm) (Default Column:
+                                 diameter)
  -fc,--flipCoordinate            Flip x, y Coordinate (Default: false)
  -glb,--glb                      Create glb file with B3DM.
  -h,--help                       Print Gelp
  -hc,--heightColumn <arg>        Height column setting for extrusion model
-                                 (Default: height)
+                                 ((Default Column: height)
  -i,--input <arg>                Input directory path
  -if,--instance <arg>            Instance file path for I3DM (Default:
                                  {OUTPUT}/instance.dae)
@@ -212,7 +218,7 @@ usage: Gaia3D Tiler
                                  point cloud data. (Default: 65536)
  -mx,--maxCount <arg>            Maximum number of triangles per node.
  -nc,--nameColumn <arg>          Name column setting for extrusion model
-                                 (Default: name)
+                                 (Default Column: name)
  -ng,--minGeometricError <arg>   Minimum geometric error (Default: 16.0)
  -nl,--minLod <arg>              min level of detail (Default: 0)
  -o,--output <arg>               Output directory file path
@@ -226,8 +232,6 @@ usage: Gaia3D Tiler
  -q,--quiet                      Quiet mode/Silent mode
  -r,--recursive                  Tree directory deep navigation.
  -ra,--refineAdd                 Set 3D Tiles Refine 'ADD' mode
- -rc,--radiusColumn <arg>        Radius column setting for extrusion model
-                                 (Default: radius)
  -ru,--flipUpAxis                Rotate the matrix 180 degrees about the
                                  X-axis. (Default: false)
  -sh,--skirtHeight <arg>         Building Skirt height setting for
