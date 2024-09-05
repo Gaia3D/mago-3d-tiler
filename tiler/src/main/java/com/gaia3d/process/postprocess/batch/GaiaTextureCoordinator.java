@@ -275,10 +275,10 @@ public class GaiaTextureCoordinator {
         }
 
         // Test.****************************************************************************
-        //if (globalOptions.isDebugLod())
+        if (globalOptions.isDebugLod())
         {
             float[] debugColor = lod.getDebugColor();
-            Color color = new Color(debugColor[0], debugColor[1], debugColor[2], 0.5f);
+            Color color = new Color(debugColor[0], debugColor[1], debugColor[2], 0.6f);
             graphics.setColor(color);
             graphics.fillRect(0, 0, maxWidth, maxHeight);
         }
@@ -315,11 +315,13 @@ public class GaiaTextureCoordinator {
 
             // test save atlasTexture image.****
             // Test.**************************************************
-            String extension = "jpg";
-            if (existPngTextures) {
-                extension = "png";
+            if (globalOptions.isDebugLod()) {
+                String extension = "jpg";
+                if (existPngTextures) {
+                    extension = "png";
+                }
+                this.writeBatchedImage(extension);
             }
-            this.writeBatchedImage(extension);
             // end test.----------------------------------------------
 
             List<GaiaBufferDataSet> materialBufferDataSets = bufferDataSets.stream().filter((bufferDataSet) -> bufferDataSet.getMaterialId() == target.getMaterialId()).collect(Collectors.toList());
