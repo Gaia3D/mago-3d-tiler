@@ -89,7 +89,15 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             //query.getHints().add(new Hints(Hints.FEATURE_2D, true));
 
             int totalCount = source.getCount(query);
+
             int totalCountBy100 = totalCount / 100;
+
+            if(totalCountBy100 == 0)
+            {
+                log.warn(" - Shape Feature Count is 0 : {}", file.getPath());
+                totalCountBy100 = 1;
+            }
+
             int progressCount = 0;
             log.info(" - Total Shape Feature Count : {}", totalCount);
 
@@ -172,6 +180,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                     }
 
                     double diameter = getDiameter(feature, diameterColumnName);
+
                     GaiaPipeLineString pipeLineString = GaiaPipeLineString.builder()
                             .id(feature.getID())
                             .profileType(PipeType.CIRCULAR)

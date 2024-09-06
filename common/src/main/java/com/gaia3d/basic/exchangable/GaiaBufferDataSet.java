@@ -103,14 +103,34 @@ public class GaiaBufferDataSet implements Serializable {
 
         // set indices as face of a surface of the primitive 2023.07.19
         GaiaSurface surface = new GaiaSurface();
+
+//        // new 20240903 Son.******************************************
+//        int indicesLength = indices.length;
+//        int trianglesCount = indicesLength / 3;
+//        for(int i=0; i<trianglesCount; i++)
+//        {
+//            int index = i * 3;
+//            int[] triangleIndices = new int[3];
+//            triangleIndices[0] = indices[index];
+//            triangleIndices[1] = indices[index + 1];
+//            triangleIndices[2] = indices[index + 2];
+//            GaiaFace face = new GaiaFace();
+//            face.setIndices(triangleIndices);
+//            surface.getFaces().add(face);
+//        }
+//        // End new 20240903 Son.---------------------------------------------
+
+        // Old.**********************************************************************
         GaiaFace face = new GaiaFace();
-        
+
         int[] indicesInt = new int[indices.length];
         System.arraycopy(indices, 0, indicesInt, 0, indices.length);
         face.setIndices(indicesInt);
         surface.setFaces(new ArrayList<>() {{
             add(face);
         }});
+        // End old.------------------------------------------------------------------
+
         primitive.setSurfaces(new ArrayList<>() {{
             add(surface);
         }});

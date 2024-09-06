@@ -1,5 +1,6 @@
 package com.gaia3d.basic.structure;
 
+import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.structure.interfaces.FaceStructure;
 import com.gaia3d.util.GeometryUtils;
 import lombok.AllArgsConstructor;
@@ -41,6 +42,18 @@ public class GaiaFace extends FaceStructure {
         }
         Vector3d firstNormal = vertices.get(0).getNormal();
         this.faceNormal = new Vector3d(firstNormal);
+    }
+
+    public GaiaBoundingBox getBoundingBox(List<GaiaVertex> vertices, GaiaBoundingBox resultBoundingBox) {
+        if(resultBoundingBox == null) {
+            resultBoundingBox = new GaiaBoundingBox();
+        }
+        for (int i = 0; i < indices.length; i++) {
+            int index = indices[i];
+            GaiaVertex vertex = vertices.get(index);
+            resultBoundingBox.addPoint(vertex.getPosition());
+        }
+        return resultBoundingBox;
     }
 
     public boolean validateNormal(Vector3d normal) {

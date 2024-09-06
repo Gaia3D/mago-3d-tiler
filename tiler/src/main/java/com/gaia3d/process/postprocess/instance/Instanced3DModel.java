@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exchangable.GaiaSet;
+import com.gaia3d.basic.geometry.octree.GaiaOctree;
 import com.gaia3d.basic.structure.GaiaAttribute;
 import com.gaia3d.basic.structure.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
@@ -16,6 +17,8 @@ import com.gaia3d.process.postprocess.batch.GaiaBatcher;
 import com.gaia3d.process.postprocess.pointcloud.Position;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
+import com.gaia3d.util.GaiaOctreeUtils;
+import com.gaia3d.util.GeometryUtils;
 import com.gaia3d.util.GlobeUtils;
 import com.gaia3d.util.StringUtils;
 import com.gaia3d.util.io.LittleEndianDataOutputStream;
@@ -250,6 +253,35 @@ public class Instanced3DModel implements TileModel {
                 GaiaBatcher gaiaBatcher = new GaiaBatcher();
                 GaiaSet gaiaSet = gaiaBatcher.runBatching(batchTileInfos, contentInfo.getNodeCode(), contentInfo.getLod());
                 GaiaScene resultGaiaScene = new GaiaScene(gaiaSet);
+
+                // Test.*********************************************************
+//                GlobalOptions globalOptions = GlobalOptions.getInstance();
+//                globalOptions.setDebugLod(true);
+                // End test.---------------------------------------------------------
+
+//                int lod = contentInfo.getLod().getLevel();
+//                if(lod > -1)
+//                {
+//                    float octreeMinSize = 4.0f;
+//
+//                    if(lod == 0)
+//                    {
+//                        octreeMinSize = 4.0f;
+//                    }
+//                    else if(lod == 1)
+//                    {
+//                        octreeMinSize = 0.6f;
+//                    }
+//                    else if(lod == 2)
+//                    {
+//                        octreeMinSize = 2.0f;
+//                    }
+//
+//
+//                    GaiaScene simpleScene = GeometryUtils.getGaiaSceneLego(resultGaiaScene, octreeMinSize);
+//                    resultGaiaScene = simpleScene;
+//                }
+
                 Matrix4d transformMatrix = resultGaiaScene.getNodes().get(0).getTransformMatrix();
                 transformMatrix.rotateX(Math.toRadians(-90));
                 gltfWriter.writeGlb(resultGaiaScene, file);

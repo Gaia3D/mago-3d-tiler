@@ -38,6 +38,10 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
             instanceGeometricError = calcGeometricError(List.of(tileInfos.get(0)));
         }
 
+        // Test set isRefineAdd to false.**********************************************************
+        globalOptions.setRefineAdd(false);
+        // End test.-------------------------------------------------------------------------------
+
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
         Matrix4d transformMatrix = getTransformMatrix(globalBoundingBox);
         rotateX90(transformMatrix);
@@ -87,6 +91,72 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
 
         long instanceLimit = globalOptions.getMaxInstance() * 4;
         long instanceCount = tileInfos.size();
+        boolean isRefineAdd = globalOptions.isRefineAdd();
+//=======
+//        //int nodeLimit = globalOptions.getNodeLimit() * 4;
+//
+//        //long triangleLimit = 65536 * 8; // original.***
+//        long triangleLimit = 65536 * 1024;
+//        long totalTriangleCount = tileInfos.stream().mapToLong(TileInfo::getTriangleCount).sum();
+//        log.info("[TriangleCount] Total : {}", totalTriangleCount);
+//>>>>>>> Stashed changes
+
+        if (instanceCount > instanceLimit) {
+            List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
+            for (int index = 0; index < childrenScenes.size(); index++) {
+                List<TileInfo> childTileInfos = childrenScenes.get(index);
+                Node childNode = createLogicalNode(parentNode, childTileInfos, index);
+                if (childNode != null) {
+                    parentNode.getChildren().add(childNode);
+                    createNode(childNode, childTileInfos);
+                }
+            }
+        } else if (instanceCount > 1) {
+            List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
+            for (int index = 0; index < childrenScenes.size(); index++) {
+                List<TileInfo> childTileInfos = childrenScenes.get(index);
+
+                Node childNode = createContentNode(parentNode, childTileInfos, index);
+                if (childNode != null) {
+                    parentNode.getChildren().add(childNode);
+                    Content content = childNode.getContent();
+                    if (content != null) {
+                        ContentInfo contentInfo = content.getContentInfo();
+                        if(isRefineAdd)
+                        {
+                            createNode(childNode, contentInfo.getRemainTileInfos());
+                        }
+                        else
+                        {
+                            createNode(childNode, childTileInfos);
+                        }
+                    } else {
+                        createNode(childNode, childTileInfos);
+                    }
+                }
+            }
+        } else if (!tileInfos.isEmpty()) {
+            Node childNode = createContentNode(parentNode, tileInfos, 0);
+            if (childNode != null) {
+                parentNode.getChildren().add(childNode);
+                Content content = childNode.getContent();
+                if (content != null) {
+                    ContentInfo contentInfo = content.getContentInfo();
+                    createNode(childNode, contentInfo.getRemainTileInfos());
+                } else {
+                    createNode(childNode, tileInfos);
+                }
+            }
+        }
+    }
+
+    private void createNode_original(Node parentNode, List<TileInfo> tileInfos) throws IOException {
+        BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
+        BoundingVolume squareBoundingVolume = parentBoundingVolume.createSqureBoundingVolume();
+
+        long instanceLimit = globalOptions.getMaxInstance() * 4;
+        long instanceCount = tileInfos.size();
+        boolean isRefineAdd = globalOptions.isRefineAdd();
 //=======
 //        //int nodeLimit = globalOptions.getNodeLimit() * 4;
 //
@@ -119,7 +189,8 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
                         ContentInfo contentInfo = content.getContentInfo();
                         createNode(childNode, contentInfo.getRemainTileInfos());
                     } else {
-                        createNode(childNode, childTileInfos);
+                        ContentInfo contentInfo = content.getContentInfo();
+                        createNode(childNode, contentInfo.getTileInfos());
                     }
                 }
             }
@@ -194,7 +265,19 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
 
         // Test.*****************************************************************
         int lodValue = lod.getLevel();
-        if(lodValue == 3)
+        if(lodValue >= 3)
+        {
+            int hola = 0;
+        }
+        else if(lodValue == 2)
+        {
+            int hola = 0;
+        }
+        else if(lodValue == 1)
+        {
+            int hola = 0;
+        }
+        else if(lodValue == 0)
         {
             int hola = 0;
         }
@@ -227,7 +310,15 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         childNode.setChildren(new ArrayList<>());
 
         //childNode.setRefine(refineAdd ? Node.RefineType.ADD : Node.RefineType.REPLACE);
-        childNode.setRefine(Node.RefineType.ADD);
+        if(refineAdd)
+        {
+            childNode.setRefine(Node.RefineType.ADD);
+        }
+        else
+        {
+            childNode.setRefine(Node.RefineType.REPLACE);
+        }
+
         if (!resultInfos.isEmpty()) {
             ContentInfo contentInfo = new ContentInfo();
             contentInfo.setName(nodeCode);
