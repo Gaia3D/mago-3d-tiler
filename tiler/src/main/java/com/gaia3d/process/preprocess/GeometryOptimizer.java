@@ -15,8 +15,6 @@ public class GeometryOptimizer implements PreProcess {
     }
 
     public void optimize(List<GaiaScene> gaiaScenes) {
-        System.out.println("Optimize TEST" );
-
         // delete faces with normal aprox to (0, 0, -1).
         Vector3d normalReference = new Vector3d(0, 0, -1);
         double error = 0.1;

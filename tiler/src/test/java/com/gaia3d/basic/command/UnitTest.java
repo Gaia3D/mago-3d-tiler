@@ -18,15 +18,8 @@ class UnitTest {
         @Test
         void sample() {
             Vector3d a = GlobeUtils.geographicToCartesianWgs84(new Vector3d(126.980125, 37.521169, 0));
-            System.out.println(a);
-
-
             Vector3d b = GlobeUtils.cartesianToGeographicWgs84(new Vector3d(-3124798.1188322213,4127332.474398493,3713347.7041680403));
-            System.out.println(b);
-
             Vector3d c = GlobeUtils.cartesianToGeographicWgs84(new Vector3d(-3075909.5, 4414039.0, 3414263.0));
-            System.out.println(c);
-
 
             CRSFactory factory = new CRSFactory();
             CoordinateReferenceSystem crs = factory.createFromName("EPSG:5186");
@@ -36,7 +29,6 @@ class UnitTest {
             ProjCoordinate coordinate = new ProjCoordinate(b.x, b.y, b.z);
             ProjCoordinate transformedCoordinate = transformer.transform(coordinate, new ProjCoordinate());
 
-            System.out.println(transformedCoordinate);
         }
 
 

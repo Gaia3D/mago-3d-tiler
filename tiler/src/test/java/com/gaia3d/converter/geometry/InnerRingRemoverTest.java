@@ -16,7 +16,6 @@ class InnerRingRemoverTest {
 
         InnerRingRemover innerRingRemover = new InnerRingRemover();
         double result = innerRingRemover.cross(a, b, c);
-        System.out.println(result);
         // 2.3946318491139483E-11
         //0.000000000023946318491139483
     }
@@ -29,7 +28,6 @@ class InnerRingRemoverTest {
 
         InnerRingRemover innerRingRemover = new InnerRingRemover();
         double result = innerRingRemover.cross(a, b, c);
-        System.out.println(result);
         // 2.3946318491139483E-11
         //0.000000000023946318491139483
 
@@ -43,7 +41,6 @@ class InnerRingRemoverTest {
 
         InnerRingRemover innerRingRemover = new InnerRingRemover();
         double result = innerRingRemover.cross(a, b, c);
-        System.out.println(result);
         // 2.3946318491139483E-11
         //0.000000000023946318491139483
 
@@ -57,10 +54,8 @@ class InnerRingRemoverTest {
 
         InnerRingRemover innerRingRemover = new InnerRingRemover();
         double result = innerRingRemover.cross(a, b, c);
-        System.out.println(result);
         // 2.3946318491139483E-11
         //0.000000000023946318491139483
-
     }
 
     @Test
@@ -94,8 +89,6 @@ class InnerRingRemoverTest {
 
         InnerRingRemover innerRingRemover = new InnerRingRemover();
         double result = innerRingRemover.cross(a, b, c);
-        System.out.println(result);
-
         // -2.4279931091618658E-8
         // -0.000000024279931091618658
 
@@ -115,7 +108,5 @@ class InnerRingRemoverTest {
 
         InnerRingRemover innerRingRemover = new InnerRingRemover();
         //boolean result = innerRingRemover.isIntersect(a, b, c, d);
-
-        //System.out.println(result);
     }
 }

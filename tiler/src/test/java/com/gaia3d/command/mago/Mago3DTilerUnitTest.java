@@ -648,7 +648,6 @@ class Mago3DTilerUnitTest {
             String xml = "";
             StringBuilder xmlBodys = new StringBuilder();
             String path = "sample-instances-" + number + ".kml";
-            System.out.println("path: " + path);
             for (int i = 0; i < length; i++) {
                 for (int j = 0; j < length; j++) {
                     double scale = random.nextFloat() * 0.5 + 0.5;

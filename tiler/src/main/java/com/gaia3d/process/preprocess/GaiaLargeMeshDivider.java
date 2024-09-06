@@ -181,7 +181,6 @@ public class GaiaLargeMeshDivider {
                 }
             }
         }
-        System.out.println("minIndex : " + minIndex + ", maxIndex : " + maxIndex);
         log.info("minIndex : {}, maxIndex : {}, offset : {}", minIndex, maxIndex, maxIndex - minIndex);
 
         //List<GaiaVertex> subtractedVertices = vertices.subList(minIndex, maxIndex + 1);
