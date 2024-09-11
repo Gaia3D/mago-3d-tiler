@@ -203,6 +203,13 @@ public class GeoJsonSurfaceConverter extends AbstractGeometryConverter implement
             GaiaScene scene = easySceneCreator.createScene(file);
             GaiaNode rootNode = scene.getNodes().get(0);
 
+            GaiaBuildingSurface firstSurface = surfaces.get(0);
+            GaiaAttribute gaiaAttribute = scene.getAttribute();
+            gaiaAttribute.setAttributes(firstSurface.getProperties());
+            Map<String, String> attributes = gaiaAttribute.getAttributes();
+            gaiaAttribute.setNodeName(rootNode.getName());
+            attributes.put("name", firstSurface.getName());
+
             GaiaBoundingBox globalBoundingBox = new GaiaBoundingBox();
             for (GaiaBuildingSurface buildingSurface : surfaces) {
                 GaiaBoundingBox localBoundingBox = buildingSurface.getBoundingBox();
@@ -216,11 +223,6 @@ public class GeoJsonSurfaceConverter extends AbstractGeometryConverter implement
 
             for (GaiaBuildingSurface buildingSurface : surfaces) {
                 GaiaMaterial material = scene.getMaterials().get(0);
-                List<List<Vector3d>> polygons = new ArrayList<>();
-                List<Vector3d> polygon = new ArrayList<>();
-
-
-
 
                 // Has holes.***
                 List<Vector3d> ExteriorPolygon = buildingSurface.getExteriorPositions();
@@ -249,18 +251,6 @@ public class GeoJsonSurfaceConverter extends AbstractGeometryConverter implement
                     interiorPolygonsLocal.add(interiorPolygonLocal);
                 }
                 GaiaPrimitive primitive = createSurfaceFromExteriorAndInteriorPolygons(ExteriorPolygonLocal, interiorPolygonsLocal);
-
-
-               /* List<Vector3d> localPositions = new ArrayList<>();
-                Collections.reverse(buildingSurface.getExteriorPositions());
-                for (Vector3d position : buildingSurface.getExteriorPositions()) {
-                    Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
-                    Vector3d localPosition = positionWorldCoordinate.mulPosition(transfromMatrixInv);
-                    localPositions.add(localPosition);
-                    polygon.add(new Vector3dsOnlyHashEquals(localPosition));
-                }
-                polygons.add(polygon);
-                GaiaPrimitive primitive = createPrimitiveFromPolygons(polygons);*/
 
                 GaiaNode node = new GaiaNode();
                 node.setTransformMatrix(new Matrix4d().identity());
