@@ -259,31 +259,31 @@ public class Instanced3DModel implements TileModel {
 //                globalOptions.setDebugLod(true);
                 // End test.---------------------------------------------------------
 
-//                int lod = contentInfo.getLod().getLevel();
-//                if(lod > -1)
-//                {
-//                    float octreeMinSize = 4.0f;
-//
-//                    if(lod == 0)
-//                    {
-//                        octreeMinSize = 4.0f;
-//                    }
-//                    else if(lod == 1)
-//                    {
-//                        octreeMinSize = 0.6f;
-//                    }
-//                    else if(lod == 2)
-//                    {
-//                        octreeMinSize = 2.0f;
-//                    }
-//
-//
-//                    GaiaScene simpleScene = GeometryUtils.getGaiaSceneLego(resultGaiaScene, octreeMinSize);
-//                    resultGaiaScene = simpleScene;
-//                }
+                int lod = contentInfo.getLod().getLevel();
+                if(lod > 0)
+                {
+                    float octreeMinSize = 4.0f;
+
+                    if(lod == 0)
+                    {
+                        octreeMinSize = 0.3f;
+                    }
+                    else if(lod == 1)
+                    {
+                        octreeMinSize = 0.6f;
+                    }
+                    else if(lod == 2)
+                    {
+                        octreeMinSize = 2.0f;
+                    }
+
+
+                    GaiaScene simpleScene = GeometryUtils.getGaiaSceneLego(resultGaiaScene, octreeMinSize);
+                    resultGaiaScene = simpleScene;
+                }
 
                 Matrix4d transformMatrix = resultGaiaScene.getNodes().get(0).getTransformMatrix();
-                transformMatrix.rotateX(Math.toRadians(-90));
+                //transformMatrix.rotateX(Math.toRadians(-90));
                 gltfWriter.writeGlb(resultGaiaScene, file);
             }
         } catch (Exception e) {

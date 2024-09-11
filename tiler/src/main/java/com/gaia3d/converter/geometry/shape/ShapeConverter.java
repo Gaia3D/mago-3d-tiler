@@ -175,11 +175,19 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
 
                         z = point.getCoordinate().getZ();
 
+//                        // Test.***
+//                        z+= 10.0;
+//                        //End Test.***
+
                         Vector3d position = new Vector3d(x, y, z); // usually crs 3857.***
                         positions.add(position);
                     }
 
                     double diameter = getDiameter(feature, diameterColumnName);
+
+//                    // Test.***
+//                    diameter *= 2000.0;
+//                    // End Test.***
 
                     GaiaPipeLineString pipeLineString = GaiaPipeLineString.builder()
                             .id(feature.getID())
