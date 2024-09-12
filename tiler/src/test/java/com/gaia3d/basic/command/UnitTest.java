@@ -532,8 +532,8 @@ class UnitTest {
 
     @Test
     void testShapePipeLinesIndia_2() {
-        String path = "selected_pipes.shp";
-        String inputPath = "D:\\data\\GitHub_Issues_data\\selected_pipes\\";
+        String path = "selected_water_line.shp";
+        String inputPath = "D:\\data\\GitHub_Issues_data\\selected_water_line\\";
         String outputPath = "D:\\Result_mago3dTiler\\";
         String[] args = new String[]{
                 "-i", inputPath + path,
@@ -709,6 +709,25 @@ class UnitTest {
                 //"-largeMesh",
                 "-debug",
                 "-glb"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void test_geoJson_yeonHwa() {
+        String inputPath = "D:\\data\\issues_data\\";
+        String outputPath = "D:\\Result_mago3dTiler\\";
+        String path = "geoJsonData";
+
+        String[] args = new String[]{
+                "-i", inputPath,
+                "-it", "geojson",
+                "-o", outputPath + path,
+                "-crs", "4326",
+                "-outputType", "b3dm",
+                "-debug",
+                "-glb",
+                "-mh", "3.3"
         };
         Mago3DTilerMain.main(args);
     }

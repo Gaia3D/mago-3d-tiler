@@ -11,6 +11,7 @@ import com.gaia3d.converter.geometry.AbstractGeometryConverter;
 import com.gaia3d.converter.geometry.GaiaExtrusionBuilding;
 import com.gaia3d.converter.geometry.InnerRingRemover;
 import com.gaia3d.converter.geometry.Vector3dsOnlyHashEquals;
+import com.gaia3d.util.GeometryUtils;
 import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -213,6 +214,8 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                     localPositions.add(new Vector3dsOnlyHashEquals(localPosition));
                 }
                 Collections.reverse(localPositions);
+
+
 
                 List<GaiaExtrusionSurface> extrusionSurfaces = gaiaExtruder.extrude(localPositions, building.getRoofHeight(), building.getFloorHeight());
 

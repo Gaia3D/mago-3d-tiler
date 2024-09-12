@@ -465,81 +465,6 @@ public abstract class AbstractGeometryConverter {
         return primitive;
     }
 
-    private List<Vector3d> getCleanPoints3dArray(List<Vector3d> pointsArray, List<Vector3d> cleanPointsArray, double error) {
-        // Here checks uroborus, and check if there are adjacent points in the same position.***
-        if(cleanPointsArray == null)
-        {
-            cleanPointsArray = new ArrayList<>();
-        }
-        else
-        {
-            cleanPointsArray.clear();
-        }
-
-        int pointsCount = pointsArray.size();
-        Vector3d firstPoint = null;
-        Vector3d lastPoint = null;
-        for(int i=0; i<pointsCount; i++)
-        {
-            Vector3d currPoint = pointsArray.get(i);
-            if(i == 0)
-            {
-                firstPoint = currPoint;
-                lastPoint = currPoint;
-                cleanPointsArray.add(currPoint);
-                continue;
-            }
-
-            if (!currPoint.equals(firstPoint) && !currPoint.equals(lastPoint)) {
-
-                if(GeometryUtils.areAproxEqualsPoints3d(currPoint, firstPoint, error))
-                {
-                    // the polygon is uroborus.***
-                    continue;
-                }
-
-                if(GeometryUtils.areAproxEqualsPoints3d(currPoint, lastPoint, error))
-                {
-                    // the point is the same as the last point.***
-                    continue;
-                }
-
-                cleanPointsArray.add(currPoint);
-                lastPoint = currPoint;
-            }
-
-        }
-
-        // now, erase colineal points.***
-        double dotProdError = 1.0 - 1e-10;
-        pointsCount = cleanPointsArray.size();
-        for (int i = 0; i < pointsCount; i++) {
-            int idxPrev = GeometryUtils.getPrevIdx(i, pointsCount);
-            int idxNext = GeometryUtils.getNextIdx(i, pointsCount);
-            Vector3d prevPoint = cleanPointsArray.get(idxPrev);
-            Vector3d currPoint = cleanPointsArray.get(i);
-            Vector3d nextPoint = cleanPointsArray.get(idxNext);
-
-            Vector3d v1 = new Vector3d();
-            Vector3d v2 = new Vector3d();
-            currPoint.sub(prevPoint, v1);
-            nextPoint.sub(currPoint, v2);
-            v1.normalize();
-            v2.normalize();
-
-            double dotProd = v1.dot(v2);
-            if (Math.abs(dotProd) >= dotProdError)
-            {
-                // the points are colineal.***
-                cleanPointsArray.remove(i);
-                i--;
-                pointsCount--;
-            }
-        }
-
-        return cleanPointsArray;
-    }
-
     protected GaiaPrimitive createPrimitiveFromPolygons(List<List<Vector3d>> polygons) {
         GaiaTessellator tessellator = new GaiaTessellator();
 
@@ -555,7 +480,7 @@ public abstract class AbstractGeometryConverter {
 
             // check uroborus.***
             List<Vector3d> cleanPolygon = new ArrayList<>();
-            cleanPolygon = getCleanPoints3dArray(polygon, cleanPolygon, error);
+            cleanPolygon = GeometryUtils.getCleanPoints3dArray(polygon, cleanPolygon, error);
             polygonsClean.add(cleanPolygon);
 
             Vector3d normal = new Vector3d();
