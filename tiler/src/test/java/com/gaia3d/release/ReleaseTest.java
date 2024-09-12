@@ -341,7 +341,39 @@ class ReleaseTest {
                 "-inputType", "shp",
                 "-crs", "32643",
                 "-output", output.getAbsolutePath(),
-                "-dc", "Diameter",
+                "-dc", "pipe_depth",
+                "-debug",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testGyangGyoInterior3ds() {
+        String path = "GYANGGYO-INTERIOR-3DS";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "3ds",
+                "-crs", "5186",
+                "-output", output.getAbsolutePath(),
+                "-debug",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testGyangGyoInteriorOjb() {
+        String path = "GYANGGYO-INTERIOR-OBJ";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "obj",
+                "-crs", "5186",
+                "-output", output.getAbsolutePath(),
                 "-debug",
         };
         Mago3DTilerMain.main(args);
