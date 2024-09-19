@@ -24,6 +24,20 @@ public class StressTest {
     }
 
     @Test
+    void testYeouidoShape() {
+        String path = "YEOUIDO-SHP";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "shp",
+                "-crs", "5186",
+                //"-terrain", getInputPath(path).getAbsolutePath() + File.separator + "korea-compressed.tif",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
     void testSeoulShape() {
         String path = "SEOUL-SHP";
         String[] args = new String[] {
@@ -31,7 +45,8 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "shp",
                 "-crs", "5186",
-                "-terrain", getInputPath(path).getAbsolutePath() + File.separator + "korea-compressed.tif",
+                //"-terrain", getInputPath(path).getAbsolutePath() + File.separator + "korea-compressed.tif",
+                "-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -45,6 +60,7 @@ public class StressTest {
                 "-it", "shp",
                 "-crs", "5186",
                 "-terrain", getInputPath(path).getAbsolutePath() + File.separator + "korea-compressed.tif",
+                "-debug"
         };
         Mago3DTilerMain.main(args);
     }
