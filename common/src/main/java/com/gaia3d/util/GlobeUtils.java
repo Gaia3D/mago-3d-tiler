@@ -1,17 +1,24 @@
 package com.gaia3d.util;
 
+import lombok.extern.slf4j.Slf4j;
+import org.geotools.geometry.jts.JTS;
+import org.geotools.referencing.CRS;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
-import org.locationtech.proj4j.BasicCoordinateTransform;
-import org.locationtech.proj4j.CRSFactory;
-import org.locationtech.proj4j.CoordinateReferenceSystem;
-import org.locationtech.proj4j.ProjCoordinate;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.io.WKTReader;
+import org.locationtech.proj4j.*;
+import org.opengis.geometry.Geometry;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 
 /**
  * Utility class for converting between geographic and cartesian coordinates.
  * @author znkim
  * @since 1.0.0
  */
+@Slf4j
 public class GlobeUtils {
     public static final double DEGREE_TO_RADIAN_FACTOR = 0.017453292519943296d; // 3.141592653589793 / 180.0;
     public static final double EQUATORIAL_RADIUS = 6378137.0d;
@@ -160,5 +167,18 @@ public class GlobeUtils {
         ProjCoordinate result = new ProjCoordinate();
         transformer.transform(coordinate, result);
         return result;
+    }
+
+    public static Coordinate transformOnGeotools(org.opengis.referencing.crs.CoordinateReferenceSystem source, Coordinate coordinate) {
+        try {
+            org.opengis.referencing.crs.CoordinateReferenceSystem wgs84 = CRS.decode("EPSG:4326");
+
+            MathTransform transform = CRS.findMathTransform(source, wgs84, false);
+            Coordinate result = JTS.transform(coordinate, coordinate, transform);
+            return result;
+        } catch (FactoryException | TransformException e) {
+            log.error("Failed to transform coordinate", e);
+            throw new RuntimeException(e);
+        }
     }
 }

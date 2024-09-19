@@ -12,15 +12,12 @@ import com.github.mreutegg.laszip4j.LASReader;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
-import org.locationtech.proj4j.BasicCoordinateTransform;
-import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -68,13 +65,7 @@ public class LasConverter {
         double zScaleFactor = header.getZScaleFactor();
         double zOffset = header.getZOffset();
 
-
-
-
-        CRSFactory factory = new CRSFactory();
-        CoordinateReferenceSystem wgs84 = globalOptions.getCrs();
-        CoordinateReferenceSystem crs = factory.createFromParameters("WGS84", "+proj=longlat +datum=WGS84 +no_defs");
-        BasicCoordinateTransform transformer = new BasicCoordinateTransform(wgs84, crs);
+        CoordinateReferenceSystem crs = globalOptions.getCrs();
 
         int pointSkip = globalOptions.getPointSkip();
         CloseablePointIterable pointIterable = reader.getCloseablePoints();
@@ -103,7 +94,7 @@ public class LasConverter {
                 double z = point.getZ() * zScaleFactor + zOffset;
 
                 ProjCoordinate coordinate = new ProjCoordinate(x, y, z);
-                ProjCoordinate transformedCoordinate = transformer.transform(coordinate, new ProjCoordinate());
+                ProjCoordinate transformedCoordinate = GlobeUtils.transform(crs, coordinate);
 
                 Vector3d position = new Vector3d(transformedCoordinate.x, transformedCoordinate.y, z);
                 transformedCoordinate = null;

@@ -13,16 +13,10 @@ import com.gaia3d.converter.geometry.pipe.Modeler3D;
 import com.gaia3d.converter.geometry.pipe.PipeElbow;
 import com.gaia3d.converter.geometry.pipe.PipeType;
 import com.gaia3d.util.GeometryUtils;
-import com.gaia3d.util.GlobeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
-import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
-import org.locationtech.proj4j.BasicCoordinateTransform;
-import org.locationtech.proj4j.CRSFactory;
-import org.locationtech.proj4j.CoordinateReferenceSystem;
-import org.locationtech.proj4j.ProjCoordinate;
 import org.opengis.feature.simple.SimpleFeature;
 
 import java.io.File;

@@ -74,10 +74,9 @@ public class GaiaTranslator implements PreProcess {
     private Vector3d getTranslation(GaiaScene gaiaScene) {
         GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox();
         Vector3d center = boundingBox.getCenter();
-        //Vector3d traslation = new Vector3d(center.x, center.y, 0.0d);
-        Vector3d traslation = new Vector3d(center.x, center.y, 0.0d);
-        traslation.negate();
-        return traslation;
+        Vector3d translation = new Vector3d(center.x, center.y, 0.0d);
+        translation.negate();
+        return translation;
     }
 
     private Vector3d getPosition(FormatType formatType, GaiaScene gaiaScene) {

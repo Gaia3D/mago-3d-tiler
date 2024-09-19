@@ -24,6 +24,19 @@ public class StressTest {
     }
 
     @Test
+    void testSeoulShape() {
+        String path = "SEOUL-SHP";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "shp",
+                "-crs", "5186",
+                "-terrain", getInputPath(path).getAbsolutePath() + File.separator + "korea-compressed.tif",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
     void testSouthKoreaShape() {
         String path = "SOUTH-KOREA-SHP";
         String[] args = new String[] {
