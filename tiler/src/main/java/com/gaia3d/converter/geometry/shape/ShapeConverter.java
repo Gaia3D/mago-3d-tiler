@@ -23,11 +23,7 @@ import org.geotools.data.shapefile.shp.ShapefileReader;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.store.ContentFeatureSource;
 import org.geotools.feature.FeatureIterator;
-import org.geotools.geometry.jts.JTSFactoryFinder;
 
-import org.geotools.referencing.CRS;
-import org.geotools.referencing.datum.BursaWolfParameters;
-import org.geotools.referencing.datum.DefaultGeodeticDatum;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
