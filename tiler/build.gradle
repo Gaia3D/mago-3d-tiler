@@ -79,6 +79,10 @@ dependencies {
     implementation "org.geotools:gt-coverage:26.5"
     implementation "org.geotools:gt-main:26.5"
     implementation "org.geotools:gt-image:26.5"
+    implementation "org.geotools:gt-grid:26.5"
+    implementation "org.geotools:gt-process:26.5"
+    implementation "org.geotools:gt-process-raster:26.5"
+    implementation "org.geotools:gt-process-feature:26.5"
 
     // org.geotools.gce.geotiff
     implementation "javax.media:jai_core:1.1.3"
