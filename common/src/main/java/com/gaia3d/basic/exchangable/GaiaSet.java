@@ -78,7 +78,7 @@ public class GaiaSet implements Serializable{
             log.debug("Directory created: {}", tempDir);
         }
         File tempFile = tempDir.resolve(tempFileName).toFile();
-        try (ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(tempFile))) {
+        try (ObjectOutputStream outputStream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(tempFile)))) {
             outputStream.writeObject(this);
 
             // Copy images to the temp directory
@@ -125,7 +125,7 @@ public class GaiaSet implements Serializable{
     public static GaiaSet readFile(Path path) throws FileNotFoundException {
         File input = path.toFile();
         Path imagesPath = path.getParent().resolve("images");
-        try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(input))) {
+        try (ObjectInputStream inputStream = new ObjectInputStream(new BufferedInputStream(new FileInputStream(input)))) {
             GaiaSet gaiaSet = (GaiaSet) inputStream.readObject();
             for (GaiaMaterial material : gaiaSet.getMaterials()) {
                 material.getTextures().forEach((textureType, textures) -> {

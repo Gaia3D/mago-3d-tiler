@@ -23,7 +23,6 @@ import org.geotools.data.shapefile.shp.ShapefileReader;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.store.ContentFeatureSource;
 import org.geotools.feature.FeatureIterator;
-import org.geotools.geometry.jts.JTSFactoryFinder;
 
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
@@ -35,6 +34,8 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.filter.Filter;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.datum.GeodeticDatum;
 
 import java.io.File;
 import java.io.IOException;
@@ -89,16 +90,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             //query.getHints().add(new Hints(Hints.FEATURE_2D, true));
 
             int totalCount = source.getCount(query);
-
-            int totalCountBy100 = totalCount / 100;
-
-            if(totalCountBy100 == 0)
-            {
-                log.warn(" - Shape Feature Count is 0 : {}", file.getPath());
-                totalCountBy100 = 1;
-            }
-
-            int progressCount = 0;
             log.info(" - Total Shape Feature Count : {}", totalCount);
 
             SimpleFeatureCollection features = source.getFeatures(query);
@@ -106,10 +97,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             List<GaiaExtrusionBuilding> buildings = new ArrayList<>();
             List<GaiaPipeLineString> pipeLineStrings = new ArrayList<>();
             while (iterator.hasNext()) {
-                if (progressCount % totalCountBy100 == 0) {
-                    log.debug(" - Shape Feature Loading progress. ({}/100)%", progressCount / totalCountBy100);
-                }
-                progressCount++;
 
                 SimpleFeature feature = iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
@@ -175,19 +162,11 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
 
                         z = point.getCoordinate().getZ();
 
-//                        // Test.***
-//                        z+= 10.0;
-//                        //End Test.***
-
                         Vector3d position = new Vector3d(x, y, z); // usually crs 3857.***
                         positions.add(position);
                     }
 
                     double diameter = getDiameter(feature, diameterColumnName);
-
-//                    // Test.***
-//                    diameter *= 2000.0;
-//                    // End Test.***
 
                     GaiaPipeLineString pipeLineString = GaiaPipeLineString.builder()
                             .id(feature.getID())

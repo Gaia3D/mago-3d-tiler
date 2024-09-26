@@ -28,7 +28,6 @@ class UnitTest {
 
             ProjCoordinate coordinate = new ProjCoordinate(b.x, b.y, b.z);
             ProjCoordinate transformedCoordinate = transformer.transform(coordinate, new ProjCoordinate());
-
         }
 
 
