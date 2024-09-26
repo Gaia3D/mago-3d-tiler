@@ -166,6 +166,11 @@ public class GeoJsonSurfaceConverter extends AbstractGeometryConverter implement
                         } else {
                             position = new Vector3d(x, y, z);
                         }
+                        // check if position is Nan.***
+                        if (Double.isNaN(position.x) || Double.isNaN(position.y)) {
+                            log.warn("Invalid Position : {}, {}", feature.getID(), nameColumnName);
+                            int hola = 0;
+                        }
                         positions.add(position);
                         boundingBox.addPoint(position);
                     }

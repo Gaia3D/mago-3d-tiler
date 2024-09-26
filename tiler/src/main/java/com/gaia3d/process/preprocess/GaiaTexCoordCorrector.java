@@ -85,26 +85,34 @@ public class GaiaTexCoordCorrector implements PreProcess {
         double tBoxHeight = texcoordBoundingRectangle.getHeight();
         double texCoordOriginX = texcoordBoundingRectangle.getMinX();
         double texCoordOriginY = texcoordBoundingRectangle.getMinY();
-        boolean mustTranslateTexCoordsToPositiveQuadrant = false;
 
         if (tBoxWidth > 1.0 || tBoxHeight > 1.0) {
-            mustTranslateTexCoordsToPositiveQuadrant = true;
-        } else {
-            if (texCoordOriginX < 0.0 || texCoordOriginX > 1.0) {
-                mustTranslateTexCoordsToPositiveQuadrant = true;
-            }
-
-            if (texCoordOriginY < 0.0 || texCoordOriginY > 1.0) {
-                mustTranslateTexCoordsToPositiveQuadrant = true;
-            }
-        }
-
-        if (mustTranslateTexCoordsToPositiveQuadrant) {
             // must find welded triangles & translate the texCoords to the 1rst quadrant.
             int surfacesCount = primitive.getSurfaces().size();
             for (int i = 0; i < surfacesCount; i++) {
                 GaiaSurface surface = primitive.getSurfaces().get(i);
                 translateSurfaceTexCoordsToPositiveQuadrant(surface, primitive.getVertices());
+            }
+        } else {
+            if (texCoordOriginX < 0.0 || texCoordOriginX > 1.0 || texCoordOriginY < 0.0 || texCoordOriginY > 1.0) {
+                double offsetX = 0.0;
+                double offsetY = 0.0;
+                if (texCoordOriginX < 0.0 || texCoordOriginX > 1.0) {
+                    offsetX = Math.floor(texCoordOriginX);
+                }
+
+                if (texCoordOriginY < 0.0 || texCoordOriginY > 1.0) {
+                    offsetY = Math.floor(texCoordOriginY);
+                }
+
+                List<GaiaVertex> vertices = primitive.getVertices();
+                for(int i = 0; i < vertices.size(); i++) {
+                    GaiaVertex vertex = vertices.get(i);
+                    Vector2d texCoord = vertex.getTexcoords();
+                    texCoord.x = texCoord.x - offsetX;
+                    texCoord.y = texCoord.y - offsetY;
+                }
+
             }
         }
     }

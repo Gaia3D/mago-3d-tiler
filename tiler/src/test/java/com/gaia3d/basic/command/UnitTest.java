@@ -411,15 +411,18 @@ class UnitTest {
 
         @Test
         void testShape() {
+            String inputPath  = "D:\\data\\unit-test\\";
+            String outputPath = "D:\\Result_mago3dTiler\\";
             String path = "shape";
             String[] args = new String[]{
-                    "-i", INPUT_PATH + path,
+                    "-i", inputPath + path,
                     "-it", "shp",
-                    "-o", OUTPUT_PATH + path,
+                    "-o", outputPath + path,
                     "-proj", "+proj=tmerc +lat_0=38 +lon_0=127.0028902777778 +k=1 +x_0=200000 +y_0=500000 +ellps=bessel +units=m +no_defs +towgs84=-115.80,474.99,674.11,1.16,-2.31,-1.63,6.43",
                     "-maxCount", "4096",
                     "-multiThread",
                     "-refineAdd",
+                    "-d"
             };
             Mago3DTilerMain.main(args);
         }
@@ -514,6 +517,25 @@ class UnitTest {
     void testShapePipeLinesIndia() {
         String path = "water_pipelines.shp";
         String inputPath = "D:\\data\\GitHub_Issues_data\\water_pipelines\\";
+        String outputPath = "D:\\Result_mago3dTiler\\";
+        String[] args = new String[]{
+                "-i", inputPath + path,
+                "-it", "shp",
+                "-o", outputPath + path,
+                "-crs", "32643",
+                "-maxCount", "4096",
+                "-multiThreadCount", "1",
+                "-refineAdd",
+                "-debug",
+                "-glb"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testShapePipeLinesIndia_10() {
+        String path = "10_z.shp";
+        String inputPath = "D:\\data\\GitHub_Issues_data\\10_z\\";
         String outputPath = "D:\\Result_mago3dTiler\\";
         String[] args = new String[]{
                 "-i", inputPath + path,
@@ -716,7 +738,7 @@ class UnitTest {
     void test_geoJson_yeonHwa() {
         String inputPath = "D:\\data\\issues_data\\";
         String outputPath = "D:\\Result_mago3dTiler\\";
-        String path = "geoJsonData";
+        String path = "ThailandGeoJsonData";
 
         String[] args = new String[]{
                 "-i", inputPath,
@@ -727,6 +749,59 @@ class UnitTest {
                 "-debug",
                 "-glb",
                 "-mh", "3.3"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void test_geoJson_seoul() {
+        // **********************************************************************************************************************************************************************************
+        // crs 5174 = +proj=tmerc +lat_0=38 +lon_0=127.0028902777778 +k=1 +x_0=200000 +y_0=500000 +ellps=bessel +units=m +no_defs +towgs84=-115.80,474.99,674.11,1.16,-2.31,-1.63,6.43
+        // **********************************************************************************************************************************************************************************
+        String inputPath = "D:\\data\\issues_data\\";
+        String outputPath = "D:\\Result_mago3dTiler\\";
+        String path = "allSeoulGeoJson";
+
+        String[] args = new String[]{
+                "-i", inputPath + path,
+                "-it", "geojson",
+                "-o", outputPath + path,
+                "-proj", "+proj=tmerc +lat_0=38 +lon_0=127.0028902777778 +k=1 +x_0=200000 +y_0=500000 +ellps=bessel +units=m +no_defs +towgs84=-115.80,474.99,674.11,1.16,-2.31,-1.63,6.43",
+                "-outputType", "b3dm",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void test_geoJson_wangsuk() {
+        String inputPath = "D:\\data\\issues_data\\";
+        String outputPath = "D:\\Result_mago3dTiler\\";
+        String path = "wangsukGeoJson";
+
+        String[] args = new String[]{
+                "-i", inputPath + path,
+                "-it", "geojson",
+                "-o", outputPath + path,
+                "-crs", "4326",
+                "-outputType", "b3dm",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void test_IndiaSchool() {
+        String inputPath = "D:\\data\\issues_data\\";
+        String outputPath = "D:\\Result_mago3dTiler\\";
+        String path = "GLB_india_school";
+
+        String[] args = new String[]{
+                "-i", inputPath + path,
+                "-it", "glb",
+                "-o", outputPath + path,
+                "-crs", "3857",
+                "-debug"
         };
         Mago3DTilerMain.main(args);
     }

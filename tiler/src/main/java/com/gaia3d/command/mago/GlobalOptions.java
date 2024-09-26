@@ -118,7 +118,7 @@ public class GlobalOptions {
     private boolean ignoreTextures = false; // ignore textures flag
 
     private boolean largeMesh = false; // [Experimental]large mesh splitting mode flag
-    private boolean texCoordCorrection = false; // [Experimental] texture coordinate correction flag, to PositiveQuadrant
+    private boolean texCoordCorrection = true; // [Experimental] texture coordinate correction flag, to PositiveQuadrant
 
     /* 2D Data Column Options */
     private String nameColumn;
