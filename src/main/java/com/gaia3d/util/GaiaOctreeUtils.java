@@ -42,7 +42,7 @@ public class GaiaOctreeUtils {
                                         GaiaFace face = surface.getFaces().get(m);
 
                                         int indicesCount = face.getIndices().length;
-                                        int indices[] = face.getIndices();
+                                        int[] indices = face.getIndices();
                                         int triangleCount = indicesCount / 3;
                                         for(int n = 0; n < triangleCount; n++) {
                                             int index0 = indices[n * 3];
