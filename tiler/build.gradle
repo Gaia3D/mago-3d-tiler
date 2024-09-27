@@ -7,10 +7,10 @@ plugins {
 }
 
 group "com.gaia3d"
-version "1.8.4"
+version "1.9.0"
 project.ext.lwjglVersion = "3.3.3"
 
-switch ( OperatingSystem.current() ) {
+switch (OperatingSystem.current()) {
     case OperatingSystem.WINDOWS:
         project.ext.lwjglNatives = "natives-windows"
         break
@@ -21,6 +21,7 @@ switch ( OperatingSystem.current() ) {
         project.ext.lwjglNatives = "natives-macos"
         break
 }
+project.ext.lwjglNatives = "natives-linux"
 
 repositories {
     maven { url "https://repo.osgeo.org/repository/release/" }
@@ -140,10 +141,10 @@ java {
 }
 
 javadoc {
-    options.addStringOption("locale","ko_KR");
-    options.addStringOption("encoding","UTF-8");
-    options.addStringOption("charset","UTF-8");
-    options.addStringOption("docencoding","UTF-8");
+    options.addStringOption("locale", "ko_KR");
+    options.addStringOption("encoding", "UTF-8");
+    options.addStringOption("charset", "UTF-8");
+    options.addStringOption("docencoding", "UTF-8");
 }
 
 jar {
@@ -173,7 +174,7 @@ shadowJar {
 
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from sourceSets.main.runtimeClasspath
-    configurations = [ project.configurations.runtimeClasspath ]
+    configurations = [project.configurations.runtimeClasspath]
     archiveFileName = "mago-3d-tiler-${project.version}-${project.ext.lwjglNatives}.jar"
 }
 
