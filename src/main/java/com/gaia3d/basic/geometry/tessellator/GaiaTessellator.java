@@ -569,11 +569,6 @@ public class GaiaTessellator {
             GaiaRectangle rect = hole.getBoundingRectangle();
             Vector2d minPoint = rect.getLeftBottomPoint();
             int mostLeftDownPointIdx = hole.getMostLeftDownPoint2DIdx();
-            if(mostLeftDownPointIdx == -1)
-            {
-                // the hole is empty.***
-                int hola = 0;
-            }
             Point2DTess mostLeftDownPoint = hole.getPoint(mostLeftDownPointIdx);
 
             double squareDist = extMinPoint.distanceSquared(mostLeftDownPoint.getPoint()); // original.***
