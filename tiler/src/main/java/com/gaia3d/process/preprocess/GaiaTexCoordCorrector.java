@@ -87,8 +87,10 @@ public class GaiaTexCoordCorrector implements PreProcess {
         double texCoordOriginY = texcoordBoundingRectangle.getMinY();
 
         if (tBoxWidth > 1.0 || tBoxHeight > 1.0) {
+            // If the bRect's width or height is bigger than 1.0, is possible that the primitive uses repeat texture mode. BUT:
             // must find welded triangles & translate the texCoords to the 1rst quadrant.
             int surfacesCount = primitive.getSurfaces().size();
+
             for (int i = 0; i < surfacesCount; i++) {
                 GaiaSurface surface = primitive.getSurfaces().get(i);
                 translateSurfaceTexCoordsToPositiveQuadrant(surface, primitive.getVertices());
@@ -112,7 +114,6 @@ public class GaiaTexCoordCorrector implements PreProcess {
                     texCoord.x = texCoord.x - offsetX;
                     texCoord.y = texCoord.y - offsetY;
                 }
-
             }
         }
     }

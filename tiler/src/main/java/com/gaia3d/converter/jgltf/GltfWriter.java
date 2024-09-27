@@ -452,8 +452,8 @@ public class GltfWriter {
         // Set the alpha mode.***
         boolean isOpaque = gaiaMaterial.isOpaqueMaterial();
         if (!isOpaque) {
-            material.setAlphaMode("MASK"); // "OPAQUE", "MASK", "BLEND"
-            material.setAlphaCutoff(0.0f);
+            material.setAlphaMode("BLEND"); // "OPAQUE", "MASK", "BLEND"
+            material.setAlphaCutoff(0.5f);
         } else {
             material.setAlphaMode("OPAQUE"); // "OPAQUE", "MASK", "BLEND"
         }
