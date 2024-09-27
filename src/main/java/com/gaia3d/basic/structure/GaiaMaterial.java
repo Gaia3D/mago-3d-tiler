@@ -37,9 +37,11 @@ public class GaiaMaterial extends MaterialStructure implements Serializable {
     private Vector4d specularColor = new Vector4d(1.0, 1.0, 1.0, 1.0);
     private float shininess = 0.0f;
     private boolean isRepeat = false;
+    private boolean isBlend = false;
+    private boolean isOpaque = true;
 
     public boolean isOpaqueMaterial() {
-        boolean isOpaque = true;
+        this.isOpaque = true;
 
         // 1rst check textures.***
         int texCount = textures.size();
@@ -50,8 +52,8 @@ public class GaiaMaterial extends MaterialStructure implements Serializable {
                     String texPath = gaiaTexture.getPath();
                     int indicePunto = texPath.lastIndexOf('.');
                     String extension = texPath.substring(indicePunto + 1);
-                    if(extension.equals("png") || extension.equals("PNG")) {
-                        isOpaque = false;
+                    if (extension.equals("png") || extension.equals("PNG")) {
+                        this.isOpaque = false;
                         break;
                     }
                 }
@@ -61,11 +63,16 @@ public class GaiaMaterial extends MaterialStructure implements Serializable {
         // if there are no textures, then check the diffuse color.***
         if (texCount == 0) {
             if (diffuseColor.w < 1.0) {
-                isOpaque = false;
+                this.isOpaque = false;
             }
         }
 
-        return isOpaque;
+        if (diffuseColor.w < 1.0) {
+            this.isOpaque = false;
+            this.isBlend = true;
+        }
+
+        return this.isOpaque;
     }
 
     public void deleteTextures() {
