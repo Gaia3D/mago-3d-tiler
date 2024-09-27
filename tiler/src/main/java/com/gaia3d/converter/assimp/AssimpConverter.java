@@ -122,19 +122,6 @@ public class AssimpConverter implements Converter {
                 matrix4.m21(0.0d);
                 matrix4.m22(1.0d);
                 matrix4.m23(0.0d);
-            } else {
-//                matrix4.m00(1.0d);
-//                matrix4.m01(0.0d);
-//                matrix4.m02(0.0d);
-//                matrix4.m03(0.0d);
-//                matrix4.m10(0.0d);
-//                matrix4.m11(0.0d);
-//                matrix4.m12(-1.0d);
-//                matrix4.m13(0.0d);
-//                matrix4.m20(0.0d);
-//                matrix4.m21(1.0d);
-//                matrix4.m22(0.0d);
-//                matrix4.m23(0.0d);
             }
         }
         if (isRootNode && isZeroOrigin) {
@@ -240,6 +227,14 @@ public class AssimpConverter implements Converter {
     private GaiaMaterial processMaterial(AIMaterial aiMaterial, String path, List<String> embeddedTextures) {
         GaiaMaterial material = new GaiaMaterial();
 
+        // TODO: Check if the material has a name
+        /*String materialName = "unnamed";
+        AIString namePath = AIString.calloc();
+        int materialNameString = Assimp.aiGetMaterialString(aiMaterial, Assimp.AI_MATKEY_NAME, 0, 0, namePath);
+        if (materialNameString == 0) {
+            materialName = namePath.dataString();
+        }*/
+
         Vector4d diffVector4d;
         AIColor4D diffColor = AIColor4D.create();
         int diffResult = Assimp.aiGetMaterialColor(aiMaterial, Assimp.AI_MATKEY_COLOR_DIFFUSE, Assimp.aiTextureType_NONE, 0, diffColor);
@@ -280,7 +275,6 @@ public class AssimpConverter implements Converter {
         Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_SHININESS, 0, shininessPath, (IntBuffer) null, null, null, null, null, null);
         String shininessTexPath = shininessPath.dataString();
 
-        //Path parentPath = new File(path).toPath();
         File parentPath = new File(path);
         if (!diffTexPath.isEmpty()) {
             material.setName(diffTexPath);
@@ -377,6 +371,7 @@ public class AssimpConverter implements Converter {
             textures = new ArrayList<>();
             material.getTextures().put(TextureType.SHININESS, textures);
         }
+
         return material;
     }
 

@@ -762,9 +762,9 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                 AbstractRingProperty ringProperty = triangle.getExterior();
                 AbstractRing ring = ringProperty.getObject();
                 String id = ring.getId();
-                log.debug("Ring id: {}", id);
+                //log.debug("Ring id: {}", id);
+                // TODO : find ring
             });
-
         }
         return new ArrayList<>();
     }
