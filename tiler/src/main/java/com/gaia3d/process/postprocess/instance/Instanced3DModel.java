@@ -7,6 +7,7 @@ import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.octree.GaiaOctree;
 import com.gaia3d.basic.structure.GaiaAttribute;
 import com.gaia3d.basic.structure.GaiaScene;
+import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.jgltf.GltfWriter;
 import com.gaia3d.converter.kml.KmlInfo;
@@ -259,7 +260,7 @@ public class Instanced3DModel implements TileModel {
 //                globalOptions.setDebugLod(true);
                 // End test.---------------------------------------------------------
 
-                int lod = contentInfo.getLod().getLevel();
+                /*int lod = contentInfo.getLod().getLevel();
                 if(lod > 0)
                 {
                     float octreeMinSize = 4.0f;
@@ -277,13 +278,12 @@ public class Instanced3DModel implements TileModel {
                         octreeMinSize = 2.0f;
                     }
 
-
                     GaiaScene simpleScene = GeometryUtils.getGaiaSceneLego(resultGaiaScene, octreeMinSize);
                     resultGaiaScene = simpleScene;
-                }
+                }*/
 
                 Matrix4d transformMatrix = resultGaiaScene.getNodes().get(0).getTransformMatrix();
-                //transformMatrix.rotateX(Math.toRadians(-90));
+                transformMatrix.rotateX(Math.toRadians(-90));
                 gltfWriter.writeGlb(resultGaiaScene, file);
             }
         } catch (Exception e) {
