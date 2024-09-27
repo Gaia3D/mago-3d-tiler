@@ -263,26 +263,6 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
             return null;
         }
 
-        // Test.*****************************************************************
-        int lodValue = lod.getLevel();
-        if(lodValue >= 3)
-        {
-            int hola = 0;
-        }
-        else if(lodValue == 2)
-        {
-            int hola = 0;
-        }
-        else if(lodValue == 1)
-        {
-            int hola = 0;
-        }
-        else if(lodValue == 0)
-        {
-            int hola = 0;
-        }
-        // End test.--------------------------------------------------------------
-
         nodeCode = nodeCode + index;
 
         log.info("[Tiling][ContentNode][" + nodeCode + "][LOD{}][OBJECT{}]", lod.getLevel(), tileInfos.size());

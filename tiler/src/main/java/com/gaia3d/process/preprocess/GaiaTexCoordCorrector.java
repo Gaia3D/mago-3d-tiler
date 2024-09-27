@@ -108,7 +108,7 @@ public class GaiaTexCoordCorrector implements PreProcess {
                 }
 
                 List<GaiaVertex> vertices = primitive.getVertices();
-                for(int i = 0; i < vertices.size(); i++) {
+                for (int i = 0; i < vertices.size(); i++) {
                     GaiaVertex vertex = vertices.get(i);
                     Vector2d texCoord = vertex.getTexcoords();
                     texCoord.x = texCoord.x - offsetX;
