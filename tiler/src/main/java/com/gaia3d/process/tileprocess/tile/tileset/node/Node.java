@@ -40,20 +40,20 @@ public class Node {
     private List<Node> children;
     private Content content;
 
-    // TransfromMatrix
+    // TransformMatrix
     public void setTransformMatrix(Matrix4d transformMatrixAux, boolean useTransform) {
         this.transformMatrixAux = transformMatrixAux;
         if (useTransform) {
             if (parent == this) { // root
                 this.transformMatrix = transformMatrixAux;
             } else if (parent.getTransformMatrixAux() != null) {
-                Matrix4d resultTransfromMatrix = new Matrix4d();
+                Matrix4d resultTransformMatrix = new Matrix4d();
                 Matrix4d parentTransformMatrix = parent.getTransformMatrixAux();
                 Matrix4d parentTransformMatrixInv = new Matrix4d(parentTransformMatrix).invert();
 
-                parentTransformMatrixInv.mul(transformMatrixAux, resultTransfromMatrix);
+                parentTransformMatrixInv.mul(transformMatrixAux, resultTransformMatrix);
 
-                this.transformMatrix = resultTransfromMatrix;
+                this.transformMatrix = resultTransformMatrix;
                 this.transformMatrixAux = transformMatrixAux;
             } else {
                 this.transformMatrix = transformMatrixAux;

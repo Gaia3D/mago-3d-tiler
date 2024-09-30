@@ -24,11 +24,11 @@ public class GaiaRelocator implements PostProcess {
             Vector3d kmlCenter = kmlInfo.getPosition();
             kmlCenter = GlobeUtils.geographicToCartesianWgs84(kmlCenter);
 
-            Matrix4d resultTransfromMatrix = transformMatrixInv.translate(kmlCenter, new Matrix4d());
+            Matrix4d resultTransformMatrix = transformMatrixInv.translate(kmlCenter, new Matrix4d());
 
-            double x = resultTransfromMatrix.get(3, 0);
-            double y = resultTransfromMatrix.get(3, 1);
-            double z = resultTransfromMatrix.get(3, 2);
+            double x = resultTransformMatrix.get(3, 0);
+            double y = resultTransformMatrix.get(3, 1);
+            double z = resultTransformMatrix.get(3, 2);
 
             Vector3d translation = new Vector3d(x, y, z);
 

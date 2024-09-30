@@ -124,12 +124,12 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
 
                 Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
                 Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
-                Matrix4d transfromMatrixInv = new Matrix4d(transformMatrix).invert();
+                Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
 
                 List<Vector3d> localPositions = new ArrayList<>();
                 for (Vector3d position : gaiaBuilding.getPositions()) {
                     Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
-                    Vector3d localPosition = positionWorldCoordinate.mulPosition(transfromMatrixInv);
+                    Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv);
                     localPosition.z = 0.0d;
                     localPositions.add(localPosition);
                 }
@@ -164,7 +164,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                 Vector3d center = globalBoundingBox.getCenter();
                 Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
                 Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
-                Matrix4d transfromMatrixInv = new Matrix4d(transformMatrix).invert();
+                Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
 
                 for (GaiaBuildingSurface buildingSurface : surfaces) {
 
@@ -189,7 +189,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                         List<Vector3d> localPositions = new ArrayList<>();
                         for (Vector3d position : buildingSurface.getExteriorPositions()) {
                             Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
-                            Vector3d localPosition = positionWorldCoordinate.mulPosition(transfromMatrixInv);
+                            Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv);
                             localPositions.add(localPosition);
                             polygon.add(new Vector3dsOnlyHashEquals(localPosition));
                         }
@@ -208,7 +208,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                         List<Vector3d> ExteriorPolygonLocal = new ArrayList<>();
                         for (Vector3d position : ExteriorPolygon) {
                             Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
-                            Vector3d localPosition = positionWorldCoordinate.mulPosition(transfromMatrixInv);
+                            Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv);
                             ExteriorPolygonLocal.add(localPosition);
                         }
 
@@ -218,7 +218,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                             List<Vector3d> interiorPolygonLocal = new ArrayList<>();
                             for (Vector3d position : interiorPolygon) {
                                 Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
-                                Vector3d localPosition = positionWorldCoordinate.mulPosition(transfromMatrixInv);
+                                Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv);
                                 interiorPolygonLocal.add(localPosition);
                             }
                             interiorPolygonsLocal.add(interiorPolygonLocal);
