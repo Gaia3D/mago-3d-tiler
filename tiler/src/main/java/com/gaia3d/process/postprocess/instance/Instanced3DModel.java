@@ -4,21 +4,17 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exchangable.GaiaSet;
-import com.gaia3d.basic.geometry.octree.GaiaOctree;
 import com.gaia3d.basic.structure.GaiaAttribute;
 import com.gaia3d.basic.structure.GaiaScene;
-import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.jgltf.GltfWriter;
 import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.process.postprocess.TileModel;
-import com.gaia3d.process.postprocess.batch.GaiaBatchTable;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTableMap;
 import com.gaia3d.process.postprocess.batch.GaiaBatcher;
 import com.gaia3d.process.postprocess.pointcloud.Position;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
-import com.gaia3d.util.GaiaOctreeUtils;
 import com.gaia3d.util.GeometryUtils;
 import com.gaia3d.util.GlobeUtils;
 import com.gaia3d.util.StringUtils;
@@ -238,14 +234,15 @@ public class Instanced3DModel implements TileModel {
     }
 
     private synchronized void createInstance(File file, ContentInfo contentInfo, TileInfo tileInfo) {
+        boolean isVoxelLod = GlobalOptions.getInstance().isVoxelLod();
+
         try {
-            if (!file.exists())  {
+            if (!file.exists()) {
                 log.info("[Create][Instance] Create instance file : {}", file.getName());
                 GaiaScene firstGaiaScene = tileInfo.getScene();
                 firstGaiaScene = firstGaiaScene.clone();
 
                 GaiaSet set = GaiaSet.fromGaiaScene(firstGaiaScene);
-                //GaiaSet clonedSet = set.clone();
                 tileInfo.setSet(set);
 
                 List<TileInfo> batchTileInfos = new ArrayList<>();
@@ -255,39 +252,26 @@ public class Instanced3DModel implements TileModel {
                 GaiaSet gaiaSet = gaiaBatcher.runBatching(batchTileInfos, contentInfo.getNodeCode(), contentInfo.getLod());
                 GaiaScene resultGaiaScene = new GaiaScene(gaiaSet);
 
-                // Test.*********************************************************
-//                GlobalOptions globalOptions = GlobalOptions.getInstance();
-//                globalOptions.setDebugLod(true);
-                // End test.---------------------------------------------------------
+                if (isVoxelLod) {
+                    int lod = contentInfo.getLod().getLevel();
+                    if (lod > 0) {
+                        float octreeMinSize = 4.0f;
+                        if (lod == 1) {
+                            octreeMinSize = 0.6f;
+                        } else if (lod == 2) {
+                            octreeMinSize = 2.0f;
+                        }
 
-                /*int lod = contentInfo.getLod().getLevel();
-                if(lod > 0)
-                {
-                    float octreeMinSize = 4.0f;
-
-                    if(lod == 0)
-                    {
-                        octreeMinSize = 0.3f;
+                        GaiaScene simpleScene = GeometryUtils.getGaiaSceneLego(resultGaiaScene, octreeMinSize);
+                        resultGaiaScene = simpleScene;
                     }
-                    else if(lod == 1)
-                    {
-                        octreeMinSize = 0.6f;
-                    }
-                    else if(lod == 2)
-                    {
-                        octreeMinSize = 2.0f;
-                    }
-
-                    GaiaScene simpleScene = GeometryUtils.getGaiaSceneLego(resultGaiaScene, octreeMinSize);
-                    resultGaiaScene = simpleScene;
-                }*/
+                }
 
                 Matrix4d transformMatrix = resultGaiaScene.getNodes().get(0).getTransformMatrix();
                 transformMatrix.rotateX(Math.toRadians(-90));
                 gltfWriter.writeGlb(resultGaiaScene, file);
             }
         } catch (Exception e) {
-            e.printStackTrace();
             log.error(e.getMessage());
             throw new RuntimeException(e);
         }
