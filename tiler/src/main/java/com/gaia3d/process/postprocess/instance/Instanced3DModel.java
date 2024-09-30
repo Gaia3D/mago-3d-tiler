@@ -267,8 +267,12 @@ public class Instanced3DModel implements TileModel {
                     }
                 }
 
-                Matrix4d transformMatrix = resultGaiaScene.getNodes().get(0).getTransformMatrix();
-                transformMatrix.rotateX(Math.toRadians(-90));
+                boolean isRotateUpAxis = GlobalOptions.getInstance().isSwapUpAxis();
+                if(isRotateUpAxis)
+                {
+                    Matrix4d transformMatrix = resultGaiaScene.getNodes().get(0).getTransformMatrix();
+                    transformMatrix.rotateX(Math.toRadians(-90));
+                }
                 gltfWriter.writeGlb(resultGaiaScene, file);
             }
         } catch (Exception e) {
