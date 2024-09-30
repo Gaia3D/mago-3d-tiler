@@ -255,11 +255,15 @@ public class Instanced3DModel implements TileModel {
                 if (isVoxelLod) {
                     int lod = contentInfo.getLod().getLevel();
                     if (lod > 0) {
-                        float octreeMinSize = 4.0f;
+                        float octreeMinSize = 6.0f;
                         if (lod == 1) {
                             octreeMinSize = 0.6f;
                         } else if (lod == 2) {
                             octreeMinSize = 2.0f;
+                        }else if (lod == 3) {
+                            octreeMinSize = 4.0f;
+                        }else if (lod == 4) {
+                            octreeMinSize = 6.0f;
                         }
 
                         GaiaScene simpleScene = GeometryUtils.getGaiaSceneLego(resultGaiaScene, octreeMinSize);
