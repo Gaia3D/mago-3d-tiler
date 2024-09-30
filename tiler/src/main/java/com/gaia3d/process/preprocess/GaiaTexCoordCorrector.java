@@ -36,13 +36,10 @@ public class GaiaTexCoordCorrector implements PreProcess {
         List<GaiaMesh> allMeshes = new ArrayList<>();
         rootNode.extractMeshes(allMeshes);
 
-        boolean toPositiveQuadrant = globalOptions.isTexCoordCorrection();
-        if (toPositiveQuadrant) {
-            for (GaiaMesh mesh : allMeshes) {
-                List<GaiaPrimitive> allPrimitives = mesh.getPrimitives();
-                for (GaiaPrimitive primitive : allPrimitives) {
-                    translatePrimitiveTexCoordsToPositiveQuadrant(primitive);
-                }
+        for (GaiaMesh mesh : allMeshes) {
+            List<GaiaPrimitive> allPrimitives = mesh.getPrimitives();
+            for (GaiaPrimitive primitive : allPrimitives) {
+                translatePrimitiveTexCoordsToPositiveQuadrant(primitive);
             }
         }
 

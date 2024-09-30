@@ -117,8 +117,10 @@ public class GlobalOptions {
     private boolean zeroOrigin = false; // data origin to zero point flag
     private boolean ignoreTextures = false; // ignore textures flag
 
-    private boolean largeMesh = false; // [Experimental]large mesh splitting mode flag
-    private boolean texCoordCorrection = true; // [Experimental] texture coordinate correction flag, to PositiveQuadrant
+    // [Experimental] 3D Data Options
+    private boolean largeMesh = false; // [Experimental] large mesh splitting mode flag
+    private boolean voxelLod = false; // [Experimental] voxel level of detail flag
+    private boolean photorealistic = false; // [Experimental] photorealistic mode flag
 
     /* 2D Data Column Options */
     private String nameColumn;
@@ -243,6 +245,8 @@ public class GlobalOptions {
         instance.setMaxInstance(DEFAULT_MAX_INSTANCE);
         instance.setMaxNodeDepth(DEFAULT_MAX_NODE_DEPTH);
         instance.setLargeMesh(command.hasOption(ProcessOptions.LARGE_MESH.getArgName()));
+        instance.setVoxelLod(command.hasOption(ProcessOptions.VOXEL_LOD.getArgName()));
+        instance.setPhotorealistic(command.hasOption(ProcessOptions.PHOTOREALISTIC.getArgName()));
 
         /* Point Cloud Options */
         instance.setPointLimit(command.hasOption(ProcessOptions.MAX_POINTS.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_POINTS.getArgName())) : DEFAULT_POINT_LIMIT);
@@ -366,6 +370,8 @@ public class GlobalOptions {
         log.debug("Max Instance Size: {}", maxInstance);
         log.debug("Max Node Depth: {}", maxNodeDepth);
         log.debug("LargeMesh: {}", largeMesh);
+        log.debug("Voxel LOD: {}", voxelLod);
+        log.debug("Photorealistic: {}", photorealistic);
 
         // 2D Data Column Options
         log.debug("========================================");

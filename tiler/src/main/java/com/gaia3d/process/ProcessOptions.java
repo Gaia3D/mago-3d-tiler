@@ -20,7 +20,10 @@ public enum ProcessOptions {
     TERRAIN("terrain", "te", "terrain", true, "GeoTiff Terrain file path, 3D Object applied as clampToGround (Supports geotiff format)"),
     INSTANCE_FILE("instance", "if", "instance", true, "Instance file path for I3DM (Default: {OUTPUT}/instance.dae)"),
     RECURSIVE("recursive", "r", "recursive", false, "Tree directory deep navigation."),
+
     LARGE_MESH("largeMesh", "lm", "largeMesh", false, "[Experimental] Large Mesh Splitting Mode (Default: false)"),
+    VOXEL_LOD("voxelLod", "vl", "voxelLod", false, "[Experimental] Voxel Level Of Detail setting for i3dm (Default: false)"),
+    PHOTOREALISTIC("photorealistic", "pr", "photorealistic", false, "[Experimental] Photorealistic mode for b3dm (Default: false)"),
 
     // Coordinate Options
     CRS("crs", "c", "crs", true,"Coordinate Reference Systems, EPSG Code(4326, 3857, 32652, 5186...)"),
@@ -57,6 +60,8 @@ public enum ProcessOptions {
     MINIMUM_HEIGHT("minimumHeight", "mh", "minimumHeight", true, "Minimum height value for extrusion model (Default: 1.0)"),
     ABSOLUTE_ALTITUDE("absoluteAltitude", "aa", "absoluteAltitude", true, "Absolute altitude value for extrusion model"),
     SKIRT_HEIGHT("skirtHeight", "sh", "skirtHeight", true, "Building Skirt height setting for extrusion model (Default: 4.0)"),
+
+
 
     DEBUG("debug", "d", "debug", false,"More detailed log output and stops on Multi-Thread bugs."),
     DEBUG_GLB("glb", "glb", "glb", false, "Create glb file with B3DM.");
