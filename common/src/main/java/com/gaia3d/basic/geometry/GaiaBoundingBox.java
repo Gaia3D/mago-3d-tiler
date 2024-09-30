@@ -153,6 +153,26 @@ public class GaiaBoundingBox implements Serializable {
         return Math.sqrt(volume.x * volume.x + volume.y * volume.y + volume.z * volume.z);
     }
 
+    public double getSizeX() {
+        return maxX - minX;
+    }
+
+    public double getSizeY() {
+        return maxY - minY;
+    }
+
+    public double getSizeZ() {
+        return maxZ - minZ;
+    }
+
+    public double getMaxSize() {
+        return Math.max(getSizeX(), Math.max(getSizeY(), getSizeZ()));
+    }
+
+    public double getMinSize() {
+        return Math.min(getSizeX(), Math.min(getSizeY(), getSizeZ()));
+    }
+
     public boolean contains(GaiaBoundingBox boundingBox) {
         return minX <= boundingBox.minX && minY <= boundingBox.minY && minZ <= boundingBox.minZ
                 && maxX >= boundingBox.maxX && maxY >= boundingBox.maxY && maxZ >= boundingBox.maxZ;

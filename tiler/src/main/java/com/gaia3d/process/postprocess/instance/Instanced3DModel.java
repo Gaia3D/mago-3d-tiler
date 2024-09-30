@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exchangable.GaiaSet;
+import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.structure.GaiaAttribute;
 import com.gaia3d.basic.structure.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
@@ -252,14 +253,21 @@ public class Instanced3DModel implements TileModel {
                 GaiaSet gaiaSet = gaiaBatcher.runBatching(batchTileInfos, contentInfo.getNodeCode(), contentInfo.getLod());
                 GaiaScene resultGaiaScene = new GaiaScene(gaiaSet);
 
+                GaiaBoundingBox boundingBox = resultGaiaScene.getBoundingBox();
+                float minSize = (float)boundingBox.getMinSize();
+
                 if (isVoxelLod) {
                     int lod = contentInfo.getLod().getLevel();
                     if (lod > 0) {
-                        float octreeMinSize = 4.0f;
+                        float octreeMinSize = minSize;
                         if (lod == 1) {
-                            octreeMinSize = 0.6f;
+                            octreeMinSize = minSize / 8.0f;
                         } else if (lod == 2) {
-                            octreeMinSize = 2.0f;
+                            octreeMinSize = minSize / 4.0f;
+                        }else if (lod == 3) {
+                            octreeMinSize = minSize / 2.0f;
+                        }else if (lod == 4) {
+                            octreeMinSize = minSize / 1.0f;
                         }
 
                         GaiaScene simpleScene = GeometryUtils.getGaiaSceneLego(resultGaiaScene, octreeMinSize);
@@ -267,8 +275,12 @@ public class Instanced3DModel implements TileModel {
                     }
                 }
 
-                Matrix4d transformMatrix = resultGaiaScene.getNodes().get(0).getTransformMatrix();
-                transformMatrix.rotateX(Math.toRadians(-90));
+                boolean isRotateUpAxis = GlobalOptions.getInstance().isSwapUpAxis();
+                if(isRotateUpAxis)
+                {
+                    Matrix4d transformMatrix = resultGaiaScene.getNodes().get(0).getTransformMatrix();
+                    transformMatrix.rotateX(Math.toRadians(-90));
+                }
                 gltfWriter.writeGlb(resultGaiaScene, file);
             }
         } catch (Exception e) {
