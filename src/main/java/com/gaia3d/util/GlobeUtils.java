@@ -57,30 +57,30 @@ public class GlobeUtils {
         Vector3d yAxis = zAxis.cross(xAxis, new Vector3d());
         yAxis.normalize();
 
-        double[] transfrom = new double[16];
-        transfrom[0] = xAxis.x();
-        transfrom[1] = xAxis.y();
-        transfrom[2] = xAxis.z();
-        transfrom[3] = 0.0f;
+        double[] transform = new double[16];
+        transform[0] = xAxis.x();
+        transform[1] = xAxis.y();
+        transform[2] = xAxis.z();
+        transform[3] = 0.0f;
 
-        transfrom[4] = yAxis.x();
-        transfrom[5] = yAxis.y();
-        transfrom[6] = yAxis.z();
-        transfrom[7] = 0.0f;
+        transform[4] = yAxis.x();
+        transform[5] = yAxis.y();
+        transform[6] = yAxis.z();
+        transform[7] = 0.0f;
 
-        transfrom[8] = zAxis.x();
-        transfrom[9] = zAxis.y();
-        transfrom[10] = zAxis.z();
-        transfrom[11] = 0.0f;
+        transform[8] = zAxis.x();
+        transform[9] = zAxis.y();
+        transform[10] = zAxis.z();
+        transform[11] = 0.0f;
 
-        transfrom[12] = x;
-        transfrom[13] = y;
-        transfrom[14] = z;
-        transfrom[15] = 1.0f;
+        transform[12] = x;
+        transform[13] = y;
+        transform[14] = z;
+        transform[15] = 1.0f;
 
-        Matrix4d transfromMatrix = new Matrix4d();
-        transfromMatrix.set(transfrom);
-        return transfromMatrix;
+        Matrix4d transformMatrix = new Matrix4d();
+        transformMatrix.set(transform);
+        return transformMatrix;
     }
 
     public static Vector3d normalAtCartesianPointWgs84(Vector3d cartesian) {

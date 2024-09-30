@@ -133,13 +133,13 @@ public class GaiaBoundingBox implements Serializable {
         Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
         
         Vector3d minLocalCoordinate = new Vector3d(minX, minY, minZ);
-        Matrix4d minTransfromMatrix = transformMatrix.translate(minLocalCoordinate, new Matrix4d());
-        Vector3d minWorldCoordinate = new Vector3d(minTransfromMatrix.m30(), minTransfromMatrix.m31(), minTransfromMatrix.m32());
+        Matrix4d minTransformMatrix = transformMatrix.translate(minLocalCoordinate, new Matrix4d());
+        Vector3d minWorldCoordinate = new Vector3d(minTransformMatrix.m30(), minTransformMatrix.m31(), minTransformMatrix.m32());
         minWorldCoordinate = GlobeUtils.cartesianToGeographicWgs84(minWorldCoordinate);
 
         Vector3d maxLocalCoordinate = new Vector3d(maxX, maxY, maxZ);
-        Matrix4d maxTransfromMatrix = transformMatrix.translate(maxLocalCoordinate, new Matrix4d());
-        Vector3d maxWorldCoordinate = new Vector3d(maxTransfromMatrix.m30(), maxTransfromMatrix.m31(), maxTransfromMatrix.m32());
+        Matrix4d maxTransformMatrix = transformMatrix.translate(maxLocalCoordinate, new Matrix4d());
+        Vector3d maxWorldCoordinate = new Vector3d(maxTransformMatrix.m30(), maxTransformMatrix.m31(), maxTransformMatrix.m32());
         maxWorldCoordinate = GlobeUtils.cartesianToGeographicWgs84(maxWorldCoordinate);
 
         GaiaBoundingBox result = new GaiaBoundingBox();
