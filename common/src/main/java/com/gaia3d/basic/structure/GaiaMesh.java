@@ -239,4 +239,15 @@ public class GaiaMesh extends MeshStructure {
         }
         return gaiaMesh;
     }
+
+    public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId)
+    {
+        int primitivesCount = primitives.size();
+        for (int i = 0; i < primitivesCount; i++)
+        {
+            GaiaPrimitive primitive = primitives.get(i);
+            primitive.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
+        }
+
+    }
 }

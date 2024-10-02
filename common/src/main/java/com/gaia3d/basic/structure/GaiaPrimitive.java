@@ -4,6 +4,7 @@ import com.gaia3d.basic.exchangable.GaiaBuffer;
 import com.gaia3d.basic.exchangable.GaiaBufferDataSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
+import com.gaia3d.basic.geometry.octree.GaiaOctreeVertices;
 import com.gaia3d.basic.structure.interfaces.PrimitiveStructure;
 import com.gaia3d.basic.types.AttributeType;
 import lombok.AllArgsConstructor;
@@ -321,12 +322,136 @@ public class GaiaPrimitive extends PrimitiveStructure {
         return result;
     }
 
+    public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId)
+    {
+        // Weld the vertices.***
+        GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null);
+        octreeVertices.getVertices().addAll(this.vertices);
+        octreeVertices.calculateSize();
+        octreeVertices.setAsCube();
+        octreeVertices.setMaxDepth(10);
+        octreeVertices.setMinBoxSize(1.0); // 1m.***
+
+        octreeVertices.makeTreeByMinVertexCount(50);
+
+        List<GaiaOctreeVertices> octreesWithContents = new ArrayList<>();
+        octreeVertices.extractOctreesWithContents(octreesWithContents);
+
+        Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster = new HashMap<>();
+
+        int octreesWithContentsCount = octreesWithContents.size();
+        for(int i=0; i<octreesWithContentsCount; i++)
+        {
+            GaiaOctreeVertices octree = octreesWithContents.get(i);
+            List<GaiaVertex> vertices = octree.getVertices();
+            getWeldableVertexMap(mapVertexToVertexMaster, vertices, error, checkTexCoord, checkNormal, checkColor, checkBatchId);
+
+//            // check if in the map there are the same vertices.******************************************************
+//            int keysCount = vertexMap.size();
+//            int vertexCount = vertices.size();
+//            // loop vertexMap.***
+//            int vertexCountInMap = 0;
+//            for(List<GaiaVertex> vertexList : vertexMap.values())
+//            {
+//                vertexCountInMap += vertexList.size();
+//            }
+//
+//            if((vertexCountInMap + keysCount) != vertexCount)
+//            {
+//                int hola = 0;
+//            }
+//            // End check.--------------------------------------------------------------------------------------------
+//
+//            int hola = 0;
+        }
+
+        // make vertexMastersList.***
+        Map<GaiaVertex, GaiaVertex> mapVertexMasters = new HashMap<>();
+        for(GaiaVertex vertexMaster : mapVertexToVertexMaster.values())
+        {
+            mapVertexMasters.put(vertexMaster, vertexMaster);
+        }
+
+        List<GaiaVertex> newVerticesArray = new ArrayList<>(mapVertexMasters.values());
+
+        Map<GaiaVertex, Integer> vertexIdxMap = new HashMap<>();
+        int verticesCount = newVerticesArray.size();
+        for(int i=0; i<verticesCount; i++)
+        {
+            vertexIdxMap.put(newVerticesArray.get(i), i);
+        }
+
+        // Now, update the indices of the faces.***
+        int surfacesCount = this.surfaces.size();
+        for(int i=0; i<surfacesCount; i++)
+        {
+            GaiaSurface surface = this.surfaces.get(i);
+            int facesCount = surface.getFaces().size();
+            for(int j=0; j<facesCount; j++) {
+                GaiaFace face = surface.getFaces().get(j);
+                int[] indices = face.getIndices();
+                for (int k = 0; k < indices.length; k++) {
+                    GaiaVertex vertex = this.vertices.get(indices[k]);
+                    GaiaVertex vertexMaster = mapVertexToVertexMaster.get(vertex);
+                    int index = vertexIdxMap.get(vertexMaster);
+                    indices[k] = index;
+                }
+            }
+        }
+
+        for(int i=0; i<this.vertices.size(); i++)
+        {
+            GaiaVertex vertex = this.vertices.get(i);
+            if(!mapVertexMasters.containsKey(vertex))
+            {
+                vertex.clear();
+            }
+        }
+
+        this.vertices.clear();
+        this.vertices = newVerticesArray;
+
+        int hola = 0;
+    }
+
+    private void getWeldableVertexMap(Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster, List<GaiaVertex> vertices, double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId)
+    {
+        Map<GaiaVertex, GaiaVertex> visitedMap = new HashMap<>();
+        int verticesCount = vertices.size();
+        for(int i=0; i<verticesCount; i++)
+        {
+            GaiaVertex vertex = vertices.get(i);
+            if(visitedMap.containsKey(vertex))
+            {
+                continue;
+            }
+
+            mapVertexToVertexMaster.put(vertex, vertex);
+
+            for(int j=i+1; j<verticesCount; j++)
+            {
+                GaiaVertex vertex2 = vertices.get(j);
+                if(visitedMap.containsKey(vertex2))
+                {
+                    continue;
+                }
+                if(vertex.isWeldable(vertex2, error, checkTexCoord, checkNormal, checkColor, checkBatchId))
+                {
+                    mapVertexToVertexMaster.put(vertex2, vertex);
+
+                    visitedMap.put(vertex, vertex);
+                    visitedMap.put(vertex2, vertex2);
+                }
+            }
+        }
+    }
+
     public boolean deleteNoUsedVertices()
     {
-        //*****************************************************
+        //*****************************************************************************************
         // Sometimes, there are no used vertices.***
-        // The no used vertices must be deleted.***
-        //*****************************************************
+        // The no used vertices must be deleted (vertex indices of the faces will be modified!).***
+        //*****************************************************************************************
         Map<GaiaVertex, Integer> vertexIdxMap = new HashMap<>();
         int surfacesCount = this.getSurfaces().size();
         for (int i = 0; i < surfacesCount; i++) {

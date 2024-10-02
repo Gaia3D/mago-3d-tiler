@@ -260,6 +260,16 @@ public class Instanced3DModel implements TileModel {
                     int lod = contentInfo.getLod().getLevel();
                     if (lod > 0) {
                         float octreeMinSize = minSize;
+//                        if (lod == 1) {
+//                            octreeMinSize = minSize / 9.0f;
+//                        } else if (lod == 2) {
+//                            octreeMinSize = minSize / 5.0f;
+//                        }else if (lod == 3) {
+//                            octreeMinSize = minSize / 3.0f;
+//                        }else if (lod == 4) {
+//                            octreeMinSize = minSize / 2.0f;
+//                        }
+
                         if (lod == 1) {
                             octreeMinSize = minSize / 8.0f;
                         } else if (lod == 2) {

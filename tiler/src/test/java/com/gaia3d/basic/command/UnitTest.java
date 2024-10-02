@@ -725,11 +725,25 @@ class UnitTest {
                 "-crs", "5186",
                 "-outputType", "i3dm",
                 "-instance", inputPath + "tree-map.3ds",
-                //"-multiThreadCount", "1",
-                //"-rotateUpAxis",
-                //"-largeMesh",
-                "-debug",
-                "-glb"
+                "-vl", "true"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void test_I3dm_IncheonSemaphore() {
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\incheonGyeyang_semaphore\\incheonSemaphore_shp\\";
+        String outputPath = "D:\\Result_mago3dTiler\\";
+        String path = "incheonSemaphore_shp";
+
+        String[] args = new String[]{
+                "-i", inputPath,
+                "-it", "shp",
+                "-o", outputPath + path,
+                "-crs", "5186",
+                "-outputType", "i3dm",
+                "-instance", inputPath + "lamp001.3ds",
+                "-vl", "true"
         };
         Mago3DTilerMain.main(args);
     }
@@ -805,4 +819,27 @@ class UnitTest {
         };
         Mago3DTilerMain.main(args);
     }
+
+    @Test
+    void test_RealisticMesh_Thailand() {
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\";
+        String outputPath = "D:\\Result_mago3dTiler\\";
+        //String path = "Tile_+000_+000_+000";
+        //String path = "splittedTile";
+        String path = "(20240712)상지대 콜라다 데이터_6buildings";
+
+        String[] args = new String[]{
+                "-i", inputPath + path,
+                "-it", "dae",
+                "-o", outputPath + path,
+                "-crs", "2096",
+                "-glb",
+                "-pr", // photo realistic mesh
+                "-minLod", "0",
+                "-maxLod", "3",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
 }

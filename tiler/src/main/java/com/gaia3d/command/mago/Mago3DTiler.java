@@ -1,10 +1,7 @@
 package com.gaia3d.command.mago;
 
 import com.gaia3d.basic.types.FormatType;
-import com.gaia3d.command.model.BatchedProcessModel;
-import com.gaia3d.command.model.InstancedProcessModel;
-import com.gaia3d.command.model.PointCloudProcessModel;
-import com.gaia3d.command.model.ProcessFlowModel;
+import com.gaia3d.command.model.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -42,7 +39,12 @@ public class Mago3DTiler {
         if (FormatType.I3DM == outputFormat) {
             processFlow = new InstancedProcessModel();
         } else if (FormatType.B3DM == outputFormat) {
-            processFlow = new BatchedProcessModel();
+            boolean isPhotorealisticMesh = GlobalOptions.getInstance().isPhotorealistic();
+            if(isPhotorealisticMesh) {
+                processFlow = new BatchedProcessModelPhR();
+            }
+            else{
+                processFlow = new BatchedProcessModel();}
         } else if (FormatType.PNTS == outputFormat) {
             processFlow = new PointCloudProcessModel();
         } else {

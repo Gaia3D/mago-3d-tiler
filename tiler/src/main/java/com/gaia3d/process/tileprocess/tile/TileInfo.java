@@ -38,7 +38,14 @@ public class TileInfo {
     private GaiaBoundingBox boundingBox;
     private Path scenePath;
     private Path outputPath;
-    private Path tempPath;
+    private Path tempPath; // tempPath lod 0.***
+
+    // New vars.***
+    private Path tempPathLod1;
+    private Path tempPathLod2;
+    private Path tempPathLod3;
+    private Path tempPathLod4;
+    private Path tempPathLod5;
 
     @Builder.Default
     private long triangleCount = 0;

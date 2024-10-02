@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
+import org.opengis.geometry.BoundingBox;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -122,7 +123,7 @@ public class GaiaOctree {
         children[7].coordinate.setDepthAndCoord(L + 1, X * 2, Y * 2 + 1, Z * 2 + 1);
     }
 
-    public void distributeContents()
+    public void distributeContentsByCenterPoint()
     {
         if(faceDataList.size() == 0)
         {
@@ -201,13 +202,61 @@ public class GaiaOctree {
         faceDataList.clear();
     }
 
+    public boolean intersectsBoundingBox(GaiaBoundingBox bbox)
+    {
+        if (maxX < bbox.getMinX() || minX > bbox.getMaxX()) {
+            return false;
+        }
+        if (maxY < bbox.getMinY() || minY > bbox.getMaxY()) {
+            return false;
+        }
+        if (maxZ < bbox.getMinZ() || minZ > bbox.getMaxZ()) {
+            return false;
+        }
+        return true;
+
+    }
+
+    public void distributeContentsByBoundingBox(boolean distributionUnique)
+    {
+        if(faceDataList.size() == 0)
+        {
+            return;
+        }
+
+        double midX = (minX + maxX) / 2.0;
+        double midY = (minY + maxY) / 2.0;
+        double midZ = (minZ + maxZ) / 2.0;
+
+        int debugCounter = 0;
+        for(GaiaFaceData faceData : faceDataList)
+        {
+            GaiaBoundingBox bbox = faceData.getBoundingBox();
+            for(int i=0; i<8; i++)
+            {
+                if(children[i].intersectsBoundingBox(bbox))
+                {
+                    children[i].addFaceData(faceData);
+                    if(distributionUnique) {
+                        break;
+                    }
+                }
+            }
+
+            debugCounter++;
+        }
+
+        // once the contents are distributed, clear the list
+        faceDataList.clear();
+    }
+
     private void addFaceData(GaiaFaceData faceData) {
         this.faceDataList.add(faceData);
     }
 
     public void recalculateSize()
     {
-        if(faceDataList.size() == 0)
+        if(faceDataList.isEmpty())
         {
             return;
         }
@@ -282,13 +331,15 @@ public class GaiaOctree {
             return;
         }
 
-        if(faceDataList.size() == 0)
+        if(faceDataList.isEmpty())
         {
             return;
         }
 
         createChildren();
-        distributeContents();
+        distributeContentsByCenterPoint();
+//        boolean distributionUnique = false;
+//        distributeContentsByBoundingBox(distributionUnique);
 
         for(GaiaOctree child : children)
         {
@@ -297,7 +348,7 @@ public class GaiaOctree {
     }
 
     public void extractOctreesWithContents(List<GaiaOctree> octrees) {
-        if(faceDataList.size() > 0) {
+        if(!faceDataList.isEmpty()) {
             octrees.add(this);
         }
         if(children != null) {

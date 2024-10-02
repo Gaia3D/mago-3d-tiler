@@ -231,4 +231,14 @@ public class GaiaNode extends NodeStructure {
             child.extractNodesWithContents(resultNodes);
         }
     }
+
+    public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId)
+    {
+        for (GaiaMesh mesh : this.getMeshes()) {
+            mesh.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
+        }
+        for (GaiaNode child : this.getChildren()) {
+            child.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
+        }
+    }
 }

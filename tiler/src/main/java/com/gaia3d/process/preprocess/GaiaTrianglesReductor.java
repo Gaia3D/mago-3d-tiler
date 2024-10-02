@@ -69,7 +69,7 @@ public class GaiaTrianglesReductor {
             HalfEdgeFace halfEdgeFace = this.getHalfEdgeFace(face, vertices, halfEdgeSurface);
         }
 
-        halfEdgeSurface.setTwinsAll();
+        halfEdgeSurface.setTwins();
 
         return halfEdgeSurface;
     }
