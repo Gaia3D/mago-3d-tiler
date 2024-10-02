@@ -78,6 +78,6 @@ public class HalfEdge {
             resultHalfEdgesLoop.add(nextHalfEdge);
             nextHalfEdge = nextHalfEdge.next;
         }
-        return null;
+        return resultHalfEdgesLoop;
     }
 }

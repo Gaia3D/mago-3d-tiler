@@ -29,9 +29,11 @@ public class GaiaMinimizerPhR implements PreProcess {
             scene.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
 
             log.info("Making HalfEdgeScene from GaiaScene");
-            //HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
+            HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 
-            GaiaSet tempSet = GaiaSet.fromGaiaScene(scene);
+            GaiaScene newScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
+
+            GaiaSet tempSet = GaiaSet.fromGaiaScene(newScene);
             Path tempPath = tempSet.writeFile(tileInfo.getTempPath(), tileInfo.getSerial(), tempSet.getAttribute());
             tileInfo.setTempPath(tempPath);
             if (tempSet != null) {
