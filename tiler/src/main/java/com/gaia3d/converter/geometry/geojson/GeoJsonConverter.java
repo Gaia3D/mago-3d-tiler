@@ -204,12 +204,12 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
 
                 Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
                 Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
-                Matrix4d transfromMatrixInv = new Matrix4d(transformMatrix).invert();
+                Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
 
                 List<Vector3d> localPositions = new ArrayList<>();
                 for (Vector3d position : building.getPositions()) {
                     Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
-                    Vector3d localPosition = positionWorldCoordinate.mulPosition(transfromMatrixInv);
+                    Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv);
                     localPosition.z = 0.0d;
                     localPositions.add(new Vector3dsOnlyHashEquals(localPosition));
                 }

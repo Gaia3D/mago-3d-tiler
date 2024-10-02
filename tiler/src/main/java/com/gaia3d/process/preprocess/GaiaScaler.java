@@ -21,13 +21,13 @@ public class GaiaScaler implements PreProcess {
 
         GaiaScene gaiaScene = tileInfo.getScene();
         GaiaNode rootNode = gaiaScene.getNodes().get(0);
-        Matrix4d transfrom = rootNode.getTransformMatrix();
+        Matrix4d transform = rootNode.getTransformMatrix();
 
         double scaleX = kmlInfo.getScaleX() <= 0 ? 1.0d : kmlInfo.getScaleX();
         double scaleY = kmlInfo.getScaleY() <= 0 ? 1.0d : kmlInfo.getScaleY();
         double scaleZ = kmlInfo.getScaleZ() <= 0 ? 1.0d : kmlInfo.getScaleZ();
-        transfrom.scale(scaleX, scaleY, scaleZ);
-        rootNode.setTransformMatrix(transfrom);
+        transform.scale(scaleX, scaleY, scaleZ);
+        rootNode.setTransformMatrix(transform);
         gaiaScene.getBoundingBox();
         return tileInfo;
     }

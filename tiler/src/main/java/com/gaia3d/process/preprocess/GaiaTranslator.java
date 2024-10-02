@@ -57,11 +57,11 @@ public class GaiaTranslator implements PreProcess {
 
         KmlInfo kmlInfo = getKmlInfo(tileInfo, center);
         Matrix4d translationMatrix = new Matrix4d().translate(translation); // new
-        Matrix4d resultTransfromMatrix = new Matrix4d(); // new
-        translationMatrix.mul(transform, resultTransfromMatrix); // new
+        Matrix4d resultTransformMatrix = new Matrix4d(); // new
+        translationMatrix.mul(transform, resultTransformMatrix); // new
 
-        rootNode.setTransformMatrix(resultTransfromMatrix);
-        tileInfo.setTransformMatrix(resultTransfromMatrix);
+        rootNode.setTransformMatrix(resultTransformMatrix);
+        tileInfo.setTransformMatrix(resultTransformMatrix);
 
         GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox(); // new
         gaiaScene.setGaiaBoundingBox(boundingBox); // new
