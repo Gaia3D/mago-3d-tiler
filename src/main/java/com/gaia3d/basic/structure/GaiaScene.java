@@ -89,4 +89,11 @@ public class GaiaScene extends SceneStructure {
         }
         return triangleCount;
     }
+
+    public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId)
+    {
+        for (GaiaNode node : this.nodes) {
+            node.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
+        }
+    }
 }

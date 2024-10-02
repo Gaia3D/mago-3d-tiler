@@ -14,7 +14,7 @@ public class HalfEdgeSurface {
     private List<HalfEdgeVertex> vertices = new ArrayList<>();
     private List<HalfEdgeFace> faces = new ArrayList<>();
 
-    public void setTwinsAll() {
+    public void setTwins() {
         Map<HalfEdge, HalfEdge> mapAlreadyTwinedHalfEdges = new HashMap<>();
         int halfEdgesCount = halfEdges.size();
         for (int i = 0; i < halfEdgesCount; i++)
