@@ -15,31 +15,57 @@ public class HalfEdgeSurface {
     private List<HalfEdgeFace> faces = new ArrayList<>();
 
     public void setTwins() {
-        Map<HalfEdge, HalfEdge> mapAlreadyTwinedHalfEdges = new HashMap<>();
-        int halfEdgesCount = halfEdges.size();
-        for (int i = 0; i < halfEdgesCount; i++)
-        {
-            HalfEdge halfEdge = halfEdges.get(i);
+        Map<HalfEdgeVertex, List<HalfEdge>> mapVertexOutingHEdges = new HashMap<>();
+        Map<HalfEdgeVertex, List<HalfEdge>> mapVertexIncomingHEdges = new HashMap<>();
 
-            if (mapAlreadyTwinedHalfEdges.containsKey(halfEdge)) {
-                // this halfEdge is already twined
+        for (HalfEdge halfEdge : halfEdges)
+        {
+            HalfEdgeVertex startVertex = halfEdge.getStartVertex();
+            HalfEdgeVertex endVertex = halfEdge.getEndVertex();
+            List<HalfEdge> outingEdges = mapVertexOutingHEdges.computeIfAbsent(startVertex, k -> new ArrayList<>());
+            outingEdges.add(halfEdge);
+
+            List<HalfEdge> incomingEdges = mapVertexIncomingHEdges.computeIfAbsent(endVertex, k -> new ArrayList<>());
+            incomingEdges.add(halfEdge);
+        }
+
+        int vertexCount = vertices.size();
+        for (int i = 0; i < vertexCount; i++)
+        {
+            HalfEdgeVertex vertex = vertices.get(i);
+            List<HalfEdge> outingEdges = mapVertexOutingHEdges.get(vertex);
+            List<HalfEdge> incomingEdges = mapVertexIncomingHEdges.get(vertex);
+
+            if (outingEdges == null || incomingEdges == null)
+            {
                 continue;
             }
-            for (int j = i + 1; j < halfEdgesCount; j++)
-            {
-                HalfEdge halfEdge2 = halfEdges.get(j);
 
-                if (mapAlreadyTwinedHalfEdges.containsKey(halfEdge2)) {
-                    // this halfEdge2 is already twined
+            int outingEdgesCount = outingEdges.size();
+            int incomingEdgesCount = incomingEdges.size();
+            for (int j = 0; j < outingEdgesCount; j++)
+            {
+                HalfEdge outingEdge = outingEdges.get(j);
+                if(outingEdge.hasTwin())
+                {
                     continue;
                 }
-                if (halfEdge.setTwin(halfEdge2)) {
-                    mapAlreadyTwinedHalfEdges.put(halfEdge, halfEdge);
-                    mapAlreadyTwinedHalfEdges.put(halfEdge2, halfEdge2);
-                    break;
+                for (int k = 0; k < incomingEdgesCount; k++)
+                {
+                    HalfEdge incomingEdge = incomingEdges.get(k);
+                    if(incomingEdge.hasTwin())
+                    {
+                        continue;
+                    }
+                    if (outingEdge.setTwin(incomingEdge))
+                    {
+                        break;
+                    }
                 }
             }
         }
+
+        int hola = 0;
     }
 
     public void doTrianglesReduction()

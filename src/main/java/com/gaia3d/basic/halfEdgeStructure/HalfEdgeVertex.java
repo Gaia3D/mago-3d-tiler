@@ -54,4 +54,27 @@ public class HalfEdgeVertex {
         this.batchId = batchId;
     }
 
+    public GaiaVertex toGaiaVertex() {
+        GaiaVertex vertex = new GaiaVertex();
+        vertex.setPosition(new Vector3d(position));
+
+        if (normal != null)
+        {
+            vertex.setNormal(new Vector3d(normal));
+        }
+
+        if (texcoords != null)
+        {
+            vertex.setTexcoords(new Vector2d(texcoords));
+        }
+
+        if (color != null)
+        {
+            vertex.setColor(color.clone());
+        }
+
+        vertex.setBatchId(batchId);
+
+        return vertex;
+    }
 }
