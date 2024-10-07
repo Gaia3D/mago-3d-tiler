@@ -383,6 +383,7 @@ public class GaiaPrimitive extends PrimitiveStructure {
 
         // Now, update the indices of the faces.***
         int surfacesCount = this.surfaces.size();
+        Map<GaiaFace, GaiaFace> mapDeleteFaces = new HashMap<>();
         for(int i=0; i<surfacesCount; i++)
         {
             GaiaSurface surface = this.surfaces.get(i);
@@ -396,8 +397,34 @@ public class GaiaPrimitive extends PrimitiveStructure {
                     int index = vertexIdxMap.get(vertexMaster);
                     indices[k] = index;
                 }
+
+                // check indices.***
+                for(int k=0; k<indices.length; k++) {
+                    int index = indices[k];
+                    for(int m=k+1; m<indices.length; m++) {
+                        if (index == indices[m]) {
+                            // must remove the face.***
+                            mapDeleteFaces.put(face, face);
+                        }
+                    }
+                }
             }
+
+            // delete the faces.***
+            if(mapDeleteFaces.size() > 0) {
+                List<GaiaFace> newFaces = new ArrayList<>();
+                for(int j=0; j<facesCount; j++) {
+                    GaiaFace face = surface.getFaces().get(j);
+                    if(!mapDeleteFaces.containsKey(face)) {
+                        newFaces.add(face);
+                    }
+                }
+                surface.setFaces(newFaces);
+            }
+
         }
+
+
 
         // delete no used vertices.***
         for(int i=0; i<this.vertices.size(); i++)

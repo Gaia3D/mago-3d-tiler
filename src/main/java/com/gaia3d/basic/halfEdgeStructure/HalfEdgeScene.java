@@ -28,4 +28,12 @@ public class HalfEdgeScene {
     @Getter
     private List<GaiaMaterial> materials = new ArrayList<>();
 
+    public void doTrianglesReduction()
+    {
+        for (HalfEdgeNode node : nodes)
+        {
+            node.doTrianglesReduction();
+        }
+    }
+
 }

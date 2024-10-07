@@ -247,6 +247,7 @@ public class GaiaMesh extends MeshStructure {
         {
             GaiaPrimitive primitive = primitives.get(i);
             primitive.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
+            primitive.deleteNoUsedVertices();
         }
 
     }

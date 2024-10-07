@@ -15,8 +15,21 @@ public class HalfEdge {
     private HalfEdgeFace face = null;
     private ObjectStatus status = ObjectStatus.ACTIVE;
 
+    public String note = null;
+
+    public HalfEdge() {
+
+    }
+
+    public void setStartVertex(HalfEdgeVertex startVertex) {
+        this.startVertex = startVertex;
+        if(startVertex != null) {
+            startVertex.setOutingHalfEdge(this);
+        }
+    }
+
     public boolean setTwin(HalfEdge twin) {
-        if(this.isTwineableByPointers(twin)) {
+        if(twin != null && this.isTwineableByPointers(twin)) {
             this.twin = twin;
             twin.twin = this;
             return true;
@@ -32,7 +45,18 @@ public class HalfEdge {
     }
 
     public boolean hasTwin() {
-        return twin != null;
+        if(this.twin == null)
+        {
+            return false;
+        }
+        else {
+            if(this.twin.getStatus() == ObjectStatus.DELETED) {
+                this.twin.setTwin(null);
+                this.twin = null;
+                return false;
+            }
+        }
+        return true;
     }
 
     public HalfEdgeVertex getEndVertex() {
@@ -79,5 +103,29 @@ public class HalfEdge {
             nextHalfEdge = nextHalfEdge.next;
         }
         return resultHalfEdgesLoop;
+    }
+
+    public HalfEdge getPrev() {
+        HalfEdge prev = this;
+        while (prev.next != this) {
+            prev = prev.next;
+            if(prev == null) {
+                return null;
+            }
+        }
+        return prev;
+    }
+
+    public boolean isDegenerated()
+    {
+        HalfEdgeVertex startVertex = this.getStartVertex();
+        HalfEdgeVertex endVertex = this.getEndVertex();
+
+        if(startVertex == endVertex)
+        {
+            return true;
+        }
+
+        return false;
     }
 }
