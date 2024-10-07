@@ -117,6 +117,10 @@ public class HalfEdgeUtils {
         for (int i = 0; i < facesCount; i++) {
             HalfEdgeFace halfEdgeFace = halfEdgeFaces.get(i);
             GaiaFace gaiaFace = gaiaFaceFromHalfEdgeFace(halfEdgeFace, mapHalfEdgeVertexToGaiaVertex, mapGaiaVertexToIndex, gaiaPrimitiveOwner);
+//            if(gaiaFace == null)
+//            {
+//                continue;
+//            }
             gaiaSurface.getFaces().add(gaiaFace);
         }
 
@@ -131,6 +135,10 @@ public class HalfEdgeUtils {
         for (int i = 0; i < verticesCount; i++) {
             HalfEdgeVertex halfEdgeVertex = halfEdgeVertices.get(i);
             GaiaVertex gaiaVertex = mapHalfEdgeVertexToGaiaVertex.get(halfEdgeVertex);
+//            if(gaiaVertex == null)
+//            {
+//                return null;
+//            }
             indices[i] = mapGaiaVertexToIndex.get(gaiaVertex);
             gaiaFace.setIndices(indices);
         }

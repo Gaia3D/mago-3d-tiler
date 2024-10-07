@@ -826,7 +826,7 @@ class UnitTest {
         String outputPath = "D:\\Result_mago3dTiler\\";
         //String path = "Tile_+000_+000_+000";
         //String path = "splittedTile";
-        String path = "(20240712)상지대 콜라다 데이터_6buildings";
+        String path = "(20240712)상지대 콜라다 데이터_1building";
 
         String[] args = new String[]{
                 "-i", inputPath + path,
@@ -836,7 +836,22 @@ class UnitTest {
                 "-glb",
                 "-pr", // photo realistic mesh
                 "-minLod", "0",
-                "-maxLod", "3",
+                "-maxLod", "0",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testObj_doorTextureDistort() {
+        String path = "Yeongdeok_Lespia_Building";
+        String inputPath = "D:\\data\\issues_data\\obj5186_doorTextureDistort\\";
+        String outputPath = "D:\\Result_mago3dTiler\\";
+        String[] args = new String[]{
+                "-i", inputPath + path,
+                "-it", "obj",
+                "-o", outputPath + path,
+                "-crs", "5186",
                 "-debug"
         };
         Mago3DTilerMain.main(args);

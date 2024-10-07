@@ -137,14 +137,27 @@ public class GaiaTexCoordCorrector implements PreProcess {
             double offsetX = 0.0;
             double offsetY = 0.0;
             boolean mustTranslate = false;
-            if (texCoordOriginX < 0.0 || texCoordOriginX > 1.0) {
+            double error = 1e-4;
+            if (texCoordOriginX < 0.0 - error || texCoordOriginX > 1.0) {
                 offsetX = Math.floor(texCoordOriginX);
                 mustTranslate = true;
+
+                if(offsetX + boxWidth > 1.0 + error)
+                {
+                    // cannot translate.***
+                    break;
+                }
             }
 
-            if (texCoordOriginY < 0.0 || texCoordOriginY > 1.0) {
+            if (texCoordOriginY < 0.0 - error || texCoordOriginY > 1.0) {
                 offsetY = Math.floor(texCoordOriginY);
                 mustTranslate = true;
+
+                if(offsetY + boxHeight > 1.0 + error)
+                {
+                    // cannot translate.***
+                    break;
+                }
             }
 
             if (mustTranslate) {
@@ -164,6 +177,9 @@ public class GaiaTexCoordCorrector implements PreProcess {
                     texCoord.x = texCoord.x - offsetX;
                     texCoord.y = texCoord.y - offsetY;
                 }
+
+                // test.***
+                //break;// test delete.!!!
             }
         }
     }

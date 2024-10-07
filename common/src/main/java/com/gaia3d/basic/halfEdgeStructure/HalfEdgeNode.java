@@ -16,4 +16,16 @@ public class HalfEdgeNode {
     @Setter
     @Getter
     private List<HalfEdgeNode> children = new ArrayList<>();
+
+    public void doTrianglesReduction()
+    {
+        for (HalfEdgeMesh mesh : meshes)
+        {
+            mesh.doTrianglesReduction();
+        }
+        for (HalfEdgeNode child : children)
+        {
+            child.doTrianglesReduction();
+        }
+    }
 }

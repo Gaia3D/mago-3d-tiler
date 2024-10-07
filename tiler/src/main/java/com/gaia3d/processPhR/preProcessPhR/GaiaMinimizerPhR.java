@@ -25,12 +25,16 @@ public class GaiaMinimizerPhR implements PreProcess {
             boolean checkNormal = false;
             boolean checkColor = false;
             boolean checkBatchId = false;
-            double error = 1e-8;
+            double error = 1e-10;
             scene.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
 
             log.info("Making HalfEdgeScene from GaiaScene");
             HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 
+            log.info("Doing triangles reduction in HalfEdgeScene");
+            halfEdgeScene.doTrianglesReduction();
+
+            log.info("Making GaiaScene from HalfEdgeScene");
             GaiaScene newScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
 
             GaiaSet tempSet = GaiaSet.fromGaiaScene(newScene);

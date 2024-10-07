@@ -10,4 +10,12 @@ public class HalfEdgeMesh {
     @Setter
     @Getter
     private List<HalfEdgePrimitive> primitives = new ArrayList<>();
+
+    public void doTrianglesReduction()
+    {
+        for (HalfEdgePrimitive primitive : primitives)
+        {
+            primitive.doTrianglesReduction();
+        }
+    }
 }
