@@ -251,6 +251,10 @@ public class GeoJsonSurfaceConverter extends AbstractGeometryConverter implement
                     interiorPolygonsLocal.add(interiorPolygonLocal);
                 }
                 GaiaPrimitive primitive = createSurfaceFromExteriorAndInteriorPolygons(ExteriorPolygonLocal, interiorPolygonsLocal);
+                if (primitive.getSurfaces().isEmpty() || primitive.getVertices().size() < 3) {
+                    log.debug("Invalid Geometry : {}", buildingSurface.getId());
+                    continue;
+                }
 
                 GaiaNode node = new GaiaNode();
                 node.setTransformMatrix(new Matrix4d().identity());
@@ -265,6 +269,11 @@ public class GeoJsonSurfaceConverter extends AbstractGeometryConverter implement
             Matrix4d rootTransformMatrix = new Matrix4d().identity();
             rootTransformMatrix.translate(center, rootTransformMatrix);
             rootNode.setTransformMatrix(rootTransformMatrix);
+
+            if (rootNode.getChildren().size() <= 0) {
+                log.debug("Invalid Scene : {}", rootNode.getName());
+                continue;
+            }
             scenes.add(scene);
         }
 

@@ -306,6 +306,10 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             node.getMeshes().add(mesh);
 
             GaiaPrimitive primitive = createPrimitiveFromGaiaExtrusionSurfaces(extrusionSurfaces);
+            if (primitive.getSurfaces().isEmpty() || primitive.getVertices().size() < 3) {
+                log.debug("Invalid Geometry : {}", building.getId());
+                continue;
+            }
 
             primitive.setMaterialIndex(0);
             mesh.getPrimitives().add(primitive);
@@ -419,6 +423,11 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             Matrix4d rootTransformMatrix = new Matrix4d().identity();
             rootTransformMatrix.translate(bboxCenter, rootTransformMatrix);
             rootNode.setTransformMatrix(rootTransformMatrix);
+
+            if (rootNode.getChildren().size() <= 0) {
+                log.debug("Invalid Scene : {}", rootNode.getName());
+                continue;
+            }
             resultScenes.add(scene);
         }
 

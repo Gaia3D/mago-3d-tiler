@@ -215,8 +215,6 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                 }
                 Collections.reverse(localPositions);
 
-
-
                 List<GaiaExtrusionSurface> extrusionSurfaces = gaiaExtruder.extrude(localPositions, building.getRoofHeight(), building.getFloorHeight());
 
                 GaiaNode node = new GaiaNode();
@@ -225,6 +223,10 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                 node.getMeshes().add(mesh);
 
                 GaiaPrimitive primitive = createPrimitiveFromGaiaExtrusionSurfaces(extrusionSurfaces);
+                if (primitive.getSurfaces().isEmpty() || primitive.getVertices().size() < 3) {
+                    log.debug("Invalid Geometry : {}", building.getId());
+                    continue;
+                }
 
                 primitive.setMaterialIndex(0);
                 mesh.getPrimitives().add(primitive);
@@ -234,6 +236,11 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                 Matrix4d rootTransformMatrix = new Matrix4d().identity();
                 rootTransformMatrix.translate(center, rootTransformMatrix);
                 rootNode.setTransformMatrix(rootTransformMatrix);
+
+                if (rootNode.getChildren().size() <= 0) {
+                    log.debug("Invalid Scene : {}", rootNode.getName());
+                    continue;
+                }
                 scenes.add(scene);
             }
         } catch (IOException e) {
