@@ -1,6 +1,7 @@
 package com.gaia3d.process.postprocess.pointcloud;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
@@ -121,6 +122,7 @@ public class PointCloudModel implements TileModel {
         batchTableIds.add("0");
 
         ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.getFactory().configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 
         try {

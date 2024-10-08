@@ -1,6 +1,7 @@
 package com.gaia3d.process.postprocess.instance;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exchangable.GaiaSet;
@@ -183,8 +184,8 @@ public class Instanced3DModel implements TileModel {
 
 
         ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.getFactory().configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-
         try {
             featureTableJson = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(featureTable));
             batchTableJson = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(batchTableMap));

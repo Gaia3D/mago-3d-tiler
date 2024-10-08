@@ -1,5 +1,6 @@
 package com.gaia3d.process.postprocess.batch;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exchangable.GaiaSet;
@@ -181,7 +182,6 @@ public class Batched3DModel implements TileModel {
 
             attributes.forEach((key, value) -> {
                 String utf8Value = StringUtils.convertUTF8(value);
-
                 batchTableMap.computeIfAbsent(key, k -> new ArrayList<>());
                 batchTableMap.get(key).add(utf8Value);
             });
@@ -189,6 +189,7 @@ public class Batched3DModel implements TileModel {
 
 
         ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.getFactory().configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);
         try {
             String featureTableText = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(featureTable));
             featureTableJson = featureTableText;

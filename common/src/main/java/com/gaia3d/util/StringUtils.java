@@ -2,6 +2,8 @@ package com.gaia3d.util;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.Vector;
 import java.util.stream.Collectors;
@@ -53,13 +55,11 @@ public class StringUtils {
     }
 
     public static String convertUTF8(String ascii) {
-        if (ascii == null) {
+        ByteBuffer buffer = StandardCharsets.UTF_8.encode(ascii);
+        String utf8EncodedString = StandardCharsets.UTF_8.decode(buffer).toString();
+        if (utf8EncodedString.isBlank()) {
             return "";
         }
-        return ascii.chars()
-                .mapToObj(c -> (char) c)
-                .map(c -> c < 128 ? c : '_')
-                .map(String::valueOf)
-                .collect(Collectors.joining());
+        return utf8EncodedString;
     }
 }
