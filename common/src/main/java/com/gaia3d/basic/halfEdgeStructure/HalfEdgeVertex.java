@@ -96,6 +96,39 @@ public class HalfEdgeVertex {
         return vertex;
     }
 
+    public List<HalfEdge> getIncomingHalfEdges(List<HalfEdge> resultHalfEdges)
+    {
+        if(this.outingHalfEdge == null)
+        {
+            return resultHalfEdges;
+        }
+
+        if(this.outingHalfEdge.getStatus() == ObjectStatus.DELETED)
+        {
+            System.out.println("HalfEdgeVertex.getIncomingHalfEdges() : outingHalfEdge is deleted!.");
+            int hola = 0;
+        }
+
+        if(resultHalfEdges == null)
+        {
+            resultHalfEdges = new ArrayList<>();
+        }
+
+        List<HalfEdge> outingEdges = this.getOutingHalfEdges(null);
+        int edgesCount = outingEdges.size();
+        for(int i=0; i<edgesCount; i++)
+        {
+            HalfEdge edge = outingEdges.get(i);
+            HalfEdge prevEdge = edge.getPrev();
+            if(prevEdge != null)
+            {
+                resultHalfEdges.add(prevEdge);
+            }
+        }
+
+        return resultHalfEdges;
+    }
+
     public List<HalfEdge> getOutingHalfEdges(List<HalfEdge> resultHalfEdges)
     {
         if(this.outingHalfEdge == null)
@@ -105,6 +138,7 @@ public class HalfEdgeVertex {
 
         if(this.outingHalfEdge.getStatus() == ObjectStatus.DELETED)
         {
+            System.out.println("HalfEdgeVertex.getOutingHalfEdges() : outingHalfEdge is deleted!.");
             int hola = 0;
         }
 

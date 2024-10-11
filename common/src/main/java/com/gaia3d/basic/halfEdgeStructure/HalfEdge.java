@@ -128,4 +128,38 @@ public class HalfEdge {
 
         return false;
     }
+
+    public void breakRelations()
+    {
+        if(this.startVertex != null)
+        {
+            this.startVertex.setOutingHalfEdge(null);
+            this.startVertex = null;
+        }
+
+        if(this.face != null)
+        {
+            this.face.setHalfEdge(null);
+            this.face = null;
+        }
+
+        if(this.next != null)
+        {
+            this.next = null;
+        }
+
+        if(this.twin != null)
+        {
+            this.twin.twin = null;
+            this.twin = null;
+        }
+    }
+
+    public void setItselfAsOutingHalfEdgeToTheStartVertex()
+    {
+        if(this.startVertex != null)
+        {
+            this.startVertex.setOutingHalfEdge(this);
+        }
+    }
 }

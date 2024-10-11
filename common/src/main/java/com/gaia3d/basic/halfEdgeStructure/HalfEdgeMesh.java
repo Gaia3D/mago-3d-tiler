@@ -18,4 +18,13 @@ public class HalfEdgeMesh {
             primitive.doTrianglesReduction();
         }
     }
+
+    public void deleteObjects()
+    {
+        for (HalfEdgePrimitive primitive : primitives)
+        {
+            primitive.deleteObjects();
+        }
+        primitives.clear();
+    }
 }

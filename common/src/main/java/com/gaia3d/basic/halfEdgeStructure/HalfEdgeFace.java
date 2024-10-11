@@ -41,4 +41,12 @@ public class HalfEdgeFace {
 
         return resultVertices;
     }
+
+    public void breakRelations() {
+        if(this.halfEdge == null) {
+            return;
+        }
+
+        this.halfEdge = null;
+    }
 }

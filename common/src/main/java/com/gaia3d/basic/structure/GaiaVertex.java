@@ -58,13 +58,15 @@ public class GaiaVertex extends VertexStructure{
 
     public boolean isWeldable(GaiaVertex vertex2, double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
         // 1rst, check position.***
-        if (position.distance(vertex2.position) > error) {
+        double distance = position.distance(vertex2.position);
+        if (distance > error) {
             return false;
         }
 
         // 2nd, check texCoord.***
         if (checkTexCoord && texcoords != null && vertex2.texcoords != null) {
-            if (texcoords.distance(vertex2.texcoords) > error) {
+            double texCoordDist = texcoords.distance(vertex2.texcoords);
+            if (texCoordDist > error) {
                 return false;
             }
         }

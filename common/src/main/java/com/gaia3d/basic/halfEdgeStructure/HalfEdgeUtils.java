@@ -146,6 +146,45 @@ public class HalfEdgeUtils {
         return gaiaFace;
     }
 
+    public static HalfEdgeScene getHalfEdgeSceneRectangularNet(int numCols, int numRows)
+    {
+        HalfEdgeScene halfEdgeScene = new HalfEdgeScene();
+        HalfEdgeNode halfEdgeNode = new HalfEdgeNode();
+        halfEdgeScene.getNodes().add(halfEdgeNode);
+
+        HalfEdgeMesh halfEdgeMesh = new HalfEdgeMesh();
+        halfEdgeNode.getMeshes().add(halfEdgeMesh);
+
+        HalfEdgePrimitive halfEdgePrimitive = new HalfEdgePrimitive();
+        halfEdgeMesh.getPrimitives().add(halfEdgePrimitive);
+
+        GaiaPrimitive gaiaPrimitive = new GaiaPrimitive();
+        halfEdgePrimitive.setMaterialIndex(0);
+        halfEdgePrimitive.setAccessorIndices(0);
+        halfEdgePrimitive.getSurfaces().add(new HalfEdgeSurface());
+
+//        GaiaSurface gaiaSurface = new GaiaSurface();
+//        gaiaPrimitive.getSurfaces().add(gaiaSurface);
+//
+//        GaiaFace gaiaFace = new GaiaFace();
+//        gaiaSurface.getFaces().add(gaiaFace);
+//
+//        List<GaiaVertex> gaiaVertices = new ArrayList<>();
+//        for(int i=0; i<numRows; i++)
+//        {
+//            for(int j=0; j<numCols; j++)
+//            {
+//                GaiaVertex gaiaVertex = new GaiaVertex();
+//                gaiaVertex.setPosition(new double[]{j, i, 0});
+//                gaiaVertices.add(gaiaVertex);
+//            }
+//        }
+//
+//        halfEdgePrimitive.setVertices(gaiaVertices);
+
+        return halfEdgeScene;
+    }
+
     public static HalfEdgeScene halfEdgeSceneFromGaiaScene(GaiaScene gaiaScene) {
         List<GaiaNode> gaiaNodes = gaiaScene.getNodes();
         int nodesCount = gaiaNodes.size(); // nodesCount must be 1. This is the root node.***
