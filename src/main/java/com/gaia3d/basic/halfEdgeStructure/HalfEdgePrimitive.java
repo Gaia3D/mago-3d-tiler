@@ -30,4 +30,14 @@ public class HalfEdgePrimitive {
             this.vertices.addAll(surface.getVertices());
         }
     }
+
+    public void deleteObjects()
+    {
+        for (HalfEdgeSurface surface : surfaces)
+        {
+            surface.deleteObjects();
+        }
+        surfaces.clear();
+        vertices.clear();
+    }
 }
