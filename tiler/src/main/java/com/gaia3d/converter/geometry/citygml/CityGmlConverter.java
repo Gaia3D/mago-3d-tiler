@@ -141,6 +141,11 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                 Matrix4d rootTransformMatrix = new Matrix4d().identity();
                 rootTransformMatrix.translate(center, rootTransformMatrix);
                 rootNode.setTransformMatrix(rootTransformMatrix);
+
+                if (rootNode.getChildren().size() <= 0) {
+                    log.debug("Invalid Scene : {}", rootNode.getName());
+                    continue;
+                }
                 scenes.add(scene);
             }
 
@@ -224,6 +229,10 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                             interiorPolygonsLocal.add(interiorPolygonLocal);
                         }
                         GaiaPrimitive primitive = createSurfaceFromExteriorAndInteriorPolygons(ExteriorPolygonLocal, interiorPolygonsLocal);
+                        if (primitive.getSurfaces().isEmpty() || primitive.getVertices().size() < 3) {
+                            log.debug("Invalid Geometry : {}", buildingSurface.getId());
+                            continue;
+                        }
 
                         primitive.setMaterialIndex(material.getId());
                         mesh.getPrimitives().add(primitive);
@@ -234,6 +243,11 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                 Matrix4d rootTransformMatrix = new Matrix4d().identity();
                 rootTransformMatrix.translate(center, rootTransformMatrix);
                 rootNode.setTransformMatrix(rootTransformMatrix);
+
+                if (rootNode.getChildren().size() <= 0) {
+                    log.debug("Invalid Scene : {}", rootNode.getName());
+                    continue;
+                }
                 scenes.add(scene);
             }
         } catch (CityGMLContextException | CityGMLReadException e) {

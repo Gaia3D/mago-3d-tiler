@@ -1,6 +1,7 @@
 package com.gaia3d.process.tileprocess.tile;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
@@ -71,6 +72,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         Path outputPath = new File(globalOptions.getOutputPath()).toPath();
         File tilesetFile = outputPath.resolve("tileset.json").toFile();
         ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.getFactory().configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);

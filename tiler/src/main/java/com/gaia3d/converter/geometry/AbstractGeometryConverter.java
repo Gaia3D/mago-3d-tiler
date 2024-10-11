@@ -156,6 +156,8 @@ public abstract class AbstractGeometryConverter {
             heightObject = heightLower;
         } else if (heightUpper != null) {
             heightObject = heightUpper;
+        } else {
+            return result;
         }
 
         if (heightObject instanceof Short) {
@@ -230,6 +232,8 @@ public abstract class AbstractGeometryConverter {
             attributeObject = LowerObject;
         } else if (UpperObject != null) {
             attributeObject = UpperObject;
+        }  else {
+            return result;
         }
 
         if (attributeObject instanceof String) {
@@ -280,6 +284,8 @@ public abstract class AbstractGeometryConverter {
             heightObject = heightLower;
         } else if (heightUpper != null) {
             heightObject = heightUpper;
+        } else {
+            return result;
         }
 
         if (heightObject instanceof Short) {
@@ -305,6 +311,8 @@ public abstract class AbstractGeometryConverter {
             attributeObject = attributeLower;
         } else if (attributeUpper != null) {
             attributeObject = attributeUpper;
+        }  else {
+            return result;
         }
 
         if (attributeObject instanceof Short) {
@@ -317,6 +325,27 @@ public abstract class AbstractGeometryConverter {
             result = result + (double) attributeObject;
         } else if (attributeObject instanceof String) {
             result = Double.parseDouble((String) attributeObject);
+        }
+
+        return result;
+    }
+
+    private double castDoubleFromObject(Object object, double defaultValue) {
+        double result;
+        if (object == null) {
+            result = defaultValue;
+        } else if (object instanceof Double) {
+            result = (double) object;
+        } else if (object instanceof Integer) {
+            result = (int) object;
+        } else if (object instanceof Long) {
+            result = (long) object;
+        } else if (object instanceof Short) {
+            result = (short) object;
+        } else if (object instanceof String) {
+            result = Double.parseDouble((String) object);
+        } else {
+            result = defaultValue;
         }
         return result;
     }
