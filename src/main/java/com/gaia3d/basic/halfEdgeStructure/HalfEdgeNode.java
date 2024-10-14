@@ -42,4 +42,16 @@ public class HalfEdgeNode {
         }
         children.clear();
     }
+
+    public void checkSandClockFaces()
+    {
+        for (HalfEdgeMesh mesh : meshes)
+        {
+            mesh.checkSandClockFaces();
+        }
+        for (HalfEdgeNode child : children)
+        {
+            child.checkSandClockFaces();
+        }
+    }
 }

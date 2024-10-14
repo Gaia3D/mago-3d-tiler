@@ -46,4 +46,12 @@ public class HalfEdgeScene {
         materials.clear();
     }
 
+    public void checkSandClockFaces()
+    {
+        for (HalfEdgeNode node : nodes)
+        {
+            node.checkSandClockFaces();
+        }
+    }
+
 }
