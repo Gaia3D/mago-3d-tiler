@@ -162,4 +162,19 @@ public class HalfEdge {
             this.startVertex.setOutingHalfEdge(this);
         }
     }
+
+    public boolean isApplauseEdge() {
+        if(this.twin == null) {
+            return false;
+        }
+
+        HalfEdgeFace face1 = this.face;
+        HalfEdgeFace face2 = this.twin.face;
+
+        if(face1 == null || face2 == null) {
+            return false;
+        }
+
+        return face1.isApplauseFace(face2);
+    }
 }

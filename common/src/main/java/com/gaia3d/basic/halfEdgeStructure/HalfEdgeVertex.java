@@ -44,6 +44,34 @@ public class HalfEdgeVertex {
         this.status = ObjectStatus.DELETED;
     }
 
+    public void copyFrom(HalfEdgeVertex vertex)
+    {
+        if(vertex.texcoords != null)
+        {
+            this.texcoords = new Vector2d(vertex.texcoords);
+        }
+
+        if(vertex.position != null)
+        {
+            this.position = new Vector3d(vertex.position);
+        }
+
+        if(vertex.normal != null)
+        {
+            this.normal = new Vector3d(vertex.normal);
+        }
+
+        if(vertex.color != null)
+        {
+            this.color = vertex.color.clone();
+        }
+
+        this.batchId = vertex.batchId;
+        this.outingHalfEdge = vertex.outingHalfEdge;
+        this.status = vertex.status;
+        this.positionType = vertex.positionType;
+    }
+
     public void copyFromGaiaVertex(GaiaVertex vertex)
     {
         Vector3d position = vertex.getPosition();

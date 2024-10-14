@@ -40,4 +40,12 @@ public class HalfEdgePrimitive {
         surfaces.clear();
         vertices.clear();
     }
+
+    public void checkSandClockFaces()
+    {
+        for (HalfEdgeSurface surface : surfaces)
+        {
+            surface.checkSandClockFaces();
+        }
+    }
 }

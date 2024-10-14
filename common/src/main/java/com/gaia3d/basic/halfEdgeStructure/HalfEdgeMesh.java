@@ -27,4 +27,12 @@ public class HalfEdgeMesh {
         }
         primitives.clear();
     }
+
+    public void checkSandClockFaces()
+    {
+        for (HalfEdgePrimitive primitive : primitives)
+        {
+            primitive.checkSandClockFaces();
+        }
+    }
 }

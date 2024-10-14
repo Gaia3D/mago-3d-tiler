@@ -135,10 +135,10 @@ public class HalfEdgeUtils {
         for (int i = 0; i < verticesCount; i++) {
             HalfEdgeVertex halfEdgeVertex = halfEdgeVertices.get(i);
             GaiaVertex gaiaVertex = mapHalfEdgeVertexToGaiaVertex.get(halfEdgeVertex);
-//            if(gaiaVertex == null)
-//            {
-//                return null;
-//            }
+            if(gaiaVertex == null)
+            {
+                int hola = 0;
+            }
             indices[i] = mapGaiaVertexToIndex.get(gaiaVertex);
             gaiaFace.setIndices(indices);
         }
@@ -228,6 +228,7 @@ public class HalfEdgeUtils {
         // check children.***
         List<GaiaNode> gaiaChildren = gaiaNode.getChildren();
         int childrenCount = gaiaChildren.size();
+
         for (int i = 0; i < childrenCount; i++) {
             GaiaNode gaiaChild = gaiaChildren.get(i);
             HalfEdgeNode halfEdgeChild = HalfEdgeUtils.halfEdgeNodeFromGaiaNode(gaiaChild);
@@ -263,6 +264,10 @@ public class HalfEdgeUtils {
         List<GaiaSurface> gaiaSurfaces = gaiaPrimitive.getSurfaces();
         List<GaiaVertex> gaiaVertices = gaiaPrimitive.getVertices();
         int surfacesCount = gaiaSurfaces.size();
+        if(surfacesCount > 1)
+        {
+            int hola = 0;
+        }
         for (int i = 0; i < surfacesCount; i++) {
             GaiaSurface gaiaSurface = gaiaSurfaces.get(i);
             HalfEdgeSurface halfEdgeSurface = HalfEdgeUtils.halfEdgeSurfaceFromGaiaSurface(gaiaSurface, gaiaVertices);
@@ -299,6 +304,7 @@ public class HalfEdgeUtils {
 
         // set twins.***
         halfEdgeSurface.setTwins();
+        halfEdgeSurface.checkSandClockFaces();
 
         return halfEdgeSurface;
     }

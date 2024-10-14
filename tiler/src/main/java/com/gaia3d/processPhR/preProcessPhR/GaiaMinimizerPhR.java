@@ -15,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @AllArgsConstructor
@@ -26,7 +28,7 @@ public class GaiaMinimizerPhR implements PreProcess {
             log.info("Welding vertices in GaiaScene");
 
             // 1rst, must weld vertices.***
-            boolean checkTexCoord = false;
+            boolean checkTexCoord = true;
             boolean checkNormal = false;
             boolean checkColor = false;
             boolean checkBatchId = false;
@@ -50,6 +52,16 @@ public class GaiaMinimizerPhR implements PreProcess {
 //            scene.getNodes().clear();
 //            scene.getNodes().add(rootNode);
 //            // End test.------------------------
+
+            // Test.************************************************
+//            GaiaNode rootNode = scene.getNodes().get(0);
+//            List<GaiaNode> reducedChildren = new ArrayList<>();
+//            int childrenCount = rootNode.getChildren().size();
+//
+//            reducedChildren.add(rootNode.getChildren().get(100));
+//            rootNode.getChildren().clear();
+//            rootNode.setChildren(reducedChildren);
+            // End test.--------------------------------------------
 
             log.info("Making HalfEdgeScene from GaiaScene");
             HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);

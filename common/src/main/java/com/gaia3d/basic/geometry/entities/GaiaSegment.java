@@ -28,4 +28,13 @@ public class GaiaSegment {
         Vector3d segment2 = new Vector3d(segment.endPoint).sub(segment.startPoint);
         return segment1.angle(segment2);
     }
+
+    public boolean check()
+    {
+        if(startPoint == null || endPoint == null)
+        {
+            return false;
+        }
+        return true;
+    }
 }
