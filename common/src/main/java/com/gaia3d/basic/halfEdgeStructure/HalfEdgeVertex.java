@@ -44,6 +44,34 @@ public class HalfEdgeVertex {
         this.status = ObjectStatus.DELETED;
     }
 
+    public void copyFrom(HalfEdgeVertex vertex)
+    {
+        if(vertex.texcoords != null)
+        {
+            this.texcoords = new Vector2d(vertex.texcoords);
+        }
+
+        if(vertex.position != null)
+        {
+            this.position = new Vector3d(vertex.position);
+        }
+
+        if(vertex.normal != null)
+        {
+            this.normal = new Vector3d(vertex.normal);
+        }
+
+        if(vertex.color != null)
+        {
+            this.color = vertex.color.clone();
+        }
+
+        this.batchId = vertex.batchId;
+        this.outingHalfEdge = vertex.outingHalfEdge;
+        this.status = vertex.status;
+        this.positionType = vertex.positionType;
+    }
+
     public void copyFromGaiaVertex(GaiaVertex vertex)
     {
         Vector3d position = vertex.getPosition();
@@ -96,6 +124,39 @@ public class HalfEdgeVertex {
         return vertex;
     }
 
+    public List<HalfEdge> getIncomingHalfEdges(List<HalfEdge> resultHalfEdges)
+    {
+        if(this.outingHalfEdge == null)
+        {
+            return resultHalfEdges;
+        }
+
+        if(this.outingHalfEdge.getStatus() == ObjectStatus.DELETED)
+        {
+            System.out.println("HalfEdgeVertex.getIncomingHalfEdges() : outingHalfEdge is deleted!.");
+            int hola = 0;
+        }
+
+        if(resultHalfEdges == null)
+        {
+            resultHalfEdges = new ArrayList<>();
+        }
+
+        List<HalfEdge> outingEdges = this.getOutingHalfEdges(null);
+        int edgesCount = outingEdges.size();
+        for(int i=0; i<edgesCount; i++)
+        {
+            HalfEdge edge = outingEdges.get(i);
+            HalfEdge prevEdge = edge.getPrev();
+            if(prevEdge != null)
+            {
+                resultHalfEdges.add(prevEdge);
+            }
+        }
+
+        return resultHalfEdges;
+    }
+
     public List<HalfEdge> getOutingHalfEdges(List<HalfEdge> resultHalfEdges)
     {
         if(this.outingHalfEdge == null)
@@ -105,6 +166,7 @@ public class HalfEdgeVertex {
 
         if(this.outingHalfEdge.getStatus() == ObjectStatus.DELETED)
         {
+            System.out.println("HalfEdgeVertex.getOutingHalfEdges() : outingHalfEdge is deleted!.");
             int hola = 0;
         }
 

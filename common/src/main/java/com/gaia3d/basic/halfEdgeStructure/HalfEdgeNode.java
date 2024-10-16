@@ -28,4 +28,30 @@ public class HalfEdgeNode {
             child.doTrianglesReduction();
         }
     }
+
+    public void deleteObjects()
+    {
+        for (HalfEdgeMesh mesh : meshes)
+        {
+            mesh.deleteObjects();
+        }
+        meshes.clear();
+        for (HalfEdgeNode child : children)
+        {
+            child.deleteObjects();
+        }
+        children.clear();
+    }
+
+    public void checkSandClockFaces()
+    {
+        for (HalfEdgeMesh mesh : meshes)
+        {
+            mesh.checkSandClockFaces();
+        }
+        for (HalfEdgeNode child : children)
+        {
+            child.checkSandClockFaces();
+        }
+    }
 }

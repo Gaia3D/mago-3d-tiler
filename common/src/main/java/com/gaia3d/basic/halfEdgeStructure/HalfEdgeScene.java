@@ -36,4 +36,22 @@ public class HalfEdgeScene {
         }
     }
 
+    public void deleteObjects()
+    {
+        for (HalfEdgeNode node : nodes)
+        {
+            node.deleteObjects();
+        }
+        nodes.clear();
+        materials.clear();
+    }
+
+    public void checkSandClockFaces()
+    {
+        for (HalfEdgeNode node : nodes)
+        {
+            node.checkSandClockFaces();
+        }
+    }
+
 }

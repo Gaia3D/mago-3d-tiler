@@ -427,6 +427,9 @@ public class GaiaPrimitive extends PrimitiveStructure {
 
 
         // delete no used vertices.***
+        int vertexCount = this.vertices.size();
+        int usedVertexCount = newVerticesArray.size();
+        int deletedVertexCount = vertexCount - usedVertexCount;
         for(int i=0; i<this.vertices.size(); i++)
         {
             GaiaVertex vertex = this.vertices.get(i);

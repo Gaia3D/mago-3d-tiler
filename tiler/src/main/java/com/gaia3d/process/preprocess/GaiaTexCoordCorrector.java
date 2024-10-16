@@ -128,7 +128,7 @@ public class GaiaTexCoordCorrector implements PreProcess {
 
             if (boxWidth > 1.0 || boxHeight > 1.0) {
                 // in this case do nothing, bcos this is a repeat texture mode.***
-                continue;
+                break;
             }
 
             // check if texCoords must be translated.***
@@ -177,9 +177,6 @@ public class GaiaTexCoordCorrector implements PreProcess {
                     texCoord.x = texCoord.x - offsetX;
                     texCoord.y = texCoord.y - offsetY;
                 }
-
-                // test.***
-                //break;// test delete.!!!
             }
         }
     }

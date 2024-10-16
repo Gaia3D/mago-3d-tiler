@@ -128,4 +128,53 @@ public class HalfEdge {
 
         return false;
     }
+
+    public void breakRelations()
+    {
+        if(this.startVertex != null)
+        {
+            this.startVertex.setOutingHalfEdge(null);
+            this.startVertex = null;
+        }
+
+        if(this.face != null)
+        {
+            this.face.setHalfEdge(null);
+            this.face = null;
+        }
+
+        if(this.next != null)
+        {
+            this.next = null;
+        }
+
+        if(this.twin != null)
+        {
+            this.twin.twin = null;
+            this.twin = null;
+        }
+    }
+
+    public void setItselfAsOutingHalfEdgeToTheStartVertex()
+    {
+        if(this.startVertex != null)
+        {
+            this.startVertex.setOutingHalfEdge(this);
+        }
+    }
+
+    public boolean isApplauseEdge() {
+        if(this.twin == null) {
+            return false;
+        }
+
+        HalfEdgeFace face1 = this.face;
+        HalfEdgeFace face2 = this.twin.face;
+
+        if(face1 == null || face2 == null) {
+            return false;
+        }
+
+        return face1.isApplauseFace(face2);
+    }
 }

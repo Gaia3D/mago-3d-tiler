@@ -30,4 +30,22 @@ public class HalfEdgePrimitive {
             this.vertices.addAll(surface.getVertices());
         }
     }
+
+    public void deleteObjects()
+    {
+        for (HalfEdgeSurface surface : surfaces)
+        {
+            surface.deleteObjects();
+        }
+        surfaces.clear();
+        vertices.clear();
+    }
+
+    public void checkSandClockFaces()
+    {
+        for (HalfEdgeSurface surface : surfaces)
+        {
+            surface.checkSandClockFaces();
+        }
+    }
 }
