@@ -1,6 +1,7 @@
 package com.gaia3d.basic.halfedge;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
@@ -8,6 +9,7 @@ import java.util.List;
 
 @Setter
 @Getter
+@NoArgsConstructor
 public class HalfEdge {
     public String note = null;
     private HalfEdge twin = null;
@@ -15,10 +17,6 @@ public class HalfEdge {
     private HalfEdgeVertex startVertex = null;
     private HalfEdgeFace face = null;
     private ObjectStatus status = ObjectStatus.ACTIVE;
-
-    public HalfEdge() {
-
-    }
 
     public void setStartVertex(HalfEdgeVertex startVertex) {
         this.startVertex = startVertex;
@@ -70,6 +68,18 @@ public class HalfEdge {
         HalfEdgeVertex twinEndVertex = twin.getEndVertex();
 
         return thisStartVertex == twinEndVertex && thisEndVertex == twinStartVertex;
+    }
+
+    public boolean isTwin(HalfEdge halfEdge) {
+        if (halfEdge == null || halfEdge.twin == null) {
+            return false;
+        }
+
+        if (this.twin == null) {
+            return false;
+        }
+
+        return halfEdge.twin == this && this.twin == halfEdge;
     }
 
     public double getSquaredLength() {
