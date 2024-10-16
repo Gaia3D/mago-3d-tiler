@@ -7,7 +7,7 @@ plugins {
 }
 
 group "com.gaia3d"
-version "1.9.0"
+version "1.9.1"
 project.ext.lwjglVersion = "3.3.3"
 
 switch (OperatingSystem.current()) {
@@ -111,7 +111,9 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.0"
 }
 test {
-    //useJUnitPlatform()
+    useJUnitPlatform {
+        includeTags 'release'
+    }
 }
 
 jib {
@@ -147,6 +149,7 @@ javadoc {
 }
 
 jar {
+    dependsOn 'test'
     finalizedBy shadowJar
     manifest {
         attributes "Main-Class": "com.gaia3d.command.mago.Mago3DTilerMain",
