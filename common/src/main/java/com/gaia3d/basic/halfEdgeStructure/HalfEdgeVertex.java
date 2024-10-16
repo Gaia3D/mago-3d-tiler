@@ -188,6 +188,10 @@ public class HalfEdgeVertex {
             while (nextOutingEdge != this.outingHalfEdge)
             {
                 resultHalfEdges.add(nextOutingEdge);
+                if(resultHalfEdges.size() > 100)
+                {
+                    System.out.println("Error: HalfEdgeVertex.getOutingHalfEdges() : resultHalfEdges.size() > 100");
+                }
                 currTwin = nextOutingEdge.getTwin();
                 if(currTwin == null)
                 {
@@ -268,5 +272,38 @@ public class HalfEdgeVertex {
             }
         }
         return positionType;
+    }
+
+    public List<HalfEdgeFace> getFaces(List<HalfEdgeFace> resultFaces)
+    {
+        if(this.outingHalfEdge == null)
+        {
+            return resultFaces;
+        }
+
+        if(this.outingHalfEdge.getStatus() == ObjectStatus.DELETED)
+        {
+            System.out.println("HalfEdgeVertex.getFaces() : outingHalfEdge is deleted!.");
+            int hola = 0;
+        }
+
+        if(resultFaces == null)
+        {
+            resultFaces = new ArrayList<>();
+        }
+
+        List<HalfEdge> outingEdges = this.getOutingHalfEdges(null);
+        int edgesCount = outingEdges.size();
+        for(int i=0; i<edgesCount; i++)
+        {
+            HalfEdge edge = outingEdges.get(i);
+            HalfEdgeFace face = edge.getFace();
+            if(face != null)
+            {
+                resultFaces.add(face);
+            }
+        }
+
+        return resultFaces;
     }
 }

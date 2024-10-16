@@ -67,7 +67,7 @@ public class GaiaMinimizerPhR implements PreProcess {
             HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 
             log.info("Doing triangles reduction in HalfEdgeScene");
-            halfEdgeScene.doTrianglesReduction();
+            //halfEdgeScene.doTrianglesReduction();
 
             log.info("Making GaiaScene from HalfEdgeScene");
             GaiaScene newScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);

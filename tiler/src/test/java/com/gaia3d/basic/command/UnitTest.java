@@ -864,21 +864,30 @@ class UnitTest {
         Mago3DTilerMain.main(args);
     }
 
-
-
     @Test
-    void testObj_doorTextureDistort() {
-        String path = "Yeongdeok_Lespia_Building";
-        String inputPath = "D:\\data\\issues_data\\obj5186_doorTextureDistort\\";
+    void test_RealisticMesh_Thailand_multiTiles() {
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\RealisticMesh_Thailand_multiTiles\\OBJ25sqkm\\";
         String outputPath = "D:\\Result_mago3dTiler\\";
+        //String path = "Tile_+000_+000_+000";
+        //String path = "splittedTile";
+        String path = "Data_1building";
+
         String[] args = new String[]{
                 "-i", inputPath + path,
                 "-it", "obj",
                 "-o", outputPath + path,
-                "-crs", "5186",
+                "-crs", "2096",
+                "-su",
+                "-glb",
+                "-pr", // photo realistic mesh
+                "-minLod", "0",
+                "-maxLod", "3",
                 "-debug"
         };
         Mago3DTilerMain.main(args);
     }
+
+
+
 
 }
