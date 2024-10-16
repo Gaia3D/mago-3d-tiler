@@ -78,6 +78,18 @@ public class HalfEdge {
         return false;
     }
 
+    public boolean isTwin(HalfEdge halfEdge) {
+        if(halfEdge == null || halfEdge.twin == null) {
+            return false;
+        }
+
+        if(this.twin == null) {
+            return false;
+        }
+
+        return halfEdge.twin == this && this.twin == halfEdge;
+    }
+
     public double getSquaredLength() {
         if(startVertex == null || next == null) {
             return -1;

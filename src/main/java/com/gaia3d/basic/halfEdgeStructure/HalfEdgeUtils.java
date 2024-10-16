@@ -305,6 +305,7 @@ public class HalfEdgeUtils {
         // set twins.***
         halfEdgeSurface.setTwins();
         halfEdgeSurface.checkSandClockFaces();
+        halfEdgeSurface.checkEqualHEdges();
 
         return halfEdgeSurface;
     }
