@@ -1,6 +1,6 @@
 package com.gaia3d.util;
 
-import com.gaia3d.basic.structure.GaiaTexture;
+import com.gaia3d.basic.model.GaiaTexture;
 import org.joml.Vector2d;
 import org.joml.Vector4d;
 
@@ -12,32 +12,31 @@ public class GaiaTextureUtils {
 
         if (positiveQuadrantTexCoord.x < 0) {
             // is repeatMode, so, recalculate the col.***
-            while(positiveQuadrantTexCoord.x < 0) {
+            while (positiveQuadrantTexCoord.x < 0) {
                 positiveQuadrantTexCoord.x += 1.0;
             }
-        }
-        else if (positiveQuadrantTexCoord.x > 1.0) {
+        } else if (positiveQuadrantTexCoord.x > 1.0) {
             // is repeatMode, so, recalculate the col.***
-            while(positiveQuadrantTexCoord.x > 1.0) {
+            while (positiveQuadrantTexCoord.x > 1.0) {
                 positiveQuadrantTexCoord.x -= 1.0;
             }
         }
 
         if (positiveQuadrantTexCoord.y < 0) {
             // is repeatMode, so, recalculate the row.***
-            while(positiveQuadrantTexCoord.y < 0) {
+            while (positiveQuadrantTexCoord.y < 0) {
                 positiveQuadrantTexCoord.y += 1.0;
             }
-        }
-        else if (positiveQuadrantTexCoord.y > 1.0) {
+        } else if (positiveQuadrantTexCoord.y > 1.0) {
             // is repeatMode, so, recalculate the row.***
-            while(positiveQuadrantTexCoord.y > 1.0) {
+            while (positiveQuadrantTexCoord.y > 1.0) {
                 positiveQuadrantTexCoord.y -= 1.0;
             }
         }
 
         return positiveQuadrantTexCoord;
     }
+
     public static Vector4d getColorOfTexture(GaiaTexture texture, Vector2d texCoord) {
         Vector4d color = new Vector4d(1.0, 1.0, 1.0, 1.0);
         if (texture == null) {
@@ -58,15 +57,13 @@ public class GaiaTextureUtils {
 
         if (col < 0) {
             col = 0;
-        }
-        else if (col >= texWidth) {
+        } else if (col >= texWidth) {
             col = texWidth;
         }
 
         if (row < 0) {
             row = 0;
-        }
-        else if (row >= texHeight) {
+        } else if (row >= texHeight) {
             row = texHeight;
         }
 
@@ -85,8 +82,7 @@ public class GaiaTextureUtils {
         return color;
     }
 
-    public static Vector4d getAverageColorOfTexture(GaiaTexture texture, Vector2d texCoord0, Vector2d texCoord1, Vector2d texCoord2)
-    {
+    public static Vector4d getAverageColorOfTexture(GaiaTexture texture, Vector2d texCoord0, Vector2d texCoord1, Vector2d texCoord2) {
         // calculate the rectangle.***
         Vector2d minTexCoord = new Vector2d();
         Vector2d maxTexCoord = new Vector2d();
@@ -127,30 +123,26 @@ public class GaiaTextureUtils {
 
         if (minCol < 0) {
             minCol = 0;
-        }
-        else if (minCol >= texWidth) {
-            minCol = texWidth-1;
+        } else if (minCol >= texWidth) {
+            minCol = texWidth - 1;
         }
 
         if (minRow < 0) {
             minRow = 0;
-        }
-        else if (minRow >= texHeight) {
-            minRow = texHeight-1;
+        } else if (minRow >= texHeight) {
+            minRow = texHeight - 1;
         }
 
         if (maxCol < 0) {
             maxCol = 0;
-        }
-        else if (maxCol >= texWidth) {
-            maxCol = texWidth-1;
+        } else if (maxCol >= texWidth) {
+            maxCol = texWidth - 1;
         }
 
         if (maxRow < 0) {
             maxRow = 0;
-        }
-        else if (maxRow >= texHeight) {
-            maxRow = texHeight-1;
+        } else if (maxRow >= texHeight) {
+            maxRow = texHeight - 1;
         }
 
         int red = 0;
@@ -166,8 +158,7 @@ public class GaiaTextureUtils {
                 blue += rgb & 0xFF;
                 if (bufferedImage.getColorModel().hasAlpha()) {
                     alpha += (rgb >> 24) & 0xFF;
-                }
-                else {
+                } else {
                     alpha += 255;
                 }
             }

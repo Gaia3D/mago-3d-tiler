@@ -4,7 +4,7 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.octree.GaiaFaceData;
 import com.gaia3d.basic.geometry.octree.GaiaOctree;
 import com.gaia3d.basic.geometry.octree.GaiaOctreeCoordinate;
-import com.gaia3d.basic.structure.*;
+import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.TextureType;
 import org.joml.Vector2d;
 import org.joml.Vector4d;
@@ -27,24 +27,23 @@ public class GaiaOctreeUtils {
                         int matId = primitive.getMaterialIndex();
                         GaiaMaterial material = sceneParent.getMaterials().get(matId);
                         GaiaTexture diffuseTexture = null;
-                        List<GaiaTexture> diffuseTexturesArray =  material.getTextures().get(TextureType.DIFFUSE);
-                        if(diffuseTexturesArray.size() > 0)
-                        {
+                        List<GaiaTexture> diffuseTexturesArray = material.getTextures().get(TextureType.DIFFUSE);
+                        if (diffuseTexturesArray.size() > 0) {
                             diffuseTexture = diffuseTexturesArray.get(0);
                             diffuseTexture.loadImage();
                         }
 
-                        if(primitive.getSurfaces() != null) {
+                        if (primitive.getSurfaces() != null) {
                             for (int k = 0, surfacesLength = primitive.getSurfaces().size(); k < surfacesLength; k++) {
                                 GaiaSurface surface = primitive.getSurfaces().get(k);
-                                if(surface.getFaces() != null) {
+                                if (surface.getFaces() != null) {
                                     for (int m = 0, facesLength = surface.getFaces().size(); m < facesLength; m++) {
                                         GaiaFace face = surface.getFaces().get(m);
 
                                         int indicesCount = face.getIndices().length;
                                         int[] indices = face.getIndices();
                                         int triangleCount = indicesCount / 3;
-                                        for(int n = 0; n < triangleCount; n++) {
+                                        for (int n = 0; n < triangleCount; n++) {
                                             int index0 = indices[n * 3];
                                             int index1 = indices[n * 3 + 1];
                                             int index2 = indices[n * 3 + 2];
@@ -63,7 +62,7 @@ public class GaiaOctreeUtils {
 
                                             Vector4d averageColor = material.getDiffuseColor();
 
-                                            if(texCoord0 != null && texCoord1 != null && texCoord2 != null) {
+                                            if (texCoord0 != null && texCoord1 != null && texCoord2 != null) {
 
                                                 Vector2d texCoordCenter = new Vector2d();
                                                 texCoordCenter.add(texCoord0);
@@ -76,8 +75,7 @@ public class GaiaOctreeUtils {
                                                     averageColor = GaiaTextureUtils.getAverageColorOfTexture(diffuseTexture, texCoord0, texCoord1, texCoord2);
                                                     if (averageColor == null) {
                                                         averageColor = material.getDiffuseColor();
-                                                    }
-                                                    else {
+                                                    } else {
                                                         averageColor.x *= 2.0;
                                                         if (averageColor.x > 1.0) averageColor.x = 1.0;
 
@@ -101,7 +99,7 @@ public class GaiaOctreeUtils {
                                 }
                             }
                         }
-                        if(diffuseTexture != null) {
+                        if (diffuseTexture != null) {
                             diffuseTexture.deleteObjects();
                         }
                     }
@@ -123,6 +121,7 @@ public class GaiaOctreeUtils {
             getFaceDataListOfNode(gaiaScene, node, resultFaceDataList);
         }
     }
+
     public static GaiaOctree getSceneOctree(GaiaScene gaiaScene, float octreeMinSize) {
         List<GaiaFaceData> faceDataList = new ArrayList<>();
         getFaceDataListOfScene(gaiaScene, faceDataList);
@@ -132,8 +131,8 @@ public class GaiaOctreeUtils {
         octree.setSize(boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ(), boundingBox.getMaxX(), boundingBox.getMaxY(), boundingBox.getMaxZ());
         octree.setAsCube();
         double size = octree.getMaxX() - octree.getMinX();
-        int i =0;
-        while(size > octreeMinSize) {
+        int i = 0;
+        while (size > octreeMinSize) {
             size /= 2.0;
             i++;
         }
@@ -164,7 +163,7 @@ public class GaiaOctreeUtils {
         //----------------------------------------------------------------
 
         GaiaOctreeCoordinate parentCoord = coordinate.getParentCoord();
-        if(parentCoord == null) {
+        if (parentCoord == null) {
             return 0;
         }
 
@@ -185,64 +184,44 @@ public class GaiaOctreeUtils {
         int difZ = z - originZ;
 
         int index = 0;
-        if(difX > 0)
-        {
+        if (difX > 0) {
             // 1, 2, 5, 6
-            if(difY > 0)
-            {
+            if (difY > 0) {
                 // 2, 6
-                if(difZ > 0)
-                {
+                if (difZ > 0) {
                     // 6
                     index = 6;
-                }
-                else
-                {
+                } else {
                     // 2
                     index = 2;
                 }
-            }
-            else
-            {
+            } else {
                 // 1, 5
-                if(difZ > 0)
-                {
+                if (difZ > 0) {
                     // 5
                     index = 5;
-                }
-                else
-                {
+                } else {
                     // 1
                     index = 1;
                 }
             }
-        }
-        else{
+        } else {
             // 0, 3, 4, 7
-            if(difY > 0)
-            {
+            if (difY > 0) {
                 // 3, 7
-                if(difZ > 0)
-                {
+                if (difZ > 0) {
                     // 7
                     index = 7;
-                }
-                else
-                {
+                } else {
                     // 3
                     index = 3;
                 }
-            }
-            else
-            {
+            } else {
                 // 0, 4
-                if(difZ > 0)
-                {
+                if (difZ > 0) {
                     // 4
                     index = 4;
-                }
-                else
-                {
+                } else {
                     // 0
                     index = 0;
                 }

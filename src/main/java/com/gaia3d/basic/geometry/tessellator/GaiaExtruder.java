@@ -25,8 +25,7 @@ public class GaiaExtruder {
         Vector3d normal = new Vector3d();
         GeometryUtils.calculateNormal3D(cleanPositions, normal);
 
-        if(normal.z < 0.0)
-        {
+        if (normal.z < 0.0) {
             // reverse cleanPositions.***
             Collections.reverse(cleanPositions);
         }

@@ -16,9 +16,10 @@ import java.io.Serializable;
  * It can be used to calculate the center and volume of the geometry.
  * It can also be used to convert the local bounding box to lonlat bounding box.
  * It can also be used to calculate the longest distance of the geometry.
+ *
  * @author znkim
- * @since 1.0.0
  * @see GaiaRectangle
+ * @since 1.0.0
  */
 @Slf4j
 @Setter
@@ -70,18 +71,14 @@ public class GaiaBoundingBox implements Serializable {
         }
     }
 
-    public boolean intersects(GaiaBoundingBox bbox)
-    {
+    public boolean intersects(GaiaBoundingBox bbox) {
         if (maxX < bbox.minX || minX > bbox.maxX) {
             return false;
         }
         if (maxY < bbox.minY || minY > bbox.maxY) {
             return false;
         }
-        if (maxZ < bbox.minZ || minZ > bbox.maxZ) {
-            return false;
-        }
-        return true;
+        return !(maxZ < bbox.minZ) && !(minZ > bbox.maxZ);
     }
 
     public boolean intersects(GaiaBoundingBox bbox, double tolerance) {
@@ -91,10 +88,7 @@ public class GaiaBoundingBox implements Serializable {
         if (maxY + tolerance < bbox.minY || minY - tolerance > bbox.maxY) {
             return false;
         }
-        if (maxZ + tolerance < bbox.minZ || minZ - tolerance > bbox.maxZ) {
-            return false;
-        }
-        return true;
+        return !(maxZ + tolerance < bbox.minZ) && !(minZ - tolerance > bbox.maxZ);
     }
 
     public void addBoundingBox(GaiaBoundingBox boundingBox) {
@@ -131,7 +125,7 @@ public class GaiaBoundingBox implements Serializable {
     public GaiaBoundingBox convertLocalToLonlatBoundingBox(Vector3d center) {
         Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
         Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
-        
+
         Vector3d minLocalCoordinate = new Vector3d(minX, minY, minZ);
         Matrix4d minTransformMatrix = transformMatrix.translate(minLocalCoordinate, new Matrix4d());
         Vector3d minWorldCoordinate = new Vector3d(minTransformMatrix.m30(), minTransformMatrix.m31(), minTransformMatrix.m32());
@@ -174,8 +168,7 @@ public class GaiaBoundingBox implements Serializable {
     }
 
     public boolean contains(GaiaBoundingBox boundingBox) {
-        return minX <= boundingBox.minX && minY <= boundingBox.minY && minZ <= boundingBox.minZ
-                && maxX >= boundingBox.maxX && maxY >= boundingBox.maxY && maxZ >= boundingBox.maxZ;
+        return minX <= boundingBox.minX && minY <= boundingBox.minY && minZ <= boundingBox.minZ && maxX >= boundingBox.maxX && maxY >= boundingBox.maxY && maxZ >= boundingBox.maxZ;
     }
 
     public GaiaBoundingBox clone() {

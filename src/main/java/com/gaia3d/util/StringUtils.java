@@ -6,7 +6,6 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.Vector;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class StringUtils {
@@ -30,7 +29,6 @@ public class StringUtils {
     }
 
 
-
     public static void splitString(String wordToSplit, String delimiter, Vector<String> resultSplittedStrings, boolean skipEmptyStrings) {
         String[] splitStrings = wordToSplit.split(delimiter);
         for (String word : splitStrings) {
@@ -49,9 +47,7 @@ public class StringUtils {
     }
 
     public static Optional<String> getExtensionByStringHandling(String filename) {
-        return Optional.ofNullable(filename)
-                .filter(f -> f.contains("."))
-                .map(f -> f.substring(filename.lastIndexOf(".") + 1));
+        return Optional.ofNullable(filename).filter(f -> f.contains(".")).map(f -> f.substring(filename.lastIndexOf(".") + 1));
     }
 
     public static String convertUTF8(String ascii) {

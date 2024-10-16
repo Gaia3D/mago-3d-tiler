@@ -24,7 +24,7 @@ public class VectorUtils {
         if (!rect1.intersects(rect2, 0.0)) {
             // Intersection check with bounding box
             return false;
-        } else if (a.equals(u) && b.equals(v) || a.equals(v) && b.equals(u)){
+        } else if (a.equals(u) && b.equals(v) || a.equals(v) && b.equals(u)) {
             // Same line case;
             return true;
         } else if (a.equals(u) || a.equals(v) || b.equals(u) || b.equals(v)) {

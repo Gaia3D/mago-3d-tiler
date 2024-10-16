@@ -5,6 +5,7 @@ import java.awt.image.BufferedImage;
 
 /**
  * Utility class for resizing images.
+ *
  * @author znkim
  * @since 1.0.0
  */

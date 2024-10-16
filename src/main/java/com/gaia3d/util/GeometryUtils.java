@@ -4,7 +4,7 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.geometry.octree.GaiaFaceData;
 import com.gaia3d.basic.geometry.octree.GaiaOctree;
-import com.gaia3d.basic.structure.*;
+import com.gaia3d.basic.model.*;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
@@ -136,8 +136,7 @@ public class GeometryUtils {
         //                         /        /   <- bottom
         //                        0--------1
 
-        if(left)
-        {
+        if (left) {
             GaiaPrimitive leftPrimitive = new GaiaPrimitive();
 
             GaiaVertex vertex0 = new GaiaVertex();
@@ -181,8 +180,7 @@ public class GeometryUtils {
             GaiaPrimitiveUtils.mergePrimitives(resultPrimitive, leftPrimitive);
         }
 
-        if(right)
-        {
+        if (right) {
             GaiaPrimitive rightPrimitive = new GaiaPrimitive();
 
             // Right.************************************************************
@@ -226,8 +224,7 @@ public class GeometryUtils {
             GaiaPrimitiveUtils.mergePrimitives(resultPrimitive, rightPrimitive);
         }
 
-        if(front)
-        {
+        if (front) {
             GaiaPrimitive frontPrimitive = new GaiaPrimitive();
 
             // Front.************************************************************
@@ -271,8 +268,7 @@ public class GeometryUtils {
             GaiaPrimitiveUtils.mergePrimitives(resultPrimitive, frontPrimitive);
         }
 
-        if(rear)
-        {
+        if (rear) {
             GaiaPrimitive rearPrimitive = new GaiaPrimitive();
 
             // Rear.************************************************************
@@ -316,8 +312,7 @@ public class GeometryUtils {
             GaiaPrimitiveUtils.mergePrimitives(resultPrimitive, rearPrimitive);
         }
 
-        if(bottom)
-        {
+        if (bottom) {
             GaiaPrimitive bottomPrimitive = new GaiaPrimitive();
             // Bottom.************************************************************
             GaiaVertex vertex0 = new GaiaVertex();
@@ -359,8 +354,7 @@ public class GeometryUtils {
             GaiaPrimitiveUtils.mergePrimitives(resultPrimitive, bottomPrimitive);
         }
 
-        if(top)
-        {
+        if (top) {
             GaiaPrimitive topPrimitive = new GaiaPrimitive();
             // Top.************************************************************
             Vector3d normalTop = new Vector3d(0, 0, 1);
@@ -406,8 +400,7 @@ public class GeometryUtils {
         return resultPrimitive;
     }
 
-    public static GaiaPrimitive getPrimitiveFromBoundingBox(GaiaBoundingBox bbox)
-    {
+    public static GaiaPrimitive getPrimitiveFromBoundingBox(GaiaBoundingBox bbox) {
         //GaiaPrimitive resultPrimitive = getPrimitiveFromBoundingBox(bbox, true, true, true, true, true, true);
         GaiaPrimitive resultPrimitive = new GaiaPrimitive();
 
@@ -677,19 +670,16 @@ public class GeometryUtils {
         return resultPrimitive;
     }
 
-    public static GaiaNode getGaiaNodeWithPrimitivesAsBox(GaiaNode node)
-    {
+    public static GaiaNode getGaiaNodeWithPrimitivesAsBox(GaiaNode node) {
         GaiaNode resultNode = new GaiaNode();
 
         // Check if exists meshes in the node.***
         int meshesCount = node.getMeshes().size();
-        for(int j = 0; j < meshesCount; j++)
-        {
+        for (int j = 0; j < meshesCount; j++) {
             GaiaMesh mesh = node.getMeshes().get(j);
             GaiaMesh resultMesh = new GaiaMesh();
             int primitivesCount = mesh.getPrimitives().size();
-            for(int k = 0; k < primitivesCount; k++)
-            {
+            for (int k = 0; k < primitivesCount; k++) {
                 GaiaPrimitive primitive = mesh.getPrimitives().get(k);
                 GaiaBoundingBox bbox = primitive.getBoundingBox(null);
                 GaiaPrimitive resultPrimitive = getPrimitiveFromBoundingBox(bbox);
@@ -710,8 +700,7 @@ public class GeometryUtils {
         return resultNode;
     }
 
-    public static GaiaScene getGaiaSceneWithPrimitivesAsBox(GaiaScene gaiaScene)
-    {
+    public static GaiaScene getGaiaSceneWithPrimitivesAsBox(GaiaScene gaiaScene) {
         GaiaScene resultScene = new GaiaScene();
 
         int nodesCount = gaiaScene.getNodes().size();
@@ -725,18 +714,15 @@ public class GeometryUtils {
         return resultScene;
     }
 
-    public static Vector4d getAverageColor(List<GaiaFaceData> faceDataList)
-    {
+    public static Vector4d getAverageColor(List<GaiaFaceData> faceDataList) {
         Vector4d resultColor = new Vector4d();
         resultColor.set(0.0, 0.0, 0.0, 0.0);
         int facesCount = faceDataList.size();
         int averageColorCount = 0;
-        for(int i=0; i<facesCount; i++)
-        {
+        for (int i = 0; i < facesCount; i++) {
             GaiaFaceData faceData = faceDataList.get(i);
             Vector4d color = faceData.getAverageColor();
-            if(color == null)
-            {
+            if (color == null) {
                 continue;
             }
             resultColor.x += color.x;
@@ -747,8 +733,7 @@ public class GeometryUtils {
             averageColorCount++;
         }
 
-        if(averageColorCount == 0)
-        {
+        if (averageColorCount == 0) {
             return null;
         }
 
@@ -762,23 +747,18 @@ public class GeometryUtils {
 
     public static List<Vector3d> getCleanPoints3dArray(List<Vector3d> pointsArray, List<Vector3d> cleanPointsArray, double error) {
         // Here checks uroborus, and check if there are adjacent points in the same position.***
-        if(cleanPointsArray == null)
-        {
+        if (cleanPointsArray == null) {
             cleanPointsArray = new ArrayList<>();
-        }
-        else
-        {
+        } else {
             cleanPointsArray.clear();
         }
 
         int pointsCount = pointsArray.size();
         Vector3d firstPoint = null;
         Vector3d lastPoint = null;
-        for(int i=0; i<pointsCount; i++)
-        {
+        for (int i = 0; i < pointsCount; i++) {
             Vector3d currPoint = pointsArray.get(i);
-            if(i == 0)
-            {
+            if (i == 0) {
                 firstPoint = currPoint;
                 lastPoint = currPoint;
                 cleanPointsArray.add(currPoint);
@@ -787,14 +767,12 @@ public class GeometryUtils {
 
             if (!currPoint.equals(firstPoint) && !currPoint.equals(lastPoint)) {
 
-                if(GeometryUtils.areAproxEqualsPoints3d(currPoint, firstPoint, error))
-                {
+                if (GeometryUtils.areAproxEqualsPoints3d(currPoint, firstPoint, error)) {
                     // the polygon is uroborus.***
                     continue;
                 }
 
-                if(GeometryUtils.areAproxEqualsPoints3d(currPoint, lastPoint, error))
-                {
+                if (GeometryUtils.areAproxEqualsPoints3d(currPoint, lastPoint, error)) {
                     // the point is the same as the last point.***
                     continue;
                 }
@@ -823,8 +801,7 @@ public class GeometryUtils {
             v2.normalize();
 
             double dotProd = v1.dot(v2);
-            if (Math.abs(dotProd) >= dotProdError)
-            {
+            if (Math.abs(dotProd) >= dotProdError) {
                 // the points are colineal.***
                 cleanPointsArray.remove(i);
                 i--;
@@ -835,8 +812,7 @@ public class GeometryUtils {
         return cleanPointsArray;
     }
 
-    public static GaiaScene getGaiaSceneLego(GaiaScene gaiaScene, float octreeMinSize)
-    {
+    public static GaiaScene getGaiaSceneLego(GaiaScene gaiaScene, float octreeMinSize) {
         GaiaScene resultScene = new GaiaScene();
         GaiaOctree gaiaOctree = GaiaOctreeUtils.getSceneOctree(gaiaScene, octreeMinSize);
 
@@ -855,8 +831,7 @@ public class GeometryUtils {
         GaiaPrimitive primitiveMaster = new GaiaPrimitive();
         mesh.getPrimitives().add(primitiveMaster);
 
-        for(int i=0; i<octreeList.size(); i++)
-        {
+        for (int i = 0; i < octreeList.size(); i++) {
             GaiaOctree octree = octreeList.get(i);
             boolean[] hasNeighbor = octree.hasNeighbor(); // left, right, front, rear, bottom, top.
             GaiaBoundingBox bbox = octree.getBoundingBox();
@@ -869,20 +844,18 @@ public class GeometryUtils {
 
             //averageColor = new Vector4d(0.9, 0.9, 0.9, 1.0);
 
-            if(averageColor == null)
-            {
+            if (averageColor == null) {
                 averageColor = new Vector4d(1.0, 0.0, 1.0, 1.0);
             }
             byte[] color = new byte[4];
-            color[0] = (byte)(averageColor.x * 255);
-            color[1] = (byte)(averageColor.y * 255);
-            color[2] = (byte)(averageColor.z * 255);
-            color[3] = (byte)(averageColor.w * 255);
+            color[0] = (byte) (averageColor.x * 255);
+            color[1] = (byte) (averageColor.y * 255);
+            color[2] = (byte) (averageColor.z * 255);
+            color[3] = (byte) (averageColor.w * 255);
 
 
             List<GaiaVertex> vertices = primitive.getVertices();
-            for(GaiaVertex vertex : vertices)
-            {
+            for (GaiaVertex vertex : vertices) {
                 vertex.setColor(color);
             }
             // End Test.------------------------------------------------------------------------------------------------

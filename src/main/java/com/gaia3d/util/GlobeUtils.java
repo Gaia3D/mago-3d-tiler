@@ -6,15 +6,17 @@ import org.geotools.referencing.CRS;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.io.WKTReader;
-import org.locationtech.proj4j.*;
-import org.opengis.geometry.Geometry;
+import org.locationtech.proj4j.BasicCoordinateTransform;
+import org.locationtech.proj4j.CRSFactory;
+import org.locationtech.proj4j.CoordinateReferenceSystem;
+import org.locationtech.proj4j.ProjCoordinate;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 
 /**
  * Utility class for converting between geographic and cartesian coordinates.
+ *
  * @author znkim
  * @since 1.0.0
  */
