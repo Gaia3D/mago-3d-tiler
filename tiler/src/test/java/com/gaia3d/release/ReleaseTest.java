@@ -325,7 +325,7 @@ class ReleaseTest {
                 "-inputType", "geojson",
                 "-crs", "5186",
                 "-output", output.getAbsolutePath(),
-                "-hc", "Z_Min",
+                //"-hc", "Z_Min",
                 "-debug",
         };
         Mago3DTilerMain.main(args);
@@ -373,6 +373,22 @@ class ReleaseTest {
         String[] args = {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "obj",
+                "-crs", "5186",
+                "-output", output.getAbsolutePath(),
+                "-debug",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testGyangGyoBridgeOjb() {
+        String path = "GYANGGYO-BRIDGE-OBJ";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "citygml",
                 "-crs", "5186",
                 "-output", output.getAbsolutePath(),
                 "-debug",

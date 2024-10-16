@@ -2,10 +2,12 @@ package com.gaia3d.release;
 
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
+@Tag("release")
 @Slf4j
 class DefaultTest {
     @Test
