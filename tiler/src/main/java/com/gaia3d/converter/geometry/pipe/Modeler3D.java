@@ -4,6 +4,7 @@ import com.gaia3d.basic.geometry.network.modeler.TEdge;
 import com.gaia3d.basic.geometry.network.modeler.TNetwork;
 import com.gaia3d.basic.geometry.network.modeler.TNode;
 import com.gaia3d.basic.model.*;
+import lombok.NoArgsConstructor;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
@@ -13,11 +14,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@NoArgsConstructor
 public class Modeler3D {
-    public Modeler3D() {
-
-    }
-
     public TNetwork getPipeNetworkFromPipeElbows(List<PipeElbow> pipeElbows) {
         TNetwork network = new TNetwork();
 

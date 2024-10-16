@@ -10,6 +10,7 @@ import java.io.IOException;
 
 /**
  * Main class for mago 3DTiler.
+ *
  * @author znkim
  */
 @Slf4j
@@ -70,13 +71,7 @@ public class Mago3DTilerMain {
     private static void printStart() {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         String programInfo = globalOptions.getProgramInfo();
-        log.info("\n" +
-                "┳┳┓┏┓┏┓┏┓  ┏┓┳┓  ┏┳┓┳┓ ┏┓┳┓\n" +
-                "┃┃┃┣┫┃┓┃┃   ┫┃┃   ┃ ┃┃ ┣ ┣┫\n" +
-                "┛ ┗┛┗┗┛┗┛  ┗┛┻┛   ┻ ┻┗┛┗┛┛┗\n" +
-                programInfo + "\n" +
-                "----------------------------------------"
-        );
+        log.info("\n" + "┳┳┓┏┓┏┓┏┓  ┏┓┳┓  ┏┳┓┳┓ ┏┓┳┓\n" + "┃┃┃┣┫┃┓┃┃   ┫┃┃   ┃ ┃┃ ┣ ┣┫\n" + "┛ ┗┛┗┗┛┗┛  ┗┛┻┛   ┻ ┻┗┛┗┛┛┗\n" + programInfo + "\n" + "----------------------------------------");
     }
 
     /**
@@ -86,10 +81,7 @@ public class Mago3DTilerMain {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         String programInfo = globalOptions.getProgramInfo();
         String javaVersionInfo = globalOptions.getJavaVersionInfo();
-        log.info(
-                programInfo + "\n" +
-                javaVersionInfo
-        );
+        log.info(programInfo + "\n" + javaVersionInfo);
         log.info("----------------------------------------");
     }
 

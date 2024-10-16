@@ -3,12 +3,12 @@ package com.gaia3d.command.model;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
-import com.gaia3d.converter.loader.FileLoader;
-import com.gaia3d.converter.loader.InstancedFileLoader;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.JacksonKmlReader;
 import com.gaia3d.converter.kml.ShapeReader;
+import com.gaia3d.converter.loader.FileLoader;
+import com.gaia3d.converter.loader.InstancedFileLoader;
 import com.gaia3d.process.TilingPipeline;
 import com.gaia3d.process.postprocess.PostProcess;
 import com.gaia3d.process.postprocess.instance.Instanced3DModel;
@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-public class InstancedProcessModel implements ProcessFlowModel{
+public class InstancedProcessModel implements ProcessFlowModel {
     public void run() throws IOException {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         FormatType inputFormat = globalOptions.getInputFormat();

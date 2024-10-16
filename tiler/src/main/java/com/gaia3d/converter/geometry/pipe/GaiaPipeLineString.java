@@ -66,7 +66,7 @@ public class GaiaPipeLineString {
                 i--;
                 deleted = true;
 
-                if(positions.size() <= 2) {
+                if (positions.size() <= 2) {
                     break;
                 }
             }

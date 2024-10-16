@@ -7,6 +7,7 @@ import org.joml.Vector3d;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class GeometryOptimizer implements PreProcess {
 
     @Override

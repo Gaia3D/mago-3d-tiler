@@ -17,6 +17,7 @@ import java.util.List;
 
 /**
  * Loads files from the input directory.
+ *
  * @author znkim
  * @since 1.0.0
  */
@@ -54,10 +55,7 @@ public class PointCloudFileLoader implements FileLoader {
                 log.error("Failed to load scene: {}", file.getAbsolutePath());
                 return null;
             } else {
-                TileInfo tileInfo = TileInfo.builder()
-                        .pointCloud(pointCloud)
-                        .outputPath(outputPath)
-                        .build();
+                TileInfo tileInfo = TileInfo.builder().pointCloud(pointCloud).outputPath(outputPath).build();
                 tileInfos.add(tileInfo);
             }
         }

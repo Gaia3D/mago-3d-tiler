@@ -21,10 +21,6 @@ public enum ProcessOptions {
     INSTANCE_FILE("instance", "if", "instance", true, "Instance file path for I3DM (Default: {OUTPUT}/instance.dae)"),
     RECURSIVE("recursive", "r", "recursive", false, "Tree directory deep navigation."),
 
-    LARGE_MESH("largeMesh", "lm", "largeMesh", false, "[Experimental] Large Mesh Splitting Mode (Default: false)"),
-    VOXEL_LOD("voxelLod", "vl", "voxelLod", false, "[Experimental] Voxel Level Of Detail setting for i3dm (Default: false)"),
-    PHOTOREALISTIC("photorealistic", "pr", "photorealistic", false, "[Experimental] Photorealistic mode for b3dm (Default: false)"),
-
     // Coordinate Options
     CRS("crs", "c", "crs", true,"Coordinate Reference Systems, EPSG Code(4326, 3857, 32652, 5186...)"),
     PROJ4("proj", "p", "proj", true, "Proj4 parameters (ex: +proj=tmerc +la...)"),
@@ -46,7 +42,6 @@ public enum ProcessOptions {
     SWAP_UP_AXIS("swapUpAxis", "su", "swapUpAxis", false, "Rotate the matrix -90 degrees about the X-axis. (Default: false)"),
     FLIP_UP_AXIS("flipUpAxis", "ru", "flipUpAxis", false, "Rotate the matrix 180 degrees about the X-axis. (Default: false)"),
 
-    ZERO_ORIGIN("zeroOrigin", "zo", "zeroOrigin", false, "[Experimental] fix 3d root transformed matrix origin to zero point."),
     IGNORE_TEXTURES("ignoreTextures", "igtx", "ignoreTextures", false,"Ignore diffuse textures. "),
     AUTO_UP_AXIS("autoUpAxis", "aa", "autoUpAxis", false, "Automatically Assign 3D Matrix Axes. If your 3D data up-axis is incorrect, try this option."),
 
@@ -61,10 +56,13 @@ public enum ProcessOptions {
     ABSOLUTE_ALTITUDE("absoluteAltitude", "aa", "absoluteAltitude", true, "Absolute altitude value for extrusion model"),
     SKIRT_HEIGHT("skirtHeight", "sh", "skirtHeight", true, "Building Skirt height setting for extrusion model (Default: 4.0)"),
 
-
-
     DEBUG("debug", "d", "debug", false,"More detailed log output and stops on Multi-Thread bugs."),
-    DEBUG_GLB("glb", "glb", "glb", false, "Create glb file with B3DM.");
+    DEBUG_GLB("glb", "glb", "glb", false, "Create glb file with B3DM."),
+
+    LARGE_MESH("largeMesh", "lm", "largeMesh", false, "[Experimental] Large Mesh Splitting Mode (Default: false)"),
+    VOXEL_LOD("voxelLod", "vl", "voxelLod", false, "[Experimental] Voxel Level Of Detail setting for i3dm (Default: false)"),
+    PHOTOREALISTIC("photorealistic", "pr", "photorealistic", false, "[Experimental] Photorealistic mode for b3dm (Default: false)"),
+    ZERO_ORIGIN("zeroOrigin", "zo", "zeroOrigin", false, "[Experimental] fix 3d root transformed matrix origin to zero point.");
 
     private final String longName;
     private final String shortName;

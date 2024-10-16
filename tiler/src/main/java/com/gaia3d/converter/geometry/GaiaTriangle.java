@@ -51,7 +51,5 @@ public class GaiaTriangle {
         }
 
         this.normal.normalize();
-
-        //log.debug("Normal: {}", this.normal.z());
     }
 }

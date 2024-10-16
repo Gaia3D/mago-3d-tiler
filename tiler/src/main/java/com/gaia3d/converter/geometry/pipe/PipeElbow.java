@@ -35,7 +35,6 @@ public class PipeElbow extends TNode {
     private boolean bottomCap = false;
     private boolean topCap = false;
 
-    //, float pipeRadius, float[] pipeRectangularSize)
     public PipeElbow(Vector3d vector3d, PipeType profileType, float elbowRadius) {
         super(vector3d);
         this.profileType = profileType;

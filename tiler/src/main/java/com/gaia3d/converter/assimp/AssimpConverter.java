@@ -29,19 +29,15 @@ import java.util.UUID;
 
 /**
  * A class that converts a file to a GaiaScene object using Assimp.
+ *
  * @author znkim
- * @since 1.0.0
  * @see Converter
+ * @since 1.0.0
  */
 @Slf4j
 @RequiredArgsConstructor
 public class AssimpConverter implements Converter {
-    public final int DEFAULT_FLAGS =
-            Assimp.aiProcess_GenNormals |
-            Assimp.aiProcess_Triangulate|
-            Assimp.aiProcess_JoinIdenticalVertices|
-            Assimp.aiProcess_CalcTangentSpace|
-            Assimp.aiProcess_SortByPType;
+    public final int DEFAULT_FLAGS = Assimp.aiProcess_GenNormals | Assimp.aiProcess_Triangulate | Assimp.aiProcess_JoinIdenticalVertices | Assimp.aiProcess_CalcTangentSpace | Assimp.aiProcess_SortByPType;
 
     public List<GaiaScene> load(String filePath) {
         return load(new File(filePath));
@@ -58,7 +54,7 @@ public class AssimpConverter implements Converter {
         }
 
         String path = file.getAbsolutePath().replace(file.getName(), "");
-        AIScene aiScene =  Assimp.aiImportFile(file.getAbsolutePath(), DEFAULT_FLAGS);
+        AIScene aiScene = Assimp.aiImportFile(file.getAbsolutePath(), DEFAULT_FLAGS);
 
         assert aiScene != null;
         GaiaScene gaiaScene = convertScene(aiScene, path, file.getName());

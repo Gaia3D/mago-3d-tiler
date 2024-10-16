@@ -80,6 +80,7 @@ public class BatchedProcessModelPhR implements ProcessFlowModel {
         }
         return isYUpAxis;
     }
+
     private Converter getConverter(FormatType formatType) {
         Converter converter;
         if (formatType == FormatType.CITYGML) {

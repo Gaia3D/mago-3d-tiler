@@ -23,7 +23,7 @@ import java.io.IOException;
 @Slf4j
 public class GlobalOptions {
     /* singleton */
-    private static final GlobalOptions instance = new GlobalOptions(); // volatile?
+    private static final GlobalOptions instance = new GlobalOptions();
 
     private static final String DEFAULT_INPUT_FORMAT = "kml";
     private static final String DEFAULT_INSTANCE_FILE = "instance.dae";
@@ -144,14 +144,14 @@ public class GlobalOptions {
 
         if (command.hasOption(ProcessOptions.INPUT.getArgName())) {
             instance.setInputPath(command.getOptionValue(ProcessOptions.INPUT.getArgName()));
-            OptionsCorrector.isExistInputPath(input);
+            OptionsCorrector.checkExistInputPath(input);
         } else {
             throw new IllegalArgumentException("Please enter the value of the input argument.");
         }
 
         if (command.hasOption(ProcessOptions.OUTPUT.getArgName())) {
             instance.setOutputPath(command.getOptionValue(ProcessOptions.OUTPUT.getArgName()));
-            OptionsCorrector.isExistOutput(output);
+            OptionsCorrector.checkExistOutput(output);
         } else {
             throw new IllegalArgumentException("Please enter the value of the output argument.");
         }
@@ -191,12 +191,12 @@ public class GlobalOptions {
 
         if (command.hasOption(ProcessOptions.TERRAIN.getArgName())) {
             instance.setTerrainPath(command.getOptionValue(ProcessOptions.TERRAIN.getArgName()));
-            OptionsCorrector.isExistInputPath(new File(instance.getTerrainPath()));
+            OptionsCorrector.checkExistInputPath(new File(instance.getTerrainPath()));
         }
 
         if (command.hasOption(ProcessOptions.INSTANCE_FILE.getArgName())) {
             instance.setInstancePath(command.getOptionValue(ProcessOptions.INSTANCE_FILE.getArgName()));
-            OptionsCorrector.isExistInputPath(new File(instance.getInstancePath()));
+            OptionsCorrector.checkExistInputPath(new File(instance.getInstancePath()));
         } else {
             String instancePath = instance.getInputPath() + File.separator + DEFAULT_INSTANCE_FILE;
             instance.setInstancePath(instancePath);
@@ -277,10 +277,7 @@ public class GlobalOptions {
         }
 
         // force setting
-        if (instance.getInputFormat().equals(FormatType.GEOJSON) ||
-                instance.getInputFormat().equals(FormatType.SHP) ||
-                instance.getInputFormat().equals(FormatType.CITYGML) ||
-                instance.getInputFormat().equals(FormatType.INDOORGML)) {
+        if (instance.getInputFormat().equals(FormatType.GEOJSON) || instance.getInputFormat().equals(FormatType.SHP) || instance.getInputFormat().equals(FormatType.CITYGML) || instance.getInputFormat().equals(FormatType.INDOORGML)) {
             isSwapUpAxis = false;
             isFlipUpAxis = false;
             isRefineAdd = true;
@@ -317,7 +314,7 @@ public class GlobalOptions {
         String version = Mago3DTilerMain.class.getPackage().getImplementationVersion();
         String title = Mago3DTilerMain.class.getPackage().getImplementationTitle();
         String vendor = Mago3DTilerMain.class.getPackage().getImplementationVendor();
-        version = version == null ? "dev-version" : version;
+        version = version == null ? "dev" : version;
         title = title == null ? "3d-tiler" : title;
         vendor = vendor == null ? "Gaia3D, Inc." : vendor;
         String programInfo = title + "(" + version + ") by " + vendor;

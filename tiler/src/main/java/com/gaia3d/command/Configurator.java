@@ -104,7 +104,7 @@ public class Configurator {
 
     private static FileAppender createRollingFileAppender(PatternLayout layout, String path) throws IOException {
         if (path == null) {
-            path = "logs/gaia3d-tiler.log";
+            path = "logs/mago-3d-tiler.log";
         }
         File file = new File(path);
         if (file.exists() && file.isFile()) {

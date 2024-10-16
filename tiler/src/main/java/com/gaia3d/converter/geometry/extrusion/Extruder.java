@@ -1,8 +1,6 @@
 package com.gaia3d.converter.geometry.extrusion;
 
-import com.gaia3d.converter.geometry.Extrusion;
 import com.gaia3d.converter.geometry.GaiaTriangle;
-import com.gaia3d.converter.geometry.Tessellator;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;

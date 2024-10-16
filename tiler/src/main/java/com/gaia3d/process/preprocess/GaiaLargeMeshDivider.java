@@ -11,23 +11,9 @@ import java.util.Map;
 
 @Slf4j
 @AllArgsConstructor
+@Deprecated
 public class GaiaLargeMeshDivider {
     public List<GaiaScene> run(List<GaiaScene> gaiaScenes) {
-
-        /*for (GaiaScene gaiaScene : gaiaScenes) {
-            divideScene(gaiaScene);
-            gaiaScene.setTileInfos(tileInfos);
-
-
-
-        }
-
-        List<GaiaNode> nodes = gaiaScene.getNodes();
-        divideNode(nodes);
-
-        GaiaNode rootNode = gaiaScene.getNodes().get(0);
-        Matrix4d transform = rootNode.getTransformMatrix();
-        return tileInfo;*/
         return gaiaScenes;
     }
 

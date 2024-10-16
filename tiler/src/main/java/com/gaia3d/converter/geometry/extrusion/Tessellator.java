@@ -1,6 +1,6 @@
-package com.gaia3d.converter.geometry;
+package com.gaia3d.converter.geometry.extrusion;
 
-import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.converter.geometry.GaiaTriangle;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 

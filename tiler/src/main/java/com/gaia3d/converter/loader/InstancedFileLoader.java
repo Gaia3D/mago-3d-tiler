@@ -4,8 +4,8 @@ import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
-import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.converter.kml.AttributeReader;
+import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -21,6 +21,7 @@ import java.util.List;
 
 /**
  * Loads files from the input directory.
+ *
  * @author znkim
  * @since 1.0.0
  */
@@ -37,7 +38,7 @@ public class InstancedFileLoader implements FileLoader {
         this.converter = converter;
         this.kmlReader = kmlReader;
     }
-    
+
     public List<GaiaScene> loadScene(File input) {
         return converter.load(input);
     }

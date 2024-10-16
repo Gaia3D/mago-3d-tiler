@@ -19,13 +19,9 @@ public class GaiaMinimizer implements PreProcess {
             GaiaSet tempSet = GaiaSet.fromGaiaScene(scene);
             Path tempPath = tempSet.writeFile(tileInfo.getTempPath(), tileInfo.getSerial(), tempSet.getAttribute());
             tileInfo.setTempPath(tempPath);
-            if (tempSet != null) {
-                tempSet.clear();
-            }
+            tempSet.clear();
             tempSet = null;
-            if (scene != null) {
-                scene.clear();
-            }
+            scene.clear();
             scene = null;
         }
         return tileInfo;

@@ -1,12 +1,15 @@
 package com.gaia3d.converter.geometry.citygml;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.tessellator.Vector3dOnlyHashEquals;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.EasySceneCreator;
 import com.gaia3d.converter.geometry.*;
 import com.gaia3d.converter.geometry.extrusion.Extruder;
+import com.gaia3d.converter.geometry.extrusion.Extrusion;
+import com.gaia3d.converter.geometry.extrusion.Tessellator;
 import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -177,10 +180,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
 
                     // Check if buildingSurface has holes.***
                     List<List<Vector3d>> interiorPolygons = buildingSurface.getInteriorPositions();
-                    boolean hasHoles = false;
-                    if (interiorPolygons != null && !interiorPolygons.isEmpty()) {
-                        hasHoles = true;
-                    }
+                    boolean hasHoles = interiorPolygons != null && !interiorPolygons.isEmpty();
 
                     GaiaNode node = new GaiaNode();
                     node.setTransformMatrix(new Matrix4d().identity());
@@ -196,7 +196,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                             Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
                             Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv);
                             localPositions.add(localPosition);
-                            polygon.add(new Vector3dsOnlyHashEquals(localPosition));
+                            polygon.add(new Vector3dOnlyHashEquals(localPosition));
                         }
                         polygons.add(polygon);
 
@@ -258,14 +258,20 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
         return scenes;
     }
 
-    private List<GaiaExtrusionBuilding> convertSolidProperty(AbstractCityObject cityObject, AbstractSolid solid) {
+    private List<GaiaExtrusionBuilding> convertSolidProperty(AbstractCityObject cityObject, AbstractSolid abstractSolid) {
         List<GaiaExtrusionBuilding> buildingList = new ArrayList<>();
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         boolean flipCoordinate = globalOptions.isFlipCoordinate();
         double skirtHeight = globalOptions.getSkirtHeight();
         double height = 1.0d;
 
-        Shell shell = ((Solid) solid).getExterior().getObject();
+        Solid solid = (Solid) abstractSolid;
+        ShellProperty exterior = solid.getExterior();
+
+        if (exterior == null) {
+            return buildingList;
+        }
+        Shell shell = exterior.getObject();
         List<SurfaceProperty> surfaceProperties = shell.getSurfaceMembers();
 
         for (SurfaceProperty surfaceProperty : surfaceProperties) {
@@ -877,7 +883,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             lod3MultiSurface = object.getLod3MultiSurface();
             lod4MultiSurface = object.getDeprecatedProperties().getLod4MultiSurface();
         } else if (spaceBoundary instanceof ReliefFeature object) {
-            reliefComponentProperties =  object.getReliefComponents();
+            reliefComponentProperties = object.getReliefComponents();
         } else {
             log.debug("Unsupported space boundary type: {}", spaceBoundary.getClass().getSimpleName());
         }

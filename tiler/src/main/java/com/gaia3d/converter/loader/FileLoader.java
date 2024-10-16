@@ -9,7 +9,9 @@ import java.util.List;
 
 public interface FileLoader {
     List<TileInfo> loadTileInfo(File file);
+
     List<File> loadFiles();
+
     List<GridCoverage2D> loadGridCoverages(List<GridCoverage2D> coverages);
 
     default String[] getExtensions(FormatType formatType) {

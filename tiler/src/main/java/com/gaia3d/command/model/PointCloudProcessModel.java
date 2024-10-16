@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-public class PointCloudProcessModel implements ProcessFlowModel{
+public class PointCloudProcessModel implements ProcessFlowModel {
     public void run() throws IOException {
         LasConverter converter = new LasConverter();
 

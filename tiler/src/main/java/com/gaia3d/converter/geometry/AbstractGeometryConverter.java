@@ -40,7 +40,6 @@ public abstract class AbstractGeometryConverter {
 
         Vector4d color = new Vector4d(0.9, 0.9, 0.9, 1);
         if (globalOptions.isDebugLod()) {
-            // TODO : random color
             Random random = new Random();
             float r = random.nextFloat();
             float g = random.nextFloat();

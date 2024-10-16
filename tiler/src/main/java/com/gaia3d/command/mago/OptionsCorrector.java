@@ -15,16 +15,15 @@ import java.util.Objects;
 @NoArgsConstructor
 public class OptionsCorrector {
 
-    public static boolean isExistInputPath(File path) throws IllegalArgumentException, IOException {
+    public static void checkExistInputPath(File path) throws IllegalArgumentException, IOException {
         if (!path.exists()) {
             throw new FileExistsException(String.format("%s path is not exist.", path));
         } else if (!path.canWrite()) {
             throw new IOException(String.format("%s path is not writable.", path));
         }
-        return true;
     }
 
-    public static boolean isExistOutput(File path) throws IOException {
+    public static void checkExistOutput(File path) throws IOException {
         if (!path.exists()) {
             boolean isSuccess = path.mkdirs();
             if (!isSuccess) {
@@ -37,7 +36,6 @@ public class OptionsCorrector {
         } else if (!path.canWrite()) {
             throw new IOException(String.format("%s path is not writable.", path));
         }
-        return true;
     }
 
     public static boolean isRecursive(File path) {

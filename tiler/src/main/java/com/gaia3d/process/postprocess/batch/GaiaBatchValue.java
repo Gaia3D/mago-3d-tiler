@@ -7,6 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
+@Deprecated
 public class GaiaBatchValue {
     private final String name;
 }

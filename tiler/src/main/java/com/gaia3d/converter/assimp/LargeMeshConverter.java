@@ -1,7 +1,7 @@
 package com.gaia3d.converter.assimp;
 
-import com.gaia3d.basic.splitter.GaiaSceneSplitter;
 import com.gaia3d.basic.model.*;
+import com.gaia3d.basic.splitter.GaiaSceneSplitter;
 import com.gaia3d.converter.Converter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

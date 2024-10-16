@@ -2,6 +2,7 @@ package com.gaia3d.process.tileprocess.tile;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
@@ -72,13 +73,13 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         Path outputPath = new File(globalOptions.getOutputPath()).toPath();
         File tilesetFile = outputPath.resolve("tileset.json").toFile();
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.getFactory().configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);
+        objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(tilesetFile))) {
             String result = objectMapper.writeValueAsString(tileset);
-            log.info("[Tiling][Tileset] write 'tileset.json' file.");
+            log.info("[Tile][Tileset] write 'tileset.json' file.");
             writer.write(result);
             globalOptions.setTilesetSize(result.length());
         } catch (IOException e) {
@@ -217,7 +218,7 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         }
         String nodeCode = parentNode.getNodeCode();
         nodeCode = nodeCode + index;
-        log.info("[Tiling][LogicalNode][" + nodeCode + "][OBJECT{}]", tileInfos.size());
+        log.info("[Tile][LogicalNode][" + nodeCode + "][OBJECT{}]", tileInfos.size());
 
         double geometricError = instanceGeometricError;
         GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
@@ -267,7 +268,7 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
 
         nodeCode = nodeCode + index;
 
-        log.info("[Tiling][ContentNode][" + nodeCode + "][LOD{}][OBJECT{}]", lod.getLevel(), tileInfos.size());
+        log.info("[Tile][ContentNode][" + nodeCode + "][LOD{}][OBJECT{}]", lod.getLevel(), tileInfos.size());
 
         int lodError = refineAdd ? lod.getGeometricErrorBlock() : lod.getGeometricError();
         int lodErrorDouble = lodError;
@@ -314,7 +315,7 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
             content.setContentInfo(contentInfo);
             childNode.setContent(content);
         } else {
-            log.warn("[Tiling][ContentNode][{}] No content", nodeCode);
+            log.warn("[Tile][ContentNode][{}] No content", nodeCode);
         }
         return childNode;
     }

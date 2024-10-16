@@ -2,6 +2,7 @@ package com.gaia3d.process.postprocess.batch;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.model.GaiaAttribute;
@@ -61,23 +62,9 @@ public class Batched3DModel implements TileModel {
         List<String> fileNameList = new ArrayList<>();
         List<String> nodeNameList = new ArrayList<>();
 
-
-
-        /*List<String> projectNames = new ArrayList<>();
-        List<String> nodeNames = new ArrayList<>();
-        List<Double> geometricErrors = new ArrayList<>();
-        List<Double> heights = new ArrayList<>();*/
-
-
         tileInfos.forEach((tileInfo) -> {
             GaiaAttribute attribute = tileInfo.getScene().getAttribute();
             Map<String, String> attributes = attribute.getAttributes();
-
-            GaiaSet set = tileInfo.getSet();
-            String projectName = set.getProjectName();
-            String asciiProjectName = StringUtils.convertUTF8(projectName);
-
-            //String uuid = attribute.getIdentifier().toString();
 
             String uuid = attributes.getOrDefault("geometry", "DefaultName");
             String name = attributes.getOrDefault("name", "DefaultName");
@@ -88,13 +75,6 @@ public class Batched3DModel implements TileModel {
             nameList.add(name);
             fileNameList.add(fileName);
             nodeNameList.add(nodeName);
-
-            //projectNames.add(asciiProjectName);
-            //nodeNames.add(tileInfo.getName());
-            //geometricErrors.add(tileInfo.getBoundingBox().getLongestDistance());
-            //GaiaBoundingBox boundingBox = tileInfo.getBoundingBox();
-            //heights.add(boundingBox.getMaxZ() - boundingBox.getMinZ());
-            //uuids.add(tileInfo.getScene().getAttribute().getIdentifier().toString());
         });
 
 
@@ -145,7 +125,6 @@ public class Batched3DModel implements TileModel {
             this.gltfWriter.writeGlb(scene, byteArrayOutputStream);
             glbBytes = byteArrayOutputStream.toByteArray();
         }
-        //this.gltfWriter = null;
         scene = null;
 
         /* BatchTable */
@@ -184,9 +163,8 @@ public class Batched3DModel implements TileModel {
             });
         });
 
-
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.getFactory().configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);
+        objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
         try {
             String featureTableText = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(featureTable));
             featureTableJson = featureTableText;

@@ -1,6 +1,7 @@
 package com.gaia3d.converter.geometry.indoorgml;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.tessellator.Vector3dOnlyHashEquals;
 import com.gaia3d.basic.model.GaiaMesh;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaPrimitive;
@@ -10,7 +11,6 @@ import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.EasySceneCreator;
 import com.gaia3d.converter.geometry.AbstractGeometryConverter;
 import com.gaia3d.converter.geometry.GaiaBuildingSurface;
-import com.gaia3d.converter.geometry.Vector3dsOnlyHashEquals;
 import com.gaia3d.util.GlobeUtils;
 import edu.stem.indoor.IndoorFeatures;
 import edu.stem.space.*;
@@ -136,11 +136,10 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                 List<List<Vector3d>> polygons = new ArrayList<>();
                 for (GaiaBuildingSurface buildingSurface : surfaces) {
                     List<Vector3d> polygon = new ArrayList<>();
-
                     for (Vector3d position : buildingSurface.getExteriorPositions()) {
                         Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
                         Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv);
-                        polygon.add(new Vector3dsOnlyHashEquals(localPosition));
+                        polygon.add(new Vector3dOnlyHashEquals(localPosition));
                     }
                     polygons.add(polygon);
                 }

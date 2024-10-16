@@ -8,6 +8,7 @@ import java.io.IOException;
 
 /**
  * Mago 3DTiler.
+ *
  * @author znkim
  * @since 1.0.0
  */
@@ -30,7 +31,8 @@ public class Mago3DTiler {
 
     /**
      * get 3dTiles process model (batched, instance, point cloud)
-     * @param inputFormat FormatType
+     *
+     * @param inputFormat  FormatType
      * @param outputFormat FormatType
      * @return ProcessFlowModel
      */
@@ -40,11 +42,11 @@ public class Mago3DTiler {
             processFlow = new InstancedProcessModel();
         } else if (FormatType.B3DM == outputFormat) {
             boolean isPhotorealisticMesh = GlobalOptions.getInstance().isPhotorealistic();
-            if(isPhotorealisticMesh) {
+            if (isPhotorealisticMesh) {
                 processFlow = new BatchedProcessModelPhR();
+            } else {
+                processFlow = new BatchedProcessModel();
             }
-            else{
-                processFlow = new BatchedProcessModel();}
         } else if (FormatType.PNTS == outputFormat) {
             processFlow = new PointCloudProcessModel();
         } else {

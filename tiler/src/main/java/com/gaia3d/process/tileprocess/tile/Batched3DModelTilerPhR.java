@@ -1,7 +1,7 @@
 package com.gaia3d.process.tileprocess.tile;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
@@ -62,8 +62,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         return tileset;
     }
 
-    public void splitMeshesByLod(List<TileInfo> tileInfos)
-    {
+    public void splitMeshesByLod(List<TileInfo> tileInfos) {
         int minLod = globalOptions.getMinLod(); // most detailed level
         int maxLod = globalOptions.getMaxLod(); // least detailed level
     }
@@ -72,13 +71,13 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         Path outputPath = new File(globalOptions.getOutputPath()).toPath();
         File tilesetFile = outputPath.resolve("tileset.json").toFile();
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.getFactory().configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);
+        objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(tilesetFile))) {
             String result = objectMapper.writeValueAsString(tileset);
-            log.info("[Tiling][Tileset] write 'tileset.json' file.");
+            log.info("[Tile][Tileset] write 'tileset.json' file.");
             writer.write(result);
             globalOptions.setTilesetSize(result.length());
         } catch (IOException e) {
@@ -95,10 +94,10 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         long triangleLimit = globalOptions.getMaxTriangles();
         long totalTriangleCount = tileInfos.stream().mapToLong(TileInfo::getTriangleCount).sum();
         log.debug("[TriangleCount] Total : {}", totalTriangleCount);
-        log.debug("[Tiling][ContentNode][OBJECT] : {}", tileInfos.size());
+        log.debug("[Tile][ContentNode][OBJECT] : {}", tileInfos.size());
 
         if (nodeDepth > globalOptions.getMaxNodeDepth()) {
-            log.warn("[Tiling] Node depth limit exceeded : {}", nodeDepth);
+            log.warn("[Tile] Node depth limit exceeded : {}", nodeDepth);
             Node childNode = createContentNode(parentNode, tileInfos, 0);
             if (childNode != null) {
                 parentNode.getChildren().add(childNode);
@@ -154,7 +153,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         }
         String nodeCode = parentNode.getNodeCode();
         nodeCode = nodeCode + index;
-        log.info("[Tiling][LogicalNode][" + nodeCode + "][OBJECT{}]", tileInfos.size());
+        log.info("[Tile][LogicalNode][" + nodeCode + "][OBJECT{}]", tileInfos.size());
 
         double geometricError = calcGeometricError(tileInfos);
         GaiaBoundingBox boundingBox = calcBoundingBox(tileInfos);
@@ -203,7 +202,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             return null;
         }
         nodeCode = nodeCode + index;
-        log.info("[Tiling][ContentNode][" + nodeCode + "][LOD{}][OBJECT{}]", lod.getLevel(), tileInfos.size());
+        log.info("[Tile][ContentNode][" + nodeCode + "][LOD{}][OBJECT{}]", lod.getLevel(), tileInfos.size());
 
         int lodError = refineAdd ? lod.getGeometricErrorBlock() : lod.getGeometricError();
 
@@ -243,7 +242,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             content.setContentInfo(contentInfo);
             childNode.setContent(content);
         } else {
-            log.debug("[Tiling][ContentNode][{}] No Contents", nodeCode);
+            log.debug("[Tile][ContentNode][{}] No Contents", nodeCode);
         }
         return childNode;
     }

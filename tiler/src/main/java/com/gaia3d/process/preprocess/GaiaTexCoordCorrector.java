@@ -3,7 +3,6 @@ package com.gaia3d.process.preprocess;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.FormatType;
-import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.GeometryUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -21,7 +20,6 @@ public class GaiaTexCoordCorrector implements PreProcess {
 
     @Override
     public synchronized TileInfo run(TileInfo tileInfo) {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
         GaiaScene gaiaScene = tileInfo.getScene();
 
         if (recentScene == gaiaScene) {
@@ -142,8 +140,7 @@ public class GaiaTexCoordCorrector implements PreProcess {
                 offsetX = Math.floor(texCoordOriginX);
                 mustTranslate = true;
 
-                if(offsetX + boxWidth > 1.0 + error)
-                {
+                if (offsetX + boxWidth > 1.0 + error) {
                     // cannot translate.***
                     break;
                 }
@@ -153,8 +150,7 @@ public class GaiaTexCoordCorrector implements PreProcess {
                 offsetY = Math.floor(texCoordOriginY);
                 mustTranslate = true;
 
-                if(offsetY + boxHeight > 1.0 + error)
-                {
+                if (offsetY + boxHeight > 1.0 + error) {
                     // cannot translate.***
                     break;
                 }

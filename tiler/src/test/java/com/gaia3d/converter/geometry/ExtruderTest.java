@@ -4,6 +4,8 @@ import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.Configurator;
 import com.gaia3d.converter.geometry.extrusion.Extruder;
+import com.gaia3d.converter.geometry.extrusion.Extrusion;
+import com.gaia3d.converter.geometry.extrusion.Tessellator;
 import com.gaia3d.converter.jgltf.GltfWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;

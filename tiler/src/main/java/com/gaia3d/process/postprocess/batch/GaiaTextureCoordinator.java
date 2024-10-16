@@ -27,8 +27,8 @@ public class GaiaTextureCoordinator {
     private final String ATLAS_IMAGE;
     private final List<GaiaMaterial> materials;
     private final List<GaiaBufferDataSet> bufferDataSets;
-    private BufferedImage atlasImage;
     private final GlobalOptions globalOptions = GlobalOptions.getInstance();
+    private BufferedImage atlasImage;
 
     public GaiaTextureCoordinator(String name, List<GaiaMaterial> materials, List<GaiaBufferDataSet> bufferDataSets) {
         this.ATLAS_IMAGE = name;
@@ -255,7 +255,7 @@ public class GaiaTextureCoordinator {
         // existPngTextures
         initBatchImage(maxWidth, maxHeight, imageType);
         if (this.atlasImage == null) {
-            log.error("atlasImage is null" );
+            log.error("atlasImage is null");
             return;
         }
 
@@ -275,8 +275,7 @@ public class GaiaTextureCoordinator {
         }
 
         // Test.****************************************************************************
-        if (globalOptions.isDebugLod())
-        {
+        if (globalOptions.isDebugLod()) {
             float[] debugColor = lod.getDebugColor();
             Color color = new Color(debugColor[0], debugColor[1], debugColor[2], 0.6f);
             graphics.setColor(color);
@@ -372,7 +371,7 @@ public class GaiaTextureCoordinator {
     }
 
     private void writeBatchedImage(String imageExtension) {
-        File file = new File("D:\\Result_mago3dTiler\\atlasImages\\" );
+        File file = new File("D:\\Result_mago3dTiler\\atlasImages\\");
         if (!file.exists()) {
             if (!file.mkdirs()) {
                 log.error("Failed to create directory");
@@ -383,7 +382,7 @@ public class GaiaTextureCoordinator {
         Path output = file.toPath().resolve(ATLAS_IMAGE + "." + imageExtension);
         if (!outputPath.toFile().exists()) {
             if (!outputPath.toFile().mkdir()) {
-                log.error("Failed to create directory" );
+                log.error("Failed to create directory");
             }
         }
         if (this.atlasImage != null) {
@@ -397,7 +396,7 @@ public class GaiaTextureCoordinator {
 
     //findMaterial
     private GaiaMaterial findMaterial(int materialId) {
-        return materials.stream().filter(material -> material.getId() == materialId).findFirst().orElseThrow(() -> new RuntimeException("not found material" ));
+        return materials.stream().filter(material -> material.getId() == materialId).findFirst().orElseThrow(() -> new RuntimeException("not found material"));
     }
 
     private int getMaxWidth(List<GaiaBatchImage> compareImages) {

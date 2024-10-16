@@ -15,9 +15,10 @@ import java.util.List;
 /**
  * KmlReader is a class that reads kml files.
  * It reads kml files and returns the information of the kml file.
+ *
  * @author znkim
- * @since 1.0.0
  * @see JacksonKmlReader , KmlInfo
+ * @since 1.0.0
  */
 @Slf4j
 @NoArgsConstructor
@@ -45,18 +46,7 @@ public class JacksonKmlReader implements AttributeReader {
             double y = model.getScale().getY();
             double z = model.getScale().getZ();
 
-            kmlInfo = KmlInfo.builder()
-                    .name(name)
-                    .position(new Vector3d(longitude, latitude, altitude))
-                    .altitudeMode(altitudeMode)
-                    .heading(heading)
-                    .tilt(tilt)
-                    .roll(roll)
-                    .href(href)
-                    .scaleX(x)
-                    .scaleY(y)
-                    .scaleZ(z)
-                    .build();
+            kmlInfo = KmlInfo.builder().name(name).position(new Vector3d(longitude, latitude, altitude)).altitudeMode(altitudeMode).heading(heading).tilt(tilt).roll(roll).href(href).scaleX(x).scaleY(y).scaleZ(z).build();
         } catch (IOException e) {
             log.error("Error : {}", e.getMessage());
             throw new RuntimeException(e);
@@ -87,18 +77,7 @@ public class JacksonKmlReader implements AttributeReader {
                 double y = model.getScale().getY();
                 double z = model.getScale().getZ();
 
-                KmlInfo kmlInfo = KmlInfo.builder()
-                        .name(name)
-                        .position(new Vector3d(longitude, latitude, altitude))
-                        .altitudeMode(altitudeMode)
-                        .heading(heading)
-                        .tilt(tilt)
-                        .roll(roll)
-                        .href(href)
-                        .scaleX(x)
-                        .scaleY(y)
-                        .scaleZ(z)
-                        .build();
+                KmlInfo kmlInfo = KmlInfo.builder().name(name).position(new Vector3d(longitude, latitude, altitude)).altitudeMode(altitudeMode).heading(heading).tilt(tilt).roll(roll).href(href).scaleX(x).scaleY(y).scaleZ(z).build();
                 kmlInfos.add(kmlInfo);
             }
         } catch (IOException e) {

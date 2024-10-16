@@ -3,10 +3,10 @@ package com.gaia3d.process.preprocess;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
+import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
-import com.gaia3d.process.tileprocess.tile.TileInfo;
 
 @Slf4j
 @NoArgsConstructor
@@ -44,11 +44,4 @@ public class GaiaRotator implements PreProcess {
         gaiaScene.getBoundingBox();
         return tileInfo;
     }
-
-    /*private void rotateX(Matrix4d matrix, double angle) {
-        Matrix4d rotationMatrix = new Matrix4d();
-        rotationMatrix.identity();
-        rotationMatrix.rotateX(Math.toRadians(angle));
-        matrix.mul(rotationMatrix, matrix);
-    }*/
 }

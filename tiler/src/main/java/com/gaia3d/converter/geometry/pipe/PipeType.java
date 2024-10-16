@@ -13,7 +13,6 @@ public enum PipeType {
     IRREGULAR(4);
 
     private final int value;
-
     public static PipeType fromValue(int value) {
         for (PipeType type : PipeType.values()) {
             if (type.getValue() == value) {

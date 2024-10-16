@@ -3,6 +3,7 @@ package com.gaia3d.converter.kml;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.geometry.GaiaExtrusionBuilding;
 import com.gaia3d.util.GlobeUtils;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.data.DataStore;
 import org.geotools.data.Query;
@@ -14,7 +15,10 @@ import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.util.factory.Hints;
 import org.joml.Vector3d;
-import org.locationtech.jts.geom.*;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.MultiPoint;
+import org.locationtech.jts.geom.Point;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 import org.opengis.feature.simple.SimpleFeature;
@@ -28,15 +32,14 @@ import java.util.List;
 /**
  * KmlReader is a class that reads kml files.
  * It reads kml files and returns the information of the kml file.
+ *
  * @author znkim
- * @since 1.0.0
  * @see ShapeReader , KmlInfo
+ * @since 1.0.0
  */
 @Slf4j
+@NoArgsConstructor
 public class ShapeReader implements AttributeReader {
-    public ShapeReader() {
-
-    }
 
     //read kml file
     @Override
@@ -90,16 +93,7 @@ public class ShapeReader implements AttributeReader {
                     position = new Vector3d(x, y, 0.0d);
                 }
 
-                KmlInfo kmlInfo = KmlInfo.builder()
-                        .position(position)
-                        .name("fromShape")
-                        .heading(0.0d)
-                        .tilt(0.0d)
-                        .roll(0.0d)
-                        .scaleX(1.0d)
-                        .scaleY(1.0d)
-                        .scaleZ(1.0d)
-                        .build();
+                KmlInfo kmlInfo = KmlInfo.builder().position(position).name("fromShape").heading(0.0d).tilt(0.0d).roll(0.0d).scaleX(1.0d).scaleY(1.0d).scaleZ(1.0d).build();
 
                 result.add(kmlInfo);
 

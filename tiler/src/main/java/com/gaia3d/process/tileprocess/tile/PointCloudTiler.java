@@ -2,6 +2,7 @@ package com.gaia3d.process.tileprocess.tile;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
@@ -87,13 +88,13 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         File outputPath = new File(globalOptions.getOutputPath());
         File tilesetFile = new File(outputPath, "tileset.json");
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.getFactory().configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);
+        objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(tilesetFile))) {
             String result = objectMapper.writeValueAsString(tileset);
-            log.info("[Tiling][Tileset] write 'tileset.json' file.");
+            log.info("[Tile][Tileset] write 'tileset.json' file.");
             writer.write(result);
             globalOptions.setTilesetSize(result.length());
         } catch (IOException e) {
@@ -190,7 +191,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         childNode.setContent(content);
 
         parentNode.getChildren().add(childNode);
-        log.info("[Tiling][ContentNode][{}]",childNode.getNodeCode());
+        log.info("[Tile][ContentNode][{}]",childNode.getNodeCode());
 
         if (vertexLength > 0) { // vertexLength > DEFUALT_MAX_COUNT
             List<GaiaPointCloud> distributes = remainPointCloud.distribute();

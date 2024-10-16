@@ -4,8 +4,8 @@ import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
-import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.converter.kml.AttributeReader;
+import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -19,6 +19,7 @@ import java.util.List;
 
 /**
  * Loads files from the input directory.
+ *
  * @author znkim
  * @since 1.0.0
  */
@@ -94,11 +95,7 @@ public class BatchedFileLoader implements FileLoader {
                                 log.error("Failed to load scene: {}", file.getAbsolutePath());
                                 return null;
                             } else {
-                                TileInfo tileInfo = TileInfo.builder()
-                                        .kmlInfo(kmlInfo)
-                                        .scene(scene)
-                                        .outputPath(outputPath)
-                                        .build();
+                                TileInfo tileInfo = TileInfo.builder().kmlInfo(kmlInfo).scene(scene).outputPath(outputPath).build();
                                 tileInfos.add(tileInfo);
                             }
                         }
@@ -116,10 +113,7 @@ public class BatchedFileLoader implements FileLoader {
                     log.error("Failed to load scene: {}", file.getAbsolutePath());
                     return null;
                 } else {
-                    TileInfo tileInfo = TileInfo.builder()
-                            .scene(scene)
-                            .outputPath(outputPath)
-                            .build();
+                    TileInfo tileInfo = TileInfo.builder().scene(scene).outputPath(outputPath).build();
                     tileInfos.add(tileInfo);
                 }
             }

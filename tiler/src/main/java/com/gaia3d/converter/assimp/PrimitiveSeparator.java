@@ -9,18 +9,21 @@ import com.gaia3d.converter.geometry.GaiaTriangle;
 import lombok.NoArgsConstructor;
 import org.joml.Vector3d;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @NoArgsConstructor
 public class PrimitiveSeparator {
 
     private GaiaPrimitive originalPrimitive;
     private List<GaiaPrimitive> newPrimitives;
-    private List<GaiaVertex> globlVertices;
+    private List<GaiaVertex> globalVertices;
 
     public List<GaiaPrimitive> separatePrimitives(GaiaPrimitive primitive, int threshold) {
         newPrimitives = new ArrayList<>();
-        globlVertices = primitive.getVertices();
+        globalVertices = primitive.getVertices();
         originalPrimitive = primitive;
         List<GaiaSurface> surfaces = primitive.getSurfaces();
 
@@ -51,12 +54,12 @@ public class PrimitiveSeparator {
         }
 
         List<GaiaFace> faces = new ArrayList<>();
-        for (int i = 0; i < indices.size(); i+=3) {
+        for (int i = 0; i < indices.size(); i += 3) {
             int index1 = indices.get(i);
             int index2 = indices.get(i + 1);
             int index3 = indices.get(i + 2);
             GaiaFace face = new GaiaFace();
-            face.setIndices(new int[] {index1, index2, index3});
+            face.setIndices(new int[]{index1, index2, index3});
             faces.add(face);
         }
 
@@ -252,13 +255,13 @@ public class PrimitiveSeparator {
 
     private List<List<GaiaVertex>> getTriangles(int[] indices) {
         List<List<GaiaVertex>> triangles = new ArrayList<>();
-        for (int i = 0; i < indices.length; i+=3) {
+        for (int i = 0; i < indices.length; i += 3) {
             int indices1 = indices[i];
             int indices2 = indices[i + 1];
             int indices3 = indices[i + 2];
-            GaiaVertex vertex1 = globlVertices.get(indices1);
-            GaiaVertex vertex2 = globlVertices.get(indices2);
-            GaiaVertex vertex3 = globlVertices.get(indices3);
+            GaiaVertex vertex1 = globalVertices.get(indices1);
+            GaiaVertex vertex2 = globalVertices.get(indices2);
+            GaiaVertex vertex3 = globalVertices.get(indices3);
             List<GaiaVertex> triangle = new ArrayList<>();
             triangle.add(vertex1);
             triangle.add(vertex2);

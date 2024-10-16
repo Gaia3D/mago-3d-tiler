@@ -3,17 +3,16 @@ package com.gaia3d.command.model;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
-import com.gaia3d.converter.geometry.geojson.GeoJsonSurfaceConverter;
-import com.gaia3d.converter.loader.BatchedFileLoader;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.assimp.LargeMeshConverter;
 import com.gaia3d.converter.geometry.citygml.CityGmlConverter;
 import com.gaia3d.converter.geometry.geojson.GeoJsonConverter;
+import com.gaia3d.converter.geometry.geojson.GeoJsonSurfaceConverter;
 import com.gaia3d.converter.geometry.indoorgml.IndoorGmlConverter;
 import com.gaia3d.converter.geometry.shape.ShapeConverter;
-import com.gaia3d.converter.kml.FastKmlReader;
-import com.gaia3d.converter.kml.JacksonKmlReader;
 import com.gaia3d.converter.kml.AttributeReader;
+import com.gaia3d.converter.kml.FastKmlReader;
+import com.gaia3d.converter.loader.BatchedFileLoader;
 import com.gaia3d.process.TilingPipeline;
 import com.gaia3d.process.postprocess.GaiaMaximizer;
 import com.gaia3d.process.postprocess.GaiaRelocator;
@@ -50,19 +49,14 @@ public class BatchedProcessModel implements ProcessFlowModel {
         preProcessors.add(new GaiaTileInfoInitiator());
         preProcessors.add(new GaiaTexCoordCorrector());
         preProcessors.add(new GaiaScaler());
-        /*if (isRotateUpAxis) {
-            preProcessors.add(new GaiaRotator());
-        }*/
-        // TODO rotXAngleDegree
         if (globalOptions.isLargeMesh()) {
             if (isRotateUpAxis) {
                 preProcessors.add(new GaiaRotator());
             }
             preProcessors.add(new GaiaTranslatorExact(geoTiffs));
-
         } else {
             preProcessors.add(new GaiaRotator());
-            preProcessors.add(new GaiaTranslator(geoTiffs)); // original
+            preProcessors.add(new GaiaTranslator(geoTiffs));
         }
 
         preProcessors.add(new GaiaMinimizer());
@@ -78,13 +72,6 @@ public class BatchedProcessModel implements ProcessFlowModel {
         processPipeline.process(fileLoader);
     }
 
-    private boolean getYUpAxis(FormatType formatType, boolean isYUpAxis) {
-        if (formatType == FormatType.CITYGML || formatType == FormatType.INDOORGML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON) {
-            // Z-UP
-            isYUpAxis = true;
-        }
-        return isYUpAxis;
-    }
     private Converter getConverter(FormatType formatType) {
         Converter converter;
         if (formatType == FormatType.CITYGML) {
@@ -94,8 +81,8 @@ public class BatchedProcessModel implements ProcessFlowModel {
         } else if (formatType == FormatType.SHP) {
             converter = new ShapeConverter();
         } else if (formatType == FormatType.GEOJSON) {
-            //converter = new GeoJsonConverter();
-            converter = new GeoJsonSurfaceConverter();
+            converter = new GeoJsonConverter();
+            //converter = new GeoJsonSurfaceConverter();
         } else {
             if (globalOptions.isLargeMesh()) {
                 converter = new LargeMeshConverter(new AssimpConverter());

@@ -12,5 +12,4 @@ public enum PipeElbowType {
     SPHERICAL(3);
 
     private final int value;
-
 }

@@ -16,8 +16,6 @@ import java.util.List;
 @Getter
 public class Pipe extends TEdge {
     private PipeType profileType = PipeType.UNKNOWN;
-    private Vector3d startLinkPosition;
-    private Vector3d endLinkPosition;
     // set pipeRadius.
     private float pipeRadius = 0.0f;
     private float[] pipeRectangularSize = new float[2]; // for rectangular pipe.
@@ -117,9 +115,6 @@ public class Pipe extends TEdge {
         // make geometry for this pipe.
         Vector3d startLinkPos = this.getStartLinkPosition();
         Vector3d endLinkPos = this.getEndLinkPosition();
-
-        startLinkPosition = startLinkPos;
-        endLinkPosition = endLinkPos;
 
         // calculate the circle positions on the startLinkPos and the endLinkPos.
         // make the circle points in local coordinates.

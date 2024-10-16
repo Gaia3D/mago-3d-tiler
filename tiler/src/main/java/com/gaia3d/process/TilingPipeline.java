@@ -105,12 +105,12 @@ public class TilingPipeline implements Pipeline {
     }
 
     private void startTilingProcess() {
-        log.info("[Tiling] Start the tiling process.");
+        log.info("[Tile] Start the tiling process.");
         Tiler tiler = (Tiler) tilingProcess;
-        log.info("[Tiling] Writing tileset file.");
+        log.info("[Tile] Writing tileset file.");
         tileset = tiler.run(tileInfos);
         tiler.writeTileset(tileset);
-        log.info("[Tiling] End the tiling process.");
+        log.info("[Tile] End the tiling process.");
     }
 
     private void startPostProcesses() throws InterruptedException {

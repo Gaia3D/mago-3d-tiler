@@ -18,7 +18,6 @@ public class InnerRing {
         this.leftDown = findLeftDown();
         this.minValue = leftDown.x + leftDown.y;
         this.coordinates = this.changeOrder(coordinates, coordinates.indexOf(leftDown));
-        //this.coordinates.add(this.leftDown);
     }
 
     public double cross(Vector2d a, Vector2d b, Vector2d c) {

@@ -1,8 +1,8 @@
-package com.gaia3d.converter.geometry;
+package com.gaia3d.converter.geometry.extrusion;
 
+import com.gaia3d.converter.geometry.GaiaTriangle;
 import com.gaia3d.util.VectorUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.joml.Vector2d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
@@ -12,12 +12,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
+@Deprecated
 public class Tessellator2D {
 
     public List<GaiaTriangle> tessellate(List<Vector3d> positions3D, double altitude) {
-        List<Vector2d> positions = positions3D.stream()
-                .map(p -> new Vector2d(p.x, p.y))
-                .collect(Collectors.toList());
+        List<Vector2d> positions = positions3D.stream().map(p -> new Vector2d(p.x, p.y)).collect(Collectors.toList());
 
         startEnd(positions);
         boolean isCCW = this.validateAngle(positions);

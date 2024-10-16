@@ -3,6 +3,7 @@ package com.gaia3d.converter.geometry;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.Configurator;
+import com.gaia3d.converter.geometry.extrusion.Tessellator;
 import com.gaia3d.converter.jgltf.GltfWriter;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
