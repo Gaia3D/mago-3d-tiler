@@ -51,6 +51,9 @@ public class StringUtils {
     }
 
     public static String convertUTF8(String ascii) {
+        if (ascii == null) {
+            return "";
+        }
         ByteBuffer buffer = StandardCharsets.UTF_8.encode(ascii);
         String utf8EncodedString = StandardCharsets.UTF_8.decode(buffer).toString();
         if (utf8EncodedString.isBlank()) {

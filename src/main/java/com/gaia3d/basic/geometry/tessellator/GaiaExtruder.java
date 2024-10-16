@@ -30,7 +30,6 @@ public class GaiaExtruder {
             Collections.reverse(cleanPositions);
         }
 
-
         List<GaiaExtrusionSurface> result = new ArrayList<>();
         List<Vector3d> roofPositions = resetHeight(cleanPositions, roofHeight);
         List<Vector3d> floorPositions = resetHeight(cleanPositions, floorHeight);
