@@ -1,9 +1,9 @@
 package com.gaia3d.converter.geometry.pipe;
 
-import com.gaia3d.basic.geometry.networkStructure.modeler.TEdge;
-import com.gaia3d.basic.geometry.networkStructure.modeler.TNode;
-import com.gaia3d.basic.structure.GaiaMesh;
-import com.gaia3d.basic.structure.GaiaPrimitive;
+import com.gaia3d.basic.geometry.network.modeler.TEdge;
+import com.gaia3d.basic.geometry.network.modeler.TNode;
+import com.gaia3d.basic.model.GaiaMesh;
+import com.gaia3d.basic.model.GaiaPrimitive;
 import lombok.Getter;
 import lombok.Setter;
 import org.joml.Matrix4d;

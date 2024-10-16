@@ -1,6 +1,6 @@
 package com.gaia3d.converter.loader;
 
-import com.gaia3d.basic.structure.GaiaScene;
+import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;

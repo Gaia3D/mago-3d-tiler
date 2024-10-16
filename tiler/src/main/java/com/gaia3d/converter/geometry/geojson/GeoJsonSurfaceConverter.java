@@ -1,9 +1,7 @@
 package com.gaia3d.converter.geometry.geojson;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.geometry.tessellator.GaiaExtruder;
-import com.gaia3d.basic.geometry.tessellator.GaiaExtrusionSurface;
-import com.gaia3d.basic.structure.*;
+import com.gaia3d.basic.model.*;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.EasySceneCreator;
@@ -15,7 +13,6 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureImpl;
 import org.geotools.geojson.feature.FeatureJSON;
-import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.locationtech.jts.geom.*;

@@ -1,28 +1,13 @@
 package com.gaia3d.process.preprocess;
 
-import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.structure.*;
-import com.gaia3d.basic.types.FormatType;
-import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.kml.KmlInfo;
-import com.gaia3d.process.tileprocess.tile.TileInfo;
-import com.gaia3d.util.GlobeUtils;
+import com.gaia3d.basic.model.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.geometry.DirectPosition2D;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.joml.Matrix4d;
-import org.joml.Vector3d;
-import org.locationtech.proj4j.CoordinateReferenceSystem;
-import org.locationtech.proj4j.ProjCoordinate;
-import org.opengis.geometry.DirectPosition;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @AllArgsConstructor

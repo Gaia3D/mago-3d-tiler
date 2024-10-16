@@ -1,6 +1,6 @@
 package com.gaia3d.basic.geometry.octree;
 
-import com.gaia3d.basic.structure.GaiaVertex;
+import com.gaia3d.basic.model.GaiaVertex;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -28,13 +28,12 @@ public class GaiaOctreeVertices {
     public GaiaOctreeVertices(GaiaOctreeVertices parent) {
         this.parent = parent;
 
-        if(parent != null) {
+        if (parent != null) {
             this.maxDepth = parent.maxDepth;
         }
     }
 
-    public void setAsCube()
-    {
+    public void setAsCube() {
         // Only modify the maximum values
         double x = maxX - minX;
         double y = maxY - minY;
@@ -45,11 +44,9 @@ public class GaiaOctreeVertices {
         maxZ = minZ + max;
     }
 
-    public void createChildren()
-    {
+    public void createChildren() {
         children = new GaiaOctreeVertices[8];
-        for(int i = 0; i < 8; i++)
-        {
+        for (int i = 0; i < 8; i++) {
             children[i] = new GaiaOctreeVertices(this);
             children[i].idx = i;
         }
@@ -85,70 +82,57 @@ public class GaiaOctreeVertices {
         children[7].coordinate.setDepthAndCoord(L + 1, X * 2, Y * 2 + 1, Z * 2 + 1);
     }
 
-    public void makeTreeByMinBoxSize(double minBoxSize)
-    {
-        if((maxX - minX) < minBoxSize || (maxY - minY) < minBoxSize || (maxZ - minZ) < minBoxSize)
-        {
+    public void makeTreeByMinBoxSize(double minBoxSize) {
+        if ((maxX - minX) < minBoxSize || (maxY - minY) < minBoxSize || (maxZ - minZ) < minBoxSize) {
             return;
         }
 
-        if(this.coordinate.getDepth() >= maxDepth)
-        {
+        if (this.coordinate.getDepth() >= maxDepth) {
             return;
         }
 
-        if(vertices.isEmpty())
-        {
+        if (vertices.isEmpty()) {
             return;
         }
 
         createChildren();
         distributeContents();
 
-        for(GaiaOctreeVertices child : children)
-        {
+        for (GaiaOctreeVertices child : children) {
             child.makeTreeByMinBoxSize(minBoxSize);
         }
     }
 
-    public void makeTreeByMinVertexCount(int minVertexCount)
-    {
-        if(this.coordinate.getDepth() >= maxDepth)
-        {
+    public void makeTreeByMinVertexCount(int minVertexCount) {
+        if (this.coordinate.getDepth() >= maxDepth) {
             return;
         }
 
-        if(vertices.isEmpty())
-        {
+        if (vertices.isEmpty()) {
             return;
         }
 
         int vertexCount = vertices.size();
-        if(vertexCount < minVertexCount)
-        {
+        if (vertexCount < minVertexCount) {
             return;
         }
 
         double sizeX = maxX - minX;
-        if(sizeX < minBoxSize)
-        {
+        if (sizeX < minBoxSize) {
             return;
         }
 
         createChildren();
         distributeContents();
 
-        for(GaiaOctreeVertices child : children)
-        {
+        for (GaiaOctreeVertices child : children) {
             child.makeTreeByMinVertexCount(minVertexCount);
         }
     }
 
-    public void calculateSize()
-    {
+    public void calculateSize() {
         int verticesCount = vertices.size();
-        if(verticesCount == 0)
-        {
+        if (verticesCount == 0) {
             return;
         }
 
@@ -159,38 +143,30 @@ public class GaiaOctreeVertices {
         maxY = -Double.MAX_VALUE;
         maxZ = -Double.MAX_VALUE;
 
-        for(GaiaVertex vertex : vertices)
-        {
+        for (GaiaVertex vertex : vertices) {
             Vector3d position = vertex.getPosition();
-            if(position.x < minX)
-            {
+            if (position.x < minX) {
                 minX = position.x;
             }
-            if(position.y < minY)
-            {
+            if (position.y < minY) {
                 minY = position.y;
             }
-            if(position.z < minZ)
-            {
+            if (position.z < minZ) {
                 minZ = position.z;
             }
-            if(position.x > maxX)
-            {
+            if (position.x > maxX) {
                 maxX = position.x;
             }
-            if(position.y > maxY)
-            {
+            if (position.y > maxY) {
                 maxY = position.y;
             }
-            if(position.z > maxZ)
-            {
+            if (position.z > maxZ) {
                 maxZ = position.z;
             }
         }
     }
 
-    public void setSize(double minX, double minY, double minZ, double maxX, double maxY, double maxZ)
-    {
+    public void setSize(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
         this.minX = minX;
         this.minY = minY;
         this.minZ = minZ;
@@ -199,10 +175,8 @@ public class GaiaOctreeVertices {
         this.maxZ = maxZ;
     }
 
-    public void distributeContents()
-    {
-        if(vertices.isEmpty())
-        {
+    public void distributeContents() {
+        if (vertices.isEmpty()) {
             return;
         }
 
@@ -210,55 +184,33 @@ public class GaiaOctreeVertices {
         double midY = (minY + maxY) / 2.0;
         double midZ = (minZ + maxZ) / 2.0;
 
-        for(GaiaVertex vertex : vertices)
-        {
+        for (GaiaVertex vertex : vertices) {
             Vector3d position = vertex.getPosition();
-            if(position.x < midX)
-            {
-                if(position.y < midY)
-                {
-                    if(position.z < midZ)
-                    {
+            if (position.x < midX) {
+                if (position.y < midY) {
+                    if (position.z < midZ) {
                         children[0].addVertex(vertex);
-                    }
-                    else
-                    {
+                    } else {
                         children[4].addVertex(vertex);
                     }
-                }
-                else
-                {
-                    if(position.z < midZ)
-                    {
+                } else {
+                    if (position.z < midZ) {
                         children[3].addVertex(vertex);
-                    }
-                    else
-                    {
+                    } else {
                         children[7].addVertex(vertex);
                     }
                 }
-            }
-            else
-            {
-                if(position.y < midY)
-                {
-                    if(position.z < midZ)
-                    {
+            } else {
+                if (position.y < midY) {
+                    if (position.z < midZ) {
                         children[1].addVertex(vertex);
-                    }
-                    else
-                    {
+                    } else {
                         children[5].addVertex(vertex);
                     }
-                }
-                else
-                {
-                    if(position.z < midZ)
-                    {
+                } else {
+                    if (position.z < midZ) {
                         children[2].addVertex(vertex);
-                    }
-                    else
-                    {
+                    } else {
                         children[6].addVertex(vertex);
                     }
                 }
@@ -274,12 +226,12 @@ public class GaiaOctreeVertices {
     }
 
     public void extractOctreesWithContents(List<GaiaOctreeVertices> octrees) {
-        if(!vertices.isEmpty()) {
+        if (!vertices.isEmpty()) {
             octrees.add(this);
         }
 
-        if(children != null) {
-            for(GaiaOctreeVertices child : children) {
+        if (children != null) {
+            for (GaiaOctreeVertices child : children) {
                 child.extractOctreesWithContents(octrees);
             }
         }

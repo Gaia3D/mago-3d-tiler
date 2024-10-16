@@ -1,10 +1,10 @@
 package com.gaia3d.converter.assimp;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.structure.GaiaFace;
-import com.gaia3d.basic.structure.GaiaPrimitive;
-import com.gaia3d.basic.structure.GaiaSurface;
-import com.gaia3d.basic.structure.GaiaVertex;
+import com.gaia3d.basic.model.GaiaFace;
+import com.gaia3d.basic.model.GaiaPrimitive;
+import com.gaia3d.basic.model.GaiaSurface;
+import com.gaia3d.basic.model.GaiaVertex;
 import com.gaia3d.converter.geometry.GaiaTriangle;
 import lombok.NoArgsConstructor;
 import org.joml.Vector3d;

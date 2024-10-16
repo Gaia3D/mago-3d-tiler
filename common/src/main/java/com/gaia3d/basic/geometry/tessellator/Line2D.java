@@ -25,7 +25,6 @@ public class Line2D {
     }
 
     public boolean pointBelongsToLine(Vector2d point, double error) {
-
         double error2 = error * error;
         double dx = point.x - this.point.x;
         double dy = point.y - this.point.y;

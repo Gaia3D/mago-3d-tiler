@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 @NoArgsConstructor
 public class GaiaTessellator {
-    // tessellate.***
     public void tessellate3D(List<Vector3d> points3dArray, List<Integer> resultTrianglesIndices) {
         // 1rst, must know the normal of the polygon to project the polygon to a plane and resilve the tessellation in 2d.***
         Vector3d normal = new Vector3d();
@@ -161,19 +160,15 @@ public class GaiaTessellator {
         double bRectHeight = boundingRectangle.getHeight();
         double xFactor = 1.0;
         double yFactor = 1.0;
-        if(bRectWidth > bRectHeight)
-        {
+        if (bRectWidth > bRectHeight) {
             // the width is bigger than the height.***
             yFactor = bRectWidth / bRectHeight;
-        }
-        else if(bRectWidth < bRectHeight)
-        {
+        } else if (bRectWidth < bRectHeight) {
             // the height is bigger than the width.***
             xFactor = bRectHeight / bRectWidth;
         }
 
-        if(xFactor > 10 || yFactor > 10)
-        {
+        if (xFactor > 10 || yFactor > 10) {
             // now, multiply all point2d of exterior & interior polygons by the factors.***
             // Exterior points.***
             for (int i = 0; i < exteriorPointsCount; i++) {
@@ -203,8 +198,7 @@ public class GaiaTessellator {
         projectedPoints2D = getCleanPoints2DTessArray(projectedPoints2D, null, epsilon);
 
         // clean the interior points.***
-        for(int i=0; i<interiorPolygonsCount; i++)
-        {
+        for (int i = 0; i < interiorPolygonsCount; i++) {
             List<Point2DTess> interiorProjectedPoints = interiorProjectedPoints2D.get(i);
             interiorProjectedPoints = getCleanPoints2DTessArray(interiorProjectedPoints, null, epsilon);
             interiorProjectedPoints2D.set(i, interiorProjectedPoints);
@@ -215,8 +209,7 @@ public class GaiaTessellator {
 
         List<Polygon2DTess> interiorPolygons2DTess = new ArrayList<>();
         int interiorPointsCountTest = 0;
-        for(int i=0; i<interiorPolygonsCount; i++)
-        {
+        for (int i = 0; i < interiorPolygonsCount; i++) {
             List<Point2DTess> interiorProjectedPoints = interiorProjectedPoints2D.get(i);
             interiorPointsCountTest += interiorProjectedPoints.size();
             Polygon2DTess interiorPolygon2D = new Polygon2DTess(interiorProjectedPoints);
@@ -228,13 +221,11 @@ public class GaiaTessellator {
         float exteriorPolygonNormal = exteriorPolygon2DTess.calculateNormal2D(resultConcaveIndices);
 
         int interiorPolygonsCount2 = interiorPolygons2DTess.size();
-        for(int i=0; i<interiorPolygonsCount2; i++)
-        {
+        for (int i = 0; i < interiorPolygonsCount2; i++) {
             Polygon2DTess interiorPolygon2D = interiorPolygons2DTess.get(i);
             List<Integer> resultConcaveIndices2 = new ArrayList<>();
             float interiorPolygonNormal = interiorPolygon2D.calculateNormal2D(resultConcaveIndices2);
-            if(exteriorPolygonNormal * interiorPolygonNormal > 0)
-            {
+            if (exteriorPolygonNormal * interiorPolygonNormal > 0) {
                 // the normals are not inverse.***
                 interiorPolygon2D.reverse();
             }
@@ -244,14 +235,12 @@ public class GaiaTessellator {
         Polygon2DTess resultPolygon2dTess = tessellateHoles(exteriorPolygon2DTess, interiorPolygons2DTess, resultTrianglesIndices);
 
         int pointsCount2 = resultPolygon2dTess.getPoints().size();
-        for(int i=0; i<pointsCount2; i++)
-        {
+        for (int i = 0; i < pointsCount2; i++) {
             Point2DTess point2DTess = resultPolygon2dTess.getPoint(i);
             Vector3d parentVertex = point2DTess.getParentPoint();
             resultPolygonPoints.add(parentVertex);
         }
     }
-
 
 
     public List<Point2DTess> getCleanPoints2DTessArray(List<Point2DTess> points2DArray, List<Point2DTess> ResultPoints2DArray, double error) {
@@ -278,14 +267,12 @@ public class GaiaTessellator {
                 Vector2d last2d = lastPoint.getPoint();
                 Vector2d first2d = firstPoint.getPoint();
 
-                if(GeometryUtils.areAproxEqualsPoints2d(curr2d, first2d, error))
-                {
+                if (GeometryUtils.areAproxEqualsPoints2d(curr2d, first2d, error)) {
                     // the polygon is uroborus.***
                     continue;
                 }
 
-                if(GeometryUtils.areAproxEqualsPoints2d(curr2d, last2d, error))
-                {
+                if (GeometryUtils.areAproxEqualsPoints2d(curr2d, last2d, error)) {
                     // the point is the same as the last point.***
                     continue;
                 }
@@ -313,8 +300,7 @@ public class GaiaTessellator {
             v2.normalize();
 
             double dotProd = v1.dot(v2);
-            if (Math.abs(dotProd) >= dotProdError)
-            {
+            if (Math.abs(dotProd) >= dotProdError) {
                 // the points are colineal.***
                 ResultPoints2DArray.remove(i);
                 i--;
@@ -476,8 +462,7 @@ public class GaiaTessellator {
                 // now, check the resultPolygonAux butterfly case.***
                 resultConvexIndices.clear();
                 float normal = resultPolygonAux.calculateNormal2D(resultConvexIndices);
-                if(normal * normalExteriorPolygon > 0)
-                {
+                if (normal * normalExteriorPolygon > 0) {
                     // the normal is positive.***
                     // the resultPolygon is not butterfly.***
                     finished = true;
@@ -490,8 +475,7 @@ public class GaiaTessellator {
             i++;
         }
 
-        if(!finished)
-        {
+        if (!finished) {
             return exteriorPolygon;
         }
 

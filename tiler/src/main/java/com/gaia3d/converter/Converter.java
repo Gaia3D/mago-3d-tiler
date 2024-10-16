@@ -1,6 +1,6 @@
 package com.gaia3d.converter;
 
-import com.gaia3d.basic.structure.GaiaScene;
+import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.converter.assimp.AssimpConverter;
 
 import java.io.File;

@@ -1,7 +1,7 @@
 package com.gaia3d.process.preprocess;
 
-import com.gaia3d.basic.structure.GaiaNode;
-import com.gaia3d.basic.structure.GaiaScene;
+import com.gaia3d.basic.model.GaiaNode;
+import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

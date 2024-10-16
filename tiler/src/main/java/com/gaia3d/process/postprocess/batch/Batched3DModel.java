@@ -4,17 +4,15 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exchangable.GaiaSet;
-import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.structure.GaiaAttribute;
-import com.gaia3d.basic.structure.GaiaNode;
-import com.gaia3d.basic.structure.GaiaScene;
+import com.gaia3d.basic.model.GaiaAttribute;
+import com.gaia3d.basic.model.GaiaNode;
+import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.jgltf.GltfWriter;
 import com.gaia3d.process.postprocess.TileModel;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
-import com.gaia3d.util.DecimalUtils;
 import com.gaia3d.util.StringUtils;
 import com.gaia3d.util.io.LittleEndianDataInputStream;
 import com.gaia3d.util.io.LittleEndianDataOutputStream;
@@ -31,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class Batched3DModel implements TileModel {

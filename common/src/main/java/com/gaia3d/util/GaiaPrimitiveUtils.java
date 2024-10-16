@@ -1,9 +1,9 @@
 package com.gaia3d.util;
 
-import com.gaia3d.basic.structure.GaiaFace;
-import com.gaia3d.basic.structure.GaiaPrimitive;
-import com.gaia3d.basic.structure.GaiaSurface;
-import com.gaia3d.basic.structure.GaiaVertex;
+import com.gaia3d.basic.model.GaiaFace;
+import com.gaia3d.basic.model.GaiaPrimitive;
+import com.gaia3d.basic.model.GaiaSurface;
+import com.gaia3d.basic.model.GaiaVertex;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
@@ -17,20 +17,17 @@ public class GaiaPrimitiveUtils {
 
         primitiveMaster.getVertices().addAll(primitive.getVertices());
         int surfacesCount = primitive.getSurfaces().size();
-        for(int i=0; i<surfacesCount; i++)
-        {
+        for (int i = 0; i < surfacesCount; i++) {
             GaiaSurface surface = primitive.getSurfaces().get(i);
             GaiaSurface surfaceNew = new GaiaSurface();
             int facesCount = surface.getFaces().size();
-            for(int j=0; j<facesCount; j++)
-            {
+            for (int j = 0; j < facesCount; j++) {
                 GaiaFace face = surface.getFaces().get(j);
                 GaiaFace faceNew = new GaiaFace();
-                int indices[] = face.getIndices();
+                int[] indices = face.getIndices();
                 int indicesCount = indices.length;
-                int indicesNew[] = new int[indicesCount];
-                for(int k=0; k<indicesCount; k++)
-                {
+                int[] indicesNew = new int[indicesCount];
+                for (int k = 0; k < indicesCount; k++) {
                     indicesNew[k] = indices[k] + vertexCountMaster;
                 }
                 faceNew.setIndices(indicesNew);
@@ -41,15 +38,12 @@ public class GaiaPrimitiveUtils {
         }
     }
 
-    public static GaiaPrimitive getRectangularNet(int numCols, int numRows, double width, double height, boolean calculateTexCoords)
-    {
+    public static GaiaPrimitive getRectangularNet(int numCols, int numRows, double width, double height, boolean calculateTexCoords) {
         GaiaPrimitive primitive = new GaiaPrimitive();
         double xStep = width / (numCols - 1);
         double yStep = height / (numRows - 1);
-        for(int i=0; i<numRows; i++)
-        {
-            for(int j=0; j<numCols; j++)
-            {
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j < numCols; j++) {
                 double x = j * xStep;
                 double y = i * yStep;
                 double z = 0;
@@ -57,10 +51,9 @@ public class GaiaPrimitiveUtils {
                 vertex.setPosition(new Vector3d(x, y, z));
                 primitive.getVertices().add(vertex);
 
-                if(calculateTexCoords)
-                {
-                    double s = (double)j / (double)(numCols - 1);
-                    double t = (double)i / (double)(numRows - 1);
+                if (calculateTexCoords) {
+                    double s = (double) j / (double) (numCols - 1);
+                    double t = (double) i / (double) (numRows - 1);
                     vertex.setTexcoords(new Vector2d(s, t));
                 }
             }
@@ -69,10 +62,8 @@ public class GaiaPrimitiveUtils {
         GaiaSurface surface = new GaiaSurface();
         primitive.getSurfaces().add(surface);
 
-        for(int i=0; i<numRows-1; i++)
-        {
-            for(int j=0; j<numCols-1; j++)
-            {
+        for (int i = 0; i < numRows - 1; i++) {
+            for (int j = 0; j < numCols - 1; j++) {
                 GaiaFace faceA = new GaiaFace();
                 GaiaFace faceB = new GaiaFace();
                 int index1 = i * numCols + j;

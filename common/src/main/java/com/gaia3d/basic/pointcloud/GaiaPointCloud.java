@@ -1,8 +1,8 @@
 package com.gaia3d.basic.pointcloud;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.structure.GaiaAttribute;
-import com.gaia3d.basic.structure.GaiaVertex;
+import com.gaia3d.basic.model.GaiaAttribute;
+import com.gaia3d.basic.model.GaiaVertex;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -45,8 +45,6 @@ public class GaiaPointCloud implements Serializable {
             return distributeOct();
         }
     }
-
-
 
     // Quarter based on the bounding box
     public List<GaiaPointCloud> distributeQuad() {

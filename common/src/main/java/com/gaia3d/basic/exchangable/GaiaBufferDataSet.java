@@ -2,9 +2,11 @@ package com.gaia3d.basic.exchangable;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
-import com.gaia3d.basic.structure.*;
+import com.gaia3d.basic.model.GaiaFace;
+import com.gaia3d.basic.model.GaiaPrimitive;
+import com.gaia3d.basic.model.GaiaSurface;
+import com.gaia3d.basic.model.GaiaVertex;
 import com.gaia3d.basic.types.AttributeType;
-
 import lombok.Getter;
 import lombok.Setter;
 import org.joml.Matrix4d;
@@ -12,15 +14,11 @@ import org.joml.Vector2d;
 import org.joml.Vector3d;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-/**
- * A GaiaBufferDataSet can correspond to a Node in a 3d structure.
- * It uses a straightforward structure and has a buffer for each attribute.
- * @author znkim
- * @since 1.0.0
- * @see GaiaSet, GaiaMaterial, GaiaBoundingBox, GaiaRectangle, GaiaPrimitive, GaiaNode, GaiaBuffer
- */
 @Getter
 @Setter
 public class GaiaBufferDataSet implements Serializable {

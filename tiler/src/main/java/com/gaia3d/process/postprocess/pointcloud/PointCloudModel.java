@@ -6,7 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.pointcloud.GaiaPointCloud;
-import com.gaia3d.basic.structure.GaiaVertex;
+import com.gaia3d.basic.model.GaiaVertex;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.postprocess.TileModel;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTable;

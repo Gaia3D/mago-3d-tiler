@@ -2,7 +2,7 @@ package com.gaia3d.basic.exchangable;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
-import com.gaia3d.basic.structure.*;
+import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.basic.types.TextureType;
@@ -23,18 +23,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * A GaiaSet is a set of data that contains a buffer of raw scene-level 3D data.
- * @author znkim
- * @since 1.0.0
- * @see GaiaBufferDataSet, GaiaMaterial, GaiaTexture, GaiaScene, GaiaNode
- */
 @Slf4j
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaSet implements Serializable{
+public class GaiaSet implements Serializable {
     private List<GaiaBufferDataSet> bufferDataList;
     private List<GaiaMaterial> materials;
     private GaiaAttribute attribute;
@@ -58,6 +52,31 @@ public class GaiaSet implements Serializable{
         newGaiaSet.bufferDataList = bufferDataSets;
 
         return newGaiaSet;
+    }
+
+    public static GaiaSet readFile(Path path) throws FileNotFoundException {
+        File input = path.toFile();
+        Path imagesPath = path.getParent().resolve("images");
+        try (ObjectInputStream inputStream = new ObjectInputStream(new BufferedInputStream(new FileInputStream(input)))) {
+            GaiaSet gaiaSet = (GaiaSet) inputStream.readObject();
+            for (GaiaMaterial material : gaiaSet.getMaterials()) {
+                material.getTextures().forEach((textureType, textures) -> {
+                    for (GaiaTexture texture : textures) {
+                        String texturePath = texture.getPath();
+                        File file = new File(texturePath);
+                        String fileName = file.getName();
+                        //Path imagePath = imagesPath.resolve(fileName);
+
+                        texture.setParentPath(imagesPath.toString());
+                        texture.setPath(fileName);
+                    }
+                });
+            }
+            return gaiaSet;
+        } catch (Exception e) {
+            log.error("GaiaSet Write Error : ", e);
+        }
+        return null;
     }
 
     public GaiaBoundingBox getBoundingBox() {
@@ -122,31 +141,6 @@ public class GaiaSet implements Serializable{
         }
     }
 
-    public static GaiaSet readFile(Path path) throws FileNotFoundException {
-        File input = path.toFile();
-        Path imagesPath = path.getParent().resolve("images");
-        try (ObjectInputStream inputStream = new ObjectInputStream(new BufferedInputStream(new FileInputStream(input)))) {
-            GaiaSet gaiaSet = (GaiaSet) inputStream.readObject();
-            for (GaiaMaterial material : gaiaSet.getMaterials()) {
-                material.getTextures().forEach((textureType, textures) -> {
-                    for (GaiaTexture texture : textures) {
-                        String texturePath = texture.getPath();
-                        File file = new File (texturePath);
-                        String fileName = file.getName();
-                        //Path imagePath = imagesPath.resolve(fileName);
-
-                        texture.setParentPath(imagesPath.toString());
-                        texture.setPath(fileName);
-                    }
-                });
-            }
-            return gaiaSet;
-        } catch (Exception e) {
-            log.error("GaiaSet Write Error : ", e);
-        }
-        return null;
-    }
-
     private GaiaRectangle calcTexcoordBoundingRectangle(GaiaBufferDataSet bufferDataSet) {
         GaiaRectangle texcoordBoundingRectangle = null;
         Map<AttributeType, GaiaBuffer> buffers = bufferDataSet.getBuffers();
@@ -191,7 +185,7 @@ public class GaiaSet implements Serializable{
         materials.forEach(GaiaMaterial::deleteTextures);
     }
 
-    public GaiaSet clone(){
+    public GaiaSet clone() {
         GaiaSet gaiaSet = new GaiaSet();
         gaiaSet.setBufferDataList(new ArrayList<>());
         for (GaiaBufferDataSet bufferData : this.bufferDataList) {

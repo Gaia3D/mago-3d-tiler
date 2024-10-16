@@ -1,6 +1,6 @@
 package com.gaia3d.process.preprocess;
 
-import com.gaia3d.basic.structure.*;
+import com.gaia3d.basic.model.*;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import org.joml.Vector3d;
 
@@ -21,14 +21,6 @@ public class GeometryOptimizer implements PreProcess {
         for (GaiaScene gaiaScene : gaiaScenes) {
             deleteFacesWithNormalInScene(gaiaScene, normalReference, error);
         }
-
-        /*
-        // optimize scenes.
-        GeometryOptimizer geometryOptimizer = new GeometryOptimizer();
-        geometryOptimizer.optimize((ArrayList<GaiaScene>) scenes);
-        // end optimize scenes.
-
-         */
     }
 
     public void deleteFacesWithNormalInNode(GaiaNode gaiaNode, Vector3d normalReference, double error) {

@@ -1,9 +1,9 @@
 package com.gaia3d.basic.geometry.octree;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.structure.GaiaFace;
-import com.gaia3d.basic.structure.GaiaPrimitive;
-import com.gaia3d.basic.structure.GaiaScene;
+import com.gaia3d.basic.model.GaiaFace;
+import com.gaia3d.basic.model.GaiaPrimitive;
+import com.gaia3d.basic.model.GaiaScene;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -11,13 +11,10 @@ import org.joml.Vector3d;
 import org.joml.Vector4d;
 
 @Slf4j
-@Setter
 @Getter
-
+@Setter
 public class GaiaFaceData {
-    //**********************************************************
     // This class is used by GaiaOctree to store the face data.
-    //**********************************************************
     private GaiaScene sceneParent = null;
     private GaiaPrimitive primitiveParent = null;
     private GaiaFace face = null;
@@ -27,7 +24,7 @@ public class GaiaFaceData {
 
     public GaiaBoundingBox getBoundingBox() {
         if (boundingBox == null) {
-            if(primitiveParent != null) {
+            if (primitiveParent != null) {
                 boundingBox = face.getBoundingBox(primitiveParent.getVertices(), new GaiaBoundingBox());
             } else {
                 log.error("[Error][getBoundingBox] : primitiveParent is null.");

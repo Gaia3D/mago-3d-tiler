@@ -29,12 +29,7 @@ public class GaiaSegment {
         return segment1.angle(segment2);
     }
 
-    public boolean check()
-    {
-        if(startPoint == null || endPoint == null)
-        {
-            return false;
-        }
-        return true;
+    public boolean check() {
+        return startPoint != null && endPoint != null;
     }
 }

@@ -1,22 +1,15 @@
 package com.gaia3d.processPhR.preProcessPhR;
 
 import com.gaia3d.basic.exchangable.GaiaSet;
-import com.gaia3d.basic.halfEdgeStructure.HalfEdgeScene;
-import com.gaia3d.basic.halfEdgeStructure.HalfEdgeUtils;
-import com.gaia3d.basic.structure.GaiaMesh;
-import com.gaia3d.basic.structure.GaiaNode;
-import com.gaia3d.basic.structure.GaiaPrimitive;
-import com.gaia3d.basic.structure.GaiaScene;
+import com.gaia3d.basic.halfedge.HalfEdgeScene;
+import com.gaia3d.basic.halfedge.HalfEdgeUtils;
+import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.process.preprocess.PreProcess;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
-import com.gaia3d.util.GaiaSceneUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.joml.Vector3d;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
 @AllArgsConstructor

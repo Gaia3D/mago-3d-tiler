@@ -1,11 +1,9 @@
 package com.gaia3d.converter.geometry;
 
-import com.gaia3d.basic.geometry.GaiaRectangle;
-import com.gaia3d.basic.geometry.networkStructure.modeler.TNetwork;
+import com.gaia3d.basic.geometry.network.modeler.TNetwork;
 import com.gaia3d.basic.geometry.tessellator.GaiaExtrusionSurface;
 import com.gaia3d.basic.geometry.tessellator.GaiaTessellator;
-import com.gaia3d.basic.geometry.tessellator.Point2DTess;
-import com.gaia3d.basic.structure.*;
+import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.geometry.pipe.GaiaPipeLineString;

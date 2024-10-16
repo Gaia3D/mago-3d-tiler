@@ -1,17 +1,13 @@
 package com.gaia3d.converter.assimp;
 
 import com.gaia3d.basic.exchangable.GaiaSet;
-import com.gaia3d.basic.structure.GaiaScene;
+import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.Configurator;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
 class AssimpConverterTest {

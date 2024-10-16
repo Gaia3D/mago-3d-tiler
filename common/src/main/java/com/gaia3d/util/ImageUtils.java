@@ -18,6 +18,7 @@ import java.util.Iterator;
 
 /**
  * Utility class for image operations.
+ *
  * @author znkim
  * @since 1.0.0
  */
@@ -82,8 +83,7 @@ public class ImageUtils {
                     buffer = new byte[is.available()];
                 }
             }
-            if (flip)
-                byteBuffer.flip();
+            if (flip) byteBuffer.flip();
             return byteBuffer;
         } catch (IOException e) {
             log.error("FileUtils.readBytes: {}", e.getMessage());
@@ -189,7 +189,7 @@ public class ImageUtils {
         result[1] = -1;
 
         if (!imageFile.exists()) {
-            System.err.println( "File not found : " + imageFile.getAbsolutePath());
+            System.err.println("File not found : " + imageFile.getAbsolutePath());
             return result;
         }
 

@@ -1,10 +1,10 @@
 package com.gaia3d.process.preprocess;
 
-import com.gaia3d.basic.halfEdgeStructure.HalfEdge;
-import com.gaia3d.basic.halfEdgeStructure.HalfEdgeFace;
-import com.gaia3d.basic.halfEdgeStructure.HalfEdgeSurface;
-import com.gaia3d.basic.halfEdgeStructure.HalfEdgeVertex;
-import com.gaia3d.basic.structure.*;
+import com.gaia3d.basic.halfedge.HalfEdge;
+import com.gaia3d.basic.halfedge.HalfEdgeFace;
+import com.gaia3d.basic.halfedge.HalfEdgeSurface;
+import com.gaia3d.basic.halfedge.HalfEdgeVertex;
+import com.gaia3d.basic.model.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,7 +12,6 @@ import java.util.List;
 
 @Setter
 @Getter
-
 public class GaiaTrianglesReductor {
     public GaiaScene reduceScene(GaiaScene scene) {
         GaiaScene resultReducedScene = new GaiaScene();

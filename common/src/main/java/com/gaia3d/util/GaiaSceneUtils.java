@@ -1,13 +1,12 @@
 package com.gaia3d.util;
 
-import com.gaia3d.basic.structure.GaiaMesh;
-import com.gaia3d.basic.structure.GaiaNode;
-import com.gaia3d.basic.structure.GaiaPrimitive;
-import com.gaia3d.basic.structure.GaiaScene;
+import com.gaia3d.basic.model.GaiaMesh;
+import com.gaia3d.basic.model.GaiaNode;
+import com.gaia3d.basic.model.GaiaPrimitive;
+import com.gaia3d.basic.model.GaiaScene;
 
 public class GaiaSceneUtils {
-    public static GaiaScene getSceneRectangularNet(int numCols, int numRows, double width, double height, boolean calculateTexCoords)
-    {
+    public static GaiaScene getSceneRectangularNet(int numCols, int numRows, double width, double height, boolean calculateTexCoords) {
         GaiaScene scene = new GaiaScene();
         GaiaNode rootNode = new GaiaNode();
         scene.getNodes().add(rootNode);

@@ -2,7 +2,7 @@ package com.gaia3d.converter.pointcloud;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.pointcloud.GaiaPointCloud;
-import com.gaia3d.basic.structure.GaiaVertex;
+import com.gaia3d.basic.model.GaiaVertex;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.util.GlobeUtils;
 import com.github.mreutegg.laszip4j.CloseablePointIterable;

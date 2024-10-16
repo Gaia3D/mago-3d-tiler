@@ -1,21 +1,16 @@
 package com.gaia3d.converter.assimp;
 
-import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.structure.*;
-import com.gaia3d.basic.structure.splitter.GaiaSceneSplitter;
-import com.gaia3d.command.mago.GlobalOptions;
+import com.gaia3d.basic.splitter.GaiaSceneSplitter;
+import com.gaia3d.basic.model.*;
 import com.gaia3d.converter.Converter;
-import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
-import org.joml.Vector3d;
-import org.locationtech.proj4j.CoordinateReferenceSystem;
-import org.locationtech.proj4j.ProjCoordinate;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 // decorator pattern
@@ -23,7 +18,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class LargeMeshConverter implements Converter {
     private final Converter converter;
-
     private final int THRES_HOLD = 65535;
 
     @Override
@@ -36,9 +30,8 @@ public class LargeMeshConverter implements Converter {
     public List<GaiaScene> load(File file) {
         List<GaiaScene> scenes = converter.load(file);
 
-        GaiaSceneSplitter splitter = new GaiaSceneSplitter();
         List<GaiaScene> resultGaiaScenes = new ArrayList<>();
-        splitter.splitScenes(scenes, resultGaiaScenes);
+        GaiaSceneSplitter.splitScenes(scenes, resultGaiaScenes);
 
         return resultGaiaScenes; // new.***
     }
@@ -52,7 +45,7 @@ public class LargeMeshConverter implements Converter {
     private List<GaiaScene> separateScenes(List<GaiaScene> scenes) {
         int size = scenes.size();
         List<GaiaScene> removedScenes = new ArrayList<>();
-        List <GaiaScene> separatedScenes = new ArrayList<>();
+        List<GaiaScene> separatedScenes = new ArrayList<>();
         for (GaiaScene scene : scenes) {
             List<GaiaScene> separatedMeshes = separateScene(scene);
             if (!separatedMeshes.isEmpty()) {
@@ -128,9 +121,7 @@ public class LargeMeshConverter implements Converter {
     private GaiaScene createNewScene(GaiaScene scene, GaiaNode node, GaiaPrimitive primitive) {
         GaiaScene newScene = new GaiaScene();
         List<GaiaNode> rootNode = new ArrayList<>();
-        List<GaiaMaterial> materials = scene.getMaterials()
-                .stream().map(GaiaMaterial::clone)
-                .collect(Collectors.toList());
+        List<GaiaMaterial> materials = scene.getMaterials().stream().map(GaiaMaterial::clone).collect(Collectors.toList());
 
         newScene.setNodes(rootNode);
         newScene.setMaterials(materials);

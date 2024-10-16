@@ -3,10 +3,9 @@ package com.gaia3d.process.tileprocess.tile;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.pointcloud.GaiaPointCloud;
-import com.gaia3d.basic.structure.GaiaNode;
-import com.gaia3d.command.mago.GlobalOptions;
+import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.converter.kml.KmlInfo;
-import com.gaia3d.basic.structure.GaiaScene;
+import com.gaia3d.basic.model.GaiaScene;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,7 +14,6 @@ import org.apache.commons.io.FileUtils;
 import org.joml.Matrix4d;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 
