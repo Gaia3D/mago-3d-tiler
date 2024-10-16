@@ -9,14 +9,155 @@ import org.joml.Vector3d;
 import java.util.*;
 
 @Slf4j
-@Getter
 @Setter
+@Getter
 public class HalfEdgeSurface {
     private List<HalfEdge> halfEdges = new ArrayList<>();
     private List<HalfEdgeVertex> vertices = new ArrayList<>();
     private List<HalfEdgeFace> faces = new ArrayList<>();
 
     public void setTwins() {
+        Map<HalfEdgeVertex, List<HalfEdge>> mapVertexOutingHEdges = new HashMap<>();
+        Map<HalfEdgeVertex, List<HalfEdge>> mapVertexIncomingHEdges = new HashMap<>();
+
+        for (HalfEdge halfEdge : halfEdges) {
+            HalfEdgeVertex startVertex = halfEdge.getStartVertex();
+            HalfEdgeVertex endVertex = halfEdge.getEndVertex();
+
+            if (startVertex == endVertex) {
+                int hola = 0;
+            }
+            List<HalfEdge> outingEdges = mapVertexOutingHEdges.computeIfAbsent(startVertex, k -> new ArrayList<>());
+            outingEdges.add(halfEdge);
+
+            List<HalfEdge> incomingEdges = mapVertexIncomingHEdges.computeIfAbsent(endVertex, k -> new ArrayList<>());
+            incomingEdges.add(halfEdge);
+        }
+
+        // make twinables lists.***
+        Map<HalfEdge, List<HalfEdge>> mapHalfEdgeTwinables = new HashMap<>();
+        Map<HalfEdge, HalfEdge> mapRemovedHalfEdges = new HashMap<>();
+        int vertexCount = vertices.size();
+        for (int i = 0; i < vertexCount; i++) {
+            HalfEdgeVertex vertex = vertices.get(i);
+            List<HalfEdge> outingEdges = mapVertexOutingHEdges.get(vertex);
+            List<HalfEdge> incomingEdges = mapVertexIncomingHEdges.get(vertex);
+
+            if (outingEdges == null || incomingEdges == null) {
+                continue;
+            }
+
+            int outingEdgesCount = outingEdges.size();
+            int incomingEdgesCount = incomingEdges.size();
+            for (int j = 0; j < outingEdgesCount; j++) {
+                HalfEdge outingEdge = outingEdges.get(j);
+
+//                if(mapRemovedHalfEdges.get(outingEdge) != null)
+//                {
+//                    continue;
+//                }
+
+                for (int k = 0; k < incomingEdgesCount; k++) {
+                    HalfEdge incomingEdge = incomingEdges.get(k);
+
+//                    if(mapRemovedHalfEdges.get(incomingEdge) != null)
+//                    {
+//                        continue;
+//                    }
+
+                    if (incomingEdge.isTwineableByPointers(outingEdge)) {
+                        List<HalfEdge> twinables = mapHalfEdgeTwinables.computeIfAbsent(outingEdge, k2 -> new ArrayList<>());
+//                        if(!twinables.isEmpty())
+//                        {
+//                            mapRemovedHalfEdges.put(incomingEdge, incomingEdge);
+//                        }
+//                        else
+                        {
+                            twinables.add(incomingEdge);
+                        }
+
+                    }
+                }
+            }
+        }
+
+        // now set twins.***
+        Set<HalfEdge> halfEdgesSet2 = mapHalfEdgeTwinables.keySet();
+        for (HalfEdge halfEdge : halfEdgesSet2) {
+            if (halfEdge.hasTwin()) {
+                continue;
+            }
+            List<HalfEdge> twinables = mapHalfEdgeTwinables.get(halfEdge);
+            for (int i = 0; i < twinables.size(); i++) {
+                HalfEdge twinable = twinables.get(i);
+                if (twinable.hasTwin()) {
+                    continue;
+                }
+                if (halfEdge.setTwin(twinable)) {
+                    int hola = 0;
+                    break;
+                }
+            }
+        }
+
+        // now collect hedges that has not twin.***
+        List<HalfEdge> singleHalfEdges = new ArrayList<>();
+        int hedgesCount = halfEdges.size();
+        for (int i = 0; i < hedgesCount; i++) {
+            HalfEdge hedge = halfEdges.get(i);
+            if (!hedge.hasTwin()) {
+                singleHalfEdges.add(hedge);
+                singleHalfEdges.add(hedge.getNext());
+            } else {
+                hedge.setItselfAsOutingHalfEdgeToTheStartVertex();
+            }
+        }
+
+        // now manage the removed halfEdges.************************************************************************
+        List<HalfEdge> removedHalfEdges = singleHalfEdges;
+        Map<HalfEdgeVertex, HalfEdgeVertex> mapVertexToNewVertex = new HashMap<>();
+        int removedHalfEdgesCount = removedHalfEdges.size();
+        for (int i = 0; i < removedHalfEdgesCount; i++) {
+            HalfEdge removedHalfEdge = removedHalfEdges.get(i);
+            HalfEdgeVertex startVertex = removedHalfEdge.getStartVertex();
+            List<HalfEdge> outingEdgesByMap = mapVertexOutingHEdges.get(startVertex);
+            List<HalfEdge> outingEdgesByVertex = startVertex.getOutingHalfEdges(null);
+
+            int hola = 0;
+        }
+
+        // now manage the removed halfEdges.************************************************************************
+//        List<HalfEdge> removedHalfEdges = singleHalfEdges;
+//        Map<HalfEdgeVertex, HalfEdgeVertex> mapVertexToNewVertex = new HashMap<>();
+//        int removedHalfEdgesCount = removedHalfEdges.size();
+//        for (int i = 0; i < removedHalfEdgesCount; i++)
+//        {
+//            HalfEdge removedHalfEdge = removedHalfEdges.get(i);
+//            HalfEdgeVertex startVertex = removedHalfEdge.getStartVertex();
+//            if(mapVertexToNewVertex.get(startVertex) == null)
+//            {
+//                HalfEdgeVertex newVertex = new HalfEdgeVertex();
+//                newVertex.copyFrom(startVertex);
+//                newVertex.setOutingHalfEdge(removedHalfEdge);
+//                newVertex.note = "newVertex";
+//                vertices.add(newVertex);
+//                mapVertexToNewVertex.put(startVertex, newVertex);
+//            }
+//
+//            HalfEdgeVertex newVertex = mapVertexToNewVertex.get(startVertex);
+//            removedHalfEdge.setStartVertex(newVertex);
+//            newVertex.setOutingHalfEdge(removedHalfEdge);
+//            removedHalfEdge.note = "removedHalfEdge";
+//
+//            int hola = 0;
+//        }
+//
+//        this.setTwinsBetweenHalfEdges(removedHalfEdges);
+
+        int hola = 0;
+    }
+
+    public void setTwins_original() {
         Map<HalfEdgeVertex, List<HalfEdge>> mapVertexOutingHEdges = new HashMap<>();
         Map<HalfEdgeVertex, List<HalfEdge>> mapVertexIncomingHEdges = new HashMap<>();
 
@@ -54,9 +195,6 @@ public class HalfEdgeSurface {
                 }
                 for (int k = 0; k < incomingEdgesCount; k++) {
                     HalfEdge incomingEdge = incomingEdges.get(k);
-                    if (outingEdge == incomingEdge) {
-                        int hola = 0;
-                    }
 
                     if (incomingEdge.hasTwin()) {
                         continue;
@@ -66,6 +204,7 @@ public class HalfEdgeSurface {
                     }
                 }
             }
+
         }
 
         int hola = 0;
@@ -170,24 +309,21 @@ public class HalfEdgeSurface {
 
             if (!halfEdge.hasTwin()) {
                 // this is frontier halfEdge.***
-                if (i == 129) {
-                    int hola = 0;
-                }
-                if (!this.checkVertices()) {
-                    int hola = 0;
-                }
-                if (this.collapseFrontierHalfEdge(halfEdge, i, false)) {
-                    hedgesCollapsedCount += 3;
-                    counterAux++;
-
-                    if (!this.checkVertices()) {
-                        int hola = 0;
-                        setItselfAsOutingHalfEdgeToTheStartVertex();
-                        if (!this.checkVertices()) {
-                            int hola2 = 0;
-                        }
-                    }
-                }
+//                if(this.collapseFrontierHalfEdge(halfEdge, i, false))
+//                {
+//                    hedgesCollapsedCount+= 3;
+//                    counterAux++;
+//
+//                    if(!this.checkVertices())
+//                    {
+//                        int hola = 0;
+////                        setItselfAsOutingHalfEdgeToTheStartVertex();
+////                        if(!this.checkVertices())
+////                        {
+////                            int hola2 = 0;
+////                        }
+//                    }
+//                }
 
                 continue;
             }
@@ -198,29 +334,35 @@ public class HalfEdgeSurface {
                 continue;
             }
 
+            if (startVertex.getPosition() == null) {
+                int hola = 0;
+            }
+
 
             if (halfEdge.getSquaredLength() < minSquaredLength) {
                 boolean testDebug = false;
                 if (halfEdge.isApplauseEdge()) {
                     continue;
                 }
-                if (!this.checkFaces()) {
-                    int hola = 0;
-                }
-                if (!this.checkVertices()) {
-                    int hola = 0;
-                }
+//                if(!this.checkFaces())
+//                {
+//                    int hola = 0;
+//                }
+//                if(!this.checkVertices()) {
+//                    int hola = 0;
+//                }
                 if (collapseHalfEdge(halfEdge, i, testDebug)) {
                     hedgesCollapsedCount += 6;
                     counterAux++;
 
-                    if (!this.checkVertices()) {
-                        int hola = 0;
-                    }
-
-                    if (!this.checkFaces()) {
-                        int hola = 0;
-                    }
+//                    if(!this.checkVertices()) {
+//                        int hola = 0;
+//                    }
+//
+//                    if(!this.checkFaces())
+//                    {
+//                        int hola = 0;
+//                    }
                 }
                 if (counterAux >= 2000) {
                     counterAux = 0;
@@ -331,7 +473,7 @@ public class HalfEdgeSurface {
         for (HalfEdgeVertex vertex : vertexSet) {
             List<HalfEdge> outingEdgesByMap = vertexAllOutingEdgesMap.get(vertex);
             if (outingEdgesByMap == null || outingEdgesByMap.isEmpty()) {
-                log.error("HalfEdgeSurface.makeVertexAllOutingEdgesMap() : outingEdges == null.");
+                //log.error("HalfEdgeSurface.makeVertexAllOutingEdgesMap() : outingEdges == null.");
                 continue;
             }
             int outingEdgesByMapCount = outingEdgesByMap.size();
@@ -384,48 +526,71 @@ public class HalfEdgeSurface {
         return newVertexAllOutingEdgesMap2;
     }
 
+    public Map<HalfEdgeVertex, List<HalfEdgeFace>> getMapVertexAllFaces(Map<HalfEdgeVertex, List<HalfEdgeFace>> resultVertexAllFacesMap) {
+        if (resultVertexAllFacesMap == null) {
+            resultVertexAllFacesMap = new HashMap<>();
+        }
+
+        for (HalfEdge halfEdge : halfEdges) {
+            if (halfEdge.getStatus() == ObjectStatus.DELETED) {
+                continue;
+            }
+            HalfEdgeVertex startVertex = halfEdge.getStartVertex();
+            if (startVertex.getStatus() == ObjectStatus.DELETED) {
+                continue;
+            }
+            HalfEdgeFace face = halfEdge.getFace();
+            if (face.getStatus() == ObjectStatus.DELETED) {
+                continue;
+            }
+            List<HalfEdgeFace> faces = resultVertexAllFacesMap.computeIfAbsent(startVertex, k -> new ArrayList<>());
+            faces.add(face);
+        }
+
+        return resultVertexAllFacesMap;
+    }
+
+    public Map<HalfEdgeVertex, List<HalfEdge>> getMapVertexAllOutingEdges(Map<HalfEdgeVertex, List<HalfEdge>> resultVertexAllOutingEdgesMap) {
+        if (resultVertexAllOutingEdgesMap == null) {
+            resultVertexAllOutingEdgesMap = new HashMap<>();
+        }
+
+        for (HalfEdge halfEdge : halfEdges) {
+            if (halfEdge.getStatus() == ObjectStatus.DELETED) {
+                continue;
+            }
+            HalfEdgeVertex startVertex = halfEdge.getStartVertex();
+            if (startVertex.getStatus() == ObjectStatus.DELETED) {
+                continue;
+            }
+            List<HalfEdge> edges = resultVertexAllOutingEdgesMap.computeIfAbsent(startVertex, k -> new ArrayList<>());
+            edges.add(halfEdge);
+        }
+
+        return resultVertexAllOutingEdgesMap;
+    }
 
     public void checkSandClockFaces() {
         // This function returns a map of all halfEdges that startVertex is the key.***
-        Map<HalfEdgeVertex, List<HalfEdge>> vertexAllOutingEdgesMap = null;
-        if (vertexAllOutingEdgesMap == null) {
-            vertexAllOutingEdgesMap = new HashMap<>();
+        Map<HalfEdgeVertex, List<HalfEdge>> vertexAllOutingEdgesMap = this.getMapVertexAllOutingEdges(null);
 
-            for (HalfEdge halfEdge : halfEdges) {
-                if (halfEdge.getStatus() == ObjectStatus.DELETED) {
-                    int hola = 0;
-                    continue;
-                }
-                HalfEdgeVertex startVertex = halfEdge.getStartVertex();
-                if (startVertex.getStatus() == ObjectStatus.DELETED) {
-                    int hola = 0;
-                    continue;
-                }
-                List<HalfEdge> edges = vertexAllOutingEdgesMap.get(startVertex);
-                if (edges == null) {
-                    edges = new ArrayList<>();
-                    vertexAllOutingEdgesMap.put(startVertex, edges);
-                }
-                edges.add(halfEdge);
+        // Now, for each outingHEdgesList, check if they are connected.***
+        int maxIterations = vertexAllOutingEdgesMap.size() * 10;
+        int iteration = 0;
+        boolean finished = false;
+        while (!finished && iteration < maxIterations) {
+            finished = true;
+            vertexAllOutingEdgesMap = checkVertexAllOutingEdgesMap(vertexAllOutingEdgesMap);
+            if (!vertexAllOutingEdgesMap.isEmpty()) {
+                finished = false;
+            } else {
+                break;
             }
-
-            // Now, for each outingHEdgesList, check if they are connected.***
-            int maxIterations = vertexAllOutingEdgesMap.size() * 10;
-            int iteration = 0;
-            boolean finished = false;
-            while (!finished && iteration < maxIterations) {
-                finished = true;
-                vertexAllOutingEdgesMap = checkVertexAllOutingEdgesMap(vertexAllOutingEdgesMap);
-                if (vertexAllOutingEdgesMap.size() > 0) {
-                    finished = false;
-                } else {
-                    break;
-                }
-                iteration++;
-            }
-
-            int hola = 0;
+            iteration++;
         }
+
+        int hola = 0;
+
     }
 
     public boolean checkVertices() {
@@ -463,6 +628,56 @@ public class HalfEdgeSurface {
 //                    HalfEdgeFace twinFace = twin.getFace();
 //                }
 //            }
+        }
+        return true;
+    }
+
+    public boolean checkEqualHEdges() {
+        Map<HalfEdgeVertex, Map<HalfEdgeVertex, List<HalfEdge>>> mapStartVertexToEndVertexToHedgesList = new HashMap<>();
+        int hedgesCount = halfEdges.size();
+        for (int i = 0; i < hedgesCount; i++) {
+            HalfEdge hedge = halfEdges.get(i);
+            if (hedge.getStatus() == ObjectStatus.DELETED) {
+                continue;
+            }
+
+            HalfEdgeVertex startVertex = hedge.getStartVertex();
+            HalfEdgeVertex endVertex = hedge.getEndVertex();
+            Map<HalfEdgeVertex, List<HalfEdge>> mapEndVertexToHedgesList = mapStartVertexToEndVertexToHedgesList.computeIfAbsent(startVertex, k -> new HashMap<>());
+            List<HalfEdge> hedgesList = mapEndVertexToHedgesList.computeIfAbsent(endVertex, k -> new ArrayList<>());
+            hedgesList.add(hedge);
+        }
+
+        Map<HalfEdgeVertex, List<HalfEdgeFace>> mapVertexAllFaces = this.getMapVertexAllFaces(null);
+
+        // now, check if exist some list that has more than one halfEdge.***
+        Set<HalfEdgeVertex> startVertexSet = mapStartVertexToEndVertexToHedgesList.keySet();
+        for (HalfEdgeVertex startVertex : startVertexSet) {
+            Map<HalfEdgeVertex, List<HalfEdge>> mapEndVertexToHedgesList = mapStartVertexToEndVertexToHedgesList.get(startVertex);
+            Set<HalfEdgeVertex> endVertexSet = mapEndVertexToHedgesList.keySet();
+            for (HalfEdgeVertex endVertex : endVertexSet) {
+                List<HalfEdge> hedgesList = mapEndVertexToHedgesList.get(endVertex);
+                if (hedgesList.size() > 1) {
+                    System.out.println("HalfEdgeSurface.checkEqualHEdges() : hedgesList.size() > 1.");
+                    int equalHEdgesCount = hedgesList.size();
+                    List<HalfEdge> startVertexOutingHEdges = startVertex.getOutingHalfEdges(null);
+                    int startVertexOutingHEdgesCount = startVertexOutingHEdges.size();
+                    List<HalfEdge> endVertexOutingHEdges = endVertex.getOutingHalfEdges(null);
+                    int endVertexOutingHEdgesCount = endVertexOutingHEdges.size();
+                    List<HalfEdge> startVertexIncomingHEdges = startVertex.getIncomingHalfEdges(null);
+                    int startVertexIncomingHEdgesCount = startVertexIncomingHEdges.size();
+                    List<HalfEdge> endVertexIncomingHEdges = endVertex.getIncomingHalfEdges(null);
+                    int endVertexIncomingHEdgesCount = endVertexIncomingHEdges.size();
+
+                    List<HalfEdgeFace> startVertexFaces = startVertex.getFaces(null);
+                    List<HalfEdgeFace> endVertexFaces = endVertex.getFaces(null);
+
+                    List<HalfEdgeFace> startVertexFaces2 = mapVertexAllFaces.get(startVertex);
+                    List<HalfEdgeFace> endVertexFaces2 = mapVertexAllFaces.get(endVertex);
+
+                    int hola = 0;
+                }
+            }
         }
         return true;
     }
@@ -672,6 +887,28 @@ public class HalfEdgeSurface {
         List<HalfEdge> outingEdgesOfDeletingVertex = deletingVertex.getOutingHalfEdges(null);
         List<HalfEdge> outingEdgesOfEndVertex = halfEdge.getEndVertex().getOutingHalfEdges(null);
 
+        if (outingEdgesOfEndVertex.size() == 1) {
+            // we are deleting an isolated face.***
+            return false;
+        }
+
+        for (HalfEdge outingEdge : outingEdgesOfDeletingVertex) {
+            if (outingEdge.getStatus() == ObjectStatus.DELETED) {
+                continue;
+            }
+
+            if (outingEdge == halfEdge) {
+                continue;
+            }
+
+            HalfEdgeVertex startVertexTest = outingEdge.getStartVertex();
+            HalfEdgeVertex endVertexTest = outingEdge.getEndVertex();
+
+            if (startVertexTest == startVertex && endVertexTest == endVertex) {
+                int hola = 0;
+            }
+        }
+
 
         if (deletingVertex == endVertex) {
             int hola = 0;
@@ -729,7 +966,6 @@ public class HalfEdgeSurface {
         }
 
         for (HalfEdge outingEdge : outingEdgesOfDeletingVertex) {
-
             if (outingEdge.getStatus() == ObjectStatus.DELETED) {
                 continue;
             }
