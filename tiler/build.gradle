@@ -28,7 +28,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly "org.projectlombok:lombok:1.18.30"
+    /*compileOnly "org.projectlombok:lombok:1.18.30"
     annotationProcessor "org.projectlombok:lombok:1.18.30"
 
     // logging
@@ -43,7 +43,7 @@ dependencies {
     implementation 'commons-io:commons-io:2.11.0'
     implementation 'commons-cli:commons-cli:1.5.0'
     implementation 'commons-collections:commons-collections:3.2.2'
-    implementation 'org.apache.commons:commons-text:1.10.0'
+    implementation 'org.apache.commons:commons-text:1.10.0'*/
 
     // lwjgl (lightweight java game library)
     implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
@@ -95,7 +95,7 @@ dependencies {
 
     implementation 'com.github.mreutegg:laszip4j:0.17'
 
-    implementation project(":mago-common")
+    //implementation project(":mago-common")
     implementation files("libs/Indoor4J.jar")
 
     runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
@@ -105,10 +105,10 @@ dependencies {
     runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-stb::$lwjglNatives"
 
-    testCompileOnly "org.projectlombok:lombok:1.18.30"
+    /*testCompileOnly "org.projectlombok:lombok:1.18.30"
     testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.0"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.0"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.0"*/
 }
 test {
     useJUnitPlatform {

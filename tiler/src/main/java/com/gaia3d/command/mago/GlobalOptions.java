@@ -1,5 +1,6 @@
 package com.gaia3d.command.mago;
 
+import com.gaia3d.TilerExtensionModule;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.process.ProcessOptions;
 import lombok.Getter;
@@ -247,6 +248,13 @@ public class GlobalOptions {
         instance.setLargeMesh(command.hasOption(ProcessOptions.LARGE_MESH.getArgName()));
         instance.setVoxelLod(command.hasOption(ProcessOptions.VOXEL_LOD.getArgName()));
         instance.setPhotorealistic(command.hasOption(ProcessOptions.PHOTOREALISTIC.getArgName()));
+
+        TilerExtensionModule extensionModule = new TilerExtensionModule();
+        if (extensionModule.isSupported()/* && instance.isPhotorealistic()*/) {
+            extensionModule.executePhotorealistic(null, null);
+        } else {
+            extensionModule.executePhotorealistic(null, null);
+        }
 
         /* Point Cloud Options */
         instance.setPointLimit(command.hasOption(ProcessOptions.MAX_POINTS.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_POINTS.getArgName())) : DEFAULT_POINT_LIMIT);
