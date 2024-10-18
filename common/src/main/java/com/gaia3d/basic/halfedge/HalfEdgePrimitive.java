@@ -2,6 +2,7 @@ package com.gaia3d.basic.halfedge;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.joml.Matrix4d;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,12 @@ public class HalfEdgePrimitive {
     public void checkSandClockFaces() {
         for (HalfEdgeSurface surface : surfaces) {
             surface.checkSandClockFaces();
+        }
+    }
+
+    public void transformPoints(Matrix4d finalMatrix) {
+        for (HalfEdgeSurface surface : surfaces) {
+            surface.transformPoints(finalMatrix);
         }
     }
 }

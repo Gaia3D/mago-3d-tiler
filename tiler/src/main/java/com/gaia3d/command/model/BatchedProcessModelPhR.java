@@ -20,7 +20,7 @@ import com.gaia3d.process.postprocess.batch.Batched3DModel;
 import com.gaia3d.process.preprocess.*;
 import com.gaia3d.process.tileprocess.Pipeline;
 import com.gaia3d.process.tileprocess.TilingProcess;
-import com.gaia3d.process.tileprocess.tile.Batched3DModelTilerPhR;
+import com.gaia3d.processPhR.tileProcessPhR.Batched3DModelTilerPhR;
 import com.gaia3d.processPhR.preProcessPhR.GaiaMinimizerPhR;
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.coverage.grid.GridCoverage2D;

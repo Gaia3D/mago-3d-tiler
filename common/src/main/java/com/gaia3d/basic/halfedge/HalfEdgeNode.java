@@ -2,6 +2,7 @@ package com.gaia3d.basic.halfedge;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.joml.Matrix4d;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +11,8 @@ import java.util.List;
 @Setter
 public class HalfEdgeNode {
     private HalfEdgeNode parent = null;
+    private Matrix4d transformMatrix = new Matrix4d();
+    private Matrix4d preMultipliedTransformMatrix = new Matrix4d();
     private List<HalfEdgeMesh> meshes = new ArrayList<>();
     private List<HalfEdgeNode> children = new ArrayList<>();
 
@@ -40,5 +43,34 @@ public class HalfEdgeNode {
         for (HalfEdgeNode child : children) {
             child.checkSandClockFaces();
         }
+    }
+
+    public Matrix4d getFinalTransformMatrix() {
+        Matrix4d finalMatrix = new Matrix4d();
+        finalMatrix.set(transformMatrix);
+        if (parent != null) {
+            finalMatrix.mul(parent.getFinalTransformMatrix());
+        }
+        return finalMatrix;
+    }
+
+    public void spendTransformationMatrix() {
+        Matrix4d finalMatrix = getFinalTransformMatrix();
+        Matrix4d identity = new Matrix4d();
+        identity.identity();
+
+        if(finalMatrix.equals(identity)) {
+            return;
+        }
+
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.transformPoints(finalMatrix);
+        }
+        for (HalfEdgeNode child : children) {
+            child.spendTransformationMatrix();
+        }
+
+        // Clear the transform matrix.
+        transformMatrix.identity();
     }
 }

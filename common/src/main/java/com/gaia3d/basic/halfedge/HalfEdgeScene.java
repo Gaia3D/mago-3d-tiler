@@ -39,4 +39,10 @@ public class HalfEdgeScene {
         }
     }
 
+    public void spendTransformationMatrix() {
+        for (HalfEdgeNode node : nodes) {
+            node.spendTransformationMatrix();
+        }
+    }
+
 }

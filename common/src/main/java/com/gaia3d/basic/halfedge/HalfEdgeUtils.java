@@ -1,6 +1,7 @@
 package com.gaia3d.basic.halfedge;
 
 import com.gaia3d.basic.model.*;
+import org.joml.Matrix4d;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -214,6 +215,19 @@ public class HalfEdgeUtils {
     public static HalfEdgeNode halfEdgeNodeFromGaiaNode(GaiaNode gaiaNode) {
         HalfEdgeNode halfEdgeNode = new HalfEdgeNode();
 
+        // 1rst, copy transform matrices.***
+        Matrix4d transformMatrix = gaiaNode.getTransformMatrix();
+        Matrix4d preMultipliedTransformMatrix = gaiaNode.getPreMultipliedTransformMatrix();
+
+        Matrix4d transformMatrixCopy = new Matrix4d();
+        transformMatrixCopy.set(transformMatrix);
+
+        Matrix4d preMultipliedTransformMatrixCopy = new Matrix4d();
+        preMultipliedTransformMatrixCopy.set(preMultipliedTransformMatrix);
+
+        halfEdgeNode.setTransformMatrix(transformMatrixCopy);
+        halfEdgeNode.setPreMultipliedTransformMatrix(preMultipliedTransformMatrixCopy);
+
         // check meshes.***
         List<GaiaMesh> gaiaMeshes = gaiaNode.getMeshes();
         int meshesCount = gaiaMeshes.size();
@@ -230,6 +244,7 @@ public class HalfEdgeUtils {
         for (int i = 0; i < childrenCount; i++) {
             GaiaNode gaiaChild = gaiaChildren.get(i);
             HalfEdgeNode halfEdgeChild = HalfEdgeUtils.halfEdgeNodeFromGaiaNode(gaiaChild);
+            halfEdgeChild.setParent(halfEdgeNode);
             halfEdgeNode.getChildren().add(halfEdgeChild);
         }
 
@@ -345,4 +360,24 @@ public class HalfEdgeUtils {
 
         return halfEdgeFace;
     }
+
+    public static List<HalfEdgeScene> cutHalfEdgeSceneByPlane(HalfEdgeScene halfEdgeScene, double[] plane, List<HalfEdgeScene> resultHalfEdgeScenes) {
+        if(resultHalfEdgeScenes == null)
+        {
+            resultHalfEdgeScenes = new ArrayList<>();
+        }
+
+        // 1rst, must spend the transformation matrices.***
+        halfEdgeScene.spendTransformationMatrix();
+
+        // now, cut the scene.***
+        int nodesCount = halfEdgeScene.getNodes().size();
+        for (int i = 0; i < nodesCount; i++) {
+            HalfEdgeNode halfEdgeNode = halfEdgeScene.getNodes().get(i);
+        }
+
+        return resultHalfEdgeScenes;
+    }
+
+
 }

@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -104,7 +105,7 @@ public class TilingPipeline implements Pipeline {
         log.info("[Pre] End the pre-processing.");
     }
 
-    private void startTilingProcess() {
+    private void startTilingProcess() throws FileNotFoundException {
         log.info("[Tile] Start the tiling process.");
         Tiler tiler = (Tiler) tilingProcess;
         log.info("[Tile] Writing tileset file.");

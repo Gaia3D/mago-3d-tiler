@@ -16,6 +16,8 @@ import org.joml.Matrix4d;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -39,11 +41,7 @@ public class TileInfo {
     private Path tempPath; // tempPath lod 0.***
 
     // New vars.***
-    private Path tempPathLod1;
-    private Path tempPathLod2;
-    private Path tempPathLod3;
-    private Path tempPathLod4;
-    private Path tempPathLod5;
+    private List<Path> tempPathLod; // tempPath lod 0, 1, 2, 3, 4, 5.***
 
     @Builder.Default
     private long triangleCount = 0;

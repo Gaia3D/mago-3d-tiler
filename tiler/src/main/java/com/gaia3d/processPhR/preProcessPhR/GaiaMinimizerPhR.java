@@ -10,6 +10,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @AllArgsConstructor
@@ -56,22 +58,61 @@ public class GaiaMinimizerPhR implements PreProcess {
 //            rootNode.setChildren(reducedChildren);
             // End test.--------------------------------------------
 
+            List<Path> tempPathLod = new ArrayList<>();
+            Path tempFolder = tileInfo.getTempPath();
+
+            // Lod 0.************************************************************************************************************
+            log.info("Minimize GaiaScene LOD 0");
+            GaiaSet tempSetLod0 = GaiaSet.fromGaiaScene(scene);
+            Path tempPathLod0 = tempSetLod0.writeFile(tileInfo.getTempPath(), tileInfo.getSerial(), tempSetLod0.getAttribute());
+            tileInfo.setTempPath(tempPathLod0);
+            tempPathLod.add(tempPathLod0);
+
+            // Lod 1.************************************************************************************************************
+            log.info("Minimize GaiaScene LOD 1");
             log.info("Making HalfEdgeScene from GaiaScene");
             HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 
             log.info("Doing triangles reduction in HalfEdgeScene");
-            //halfEdgeScene.doTrianglesReduction();
+            halfEdgeScene.doTrianglesReduction();
 
             log.info("Making GaiaScene from HalfEdgeScene");
-            GaiaScene newScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
+            GaiaScene sceneLod1 = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
             halfEdgeScene.deleteObjects();
 
-            GaiaSet tempSet = GaiaSet.fromGaiaScene(newScene);
-            Path tempPath = tempSet.writeFile(tileInfo.getTempPath(), tileInfo.getSerial(), tempSet.getAttribute());
-            tileInfo.setTempPath(tempPath);
-            if (tempSet != null) {
-                tempSet.clear();
-                tempSet = null;
+            GaiaSet tempSetLod1 = GaiaSet.fromGaiaScene(sceneLod1);
+
+            Path tempFolderLod1 = tempFolder.resolve("lod1");
+            Path tempPathLod1 = tempSetLod1.writeFile(tempFolderLod1, tileInfo.getSerial(), tempSetLod1.getAttribute());
+            tempPathLod.add(tempPathLod1);
+
+            // Lod 2.************************************************************************************************************
+            log.info("Minimize GaiaScene LOD 2");
+            checkTexCoord = false;
+            scene.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
+
+            log.info("Making HalfEdgeScene from GaiaScene");
+            halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
+
+            log.info("Doing triangles reduction in HalfEdgeScene");
+            halfEdgeScene.doTrianglesReduction();
+
+            log.info("Making GaiaScene from HalfEdgeScene");
+            GaiaScene sceneLod2 = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
+            halfEdgeScene.deleteObjects();
+
+            GaiaSet tempSetLod2 = GaiaSet.fromGaiaScene(sceneLod2);
+
+            Path tempFolderLod2 = tempFolder.resolve("lod2");
+            Path tempPathLod2 = tempSetLod2.writeFile(tempFolderLod2, tileInfo.getSerial(), tempSetLod2.getAttribute());
+            tempPathLod.add(tempPathLod2);
+
+            // set tempPathLod to tileInfo.***
+            tileInfo.setTempPathLod(tempPathLod);
+
+            if (tempSetLod0 != null) {
+                tempSetLod0.clear();
+                tempSetLod0 = null;
             }
 
             if (scene != null) {

@@ -14,16 +14,19 @@ import java.util.List;
 @Getter
 
 public class GaiaOctreeVertices {
-    private List<GaiaVertex> vertices = new ArrayList<>();
+
     private GaiaOctreeVertices parent = null;
     private double minX, minY, minZ;
     private double maxX, maxY, maxZ;
     private int idx = -1;
     private GaiaOctreeCoordinate coordinate = new GaiaOctreeCoordinate();
-
-    private GaiaOctreeVertices[] children = null;
     private int maxDepth = 5;
     private double minBoxSize = 0.1;
+    private GaiaOctreeVertices[] children = null;
+    //-----------------------------------------------------------------------------------
+    private List<GaiaVertex> vertices = new ArrayList<>();
+
+
 
     public GaiaOctreeVertices(GaiaOctreeVertices parent) {
         this.parent = parent;
