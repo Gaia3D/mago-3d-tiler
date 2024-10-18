@@ -1,6 +1,7 @@
 package com.gaia3d;
 
 import com.gaia3d.basic.model.GaiaScene;
+import com.gaia3d.basic.model.GaiaTexture;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
@@ -24,6 +25,11 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
         log.debug("Cannot execute photorealistic extension module.");
         log.debug("This module is not implemented.");
         log.debug("----------------------------------------");
+        return null;
+    }
+
+    @Override
+    public GaiaTexture getRenderScene(GaiaScene scene) {
         return null;
     }
 }

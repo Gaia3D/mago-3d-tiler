@@ -3,6 +3,7 @@ package com.gaia3d.processPhR.tileProcessPhR;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gaia3d.TilerExtensionModule;
 import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
@@ -164,6 +165,13 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
             int hola = 0;
         }
+    }
+
+    public void getRenderTexture(GaiaScene scene)
+    {
+        TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
+        tilerExtensionModule.executePhotorealistic(scene, null);
+
     }
 
     private void createQuadTreeChildrenForNode(Node node)
