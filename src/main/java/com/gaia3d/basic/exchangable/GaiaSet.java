@@ -55,6 +55,7 @@ public class GaiaSet implements Serializable {
     }
 
     public static GaiaSet readFile(Path path) throws FileNotFoundException {
+        // function used in TileInfo.java
         File input = path.toFile();
         Path imagesPath = path.getParent().resolve("images");
         try (ObjectInputStream inputStream = new ObjectInputStream(new BufferedInputStream(new FileInputStream(input)))) {

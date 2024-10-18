@@ -4,6 +4,7 @@ import com.gaia3d.basic.geometry.entities.GaiaSegment;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
 import java.util.*;
@@ -1300,6 +1301,440 @@ public class HalfEdgeSurface {
                     break;
                 }
             }
+        }
+    }
+
+    public void transformPoints(Matrix4d finalMatrix) {
+        int vertexCount = vertices.size();
+        for (int i = 0; i < vertexCount; i++) {
+            HalfEdgeVertex vertex = vertices.get(i);
+            Vector3d position = vertex.getPosition();
+            if (position != null) {
+                Vector3d transformedPosition = new Vector3d();
+                finalMatrix.transformPosition(position, transformedPosition);
+                vertex.setPosition(transformedPosition);
+            }
+        }
+    }
+
+    public void cutByPlane(PlaneType planeType, Vector3d planePosition, double error)
+    {
+        if(planeType == PlaneType.XY)
+        {
+            //cutByPlaneXY(planePosition);
+        }
+        else if(planeType == PlaneType.XZ)
+        {
+            cutByPlaneXZ(planePosition, error);
+        }
+        else if(planeType == PlaneType.YZ)
+        {
+            cutByPlaneYZ(planePosition, error);
+        }
+    }
+
+    private void cutByPlaneXZ(Vector3d planePosition, double error)
+    {
+        // find halfEdges that are cut by the plane.***
+        HalfEdgeVertex intersectionVertex = new HalfEdgeVertex();
+        int hedgesCount = halfEdges.size();
+        for (int i = 0; i < hedgesCount; i++)
+        {
+            HalfEdge hedge = halfEdges.get(i);
+            if(hedge.getStatus() == ObjectStatus.DELETED)
+            {
+                continue;
+            }
+
+            if(hedge.getIntersectionByPlane(PlaneType.XZ, planePosition, intersectionVertex, error))
+            {
+
+            }
+        }
+
+    }
+
+    private void cutByPlaneYZ(Vector3d planePosition, double error)
+    {
+
+    }
+
+    private void splitHalfEdge(HalfEdge halfEdge, HalfEdgeVertex intersectionVertex)
+    {
+        // When split a halfEdge, must split the face too.***
+        // If exist twin, must split the twin and twin's face too.***
+        HalfEdge twin = halfEdge.getTwin();
+
+        HalfEdgeVertex startVertex = halfEdge.getStartVertex();
+        HalfEdgeVertex endVertex = halfEdge.getEndVertex();
+
+        if(twin != null)
+        {
+            // must split the twin too.***
+            HalfEdgeFace faceA = halfEdge.getFace();
+            HalfEdgeFace faceB = twin.getFace();
+
+            faceA.setStatus(ObjectStatus.DELETED);
+            faceB.setStatus(ObjectStatus.DELETED);
+
+            List<HalfEdge> halfEdgesLoopA = new ArrayList<>();
+            halfEdgesLoopA = halfEdge.getLoop(halfEdgesLoopA);
+
+            List<HalfEdge> halfEdgesLoopB = new ArrayList<>();
+            halfEdgesLoopB = twin.getLoop(halfEdgesLoopB);
+
+            List<HalfEdge> halfEdgedLoopATwins = new ArrayList<>();
+            int hedgesACount = halfEdgesLoopA.size();
+            for(int i=0; i<hedgesACount; i++)
+            {
+                HalfEdge hedgeA = halfEdgesLoopA.get(i);
+                hedgeA.setStatus(ObjectStatus.DELETED);
+                hedgeA.breakRelations();
+
+                HalfEdge twinA = hedgeA.getTwin();
+                if(twinA != null)
+                {
+                    halfEdgedLoopATwins.add(twinA);
+                }
+            }
+
+            List<HalfEdge> halfEdgedLoopBTwins = new ArrayList<>();
+            int hedgesBCount = halfEdgesLoopB.size();
+            for(int i=0; i<hedgesBCount; i++)
+            {
+                HalfEdge hedgeB = halfEdgesLoopB.get(i);
+                hedgeB.setStatus(ObjectStatus.DELETED);
+                hedgeB.breakRelations();
+
+                HalfEdge twinB = hedgeB.getTwin();
+                if(twinB != null)
+                {
+                    halfEdgedLoopBTwins.add(twinB);
+                }
+            }
+
+
+            // Initial situation.***************************************************************************************
+            //                                               oppositeVertexA
+            //                                                    / \
+            //                                                 /       \
+            //                                              /             \
+            //                                           /                   \
+            //                 exteriorHEdgeA2        /                         \   exteriorHEdgeA1
+            //                                     /                               \
+            //                                  /             faceA                   \
+            //                               /                                           \
+            //                            /                                                 \
+            //                         /                    halfEdge--->                       \
+            //             startV   *-------------------------------------------------------------*  endV
+            //                         \                    <---twin                           /
+            //                            \                                                 /
+            //                               \                                           /
+            //                                  \            faceB                    /
+            //                                     \                               /
+            //                  exteriorHEdgeB1       \                         /   exteriorHEdgeB2
+            //                                           \                   /
+            //                                              \             /
+            //                                                 \       /
+            //                                                    \ /
+            //                                               oppositeVertexB
+
+
+            // Final situation.*****************************************************************************************
+            //                                               oppositeVertexA
+            //                                                    /|\
+            //                                                 /   |   \
+            //                                              /      |      \
+            //                                           /         |         \
+            //                     exteriorHEdgeA2    /            |            \   exteriorHEdgeA1
+            //                                     /               |               \
+            //                                  /          faceA   |    faceC         \
+            //                               /                     |                     \
+            //                            /                        |                        \
+            //                         /        halfEdge--->       |     newHalfEdgeC--->      \
+            //             startV   *------------------------------*------------------------------*  endV  (in the center there are intersectionVertex)
+            //                         \      <--->twin            |   <--->newHalfEdgeD       /
+            //                            \                        |                        /
+            //                               \                     |                     /
+            //                                  \          faceB   |    faceD         /
+            //                                     \               |               /
+            //                                        \            |            /
+            //                      exteriorHEdgeB1      \         |         /   exteriorHEdgeB2
+            //                                              \      |      /
+            //                                                 \   |   /
+            //                                                    \|/
+            //                                               oppositeVertexB
+
+            // Find oppositeVertexA and oppositeVertexB.***
+            HalfEdgeVertex oppositeVertexA = halfEdge.getPrev().getStartVertex();
+            HalfEdgeVertex oppositeVertexB = twin.getPrev().getStartVertex();
+
+            HalfEdge exteriorHEdgeA1 = halfEdge.getNext();
+            HalfEdge exteriorHEdgeA2 = halfEdge.getPrev();
+            HalfEdge exteriorHEdgeB1 = twin.getNext();
+            HalfEdge exteriorHEdgeB2 = twin.getPrev();
+
+            // Face A.********************************
+            // In this face use the halfEdge.***
+            HalfEdgeFace newFaceA = new HalfEdgeFace();
+            HalfEdge newHalfEdgeA1 = halfEdge;
+            HalfEdge newHalfEdgeA2 = new HalfEdge();
+            HalfEdge newHalfEdgeA3 = new HalfEdge();
+
+            newHalfEdgeA1.setNext(newHalfEdgeA2);
+            newHalfEdgeA2.setNext(newHalfEdgeA3);
+            newHalfEdgeA3.setNext(newHalfEdgeA1);
+
+            newHalfEdgeA1.setFace(newFaceA);
+            newHalfEdgeA2.setFace(newFaceA);
+            newHalfEdgeA3.setFace(newFaceA);
+
+            newFaceA.setHalfEdge(newHalfEdgeA1);
+
+            newHalfEdgeA1.setStartVertex(startVertex); // is redundant.***
+            newHalfEdgeA2.setStartVertex(intersectionVertex);
+            newHalfEdgeA3.setStartVertex(oppositeVertexA);
+
+            intersectionVertex.setOutingHalfEdge(newHalfEdgeA2);
+            oppositeVertexA.setOutingHalfEdge(newHalfEdgeA3);
+
+            // Face B.********************************
+            // In this face use the twin.***
+            HalfEdgeFace newFaceB = new HalfEdgeFace();
+            HalfEdge newHalfEdgeB1 = twin;
+            HalfEdge newHalfEdgeB2 = new HalfEdge();
+            HalfEdge newHalfEdgeB3 = new HalfEdge();
+
+            newHalfEdgeB1.setNext(newHalfEdgeB2);
+            newHalfEdgeB2.setNext(newHalfEdgeB3);
+            newHalfEdgeB3.setNext(newHalfEdgeB1);
+
+            newHalfEdgeB1.setFace(newFaceB);
+            newHalfEdgeB2.setFace(newFaceB);
+            newHalfEdgeB3.setFace(newFaceB);
+
+            newFaceB.setHalfEdge(newHalfEdgeB1);
+
+            newHalfEdgeB1.setStartVertex(intersectionVertex);
+            newHalfEdgeB2.setStartVertex(startVertex);
+            newHalfEdgeB3.setStartVertex(oppositeVertexB);
+
+            intersectionVertex.setOutingHalfEdge(newHalfEdgeB2);
+            oppositeVertexB.setOutingHalfEdge(newHalfEdgeB3);
+
+            // Face C.********************************
+            // In this face use the newHalfEdgeC.***
+            HalfEdgeFace newFaceC = new HalfEdgeFace();
+            HalfEdge newHalfEdgeC1 = new HalfEdge();
+            HalfEdge newHalfEdgeC2 = new HalfEdge();
+            HalfEdge newHalfEdgeC3 = new HalfEdge();
+
+            newHalfEdgeC1.setNext(newHalfEdgeC2);
+            newHalfEdgeC2.setNext(newHalfEdgeC3);
+            newHalfEdgeC3.setNext(newHalfEdgeC1);
+
+            newHalfEdgeC1.setFace(newFaceC);
+            newHalfEdgeC2.setFace(newFaceC);
+            newHalfEdgeC3.setFace(newFaceC);
+
+            newFaceC.setHalfEdge(newHalfEdgeC1);
+
+            newHalfEdgeC1.setStartVertex(intersectionVertex);
+            newHalfEdgeC2.setStartVertex(endVertex);
+            newHalfEdgeC3.setStartVertex(oppositeVertexA);
+
+            intersectionVertex.setOutingHalfEdge(newHalfEdgeC2);
+            oppositeVertexA.setOutingHalfEdge(newHalfEdgeC3);
+
+            // Face D.********************************
+            // In this face use the newHalfEdgeD.***
+            HalfEdgeFace newFaceD = new HalfEdgeFace();
+            HalfEdge newHalfEdgeD1 = new HalfEdge();
+            HalfEdge newHalfEdgeD2 = new HalfEdge();
+            HalfEdge newHalfEdgeD3 = new HalfEdge();
+
+            newHalfEdgeD1.setNext(newHalfEdgeD2);
+            newHalfEdgeD2.setNext(newHalfEdgeD3);
+            newHalfEdgeD3.setNext(newHalfEdgeD1);
+
+            newHalfEdgeD1.setFace(newFaceD);
+            newHalfEdgeD2.setFace(newFaceD);
+            newHalfEdgeD3.setFace(newFaceD);
+
+            newFaceD.setHalfEdge(newHalfEdgeD1);
+
+            newHalfEdgeD1.setStartVertex(endVertex);
+            newHalfEdgeD2.setStartVertex(intersectionVertex);
+            newHalfEdgeD3.setStartVertex(oppositeVertexB);
+
+            intersectionVertex.setOutingHalfEdge(newHalfEdgeD2);
+            oppositeVertexB.setOutingHalfEdge(newHalfEdgeD3);
+
+            // Now set twins.***
+            if(!newHalfEdgeA1.setTwin(newHalfEdgeB1))
+            {
+                int hola = 0;
+            }
+            if(!newHalfEdgeA2.setTwin(newHalfEdgeC3))
+            {
+                int hola = 0;
+            }
+            if(!newHalfEdgeA3.setTwin(exteriorHEdgeA2))
+            {
+                int hola = 0;
+            }
+
+            if(!newHalfEdgeB2.setTwin(exteriorHEdgeB1))
+            {
+                int hola = 0;
+            }
+            if(!newHalfEdgeB3.setTwin(newHalfEdgeD2))
+            {
+                int hola = 0;
+            }
+
+            if(!newHalfEdgeC1.setTwin(newHalfEdgeD1))
+            {
+                int hola = 0;
+            }
+            if(!newHalfEdgeC2.setTwin(exteriorHEdgeA1))
+            {
+                int hola = 0;
+            }
+
+            if(!newHalfEdgeD3.setTwin(exteriorHEdgeB2))
+            {
+                int hola = 0;
+            }
+
+        }
+        else
+        {
+            HalfEdgeFace faceA = halfEdge.getFace();
+
+            faceA.setStatus(ObjectStatus.DELETED);
+
+            List<HalfEdge> halfEdgesLoopA = new ArrayList<>();
+            halfEdgesLoopA = halfEdge.getLoop(halfEdgesLoopA);
+
+            List<HalfEdge> halfEdgedLoopATwins = new ArrayList<>();
+            int hedgesACount = halfEdgesLoopA.size();
+            for(int i=0; i<hedgesACount; i++)
+            {
+                HalfEdge hedgeA = halfEdgesLoopA.get(i);
+                hedgeA.setStatus(ObjectStatus.DELETED);
+                hedgeA.breakRelations();
+
+                HalfEdge twinA = hedgeA.getTwin();
+                if(twinA != null)
+                {
+                    halfEdgedLoopATwins.add(twinA);
+                }
+            }
+
+
+            // Initial situation.***************************************************************************************
+            //                                               oppositeVertexA
+            //                                                    / \
+            //                                                 /       \
+            //                                              /             \
+            //                                           /                   \
+            //                 exteriorHEdgeA2        /                         \   exteriorHEdgeA1
+            //                                     /                               \
+            //                                  /             faceA                   \
+            //                               /                                           \
+            //                            /                                                 \
+            //                         /                    halfEdge--->                       \
+            //             startV   *-------------------------------------------------------------*  endV
+
+
+
+            // Final situation.*****************************************************************************************
+            //                                               oppositeVertexA
+            //                                                    /|\
+            //                                                 /   |   \
+            //                                              /      |      \
+            //                                           /         |         \
+            //                     exteriorHEdgeA2    /            |            \   exteriorHEdgeA1
+            //                                     /               |               \
+            //                                  /          faceA   |    faceC         \
+            //                               /                     |                     \
+            //                            /                        |                        \
+            //                         /        halfEdge--->       |     newHalfEdgeC--->      \
+            //             startV   *------------------------------*------------------------------*  endV  (in the center there are intersectionVertex)
+
+
+            // Find oppositeVertexA and oppositeVertexB.***
+            HalfEdgeVertex oppositeVertexA = halfEdge.getPrev().getStartVertex();
+
+            HalfEdge exteriorHEdgeA1 = halfEdge.getNext();
+            HalfEdge exteriorHEdgeA2 = halfEdge.getPrev();
+
+            // Face A.********************************
+            // In this face use the halfEdge.***
+            HalfEdgeFace newFaceA = new HalfEdgeFace();
+            HalfEdge newHalfEdgeA1 = halfEdge;
+            HalfEdge newHalfEdgeA2 = new HalfEdge();
+            HalfEdge newHalfEdgeA3 = new HalfEdge();
+
+            newHalfEdgeA1.setNext(newHalfEdgeA2);
+            newHalfEdgeA2.setNext(newHalfEdgeA3);
+            newHalfEdgeA3.setNext(newHalfEdgeA1);
+
+            newHalfEdgeA1.setFace(newFaceA);
+            newHalfEdgeA2.setFace(newFaceA);
+            newHalfEdgeA3.setFace(newFaceA);
+
+            newFaceA.setHalfEdge(newHalfEdgeA1);
+
+            newHalfEdgeA1.setStartVertex(startVertex); // is redundant.***
+            newHalfEdgeA2.setStartVertex(intersectionVertex);
+            newHalfEdgeA3.setStartVertex(oppositeVertexA);
+
+            intersectionVertex.setOutingHalfEdge(newHalfEdgeA2);
+            oppositeVertexA.setOutingHalfEdge(newHalfEdgeA3);
+
+
+            // Face C.********************************
+            // In this face use the newHalfEdgeC.***
+            HalfEdgeFace newFaceC = new HalfEdgeFace();
+            HalfEdge newHalfEdgeC1 = new HalfEdge();
+            HalfEdge newHalfEdgeC2 = new HalfEdge();
+            HalfEdge newHalfEdgeC3 = new HalfEdge();
+
+            newHalfEdgeC1.setNext(newHalfEdgeC2);
+            newHalfEdgeC2.setNext(newHalfEdgeC3);
+            newHalfEdgeC3.setNext(newHalfEdgeC1);
+
+            newHalfEdgeC1.setFace(newFaceC);
+            newHalfEdgeC2.setFace(newFaceC);
+            newHalfEdgeC3.setFace(newFaceC);
+
+            newFaceC.setHalfEdge(newHalfEdgeC1);
+
+            newHalfEdgeC1.setStartVertex(intersectionVertex);
+            newHalfEdgeC2.setStartVertex(endVertex);
+            newHalfEdgeC3.setStartVertex(oppositeVertexA);
+
+            intersectionVertex.setOutingHalfEdge(newHalfEdgeC2);
+            oppositeVertexA.setOutingHalfEdge(newHalfEdgeC3);
+
+
+            // Now set twins.***
+            if(!newHalfEdgeA2.setTwin(newHalfEdgeC3))
+            {
+                int hola = 0;
+            }
+            if(!newHalfEdgeA3.setTwin(exteriorHEdgeA2))
+            {
+                int hola = 0;
+            }
+
+            if(!newHalfEdgeC2.setTwin(exteriorHEdgeA1))
+            {
+                int hola = 0;
+            }
+
         }
     }
 }

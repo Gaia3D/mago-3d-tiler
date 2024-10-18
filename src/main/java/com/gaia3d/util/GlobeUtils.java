@@ -47,6 +47,25 @@ public class GlobeUtils {
         return result;
     }
 
+    public static double radiusAtLatitudeRad(double latRad) {
+        double cosLat = Math.cos(latRad);
+        double sinLat = Math.sin(latRad);
+        /*
+        double numerator = Math.pow(EARTH_RADIUS_EQUATOR * cosLat, 2) + Math.pow(EARTH_RADIUS_POLAR * sinLat, 2);
+        double denominator = Math.pow(EARTH_RADIUS_EQUATOR * cosLat, 2) + Math.pow(EARTH_RADIUS_POLAR * sinLat, 2);
+        return Math.sqrt(numerator / denominator);
+         */
+        return EQUATORIAL_RADIUS / Math.sqrt(1.0 - FIRST_ECCENTRICITY_SQUARED * sinLat * sinLat);
+    }
+
+    public static double distanceBetweenLatitudesRad(double minLatRad, double maxLatRad) {
+        double radiusMin = radiusAtLatitudeRad(minLatRad);
+        double radiusMax = radiusAtLatitudeRad(maxLatRad);
+        double avgRadius = (radiusMin + radiusMax) / 2.0;
+
+        return avgRadius * (maxLatRad - minLatRad);
+    }
+
     public static Vector3d geographicToCartesianWgs84(Vector3d position) {
         double[] result = geographicToCartesianWgs84(position.x, position.y, position.z);
         return new Vector3d(result[0], result[1], result[2]);
