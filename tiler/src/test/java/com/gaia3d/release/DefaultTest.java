@@ -23,6 +23,7 @@ class DefaultTest {
                 "-version",
                 "-help",
         };
+        log.info("version test.");
         Mago3DTilerMain.main(args);
     }
     @Test

@@ -1,3 +1,1 @@
-rootProject.name = 'mago-3d-tiler'
-include ':mago-common'
-project(':mago-common').projectDir = new File(settingsDir, '../common')
+rootProject.name = 'mago-tiler'
