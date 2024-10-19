@@ -16,6 +16,9 @@ public class HalfEdgeFace {
     private HalfEdge halfEdge = null;
     private Vector3d normal = null;
     private ObjectStatus status = ObjectStatus.ACTIVE;
+    private String note = null;
+    private int id = -1;
+    private int classifyId = -1;
 
     public List<HalfEdge> getHalfEdgesLoop(List<HalfEdge> resultHalfEdgesLoop) {
         if (this.halfEdge == null) {
@@ -44,6 +47,26 @@ public class HalfEdgeFace {
         }
 
         return resultVertices;
+    }
+
+    public Vector3d getBarycenter(Vector3d resultBaricenter) {
+        List<HalfEdgeVertex> vertices = this.getVertices(null);
+        if(vertices == null) {
+            return resultBaricenter;
+        }
+
+        if (resultBaricenter == null) {
+            resultBaricenter = new Vector3d();
+        }
+
+        int verticesSize = vertices.size();
+        for (int i = 0; i < verticesSize; i++) {
+            HalfEdgeVertex vertex = vertices.get(i);
+            resultBaricenter.add(vertex.getPosition());
+        }
+
+        resultBaricenter.div(verticesSize);
+        return resultBaricenter;
     }
 
     public void breakRelations() {

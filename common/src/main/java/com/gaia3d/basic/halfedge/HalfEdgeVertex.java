@@ -25,6 +25,7 @@ public class HalfEdgeVertex {
     private HalfEdge outingHalfEdge = null;
     private ObjectStatus status = ObjectStatus.ACTIVE;
     private PositionType positionType = null;
+    private int id = -1;
 
     public HalfEdgeVertex(GaiaVertex vertex) {
         copyFromGaiaVertex(vertex);

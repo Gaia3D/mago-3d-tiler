@@ -20,6 +20,7 @@ public class HalfEdge {
     private HalfEdgeVertex startVertex = null;
     private HalfEdgeFace face = null;
     private ObjectStatus status = ObjectStatus.ACTIVE;
+    private int id = -1;
 
     public void setStartVertex(HalfEdgeVertex startVertex) {
         this.startVertex = startVertex;

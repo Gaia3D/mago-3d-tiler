@@ -9,6 +9,7 @@ import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.halfedge.HalfEdgeScene;
 import com.gaia3d.basic.halfedge.HalfEdgeUtils;
+import com.gaia3d.basic.halfedge.PlaneType;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.KmlInfo;
@@ -129,13 +130,63 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         }
 
         int longitudesCount = lonDivisions.size();
+        for(int i = 0; i < longitudesCount; i++)
+        {
+            double lonDeg = lonDivisions.get(i);
+            cutRectangleCakeByLongitudeDeg(tileInfos, lod, lonDeg);
+        }
 
         int hola = 0;
 
     }
 
-    private void cutRectangleCakeByLatitudeDeg(List<TileInfo> tileInfos, int lod, double latDeg) throws FileNotFoundException {
+    private void cutRectangleCakeByLongitudeDeg(List<TileInfo> tileInfos, int lod, double lonDeg) throws FileNotFoundException {
+        log.info("lod : {}", lod);
+        log.info(" #Cutting by longitude : {}", lonDeg);
         int tileInfosCount = tileInfos.size();
+        PlaneType planeType = PlaneType.YZ;
+        double error = 1e-8;
+        for(int i = 0; i < tileInfosCount; i++)
+        {
+            TileInfo tileInfo = tileInfos.get(i);
+            List<Path> paths = tileInfo.getTempPathLod();
+            Path path = paths.get(lod);
+            GaiaBoundingBox boundingBox = tileInfo.getBoundingBox();
+            KmlInfo kmlInfo = tileInfo.getKmlInfo();
+            Vector3d geoCoordPosition = kmlInfo.getPosition();
+            Vector3d posWC = GlobeUtils.geographicToCartesianWgs84(geoCoordPosition);
+            Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(posWC);
+            Matrix4d transformMatrixInv = new Matrix4d(transformMatrix);
+            transformMatrixInv.invert();
+
+            // load the file.***
+            GaiaSet gaiaSet = GaiaSet.readFile(path);
+            if(gaiaSet == null)
+                continue;
+            GaiaScene scene = new GaiaScene(gaiaSet);
+            HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
+
+            // create a point with lonDeg, geoCoordPosition.y, 0.0.***
+            Vector3d samplePointGeoCoord = new Vector3d(lonDeg, geoCoordPosition.y, 0.0);
+            Vector3d samplePointWC = GlobeUtils.geographicToCartesianWgs84(samplePointGeoCoord);
+            Vector3d samplePointLC = new Vector3d();
+            transformMatrixInv.transformPosition(samplePointWC, samplePointLC);
+
+            halfEdgeScene.cutByPlane(planeType, samplePointLC, error);
+            if(halfEdgeScene.cutByPlane(planeType, samplePointLC, error)) {
+                // once scene is cut, then save the 2 scenes and delete the original.***
+                halfEdgeScene.classifyFacesIdByPlane(planeType, samplePointLC);
+            }
+            int hola = 0;
+        }
+    }
+
+    private void cutRectangleCakeByLatitudeDeg(List<TileInfo> tileInfos, int lod, double latDeg) throws FileNotFoundException {
+        log.info("lod : {}", lod);
+        log.info(" #Cutting by latitude : {}", latDeg);
+        int tileInfosCount = tileInfos.size();
+        PlaneType planeType = PlaneType.XZ;
+        double error = 1e-8;
         for(int i = 0; i < tileInfosCount; i++)
         {
             TileInfo tileInfo = tileInfos.get(i);
@@ -162,6 +213,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             Vector3d samplePointLC = new Vector3d();
             transformMatrixInv.transformPosition(samplePointWC, samplePointLC);
 
+            if(halfEdgeScene.cutByPlane(planeType, samplePointLC, error))
+            {
+                // once scene is cut, then save the 2 scenes and delete the original.***
+                halfEdgeScene.classifyFacesIdByPlane(planeType, samplePointLC);
+                int hola = 0;
+            }
 
             int hola = 0;
         }
