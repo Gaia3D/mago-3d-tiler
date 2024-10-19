@@ -121,6 +121,13 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             latDivisions.add(minLatDeg + i * latStep);
         }
 
+        int longitudesCount = lonDivisions.size();
+        for(int i = 0; i < longitudesCount; i++)
+        {
+            double lonDeg = lonDivisions.get(i);
+            cutRectangleCakeByLongitudeDeg(tileInfos, lod, lonDeg);
+        }
+
         // 1rst cut by latitudes.***
         int latitudesCount = latDivisions.size();
         for(int i = 0; i < latitudesCount; i++)
@@ -129,12 +136,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             cutRectangleCakeByLatitudeDeg(tileInfos, lod, latDeg);
         }
 
-        int longitudesCount = lonDivisions.size();
-        for(int i = 0; i < longitudesCount; i++)
-        {
-            double lonDeg = lonDivisions.get(i);
-            cutRectangleCakeByLongitudeDeg(tileInfos, lod, lonDeg);
-        }
+
 
         int hola = 0;
 
@@ -217,6 +219,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             {
                 // once scene is cut, then save the 2 scenes and delete the original.***
                 halfEdgeScene.classifyFacesIdByPlane(planeType, samplePointLC);
+
+                //List<HalfEdgeScene> halfEdgeScenes = HalfEdgeUtils.getCopyHalfEdgeScenesByFaceClassifyId(halfEdgeScene, null);
                 int hola = 0;
             }
 

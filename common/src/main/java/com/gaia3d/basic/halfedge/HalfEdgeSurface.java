@@ -1433,8 +1433,67 @@ public class HalfEdgeSurface {
         }
     }
 
+    public boolean checkHalfEdgesFaces()
+    {
+        int hedgesCount = halfEdges.size();
+        for(int i=0; i<hedgesCount; i++)
+        {
+            HalfEdge hedge = halfEdges.get(i);
+            if(hedge.getStatus() == ObjectStatus.DELETED)
+            {
+                continue;
+            }
+            if(hedge.getFace() == null)
+            {
+                System.out.println("HalfEdgeSurface.checkHalfEdgesFaces() : hedge.getFace() == null.");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public boolean checkTwins()
+    {
+        int hedgesCount = halfEdges.size();
+        for(int i=0; i<hedgesCount; i++)
+        {
+            HalfEdge hedge = halfEdges.get(i);
+            if(hedge.getStatus() == ObjectStatus.DELETED)
+            {
+                continue;
+            }
+            HalfEdge twin = hedge.getTwin();
+            if(twin != null && twin.getStatus() != ObjectStatus.DELETED)
+            {
+                HalfEdgeVertex startVertex = hedge.getStartVertex();
+                HalfEdgeVertex endVertex = hedge.getEndVertex();
+
+                HalfEdgeVertex twinStartVertex = twin.getStartVertex();
+                HalfEdgeVertex twinEndVertex = twin.getEndVertex();
+
+                if(startVertex != twinEndVertex || endVertex != twinStartVertex) {
+                    System.out.println("HalfEdgeSurface.checkTwins() : startVertex != twinEndVertex || endVertex != twinStartVertex.");
+                    return false;
+                }
+            }
+
+            if(twin != null && twin.getStatus() != ObjectStatus.DELETED && twin.getTwin() != hedge)
+            {
+                System.out.println("HalfEdgeSurface.checkTwins() : twin.getTwin() != hedge.");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private void splitHalfEdge(HalfEdge halfEdge, HalfEdgeVertex intersectionVertex)
     {
+        if(!checkTwins())
+        {
+            int hola = 0;
+        }
         // When split a halfEdge, must split the face too.***
         // If exist twin, must split the twin and twin's face too.***
         HalfEdge twin = halfEdge.getTwin();
@@ -1444,7 +1503,17 @@ public class HalfEdgeSurface {
 
         this.getVertices().add(intersectionVertex);
 
-        if(twin != null)
+        if(twin != null && twin.getStatus() != ObjectStatus.DELETED)
+        {
+            HalfEdgeFace twinsFace = twin.getFace();
+            if(twinsFace == null)
+            {
+                int hola = 0;
+            }
+            int hola = 0;
+        }
+
+        if(twin != null && twin.getStatus() != ObjectStatus.DELETED)
         {
             // must split the twin too.***
             HalfEdgeFace faceA = halfEdge.getFace();
@@ -1503,9 +1572,9 @@ public class HalfEdgeSurface {
             //                                  /          faceA   |    faceC         \
             //                               /                     |                     \
             //                            /                        |                        \
-            //                         /        halfEdge--->       |     newHalfEdgeC--->      \
+            //                         /        halfEdge--->       |     newHalfEdgeC1--->     \
             //             startV   *------------------------------*------------------------------*  endV  (in the center there are intersectionVertex)
-            //                         \      <--->twin            |   <--->newHalfEdgeD       /
+            //                         \      <--->twin            |   <--->newHalfEdgeD1      /
             //                            \                        |                        /
             //                               \                     |                     /
             //                                  \          faceB   |    faceD         /
@@ -1524,6 +1593,16 @@ public class HalfEdgeSurface {
             HalfEdge exteriorHEdgeA1 = halfEdge.getNext().getTwin();
             HalfEdge exteriorHEdgeA2 = halfEdge.getPrev().getTwin();
             HalfEdge exteriorHEdgeB1 = twin.getNext().getTwin();
+            // test.***
+            if(exteriorHEdgeB1 != null)
+            {
+                HalfEdgeVertex extB1StartVertex = exteriorHEdgeB1.getStartVertex();
+                HalfEdgeVertex extB1EndVertex = exteriorHEdgeB1.getEndVertex();
+                if (extB1StartVertex != oppositeVertexB || extB1EndVertex != startVertex) {
+                    int hola = 0;
+                }
+                // end test.---
+            }
             HalfEdge exteriorHEdgeB2 = twin.getPrev().getTwin();
 
             // Face A.********************************
@@ -1710,6 +1789,11 @@ public class HalfEdgeSurface {
 
             int hola = 0;
 
+            if(!checkTwins())
+            {
+                hola = 0;
+            }
+
         }
         else
         {
@@ -1848,6 +1932,11 @@ public class HalfEdgeSurface {
             }
 
             int hola = 0;
+
+            if(!checkTwins())
+            {
+                hola = 0;
+            }
 
         }
     }

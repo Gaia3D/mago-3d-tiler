@@ -63,6 +63,7 @@ public class HalfEdgeVertex {
         this.outingHalfEdge = vertex.outingHalfEdge;
         this.status = vertex.status;
         this.positionType = vertex.positionType;
+        this.id = vertex.id;
     }
 
     public void copyFromGaiaVertex(GaiaVertex vertex) {

@@ -96,4 +96,5 @@ public class HalfEdgePrimitive {
             surface.setObjectIdsInList();
         }
     }
+
 }

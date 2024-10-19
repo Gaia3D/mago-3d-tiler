@@ -1,7 +1,9 @@
 package com.gaia3d.basic.halfedge;
 
 import com.gaia3d.basic.model.*;
+import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
+import org.joml.Vector2d;
 import org.joml.Vector3d;
 
 import java.util.ArrayList;
@@ -9,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class HalfEdgeUtils {
     public static GaiaScene gaiaSceneFromHalfEdgeScene(HalfEdgeScene halfEdgeScene) {
         GaiaScene gaiaScene = new GaiaScene();
@@ -387,81 +390,304 @@ public class HalfEdgeUtils {
         return halfEdgeFace;
     }
 
-    public static List<HalfEdgeScene> getCopyHalfEdgeScenesByFaceClassifyId(HalfEdgeScene halfEdgeScene, List<HalfEdgeScene> resultHalfEdgeScenes, List<Integer> faceIds)
+    private static HalfEdgePrimitive getCopyHalfEdgePrimitive(HalfEdgePrimitive halfEdgePrimitive)
+    {
+        HalfEdgePrimitive copyHalfEdgePrimitive = new HalfEdgePrimitive();
+
+        // copy surfaces.***
+        List<HalfEdgeSurface> halfEdgeSurfaces = halfEdgePrimitive.getSurfaces();
+        int surfacesCount = halfEdgeSurfaces.size();
+        for (int i = 0; i < surfacesCount; i++) {
+            HalfEdgeSurface halfEdgeSurface = halfEdgeSurfaces.get(i);
+            HalfEdgeSurface newHalfEdgeSurface = getCopyHalfEdgeSurface(halfEdgeSurface);
+            copyHalfEdgePrimitive.getSurfaces().add(newHalfEdgeSurface);
+        }
+
+        return copyHalfEdgePrimitive;
+    }
+
+    private static HalfEdgeSurface getCopyHalfEdgeSurface(HalfEdgeSurface halfEdgeSurface)
+    {
+        HalfEdgeSurface copyHalfEdgeSurface = new HalfEdgeSurface();
+        halfEdgeSurface.removeDeletedObjects();
+        halfEdgeSurface.setObjectIdsInList();
+
+        // 1rst, copy vertices.***
+        List<HalfEdgeVertex> halfEdgeVertices = halfEdgeSurface.getVertices();
+        int verticesCount = halfEdgeVertices.size();
+        for (int i = 0; i < verticesCount; i++) {
+            HalfEdgeVertex halfEdgeVertex = halfEdgeVertices.get(i);
+            HalfEdgeVertex newHalfEdgeVertex = new HalfEdgeVertex();
+            newHalfEdgeVertex.copyFrom(halfEdgeVertex);
+            newHalfEdgeVertex.setOutingHalfEdge(null); // no copy halfEdgeStructure pointers.***
+
+            copyHalfEdgeSurface.getVertices().add(newHalfEdgeVertex);
+        }
+
+        // copy faces.***
+        List<HalfEdgeFace> halfEdgeFaces = halfEdgeSurface.getFaces();
+        int facesCount = halfEdgeFaces.size();
+        for (int i = 0; i < facesCount; i++) {
+            HalfEdgeFace halfEdgeFace = halfEdgeFaces.get(i);
+            HalfEdgeFace newHalfEdgeFace = new HalfEdgeFace();
+            newHalfEdgeFace.setId(halfEdgeFace.getId());
+            newHalfEdgeFace.setClassifyId(halfEdgeFace.getClassifyId());
+            copyHalfEdgeSurface.getFaces().add(newHalfEdgeFace);
+        }
+
+        // copy halfEdges.***
+        List<HalfEdge> halfEdges = halfEdgeSurface.getHalfEdges();
+        int halfEdgesCount = halfEdges.size();
+        for (int i = 0; i < halfEdgesCount; i++) {
+            HalfEdge halfEdge = halfEdges.get(i);
+            HalfEdge newHalfEdge = new HalfEdge();
+            newHalfEdge.setId(halfEdge.getId());
+            copyHalfEdgeSurface.getHalfEdges().add(newHalfEdge);
+        }
+
+        // set startVertex & face to halfEdges.***
+        List<HalfEdgeVertex> copyHalfEdgeVertices = copyHalfEdgeSurface.getVertices();
+        List<HalfEdgeFace> copyHalfEdgeFaces = copyHalfEdgeSurface.getFaces();
+        List<HalfEdge> copyHalfEdges = copyHalfEdgeSurface.getHalfEdges();
+        for (int i = 0; i < halfEdgesCount; i++) {
+            HalfEdge halfEdge = halfEdges.get(i);
+            HalfEdge copyHalfEdge = copyHalfEdges.get(i);
+
+            // startVertex.***
+            int startVertexId = halfEdge.getStartVertex().getId();
+            if(startVertexId < 0)
+            {
+                log.error("startVertexId < 0.***");
+                int hola = 0;
+            }
+            HalfEdgeVertex copyStartVertex = copyHalfEdgeVertices.get(startVertexId);
+            copyHalfEdge.setStartVertex(copyStartVertex);
+            copyStartVertex.setOutingHalfEdge(copyHalfEdge);
+
+            // face.***
+            int faceId = halfEdge.getFace().getId();
+            int classifyId = halfEdge.getFace().getClassifyId();
+            HalfEdgeFace copyFace = copyHalfEdgeFaces.get(faceId);
+            copyHalfEdge.setFace(copyFace);
+            copyFace.setHalfEdge(copyHalfEdge);
+
+            // twin.***
+            HalfEdge twin = halfEdge.getTwin();
+            if(twin != null && twin.getStatus() != ObjectStatus.DELETED)
+            {
+                int twinId = twin.getId();
+                // check the twin's face classifyId.***
+                HalfEdgeFace twinFace = twin.getFace();
+                if(twinFace == null)
+                {
+                    log.error("twinFace is null.***");
+                }
+                int twinFaceClassifyId = twin.getFace().getClassifyId();
+                if(twinFaceClassifyId == classifyId)
+                {
+                    HalfEdge copyTwin = copyHalfEdges.get(twinId);
+                    copyHalfEdge.setTwin(copyTwin);
+                }
+            }
+
+            // next.***
+            HalfEdge next = halfEdge.getNext();
+            if(next == null) {
+                log.error("next is null.***");
+            }
+            else {
+                int nextId = next.getId();
+                HalfEdge copyNext = copyHalfEdges.get(nextId);
+                copyHalfEdge.setNext(copyNext);
+            }
+
+        }
+
+        return copyHalfEdgeSurface;
+    }
+
+    public static List<HalfEdgeScene> getCopyHalfEdgeScenesByFaceClassifyId(HalfEdgeScene halfEdgeScene, List<HalfEdgeScene> resultHalfEdgeScenes)
     {
         if(resultHalfEdgeScenes == null)
         {
             resultHalfEdgeScenes = new ArrayList<>();
         }
 
-        int faceIdsCount = faceIds.size();
-        for(int i=0; i<faceIdsCount; i++)
+        Map<Integer, HalfEdgeScene> mapClassifyIdToHalfEdgeScene = new HashMap<>();
+
+        int nodesCount = halfEdgeScene.getNodes().size();
+        for(int j=0; j<nodesCount; j++)
         {
-            int faceId = faceIds.get(i);
-            HalfEdgeScene newHalfEdgeScene = new HalfEdgeScene();
-            newHalfEdgeScene.setOriginalPath(halfEdgeScene.getOriginalPath());
-            int nodesCount = halfEdgeScene.getNodes().size();
-            for(int j=0; j<nodesCount; j++)
+            HalfEdgeNode rootNode = halfEdgeScene.getNodes().get(j);
+            Map<Integer,HalfEdgeNode> mapClassifyIdToNode = getMapHalfEdgeNodeByFaceClassifyId(rootNode, null);
+            for(Integer key : mapClassifyIdToNode.keySet())
             {
-                HalfEdgeNode rootNode = halfEdgeScene.getNodes().get(j);
+                int faceClassifyId = key;
+                HalfEdgeNode halfEdgeNode = mapClassifyIdToNode.get(faceClassifyId);
+                HalfEdgeScene halfEdgeSceneCopy = mapClassifyIdToHalfEdgeScene.get(faceClassifyId);
+                if(halfEdgeSceneCopy == null)
+                {
+                    halfEdgeSceneCopy = new HalfEdgeScene();
+                    mapClassifyIdToHalfEdgeScene.put(faceClassifyId, halfEdgeSceneCopy);
+                }
+                halfEdgeSceneCopy.getNodes().add(halfEdgeNode);
             }
+
         }
 
+        for(Integer key : mapClassifyIdToHalfEdgeScene.keySet())
+        {
+            HalfEdgeScene halfEdgeSceneCopy = mapClassifyIdToHalfEdgeScene.get(key);
+
+            // copy materials.***
+            List<GaiaMaterial> gaiaMaterials = halfEdgeScene.getMaterials();
+            int materialsCount = gaiaMaterials.size();
+            for(int i=0; i<materialsCount; i++)
+            {
+                GaiaMaterial gaiaMaterial = gaiaMaterials.get(i);
+                GaiaMaterial newGaiaMaterial = gaiaMaterial.clone();
+                halfEdgeSceneCopy.getMaterials().add(newGaiaMaterial);
+            }
+            resultHalfEdgeScenes.add(halfEdgeSceneCopy);
+        }
 
         return resultHalfEdgeScenes;
     }
 
-    private static HalfEdgeNode getCopyHalfEdgeNodeByFaceClassifyId(HalfEdgeNode halfEdgeNode, int faceId)
+    private static Map<Integer,HalfEdgeNode> getMapHalfEdgeNodeByFaceClassifyId(HalfEdgeNode halfEdgeNode, Map<Integer,HalfEdgeNode> resultClassifyIdToNode)
     {
-        HalfEdgeNode newHalfEdgeNode = new HalfEdgeNode();
-        int meshesCount = halfEdgeNode.getMeshes().size();
+        if(resultClassifyIdToNode == null)
+        {
+            resultClassifyIdToNode = new HashMap<>();
+        }
+
+        List<HalfEdgeMesh> halfEdgeMeshes = halfEdgeNode.getMeshes();
+        int meshesCount = halfEdgeMeshes.size();
         for(int i=0; i<meshesCount; i++)
         {
-            HalfEdgeMesh halfEdgeMesh = halfEdgeNode.getMeshes().get(i);
-            HalfEdgeMesh newHalfEdgeMesh = getCopyHalfEdgeMeshByFaceClassifyId(halfEdgeMesh, faceId);
-            newHalfEdgeNode.getMeshes().add(newHalfEdgeMesh);
+            HalfEdgeMesh halfEdgeMesh = halfEdgeMeshes.get(i);
+            Map<Integer, HalfEdgeMesh> mapClassifyIdToMesh = getMapHalfEdgeMeshByFaceClassifyId(halfEdgeMesh, null);
+            for(Integer key : mapClassifyIdToMesh.keySet())
+            {
+                int faceClassifyId = key;
+                HalfEdgeMesh newHalfEdgeMesh = mapClassifyIdToMesh.get(faceClassifyId);
+                HalfEdgeNode newHalfEdgeNode = resultClassifyIdToNode.get(faceClassifyId);
+                if(newHalfEdgeNode == null)
+                {
+                    newHalfEdgeNode = new HalfEdgeNode();
 
+                    // copy transform matrices.***
+                    Matrix4d transformMatrix = halfEdgeNode.getTransformMatrix();
+                    Matrix4d preMultipliedTransformMatrix = halfEdgeNode.getPreMultipliedTransformMatrix();
+
+                    Matrix4d transformMatrixCopy = new Matrix4d();
+                    transformMatrixCopy.set(transformMatrix);
+
+                    Matrix4d preMultipliedTransformMatrixCopy = new Matrix4d();
+                    preMultipliedTransformMatrixCopy.set(preMultipliedTransformMatrix);
+
+                    newHalfEdgeNode.setTransformMatrix(transformMatrixCopy);
+                    newHalfEdgeNode.setPreMultipliedTransformMatrix(preMultipliedTransformMatrixCopy);
+
+                    resultClassifyIdToNode.put(faceClassifyId, newHalfEdgeNode);
+                }
+                newHalfEdgeNode.getMeshes().add(newHalfEdgeMesh);
+            }
         }
-        return newHalfEdgeNode;
+
+        // check children.***
+        List<HalfEdgeNode> children = halfEdgeNode.getChildren();
+        int childrenCount = children.size();
+        for(int i=0; i<childrenCount; i++)
+        {
+            HalfEdgeNode child = children.get(i);
+            Map<Integer, HalfEdgeNode> mapClassifyIdToNode = getMapHalfEdgeNodeByFaceClassifyId(child, null);
+            for(Integer key : mapClassifyIdToNode.keySet())
+            {
+                int faceClassifyId = key;
+                HalfEdgeNode newHalfEdgeNode = mapClassifyIdToNode.get(faceClassifyId);
+                HalfEdgeNode newHalfEdgeNodeParent = resultClassifyIdToNode.get(faceClassifyId);
+                if(newHalfEdgeNodeParent == null)
+                {
+                    newHalfEdgeNodeParent = new HalfEdgeNode();
+                    resultClassifyIdToNode.put(faceClassifyId, newHalfEdgeNodeParent);
+                }
+                newHalfEdgeNodeParent.getChildren().add(newHalfEdgeNode);
+            }
+        }
+
+        return resultClassifyIdToNode;
     }
 
-    private static HalfEdgeMesh getCopyHalfEdgeMeshByFaceClassifyId(HalfEdgeMesh halfEdgeMesh, int faceId)
+
+    private static Map<Integer, HalfEdgeMesh> getMapHalfEdgeMeshByFaceClassifyId(HalfEdgeMesh halfEdgeMesh, Map<Integer, HalfEdgeMesh> resultMap)
     {
-        HalfEdgeMesh newHalfEdgeMesh = new HalfEdgeMesh();
-        int primitivesCount = halfEdgeMesh.getPrimitives().size();
+        if(resultMap == null)
+        {
+            resultMap = new HashMap<>();
+        }
+
+
+        List<HalfEdgePrimitive> halfEdgePrimitives = halfEdgeMesh.getPrimitives();
+        int primitivesCount = halfEdgePrimitives.size();
         for(int i=0; i<primitivesCount; i++)
         {
-            HalfEdgePrimitive halfEdgePrimitive = halfEdgeMesh.getPrimitives().get(i);
-            HalfEdgePrimitive newHalfEdgePrimitive = getCopyHalfEdgePrimitiveByFaceClassifyId(halfEdgePrimitive, faceId);
-            newHalfEdgeMesh.getPrimitives().add(newHalfEdgePrimitive);
+            HalfEdgePrimitive halfEdgePrimitive = halfEdgePrimitives.get(i);
+            Map<Integer, HalfEdgePrimitive> mapClassifyIdToPrimitive = getMapHalfEdgePrimitiveByFaceClassifyId(halfEdgePrimitive, null);
+            for(Integer key : mapClassifyIdToPrimitive.keySet())
+            {
+                int faceClassifyId = key;
+                HalfEdgePrimitive newHalfEdgePrimitive = mapClassifyIdToPrimitive.get(faceClassifyId);
+                HalfEdgeMesh newHalfEdgeMesh = resultMap.get(faceClassifyId);
+                if(newHalfEdgeMesh == null)
+                {
+                    newHalfEdgeMesh = new HalfEdgeMesh();
+                    resultMap.put(faceClassifyId, newHalfEdgeMesh);
+                }
+                newHalfEdgeMesh.getPrimitives().add(newHalfEdgePrimitive);
+            }
+
         }
-        return newHalfEdgeMesh;
+
+        return resultMap;
     }
 
-    private static HalfEdgePrimitive getCopyHalfEdgePrimitive(HalfEdgePrimitive halfEdgePrimitive)
-    {
-        HalfEdgePrimitive newHalfEdgePrimitive = new HalfEdgePrimitive();
-        int surfacesCount = halfEdgePrimitive.getSurfaces().size();
-        for(int i=0; i<surfacesCount; i++)
-        {
-            HalfEdgeSurface halfEdgeSurface = halfEdgePrimitive.getSurfaces().get(i);
-            //HalfEdgeSurface newHalfEdgeSurface = getCopyHalfEdgeSurfaceByFaceId(halfEdgeSurface, faceId);
-            //newHalfEdgePrimitive.getSurfaces().add(newHalfEdgeSurface);
-        }
-        return newHalfEdgePrimitive;
-    }
 
-    private static HalfEdgePrimitive getCopyHalfEdgePrimitiveByFaceClassifyId(HalfEdgePrimitive halfEdgePrimitive, int faceId)
+
+    private static Map<Integer, HalfEdgePrimitive> getMapHalfEdgePrimitiveByFaceClassifyId(HalfEdgePrimitive halfEdgePrimitive, Map<Integer, HalfEdgePrimitive> resultMap)
     {
-        HalfEdgePrimitive newHalfEdgePrimitive = new HalfEdgePrimitive();
-        int surfacesCount = halfEdgePrimitive.getSurfaces().size();
+        if(resultMap == null)
+        {
+            resultMap = new HashMap<>();
+        }
+
+        List<HalfEdgeSurface> halfEdgeSurfaces = halfEdgePrimitive.getSurfaces();
+        int surfacesCount = halfEdgeSurfaces.size();
         for(int i=0; i<surfacesCount; i++)
         {
-            HalfEdgeSurface halfEdgeSurface = halfEdgePrimitive.getSurfaces().get(i);
-            //HalfEdgeSurface newHalfEdgeSurface = getCopyHalfEdgeSurfaceByFaceId(halfEdgeSurface, faceId);
-            //newHalfEdgePrimitive.getSurfaces().add(newHalfEdgeSurface);
+            HalfEdgeSurface halfEdgeSurface = halfEdgeSurfaces.get(i);
+            Map<Integer, HalfEdgeSurface> mapClassifyIdToSurface = getMapHalfEdgeSurfaceByFaceClassifyId(halfEdgeSurface, null);
+            for(Integer key : mapClassifyIdToSurface.keySet())
+            {
+                int faceClassifyId = key;
+                HalfEdgeSurface newHalfEdgeSurface = mapClassifyIdToSurface.get(faceClassifyId);
+                HalfEdgePrimitive newHalfEdgePrimitive = resultMap.get(faceClassifyId);
+                if(newHalfEdgePrimitive == null)
+                {
+                    newHalfEdgePrimitive = new HalfEdgePrimitive();
+
+                    // set accessor indices & materialId.***
+                    newHalfEdgePrimitive.setAccessorIndices(halfEdgePrimitive.getAccessorIndices());
+                    newHalfEdgePrimitive.setMaterialIndex(halfEdgePrimitive.getMaterialIndex());
+
+                    resultMap.put(faceClassifyId, newHalfEdgePrimitive);
+                }
+                newHalfEdgePrimitive.getSurfaces().add(newHalfEdgeSurface);
+            }
         }
-        return newHalfEdgePrimitive;
+
+        return resultMap;
+
     }
 
     private static Map<Integer, HalfEdgeSurface> getMapHalfEdgeSurfaceByFaceClassifyId(HalfEdgeSurface halfEdgeSurface, Map<Integer, HalfEdgeSurface> resultHalfEdgeSurfaces) {
@@ -470,32 +696,62 @@ public class HalfEdgeUtils {
             resultHalfEdgeSurfaces = new HashMap<>();
         }
 
-        Map<HalfEdgeVertex, HalfEdgeVertex> mapOriginalVertexToNewVertex = new HashMap<>();
+        Map<Integer, List<HalfEdge>> mapFaceClassifyIdToHalfEdges = new HashMap<>();
 
-        int facesCount = halfEdgeSurface.getFaces().size();
-        for (int i = 0; i < facesCount; i++)
+        int halfEdgesCount = halfEdgeSurface.getHalfEdges().size();
+        for(int i=0; i<halfEdgesCount; i++)
         {
-            HalfEdgeFace halfEdgeFace = halfEdgeSurface.getFaces().get(i);
-            int faceClassifyId = halfEdgeFace.getClassifyId();
-            HalfEdgeSurface currSurface = resultHalfEdgeSurfaces.get(faceClassifyId);
-            if(currSurface == null)
-            {
-                currSurface = new HalfEdgeSurface();
-                resultHalfEdgeSurfaces.put(faceClassifyId, currSurface);
-            }
+            HalfEdge halfEdge = halfEdgeSurface.getHalfEdges().get(i);
+            HalfEdgeFace face = halfEdge.getFace();
+            int faceClassifyId = face.getClassifyId();
+            List<HalfEdge> halfEdges = mapFaceClassifyIdToHalfEdges.computeIfAbsent(faceClassifyId, k -> new ArrayList<>());
+            halfEdges.add(halfEdge);
+        }
 
-            // Now create a new face.***
-//            HalfEdgeFace newHalfEdgeFace = new HalfEdgeFace();
-//            newHalfEdgeFace.setId(halfEdgeFace.getId());
-//            HalfEdge newHalfEdge = new HalfEdge();
-//            newHalfEdge.setFace(newHalfEdgeFace);
-//            newHalfEdgeFace.setHalfEdge(newHalfEdge);
-//
-//
-//            currSurface.getFaces().add(newHalfEdgeFace);
+        int faceClassifyIdsCount = mapFaceClassifyIdToHalfEdges.size();
+        for(Integer key : mapFaceClassifyIdToHalfEdges.keySet())
+        {
+            int faceClassifyId = key;
+            List<HalfEdge> halfEdges = mapFaceClassifyIdToHalfEdges.get(faceClassifyId);
+            HalfEdgeSurface newHalfEdgeSurface = createCopyHalfEdgeSurfaceFromHalfEdgesList(halfEdges);
+            resultHalfEdgeSurfaces.put(faceClassifyId, newHalfEdgeSurface);
         }
 
         return resultHalfEdgeSurfaces;
+    }
+
+    private static HalfEdgeSurface createCopyHalfEdgeSurfaceFromHalfEdgesList(List<HalfEdge> halfEdges)
+    {
+        // create a temp surface.***
+        HalfEdgeSurface halfEdgeSurfaceTemp = new HalfEdgeSurface();
+        Map<HalfEdgeVertex, HalfEdgeVertex> mapUniqueHalfEdgeVertex = new HashMap<>();
+        Map<HalfEdgeFace, HalfEdgeFace> mapUniqueHalfEdgeFace = new HashMap<>();
+        int halfEdgesCount = halfEdges.size();
+        for(int i=0; i<halfEdgesCount; i++)
+        {
+            HalfEdge halfEdge = halfEdges.get(i);
+            halfEdgeSurfaceTemp.getHalfEdges().add(halfEdge);
+
+            HalfEdgeVertex startVertex = halfEdge.getStartVertex();
+            mapUniqueHalfEdgeVertex.put(startVertex, startVertex);
+
+            HalfEdgeFace face = halfEdge.getFace();
+            mapUniqueHalfEdgeFace.put(face, face);
+        }
+
+        // set unique vertices.***
+        List<HalfEdgeVertex> uniqueVertices = new ArrayList<>(mapUniqueHalfEdgeVertex.keySet());
+        halfEdgeSurfaceTemp.getVertices().addAll(uniqueVertices);
+
+        // set unique faces.***
+        List<HalfEdgeFace> uniqueFaces = new ArrayList<>(mapUniqueHalfEdgeFace.keySet());
+        halfEdgeSurfaceTemp.getFaces().addAll(uniqueFaces);
+
+        halfEdgeSurfaceTemp.removeDeletedObjects();
+        halfEdgeSurfaceTemp.setObjectIdsInList();
+
+        // create a copy of the surface.***
+        return getCopyHalfEdgeSurface(halfEdgeSurfaceTemp);
     }
 
 
