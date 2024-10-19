@@ -1,11 +1,13 @@
 package com.gaia3d.basic.halfedge;
 
+import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.entities.GaiaSegment;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
+import org.opengis.geometry.BoundingBox;
 
 import java.util.*;
 
@@ -16,6 +18,7 @@ public class HalfEdgeSurface {
     private List<HalfEdge> halfEdges = new ArrayList<>();
     private List<HalfEdgeVertex> vertices = new ArrayList<>();
     private List<HalfEdgeFace> faces = new ArrayList<>();
+    private GaiaBoundingBox boundingBox = null;
 
     public void setTwins() {
         Map<HalfEdgeVertex, List<HalfEdge>> mapVertexOutingHEdges = new HashMap<>();
@@ -380,8 +383,46 @@ public class HalfEdgeSurface {
         System.out.println("*** TOTAL HALFEDGES DELETED = " + hedgesCollapsedCount);
 
         // delete objects that status is DELETED.***
+        this.removeDeletedObjects();
+
+        if (!this.checkVertices()) {
+            int hola = 0;
+//            setItselfAsOutingHalfEdgeToTheStartVertex();
+//            if(!this.checkVertices())
+//            {
+//                int hola2 = 0;
+//            }
+        }
+
+        if (!this.checkFaces()) {
+            int hola = 0;
+        }
+
+        // Finally check the halfEdges.***
+        if (!this.check()) {
+            int hola = 0;
+            setItselfAsOutingHalfEdgeToTheStartVertex();
+            if (!this.check()) {
+                int hola2 = 0;
+            }
+        }
+
+        int finalFacesCount = faces.size();
+        int finalHalfEdgesCount = halfEdges.size();
+        int finalVerticesCount = vertices.size();
+
+        int facesCountDiff = originalFacesCount - finalFacesCount;
+        int halfEdgesCountDiff = originalHalfEdgesCount - finalHalfEdgesCount;
+        int verticesCountDiff = originalVerticesCount - finalVerticesCount;
+
+        int hola = 0;
+    }
+
+    public void removeDeletedObjects()
+    {
+        // delete objects that status is DELETED.***
         // delete halfEdges that status is DELETED.***
-        halfEdgesCount = this.halfEdges.size();
+        int halfEdgesCount = this.halfEdges.size();
         List<HalfEdge> copyHalfEdges = new ArrayList<>(this.halfEdges);
         this.halfEdges.clear();
         for (int i = 0; i < halfEdgesCount; i++) {
@@ -421,38 +462,30 @@ public class HalfEdgeSurface {
             }
         }
         copyFaces.clear();
+    }
 
-        if (!this.checkVertices()) {
-            int hola = 0;
-//            setItselfAsOutingHalfEdgeToTheStartVertex();
-//            if(!this.checkVertices())
-//            {
-//                int hola2 = 0;
-//            }
+    public void setObjectIdsInList()
+    {
+        int halfEdgesCount = halfEdges.size();
+        for (int i = 0; i < halfEdgesCount; i++)
+        {
+            HalfEdge halfEdge = halfEdges.get(i);
+            halfEdge.setId(i);
         }
 
-        if (!this.checkFaces()) {
-            int hola = 0;
+        int verticesCount = vertices.size();
+        for (int i = 0; i < verticesCount; i++)
+        {
+            HalfEdgeVertex vertex = vertices.get(i);
+            vertex.setId(i);
         }
 
-        // Finally check the halfEdges.***
-        if (!this.check()) {
-            int hola = 0;
-            setItselfAsOutingHalfEdgeToTheStartVertex();
-            if (!this.check()) {
-                int hola2 = 0;
-            }
+        int facesCount = faces.size();
+        for (int i = 0; i < facesCount; i++)
+        {
+            HalfEdgeFace face = faces.get(i);
+            face.setId(i);
         }
-
-        int finalFacesCount = faces.size();
-        int finalHalfEdgesCount = halfEdges.size();
-        int finalVerticesCount = vertices.size();
-
-        int facesCountDiff = originalFacesCount - finalFacesCount;
-        int halfEdgesCountDiff = originalHalfEdgesCount - finalHalfEdgesCount;
-        int verticesCountDiff = originalVerticesCount - finalVerticesCount;
-
-        int hola = 0;
     }
 
     public void setItselfAsOutingHalfEdgeToTheStartVertex() {
@@ -1317,6 +1350,30 @@ public class HalfEdgeSurface {
         }
     }
 
+    public GaiaBoundingBox calculateBoundingBox(GaiaBoundingBox resultBBox) {
+        if(resultBBox == null)
+        {
+            resultBBox = new GaiaBoundingBox();
+        }
+        resultBBox.setInit(true);
+        int vertexCount = vertices.size();
+        for (int i = 0; i < vertexCount; i++) {
+            HalfEdgeVertex vertex = vertices.get(i);
+            Vector3d position = vertex.getPosition();
+            if (position != null) {
+                resultBBox.addPoint(position);
+            }
+        }
+        return resultBBox;
+    }
+
+    public GaiaBoundingBox getBoundingBox() {
+        if (boundingBox == null) {
+            boundingBox = calculateBoundingBox(null);
+        }
+        return boundingBox;
+    }
+
     public void cutByPlane(PlaneType planeType, Vector3d planePosition, double error)
     {
         if(planeType == PlaneType.XY)
@@ -1331,6 +1388,8 @@ public class HalfEdgeSurface {
         {
             cutByPlaneYZ(planePosition, error);
         }
+
+        removeDeletedObjects();
     }
 
     private void cutByPlaneXZ(Vector3d planePosition, double error)
@@ -1348,7 +1407,7 @@ public class HalfEdgeSurface {
 
             if(hedge.getIntersectionByPlane(PlaneType.XZ, planePosition, intersectionVertex, error))
             {
-
+                splitHalfEdge(hedge, intersectionVertex);
             }
         }
 
@@ -1356,7 +1415,22 @@ public class HalfEdgeSurface {
 
     private void cutByPlaneYZ(Vector3d planePosition, double error)
     {
+        // find halfEdges that are cut by the plane.***
+        HalfEdgeVertex intersectionVertex = new HalfEdgeVertex();
+        int hedgesCount = halfEdges.size();
+        for (int i = 0; i < hedgesCount; i++)
+        {
+            HalfEdge hedge = halfEdges.get(i);
+            if(hedge.getStatus() == ObjectStatus.DELETED)
+            {
+                continue;
+            }
 
+            if(hedge.getIntersectionByPlane(PlaneType.YZ, planePosition, intersectionVertex, error))
+            {
+                splitHalfEdge(hedge, intersectionVertex);
+            }
+        }
     }
 
     private void splitHalfEdge(HalfEdge halfEdge, HalfEdgeVertex intersectionVertex)
@@ -1368,6 +1442,8 @@ public class HalfEdgeSurface {
         HalfEdgeVertex startVertex = halfEdge.getStartVertex();
         HalfEdgeVertex endVertex = halfEdge.getEndVertex();
 
+        this.getVertices().add(intersectionVertex);
+
         if(twin != null)
         {
             // must split the twin too.***
@@ -1375,7 +1451,9 @@ public class HalfEdgeSurface {
             HalfEdgeFace faceB = twin.getFace();
 
             faceA.setStatus(ObjectStatus.DELETED);
+            faceA.setNote("faceA_deleted");
             faceB.setStatus(ObjectStatus.DELETED);
+            faceB.setNote("faceB_deleted");
 
             List<HalfEdge> halfEdgesLoopA = new ArrayList<>();
             halfEdgesLoopA = halfEdge.getLoop(halfEdgesLoopA);
@@ -1383,35 +1461,9 @@ public class HalfEdgeSurface {
             List<HalfEdge> halfEdgesLoopB = new ArrayList<>();
             halfEdgesLoopB = twin.getLoop(halfEdgesLoopB);
 
-            List<HalfEdge> halfEdgedLoopATwins = new ArrayList<>();
             int hedgesACount = halfEdgesLoopA.size();
-            for(int i=0; i<hedgesACount; i++)
-            {
-                HalfEdge hedgeA = halfEdgesLoopA.get(i);
-                hedgeA.setStatus(ObjectStatus.DELETED);
-                hedgeA.breakRelations();
-
-                HalfEdge twinA = hedgeA.getTwin();
-                if(twinA != null)
-                {
-                    halfEdgedLoopATwins.add(twinA);
-                }
-            }
-
-            List<HalfEdge> halfEdgedLoopBTwins = new ArrayList<>();
             int hedgesBCount = halfEdgesLoopB.size();
-            for(int i=0; i<hedgesBCount; i++)
-            {
-                HalfEdge hedgeB = halfEdgesLoopB.get(i);
-                hedgeB.setStatus(ObjectStatus.DELETED);
-                hedgeB.breakRelations();
 
-                HalfEdge twinB = hedgeB.getTwin();
-                if(twinB != null)
-                {
-                    halfEdgedLoopBTwins.add(twinB);
-                }
-            }
 
 
             // Initial situation.***************************************************************************************
@@ -1469,17 +1521,21 @@ public class HalfEdgeSurface {
             HalfEdgeVertex oppositeVertexA = halfEdge.getPrev().getStartVertex();
             HalfEdgeVertex oppositeVertexB = twin.getPrev().getStartVertex();
 
-            HalfEdge exteriorHEdgeA1 = halfEdge.getNext();
-            HalfEdge exteriorHEdgeA2 = halfEdge.getPrev();
-            HalfEdge exteriorHEdgeB1 = twin.getNext();
-            HalfEdge exteriorHEdgeB2 = twin.getPrev();
+            HalfEdge exteriorHEdgeA1 = halfEdge.getNext().getTwin();
+            HalfEdge exteriorHEdgeA2 = halfEdge.getPrev().getTwin();
+            HalfEdge exteriorHEdgeB1 = twin.getNext().getTwin();
+            HalfEdge exteriorHEdgeB2 = twin.getPrev().getTwin();
 
             // Face A.********************************
             // In this face use the halfEdge.***
             HalfEdgeFace newFaceA = new HalfEdgeFace();
+            newFaceA.setNote("newFaceA");
             HalfEdge newHalfEdgeA1 = halfEdge;
             HalfEdge newHalfEdgeA2 = new HalfEdge();
             HalfEdge newHalfEdgeA3 = new HalfEdge();
+            this.getHalfEdges().add(newHalfEdgeA2);
+            this.getHalfEdges().add(newHalfEdgeA3);
+            this.getFaces().add(newFaceA);
 
             newHalfEdgeA1.setNext(newHalfEdgeA2);
             newHalfEdgeA2.setNext(newHalfEdgeA3);
@@ -1489,21 +1545,24 @@ public class HalfEdgeSurface {
             newHalfEdgeA2.setFace(newFaceA);
             newHalfEdgeA3.setFace(newFaceA);
 
-            newFaceA.setHalfEdge(newHalfEdgeA1);
-
             newHalfEdgeA1.setStartVertex(startVertex); // is redundant.***
             newHalfEdgeA2.setStartVertex(intersectionVertex);
             newHalfEdgeA3.setStartVertex(oppositeVertexA);
 
+            newFaceA.setHalfEdge(newHalfEdgeA1);
             intersectionVertex.setOutingHalfEdge(newHalfEdgeA2);
             oppositeVertexA.setOutingHalfEdge(newHalfEdgeA3);
 
             // Face B.********************************
             // In this face use the twin.***
             HalfEdgeFace newFaceB = new HalfEdgeFace();
+            newFaceB.setNote("newFaceB");
             HalfEdge newHalfEdgeB1 = twin;
             HalfEdge newHalfEdgeB2 = new HalfEdge();
             HalfEdge newHalfEdgeB3 = new HalfEdge();
+            this.getHalfEdges().add(newHalfEdgeB2);
+            this.getHalfEdges().add(newHalfEdgeB3);
+            this.getFaces().add(newFaceB);
 
             newHalfEdgeB1.setNext(newHalfEdgeB2);
             newHalfEdgeB2.setNext(newHalfEdgeB3);
@@ -1513,12 +1572,11 @@ public class HalfEdgeSurface {
             newHalfEdgeB2.setFace(newFaceB);
             newHalfEdgeB3.setFace(newFaceB);
 
-            newFaceB.setHalfEdge(newHalfEdgeB1);
-
             newHalfEdgeB1.setStartVertex(intersectionVertex);
             newHalfEdgeB2.setStartVertex(startVertex);
             newHalfEdgeB3.setStartVertex(oppositeVertexB);
 
+            newFaceB.setHalfEdge(newHalfEdgeB1);
             intersectionVertex.setOutingHalfEdge(newHalfEdgeB2);
             oppositeVertexB.setOutingHalfEdge(newHalfEdgeB3);
 
@@ -1528,6 +1586,10 @@ public class HalfEdgeSurface {
             HalfEdge newHalfEdgeC1 = new HalfEdge();
             HalfEdge newHalfEdgeC2 = new HalfEdge();
             HalfEdge newHalfEdgeC3 = new HalfEdge();
+            this.getHalfEdges().add(newHalfEdgeC1);
+            this.getHalfEdges().add(newHalfEdgeC2);
+            this.getHalfEdges().add(newHalfEdgeC3);
+            this.getFaces().add(newFaceC);
 
             newHalfEdgeC1.setNext(newHalfEdgeC2);
             newHalfEdgeC2.setNext(newHalfEdgeC3);
@@ -1537,12 +1599,11 @@ public class HalfEdgeSurface {
             newHalfEdgeC2.setFace(newFaceC);
             newHalfEdgeC3.setFace(newFaceC);
 
-            newFaceC.setHalfEdge(newHalfEdgeC1);
-
             newHalfEdgeC1.setStartVertex(intersectionVertex);
             newHalfEdgeC2.setStartVertex(endVertex);
             newHalfEdgeC3.setStartVertex(oppositeVertexA);
 
+            newFaceC.setHalfEdge(newHalfEdgeC1);
             intersectionVertex.setOutingHalfEdge(newHalfEdgeC2);
             oppositeVertexA.setOutingHalfEdge(newHalfEdgeC3);
 
@@ -1552,6 +1613,10 @@ public class HalfEdgeSurface {
             HalfEdge newHalfEdgeD1 = new HalfEdge();
             HalfEdge newHalfEdgeD2 = new HalfEdge();
             HalfEdge newHalfEdgeD3 = new HalfEdge();
+            this.getHalfEdges().add(newHalfEdgeD1);
+            this.getHalfEdges().add(newHalfEdgeD2);
+            this.getHalfEdges().add(newHalfEdgeD3);
+            this.getFaces().add(newFaceD);
 
             newHalfEdgeD1.setNext(newHalfEdgeD2);
             newHalfEdgeD2.setNext(newHalfEdgeD3);
@@ -1561,12 +1626,11 @@ public class HalfEdgeSurface {
             newHalfEdgeD2.setFace(newFaceD);
             newHalfEdgeD3.setFace(newFaceD);
 
-            newFaceD.setHalfEdge(newHalfEdgeD1);
-
             newHalfEdgeD1.setStartVertex(endVertex);
             newHalfEdgeD2.setStartVertex(intersectionVertex);
             newHalfEdgeD3.setStartVertex(oppositeVertexB);
 
+            newFaceD.setHalfEdge(newHalfEdgeD1);
             intersectionVertex.setOutingHalfEdge(newHalfEdgeD2);
             oppositeVertexB.setOutingHalfEdge(newHalfEdgeD3);
 
@@ -1579,15 +1643,22 @@ public class HalfEdgeSurface {
             {
                 int hola = 0;
             }
-            if(!newHalfEdgeA3.setTwin(exteriorHEdgeA2))
+            if(exteriorHEdgeA2 != null)
             {
-                int hola = 0;
+                if(!newHalfEdgeA3.setTwin(exteriorHEdgeA2))
+                {
+                    int hola = 0;
+                }
             }
 
-            if(!newHalfEdgeB2.setTwin(exteriorHEdgeB1))
+            if(exteriorHEdgeB1 != null)
             {
-                int hola = 0;
+                if(!newHalfEdgeB2.setTwin(exteriorHEdgeB1))
+                {
+                    int hola = 0;
+                }
             }
+
             if(!newHalfEdgeB3.setTwin(newHalfEdgeD2))
             {
                 int hola = 0;
@@ -1597,15 +1668,47 @@ public class HalfEdgeSurface {
             {
                 int hola = 0;
             }
-            if(!newHalfEdgeC2.setTwin(exteriorHEdgeA1))
+
+            if(exteriorHEdgeA1 != null)
             {
-                int hola = 0;
+                if(!newHalfEdgeC2.setTwin(exteriorHEdgeA1))
+                {
+                    int hola = 0;
+                }
             }
 
-            if(!newHalfEdgeD3.setTwin(exteriorHEdgeB2))
+            if(exteriorHEdgeB2 != null)
             {
-                int hola = 0;
+                if(!newHalfEdgeD3.setTwin(exteriorHEdgeB2))
+                {
+                    int hola = 0;
+                }
             }
+
+
+            // finally break the relations of the halfEdgesLoopA.***
+            for(int i=0; i<hedgesACount; i++)
+            {
+                HalfEdge hedgeA = halfEdgesLoopA.get(i);
+                if(hedgeA != halfEdge)
+                {
+                    hedgeA.setStatus(ObjectStatus.DELETED);
+                    hedgeA.breakRelations();
+                }
+            }
+
+            // finally break the relations of the halfEdgesLoopB.***
+            for(int i=0; i<hedgesBCount; i++)
+            {
+                HalfEdge hedgeB = halfEdgesLoopB.get(i);
+                if(hedgeB != twin)
+                {
+                    hedgeB.setStatus(ObjectStatus.DELETED);
+                    hedgeB.breakRelations();
+                }
+            }
+
+            int hola = 0;
 
         }
         else
@@ -1617,20 +1720,8 @@ public class HalfEdgeSurface {
             List<HalfEdge> halfEdgesLoopA = new ArrayList<>();
             halfEdgesLoopA = halfEdge.getLoop(halfEdgesLoopA);
 
-            List<HalfEdge> halfEdgedLoopATwins = new ArrayList<>();
             int hedgesACount = halfEdgesLoopA.size();
-            for(int i=0; i<hedgesACount; i++)
-            {
-                HalfEdge hedgeA = halfEdgesLoopA.get(i);
-                hedgeA.setStatus(ObjectStatus.DELETED);
-                hedgeA.breakRelations();
 
-                HalfEdge twinA = hedgeA.getTwin();
-                if(twinA != null)
-                {
-                    halfEdgedLoopATwins.add(twinA);
-                }
-            }
 
 
             // Initial situation.***************************************************************************************
@@ -1667,8 +1758,8 @@ public class HalfEdgeSurface {
             // Find oppositeVertexA and oppositeVertexB.***
             HalfEdgeVertex oppositeVertexA = halfEdge.getPrev().getStartVertex();
 
-            HalfEdge exteriorHEdgeA1 = halfEdge.getNext();
-            HalfEdge exteriorHEdgeA2 = halfEdge.getPrev();
+            HalfEdge exteriorHEdgeA1 = halfEdge.getNext().getTwin();
+            HalfEdge exteriorHEdgeA2 = halfEdge.getPrev().getTwin();
 
             // Face A.********************************
             // In this face use the halfEdge.***
@@ -1676,6 +1767,9 @@ public class HalfEdgeSurface {
             HalfEdge newHalfEdgeA1 = halfEdge;
             HalfEdge newHalfEdgeA2 = new HalfEdge();
             HalfEdge newHalfEdgeA3 = new HalfEdge();
+            this.getHalfEdges().add(newHalfEdgeA2);
+            this.getHalfEdges().add(newHalfEdgeA3);
+            this.getFaces().add(newFaceA);
 
             newHalfEdgeA1.setNext(newHalfEdgeA2);
             newHalfEdgeA2.setNext(newHalfEdgeA3);
@@ -1685,12 +1779,11 @@ public class HalfEdgeSurface {
             newHalfEdgeA2.setFace(newFaceA);
             newHalfEdgeA3.setFace(newFaceA);
 
-            newFaceA.setHalfEdge(newHalfEdgeA1);
-
             newHalfEdgeA1.setStartVertex(startVertex); // is redundant.***
             newHalfEdgeA2.setStartVertex(intersectionVertex);
             newHalfEdgeA3.setStartVertex(oppositeVertexA);
 
+            newFaceA.setHalfEdge(newHalfEdgeA1);
             intersectionVertex.setOutingHalfEdge(newHalfEdgeA2);
             oppositeVertexA.setOutingHalfEdge(newHalfEdgeA3);
 
@@ -1701,6 +1794,10 @@ public class HalfEdgeSurface {
             HalfEdge newHalfEdgeC1 = new HalfEdge();
             HalfEdge newHalfEdgeC2 = new HalfEdge();
             HalfEdge newHalfEdgeC3 = new HalfEdge();
+            this.getHalfEdges().add(newHalfEdgeC1);
+            this.getHalfEdges().add(newHalfEdgeC2);
+            this.getHalfEdges().add(newHalfEdgeC3);
+            this.getFaces().add(newFaceC);
 
             newHalfEdgeC1.setNext(newHalfEdgeC2);
             newHalfEdgeC2.setNext(newHalfEdgeC3);
@@ -1710,12 +1807,11 @@ public class HalfEdgeSurface {
             newHalfEdgeC2.setFace(newFaceC);
             newHalfEdgeC3.setFace(newFaceC);
 
-            newFaceC.setHalfEdge(newHalfEdgeC1);
-
             newHalfEdgeC1.setStartVertex(intersectionVertex);
             newHalfEdgeC2.setStartVertex(endVertex);
             newHalfEdgeC3.setStartVertex(oppositeVertexA);
 
+            newFaceC.setHalfEdge(newHalfEdgeC1);
             intersectionVertex.setOutingHalfEdge(newHalfEdgeC2);
             oppositeVertexA.setOutingHalfEdge(newHalfEdgeC3);
 
@@ -1725,16 +1821,118 @@ public class HalfEdgeSurface {
             {
                 int hola = 0;
             }
-            if(!newHalfEdgeA3.setTwin(exteriorHEdgeA2))
+            if(exteriorHEdgeA2 != null)
             {
-                int hola = 0;
+                if(!newHalfEdgeA3.setTwin(exteriorHEdgeA2))
+                {
+                    int hola = 0;
+                }
             }
 
-            if(!newHalfEdgeC2.setTwin(exteriorHEdgeA1))
+            if(exteriorHEdgeA1 != null)
             {
-                int hola = 0;
+                if(!newHalfEdgeC2.setTwin(exteriorHEdgeA1))
+                {
+                    int hola = 0;
+                }
             }
 
+            // finally break the relations of the halfEdgesLoopA.***
+            for(int i=0; i<hedgesACount; i++)
+            {
+                HalfEdge hedgeA = halfEdgesLoopA.get(i);
+                if(hedgeA != halfEdge) {
+                    hedgeA.setStatus(ObjectStatus.DELETED);
+                    hedgeA.breakRelations();
+                }
+            }
+
+            int hola = 0;
+
+        }
+    }
+
+    public void classifyFacesIdByPlane(PlaneType planeType, Vector3d planePosition)
+    {
+        int facesCount = faces.size();
+        Vector3d barycenter = new Vector3d();
+        if(planeType == PlaneType.XY)
+        {
+            for(int i=0; i<facesCount; i++)
+            {
+                HalfEdgeFace face = faces.get(i);
+                if(face.getStatus() == ObjectStatus.DELETED)
+                {
+                    continue;
+                }
+
+                barycenter = face.getBarycenter(barycenter);
+                double z = barycenter.z;
+                if(z > planePosition.z)
+                {
+                    face.setClassifyId(2);
+                }
+                else if(z < planePosition.z)
+                {
+                    face.setClassifyId(1);
+                }
+                else
+                {
+                    face.setClassifyId(0);
+                }
+            }
+        }
+        else if(planeType == PlaneType.XZ)
+        {
+            for(int i=0; i<facesCount; i++)
+            {
+                HalfEdgeFace face = faces.get(i);
+                if(face.getStatus() == ObjectStatus.DELETED)
+                {
+                    continue;
+                }
+
+                barycenter = face.getBarycenter(barycenter);
+                double y = barycenter.y;
+                if(y > planePosition.y)
+                {
+                    face.setClassifyId(2);
+                }
+                else if(y < planePosition.y)
+                {
+                    face.setClassifyId(1);
+                }
+                else
+                {
+                    face.setClassifyId(0);
+                }
+            }
+        }
+        else if(planeType == PlaneType.YZ)
+        {
+            for(int i=0; i<facesCount; i++)
+            {
+                HalfEdgeFace face = faces.get(i);
+                if(face.getStatus() == ObjectStatus.DELETED)
+                {
+                    continue;
+                }
+
+                barycenter = face.getBarycenter(barycenter);
+                double x = barycenter.x;
+                if(x > planePosition.x)
+                {
+                    face.setClassifyId(2);
+                }
+                else if(x < planePosition.x)
+                {
+                    face.setClassifyId(1);
+                }
+                else
+                {
+                    face.setClassifyId(0);
+                }
+            }
         }
     }
 }
