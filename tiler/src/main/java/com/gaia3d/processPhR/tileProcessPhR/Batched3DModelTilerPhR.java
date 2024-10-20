@@ -10,6 +10,7 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.halfedge.HalfEdgeScene;
 import com.gaia3d.basic.halfedge.HalfEdgeUtils;
 import com.gaia3d.basic.halfedge.PlaneType;
+import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.KmlInfo;
@@ -32,8 +33,8 @@ import org.joml.Vector3d;
 
 import java.io.*;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.file.Paths;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -121,6 +122,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             latDivisions.add(minLatDeg + i * latStep);
         }
 
+        Map<TileInfo, TileInfo> deletedTileInfoMap = new HashMap<>();
+
         int longitudesCount = lonDivisions.size();
         for(int i = 0; i < longitudesCount; i++)
         {
@@ -136,8 +139,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             cutRectangleCakeByLatitudeDeg(tileInfos, lod, latDeg);
         }
 
-
-
         int hola = 0;
 
     }
@@ -147,12 +148,38 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         log.info(" #Cutting by longitude : {}", lonDeg);
         int tileInfosCount = tileInfos.size();
         PlaneType planeType = PlaneType.YZ;
+        String outputPathString = globalOptions.getOutputPath();
+        String cutTempPathString = outputPathString + File.separator + "cutTemp";
+        Path cutTempPath = Paths.get(cutTempPathString);
+        // create directory if not exists.***
+        if(!cutTempPath.toFile().exists())
+        {
+            cutTempPath.toFile().mkdirs();
+        }
+
+        Path cutTempLodPath = cutTempPath.resolve("lod" + lod);
+        if(!cutTempLodPath.toFile().exists())
+        {
+            cutTempLodPath.toFile().mkdirs();
+        }
+
+        Map<TileInfo, TileInfo> deletedTileInfoMap = new HashMap<>();
+        List<TileInfo> cutTileInfos = new ArrayList<>();
         double error = 1e-8;
         for(int i = 0; i < tileInfosCount; i++)
         {
             TileInfo tileInfo = tileInfos.get(i);
-            List<Path> paths = tileInfo.getTempPathLod();
-            Path path = paths.get(lod);
+            if(deletedTileInfoMap.containsKey(tileInfo))
+                continue;
+            Path path;
+            if(tileInfo.getTempPathLod() != null) {
+                List<Path> paths = tileInfo.getTempPathLod();
+                path = paths.get(lod);
+            }
+            else {
+                path = tileInfo.getTempPath();
+            }
+
             GaiaBoundingBox boundingBox = tileInfo.getBoundingBox();
             KmlInfo kmlInfo = tileInfo.getKmlInfo();
             Vector3d geoCoordPosition = kmlInfo.getPosition();
@@ -165,6 +192,9 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             GaiaSet gaiaSet = GaiaSet.readFile(path);
             if(gaiaSet == null)
                 continue;
+
+            GaiaAttribute attribute = gaiaSet.getAttribute();
+
             GaiaScene scene = new GaiaScene(gaiaSet);
             HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 
@@ -174,13 +204,59 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             Vector3d samplePointLC = new Vector3d();
             transformMatrixInv.transformPosition(samplePointWC, samplePointLC);
 
-            halfEdgeScene.cutByPlane(planeType, samplePointLC, error);
-            if(halfEdgeScene.cutByPlane(planeType, samplePointLC, error)) {
+            if(halfEdgeScene.cutByPlane(planeType, samplePointLC, error))
+            {
+                deletedTileInfoMap.put(tileInfo, tileInfo);
                 // once scene is cut, then save the 2 scenes and delete the original.***
                 halfEdgeScene.classifyFacesIdByPlane(planeType, samplePointLC);
+
+                List<HalfEdgeScene> halfEdgeCutScenes = HalfEdgeUtils.getCopyHalfEdgeScenesByFaceClassifyId(halfEdgeScene, null);
+
+                // create tileInfos for the cut scenes.***
+                for(HalfEdgeScene halfEdgeCutScene : halfEdgeCutScenes)
+                {
+                    GaiaScene gaiaSceneCut = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeCutScene);
+
+                    // create an originalPath for the cut scene.***
+                    Path cutScenePath = Paths.get("");
+                    gaiaSceneCut.setOriginalPath(cutScenePath);
+
+                    GaiaSet gaiaSetCut = GaiaSet.fromGaiaScene(gaiaSceneCut);
+                    UUID identifier = UUID.randomUUID();
+                    Path gaiaSetCutFolderPath = cutTempLodPath.resolve(identifier.toString());
+                    if(!gaiaSetCutFolderPath.toFile().exists())
+                    {
+                        gaiaSetCutFolderPath.toFile().mkdirs();
+                    }
+
+                    Path tempPathLod = gaiaSetCut.writeFile(gaiaSetCutFolderPath);
+
+                    // create a new tileInfo for the cut scene.***
+                    TileInfo tileInfoCut = TileInfo.builder().scene(gaiaSceneCut).outputPath(tileInfo.getOutputPath()).build();
+                    tileInfoCut.setTempPath(tempPathLod);
+
+                    // make a kmlInfo for the cut scene.***
+                    // In reality, we must recalculate the position of the cut scene. Provisionally, we use the same position.***
+                    // In reality, we must recalculate the position of the cut scene. Provisionally, we use the same position.***
+                    KmlInfo kmlInfoCut = KmlInfo.builder().position(geoCoordPosition).build();
+                    tileInfoCut.setKmlInfo(kmlInfoCut);
+                    cutTileInfos.add(tileInfoCut);
+                }
+
             }
             int hola = 0;
         }
+
+        // remove from tileInfos the deleted tileInfos.***
+        for(Map.Entry<TileInfo, TileInfo> entry : deletedTileInfoMap.entrySet())
+        {
+            tileInfos.remove(entry.getKey());
+        }
+
+        // add the cutTileInfos to tileInfos.***
+        tileInfos.addAll(cutTileInfos);
+
+        int hola = 0;
     }
 
     private void cutRectangleCakeByLatitudeDeg(List<TileInfo> tileInfos, int lod, double latDeg) throws FileNotFoundException {
@@ -188,12 +264,38 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         log.info(" #Cutting by latitude : {}", latDeg);
         int tileInfosCount = tileInfos.size();
         PlaneType planeType = PlaneType.XZ;
+        String outputPathString = globalOptions.getOutputPath();
+        String cutTempPathString = outputPathString + File.separator + "cutTemp";
+        Path cutTempPath = Paths.get(cutTempPathString);
+        // create directory if not exists.***
+        if(!cutTempPath.toFile().exists())
+        {
+            cutTempPath.toFile().mkdirs();
+        }
+
+        Path cutTempLodPath = cutTempPath.resolve("lod" + lod);
+        if(!cutTempLodPath.toFile().exists())
+        {
+            cutTempLodPath.toFile().mkdirs();
+        }
+
+        Map<TileInfo, TileInfo> deletedTileInfoMap = new HashMap<>();
+        List<TileInfo> cutTileInfos = new ArrayList<>();
         double error = 1e-8;
         for(int i = 0; i < tileInfosCount; i++)
         {
             TileInfo tileInfo = tileInfos.get(i);
-            List<Path> paths = tileInfo.getTempPathLod();
-            Path path = paths.get(lod);
+            if(deletedTileInfoMap.containsKey(tileInfo))
+                continue;
+            Path path;
+            if(tileInfo.getTempPathLod() != null) {
+                List<Path> paths = tileInfo.getTempPathLod();
+                path = paths.get(lod);
+            }
+            else {
+                path = tileInfo.getTempPath();
+            }
+
             GaiaBoundingBox boundingBox = tileInfo.getBoundingBox();
             KmlInfo kmlInfo = tileInfo.getKmlInfo();
             Vector3d geoCoordPosition = kmlInfo.getPosition();
@@ -206,6 +308,9 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             GaiaSet gaiaSet = GaiaSet.readFile(path);
             if(gaiaSet == null)
                 continue;
+
+            GaiaAttribute attribute = gaiaSet.getAttribute();
+
             GaiaScene scene = new GaiaScene(gaiaSet);
             HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 
@@ -217,15 +322,56 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
             if(halfEdgeScene.cutByPlane(planeType, samplePointLC, error))
             {
+                deletedTileInfoMap.put(tileInfo, tileInfo);
                 // once scene is cut, then save the 2 scenes and delete the original.***
                 halfEdgeScene.classifyFacesIdByPlane(planeType, samplePointLC);
 
-                //List<HalfEdgeScene> halfEdgeScenes = HalfEdgeUtils.getCopyHalfEdgeScenesByFaceClassifyId(halfEdgeScene, null);
-                int hola = 0;
+                List<HalfEdgeScene> halfEdgeCutScenes = HalfEdgeUtils.getCopyHalfEdgeScenesByFaceClassifyId(halfEdgeScene, null);
+
+                // create tileInfos for the cut scenes.***
+                for(HalfEdgeScene halfEdgeCutScene : halfEdgeCutScenes)
+                {
+                    GaiaScene gaiaSceneCut = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeCutScene);
+
+                    // create an originalPath for the cut scene.***
+                    Path cutScenePath = Paths.get("");
+                    gaiaSceneCut.setOriginalPath(cutScenePath);
+
+                    GaiaSet gaiaSetCut = GaiaSet.fromGaiaScene(gaiaSceneCut);
+                    UUID identifier = UUID.randomUUID();
+                    Path gaiaSetCutFolderPath = cutTempLodPath.resolve(identifier.toString());
+                    if(!gaiaSetCutFolderPath.toFile().exists())
+                    {
+                        gaiaSetCutFolderPath.toFile().mkdirs();
+                    }
+
+                    Path tempPathLod = gaiaSetCut.writeFile(gaiaSetCutFolderPath);
+
+                    // create a new tileInfo for the cut scene.***
+                    TileInfo tileInfoCut = TileInfo.builder().scene(gaiaSceneCut).outputPath(tileInfo.getOutputPath()).build();
+                    tileInfoCut.setTempPath(tempPathLod);
+
+                    // make a kmlInfo for the cut scene.***
+                    // In reality, we must recalculate the position of the cut scene. Provisionally, we use the same position.***
+                    // In reality, we must recalculate the position of the cut scene. Provisionally, we use the same position.***
+                    KmlInfo kmlInfoCut = KmlInfo.builder().position(geoCoordPosition).build();
+                    tileInfoCut.setKmlInfo(kmlInfoCut);
+                    cutTileInfos.add(tileInfoCut);
+                }
+
             }
 
             int hola = 0;
         }
+
+        // remove from tileInfos the deleted tileInfos.***
+        for(Map.Entry<TileInfo, TileInfo> entry : deletedTileInfoMap.entrySet())
+        {
+            tileInfos.remove(entry.getKey());
+        }
+
+        // add the cutTileInfos to tileInfos.***
+        tileInfos.addAll(cutTileInfos);
     }
 
     public void getRenderTexture(GaiaScene scene)

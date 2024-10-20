@@ -9,12 +9,16 @@ import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.opengis.geometry.BoundingBox;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.*;
 
 @Slf4j
 @Setter
 @Getter
-public class HalfEdgeSurface {
+public class HalfEdgeSurface implements Serializable {
     private List<HalfEdge> halfEdges = new ArrayList<>();
     private List<HalfEdgeVertex> vertices = new ArrayList<>();
     private List<HalfEdgeFace> faces = new ArrayList<>();
@@ -418,8 +422,7 @@ public class HalfEdgeSurface {
         int hola = 0;
     }
 
-    public void removeDeletedObjects()
-    {
+    public void removeDeletedObjects() {
         // delete objects that status is DELETED.***
         // delete halfEdges that status is DELETED.***
         int halfEdgesCount = this.halfEdges.size();
@@ -464,25 +467,21 @@ public class HalfEdgeSurface {
         copyFaces.clear();
     }
 
-    public void setObjectIdsInList()
-    {
+    public void setObjectIdsInList() {
         int halfEdgesCount = halfEdges.size();
-        for (int i = 0; i < halfEdgesCount; i++)
-        {
+        for (int i = 0; i < halfEdgesCount; i++) {
             HalfEdge halfEdge = halfEdges.get(i);
             halfEdge.setId(i);
         }
 
         int verticesCount = vertices.size();
-        for (int i = 0; i < verticesCount; i++)
-        {
+        for (int i = 0; i < verticesCount; i++) {
             HalfEdgeVertex vertex = vertices.get(i);
             vertex.setId(i);
         }
 
         int facesCount = faces.size();
-        for (int i = 0; i < facesCount; i++)
-        {
+        for (int i = 0; i < facesCount; i++) {
             HalfEdgeFace face = faces.get(i);
             face.setId(i);
         }
@@ -710,6 +709,8 @@ public class HalfEdgeSurface {
                     List<HalfEdgeFace> endVertexFaces2 = mapVertexAllFaces.get(endVertex);
 
                     int hola = 0;
+
+                    return true;
                 }
             }
         }
@@ -1351,8 +1352,7 @@ public class HalfEdgeSurface {
     }
 
     public GaiaBoundingBox calculateBoundingBox(GaiaBoundingBox resultBBox) {
-        if(resultBBox == null)
-        {
+        if (resultBBox == null) {
             resultBBox = new GaiaBoundingBox();
         }
         resultBBox.setInit(true);
@@ -1374,77 +1374,59 @@ public class HalfEdgeSurface {
         return boundingBox;
     }
 
-    public void cutByPlane(PlaneType planeType, Vector3d planePosition, double error)
-    {
-        if(planeType == PlaneType.XY)
-        {
+    public void cutByPlane(PlaneType planeType, Vector3d planePosition, double error) {
+        if (planeType == PlaneType.XY) {
             //cutByPlaneXY(planePosition);
-        }
-        else if(planeType == PlaneType.XZ)
-        {
+        } else if (planeType == PlaneType.XZ) {
             cutByPlaneXZ(planePosition, error);
-        }
-        else if(planeType == PlaneType.YZ)
-        {
+        } else if (planeType == PlaneType.YZ) {
             cutByPlaneYZ(planePosition, error);
         }
 
         removeDeletedObjects();
     }
 
-    private void cutByPlaneXZ(Vector3d planePosition, double error)
-    {
+    private void cutByPlaneXZ(Vector3d planePosition, double error) {
         // find halfEdges that are cut by the plane.***
         HalfEdgeVertex intersectionVertex = new HalfEdgeVertex();
         int hedgesCount = halfEdges.size();
-        for (int i = 0; i < hedgesCount; i++)
-        {
+        for (int i = 0; i < hedgesCount; i++) {
             HalfEdge hedge = halfEdges.get(i);
-            if(hedge.getStatus() == ObjectStatus.DELETED)
-            {
+            if (hedge.getStatus() == ObjectStatus.DELETED) {
                 continue;
             }
 
-            if(hedge.getIntersectionByPlane(PlaneType.XZ, planePosition, intersectionVertex, error))
-            {
+            if (hedge.getIntersectionByPlane(PlaneType.XZ, planePosition, intersectionVertex, error)) {
                 splitHalfEdge(hedge, intersectionVertex);
             }
         }
 
     }
 
-    private void cutByPlaneYZ(Vector3d planePosition, double error)
-    {
+    private void cutByPlaneYZ(Vector3d planePosition, double error) {
         // find halfEdges that are cut by the plane.***
         HalfEdgeVertex intersectionVertex = new HalfEdgeVertex();
         int hedgesCount = halfEdges.size();
-        for (int i = 0; i < hedgesCount; i++)
-        {
+        for (int i = 0; i < hedgesCount; i++) {
             HalfEdge hedge = halfEdges.get(i);
-            if(hedge.getStatus() == ObjectStatus.DELETED)
-            {
+            if (hedge.getStatus() == ObjectStatus.DELETED) {
                 continue;
             }
 
-            if(hedge.getIntersectionByPlane(PlaneType.YZ, planePosition, intersectionVertex, error))
-            {
+            if (hedge.getIntersectionByPlane(PlaneType.YZ, planePosition, intersectionVertex, error)) {
                 splitHalfEdge(hedge, intersectionVertex);
             }
         }
     }
 
-    public boolean checkHalfEdgesFaces()
-    {
+    public boolean checkHalfEdgesFaces() {
         int hedgesCount = halfEdges.size();
-        for(int i=0; i<hedgesCount; i++)
-        {
+        for (int i = 0; i < hedgesCount; i++) {
             HalfEdge hedge = halfEdges.get(i);
-            if(hedge.getStatus() == ObjectStatus.DELETED)
-            {
+            if (hedge.getStatus() == ObjectStatus.DELETED) {
                 continue;
             }
-            if(hedge.getFace() == null)
-            {
+            if (hedge.getFace() == null) {
                 System.out.println("HalfEdgeSurface.checkHalfEdgesFaces() : hedge.getFace() == null.");
                 return false;
             }
@@ -1453,33 +1435,29 @@ public class HalfEdgeSurface {
         return true;
     }
 
-    public boolean checkTwins()
-    {
+    public boolean checkTwins() {
         int hedgesCount = halfEdges.size();
-        for(int i=0; i<hedgesCount; i++)
-        {
+        for (int i = 0; i < hedgesCount; i++) {
             HalfEdge hedge = halfEdges.get(i);
-            if(hedge.getStatus() == ObjectStatus.DELETED)
-            {
+            if (hedge.getStatus() == ObjectStatus.DELETED) {
                 continue;
             }
             HalfEdge twin = hedge.getTwin();
-            if(twin != null && twin.getStatus() != ObjectStatus.DELETED)
-            {
-                HalfEdgeVertex startVertex = hedge.getStartVertex();
-                HalfEdgeVertex endVertex = hedge.getEndVertex();
+//            if(twin != null && twin.getStatus() != ObjectStatus.DELETED)
+//            {
+//                HalfEdgeVertex startVertex = hedge.getStartVertex();
+//                HalfEdgeVertex endVertex = hedge.getEndVertex();
+//
+//                HalfEdgeVertex twinStartVertex = twin.getStartVertex();
+//                HalfEdgeVertex twinEndVertex = twin.getEndVertex();
+//
+//                if(startVertex != twinEndVertex || endVertex != twinStartVertex) {
+//                    System.out.println("HalfEdgeSurface.checkTwins() : startVertex != twinEndVertex || endVertex != twinStartVertex.");
+//                    return false;
+//                }
+//            }
 
-                HalfEdgeVertex twinStartVertex = twin.getStartVertex();
-                HalfEdgeVertex twinEndVertex = twin.getEndVertex();
-
-                if(startVertex != twinEndVertex || endVertex != twinStartVertex) {
-                    System.out.println("HalfEdgeSurface.checkTwins() : startVertex != twinEndVertex || endVertex != twinStartVertex.");
-                    return false;
-                }
-            }
-
-            if(twin != null && twin.getStatus() != ObjectStatus.DELETED && twin.getTwin() != hedge)
-            {
+            if (twin != null && twin.getStatus() != ObjectStatus.DELETED && twin.getTwin() != hedge) {
                 System.out.println("HalfEdgeSurface.checkTwins() : twin.getTwin() != hedge.");
                 return false;
             }
@@ -1488,12 +1466,7 @@ public class HalfEdgeSurface {
         return true;
     }
 
-    private void splitHalfEdge(HalfEdge halfEdge, HalfEdgeVertex intersectionVertex)
-    {
-        if(!checkTwins())
-        {
-            int hola = 0;
-        }
+    private void splitHalfEdge(HalfEdge halfEdge, HalfEdgeVertex intersectionVertex) {
         // When split a halfEdge, must split the face too.***
         // If exist twin, must split the twin and twin's face too.***
         HalfEdge twin = halfEdge.getTwin();
@@ -1503,18 +1476,15 @@ public class HalfEdgeSurface {
 
         this.getVertices().add(intersectionVertex);
 
-        if(twin != null && twin.getStatus() != ObjectStatus.DELETED)
-        {
+        if (twin != null && twin.getStatus() != ObjectStatus.DELETED) {
             HalfEdgeFace twinsFace = twin.getFace();
-            if(twinsFace == null)
-            {
+            if (twinsFace == null) {
                 int hola = 0;
             }
             int hola = 0;
         }
 
-        if(twin != null && twin.getStatus() != ObjectStatus.DELETED)
-        {
+        if (twin != null && twin.getStatus() != ObjectStatus.DELETED) {
             // must split the twin too.***
             HalfEdgeFace faceA = halfEdge.getFace();
             HalfEdgeFace faceB = twin.getFace();
@@ -1532,7 +1502,6 @@ public class HalfEdgeSurface {
 
             int hedgesACount = halfEdgesLoopA.size();
             int hedgesBCount = halfEdgesLoopB.size();
-
 
 
             // Initial situation.***************************************************************************************
@@ -1594,8 +1563,7 @@ public class HalfEdgeSurface {
             HalfEdge exteriorHEdgeA2 = halfEdge.getPrev().getTwin();
             HalfEdge exteriorHEdgeB1 = twin.getNext().getTwin();
             // test.***
-            if(exteriorHEdgeB1 != null)
-            {
+            if (exteriorHEdgeB1 != null) {
                 HalfEdgeVertex extB1StartVertex = exteriorHEdgeB1.getStartVertex();
                 HalfEdgeVertex extB1EndVertex = exteriorHEdgeB1.getEndVertex();
                 if (extB1StartVertex != oppositeVertexB || extB1EndVertex != startVertex) {
@@ -1714,74 +1682,82 @@ public class HalfEdgeSurface {
             oppositeVertexB.setOutingHalfEdge(newHalfEdgeD3);
 
             // Now set twins.***
-            if(!newHalfEdgeA1.setTwin(newHalfEdgeB1))
-            {
+            if (!newHalfEdgeA1.setTwin(newHalfEdgeB1)) {
                 int hola = 0;
             }
-            if(!newHalfEdgeA2.setTwin(newHalfEdgeC3))
-            {
+
+            if (!newHalfEdgeA2.setTwin(newHalfEdgeC3)) {
                 int hola = 0;
             }
-            if(exteriorHEdgeA2 != null)
-            {
-                if(!newHalfEdgeA3.setTwin(exteriorHEdgeA2))
-                {
+
+
+            if (exteriorHEdgeA2 != null) {
+                HalfEdge currTwinOfExteriorA2 = exteriorHEdgeA2.getTwin();
+                if (!newHalfEdgeA3.setTwin(exteriorHEdgeA2)) {
                     int hola = 0;
+                }
+
+                if (currTwinOfExteriorA2 != null) {
+                    currTwinOfExteriorA2.setTwin(null);
                 }
             }
 
-            if(exteriorHEdgeB1 != null)
-            {
-                if(!newHalfEdgeB2.setTwin(exteriorHEdgeB1))
-                {
+            if (exteriorHEdgeB1 != null) {
+                HalfEdge currTwinOfExteriorB1 = exteriorHEdgeB1.getTwin();
+                if (!newHalfEdgeB2.setTwin(exteriorHEdgeB1)) {
                     int hola = 0;
+                }
+
+                if (currTwinOfExteriorB1 != null) {
+                    currTwinOfExteriorB1.setTwin(null);
                 }
             }
 
-            if(!newHalfEdgeB3.setTwin(newHalfEdgeD2))
-            {
+            if (!newHalfEdgeB3.setTwin(newHalfEdgeD2)) {
                 int hola = 0;
             }
 
-            if(!newHalfEdgeC1.setTwin(newHalfEdgeD1))
-            {
+            if (!newHalfEdgeC1.setTwin(newHalfEdgeD1)) {
                 int hola = 0;
             }
 
-            if(exteriorHEdgeA1 != null)
-            {
-                if(!newHalfEdgeC2.setTwin(exteriorHEdgeA1))
-                {
+            if (exteriorHEdgeA1 != null) {
+                HalfEdge currTwinOfExteriorA1 = exteriorHEdgeA1.getTwin();
+                if (!newHalfEdgeC2.setTwin(exteriorHEdgeA1)) {
                     int hola = 0;
+                }
+
+                if (currTwinOfExteriorA1 != null) {
+                    currTwinOfExteriorA1.setTwin(null);
                 }
             }
 
-            if(exteriorHEdgeB2 != null)
-            {
-                if(!newHalfEdgeD3.setTwin(exteriorHEdgeB2))
-                {
+            if (exteriorHEdgeB2 != null) {
+                HalfEdge currTwinOfExteriorB2 = exteriorHEdgeB2.getTwin();
+                if (!newHalfEdgeD3.setTwin(exteriorHEdgeB2)) {
                     int hola = 0;
+                }
+
+                if (currTwinOfExteriorB2 != null) {
+                    currTwinOfExteriorB2.setTwin(null);
                 }
             }
 
 
             // finally break the relations of the halfEdgesLoopA.***
-            for(int i=0; i<hedgesACount; i++)
-            {
+            for (int i = 0; i < hedgesACount; i++) {
                 HalfEdge hedgeA = halfEdgesLoopA.get(i);
-                if(hedgeA != halfEdge)
-                {
+                if (hedgeA != halfEdge) {
                     hedgeA.setStatus(ObjectStatus.DELETED);
                     hedgeA.breakRelations();
+
                 }
             }
 
             // finally break the relations of the halfEdgesLoopB.***
-            for(int i=0; i<hedgesBCount; i++)
-            {
+            for (int i = 0; i < hedgesBCount; i++) {
                 HalfEdge hedgeB = halfEdgesLoopB.get(i);
-                if(hedgeB != twin)
-                {
+                if (hedgeB != twin) {
                     hedgeB.setStatus(ObjectStatus.DELETED);
                     hedgeB.breakRelations();
                 }
@@ -1789,14 +1765,7 @@ public class HalfEdgeSurface {
 
             int hola = 0;
 
-            if(!checkTwins())
-            {
-                hola = 0;
-            }
-
-        }
-        else
-        {
+        } else {
             HalfEdgeFace faceA = halfEdge.getFace();
 
             faceA.setStatus(ObjectStatus.DELETED);
@@ -1805,7 +1774,6 @@ public class HalfEdgeSurface {
             halfEdgesLoopA = halfEdge.getLoop(halfEdgesLoopA);
 
             int hedgesACount = halfEdgesLoopA.size();
-
 
 
             // Initial situation.***************************************************************************************
@@ -1821,7 +1789,6 @@ public class HalfEdgeSurface {
             //                            /                                                 \
             //                         /                    halfEdge--->                       \
             //             startV   *-------------------------------------------------------------*  endV
-
 
 
             // Final situation.*****************************************************************************************
@@ -1901,31 +1868,35 @@ public class HalfEdgeSurface {
 
 
             // Now set twins.***
-            if(!newHalfEdgeA2.setTwin(newHalfEdgeC3))
-            {
+            if (!newHalfEdgeA2.setTwin(newHalfEdgeC3)) {
                 int hola = 0;
             }
-            if(exteriorHEdgeA2 != null)
-            {
-                if(!newHalfEdgeA3.setTwin(exteriorHEdgeA2))
-                {
+            if (exteriorHEdgeA2 != null) {
+                HalfEdge currTwinOfExteriorA2 = exteriorHEdgeA2.getTwin();
+                if (!newHalfEdgeA3.setTwin(exteriorHEdgeA2)) {
                     int hola = 0;
+                }
+
+                if (currTwinOfExteriorA2 != null) {
+                    currTwinOfExteriorA2.setTwin(null);
                 }
             }
 
-            if(exteriorHEdgeA1 != null)
-            {
-                if(!newHalfEdgeC2.setTwin(exteriorHEdgeA1))
-                {
+            if (exteriorHEdgeA1 != null) {
+                HalfEdge currTwinOfExteriorA1 = exteriorHEdgeA1.getTwin();
+                if (!newHalfEdgeC2.setTwin(exteriorHEdgeA1)) {
                     int hola = 0;
+                }
+
+                if (currTwinOfExteriorA1 != null) {
+                    currTwinOfExteriorA1.setTwin(null);
                 }
             }
 
             // finally break the relations of the halfEdgesLoopA.***
-            for(int i=0; i<hedgesACount; i++)
-            {
+            for (int i = 0; i < hedgesACount; i++) {
                 HalfEdge hedgeA = halfEdgesLoopA.get(i);
-                if(hedgeA != halfEdge) {
+                if (hedgeA != halfEdge) {
                     hedgeA.setStatus(ObjectStatus.DELETED);
                     hedgeA.breakRelations();
                 }
@@ -1933,95 +1904,208 @@ public class HalfEdgeSurface {
 
             int hola = 0;
 
-            if(!checkTwins())
-            {
-                hola = 0;
-            }
 
+        }
+
+        if (!checkTwins()) {
+            int hola = 0;
         }
     }
 
-    public void classifyFacesIdByPlane(PlaneType planeType, Vector3d planePosition)
-    {
+    public void classifyFacesIdByPlane(PlaneType planeType, Vector3d planePosition) {
         int facesCount = faces.size();
         Vector3d barycenter = new Vector3d();
-        if(planeType == PlaneType.XY)
-        {
-            for(int i=0; i<facesCount; i++)
-            {
+        if (planeType == PlaneType.XY) {
+            for (int i = 0; i < facesCount; i++) {
                 HalfEdgeFace face = faces.get(i);
-                if(face.getStatus() == ObjectStatus.DELETED)
-                {
+                if (face.getStatus() == ObjectStatus.DELETED) {
                     continue;
                 }
 
                 barycenter = face.getBarycenter(barycenter);
                 double z = barycenter.z;
-                if(z > planePosition.z)
-                {
+                if (z > planePosition.z) {
                     face.setClassifyId(2);
-                }
-                else if(z < planePosition.z)
-                {
+                } else if (z < planePosition.z) {
                     face.setClassifyId(1);
-                }
-                else
-                {
+                } else {
                     face.setClassifyId(0);
                 }
             }
-        }
-        else if(planeType == PlaneType.XZ)
-        {
-            for(int i=0; i<facesCount; i++)
-            {
+        } else if (planeType == PlaneType.XZ) {
+            for (int i = 0; i < facesCount; i++) {
                 HalfEdgeFace face = faces.get(i);
-                if(face.getStatus() == ObjectStatus.DELETED)
-                {
+                if (face.getStatus() == ObjectStatus.DELETED) {
                     continue;
                 }
 
                 barycenter = face.getBarycenter(barycenter);
                 double y = barycenter.y;
-                if(y > planePosition.y)
-                {
+                if (y > planePosition.y) {
                     face.setClassifyId(2);
-                }
-                else if(y < planePosition.y)
-                {
+                } else if (y < planePosition.y) {
                     face.setClassifyId(1);
-                }
-                else
-                {
+                } else {
                     face.setClassifyId(0);
                 }
             }
-        }
-        else if(planeType == PlaneType.YZ)
-        {
-            for(int i=0; i<facesCount; i++)
-            {
+        } else if (planeType == PlaneType.YZ) {
+            for (int i = 0; i < facesCount; i++) {
                 HalfEdgeFace face = faces.get(i);
-                if(face.getStatus() == ObjectStatus.DELETED)
-                {
+                if (face.getStatus() == ObjectStatus.DELETED) {
                     continue;
                 }
 
                 barycenter = face.getBarycenter(barycenter);
                 double x = barycenter.x;
-                if(x > planePosition.x)
-                {
+                if (x > planePosition.x) {
                     face.setClassifyId(2);
-                }
-                else if(x < planePosition.x)
-                {
+                } else if (x < planePosition.x) {
                     face.setClassifyId(1);
-                }
-                else
-                {
+                } else {
                     face.setClassifyId(0);
                 }
             }
         }
+    }
+
+    private void postReadFile()
+    {
+        // set the twins & others.***
+        int hedgesCount = halfEdges.size();
+        for (int i = 0; i < hedgesCount; i++) {
+            HalfEdge hedge = halfEdges.get(i);
+            if (hedge.getStatus() == ObjectStatus.DELETED) {
+                continue;
+            }
+
+            // set the twin.***
+            int twinIndex = hedge.getTwinId();
+            if (twinIndex >= 0) {
+                HalfEdge twin = halfEdges.get(twinIndex);
+                hedge.setTwin(twin);
+            }
+
+            // set the next.***
+            int nextIndex = hedge.getNextId();
+            if (nextIndex >= 0) {
+                HalfEdge next = halfEdges.get(nextIndex);
+                hedge.setNext(next);
+            }
+
+            // set the startVertex.***
+            int startVertexIndex = hedge.getStartVertexId();
+            if(startVertexIndex >= 0)
+            {
+                HalfEdgeVertex startVertex = vertices.get(startVertexIndex);
+                hedge.setStartVertex(startVertex);
+            }
+
+            // set the face.***
+            int faceIndex = hedge.getFaceId();
+            if(faceIndex >= 0)
+            {
+                HalfEdgeFace face = faces.get(faceIndex);
+                hedge.setFace(face);
+            }
+        }
+
+        // set the faces.***
+        int facesCount = faces.size();
+        for (int i = 0; i < facesCount; i++) {
+            HalfEdgeFace face = faces.get(i);
+            if (face.getStatus() == ObjectStatus.DELETED) {
+                continue;
+            }
+
+            int halfEdgeIndex = face.getHalfEdgeId();
+            if (halfEdgeIndex >= 0) {
+                HalfEdge halfEdge = halfEdges.get(halfEdgeIndex);
+                face.setHalfEdge(halfEdge);
+            }
+        }
+
+        // set the startVertex.***
+        int verticesCount = vertices.size();
+        for (int i = 0; i < verticesCount; i++) {
+            HalfEdgeVertex vertex = vertices.get(i);
+            if (vertex.getStatus() == ObjectStatus.DELETED) {
+                continue;
+            }
+
+            int outingHalfEdgeIndex = vertex.getOutingHalfEdgeId();
+            if (outingHalfEdgeIndex >= 0) {
+                HalfEdge outingHalfEdge = halfEdges.get(outingHalfEdgeIndex);
+                vertex.setOutingHalfEdge(outingHalfEdge);
+            }
+        }
+    }
+
+    public void writeFile(ObjectOutputStream outputStream) {
+        /*
+        private List<HalfEdge> halfEdges = new ArrayList<>();
+        private List<HalfEdgeVertex> vertices = new ArrayList<>();
+        private List<HalfEdgeFace> faces = new ArrayList<>();
+        private GaiaBoundingBox boundingBox = null;
+         */
+
+        this.setObjectIdsInList();
+
+        try {
+            // vertices
+            outputStream.writeInt(vertices.size());
+            for (HalfEdgeVertex vertex : vertices) {
+                vertex.writeFile(outputStream);
+            }
+
+            // faces
+            outputStream.writeInt(faces.size());
+            for(HalfEdgeFace face : faces) {
+                face.writeFile(outputStream);
+            }
+
+            outputStream.writeObject(boundingBox);
+
+            outputStream.writeInt(halfEdges.size());
+            int counter = 0;
+            for (HalfEdge halfEdge : halfEdges) {
+                halfEdge.writeFile(outputStream);
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void readFile(ObjectInputStream inputStream) {
+        try {
+            // vertices
+            int verticesCount = inputStream.readInt();
+            for (int i = 0; i < verticesCount; i++) {
+                HalfEdgeVertex vertex = new HalfEdgeVertex();
+                vertex.readFile(inputStream);
+                vertices.add(vertex);
+            }
+            // faces
+            int facesCount = inputStream.readInt();
+            for (int i = 0; i < facesCount; i++) {
+                HalfEdgeFace face = new HalfEdgeFace();
+                face.readFile(inputStream);
+                faces.add(face);
+            }
+            boundingBox = (GaiaBoundingBox) inputStream.readObject();
+
+            int halfEdgesCount = inputStream.readInt();
+            for (int i = 0; i < halfEdgesCount; i++) {
+                HalfEdge halfEdge = new HalfEdge();
+                halfEdge.readFile(inputStream);
+                halfEdges.add(halfEdge);
+            }
+
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        postReadFile();
     }
 }

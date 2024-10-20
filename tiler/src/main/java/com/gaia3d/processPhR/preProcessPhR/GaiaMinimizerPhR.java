@@ -9,6 +9,7 @@ import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,6 +77,28 @@ public class GaiaMinimizerPhR implements PreProcess {
             log.info("Doing triangles reduction in HalfEdgeScene");
             halfEdgeScene.doTrianglesReduction();
 
+            Path testPath = tempFolder.resolve("test");
+            if(!testPath.toFile().exists()) {
+                testPath.toFile().mkdirs();
+            }
+            try{
+                halfEdgeScene.writeFile(testPath.toString(), "testhalfEdgeScene");
+            } catch (FileNotFoundException e) {
+                log.error("Failed to write file", e);
+                throw new RuntimeException("Failed to write file", e);
+            }
+
+
+            try
+            {
+                halfEdgeScene = HalfEdgeScene.readFile(testPath.toString(), "testhalfEdgeScene");
+            }
+            catch (FileNotFoundException e)
+            {
+                log.error("Failed to read file", e);
+                throw new RuntimeException("Failed to read file", e);
+            }
+
             log.info("Making GaiaScene from HalfEdgeScene");
             GaiaScene sceneLod1 = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
             halfEdgeScene.deleteObjects();
@@ -85,6 +108,8 @@ public class GaiaMinimizerPhR implements PreProcess {
             Path tempFolderLod1 = tempFolder.resolve("lod1");
             Path tempPathLod1 = tempSetLod1.writeFile(tempFolderLod1, tileInfo.getSerial(), tempSetLod1.getAttribute());
             tempPathLod.add(tempPathLod1);
+
+
 
             // Lod 2.************************************************************************************************************
             log.info("Minimize GaiaScene LOD 2");

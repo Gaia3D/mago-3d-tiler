@@ -41,7 +41,7 @@ public class TileInfo {
     private Path tempPath; // tempPath lod 0.***
 
     // New vars.***
-    private List<Path> tempPathLod; // tempPath lod 0, 1, 2, 3, 4, 5.***
+    private List<Path> tempPathLod; // tempPath lod 0, 1, 2, 3, 4, 5, etc.***
 
     @Builder.Default
     private long triangleCount = 0;

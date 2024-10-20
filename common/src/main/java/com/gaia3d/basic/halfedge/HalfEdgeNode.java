@@ -6,12 +6,15 @@ import lombok.Setter;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Setter
-public class HalfEdgeNode {
+public class HalfEdgeNode implements Serializable {
     private HalfEdgeNode parent = null;
     private Matrix4d transformMatrix = new Matrix4d();
     private Matrix4d preMultipliedTransformMatrix = new Matrix4d();
@@ -113,6 +116,64 @@ public class HalfEdgeNode {
         }
         for (HalfEdgeNode child : children) {
             child.classifyFacesIdByPlane(planeType, planePosition);
+        }
+    }
+
+    public void writeFile(ObjectOutputStream outputStream) {
+        try {
+            /*
+            private HalfEdgeNode parent = null;
+            private Matrix4d transformMatrix = new Matrix4d();
+            private Matrix4d preMultipliedTransformMatrix = new Matrix4d();
+            private List<HalfEdgeMesh> meshes = new ArrayList<>();
+            private List<HalfEdgeNode> children = new ArrayList<>();
+            private GaiaBoundingBox boundingBox = null;
+             */
+            // transformMatrix
+            outputStream.writeObject(transformMatrix);
+            // preMultipliedTransformMatrix
+            outputStream.writeObject(preMultipliedTransformMatrix);
+            // meshes
+            outputStream.writeInt(meshes.size());
+            for (HalfEdgeMesh mesh : meshes) {
+                mesh.writeFile(outputStream);
+            }
+
+            // children
+            outputStream.writeInt(children.size());
+            for (HalfEdgeNode child : children) {
+                child.writeFile(outputStream);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void readFile(ObjectInputStream inputStream) {
+        try {
+            // transformMatrix
+            transformMatrix = (Matrix4d) inputStream.readObject();
+            // preMultipliedTransformMatrix
+            preMultipliedTransformMatrix = (Matrix4d) inputStream.readObject();
+            // meshes
+            int meshesSize = inputStream.readInt();
+            for (int i = 0; i < meshesSize; i++) {
+                HalfEdgeMesh mesh = new HalfEdgeMesh();
+                mesh.readFile(inputStream);
+                meshes.add(mesh);
+            }
+
+            // children
+            int childrenSize = inputStream.readInt();
+            for (int i = 0; i < childrenSize; i++) {
+                HalfEdgeNode child = new HalfEdgeNode();
+                child.readFile(inputStream);
+                children.add(child);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
