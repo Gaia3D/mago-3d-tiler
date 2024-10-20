@@ -8,6 +8,9 @@ import lombok.Setter;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +18,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class HalfEdgeVertex {
+public class HalfEdgeVertex implements Serializable {
     public String note = null;
     private Vector2d texcoords;
     private Vector3d position;
@@ -26,6 +29,7 @@ public class HalfEdgeVertex {
     private ObjectStatus status = ObjectStatus.ACTIVE;
     private PositionType positionType = null;
     private int id = -1;
+    private int outingHalfEdgeId = -1;
 
     public HalfEdgeVertex(GaiaVertex vertex) {
         copyFromGaiaVertex(vertex);
@@ -259,5 +263,149 @@ public class HalfEdgeVertex {
         }
 
         return resultFaces;
+    }
+
+    public void writeFile(ObjectOutputStream outputStream)
+    {
+        /*
+        public String note = null;
+        private Vector2d texcoords;
+        private Vector3d position;
+        private Vector3d normal;
+        private byte[] color;
+        private float batchId;
+        private HalfEdge outingHalfEdge = null;
+        private ObjectStatus status = ObjectStatus.ACTIVE;
+        private PositionType positionType = null;
+        private int id = -1;
+        private int outingHalfEdgeId = -1;
+         */
+
+        try
+        {
+            // position
+            if(position != null)
+            {
+                outputStream.writeBoolean(true);
+                outputStream.writeObject(position);
+            }
+            else
+            {
+                outputStream.writeBoolean(false);
+            }
+            // texcoords
+            if(texcoords != null)
+            {
+                outputStream.writeBoolean(true);
+                outputStream.writeObject(texcoords);
+            }
+            else
+            {
+                outputStream.writeBoolean(false);
+            }
+            // normal
+            if(normal != null)
+            {
+                outputStream.writeBoolean(true);
+                outputStream.writeObject(normal);
+            }
+            else
+            {
+                outputStream.writeBoolean(false);
+            }
+            // color
+            if(color != null)
+            {
+                outputStream.writeBoolean(true);
+                outputStream.writeInt(color.length);
+                outputStream.write(color);
+            }
+            else
+            {
+                outputStream.writeBoolean(false);
+            }
+            // batchId
+            outputStream.writeFloat(batchId);
+
+            // status
+            outputStream.writeObject(status);
+            // positionType
+            outputStream.writeObject(positionType);
+            // id
+            outputStream.writeInt(id);
+
+            // outingHalfEdgeId
+            int outingHalfEdgeId = -1;
+            if(outingHalfEdge != null)
+            {
+                outingHalfEdgeId = outingHalfEdge.getId();
+            }
+            outputStream.writeInt(outingHalfEdgeId);
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public void readFile(ObjectInputStream inputStream)
+    {
+        try
+        {
+            // position
+            if(inputStream.readBoolean())
+            {
+                position = (Vector3d)inputStream.readObject();
+            }
+            else
+            {
+                position = null;
+            }
+            // texcoords
+            if(inputStream.readBoolean())
+            {
+                texcoords = (Vector2d)inputStream.readObject();
+            }
+            else
+            {
+                texcoords = null;
+            }
+            // normal
+            if(inputStream.readBoolean())
+            {
+                normal = (Vector3d)inputStream.readObject();
+            }
+            else
+            {
+                normal = null;
+            }
+            // color
+            if(inputStream.readBoolean())
+            {
+                int colorLength = inputStream.readInt();
+                color = new byte[colorLength];
+                inputStream.readFully(color);
+            }
+            else
+            {
+                color = null;
+            }
+            // batchId
+            batchId = inputStream.readFloat();
+
+            // status
+            status = (ObjectStatus)inputStream.readObject();
+            // positionType
+            positionType = (PositionType)inputStream.readObject();
+            // id
+            id = inputStream.readInt();
+
+            // outingHalfEdgeId
+            outingHalfEdgeId = inputStream.readInt();
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 }

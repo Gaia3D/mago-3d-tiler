@@ -6,10 +6,13 @@ import lombok.Setter;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HalfEdgeMesh {
+public class HalfEdgeMesh implements Serializable {
     @Setter
     @Getter
     private List<HalfEdgePrimitive> primitives = new ArrayList<>();
@@ -67,6 +70,35 @@ public class HalfEdgeMesh {
     {
         for (HalfEdgePrimitive primitive : primitives) {
             primitive.classifyFacesIdByPlane(planeType, planePosition);
+        }
+    }
+
+    public void writeFile(ObjectOutputStream outputStream) {
+        /*
+        private List<HalfEdgePrimitive> primitives = new ArrayList<>();
+        private GaiaBoundingBox boundingBox = null;
+         */
+
+        try {
+            outputStream.writeInt(primitives.size());
+            for (HalfEdgePrimitive primitive : primitives) {
+                primitive.writeFile(outputStream);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void readFile(ObjectInputStream inputStream) {
+        try {
+            int primitivesSize = inputStream.readInt();
+            for (int i = 0; i < primitivesSize; i++) {
+                HalfEdgePrimitive primitive = new HalfEdgePrimitive();
+                primitive.readFile(inputStream);
+                primitives.add(primitive);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

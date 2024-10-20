@@ -88,6 +88,24 @@ public class GaiaSet implements Serializable {
         return boundingBox;
     }
 
+    public Path writeFile(Path path) {
+        String tempFileName = this.attribute.getIdentifier().toString() + "." + FormatType.TEMP.getExtension();
+        Path tempDir = path.resolve(this.projectName);
+        File tempFile = path.resolve(tempFileName).toFile();
+        try (ObjectOutputStream outputStream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(tempFile)))) {
+            outputStream.writeObject(this);
+
+            // Copy images to the temp directory
+            for (GaiaMaterial material : materials) {
+                copyTextures(material, tempDir);
+            }
+        } catch (Exception e) {
+            log.error("GaiaSet Write Error : ", e);
+            tempFile.delete();
+        }
+        return tempFile.toPath();
+    }
+
     public Path writeFile(Path path, int serial, GaiaAttribute gaiaAttribute) {
         int dividedNumber = serial / 50000;
 

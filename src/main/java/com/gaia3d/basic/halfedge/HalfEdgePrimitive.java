@@ -6,12 +6,15 @@ import lombok.Setter;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Setter
-public class HalfEdgePrimitive {
+public class HalfEdgePrimitive implements Serializable {
     private Integer accessorIndices = -1;
     private Integer materialIndex = -1;
     private List<HalfEdgeSurface> surfaces = new ArrayList<>();
@@ -28,6 +31,18 @@ public class HalfEdgePrimitive {
         for (HalfEdgeSurface surface : surfaces) {
             this.vertices.addAll(surface.getVertices());
         }
+    }
+
+    public List<HalfEdgeVertex> getVertices() {
+        return calculateVertices();
+    }
+
+    public List<HalfEdgeVertex> calculateVertices() {
+        vertices.clear();
+        for (HalfEdgeSurface surface : surfaces) {
+            vertices.addAll(surface.getVertices());
+        }
+        return vertices;
     }
 
     public void deleteObjects() {
@@ -97,4 +112,45 @@ public class HalfEdgePrimitive {
         }
     }
 
+    public void writeFile(ObjectOutputStream outputStream) {
+        /*
+        private Integer accessorIndices = -1;
+        private Integer materialIndex = -1;
+        private List<HalfEdgeSurface> surfaces = new ArrayList<>();
+        private List<HalfEdgeVertex> vertices = new ArrayList<>(); // vertices of all surfaces.***
+        private GaiaBoundingBox boundingBox = null;
+         */
+
+        try {
+            // accessorIndices
+            outputStream.writeInt(accessorIndices);
+            // materialIndex
+            outputStream.writeInt(materialIndex);
+            // surfaces
+            outputStream.writeInt(surfaces.size());
+            for (HalfEdgeSurface surface : surfaces) {
+                surface.writeFile(outputStream);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void readFile(ObjectInputStream inputStream) {
+        try {
+            // accessorIndices
+            accessorIndices = inputStream.readInt();
+            // materialIndex
+            materialIndex = inputStream.readInt();
+            // surfaces
+            int surfacesCount = inputStream.readInt();
+            for (int i = 0; i < surfacesCount; i++) {
+                HalfEdgeSurface surface = new HalfEdgeSurface();
+                surface.readFile(inputStream);
+                surfaces.add(surface);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -4,6 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.joml.Vector3d;
 
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,13 +15,14 @@ import java.util.Map;
 @Setter
 @Getter
 
-public class HalfEdgeFace {
+public class HalfEdgeFace implements Serializable {
     private HalfEdge halfEdge = null;
     private Vector3d normal = null;
     private ObjectStatus status = ObjectStatus.ACTIVE;
     private String note = null;
     private int id = -1;
     private int classifyId = -1;
+    private int halfEdgeId = -1;
 
     public List<HalfEdge> getHalfEdgesLoop(List<HalfEdge> resultHalfEdgesLoop) {
         if (this.halfEdge == null) {
@@ -107,5 +111,59 @@ public class HalfEdgeFace {
         }
 
         return true;
+    }
+
+    public void writeFile(ObjectOutputStream outputStream)
+    {
+        /*
+        private Vector3d normal = null;
+        private ObjectStatus status = ObjectStatus.ACTIVE;
+        private int id = -1;
+        private int halfEdgeId = -1;
+         */
+
+        try {
+            if(normal != null)
+            {
+                outputStream.writeBoolean(true);
+                outputStream.writeObject(normal);
+            }
+            else
+            {
+                outputStream.writeBoolean(false);
+            }
+
+            outputStream.writeObject(status);
+            outputStream.writeInt(id);
+            halfEdgeId = -1;
+            if(halfEdge != null)
+            {
+                halfEdgeId = halfEdge.getId();
+            }
+            outputStream.writeInt(halfEdgeId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void readFile(ObjectInputStream inputStream)
+    {
+        try {
+            boolean hasNormal = inputStream.readBoolean();
+            if(hasNormal)
+            {
+                normal = (Vector3d)inputStream.readObject();
+            }
+            else
+            {
+                normal = null;
+            }
+
+            status = (ObjectStatus)inputStream.readObject();
+            id = inputStream.readInt();
+            halfEdgeId = inputStream.readInt();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

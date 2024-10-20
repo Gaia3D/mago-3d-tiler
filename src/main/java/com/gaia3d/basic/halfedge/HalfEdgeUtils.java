@@ -103,6 +103,11 @@ public class HalfEdgeUtils {
             mapGaiaVertexToIndex.put(gaiaVertex, i);
         }
 
+        if(mapHalfEdgeVertexToGaiaVertex.size() == 0)
+        {
+            int hola = 0;
+        }
+
         int surfacesCount = halfEdgeSurfaces.size();
         for (int i = 0; i < surfacesCount; i++) {
             HalfEdgeSurface halfEdgeSurface = halfEdgeSurfaces.get(i);
@@ -141,6 +146,9 @@ public class HalfEdgeUtils {
             HalfEdgeVertex halfEdgeVertex = halfEdgeVertices.get(i);
             GaiaVertex gaiaVertex = mapHalfEdgeVertexToGaiaVertex.get(halfEdgeVertex);
             if (gaiaVertex == null) {
+                int hola = 0;
+            }
+            if (mapGaiaVertexToIndex.get(gaiaVertex) == null) {
                 int hola = 0;
             }
             indices[i] = mapGaiaVertexToIndex.get(gaiaVertex);
@@ -197,6 +205,11 @@ public class HalfEdgeUtils {
         halfEdgeScene.setOriginalPath(gaiaScene.getOriginalPath());
         halfEdgeScene.setGaiaBoundingBox(gaiaScene.getBoundingBox().clone());
         halfEdgeScene.setAttribute(gaiaScene.getAttribute().getCopy());
+
+        // copy gaiaAttributes.***
+        GaiaAttribute gaiaAttribute = gaiaScene.getAttribute();
+        GaiaAttribute newGaiaAttribute = gaiaAttribute.getCopy();
+        halfEdgeScene.setAttribute(newGaiaAttribute);
 
         // check nodes.***
         for (int i = 0; i < nodesCount; i++) {
@@ -514,6 +527,7 @@ public class HalfEdgeUtils {
         }
 
         Map<Integer, HalfEdgeScene> mapClassifyIdToHalfEdgeScene = new HashMap<>();
+        GaiaAttribute gaiaAttribute = halfEdgeScene.getAttribute();
 
         int nodesCount = halfEdgeScene.getNodes().size();
         for(int j=0; j<nodesCount; j++)
@@ -528,6 +542,14 @@ public class HalfEdgeUtils {
                 if(halfEdgeSceneCopy == null)
                 {
                     halfEdgeSceneCopy = new HalfEdgeScene();
+
+                    // copy original path.***
+                    halfEdgeSceneCopy.setOriginalPath(halfEdgeScene.getOriginalPath());
+
+                    // copy gaiaAttributes.***
+                    GaiaAttribute newGaiaAttribute = gaiaAttribute.getCopy();
+                    halfEdgeSceneCopy.setAttribute(newGaiaAttribute);
+
                     mapClassifyIdToHalfEdgeScene.put(faceClassifyId, halfEdgeSceneCopy);
                 }
                 halfEdgeSceneCopy.getNodes().add(halfEdgeNode);
