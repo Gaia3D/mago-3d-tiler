@@ -48,8 +48,8 @@ public abstract class DefaultTiler {
         matrix.mul(rotationMatrix, matrix);
     }
 
-    protected Matrix4d getTransformMatrix(GaiaBoundingBox boundingBox) {
-        Vector3d center = boundingBox.getCenter();
+    protected Matrix4d getTransformMatrix(GaiaBoundingBox cartographicBoundingBox) {
+        Vector3d center = cartographicBoundingBox.getCenter();
         double[] cartesian = GlobeUtils.geographicToCartesianWgs84(center.x, center.y, center.z);
         return GlobeUtils.transformMatrixAtCartesianPointWgs84(cartesian[0], cartesian[1], cartesian[2]);
     }

@@ -70,8 +70,8 @@ public class GaiaMinimizerPhR implements PreProcess {
             log.info("Minimize GaiaScene LOD 0");
             GaiaSet tempSetLod0 = GaiaSet.fromGaiaScene(scene);
             Path tempPathLod0 = tempSetLod0.writeFile(tileInfo.getTempPath(), tileInfo.getSerial(), tempSetLod0.getAttribute());
-//            tileInfo.setTempPath(tempPathLod0);
-//            tempPathLod.add(tempPathLod0);
+            tileInfo.setTempPath(tempPathLod0);
+            tempPathLod.add(tempPathLod0);
 
             // Lod 1.************************************************************************************************************
             log.info("Minimize GaiaScene LOD 1");
@@ -81,7 +81,7 @@ public class GaiaMinimizerPhR implements PreProcess {
             log.info("Doing triangles reduction in HalfEdgeScene");
             halfEdgeScene.doTrianglesReduction();
 
-            halfEdgeScene.TEST_cutScene();
+            //halfEdgeScene.TEST_cutScene();
 
 //            Path testPath = tempFolder.resolve("test");
 //            if(!testPath.toFile().exists()) {
@@ -113,8 +113,6 @@ public class GaiaMinimizerPhR implements PreProcess {
 
             Path tempFolderLod1 = tempFolder.resolve("lod1");
             Path tempPathLod1 = tempSetLod1.writeFile(tempFolderLod1, tileInfo.getSerial(), tempSetLod1.getAttribute());
-            //tempPathLod.add(tempPathLod1);
-            tileInfo.setTempPath(tempPathLod1);
             tempPathLod.add(tempPathLod1);
 
 

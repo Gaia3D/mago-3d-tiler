@@ -42,8 +42,8 @@ import java.util.stream.Collectors;
 public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
     public final GlobalOptions globalOptions = GlobalOptions.getInstance();
 
-    @Override
-    public Tileset run(List<TileInfo> tileInfos) throws FileNotFoundException {
+
+    public Tileset run_old(List<TileInfo> tileInfos) throws FileNotFoundException {
         //**************************************************************
         // In photoRealistic, 1rst make a empty quadTree.
         // then use rectangleCakeCutter to fill the quadTree.
@@ -80,7 +80,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         return tileset;
     }
 
-    public Tileset run_new(List<TileInfo> tileInfos) throws FileNotFoundException {
+    @Override
+    public Tileset run(List<TileInfo> tileInfos) throws FileNotFoundException {
         //**************************************************************
         // In photoRealistic, 1rst make a empty quadTree.
         // then use rectangleCakeCutter to fill the quadTree.
@@ -89,6 +90,26 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         geometricError = DecimalUtils.cut(geometricError);
 
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
+
+        // make globalBoundingBox as square.***
+        double minLonDeg = globalBoundingBox.getMinX();
+        double minLatDeg = globalBoundingBox.getMinY();
+        double maxLonDeg = globalBoundingBox.getMaxX();
+        double maxLatDeg = globalBoundingBox.getMaxY();
+
+        double lonDegDiff = maxLonDeg - minLonDeg;
+        double latDegDiff = maxLatDeg - minLatDeg;
+
+        if(lonDegDiff > latDegDiff)
+        {
+            maxLatDeg = minLatDeg + lonDegDiff;
+        }
+        else if(latDegDiff > lonDegDiff)
+        {
+            maxLonDeg = minLonDeg + latDegDiff;
+        }
+
+
         Matrix4d transformMatrix = getTransformMatrix(globalBoundingBox);
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);
@@ -99,7 +120,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         root.setBoundingVolume(new BoundingVolume(globalBoundingBox));
         root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
         root.setGeometricError(geometricError);
-        double minLatLength = 200.0; // test value
+        double minLatLength = 300.0; // test value
         makeQuadTree(root, minLatLength);
 
         int lod = 0;
@@ -110,6 +131,9 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             throw new RuntimeException(e);
         }
 
+        // distribute contents to node in the correspondent depth.***
+        int maxDepth = root.getMaxDepth();
+        root.distributeContentsPhR(tileInfos, maxDepth);
 
 //        //Old**************************************************************
 //        try {
@@ -126,6 +150,11 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         tileset.setAsset(asset);
         tileset.setRoot(root);
         return tileset;
+    }
+
+    private void distributeContents(List<TileInfo> tileInfos, int depth, Node rootNode)
+    {
+
     }
 
     private void cutRectangleCake(List<TileInfo> tileInfos, int lod, Node rootNode) throws FileNotFoundException {
@@ -159,8 +188,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             latDivisions.add(minLatDeg + i * latStep);
         }
 
-        Map<TileInfo, TileInfo> deletedTileInfoMap = new HashMap<>();
-
         int longitudesCount = lonDivisions.size();
         for(int i = 0; i < longitudesCount; i++)
         {
@@ -178,6 +205,94 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
         int hola = 0;
 
+    }
+
+    private boolean cutHalfEdgeSceneByPlane(HalfEdgeScene halfEdgeScene, PlaneType planeType, Vector3d samplePointLC, TileInfo tileInfo, Path cutTempLodPath,
+                                         List<TileInfo> cutTileInfos, double error)
+    {
+        KmlInfo kmlInfo = tileInfo.getKmlInfo();
+        Vector3d geoCoordPosition = kmlInfo.getPosition();
+        Vector3d posWC = GlobeUtils.geographicToCartesianWgs84(geoCoordPosition);
+        Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(posWC);
+        Matrix4d transformMatrixInv = new Matrix4d(transformMatrix);
+        transformMatrixInv.invert();
+
+        if(halfEdgeScene.cutByPlane(planeType, samplePointLC, error))
+        {
+            // once scene is cut, then save the 2 scenes and delete the original.***
+            halfEdgeScene.classifyFacesIdByPlane(planeType, samplePointLC);
+
+            List<HalfEdgeScene> halfEdgeCutScenes = HalfEdgeUtils.getCopyHalfEdgeScenesByFaceClassifyId(halfEdgeScene, null);
+
+            // create tileInfos for the cut scenes.***
+            for(HalfEdgeScene halfEdgeCutScene : halfEdgeCutScenes)
+            {
+                GaiaScene gaiaSceneCut = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeCutScene);
+                GaiaBoundingBox boundingBoxCutLC = gaiaSceneCut.getGaiaBoundingBox();
+
+                // Calculate cartographicBoundingBox.***
+                double minPosLCX = boundingBoxCutLC.getMinX();
+                double minPosLCY = boundingBoxCutLC.getMinY();
+                double minPosLCZ = boundingBoxCutLC.getMinZ();
+
+                double maxPosLCX = boundingBoxCutLC.getMaxX();
+                double maxPosLCY = boundingBoxCutLC.getMaxY();
+                double maxPosLCZ = boundingBoxCutLC.getMaxZ();
+
+                Vector3d leftDownBottomLC = new Vector3d(minPosLCX, minPosLCY, minPosLCZ);
+                Vector3d rightDownBottomLC = new Vector3d(maxPosLCX, minPosLCY, minPosLCZ);
+                Vector3d rightUpBottomLC = new Vector3d(maxPosLCX, maxPosLCY, minPosLCZ);
+
+                Vector3d leftDownBottomWC = transformMatrix.transformPosition(leftDownBottomLC);
+                Vector3d geoCoordLeftDownBottom = GlobeUtils.cartesianToGeographicWgs84(leftDownBottomWC);
+
+                Vector3d rightDownBottomWC = transformMatrix.transformPosition(rightDownBottomLC);
+                Vector3d geoCoordRightDownBottom = GlobeUtils.cartesianToGeographicWgs84(rightDownBottomWC);
+
+                Vector3d rightUpBottomWC = transformMatrix.transformPosition(rightUpBottomLC);
+                Vector3d geoCoordRightUpBottom = GlobeUtils.cartesianToGeographicWgs84(rightUpBottomWC);
+
+                double minLonDegCut = geoCoordLeftDownBottom.x;
+                double minLatDegCut = geoCoordLeftDownBottom.y;
+                double maxLonDegCut = geoCoordRightDownBottom.x;
+                double maxLatDegCut = geoCoordRightUpBottom.y;
+
+                GaiaBoundingBox cartographicBoundingBox = new GaiaBoundingBox(minLonDegCut, minLatDegCut, boundingBoxCutLC.getMinZ(), maxLonDegCut, maxLatDegCut, boundingBoxCutLC.getMaxZ(), false);
+
+                // create an originalPath for the cut scene.***
+                Path cutScenePath = Paths.get("");
+                gaiaSceneCut.setOriginalPath(cutScenePath);
+
+                GaiaSet gaiaSetCut = GaiaSet.fromGaiaScene(gaiaSceneCut);
+                UUID identifier = UUID.randomUUID();
+                Path gaiaSetCutFolderPath = cutTempLodPath.resolve(identifier.toString());
+                if(!gaiaSetCutFolderPath.toFile().exists())
+                {
+                    gaiaSetCutFolderPath.toFile().mkdirs();
+                }
+
+                Path tempPathLod = gaiaSetCut.writeFile(gaiaSetCutFolderPath);
+
+                // create a new tileInfo for the cut scene.***
+                TileInfo tileInfoCut = TileInfo.builder().scene(gaiaSceneCut).outputPath(tileInfo.getOutputPath()).build();
+                tileInfoCut.setTempPath(tempPathLod);
+                Matrix4d transformMatrixCut = new Matrix4d(tileInfo.getTransformMatrix());
+                tileInfoCut.setTransformMatrix(transformMatrixCut);
+                tileInfoCut.setBoundingBox(boundingBoxCutLC);
+                tileInfoCut.setCartographicBBox(cartographicBoundingBox);
+
+                // make a kmlInfo for the cut scene.***
+                // In reality, we must recalculate the position of the cut scene. Provisionally, we use the same position.***
+                // In reality, we must recalculate the position of the cut scene. Provisionally, we use the same position.***
+                KmlInfo kmlInfoCut = KmlInfo.builder().position(geoCoordPosition).build();
+                tileInfoCut.setKmlInfo(kmlInfoCut);
+                cutTileInfos.add(tileInfoCut);
+            }
+
+            return true;
+
+        }
+        return false;
     }
 
     private void cutRectangleCakeByLongitudeDeg(List<TileInfo> tileInfos, int lod, double lonDeg) throws FileNotFoundException {
@@ -208,6 +323,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             TileInfo tileInfo = tileInfos.get(i);
             if(deletedTileInfoMap.containsKey(tileInfo))
                 continue;
+
             Path path;
             if(tileInfo.getTempPathLod() != null) {
                 List<Path> paths = tileInfo.getTempPathLod();
@@ -241,46 +357,11 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             Vector3d samplePointLC = new Vector3d();
             transformMatrixInv.transformPosition(samplePointWC, samplePointLC);
 
-            if(halfEdgeScene.cutByPlane(planeType, samplePointLC, error))
+            if(this.cutHalfEdgeSceneByPlane(halfEdgeScene, planeType, samplePointLC, tileInfo, cutTempLodPath, cutTileInfos, error))
             {
                 deletedTileInfoMap.put(tileInfo, tileInfo);
-                // once scene is cut, then save the 2 scenes and delete the original.***
-                halfEdgeScene.classifyFacesIdByPlane(planeType, samplePointLC);
-
-                List<HalfEdgeScene> halfEdgeCutScenes = HalfEdgeUtils.getCopyHalfEdgeScenesByFaceClassifyId(halfEdgeScene, null);
-
-                // create tileInfos for the cut scenes.***
-                for(HalfEdgeScene halfEdgeCutScene : halfEdgeCutScenes)
-                {
-                    GaiaScene gaiaSceneCut = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeCutScene);
-
-                    // create an originalPath for the cut scene.***
-                    Path cutScenePath = Paths.get("");
-                    gaiaSceneCut.setOriginalPath(cutScenePath);
-
-                    GaiaSet gaiaSetCut = GaiaSet.fromGaiaScene(gaiaSceneCut);
-                    UUID identifier = UUID.randomUUID();
-                    Path gaiaSetCutFolderPath = cutTempLodPath.resolve(identifier.toString());
-                    if(!gaiaSetCutFolderPath.toFile().exists())
-                    {
-                        gaiaSetCutFolderPath.toFile().mkdirs();
-                    }
-
-                    Path tempPathLod = gaiaSetCut.writeFile(gaiaSetCutFolderPath);
-
-                    // create a new tileInfo for the cut scene.***
-                    TileInfo tileInfoCut = TileInfo.builder().scene(gaiaSceneCut).outputPath(tileInfo.getOutputPath()).build();
-                    tileInfoCut.setTempPath(tempPathLod);
-
-                    // make a kmlInfo for the cut scene.***
-                    // In reality, we must recalculate the position of the cut scene. Provisionally, we use the same position.***
-                    // In reality, we must recalculate the position of the cut scene. Provisionally, we use the same position.***
-                    KmlInfo kmlInfoCut = KmlInfo.builder().position(geoCoordPosition).build();
-                    tileInfoCut.setKmlInfo(kmlInfoCut);
-                    cutTileInfos.add(tileInfoCut);
-                }
-
             }
+
             int hola = 0;
         }
 
@@ -357,46 +438,11 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             Vector3d samplePointLC = new Vector3d();
             transformMatrixInv.transformPosition(samplePointWC, samplePointLC);
 
-            if(halfEdgeScene.cutByPlane(planeType, samplePointLC, error))
+            if(this.cutHalfEdgeSceneByPlane(halfEdgeScene, planeType, samplePointLC, tileInfo, cutTempLodPath, cutTileInfos, error))
             {
                 deletedTileInfoMap.put(tileInfo, tileInfo);
-                // once scene is cut, then save the 2 scenes and delete the original.***
-                halfEdgeScene.classifyFacesIdByPlane(planeType, samplePointLC);
-
-                List<HalfEdgeScene> halfEdgeCutScenes = HalfEdgeUtils.getCopyHalfEdgeScenesByFaceClassifyId(halfEdgeScene, null);
-
-                // create tileInfos for the cut scenes.***
-                for(HalfEdgeScene halfEdgeCutScene : halfEdgeCutScenes)
-                {
-                    GaiaScene gaiaSceneCut = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeCutScene);
-
-                    // create an originalPath for the cut scene.***
-                    Path cutScenePath = Paths.get("");
-                    gaiaSceneCut.setOriginalPath(cutScenePath);
-
-                    GaiaSet gaiaSetCut = GaiaSet.fromGaiaScene(gaiaSceneCut);
-                    UUID identifier = UUID.randomUUID();
-                    Path gaiaSetCutFolderPath = cutTempLodPath.resolve(identifier.toString());
-                    if(!gaiaSetCutFolderPath.toFile().exists())
-                    {
-                        gaiaSetCutFolderPath.toFile().mkdirs();
-                    }
-
-                    Path tempPathLod = gaiaSetCut.writeFile(gaiaSetCutFolderPath);
-
-                    // create a new tileInfo for the cut scene.***
-                    TileInfo tileInfoCut = TileInfo.builder().scene(gaiaSceneCut).outputPath(tileInfo.getOutputPath()).build();
-                    tileInfoCut.setTempPath(tempPathLod);
-
-                    // make a kmlInfo for the cut scene.***
-                    // In reality, we must recalculate the position of the cut scene. Provisionally, we use the same position.***
-                    // In reality, we must recalculate the position of the cut scene. Provisionally, we use the same position.***
-                    KmlInfo kmlInfoCut = KmlInfo.builder().position(geoCoordPosition).build();
-                    tileInfoCut.setKmlInfo(kmlInfoCut);
-                    cutTileInfos.add(tileInfoCut);
-                }
-
             }
+
 
             int hola = 0;
         }
@@ -673,7 +719,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
         int lodErrorDouble = lodError;
         List<TileInfo> resultInfos;
-        List<TileInfo> remainInfos;
+        List<TileInfo> remainInfos; // small buildings, to add after as ADD.***
         resultInfos = tileInfos.stream().filter(tileInfo -> {
             double geometricError = tileInfo.getBoundingBox().getLongestDistance();
             return geometricError >= lodErrorDouble;

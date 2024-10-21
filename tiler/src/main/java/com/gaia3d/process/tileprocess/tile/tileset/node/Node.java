@@ -4,12 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
+import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.DecimalUtils;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
+import org.opengis.geometry.BoundingBox;
 
 import java.util.List;
 
@@ -112,6 +114,32 @@ public class Node {
         }
         for (Node node : children) {
             node.getNodesByDepth(depth, resultNodes);
+        }
+    }
+
+    public void distributeContentsPhR(List<TileInfo> tileInfos, int depth) {
+        if (this.depth == depth) {
+            if (content != null) {
+                //content.distributeContentsPhR(tileInfos);
+                this.setRefine(Node.RefineType.REPLACE);
+
+            }
+            return;
+        }
+
+        int tileInfosCount = tileInfos.size();
+        for (int i = 0; i < tileInfosCount; i++) {
+            TileInfo tileInfo = tileInfos.get(i);
+            Matrix4d tileTransformMatrix = tileInfo.getTransformMatrix();
+            GaiaBoundingBox tileBoundingBox = tileInfo.getBoundingBox();
+
+            int hola = 0;
+        }
+        if (children == null) {
+            return;
+        }
+        for (Node node : children) {
+            node.distributeContentsPhR(tileInfos, depth);
         }
     }
 

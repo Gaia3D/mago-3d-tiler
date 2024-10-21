@@ -1390,6 +1390,7 @@ public class HalfEdgeSurface implements Serializable {
         // find halfEdges that are cut by the plane.***
 
         int hedgesCount = halfEdges.size();
+        int hedgesCutCount = 0;
         for (int i = 0; i < hedgesCount; i++) {
             HalfEdge hedge = halfEdges.get(i);
             if (hedge.getStatus() == ObjectStatus.DELETED) {
@@ -1400,6 +1401,12 @@ public class HalfEdgeSurface implements Serializable {
             if (hedge.getIntersectionByPlane(PlaneType.XZ, planePosition, intersectionVertex, error)) {
                 splitHalfEdge(hedge, intersectionVertex);
                 hedgesCount = halfEdges.size();
+
+                hedgesCutCount++;
+                if(hedgesCutCount%10 == 0)
+                {
+                    log.info("hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount + " , currIdx = " + i);
+                }
             }
         }
 
@@ -1409,6 +1416,7 @@ public class HalfEdgeSurface implements Serializable {
         // find halfEdges that are cut by the plane.***
 
         int hedgesCount = halfEdges.size();
+        int hedgesCutCount = 0;
         int cutCount = 0;
         for (int i = 0; i < hedgesCount; i++) {
             HalfEdge hedge = halfEdges.get(i);
@@ -1420,11 +1428,11 @@ public class HalfEdgeSurface implements Serializable {
             if (hedge.getIntersectionByPlane(PlaneType.YZ, planePosition, intersectionVertex, error)) {
                 splitHalfEdge(hedge, intersectionVertex);
                 hedgesCount = halfEdges.size();
-                cutCount++;
-//                if(cutCount > 1)
-//                {
-//                    break; // test
-//                }
+                hedgesCutCount++;
+                if(hedgesCutCount%10 == 0)
+                {
+                    log.info("hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount + " , currIdx = " + i);
+                }
             }
         }
     }
@@ -1749,24 +1757,10 @@ public class HalfEdgeSurface implements Serializable {
             // Now set twins.***
             if (!newHalfEdgeA1.setTwin(newHalfEdgeB1)) {
                 int hola = 0;
-
-                double lengthA1 = newHalfEdgeA1.getLength();
-                double lengthB1 = newHalfEdgeB1.getLength();
-
-                if (lengthA1 > 5.0 || lengthB1 > 5.0) {
-                    int hola2 = 0;
-                }
             }
 
             if (!newHalfEdgeA2.setTwin(newHalfEdgeC3)) {
                 int hola = 0;
-
-                double lengthA2 = newHalfEdgeA2.getLength();
-                double lengthC3 = newHalfEdgeC3.getLength();
-
-                if (lengthA2 > 5.0 || lengthC3 > 5.0) {
-                    int hola2 = 0;
-                }
             }
 
 
@@ -1774,13 +1768,6 @@ public class HalfEdgeSurface implements Serializable {
                 HalfEdge currTwinOfExteriorA2 = exteriorHEdgeA2.getTwin();
                 if (!newHalfEdgeA3.setTwin(exteriorHEdgeA2)) {
                     int hola = 0;
-                }
-
-                double lengthA3 = newHalfEdgeA3.getLength();
-                double lengthExteriorA2 = exteriorHEdgeA2.getLength();
-
-                if (lengthA3 > 5.0 || lengthExteriorA2 > 5.0) {
-                    int hola2 = 0;
                 }
 
                 if (currTwinOfExteriorA2 != null) {
@@ -1795,13 +1782,6 @@ public class HalfEdgeSurface implements Serializable {
                     int hola = 0;
                 }
 
-                double lengthB2 = newHalfEdgeB2.getLength();
-                double lengthExteriorB1 = exteriorHEdgeB1.getLength();
-
-                if (lengthB2 > 5.0 || lengthExteriorB1 > 5.0) {
-                    int hola2 = 0;
-                }
-
                 if (currTwinOfExteriorB1 != null) {
                     currTwinOfExteriorB1.setTwin(null);
                 }
@@ -1810,37 +1790,16 @@ public class HalfEdgeSurface implements Serializable {
 
             if (!newHalfEdgeB3.setTwin(newHalfEdgeD2)) {
                 int hola = 0;
-
-                double lengthB3 = newHalfEdgeB3.getLength();
-                double lengthD2 = newHalfEdgeD2.getLength();
-
-                if (lengthB3 > 5.0 || lengthD2 > 5.0) {
-                    int hola2 = 0;
-                }
             }
 
             if (!newHalfEdgeC1.setTwin(newHalfEdgeD1)) {
                 int hola = 0;
-
-                double lengthC1 = newHalfEdgeC1.getLength();
-                double lengthD1 = newHalfEdgeD1.getLength();
-
-                if (lengthC1 > 5.0 || lengthD1 > 5.0) {
-                    int hola2 = 0;
-                }
             }
 
             if (exteriorHEdgeA1 != null) {
                 HalfEdge currTwinOfExteriorA1 = exteriorHEdgeA1.getTwin();
                 if (!newHalfEdgeC2.setTwin(exteriorHEdgeA1)) {
                     int hola = 0;
-                }
-
-                double lengthC2 = newHalfEdgeC2.getLength();
-                double lengthExteriorA1 = exteriorHEdgeA1.getLength();
-
-                if (lengthC2 > 5.0 || lengthExteriorA1 > 5.0) {
-                    int hola2 = 0;
                 }
 
                 if (currTwinOfExteriorA1 != null) {
@@ -1852,13 +1811,6 @@ public class HalfEdgeSurface implements Serializable {
                 HalfEdge currTwinOfExteriorB2 = exteriorHEdgeB2.getTwin();
                 if (!newHalfEdgeD3.setTwin(exteriorHEdgeB2)) {
                     int hola = 0;
-                }
-
-                double lengthD3 = newHalfEdgeD3.getLength();
-                double lengthExteriorB2 = exteriorHEdgeB2.getLength();
-
-                if (lengthD3 > 5.0 || lengthExteriorB2 > 5.0) {
-                    int hola2 = 0;
                 }
 
                 if (currTwinOfExteriorB2 != null) {
@@ -1999,25 +1951,11 @@ public class HalfEdgeSurface implements Serializable {
             // Now set twins.***
             if (!newHalfEdgeA2.setTwin(newHalfEdgeC3)) {
                 int hola = 0;
-
-                double lengthA2 = newHalfEdgeA2.getLength();
-                double lengthC3 = newHalfEdgeC3.getLength();
-
-                if (lengthA2 > 5.0 || lengthC3 > 5.0) {
-                    int hola2 = 0;
-                }
             }
             if (exteriorHEdgeA2 != null) {
                 HalfEdge currTwinOfExteriorA2 = exteriorHEdgeA2.getTwin();
                 if (!newHalfEdgeA3.setTwin(exteriorHEdgeA2)) {
                     int hola = 0;
-                }
-
-                double lengthA3 = newHalfEdgeA3.getLength();
-                double lengthExteriorA2 = exteriorHEdgeA2.getLength();
-
-                if (lengthA3 > 5.0 || lengthExteriorA2 > 5.0) {
-                    int hola2 = 0;
                 }
 
                 if (currTwinOfExteriorA2 != null) {
@@ -2029,13 +1967,6 @@ public class HalfEdgeSurface implements Serializable {
                 HalfEdge currTwinOfExteriorA1 = exteriorHEdgeA1.getTwin();
                 if (!newHalfEdgeC2.setTwin(exteriorHEdgeA1)) {
                     int hola = 0;
-                }
-
-                double lengthC2 = newHalfEdgeC2.getLength();
-                double lengthExteriorA1 = exteriorHEdgeA1.getLength();
-
-                if (lengthC2 > 5.0 || lengthExteriorA1 > 5.0) {
-                    int hola2 = 0;
                 }
 
                 if (currTwinOfExteriorA1 != null) {
