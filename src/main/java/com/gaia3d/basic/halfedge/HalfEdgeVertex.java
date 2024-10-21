@@ -329,10 +329,6 @@ public class HalfEdgeVertex implements Serializable {
 
             // status
             outputStream.writeObject(status);
-            // positionType
-            outputStream.writeObject(positionType);
-            // id
-            outputStream.writeInt(id);
 
             // outingHalfEdgeId
             int outingHalfEdgeId = -1;
@@ -395,10 +391,6 @@ public class HalfEdgeVertex implements Serializable {
 
             // status
             status = (ObjectStatus)inputStream.readObject();
-            // positionType
-            positionType = (PositionType)inputStream.readObject();
-            // id
-            id = inputStream.readInt();
 
             // outingHalfEdgeId
             outingHalfEdgeId = inputStream.readInt();

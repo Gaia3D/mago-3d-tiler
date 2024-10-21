@@ -62,6 +62,55 @@ public class HalfEdgeScene  implements Serializable{
         }
     }
 
+    public void TEST_cutScene()
+    {
+        // Test.***
+        GaiaBoundingBox bbox = getBoundingBox();
+        Vector3d center = bbox.getCenter();
+        double error = 1e-8;
+//        if(error < 1)
+//        {
+//            return;
+//        }
+        PlaneType planeType = PlaneType.YZ;
+        cutByPlane(planeType, center, error);
+        classifyFacesIdByPlane(planeType, center);
+
+        // check if there are no used vertices.***
+        List<HalfEdgeSurface> resultHalfEdgeSurfaces = new ArrayList<>();
+        extractSurfaces(resultHalfEdgeSurfaces);
+        for (HalfEdgeSurface surface : resultHalfEdgeSurfaces) {
+            if(surface.existNoUsedVertices())
+            {
+                log.error("Error: existNoUsedVertices.***");
+            }
+        }
+
+        // now, remove faces with classifyId = 1.***
+//        for (HalfEdgeNode node : nodes) {
+//            node.TEST_removeFacesWithClassifyId(1);
+//        }
+
+    }
+
+    public List<HalfEdgeSurface> extractSurfaces(List<HalfEdgeSurface> resultHalfEdgeSurfaces)
+    {
+        if(resultHalfEdgeSurfaces == null) {
+            resultHalfEdgeSurfaces = new ArrayList<>();
+        }
+        for (HalfEdgeNode node : nodes) {
+            resultHalfEdgeSurfaces = node.extractSurfaces(resultHalfEdgeSurfaces);
+        }
+        return resultHalfEdgeSurfaces;
+    }
+
+    public void removeDeletedObjects()
+    {
+        for (HalfEdgeNode node : nodes) {
+            node.removeDeletedObjects();
+        }
+    }
+
     public boolean cutByPlane(PlaneType planeType, Vector3d planePosition, double error)
     {
         // 1rst check if the plane intersects the bbox.***
@@ -88,6 +137,8 @@ public class HalfEdgeScene  implements Serializable{
         for (HalfEdgeNode node : nodes) {
             node.cutByPlane(planeType, planePosition, error);
         }
+
+        removeDeletedObjects();
 
         return true;
     }

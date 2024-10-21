@@ -49,6 +49,13 @@ public class HalfEdgeMesh implements Serializable {
         }
     }
 
+    public void removeDeletedObjects()
+    {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.removeDeletedObjects();
+        }
+    }
+
     public GaiaBoundingBox calculateBoundingBox(GaiaBoundingBox resultBBox) {
         if(resultBBox == null) {
             resultBBox = new GaiaBoundingBox();
@@ -100,5 +107,17 @@ public class HalfEdgeMesh implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public List<HalfEdgeSurface> extractSurfaces(List<HalfEdgeSurface> resultHalfEdgeSurfaces) {
+        if (resultHalfEdgeSurfaces == null) {
+            resultHalfEdgeSurfaces = new ArrayList<>();
+        }
+
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.extractSurfaces(resultHalfEdgeSurfaces);
+        }
+
+        return resultHalfEdgeSurfaces;
     }
 }

@@ -134,7 +134,7 @@ public class HalfEdgeFace implements Serializable {
             }
 
             outputStream.writeObject(status);
-            outputStream.writeInt(id);
+
             halfEdgeId = -1;
             if(halfEdge != null)
             {
@@ -160,7 +160,6 @@ public class HalfEdgeFace implements Serializable {
             }
 
             status = (ObjectStatus)inputStream.readObject();
-            id = inputStream.readInt();
             halfEdgeId = inputStream.readInt();
         } catch (Exception e) {
             e.printStackTrace();

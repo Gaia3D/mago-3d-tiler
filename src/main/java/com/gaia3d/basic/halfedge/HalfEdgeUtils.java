@@ -96,6 +96,11 @@ public class HalfEdgeUtils {
         int verticesCount = halfEdgeVertices.size();
         for (int i = 0; i < verticesCount; i++) {
             HalfEdgeVertex halfEdgeVertex = halfEdgeVertices.get(i);
+//            String vertexNote = halfEdgeVertex.getNote();
+//            if(vertexNote != null && vertexNote.equals("intersectionVertex"))
+//            {
+//                int hola = 0;
+//            }
             GaiaVertex gaiaVertex = halfEdgeVertex.toGaiaVertex();
             mapHalfEdgeVertexToGaiaVertex.put(halfEdgeVertex, gaiaVertex);
             gaiaPrimitive.getVertices().add(gaiaVertex);
@@ -226,6 +231,7 @@ public class HalfEdgeUtils {
             GaiaMaterial newGaiaMaterial = gaiaMaterial.clone();
             halfEdgeScene.getMaterials().add(newGaiaMaterial);
         }
+
         return halfEdgeScene;
     }
 
@@ -359,7 +365,7 @@ public class HalfEdgeUtils {
         // set twins.***
         halfEdgeSurface.setTwins();
         halfEdgeSurface.checkSandClockFaces();
-        halfEdgeSurface.checkEqualHEdges();
+        halfEdgeSurface.TEST_checkEqualHEdges();
 
         return halfEdgeSurface;
     }

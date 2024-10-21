@@ -89,6 +89,29 @@ public class HalfEdgeNode implements Serializable {
         }
     }
 
+    public void removeDeletedObjects() {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.removeDeletedObjects();
+        }
+        for (HalfEdgeNode child : children) {
+            child.removeDeletedObjects();
+        }
+    }
+
+    public List<HalfEdgeSurface> extractSurfaces(List<HalfEdgeSurface> resultHalfEdgeSurfaces)
+    {
+        if(resultHalfEdgeSurfaces == null) {
+            resultHalfEdgeSurfaces = new ArrayList<>();
+        }
+        for (HalfEdgeMesh mesh : meshes) {
+            resultHalfEdgeSurfaces = mesh.extractSurfaces(resultHalfEdgeSurfaces);
+        }
+        for (HalfEdgeNode child : children) {
+            resultHalfEdgeSurfaces = child.extractSurfaces(resultHalfEdgeSurfaces);
+        }
+        return resultHalfEdgeSurfaces;
+    }
+
     public GaiaBoundingBox calculateBoundingBox(GaiaBoundingBox resultBBox) {
         if(resultBBox == null) {
             resultBBox = new GaiaBoundingBox();
