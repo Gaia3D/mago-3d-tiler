@@ -62,6 +62,43 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         root.setBoundingVolume(new BoundingVolume(globalBoundingBox));
         root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
         root.setGeometricError(geometricError);
+
+        //Old**************************************************************
+        try {
+            createNode(root, tileInfos, 0);
+        } catch (IOException e) {
+            log.error("Error : {}", e.getMessage());
+            throw new RuntimeException(e);
+        }
+        //End Old.---------------------------------------------------------
+
+        Asset asset = createAsset();
+        Tileset tileset = new Tileset();
+        tileset.setGeometricError(geometricError);
+        tileset.setAsset(asset);
+        tileset.setRoot(root);
+        return tileset;
+    }
+
+    public Tileset run_new(List<TileInfo> tileInfos) throws FileNotFoundException {
+        //**************************************************************
+        // In photoRealistic, 1rst make a empty quadTree.
+        // then use rectangleCakeCutter to fill the quadTree.
+        //**************************************************************
+        double geometricError = calcGeometricError(tileInfos);
+        geometricError = DecimalUtils.cut(geometricError);
+
+        GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
+        Matrix4d transformMatrix = getTransformMatrix(globalBoundingBox);
+        if (globalOptions.isClassicTransformMatrix()) {
+            rotateX90(transformMatrix);
+        }
+
+        Node root = createRoot();
+        root.setDepth(0);
+        root.setBoundingVolume(new BoundingVolume(globalBoundingBox));
+        root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
+        root.setGeometricError(geometricError);
         double minLatLength = 200.0; // test value
         makeQuadTree(root, minLatLength);
 

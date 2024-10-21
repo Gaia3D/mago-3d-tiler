@@ -37,6 +37,13 @@ public class HalfEdge implements Serializable {
         }
     }
 
+    public void setFace(HalfEdgeFace face) {
+        this.face = face;
+        if (face != null) {
+            face.setHalfEdge(this);
+        }
+    }
+
     public boolean setTwin(HalfEdge twin) {
         if (twin == null) {
             this.twin = null;
@@ -229,11 +236,25 @@ public class HalfEdge implements Serializable {
             return false;
         }
 
+        // check if the halfEdge is parallel to the plane
+        if (Math.abs(startVertexPosition.x - endVertexPosition.x) < error) {
+            return false;
+        }
+
         // calculate the intersection point
         double t = (planePosition.x - startVertexPosition.x) / (endVertexPosition.x - startVertexPosition.x);
         resultIntersectionPoint.set(planePosition.x,
                 startVertexPosition.y + t * (endVertexPosition.y - startVertexPosition.y),
                 startVertexPosition.z + t * (endVertexPosition.z - startVertexPosition.z));
+
+        // t represents
+
+        // check if the intersection point is in the range of the halfEdge
+        if (resultIntersectionPoint.y < Math.min(startVertexPosition.y, endVertexPosition.y) - error) {
+            return false;
+        } else if (resultIntersectionPoint.y > Math.max(startVertexPosition.y, endVertexPosition.y) + error) {
+            return false;
+        }
 
         resultIntesectionVertex.setPosition(resultIntersectionPoint);
 
@@ -294,11 +315,23 @@ public class HalfEdge implements Serializable {
             return false;
         }
 
+        // check if the halfEdge is parallel to the plane
+        if (Math.abs(startVertexPosition.y - endVertexPosition.y) < error) {
+            return false;
+        }
+
         // calculate the intersection point
         double t = (planePosition.y - startVertexPosition.y) / (endVertexPosition.y - startVertexPosition.y);
         resultIntersectionPoint.set(startVertexPosition.x + t * (endVertexPosition.x - startVertexPosition.x),
                 planePosition.y,
                 startVertexPosition.z + t * (endVertexPosition.z - startVertexPosition.z));
+
+        // check if the intersection point is in the range of the halfEdge
+        if (resultIntersectionPoint.x < Math.min(startVertexPosition.x, endVertexPosition.x) - error) {
+            return false;
+        } else if (resultIntersectionPoint.x > Math.max(startVertexPosition.x, endVertexPosition.x) + error) {
+            return false;
+        }
 
         resultIntesectionVertex.setPosition(resultIntersectionPoint);
 
@@ -370,8 +403,7 @@ public class HalfEdge implements Serializable {
             outputStream.writeInt(faceId);
             // status
             outputStream.writeObject(status);
-            // id
-            outputStream.writeInt(id);
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -389,8 +421,7 @@ public class HalfEdge implements Serializable {
             faceId = inputStream.readInt();
             // status
             status = (ObjectStatus) inputStream.readObject();
-            // id
-            id = inputStream.readInt();
+
         } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }

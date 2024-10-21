@@ -3,7 +3,9 @@ package com.gaia3d.processPhR.preProcessPhR;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.halfedge.HalfEdgeScene;
 import com.gaia3d.basic.halfedge.HalfEdgeUtils;
+import com.gaia3d.basic.halfedge.PlaneType;
 import com.gaia3d.basic.model.GaiaScene;
+import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.process.preprocess.PreProcess;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.AllArgsConstructor;
@@ -11,8 +13,10 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @AllArgsConstructor
@@ -66,8 +70,8 @@ public class GaiaMinimizerPhR implements PreProcess {
             log.info("Minimize GaiaScene LOD 0");
             GaiaSet tempSetLod0 = GaiaSet.fromGaiaScene(scene);
             Path tempPathLod0 = tempSetLod0.writeFile(tileInfo.getTempPath(), tileInfo.getSerial(), tempSetLod0.getAttribute());
-            tileInfo.setTempPath(tempPathLod0);
-            tempPathLod.add(tempPathLod0);
+//            tileInfo.setTempPath(tempPathLod0);
+//            tempPathLod.add(tempPathLod0);
 
             // Lod 1.************************************************************************************************************
             log.info("Minimize GaiaScene LOD 1");
@@ -77,27 +81,29 @@ public class GaiaMinimizerPhR implements PreProcess {
             log.info("Doing triangles reduction in HalfEdgeScene");
             halfEdgeScene.doTrianglesReduction();
 
-            Path testPath = tempFolder.resolve("test");
-            if(!testPath.toFile().exists()) {
-                testPath.toFile().mkdirs();
-            }
-            try{
-                halfEdgeScene.writeFile(testPath.toString(), "testhalfEdgeScene");
-            } catch (FileNotFoundException e) {
-                log.error("Failed to write file", e);
-                throw new RuntimeException("Failed to write file", e);
-            }
+            halfEdgeScene.TEST_cutScene();
 
-
-            try
-            {
-                halfEdgeScene = HalfEdgeScene.readFile(testPath.toString(), "testhalfEdgeScene");
-            }
-            catch (FileNotFoundException e)
-            {
-                log.error("Failed to read file", e);
-                throw new RuntimeException("Failed to read file", e);
-            }
+//            Path testPath = tempFolder.resolve("test");
+//            if(!testPath.toFile().exists()) {
+//                testPath.toFile().mkdirs();
+//            }
+//            try{
+//                halfEdgeScene.writeFile(testPath.toString(), "testHalfEdgeScene");
+//            } catch (FileNotFoundException e) {
+//                log.error("Failed to write file", e);
+//                throw new RuntimeException("Failed to write file", e);
+//            }
+//
+//
+//            try
+//            {
+//                halfEdgeScene = HalfEdgeScene.readFile(testPath.toString(), "testHalfEdgeScene");
+//            }
+//            catch (FileNotFoundException e)
+//            {
+//                log.error("Failed to read file", e);
+//                throw new RuntimeException("Failed to read file", e);
+//            }
 
             log.info("Making GaiaScene from HalfEdgeScene");
             GaiaScene sceneLod1 = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
@@ -107,8 +113,9 @@ public class GaiaMinimizerPhR implements PreProcess {
 
             Path tempFolderLod1 = tempFolder.resolve("lod1");
             Path tempPathLod1 = tempSetLod1.writeFile(tempFolderLod1, tileInfo.getSerial(), tempSetLod1.getAttribute());
+            //tempPathLod.add(tempPathLod1);
+            tileInfo.setTempPath(tempPathLod1);
             tempPathLod.add(tempPathLod1);
-
 
 
             // Lod 2.************************************************************************************************************
@@ -147,5 +154,53 @@ public class GaiaMinimizerPhR implements PreProcess {
 
         }
         return tileInfo;
+    }
+
+    private List<HalfEdgeScene> testCutHalfEdgeScene(HalfEdgeScene halfEdgeScene) {
+        List<HalfEdgeScene> halfEdgeCutScenes = null;
+        PlaneType planeType = PlaneType.XZ;
+
+//        if(halfEdgeScene.cutByPlane(planeType, samplePointLC, error))
+//        {
+//            deletedTileInfoMap.put(tileInfo, tileInfo);
+//            // once scene is cut, then save the 2 scenes and delete the original.***
+//            halfEdgeScene.classifyFacesIdByPlane(planeType, samplePointLC);
+//
+//            halfEdgeCutScenes = HalfEdgeUtils.getCopyHalfEdgeScenesByFaceClassifyId(halfEdgeScene, null);
+//
+//            // create tileInfos for the cut scenes.***
+//            for(HalfEdgeScene halfEdgeCutScene : halfEdgeCutScenes)
+//            {
+//                GaiaScene gaiaSceneCut = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeCutScene);
+//
+//                // create an originalPath for the cut scene.***
+//                Path cutScenePath = Paths.get("");
+//                gaiaSceneCut.setOriginalPath(cutScenePath);
+//
+//                GaiaSet gaiaSetCut = GaiaSet.fromGaiaScene(gaiaSceneCut);
+//                UUID identifier = UUID.randomUUID();
+//                Path gaiaSetCutFolderPath = cutTempLodPath.resolve(identifier.toString());
+//                if(!gaiaSetCutFolderPath.toFile().exists())
+//                {
+//                    gaiaSetCutFolderPath.toFile().mkdirs();
+//                }
+//
+//                Path tempPathLod = gaiaSetCut.writeFile(gaiaSetCutFolderPath);
+//
+//                // create a new tileInfo for the cut scene.***
+//                TileInfo tileInfoCut = TileInfo.builder().scene(gaiaSceneCut).outputPath(tileInfo.getOutputPath()).build();
+//                tileInfoCut.setTempPath(tempPathLod);
+//
+//                // make a kmlInfo for the cut scene.***
+//                // In reality, we must recalculate the position of the cut scene. Provisionally, we use the same position.***
+//                // In reality, we must recalculate the position of the cut scene. Provisionally, we use the same position.***
+//                KmlInfo kmlInfoCut = KmlInfo.builder().position(geoCoordPosition).build();
+//                tileInfoCut.setKmlInfo(kmlInfoCut);
+//                cutTileInfos.add(tileInfoCut);
+//            }
+//
+//        }
+
+        return halfEdgeCutScenes;
     }
 }

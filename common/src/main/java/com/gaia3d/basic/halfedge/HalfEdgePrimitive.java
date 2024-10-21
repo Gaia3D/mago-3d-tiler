@@ -69,6 +69,8 @@ public class HalfEdgePrimitive implements Serializable {
         for (HalfEdgeSurface surface : surfaces) {
             surface.cutByPlane(planeType, planePosition, error);
         }
+
+        vertices.clear();
     }
 
     public GaiaBoundingBox calculateBoundingBox(GaiaBoundingBox resultBBox) {
@@ -152,5 +154,9 @@ public class HalfEdgePrimitive implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void extractSurfaces(List<HalfEdgeSurface> resultHalfEdgeSurfaces) {
+        resultHalfEdgeSurfaces.addAll(surfaces);
     }
 }
