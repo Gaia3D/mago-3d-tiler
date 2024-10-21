@@ -72,7 +72,7 @@ public class HalfEdgeScene  implements Serializable{
 //        {
 //            return;
 //        }
-        PlaneType planeType = PlaneType.YZ;
+        PlaneType planeType = PlaneType.XZ;
         cutByPlane(planeType, center, error);
         classifyFacesIdByPlane(planeType, center);
 
