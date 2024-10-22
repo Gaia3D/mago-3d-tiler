@@ -106,9 +106,6 @@ public class GaiaTessellator {
                 ResultPoints2DArray.add(currPoint);
                 lastPoint = currPoint;
             }
-            else {
-                int hola = 0;
-            }
         }
 
         // now, erase colineal points.***
@@ -307,13 +304,6 @@ public class GaiaTessellator {
             }
 
             i++;
-        }
-
-        if(!finished)
-        {
-            // the hole is not intersecting the exteriorPolygon.***
-            // so, must return the exteriorPolygon.***
-            int hola = 0;
         }
 
         return resultPolygon;
