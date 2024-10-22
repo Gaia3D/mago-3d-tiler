@@ -159,4 +159,21 @@ public class HalfEdgePrimitive implements Serializable {
     public void extractSurfaces(List<HalfEdgeSurface> resultHalfEdgeSurfaces) {
         resultHalfEdgeSurfaces.addAll(surfaces);
     }
+
+    public void deleteFacesWithClassifyId(int classifyId) {
+        for (HalfEdgeSurface surface : surfaces) {
+            surface.deleteFacesWithClassifyId(classifyId);
+        }
+    }
+
+    public HalfEdgePrimitive clone()
+    {
+        HalfEdgePrimitive cloned = new HalfEdgePrimitive();
+        cloned.setAccessorIndices(accessorIndices);
+        cloned.setMaterialIndex(materialIndex);
+        for (HalfEdgeSurface surface : surfaces) {
+            cloned.getSurfaces().add(surface.clone());
+        }
+        return cloned;
+    }
 }

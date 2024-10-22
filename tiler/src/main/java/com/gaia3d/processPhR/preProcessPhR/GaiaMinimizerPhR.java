@@ -68,6 +68,13 @@ public class GaiaMinimizerPhR implements PreProcess {
 
             // Lod 0.************************************************************************************************************
             log.info("Minimize GaiaScene LOD 0");
+
+//                        // test.***
+//                        HalfEdgeScene halfEdgeSceneLod0 = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
+//                        halfEdgeSceneLod0.TEST_cutScene();
+//                        GaiaScene sceneLod0 = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneLod0);
+//                        // end test.***
+
             GaiaSet tempSetLod0 = GaiaSet.fromGaiaScene(scene);
             Path tempPathLod0 = tempSetLod0.writeFile(tileInfo.getTempPath(), tileInfo.getSerial(), tempSetLod0.getAttribute());
             tileInfo.setTempPath(tempPathLod0);
@@ -83,27 +90,6 @@ public class GaiaMinimizerPhR implements PreProcess {
 
             //halfEdgeScene.TEST_cutScene();
 
-//            Path testPath = tempFolder.resolve("test");
-//            if(!testPath.toFile().exists()) {
-//                testPath.toFile().mkdirs();
-//            }
-//            try{
-//                halfEdgeScene.writeFile(testPath.toString(), "testHalfEdgeScene");
-//            } catch (FileNotFoundException e) {
-//                log.error("Failed to write file", e);
-//                throw new RuntimeException("Failed to write file", e);
-//            }
-//
-//
-//            try
-//            {
-//                halfEdgeScene = HalfEdgeScene.readFile(testPath.toString(), "testHalfEdgeScene");
-//            }
-//            catch (FileNotFoundException e)
-//            {
-//                log.error("Failed to read file", e);
-//                throw new RuntimeException("Failed to read file", e);
-//            }
 
             log.info("Making GaiaScene from HalfEdgeScene");
             GaiaScene sceneLod1 = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);

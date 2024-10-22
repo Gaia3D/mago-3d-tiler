@@ -24,6 +24,22 @@ public class HalfEdgeFace implements Serializable {
     private int classifyId = -1;
     private int halfEdgeId = -1;
 
+    public void copyFrom(HalfEdgeFace face) {
+        if (face == null) {
+            return;
+        }
+        // do not copy pointers.***
+        if(face.normal != null)
+        {
+            this.normal = new Vector3d(face.normal);
+        }
+        this.status = face.status;
+        this.note = face.note;
+        this.id = face.id;
+        this.classifyId = face.classifyId;
+        this.halfEdgeId = face.halfEdgeId;
+    }
+
     public List<HalfEdge> getHalfEdgesLoop(List<HalfEdge> resultHalfEdgesLoop) {
         if (this.halfEdge == null) {
             return resultHalfEdgesLoop;

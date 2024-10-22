@@ -120,4 +120,19 @@ public class HalfEdgeMesh implements Serializable {
 
         return resultHalfEdgeSurfaces;
     }
+
+    public void deleteFacesWithClassifyId(int classifyId) {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.deleteFacesWithClassifyId(classifyId);
+        }
+    }
+
+    public HalfEdgeMesh clone()
+    {
+        HalfEdgeMesh clonedMesh = new HalfEdgeMesh();
+        for (HalfEdgePrimitive primitive : primitives) {
+            clonedMesh.primitives.add(primitive.clone());
+        }
+        return clonedMesh;
+    }
 }

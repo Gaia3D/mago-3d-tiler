@@ -142,6 +142,34 @@ public class HalfEdgeNode implements Serializable {
         }
     }
 
+    public void deleteFacesWithClassifyId(int classifyId)
+    {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.deleteFacesWithClassifyId(classifyId);
+        }
+        for (HalfEdgeNode child : children) {
+            child.deleteFacesWithClassifyId(classifyId);
+        }
+    }
+
+    public HalfEdgeNode clone() {
+        HalfEdgeNode clonedNode = new HalfEdgeNode();
+        clonedNode.transformMatrix = new Matrix4d(transformMatrix);
+        clonedNode.preMultipliedTransformMatrix = new Matrix4d(preMultipliedTransformMatrix);
+        for (HalfEdgeMesh mesh : meshes) {
+            clonedNode.meshes.add(mesh.clone());
+        }
+        for (HalfEdgeNode child : children) {
+            HalfEdgeNode clonedChild = child.clone();
+            clonedChild.parent = clonedNode;
+            clonedNode.children.add(clonedChild);
+        }
+        if (boundingBox != null) {
+            clonedNode.boundingBox = boundingBox.clone();
+        }
+        return clonedNode;
+    }
+
     public void writeFile(ObjectOutputStream outputStream) {
         try {
             /*

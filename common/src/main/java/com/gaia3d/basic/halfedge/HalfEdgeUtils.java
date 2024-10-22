@@ -157,8 +157,8 @@ public class HalfEdgeUtils {
                 int hola = 0;
             }
             indices[i] = mapGaiaVertexToIndex.get(gaiaVertex);
-            gaiaFace.setIndices(indices);
         }
+        gaiaFace.setIndices(indices);
 
         return gaiaFace;
     }
@@ -326,7 +326,12 @@ public class HalfEdgeUtils {
         int[] indices = gaiaFace.getIndices();
         Vector3d normal = gaiaFace.getFaceNormal();
         int indicesCount = indices.length;
-        for (int i = 0; i < indicesCount; i += 3) {
+
+        for (int i = 0; i < indicesCount - 2; i += 3) {
+            if(i + 2 >= indicesCount)
+            {
+                int hola = 0;
+            }
             GaiaFace gaiaTriangleFace = new GaiaFace();
             gaiaTriangleFace.setIndices(new int[]{indices[i], indices[i + 1], indices[i + 2]});
             if(normal != null)
@@ -526,6 +531,75 @@ public class HalfEdgeUtils {
     }
 
     public static List<HalfEdgeScene> getCopyHalfEdgeScenesByFaceClassifyId(HalfEdgeScene halfEdgeScene, List<HalfEdgeScene> resultHalfEdgeScenes)
+    {
+        // TEST FUNCTION.***
+        if(resultHalfEdgeScenes == null)
+        {
+            resultHalfEdgeScenes = new ArrayList<>();
+        }
+
+        Map<Integer, HalfEdgeScene> mapClassifyIdToHalfEdgeScene = new HashMap<>();
+        GaiaAttribute gaiaAttribute = halfEdgeScene.getAttribute();
+
+        // test : delete faces with classifyId = 1.***
+        HalfEdgeScene halfEdgeScene1 = halfEdgeScene.clone();
+        HalfEdgeScene halfEdgeScene2 = halfEdgeScene.clone();
+
+        halfEdgeScene1.deleteFacesWithClassifyId(2);
+        halfEdgeScene2.deleteFacesWithClassifyId(1);
+        resultHalfEdgeScenes.add(halfEdgeScene1);
+        resultHalfEdgeScenes.add(halfEdgeScene2);
+
+
+//        List<HalfEdgeNode> halfEdgeNodes = halfEdgeScene.getNodes();
+//        int nodesCount = halfEdgeNodes.size();
+//        for(int j=0; j<nodesCount; j++)
+//        {
+//            HalfEdgeNode rootNode = halfEdgeNodes.get(j);
+//            Map<Integer,HalfEdgeNode> mapClassifyIdToNode = getMapHalfEdgeNodeByFaceClassifyId(rootNode, null);
+//            for(Integer key : mapClassifyIdToNode.keySet())
+//            {
+//                int faceClassifyId = key;
+//                HalfEdgeNode halfEdgeNode = mapClassifyIdToNode.get(faceClassifyId);
+//                HalfEdgeScene halfEdgeSceneCopy = mapClassifyIdToHalfEdgeScene.get(faceClassifyId);
+//                if(halfEdgeSceneCopy == null)
+//                {
+//                    halfEdgeSceneCopy = new HalfEdgeScene();
+//
+//                    // copy original path.***
+//                    halfEdgeSceneCopy.setOriginalPath(halfEdgeScene.getOriginalPath());
+//
+//                    // copy gaiaAttributes.***
+//                    GaiaAttribute newGaiaAttribute = gaiaAttribute.getCopy();
+//                    halfEdgeSceneCopy.setAttribute(newGaiaAttribute);
+//
+//                    mapClassifyIdToHalfEdgeScene.put(faceClassifyId, halfEdgeSceneCopy);
+//                }
+//                halfEdgeSceneCopy.getNodes().add(halfEdgeNode);
+//            }
+//
+//        }
+//
+//        for(Integer key : mapClassifyIdToHalfEdgeScene.keySet())
+//        {
+//            HalfEdgeScene halfEdgeSceneCopy = mapClassifyIdToHalfEdgeScene.get(key);
+//
+//            // copy materials.***
+//            List<GaiaMaterial> gaiaMaterials = halfEdgeScene.getMaterials();
+//            int materialsCount = gaiaMaterials.size();
+//            for(int i=0; i<materialsCount; i++)
+//            {
+//                GaiaMaterial gaiaMaterial = gaiaMaterials.get(i);
+//                GaiaMaterial newGaiaMaterial = gaiaMaterial.clone();
+//                halfEdgeSceneCopy.getMaterials().add(newGaiaMaterial);
+//            }
+//            resultHalfEdgeScenes.add(halfEdgeSceneCopy);
+//        }
+
+        return resultHalfEdgeScenes;
+    }
+
+    public static List<HalfEdgeScene> getCopyHalfEdgeScenesByFaceClassifyId_original(HalfEdgeScene halfEdgeScene, List<HalfEdgeScene> resultHalfEdgeScenes)
     {
         if(resultHalfEdgeScenes == null)
         {
