@@ -64,10 +64,11 @@ public class HalfEdgeVertex implements Serializable {
         }
 
         this.batchId = vertex.batchId;
-        this.outingHalfEdge = vertex.outingHalfEdge;
+        // no copy pointer.***
         this.status = vertex.status;
         this.positionType = vertex.positionType;
         this.id = vertex.id;
+        this.outingHalfEdgeId = vertex.outingHalfEdgeId;
     }
 
     public void copyFromGaiaVertex(GaiaVertex vertex) {
