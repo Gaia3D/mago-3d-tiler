@@ -1,8 +1,9 @@
-package com.gaia3d.basic.structure;
+package com.gaia3d.basic.model;
 
 import com.gaia3d.basic.exchangable.GaiaBuffer;
 import com.gaia3d.basic.exchangable.GaiaBufferDataSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.model.structure.NodeStructure;
 import com.gaia3d.basic.types.AttributeType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,7 +14,6 @@ import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,21 +23,18 @@ import java.util.Map;
  * It contains the meshes and children.
  * The meshes are used for rendering.
  * The children are used for hierarchical structure.
+ *
  * @author znkim
- * @since 1.0.0
  * @see <a href="https://en.wikipedia.org/wiki/Scene_graph">Scene graph</a>
+ * @since 1.0.0
  */
 @Slf4j
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaNode implements Serializable {
-    private String name = "";
-    private GaiaNode parent = null;
-    private List<GaiaMesh> meshes = new ArrayList<>();
-    private List<GaiaNode> children = new ArrayList<>();
-
+public class GaiaNode extends NodeStructure {
+    private String name = "node";
     private Matrix4d transformMatrix = new Matrix4d();
     private Matrix4d preMultipliedTransformMatrix = new Matrix4d();
     private GaiaBoundingBox gaiaBoundingBox = null;
@@ -218,6 +215,25 @@ public class GaiaNode implements Serializable {
         resultMeshes.addAll(this.getMeshes());
         for (GaiaNode child : this.getChildren()) {
             child.extractMeshes(resultMeshes);
+        }
+    }
+
+    public void extractNodesWithContents(List<GaiaNode> resultNodes) {
+        if (!this.meshes.isEmpty()) {
+            resultNodes.add(this);
+        }
+
+        for (GaiaNode child : this.getChildren()) {
+            child.extractNodesWithContents(resultNodes);
+        }
+    }
+
+    public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
+        for (GaiaMesh mesh : this.getMeshes()) {
+            mesh.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
+        }
+        for (GaiaNode child : this.getChildren()) {
+            child.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
         }
     }
 }

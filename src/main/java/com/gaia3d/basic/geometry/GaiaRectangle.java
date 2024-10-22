@@ -13,9 +13,6 @@ import java.io.Serializable;
  * It can be used to calculate the center and volume of the geometry.
  * It can also be used to convert the local bounding rectangle to lonlat bounding rectangle.
  * It can also be used to calculate the longest distance of the geometry.
- * @author znkim
- * @since 1.0.0
- * @see GaiaBoundingBox
  */
 @Setter
 @Getter
@@ -32,36 +29,32 @@ public class GaiaRectangle implements Serializable {
         addPoint(maxPoint);
     }
 
-    /*public Vector2d getCenter() {
+    public Vector2d getCenter() {
         return new Vector2d((minX + maxX) / 2, (minY + maxY) / 2);
-    }*/
+    }
 
-    /*public Vector2d getVolume() {
+    public Vector2d getVolume() {
         return new Vector2d(maxX - minX, maxY - minY);
-    }*/
+    }
 
-    /*public Vector2d getCenterCorrected() {
+    public Vector2d getCenterCorrected() {
         return new Vector2d((minX + maxX) / 2, (minY + maxY) / 2);
-    }*/
+    }
 
     public Vector2d getRange() {
         return new Vector2d(maxX - minX, maxY - minY);
     }
 
     public Vector2d getLeftBottomPoint() {
-        return new Vector2d(minX, maxY);
+        return new Vector2d(minX, minY);
     }
 
     public Vector2d getRightTopPoint() {
         return new Vector2d(maxX, minY);
     }
 
-    /*public double getBoundingArea() {
+    public double getBoundingArea() {
         return (maxX * maxY);
-    }*/
-
-    public Vector2d getCenter() {
-        return new Vector2d((minX + maxX) / 2, (minY + maxY) / 2);
     }
 
     public double getArea() {
@@ -133,14 +126,6 @@ public class GaiaRectangle implements Serializable {
         maxX = rectangle.maxX;
         maxY = rectangle.maxY;
     }
-
-    // interects
-    /*public boolean intersects(GaiaRectangle rectangle) {
-        return (minX < rectangle.maxX
-                && maxX > rectangle.minX
-                && minY < rectangle.maxY
-                && maxY > rectangle.minY);
-    }*/
 
     public boolean intersects(GaiaRectangle compare, double error) {
         if (compare.minX > this.maxX - error) {

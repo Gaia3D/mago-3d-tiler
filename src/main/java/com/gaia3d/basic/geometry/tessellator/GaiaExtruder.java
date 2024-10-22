@@ -1,10 +1,12 @@
 package com.gaia3d.basic.geometry.tessellator;
 
+import com.gaia3d.util.GeometryUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -12,9 +14,25 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class GaiaExtruder {
     public List<GaiaExtrusionSurface> extrude(List<Vector3d> positions, double roofHeight, double floorHeight) {
+
+        // check uroborus and aligned points.******************************************
+        List<Vector3d> cleanPositions = new ArrayList<>();
+        double error = 1e-10;
+        GeometryUtils.getCleanPoints3dArray(positions, cleanPositions, error);
+        // End of check uroborus and aligned points.-----------------------------------
+
+        // Check positions sense : CW or CCW.******************************************
+        Vector3d normal = new Vector3d();
+        GeometryUtils.calculateNormal3D(cleanPositions, normal);
+
+        if (normal.z < 0.0) {
+            // reverse cleanPositions.***
+            Collections.reverse(cleanPositions);
+        }
+
         List<GaiaExtrusionSurface> result = new ArrayList<>();
-        List<Vector3d> roofPositions = resetHeight(positions, roofHeight);
-        List<Vector3d> floorPositions = resetHeight(positions, floorHeight);
+        List<Vector3d> roofPositions = resetHeight(cleanPositions, roofHeight);
+        List<Vector3d> floorPositions = resetHeight(cleanPositions, floorHeight);
 
         GaiaExtrusionSurface roof = new GaiaExtrusionSurface(roofPositions);
         List<GaiaExtrusionSurface> wallPositions = createWallPositions(roofPositions, floorPositions);

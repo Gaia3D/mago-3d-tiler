@@ -207,13 +207,17 @@ public class LittleEndianDataInputStream extends FilterInputStream implements Da
     public String readIntAndUTF() throws IOException {
         int length = readInt();
         byte[] bytes = new byte[length];
-        read(bytes);
+        if (read(bytes) != length) {
+            throw new EOFException();
+        }
         return new String(bytes, StandardCharsets.UTF_8);
     }
 
     public String readIntAndUTF(int length) throws IOException {
         byte[] bytes = new byte[length];
-        read(bytes);
+        if (read(bytes) != length) {
+            throw new EOFException();
+        }
         return new String(bytes, StandardCharsets.UTF_8);
     }
 
@@ -221,17 +225,21 @@ public class LittleEndianDataInputStream extends FilterInputStream implements Da
     public String readUTF() throws IOException {
         int length = readInt();
         byte[] bytes = new byte[length];
-        read(bytes);
+        if (read(bytes) != length) {
+            throw new EOFException();
+        }
         return new String(bytes, StandardCharsets.UTF_8);
     }
 
     public String readUTF(int length) throws IOException {
         byte[] bytes = new byte[length];
-        read(bytes);
+        if (read(bytes) != length) {
+            throw new EOFException();
+        }
         return new String(bytes, StandardCharsets.UTF_8);
     }
 
-    public byte[] intsToBytes(int[] value) {
+    private byte[] intsToBytes(int[] value) {
         byte[] bytes = new byte[value.length];
         for (int i = 0; i < value.length; i++) {
             bytes[i] = (byte) value[i];

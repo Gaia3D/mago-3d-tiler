@@ -38,12 +38,15 @@ public class Polygon2DTess {
         }
     }
 
-    public void setPointsIdxInList()
-    {
+    public void setPointsIdxInList() {
         int pointsCount = points.size();
         for (int i = 0; i < pointsCount; i++) {
             points.get(i).setIdxInList(i);
         }
+    }
+
+    private boolean isInvalidVector(Vector2d vector) {
+        return !isValidVector(vector);
     }
 
     private boolean isValidVector(Vector2d vector) {
@@ -58,8 +61,7 @@ public class Polygon2DTess {
         return valid;
     }
 
-    public void reverse()
-    {
+    public void reverse() {
         Collections.reverse(points);
     }
 
@@ -71,6 +73,7 @@ public class Polygon2DTess {
         }
 
         float normal = 0.0f;
+        float angRadSum = 0.0f;
         List<Integer> positivePoints = new ArrayList<>();
         List<Integer> negativePoints = new ArrayList<>();
 
@@ -108,7 +111,7 @@ public class Polygon2DTess {
                 continue;
             }
 
-
+            // if cross > 0 => CCW, if cross < 0 => CW.***
             double cross = v1.x * v2.y - v1.y * v2.x;
             if (cross < 0) {
                 cross = -1.0;
@@ -119,21 +122,24 @@ public class Polygon2DTess {
             }
 
             double angRad = Math.acos(dot); // because v1 and v2 are normalized.***
-            normal += (float) (angRad * cross);
+            angRadSum += (float) (angRad * cross);
 
-            // TODO: check if this is necessary.***
-            if (Math.abs(normal) < 1e-5) {
-                normal = 0.0f;
-                return normal;
-            }
+//            // TODO: check if this is necessary.***
+//            if (Math.abs(normal) < 1e-5) {
+//                normal = 0.0f;
+//                return normal;
+//            }
         }
 
-        if (Math.abs(normal) < 1e-5) {
+        float angRadSumError = 1e-4F;
+        if (Math.abs(angRadSum) < angRadSumError) {
             // 1e-6 works ok.***
             // probably the polygon is a line, or a self-intersecting polygon (butterfly polygon).***
             normal = 0.0f;
             return normal;
         }
+
+        normal = angRadSum / Math.abs(angRadSum);
 
         if (normal > 0.0f) {
             normal = 1.0f;
@@ -177,7 +183,7 @@ public class Polygon2DTess {
             return false;
         }
 
-        int intersectionsCount = 0;
+        //int intersectionsCount = 0;
         Point2DTess intersectionPoint = new Point2DTess(null, null, null);
         Segment2DTess polygonSegment = new Segment2DTess(null, null);
         for (int i = 0; i < pointsCount; i++) {
@@ -193,8 +199,7 @@ public class Polygon2DTess {
 
             getSegment2DTess(i, polygonSegment);
             int intersectionType = polygonSegment.intersectionWithSegment(segment, intersectionPoint, error);
-            if (intersectionType == 1 || intersectionType == 6)
-            {
+            if (intersectionType == 1 || intersectionType == 6) {
                 return true;
             }
         }
@@ -212,10 +217,8 @@ public class Polygon2DTess {
         return (currIdx - 1 + pointsCount) % pointsCount;
     }
 
-    public GaiaRectangle getBoundingRectangle()
-    {
-        if(boundingRect == null)
-        {
+    public GaiaRectangle getBoundingRectangle() {
+        if (boundingRect == null) {
             boundingRect = new GaiaRectangle();
 
             int pointsCount = points.size();
@@ -231,13 +234,12 @@ public class Polygon2DTess {
         return boundingRect;
     }
 
-    public int getMostLeftDownPoint2DIdx()
-    {
+    public int getMostLeftDownPoint2DIdx() {
         // the most leftDown point is the point that is closest to the leftDownPoint of the boundingRectangle.***
         GaiaRectangle boundingRect = getBoundingRectangle();
         Vector2d leftDownPoint = boundingRect.getLeftBottomPoint();
-        Point2DTess mostLeftDownPoint = null;
-        int resultIdx= -1;
+        //Point2DTess mostLeftDownPoint = null;
+        int resultIdx = -1;
         double minDist = Double.MAX_VALUE;
         int pointsCount = points.size();
         for (int i = 0; i < pointsCount; i++) {

@@ -1,7 +1,8 @@
 package com.gaia3d.basic.pointcloud;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.structure.GaiaVertex;
+import com.gaia3d.basic.model.GaiaAttribute;
+import com.gaia3d.basic.model.GaiaVertex;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,10 +21,11 @@ import java.util.List;
 @Getter
 @Setter
 public class GaiaPointCloud implements Serializable {
-    String code = "A";
+    private String code = "A";
     private Path originalPath;
     private GaiaBoundingBox gaiaBoundingBox = new GaiaBoundingBox();
-    List<GaiaVertex> vertices = new ArrayList<>();
+    private List<GaiaVertex> vertices = new ArrayList<>();
+    private GaiaAttribute gaiaAttribute = new GaiaAttribute();
 
     public List<GaiaPointCloud> distribute() {
         double minX = gaiaBoundingBox.getMinX();

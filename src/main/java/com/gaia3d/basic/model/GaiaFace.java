@@ -1,40 +1,35 @@
-package com.gaia3d.basic.structure;
+package com.gaia3d.basic.model;
 
+import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.model.structure.FaceStructure;
 import com.gaia3d.util.GeometryUtils;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * A class that represents a face of a Gaia object.
  * It contains the indices and the face normal.
  * The face normal is calculated by the indices and the vertices.
+ *
  * @author znkim
- * @since 1.0.0
  * @see <a href="https://en.wikipedia.org/wiki/Face_normal">Face normal</a>
+ * @since 1.0.0
  */
 @Slf4j
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class GaiaFace implements Serializable {
-    private int[] indices;
-    private Vector3d faceNormal = new Vector3d();
+public class GaiaFace extends FaceStructure {
 
     public void calculateFaceNormal(List<GaiaVertex> vertices) {
         if (indices.length < 3) {
             log.error("[Error][calculateFaceNormal] : not enough indices. (indices.length < 3)");
             return;
         }
-        for (int i = 0; i < indices.length; i+=3) {
+        for (int i = 0; i < indices.length; i += 3) {
             int indices1 = indices[i];
             int indices2 = indices[i + 1];
             int indices3 = indices[i + 2];
@@ -47,14 +42,19 @@ public class GaiaFace implements Serializable {
         this.faceNormal = new Vector3d(firstNormal);
     }
 
+    public GaiaBoundingBox getBoundingBox(List<GaiaVertex> vertices, GaiaBoundingBox resultBoundingBox) {
+        if (resultBoundingBox == null) {
+            resultBoundingBox = new GaiaBoundingBox();
+        }
+        for (int index : indices) {
+            GaiaVertex vertex = vertices.get(index);
+            resultBoundingBox.addPoint(vertex.getPosition());
+        }
+        return resultBoundingBox;
+    }
+
     public boolean validateNormal(Vector3d normal) {
-        return !Double.isNaN(normal.lengthSquared())
-                && !Double.isNaN(normal.x())
-                && !Double.isNaN(normal.y())
-                && !Double.isNaN(normal.z())
-                && !Float.isNaN((float) normal.x())
-                && !Float.isNaN((float) normal.y())
-                && !Float.isNaN((float) normal.z());
+        return !Double.isNaN(normal.lengthSquared()) && !Double.isNaN(normal.x()) && !Double.isNaN(normal.y()) && !Double.isNaN(normal.z()) && !Float.isNaN((float) normal.x()) && !Float.isNaN((float) normal.y()) && !Float.isNaN((float) normal.z());
     }
 
     public Vector3d calcNormal(Vector3d p1, Vector3d p2, Vector3d p3) {
@@ -88,13 +88,16 @@ public class GaiaFace implements Serializable {
     }
 
     public GaiaFace clone() {
-        return new GaiaFace(indices.clone(), new Vector3d(faceNormal));
+        GaiaFace cloneGaiaFace = new GaiaFace();
+        cloneGaiaFace.setIndices(indices.clone());
+        cloneGaiaFace.setFaceNormal(new Vector3d(faceNormal));
+        return cloneGaiaFace;
     }
 
     public boolean hasCoincidentIndices(GaiaFace face) {
-        for (int i = 0; i < indices.length; i++) {
+        for (int index : indices) {
             for (int j = 0; j < face.getIndices().length; j++) {
-                if (indices[i] == face.getIndices()[j]) {
+                if (index == face.getIndices()[j]) {
                     return true;
                 }
             }
@@ -104,7 +107,7 @@ public class GaiaFace implements Serializable {
 
     public double calculateArea(List<GaiaVertex> vertices) {
         double area = 0.0;
-        for (int i = 0; i < indices.length; i+=3) {
+        for (int i = 0; i < indices.length; i += 3) {
             int indices1 = indices[i];
             int indices2 = indices[i + 1];
             int indices3 = indices[i + 2];

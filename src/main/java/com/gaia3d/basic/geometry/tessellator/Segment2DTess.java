@@ -29,13 +29,11 @@ public class Segment2DTess {
         return resultLine;
     }
 
-    public double getLengthSquared()
-    {
+    public double getLengthSquared() {
         return this.startPoint.squareDistanceTo(this.endPoint);
     }
 
-    public double getLength()
-    {
+    public double getLength() {
         return this.startPoint.distanceTo(this.endPoint);
     }
 
@@ -83,7 +81,7 @@ public class Segment2DTess {
             intersectionPoint.point = new Vector2d();
         }
 
-        if (line1.intersectionWithLine(line2, intersectionPoint.point)) {
+        if (line1.intersectionWithLine(line2, intersectionPoint.point, error)) {
             int intersectionType1 = this.intersectionWithPointByDistances(intersectionPoint, error);
             int intersectionType2 = segment.intersectionWithPointByDistances(intersectionPoint, error);
 
@@ -98,9 +96,7 @@ public class Segment2DTess {
             } else if (intersectionType1 == 1 && intersectionType2 == 3) {
                 return 5;
             }
-        }
-        else
-        {
+        } else {
             // lines are paralel.***
             // check if any point of the segment is inside the this segment.***
             //****************************************************
@@ -109,30 +105,20 @@ public class Segment2DTess {
             // 2 = point is the start point,
             // 3 = point is the end point.
             //****************************************************
-            if(this.intersectionWithPointByDistances(segment.startPoint, error) == 1)
-            {
+            if (this.intersectionWithPointByDistances(segment.startPoint, error) == 1) {
                 return 6;
-            }
-            else if(this.intersectionWithPointByDistances(segment.endPoint, error) == 1)
-            {
+            } else if (this.intersectionWithPointByDistances(segment.endPoint, error) == 1) {
                 return 6;
-            }
-            else if(segment.intersectionWithPointByDistances(this.startPoint, error) == 1)
-            {
+            } else if (segment.intersectionWithPointByDistances(this.startPoint, error) == 1) {
                 return 6;
-            }
-            else if(segment.intersectionWithPointByDistances(this.endPoint, error) == 1)
-            {
+            } else if (segment.intersectionWithPointByDistances(this.endPoint, error) == 1) {
                 return 6;
             }
 
             // check total coincidence.***
-            if(this.startPoint.point.equals(segment.startPoint.point) && this.endPoint.point.equals(segment.endPoint.point))
-            {
+            if (this.startPoint.point.equals(segment.startPoint.point) && this.endPoint.point.equals(segment.endPoint.point)) {
                 return 6;
-            }
-            else if(this.startPoint.point.equals(segment.endPoint.point) && this.endPoint.point.equals(segment.startPoint.point))
-            {
+            } else if (this.startPoint.point.equals(segment.endPoint.point) && this.endPoint.point.equals(segment.startPoint.point)) {
                 return 6;
             }
 

@@ -1,41 +1,69 @@
 package com.gaia3d.util;
 
+import lombok.extern.slf4j.Slf4j;
+import org.geotools.geometry.jts.JTS;
+import org.geotools.referencing.CRS;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.proj4j.BasicCoordinateTransform;
 import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 
 /**
  * Utility class for converting between geographic and cartesian coordinates.
+ *
  * @author znkim
  * @since 1.0.0
  */
+@Slf4j
 public class GlobeUtils {
-    private static final double degToRadFactor = 0.017453292519943296d; // 3.141592653589793 / 180.0;
-    private static final double equatorialRadius = 6378137.0d; // meters.
-    private static final double equatorialRadiusSquared = 40680631590769.0d;
-    private static final double polarRadius = 6356752.3142d; // meters.
-    private static final double polarRadiusSquared = 40408299984087.05552164d;
-    private static final double firstEccentricitySquared = 6.69437999014E-3d;
+    public static final double DEGREE_TO_RADIAN_FACTOR = 0.017453292519943296d; // 3.141592653589793 / 180.0;
+    public static final double EQUATORIAL_RADIUS = 6378137.0d;
+    public static final double EQUATORIAL_RADIUS_SQUARED = 40680631590769.0d;
+    public static final double POLAR_RADIUS = 6356752.3142d;
+    public static final double POLAR_RADIUS_SQUARED = 40408299984087.05552164d;
+    public static final double FIRST_ECCENTRICITY_SQUARED = 6.69437999014E-3d;
     private static final CRSFactory factory = new CRSFactory();
     private static final CoordinateReferenceSystem wgs84 = factory.createFromParameters("WGS84", "+proj=longlat +datum=WGS84 +no_defs");
 
     public static double[] geographicToCartesianWgs84(double longitude, double latitude, double altitude) {
         double[] result = new double[3];
-        double lonRad = longitude * degToRadFactor;
-        double latRad = latitude * degToRadFactor;
+        double lonRad = longitude * DEGREE_TO_RADIAN_FACTOR;
+        double latRad = latitude * DEGREE_TO_RADIAN_FACTOR;
         double cosLon = Math.cos(lonRad);
         double cosLat = Math.cos(latRad);
         double sinLon = Math.sin(lonRad);
         double sinLat = Math.sin(latRad);
-        double e2 = firstEccentricitySquared;
-        double v = equatorialRadius / Math.sqrt(1.0 - e2 * sinLat * sinLat);
+        double e2 = FIRST_ECCENTRICITY_SQUARED;
+        double v = EQUATORIAL_RADIUS / Math.sqrt(1.0 - e2 * sinLat * sinLat);
         result[0] = (v + altitude) * cosLat * cosLon;
         result[1] = (v + altitude) * cosLat * sinLon;
         result[2] = (v * (1.0 - e2) + altitude) * sinLat;
         return result;
+    }
+
+    public static double radiusAtLatitudeRad(double latRad) {
+        double cosLat = Math.cos(latRad);
+        double sinLat = Math.sin(latRad);
+        /*
+        double numerator = Math.pow(EARTH_RADIUS_EQUATOR * cosLat, 2) + Math.pow(EARTH_RADIUS_POLAR * sinLat, 2);
+        double denominator = Math.pow(EARTH_RADIUS_EQUATOR * cosLat, 2) + Math.pow(EARTH_RADIUS_POLAR * sinLat, 2);
+        return Math.sqrt(numerator / denominator);
+         */
+        return EQUATORIAL_RADIUS / Math.sqrt(1.0 - FIRST_ECCENTRICITY_SQUARED * sinLat * sinLat);
+    }
+
+    public static double distanceBetweenLatitudesRad(double minLatRad, double maxLatRad) {
+        double radiusMin = radiusAtLatitudeRad(minLatRad);
+        double radiusMax = radiusAtLatitudeRad(maxLatRad);
+        double avgRadius = (radiusMin + radiusMax) / 2.0;
+
+        return avgRadius * (maxLatRad - minLatRad);
     }
 
     public static Vector3d geographicToCartesianWgs84(Vector3d position) {
@@ -44,37 +72,36 @@ public class GlobeUtils {
     }
 
     public static Matrix4d transformMatrixAtCartesianPointWgs84(double x, double y, double z) {
-        Vector3d zAxis = new Vector3d(x / equatorialRadiusSquared, y / equatorialRadiusSquared, z / polarRadiusSquared);
-        zAxis.normalize();
+        Vector3d zAxis = normalAtCartesianPointWgs84(x, y, z);
         Vector3d xAxis = new Vector3d(-y, +x, 0.0);
         xAxis.normalize();
         Vector3d yAxis = zAxis.cross(xAxis, new Vector3d());
         yAxis.normalize();
 
-        double[] transfrom = new double[16];
-        transfrom[0] = xAxis.x();
-        transfrom[1] = xAxis.y();
-        transfrom[2] = xAxis.z();
-        transfrom[3] = 0.0f;
+        double[] transform = new double[16];
+        transform[0] = xAxis.x();
+        transform[1] = xAxis.y();
+        transform[2] = xAxis.z();
+        transform[3] = 0.0f;
 
-        transfrom[4] = yAxis.x();
-        transfrom[5] = yAxis.y();
-        transfrom[6] = yAxis.z();
-        transfrom[7] = 0.0f;
+        transform[4] = yAxis.x();
+        transform[5] = yAxis.y();
+        transform[6] = yAxis.z();
+        transform[7] = 0.0f;
 
-        transfrom[8] = zAxis.x();
-        transfrom[9] = zAxis.y();
-        transfrom[10] = zAxis.z();
-        transfrom[11] = 0.0f;
+        transform[8] = zAxis.x();
+        transform[9] = zAxis.y();
+        transform[10] = zAxis.z();
+        transform[11] = 0.0f;
 
-        transfrom[12] = x;
-        transfrom[13] = y;
-        transfrom[14] = z;
-        transfrom[15] = 1.0f;
+        transform[12] = x;
+        transform[13] = y;
+        transform[14] = z;
+        transform[15] = 1.0f;
 
-        Matrix4d transfromMatrix = new Matrix4d();
-        transfromMatrix.set(transfrom);
-        return transfromMatrix;
+        Matrix4d transformMatrix = new Matrix4d();
+        transformMatrix.set(transform);
+        return transformMatrix;
     }
 
     public static Vector3d normalAtCartesianPointWgs84(Vector3d cartesian) {
@@ -82,7 +109,7 @@ public class GlobeUtils {
     }
 
     public static Vector3d normalAtCartesianPointWgs84(double x, double y, double z) {
-        Vector3d zAxis = new Vector3d(x / equatorialRadiusSquared, y / equatorialRadiusSquared, z / polarRadiusSquared);
+        Vector3d zAxis = new Vector3d(x / EQUATORIAL_RADIUS_SQUARED, y / EQUATORIAL_RADIUS_SQUARED, z / POLAR_RADIUS_SQUARED);
         zAxis.normalize();
         return zAxis;
     }
@@ -98,9 +125,9 @@ public class GlobeUtils {
 
         double xxpyy = x * x + y * y;
         double sqrtXXpYY = Math.sqrt(xxpyy);
-        double a = equatorialRadius;
+        double a = EQUATORIAL_RADIUS;
         double ra2 = 1.0 / (a * a);
-        double e2 = firstEccentricitySquared;
+        double e2 = FIRST_ECCENTRICITY_SQUARED;
         double e4 = e2 * e2;
         double p = xxpyy * ra2;
         double q = z * z * (1.0 - e2) * ra2;
@@ -161,5 +188,18 @@ public class GlobeUtils {
         ProjCoordinate result = new ProjCoordinate();
         transformer.transform(coordinate, result);
         return result;
+    }
+
+    public static Coordinate transformOnGeotools(org.opengis.referencing.crs.CoordinateReferenceSystem source, Coordinate coordinate) {
+        try {
+            org.opengis.referencing.crs.CoordinateReferenceSystem wgs84 = CRS.decode("EPSG:4326");
+
+            MathTransform transform = CRS.findMathTransform(source, wgs84, false);
+            Coordinate result = JTS.transform(coordinate, coordinate, transform);
+            return result;
+        } catch (FactoryException | TransformException e) {
+            log.error("Failed to transform coordinate", e);
+            throw new RuntimeException(e);
+        }
     }
 }

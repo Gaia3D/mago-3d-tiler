@@ -2,70 +2,38 @@ package com.gaia3d.basic.exchangable;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
-import com.gaia3d.basic.structure.*;
+import com.gaia3d.basic.model.GaiaFace;
+import com.gaia3d.basic.model.GaiaPrimitive;
+import com.gaia3d.basic.model.GaiaSurface;
+import com.gaia3d.basic.model.GaiaVertex;
 import com.gaia3d.basic.types.AttributeType;
-import com.gaia3d.util.io.BigEndianDataInputStream;
-import com.gaia3d.util.io.BigEndianDataOutputStream;
 import lombok.Getter;
 import lombok.Setter;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-/**
- * A GaiaBufferDataSet can correspond to a Node in a 3d structure.
- * It uses a straightforward structure and has a buffer for each attribute.
- * @author znkim
- * @since 1.0.0
- * @see GaiaSet, GaiaMaterial, GaiaBoundingBox, GaiaRectangle, GaiaPrimitive, GaiaNode, GaiaBuffer
- */
 @Getter
 @Setter
 public class GaiaBufferDataSet implements Serializable {
     private Map<AttributeType, GaiaBuffer> buffers;
+    private int materialId;
     private int id = -1;
     private String guid = "no_guid";
-    private int materialId;
 
-    GaiaBoundingBox boundingBox = null;
-    GaiaRectangle texcoordBoundingRectangle = null;
-    Matrix4d transformMatrix = null;
-    Matrix4d preMultipliedTransformMatrix = null;
+    private GaiaBoundingBox boundingBox = null;
+    private GaiaRectangle texcoordBoundingRectangle = null;
+    private Matrix4d transformMatrix = null;
+    private Matrix4d preMultipliedTransformMatrix = null;
 
     public GaiaBufferDataSet() {
-        this.buffers = new WeakHashMap<>();
-    }
-
-    public void write(BigEndianDataOutputStream stream) throws IOException {
-        stream.writeInt(id);
-        stream.writeText(guid);
-        stream.writeInt(materialId);
-        stream.writeInt(buffers.size());
-        for (Map.Entry<AttributeType, GaiaBuffer> entry : buffers.entrySet()) {
-            AttributeType attributeType = entry.getKey();
-            GaiaBuffer buffer = entry.getValue();
-            stream.writeText(attributeType.getGaia());
-            buffer.writeBuffer(stream);
-        }
-    }
-
-    //read
-    public void read(BigEndianDataInputStream stream) throws IOException {
-        this.setId(stream.readInt());
-        this.setGuid(stream.readText());
-        this.setMaterialId(stream.readInt());
-        int size = stream.readInt();
-        for (int i = 0; i < size; i++) {
-            String gaiaAttribute = stream.readText();
-            AttributeType attributeType = AttributeType.getGaiaAttribute(gaiaAttribute);
-            GaiaBuffer buffer = new GaiaBuffer();
-            buffer.readBuffer(stream);
-            buffers.put(attributeType, buffer);
-        }
+        this.buffers = new HashMap<>();
     }
 
     public GaiaPrimitive toPrimitive() {
@@ -133,16 +101,34 @@ public class GaiaBufferDataSet implements Serializable {
 
         // set indices as face of a surface of the primitive 2023.07.19
         GaiaSurface surface = new GaiaSurface();
+
+//        // new 20240903 Son.******************************************
+//        int indicesLength = indices.length;
+//        int trianglesCount = indicesLength / 3;
+//        for(int i=0; i<trianglesCount; i++)
+//        {
+//            int index = i * 3;
+//            int[] triangleIndices = new int[3];
+//            triangleIndices[0] = indices[index];
+//            triangleIndices[1] = indices[index + 1];
+//            triangleIndices[2] = indices[index + 2];
+//            GaiaFace face = new GaiaFace();
+//            face.setIndices(triangleIndices);
+//            surface.getFaces().add(face);
+//        }
+//        // End new 20240903 Son.---------------------------------------------
+
+        // Old.**********************************************************************
         GaiaFace face = new GaiaFace();
-        
+
         int[] indicesInt = new int[indices.length];
-        for (int i = 0; i < indices.length; i++) {
-            indicesInt[i] = indices[i];
-        }
+        System.arraycopy(indices, 0, indicesInt, 0, indices.length);
         face.setIndices(indicesInt);
         surface.setFaces(new ArrayList<>() {{
             add(face);
         }});
+        // End old.------------------------------------------------------------------
+
         primitive.setSurfaces(new ArrayList<>() {{
             add(surface);
         }});

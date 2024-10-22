@@ -2,7 +2,10 @@ plugins {
     id 'java'
 }
 
-project.ext.lwjglVersion = "3.3.2"
+group = 'com.gaia3d'
+version "1.8.0"
+project.ext.lwjglVersion = "3.3.3"
+
 switch ( org.gradle.internal.os.OperatingSystem.current() ) {
     case org.gradle.internal.os.OperatingSystem.WINDOWS:
         project.ext.lwjglNatives = "natives-windows"
@@ -16,6 +19,7 @@ switch ( org.gradle.internal.os.OperatingSystem.current() ) {
 }
 
 repositories {
+    maven { url "https://repo.osgeo.org/repository/release/" }
     mavenCentral()
 }
 
@@ -39,6 +43,9 @@ dependencies {
 
     implementation "org.locationtech.proj4j:proj4j:1.2.3"
     implementation "org.locationtech.proj4j:proj4j-epsg:1.2.3"
+
+    implementation 'org.geotools:gt-geojson:26.5'
+    implementation 'org.geotools:gt-geojsondatastore:26.5'
 
     runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"

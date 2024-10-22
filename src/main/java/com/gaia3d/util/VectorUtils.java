@@ -1,10 +1,8 @@
 package com.gaia3d.util;
 
-import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector2d;
-import org.joml.Vector3d;
 
 @Slf4j
 public class VectorUtils {
@@ -26,7 +24,7 @@ public class VectorUtils {
         if (!rect1.intersects(rect2, 0.0)) {
             // Intersection check with bounding box
             return false;
-        } else if (a.equals(u) && b.equals(v) || a.equals(v) && b.equals(u)){
+        } else if (a.equals(u) && b.equals(v) || a.equals(v) && b.equals(u)) {
             // Same line case;
             return true;
         } else if (a.equals(u) || a.equals(v) || b.equals(u) || b.equals(v)) {

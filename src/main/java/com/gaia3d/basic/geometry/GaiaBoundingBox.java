@@ -16,9 +16,10 @@ import java.io.Serializable;
  * It can be used to calculate the center and volume of the geometry.
  * It can also be used to convert the local bounding box to lonlat bounding box.
  * It can also be used to calculate the longest distance of the geometry.
+ *
  * @author znkim
- * @since 1.0.0
  * @see GaiaRectangle
+ * @since 1.0.0
  */
 @Slf4j
 @Setter
@@ -32,6 +33,14 @@ public class GaiaBoundingBox implements Serializable {
 
     public Vector3d getCenter() {
         return new Vector3d((minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2);
+    }
+
+    public Vector3d getMinPosition() {
+        return new Vector3d(minX, minY, minZ);
+    }
+
+    public Vector3d getMaxPosition() {
+        return new Vector3d(maxX, maxY, maxZ);
     }
 
     public Vector3d getVolume() {
@@ -70,18 +79,14 @@ public class GaiaBoundingBox implements Serializable {
         }
     }
 
-    public boolean intersects(GaiaBoundingBox bbox)
-    {
+    public boolean intersects(GaiaBoundingBox bbox) {
         if (maxX < bbox.minX || minX > bbox.maxX) {
             return false;
         }
         if (maxY < bbox.minY || minY > bbox.maxY) {
             return false;
         }
-        if (maxZ < bbox.minZ || minZ > bbox.maxZ) {
-            return false;
-        }
-        return true;
+        return !(maxZ < bbox.minZ) && !(minZ > bbox.maxZ);
     }
 
     public boolean intersects(GaiaBoundingBox bbox, double tolerance) {
@@ -91,10 +96,7 @@ public class GaiaBoundingBox implements Serializable {
         if (maxY + tolerance < bbox.minY || minY - tolerance > bbox.maxY) {
             return false;
         }
-        if (maxZ + tolerance < bbox.minZ || minZ - tolerance > bbox.maxZ) {
-            return false;
-        }
-        return true;
+        return !(maxZ + tolerance < bbox.minZ) && !(minZ - tolerance > bbox.maxZ);
     }
 
     public void addBoundingBox(GaiaBoundingBox boundingBox) {
@@ -131,15 +133,15 @@ public class GaiaBoundingBox implements Serializable {
     public GaiaBoundingBox convertLocalToLonlatBoundingBox(Vector3d center) {
         Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
         Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
-        
+
         Vector3d minLocalCoordinate = new Vector3d(minX, minY, minZ);
-        Matrix4d minTransfromMatrix = transformMatrix.translate(minLocalCoordinate, new Matrix4d());
-        Vector3d minWorldCoordinate = new Vector3d(minTransfromMatrix.m30(), minTransfromMatrix.m31(), minTransfromMatrix.m32());
+        Matrix4d minTransformMatrix = transformMatrix.translate(minLocalCoordinate, new Matrix4d());
+        Vector3d minWorldCoordinate = new Vector3d(minTransformMatrix.m30(), minTransformMatrix.m31(), minTransformMatrix.m32());
         minWorldCoordinate = GlobeUtils.cartesianToGeographicWgs84(minWorldCoordinate);
 
         Vector3d maxLocalCoordinate = new Vector3d(maxX, maxY, maxZ);
-        Matrix4d maxTransfromMatrix = transformMatrix.translate(maxLocalCoordinate, new Matrix4d());
-        Vector3d maxWorldCoordinate = new Vector3d(maxTransfromMatrix.m30(), maxTransfromMatrix.m31(), maxTransfromMatrix.m32());
+        Matrix4d maxTransformMatrix = transformMatrix.translate(maxLocalCoordinate, new Matrix4d());
+        Vector3d maxWorldCoordinate = new Vector3d(maxTransformMatrix.m30(), maxTransformMatrix.m31(), maxTransformMatrix.m32());
         maxWorldCoordinate = GlobeUtils.cartesianToGeographicWgs84(maxWorldCoordinate);
 
         GaiaBoundingBox result = new GaiaBoundingBox();
@@ -153,9 +155,28 @@ public class GaiaBoundingBox implements Serializable {
         return Math.sqrt(volume.x * volume.x + volume.y * volume.y + volume.z * volume.z);
     }
 
+    public double getSizeX() {
+        return maxX - minX;
+    }
+
+    public double getSizeY() {
+        return maxY - minY;
+    }
+
+    public double getSizeZ() {
+        return maxZ - minZ;
+    }
+
+    public double getMaxSize() {
+        return Math.max(getSizeX(), Math.max(getSizeY(), getSizeZ()));
+    }
+
+    public double getMinSize() {
+        return Math.min(getSizeX(), Math.min(getSizeY(), getSizeZ()));
+    }
+
     public boolean contains(GaiaBoundingBox boundingBox) {
-        return minX <= boundingBox.minX && minY <= boundingBox.minY && minZ <= boundingBox.minZ
-                && maxX >= boundingBox.maxX && maxY >= boundingBox.maxY && maxZ >= boundingBox.maxZ;
+        return minX <= boundingBox.minX && minY <= boundingBox.minY && minZ <= boundingBox.minZ && maxX >= boundingBox.maxX && maxY >= boundingBox.maxY && maxZ >= boundingBox.maxZ;
     }
 
     public GaiaBoundingBox clone() {

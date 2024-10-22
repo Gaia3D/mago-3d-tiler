@@ -1,4 +1,4 @@
-package com.gaia3d.basic.geometry.networkStructure.modeler;
+package com.gaia3d.basic.geometry.network.modeler;
 
 import lombok.Getter;
 import lombok.Setter;

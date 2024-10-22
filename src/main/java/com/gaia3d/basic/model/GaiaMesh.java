@@ -1,16 +1,14 @@
-package com.gaia3d.basic.structure;
+package com.gaia3d.basic.model;
 
 import com.gaia3d.basic.exchangable.GaiaBufferDataSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import lombok.AllArgsConstructor;
+import com.gaia3d.basic.model.structure.MeshStructure;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,16 +16,15 @@ import java.util.List;
  * A class that represents a mesh of a Gaia object.
  * It contains the primitives.
  * The primitives are used for rendering.
+ *
  * @author znkim
- * @since 1.0.0
  * @see <a href="https://en.wikipedia.org/wiki/Polygon_mesh">Polygon mesh</a>
+ * @since 1.0.0
  */
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class GaiaMesh implements Serializable {
-    private List<GaiaPrimitive> primitives = new ArrayList<>();
+public class GaiaMesh extends MeshStructure {
+    //private List<GaiaPrimitive> primitives = new ArrayList<>();
 
     public GaiaBoundingBox getBoundingBox(Matrix4d transform) {
         GaiaBoundingBox boundingBox = null;
@@ -239,5 +236,15 @@ public class GaiaMesh implements Serializable {
             gaiaMesh.getPrimitives().add(primitive.clone());
         }
         return gaiaMesh;
+    }
+
+    public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
+        int primitivesCount = primitives.size();
+        for (int i = 0; i < primitivesCount; i++) {
+            GaiaPrimitive primitive = primitives.get(i);
+            primitive.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
+            primitive.deleteNoUsedVertices();
+        }
+
     }
 }

@@ -1,10 +1,10 @@
-package com.gaia3d.basic.geometry.networkStructure.modeler;
+package com.gaia3d.basic.geometry.network.modeler;
 
 import lombok.Getter;
 import lombok.Setter;
 
-@Setter
 @Getter
+@Setter
 public class TEdge {
     // topological edge.
     // this can be a line, an arc, a pipe, a road, a river, a stream, a canal, a railway, a power line, a gas line, a water line, a sewer line, a telephone line, a cable line, etc.
