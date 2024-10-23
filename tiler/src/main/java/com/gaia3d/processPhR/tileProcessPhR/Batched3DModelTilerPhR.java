@@ -136,6 +136,14 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         {
             TileInfo tileInfo = tileInfos.get(i);
             TileInfo tileInfoCopy = tileInfo.clone();
+
+            // change the tempPath of the tileInfos by tempPathLod.***
+            List<Path> tempPathLod = tileInfoCopy.getTempPathLod();
+            Path pathLod = tempPathLod.get(lod);
+            if(pathLod != null){
+                tileInfoCopy.setTempPath(pathLod);
+            }
+
             tileInfosCopy.add(tileInfoCopy);
         }
 
@@ -170,6 +178,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             tileInfosInNode.add(tileInfo);
         }
 
+        scissorTextures(tileInfosCopy);
         makeContentsForNodes(nodeTileInfoMap, lod);
         // End lod 0.---------------------------------------------------------
 
@@ -181,6 +190,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         {
             TileInfo tileInfo = tileInfos.get(i);
             TileInfo tileInfoCopy = tileInfo.clone();
+            // change the tempPath of the tileInfos by tempPathLod.***
+            List<Path> tempPathLod = tileInfoCopy.getTempPathLod();
+            Path pathLod = tempPathLod.get(lod);
+            if(pathLod != null){
+                tileInfoCopy.setTempPath(pathLod);
+            }
             tileInfosCopy.add(tileInfoCopy);
         }
 
@@ -214,6 +229,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             tileInfosInNode.add(tileInfo);
         }
 
+        scissorTextures(tileInfosCopy);
         makeContentsForNodes(nodeTileInfoMap, lod);
         // End lod 1.---------------------------------------------------------
 
@@ -225,6 +241,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         {
             TileInfo tileInfo = tileInfos.get(i);
             TileInfo tileInfoCopy = tileInfo.clone();
+            // change the tempPath of the tileInfos by tempPathLod.***
+            List<Path> tempPathLod = tileInfoCopy.getTempPathLod();
+            Path pathLod = tempPathLod.get(lod);
+            if(pathLod != null){
+                tileInfoCopy.setTempPath(pathLod);
+            }
             tileInfosCopy.add(tileInfoCopy);
         }
 
@@ -258,7 +280,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             tileInfosInNode.add(tileInfo);
         }
 
+        scissorTextures(tileInfosCopy);
         makeContentsForNodes(nodeTileInfoMap, lod);
+        // End lod 2.---------------------------------------------------------
+
+        // now, delete nodes that have no contents.***
+        root.deleteNoContentNodes();
 
 //        //Old**************************************************************
 //        try {
@@ -277,7 +304,31 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         return tileset;
     }
 
+    private void scissorTextures(List<TileInfo> tileInfos)
+    {
+        int tileInfosCount = tileInfos.size();
+        for(int i = 0; i < tileInfosCount; i++)
+        {
+            TileInfo tileInfo = tileInfos.get(i);
+            Path path = tileInfo.getTempPath();
 
+            // load the file.***
+            try {
+                GaiaSet gaiaSet = GaiaSet.readFile(path);
+                GaiaScene scene = new GaiaScene(gaiaSet);
+                HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
+                halfEdgeScene.scissorTextures();
+
+                if (gaiaSet == null)
+                    continue;
+            }
+            catch (IOException e)
+            {
+                log.error("Error : {}", e.getMessage());
+                throw new RuntimeException(e);
+            }
+        }
+    }
 
     private void cutRectangleCake(List<TileInfo> tileInfos, int lod, Node rootNode) throws FileNotFoundException {
         int maxDepth = rootNode.findMaxDepth();
@@ -291,9 +342,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         double minLatDeg = Math.toDegrees(boundingVolume.getRegion()[1]);
         double maxLonDeg = Math.toDegrees(boundingVolume.getRegion()[2]);
         double maxLatDeg = Math.toDegrees(boundingVolume.getRegion()[3]);
-
-//        List<Node> nodesByDepth = new ArrayList<>();
-//        rootNode.getNodesByDepth(currDepth, nodesByDepth);
 
         double divisionsCount = Math.pow(2, currDepth);
 
@@ -831,6 +879,19 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
             LevelOfDetail lodLevel = LevelOfDetail.getByLevel(lod);
             int lodError = lodLevel.getGeometricError();
+
+            if(lod == 0)
+            {
+                lodError = 0;
+            }
+            else if(lod == 1)
+            {
+                lodError = 2;
+            }
+            else if(lod == 2)
+            {
+                lodError = 4;
+            }
 
             childNode.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
             childNode.setBoundingVolume(boundingVolume);

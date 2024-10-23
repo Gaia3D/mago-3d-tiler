@@ -5,6 +5,7 @@ import com.gaia3d.basic.halfedge.HalfEdgeScene;
 import com.gaia3d.basic.halfedge.HalfEdgeUtils;
 import com.gaia3d.basic.halfedge.PlaneType;
 import com.gaia3d.basic.model.GaiaScene;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.process.preprocess.PreProcess;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
@@ -53,15 +54,6 @@ public class GaiaMinimizerPhR implements PreProcess {
 //            scene.getNodes().add(rootNode);
 //            // End test.------------------------
 
-            // Test.************************************************
-//            GaiaNode rootNode = scene.getNodes().get(0);
-//            List<GaiaNode> reducedChildren = new ArrayList<>();
-//            int childrenCount = rootNode.getChildren().size();
-//
-//            reducedChildren.add(rootNode.getChildren().get(100));
-//            rootNode.getChildren().clear();
-//            rootNode.setChildren(reducedChildren);
-            // End test.--------------------------------------------
 
             List<Path> tempPathLod = new ArrayList<>();
             Path tempFolder = tileInfo.getTempPath();

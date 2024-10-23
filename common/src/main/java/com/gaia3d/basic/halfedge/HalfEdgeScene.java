@@ -321,4 +321,31 @@ public class HalfEdgeScene  implements Serializable{
     }
 
 
+    public void scissorTextures() {
+        boolean hasTextures = false;
+        for (GaiaMaterial material : materials) {
+            if(material.hasTextures()) {
+                hasTextures = true;
+                break;
+            }
+        }
+
+        if(!hasTextures) {
+            return;
+        }
+
+        int nodesSize = nodes.size();
+        for (int i = 0; i < nodesSize; i++) {
+            HalfEdgeNode node = nodes.get(i);
+            node.scissorTextures(materials);
+        }
+    }
+
+    public int getTrianglesCount() {
+        int trianglesCount = 0;
+        for (HalfEdgeNode node : nodes) {
+            trianglesCount += node.getTrianglesCount();
+        }
+        return trianglesCount;
+    }
 }

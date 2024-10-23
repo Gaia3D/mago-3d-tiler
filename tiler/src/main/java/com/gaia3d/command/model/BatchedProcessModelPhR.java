@@ -69,6 +69,10 @@ public class BatchedProcessModelPhR implements ProcessFlowModel {
         postProcessors.add(new GaiaRelocator());
         postProcessors.add(new Batched3DModel());
 
+        // Test.***
+        globalOptions.setDebugLod(true);// Test. delete this.!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // end Test.---
+
         Pipeline processPipeline = new TilingPipeline(preProcessors, tilingProcess, postProcessors);
         processPipeline.process(fileLoader);
     }

@@ -69,6 +69,22 @@ public class Node {
         }
     }
 
+    public void deleteNoContentNodes() {
+        if (children == null) {
+            return;
+        }
+
+        for (int i = 0; i < children.size(); i++) {
+            Node childNode = children.get(i);
+            if (childNode.getContent() == null) {
+                children.remove(i);
+                i--;
+            } else {
+                childNode.deleteNoContentNodes();
+            }
+        }
+    }
+
     public enum RefineType {
         ADD,
         REPLACE,
