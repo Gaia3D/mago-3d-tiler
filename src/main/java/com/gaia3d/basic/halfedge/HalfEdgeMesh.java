@@ -1,6 +1,7 @@
 package com.gaia3d.basic.halfedge;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.model.GaiaMaterial;
 import lombok.Getter;
 import lombok.Setter;
 import org.joml.Matrix4d;
@@ -134,5 +135,19 @@ public class HalfEdgeMesh implements Serializable {
             clonedMesh.primitives.add(primitive.clone());
         }
         return clonedMesh;
+    }
+
+    public void scissorTextures(List<GaiaMaterial> materials) {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.scissorTextures(materials);
+        }
+    }
+
+    public int getTrianglesCount() {
+        int trianglesCount = 0;
+        for (HalfEdgePrimitive primitive : primitives) {
+            trianglesCount += primitive.getTrianglesCount();
+        }
+        return trianglesCount;
     }
 }

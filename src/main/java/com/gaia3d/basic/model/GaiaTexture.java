@@ -65,6 +65,16 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         }
     }
 
+    public void saveImage(String savePath) {
+        try {
+            String imageExtension = savePath.substring(savePath.lastIndexOf(".") + 1);
+            File file = new File(savePath);
+            ImageIO.write(bufferedImage, imageExtension, file);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
     public void flipImageY() {
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height / 2; j++) {
@@ -88,6 +98,12 @@ public class GaiaTexture extends TextureStructure implements Serializable {
             log.error(e.getMessage());
         }
         return image;
+    }
+
+    public void createImage(int width, int height, int imageType) {
+        this.width = width;
+        this.height = height;
+        this.bufferedImage = new BufferedImage(width, height, imageType);
     }
 
     private BufferedImage testImage() {

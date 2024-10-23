@@ -1,7 +1,9 @@
 package com.gaia3d.basic.halfedge;
 
+import com.gaia3d.basic.geometry.GaiaRectangle;
 import lombok.Getter;
 import lombok.Setter;
+import org.joml.Vector2d;
 import org.joml.Vector3d;
 
 import java.io.ObjectInputStream;
@@ -180,5 +182,97 @@ public class HalfEdgeFace implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public List<HalfEdgeFace> getAdjacentFaces(List<HalfEdgeFace> resultAdjacentFaces) {
+        if (this.halfEdge == null) {
+            return resultAdjacentFaces;
+        }
+
+        if (resultAdjacentFaces == null) {
+            resultAdjacentFaces = new ArrayList<>();
+        }
+
+        List<HalfEdge> halfEdgesLoop = this.halfEdge.getLoop(null);
+        for (HalfEdge halfEdge : halfEdgesLoop) {
+            HalfEdge twin = halfEdge.getTwin();
+            if(twin != null)
+            {
+                HalfEdgeFace adjacentFace = twin.getFace();
+                if (adjacentFace != null) {
+                    resultAdjacentFaces.add(adjacentFace);
+                }
+            }
+        }
+
+        return resultAdjacentFaces;
+    }
+
+    public boolean getWeldedFaces(List<HalfEdgeFace> resultWeldedFaces, Map<HalfEdgeFace, HalfEdgeFace> mapVisitedFaces) {
+        if (this.halfEdge == null) {
+            return false;
+        }
+
+//        if(mapVisitedFaces.get(this) != null)
+//        {
+//            return false;
+//        }
+
+        mapVisitedFaces.put(this, this);
+        resultWeldedFaces.add(this);
+
+        List<HalfEdgeFace> adjacentFaces = this.getAdjacentFaces(null);
+        if (adjacentFaces == null) {
+            return false;
+        }
+
+        int adjacentFacesSize = adjacentFaces.size();
+        for (int i = 0; i < adjacentFacesSize; i++) {
+            HalfEdgeFace adjacentFace = adjacentFaces.get(i);
+            if (adjacentFace != null) {
+                // check if is visited.***
+                if (mapVisitedFaces.get(adjacentFace) == null) {
+                    adjacentFace.getWeldedFaces(resultWeldedFaces, mapVisitedFaces);
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public GaiaRectangle getTexCoordBoundingRectangle(GaiaRectangle resultRectangle, boolean invertY) {
+        List<HalfEdgeVertex> vertices = this.getVertices(null);
+        if(vertices == null) {
+            return resultRectangle;
+        }
+
+        if (resultRectangle == null) {
+            resultRectangle = new GaiaRectangle();
+        }
+
+        int verticesSize = vertices.size();
+        for (int i = 0; i < verticesSize; i++) {
+            HalfEdgeVertex vertex = vertices.get(i);
+            Vector2d texCoord = vertex.getTexcoords();
+            double x = texCoord.x;
+            double y = texCoord.y;
+
+            if(invertY)
+            {
+                y = 1.0 - y;
+            }
+            if(i==0)
+            {
+                resultRectangle.setMinX(x);
+                resultRectangle.setMaxX(x);
+                resultRectangle.setMinY(y);
+                resultRectangle.setMaxY(y);
+            }
+            else {
+                resultRectangle.addPoint(x, y);
+            }
+        }
+
+        return resultRectangle;
     }
 }

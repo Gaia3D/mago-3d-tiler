@@ -547,8 +547,14 @@ public class HalfEdgeUtils {
 
         halfEdgeScene1.deleteFacesWithClassifyId(2);
         halfEdgeScene2.deleteFacesWithClassifyId(1);
-        resultHalfEdgeScenes.add(halfEdgeScene1);
-        resultHalfEdgeScenes.add(halfEdgeScene2);
+
+        if(halfEdgeScene1.getTrianglesCount() > 0) {
+            resultHalfEdgeScenes.add(halfEdgeScene1);
+        }
+
+        if(halfEdgeScene2.getTrianglesCount() > 0) {
+            resultHalfEdgeScenes.add(halfEdgeScene2);
+        }
 
 
 //        List<HalfEdgeNode> halfEdgeNodes = halfEdgeScene.getNodes();
