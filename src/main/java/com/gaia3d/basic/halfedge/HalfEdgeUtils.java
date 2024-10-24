@@ -6,6 +6,7 @@ import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -207,7 +208,12 @@ public class HalfEdgeUtils {
         HalfEdgeScene halfEdgeScene = new HalfEdgeScene();
 
         // set original path.***
-        halfEdgeScene.setOriginalPath(gaiaScene.getOriginalPath());
+        Path originalPath = gaiaScene.getOriginalPath();
+        if(originalPath == null)
+        {
+            originalPath = Path.of("");
+        }
+        halfEdgeScene.setOriginalPath(originalPath);
         halfEdgeScene.setGaiaBoundingBox(gaiaScene.getBoundingBox().clone());
         halfEdgeScene.setAttribute(gaiaScene.getAttribute().getCopy());
 

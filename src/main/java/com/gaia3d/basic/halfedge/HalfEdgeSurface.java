@@ -2363,21 +2363,6 @@ public class HalfEdgeSurface implements Serializable {
         int texWidth = texture.getWidth();
         int texHeight = texture.getHeight();
 
-        /*
-        List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
-            GaiaTexture texture = null;
-            BufferedImage bufferedImage;
-            if (!textures.isEmpty()) {
-                texture = textures.get(0);
-                if (texture.getPath().endsWith(".png") || texture.getPath().endsWith(".PNG")) {
-                    existPngTextures = true;
-                }
-                bufferedImage = texture.getBufferedImage(lod.getTextureScale());
-            } else {
-                bufferedImage = createShamImage();
-            }
-         */
-
         // must find welded face-groups (faces group that are not connected with other faces).***
         List<List<HalfEdgeFace>> resultWeldedFacesGroups = new ArrayList<>();
         getWeldedFacesGroups(resultWeldedFacesGroups);
@@ -2390,7 +2375,7 @@ public class HalfEdgeSurface implements Serializable {
         List<GaiaTextureScissorData> textureScissorDatasWidth = new ArrayList<>();
         List<GaiaTextureScissorData> textureScissorDatasHeight = new ArrayList<>();
         int weldedFacesGroupsCount = resultWeldedFacesGroups.size();
-        boolean invertTexCoordY = true;
+        boolean invertTexCoordY = false;
         for (int i = 0; i < weldedFacesGroupsCount; i++) {
             List<HalfEdgeFace> weldedFacesGroup = resultWeldedFacesGroups.get(i);
             GaiaRectangle groupTexCoordBRect = new GaiaRectangle();
@@ -2455,12 +2440,14 @@ public class HalfEdgeSurface implements Serializable {
         int maxWidth = getMaxWidth(textureScissorDatas);
         int maxHeight = getMaxHeight(textureScissorDatas);
 
-        if(maxWidth <= 0 || maxHeight <= 0)
+        // compare with the texture size.***
+        if(maxWidth * maxHeight > texWidth * texHeight)
         {
             int hola = 0;
         }
 
         GaiaRectangle atlasBoundary = new GaiaRectangle(0.0, 0.0, maxWidth, maxHeight);
+        Map<HalfEdgeVertex, HalfEdgeVertex> visitedVertexMap = new HashMap<>();
 
         int textureScissorDatasCount = textureScissorDatas.size();
         for (int i = 0; i < textureScissorDatasCount; i++) {
@@ -2469,21 +2456,52 @@ public class HalfEdgeSurface implements Serializable {
             GaiaRectangle currentBoundary = textureScissorData.getCurrentBoundary();
             GaiaRectangle batchedBoundary = textureScissorData.getBatchedBoundary();
 
+            // obtain all vertex of the faceGroup.***
+            Map<HalfEdgeVertex, HalfEdgeVertex> groupVertexMap = new HashMap<>();
+
             int facesCount = faceGroup.size();
             for (int j = 0; j < facesCount; j++) {
                 HalfEdgeFace face = faceGroup.get(j);
-                List<HalfEdgeVertex> vertices = face.getVertices(null);
-                int verticesCount = vertices.size();
+                List<HalfEdgeVertex> faceVertices = face.getVertices(null);
+                int verticesCount = faceVertices.size();
                 for (int k = 0; k < verticesCount; k++) {
-                    HalfEdgeVertex vertex = vertices.get(k);
-                    Vector2d texCoord = vertex.getTexcoords();
-                    double x = texCoord.x;
-                    double y = texCoord.y;
-                    double newU = (x * currentBoundary.getWidth() + currentBoundary.getMinX()) / atlasBoundary.getWidth();
-                    double newV = (y * currentBoundary.getHeight() + currentBoundary.getMinY()) / atlasBoundary.getHeight();
-                    vertex.setTexcoords(new Vector2d(newU, newV));
+                    HalfEdgeVertex vertex = faceVertices.get(k);
+                    groupVertexMap.put(vertex, vertex);
                 }
             }
+
+            // now, calculate the vertex list from the map.***
+            List<HalfEdgeVertex> vertexList = new ArrayList<>(groupVertexMap.values());
+
+            int verticesCount = vertexList.size();
+            for (int k = 0; k < verticesCount; k++) {
+                HalfEdgeVertex vertex = vertexList.get(k);
+
+                if(visitedVertexMap.containsKey(vertex))
+                {
+                    int hola = 0;
+                }
+                visitedVertexMap.put(vertex, vertex);
+
+                Vector2d texCoord = vertex.getTexcoords();
+                double x = texCoord.x;
+                double y = texCoord.y;
+
+                double pixelX = x * texWidth;
+                double pixelY = y * texHeight;
+
+                // transform the texCoords to texCoordRelToCurrentBoundary.***
+                double xRel = (pixelX - currentBoundary.getMinX()) / currentBoundary.getWidth();
+                double yRel = (pixelY - currentBoundary.getMinY()) / currentBoundary.getHeight();
+
+                // transform the texCoordRelToCurrentBoundary to atlasBoundary using batchedBoundary.***
+                double xAtlas = (batchedBoundary.getMinX() + xRel * batchedBoundary.getWidth()) / maxWidth;
+                double yAtlas = (batchedBoundary.getMinY() + yRel * batchedBoundary.getHeight()) / maxHeight;
+
+                texCoord.set(xAtlas, yAtlas);
+                vertex.setTexcoords(texCoord);
+            }
+
         }
 
 
@@ -2522,9 +2540,23 @@ public class HalfEdgeSurface implements Serializable {
 
         // write the textureAtlas into a file.***
         String imageParentPath = texture.getParentPath();
-        String textureAtlasName = texture.getPath().replace(".png", "_atlas.png");
+        String texturePath = texture.getPath();
+        String textureRawName = texturePath.substring(texturePath.lastIndexOf(File.separator) + 1);
+        String textureImageExtension = textureRawName.substring(textureRawName.lastIndexOf("."));
+
+        String textureAtlasName = textureRawName.substring(0, textureRawName.lastIndexOf(".")) + "_atlas" + textureImageExtension;
         String textureAtlasPath = imageParentPath + File.separator + textureAtlasName;
         textureAtlas.saveImage(textureAtlasPath);
+
+        // change the diffuseTexture path.***
+        diffuseTextures.get(0).setPath(textureAtlasName);
+
+        // delete the original texture.***
+        String textureToDeletePath = imageParentPath + File.separator + texturePath;
+        File textureToDelete = new File(textureToDeletePath);
+        if (textureToDelete.exists()) {
+            textureToDelete.delete();
+        }
 
         int hola = 0;
     }
