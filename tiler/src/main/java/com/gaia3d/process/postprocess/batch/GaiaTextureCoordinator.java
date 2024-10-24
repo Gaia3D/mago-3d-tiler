@@ -358,6 +358,7 @@ public class GaiaTextureCoordinator {
                             u = 1.0 + u;
                         }
 
+                        // "width" is the width of the splittedRectangle.***
                         u2 = (splittedRectangle.getMinX() + u * width) / maxWidth;
                         v2 = (splittedRectangle.getMinY() + v * height) / maxHeight;
 

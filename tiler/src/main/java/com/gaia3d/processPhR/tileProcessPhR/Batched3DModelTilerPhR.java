@@ -11,6 +11,7 @@ import com.gaia3d.basic.halfedge.HalfEdgeScene;
 import com.gaia3d.basic.halfedge.HalfEdgeUtils;
 import com.gaia3d.basic.halfedge.PlaneType;
 import com.gaia3d.basic.model.GaiaAttribute;
+import com.gaia3d.basic.model.GaiaMaterial;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.KmlInfo;
@@ -280,7 +281,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             tileInfosInNode.add(tileInfo);
         }
 
-        scissorTextures(tileInfosCopy);
+        // in lod2, we don't scissor textures.***
+        // lod2 uses the rendered image.***
         makeContentsForNodes(nodeTileInfoMap, lod);
         // End lod 2.---------------------------------------------------------
 
@@ -318,6 +320,13 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 GaiaScene scene = new GaiaScene(gaiaSet);
                 HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
                 halfEdgeScene.scissorTextures();
+
+                // once scene is scissored, must change the materials of the gaiaSet and overwrite the file.***
+                GaiaScene scissorsScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
+                gaiaSet = GaiaSet.fromGaiaScene(scissorsScene);
+
+                // overwrite the file.***
+                gaiaSet.writeFileInThePath(path);
 
                 if (gaiaSet == null)
                     continue;
@@ -398,7 +407,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             for(HalfEdgeScene halfEdgeCutScene : halfEdgeCutScenes)
             {
                 GaiaScene gaiaSceneCut = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeCutScene);
-                GaiaBoundingBox boundingBoxCutLC = gaiaSceneCut.getGaiaBoundingBox();
+                GaiaBoundingBox boundingBoxCutLC = gaiaSceneCut.getBoundingBox();
 
                 // Calculate cartographicBoundingBox.***
                 double minPosLCX = boundingBoxCutLC.getMinX();
@@ -538,6 +547,15 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         // remove from tileInfos the deleted tileInfos.***
         for(Map.Entry<TileInfo, TileInfo> entry : deletedTileInfoMap.entrySet())
         {
+            // delete the temp folder of the tileInfo.***
+            TileInfo tileInfo = entry.getKey();
+            Path tempPath = tileInfo.getTempPath();
+            Path tempPathFolder = tempPath.getParent();
+            File tempPathFile = tempPathFolder.toFile();
+            if(tempPathFile.exists())
+            {
+                tempPathFile.delete(); // no works. TODO: must delete the folder and all its contents.***
+            }
             tileInfos.remove(entry.getKey());
         }
 

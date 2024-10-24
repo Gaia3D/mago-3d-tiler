@@ -35,6 +35,14 @@ public class HalfEdgeScene  implements Serializable{
         }
     }
 
+    public List<GaiaMaterial> getCopyMaterials() {
+        List<GaiaMaterial> copyMaterials = new ArrayList<>();
+        for (GaiaMaterial material : materials) {
+            copyMaterials.add(material.clone());
+        }
+        return copyMaterials;
+    }
+
     public GaiaBoundingBox getGaiaBoundingBox() {
         if (gaiaBoundingBox == null) {
             gaiaBoundingBox = calculateBoundingBox(null);
