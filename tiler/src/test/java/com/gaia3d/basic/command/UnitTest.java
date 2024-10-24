@@ -1,5 +1,8 @@
 package com.gaia3d.basic.command;
 
+import com.gaia3d.TilerExtensionModule;
+import com.gaia3d.basic.model.GaiaScene;
+import com.gaia3d.command.Configurator;
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import com.gaia3d.util.GlobeUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +12,9 @@ import org.locationtech.proj4j.BasicCoordinateTransform;
 import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 class UnitTest {
@@ -911,6 +917,17 @@ class UnitTest {
     }
 
 
+    @Test
+    void testRenderScenes() {
+        Configurator.initConsoleLogger();
+        List<GaiaScene> gaiaSceneList = new ArrayList<>();
+        GaiaScene gaiaScene = new GaiaScene();
+
+        gaiaSceneList.add(gaiaScene);
+
+        TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
+        tilerExtensionModule.getRenderScene(gaiaSceneList);
+    }
 
 
 }

@@ -114,7 +114,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             maxLonDeg = minLonDeg + latDegDiff;
         }
 
-
         Matrix4d transformMatrix = getTransformMatrix(globalBoundingBox);
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);
@@ -304,6 +303,42 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         tileset.setAsset(asset);
         tileset.setRoot(root);
         return tileset;
+    }
+
+    private void createUniqueTextureByRendering(TileInfo tileInfo, int lod)
+    {
+        Path path;
+        if(tileInfo.getTempPathLod() != null) {
+            List<Path> paths = tileInfo.getTempPathLod();
+            path = paths.get(lod);
+        }
+        else {
+            path = tileInfo.getTempPath();
+        }
+
+        KmlInfo kmlInfo = tileInfo.getKmlInfo();
+        Vector3d geoCoordPosition = kmlInfo.getPosition();
+        Vector3d posWC = GlobeUtils.geographicToCartesianWgs84(geoCoordPosition);
+        Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(posWC);
+        Matrix4d transformMatrixInv = new Matrix4d(transformMatrix);
+        transformMatrixInv.invert();
+
+        // load the file.***
+        GaiaSet gaiaSet = null;
+        try{
+            gaiaSet = GaiaSet.readFile(path);
+            if(gaiaSet == null)
+                return;
+        }
+        catch (IOException e)
+        {
+            log.error("Error : {}", e.getMessage());
+            throw new RuntimeException(e);
+        }
+
+//        TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
+//        tilerExtensionModule.executePhotorealistic(scene, null);
+
     }
 
     private void scissorTextures(List<TileInfo> tileInfos)
@@ -647,6 +682,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
     public void getRenderTexture(GaiaScene scene)
     {
+        // example function.***
         TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
         tilerExtensionModule.executePhotorealistic(scene, null);
 

@@ -3,6 +3,7 @@ package com.gaia3d;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.model.GaiaTexture;
 
+import java.util.List;
 import java.util.Map;
 
 public interface ExtensionModuleFrame {
@@ -12,5 +13,5 @@ public interface ExtensionModuleFrame {
 
     GaiaScene executePhotorealistic(GaiaScene gaiaScene, Map<String, Object> options);
 
-    GaiaTexture getRenderScene(GaiaScene scene);
+    List<GaiaTexture> getRenderScene(List<GaiaScene> scene);
 }
