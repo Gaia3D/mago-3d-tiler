@@ -4,6 +4,7 @@ import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.model.GaiaTexture;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -29,7 +30,7 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
-    public GaiaTexture getRenderScene(GaiaScene scene) {
+    public List<GaiaTexture> getRenderScene(List<GaiaScene> scene) {
         return null;
     }
 }

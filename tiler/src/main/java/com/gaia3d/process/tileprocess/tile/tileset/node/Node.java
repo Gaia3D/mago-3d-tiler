@@ -4,14 +4,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
-import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.DecimalUtils;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
-import org.opengis.geometry.BoundingBox;
+import org.joml.Vector2d;
 
 import java.util.List;
 
@@ -70,6 +69,22 @@ public class Node {
         }
     }
 
+    public void deleteNoContentNodes() {
+        if (children == null) {
+            return;
+        }
+
+        for (int i = 0; i < children.size(); i++) {
+            Node childNode = children.get(i);
+            if (childNode.getContent() == null) {
+                children.remove(i);
+                i--;
+            } else {
+                childNode.deleteNoContentNodes();
+            }
+        }
+    }
+
     public enum RefineType {
         ADD,
         REPLACE,
@@ -82,20 +97,22 @@ public class Node {
                 contentInfoList.add(contentInfo);
             }
         }
-        for (Node node : children) {
-            node.findAllContentInfo(contentInfoList);
+        if(children != null) {
+            for (Node node : children) {
+                node.findAllContentInfo(contentInfoList);
+            }
         }
         return contentInfoList;
     }
 
-    public int getMaxDepth()
+    public int findMaxDepth()
     {
         int maxDepth = this.depth;
         if(this.children == null) {
             return maxDepth;
         }
         for (Node node : children) {
-            int depth = node.getMaxDepth();
+            int depth = node.findMaxDepth();
             if (depth > maxDepth) {
                 maxDepth = depth;
             }
@@ -117,31 +134,26 @@ public class Node {
         }
     }
 
-    public void distributeContentsPhR(List<TileInfo> tileInfos, int depth) {
+    public Node getIntersectedNode(Vector2d cartographicRad, int depth) {
         if (this.depth == depth) {
-            if (content != null) {
-                //content.distributeContentsPhR(tileInfos);
-                this.setRefine(Node.RefineType.REPLACE);
-
-            }
-            return;
+            return this;
         }
 
-        int tileInfosCount = tileInfos.size();
-        for (int i = 0; i < tileInfosCount; i++) {
-            TileInfo tileInfo = tileInfos.get(i);
-            Matrix4d tileTransformMatrix = tileInfo.getTransformMatrix();
-            GaiaBoundingBox tileBoundingBox = tileInfo.getBoundingBox();
-
-            int hola = 0;
-        }
         if (children == null) {
-            return;
+            return null;
         }
-        for (Node node : children) {
-            node.distributeContentsPhR(tileInfos, depth);
+
+        for (Node childNode : children) {
+            BoundingVolume childBoundingVolume = childNode.getBoundingVolume();
+
+            double[] region = childBoundingVolume.getRegion();// minx, miny, maxx, maxy, minz, maxz
+
+            // check if intersects centerLonRad and centerLatRad
+            if (cartographicRad.x >= region[0] && cartographicRad.x <= region[2] && cartographicRad.y >= region[1] && cartographicRad.y <= region[3]) {
+                return childNode.getIntersectedNode(cartographicRad, depth);
+            }
         }
+
+        return null;
     }
-
-
 }

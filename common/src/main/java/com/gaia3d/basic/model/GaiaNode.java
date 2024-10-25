@@ -236,4 +236,6 @@ public class GaiaNode extends NodeStructure {
             child.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
         }
     }
+
+
 }

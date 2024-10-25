@@ -128,4 +128,25 @@ public class TileInfo {
             log.warn("Can not delete temp files: {}", file);
         }
     }
+
+    public TileInfo clone()
+    {
+        return TileInfo.builder()
+            .serial(this.serial)
+            .scene(this.scene)
+            .set(this.set)
+            .pointCloud(this.pointCloud)
+            .name(this.name)
+            .kmlInfo(this.kmlInfo)
+            .transformMatrix(this.transformMatrix)
+            .boundingBox(this.boundingBox)
+            .scenePath(this.scenePath)
+            .outputPath(this.outputPath)
+            .tempPath(this.tempPath)
+            .tempPathLod(this.tempPathLod)
+            .cartographicBBox(this.cartographicBBox)
+            .triangleCount(this.triangleCount)
+            .isI3dm(this.isI3dm)
+            .build();
+    }
 }

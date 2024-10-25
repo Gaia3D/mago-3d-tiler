@@ -2,9 +2,13 @@ package com.gaia3d;
 
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.model.GaiaTexture;
-import com.gaia3d.renderer.Renderer;
+import com.gaia3d.renderer.MainRenderer;
+import com.gaia3d.renderer.engine.InternDataConverter;
+import com.gaia3d.renderer.renderable.RenderableGaiaScene;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -31,14 +35,21 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
         return null;
     }
 
-    public GaiaTexture getRenderScene(GaiaScene scene)
+    public List<GaiaTexture> getRenderScene(List<GaiaScene> scenes)
     {
+
+
+
+        List<GaiaTexture> textures = new ArrayList<>();
         GaiaTexture tex = null;
 
-        Renderer renderer = new Renderer();
+        textures.add(tex);
+
+        MainRenderer renderer = new MainRenderer();
+        renderer.render(scenes);
 
         // Renderer renderer = new Renderer();
         // use the renderer to render the scene
-        return tex;
+        return textures;
     }
 }

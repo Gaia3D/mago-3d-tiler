@@ -1,3 +1,4 @@
+
 plugins {
     id 'java'
 }
@@ -49,9 +50,11 @@ dependencies {
 
     //implementation project(":mago-common")
 
+
     runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"
+
 
     testCompileOnly "org.projectlombok:lombok:1.18.30"
     testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
@@ -60,5 +63,7 @@ dependencies {
 }
 
 test {
-
+//    useJUnitPlatform {
+//        includeTags 'release'
+//    }
 }

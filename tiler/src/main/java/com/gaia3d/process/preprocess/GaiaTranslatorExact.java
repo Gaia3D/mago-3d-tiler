@@ -58,6 +58,43 @@ public class GaiaTranslatorExact implements PreProcess {
             centerGeoCoord.z = memSave_alt[0];
         });
 
+        // calculate cartographic bounding box.*****************************************************************
+        double[] centerCartesianWC = GlobeUtils.geographicToCartesianWgs84(centerGeoCoord.x, centerGeoCoord.y, centerGeoCoord.z);
+        Matrix4d tMatrixAtCenterGeoCoord = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerCartesianWC[0], centerCartesianWC[1], centerCartesianWC[2]);
+        Matrix4d globalTMatrixInv = new Matrix4d(tMatrixAtCenterGeoCoord);
+        globalTMatrixInv.invert();
+
+        // Calculate cartographicBoundingBox.***
+        double minPosLCX = bboxLC.getMinX();
+        double minPosLCY = bboxLC.getMinY();
+        double minPosLCZ = bboxLC.getMinZ();
+
+        double maxPosLCX = bboxLC.getMaxX();
+        double maxPosLCY = bboxLC.getMaxY();
+        double maxPosLCZ = bboxLC.getMaxZ();
+
+        Vector3d leftDownBottomLC = new Vector3d(minPosLCX, minPosLCY, minPosLCZ);
+        Vector3d rightDownBottomLC = new Vector3d(maxPosLCX, minPosLCY, minPosLCZ);
+        Vector3d rightUpBottomLC = new Vector3d(maxPosLCX, maxPosLCY, minPosLCZ);
+
+        Vector3d leftDownBottomWC = tMatrixAtCenterGeoCoord.transformPosition(leftDownBottomLC);
+        Vector3d geoCoordLeftDownBottom = GlobeUtils.cartesianToGeographicWgs84(leftDownBottomWC);
+
+        Vector3d rightDownBottomWC = tMatrixAtCenterGeoCoord.transformPosition(rightDownBottomLC);
+        Vector3d geoCoordRightDownBottom = GlobeUtils.cartesianToGeographicWgs84(rightDownBottomWC);
+
+        Vector3d rightUpBottomWC = tMatrixAtCenterGeoCoord.transformPosition(rightUpBottomLC);
+        Vector3d geoCoordRightUpBottom = GlobeUtils.cartesianToGeographicWgs84(rightUpBottomWC);
+
+        double minLonDegCut = geoCoordLeftDownBottom.x;
+        double minLatDegCut = geoCoordLeftDownBottom.y;
+        double maxLonDegCut = geoCoordRightDownBottom.x;
+        double maxLatDegCut = geoCoordRightUpBottom.y;
+
+        GaiaBoundingBox cartographicBoundingBox = new GaiaBoundingBox(minLonDegCut, minLatDegCut, bboxLC.getMinZ(), maxLonDegCut, maxLatDegCut, bboxLC.getMaxZ(), false);
+        tileInfo.setCartographicBBox(cartographicBoundingBox);
+        // End calculate cartographicBoundingBox.-------------------------------------------------------------
+
         KmlInfo kmlInfo = getKmlInfo(tileInfo, centerGeoCoord);
         rootNode.setTransformMatrix(transform);
         tileInfo.setTransformMatrix(transform);

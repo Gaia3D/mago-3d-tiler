@@ -247,4 +247,8 @@ public class GaiaMesh extends MeshStructure {
         }
 
     }
+
+    public void scissorTextures(List<GaiaMaterial> materials) {
+
+    }
 }

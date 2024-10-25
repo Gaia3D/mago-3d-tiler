@@ -25,7 +25,7 @@ public class BoundingVolume {
     @JsonIgnore
     BoundingVolumeType type;
 
-    double[] region;
+    double[] region; // minx, miny, maxx, maxy, minz, maxz
     double[] box;
     double[] sphere;
 

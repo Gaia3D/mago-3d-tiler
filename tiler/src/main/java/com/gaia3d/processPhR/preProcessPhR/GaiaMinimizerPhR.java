@@ -1,10 +1,12 @@
 package com.gaia3d.processPhR.preProcessPhR;
 
+import com.gaia3d.TilerExtensionModule;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.halfedge.HalfEdgeScene;
 import com.gaia3d.basic.halfedge.HalfEdgeUtils;
 import com.gaia3d.basic.halfedge.PlaneType;
 import com.gaia3d.basic.model.GaiaScene;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.process.preprocess.PreProcess;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
@@ -53,21 +55,26 @@ public class GaiaMinimizerPhR implements PreProcess {
 //            scene.getNodes().add(rootNode);
 //            // End test.------------------------
 
-            // Test.************************************************
-//            GaiaNode rootNode = scene.getNodes().get(0);
-//            List<GaiaNode> reducedChildren = new ArrayList<>();
-//            int childrenCount = rootNode.getChildren().size();
-//
-//            reducedChildren.add(rootNode.getChildren().get(100));
-//            rootNode.getChildren().clear();
-//            rootNode.setChildren(reducedChildren);
-            // End test.--------------------------------------------
+            // Rendering test.****************************************************************
+            List<GaiaScene> gaiaSceneList = new ArrayList<>();
+            gaiaSceneList.add(scene);
+            TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
+            tilerExtensionModule.getRenderScene(gaiaSceneList);
+            // end rendering test.------------------------------------------------------------
+
 
             List<Path> tempPathLod = new ArrayList<>();
             Path tempFolder = tileInfo.getTempPath();
 
             // Lod 0.************************************************************************************************************
             log.info("Minimize GaiaScene LOD 0");
+
+//                        // test.***
+//                        HalfEdgeScene halfEdgeSceneLod0 = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
+//                        halfEdgeSceneLod0.TEST_cutScene();
+//                        GaiaScene sceneLod0 = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneLod0);
+//                        // end test.***
+
             GaiaSet tempSetLod0 = GaiaSet.fromGaiaScene(scene);
             Path tempPathLod0 = tempSetLod0.writeFile(tileInfo.getTempPath(), tileInfo.getSerial(), tempSetLod0.getAttribute());
             tileInfo.setTempPath(tempPathLod0);
@@ -83,27 +90,6 @@ public class GaiaMinimizerPhR implements PreProcess {
 
             //halfEdgeScene.TEST_cutScene();
 
-//            Path testPath = tempFolder.resolve("test");
-//            if(!testPath.toFile().exists()) {
-//                testPath.toFile().mkdirs();
-//            }
-//            try{
-//                halfEdgeScene.writeFile(testPath.toString(), "testHalfEdgeScene");
-//            } catch (FileNotFoundException e) {
-//                log.error("Failed to write file", e);
-//                throw new RuntimeException("Failed to write file", e);
-//            }
-//
-//
-//            try
-//            {
-//                halfEdgeScene = HalfEdgeScene.readFile(testPath.toString(), "testHalfEdgeScene");
-//            }
-//            catch (FileNotFoundException e)
-//            {
-//                log.error("Failed to read file", e);
-//                throw new RuntimeException("Failed to read file", e);
-//            }
 
             log.info("Making GaiaScene from HalfEdgeScene");
             GaiaScene sceneLod1 = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
