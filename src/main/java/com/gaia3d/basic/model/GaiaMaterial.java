@@ -118,4 +118,17 @@ public class GaiaMaterial extends MaterialStructure implements Serializable {
         }
         return newMaterial;
     }
+
+    public boolean hasTextures() {
+        for (Map.Entry<TextureType, List<GaiaTexture>> entry : textures.entrySet()) {
+            List<GaiaTexture> gaiaTextures = entry.getValue();
+            for (GaiaTexture gaiaTexture : gaiaTextures) {
+                if (gaiaTexture != null) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 }

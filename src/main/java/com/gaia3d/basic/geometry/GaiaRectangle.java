@@ -89,6 +89,21 @@ public class GaiaRectangle implements Serializable {
         }
     }
 
+    public void addPoint(double x, double y) {
+        if (x < minX) {
+            minX = x;
+        }
+        if (y < minY) {
+            minY = y;
+        }
+        if (x > maxX) {
+            maxX = x;
+        }
+        if (y > maxY) {
+            maxY = y;
+        }
+    }
+
     public void translate(Vector2d vector2d) {
         minX += vector2d.x;
         minY += vector2d.y;
@@ -112,12 +127,12 @@ public class GaiaRectangle implements Serializable {
         }
     }
 
-    public double getWidth() {
-        return maxX - minX;
+    public int getWidth() {
+        return (int)Math.ceil(maxX) - (int)Math.floor(minX);
     }
 
-    public double getHeight() {
-        return maxY - minY;
+    public int getHeight() {
+        return (int)Math.ceil(maxY) - (int)Math.floor(minY);
     }
 
     public void copyFrom(GaiaRectangle rectangle) {

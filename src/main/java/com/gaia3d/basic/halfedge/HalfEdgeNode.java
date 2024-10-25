@@ -1,6 +1,7 @@
 package com.gaia3d.basic.halfedge;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.model.GaiaMaterial;
 import lombok.Getter;
 import lombok.Setter;
 import org.joml.Matrix4d;
@@ -142,6 +143,34 @@ public class HalfEdgeNode implements Serializable {
         }
     }
 
+    public void deleteFacesWithClassifyId(int classifyId)
+    {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.deleteFacesWithClassifyId(classifyId);
+        }
+        for (HalfEdgeNode child : children) {
+            child.deleteFacesWithClassifyId(classifyId);
+        }
+    }
+
+    public HalfEdgeNode clone() {
+        HalfEdgeNode clonedNode = new HalfEdgeNode();
+        clonedNode.transformMatrix = new Matrix4d(transformMatrix);
+        clonedNode.preMultipliedTransformMatrix = new Matrix4d(preMultipliedTransformMatrix);
+        for (HalfEdgeMesh mesh : meshes) {
+            clonedNode.meshes.add(mesh.clone());
+        }
+        for (HalfEdgeNode child : children) {
+            HalfEdgeNode clonedChild = child.clone();
+            clonedChild.parent = clonedNode;
+            clonedNode.children.add(clonedChild);
+        }
+        if (boundingBox != null) {
+            clonedNode.boundingBox = boundingBox.clone();
+        }
+        return clonedNode;
+    }
+
     public void writeFile(ObjectOutputStream outputStream) {
         try {
             /*
@@ -198,5 +227,25 @@ public class HalfEdgeNode implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void scissorTextures(List<GaiaMaterial> materials) {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.scissorTextures(materials);
+        }
+        for (HalfEdgeNode child : children) {
+            child.scissorTextures(materials);
+        }
+    }
+
+    public int getTrianglesCount() {
+        int trianglesCount = 0;
+        for (HalfEdgeMesh mesh : meshes) {
+            trianglesCount += mesh.getTrianglesCount();
+        }
+        for (HalfEdgeNode child : children) {
+            trianglesCount += child.getTrianglesCount();
+        }
+        return trianglesCount;
     }
 }

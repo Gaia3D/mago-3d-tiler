@@ -35,6 +35,14 @@ public class HalfEdgeScene  implements Serializable{
         }
     }
 
+    public List<GaiaMaterial> getCopyMaterials() {
+        List<GaiaMaterial> copyMaterials = new ArrayList<>();
+        for (GaiaMaterial material : materials) {
+            copyMaterials.add(material.clone());
+        }
+        return copyMaterials;
+    }
+
     public GaiaBoundingBox getGaiaBoundingBox() {
         if (gaiaBoundingBox == null) {
             gaiaBoundingBox = calculateBoundingBox(null);
@@ -62,6 +70,12 @@ public class HalfEdgeScene  implements Serializable{
         }
     }
 
+    public void deleteFacesWithClassifyId(int classifyId) {
+        for (HalfEdgeNode node : nodes) {
+            node.deleteFacesWithClassifyId(classifyId);
+        }
+    }
+
     public void TEST_cutScene()
     {
         // Test.***
@@ -72,15 +86,17 @@ public class HalfEdgeScene  implements Serializable{
 //        {
 //            return;
 //        }
-        PlaneType planeType = PlaneType.XZ;
+        PlaneType planeType = PlaneType.YZ;
         cutByPlane(planeType, center, error);
         classifyFacesIdByPlane(planeType, center);
 
         // check if there are no used vertices.***
         List<HalfEdgeSurface> resultHalfEdgeSurfaces = new ArrayList<>();
         extractSurfaces(resultHalfEdgeSurfaces);
+        List<HalfEdgeVertex> noUsedVertices = new ArrayList<>();
         for (HalfEdgeSurface surface : resultHalfEdgeSurfaces) {
-            if(surface.existNoUsedVertices())
+            noUsedVertices.clear();
+            if(surface.existNoUsedVertices(noUsedVertices))
             {
                 log.error("Error: existNoUsedVertices.***");
             }
@@ -297,48 +313,47 @@ public class HalfEdgeScene  implements Serializable{
         return null;
     }
 
-    public void writeFileSerializable(String folderPathString, String fileName) {
-        Path folderPath = Paths.get(folderPathString);
-        Path filePath = folderPath.resolve(fileName);
-        File file = filePath.toFile();
-        try (ObjectOutputStream outputStream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)))) {
-            outputStream.writeObject(this);
+    public HalfEdgeScene clone()
+    {
+        HalfEdgeScene clonedScene = new HalfEdgeScene();
+        clonedScene.originalPath = originalPath;
+        clonedScene.gaiaBoundingBox = gaiaBoundingBox;
+        clonedScene.attribute = attribute;
+        for (HalfEdgeNode node : nodes) {
+            clonedScene.nodes.add(node.clone());
+        }
+        for (GaiaMaterial material : materials) {
+            clonedScene.materials.add(material.clone());
+        }
+        return clonedScene;
+    }
 
-            // Copy images to the temp directory
-            for (GaiaMaterial material : materials) {
-                copyTextures(material, folderPath);
+
+    public void scissorTextures() {
+        boolean hasTextures = false;
+        for (GaiaMaterial material : materials) {
+            if(material.hasTextures()) {
+                hasTextures = true;
+                break;
             }
-        } catch (Exception e) {
-            log.error("GaiaSet Write Error : ", e);
-            file.delete();
+        }
+
+        if(!hasTextures) {
+            return;
+        }
+
+        int nodesSize = nodes.size();
+        for (int i = 0; i < nodesSize; i++) {
+            HalfEdgeNode node = nodes.get(i);
+            node.scissorTextures(materials);
         }
     }
 
-    public static HalfEdgeScene readFileSerializable(String folderPathString, String fileName) throws FileNotFoundException {
-        Path folderPath = Paths.get(folderPathString);
-        Path filePath = folderPath.resolve(fileName);
-        Path imagesPath = folderPath.getParent().resolve("images");
-        File file = filePath.toFile();
-        try (ObjectInputStream inputStream = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)))) {
-            HalfEdgeScene halfEdgeScene = (HalfEdgeScene) inputStream.readObject();
-            for (GaiaMaterial material : halfEdgeScene.getMaterials()) {
-                material.getTextures().forEach((textureType, textures) -> {
-                    for (GaiaTexture texture : textures) {
-                        String texturePath = texture.getPath();
-                        File fileTex = new File(texturePath);
-                        String fileNameTex = fileTex.getName();
-                        //Path imagePath = imagesPath.resolve(fileName);
-
-                        texture.setParentPath(imagesPath.toString());
-                        texture.setPath(fileName);
-                    }
-                });
-            }
-            return halfEdgeScene;
-        } catch (Exception e) {
-            log.error("GaiaSet Write Error : ", e);
+    public int getTrianglesCount() {
+        int trianglesCount = 0;
+        for (HalfEdgeNode node : nodes) {
+            trianglesCount += node.getTrianglesCount();
         }
-        return null;
+        return trianglesCount;
     }
-
 }
