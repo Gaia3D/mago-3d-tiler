@@ -40,7 +40,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
     private String parentPath;
     private String name;
     private String path;
-    private TextureType type;
+    private TextureType type; // DIFFUSE, NORMAL, SPECULAR, ETC
 
     private int width;
     private int height;

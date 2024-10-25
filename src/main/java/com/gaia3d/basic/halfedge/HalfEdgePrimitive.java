@@ -202,4 +202,22 @@ public class HalfEdgePrimitive implements Serializable {
         }
         return trianglesCount;
     }
+
+    public void setBoxTexCoordsXY(GaiaBoundingBox box) {
+        for (HalfEdgeSurface surface : surfaces) {
+            surface.setBoxTexCoordsXY(box);
+        }
+    }
+
+    public void getUsedMaterialsIds(List<Integer> resultMaterialsIds) {
+        if(resultMaterialsIds == null) {
+            resultMaterialsIds = new ArrayList<>();
+        }
+
+        int matId = this.materialIndex;
+        if(matId >= 0 && !resultMaterialsIds.contains(matId)) {
+            resultMaterialsIds.add(matId);
+        }
+    }
+
 }
