@@ -62,7 +62,7 @@ public class RenderEngine {
 
         uniformsMap.setUniformMatrix4fv("uObjectMatrix", identityMatrix);
 
-        List<RenderableNode> renderableNodes = renderableGaiaScene.getRenderableNodess();
+        List<RenderableNode> renderableNodes = renderableGaiaScene.getRenderableNodes();
         for (RenderableNode renderableNode : renderableNodes) {
             renderColorCodedNode(renderableNode, selectionColorManager, shaderProgram);
         }
@@ -148,7 +148,7 @@ public class RenderEngine {
     }
 
     private void renderGaiaScene(RenderableGaiaScene renderableGaiaScene, ShaderProgram shaderProgram) {
-        List<RenderableNode> renderableNodes = renderableGaiaScene.getRenderableNodess();
+        List<RenderableNode> renderableNodes = renderableGaiaScene.getRenderableNodes();
         for (RenderableNode renderableNode : renderableNodes) {
             renderGaiaNode(renderableNode, shaderProgram);
         }

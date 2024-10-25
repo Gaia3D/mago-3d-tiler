@@ -13,13 +13,12 @@ import java.util.List;
 @Setter
 public class GaiaScenesContainer {
     private Projection projection;
-    //private TextureCache textureCache;
     private Camera camera;
     private List<RenderableGaiaScene> renderableGaiaScenes;
 
-    public GaiaScenesContainer(int width, int height) {
+    public GaiaScenesContainer(int screenWidth, int screenHeight) {
         renderableGaiaScenes = new ArrayList<>();
-        projection = new Projection(width, height);
+        projection = new Projection(screenWidth, screenHeight);
         //textureCache = new TextureCache();
         //camera = new Camera();
     }

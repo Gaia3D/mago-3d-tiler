@@ -14,19 +14,19 @@ import java.util.List;
 public class RenderableGaiaScene {
     private GaiaScene originalGaiaScene;
     private Path originalPath;
-    List<RenderableNode> renderableNodess;
+    List<RenderableNode> renderableNodes;
     private List<GaiaMaterial> materials = new ArrayList<>();
     public RenderableGaiaScene() {
-        renderableNodess = new ArrayList<>();
+        renderableNodes = new ArrayList<>();
         originalGaiaScene = null;
     }
 
     public void addRenderableNode(RenderableNode renderableNode) {
-        renderableNodess.add(renderableNode);
+        renderableNodes.add(renderableNode);
     }
 
     public void extractRenderablePrimitives(List<RenderablePrimitive> resultRenderablePrimitives) {
-        for (RenderableNode renderableNode : renderableNodess) {
+        for (RenderableNode renderableNode : renderableNodes) {
             renderableNode.extractRenderablePrimitives(resultRenderablePrimitives);
         }
     }

@@ -23,6 +23,8 @@ import com.gaia3d.renderer.engine.screen.ScreenQuad;
 import com.gaia3d.renderer.renderable.RenderableGaiaScene;
 import com.gaia3d.renderer.renderable.RenderablePrimitive;
 import com.gaia3d.renderer.renderable.SelectionColorManager;
+import lombok.Getter;
+import lombok.Setter;
 import org.joml.*;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -45,6 +47,8 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.glfwPollEvents;
 import static org.lwjgl.opengl.GL11.*;
 
+@Getter
+@Setter
 public class Engine {
     private Window window;
     private ShaderManager shaderManager;
@@ -102,7 +106,7 @@ public class Engine {
         glfwSetErrorCallback(null).free();
     }
 
-    private void init() throws JAXBException, IOException {
+    public void init() throws JAXBException, IOException {
         // 에러 콜백을 설정합니다. System.err의 에러 메세지를 출력 기본으로 구현합니다.
         GLFWErrorCallback.createPrint(System.err).set();
 
@@ -178,9 +182,25 @@ public class Engine {
 
         setupShader();
 
-        renderer = new RenderEngine();
-        camera = new Camera();
-        fboManager = new FboManager();
+        if(renderer == null)
+        {
+            renderer = new RenderEngine();
+        }
+
+        if(camera == null)
+        {
+            camera = new Camera();
+        }
+
+        if(selectionColorManager == null)
+        {
+            selectionColorManager = new SelectionColorManager();
+        }
+
+        if(fboManager == null)
+        {
+            fboManager = new FboManager();
+        }
 
         int windowWidth = window.getWidth();
         int windowHeight = window.getHeight();
@@ -189,25 +209,16 @@ public class Engine {
         // now, create a 500 x 500 fbo for colorCode render.***
         fboManager.createFbo("colorCodeRender", 500, 500);
 
-        screenQuad = new ScreenQuad();
+        if(screenQuad == null) {
+            screenQuad = new ScreenQuad();
+        }
 
-        gaiaScenesContainer = new GaiaScenesContainer(windowWidth, windowHeight);
+        if(gaiaScenesContainer == null) {
+            gaiaScenesContainer = new GaiaScenesContainer(windowWidth, windowHeight);
+        }
         gaiaScenesContainer.setCamera(camera);
 
-        selectionColorManager = new SelectionColorManager();
 
-
-
-//        IndoorGmlConverter indoorGmlConverter = new IndoorGmlConverter();
-//        String indoorGMLPath = "D:\\data\\military\\withOutLAS\\IndoorGML\\B00100000005WM8IR.gml";
-//        List<GaiaScene> gaiaScenes = indoorGmlConverter.load(indoorGMLPath);
-//        int scenesCount = gaiaScenes.size();
-//        for(int i=0; i<scenesCount; i++)
-//        {
-//            RenderableGaiaScene renderableGaiaScene = InternDataConverter.getRenderableGaiaScene(gaiaScenes.get(i));
-//            gaiaScenesContainer.addRenderableGaiaScene(renderableGaiaScene);
-//            break;
-//        }
         int hola2 = 0;
     }
 

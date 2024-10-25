@@ -1,5 +1,6 @@
 package com.gaia3d.processPhR.preProcessPhR;
 
+import com.gaia3d.TilerExtensionModule;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.halfedge.HalfEdgeScene;
 import com.gaia3d.basic.halfedge.HalfEdgeUtils;
@@ -53,6 +54,13 @@ public class GaiaMinimizerPhR implements PreProcess {
 //            scene.getNodes().clear();
 //            scene.getNodes().add(rootNode);
 //            // End test.------------------------
+
+            // Rendering test.****************************************************************
+            List<GaiaScene> gaiaSceneList = new ArrayList<>();
+            gaiaSceneList.add(scene);
+            TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
+            tilerExtensionModule.getRenderScene(gaiaSceneList);
+            // end rendering test.------------------------------------------------------------
 
 
             List<Path> tempPathLod = new ArrayList<>();
