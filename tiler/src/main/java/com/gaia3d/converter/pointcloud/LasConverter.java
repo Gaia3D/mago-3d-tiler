@@ -65,7 +65,23 @@ public class LasConverter {
         double zScaleFactor = header.getZScaleFactor();
         double zOffset = header.getZOffset();
 
+        double getMinX = header.getMinX();
+        double getMinY = header.getMinY();
+        double getMinZ = header.getMinZ();
+        double getMaxX = header.getMaxX();
+        double getMaxY = header.getMaxY();
+        double getMaxZ = header.getMaxZ();
+
         CoordinateReferenceSystem crs = globalOptions.getCrs();
+
+        ProjCoordinate minCoordinate = new ProjCoordinate(getMinX, getMinY, getMinZ);
+        ProjCoordinate maxCoordinate = new ProjCoordinate(getMaxX, getMaxY, getMaxZ);
+        ProjCoordinate minTransformedCoordinate = GlobeUtils.transform(crs, minCoordinate);
+        ProjCoordinate maxTransformedCoordinate = GlobeUtils.transform(crs, maxCoordinate);
+        minTransformedCoordinate.z = getMinZ;
+        maxTransformedCoordinate.z = getMaxZ;
+
+
 
         int pointSkip = globalOptions.getPointSkip();
         CloseablePointIterable pointIterable = reader.getCloseablePoints();
@@ -73,9 +89,10 @@ public class LasConverter {
         long legacyPointRecords = header.getLegacyNumberOfPointRecords();
 
         long totalPointRecords = pointRecords + legacyPointRecords;
-        long totalPointRecords1percent = totalPointRecords / 100;
+        //long totalPointRecords1percent = totalPointRecords / 100;
 
         log.info("[Pre] Loading a pointcloud file. : {}", file.getAbsolutePath());
+        log.debug("----------------------------------------");
         log.debug(" - LAS Version : {}.{}", major, minor);
         log.debug(" - LAS Point Data Record Format : {}", recordFormat);
         log.debug(" - LAS Point Data Record Length : {}", recordLength);
@@ -83,11 +100,15 @@ public class LasConverter {
         log.debug(" - LAS Total Point Records : {}", pointRecords);
         log.debug(" - LAS Total Legacy Point Records : {}", legacyPointRecords);
         log.debug(" - LAS Total Record size : {}", totalPointRecords * recordLength);
+        log.debug(" - LAS Min Coordinate : {}", minTransformedCoordinate);
+        log.debug(" - LAS Max Coordinate : {}", maxTransformedCoordinate);
+        log.debug("----------------------------------------");
+
         long pointIndex = 0;
         for (LASPoint point : pointIterable) {
-            if (pointIndex % totalPointRecords1percent == 0) {
-                log.debug(" - Las Records Loading progress. ({}/100)%", pointIndex / totalPointRecords1percent);
-            }
+            /*if (pointIndex % totalPointRecords1percent == 0 && pointIndex != 0) {
+                //log.debug(" - Las Records Loading progress. ({}/100)%", pointIndex / totalPointRecords1percent);
+            }*/
             if (pointIndex % pointSkip == 0) {
                 double x = point.getX() * xScaleFactor + xOffset;
                 double y = point.getY() * yScaleFactor + yOffset;
@@ -117,6 +138,7 @@ public class LasConverter {
             }
             pointIndex++;
         }
+        log.debug("----------------------------------------");
 
         pointIterable.close();
 
@@ -130,7 +152,7 @@ public class LasConverter {
         return pointClouds;
     }
 
-    private void trasnformPostions(List<GaiaVertex> vertices) {
+    private void transformPositions(List<GaiaVertex> vertices) {
         vertices.forEach((vertex) -> {
             Vector3d positions = vertex.getPosition();
             ProjCoordinate coordinate = new ProjCoordinate(positions.x, positions.y, positions.z);

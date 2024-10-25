@@ -47,9 +47,12 @@ public class PointCloudModel implements TileModel {
         AtomicInteger vertexCount = new AtomicInteger();
         tileInfos.forEach((tileInfo) -> {
             GaiaPointCloud pointCloud = tileInfo.getPointCloud();
+
+            pointCloud.maximizeTemp();
             List<GaiaVertex> gaiaVertex = pointCloud.getVertices();
             vertexCount.addAndGet(gaiaVertex.size());
             boundingBox.addBoundingBox(pointCloud.getGaiaBoundingBox());
+            pointCloud.minimizeTemp();
         });
 
         int vertexLength = vertexCount.get();
@@ -69,6 +72,7 @@ public class PointCloudModel implements TileModel {
         AtomicInteger batchIdIndex= new AtomicInteger();
         tileInfos.forEach((tileInfo) -> {
             GaiaPointCloud pointCloud = tileInfo.getPointCloud();
+            pointCloud.maximize();
             List<GaiaVertex> gaiaVertex = pointCloud.getVertices();
             gaiaVertex.forEach((vertex) -> {
                 int index = mainIndex.getAndIncrement();
@@ -92,6 +96,7 @@ public class PointCloudModel implements TileModel {
 
                 batchIds[batchIdIndex.getAndIncrement()] = batchId;
             });
+            pointCloud.minimizeTemp();
         });
 
         PointCloudBinary pointCloudBinary = new PointCloudBinary();

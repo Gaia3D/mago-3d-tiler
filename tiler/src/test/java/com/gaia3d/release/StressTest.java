@@ -140,7 +140,50 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-crs", "32648",
-                "-pointSkip", "2",
+                "-pointSkip", "1",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testDemoLasAll() {
+        String path = "DEMO-LAS-ALL";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "las",
+                "-crs", "32648",
+                "-pointSkip", "1",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testSangAmLasAll() {
+        String path = "SANGAM-LAS";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "las",
+                "-crs", "5186",
+                "-pointSkip", "8",
+                "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testHighwayLasAll() {
+        String path = "HIGHWAY-LAS";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "las",
+                "-crs", "5186",
+                "-pointSkip", "8",
                 "-debug"
         };
         Mago3DTilerMain.main(args);
