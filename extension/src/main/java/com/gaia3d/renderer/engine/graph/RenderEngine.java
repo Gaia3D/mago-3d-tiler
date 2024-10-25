@@ -8,6 +8,8 @@ import com.gaia3d.renderer.engine.dataStructure.GaiaScenesContainer;
 import com.gaia3d.renderer.engine.scene.Camera;
 import com.gaia3d.renderer.engine.RenderableTexturesUtils;
 import com.gaia3d.renderer.renderable.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.joml.Matrix4d;
 import org.joml.Matrix4f;
 import org.joml.Vector4d;
@@ -19,9 +21,11 @@ import java.util.List;
 import java.util.Map;
 
 import static org.lwjgl.opengl.GL11.*;
-
+@Getter
+@Setter
 public class RenderEngine {
-    RenderableBasicAxis renderableBasicAxis;
+    private RenderableBasicAxis renderableBasicAxis;
+    private boolean renderWireFrame = false;
     public RenderEngine() {
         renderableBasicAxis = new RenderableBasicAxis();
     }
@@ -304,13 +308,16 @@ public class RenderEngine {
             GL20.glDrawElements(GL20.GL_TRIANGLES, elemsCount, type, 0);
 
             // render wireframe
-            uniformsMap.setUniform1i("uColorMode", 0);
-            uniformsMap.setUniform4fv("uOneColor", new Vector4f(0.0f, 0.0f, 0.0f, 1.0f));
-            GL20.glPolygonMode(GL20.GL_FRONT_AND_BACK, GL20.GL_LINE);
-            // do offset
-            GL20.glEnable(GL20.GL_POLYGON_OFFSET_FILL);
-            GL20.glPolygonOffset(1.0f, 1.0f);
-            GL20.glDrawElements(GL20.GL_TRIANGLES, elemsCount, type, 0);
+
+            if(renderWireFrame) {
+                uniformsMap.setUniform1i("uColorMode", 0);
+                uniformsMap.setUniform4fv("uOneColor", new Vector4f(0.0f, 0.0f, 0.0f, 1.0f));
+                GL20.glPolygonMode(GL20.GL_FRONT_AND_BACK, GL20.GL_LINE);
+                // do offset
+                GL20.glEnable(GL20.GL_POLYGON_OFFSET_FILL);
+                GL20.glPolygonOffset(1.0f, 1.0f);
+                GL20.glDrawElements(GL20.GL_TRIANGLES, elemsCount, type, 0);
+            }
 
 //            // render the 1rst point of the primitive
 //            GL20.glPointSize(10.0f);

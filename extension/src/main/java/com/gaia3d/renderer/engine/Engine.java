@@ -34,6 +34,7 @@ import org.lwjgl.opengl.GL30;
 
 import javax.xml.bind.JAXBException;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.lang.Math;
 import java.nio.ByteBuffer;
@@ -67,6 +68,7 @@ public class Engine {
     private double leftButtonYpos = 0;
     private boolean leftButtonClicked = false;
     private boolean midButtonClicked = false;
+    private boolean renderAxis = false;
 
     private boolean checkGlError()
     {
@@ -104,6 +106,45 @@ public class Engine {
         // GLFW를 종료하고 에러 콜백을 해제합니다.
         glfwTerminate();
         glfwSetErrorCallback(null).free();
+    }
+
+    public BufferedImage getRenderSceneImage(int bufferedImageType)
+    {
+        // render into frame buffer.***
+        Fbo colorRenderFbo = fboManager.getFbo("colorRender");
+        colorRenderFbo.bind();
+
+        int[] width = new int[1];
+        int[] height = new int[1];
+        width[0] = colorRenderFbo.getFboWidth();
+        height[0] = colorRenderFbo.getFboHeight();
+        //glfwGetWindowSize(window.getWindowHandle(), width, height);
+
+        glViewport(0, 0, width[0], height[0]);
+        glClearColor(0.5f, 0.1f, 0.9f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
+
+        // render scene objects.***
+        ShaderProgram sceneShaderProgram = shaderManager.getShaderProgram("scene");
+        sceneShaderProgram.bind();
+
+        Camera camera = gaiaScenesContainer.getCamera();
+        Matrix4d modelViewMatrix = camera.getModelViewMatrix();
+        UniformsMap uniformsMap = sceneShaderProgram.getUniformsMap();
+        uniformsMap.setUniformMatrix4fv("uModelViewMatrix", new Matrix4f(modelViewMatrix));
+
+        // disable cull face.***
+        glDisable(GL_CULL_FACE);
+        renderer.render(gaiaScenesContainer, sceneShaderProgram);
+        sceneShaderProgram.unbind();
+
+        // make the bufferImage.***
+        BufferedImage image = colorRenderFbo.getBufferedImage(bufferedImageType);
+
+        colorRenderFbo.unbind();
+
+        return image;
     }
 
     public void init() throws JAXBException, IOException {
@@ -200,20 +241,21 @@ public class Engine {
         if(fboManager == null)
         {
             fboManager = new FboManager();
+            int windowWidth = window.getWidth();
+            int windowHeight = window.getHeight();
+            fboManager.createFbo("colorRender", windowWidth, windowHeight);
+
+            // now, create a 500 x 500 fbo for colorCode render.***
+            fboManager.createFbo("colorCodeRender", 500, 500);
         }
-
-        int windowWidth = window.getWidth();
-        int windowHeight = window.getHeight();
-        fboManager.createFbo("colorRender", windowWidth, windowHeight);
-
-        // now, create a 500 x 500 fbo for colorCode render.***
-        fboManager.createFbo("colorCodeRender", 500, 500);
 
         if(screenQuad == null) {
             screenQuad = new ScreenQuad();
         }
 
         if(gaiaScenesContainer == null) {
+            int windowWidth = window.getWidth();
+            int windowHeight = window.getHeight();
             gaiaScenesContainer = new GaiaScenesContainer(windowWidth, windowHeight);
         }
         gaiaScenesContainer.setCamera(camera);
@@ -634,12 +676,23 @@ public class Engine {
         // render into frame buffer.***
         Fbo colorRenderFbo = fboManager.getFbo("colorRender");
         colorRenderFbo.bind();
+
+        int[] width = new int[1];
+        int[] height = new int[1];
+        width[0] = colorRenderFbo.getFboWidth();
+        height[0] = colorRenderFbo.getFboHeight();
+        glfwGetWindowSize(window.getWindowHandle(), width, height);
+        glViewport(0, 0, width[0], height[0]);
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // render scene objects.***
         ShaderProgram sceneShaderProgram = shaderManager.getShaderProgram("scene");
         sceneShaderProgram.bind();
-        renderer.renderAxis(sceneShaderProgram);
+        if(renderAxis)
+        {
+            renderer.renderAxis(sceneShaderProgram);
+        }
         renderer.render(gaiaScenesContainer, sceneShaderProgram);
         sceneShaderProgram.unbind();
 

@@ -18,9 +18,8 @@ public class GaiaScenesContainer {
 
     public GaiaScenesContainer(int screenWidth, int screenHeight) {
         renderableGaiaScenes = new ArrayList<>();
-        projection = new Projection(screenWidth, screenHeight);
-        //textureCache = new TextureCache();
-        //camera = new Camera();
+        int projType = 0; // 0: perspective, 1: orthographic
+        projection = new Projection(projType, screenWidth, screenHeight);
     }
 
     public void addRenderableGaiaScene(RenderableGaiaScene renderableGaiaScene) {
