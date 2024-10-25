@@ -159,6 +159,9 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
 
         double geometricErrorCalc = calcGeometricError(selfPointCloud);
         double calculatedGeometricError = geometricErrorCalc / pointScale / 12;
+        if (calculatedGeometricError < 1.0) {
+            calculatedGeometricError = 1.0;
+        }
 
         Node childNode = new Node();
         childNode.setParent(parentNode);
