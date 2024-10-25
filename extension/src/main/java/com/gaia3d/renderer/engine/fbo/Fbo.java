@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.lwjgl.opengl.GL30;
 
+import java.awt.image.BufferedImage;
+import java.nio.ByteBuffer;
+
 @Getter
 @Setter
 public class Fbo {
@@ -49,5 +52,49 @@ public class Fbo {
 
     public void unbind() {
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
+    }
+
+    public ByteBuffer readPixels() {
+        ByteBuffer pixels = ByteBuffer.allocateDirect(fboWidth * fboHeight * 4);
+        GL30.glReadPixels(0, 0, fboWidth, fboHeight, GL30.GL_RGBA, GL30.GL_UNSIGNED_BYTE, pixels);
+        return pixels;
+    }
+
+    public BufferedImage getBufferedImage(int bufferedImageType)
+    {
+        ByteBuffer byteBuffer = this.readPixels();
+        byteBuffer.rewind();
+
+        int fboWidth = this.getFboWidth();
+        int fboHeight = this.getFboHeight();
+
+        BufferedImage image = new BufferedImage(fboWidth, fboHeight, bufferedImageType);
+
+        for (int y = 0; y < fboHeight; y++) {
+            for (int x = 0; x < fboWidth; x++) {
+                if(bufferedImageType == BufferedImage.TYPE_INT_ARGB)
+                {
+                    int r = byteBuffer.get() & 0xFF; // Rojo
+                    int g = byteBuffer.get() & 0xFF; // Verde
+                    int b = byteBuffer.get() & 0xFF; // Azul
+                    int a = byteBuffer.get() & 0xFF; // Alpha
+
+                    int color = (a << 24) | (r << 16) | (g << 8) | b; // Formato ARGB
+                    image.setRGB(x, fboHeight - y - 1, color);
+                }
+                else if(bufferedImageType == BufferedImage.TYPE_INT_RGB)
+                {
+                    int r = byteBuffer.get() & 0xFF; // Rojo
+                    int g = byteBuffer.get() & 0xFF; // Verde
+                    int b = byteBuffer.get() & 0xFF; // Azul
+
+                    int color = (r << 16) | (g << 8) | b; // Formato RGB
+                    image.setRGB(x, fboHeight - y - 1, color);
+                }
+
+            }
+        }
+
+        return image;
     }
 }

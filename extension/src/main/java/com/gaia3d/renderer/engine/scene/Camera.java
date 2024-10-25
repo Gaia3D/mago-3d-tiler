@@ -1,10 +1,14 @@
 package com.gaia3d.renderer.engine.scene;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.joml.Matrix3d;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
 
+@Setter
+@Getter
 public class Camera {
     Matrix4d transformMatrix;
     Matrix4d modelViewMatrix;
