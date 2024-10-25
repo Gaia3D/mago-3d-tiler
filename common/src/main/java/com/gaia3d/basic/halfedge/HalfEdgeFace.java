@@ -81,6 +81,9 @@ public class HalfEdgeFace implements Serializable {
             resultBaricenter = new Vector3d();
         }
 
+        // init.***
+        resultBaricenter.set(0, 0, 0);
+
         int verticesSize = vertices.size();
         for (int i = 0; i < verticesSize; i++) {
             HalfEdgeVertex vertex = vertices.get(i);

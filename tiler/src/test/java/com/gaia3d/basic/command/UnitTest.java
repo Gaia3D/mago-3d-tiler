@@ -13,6 +13,7 @@ import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -926,7 +927,9 @@ class UnitTest {
         gaiaSceneList.add(gaiaScene);
 
         TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
-        tilerExtensionModule.getRenderScene(gaiaSceneList);
+        List<BufferedImage> bufferedImageList = new ArrayList<>();
+        int bufferedImageType = BufferedImage.TYPE_INT_ARGB;
+        tilerExtensionModule.getRenderScene(gaiaSceneList, bufferedImageType, bufferedImageList);
     }
 
 

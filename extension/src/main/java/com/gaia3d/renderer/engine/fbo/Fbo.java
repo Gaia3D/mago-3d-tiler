@@ -9,6 +9,10 @@ import org.lwjgl.opengl.GL30;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 
+import static org.lwjgl.opengl.GL11.glPixelStorei;
+import static org.lwjgl.opengl.GL11C.GL_PACK_ALIGNMENT;
+import static org.lwjgl.opengl.GL11C.GL_UNPACK_ALIGNMENT;
+
 @Getter
 @Setter
 public class Fbo {
@@ -54,15 +58,28 @@ public class Fbo {
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
     }
 
-    public ByteBuffer readPixels() {
+    public ByteBuffer readPixels(int format) {
+        glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
         ByteBuffer pixels = ByteBuffer.allocateDirect(fboWidth * fboHeight * 4);
-        GL30.glReadPixels(0, 0, fboWidth, fboHeight, GL30.GL_RGBA, GL30.GL_UNSIGNED_BYTE, pixels);
+        GL30.glReadPixels(0, 0, fboWidth, fboHeight, format, GL30.GL_UNSIGNED_BYTE, pixels);
         return pixels;
     }
 
     public BufferedImage getBufferedImage(int bufferedImageType)
     {
-        ByteBuffer byteBuffer = this.readPixels();
+        int format = GL30.GL_RGBA;
+
+        if(bufferedImageType == BufferedImage.TYPE_INT_RGB)
+        {
+            format = GL30.GL_RGB;
+        }
+        else if(bufferedImageType == BufferedImage.TYPE_INT_ARGB)
+        {
+            format = GL30.GL_RGBA;
+        }
+        ByteBuffer byteBuffer = this.readPixels(format);
         byteBuffer.rewind();
 
         int fboWidth = this.getFboWidth();

@@ -248,4 +248,22 @@ public class HalfEdgeNode implements Serializable {
         }
         return trianglesCount;
     }
+
+    public void setBoxTexCoordsXY(GaiaBoundingBox box) {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.setBoxTexCoordsXY(box);
+        }
+        for (HalfEdgeNode child : children) {
+            child.setBoxTexCoordsXY(box);
+        }
+    }
+
+    public void getUsedMaterialsIds(List<Integer> resultMaterialsIds) {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.getUsedMaterialsIds(resultMaterialsIds);
+        }
+        for (HalfEdgeNode child : children) {
+            child.getUsedMaterialsIds(resultMaterialsIds);
+        }
+    }
 }

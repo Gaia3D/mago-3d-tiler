@@ -680,14 +680,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         tileInfos.addAll(cutTileInfos);
     }
 
-    public void getRenderTexture(GaiaScene scene)
-    {
-        // example function.***
-        TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
-        tilerExtensionModule.executePhotorealistic(scene, null);
-
-    }
-
     private void createQuadTreeChildrenForNode(Node node)
     {
         if (node == null)

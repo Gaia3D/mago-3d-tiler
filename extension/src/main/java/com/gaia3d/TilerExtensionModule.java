@@ -7,6 +7,7 @@ import com.gaia3d.renderer.engine.InternDataConverter;
 import com.gaia3d.renderer.renderable.RenderableGaiaScene;
 import lombok.extern.slf4j.Slf4j;
 
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,18 +36,24 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
         return null;
     }
 
-    public List<GaiaTexture> getRenderScene(List<GaiaScene> scenes)
+    public List<GaiaTexture> getRenderScene(List<GaiaScene> scenes, int bufferedImageType, List<BufferedImage> resultImages)
     {
-
-
-
         List<GaiaTexture> textures = new ArrayList<>();
         GaiaTexture tex = null;
 
         textures.add(tex);
 
         MainRenderer renderer = new MainRenderer();
-        renderer.render(scenes);
+        renderer.render(scenes, bufferedImageType, resultImages);
+
+//        int resultImagesCount = resultImages.size();
+//        for(int i = 0; i < resultImagesCount; i++)
+//        {
+//            BufferedImage img = resultImages.get(i);
+//            tex = new GaiaTexture();
+//            tex.setBufferedImage(img);
+//            textures.add(tex);
+//        }
 
         // Renderer renderer = new Renderer();
         // use the renderer to render the scene

@@ -2754,4 +2754,19 @@ public class HalfEdgeSurface implements Serializable {
         int trianglesCount = hedgesCount/3; // provisionally.***
         return trianglesCount;
     }
+
+    public void setBoxTexCoordsXY(GaiaBoundingBox box) {
+        int verticesCount = vertices.size();
+        for (int i = 0; i < verticesCount; i++) {
+            HalfEdgeVertex vertex = vertices.get(i);
+            Vector3d position = vertex.getPosition();
+            Vector2d texCoord = new Vector2d();
+            double relPosX = (position.x - box.getMinX()) / box.getSizeX();
+            double relPosY = (position.y - box.getMinY()) / box.getSizeY();
+
+            texCoord.set(relPosX, 1.0 - relPosY);
+            vertex.setTexcoords(texCoord);
+        }
+    }
+
 }

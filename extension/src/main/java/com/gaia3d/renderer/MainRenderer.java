@@ -36,7 +36,7 @@ public class MainRenderer implements IAppLogic {
 
     }
 
-    public void render(List<GaiaScene> gaiaScenes) {
+    public void render(List<GaiaScene> gaiaScenes, int bufferedImageType, List<BufferedImage> resultImages) {
         // render the scene
         log.info("Rendering the scene...");
 
@@ -87,8 +87,9 @@ public class MainRenderer implements IAppLogic {
         float zLength = (float)gaiaBoundingBox.getSizeZ();
 
         // calculate the projectionMatrix for the camera.***
-        Projection projection = gaiaScenesContainer.getProjection();
+        Projection projection = new Projection(0, screenWidth, screenHeight);
         projection.setProjectionOrthographic(-xLength/2.0f, xLength/2.0f, -yLength/2.0f, yLength/2.0f, -zLength*2.0f, zLength*2.0f);
+        gaiaScenesContainer.setProjection(projection);
         engine.setGaiaScenesContainer(gaiaScenesContainer);
 
         // Take FboManager from engine.***
@@ -118,12 +119,8 @@ public class MainRenderer implements IAppLogic {
         gaiaScenesContainer.setCamera(camera);
 
         try{
-            BufferedImage image = engine.getRenderSceneImage(BufferedImage.TYPE_INT_ARGB);
-
-            File file = new File("D:\\Result_mago3dTiler\\renderSceneImage.png");
-            ImageIO.write(image, "PNG", file);
-
-            int hola = 0;
+            BufferedImage image = engine.getRenderSceneImage(bufferedImageType);
+            resultImages.add(image);
         } catch (Exception e) {
             log.error("Error initializing the engine: " + e.getMessage());
         }

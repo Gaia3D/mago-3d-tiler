@@ -4,6 +4,7 @@ import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.model.GaiaTexture;
 import lombok.extern.slf4j.Slf4j;
 
+import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +31,7 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
-    public List<GaiaTexture> getRenderScene(List<GaiaScene> scene) {
+    public List<GaiaTexture> getRenderScene(List<GaiaScene> scene, int bufferedImageType, List<BufferedImage> resultImages) {
         return null;
     }
 }

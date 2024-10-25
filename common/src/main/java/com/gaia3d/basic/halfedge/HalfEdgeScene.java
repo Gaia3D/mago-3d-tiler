@@ -356,4 +356,42 @@ public class HalfEdgeScene  implements Serializable{
         }
         return trianglesCount;
     }
+
+    public void setBoxTexCoordsXY(GaiaBoundingBox box) {
+        for (HalfEdgeNode node : nodes) {
+            node.setBoxTexCoordsXY(box);
+        }
+    }
+
+    public List<Integer> getUsedMaterialsIds(List<Integer> resultMaterialsIds) {
+        if(resultMaterialsIds == null) {
+            resultMaterialsIds = new ArrayList<>();
+        }
+        for (HalfEdgeNode node : nodes) {
+            node.getUsedMaterialsIds(resultMaterialsIds);
+        }
+        return resultMaterialsIds;
+    }
+
+    public List<GaiaMaterial> getUsingMaterialsWithTextures(List<GaiaMaterial> resultMaterials) {
+        //********************************************************************************
+        // Usually, there are materials that are not using.***
+        // This function returns the materials that are using and has textures.***
+        //********************************************************************************
+        if(resultMaterials == null) {
+            resultMaterials = new ArrayList<>();
+        }
+
+        List<Integer> usedMaterialsIds = getUsedMaterialsIds(null);
+        int usedMaterialsIdsSize = usedMaterialsIds.size();
+        for(int i = 0; i < usedMaterialsIdsSize; i++) {
+            int materialId = usedMaterialsIds.get(i);
+            GaiaMaterial material = materials.get(materialId);
+            if(material.hasTextures()) {
+                resultMaterials.add(material);
+            }
+        }
+
+        return resultMaterials;
+    }
 }

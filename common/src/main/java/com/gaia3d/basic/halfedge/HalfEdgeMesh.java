@@ -150,4 +150,16 @@ public class HalfEdgeMesh implements Serializable {
         }
         return trianglesCount;
     }
+
+    public void setBoxTexCoordsXY(GaiaBoundingBox box) {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.setBoxTexCoordsXY(box);
+        }
+    }
+
+    public void getUsedMaterialsIds(List<Integer> resultMaterialsIds) {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.getUsedMaterialsIds(resultMaterialsIds);
+        }
+    }
 }
