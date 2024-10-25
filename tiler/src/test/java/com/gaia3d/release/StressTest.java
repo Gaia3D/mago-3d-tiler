@@ -132,6 +132,21 @@ public class StressTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Test
+    void testDemoLas() {
+        String path = "DEMO-LAS";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "las",
+                "-crs", "32648",
+                "-pointSkip", "2",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+
     private File getInputPath(String path) {
         return new File(INPUT_PATH, path);
     }
