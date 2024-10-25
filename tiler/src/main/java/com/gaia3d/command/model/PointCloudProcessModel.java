@@ -5,6 +5,7 @@ import com.gaia3d.converter.pointcloud.LasConverter;
 import com.gaia3d.process.TilingPipeline;
 import com.gaia3d.process.postprocess.PostProcess;
 import com.gaia3d.process.postprocess.pointcloud.PointCloudModel;
+import com.gaia3d.process.preprocess.GaiaMinimizer;
 import com.gaia3d.process.preprocess.PreProcess;
 import com.gaia3d.process.tileprocess.Pipeline;
 import com.gaia3d.process.tileprocess.TilingProcess;
@@ -22,6 +23,7 @@ public class PointCloudProcessModel implements ProcessFlowModel {
 
         PointCloudFileLoader fileLoader = new PointCloudFileLoader(converter);
         List<PreProcess> preProcessors = new ArrayList<>();
+        preProcessors.add(new GaiaMinimizer());
 
         TilingProcess tilingProcess = new PointCloudTiler();
         List<PostProcess> postProcessors = new ArrayList<>();

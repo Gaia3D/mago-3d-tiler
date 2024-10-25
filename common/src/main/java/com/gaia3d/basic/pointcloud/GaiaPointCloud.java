@@ -10,7 +10,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 
-import java.io.Serializable;
+import java.io.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +26,54 @@ public class GaiaPointCloud implements Serializable {
     private GaiaBoundingBox gaiaBoundingBox = new GaiaBoundingBox();
     private List<GaiaVertex> vertices = new ArrayList<>();
     private GaiaAttribute gaiaAttribute = new GaiaAttribute();
+
+    private boolean isMinimized = false;
+    private File minimizedFile = null;
+
+    public void minimizeTemp() {
+        vertices = null;
+        isMinimized = true;
+    }
+
+    public void minimize(File minimizedFile) {
+        if (isMinimized) {
+            log.warn("The point cloud is already minimized.");
+            return;
+        }
+
+        try (ObjectOutputStream objectInputStream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(minimizedFile)))) {
+            objectInputStream.writeObject(vertices);
+            this.vertices = null;
+        } catch (Exception e) {
+            log.error("[Error][minimize] : Failed to minimize the point cloud.", e);
+        }
+
+        // Minimize the point cloud
+        isMinimized = true;
+        this.minimizedFile = minimizedFile;
+    }
+
+    public void maximizeTemp() {
+        if (!isMinimized) {
+            log.warn("The point cloud is already maximized.");
+            return;
+        }
+
+        try (ObjectInputStream objectInputStream = new ObjectInputStream(new BufferedInputStream(new FileInputStream(minimizedFile)))) {
+            this.vertices = (List<GaiaVertex>) objectInputStream.readObject();
+        } catch (Exception e) {
+            log.error("[Error][maximize] : Failed to maximize the point cloud.", e);
+        }
+    }
+
+    public void maximize() {
+        maximizeTemp();
+
+        // Maximize the point cloud
+        isMinimized = false;
+        this.minimizedFile = null;
+    }
+
 
     public List<GaiaPointCloud> distribute() {
         double minX = gaiaBoundingBox.getMinX();
@@ -122,6 +170,7 @@ public class GaiaPointCloud implements Serializable {
         gaiaPointCloudA.setCode("A");
         gaiaPointCloudA.setOriginalPath(originalPath);
         gaiaPointCloudA.setGaiaBoundingBox(gaiaBoundingBoxA);
+        gaiaPointCloudA.setGaiaAttribute(gaiaAttribute);
         List<GaiaVertex> verticesA = gaiaPointCloudA.getVertices();
 
         GaiaBoundingBox gaiaBoundingBoxB = new GaiaBoundingBox();
@@ -129,6 +178,7 @@ public class GaiaPointCloud implements Serializable {
         gaiaPointCloudB.setCode("B");
         gaiaPointCloudB.setOriginalPath(originalPath);
         gaiaPointCloudB.setGaiaBoundingBox(gaiaBoundingBoxB);
+        gaiaPointCloudB.setGaiaAttribute(gaiaAttribute);
         List<GaiaVertex> verticesB = gaiaPointCloudB.getVertices();
 
         GaiaBoundingBox gaiaBoundingBoxC = new GaiaBoundingBox();
@@ -136,6 +186,7 @@ public class GaiaPointCloud implements Serializable {
         gaiaPointCloudC.setCode("C");
         gaiaPointCloudC.setOriginalPath(originalPath);
         gaiaPointCloudC.setGaiaBoundingBox(gaiaBoundingBoxC);
+        gaiaPointCloudC.setGaiaAttribute(gaiaAttribute);
         List<GaiaVertex> verticesC = gaiaPointCloudC.getVertices();
 
         GaiaBoundingBox gaiaBoundingBoxD = new GaiaBoundingBox();
@@ -143,6 +194,7 @@ public class GaiaPointCloud implements Serializable {
         gaiaPointCloudD.setCode("D");
         gaiaPointCloudD.setOriginalPath(originalPath);
         gaiaPointCloudD.setGaiaBoundingBox(gaiaBoundingBoxD);
+        gaiaPointCloudD.setGaiaAttribute(gaiaAttribute);
         List<GaiaVertex> verticesD = gaiaPointCloudD.getVertices();
 
         GaiaBoundingBox gaiaBoundingBoxE = new GaiaBoundingBox();
@@ -150,6 +202,7 @@ public class GaiaPointCloud implements Serializable {
         gaiaPointCloudE.setCode("E");
         gaiaPointCloudE.setOriginalPath(originalPath);
         gaiaPointCloudE.setGaiaBoundingBox(gaiaBoundingBoxE);
+        gaiaPointCloudE.setGaiaAttribute(gaiaAttribute);
         List<GaiaVertex> verticesE = gaiaPointCloudE.getVertices();
 
         GaiaBoundingBox gaiaBoundingBoxF = new GaiaBoundingBox();
@@ -157,6 +210,7 @@ public class GaiaPointCloud implements Serializable {
         gaiaPointCloudF.setCode("F");
         gaiaPointCloudF.setOriginalPath(originalPath);
         gaiaPointCloudF.setGaiaBoundingBox(gaiaBoundingBoxF);
+        gaiaPointCloudF.setGaiaAttribute(gaiaAttribute);
         List<GaiaVertex> verticesF = gaiaPointCloudF.getVertices();
 
         GaiaBoundingBox gaiaBoundingBoxG = new GaiaBoundingBox();
@@ -164,6 +218,7 @@ public class GaiaPointCloud implements Serializable {
         gaiaPointCloudG.setCode("G");
         gaiaPointCloudG.setOriginalPath(originalPath);
         gaiaPointCloudG.setGaiaBoundingBox(gaiaBoundingBoxG);
+        gaiaPointCloudG.setGaiaAttribute(gaiaAttribute);
         List<GaiaVertex> verticesG = gaiaPointCloudG.getVertices();
 
         GaiaBoundingBox gaiaBoundingBoxH = new GaiaBoundingBox();
@@ -171,6 +226,7 @@ public class GaiaPointCloud implements Serializable {
         gaiaPointCloudH.setCode("H");
         gaiaPointCloudH.setOriginalPath(originalPath);
         gaiaPointCloudH.setGaiaBoundingBox(gaiaBoundingBoxH);
+        gaiaPointCloudH.setGaiaAttribute(gaiaAttribute);
         List<GaiaVertex> verticesH = gaiaPointCloudH.getVertices();
 
         double minX = gaiaBoundingBox.getMinX();
@@ -242,16 +298,18 @@ public class GaiaPointCloud implements Serializable {
         GaiaPointCloud chunkPointCloud = new GaiaPointCloud();
         chunkPointCloud.setOriginalPath(originalPath);
         chunkPointCloud.setGaiaBoundingBox(gaiaBoundingBox);
+        chunkPointCloud.setGaiaAttribute(gaiaAttribute);
 
         GaiaPointCloud remainderPointCloud = new GaiaPointCloud();
         remainderPointCloud.setOriginalPath(originalPath);
         remainderPointCloud.setGaiaBoundingBox(gaiaBoundingBox);
+        remainderPointCloud.setGaiaAttribute(gaiaAttribute);
 
         if (vertices.size() > chunkSize) {
-            chunkPointCloud.setVertices(vertices.subList(0, chunkSize));
-            remainderPointCloud.setVertices(vertices.subList(chunkSize, vertices.size()));
+            chunkPointCloud.setVertices(new ArrayList<>(vertices.subList(0, chunkSize)));
+            remainderPointCloud.setVertices(new ArrayList<>(vertices.subList(chunkSize, vertices.size())));
         } else {
-            chunkPointCloud.setVertices(vertices.subList(0, vertices.size()));
+            chunkPointCloud.setVertices(new ArrayList<>(vertices.subList(0, vertices.size())));
         }
 
         pointClouds.add(chunkPointCloud);

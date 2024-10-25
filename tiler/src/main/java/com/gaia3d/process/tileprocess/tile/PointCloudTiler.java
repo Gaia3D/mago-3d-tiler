@@ -25,6 +25,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -32,8 +33,6 @@ import java.util.stream.Collectors;
 public class PointCloudTiler extends DefaultTiler implements Tiler {
     @Override
     public Tileset run(List<TileInfo> tileInfos) {
-        double geometricError = calcGeometricError(tileInfos);
-
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
 
         double minX = globalBoundingBox.getMinX();
@@ -61,8 +60,11 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         Matrix4d transformMatrix = getTransformMatrix(globalBoundingBox);
         rotateX90(transformMatrix);
 
+        double geometricError = calcGeometricError(tileInfos);
         Node root = createRoot();
+        root.setNodeCode("R");
         root.setBoundingBox(globalBoundingBox);
+        root.setRefine(Node.RefineType.ADD);
         // root만 큐브로
         root.setBoundingVolume(new BoundingVolume(globalBoundingBox));
         root.setTransformMatrix(transformMatrix, true);
@@ -127,21 +129,22 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
     }
 
     private void createRootNode(Node parentNode, List<TileInfo> tileInfos) throws IOException {
-        BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
-        parentNode.setBoundingVolume(parentBoundingVolume);
-        parentNode.setRefine(Node.RefineType.ADD);
-
         List<GaiaPointCloud> pointClouds = tileInfos.stream()
                 .map(TileInfo::getPointCloud)
                 .collect(Collectors.toList());
         int index = 0;
         for (GaiaPointCloud pointCloud : pointClouds) {
             pointCloud.setCode((index++) + "");
-            createNode(parentNode, pointCloud, 16.0d);
+            pointCloud.maximize();
+            List<GaiaPointCloud> allPointClouds = new ArrayList<>();
+            createNode(allPointClouds, index, parentNode, pointCloud, 16.0d);
+            minimizeAllPointCloud(allPointClouds);
         }
     }
 
-    private void createNode(Node parentNode, GaiaPointCloud pointCloud, double geometricError) {
+    private void createNode(List<GaiaPointCloud> allPointClouds, int index, Node parentNode, GaiaPointCloud pointCloud, double geometricError) {
+        allPointClouds.add(pointCloud);
+
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         int vertexLength = pointCloud.getVertices().size();
 
@@ -150,6 +153,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
 
         List<GaiaPointCloud> divided = pointCloud.divideChunkSize(pointLimit * pointScale);
         GaiaPointCloud selfPointCloud = divided.get(0);
+        allPointClouds.add(selfPointCloud);
         GaiaPointCloud remainPointCloud = divided.get(1);
 
         GaiaBoundingBox childBoundingBox = selfPointCloud.getGaiaBoundingBox();
@@ -194,15 +198,43 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         childNode.setContent(content);
 
         parentNode.getChildren().add(childNode);
-        log.info("[Tile][ContentNode][{}]",childNode.getNodeCode());
+        log.info("[{}][Tile][ContentNode][{}]", index, childNode.getNodeCode());
 
         if (vertexLength > 0) { // vertexLength > DEFUALT_MAX_COUNT
             List<GaiaPointCloud> distributes = remainPointCloud.distribute();
             distributes.forEach(distribute -> {
                 if (!distribute.getVertices().isEmpty()) {
-                    createNode(childNode, distribute, geometricError / 2);
+                    createNode(allPointClouds, index, childNode, distribute, geometricError / 2);
                 }
             });
         }
+    }
+
+    private void minimizeTreeNode(Node node) {
+        List<Node> children = node.getChildren();
+        children.forEach(this::minimizeTreeNode);
+
+        Content content = node.getContent();
+        if (content == null) {
+            return;
+        }
+        ContentInfo contentInfo = content.getContentInfo();
+        List<TileInfo> tileInfos = contentInfo.getTileInfos();
+        tileInfos.forEach(tileInfo -> {
+            GaiaPointCloud pointCloud = tileInfo.getPointCloud();
+            File tempPath = new File(GlobalOptions.getInstance().getOutputPath(), "temp");
+            File tempFile = new File(tempPath, UUID.randomUUID().toString());
+            pointCloud.minimize(tempFile);
+            log.info("[Tile][Minimize][{}]", tempFile.getName());
+        });
+    }
+
+    private void minimizeAllPointCloud(List<GaiaPointCloud> allPointClouds) {
+        allPointClouds.forEach(pointCloud -> {
+            File tempPath = new File(GlobalOptions.getInstance().getOutputPath(), "temp");
+            File tempFile = new File(tempPath, UUID.randomUUID().toString());
+            pointCloud.minimize(tempFile);
+            log.info("[Tile][Minimize][{}]", tempFile.getName());
+        });
     }
 }
