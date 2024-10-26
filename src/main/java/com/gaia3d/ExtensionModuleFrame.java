@@ -14,5 +14,5 @@ public interface ExtensionModuleFrame {
 
     GaiaScene executePhotorealistic(GaiaScene gaiaScene, Map<String, Object> options);
 
-    List<GaiaTexture> getRenderScene(List<GaiaScene> scene, int bufferedImageType, List<BufferedImage> resultImages);
+    void getRenderScene(List<GaiaScene> scene, int bufferedImageType, int maxScreenSize, List<BufferedImage> resultImages);
 }
