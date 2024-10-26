@@ -235,7 +235,39 @@ public class HalfEdgeFace implements Serializable {
             if (adjacentFace != null) {
                 // check if is visited.***
                 if (mapVisitedFaces.get(adjacentFace) == null) {
-                    adjacentFace.getWeldedFaces(resultWeldedFaces, mapVisitedFaces);
+                    resultWeldedFaces.add(adjacentFace);
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public boolean getWeldedFacesRecursive(List<HalfEdgeFace> resultWeldedFaces, Map<HalfEdgeFace, HalfEdgeFace> mapVisitedFaces) {
+        if (this.halfEdge == null) {
+            return false;
+        }
+
+//        if(mapVisitedFaces.get(this) != null)
+//        {
+//            return false;
+//        }
+
+        mapVisitedFaces.put(this, this);
+        resultWeldedFaces.add(this);
+
+        List<HalfEdgeFace> adjacentFaces = this.getAdjacentFaces(null);
+        if (adjacentFaces == null) {
+            return false;
+        }
+
+        int adjacentFacesSize = adjacentFaces.size();
+        for (int i = 0; i < adjacentFacesSize; i++) {
+            HalfEdgeFace adjacentFace = adjacentFaces.get(i);
+            if (adjacentFace != null) {
+                // check if is visited.***
+                if (mapVisitedFaces.get(adjacentFace) == null) {
+                    adjacentFace.getWeldedFacesRecursive(resultWeldedFaces, mapVisitedFaces);
                 }
             }
         }
