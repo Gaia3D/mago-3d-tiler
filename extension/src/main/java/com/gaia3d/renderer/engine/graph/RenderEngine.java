@@ -161,12 +161,16 @@ public class RenderEngine {
     private void renderGaiaNode(RenderableNode renderableNode, ShaderProgram shaderProgram) {
         UniformsMap uniformsMap = shaderProgram.getUniformsMap();
         Matrix4d transformMatrix = renderableNode.getPreMultipliedTransformMatrix();
-        Matrix4f identityMatrix = new Matrix4f();
-        identityMatrix.identity();
+        if(transformMatrix == null) {
+            transformMatrix = new Matrix4d();
+            transformMatrix.identity();
+        }
+        Matrix4f tMatF = new Matrix4f();
+        tMatF.set(transformMatrix);
 
         //uniformsMap.setUniformMatrix4fv("uObjectMatrix", new Matrix4f(transformMatrix));
         // note : use "identityMatrix" because the renderablePrimitive has transformed vertices.***
-        uniformsMap.setUniformMatrix4fv("uObjectMatrix", identityMatrix);
+        uniformsMap.setUniformMatrix4fv("uObjectMatrix", tMatF);
 
         List<RenderableMesh> renderableMeshes = renderableNode.getRenderableMeshes();
         for (RenderableMesh renderableMesh : renderableMeshes) {

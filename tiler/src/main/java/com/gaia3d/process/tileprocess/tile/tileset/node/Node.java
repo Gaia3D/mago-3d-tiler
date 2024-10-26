@@ -5,12 +5,14 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.util.DecimalUtils;
+import com.gaia3d.util.GlobeUtils;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
+import org.joml.Vector3d;
 
 import java.util.List;
 
@@ -76,7 +78,7 @@ public class Node {
 
         for (int i = 0; i < children.size(); i++) {
             Node childNode = children.get(i);
-            if (childNode.getContent() == null) {
+            if (!childNode.hasContentsInTree()) {
                 children.remove(i);
                 i--;
             } else {
@@ -134,6 +136,22 @@ public class Node {
         }
     }
 
+    public boolean hasContentsInTree()
+    {
+        if(this.content != null) {
+            return true;
+        }
+        if(this.children == null || this.children.isEmpty()) {
+            return false;
+        }
+        for (Node node : children) {
+            if(node.hasContentsInTree()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public Node getIntersectedNode(Vector2d cartographicRad, int depth) {
         if (this.depth == depth) {
             return this;
@@ -155,5 +173,50 @@ public class Node {
         }
 
         return null;
+    }
+
+    public GaiaBoundingBox getLocalBoundingBox()
+    {
+        if(this.boundingVolume == null) {
+            return null;
+        }
+
+        double[] region = this.boundingVolume.getRegion();
+        double minLonDeg = Math.toDegrees(region[0]);
+        double minLatDeg = Math.toDegrees(region[1]);
+        double maxLonDeg = Math.toDegrees(region[2]);
+        double maxLatDeg = Math.toDegrees(region[3]);
+        double minAlt = region[4];
+        double maxAlt = region[5];
+
+        Vector3d centerCartographicRad = new Vector3d((minLonDeg + maxLonDeg) / 2.0, (minLatDeg + maxLatDeg) / 2.0, (minAlt + maxAlt) / 2.0);
+        Vector3d certerCartesianWgs84 = GlobeUtils.geographicToCartesianWgs84(centerCartographicRad);
+        Matrix4d tMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(certerCartesianWgs84);
+
+        Vector3d leftDownBottom = new Vector3d(minLonDeg, minLatDeg, minAlt);
+        Vector3d rightUpTop = new Vector3d(maxLonDeg, maxLatDeg, maxAlt);
+        Vector3d rightDownBottom = new Vector3d(maxLonDeg, minLatDeg, minAlt);
+
+        // transform the geoCoords to worldCoords.***
+        Vector3d leftDownBottomWC = GlobeUtils.geographicToCartesianWgs84(leftDownBottom);
+        Vector3d rightUpTopWC = GlobeUtils.geographicToCartesianWgs84(rightUpTop);
+        Vector3d rightDownBottomWC = GlobeUtils.geographicToCartesianWgs84(rightDownBottom);
+
+        // transform the worldCoords to localCoords.***
+        Matrix4d transformMatrixInv = new Matrix4d(tMatrix).invert();
+        Vector3d leftDownBottomLC = new Vector3d(leftDownBottomWC).mulPosition(transformMatrixInv);
+        Vector3d rightUpTopLC = new Vector3d(rightUpTopWC).mulPosition(transformMatrixInv);
+        Vector3d rightDownBottomLC = new Vector3d(rightDownBottomWC).mulPosition(transformMatrixInv);
+
+        double minX = Math.min(leftDownBottomLC.x, Math.min(rightUpTopLC.x, rightDownBottomLC.x));
+        double minY = Math.min(leftDownBottomLC.y, Math.min(rightUpTopLC.y, rightDownBottomLC.y));
+        double minZ = Math.min(leftDownBottomLC.z, Math.min(rightUpTopLC.z, rightDownBottomLC.z));
+        double maxX = Math.max(leftDownBottomLC.x, Math.max(rightUpTopLC.x, rightDownBottomLC.x));
+        double maxY = Math.max(leftDownBottomLC.y, Math.max(rightUpTopLC.y, rightDownBottomLC.y));
+        double maxZ = Math.max(leftDownBottomLC.z, Math.max(rightUpTopLC.z, rightDownBottomLC.z));
+
+        GaiaBoundingBox bboxLC = new GaiaBoundingBox(minX, minY, minZ, maxX, maxY, maxZ, true);
+
+        return bboxLC;
     }
 }

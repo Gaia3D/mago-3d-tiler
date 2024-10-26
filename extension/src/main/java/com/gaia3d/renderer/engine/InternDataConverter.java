@@ -32,6 +32,7 @@ public class InternDataConverter {
         List<GaiaNode> nodes = gaiaScene.getNodes();
         for (GaiaNode node : nodes) {
             RenderableNode renderableNode = getRenderableNode(node, null, gaiaScene);
+            renderableNode.calculatePreMultipliedTransformMatrix();
             renderableGaiaScene.addRenderableNode(renderableNode);
         }
 
@@ -65,6 +66,7 @@ public class InternDataConverter {
         for (int i = 0; i < childrenCount; i++) {
             GaiaNode child = children.get(i);
             RenderableNode renderableChildNode = getRenderableNode(child, transformMatrix, scene);
+            renderableChildNode.setParent(renderableNode);
             renderableNode.addChild(renderableChildNode);
         }
 

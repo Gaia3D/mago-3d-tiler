@@ -108,23 +108,11 @@ public class Engine {
         glfwSetErrorCallback(null).free();
     }
 
-    public BufferedImage getRenderSceneImage(int bufferedImageType)
+    public void getRenderSceneImage()
     {
-        // render into frame buffer.***
-        Fbo colorRenderFbo = fboManager.getFbo("colorRender");
-        colorRenderFbo.bind();
-
-        int[] width = new int[1];
-        int[] height = new int[1];
-        width[0] = colorRenderFbo.getFboWidth();
-        height[0] = colorRenderFbo.getFboHeight();
-        //glfwGetWindowSize(window.getWindowHandle(), width, height);
-
-        glViewport(0, 0, width[0], height[0]);
-        glClearColor(0.5f, 0.1f, 0.9f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glEnable(GL_DEPTH_TEST);
-
+        //***********************************************************
+        // Note : before to call this function, must bind the fbo.***
+        //***********************************************************
         // render scene objects.***
         ShaderProgram sceneShaderProgram = shaderManager.getShaderProgram("scene");
         sceneShaderProgram.bind();
@@ -134,17 +122,8 @@ public class Engine {
         UniformsMap uniformsMap = sceneShaderProgram.getUniformsMap();
         uniformsMap.setUniformMatrix4fv("uModelViewMatrix", new Matrix4f(modelViewMatrix));
 
-        // disable cull face.***
-        glDisable(GL_CULL_FACE);
         renderer.render(gaiaScenesContainer, sceneShaderProgram);
         sceneShaderProgram.unbind();
-
-        // make the bufferImage.***
-        BufferedImage image = colorRenderFbo.getBufferedImage(bufferedImageType);
-
-        colorRenderFbo.unbind();
-
-        return image;
     }
 
     public void init() throws JAXBException, IOException {

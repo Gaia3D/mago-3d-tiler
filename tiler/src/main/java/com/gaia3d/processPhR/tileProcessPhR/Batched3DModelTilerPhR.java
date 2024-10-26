@@ -25,6 +25,8 @@ import com.gaia3d.process.tileprocess.tile.tileset.asset.Asset;
 import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
+import com.gaia3d.renderer.engine.dataStructure.SceneInfo;
+import com.gaia3d.renderer.engine.fbo.Fbo;
 import com.gaia3d.util.DecimalUtils;
 import com.gaia3d.util.GlobeUtils;
 import lombok.NoArgsConstructor;
@@ -32,7 +34,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
+import org.opengis.geometry.BoundingBox;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -126,26 +131,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
         root.setGeometricError(geometricError);
 
-        double minLatLength = 300.0; // test value
+        double minLatLength = 150.0; // test value
         makeQuadTree(root, minLatLength);
 
+        // lod 0.**********************************************************************************************************
         int lod = 0;
-        List<TileInfo> tileInfosCopy = new ArrayList<>(tileInfos);
-        int tileInfosCount = tileInfos.size();
-        for(int i = 0; i < tileInfosCount; i++)
-        {
-            TileInfo tileInfo = tileInfos.get(i);
-            TileInfo tileInfoCopy = tileInfo.clone();
-
-            // change the tempPath of the tileInfos by tempPathLod.***
-            List<Path> tempPathLod = tileInfoCopy.getTempPathLod();
-            Path pathLod = tempPathLod.get(lod);
-            if(pathLod != null){
-                tileInfoCopy.setTempPath(pathLod);
-            }
-
-            tileInfosCopy.add(tileInfoCopy);
-        }
+        List<TileInfo> tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, null);
 
         try {
             cutRectangleCake(tileInfosCopy, lod, root);
@@ -156,48 +147,21 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
         Map<Node, List<TileInfo>> nodeTileInfoMap = new HashMap<>();
 
-        // distribute contents to node in the correspondent depth.***
         int maxDepth = root.findMaxDepth();
         int currDepth = maxDepth - lod;
-        tileInfosCount = tileInfosCopy.size();
-        for(int i = 0; i < tileInfosCount; i++)
-        {
-            TileInfo tileInfo = tileInfosCopy.get(i);
-            Matrix4d tileTransformMatrix = tileInfo.getTransformMatrix();
-            GaiaBoundingBox tileBoundingBox = tileInfo.getBoundingBox();
-            GaiaBoundingBox cartographicBBox = tileInfo.getCartographicBBox();
-            Vector3d geoCoordCenter = cartographicBBox.getCenter();
-            double centerLonRad = Math.toRadians(geoCoordCenter.x);
-            double centerLatRad = Math.toRadians(geoCoordCenter.y);
-            Vector2d tileInfoCenterGeoCoordRad = new Vector2d(centerLonRad, centerLatRad);
 
-            Node childNode = root.getIntersectedNode(tileInfoCenterGeoCoordRad, currDepth);
-
-            nodeTileInfoMap.computeIfAbsent(childNode, k -> new ArrayList<>()).add(tileInfo);
-            List<TileInfo> tileInfosInNode = nodeTileInfoMap.get(childNode);
-            tileInfosInNode.add(tileInfo);
-        }
+        // distribute contents to node in the correspondent depth.***
+        // After process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes.***
+        distributeContentsToNodes(root, tileInfosCopy, currDepth, nodeTileInfoMap);
 
         scissorTextures(tileInfosCopy);
         makeContentsForNodes(nodeTileInfoMap, lod);
-        // End lod 0.---------------------------------------------------------
+        // End lod 0.-----------------------------------------------------------------------------------------------------------
 
-        // make lod 1.---------------------------------------------------------
+        // make lod 1.**********************************************************************************************************
         lod = 1;
         tileInfosCopy.clear();
-        tileInfosCount = tileInfos.size();
-        for(int i = 0; i < tileInfosCount; i++)
-        {
-            TileInfo tileInfo = tileInfos.get(i);
-            TileInfo tileInfoCopy = tileInfo.clone();
-            // change the tempPath of the tileInfos by tempPathLod.***
-            List<Path> tempPathLod = tileInfoCopy.getTempPathLod();
-            Path pathLod = tempPathLod.get(lod);
-            if(pathLod != null){
-                tileInfoCopy.setTempPath(pathLod);
-            }
-            tileInfosCopy.add(tileInfoCopy);
-        }
+        tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
 
         try {
             cutRectangleCake(tileInfosCopy, lod, root);
@@ -209,46 +173,18 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         nodeTileInfoMap.clear();
 
         // distribute contents to node in the correspondent depth.***
+        // After process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes.***
         currDepth = maxDepth - lod;
-        tileInfosCount = tileInfosCopy.size();
-        for(int i = 0; i < tileInfosCount; i++)
-        {
-            TileInfo tileInfo = tileInfosCopy.get(i);
-            Matrix4d tileTransformMatrix = tileInfo.getTransformMatrix();
-            GaiaBoundingBox tileBoundingBox = tileInfo.getBoundingBox();
-            GaiaBoundingBox cartographicBBox = tileInfo.getCartographicBBox();
-            Vector3d geoCoordCenter = cartographicBBox.getCenter();
-            double centerLonRad = Math.toRadians(geoCoordCenter.x);
-            double centerLatRad = Math.toRadians(geoCoordCenter.y);
-            Vector2d tileInfoCenterGeoCoordRad = new Vector2d(centerLonRad, centerLatRad);
-
-            Node childNode = root.getIntersectedNode(tileInfoCenterGeoCoordRad, currDepth);
-
-            nodeTileInfoMap.computeIfAbsent(childNode, k -> new ArrayList<>()).add(tileInfo);
-            List<TileInfo> tileInfosInNode = nodeTileInfoMap.get(childNode);
-            tileInfosInNode.add(tileInfo);
-        }
+        distributeContentsToNodes(root, tileInfosCopy, currDepth, nodeTileInfoMap);
 
         scissorTextures(tileInfosCopy);
         makeContentsForNodes(nodeTileInfoMap, lod);
-        // End lod 1.---------------------------------------------------------
+        // End lod 1.----------------------------------------------------------------------------------------------------------
 
-        // make lod 2.---------------------------------------------------------
+        // make lod 2.**********************************************************************************************************
         lod = 2;
         tileInfosCopy.clear();
-        tileInfosCount = tileInfos.size();
-        for(int i = 0; i < tileInfosCount; i++)
-        {
-            TileInfo tileInfo = tileInfos.get(i);
-            TileInfo tileInfoCopy = tileInfo.clone();
-            // change the tempPath of the tileInfos by tempPathLod.***
-            List<Path> tempPathLod = tileInfoCopy.getTempPathLod();
-            Path pathLod = tempPathLod.get(lod);
-            if(pathLod != null){
-                tileInfoCopy.setTempPath(pathLod);
-            }
-            tileInfosCopy.add(tileInfoCopy);
-        }
+        tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
 
         boolean someSceneCut = false;
         try {
@@ -261,25 +197,10 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         nodeTileInfoMap.clear();
 
         // distribute contents to node in the correspondent depth.***
+        // After process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes.***
         currDepth = maxDepth - lod;
-        tileInfosCount = tileInfosCopy.size();
-        for(int i = 0; i < tileInfosCount; i++)
-        {
-            TileInfo tileInfo = tileInfosCopy.get(i);
-            Matrix4d tileTransformMatrix = tileInfo.getTransformMatrix();
-            GaiaBoundingBox tileBoundingBox = tileInfo.getBoundingBox();
-            GaiaBoundingBox cartographicBBox = tileInfo.getCartographicBBox();
-            Vector3d geoCoordCenter = cartographicBBox.getCenter();
-            double centerLonRad = Math.toRadians(geoCoordCenter.x);
-            double centerLatRad = Math.toRadians(geoCoordCenter.y);
-            Vector2d tileInfoCenterGeoCoordRad = new Vector2d(centerLonRad, centerLatRad);
+        distributeContentsToNodes(root, tileInfosCopy, currDepth, nodeTileInfoMap);
 
-            Node childNode = root.getIntersectedNode(tileInfoCenterGeoCoordRad, currDepth);
-
-            nodeTileInfoMap.computeIfAbsent(childNode, k -> new ArrayList<>()).add(tileInfo);
-            List<TileInfo> tileInfosInNode = nodeTileInfoMap.get(childNode);
-            tileInfosInNode.add(tileInfo);
-        }
 
         if(someSceneCut)
         {
@@ -288,11 +209,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         makeContentsForNodes(nodeTileInfoMap, lod);
         // End lod 2.---------------------------------------------------------
 
-        // Check if is necessary netSurfaces nodes.***
-        if(maxDepth > 2)
+        // Check if is necessary netSurfaces nodes.***********************************************************************
+        for(int depth = maxDepth - lod; depth > 0; depth--)
         {
-            createNetSurfaceNodes(root, tileInfos);
+            createNetSurfaceNodes(root, tileInfos, depth);
         }
+
 
         // now, delete nodes that have no contents.***
         root.deleteNoContentNodes();
@@ -314,76 +236,155 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         return tileset;
     }
 
-    private void createNetSurfaceNodes(Node rootNode, List<TileInfo> tileInfos)
+    private void createNetSurfaceNodes(Node rootNode, List<TileInfo> tileInfos, int nodeDepth)
     {
-        int maxDepth = rootNode.findMaxDepth();
-        int currDepth = maxDepth - 1;
-
+        // 1rst, find all tileInfos that intersects with the node.***
         List<Node> nodes = new ArrayList<>();
-        rootNode.getNodesByDepth(currDepth, nodes);
+        rootNode.getNodesByDepth(nodeDepth, nodes);
+        List<TileInfo> tileInfosOfNode = new ArrayList<>();
         int nodesCount = nodes.size();
         for(int i = 0; i < nodesCount; i++)
         {
             Node node = nodes.get(i);
-            List<TileInfo> tileInfosInNode = node.getContent().getContentInfo().getTileInfos();
-            int tileInfosCount = tileInfosInNode.size();
+            int tileInfosCount = tileInfos.size();
             for(int j = 0; j < tileInfosCount; j++)
             {
-                TileInfo tileInfo = tileInfosInNode.get(j);
-                Path path = tileInfo.getTempPath();
-                GaiaSet gaiaSet = null;
-                try{
-                    gaiaSet = GaiaSet.readFile(path);
-                    if(gaiaSet == null)
-                        continue;
-                }
-                catch (IOException e)
+                TileInfo tileInfo = tileInfos.get(j);
+                if(intersectsNodeWithTileInfo(node, tileInfo))
                 {
-                    log.error("Error : {}", e.getMessage());
-                    throw new RuntimeException(e);
+                    tileInfosOfNode.add(tileInfo);
                 }
-
-                GaiaScene scene = new GaiaScene(gaiaSet);
-                HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
-                //HalfEdgeUtils.createNetSurfaceNodes(halfEdgeScene);
             }
+
+            int tileInfosOfNodeCount = tileInfosOfNode.size();
+            if(tileInfosOfNodeCount == 0)
+                continue;
+
+            // create sceneInfos.***
+            List<SceneInfo> sceneInfos = new ArrayList<>();
+            for(int j = 0; j < tileInfosOfNodeCount; j++)
+            {
+                TileInfo tileInfo = tileInfosOfNode.get(j);
+                SceneInfo sceneInfo = new SceneInfo();
+                sceneInfo.setScenePath(tileInfo.getTempPath().toString());
+                KmlInfo kmlInfo = tileInfo.getKmlInfo();
+                Vector3d geoCoordPosition = kmlInfo.getPosition();
+                Vector3d posWC = GlobeUtils.geographicToCartesianWgs84(geoCoordPosition);
+                Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(posWC);
+                sceneInfo.setTransformMatrix(transformMatrix);
+                sceneInfos.add(sceneInfo);
+            }
+
+            // make a netSurface node.***
+            TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
+            List<BufferedImage> resultImages = new ArrayList<>();
+            int bufferedImageType = BufferedImage.TYPE_INT_RGB;
+
+            Vector3d nodeCenterGeoCoordRad = node.getBoundingVolume().calcCenter();
+            Vector3d nodeCenterGeoCoordDeg = new Vector3d(Math.toDegrees(nodeCenterGeoCoordRad.x), Math.toDegrees(nodeCenterGeoCoordRad.y), nodeCenterGeoCoordRad.z);
+            Vector3d nodePosWC = GlobeUtils.geographicToCartesianWgs84(nodeCenterGeoCoordDeg);
+            Matrix4d nodeTMatrix = node.getTransformMatrix();
+            if(nodeTMatrix == null)
+            {
+                nodeTMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(nodePosWC);
+            }
+            GaiaBoundingBox nodeBBoxLC = node.getLocalBoundingBox();
+
+            tilerExtensionModule.getColorAndDepthRender(sceneInfos, bufferedImageType, resultImages, nodeBBoxLC, nodeTMatrix, 1024);
+
+            // test save resultImages.***
+            String sceneName = "mosaicRenderTest_" + i;
+            String sceneRawName = sceneName;
+            File file = new File("D:" + File.separator + "Result_mago3dTiler" + File.separator + sceneRawName + ".jpg");
+            try
+            {
+                ImageIO.write(resultImages.get(0), "JPG", file);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+
+            int hola = 0;
+
+        }
+
+
+
+
+    }
+
+    private boolean intersectsNodeWithTileInfo(Node node, TileInfo tileInfo)
+    {
+        BoundingVolume boundingVolume = node.getBoundingVolume();
+        double[] region = boundingVolume.getRegion();  // [minLonDeg, minLatDeg, maxLonDeg, maxLatDeg]
+
+        // compare longitudes.***
+        double minLonDeg = Math.toDegrees(region[0]);
+        double maxLonDeg = Math.toDegrees(region[2]);
+        GaiaBoundingBox tileBoundingBox = tileInfo.getCartographicBBox();
+
+        if(maxLonDeg < tileBoundingBox.getMinX() || minLonDeg > tileBoundingBox.getMaxX())
+            return false;
+
+        // compare latitudes.***
+        double minLatDeg = Math.toDegrees(region[1]);
+        double maxLatDeg = Math.toDegrees(region[3]);
+
+        if(maxLatDeg < tileBoundingBox.getMinY() || minLatDeg > tileBoundingBox.getMaxY())
+            return false;
+
+        return true;
+    }
+
+    private void distributeContentsToNodes(Node rootNode, List<TileInfo> tileInfos, int nodeDepth, Map<Node, List<TileInfo>> nodeTileInfoMap)
+    {
+        // distribute contents to node in the correspondent depth.***
+        // Here, the tileInfos are cutTileInfos by node's boundary planes, so we can use tileInfoCenterGeoCoordRad.***
+        int tileInfosCount = tileInfos.size();
+        for(int i = 0; i < tileInfosCount; i++)
+        {
+            TileInfo tileInfo = tileInfos.get(i);
+            Matrix4d tileTransformMatrix = tileInfo.getTransformMatrix();
+            GaiaBoundingBox tileBoundingBox = tileInfo.getBoundingBox();
+            GaiaBoundingBox cartographicBBox = tileInfo.getCartographicBBox();
+            Vector3d geoCoordCenter = cartographicBBox.getCenter();
+            double centerLonRad = Math.toRadians(geoCoordCenter.x);
+            double centerLatRad = Math.toRadians(geoCoordCenter.y);
+            Vector2d tileInfoCenterGeoCoordRad = new Vector2d(centerLonRad, centerLatRad);
+
+            Node childNode = rootNode.getIntersectedNode(tileInfoCenterGeoCoordRad, nodeDepth);
+
+            nodeTileInfoMap.computeIfAbsent(childNode, k -> new ArrayList<>()).add(tileInfo);
+            List<TileInfo> tileInfosInNode = nodeTileInfoMap.get(childNode);
+            tileInfosInNode.add(tileInfo);
         }
     }
 
-    private void createUniqueTextureByRendering(TileInfo tileInfo, int lod)
+    private List<TileInfo> getTileInfosCopy(List<TileInfo> tileInfos, int lod, List<TileInfo> resultTileInfosCopy)
     {
-        Path path;
-        if(tileInfo.getTempPathLod() != null) {
-            List<Path> paths = tileInfo.getTempPathLod();
-            path = paths.get(lod);
-        }
-        else {
-            path = tileInfo.getTempPath();
-        }
-
-        KmlInfo kmlInfo = tileInfo.getKmlInfo();
-        Vector3d geoCoordPosition = kmlInfo.getPosition();
-        Vector3d posWC = GlobeUtils.geographicToCartesianWgs84(geoCoordPosition);
-        Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(posWC);
-        Matrix4d transformMatrixInv = new Matrix4d(transformMatrix);
-        transformMatrixInv.invert();
-
-        // load the file.***
-        GaiaSet gaiaSet = null;
-        try{
-            gaiaSet = GaiaSet.readFile(path);
-            if(gaiaSet == null)
-                return;
-        }
-        catch (IOException e)
+        if(resultTileInfosCopy == null)
         {
-            log.error("Error : {}", e.getMessage());
-            throw new RuntimeException(e);
+            resultTileInfosCopy = new ArrayList<>();
         }
 
-//        TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
-//        tilerExtensionModule.executePhotorealistic(scene, null);
+        int tileInfosCount = tileInfos.size();
+        for(int i = 0; i < tileInfosCount; i++)
+        {
+            TileInfo tileInfo = tileInfos.get(i);
+            TileInfo tileInfoCopy = tileInfo.clone();
 
+            // change the tempPath of the tileInfos by tempPathLod.***
+            List<Path> tempPathLod = tileInfoCopy.getTempPathLod();
+            Path pathLod = tempPathLod.get(lod);
+            if(pathLod != null){
+                tileInfoCopy.setTempPath(pathLod);
+            }
+
+            resultTileInfosCopy.add(tileInfoCopy);
+        }
+
+        return resultTileInfosCopy;
     }
 
     private void scissorTextures(List<TileInfo> tileInfos)

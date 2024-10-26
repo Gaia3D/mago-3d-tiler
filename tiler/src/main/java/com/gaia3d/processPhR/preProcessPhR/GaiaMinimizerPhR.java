@@ -109,7 +109,8 @@ public class GaiaMinimizerPhR implements PreProcess {
             TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
             List<BufferedImage> resultImages = new ArrayList<>();
             int bufferedImageType = BufferedImage.TYPE_INT_RGB;
-            tilerExtensionModule.getRenderScene(gaiaSceneList, bufferedImageType, resultImages);
+            int maxScreenSize = 1024;
+            tilerExtensionModule.getRenderScene(gaiaSceneList, bufferedImageType, maxScreenSize, resultImages);
 
             if(resultImages.size() == 0)
             {
@@ -118,7 +119,9 @@ public class GaiaMinimizerPhR implements PreProcess {
             }
 
             // test.***
-            File file = new File("D:\\Result_mago3dTiler\\renderSceneImage1.jpg");
+            String sceneName = scene.getOriginalPath().getFileName().toString();
+            String sceneRawName = sceneName.substring(0, sceneName.lastIndexOf("."));
+            File file = new File("D:" + File.separator + "Result_mago3dTiler" + File.separator + sceneRawName + ".jpg");
             try
             {
                 ImageIO.write(resultImages.get(0), "JPG", file);

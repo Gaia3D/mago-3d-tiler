@@ -31,7 +31,6 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
-    public List<GaiaTexture> getRenderScene(List<GaiaScene> scene, int bufferedImageType, List<BufferedImage> resultImages) {
-        return null;
+    public void getRenderScene(List<GaiaScene> scene, int bufferedImageType, int maxScreenSize, List<BufferedImage> resultImages) {
     }
 }

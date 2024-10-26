@@ -895,12 +895,12 @@ class UnitTest {
     }
 
     @Test
-    void test_RealisticMesh_Thailand_Data_10buildings() {
+    void test_RealisticMesh_Thailand_Data_N_buildings() {
         String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\RealisticMesh_Thailand_multiTiles\\OBJ25sqkm\\";
         String outputPath = "D:\\Result_mago3dTiler\\";
         //String path = "Tile_+000_+000_+000";
         //String path = "splittedTile";
-        String path = "Data_10buildings";
+        String path = "Data_6buildings";
 
         String[] args = new String[]{
                 "-i", inputPath + path,
@@ -930,7 +930,8 @@ class UnitTest {
         TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
         List<BufferedImage> bufferedImageList = new ArrayList<>();
         int bufferedImageType = BufferedImage.TYPE_INT_ARGB;
-        tilerExtensionModule.getRenderScene(gaiaSceneList, bufferedImageType, bufferedImageList);
+        int maxScreenSize = 1024;
+        tilerExtensionModule.getRenderScene(gaiaSceneList, bufferedImageType, maxScreenSize, bufferedImageList);
     }
 
 

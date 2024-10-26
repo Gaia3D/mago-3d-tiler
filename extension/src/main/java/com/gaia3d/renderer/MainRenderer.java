@@ -1,25 +1,35 @@
 package com.gaia3d.renderer;
 
+import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.renderer.engine.Engine;
 import com.gaia3d.renderer.engine.IAppLogic;
 import com.gaia3d.renderer.engine.InternDataConverter;
 import com.gaia3d.renderer.engine.Window;
 import com.gaia3d.renderer.engine.dataStructure.GaiaScenesContainer;
+import com.gaia3d.renderer.engine.dataStructure.SceneInfo;
+import com.gaia3d.renderer.engine.fbo.Fbo;
 import com.gaia3d.renderer.engine.fbo.FboManager;
 import com.gaia3d.renderer.engine.scene.Camera;
 import com.gaia3d.renderer.engine.scene.Projection;
 import com.gaia3d.renderer.renderable.RenderableGaiaScene;
 import lombok.extern.slf4j.Slf4j;
+import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.ByteBuffer;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 
 @Slf4j
 public class MainRenderer implements IAppLogic {
@@ -36,7 +46,136 @@ public class MainRenderer implements IAppLogic {
 
     }
 
-    public void render(List<GaiaScene> gaiaScenes, int bufferedImageType, List<BufferedImage> resultImages) {
+    public void getColorAndDepthRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<BufferedImage> resultImages, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize)
+    {
+        // render the scene
+        log.info("Rendering the scene...");
+
+        // Must init gl.***
+        try{
+            engine.init();
+        } catch (Exception e) {
+            log.error("Error initializing the engine: " + e.getMessage());
+        }
+
+        int screenWidth = 1000; // no used var.***
+        int screenHeight = 600; // no used var.***
+
+        GaiaScenesContainer gaiaScenesContainer = new GaiaScenesContainer(screenWidth, screenHeight);
+
+        // calculate the projectionMatrix for the camera.***
+        Vector3d bboxCenter = nodeBBox.getCenter();
+        float xLength = (float)nodeBBox.getSizeX();
+        float yLength = (float)nodeBBox.getSizeY();
+        float zLength = (float)nodeBBox.getSizeZ();
+
+        Projection projection = new Projection(0, screenWidth, screenHeight);
+        projection.setProjectionOrthographic(-xLength/2.0f, xLength/2.0f, -yLength/2.0f, yLength/2.0f, -zLength*50.0f, zLength*50.0f);
+        gaiaScenesContainer.setProjection(projection);
+        engine.setGaiaScenesContainer(gaiaScenesContainer);
+
+        // Take FboManager from engine.***
+        FboManager fboManager = engine.getFboManager();
+
+        // create the fbo.***
+        int fboWidth = maxScreenSize;
+        int fboHeight = maxScreenSize;
+        if(xLength > yLength)
+        {
+            fboWidth = maxScreenSize;
+            fboHeight = (int)(maxScreenSize * yLength / xLength);
+        }
+        else
+        {
+            fboWidth = (int)(maxScreenSize * xLength / yLength);
+            fboHeight = maxScreenSize;
+        }
+        fboManager.createFbo("colorRender", fboWidth, fboHeight);
+        Fbo colorFbo = fboManager.getFbo("colorRender");
+
+        // now set camera position.***
+        Camera camera = new Camera();
+        camera.setPosition(bboxCenter);
+        camera.setDirection(new Vector3d(0, 0, -1));
+        camera.setUp(new Vector3d(0, 1, 0));
+        gaiaScenesContainer.setCamera(camera);
+
+        // Bind the fbo.***
+        colorFbo.bind();
+
+        int[] width = new int[1];
+        int[] height = new int[1];
+        width[0] = colorFbo.getFboWidth();
+        height[0] = colorFbo.getFboHeight();
+
+        glViewport(0, 0, width[0], height[0]);
+        glClearColor(0.5f, 0.1f, 0.9f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
+
+        // disable cull face.***
+        glDisable(GL_CULL_FACE);
+
+        Matrix4d nodeMatrixInv = new Matrix4d(nodeTMatrix);
+        nodeMatrixInv.invert();
+
+        // render the scenes.***
+        int scenesCount = sceneInfos.size();
+        InternDataConverter internDataConverter = new InternDataConverter();
+        List<RenderableGaiaScene> renderableGaiaScenes = new ArrayList<>();
+        for(int i=0; i<scenesCount; i++)
+        {
+            // load and render, one by one.***
+            SceneInfo sceneInfo = sceneInfos.get(i);
+            String scenePath = sceneInfo.getScenePath();
+            Matrix4d sceneTMat = sceneInfo.getTransformMatrix();
+
+            // must find the local position of the scene rel to node.***
+            Vector3d scenePosWC = new Vector3d(sceneTMat.m30(), sceneTMat.m31(), sceneTMat.m32());
+            Vector3d scenePosLC = nodeMatrixInv.transformPosition(scenePosWC, new Vector3d());
+
+            // calculate the local sceneTMat.***
+            Matrix4d sceneTMatLC = new Matrix4d(sceneTMat);
+            sceneTMatLC.m30(scenePosLC.x);
+            sceneTMatLC.m31(scenePosLC.y);
+            sceneTMatLC.m32(scenePosLC.z);
+
+
+            renderableGaiaScenes.clear();
+
+            // load the set file.***
+            Path path = Paths.get(scenePath);
+            try
+            {
+                GaiaSet gaiaSet = GaiaSet.readFile(path);
+                GaiaScene gaiaScene = new GaiaScene(gaiaSet);
+                GaiaNode gaiaNode = gaiaScene.getNodes().get(0);
+                gaiaNode.setTransformMatrix(sceneTMatLC);
+                gaiaNode.setPreMultipliedTransformMatrix(sceneTMatLC);
+
+                RenderableGaiaScene renderableScene = internDataConverter.getRenderableGaiaScene(gaiaScene);
+                renderableGaiaScenes.add(renderableScene);
+            }
+            catch (Exception e)
+            {
+                log.error("Error reading the file: " + e.getMessage());
+            }
+
+            gaiaScenesContainer.setRenderableGaiaScenes(renderableGaiaScenes);
+
+            try{
+                engine.getRenderSceneImage();
+            } catch (Exception e) {
+                log.error("Error initializing the engine: " + e.getMessage());
+            }
+
+            BufferedImage image = colorFbo.getBufferedImage(bufferedImageType);
+            colorFbo.unbind();
+            resultImages.add(image);
+        }
+    }
+
+    public void render(List<GaiaScene> gaiaScenes, int bufferedImageType, List<BufferedImage> resultImages, int maxScreenSize) {
         // render the scene
         log.info("Rendering the scene...");
 
@@ -96,7 +235,6 @@ public class MainRenderer implements IAppLogic {
         FboManager fboManager = engine.getFboManager();
 
         // create the fbo.***
-        int maxScreenSize = 2048;
         int fboWidth = maxScreenSize;
         int fboHeight = maxScreenSize;
         if(xLength > yLength)
@@ -110,6 +248,7 @@ public class MainRenderer implements IAppLogic {
             fboHeight = maxScreenSize;
         }
         fboManager.createFbo("colorRender", fboWidth, fboHeight);
+        Fbo colorFbo = fboManager.getFbo("colorRender");
 
         // now set camera position.***
         Camera camera = new Camera();
@@ -119,7 +258,27 @@ public class MainRenderer implements IAppLogic {
         gaiaScenesContainer.setCamera(camera);
 
         try{
-            BufferedImage image = engine.getRenderSceneImage(bufferedImageType);
+            colorFbo.bind();
+
+            int[] width = new int[1];
+            int[] height = new int[1];
+            width[0] = colorFbo.getFboWidth();
+            height[0] = colorFbo.getFboHeight();
+
+            glViewport(0, 0, width[0], height[0]);
+            glClearColor(0.5f, 0.1f, 0.9f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glEnable(GL_DEPTH_TEST);
+
+            // disable cull face.***
+            glDisable(GL_CULL_FACE);
+
+            engine.getRenderSceneImage();
+            // make the bufferImage.***
+            BufferedImage image = colorFbo.getBufferedImage(bufferedImageType);
+
+            colorFbo.unbind();
+
             resultImages.add(image);
         } catch (Exception e) {
             log.error("Error initializing the engine: " + e.getMessage());

@@ -14,6 +14,7 @@ import java.util.List;
 public class RenderableNode {
     private String name = "";
     private GaiaNode originalGaiaNode = null;
+    private RenderableNode parent = null;
     private List<RenderableMesh> renderableMeshes = new ArrayList<>();
     private List<RenderableNode> children = new ArrayList<>();
 
@@ -41,6 +42,23 @@ public class RenderableNode {
 
         for (RenderableNode child : children) {
             child.extractRenderablePrimitives(resultRenderablePrimitives);
+        }
+    }
+
+    public void calculatePreMultipliedTransformMatrix() {
+        Matrix4d matrixAux = new Matrix4d();
+        if(this.parent == null) {
+            matrixAux.identity();
+        }
+        else {
+            matrixAux.set(this.parent.getPreMultipliedTransformMatrix());
+        }
+        matrixAux.mul(this.transformMatrix);
+        preMultipliedTransformMatrix.set(matrixAux);
+        //preMultipliedTransformMatrix.mul(transformMatrix);
+
+        for (RenderableNode child : children) {
+            child.calculatePreMultipliedTransformMatrix();
         }
     }
 }

@@ -1,11 +1,15 @@
 package com.gaia3d;
 
+import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.model.GaiaTexture;
 import com.gaia3d.renderer.MainRenderer;
 import com.gaia3d.renderer.engine.InternDataConverter;
+import com.gaia3d.renderer.engine.dataStructure.SceneInfo;
 import com.gaia3d.renderer.renderable.RenderableGaiaScene;
 import lombok.extern.slf4j.Slf4j;
+import org.joml.Matrix4d;
+import org.joml.Vector3d;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -36,27 +40,16 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
         return null;
     }
 
-    public List<GaiaTexture> getRenderScene(List<GaiaScene> scenes, int bufferedImageType, List<BufferedImage> resultImages)
+    public void getColorAndDepthRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<BufferedImage> resultImages, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize)
     {
-        List<GaiaTexture> textures = new ArrayList<>();
-        GaiaTexture tex = null;
-
-        textures.add(tex);
-
         MainRenderer renderer = new MainRenderer();
-        renderer.render(scenes, bufferedImageType, resultImages);
+        renderer.getColorAndDepthRender(sceneInfos, bufferedImageType, resultImages, nodeBBox, nodeTMatrix, maxScreenSize);
+    }
 
-//        int resultImagesCount = resultImages.size();
-//        for(int i = 0; i < resultImagesCount; i++)
-//        {
-//            BufferedImage img = resultImages.get(i);
-//            tex = new GaiaTexture();
-//            tex.setBufferedImage(img);
-//            textures.add(tex);
-//        }
 
-        // Renderer renderer = new Renderer();
-        // use the renderer to render the scene
-        return textures;
+    public void getRenderScene(List<GaiaScene> scenes, int bufferedImageType, int maxScreenSize, List<BufferedImage> resultImages)
+    {
+        MainRenderer renderer = new MainRenderer();
+        renderer.render(scenes, bufferedImageType, resultImages, maxScreenSize);
     }
 }
