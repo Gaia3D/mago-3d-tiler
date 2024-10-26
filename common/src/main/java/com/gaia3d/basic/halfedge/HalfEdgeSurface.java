@@ -2723,6 +2723,50 @@ public class HalfEdgeSurface implements Serializable {
         return intersects;
     }
 
+    public boolean getWeldedFacesWithFace(HalfEdgeFace face, List<HalfEdgeFace> resultWeldedFaces, Map<HalfEdgeFace, HalfEdgeFace> mapVisitedFaces)
+    {
+        List<HalfEdgeFace> weldedFacesAux = new ArrayList<>();
+        List<HalfEdgeFace> faces = new ArrayList<>();
+        faces.add(face);
+        //mapVisitedFaces.put(face, face);
+        boolean finished = false;
+        int counter = 0;
+        while(!finished)// && counter < 10000000)
+        {
+            List<HalfEdgeFace> newAddedfaces = new ArrayList<>();
+            int facesCount = faces.size();
+            for (int i = 0; i < facesCount; i++)
+            {
+                HalfEdgeFace currFace = faces.get(i);
+                if (currFace.getStatus() == ObjectStatus.DELETED) {
+                    continue;
+                }
+
+                if (mapVisitedFaces.containsKey(currFace)) {
+                    continue;
+                }
+
+                resultWeldedFaces.add(currFace);
+                mapVisitedFaces.put(currFace, currFace);
+                weldedFacesAux.clear();
+                currFace.getWeldedFaces(weldedFacesAux, mapVisitedFaces);
+                newAddedfaces.addAll(weldedFacesAux);
+            }
+
+            if(newAddedfaces.isEmpty()) {
+                finished = true;
+            } else {
+                faces.clear();
+                faces.addAll(newAddedfaces);
+            }
+
+            counter++;
+        }
+
+
+        return true;
+    }
+
     public List<List<HalfEdgeFace>> getWeldedFacesGroups(List<List<HalfEdgeFace>> resultWeldedFacesGroups) {
         if(resultWeldedFacesGroups == null) {
             resultWeldedFacesGroups = new ArrayList<>();
@@ -2742,7 +2786,33 @@ public class HalfEdgeSurface implements Serializable {
             }
 
             List<HalfEdgeFace> weldedFaces = new ArrayList<>();
-            face.getWeldedFaces(weldedFaces, mapVisitedFaces);
+            this.getWeldedFacesWithFace(face, weldedFaces, mapVisitedFaces);
+            resultWeldedFacesGroups.add(weldedFaces);
+        }
+
+        return resultWeldedFacesGroups;
+    }
+
+    public List<List<HalfEdgeFace>> getWeldedFacesGroupsRecursive(List<List<HalfEdgeFace>> resultWeldedFacesGroups) {
+        if(resultWeldedFacesGroups == null) {
+            resultWeldedFacesGroups = new ArrayList<>();
+        }
+
+        Map<HalfEdgeVertex, List<HalfEdgeFace>> vertexFacesMap = getMapVertexAllFaces(null);
+        Map<HalfEdgeFace, HalfEdgeFace> mapVisitedFaces = new HashMap<>();
+        int facesCount = faces.size();
+        for (int i = 0; i < facesCount; i++) {
+            HalfEdgeFace face = faces.get(i);
+            if (face.getStatus() == ObjectStatus.DELETED) {
+                continue;
+            }
+
+            if (mapVisitedFaces.containsKey(face)) {
+                continue;
+            }
+
+            List<HalfEdgeFace> weldedFaces = new ArrayList<>();
+            face.getWeldedFacesRecursive(weldedFaces, mapVisitedFaces);
             resultWeldedFacesGroups.add(weldedFaces);
         }
 

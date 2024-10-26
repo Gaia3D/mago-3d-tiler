@@ -250,8 +250,9 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             tileInfosCopy.add(tileInfoCopy);
         }
 
+        boolean someSceneCut = false;
         try {
-            cutRectangleCake(tileInfosCopy, lod, root);
+            someSceneCut = cutRectangleCake(tileInfosCopy, lod, root);
         } catch (IOException e) {
             log.error("Error : {}", e.getMessage());
             throw new RuntimeException(e);
@@ -280,10 +281,18 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             tileInfosInNode.add(tileInfo);
         }
 
-        // in lod2, we don't scissor textures.***
-        // lod2 uses the rendered image.***
+        if(someSceneCut)
+        {
+            scissorTextures(tileInfosCopy);
+        }
         makeContentsForNodes(nodeTileInfoMap, lod);
         // End lod 2.---------------------------------------------------------
+
+        // Check if is necessary netSurfaces nodes.***
+        if(maxDepth > 2)
+        {
+            createNetSurfaceNodes(root, tileInfos);
+        }
 
         // now, delete nodes that have no contents.***
         root.deleteNoContentNodes();
@@ -303,6 +312,42 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         tileset.setAsset(asset);
         tileset.setRoot(root);
         return tileset;
+    }
+
+    private void createNetSurfaceNodes(Node rootNode, List<TileInfo> tileInfos)
+    {
+        int maxDepth = rootNode.findMaxDepth();
+        int currDepth = maxDepth - 1;
+
+        List<Node> nodes = new ArrayList<>();
+        rootNode.getNodesByDepth(currDepth, nodes);
+        int nodesCount = nodes.size();
+        for(int i = 0; i < nodesCount; i++)
+        {
+            Node node = nodes.get(i);
+            List<TileInfo> tileInfosInNode = node.getContent().getContentInfo().getTileInfos();
+            int tileInfosCount = tileInfosInNode.size();
+            for(int j = 0; j < tileInfosCount; j++)
+            {
+                TileInfo tileInfo = tileInfosInNode.get(j);
+                Path path = tileInfo.getTempPath();
+                GaiaSet gaiaSet = null;
+                try{
+                    gaiaSet = GaiaSet.readFile(path);
+                    if(gaiaSet == null)
+                        continue;
+                }
+                catch (IOException e)
+                {
+                    log.error("Error : {}", e.getMessage());
+                    throw new RuntimeException(e);
+                }
+
+                GaiaScene scene = new GaiaScene(gaiaSet);
+                HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
+                //HalfEdgeUtils.createNetSurfaceNodes(halfEdgeScene);
+            }
+        }
     }
 
     private void createUniqueTextureByRendering(TileInfo tileInfo, int lod)
@@ -374,7 +419,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         }
     }
 
-    private void cutRectangleCake(List<TileInfo> tileInfos, int lod, Node rootNode) throws FileNotFoundException {
+    private boolean cutRectangleCake(List<TileInfo> tileInfos, int lod, Node rootNode) throws FileNotFoundException {
         int maxDepth = rootNode.findMaxDepth();
         int currDepth = maxDepth - lod;
 
@@ -402,11 +447,16 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             latDivisions.add(minLatDeg + i * latStep);
         }
 
+        boolean someSceneCut = false;
+
         int longitudesCount = lonDivisions.size();
         for(int i = 0; i < longitudesCount; i++)
         {
             double lonDeg = lonDivisions.get(i);
-            cutRectangleCakeByLongitudeDeg(tileInfos, lod, lonDeg);
+            if(cutRectangleCakeByLongitudeDeg(tileInfos, lod, lonDeg))
+            {
+                someSceneCut = true;
+            }
         }
 
         // 1rst cut by latitudes.***
@@ -414,11 +464,14 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         for(int i = 0; i < latitudesCount; i++)
         {
             double latDeg = latDivisions.get(i);
-            cutRectangleCakeByLatitudeDeg(tileInfos, lod, latDeg);
+            if(cutRectangleCakeByLatitudeDeg(tileInfos, lod, latDeg))
+            {
+                someSceneCut = true;
+            }
         }
 
         int hola = 0;
-
+        return someSceneCut;
     }
 
     private boolean cutHalfEdgeSceneByPlane(HalfEdgeScene halfEdgeScene, PlaneType planeType, Vector3d samplePointLC, TileInfo tileInfo, Path cutTempLodPath,
@@ -509,7 +562,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         return false;
     }
 
-    private void cutRectangleCakeByLongitudeDeg(List<TileInfo> tileInfos, int lod, double lonDeg) throws FileNotFoundException {
+    private boolean cutRectangleCakeByLongitudeDeg(List<TileInfo> tileInfos, int lod, double lonDeg) throws FileNotFoundException {
+        boolean someSceneCutted = false;
         log.info("lod : {}", lod);
         log.info(" #Cutting by longitude : {}", lonDeg);
         int tileInfosCount = tileInfos.size();
@@ -574,6 +628,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             if(this.cutHalfEdgeSceneByPlane(halfEdgeScene, planeType, samplePointLC, tileInfo, cutTempLodPath, cutTileInfos, error))
             {
                 deletedTileInfoMap.put(tileInfo, tileInfo);
+                someSceneCutted = true;
             }
 
             int hola = 0;
@@ -598,9 +653,11 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         tileInfos.addAll(cutTileInfos);
 
         int hola = 0;
+        return someSceneCutted;
     }
 
-    private void cutRectangleCakeByLatitudeDeg(List<TileInfo> tileInfos, int lod, double latDeg) throws FileNotFoundException {
+    private boolean cutRectangleCakeByLatitudeDeg(List<TileInfo> tileInfos, int lod, double latDeg) throws FileNotFoundException {
+        boolean someSceneCutted = false;
         log.info("lod : {}", lod);
         log.info(" #Cutting by latitude : {}", latDeg);
         int tileInfosCount = tileInfos.size();
@@ -664,6 +721,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             if(this.cutHalfEdgeSceneByPlane(halfEdgeScene, planeType, samplePointLC, tileInfo, cutTempLodPath, cutTileInfos, error))
             {
                 deletedTileInfoMap.put(tileInfo, tileInfo);
+                someSceneCutted = true;
             }
 
 
@@ -678,6 +736,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
         // add the cutTileInfos to tileInfos.***
         tileInfos.addAll(cutTileInfos);
+
+        return someSceneCutted;
     }
 
     private void createQuadTreeChildrenForNode(Node node)

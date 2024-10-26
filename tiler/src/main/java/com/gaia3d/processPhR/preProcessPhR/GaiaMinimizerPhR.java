@@ -111,6 +111,12 @@ public class GaiaMinimizerPhR implements PreProcess {
             int bufferedImageType = BufferedImage.TYPE_INT_RGB;
             tilerExtensionModule.getRenderScene(gaiaSceneList, bufferedImageType, resultImages);
 
+            if(resultImages.size() == 0)
+            {
+                log.error("resultImages.size() == 0");
+                int hola = 0;
+            }
+
             // test.***
             File file = new File("D:\\Result_mago3dTiler\\renderSceneImage1.jpg");
             try

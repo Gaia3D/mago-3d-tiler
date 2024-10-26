@@ -895,12 +895,12 @@ class UnitTest {
     }
 
     @Test
-    void test_RealisticMesh_Thailand_Data_4buildings() {
+    void test_RealisticMesh_Thailand_Data_10buildings() {
         String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\RealisticMesh_Thailand_multiTiles\\OBJ25sqkm\\";
         String outputPath = "D:\\Result_mago3dTiler\\";
         //String path = "Tile_+000_+000_+000";
         //String path = "splittedTile";
-        String path = "Data_4buildings";
+        String path = "Data_10buildings";
 
         String[] args = new String[]{
                 "-i", inputPath + path,
@@ -920,6 +920,7 @@ class UnitTest {
 
     @Test
     void testRenderScenes() {
+            // This is a sample code. NO WORKS.***
         Configurator.initConsoleLogger();
         List<GaiaScene> gaiaSceneList = new ArrayList<>();
         GaiaScene gaiaScene = new GaiaScene();
