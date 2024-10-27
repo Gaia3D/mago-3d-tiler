@@ -298,9 +298,20 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             for(int j = 0; j < resultMosaicImagesCount; j++) {
                 String sceneName = "mosaicRenderTest_" + i + "_" + j;
                 String sceneRawName = sceneName;
-                File file = new File("D:" + File.separator + "Result_mago3dTiler" + File.separator + sceneRawName + ".jpg");
+                String imageExtension = "jpg";
+                if(j == 1)
+                {
+                    imageExtension = "png";
+                }
+                File file = new File("D:" + File.separator + "Result_mago3dTiler" + File.separator + sceneRawName + "." + imageExtension);
                 try {
-                    ImageIO.write(resultImages.get(j), "JPG", file);
+                    BufferedImage image = resultImages.get(j);
+                    if(j == 0) {
+                        ImageIO.write(image, "JPG", file);
+                    }
+                    else {
+                        ImageIO.write(image, "PNG", file);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

@@ -12,6 +12,8 @@ import com.gaia3d.renderer.engine.dataStructure.GaiaScenesContainer;
 import com.gaia3d.renderer.engine.dataStructure.SceneInfo;
 import com.gaia3d.renderer.engine.fbo.Fbo;
 import com.gaia3d.renderer.engine.fbo.FboManager;
+import com.gaia3d.renderer.engine.graph.ShaderManager;
+import com.gaia3d.renderer.engine.graph.ShaderProgram;
 import com.gaia3d.renderer.engine.scene.Camera;
 import com.gaia3d.renderer.engine.scene.Projection;
 import com.gaia3d.renderer.renderable.RenderableGaiaScene;
@@ -70,7 +72,7 @@ public class MainRenderer implements IAppLogic {
         float zLength = (float)nodeBBox.getSizeZ();
 
         Projection projection = new Projection(0, screenWidth, screenHeight);
-        projection.setProjectionOrthographic(-xLength/2.0f, xLength/2.0f, -yLength/2.0f, yLength/2.0f, -zLength*50.0f, zLength*50.0f);
+        projection.setProjectionOrthographic(-xLength/2.0f, xLength/2.0f, -yLength/2.0f, yLength/2.0f, -zLength * 0.5f, zLength * 0.5f);
         gaiaScenesContainer.setProjection(projection);
         engine.setGaiaScenesContainer(gaiaScenesContainer);
 
@@ -91,7 +93,9 @@ public class MainRenderer implements IAppLogic {
             fboHeight = maxScreenSize;
         }
         fboManager.createFbo("colorRender", fboWidth, fboHeight);
+        fboManager.createFbo("depthRender", fboWidth, fboHeight);
         Fbo colorFbo = fboManager.getFbo("colorRender");
+        Fbo depthFbo = fboManager.getFbo("depthRender");
 
         // now set camera position.***
         Camera camera = new Camera();
@@ -100,8 +104,17 @@ public class MainRenderer implements IAppLogic {
         camera.setUp(new Vector3d(0, 1, 0));
         gaiaScenesContainer.setCamera(camera);
 
-        // Bind the fbo.***
+
+
+        // clear the colorFbo.***
         colorFbo.bind();
+        glClearColor(0.9f, 0.1f, 0.9f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // clear the depthFbo.***
+        depthFbo.bind();
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         int[] width = new int[1];
         int[] height = new int[1];
@@ -109,8 +122,8 @@ public class MainRenderer implements IAppLogic {
         height[0] = colorFbo.getFboHeight();
 
         glViewport(0, 0, width[0], height[0]);
-        glClearColor(0.5f, 0.1f, 0.9f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // disable cull face.***
         glEnable(GL_DEPTH_TEST);
 
         // disable cull face.***
@@ -165,16 +178,39 @@ public class MainRenderer implements IAppLogic {
             gaiaScenesContainer.setRenderableGaiaScenes(renderableGaiaScenes);
 
             try{
-                engine.getRenderSceneImage();
+                // shader program.***
+                ShaderManager shaderManager = engine.getShaderManager();
+                ShaderProgram sceneShaderProgram = shaderManager.getShaderProgram("scene");
+
+                // render the scene.***
+                // Bind the fbo.***
+                colorFbo.bind();
+                engine.getRenderSceneImage(sceneShaderProgram);
+                colorFbo.unbind();
+
+                // depth render.***
+                ShaderProgram depthShaderProgram = shaderManager.getShaderProgram("depth");
+                depthFbo.bind();
+                engine.getRenderSceneImage(depthShaderProgram);
+                depthFbo.unbind();
+
             } catch (Exception e) {
                 log.error("Error initializing the engine: " + e.getMessage());
             }
         }
 
         // take the final rendered colorBuffer of the fbo.***
+        colorFbo.bind();
         BufferedImage image = colorFbo.getBufferedImage(bufferedImageType);
         resultImages.add(image);
         colorFbo.unbind();
+
+        // take the final rendered depthBuffer of the fbo.***
+        int depthBufferedImageType = BufferedImage.TYPE_INT_ARGB;
+        depthFbo.bind();
+        BufferedImage depthImage = depthFbo.getBufferedImage(depthBufferedImageType);
+        resultImages.add(depthImage);
+        depthFbo.unbind();
     }
 
     public void render(List<GaiaScene> gaiaScenes, int bufferedImageType, List<BufferedImage> resultImages, int maxScreenSize) {
@@ -268,14 +304,20 @@ public class MainRenderer implements IAppLogic {
             height[0] = colorFbo.getFboHeight();
 
             glViewport(0, 0, width[0], height[0]);
-            glClearColor(0.5f, 0.1f, 0.9f, 1.0f);
+            glClearColor(0.9f, 0.1f, 0.9f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glEnable(GL_DEPTH_TEST);
 
             // disable cull face.***
             glDisable(GL_CULL_FACE);
 
-            engine.getRenderSceneImage();
+            // shader program.***
+            ShaderManager shaderManager = engine.getShaderManager();
+            ShaderProgram sceneShaderProgram = shaderManager.getShaderProgram("scene");
+
+            // render the scene.***
+            engine.getRenderSceneImage(sceneShaderProgram);
+
             // make the bufferImage.***
             BufferedImage image = colorFbo.getBufferedImage(bufferedImageType);
 

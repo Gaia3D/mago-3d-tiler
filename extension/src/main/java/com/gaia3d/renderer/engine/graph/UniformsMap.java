@@ -36,23 +36,33 @@ public class UniformsMap {
         uniforms.put(uniformName, uniformLocation);
     }
 
-    public void setUniform1i(String uniformName, int value) {
-        glUniform1i(getUniformLocation(uniformName), value);
+    public boolean setUniform1i(String uniformName, int value) {
+        // check if exist uniform.***
+        int location = glGetUniformLocation(programId, uniformName);
+        if(location >= 0) {
+            glUniform1i(location, value);
+            return true;
+        }
+        return false;
     }
 
     public void setUniform4fv(String uniformName, Vector4f value) {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            glUniform4fv(getUniformLocation(uniformName), value.get(stack.mallocFloat(4)));
+        // check if exist uniform.***
+        int location = glGetUniformLocation(programId, uniformName);
+        if(location >= 0) {
+            try (MemoryStack stack = MemoryStack.stackPush()) {
+                glUniform4fv(location, value.get(stack.mallocFloat(4)));
+            }
         }
     }
 
     public void setUniformMatrix4fv(String uniformName, Matrix4f value) {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            Integer location = uniforms.get(uniformName);
-            if (location == null) {
-                throw new RuntimeException("Could not find uniform [" + uniformName + "]");
+        // check if exist uniform.***
+        int location = glGetUniformLocation(programId, uniformName);
+        if(location >= 0) {
+            try (MemoryStack stack = MemoryStack.stackPush()) {
+                glUniformMatrix4fv(location, false, value.get(stack.mallocFloat(16)));
             }
-            glUniformMatrix4fv(location.intValue(), false, value.get(stack.mallocFloat(16)));
         }
     }
 }

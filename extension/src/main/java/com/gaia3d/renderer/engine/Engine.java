@@ -108,13 +108,11 @@ public class Engine {
         glfwSetErrorCallback(null).free();
     }
 
-    public void getRenderSceneImage()
+    public void getRenderSceneImage(ShaderProgram sceneShaderProgram)
     {
         //***********************************************************
         // Note : before to call this function, must bind the fbo.***
         //***********************************************************
-        // render scene objects.***
-        ShaderProgram sceneShaderProgram = shaderManager.getShaderProgram("scene");
         sceneShaderProgram.bind();
 
         Camera camera = gaiaScenesContainer.getCamera();
@@ -123,6 +121,7 @@ public class Engine {
         uniformsMap.setUniformMatrix4fv("uModelViewMatrix", new Matrix4f(modelViewMatrix));
 
         renderer.render(gaiaScenesContainer, sceneShaderProgram);
+
         sceneShaderProgram.unbind();
     }
 
@@ -250,7 +249,7 @@ public class Engine {
         GL.createCapabilities();
         String shaderFolder = "D:/Java_Projects/mago-3d-tiler/extension/src/main/resources/shaders/";
 
-        // create a scene shader program
+        // create a scene shader program.*************************************************************************************************
         java.util.List<ShaderProgram.ShaderModuleData> shaderModuleDataList = new ArrayList<>();
         shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(shaderFolder + "sceneV330.vert", GL20.GL_VERTEX_SHADER));
         shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(shaderFolder + "sceneV330.frag", GL20.GL_FRAGMENT_SHADER));
@@ -268,7 +267,7 @@ public class Engine {
         sceneShaderProgram.validate();
         //sceneShaderProgram.getUniformsMap().setUniform1i("texture0", 0); // texture channel 0
 
-        // create a screen shader program
+        // create a screen shader program.*************************************************************************************************
         shaderModuleDataList = new ArrayList<>();
         shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(shaderFolder + "screenV330.vert", GL20.GL_VERTEX_SHADER));
         shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(shaderFolder + "screenV330.frag", GL20.GL_FRAGMENT_SHADER));
@@ -279,47 +278,7 @@ public class Engine {
         screenShaderProgram.createUniforms(uniformNames);
         screenShaderProgram.validate();
 
-        // create a colorCode shader program.***
-        // colorCode.vert : "#version 330
-        //layout (location = 0) in vec3 aPosition;
-        //
-        //uniform mat4 uProjectionMatrix;
-        //uniform mat4 uModelViewMatrix;
-        //uniform mat4 uObjectMatrix;
-        //uniform int uColorCode;
-        //
-        //out vec4 vColor;
-        //
-        //vec4 decodeColor4(int colorCode) {
-        //  int r = (colorCode >> 24) & 0xFF;
-        //  int g = (colorCode >> 16) & 0xFF;
-        //  int b = (colorCode >> 8) & 0xFF;
-        //  int a = colorCode & 0xFF;
-        //  return vec4(r / 255.0, g / 255.0, b / 255.0, a / 255.0);
-        //}
-        //
-        //vec4 getOrthoPosition() {
-        //  vec4 transformedPosition = uObjectMatrix * vec4(aPosition, 1.0);
-        //  vec4 orthoPosition = uModelViewMatrix * transformedPosition;
-        //  return orthoPosition;
-        //}
-        //
-        //void main(void) {
-        //  vec4 orthoPosition = getOrthoPosition();
-        //  vColor = decodeColor4(uColorCode);
-        //  gl_Position = uProjectionMatrix * orthoPosition;
-        //
-        //}"
-        // colorCode.grag : "#version 330
-        ////precision highp float;
-        //// colorMode = 0: oneColor, 1: vertexColor, 2: textureColor
-        //in vec4 vColor;
-        //
-        //layout (location = 0) out vec4 fragColor;
-        //
-        //void main(void) {
-        //    fragColor = vColor;
-        //}"
+        // create a colorCode shader program.****************************************************************************************************
         shaderModuleDataList = new ArrayList<>();
         shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(shaderFolder + "colorCodeV330.vert", GL20.GL_VERTEX_SHADER));
         shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(shaderFolder + "colorCodeV330.frag", GL20.GL_FRAGMENT_SHADER));
@@ -333,8 +292,18 @@ public class Engine {
         colorCodeShaderProgram.createUniforms(uniformNames);
         colorCodeShaderProgram.validate();
 
+        // create depthShader.****************************************************************************************************
+        shaderModuleDataList = new ArrayList<>();
+        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(shaderFolder + "depthV330.vert", GL20.GL_VERTEX_SHADER));
+        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(shaderFolder + "depthV330.frag", GL20.GL_FRAGMENT_SHADER));
+        sceneShaderProgram = shaderManager.createShaderProgram("depth", shaderModuleDataList);
 
-
+        uniformNames = new ArrayList<>();
+        uniformNames.add("uProjectionMatrix");
+        uniformNames.add("uModelViewMatrix");
+        uniformNames.add("uObjectMatrix");
+        sceneShaderProgram.createUniforms(uniformNames);
+        sceneShaderProgram.validate();
     }
 
     private void takeColorCodedPhoto(RenderableGaiaScene renderableGaiaScene, Fbo fbo, ShaderProgram shaderProgram)
