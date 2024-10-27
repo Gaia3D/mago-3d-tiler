@@ -162,4 +162,10 @@ public class HalfEdgeMesh implements Serializable {
             primitive.getUsedMaterialsIds(resultMaterialsIds);
         }
     }
+
+    public void setMaterialId(int materialId) {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.setMaterialId(materialId);
+        }
+    }
 }

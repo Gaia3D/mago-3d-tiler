@@ -15,6 +15,14 @@ layout (location = 0) out vec4 fragColor;
 //    return res;
 //}
 
+float UnpackDepth32(in vec4 packedDepth) {
+    // Ajusta el valor original que se agregó en el último paso de PackDepth32
+    packedDepth -= 1.0 / 512.0;
+
+    // Recupera el valor de profundidad original
+    return dot(packedDepth, vec4(1.0, 1.0 / 256.0, 1.0 / (256.0 * 256.0), 1.0 / 16777216.0));
+}
+
 vec4 PackDepth32( in float depth )
 {
     depth *= (16777216.0 - 1.0) / (16777216.0);

@@ -13,6 +13,8 @@ import com.gaia3d.basic.halfedge.PlaneType;
 import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaMaterial;
 import com.gaia3d.basic.model.GaiaScene;
+import com.gaia3d.basic.model.GaiaTexture;
+import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.process.tileprocess.Tiler;
@@ -37,11 +39,13 @@ import org.joml.Vector3d;
 import org.opengis.geometry.BoundingBox;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -276,7 +280,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 sceneInfos.add(sceneInfo);
             }
 
-            // make a netSurface node.***
+            // render the sceneInfos and obtain the color and depth images.************************************************************
             TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
             List<BufferedImage> resultImages = new ArrayList<>();
             int bufferedImageType = BufferedImage.TYPE_INT_RGB;
@@ -292,38 +296,168 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             GaiaBoundingBox nodeBBoxLC = node.getLocalBoundingBox();
 
             tilerExtensionModule.getColorAndDepthRender(sceneInfos, bufferedImageType, resultImages, nodeBBoxLC, nodeTMatrix, 1024);
+            BufferedImage bufferedImageColor = resultImages.get(0);
+            BufferedImage bufferedImageDepth = resultImages.get(1);
 
-            // test save resultImages.***
-            int resultMosaicImagesCount = resultImages.size();
-            for(int j = 0; j < resultMosaicImagesCount; j++) {
-                String sceneName = "mosaicRenderTest_" + i + "_" + j;
-                String sceneRawName = sceneName;
-                String imageExtension = "jpg";
-                if(j == 1)
-                {
-                    imageExtension = "png";
-                }
-                File file = new File("D:" + File.separator + "Result_mago3dTiler" + File.separator + sceneRawName + "." + imageExtension);
-                try {
-                    BufferedImage image = resultImages.get(j);
-                    if(j == 0) {
-                        ImageIO.write(image, "JPG", file);
-                    }
-                    else {
-                        ImageIO.write(image, "PNG", file);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            // now, make a halfEdgeScene from the bufferedImages.*********************************************************************
+            String outputPathString = globalOptions.getOutputPath();
+            String netTempPathString = outputPathString + File.separator + "netTemp";
+            Path netTempPath = Paths.get(netTempPathString);
+            // create dirs if not exists.***
+            File netTempFile = netTempPath.toFile();
+            if(!netTempFile.exists())
+            {
+                netTempFile.mkdirs();
             }
 
-            int hola = 0;
+            String netSetFolderPathString = netTempPathString + File.separator + "netSet_nodeDepth_" + nodeDepth + "_" + i;
+            Path netSetFolderPath = Paths.get(netSetFolderPathString);
+            // create dirs if not exists.***
+            File netSetFile = netSetFolderPath.toFile();
+            if(!netSetFile.exists())
+            {
+                netSetFile.mkdirs();
+            }
+            String netSetImagesFolderPathString = netSetFolderPathString + File.separator + "images";
+            Path netSetImagesFolderPath = Paths.get(netSetImagesFolderPathString);
+            // create dirs if not exists.***
+            File netSetImagesFolder = netSetImagesFolderPath.toFile();
+            if(!netSetImagesFolder.exists())
+            {
+                netSetImagesFolder.mkdirs();
+            }
 
+            // save the bufferedImageColor into the netSetImagesFolder.***
+            String imageExtension = "jpg";
+            String imagePath = "netScene_" + nodeDepth + "_" + i + "_color" + "." + imageExtension;
+            try {
+                File file = new File(netSetImagesFolderPathString + File.separator + imagePath);
+                ImageIO.write(bufferedImageColor, "JPG", file);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            float[][] depthValues = bufferedImageToFloatMatrix(bufferedImageDepth);
+            int numCols = bufferedImageDepth.getWidth();
+            int numRows = bufferedImageDepth.getHeight();
+            HalfEdgeScene halfEdgeScene = HalfEdgeUtils.getHalfEdgeSceneRectangularNet(numCols, numRows, depthValues, nodeBBoxLC);
+
+            // now, create material for the halfEdgeScene.***
+            GaiaMaterial material = new GaiaMaterial();
+            List<GaiaTexture> textures = new ArrayList<>();
+            GaiaTexture gaiaTexture = new GaiaTexture();
+            gaiaTexture.setPath(imagePath);
+            gaiaTexture.setParentPath(netSetImagesFolderPathString);
+            textures.add(gaiaTexture);
+            material.getTextures().put(TextureType.DIFFUSE, textures);
+            List<GaiaMaterial> materials = new ArrayList<>();
+            materials.add(material);
+            halfEdgeScene.setMaterials(materials);
+
+            // now set materialId to the halfEdgeScene.***
+            int materialId = 0;
+            halfEdgeScene.setMaterialId(materialId);
+
+            GaiaScene gaiaScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
+            GaiaSet gaiaSet = GaiaSet.fromGaiaScene(gaiaScene);
+            Path netSetPath = Paths.get(netSetFolderPathString + File.separator + "netSet_nodeDepth_" + nodeDepth + "_" + i + ".tmp");
+            gaiaSet.writeFileInThePath(netSetPath);
+
+            // make contents for the node.***
+            List<TileInfo> netTileInfos = new ArrayList<>();
+            TileInfo tileInfoNet = TileInfo.builder().scene(gaiaScene).outputPath(netSetFolderPath).build();
+            tileInfoNet.setTempPath(netSetPath);
+            Matrix4d transformMatrixNet = new Matrix4d(nodeTMatrix);
+            tileInfoNet.setTransformMatrix(transformMatrixNet);
+            tileInfoNet.setBoundingBox(nodeBBoxLC);
+            tileInfoNet.setCartographicBBox(null);
+
+            // make a kmlInfo for the cut scene.***
+            KmlInfo kmlInfoCut = KmlInfo.builder().position(nodeCenterGeoCoordDeg).build();
+            tileInfoNet.setKmlInfo(kmlInfoCut);
+            netTileInfos.add(tileInfoNet);
+
+            ContentInfo contentInfo = new ContentInfo();
+            String nodeCode = node.getNodeCode();
+            contentInfo.setName(nodeCode);
+            LevelOfDetail lodLevel = LevelOfDetail.getByLevel(3);
+            int lodError = lodLevel.getGeometricError();
+            contentInfo.setLod(lodLevel);
+            contentInfo.setBoundingBox(nodeBBoxLC);
+            contentInfo.setNodeCode(node.getNodeCode());
+            contentInfo.setTileInfos(netTileInfos);
+            contentInfo.setRemainTileInfos(null);
+            contentInfo.setTransformMatrix(nodeTMatrix);
+
+            Content content = new Content();
+            content.setUri("data/" + nodeCode + ".b3dm");
+            content.setContentInfo(contentInfo);
+            node.setContent(content);
+
+
+//            // test save resultImages.***
+//            String sceneName = "mosaicRenderTest_" + i + "_color";
+//            String sceneRawName = sceneName;
+//            imageExtension = "jpg";
+//            try {
+//                File file = new File("D:" + File.separator + "Result_mago3dTiler" + File.separator + sceneRawName + "." + imageExtension);
+//                    ImageIO.write(bufferedImageColor, "JPG", file);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//
+//            try {
+//                sceneName = "mosaicRenderTest_" + i + "_depth";
+//                imageExtension = "png";
+//                File file = new File("D:" + File.separator + "Result_mago3dTiler" + File.separator + sceneName + "." + imageExtension);
+//                ImageIO.write(bufferedImageDepth, "PNG", file);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+            int hola = 0;
+        }
+    }
+
+    public float unpackDepth32(float[] packedDepth)
+    {
+        if (packedDepth.length != 4) {
+            throw new IllegalArgumentException("packedDepth debe tener exactamente 4 elementos.");
         }
 
+        // Ajuste del valor final (equivalente a packedDepth - 1.0 / 512.0)
+        for (int i = 0; i < 4; i++) {
+            packedDepth[i] -= 1.0f / 512.0f;
+        }
 
+        // Producto punto para recuperar la profundidad original
+        return packedDepth[0]
+                + packedDepth[1] / 256.0f
+                + packedDepth[2] / (256.0f * 256.0f)
+                + packedDepth[3] / 16777216.0f;
+    }
 
+    private float[][] bufferedImageToFloatMatrix(BufferedImage image)
+    {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        float[][] floatMatrix = new float[width][height];
+        for(int i = 0; i < width; i++)
+        {
+            for(int j = 0; j < height; j++)
+            {
+                Color color = new Color(image.getRGB(i, j), true);
+                float r = color.getRed()/255.0f;
+                float g = color.getGreen()/255.0f;
+                float b = color.getBlue()/255.0f;
+                float a = color.getAlpha()/255.0f;
 
+                float depth = unpackDepth32(new float[]{r, g, b, a});
+                floatMatrix[i][j] = depth;
+                int hola = 0;
+            }
+        }
+
+        return floatMatrix;
     }
 
     private boolean intersectsNodeWithTileInfo(Node node, TileInfo tileInfo)
