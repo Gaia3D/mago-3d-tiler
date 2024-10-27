@@ -1410,7 +1410,7 @@ public class HalfEdgeSurface implements Serializable {
                 hedgesCount = halfEdges.size();
 
                 hedgesCutCount++;
-                if(hedgesCutCount%10 == 0)
+                if(hedgesCutCount%20 == 0)
                 {
                     log.info("hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount + " , currIdx = " + i);
                 }
@@ -1436,7 +1436,7 @@ public class HalfEdgeSurface implements Serializable {
                 splitHalfEdge(hedge, intersectionVertex);
                 hedgesCount = halfEdges.size();
                 hedgesCutCount++;
-                if(hedgesCutCount%10 == 0)
+                if(hedgesCutCount%20 == 0)
                 {
                     log.info("hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount + " , currIdx = " + i);
                 }
