@@ -1,5 +1,6 @@
 package com.gaia3d.basic.halfedge;
 
+import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
@@ -164,40 +165,131 @@ public class HalfEdgeUtils {
         return gaiaFace;
     }
 
-    public static HalfEdgeScene getHalfEdgeSceneRectangularNet(int numCols, int numRows) {
-        HalfEdgeScene halfEdgeScene = new HalfEdgeScene();
-        HalfEdgeNode halfEdgeNode = new HalfEdgeNode();
-        halfEdgeScene.getNodes().add(halfEdgeNode);
+    private static HalfEdgeSurface getHalfEdgeSurfaceRegularNet(int numCols, int numRows, float[][] depthValues, GaiaBoundingBox bbox)
+    {
+        HalfEdgeSurface halfEdgeSurface = new HalfEdgeSurface();
+        double minX = bbox.getMinX();
+        double minY = bbox.getMinY();
+        double maxX = bbox.getMaxX();
+        double maxY = bbox.getMaxY();
+        double minZ = bbox.getMinZ();
+        double maxZ = bbox.getMaxZ();
 
+        double xStep = (maxX - minX) / (numCols - 1);
+        double yStep = (maxY - minY) / (numRows - 1);
+
+        // create vertices.***
+        for (int c = 0; c < numCols; c++) {
+            for (int r = 0; r < numRows; r++) {
+                double x = minX + c * xStep;
+                double y = minY + r * yStep;
+                double depthValue = depthValues[c][r];
+                double z = minZ + (maxZ - minZ) * depthValue;
+                HalfEdgeVertex halfEdgeVertex = new HalfEdgeVertex();
+                halfEdgeVertex.setPosition(new Vector3d(x, y, z));
+
+                // calculate texCoords.***
+                double s = (double) c / (double) (numCols - 1);
+                double t = (double) r / (double) (numRows - 1);
+                halfEdgeVertex.setTexcoords(new Vector2d(s, t));
+
+                halfEdgeSurface.getVertices().add(halfEdgeVertex);
+            }
+        }
+
+        // create halfEdges & halfEdgeFaces.***
+        for (int c = 0; c < numCols - 1; c++) {
+            for (int r = 0; r < numRows - 1; r++) {
+                HalfEdgeFace faceA = new HalfEdgeFace();
+                HalfEdgeFace faceB = new HalfEdgeFace();
+                int index1 = r * numCols + c;
+                int index2 = r * numCols + c + 1;
+                int index3 = (r + 1) * numCols + c + 1;
+                int index4 = (r + 1) * numCols + c;
+
+                HalfEdgeVertex vertex1 = halfEdgeSurface.getVertices().get(index1);
+                HalfEdgeVertex vertex2 = halfEdgeSurface.getVertices().get(index2);
+                HalfEdgeVertex vertex3 = halfEdgeSurface.getVertices().get(index3);
+                HalfEdgeVertex vertex4 = halfEdgeSurface.getVertices().get(index4);
+
+                // face A.***
+                HalfEdge halfEdgeA1 = new HalfEdge();
+                HalfEdge halfEdgeA2 = new HalfEdge();
+                HalfEdge halfEdgeA3 = new HalfEdge();
+                halfEdgeA1.setStartVertex(vertex1);
+                halfEdgeA2.setStartVertex(vertex2);
+                halfEdgeA3.setStartVertex(vertex3);
+                halfEdgeA1.setNext(halfEdgeA2);
+                halfEdgeA2.setNext(halfEdgeA3);
+                halfEdgeA3.setNext(halfEdgeA1);
+                halfEdgeA1.setFace(faceA);
+                halfEdgeA2.setFace(faceA);
+                halfEdgeA3.setFace(faceA);
+                vertex1.setOutingHalfEdge(halfEdgeA1);
+                vertex2.setOutingHalfEdge(halfEdgeA2);
+                vertex3.setOutingHalfEdge(halfEdgeA3);
+                faceA.setHalfEdge(halfEdgeA1);
+                halfEdgeSurface.getHalfEdges().add(halfEdgeA1);
+                halfEdgeSurface.getHalfEdges().add(halfEdgeA2);
+                halfEdgeSurface.getHalfEdges().add(halfEdgeA3);
+                halfEdgeSurface.getFaces().add(faceA);
+
+                // face B.***
+                HalfEdge halfEdgeB1 = new HalfEdge();
+                HalfEdge halfEdgeB2 = new HalfEdge();
+                HalfEdge halfEdgeB3 = new HalfEdge();
+                halfEdgeB1.setStartVertex(vertex1);
+                halfEdgeB2.setStartVertex(vertex3);
+                halfEdgeB3.setStartVertex(vertex4);
+                halfEdgeB1.setNext(halfEdgeB2);
+                halfEdgeB2.setNext(halfEdgeB3);
+                halfEdgeB3.setNext(halfEdgeB1);
+                halfEdgeB1.setFace(faceB);
+                halfEdgeB2.setFace(faceB);
+                halfEdgeB3.setFace(faceB);
+                vertex1.setOutingHalfEdge(halfEdgeB1);
+                vertex3.setOutingHalfEdge(halfEdgeB2);
+                vertex4.setOutingHalfEdge(halfEdgeB3);
+                faceB.setHalfEdge(halfEdgeB1);
+                halfEdgeSurface.getHalfEdges().add(halfEdgeB1);
+                halfEdgeSurface.getHalfEdges().add(halfEdgeB2);
+                halfEdgeSurface.getHalfEdges().add(halfEdgeB3);
+                halfEdgeSurface.getFaces().add(faceB);
+            }
+        }
+
+        halfEdgeSurface.setTwins();
+
+        return halfEdgeSurface;
+    }
+
+    public static HalfEdgeScene getHalfEdgeSceneRectangularNet(int numCols, int numRows, float[][] depthValues, GaiaBoundingBox bbox) {
+        // Create halfEdgeScene.***
+        HalfEdgeScene halfEdgeScene = new HalfEdgeScene();
+        GaiaAttribute gaiaAttribute = new GaiaAttribute();
+        halfEdgeScene.setAttribute(gaiaAttribute);
+        String originalPath = "";
+        halfEdgeScene.setOriginalPath(Path.of(originalPath));
+
+        // Create root node.***
+        HalfEdgeNode halfEdgeRootNode = new HalfEdgeNode();
+        halfEdgeScene.getNodes().add(halfEdgeRootNode);
+
+        // Create node.***
+        HalfEdgeNode halfEdgeNode = new HalfEdgeNode();
+        halfEdgeRootNode.getChildren().add(halfEdgeNode);
+
+        // Create mesh.***
         HalfEdgeMesh halfEdgeMesh = new HalfEdgeMesh();
         halfEdgeNode.getMeshes().add(halfEdgeMesh);
 
+        // Create primitive.***
         HalfEdgePrimitive halfEdgePrimitive = new HalfEdgePrimitive();
         halfEdgeMesh.getPrimitives().add(halfEdgePrimitive);
 
-        GaiaPrimitive gaiaPrimitive = new GaiaPrimitive();
-        halfEdgePrimitive.setMaterialIndex(0);
-        halfEdgePrimitive.setAccessorIndices(0);
-        halfEdgePrimitive.getSurfaces().add(new HalfEdgeSurface());
-
-//        GaiaSurface gaiaSurface = new GaiaSurface();
-//        gaiaPrimitive.getSurfaces().add(gaiaSurface);
-//
-//        GaiaFace gaiaFace = new GaiaFace();
-//        gaiaSurface.getFaces().add(gaiaFace);
-//
-//        List<GaiaVertex> gaiaVertices = new ArrayList<>();
-//        for(int i=0; i<numRows; i++)
-//        {
-//            for(int j=0; j<numCols; j++)
-//            {
-//                GaiaVertex gaiaVertex = new GaiaVertex();
-//                gaiaVertex.setPosition(new double[]{j, i, 0});
-//                gaiaVertices.add(gaiaVertex);
-//            }
-//        }
-//
-//        halfEdgePrimitive.setVertices(gaiaVertices);
+        // Create surface.***
+        HalfEdgeSurface halfEdgeSurface = getHalfEdgeSurfaceRegularNet(numCols, numRows, depthValues, bbox);
+        halfEdgePrimitive.getSurfaces().add(halfEdgeSurface);
 
         return halfEdgeScene;
     }
@@ -867,6 +959,5 @@ public class HalfEdgeUtils {
         // create a copy of the surface.***
         return getCopyHalfEdgeSurface(halfEdgeSurfaceTemp);
     }
-
 
 }

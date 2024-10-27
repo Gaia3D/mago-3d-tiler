@@ -394,4 +394,10 @@ public class HalfEdgeScene  implements Serializable{
 
         return resultMaterials;
     }
+
+    public void setMaterialId(int materialId) {
+        for (HalfEdgeNode node : nodes) {
+            node.setMaterialId(materialId);
+        }
+    }
 }

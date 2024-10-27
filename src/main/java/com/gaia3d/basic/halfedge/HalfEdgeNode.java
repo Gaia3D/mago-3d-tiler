@@ -266,4 +266,13 @@ public class HalfEdgeNode implements Serializable {
             child.getUsedMaterialsIds(resultMaterialsIds);
         }
     }
+
+    public void setMaterialId(int materialId) {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.setMaterialId(materialId);
+        }
+        for (HalfEdgeNode child : children) {
+            child.setMaterialId(materialId);
+        }
+    }
 }

@@ -220,4 +220,7 @@ public class HalfEdgePrimitive implements Serializable {
         }
     }
 
+    public void setMaterialId(int materialId) {
+        this.materialIndex = materialId;
+    }
 }
