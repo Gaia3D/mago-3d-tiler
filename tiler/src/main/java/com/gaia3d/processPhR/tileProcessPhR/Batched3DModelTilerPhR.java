@@ -210,7 +210,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         // End lod 2.---------------------------------------------------------
 
         // Check if is necessary netSurfaces nodes.***********************************************************************
-        for(int depth = maxDepth - lod; depth > 0; depth--)
+        lod = 3;
+        for(int depth = maxDepth - lod; depth >= 0; depth--)
         {
             createNetSurfaceNodes(root, tileInfos, depth);
         }
@@ -293,16 +294,16 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             tilerExtensionModule.getColorAndDepthRender(sceneInfos, bufferedImageType, resultImages, nodeBBoxLC, nodeTMatrix, 1024);
 
             // test save resultImages.***
-            String sceneName = "mosaicRenderTest_" + i;
-            String sceneRawName = sceneName;
-            File file = new File("D:" + File.separator + "Result_mago3dTiler" + File.separator + sceneRawName + ".jpg");
-            try
-            {
-                ImageIO.write(resultImages.get(0), "JPG", file);
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
+            int resultMosaicImagesCount = resultImages.size();
+            for(int j = 0; j < resultMosaicImagesCount; j++) {
+                String sceneName = "mosaicRenderTest_" + i + "_" + j;
+                String sceneRawName = sceneName;
+                File file = new File("D:" + File.separator + "Result_mago3dTiler" + File.separator + sceneRawName + ".jpg");
+                try {
+                    ImageIO.write(resultImages.get(j), "JPG", file);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
 
             int hola = 0;

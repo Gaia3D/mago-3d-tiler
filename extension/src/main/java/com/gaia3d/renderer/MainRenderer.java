@@ -135,7 +135,8 @@ public class MainRenderer implements IAppLogic {
             Vector3d scenePosLC = nodeMatrixInv.transformPosition(scenePosWC, new Vector3d());
 
             // calculate the local sceneTMat.***
-            Matrix4d sceneTMatLC = new Matrix4d(sceneTMat);
+            Matrix4d sceneTMatLC = new Matrix4d();
+            sceneTMatLC.identity();
             sceneTMatLC.m30(scenePosLC.x);
             sceneTMatLC.m31(scenePosLC.y);
             sceneTMatLC.m32(scenePosLC.z);
@@ -168,11 +169,12 @@ public class MainRenderer implements IAppLogic {
             } catch (Exception e) {
                 log.error("Error initializing the engine: " + e.getMessage());
             }
-
-            BufferedImage image = colorFbo.getBufferedImage(bufferedImageType);
-            colorFbo.unbind();
-            resultImages.add(image);
         }
+
+        // take the final rendered colorBuffer of the fbo.***
+        BufferedImage image = colorFbo.getBufferedImage(bufferedImageType);
+        resultImages.add(image);
+        colorFbo.unbind();
     }
 
     public void render(List<GaiaScene> gaiaScenes, int bufferedImageType, List<BufferedImage> resultImages, int maxScreenSize) {

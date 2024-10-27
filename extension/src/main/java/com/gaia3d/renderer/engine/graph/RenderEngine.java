@@ -305,14 +305,10 @@ public class RenderEngine {
             int elemsCount = renderableBuffer.getElementsCount();
             int type = renderableBuffer.getGlType();
 
-            // enable face cull
-            GL20.glEnable(GL20.GL_CULL_FACE);
-
             GL20.glPointSize(10.0f);
             GL20.glDrawElements(GL20.GL_TRIANGLES, elemsCount, type, 0);
 
             // render wireframe
-
             if(renderWireFrame) {
                 uniformsMap.setUniform1i("uColorMode", 0);
                 uniformsMap.setUniform4fv("uOneColor", new Vector4f(0.0f, 0.0f, 0.0f, 1.0f));
@@ -330,7 +326,6 @@ public class RenderEngine {
 
             // return polygonMode to fill
             GL20.glPolygonMode(GL20.GL_FRONT_AND_BACK, GL20.GL_FILL);
-
             GL20.glBindTexture(GL20.GL_TEXTURE_2D, 0); // unbind texture
         }
     }
