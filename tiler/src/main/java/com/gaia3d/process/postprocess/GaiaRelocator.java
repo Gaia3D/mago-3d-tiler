@@ -15,9 +15,9 @@ public class GaiaRelocator implements PostProcess {
     @Override
     public ContentInfo run(ContentInfo contentInfo) {
         GaiaBoundingBox allBoundingBox = contentInfo.getBoundingBox();
-        Vector3d center = allBoundingBox.getCenter();
-        center = GlobeUtils.geographicToCartesianWgs84(center);
-        Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(center);
+        Vector3d centerCartographic = allBoundingBox.getCenter();
+        Vector3d centerCartesian = GlobeUtils.geographicToCartesianWgs84(centerCartographic);
+        Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerCartesian);
         Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
         for (TileInfo tileInfo : contentInfo.getTileInfos()) {
             KmlInfo kmlInfo = tileInfo.getKmlInfo();
@@ -33,9 +33,6 @@ public class GaiaRelocator implements PostProcess {
             Vector3d translation = new Vector3d(x, y, z);
 
             GaiaSet set = tileInfo.getSet();
-            if(set == null) {
-                int hola = 0;
-            }
             set.translate(translation);
         }
         return contentInfo;

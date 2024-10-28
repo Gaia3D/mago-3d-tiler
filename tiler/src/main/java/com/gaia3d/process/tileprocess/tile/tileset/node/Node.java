@@ -175,7 +175,26 @@ public class Node {
         return null;
     }
 
-    public GaiaBoundingBox getLocalBoundingBox()
+    public GaiaBoundingBox calculateCartographicBoundingBox()
+    {
+        if(this.boundingVolume == null) {
+            return null;
+        }
+
+        double[] region = this.boundingVolume.getRegion();
+        double minLonDeg = Math.toDegrees(region[0]);
+        double minLatDeg = Math.toDegrees(region[1]);
+        double maxLonDeg = Math.toDegrees(region[2]);
+        double maxLatDeg = Math.toDegrees(region[3]);
+        double minAlt = region[4];
+        double maxAlt = region[5];
+
+        GaiaBoundingBox bbox = new GaiaBoundingBox(minLonDeg, minLatDeg, minAlt, maxLonDeg, maxLatDeg, maxAlt, false);
+
+        return bbox;
+    }
+
+    public GaiaBoundingBox calculateLocalBoundingBox()
     {
         if(this.boundingVolume == null) {
             return null;

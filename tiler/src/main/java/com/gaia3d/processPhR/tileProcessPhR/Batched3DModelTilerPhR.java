@@ -293,7 +293,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             {
                 nodeTMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(nodePosWC);
             }
-            GaiaBoundingBox nodeBBoxLC = node.getLocalBoundingBox();
+            GaiaBoundingBox nodeBBoxLC = node.calculateLocalBoundingBox();
+            GaiaBoundingBox nodeCartographicBBox = node.calculateCartographicBoundingBox();
 
             tilerExtensionModule.getColorAndDepthRender(sceneInfos, bufferedImageType, resultImages, nodeBBoxLC, nodeTMatrix, 1024);
             BufferedImage bufferedImageColor = resultImages.get(0);
@@ -343,6 +344,10 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             HalfEdgeScene halfEdgeScene = HalfEdgeUtils.getHalfEdgeSceneRectangularNet(numCols, numRows, depthValues, nodeBBoxLC);
 
             // now, create material for the halfEdgeScene.***
+            //GaiaMaterial material = new GaiaMaterial();
+            List<GaiaMaterial> materials = new ArrayList<>();
+            //materials.add(material);
+
             GaiaMaterial material = new GaiaMaterial();
             List<GaiaTexture> textures = new ArrayList<>();
             GaiaTexture gaiaTexture = new GaiaTexture();
@@ -350,7 +355,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             gaiaTexture.setParentPath(netSetImagesFolderPathString);
             textures.add(gaiaTexture);
             material.getTextures().put(TextureType.DIFFUSE, textures);
-            List<GaiaMaterial> materials = new ArrayList<>();
+            material.setId(0);
             materials.add(material);
             halfEdgeScene.setMaterials(materials);
 
@@ -383,7 +388,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             LevelOfDetail lodLevel = LevelOfDetail.getByLevel(3);
             int lodError = lodLevel.getGeometricError();
             contentInfo.setLod(lodLevel);
-            contentInfo.setBoundingBox(nodeBBoxLC);
+            contentInfo.setBoundingBox(nodeCartographicBBox); // must be cartographicBBox.***
             contentInfo.setNodeCode(node.getNodeCode());
             contentInfo.setTileInfos(netTileInfos);
             contentInfo.setRemainTileInfos(null);
@@ -395,25 +400,25 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             node.setContent(content);
 
 
-//            // test save resultImages.***
-//            String sceneName = "mosaicRenderTest_" + i + "_color";
-//            String sceneRawName = sceneName;
-//            imageExtension = "jpg";
-//            try {
-//                File file = new File("D:" + File.separator + "Result_mago3dTiler" + File.separator + sceneRawName + "." + imageExtension);
-//                    ImageIO.write(bufferedImageColor, "JPG", file);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//
-//            try {
-//                sceneName = "mosaicRenderTest_" + i + "_depth";
-//                imageExtension = "png";
-//                File file = new File("D:" + File.separator + "Result_mago3dTiler" + File.separator + sceneName + "." + imageExtension);
-//                ImageIO.write(bufferedImageDepth, "PNG", file);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
+            // test save resultImages.***
+            String sceneName = "mosaicRenderTest_" + i + "_color";
+            String sceneRawName = sceneName;
+            imageExtension = "jpg";
+            try {
+                File file = new File("D:" + File.separator + "Result_mago3dTiler" + File.separator + sceneRawName + "." + imageExtension);
+                    ImageIO.write(bufferedImageColor, "JPG", file);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            try {
+                sceneName = "mosaicRenderTest_" + i + "_depth";
+                imageExtension = "png";
+                File file = new File("D:" + File.separator + "Result_mago3dTiler" + File.separator + sceneName + "." + imageExtension);
+                ImageIO.write(bufferedImageDepth, "PNG", file);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             int hola = 0;
         }
     }
@@ -1124,7 +1129,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
             List<TileInfo> tileInfos = entry.getValue();
 
-            GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
+            GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos); // cartographicBBox.***
             Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
             if (globalOptions.isClassicTransformMatrix()) {
                 rotateX90(transformMatrix);
