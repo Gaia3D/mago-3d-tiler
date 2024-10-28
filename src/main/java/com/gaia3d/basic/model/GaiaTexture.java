@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.lwjgl.opengl.GL20;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -228,5 +229,12 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         clonedTexture.setTextureId(this.textureId);
         clonedTexture.setParentPath(this.parentPath);
         return clonedTexture;
+    }
+
+    public void deleteTexture(GL20 gl) {
+        if (textureId != -1) {
+            gl.glDeleteTextures(textureId);
+            textureId = -1;
+        }
     }
 }

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector4d;
+import org.lwjgl.opengl.GL20;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -130,5 +131,16 @@ public class GaiaMaterial extends MaterialStructure implements Serializable {
         }
 
         return false;
+    }
+
+    public void deleteTexture(GL20 gl) {
+        for (Map.Entry<TextureType, List<GaiaTexture>> entry : textures.entrySet()) {
+            List<GaiaTexture> gaiaTextures = entry.getValue();
+            for (GaiaTexture gaiaTexture : gaiaTextures) {
+                if (gaiaTexture != null) {
+                    gaiaTexture.deleteTexture(gl);
+                }
+            }
+        }
     }
 }
