@@ -179,27 +179,37 @@ public class HalfEdgeUtils {
         double yStep = (maxY - minY) / (numRows - 1);
 
         // create vertices.***
-        for (int c = 0; c < numCols; c++) {
-            for (int r = 0; r < numRows; r++) {
+        List<HalfEdgeVertex> noDataHalfEdgeVertices = new ArrayList<>();
+        for (int r = 0; r < numRows; r++) {
+            for (int c = 0; c < numCols; c++) {
                 double x = minX + c * xStep;
                 double y = minY + r * yStep;
-                double depthValue = depthValues[c][r];
-                double z = minZ + (maxZ - minZ) * depthValue;
+                int rInv = numRows - 1 - r;
+                double depthValue = depthValues[c][rInv];
+
+                double depthValueInv = 1.0 - depthValue;
+                double z = minZ + (maxZ - minZ) * depthValueInv;
                 HalfEdgeVertex halfEdgeVertex = new HalfEdgeVertex();
                 halfEdgeVertex.setPosition(new Vector3d(x, y, z));
 
                 // calculate texCoords.***
                 double s = (double) c / (double) (numCols - 1);
                 double t = (double) r / (double) (numRows - 1);
-                halfEdgeVertex.setTexcoords(new Vector2d(s, t));
+                halfEdgeVertex.setTexcoords(new Vector2d(s, 1.0 - t));
+
+                if(depthValue >= 1.0)
+                {
+                    // this is noData.***
+                    noDataHalfEdgeVertices.add(halfEdgeVertex);
+                }
 
                 halfEdgeSurface.getVertices().add(halfEdgeVertex);
             }
         }
 
         // create halfEdges & halfEdgeFaces.***
-        for (int c = 0; c < numCols - 1; c++) {
-            for (int r = 0; r < numRows - 1; r++) {
+        for (int r = 0; r < numRows - 1; r++) {
+            for (int c = 0; c < numCols - 1; c++) {
                 HalfEdgeFace faceA = new HalfEdgeFace();
                 HalfEdgeFace faceB = new HalfEdgeFace();
                 int index1 = r * numCols + c;
@@ -259,6 +269,47 @@ public class HalfEdgeUtils {
         }
 
         halfEdgeSurface.setTwins();
+
+        // now, delete the noData vertices.***
+        Map<HalfEdgeVertex, List<HalfEdgeFace>> mapHalfEdgeVertexToHalfEdgeFaces = halfEdgeSurface.getMapVertexAllFaces(null);
+        int noDataHalfEdgeVerticesCount = noDataHalfEdgeVertices.size();
+        for(int i = 0; i < noDataHalfEdgeVerticesCount; i++)
+        {
+            HalfEdgeVertex noDataHalfEdgeVertex = noDataHalfEdgeVertices.get(i);
+            List<HalfEdgeFace> noDataHalfEdgeVertexFaces = mapHalfEdgeVertexToHalfEdgeFaces.get(noDataHalfEdgeVertex);
+            if(noDataHalfEdgeVertexFaces == null || noDataHalfEdgeVertexFaces.size() == 0)
+            {
+                continue;
+            }
+
+            int noDataHalfEdgeVertexFacesCount = noDataHalfEdgeVertexFaces.size();
+            for(int j = 0; j < noDataHalfEdgeVertexFacesCount; j++)
+            {
+                HalfEdgeFace noDataHalfEdgeVertexFace = noDataHalfEdgeVertexFaces.get(j);
+                if(noDataHalfEdgeVertexFace.getStatus() == ObjectStatus.DELETED)
+                {
+                    continue;
+                }
+
+                List<HalfEdge> faceHalfEdgesLoop = noDataHalfEdgeVertexFace.getHalfEdgesLoop(null);
+                if(faceHalfEdgesLoop == null || faceHalfEdgesLoop.size() == 0)
+                {
+                    continue;
+                }
+
+                int faceHalfEdgesLoopCount = faceHalfEdgesLoop.size();
+                for(int k = 0; k < faceHalfEdgesLoopCount; k++)
+                {
+                    HalfEdge faceHalfEdge = faceHalfEdgesLoop.get(k);
+                    faceHalfEdge.breakRelations();
+                    faceHalfEdge.setStatus(ObjectStatus.DELETED);
+                }
+                noDataHalfEdgeVertexFace.setStatus(ObjectStatus.DELETED);
+            }
+            noDataHalfEdgeVertex.setStatus(ObjectStatus.DELETED);
+        }
+
+        halfEdgeSurface.removeDeletedObjects();
 
         return halfEdgeSurface;
     }
