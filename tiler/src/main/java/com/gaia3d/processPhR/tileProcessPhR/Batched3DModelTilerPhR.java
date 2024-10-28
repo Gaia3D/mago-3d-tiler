@@ -780,16 +780,20 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             if(gaiaSet == null)
                 continue;
 
-            GaiaAttribute attribute = gaiaSet.getAttribute();
-
-            GaiaScene scene = new GaiaScene(gaiaSet);
-            HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
+            GaiaBoundingBox setBBox = gaiaSet.getBoundingBox();
 
             // create a point with lonDeg, geoCoordPosition.y, 0.0.***
             Vector3d samplePointGeoCoord = new Vector3d(lonDeg, geoCoordPosition.y, 0.0);
             Vector3d samplePointWC = GlobeUtils.geographicToCartesianWgs84(samplePointGeoCoord);
             Vector3d samplePointLC = new Vector3d();
             transformMatrixInv.transformPosition(samplePointWC, samplePointLC);
+
+            // check if the planeLC cuts the setBBox.***
+            if(samplePointLC.x < setBBox.getMinX() || samplePointLC.x > setBBox.getMaxX())
+                continue;
+
+            GaiaScene scene = new GaiaScene(gaiaSet);
+            HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 
             if(this.cutHalfEdgeSceneByPlane(halfEdgeScene, planeType, samplePointLC, tileInfo, cutTempLodPath, cutTileInfos, error))
             {
@@ -873,16 +877,20 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             if(gaiaSet == null)
                 continue;
 
-            GaiaAttribute attribute = gaiaSet.getAttribute();
-
-            GaiaScene scene = new GaiaScene(gaiaSet);
-            HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
+            GaiaBoundingBox setBBox = gaiaSet.getBoundingBox();
 
             // create a point with geoCoordPosition.x, latDeg, 0.0.***
             Vector3d samplePointGeoCoord = new Vector3d(geoCoordPosition.x, latDeg, 0.0);
             Vector3d samplePointWC = GlobeUtils.geographicToCartesianWgs84(samplePointGeoCoord);
             Vector3d samplePointLC = new Vector3d();
             transformMatrixInv.transformPosition(samplePointWC, samplePointLC);
+
+            // check if the planeLC cuts the setBBox.***
+            if(samplePointLC.y < setBBox.getMinY() || samplePointLC.y > setBBox.getMaxY())
+                continue;
+
+            GaiaScene scene = new GaiaScene(gaiaSet);
+            HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 
             if(this.cutHalfEdgeSceneByPlane(halfEdgeScene, planeType, samplePointLC, tileInfo, cutTempLodPath, cutTileInfos, error))
             {

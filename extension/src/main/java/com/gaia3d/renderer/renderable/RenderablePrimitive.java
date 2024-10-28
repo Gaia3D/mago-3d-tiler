@@ -6,6 +6,7 @@ import com.gaia3d.basic.model.GaiaPrimitive;
 import com.gaia3d.basic.types.AttributeType;
 import lombok.Getter;
 import lombok.Setter;
+import org.lwjgl.opengl.GL20;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,5 +34,21 @@ public class RenderablePrimitive  extends RenderableObject{
     public void setAttribTypeRenderableBuffer(AttributeType attribType, RenderableBuffer renderableBuffer)
     {
         mapAttribTypeRenderableBuffer.put(attribType, renderableBuffer);
+    }
+
+    public void deleteGLBuffers() {
+        for (RenderableBuffer renderableBuffer : mapAttribTypeRenderableBuffer.values())
+        {
+            int vboId = renderableBuffer.getVboId();
+            if(vboId != -1)
+            {
+                GL20.glDeleteBuffers(vboId);
+                renderableBuffer.setVboId(-1);
+            }
+        }
+
+        // remove all elements from map.
+        mapAttribTypeRenderableBuffer.clear();
+
     }
 }

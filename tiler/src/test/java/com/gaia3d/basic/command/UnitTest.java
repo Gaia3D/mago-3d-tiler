@@ -900,7 +900,7 @@ class UnitTest {
         String outputPath = "D:\\Result_mago3dTiler\\";
         //String path = "Tile_+000_+000_+000";
         //String path = "splittedTile";
-        String path = "Data_15buildings";
+        String path = "Data_6buildings";
 
         String[] args = new String[]{
                 "-i", inputPath + path,
@@ -944,8 +944,9 @@ class UnitTest {
                 "-it", "obj",
                 "-o", outputPath + path,
                 "-crs", "5186",
+                "-su",
                 "-minLod", "0",
-                "-maxLod", "3",
+                "-maxLod", "0",
                 "-debug"
         };
         Mago3DTilerMain.main(args);

@@ -61,4 +61,18 @@ public class RenderableNode {
             child.calculatePreMultipliedTransformMatrix();
         }
     }
+
+    public void deleteGLBuffers() {
+        for (RenderableMesh renderableMesh : renderableMeshes) {
+            renderableMesh.deleteGLBuffers();
+        }
+
+        for (RenderableNode child : children) {
+            child.deleteGLBuffers();
+        }
+
+        // remove all elements from map.
+        renderableMeshes.clear();
+        children.clear();
+    }
 }

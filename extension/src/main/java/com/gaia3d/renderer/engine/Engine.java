@@ -691,4 +691,10 @@ public class Engine {
             glfwPollEvents();
         }
     }
+
+    public void deleteBuffer(int vboId)
+    {
+        GL20.glDeleteBuffers(vboId);
+    }
+
 }

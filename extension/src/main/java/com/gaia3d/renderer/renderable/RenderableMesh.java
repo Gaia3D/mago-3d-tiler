@@ -26,4 +26,14 @@ public class RenderableMesh {
             resultRenderablePrimitives.add(renderablePrimitive);
         }
     }
+
+
+    public void deleteGLBuffers() {
+        for (RenderablePrimitive renderablePrimitive : renderablePrimitives) {
+            renderablePrimitive.deleteGLBuffers();
+        }
+
+        // remove all elements from map.
+        renderablePrimitives.clear();
+    }
 }

@@ -21,10 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -212,6 +209,12 @@ public class MainRenderer implements IAppLogic {
         BufferedImage depthImage = depthFbo.getBufferedImage(depthBufferedImageType);
         resultImages.add(depthImage);
         depthFbo.unbind();
+
+        // delete renderableGaiaScenes.***
+        for(RenderableGaiaScene renderableScene : renderableGaiaScenes)
+        {
+            renderableScene.deleteGLBuffers();
+        }
     }
 
     public void render(List<GaiaScene> gaiaScenes, int bufferedImageType, List<BufferedImage> resultImages, int maxScreenSize) {
@@ -328,6 +331,12 @@ public class MainRenderer implements IAppLogic {
             resultImages.add(image);
         } catch (Exception e) {
             log.error("Error initializing the engine: " + e.getMessage());
+        }
+
+        // delete renderableGaiaScenes.***
+        for(RenderableGaiaScene renderableScene : renderableGaiaScenes)
+        {
+            renderableScene.deleteGLBuffers();
         }
 
     }
