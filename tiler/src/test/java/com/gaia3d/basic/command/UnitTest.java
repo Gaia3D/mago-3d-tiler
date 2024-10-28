@@ -934,5 +934,22 @@ class UnitTest {
         tilerExtensionModule.getRenderScene(gaiaSceneList, bufferedImageType, maxScreenSize, bufferedImageList);
     }
 
+    @Test
+    void test_objAmyok() {
+        String inputPath = "D:\\temp2\\";
+        String outputPath = "D:\\Result_mago3dTiler\\";
+        String path = "amyok_testOBJ";
+        String[] args = new String[]{
+                "-i", inputPath + path,
+                "-it", "obj",
+                "-o", outputPath + path,
+                "-crs", "5186",
+                "-minLod", "0",
+                "-maxLod", "3",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
 
 }
