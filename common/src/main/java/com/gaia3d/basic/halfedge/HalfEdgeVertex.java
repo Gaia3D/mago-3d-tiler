@@ -205,7 +205,16 @@ public class HalfEdgeVertex implements Serializable {
     }
 
     public boolean changeOutingHalfEdge() {
+        if(this.outingHalfEdge.getStatus() != ObjectStatus.DELETED) {
+            return true;
+        }
+
         List<HalfEdge> outingEdges = this.getOutingHalfEdges(null);
+        if(outingEdges == null)
+        {
+            return false;
+        }
+
         int edgesCount = outingEdges.size();
         for (int i = 0; i < edgesCount; i++) {
             HalfEdge edge = outingEdges.get(i);

@@ -123,6 +123,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             maxLonDeg = minLonDeg + latDegDiff;
         }
 
+        globalBoundingBox = new GaiaBoundingBox(minLonDeg, minLatDeg, globalBoundingBox.getMinZ(), maxLonDeg, maxLatDeg, globalBoundingBox.getMaxZ(), false);
+
         Matrix4d transformMatrix = getTransformMatrix(globalBoundingBox);
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);
@@ -217,7 +219,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         lod = 3;
         for(int depth = maxDepth - lod; depth >= 0; depth--)
         {
-            createNetSurfaceNodes(root, tileInfos, depth);
+            createNetSurfaceNodes(root, tileInfos, depth, maxDepth);
         }
 
 
@@ -241,7 +243,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         return tileset;
     }
 
-    private void createNetSurfaceNodes(Node rootNode, List<TileInfo> tileInfos, int nodeDepth)
+    private void createNetSurfaceNodes(Node rootNode, List<TileInfo> tileInfos, int nodeDepth, int maxDepth)
     {
         // 1rst, find all tileInfos that intersects with the node.***
         List<Node> nodes = new ArrayList<>();
@@ -264,6 +266,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             int tileInfosOfNodeCount = tileInfosOfNode.size();
             if(tileInfosOfNodeCount == 0)
                 continue;
+
+            node.setRefine(Node.RefineType.REPLACE);
 
             // create sceneInfos.***
             List<SceneInfo> sceneInfos = new ArrayList<>();
@@ -342,6 +346,11 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             int numCols = bufferedImageDepth.getWidth();
             int numRows = bufferedImageDepth.getHeight();
             HalfEdgeScene halfEdgeScene = HalfEdgeUtils.getHalfEdgeSceneRectangularNet(numCols, numRows, depthValues, nodeBBoxLC);
+            double hedgeMaxHeightDiff = 2.0;
+            halfEdgeScene.doTrianglesReductionForNetSurface(hedgeMaxHeightDiff);
+
+            if(halfEdgeScene.getTrianglesCount() == 0)
+                continue;
 
             // now, create material for the halfEdgeScene.***
             //GaiaMaterial material = new GaiaMaterial();
@@ -367,6 +376,11 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             GaiaSet gaiaSet = GaiaSet.fromGaiaScene(gaiaScene);
             Path netSetPath = Paths.get(netSetFolderPathString + File.separator + "netSet_nodeDepth_" + nodeDepth + "_" + i + ".tmp");
             gaiaSet.writeFileInThePath(netSetPath);
+
+            //calculate lod.***
+            int lod = maxDepth - nodeDepth;
+            double netSurfaceGeometricError = 2*(lod+1);
+            node.setGeometricError(netSurfaceGeometricError);
 
             // make contents for the node.***
             List<TileInfo> netTileInfos = new ArrayList<>();

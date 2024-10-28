@@ -301,14 +301,21 @@ public class HalfEdgeUtils {
                 for(int k = 0; k < faceHalfEdgesLoopCount; k++)
                 {
                     HalfEdge faceHalfEdge = faceHalfEdgesLoop.get(k);
-                    faceHalfEdge.breakRelations();
                     faceHalfEdge.setStatus(ObjectStatus.DELETED);
+
+                    HalfEdgeVertex startVertex = faceHalfEdge.getStartVertex();
+                    if(startVertex != null)
+                    {
+                        startVertex.changeOutingHalfEdge();
+                    }
                 }
                 noDataHalfEdgeVertexFace.setStatus(ObjectStatus.DELETED);
             }
             noDataHalfEdgeVertex.setStatus(ObjectStatus.DELETED);
         }
 
+        // before remove deleted objects, chack if a vertex has deleted outingHEdge.***
+        halfEdgeSurface.changeOutingHEdgesOfVertexIfHEdgeIsDeleted();
         halfEdgeSurface.removeDeletedObjects();
 
         return halfEdgeSurface;

@@ -270,6 +270,133 @@ public class HalfEdgeSurface implements Serializable {
         vertices.clear();
     }
 
+    public void doTrianglesReductionForNetSurface(double maxHeightDiff)
+    {
+        // 1rst, find possible halfEdges to remove.***
+        // Reasons to remove a halfEdge:
+        // 1. The halfEdge is very short. (small length).
+        // 2. All triangles around the startVertex has a similar normal.
+        //----------------------------------------------------------------
+        int originalFacesCount = faces.size();
+        int originalHalfEdgesCount = halfEdges.size();
+        int originalVerticesCount = vertices.size();
+
+        // Make a map ordered by squaredLength.***
+        TreeMap<Double, List<HalfEdge>> mapHalfEdgesOrderedBySquaredLength = new TreeMap<>();
+        double averageSquaredLength = 0.0;
+        for (HalfEdge halfEdge : halfEdges) {
+            double squaredLength = halfEdge.getSquaredLength();
+            List<HalfEdge> halfEdges = mapHalfEdgesOrderedBySquaredLength.computeIfAbsent(squaredLength, k -> new ArrayList<>());
+            halfEdges.add(halfEdge);
+            averageSquaredLength += squaredLength;
+        }
+        averageSquaredLength /= halfEdges.size();
+        double averageLength = Math.sqrt(averageSquaredLength);
+
+        double minSquaredLength = averageSquaredLength * 10.0;
+        List<List<HalfEdge>> orderedHalfEdgesList = new ArrayList<>(mapHalfEdgesOrderedBySquaredLength.values());
+        List<HalfEdge> orderedHalfEdges = new ArrayList<>();
+
+        int orderedHalfEdgesListCount = orderedHalfEdgesList.size();
+        for (int i = 0; i < orderedHalfEdgesListCount; i++) {
+            List<HalfEdge> halfEdges = orderedHalfEdgesList.get(i);
+            orderedHalfEdges.addAll(halfEdges);
+        }
+        int halfEdgesCount = orderedHalfEdges.size();
+        System.out.println("halfEdgesCount = " + halfEdgesCount);
+        int counterAux = 0;
+        int hedgesCollapsedCount = 0;
+
+        for (int i = 0; i < halfEdgesCount; i++) {
+            HalfEdge halfEdge = orderedHalfEdges.get(i);
+            if (halfEdge.getStatus() == ObjectStatus.DELETED) {
+                continue;
+            }
+
+            if (halfEdge.isDegenerated()) {
+                int hola = 0;
+            }
+
+            if (!halfEdge.hasTwin()) {
+                continue;
+            }
+
+            HalfEdgeVertex startVertex = halfEdge.getStartVertex();
+            PositionType positionType = startVertex.getPositionType();
+            if (positionType != PositionType.INTERIOR) {
+                continue;
+            }
+
+            if (startVertex.getPosition() == null) {
+                int hola = 0;
+            }
+
+
+            if (halfEdge.getSquaredLength() < minSquaredLength)
+            {
+                // check hedge height.***
+                HalfEdgeVertex endVertex = halfEdge.getEndVertex();
+                Vector3d startPosition = startVertex.getPosition();
+                Vector3d endPosition = endVertex.getPosition();
+                double heightDiff = Math.abs(startPosition.z - endPosition.z);
+                if(heightDiff > maxHeightDiff)
+                {
+                    continue;
+                }
+
+                boolean testDebug = false;
+                if (halfEdge.isApplauseEdge()) {
+                    continue;
+                }
+
+                if (collapseHalfEdge(halfEdge, i, testDebug)) {
+                    hedgesCollapsedCount += 6;
+                    counterAux++;
+                }
+                if (counterAux >= 2000) {
+                    counterAux = 0;
+                    System.out.println("halfEdges deleted = " + hedgesCollapsedCount);
+                }
+            }
+//            else {
+//                break;  // the halfEdges are ordered by squaredLength.***
+//            }
+
+
+        }
+
+        System.out.println("*** TOTAL HALFEDGES DELETED = " + hedgesCollapsedCount);
+
+        // delete objects that status is DELETED.***
+        this.removeDeletedObjects();
+
+//        if (!this.checkVertices()) {
+//            int hola = 0;
+//        }
+//
+//        if (!this.checkFaces()) {
+//            int hola = 0;
+//        }
+
+        // Finally check the halfEdges.***
+//        if (!this.TEST_check()) {
+//            int hola = 0;
+//            setItselfAsOutingHalfEdgeToTheStartVertex();
+//            if (!this.TEST_check()) {
+//                int hola2 = 0;
+//            }
+//        }
+
+        int finalFacesCount = faces.size();
+        int finalHalfEdgesCount = halfEdges.size();
+        int finalVerticesCount = vertices.size();
+
+        int facesCountDiff = originalFacesCount - finalFacesCount;
+        int halfEdgesCountDiff = originalHalfEdgesCount - finalHalfEdgesCount;
+        int verticesCountDiff = originalVerticesCount - finalVerticesCount;
+
+        int hola = 0;
+    }
 
     public void doTrianglesReduction() {
 //        if(this.TEST_addRandomPositionToVertices())
@@ -323,23 +450,6 @@ public class HalfEdgeSurface implements Serializable {
             }
 
             if (!halfEdge.hasTwin()) {
-                // this is frontier halfEdge.***
-//                if(this.collapseFrontierHalfEdge(halfEdge, i, false))
-//                {
-//                    hedgesCollapsedCount+= 3;
-//                    counterAux++;
-//
-//                    if(!this.checkVertices())
-//                    {
-//                        int hola = 0;
-////                        setItselfAsOutingHalfEdgeToTheStartVertex();
-////                        if(!this.checkVertices())
-////                        {
-////                            int hola2 = 0;
-////                        }
-//                    }
-//                }
-
                 continue;
             }
 
@@ -1992,7 +2102,7 @@ public class HalfEdgeSurface implements Serializable {
 
             // int hola = 0;
 
-            TEST_checkHalfEdgeLength();
+            //TEST_checkHalfEdgeLength();
 
 
 
@@ -2836,6 +2946,25 @@ public class HalfEdgeSurface implements Serializable {
 
             texCoord.set(relPosX, 1.0 - relPosY);
             vertex.setTexcoords(texCoord);
+        }
+    }
+
+    public void changeOutingHEdgesOfVertexIfHEdgeIsDeleted()
+    {
+        int verticesCount = vertices.size();
+        for (int i = 0; i < verticesCount; i++)
+        {
+            HalfEdgeVertex vertex = vertices.get(i);
+            if (vertex.getStatus() == ObjectStatus.DELETED)
+            {
+                continue;
+            }
+
+            HalfEdge outgoingHEdge = vertex.getOutingHalfEdge();
+            if (outgoingHEdge.getStatus() == ObjectStatus.DELETED)
+            {
+                vertex.changeOutingHalfEdge();
+            }
         }
     }
 

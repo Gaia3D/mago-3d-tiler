@@ -199,6 +199,8 @@ public class GaiaTextureCoordinator {
         // BufferedImage this.atlasImage;
         //--------------------------------------------------------
 
+        boolean isPhotorealistic = globalOptions.isPhotorealistic();
+
         // 1rst, make a list of GaiaBatchImage (splittedImage).********
         List<GaiaBatchImage> splittedImages = new ArrayList<>();
         boolean existPngTextures = false;
@@ -212,7 +214,18 @@ public class GaiaTextureCoordinator {
                 if (texture.getPath().endsWith(".png") || texture.getPath().endsWith(".PNG")) {
                     existPngTextures = true;
                 }
-                bufferedImage = texture.getBufferedImage(lod.getTextureScale());
+                float scaleFactor = lod.getTextureScale();
+
+                // check if the texture is photorealistic and the lod level is greater than 2
+                if(isPhotorealistic)
+                {
+                    int lodLevel = lod.getLevel();
+                    if(lodLevel > 1)
+                    {
+                        scaleFactor = 1.0f;
+                    }
+                }
+                bufferedImage = texture.getBufferedImage(scaleFactor);
             } else {
                 bufferedImage = createShamImage();
             }

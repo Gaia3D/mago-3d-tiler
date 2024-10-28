@@ -35,6 +35,13 @@ public class HalfEdgeScene  implements Serializable{
         }
     }
 
+    public void doTrianglesReductionForNetSurface(double maxHeightDiff)
+    {
+        for (HalfEdgeNode node : nodes) {
+            node.doTrianglesReductionForNetSurface(maxHeightDiff);
+        }
+    }
+
     public List<GaiaMaterial> getCopyMaterials() {
         List<GaiaMaterial> copyMaterials = new ArrayList<>();
         for (GaiaMaterial material : materials) {

@@ -168,4 +168,10 @@ public class HalfEdgeMesh implements Serializable {
             primitive.setMaterialId(materialId);
         }
     }
+
+    public void doTrianglesReductionForNetSurface(double maxHeightDiff) {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.doTrianglesReductionForNetSurface(maxHeightDiff);
+        }
+    }
 }

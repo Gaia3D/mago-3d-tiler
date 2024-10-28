@@ -23,8 +23,8 @@ void main(void) {
         finalColor = texture(texture0, vTexCoord);
     }
 
-    float light = max(abs(dot(vNormal * 1.4, vCamDir)), 0.3);
-    finalColor.rgb *= light;
+//    float light = max(abs(dot(vNormal * 1.4, vCamDir)), 0.3);
+//    finalColor.rgb *= light;
 
     fragColor = finalColor;
 }

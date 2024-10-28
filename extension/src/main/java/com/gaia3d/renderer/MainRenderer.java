@@ -108,7 +108,8 @@ public class MainRenderer implements IAppLogic {
 
         // clear the colorFbo.***
         colorFbo.bind();
-        glClearColor(0.9f, 0.1f, 0.9f, 1.0f);
+        //glClearColor(0.9f, 0.1f, 0.9f, 1.0f);
+        glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // clear the depthFbo.***
@@ -304,7 +305,8 @@ public class MainRenderer implements IAppLogic {
             height[0] = colorFbo.getFboHeight();
 
             glViewport(0, 0, width[0], height[0]);
-            glClearColor(0.9f, 0.1f, 0.9f, 1.0f);
+            //glClearColor(0.9f, 0.1f, 0.9f, 1.0f);
+            glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glEnable(GL_DEPTH_TEST);
 
