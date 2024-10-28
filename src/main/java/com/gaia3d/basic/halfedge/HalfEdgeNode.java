@@ -275,4 +275,13 @@ public class HalfEdgeNode implements Serializable {
             child.setMaterialId(materialId);
         }
     }
+
+    public void doTrianglesReductionForNetSurface(double maxHeightDiff) {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.doTrianglesReductionForNetSurface(maxHeightDiff);
+        }
+        for (HalfEdgeNode child : children) {
+            child.doTrianglesReductionForNetSurface(maxHeightDiff);
+        }
+    }
 }

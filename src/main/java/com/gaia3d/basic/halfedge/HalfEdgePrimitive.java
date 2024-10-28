@@ -223,4 +223,10 @@ public class HalfEdgePrimitive implements Serializable {
     public void setMaterialId(int materialId) {
         this.materialIndex = materialId;
     }
+
+    public void doTrianglesReductionForNetSurface(double maxHeightDiff) {
+        for (HalfEdgeSurface surface : surfaces) {
+            surface.doTrianglesReductionForNetSurface(maxHeightDiff);
+        }
+    }
 }
