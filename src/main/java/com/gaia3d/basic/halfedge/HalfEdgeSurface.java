@@ -2550,6 +2550,11 @@ public class HalfEdgeSurface implements Serializable {
         int maxWidth = getMaxWidth(textureScissorDatas);
         int maxHeight = getMaxHeight(textureScissorDatas);
 
+        if(maxWidth == 0 || maxHeight == 0)
+        {
+            return;
+        }
+
         // compare with the texture size.***
         if(maxWidth * maxHeight > texWidth * texHeight)
         {
