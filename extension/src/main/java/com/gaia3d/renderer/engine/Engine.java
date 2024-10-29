@@ -32,7 +32,6 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
-import javax.xml.bind.JAXBException;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -92,7 +91,7 @@ public class Engine {
         //scene.resize(window.getWidth(), window.getHeight());
     }
 
-    public void run() throws JAXBException, IOException {
+    public void run() throws IOException {
         System.out.println("Hello LWJGL " + Version.getVersion() + "!");
 
         init();
@@ -125,7 +124,7 @@ public class Engine {
         sceneShaderProgram.unbind();
     }
 
-    public void init() throws JAXBException, IOException {
+    public void init() {
         // 에러 콜백을 설정합니다. System.err의 에러 메세지를 출력 기본으로 구현합니다.
         GLFWErrorCallback.createPrint(System.err).set();
 

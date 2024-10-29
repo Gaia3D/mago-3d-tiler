@@ -179,7 +179,6 @@ public class HalfEdgeUtils {
         double yStep = (maxY - minY) / (numRows - 1);
 
         // create vertices.***
-        List<HalfEdgeVertex> noDataHalfEdgeVertices = new ArrayList<>();
         for (int r = 0; r < numRows; r++) {
             for (int c = 0; c < numCols; c++) {
                 double x = minX + c * xStep;
@@ -200,7 +199,7 @@ public class HalfEdgeUtils {
                 if(depthValue >= 1.0)
                 {
                     // this is noData.***
-                    noDataHalfEdgeVertices.add(halfEdgeVertex);
+                    halfEdgeVertex.setStatus(ObjectStatus.DELETED);
                 }
 
                 halfEdgeSurface.getVertices().add(halfEdgeVertex);
@@ -222,100 +221,59 @@ public class HalfEdgeUtils {
                 HalfEdgeVertex vertex3 = halfEdgeSurface.getVertices().get(index3);
                 HalfEdgeVertex vertex4 = halfEdgeSurface.getVertices().get(index4);
 
-                // face A.***
-                HalfEdge halfEdgeA1 = new HalfEdge();
-                HalfEdge halfEdgeA2 = new HalfEdge();
-                HalfEdge halfEdgeA3 = new HalfEdge();
-                halfEdgeA1.setStartVertex(vertex1);
-                halfEdgeA2.setStartVertex(vertex2);
-                halfEdgeA3.setStartVertex(vertex3);
-                halfEdgeA1.setNext(halfEdgeA2);
-                halfEdgeA2.setNext(halfEdgeA3);
-                halfEdgeA3.setNext(halfEdgeA1);
-                halfEdgeA1.setFace(faceA);
-                halfEdgeA2.setFace(faceA);
-                halfEdgeA3.setFace(faceA);
-                vertex1.setOutingHalfEdge(halfEdgeA1);
-                vertex2.setOutingHalfEdge(halfEdgeA2);
-                vertex3.setOutingHalfEdge(halfEdgeA3);
-                faceA.setHalfEdge(halfEdgeA1);
-                halfEdgeSurface.getHalfEdges().add(halfEdgeA1);
-                halfEdgeSurface.getHalfEdges().add(halfEdgeA2);
-                halfEdgeSurface.getHalfEdges().add(halfEdgeA3);
-                halfEdgeSurface.getFaces().add(faceA);
+                if(vertex1.getStatus() != ObjectStatus.DELETED && vertex2.getStatus() != ObjectStatus.DELETED && vertex3.getStatus() != ObjectStatus.DELETED)
+                {
+                    // face A.***
+                    HalfEdge halfEdgeA1 = new HalfEdge();
+                    HalfEdge halfEdgeA2 = new HalfEdge();
+                    HalfEdge halfEdgeA3 = new HalfEdge();
+                    halfEdgeA1.setStartVertex(vertex1);
+                    halfEdgeA2.setStartVertex(vertex2);
+                    halfEdgeA3.setStartVertex(vertex3);
+                    halfEdgeA1.setNext(halfEdgeA2);
+                    halfEdgeA2.setNext(halfEdgeA3);
+                    halfEdgeA3.setNext(halfEdgeA1);
+                    halfEdgeA1.setFace(faceA);
+                    halfEdgeA2.setFace(faceA);
+                    halfEdgeA3.setFace(faceA);
+                    vertex1.setOutingHalfEdge(halfEdgeA1);
+                    vertex2.setOutingHalfEdge(halfEdgeA2);
+                    vertex3.setOutingHalfEdge(halfEdgeA3);
+                    faceA.setHalfEdge(halfEdgeA1);
+                    halfEdgeSurface.getHalfEdges().add(halfEdgeA1);
+                    halfEdgeSurface.getHalfEdges().add(halfEdgeA2);
+                    halfEdgeSurface.getHalfEdges().add(halfEdgeA3);
+                    halfEdgeSurface.getFaces().add(faceA);
+                }
 
-                // face B.***
-                HalfEdge halfEdgeB1 = new HalfEdge();
-                HalfEdge halfEdgeB2 = new HalfEdge();
-                HalfEdge halfEdgeB3 = new HalfEdge();
-                halfEdgeB1.setStartVertex(vertex1);
-                halfEdgeB2.setStartVertex(vertex3);
-                halfEdgeB3.setStartVertex(vertex4);
-                halfEdgeB1.setNext(halfEdgeB2);
-                halfEdgeB2.setNext(halfEdgeB3);
-                halfEdgeB3.setNext(halfEdgeB1);
-                halfEdgeB1.setFace(faceB);
-                halfEdgeB2.setFace(faceB);
-                halfEdgeB3.setFace(faceB);
-                vertex1.setOutingHalfEdge(halfEdgeB1);
-                vertex3.setOutingHalfEdge(halfEdgeB2);
-                vertex4.setOutingHalfEdge(halfEdgeB3);
-                faceB.setHalfEdge(halfEdgeB1);
-                halfEdgeSurface.getHalfEdges().add(halfEdgeB1);
-                halfEdgeSurface.getHalfEdges().add(halfEdgeB2);
-                halfEdgeSurface.getHalfEdges().add(halfEdgeB3);
-                halfEdgeSurface.getFaces().add(faceB);
+                if(vertex1.getStatus() != ObjectStatus.DELETED && vertex3.getStatus() != ObjectStatus.DELETED && vertex4.getStatus() != ObjectStatus.DELETED) {
+
+                    // face B.***
+                    HalfEdge halfEdgeB1 = new HalfEdge();
+                    HalfEdge halfEdgeB2 = new HalfEdge();
+                    HalfEdge halfEdgeB3 = new HalfEdge();
+                    halfEdgeB1.setStartVertex(vertex1);
+                    halfEdgeB2.setStartVertex(vertex3);
+                    halfEdgeB3.setStartVertex(vertex4);
+                    halfEdgeB1.setNext(halfEdgeB2);
+                    halfEdgeB2.setNext(halfEdgeB3);
+                    halfEdgeB3.setNext(halfEdgeB1);
+                    halfEdgeB1.setFace(faceB);
+                    halfEdgeB2.setFace(faceB);
+                    halfEdgeB3.setFace(faceB);
+                    vertex1.setOutingHalfEdge(halfEdgeB1);
+                    vertex3.setOutingHalfEdge(halfEdgeB2);
+                    vertex4.setOutingHalfEdge(halfEdgeB3);
+                    faceB.setHalfEdge(halfEdgeB1);
+                    halfEdgeSurface.getHalfEdges().add(halfEdgeB1);
+                    halfEdgeSurface.getHalfEdges().add(halfEdgeB2);
+                    halfEdgeSurface.getHalfEdges().add(halfEdgeB3);
+                    halfEdgeSurface.getFaces().add(faceB);
+                }
             }
         }
 
         halfEdgeSurface.setTwins();
-
-        // now, delete the noData vertices.***
-        Map<HalfEdgeVertex, List<HalfEdgeFace>> mapHalfEdgeVertexToHalfEdgeFaces = halfEdgeSurface.getMapVertexAllFaces(null);
-        int noDataHalfEdgeVerticesCount = noDataHalfEdgeVertices.size();
-        for(int i = 0; i < noDataHalfEdgeVerticesCount; i++)
-        {
-            HalfEdgeVertex noDataHalfEdgeVertex = noDataHalfEdgeVertices.get(i);
-            List<HalfEdgeFace> noDataHalfEdgeVertexFaces = mapHalfEdgeVertexToHalfEdgeFaces.get(noDataHalfEdgeVertex);
-            if(noDataHalfEdgeVertexFaces == null || noDataHalfEdgeVertexFaces.size() == 0)
-            {
-                continue;
-            }
-
-            int noDataHalfEdgeVertexFacesCount = noDataHalfEdgeVertexFaces.size();
-            for(int j = 0; j < noDataHalfEdgeVertexFacesCount; j++)
-            {
-                HalfEdgeFace noDataHalfEdgeVertexFace = noDataHalfEdgeVertexFaces.get(j);
-                if(noDataHalfEdgeVertexFace.getStatus() == ObjectStatus.DELETED)
-                {
-                    continue;
-                }
-
-                List<HalfEdge> faceHalfEdgesLoop = noDataHalfEdgeVertexFace.getHalfEdgesLoop(null);
-                if(faceHalfEdgesLoop == null || faceHalfEdgesLoop.size() == 0)
-                {
-                    continue;
-                }
-
-                int faceHalfEdgesLoopCount = faceHalfEdgesLoop.size();
-                for(int k = 0; k < faceHalfEdgesLoopCount; k++)
-                {
-                    HalfEdge faceHalfEdge = faceHalfEdgesLoop.get(k);
-                    faceHalfEdge.setStatus(ObjectStatus.DELETED);
-
-                    HalfEdgeVertex startVertex = faceHalfEdge.getStartVertex();
-                    if(startVertex != null)
-                    {
-                        startVertex.changeOutingHalfEdge();
-                    }
-                }
-                noDataHalfEdgeVertexFace.setStatus(ObjectStatus.DELETED);
-            }
-            noDataHalfEdgeVertex.setStatus(ObjectStatus.DELETED);
-        }
-
-        // before remove deleted objects, chack if a vertex has deleted outingHEdge.***
-        halfEdgeSurface.changeOutingHEdgesOfVertexIfHEdgeIsDeleted();
         halfEdgeSurface.removeDeletedObjects();
 
         return halfEdgeSurface;

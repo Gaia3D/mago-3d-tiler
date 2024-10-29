@@ -1,8 +1,11 @@
 package com.gaia3d;
 
+import com.gaia3d.basic.exchangable.SceneInfo;
+import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.model.GaiaTexture;
 import lombok.extern.slf4j.Slf4j;
+import org.joml.Matrix4d;
 
 import java.awt.image.BufferedImage;
 import java.util.List;
@@ -28,6 +31,10 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
         log.debug("This module is not implemented.");
         log.debug("----------------------------------------");
         return null;
+    }
+
+    public void getColorAndDepthRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<BufferedImage> resultImages, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize) {
+
     }
 
     @Override

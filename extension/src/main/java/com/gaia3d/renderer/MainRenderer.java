@@ -1,6 +1,7 @@
 package com.gaia3d.renderer;
 
 import com.gaia3d.basic.exchangable.GaiaSet;
+import com.gaia3d.basic.exchangable.SceneInfo;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
@@ -9,7 +10,6 @@ import com.gaia3d.renderer.engine.IAppLogic;
 import com.gaia3d.renderer.engine.InternDataConverter;
 import com.gaia3d.renderer.engine.Window;
 import com.gaia3d.renderer.engine.dataStructure.GaiaScenesContainer;
-import com.gaia3d.renderer.engine.dataStructure.SceneInfo;
 import com.gaia3d.renderer.engine.fbo.Fbo;
 import com.gaia3d.renderer.engine.fbo.FboManager;
 import com.gaia3d.renderer.engine.graph.ShaderManager;
@@ -45,8 +45,7 @@ public class MainRenderer implements IAppLogic {
 
     }
 
-    public void getColorAndDepthRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<BufferedImage> resultImages, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize)
-    {
+    public void getColorAndDepthRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<BufferedImage> resultImages, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize) {
         // render the scene
         log.info("Rendering the scene...");
 

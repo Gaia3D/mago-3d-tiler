@@ -43,6 +43,10 @@ public class Mago3DTilerMain {
                 Configurator.setLevel(Level.INFO);
             }
 
+            // Test.***********************************
+            Configurator.setLevel(Level.DEBUG); // delete aFTER TEST.!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            //------------------------------------------
+
             printStart();
             if (isVersion) {
                 printVersion();

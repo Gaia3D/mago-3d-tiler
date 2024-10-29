@@ -1,18 +1,13 @@
 package com.gaia3d;
 
+import com.gaia3d.basic.exchangable.SceneInfo;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaScene;
-import com.gaia3d.basic.model.GaiaTexture;
 import com.gaia3d.renderer.MainRenderer;
-import com.gaia3d.renderer.engine.InternDataConverter;
-import com.gaia3d.renderer.engine.dataStructure.SceneInfo;
-import com.gaia3d.renderer.renderable.RenderableGaiaScene;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
-import org.joml.Vector3d;
 
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 

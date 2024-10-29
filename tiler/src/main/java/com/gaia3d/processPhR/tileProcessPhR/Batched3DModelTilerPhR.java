@@ -6,11 +6,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.TilerExtensionModule;
 import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.exchangable.GaiaSet;
+import com.gaia3d.basic.exchangable.SceneInfo;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.halfedge.HalfEdgeScene;
 import com.gaia3d.basic.halfedge.HalfEdgeUtils;
 import com.gaia3d.basic.halfedge.PlaneType;
-import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaMaterial;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.model.GaiaTexture;
@@ -27,8 +27,6 @@ import com.gaia3d.process.tileprocess.tile.tileset.asset.Asset;
 import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
-import com.gaia3d.renderer.engine.dataStructure.SceneInfo;
-import com.gaia3d.renderer.engine.fbo.Fbo;
 import com.gaia3d.util.DecimalUtils;
 import com.gaia3d.util.GlobeUtils;
 import lombok.NoArgsConstructor;
@@ -36,7 +34,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
-import org.opengis.geometry.BoundingBox;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -310,7 +307,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             Path netTempPath = Paths.get(netTempPathString);
             // create dirs if not exists.***
             File netTempFile = netTempPath.toFile();
-            if(!netTempFile.exists())
+            if (!netTempFile.exists())
             {
                 netTempFile.mkdirs();
             }
@@ -720,6 +717,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 KmlInfo kmlInfoCut = KmlInfo.builder().position(geoCoordPosition).build();
                 tileInfoCut.setKmlInfo(kmlInfoCut);
                 cutTileInfos.add(tileInfoCut);
+
+                halfEdgeCutScene.deleteObjects();
             }
 
             return true;
@@ -767,7 +766,11 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 path = tileInfo.getTempPath();
             }
 
-            GaiaBoundingBox boundingBox = tileInfo.getBoundingBox();
+            GaiaBoundingBox setBBox = tileInfo.getBoundingBox();
+            if(setBBox == null) {
+                log.error("Error : setBBox is null.");
+                int hola = 0;
+            }
             KmlInfo kmlInfo = tileInfo.getKmlInfo();
             Vector3d geoCoordPosition = kmlInfo.getPosition();
             Vector3d posWC = GlobeUtils.geographicToCartesianWgs84(geoCoordPosition);
@@ -775,12 +778,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             Matrix4d transformMatrixInv = new Matrix4d(transformMatrix);
             transformMatrixInv.invert();
 
-            // load the file.***
-            GaiaSet gaiaSet = GaiaSet.readFile(path);
-            if(gaiaSet == null)
-                continue;
-
-            GaiaBoundingBox setBBox = gaiaSet.getBoundingBox();
 
             // create a point with lonDeg, geoCoordPosition.y, 0.0.***
             Vector3d samplePointGeoCoord = new Vector3d(lonDeg, geoCoordPosition.y, 0.0);
@@ -792,6 +789,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             if(samplePointLC.x < setBBox.getMinX() || samplePointLC.x > setBBox.getMaxX())
                 continue;
 
+            // load the file.***
+            GaiaSet gaiaSet = GaiaSet.readFile(path);
+            if(gaiaSet == null)
+                continue;
+
+
             GaiaScene scene = new GaiaScene(gaiaSet);
             HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 
@@ -800,6 +803,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 deletedTileInfoMap.put(tileInfo, tileInfo);
                 someSceneCutted = true;
             }
+
+            halfEdgeScene.deleteObjects();
 
             int hola = 0;
         }
@@ -864,7 +869,11 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 path = tileInfo.getTempPath();
             }
 
-            GaiaBoundingBox boundingBox = tileInfo.getBoundingBox();
+            GaiaBoundingBox setBBox = tileInfo.getBoundingBox();
+            if(setBBox == null) {
+                log.error("Error : setBBox is null.");
+                int hola = 0;
+            }
             KmlInfo kmlInfo = tileInfo.getKmlInfo();
             Vector3d geoCoordPosition = kmlInfo.getPosition();
             Vector3d posWC = GlobeUtils.geographicToCartesianWgs84(geoCoordPosition);
@@ -872,12 +881,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             Matrix4d transformMatrixInv = new Matrix4d(transformMatrix);
             transformMatrixInv.invert();
 
-            // load the file.***
-            GaiaSet gaiaSet = GaiaSet.readFile(path);
-            if(gaiaSet == null)
-                continue;
-
-            GaiaBoundingBox setBBox = gaiaSet.getBoundingBox();
 
             // create a point with geoCoordPosition.x, latDeg, 0.0.***
             Vector3d samplePointGeoCoord = new Vector3d(geoCoordPosition.x, latDeg, 0.0);
@@ -889,6 +892,11 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             if(samplePointLC.y < setBBox.getMinY() || samplePointLC.y > setBBox.getMaxY())
                 continue;
 
+            // load the file.***
+            GaiaSet gaiaSet = GaiaSet.readFile(path);
+            if(gaiaSet == null)
+                continue;
+
             GaiaScene scene = new GaiaScene(gaiaSet);
             HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 
@@ -898,6 +906,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 someSceneCutted = true;
             }
 
+            halfEdgeScene.deleteObjects();
 
             int hola = 0;
         }
