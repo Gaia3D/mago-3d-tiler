@@ -121,4 +121,22 @@ class DefaultTest {
             log.debug(e.getMessage());
         }
     }
+
+    @Test
+    void zAxisUp() {
+        ClassLoader classLoader = getClass().getClassLoader();
+        File input = new File(classLoader.getResource("./sample-xyz").getFile());
+        File output = new File(classLoader.getResource("./sample-output").getFile());
+        String args[] = {
+                "-input", input.getAbsolutePath(),
+                "-output", output.getAbsolutePath(),
+                //"-multiThread",
+        };
+        try {
+            Mago3DTilerMain.main(args);
+        } catch (Exception e) {
+            log.debug("success test.");
+            log.debug(e.getMessage());
+        }
+    }
 }

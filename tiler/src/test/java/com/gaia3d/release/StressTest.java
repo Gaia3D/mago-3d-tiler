@@ -154,21 +154,21 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-crs", "32648",
-                "-pointSkip", "1",
+                //"-pointSkip", "4",
                 "-debug"
         };
         Mago3DTilerMain.main(args);
     }
 
     @Test
-    void testSangAmLasAll() {
+    void testSangAmLas() {
         String path = "SANGAM-LAS";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-crs", "5186",
-                "-pointSkip", "8",
+                //"-pointSkip", "4",
                 "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
                 "-debug"
         };
@@ -176,15 +176,70 @@ public class StressTest {
     }
 
     @Test
-    void testHighwayLasAll() {
+    void testHighwayLas() {
         String path = "HIGHWAY-LAS";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-crs", "5186",
-                "-pointSkip", "8",
+                //"-pointSkip", "4",
                 "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testSewoonLas() {
+        String path = "SEWOON-LAS";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "las",
+                "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
+                "-pointSkip", "1",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testSangjiUniLas() {
+        String path = "SANGJI-UNI-LAS";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "las",
+                "-crs", "5186",
+                //"-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testNdtpLas() {
+        String path = "NDTP-LAS";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "las",
+                "-crs", "5186",
+                //"-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testSinChonLas() {
+        String path = "SINCHON-LAS";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "las",
+                //"-crs", "5186",
+                "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
+                //"-pointSkip", "8",
+                //"-debug"
         };
         Mago3DTilerMain.main(args);
     }
