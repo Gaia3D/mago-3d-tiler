@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaAttribute;
+import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.jgltf.GltfWriter;
@@ -67,7 +68,7 @@ public class Instanced3DModel implements TileModel {
         Vector3d center = contentInfo.getBoundingBox().getCenter();
         Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
         Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
-        Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
+        //Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
 
         AtomicInteger positionIndex = new AtomicInteger();
         AtomicInteger normalUpIndex = new AtomicInteger();
@@ -76,24 +77,49 @@ public class Instanced3DModel implements TileModel {
         AtomicInteger batchIdIndex = new AtomicInteger();
         for (TileInfo tileInfo : tileInfos) {
             //y-up
-            Vector3d normalUp = new Vector3d(0, 0, 1);
+            //Vector3d normalUp = new Vector3d(0, 1, 0);
+            //Vector3d normalRight = new Vector3d(1, 0, 0);
+
+            Vector3d normalUp = new Vector3d(0, 0, -1);
             Vector3d normalRight = new Vector3d(1, 0, 0);
 
             // GPS Coordinates
             KmlInfo kmlInfo = tileInfo.getKmlInfo();
             Vector3d position = kmlInfo.getPosition();
             Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
-            Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv, new Vector3d());
+            Vector3d localPosition = positionWorldCoordinate.sub(centerWorldCoordinate, new Vector3d());
+
+            //Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv, new Vector3d());
 
             // local position(Z-UP), gltf position(Y-UP)
-            Vector3d localPositionYUp = new Vector3d(localPosition.x, -localPosition.z, localPosition.y);
+            Vector3d localPositionYUp = new Vector3d(localPosition.x, localPosition.y, localPosition.z);
+
+
+
+            Matrix3d worldRotationMatrix3d = transformMatrix.get3x3(new Matrix3d());
+            //Matrix3d xRotationMatrix3d = new Matrix3d();
+            //xRotationMatrix3d.identity();
+            //xRotationMatrix3d.rotateX(Math.toRadians(-90));
+            //xRotationMatrix3d.mul(worldRotationMatrix3d, worldRotationMatrix3d);
+            //Matrix4d worldRotationMatrix4d = new Matrix4d(worldRotationMatrix3d);
+
+
 
             // rotate
             double headingValue = Math.toRadians(kmlInfo.getHeading());
             Matrix3d rotationMatrix = new Matrix3d();
-            rotationMatrix.rotateY(headingValue);
-            normalUp = rotationMatrix.transform(normalUp);
-            normalRight = rotationMatrix.transform(normalRight);
+            rotationMatrix.rotateZ(headingValue);
+            worldRotationMatrix3d.mul(rotationMatrix, worldRotationMatrix3d);
+
+            normalUp = worldRotationMatrix3d.transform(normalUp);
+            normalRight = worldRotationMatrix3d.transform(normalRight);
+
+            //normalUp = new Vector3d(worldRotationMatrix3d.m00(), worldRotationMatrix3d.m10(), worldRotationMatrix3d.m20());
+            //normalRight = new Vector3d(worldRotationMatrix3d.m01(), worldRotationMatrix3d.m11(), worldRotationMatrix3d.m21());
+
+
+            //normalUp = rotationMatrix.transform(normalUp);
+            //normalRight = rotationMatrix.transform(normalRight);
 
             // scale
             double scale = kmlInfo.getScaleZ();
@@ -101,6 +127,10 @@ public class Instanced3DModel implements TileModel {
             positions[positionIndex.getAndIncrement()] = (float) localPositionYUp.x;
             positions[positionIndex.getAndIncrement()] = (float) localPositionYUp.y;
             positions[positionIndex.getAndIncrement()] = (float) localPositionYUp.z;
+
+            /*positions[positionIndex.getAndIncrement()] = (float) 0;
+            positions[positionIndex.getAndIncrement()] = (float) 0;
+            positions[positionIndex.getAndIncrement()] = (float) 0;*/
 
             normalUps[normalUpIndex.getAndIncrement()] = (float) normalUp.x;
             normalUps[normalUpIndex.getAndIncrement()] = (float) normalUp.y;
@@ -139,7 +169,30 @@ public class Instanced3DModel implements TileModel {
         System.arraycopy(normalRightBytes, 0, featureTableBytes, positionBytes.length + normalUpBytes.length, normalRightBytes.length);
         System.arraycopy(scaleBytes, 0, featureTableBytes, positionBytes.length + normalUpBytes.length + normalRightBytes.length, scaleBytes.length);
 
+
+        GaiaScene scene = tileInfos.get(0).getScene();
         GaiaFeatureTable featureTable = new GaiaFeatureTable();
+        if (!globalOptions.isClassicTransformMatrix()) {
+            /* relative to center */
+            Matrix4d worldTransformMatrix = transformMatrix;
+            /*Matrix3d rotationMatrix3d = worldTransformMatrix.get3x3(new Matrix3d());
+            Matrix3d xRotationMatrix3d = new Matrix3d();
+            xRotationMatrix3d.identity();
+            xRotationMatrix3d.rotateX(Math.toRadians(-90));
+            xRotationMatrix3d.mul(rotationMatrix3d, rotationMatrix3d);
+            Matrix4d rotationMatrix4d = new Matrix4d(rotationMatrix3d);*/
+
+            //GaiaNode rootNode = scene.getNodes().get(0); // z-up
+            //Matrix4d sceneTransformMatrix = rootNode.getTransformMatrix();
+            //rotationMatrix4d.mul(sceneTransformMatrix, sceneTransformMatrix);
+
+            double[] rtcCenter = new double[3];
+            rtcCenter[0] = worldTransformMatrix.m30();
+            rtcCenter[1] = worldTransformMatrix.m31();
+            rtcCenter[2] = worldTransformMatrix.m32();
+            featureTable.setRctCenter(rtcCenter);
+        }
+
         featureTable.setInstancesLength(instanceLength);
         featureTable.setEastNorthUp(false);
         featureTable.setPosition(new Position(0));
@@ -261,37 +314,24 @@ public class Instanced3DModel implements TileModel {
                     int lod = contentInfo.getLod().getLevel();
                     if (lod > 0) {
                         float octreeMinSize = minSize;
-//                        if (lod == 1) {
-//                            octreeMinSize = minSize / 9.0f;
-//                        } else if (lod == 2) {
-//                            octreeMinSize = minSize / 5.0f;
-//                        }else if (lod == 3) {
-//                            octreeMinSize = minSize / 3.0f;
-//                        }else if (lod == 4) {
-//                            octreeMinSize = minSize / 2.0f;
-//                        }
-
                         if (lod == 1) {
                             octreeMinSize = minSize / 8.0f;
                         } else if (lod == 2) {
                             octreeMinSize = minSize / 4.0f;
-                        }else if (lod == 3) {
+                        } else if (lod == 3) {
                             octreeMinSize = minSize / 2.0f;
-                        }else if (lod == 4) {
-                            octreeMinSize = minSize / 1.0f;
+                        } else if (lod == 4) {
+                            octreeMinSize = minSize;
                         }
-
-                        GaiaScene simpleScene = GeometryUtils.getGaiaSceneLego(resultGaiaScene, octreeMinSize);
-                        resultGaiaScene = simpleScene;
+                        resultGaiaScene = GeometryUtils.getGaiaSceneLego(resultGaiaScene, octreeMinSize);
                     }
                 }
 
-                boolean isRotateUpAxis = GlobalOptions.getInstance().isSwapUpAxis();
-                if(isRotateUpAxis)
-                {
+                /*boolean isRotateUpAxis = GlobalOptions.getInstance().isSwapUpAxis();
+                if (isRotateUpAxis) {
                     Matrix4d transformMatrix = resultGaiaScene.getNodes().get(0).getTransformMatrix();
                     transformMatrix.rotateX(Math.toRadians(-90));
-                }
+                }*/
                 gltfWriter.writeGlb(resultGaiaScene, file);
             }
         } catch (Exception e) {

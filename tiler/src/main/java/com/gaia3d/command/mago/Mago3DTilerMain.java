@@ -44,7 +44,7 @@ public class Mago3DTilerMain {
             }
 
             // Test.***********************************
-            Configurator.setLevel(Level.DEBUG); // delete aFTER TEST.!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            // Configurator.setLevel(Level.DEBUG); // delete aFTER TEST.!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             //------------------------------------------
 
             printStart();
