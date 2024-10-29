@@ -203,7 +203,7 @@ public class AssimpConverter implements Converter {
             if (filename.isEmpty()) {
                 filename = fileNameWithoutExtension + "_extracted_" + i + "." + ext;
             } else {
-                File file = new File(filename);
+                File file = new File(filename + "." + ext);
                 filename = file.getName();
             }
 
