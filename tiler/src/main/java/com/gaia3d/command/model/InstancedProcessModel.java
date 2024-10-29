@@ -28,7 +28,7 @@ public class InstancedProcessModel implements ProcessFlowModel {
     public void run() throws IOException {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         FormatType inputFormat = globalOptions.getInputFormat();
-        boolean isRotateUpAxis = globalOptions.isSwapUpAxis();
+        //boolean isRotateUpAxis = globalOptions.isSwapUpAxis();
 
         Converter converter = getConverter(inputFormat);
         AttributeReader kmlReader = getAttributeReader(inputFormat);
@@ -41,9 +41,7 @@ public class InstancedProcessModel implements ProcessFlowModel {
 
         List<PreProcess> preProcessors = new ArrayList<>();
         preProcessors.add(new GaiaTileInfoInitiator());
-        if (isRotateUpAxis) {
-            preProcessors.add(new GaiaRotator());
-        }
+        preProcessors.add(new GaiaRotator());
         preProcessors.add(new GaiaTexCoordCorrector());
         preProcessors.add(new GaiaInstanceTranslator(geoTiffs));
 

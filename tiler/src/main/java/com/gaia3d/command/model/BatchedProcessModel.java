@@ -7,7 +7,6 @@ import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.assimp.LargeMeshConverter;
 import com.gaia3d.converter.geometry.citygml.CityGmlConverter;
 import com.gaia3d.converter.geometry.geojson.GeoJsonConverter;
-import com.gaia3d.converter.geometry.geojson.GeoJsonSurfaceConverter;
 import com.gaia3d.converter.geometry.indoorgml.IndoorGmlConverter;
 import com.gaia3d.converter.geometry.shape.ShapeConverter;
 import com.gaia3d.converter.kml.AttributeReader;
@@ -49,13 +48,18 @@ public class BatchedProcessModel implements ProcessFlowModel {
         preProcessors.add(new GaiaTileInfoInitiator());
         preProcessors.add(new GaiaTexCoordCorrector());
         preProcessors.add(new GaiaScaler());
+
+
+
         if (globalOptions.isLargeMesh()) {
             if (isRotateUpAxis) {
                 preProcessors.add(new GaiaRotator());
+                //preProcessors.add(new GaiaRotatorOld());
             }
             preProcessors.add(new GaiaTranslatorExact(geoTiffs));
         } else {
             preProcessors.add(new GaiaRotator());
+            //preProcessors.add(new GaiaRotatorOld());
             preProcessors.add(new GaiaTranslator(geoTiffs));
         }
 

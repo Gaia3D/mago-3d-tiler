@@ -112,6 +112,7 @@ public class GlobalOptions {
 
     private boolean swapUpAxis = false; // swap up axis flag
     private boolean flipUpAxis = false; // reverse up axis flag
+    private double rotateX = 0; // degrees
 
     private boolean refineAdd = false; // 3dTiles refine option ADD fix flag
     private boolean flipCoordinate = false; // flip coordinate flag for 2D Data
@@ -273,33 +274,43 @@ public class GlobalOptions {
         instance.setDebug(command.hasOption(ProcessOptions.DEBUG.getArgName()));
         instance.setDebugLod(DEFAULT_DEBUG_LOD);
 
-        boolean isSwapUpAxis = true;
+        boolean isSwapUpAxis = false;
         boolean isFlipUpAxis = false;
         boolean isRefineAdd = false;
 
         if (command.hasOption(ProcessOptions.FLIP_UP_AXIS.getArgName())) {
             isFlipUpAxis = true;
         }
+        if (command.hasOption(ProcessOptions.SWAP_UP_AXIS.getArgName())) {
+            isSwapUpAxis = true;
+        }
         if (command.hasOption(ProcessOptions.REFINE_ADD.getArgName())) {
             isRefineAdd = true;
         }
+
+        double rotateXAxis = command.hasOption(ProcessOptions.ROTATE_X_AXIS.getArgName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.ROTATE_X_AXIS.getArgName())) : 0;
 
         // force setting
         if (instance.getInputFormat().equals(FormatType.GEOJSON) || instance.getInputFormat().equals(FormatType.SHP) || instance.getInputFormat().equals(FormatType.CITYGML) || instance.getInputFormat().equals(FormatType.INDOORGML)) {
             isSwapUpAxis = false;
             isFlipUpAxis = false;
+            rotateXAxis = -90;
             isRefineAdd = true;
         }
 
-        if (command.hasOption(ProcessOptions.SWAP_UP_AXIS.getArgName())) {
+        /*if (command.hasOption(ProcessOptions.SWAP_UP_AXIS.getArgName())) {
             isSwapUpAxis = !isSwapUpAxis;
-        }
+        }*/
 
         instance.setSwapUpAxis(isSwapUpAxis);
         instance.setFlipUpAxis(isFlipUpAxis);
+        instance.setRotateX(rotateXAxis);
         instance.setRefineAdd(isRefineAdd);
         instance.setGlb(command.hasOption(ProcessOptions.DEBUG_GLB.getArgName()));
         instance.setFlipCoordinate(command.hasOption(ProcessOptions.FLIP_COORDINATE.getArgName()));
+
+
+
 
         if (command.hasOption(ProcessOptions.MULTI_THREAD_COUNT.getArgName())) {
             instance.setMultiThreadCount(Byte.parseByte(command.getOptionValue(ProcessOptions.MULTI_THREAD_COUNT.getArgName())));
