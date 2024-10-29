@@ -36,8 +36,7 @@ public class GaiaRotator implements PreProcess {
         }
         recentScene = gaiaScene;
 
-        log.info("rotateX: {}, isSwapUpAxis: {}, isFlipUpAxis: {}", rotateX, isSwapUpAxis, isFlipUpAxis);
-
+        //log.info("rotateX: {}, isSwapUpAxis: {}, isFlipUpAxis: {}", rotateX, isSwapUpAxis, isFlipUpAxis);
         // 90 degree rotation
         //double rotateX = isSwapUpAxis ? 90 : 0;
         // Reverse the rotation direction
@@ -46,8 +45,8 @@ public class GaiaRotator implements PreProcess {
         GaiaNode rootNode = gaiaScene.getNodes().get(0);
         Matrix4d transform = rootNode.getTransformMatrix();
 
-        log.info("before transform");
-        log.info(transform.toString());
+        //log.info("before transform");
+        //log.info(transform.toString());
 
         rotateX(transform, rotateX);
 
@@ -56,8 +55,8 @@ public class GaiaRotator implements PreProcess {
         tileInfo.setTransformMatrix(transform);
         gaiaScene.getBoundingBox();
 
-        log.info("after transform");
-        log.info(transform.toString());
+        //log.info("after transform");
+        //log.info(transform.toString());
         return tileInfo;
     }
 
