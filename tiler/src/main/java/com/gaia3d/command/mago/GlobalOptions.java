@@ -37,7 +37,7 @@ public class GlobalOptions {
     private static final int DEFAULT_MAX_NODE_DEPTH = 32;
     private static final int DEFAULT_MAX_INSTANCE = 512;
 
-    private static final int DEFAULT_POINT_LIMIT = 65536;
+    private static final int DEFAULT_POINT_LIMIT = 65536 / 2;
     private static final int DEFAULT_POINT_SCALE = 2;
     private static final int DEFAULT_POINT_SKIP = 4;
 
