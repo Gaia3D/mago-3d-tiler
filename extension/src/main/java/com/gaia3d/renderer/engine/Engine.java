@@ -87,6 +87,14 @@ public class Engine {
 
     }
 
+    public void deleteObjects()
+    {
+        fboManager.deleteAllFbos();
+        shaderManager.deleteAllShaderPrograms();
+        screenQuad.cleanup();
+        window.cleanup();
+    }
+
     private void resize() {
         //scene.resize(window.getWidth(), window.getHeight());
     }
@@ -131,72 +139,72 @@ public class Engine {
 
         long windowHandle = window.getWindowHandle();
         // 마우스 위치 콜백
-        glfwSetCursorPosCallback(windowHandle, (window, xpos, ypos) -> {
-            if (this.midButtonClicked) {
-                Vector3d pivot = new Vector3d(0.0d,0.0d,-1.0d);
-                float xoffset = (float) (this.midButtonXpos - xpos) * 0.01f;
-                float yoffset = (float) (this.midButtonYpos - ypos) * 0.01f;
-                camera.rotationOrbit(xoffset, yoffset, pivot);
-            }
-            this.midButtonXpos = xpos;
-            this.midButtonYpos = ypos;
-
-            if(this.leftButtonClicked)
-            {
-                // translate camera
-                Vector3d translation = new Vector3d((xpos - this.leftButtonXpos) * 0.01f, (ypos - this.leftButtonYpos) * 0.01f, 0);
-                //translation.y *= -1;
-                camera.translate(translation);
-            }
-
-            this.leftButtonXpos = xpos;
-            this.leftButtonYpos = ypos;
-        });
+//        glfwSetCursorPosCallback(windowHandle, (window, xpos, ypos) -> {
+//            if (this.midButtonClicked) {
+//                Vector3d pivot = new Vector3d(0.0d,0.0d,-1.0d);
+//                float xoffset = (float) (this.midButtonXpos - xpos) * 0.01f;
+//                float yoffset = (float) (this.midButtonYpos - ypos) * 0.01f;
+//                camera.rotationOrbit(xoffset, yoffset, pivot);
+//            }
+//            this.midButtonXpos = xpos;
+//            this.midButtonYpos = ypos;
+//
+//            if(this.leftButtonClicked)
+//            {
+//                // translate camera
+//                Vector3d translation = new Vector3d((xpos - this.leftButtonXpos) * 0.01f, (ypos - this.leftButtonYpos) * 0.01f, 0);
+//                //translation.y *= -1;
+//                camera.translate(translation);
+//            }
+//
+//            this.leftButtonXpos = xpos;
+//            this.leftButtonYpos = ypos;
+//        });
 
 
         // 마우스 버튼 이벤트
-        glfwSetMouseButtonCallback(windowHandle, (window, key, action, mode) -> {
-            if (key == GLFW_MOUSE_BUTTON_3 && action == GLFW_PRESS) {
-                this.midButtonClicked = true;
-            } else if (key == GLFW_MOUSE_BUTTON_3 && action == GLFW_RELEASE) {
-                this.midButtonClicked = false;
-            }
-
-            // check left button
-            if (key == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
-                this.leftButtonClicked = true;
-            } else if (key == GLFW_MOUSE_BUTTON_1 && action == GLFW_RELEASE) {
-                this.leftButtonClicked = false;
-            }
-
-        });
-
-        glfwSetScrollCallback(windowHandle, (window, xoffset, yoffset) -> {
-            camera.moveFront((float)yoffset * 10.0f);
-        });
-
-        // 키보드 콜백 이벤트를 설정합니다. 키를 눌렀을 때, 누르고 있을 때, 떼었을 때에 따라 바꿔줍니다.
-        glfwSetKeyCallback(windowHandle, (window, key, scancode, action, mods) -> {
-            if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-                glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
-            }
-
-            float rotationOffset = 0.1f;
-            Vector3d pivot = new Vector3d(0.0d,0.0d,-1.0d);
-            if (key == GLFW_KEY_W) {
-                //camera.rotationOrbit(0, -rotationOffset, pivot);
-                camera.moveFront(-0.1f);
-            }
-            if (key == GLFW_KEY_A) {
-                camera.rotationOrbit(rotationOffset, 0, pivot);
-            }
-            if (key == GLFW_KEY_S) {
-                camera.rotationOrbit(0, rotationOffset, pivot);
-            }
-            if (key == GLFW_KEY_D) {
-                camera.rotationOrbit(-rotationOffset, 0, pivot);
-            }
-        });
+//        glfwSetMouseButtonCallback(windowHandle, (window, key, action, mode) -> {
+//            if (key == GLFW_MOUSE_BUTTON_3 && action == GLFW_PRESS) {
+//                this.midButtonClicked = true;
+//            } else if (key == GLFW_MOUSE_BUTTON_3 && action == GLFW_RELEASE) {
+//                this.midButtonClicked = false;
+//            }
+//
+//            // check left button
+//            if (key == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
+//                this.leftButtonClicked = true;
+//            } else if (key == GLFW_MOUSE_BUTTON_1 && action == GLFW_RELEASE) {
+//                this.leftButtonClicked = false;
+//            }
+//
+//        });
+//
+//        glfwSetScrollCallback(windowHandle, (window, xoffset, yoffset) -> {
+//            camera.moveFront((float)yoffset * 10.0f);
+//        });
+//
+//        // 키보드 콜백 이벤트를 설정합니다. 키를 눌렀을 때, 누르고 있을 때, 떼었을 때에 따라 바꿔줍니다.
+//        glfwSetKeyCallback(windowHandle, (window, key, scancode, action, mods) -> {
+//            if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+//                glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
+//            }
+//
+//            float rotationOffset = 0.1f;
+//            Vector3d pivot = new Vector3d(0.0d,0.0d,-1.0d);
+//            if (key == GLFW_KEY_W) {
+//                //camera.rotationOrbit(0, -rotationOffset, pivot);
+//                camera.moveFront(-0.1f);
+//            }
+//            if (key == GLFW_KEY_A) {
+//                camera.rotationOrbit(rotationOffset, 0, pivot);
+//            }
+//            if (key == GLFW_KEY_S) {
+//                camera.rotationOrbit(0, rotationOffset, pivot);
+//            }
+//            if (key == GLFW_KEY_D) {
+//                camera.rotationOrbit(-rotationOffset, 0, pivot);
+//            }
+//        });
 
         setupShader();
 
@@ -218,12 +226,12 @@ public class Engine {
         if(fboManager == null)
         {
             fboManager = new FboManager();
-            int windowWidth = window.getWidth();
-            int windowHeight = window.getHeight();
-            fboManager.createFbo("colorRender", windowWidth, windowHeight);
-
-            // now, create a 500 x 500 fbo for colorCode render.***
-            fboManager.createFbo("colorCodeRender", 500, 500);
+//            int windowWidth = window.getWidth();
+//            int windowHeight = window.getHeight();
+//            fboManager.createFbo("colorRender", windowWidth, windowHeight);
+//
+//            // now, create a 500 x 500 fbo for colorCode render.***
+//            fboManager.createFbo("colorCodeRender", 500, 500);
         }
 
         if(screenQuad == null) {
@@ -267,29 +275,29 @@ public class Engine {
         //sceneShaderProgram.getUniformsMap().setUniform1i("texture0", 0); // texture channel 0
 
         // create a screen shader program.*************************************************************************************************
-        shaderModuleDataList = new ArrayList<>();
-        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(shaderFolder + "screenV330.vert", GL20.GL_VERTEX_SHADER));
-        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(shaderFolder + "screenV330.frag", GL20.GL_FRAGMENT_SHADER));
-        ShaderProgram screenShaderProgram = shaderManager.createShaderProgram("screen", shaderModuleDataList);
-
-        uniformNames = new ArrayList<>();
-        uniformNames.add("texture0");
-        screenShaderProgram.createUniforms(uniformNames);
-        screenShaderProgram.validate();
+//        shaderModuleDataList = new ArrayList<>();
+//        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(shaderFolder + "screenV330.vert", GL20.GL_VERTEX_SHADER));
+//        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(shaderFolder + "screenV330.frag", GL20.GL_FRAGMENT_SHADER));
+//        ShaderProgram screenShaderProgram = shaderManager.createShaderProgram("screen", shaderModuleDataList);
+//
+//        uniformNames = new ArrayList<>();
+//        uniformNames.add("texture0");
+//        screenShaderProgram.createUniforms(uniformNames);
+//        screenShaderProgram.validate();
 
         // create a colorCode shader program.****************************************************************************************************
-        shaderModuleDataList = new ArrayList<>();
-        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(shaderFolder + "colorCodeV330.vert", GL20.GL_VERTEX_SHADER));
-        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(shaderFolder + "colorCodeV330.frag", GL20.GL_FRAGMENT_SHADER));
-        ShaderProgram colorCodeShaderProgram = shaderManager.createShaderProgram("colorCode", shaderModuleDataList);
-
-        uniformNames = new ArrayList<>();
-        uniformNames.add("uProjectionMatrix");
-        uniformNames.add("uModelViewMatrix");
-        uniformNames.add("uObjectMatrix");
-        uniformNames.add("uColorCode");
-        colorCodeShaderProgram.createUniforms(uniformNames);
-        colorCodeShaderProgram.validate();
+//        shaderModuleDataList = new ArrayList<>();
+//        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(shaderFolder + "colorCodeV330.vert", GL20.GL_VERTEX_SHADER));
+//        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(shaderFolder + "colorCodeV330.frag", GL20.GL_FRAGMENT_SHADER));
+//        ShaderProgram colorCodeShaderProgram = shaderManager.createShaderProgram("colorCode", shaderModuleDataList);
+//
+//        uniformNames = new ArrayList<>();
+//        uniformNames.add("uProjectionMatrix");
+//        uniformNames.add("uModelViewMatrix");
+//        uniformNames.add("uObjectMatrix");
+//        uniformNames.add("uColorCode");
+//        colorCodeShaderProgram.createUniforms(uniformNames);
+//        colorCodeShaderProgram.validate();
 
         // create depthShader.****************************************************************************************************
         shaderModuleDataList = new ArrayList<>();

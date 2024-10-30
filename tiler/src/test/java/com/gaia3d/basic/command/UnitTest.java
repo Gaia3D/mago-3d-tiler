@@ -900,7 +900,7 @@ class UnitTest {
         String outputPath = "D:\\Result_mago3dTiler\\";
         //String path = "Tile_+000_+000_+000";
         //String path = "splittedTile";
-        String path = "Data_6buildings";
+        String path = "Data_mosaic_1";
 
         String[] args = new String[]{
                 "-i", inputPath + path,

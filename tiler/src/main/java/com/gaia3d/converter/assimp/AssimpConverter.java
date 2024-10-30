@@ -15,6 +15,7 @@ import org.joml.Vector3d;
 import org.joml.Vector4d;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
+import org.lwjgl.system.MemoryUtil;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -58,7 +59,7 @@ public class AssimpConverter implements Converter {
 
         assert aiScene != null;
         GaiaScene gaiaScene = convertScene(aiScene, path, file.getName());
-        aiScene.free();
+        //aiScene.free();
         gaiaScene.setOriginalPath(file.toPath());
 
         GaiaAttribute attribute = new GaiaAttribute();
@@ -70,6 +71,8 @@ public class AssimpConverter implements Converter {
 
         List<GaiaScene> gaiaScenes = new ArrayList<>();
         gaiaScenes.add(gaiaScene);
+
+        Assimp.aiFreeScene(aiScene);
         return gaiaScenes;
     }
 
@@ -178,7 +181,28 @@ public class AssimpConverter implements Converter {
         node.setTransformMatrix(rootTransform);
         node.recalculateTransform();
         gaiaScene.getNodes().add(node);
+
+        //TEST_DeleteAiNode(aiScene, aiNode, formatType);
+
         return gaiaScene;
+    }
+
+    private void TEST_DeleteAiNode(AIScene aiScene, AINode aiNode, FormatType formatType) {
+        PointerBuffer aiMaterials = aiScene.mMaterials();
+        MemoryUtil.memFree(aiMaterials);
+
+        int numMeshes = aiNode.mNumMeshes();
+        int numChildren = aiNode.mNumChildren();
+
+        if (numMeshes < 1 && numChildren < 1) {
+            return;
+        }
+
+        PointerBuffer aiMeshes = aiScene.mMeshes();
+        MemoryUtil.memFree(aiMeshes);
+
+        PointerBuffer childrenBuffer = aiNode.mChildren();
+        MemoryUtil.memFree(childrenBuffer);
     }
 
     private List<String> getEmbeddedTexturePath(AIScene aiScene, String filePath, String fileName) {
@@ -215,7 +239,6 @@ public class AssimpConverter implements Converter {
                 log.error(e.getMessage());
             }
             embeddedTextures.add(filename);
-            aiTexture.free();
         }
         return embeddedTextures;
     }
@@ -440,6 +463,7 @@ public class AssimpConverter implements Converter {
             surface.getFaces().add(face);
         }
 
+
         int mNumVertices = aiMesh.mNumVertices();
         AIVector3D.Buffer verticesBuffer = aiMesh.mVertices();
         AIVector3D.Buffer normalsBuffer = aiMesh.mNormals();
@@ -465,6 +489,7 @@ public class AssimpConverter implements Converter {
             } else {
                 vertex.setNormal(new Vector3d());
             }
+
 
             if (textureCoordiantesBuffer != null) {
                 AIVector3D textureCoordinate = textureCoordiantesBuffer.get(i);

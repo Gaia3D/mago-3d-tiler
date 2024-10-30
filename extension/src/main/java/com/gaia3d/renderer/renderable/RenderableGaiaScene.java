@@ -51,9 +51,19 @@ public class RenderableGaiaScene {
                         GL20.glDeleteTextures(textureId);
                         gaiaTexture.setTextureId(-1);
                     }
+                    gaiaTexture.setByteBuffer(null);
+                    gaiaTexture.setBufferedImage(null);
                 }
             }
         }
+
+        int materialsCount = this.materials.size();
+        for (int i = 0; i < materialsCount; i++) {
+            GaiaMaterial material = this.materials.get(i);
+            material.clear();
+        }
+
+        materials.clear();
     }
 
 }

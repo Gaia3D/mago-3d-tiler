@@ -25,4 +25,19 @@ public class FboManager {
         // 1rst check if exist
         return mapNameFbos.get(name);
     }
+
+    public void deleteFbo(String name) {
+        Fbo fbo = mapNameFbos.get(name);
+        if (fbo != null) {
+            fbo.cleanup();
+            mapNameFbos.remove(name);
+        }
+    }
+
+    public void deleteAllFbos() {
+        for (Fbo fbo : mapNameFbos.values()) {
+            fbo.cleanup();
+        }
+        mapNameFbos.clear();
+    }
 }

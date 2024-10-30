@@ -49,6 +49,16 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
     public final GlobalOptions globalOptions = GlobalOptions.getInstance();
+    private Vector3d vec3Aux1 = new Vector3d();
+    private Vector3d vec3Aux2 = new Vector3d();
+    private Vector3d vec3Aux3 = new Vector3d();
+    private Vector3d vec3Aux4 = new Vector3d();
+    private Vector3d vec3Aux5 = new Vector3d();
+    private Vector3d vec3Aux6 = new Vector3d();
+    private Vector3d vec3Aux7 = new Vector3d();
+    private Vector3d vec3Aux8 = new Vector3d();
+    private Vector3d vec3Aux9 = new Vector3d();
+    private Vector3d vec3Aux10 = new Vector3d();
 
     //@Override
     public Tileset run_old(List<TileInfo> tileInfos) throws FileNotFoundException {
@@ -134,7 +144,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
         root.setGeometricError(geometricError);
 
-        double minLatLength = 150.0; // test value
+        double minLatLength = 250.0; // test value
         makeQuadTree(root, minLatLength);
 
         // lod 0.**********************************************************************************************************
@@ -410,6 +420,13 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             content.setContentInfo(contentInfo);
             node.setContent(content);
 
+            // delete scenes.***
+            halfEdgeScene.deleteObjects();
+            gaiaScene.clear();
+            gaiaSet.clear();
+
+            System.gc();
+
 
             // test save resultImages.***
             String sceneName = "mosaicRenderTest_" + i + "_color";
@@ -561,15 +578,22 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             try {
                 GaiaSet gaiaSet = GaiaSet.readFile(path);
                 GaiaScene scene = new GaiaScene(gaiaSet);
+
                 HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
                 halfEdgeScene.scissorTextures();
 
                 // once scene is scissored, must change the materials of the gaiaSet and overwrite the file.***
                 GaiaScene scissorsScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
-                gaiaSet = GaiaSet.fromGaiaScene(scissorsScene);
+                GaiaSet gaiaSet2 = GaiaSet.fromGaiaScene(scissorsScene);
 
                 // overwrite the file.***
-                gaiaSet.writeFileInThePath(path);
+                gaiaSet2.writeFileInThePath(path);
+
+                scene.clear();
+                gaiaSet.clear();
+                halfEdgeScene.deleteObjects();
+                scissorsScene.clear();
+                gaiaSet2.clear();
 
                 if (gaiaSet == null)
                     continue;
@@ -619,6 +643,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             if(cutRectangleCakeByLongitudeDeg(tileInfos, lod, lonDeg))
             {
                 someSceneCut = true;
+                System.gc();
             }
         }
 
@@ -630,6 +655,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             if(cutRectangleCakeByLatitudeDeg(tileInfos, lod, latDeg))
             {
                 someSceneCut = true;
+                System.gc();
             }
         }
 
@@ -805,6 +831,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
 
             halfEdgeScene.deleteObjects();
+            scene.clear();
+            gaiaSet.clear();
 
             int hola = 0;
         }
@@ -907,6 +935,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
 
             halfEdgeScene.deleteObjects();
+            scene.clear();
+            gaiaSet.clear();
 
             int hola = 0;
         }

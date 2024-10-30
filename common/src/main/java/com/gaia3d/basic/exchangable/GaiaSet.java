@@ -253,6 +253,12 @@ public class GaiaSet implements Serializable {
     public void clear() {
         this.bufferDataList.forEach(GaiaBufferDataSet::clear);
         this.bufferDataList.clear();
+
+        int materialsCount = this.materials.size();
+        for (int i = 0; i < materialsCount; i++) {
+            GaiaMaterial material = this.materials.get(i);
+            material.clear();
+        }
         this.materials.clear();
     }
 }

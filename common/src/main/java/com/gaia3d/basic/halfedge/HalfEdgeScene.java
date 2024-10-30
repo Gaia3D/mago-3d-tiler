@@ -62,6 +62,11 @@ public class HalfEdgeScene  implements Serializable{
             node.deleteObjects();
         }
         nodes.clear();
+        int materialsCount = this.materials.size();
+        for (int i = 0; i < materialsCount; i++) {
+            GaiaMaterial material = this.materials.get(i);
+            material.clear();
+        }
         materials.clear();
     }
 

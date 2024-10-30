@@ -83,45 +83,49 @@ public class Window {
             this.width = opts.width;
             this.height = opts.height;
         } else {
-            glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
+            //glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
+            glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
             GLFWVidMode vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
             width = vidMode.width();
             height = vidMode.height();
         }
+
+        this.width = 1;
+        this.height = 1;
 
         windowHandle = glfwCreateWindow(width, height, title, NULL, NULL);
         if (windowHandle == NULL) {
             throw new RuntimeException("Failed to create the GLFW window");
         }
 
-        glfwSetFramebufferSizeCallback(windowHandle, (window, w, h) -> resized(w, h));
+        //glfwSetFramebufferSizeCallback(windowHandle, (window, w, h) -> resized(w, h));
 
         glfwSetErrorCallback((int errorCode, long msgPtr) ->
                 //Logger.error("Error code [{}], msg [{}]", errorCode, MemoryUtil.memUTF8(msgPtr))
                 System.out.println("Error code [" + errorCode + "], msg [" + MemoryUtil.memUTF8(msgPtr) + "]")
         );
 
-        glfwSetKeyCallback(windowHandle, (window, key, scancode, action, mods) -> {
-            keyCallBack(key, action);
-        });
+//        glfwSetKeyCallback(windowHandle, (window, key, scancode, action, mods) -> {
+//            keyCallBack(key, action);
+//        });
 
         glfwMakeContextCurrent(windowHandle); // all drawing happens in the current context
+//
+//        if (opts.fps > 0) {
+//            glfwSwapInterval(0);
+//        } else {
+//            glfwSwapInterval(1);
+//        }
 
-        if (opts.fps > 0) {
-            glfwSwapInterval(0);
-        } else {
-            glfwSwapInterval(1);
-        }
+        //glfwShowWindow(windowHandle);
 
-        glfwShowWindow(windowHandle);
-
-        int[] arrWidth = new int[1];
-        int[] arrHeight = new int[1];
-        glfwGetFramebufferSize(windowHandle, arrWidth, arrHeight);
-        width = arrWidth[0];
-        height = arrHeight[0];
-
-        mouseInput = new MouseInput(windowHandle);
+//        int[] arrWidth = new int[1];
+//        int[] arrHeight = new int[1];
+//        glfwGetFramebufferSize(windowHandle, arrWidth, arrHeight);
+//        width = arrWidth[0];
+//        height = arrHeight[0];
+//
+//        mouseInput = new MouseInput(windowHandle);
     }
 
     public void glMakeContextCurrent() {

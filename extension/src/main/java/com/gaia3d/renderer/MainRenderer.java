@@ -155,11 +155,15 @@ public class MainRenderer implements IAppLogic {
             renderableGaiaScenes.clear();
 
             // load the set file.***
+            GaiaSet gaiaSetToDelete = null;
+            GaiaScene gaiaSceneToDelete = null;
             Path path = Paths.get(scenePath);
             try
             {
                 GaiaSet gaiaSet = GaiaSet.readFile(path);
+                gaiaSetToDelete = gaiaSet;
                 GaiaScene gaiaScene = new GaiaScene(gaiaSet);
+                gaiaSceneToDelete = gaiaScene;
                 GaiaNode gaiaNode = gaiaScene.getNodes().get(0);
                 gaiaNode.setTransformMatrix(sceneTMatLC);
                 gaiaNode.setPreMultipliedTransformMatrix(sceneTMatLC);
@@ -194,6 +198,22 @@ public class MainRenderer implements IAppLogic {
             } catch (Exception e) {
                 log.error("Error initializing the engine: " + e.getMessage());
             }
+
+            // delete renderableGaiaScenes.***
+            for(RenderableGaiaScene renderableScene : renderableGaiaScenes)
+            {
+                renderableScene.deleteGLBuffers();
+            }
+
+            if(gaiaSetToDelete != null)
+            {
+                gaiaSetToDelete.clear();
+            }
+
+            if(gaiaSceneToDelete != null)
+            {
+                gaiaSceneToDelete.clear();
+            }
         }
 
         // take the final rendered colorBuffer of the fbo.***
@@ -214,6 +234,8 @@ public class MainRenderer implements IAppLogic {
         {
             renderableScene.deleteGLBuffers();
         }
+
+        engine.deleteObjects();
     }
 
     public void render(List<GaiaScene> gaiaScenes, int bufferedImageType, List<BufferedImage> resultImages, int maxScreenSize) {
@@ -255,6 +277,7 @@ public class MainRenderer implements IAppLogic {
         if(gaiaBoundingBox == null)
         {
             log.error("Error: gaiaBoundingBox is null.");
+            engine.deleteObjects();
             return;
         }
 
@@ -337,6 +360,8 @@ public class MainRenderer implements IAppLogic {
         {
             renderableScene.deleteGLBuffers();
         }
+
+        engine.deleteObjects();
 
     }
 

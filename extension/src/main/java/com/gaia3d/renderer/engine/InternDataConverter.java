@@ -11,6 +11,7 @@ import org.lwjgl.opengl.GL20;
 
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -26,7 +27,14 @@ public class InternDataConverter {
 
         // materials
         List<GaiaMaterial> materials = gaiaScene.getMaterials();
-        renderableGaiaScene.setMaterials(materials);
+        List<GaiaMaterial> newMaterials = new ArrayList<>();
+        for(int i=0; i<materials.size(); i++)
+        {
+            GaiaMaterial material = materials.get(i);
+            GaiaMaterial newMaterial = material.clone();
+            newMaterials.add(newMaterial);
+        }
+        renderableGaiaScene.setMaterials(newMaterials);
 
         // nodes
         List<GaiaNode> nodes = gaiaScene.getNodes();

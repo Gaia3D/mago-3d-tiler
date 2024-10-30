@@ -114,4 +114,15 @@ public class Fbo {
 
         return image;
     }
+
+    public void cleanup()
+    {
+        GL30.glDeleteTextures(colorTextureId);
+
+        // Eliminar el render buffer de profundidad
+        GL30.glDeleteRenderbuffers(depthRenderBufferId);
+
+        // Eliminar el framebuffer
+        GL30.glDeleteFramebuffers(fboId);
+    }
 }

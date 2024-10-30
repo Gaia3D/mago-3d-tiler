@@ -251,4 +251,10 @@ public class GaiaMesh extends MeshStructure {
     public void scissorTextures(List<GaiaMaterial> materials) {
 
     }
+
+    public void deleteObjects() {
+        for (GaiaPrimitive primitive : primitives) {
+            primitive.deleteObjects();
+        }
+    }
 }

@@ -129,45 +129,19 @@ public class HalfEdgeSurface implements Serializable {
         }
 
         // now manage the removed halfEdges.************************************************************************
-        List<HalfEdge> removedHalfEdges = singleHalfEdges;
-        Map<HalfEdgeVertex, HalfEdgeVertex> mapVertexToNewVertex = new HashMap<>();
-        int removedHalfEdgesCount = removedHalfEdges.size();
-        for (int i = 0; i < removedHalfEdgesCount; i++) {
-            HalfEdge removedHalfEdge = removedHalfEdges.get(i);
-            HalfEdgeVertex startVertex = removedHalfEdge.getStartVertex();
-            List<HalfEdge> outingEdgesByMap = mapVertexOutingHEdges.get(startVertex);
-            List<HalfEdge> outingEdgesByVertex = startVertex.getOutingHalfEdges(null);
-
-            int hola = 0;
-        }
-
-        // now manage the removed halfEdges.************************************************************************
 //        List<HalfEdge> removedHalfEdges = singleHalfEdges;
 //        Map<HalfEdgeVertex, HalfEdgeVertex> mapVertexToNewVertex = new HashMap<>();
 //        int removedHalfEdgesCount = removedHalfEdges.size();
-//        for (int i = 0; i < removedHalfEdgesCount; i++)
-//        {
+//        for (int i = 0; i < removedHalfEdgesCount; i++) {
 //            HalfEdge removedHalfEdge = removedHalfEdges.get(i);
 //            HalfEdgeVertex startVertex = removedHalfEdge.getStartVertex();
-//            if(mapVertexToNewVertex.get(startVertex) == null)
-//            {
-//                HalfEdgeVertex newVertex = new HalfEdgeVertex();
-//                newVertex.copyFrom(startVertex);
-//                newVertex.setOutingHalfEdge(removedHalfEdge);
-//                newVertex.note = "newVertex";
-//                vertices.add(newVertex);
-//                mapVertexToNewVertex.put(startVertex, newVertex);
-//            }
-//
-//            HalfEdgeVertex newVertex = mapVertexToNewVertex.get(startVertex);
-//            removedHalfEdge.setStartVertex(newVertex);
-//            newVertex.setOutingHalfEdge(removedHalfEdge);
-//            removedHalfEdge.note = "removedHalfEdge";
+//            List<HalfEdge> outingEdgesByMap = mapVertexOutingHEdges.get(startVertex);
+//            List<HalfEdge> outingEdgesByVertex = startVertex.getOutingHalfEdges(null);
 //
 //            int hola = 0;
 //        }
-//
-//        this.setTwinsBetweenHalfEdges(removedHalfEdges);
+
+
 
         int hola = 0;
     }
@@ -506,27 +480,27 @@ public class HalfEdgeSurface implements Serializable {
         // delete objects that status is DELETED.***
         this.removeDeletedObjects();
 
-        if (!this.checkVertices()) {
-            int hola = 0;
-//            setItselfAsOutingHalfEdgeToTheStartVertex();
-//            if(!this.checkVertices())
-//            {
-//                int hola2 = 0;
-//            }
-        }
+//        if (!this.checkVertices()) {
+//            int hola = 0;
+////            setItselfAsOutingHalfEdgeToTheStartVertex();
+////            if(!this.checkVertices())
+////            {
+////                int hola2 = 0;
+////            }
+//        }
 
-        if (!this.checkFaces()) {
-            int hola = 0;
-        }
+//        if (!this.checkFaces()) {
+//            int hola = 0;
+//        }
 
         // Finally check the halfEdges.***
-        if (!this.TEST_check()) {
-            int hola = 0;
-            setItselfAsOutingHalfEdgeToTheStartVertex();
-            if (!this.TEST_check()) {
-                int hola2 = 0;
-            }
-        }
+//        if (!this.TEST_check()) {
+//            int hola = 0;
+//            setItselfAsOutingHalfEdgeToTheStartVertex();
+//            if (!this.TEST_check()) {
+//                int hola2 = 0;
+//            }
+//        }
 
         int finalFacesCount = faces.size();
         int finalHalfEdgesCount = halfEdges.size();
@@ -2626,6 +2600,7 @@ public class HalfEdgeSurface implements Serializable {
         textureAtlas.createImage(maxWidth, maxHeight, imageType);
 
         // draw the images into textureAtlas.***
+        Graphics2D g2d = textureAtlas.getBufferedImage().createGraphics();
         textureScissorDatasCount = textureScissorDatas.size();
         for (int i = 0; i < textureScissorDatasCount; i++) {
             GaiaTextureScissorData textureScissorData = textureScissorDatas.get(i);
@@ -2647,11 +2622,9 @@ public class HalfEdgeSurface implements Serializable {
                 int hola = 0;
             }
             BufferedImage subImage = image.getSubimage(subImageMinX, subImageMinY, subImageW, subImageH);
-            Graphics2D g2d = textureAtlas.getBufferedImage().createGraphics();
             g2d.drawImage(subImage, (int) batchedBoundary.getMinX(), (int) batchedBoundary.getMinY(), null);
-            g2d.dispose();
-
         }
+        g2d.dispose();
 
         // write the textureAtlas into a file.***
         String imageParentPath = texture.getParentPath();

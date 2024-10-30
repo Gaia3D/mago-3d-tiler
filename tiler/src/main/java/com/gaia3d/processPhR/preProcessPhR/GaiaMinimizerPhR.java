@@ -36,6 +36,7 @@ public class GaiaMinimizerPhR implements PreProcess {
         if (scene != null) {
             log.info("Welding vertices in GaiaScene");
 
+
             // 1rst, must weld vertices.***
             boolean checkTexCoord = true;
             boolean checkNormal = false;
@@ -87,8 +88,6 @@ public class GaiaMinimizerPhR implements PreProcess {
 
             log.info("Doing triangles reduction in HalfEdgeScene");
             halfEdgeScene.doTrianglesReduction();
-
-            //halfEdgeScene.TEST_cutScene();
 
 
             log.info("Making GaiaScene from HalfEdgeScene");
@@ -192,7 +191,6 @@ public class GaiaMinimizerPhR implements PreProcess {
                 }
             }
 
-
             log.info("Making GaiaScene from HalfEdgeScene");
             GaiaScene sceneLod2 = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
             halfEdgeScene.deleteObjects();
@@ -211,12 +209,30 @@ public class GaiaMinimizerPhR implements PreProcess {
                 tempSetLod0 = null;
             }
 
+            if (tempSetLod1 != null) {
+                tempSetLod1.clear();
+                tempSetLod1 = null;
+            }
+
+            if (tempSetLod2 != null) {
+                tempSetLod2.clear();
+                tempSetLod2 = null;
+            }
+
             if (scene != null) {
                 scene.clear();
                 scene = null;
             }
 
+            if(sceneLod2 != null)
+            {
+                sceneLod2.clear();
+                sceneLod2 = null;
+            }
+
         }
+
+        System.gc();
         return tileInfo;
     }
 
