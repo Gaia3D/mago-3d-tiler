@@ -50,9 +50,8 @@ public class GaiaPipeLineString {
         positions.addAll(points);
     }
 
-    public boolean deleteDuplicatedPoints() {
+    public void deleteDuplicatedPoints() {
         // search for adjacent points with same positions.
-        boolean deleted = false;
         for (int i = 0; i < positions.size() - 1; i++) {
             Vector3d point = positions.get(i);
             Vector3d point2 = positions.get(i + 1);
@@ -64,14 +63,12 @@ public class GaiaPipeLineString {
                     positions.remove(i + 1);
                 }
                 i--;
-                deleted = true;
 
                 if (positions.size() <= 2) {
                     break;
                 }
             }
         }
-        return deleted;
     }
 
     public boolean intersects(GaiaPipeLineString pipeLine, double tolerance) {

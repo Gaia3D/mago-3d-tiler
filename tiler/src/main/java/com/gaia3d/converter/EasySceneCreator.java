@@ -2,7 +2,6 @@ package com.gaia3d.converter;
 
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.TextureType;
-import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.geometry.Classification;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +11,10 @@ import org.joml.Vector3d;
 import org.joml.Vector4d;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Slf4j
 @NoArgsConstructor
@@ -71,16 +73,7 @@ public class EasySceneCreator {
     }
 
     private GaiaMaterial createDefaultMaterial(int id) {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
         Vector4d color = new Vector4d(0.9, 0.9, 0.9, 1);
-        if (globalOptions.isDebugLod()) {
-            // TODO : random color
-            Random random = new Random();
-            float r = random.nextFloat();
-            float g = random.nextFloat();
-            float b = random.nextFloat();
-            color = new Vector4d(r, g, b, 1);
-        }
         return createMaterial(id, color);
     }
 
@@ -112,7 +105,7 @@ public class EasySceneCreator {
         List<GaiaVertex> vertices = new ArrayList<>();
         int indexId = 0;
         for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width ; j++) {
+            for (int j = 0; j < width; j++) {
                 GaiaVertex vertex = new GaiaVertex();
                 Vector3d position = new Vector3d(i, 0, -j);
                 Vector3d normal = new Vector3d(0.0, -1.0, 0.0);

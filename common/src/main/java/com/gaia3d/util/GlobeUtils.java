@@ -195,8 +195,7 @@ public class GlobeUtils {
             org.opengis.referencing.crs.CoordinateReferenceSystem wgs84 = CRS.decode("EPSG:4326");
 
             MathTransform transform = CRS.findMathTransform(source, wgs84, false);
-            Coordinate result = JTS.transform(coordinate, coordinate, transform);
-            return result;
+            return JTS.transform(coordinate, coordinate, transform);
         } catch (FactoryException | TransformException e) {
             log.error("Failed to transform coordinate", e);
             throw new RuntimeException(e);

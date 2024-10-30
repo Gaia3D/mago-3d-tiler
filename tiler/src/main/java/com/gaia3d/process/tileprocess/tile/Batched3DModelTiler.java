@@ -134,7 +134,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
                     }
                 }
             }
-        } else if (tileInfos.size() <= 4 || !tileInfos.isEmpty()) {
+        } else {
             Node childNode = createContentNode(parentNode, tileInfos, 0);
             if (childNode != null) {
                 parentNode.getChildren().add(childNode);
@@ -202,16 +202,15 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
 
         int lodError = refineAdd ? lod.getGeometricErrorBlock() : lod.getGeometricError();
 
-        int lodErrorDouble = lodError;
         List<TileInfo> resultInfos;
         List<TileInfo> remainInfos;
         resultInfos = tileInfos.stream().filter(tileInfo -> {
             double geometricError = tileInfo.getBoundingBox().getLongestDistance();
-            return geometricError >= lodErrorDouble;
+            return geometricError >= lodError;
         }).collect(Collectors.toList());
         remainInfos = tileInfos.stream().filter(tileInfo -> {
             double geometricError = tileInfo.getBoundingBox().getLongestDistance();
-            return geometricError < lodErrorDouble;
+            return geometricError < lodError;
         }).collect(Collectors.toList());
 
         Node childNode = new Node();

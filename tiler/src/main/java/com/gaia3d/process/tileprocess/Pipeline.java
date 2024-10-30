@@ -5,5 +5,5 @@ import com.gaia3d.converter.loader.FileLoader;
 import java.io.IOException;
 
 public interface Pipeline {
-    public void process(FileLoader fileLoader) throws IOException;
+    void process(FileLoader fileLoader) throws IOException;
 }

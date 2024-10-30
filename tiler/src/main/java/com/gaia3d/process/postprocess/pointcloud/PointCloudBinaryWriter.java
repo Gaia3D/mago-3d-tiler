@@ -1,6 +1,6 @@
 package com.gaia3d.process.postprocess.pointcloud;
 
-import com.gaia3d.util.io.LittleEndianDataOutputStream;
+import com.gaia3d.io.LittleEndianDataOutputStream;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedOutputStream;

@@ -11,9 +11,10 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @AllArgsConstructor
-public class Extruder {
+@Deprecated
+public class OldExtruder {
 
-    private final Tessellator tessellator;
+    private final OldTessellator oldTessellator;
 
     public Extrusion extrude(List<Vector3d> positions, double roofHeight, double floorHeight) {
         List<GaiaTriangle> resultTriangles = new ArrayList<>();
@@ -23,8 +24,8 @@ public class Extruder {
         List<Vector3d> roofPositions = resetPositionHeight(positions, roofHeight);
         List<Vector3d> floorPositions = resetPositionHeight(positions, floorHeight);
 
-        List<GaiaTriangle> triangleRoof = tessellator.tessellate(roofPositions);
-        List<GaiaTriangle> triangleFloor = tessellator.tessellate(floorPositions);
+        List<GaiaTriangle> triangleRoof = oldTessellator.tessellate(roofPositions);
+        List<GaiaTriangle> triangleFloor = oldTessellator.tessellate(floorPositions);
 
         List<Vector3d> wallPositions = createWallPositions(roofPositions, floorPositions);
         List<GaiaTriangle> wallTriangles = createWallTriangles(wallPositions);

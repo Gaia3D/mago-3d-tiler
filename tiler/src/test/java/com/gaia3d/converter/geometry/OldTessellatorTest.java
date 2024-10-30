@@ -3,7 +3,7 @@ package com.gaia3d.converter.geometry;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.Configurator;
-import com.gaia3d.converter.geometry.extrusion.Tessellator;
+import com.gaia3d.converter.geometry.extrusion.OldTessellator;
 import com.gaia3d.converter.jgltf.GltfWriter;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-class TessellatorTest {
+class OldTessellatorTest {
 
     @Test
     void tessellate() {
@@ -23,8 +23,8 @@ class TessellatorTest {
         double[] target = errorTest();
 
         List<Vector3d> positions = convert(target);
-        Tessellator tessellator = new Tessellator();
-        List<GaiaTriangle> triangles = tessellator.tessellate(positions);
+        OldTessellator oldTessellator = new OldTessellator();
+        List<GaiaTriangle> triangles = oldTessellator.tessellate(positions);
 
         GaiaScene scene = new GaiaScene();
         GaiaMaterial material = new GaiaMaterial();

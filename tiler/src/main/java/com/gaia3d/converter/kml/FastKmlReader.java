@@ -39,8 +39,7 @@ public class FastKmlReader implements AttributeReader {
     @Override
     public List<KmlInfo> readAll(File file) {
         KmlInfo kmlInfo = read(file);
-        List<KmlInfo> kmlInfos = List.of(kmlInfo);
-        return kmlInfos;
+        return List.of(kmlInfo);
     }
 
     private double parseDouble(String value) {

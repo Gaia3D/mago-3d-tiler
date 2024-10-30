@@ -8,8 +8,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@Deprecated
 @Slf4j
-public class Tessellator {
+public class OldTessellator {
 
     public List<GaiaTriangle> tessellate(List<Vector3d> positions) {
         startEnd(positions);

@@ -4,6 +4,7 @@ import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.assimp.AssimpConverter;
+import com.gaia3d.converter.geometry.geojson.GeoJsonConverter;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.JacksonKmlReader;
 import com.gaia3d.converter.kml.ShapeReader;
@@ -25,10 +26,11 @@ import java.util.List;
 
 @Slf4j
 public class InstancedProcessModel implements ProcessFlowModel {
+    private static final String MODEL_NAME = "InstancedProcessModel";
+    private final GlobalOptions globalOptions = GlobalOptions.getInstance();
+
     public void run() throws IOException {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
         FormatType inputFormat = globalOptions.getInputFormat();
-        //boolean isRotateUpAxis = globalOptions.isSwapUpAxis();
 
         Converter converter = getConverter(inputFormat);
         AttributeReader kmlReader = getAttributeReader(inputFormat);
@@ -56,26 +58,23 @@ public class InstancedProcessModel implements ProcessFlowModel {
 
     private AttributeReader getAttributeReader(FormatType formatType) {
         AttributeReader reader = null;
-        if (formatType == FormatType.CITYGML) {
-            //reader = new CityGmlConverter();
-        } else if (formatType == FormatType.SHP) {
+        if (formatType == FormatType.SHP) {
             reader = new ShapeReader();
-        } else if (formatType == FormatType.GEOJSON) {
-            //reader = new GeoJsonConverter();
-        } else {
+        } /*else if (formatType == FormatType.GEOJSON) {
+            reader = new GeoJsonConverter();
+        }*/ else {
             reader = new JacksonKmlReader();
         }
         return reader;
     }
 
     private Converter getConverter(FormatType formatType) {
-        Converter converter = new AssimpConverter();
-        return converter;
+        return new AssimpConverter();
     }
 
     @Override
     public String getModelName() {
-        return "InstancedProcessModel";
+        return MODEL_NAME;
     }
 
     private boolean getYUpAxis(FormatType formatType, boolean isYUpAxis) {
