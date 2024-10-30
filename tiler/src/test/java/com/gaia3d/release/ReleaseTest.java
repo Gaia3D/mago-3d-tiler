@@ -77,7 +77,7 @@ class ReleaseTest {
                 //"-crs", "5186",
                 "-it", "ifc",
                 //"-swapUpAxis",
-                "-debug"
+                //"-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -90,7 +90,7 @@ class ReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 //"-crs", "5186",
                 //"-it", "ifc",
-                "-debug"
+                //"-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -109,8 +109,8 @@ class ReleaseTest {
     }
 
     @Test
-    void testYUpAxis() {
-        String path = "Y-Up-AXIS";
+    void testZUpAxis() {
+        String path = "Z-UP-AXIS";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
@@ -122,21 +122,19 @@ class ReleaseTest {
     }
 
     @Test
-    void testZUpAxis() {
-        String path = "Z-Up-AXIS";
+    void testYUpAxis() {
+        String path = "Y-UP-AXIS";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                //"-it", "glb",
                 "-swapUpAxis",
-                //"-flipUpAxis",
         };
         Mago3DTilerMain.main(args);
     }
 
     @Test
     void testFlipYUpAxis() {
-        String path = "FLIP-Y-Up-AXIS";
+        String path = "FLIP-Y-UP-AXIS";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
@@ -149,7 +147,7 @@ class ReleaseTest {
 
     @Test
     void testFlipZUpAxis() {
-        String path = "FLIP-Z-Up-AXIS";
+        String path = "FLIP-Z-UP-AXIS";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
@@ -170,7 +168,7 @@ class ReleaseTest {
                 //"-it", "ifc",
                 //"-swapUpAxis",
                 //"-flipUpAxis",
-                "-debug"
+                //"-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -201,25 +199,37 @@ class ReleaseTest {
     }
 
     @Test
-    void testSangjiUnivPointCloud() {
-        String path = "SANGJUUNIV-LAS";
+    void testInstancedModel() {
+        String path = "INSTANCED-MODEL-KML-3DS";
+        FileUtils.deleteQuietly(getOutputPath(path));
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                "-crs", "5186",
+                "-ot", "i3dm",
         };
         Mago3DTilerMain.main(args);
     }
 
     @Test
-    void testInstancedModel() {
-        String path = "INSTANCED-MODEL-KML";
+    void testInstancedModel2() {
+        String path = "INSTANCED-MODEL-KML-DAE";
+        FileUtils.deleteQuietly(getOutputPath(path));
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                "-it", "kml",
                 "-ot", "i3dm",
-                //"-autoUpAxis",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testInstancedModel3() {
+        String path = "INSTANCED-MODEL-KML-GLB";
+        FileUtils.deleteQuietly(getOutputPath(path));
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-ot", "i3dm",
         };
         Mago3DTilerMain.main(args);
     }
@@ -234,7 +244,7 @@ class ReleaseTest {
                 "-it", "shp",
                 //"-crs", "5174",
                 "-proj", "+proj=tmerc +lat_0=38 +lon_0=127.0028902777778 +k=1 +x_0=200000 +y_0=500000 +ellps=bessel +units=m +no_defs +towgs84=-115.80,474.99,674.11,1.16,-2.31,-1.63,6.43",
-                "-debug"
+                //"-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -247,7 +257,7 @@ class ReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "geojson",
                 "-nameColumn", "layer",
-                "-debug"
+                //"-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -276,8 +286,8 @@ class ReleaseTest {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "ifc",
                 "-output", output.getAbsolutePath(),
-                "-debug",
-                "-glb"
+                //"-debug",
+                //"-glb"
         };
         Mago3DTilerMain.main(args);
     }
@@ -294,7 +304,7 @@ class ReleaseTest {
                 "-crs", "4326",
                 "-flipCoordinate",
                 "-output", output.getAbsolutePath(),
-                "-debug",
+                //"-debug",
         };
         Mago3DTilerMain.main(args);
     }
@@ -309,7 +319,7 @@ class ReleaseTest {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "citygml",
                 "-output", output.getAbsolutePath(),
-                "-debug",
+                //"-debug",
         };
         Mago3DTilerMain.main(args);
     }
@@ -326,7 +336,7 @@ class ReleaseTest {
                 "-crs", "5186",
                 "-output", output.getAbsolutePath(),
                 //"-hc", "Z_Min",
-                "-debug",
+                //"-debug",
         };
         Mago3DTilerMain.main(args);
     }
@@ -343,7 +353,7 @@ class ReleaseTest {
                 "-crs", "32643",
                 "-output", output.getAbsolutePath(),
                 "-dc", "length",
-                "-debug",
+                //"-debug",
         };
         Mago3DTilerMain.main(args);
     }
@@ -359,7 +369,7 @@ class ReleaseTest {
                 "-inputType", "3ds",
                 "-crs", "5186",
                 "-output", output.getAbsolutePath(),
-                "-debug",
+                //"-debug",
         };
         Mago3DTilerMain.main(args);
     }
@@ -375,7 +385,7 @@ class ReleaseTest {
                 "-inputType", "obj",
                 "-crs", "5186",
                 "-output", output.getAbsolutePath(),
-                "-debug",
+                //"-debug",
         };
         Mago3DTilerMain.main(args);
     }
@@ -391,7 +401,26 @@ class ReleaseTest {
                 "-inputType", "citygml",
                 "-crs", "5186",
                 "-output", output.getAbsolutePath(),
-                "-debug",
+                //"-debug",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testObj() {
+        String path = "AMYOK-OBJ";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "obj",
+                "-crs", "27700",
+                "-output", output.getAbsolutePath(),
+                //"-swapUpAxis",
+                //"-autoUpAxis",
+                //"-flipUpAxis",
+                //"-debug",
         };
         Mago3DTilerMain.main(args);
     }

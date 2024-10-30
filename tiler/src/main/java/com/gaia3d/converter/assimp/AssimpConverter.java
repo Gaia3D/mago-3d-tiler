@@ -59,7 +59,7 @@ public class AssimpConverter implements Converter {
 
         assert aiScene != null;
         GaiaScene gaiaScene = convertScene(aiScene, path, file.getName());
-        //aiScene.free();
+
         gaiaScene.setOriginalPath(file.toPath());
 
         GaiaAttribute attribute = new GaiaAttribute();
@@ -227,7 +227,7 @@ public class AssimpConverter implements Converter {
             if (filename.isEmpty()) {
                 filename = fileNameWithoutExtension + "_extracted_" + i + "." + ext;
             } else {
-                File file = new File(filename);
+                File file = new File(filename + "." + ext);
                 filename = file.getName();
             }
 
@@ -245,14 +245,6 @@ public class AssimpConverter implements Converter {
 
     private GaiaMaterial processMaterial(AIMaterial aiMaterial, String path, List<String> embeddedTextures) {
         GaiaMaterial material = new GaiaMaterial();
-
-        // TODO: Check if the material has a name
-        /*String materialName = "unnamed";
-        AIString namePath = AIString.calloc();
-        int materialNameString = Assimp.aiGetMaterialString(aiMaterial, Assimp.AI_MATKEY_NAME, 0, 0, namePath);
-        if (materialNameString == 0) {
-            materialName = namePath.dataString();
-        }*/
 
         Vector4d diffVector4d;
         AIColor4D diffColor = AIColor4D.create();
@@ -468,8 +460,6 @@ public class AssimpConverter implements Converter {
         AIVector3D.Buffer verticesBuffer = aiMesh.mVertices();
         AIVector3D.Buffer normalsBuffer = aiMesh.mNormals();
         AIVector3D.Buffer textureCoordiantesBuffer = aiMesh.mTextureCoords(0);
-        //AIColor4D.Buffer colorsBuffer = aiMesh.mColors(0);
-
         for (int i = 0; i < mNumVertices; i++) {
             GaiaVertex vertex = new GaiaVertex();
             AIVector3D aiVertice = verticesBuffer.get(i);

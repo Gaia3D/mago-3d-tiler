@@ -4,13 +4,43 @@ import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.Configurator;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.Level;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 class AssimpConverterTest {
+
+    /**
+     * Stress test for loading 3D models.
+     */
+    @Test
+    void loadStressTest() {
+        Configurator.initConsoleLogger("%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n");
+        Configurator.setLevel(Level.DEBUG);
+
+        AssimpConverter assimpConverter = new AssimpConverter();
+        File inputFolder = new File("D:\\data\\mago-tiler-data\\input\\seoul-set\\");
+        List<File> files = (List<File>) FileUtils.listFiles(inputFolder, new String[]{"3ds", "3DS"}, true);
+        int size = files.size();
+        int count = 0;
+
+        List<GaiaScene> gaiaAllScenes = new ArrayList<>();
+        for (File file : files) {
+            log.debug("[{}/{}] Start loading file : {}", count, size, file.getName());
+            List<GaiaScene> gaiaScenes = assimpConverter.load(file);
+            //gaiaAllScenes.addAll(gaiaScenes);
+            gaiaScenes = null;
+            log.debug("[{}/{}] End loading file : {}", count, size, file.getName());
+            count++;
+        }
+        log.debug("End loading files");
+    }
+
 
     @Test
     void load() {

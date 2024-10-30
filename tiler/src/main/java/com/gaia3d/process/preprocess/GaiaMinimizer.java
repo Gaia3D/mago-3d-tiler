@@ -22,7 +22,6 @@ public class GaiaMinimizer implements PreProcess {
 
         minimizeGaiaScene(tileInfo, scene);
         minimizeGaiaPointCloud(tileInfo, pointCloud);
-
         return tileInfo;
     }
 

@@ -55,6 +55,7 @@ public class BatchedProcessModelPhR implements ProcessFlowModel {
         // TODO rotXAngleDegree
         //if (isRotateUpAxis)
         {
+            //preProcessors.add(new GaiaRotatorOld());
             preProcessors.add(new GaiaRotator());
         }
         preProcessors.add(new GaiaTranslatorExact(geoTiffs));

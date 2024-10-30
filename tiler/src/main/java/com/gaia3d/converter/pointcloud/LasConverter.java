@@ -12,6 +12,7 @@ import com.github.mreutegg.laszip4j.LASReader;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
+import org.locationtech.proj4j.BasicCoordinateTransform;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 
@@ -74,14 +75,16 @@ public class LasConverter {
 
         CoordinateReferenceSystem crs = globalOptions.getCrs();
 
-        ProjCoordinate minCoordinate = new ProjCoordinate(getMinX, getMinY, getMinZ);
-        ProjCoordinate maxCoordinate = new ProjCoordinate(getMaxX, getMaxY, getMaxZ);
+        BasicCoordinateTransform transformer = new BasicCoordinateTransform(crs, GlobeUtils.wgs84);
+        //ProjCoordinate minCoordinate = new ProjCoordinate(getMinX, getMinY, getMinZ);
+        //ProjCoordinate maxCoordinate = new ProjCoordinate(getMaxX, getMaxY, getMaxZ);
+        ProjCoordinate minCoordinate = transformer.transform(new ProjCoordinate(getMinX, getMinY, getMinZ), new ProjCoordinate());
+        ProjCoordinate maxCoordinate = transformer.transform(new ProjCoordinate(getMaxX, getMaxY, getMaxZ), new ProjCoordinate());
+
         ProjCoordinate minTransformedCoordinate = GlobeUtils.transform(crs, minCoordinate);
         ProjCoordinate maxTransformedCoordinate = GlobeUtils.transform(crs, maxCoordinate);
         minTransformedCoordinate.z = getMinZ;
         maxTransformedCoordinate.z = getMaxZ;
-
-
 
         int pointSkip = globalOptions.getPointSkip();
         CloseablePointIterable pointIterable = reader.getCloseablePoints();
@@ -89,7 +92,7 @@ public class LasConverter {
         long legacyPointRecords = header.getLegacyNumberOfPointRecords();
 
         long totalPointRecords = pointRecords + legacyPointRecords;
-        //long totalPointRecords1percent = totalPointRecords / 100;
+        long totalPointRecords1percent = totalPointRecords / 100;
 
         log.info("[Pre] Loading a pointcloud file. : {}", file.getAbsolutePath());
         log.debug("----------------------------------------");
@@ -106,20 +109,21 @@ public class LasConverter {
 
         long pointIndex = 0;
         for (LASPoint point : pointIterable) {
-            /*if (pointIndex % totalPointRecords1percent == 0 && pointIndex != 0) {
-                //log.debug(" - Las Records Loading progress. ({}/100)%", pointIndex / totalPointRecords1percent);
-            }*/
+            if (pointIndex % totalPointRecords1percent == 0 && pointIndex != 0) {
+                log.debug(" - Las Records Loading progress. ({}/100)%", pointIndex / totalPointRecords1percent);
+            }
             if (pointIndex % pointSkip == 0) {
                 double x = point.getX() * xScaleFactor + xOffset;
                 double y = point.getY() * yScaleFactor + yOffset;
                 double z = point.getZ() * zScaleFactor + zOffset;
 
                 ProjCoordinate coordinate = new ProjCoordinate(x, y, z);
-                ProjCoordinate transformedCoordinate = GlobeUtils.transform(crs, coordinate);
-
+                ProjCoordinate transformedCoordinate = new ProjCoordinate();
+                transformer.transform(coordinate, transformedCoordinate);
+                //ProjCoordinate transformedCoordinate = GlobeUtils.transform(crs, coordinate);
                 Vector3d position = new Vector3d(transformedCoordinate.x, transformedCoordinate.y, z);
-                transformedCoordinate = null;
                 coordinate = null;
+                transformedCoordinate = null;
 
                 byte[] rgb;
                 if (hasRgbColor) {

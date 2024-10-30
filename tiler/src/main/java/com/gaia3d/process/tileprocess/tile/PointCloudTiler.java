@@ -133,12 +133,13 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
                 .map(TileInfo::getPointCloud)
                 .collect(Collectors.toList());
         int index = 0;
+        int maximumIndex = pointClouds.size();
         for (GaiaPointCloud pointCloud : pointClouds) {
             pointCloud.setCode((index++) + "");
             pointCloud.maximize();
             List<GaiaPointCloud> allPointClouds = new ArrayList<>();
             createNode(allPointClouds, index, parentNode, pointCloud, 16.0d);
-            minimizeAllPointCloud(allPointClouds);
+            minimizeAllPointCloud(index, maximumIndex, allPointClouds);
         }
     }
 
@@ -210,6 +211,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         }
     }
 
+    @Deprecated
     private void minimizeTreeNode(Node node) {
         List<Node> children = node.getChildren();
         children.forEach(this::minimizeTreeNode);
@@ -229,12 +231,12 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         });
     }
 
-    private void minimizeAllPointCloud(List<GaiaPointCloud> allPointClouds) {
+    private void minimizeAllPointCloud(int index, int maximumIndex, List<GaiaPointCloud> allPointClouds) {
         allPointClouds.forEach(pointCloud -> {
             File tempPath = new File(GlobalOptions.getInstance().getOutputPath(), "temp");
             File tempFile = new File(tempPath, UUID.randomUUID().toString());
             pointCloud.minimize(tempFile);
-            log.info("[Tile][Minimize][{}]", tempFile.getName());
+            log.info("[Tile][Minimize][{}/{}][{}]", index, maximumIndex, tempFile.getName());
         });
     }
 }
