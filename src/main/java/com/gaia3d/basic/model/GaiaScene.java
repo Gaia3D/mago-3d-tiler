@@ -65,6 +65,12 @@ public class GaiaScene extends SceneStructure {
         this.originalPath = null;
         this.gaiaBoundingBox = null;
         this.nodes.clear();
+
+        int materialsCount = this.materials.size();
+        for (int i = 0; i < materialsCount; i++) {
+            GaiaMaterial material = this.materials.get(i);
+            material.clear();
+        }
         this.materials.clear();
     }
 

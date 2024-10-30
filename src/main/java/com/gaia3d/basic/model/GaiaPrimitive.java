@@ -429,6 +429,14 @@ public class GaiaPrimitive extends PrimitiveStructure {
         }
 
         int vertexCount = this.getVertices().size();
+        for(int i = 0; i < vertexCount; i++) {
+            GaiaVertex vertex = this.getVertices().get(i);
+            if (!vertexIdxMap.containsKey(vertex)) {
+                vertex.clear();
+            }
+        }
+
+        vertexCount = this.getVertices().size();
         int usedVertexCount = vertexIdxMap.size();
         if (vertexCount != usedVertexCount) {
             // Exists no used vertices.***
@@ -461,5 +469,19 @@ public class GaiaPrimitive extends PrimitiveStructure {
         }
 
         return false;
+    }
+
+    public void deleteObjects() {
+        if (this.vertices != null) {
+            this.vertices.forEach(GaiaVertex::clear);
+            this.vertices.clear();
+        }
+        if (this.surfaces != null) {
+            this.surfaces.forEach(GaiaSurface::clear);
+            this.surfaces.clear();
+        }
+
+        this.vertices = null;
+        this.surfaces = null;
     }
 }

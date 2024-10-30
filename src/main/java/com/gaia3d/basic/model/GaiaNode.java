@@ -238,4 +238,14 @@ public class GaiaNode extends NodeStructure {
     }
 
 
+    public void deleteObjects() {
+        for (GaiaMesh mesh : this.getMeshes()) {
+            mesh.deleteObjects();
+        }
+        for (GaiaNode child : this.getChildren()) {
+            child.deleteObjects();
+        }
+
+        this.clear();
+    }
 }
