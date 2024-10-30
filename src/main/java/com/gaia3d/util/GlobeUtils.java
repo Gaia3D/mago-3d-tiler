@@ -29,7 +29,7 @@ public class GlobeUtils {
     public static final double POLAR_RADIUS_SQUARED = 40408299984087.05552164d;
     public static final double FIRST_ECCENTRICITY_SQUARED = 6.69437999014E-3d;
     private static final CRSFactory factory = new CRSFactory();
-    private static final CoordinateReferenceSystem wgs84 = factory.createFromParameters("WGS84", "+proj=longlat +datum=WGS84 +no_defs");
+    public static final CoordinateReferenceSystem wgs84 = factory.createFromParameters("WGS84", "+proj=longlat +datum=WGS84 +no_defs");
 
     public static double[] geographicToCartesianWgs84(double longitude, double latitude, double altitude) {
         double[] result = new double[3];
