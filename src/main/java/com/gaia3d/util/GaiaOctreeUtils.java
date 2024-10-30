@@ -28,7 +28,7 @@ public class GaiaOctreeUtils {
                         GaiaMaterial material = sceneParent.getMaterials().get(matId);
                         GaiaTexture diffuseTexture = null;
                         List<GaiaTexture> diffuseTexturesArray = material.getTextures().get(TextureType.DIFFUSE);
-                        if (diffuseTexturesArray.size() > 0) {
+                        if (!diffuseTexturesArray.isEmpty()) {
                             diffuseTexture = diffuseTexturesArray.get(0);
                             diffuseTexture.loadImage();
                         }

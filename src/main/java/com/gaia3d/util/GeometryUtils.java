@@ -717,10 +717,8 @@ public class GeometryUtils {
     public static Vector4d getAverageColor(List<GaiaFaceData> faceDataList) {
         Vector4d resultColor = new Vector4d();
         resultColor.set(0.0, 0.0, 0.0, 0.0);
-        int facesCount = faceDataList.size();
         int averageColorCount = 0;
-        for (int i = 0; i < facesCount; i++) {
-            GaiaFaceData faceData = faceDataList.get(i);
+        for (GaiaFaceData faceData : faceDataList) {
             Vector4d color = faceData.getAverageColor();
             if (color == null) {
                 continue;
@@ -729,7 +727,6 @@ public class GeometryUtils {
             resultColor.y += color.y;
             resultColor.z += color.z;
             resultColor.w += color.w;
-
             averageColorCount++;
         }
 
@@ -831,8 +828,7 @@ public class GeometryUtils {
         GaiaPrimitive primitiveMaster = new GaiaPrimitive();
         mesh.getPrimitives().add(primitiveMaster);
 
-        for (int i = 0; i < octreeList.size(); i++) {
-            GaiaOctree octree = octreeList.get(i);
+        for (GaiaOctree octree : octreeList) {
             boolean[] hasNeighbor = octree.hasNeighbor(); // left, right, front, rear, bottom, top.
             GaiaBoundingBox bbox = octree.getBoundingBox();
 
@@ -866,6 +862,10 @@ public class GeometryUtils {
         return resultScene;
     }
 
+    public static boolean isInvalidVector(Vector3d vector) {
+        return !isValidVector(vector);
+    }
+
     public static boolean isValidVector(Vector3d vector) {
         boolean valid = true;
         if (!Double.isNaN(vector.get(0)) && !Double.isNaN(vector.get(1)) && !Double.isNaN(vector.get(2))) {
@@ -874,7 +874,6 @@ public class GeometryUtils {
         } else {
             valid = false;
         }
-
         return valid;
     }
 
