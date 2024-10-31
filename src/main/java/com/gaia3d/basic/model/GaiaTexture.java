@@ -26,10 +26,6 @@ import java.nio.file.Path;
  * It contains the texture name, path, type, width, height, format, byteLength, and byteBuffer.
  * The byteBuffer is used to create a texture.
  * The byteBuffer is created by reading the texture file.
- *
- * @author znkim
- * @see <a href="https://en.wikipedia.org/wiki/Texture_mapping">Texture mapping</a>
- * @since 1.0.0
  */
 @Slf4j
 @Getter

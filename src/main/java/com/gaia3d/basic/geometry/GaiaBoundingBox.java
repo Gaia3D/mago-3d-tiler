@@ -16,10 +16,6 @@ import java.io.Serializable;
  * It can be used to calculate the center and volume of the geometry.
  * It can also be used to convert the local bounding box to lonlat bounding box.
  * It can also be used to calculate the longest distance of the geometry.
- *
- * @author znkim
- * @see GaiaRectangle
- * @since 1.0.0
  */
 @Slf4j
 @Setter
