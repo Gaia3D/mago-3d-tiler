@@ -60,8 +60,6 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
             PrimalSpaceFeatures primalSpaceFeaturesChild = primalSpaceFeatures.getPrimalSpaceFeatures();
             List<CellSpaceMember> cellSpaceMembers = primalSpaceFeaturesChild.getCellSpaceMember();
             for (CellSpaceMember cellSpaceMember : cellSpaceMembers) {
-
-                //log.info("CellSpaceMember: {}", cellSpaceMember.getCellSpace().getId());
                 CellSpace cellSpace = cellSpaceMember.getCellSpace();
                 CellSpaceGeometry cellSpaceGeometry = cellSpace.getCellSpaceGeometry();
                 Geometry3D geometry3D = cellSpaceGeometry.getGeometry3d();
@@ -79,8 +77,6 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                     List<Pos> posList = polygon.getExterior().getPos();
                     for (Pos pos : posList) {
                         String[] vectors = pos.getVector().split(" ");
-
-                        //double scale = 0.0254d; // inch to meter
                         double scale = 1.0d;
                         double x = Double.parseDouble(vectors[0]) * scale;
                         double y = Double.parseDouble(vectors[1]) * scale;

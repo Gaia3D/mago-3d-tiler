@@ -2,10 +2,10 @@ package com.gaia3d.process.tileprocess.tile;
 
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.pointcloud.GaiaPointCloud;
 import com.gaia3d.basic.model.GaiaNode;
-import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.basic.model.GaiaScene;
+import com.gaia3d.basic.pointcloud.GaiaPointCloud;
+import com.gaia3d.converter.kml.KmlInfo;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,7 +16,6 @@ import org.joml.Matrix4d;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -40,7 +39,6 @@ public class TileInfo {
     private Path outputPath;
     private Path tempPath; // tempPath lod 0.***
 
-    // New vars.***
     private List<Path> tempPathLod; // tempPath lod 0, 1, 2, 3, 4, 5, etc.***
     private GaiaBoundingBox cartographicBBox;
 
@@ -65,23 +63,6 @@ public class TileInfo {
     }
 
     /**
-     * Write the scene file to the output directory.
-     * @param serial
-     */
-    /*public void minimize(int serial) {
-        GlobalOptions options = GlobalOptions.getInstance();
-
-        if (this.scene != null && !this.scene.getNodes().isEmpty()) {
-            GaiaSet tempSet = GaiaSet.fromGaiaScene(this.scene);
-            this.tempPath = tempSet.writeFile(this.tempPath, serial);
-            tempSet.clear();
-            tempSet = null;
-            this.scene.clear();
-            this.scene = null;
-        }
-    }*/
-
-    /**
      * Load the minimized scene file and create a GaiaSet object.
      */
     public void maximize() {
@@ -96,12 +77,10 @@ public class TileInfo {
             this.set.deleteTextures();
             this.set = null;
         }
-        //this.set = GaiaSet.fromGaiaScene(this.tempPath);
         try {
             this.set = GaiaSet.readFile(this.tempPath);
         } catch (IOException e) {
             log.error("Failed to read the temp file: {}", this.tempPath);
-            //throw new FileNotFoundException();
         }
     }
 
@@ -139,24 +118,23 @@ public class TileInfo {
         }
     }
 
-    public TileInfo clone()
-    {
+    public TileInfo clone() {
         return TileInfo.builder()
-            .serial(this.serial)
-            .scene(this.scene)
-            .set(this.set)
-            .pointCloud(this.pointCloud)
-            .name(this.name)
-            .kmlInfo(this.kmlInfo)
-            .transformMatrix(this.transformMatrix)
-            .boundingBox(this.boundingBox)
-            .scenePath(this.scenePath)
-            .outputPath(this.outputPath)
-            .tempPath(this.tempPath)
-            .tempPathLod(this.tempPathLod)
-            .cartographicBBox(this.cartographicBBox)
-            .triangleCount(this.triangleCount)
-            .isI3dm(this.isI3dm)
-            .build();
+                .serial(this.serial)
+                .scene(this.scene)
+                .set(this.set)
+                .pointCloud(this.pointCloud)
+                .name(this.name)
+                .kmlInfo(this.kmlInfo)
+                .transformMatrix(this.transformMatrix)
+                .boundingBox(this.boundingBox)
+                .scenePath(this.scenePath)
+                .outputPath(this.outputPath)
+                .tempPath(this.tempPath)
+                .tempPathLod(this.tempPathLod)
+                .cartographicBBox(this.cartographicBBox)
+                .triangleCount(this.triangleCount)
+                .isI3dm(this.isI3dm)
+                .build();
     }
 }

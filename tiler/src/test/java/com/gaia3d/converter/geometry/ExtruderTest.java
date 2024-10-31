@@ -3,9 +3,9 @@ package com.gaia3d.converter.geometry;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.Configurator;
-import com.gaia3d.converter.geometry.extrusion.Extruder;
+import com.gaia3d.converter.geometry.extrusion.OldExtruder;
 import com.gaia3d.converter.geometry.extrusion.Extrusion;
-import com.gaia3d.converter.geometry.extrusion.Tessellator;
+import com.gaia3d.converter.geometry.extrusion.OldTessellator;
 import com.gaia3d.converter.jgltf.GltfWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
@@ -27,8 +27,8 @@ class ExtruderTest {
         double[] target = getStar();
 
         List<Vector3d> positions = convert(target);
-        Tessellator tessellator = new Tessellator();
-        Extruder extruder = new Extruder(tessellator);
+        OldTessellator oldTessellator = new OldTessellator();
+        OldExtruder extruder = new OldExtruder(oldTessellator);
 
         Extrusion extrusion = extruder.extrude(positions, 10, 0);
         output(extrusion.getTriangles());

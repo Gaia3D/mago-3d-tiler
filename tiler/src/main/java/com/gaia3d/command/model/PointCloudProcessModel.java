@@ -1,5 +1,6 @@
 package com.gaia3d.command.model;
 
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.loader.PointCloudFileLoader;
 import com.gaia3d.converter.pointcloud.LasConverter;
 import com.gaia3d.process.TilingPipeline;
@@ -18,6 +19,9 @@ import java.util.List;
 
 @Slf4j
 public class PointCloudProcessModel implements ProcessFlowModel {
+    private static final String MODEL_NAME = "PointCloudProcessModel";
+    private final GlobalOptions globalOptions = GlobalOptions.getInstance();
+
     public void run() throws IOException {
         LasConverter converter = new LasConverter();
 
@@ -35,7 +39,6 @@ public class PointCloudProcessModel implements ProcessFlowModel {
 
     @Override
     public String getModelName() {
-        return "PointCloudProcessModel";
+        return MODEL_NAME;
     }
-
 }

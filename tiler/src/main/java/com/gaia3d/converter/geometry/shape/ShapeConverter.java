@@ -8,8 +8,9 @@ import com.gaia3d.basic.model.*;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.EasySceneCreator;
-import com.gaia3d.converter.geometry.*;
-
+import com.gaia3d.converter.geometry.AbstractGeometryConverter;
+import com.gaia3d.converter.geometry.GaiaExtrusionBuilding;
+import com.gaia3d.converter.geometry.InnerRingRemover;
 import com.gaia3d.converter.geometry.pipe.GaiaPipeLineString;
 import com.gaia3d.converter.geometry.pipe.PipeType;
 import com.gaia3d.util.GlobeUtils;
@@ -23,10 +24,8 @@ import org.geotools.data.shapefile.shp.ShapefileReader;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.store.ContentFeatureSource;
 import org.geotools.feature.FeatureIterator;
-
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
-
 import org.locationtech.jts.geom.*;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
@@ -143,7 +142,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 for (LineString lineString : LineStrings) {
                     Coordinate[] coordinates = lineString.getCoordinates();
                     List<Vector3d> positions = new ArrayList<>();
-                    if(coordinates.length < 2) {
+                    if (coordinates.length < 2) {
                         log.warn("Invalid LineString : {}", feature.getID());
                         continue;
                     }
@@ -166,12 +165,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
 
                     double diameter = getDiameter(feature, diameterColumnName);
 
-                    GaiaPipeLineString pipeLineString = GaiaPipeLineString.builder()
-                            .id(feature.getID())
-                            .profileType(PipeType.CIRCULAR)
-                            .diameter(diameter)
-                            .properties(attributes)
-                            .positions(positions).build();
+                    GaiaPipeLineString pipeLineString = GaiaPipeLineString.builder().id(feature.getID()).profileType(PipeType.CIRCULAR).diameter(diameter).properties(attributes).positions(positions).build();
                     pipeLineString.setOriginalFilePath(file.getPath());
                     pipeLineStrings.add(pipeLineString);
                 }
@@ -231,16 +225,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                         if (altitudeColumnName != null) {
                             altitude = getAltitude(feature, altitudeColumnName);
                         }
-                        GaiaExtrusionBuilding building = GaiaExtrusionBuilding.builder()
-                                .id(feature.getID())
-                                .name(name)
-                                .boundingBox(boundingBox)
-                                .floorHeight(altitude)
-                                .roofHeight(height + skirtHeight)
-                                .positions(positions)
-                                .originalFilePath(file.getPath())
-                                .properties(attributes)
-                                .build();
+                        GaiaExtrusionBuilding building = GaiaExtrusionBuilding.builder().id(feature.getID()).name(name).boundingBox(boundingBox).floorHeight(altitude).roofHeight(height + skirtHeight).positions(positions).originalFilePath(file.getPath()).properties(attributes).build();
                         buildings.add(building);
                     } else {
                         log.warn("Invalid Geometry : {}, {}", feature.getID(), name);
@@ -261,6 +246,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         shpFiles.dispose();
         return scenes;
     }
+
     //convertPipeLineStrings(pipeLineStrings, scenes);
     private void convertExtrusionBuildings(List<GaiaExtrusionBuilding> buildings, List<GaiaScene> resultScenes, File file) {
         double skirtHeight = globalOptions.getSkirtHeight();
@@ -358,7 +344,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         EasySceneCreator easySceneCreator = new EasySceneCreator();
         for (GaiaPipeLineString pipeLineString : pipeLineStrings) {
             int pointsCount = pipeLineString.getPositions().size();
-            if(pointsCount < 2) {
+            if (pointsCount < 2) {
                 log.warn("Invalid PipeLineString : {}", pipeLineString.getId());
                 continue;
             }
@@ -391,19 +377,19 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             pipeLineString.setPositions(localPositions);
 
             //pipeLineString.TEST_Check();
-            if(localPositions.size() > 2) {
+            if (localPositions.size() > 2) {
                 pipeLineString.deleteDuplicatedPoints();
             }
 
             // once deleted duplicatedPoints, check pointsCount again.***
             pointsCount = pipeLineString.getPositions().size();
-            if(pointsCount < 2) {
+            if (pointsCount < 2) {
                 log.warn("Invalid PipeLineString POINTS COUNT LESS THAN 2: {}", pipeLineString.getId());
                 continue;
             }
 
             GaiaNode node = createPrimitiveFromPipeLineString(pipeLineString);
-            if(node == null) {
+            if (node == null) {
                 log.warn("Invalid PipeLineString NULL NODE: {}", pipeLineString.getId());
                 continue;
             }
@@ -428,7 +414,5 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             }
             resultScenes.add(scene);
         }
-
     }
-
 }

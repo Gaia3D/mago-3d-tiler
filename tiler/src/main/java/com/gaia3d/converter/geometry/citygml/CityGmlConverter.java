@@ -7,9 +7,9 @@ import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.EasySceneCreator;
 import com.gaia3d.converter.geometry.*;
-import com.gaia3d.converter.geometry.extrusion.Extruder;
+import com.gaia3d.converter.geometry.extrusion.OldExtruder;
 import com.gaia3d.converter.geometry.extrusion.Extrusion;
-import com.gaia3d.converter.geometry.extrusion.Tessellator;
+import com.gaia3d.converter.geometry.extrusion.OldTessellator;
 import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -77,8 +77,8 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
         List<GaiaScene> scenes = new ArrayList<>();
 
         try {
-            Tessellator tessellator = new Tessellator();
-            Extruder extruder = new Extruder(tessellator);
+            OldTessellator oldTessellator = new OldTessellator();
+            OldExtruder extruder = new OldExtruder(oldTessellator);
 
             CityGMLContext context = CityGMLContext.newInstance();
             CityGMLInputFactory factory = context.createCityGMLInputFactory();
@@ -191,11 +191,9 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                         List<List<Vector3d>> polygons = new ArrayList<>();
                         List<Vector3d> polygon = new ArrayList<>();
 
-                        List<Vector3d> localPositions = new ArrayList<>();
                         for (Vector3d position : buildingSurface.getExteriorPositions()) {
                             Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
                             Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv);
-                            localPositions.add(localPosition);
                             polygon.add(new Vector3dOnlyHashEquals(localPosition));
                         }
                         polygons.add(polygon);
@@ -250,6 +248,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                 }
                 scenes.add(scene);
             }
+            reader.close();
         } catch (CityGMLContextException | CityGMLReadException e) {
             log.error("Failed to read citygml file: {}", file.getName());
             throw new RuntimeException(e);

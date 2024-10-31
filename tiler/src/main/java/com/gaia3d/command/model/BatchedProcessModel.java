@@ -30,6 +30,7 @@ import java.util.List;
 
 @Slf4j
 public class BatchedProcessModel implements ProcessFlowModel {
+    private static final String MODEL_NAME = "BatchedProcessModel";
     private final GlobalOptions globalOptions = GlobalOptions.getInstance();
 
     public void run() throws IOException {
@@ -99,6 +100,6 @@ public class BatchedProcessModel implements ProcessFlowModel {
 
     @Override
     public String getModelName() {
-        return "BatchedProcessModel";
+        return MODEL_NAME;
     }
 }

@@ -43,9 +43,9 @@ public class PipeElbow extends TNode {
         mapEdgeLinkNormals = new HashMap<>();
     }
 
+    @Deprecated
     private void calculateElbowPositionsIfExistOnlyOneTEdge() {
         TEdge edge1 = this.getEdge(0);
-        //TEdge edge2 = null;
 
         TNode tNodeA = edge1.getTheAnotherNode(this);
         //TNode tNodeB = null;

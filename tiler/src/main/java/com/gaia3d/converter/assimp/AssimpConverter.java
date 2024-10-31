@@ -15,7 +15,6 @@ import org.joml.Vector3d;
 import org.joml.Vector4d;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
-import org.lwjgl.system.MemoryUtil;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -83,11 +82,6 @@ public class AssimpConverter implements Converter {
         Matrix4d matrix4 = new Matrix4d();
 
         boolean isRootNode = parentNode == null;
-//        log.debug(isRootNode ? "=======RootTrasformMatrix=======" : "=======TrasformMatrix=======");
-//        log.debug("{} {} {} {}", aiMatrix4x4.a1(), aiMatrix4x4.b1(), aiMatrix4x4.c1(), aiMatrix4x4.d1());
-//        log.debug("{} {} {} {}", aiMatrix4x4.a2(), aiMatrix4x4.b2(), aiMatrix4x4.c2(), aiMatrix4x4.d2());
-//        log.debug("{} {} {} {}", aiMatrix4x4.a3(), aiMatrix4x4.b3(), aiMatrix4x4.c3(), aiMatrix4x4.d3());
-//        log.debug("{} {} {} {}", aiMatrix4x4.a4(), aiMatrix4x4.b4(), aiMatrix4x4.c4(), aiMatrix4x4.d4());
 
         // getTransformMatrix
         matrix4.m00(aiMatrix4x4.a1());
@@ -140,25 +134,6 @@ public class AssimpConverter implements Converter {
     private GaiaScene convertScene(AIScene aiScene, String filePath, String fileName) {
         FormatType formatType = FormatType.fromExtension(FilenameUtils.getExtension(fileName));
 
-        /*
-        //READ METADATA
-        AIMetaData aiMetaData = aiScene.mMetaData();
-        assert aiMetaData != null;
-        if (aiMetaData != null) {
-            // UnitScaleFactor
-            var keys = aiMetaData.mKeys();
-            var values = aiMetaData.mValues();
-            int length = aiMetaData.mNumProperties();
-            for (int i = 0; i < length; i++) {
-                AIString keyAiString = keys.get(i);
-                String key = keyAiString.dataString();
-                AIMetaDataEntry dataEntry = values.get(i);
-                int type = dataEntry.mType();
-                ByteBuffer buffer = dataEntry.mData(0);
-                log.info("Key: " + key);
-            }
-        }*/
-
         GaiaScene gaiaScene = new GaiaScene();
         AINode aiNode = aiScene.mRootNode();
         List<String> embeddedTextures = getEmbeddedTexturePath(aiScene, filePath, fileName);
@@ -182,27 +157,7 @@ public class AssimpConverter implements Converter {
         node.recalculateTransform();
         gaiaScene.getNodes().add(node);
 
-        //TEST_DeleteAiNode(aiScene, aiNode, formatType);
-
         return gaiaScene;
-    }
-
-    private void TEST_DeleteAiNode(AIScene aiScene, AINode aiNode, FormatType formatType) {
-        PointerBuffer aiMaterials = aiScene.mMaterials();
-        MemoryUtil.memFree(aiMaterials);
-
-        int numMeshes = aiNode.mNumMeshes();
-        int numChildren = aiNode.mNumChildren();
-
-        if (numMeshes < 1 && numChildren < 1) {
-            return;
-        }
-
-        PointerBuffer aiMeshes = aiScene.mMeshes();
-        MemoryUtil.memFree(aiMeshes);
-
-        PointerBuffer childrenBuffer = aiNode.mChildren();
-        MemoryUtil.memFree(childrenBuffer);
     }
 
     private List<String> getEmbeddedTexturePath(AIScene aiScene, String filePath, String fileName) {
@@ -214,7 +169,9 @@ public class AssimpConverter implements Converter {
         int numTextures = aiScene.mNumTextures();
         for (int i = 0; i < numTextures; i++) {
             File path = new File(filePath, EMBEDDED_TEXTURES_DIR);
-            path.mkdirs();
+            if (path.mkdirs()) {
+                log.debug("Embedded Textures Directory Created: {}", path.getAbsolutePath());
+            }
 
             assert aiTextures != null;
             AITexture aiTexture = AITexture.create(aiTextures.get(i));
@@ -230,6 +187,7 @@ public class AssimpConverter implements Converter {
                 File file = new File(filename + "." + ext);
                 filename = file.getName();
             }
+            pathName.close();
 
             try (BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(new File(path, filename)))) {
                 byte[] bytes = new byte[buffer.capacity()];

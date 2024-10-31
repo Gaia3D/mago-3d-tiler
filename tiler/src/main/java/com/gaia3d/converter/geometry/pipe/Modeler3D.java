@@ -75,11 +75,10 @@ public class Modeler3D {
         for (int i = 0; i < network.getEdges().size(); i++) {
             TEdge edge = network.getEdges().get(i);
             if (edge instanceof Pipe pipe) {
-                if(i == 0 || i == network.getEdges().size() - 1) {
+                if (i == 0 || i == network.getEdges().size() - 1) {
                     pipe.setBottomCap(true);
                     pipe.setTopCap(true);
-                }
-                else {
+                } else {
                     pipe.setBottomCap(false);
                     pipe.setTopCap(false);
                 }

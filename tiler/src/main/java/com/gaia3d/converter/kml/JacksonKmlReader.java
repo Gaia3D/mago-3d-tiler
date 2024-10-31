@@ -63,8 +63,7 @@ public class JacksonKmlReader implements AttributeReader {
             String name = root.getDocument().getPlacemark().getName();
             String description = root.getDocument().getPlacemark().getDescription();
             List<Model> models = root.getDocument().getPlacemark().getModel();
-            for (int i = 0; i < models.size(); i++) {
-                Model model = models.get(i);
+            for (Model model : models) {
                 String altitudeMode = model.getAltitudeMode();
                 String href = model.getLink().getHref();
                 double longitude = model.getLocation().getLongitude();

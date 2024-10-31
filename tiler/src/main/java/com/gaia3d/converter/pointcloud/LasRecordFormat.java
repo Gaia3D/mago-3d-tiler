@@ -63,7 +63,7 @@ public enum LasRecordFormat {
     FORMAT_10((byte) 10,true);
 
     final byte formatNumber;
-    boolean hasColor;
+    final boolean hasColor;
 
     public static LasRecordFormat fromFormatNumber(byte formatNumber) {
         for (LasRecordFormat format : LasRecordFormat.values()) {

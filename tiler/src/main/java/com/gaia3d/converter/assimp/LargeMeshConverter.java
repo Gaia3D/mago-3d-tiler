@@ -83,14 +83,14 @@ public class LargeMeshConverter implements Converter {
             long indicesCount = mesh.getIndicesCount();
 
             if (vertexCount > THRES_HOLD) {
-                int spareatedCount = (int) (vertexCount / THRES_HOLD);
+                int separatedCount = (int) (vertexCount / THRES_HOLD);
 
                 // TODO implement logic to separate large mesh
                 log.info("[LargeMeshConverter] Large Mesh Name : {}", node.getName());
                 log.info(" - Mesh Triangle Count : {}", triangleCount);
                 log.info(" - Mesh Vertex Count : {}", vertexCount);
                 log.info(" - Mesh Indices Count : {}", indicesCount);
-                log.info(" - Mesh Index : {}", spareatedCount);
+                log.info(" - Mesh Index : {}", separatedCount);
 
                 List<GaiaScene> newScene = separateMesh(scene, node, mesh);
                 newScenes.addAll(newScene);
