@@ -11,6 +11,7 @@ import lombok.Setter;
 import org.joml.Matrix4d;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -33,6 +34,10 @@ public class GaiaScene extends SceneStructure {
 
     public GaiaScene(GaiaSet gaiaSet) {
         List<GaiaBufferDataSet> bufferDataSets = gaiaSet.getBufferDataList();
+        List<GaiaBufferDataSet> bufferDataSetsCopy = new ArrayList<>();
+        for (GaiaBufferDataSet bufferDataSet : bufferDataSets) {
+            bufferDataSetsCopy.add(bufferDataSet.clone());
+        }
         List<GaiaMaterial> materials = gaiaSet.getMaterials();
 
         Matrix4d transformMatrix = new Matrix4d();
@@ -45,7 +50,7 @@ public class GaiaScene extends SceneStructure {
         this.nodes.add(rootNode);
         this.attribute = gaiaSet.getAttribute();
 
-        bufferDataSets.forEach((bufferDataSet) -> rootNode.getChildren().add(new GaiaNode(bufferDataSet)));
+        bufferDataSetsCopy.forEach((bufferDataSet) -> rootNode.getChildren().add(new GaiaNode(bufferDataSet)));
     }
 
     public GaiaBoundingBox getBoundingBox() {

@@ -93,7 +93,6 @@ public class TilingPipeline implements Pipeline {
                         for (PreProcess preProcessors : preProcesses) {
                             preProcessors.run(tileInfo);
                         }
-                        tileInfo.setScene(null);
                         tileInfos.add(tileInfo);
                     }
                 }
