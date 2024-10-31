@@ -87,6 +87,16 @@ public class TileInfo {
     public void clear() {
         this.scene = null;
         this.set = null;
+        pointCloud = null;
+        kmlInfo = null;
+        transformMatrix = null;
+        boundingBox = null;
+        scenePath = null;
+        outputPath = null;
+        tempPath = null;
+        tempPathLod = null;
+        cartographicBBox = null;
+
     }
 
     public void deleteTemp() throws IOException {

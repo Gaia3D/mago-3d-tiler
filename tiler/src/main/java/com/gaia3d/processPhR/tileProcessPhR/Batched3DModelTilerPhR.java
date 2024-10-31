@@ -11,6 +11,7 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.halfedge.HalfEdgeScene;
 import com.gaia3d.basic.halfedge.HalfEdgeUtils;
 import com.gaia3d.basic.halfedge.PlaneType;
+import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaMaterial;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.model.GaiaTexture;
@@ -144,7 +145,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
         root.setGeometricError(geometricError);
 
-        double minLatLength = 250.0; // test value
+        double minLatLength = 200.0; // test value
         makeQuadTree(root, minLatLength);
 
         // lod 0.**********************************************************************************************************
@@ -174,6 +175,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         // make lod 1.**********************************************************************************************************
         lod = 1;
         tileInfosCopy.clear();
+        nodeTileInfoMap.clear();
         tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
 
         try {
@@ -183,7 +185,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             throw new RuntimeException(e);
         }
 
-        nodeTileInfoMap.clear();
+
 
         // distribute contents to node in the correspondent depth.***
         // After process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes.***
@@ -197,6 +199,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         // make lod 2.**********************************************************************************************************
         lod = 2;
         tileInfosCopy.clear();
+        nodeTileInfoMap.clear();
         tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
 
         boolean someSceneCut = false;
@@ -207,19 +210,17 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             throw new RuntimeException(e);
         }
 
-        nodeTileInfoMap.clear();
-
         // distribute contents to node in the correspondent depth.***
         // After process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes.***
         currDepth = maxDepth - lod;
         distributeContentsToNodes(root, tileInfosCopy, currDepth, nodeTileInfoMap);
-
 
         if(someSceneCut)
         {
             scissorTextures(tileInfosCopy);
         }
         makeContentsForNodes(nodeTileInfoMap, lod);
+        nodeTileInfoMap.clear();
         // End lod 2.---------------------------------------------------------
 
         // Check if is necessary netSurfaces nodes.***********************************************************************
@@ -718,6 +719,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 // create an originalPath for the cut scene.***
                 Path cutScenePath = Paths.get("");
                 gaiaSceneCut.setOriginalPath(cutScenePath);
+                //GaiaAttribute gaiaAttribute = gaiaSceneCut.getAttribute();
 
                 GaiaSet gaiaSetCut = GaiaSet.fromGaiaScene(gaiaSceneCut);
                 UUID identifier = UUID.randomUUID();
@@ -729,6 +731,11 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
                 Path tempPathLod = gaiaSetCut.writeFile(gaiaSetCutFolderPath);
 
+                // delete the contents of the gaiaSceneCut.************************************************
+                gaiaSceneCut.getNodes().forEach(node -> {
+                    node.clear();
+                });
+
                 // create a new tileInfo for the cut scene.***
                 TileInfo tileInfoCut = TileInfo.builder().scene(gaiaSceneCut).outputPath(tileInfo.getOutputPath()).build();
                 tileInfoCut.setTempPath(tempPathLod);
@@ -736,6 +743,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 tileInfoCut.setTransformMatrix(transformMatrixCut);
                 tileInfoCut.setBoundingBox(boundingBoxCutLC);
                 tileInfoCut.setCartographicBBox(cartographicBoundingBox);
+
+
 
                 // make a kmlInfo for the cut scene.***
                 // In reality, we must recalculate the position of the cut scene. Provisionally, we use the same position.***
@@ -777,13 +786,14 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         Map<TileInfo, TileInfo> deletedTileInfoMap = new HashMap<>();
         List<TileInfo> cutTileInfos = new ArrayList<>();
         double error = 1e-8;
+        Path path;
+        Vector3d samplePointLC = new Vector3d();
         for(int i = 0; i < tileInfosCount; i++)
         {
             TileInfo tileInfo = tileInfos.get(i);
             if(deletedTileInfoMap.containsKey(tileInfo))
                 continue;
 
-            Path path;
             if(tileInfo.getTempPathLod() != null) {
                 List<Path> paths = tileInfo.getTempPathLod();
                 path = paths.get(lod);
@@ -808,7 +818,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             // create a point with lonDeg, geoCoordPosition.y, 0.0.***
             Vector3d samplePointGeoCoord = new Vector3d(lonDeg, geoCoordPosition.y, 0.0);
             Vector3d samplePointWC = GlobeUtils.geographicToCartesianWgs84(samplePointGeoCoord);
-            Vector3d samplePointLC = new Vector3d();
+
             transformMatrixInv.transformPosition(samplePointWC, samplePointLC);
 
             // check if the planeLC cuts the setBBox.***
@@ -849,11 +859,14 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             {
                 tempPathFile.delete(); // no works. TODO: must delete the folder and all its contents.***
             }
-            tileInfos.remove(entry.getKey());
+            tileInfo.clear();
+            tileInfos.remove(tileInfo);
         }
 
         // add the cutTileInfos to tileInfos.***
         tileInfos.addAll(cutTileInfos);
+
+        System.gc();
 
         int hola = 0;
         return someSceneCutted;
@@ -944,7 +957,9 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         // remove from tileInfos the deleted tileInfos.***
         for(Map.Entry<TileInfo, TileInfo> entry : deletedTileInfoMap.entrySet())
         {
-            tileInfos.remove(entry.getKey());
+            TileInfo tileInfo = entry.getKey();
+            tileInfo.clear();
+            tileInfos.remove(tileInfo);
         }
 
         // add the cutTileInfos to tileInfos.***
@@ -1189,6 +1204,17 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             // Note : in each node, has NodeCode.***
 
             List<TileInfo> tileInfos = entry.getValue();
+
+            int tileInfosCount = tileInfos.size();
+            for(int i = 0; i < tileInfosCount; i++)
+            {
+                TileInfo tileInfo = tileInfos.get(i);
+                GaiaScene scene = tileInfo.getScene();
+                if(scene == null)
+                {
+                    log.error("makeContentsForNodes() Error : scene is null.");
+                }
+            }
 
             GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos); // cartographicBBox.***
             Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
