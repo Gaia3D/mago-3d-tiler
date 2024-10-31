@@ -99,6 +99,8 @@ public class HalfEdgeFace implements Serializable {
             return;
         }
 
+        this.normal = null;
+
         this.halfEdge = null;
     }
 
