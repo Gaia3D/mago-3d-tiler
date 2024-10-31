@@ -12,10 +12,6 @@ import java.util.List;
 /**
  * KmlReader is a class that reads kml files.
  * It reads kml files and returns the information of the kml file.
- *
- * @author znkim
- * @see FastKmlReader , KmlInfo
- * @since 1.0.0
  */
 @Slf4j
 @NoArgsConstructor

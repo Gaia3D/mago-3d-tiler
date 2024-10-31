@@ -29,10 +29,6 @@ import java.util.UUID;
 
 /**
  * A class that converts a file to a GaiaScene object using Assimp.
- *
- * @author znkim
- * @see Converter
- * @since 1.0.0
  */
 @Slf4j
 @RequiredArgsConstructor

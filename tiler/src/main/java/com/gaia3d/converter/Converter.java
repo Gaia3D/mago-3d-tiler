@@ -9,9 +9,6 @@ import java.util.List;
 
 /**
  * Interface for the converter.
- * @author znkim
- * @since 1.0.0
- * @see AssimpConverter
  */
 public interface Converter {
     List<GaiaScene> load(String path);

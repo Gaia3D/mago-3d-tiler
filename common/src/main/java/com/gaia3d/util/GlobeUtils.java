@@ -16,9 +16,6 @@ import org.opengis.referencing.operation.TransformException;
 
 /**
  * Utility class for converting between geographic and cartesian coordinates.
- *
- * @author znkim
- * @since 1.0.0
  */
 @Slf4j
 public class GlobeUtils {

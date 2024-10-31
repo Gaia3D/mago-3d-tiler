@@ -62,8 +62,12 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.0"
 }
 
+javadoc {
+    enabled = false
+}
+
 test {
-//    useJUnitPlatform {
-//        includeTags 'release'
-//    }
+    useJUnitPlatform {
+        includeTags 'release'
+    }
 }

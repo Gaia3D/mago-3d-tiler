@@ -20,9 +20,6 @@ import java.nio.file.StandardCopyOption;
 
 /**
  * Class for setting up logs.
- *
- * @author znkim
- * @since 1.0.0
  */
 public class Configurator {
     public static final Level LEVEL = Level.ALL;
