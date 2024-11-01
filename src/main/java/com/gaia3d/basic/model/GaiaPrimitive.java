@@ -26,10 +26,6 @@ import java.util.*;
  * It contains the vertices and surfaces.
  * The vertices are used for rendering.
  * The surfaces are used for calculating normals.
- *
- * @author znkim
- * @see <a href="https://en.wikipedia.org/wiki/Polygon_mesh">Polygon mesh</a>
- * @since 1.0.0
  */
 @Slf4j
 @Getter

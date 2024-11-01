@@ -23,10 +23,6 @@ import java.util.Map;
  * It contains the meshes and children.
  * The meshes are used for rendering.
  * The children are used for hierarchical structure.
- *
- * @author znkim
- * @see <a href="https://en.wikipedia.org/wiki/Scene_graph">Scene graph</a>
- * @since 1.0.0
  */
 @Slf4j
 @Getter

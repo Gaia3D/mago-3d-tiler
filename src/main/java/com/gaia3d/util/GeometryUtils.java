@@ -14,9 +14,6 @@ import java.util.List;
 
 /**
  * GeometryUtils
- *
- * @author znkim
- * @since 1.0.0
  */
 public class GeometryUtils {
     public static boolean isIdentity(float[] matrix) {
