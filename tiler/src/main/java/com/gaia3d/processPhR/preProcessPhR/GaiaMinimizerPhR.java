@@ -44,6 +44,7 @@ public class GaiaMinimizerPhR implements PreProcess {
             boolean checkBatchId = false;
             double error = 1e-8;
             scene.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
+            scene.doNormalLengthUnitary();
 
 //            // Test create a rectangularNet scene.***
 //            boolean calculateTexCoords = true;

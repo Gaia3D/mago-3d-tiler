@@ -86,6 +86,15 @@ public class GaiaPrimitive extends PrimitiveStructure {
         return resultIndices;
     }
 
+    public void doNormalLengthUnitary() {
+        for (GaiaVertex vertex : vertices) {
+            Vector3d normal = vertex.getNormal();
+            if (normal != null) {
+                normal.normalize();
+            }
+        }
+    }
+
     public GaiaBufferDataSet toGaiaBufferSet(Matrix4d transformMatrixOrigin) {
         Matrix4d transformMatrix = new Matrix4d(transformMatrixOrigin);
         Matrix3d rotationMatrix = new Matrix3d();

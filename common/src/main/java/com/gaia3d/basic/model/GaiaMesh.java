@@ -218,6 +218,12 @@ public class GaiaMesh extends MeshStructure {
         }
     }
 
+    public void doNormalLengthUnitary() {
+        for (GaiaPrimitive primitive : primitives) {
+            primitive.doNormalLengthUnitary();
+        }
+    }
+
     public void translate(Vector3d translation) {
         for (GaiaPrimitive primitive : primitives) {
             primitive.translate(translation);

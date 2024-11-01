@@ -2731,10 +2731,13 @@ public class HalfEdgeSurface implements Serializable {
         GaiaRectangle beforeMosaicRectangle = new GaiaRectangle(0.0, 0.0, 0.0, 0.0);
         List<GaiaRectangle> list_rectangles = new ArrayList<>();
 
+        TreeMap<Double, List<GaiaRectangle>> map_maxXrectangles = new TreeMap<>();
+
         Vector2d bestPosition = new Vector2d();
         List<GaiaTextureScissorData> currProcessScissorDates = new ArrayList<>();
         int textureScissorDatasCount = textureScissorDates.size();
         log.info("HalfEdgeSurface.doTextureAtlasProcess() : textureScissorDatasCount = " + textureScissorDatasCount);
+
         for (int i = 0; i < textureScissorDatasCount; i++)
         {
             GaiaTextureScissorData textureScissorData = textureScissorDates.get(i);
@@ -2751,13 +2754,19 @@ public class HalfEdgeSurface implements Serializable {
             else
             {
                 // 1rst, find the best position for image into atlas.***
-                bestPosition = this.getBestPositionMosaicInAtlas(currProcessScissorDates, textureScissorData, bestPosition, beforeMosaicRectangle, list_rectangles);
+                bestPosition = this.getBestPositionMosaicInAtlas(currProcessScissorDates, textureScissorData, bestPosition, beforeMosaicRectangle, list_rectangles, map_maxXrectangles);
                 batchedBoundary = new GaiaRectangle(bestPosition.x, bestPosition.y, bestPosition.x + originBoundary.getWidth(), bestPosition.y + originBoundary.getHeight());
                 textureScissorData.setBatchedBoundary(batchedBoundary);
                 beforeMosaicRectangle.addBoundingRectangle(batchedBoundary);
             }
             list_rectangles.add(batchedBoundary);
             currProcessScissorDates.add(textureScissorData);
+
+            // map.************************************************************************************************************************
+            double maxX = batchedBoundary.getMaxX();
+
+            List<GaiaRectangle> list_rectanglesMaxX = map_maxXrectangles.computeIfAbsent(maxX, k -> new ArrayList<>());
+            list_rectanglesMaxX.add(batchedBoundary);
         }
     }
 
@@ -2770,7 +2779,7 @@ public class HalfEdgeSurface implements Serializable {
     }
 
     private Vector2d getBestPositionMosaicInAtlas(List<GaiaTextureScissorData> currProcessScissorDates, GaiaTextureScissorData scissorData_toPutInMosaic, Vector2d resultVec,
-                                                  GaiaRectangle beforeMosaicRectangle, List<GaiaRectangle> list_rectangles) {
+                                                  GaiaRectangle beforeMosaicRectangle, List<GaiaRectangle> list_rectangles, TreeMap<Double, List<GaiaRectangle>> map_maxXrectangles) {
         if(resultVec == null)
         {
             resultVec = new Vector2d();
@@ -2812,7 +2821,7 @@ public class HalfEdgeSurface implements Serializable {
             scissorData_toPutInMosaic.getBatchedBoundary().setMaxY(currPosY + height);
 
             // put our rectangle into mosaic & check that no intersects with another rectangles.***
-            if (!this.intersectsRectangleAtlasingProcess(list_rectangles, scissorData_toPutInMosaic.getBatchedBoundary())) {
+            if (!this.intersectsRectangleAtlasingProcess(list_rectangles, scissorData_toPutInMosaic.getBatchedBoundary(), map_maxXrectangles)) {
                 GaiaRectangle afterMosaicRectangle = new GaiaRectangle(0.0, 0.0, 0.0, 0.0);
                 afterMosaicRectangle.copyFrom(beforeMosaicRectangle);
                 afterMosaicRectangle.addBoundingRectangle(scissorData_toPutInMosaic.getBatchedBoundary());
@@ -2844,7 +2853,7 @@ public class HalfEdgeSurface implements Serializable {
             scissorData_toPutInMosaic.getBatchedBoundary().setMaxY(currPosY + height);
 
             // put our rectangle into mosaic & check that no intersects with another rectangles.***
-            if (!this.intersectsRectangleAtlasingProcess(list_rectangles, scissorData_toPutInMosaic.getBatchedBoundary())) {
+            if (!this.intersectsRectangleAtlasingProcess(list_rectangles, scissorData_toPutInMosaic.getBatchedBoundary(), map_maxXrectangles)) {
                 GaiaRectangle afterMosaicRectangle = new GaiaRectangle(0.0, 0.0, 0.0, 0.0);
                 afterMosaicRectangle.copyFrom(beforeMosaicRectangle);
                 afterMosaicRectangle.addBoundingRectangle(scissorData_toPutInMosaic.getBatchedBoundary());
@@ -2871,19 +2880,42 @@ public class HalfEdgeSurface implements Serializable {
         return resultVec;
     }
 
-    private boolean intersectsRectangleAtlasingProcess(List<GaiaRectangle> listRectangles, GaiaRectangle rectangle) {
+
+
+    private boolean intersectsRectangleAtlasingProcess(List<GaiaRectangle> listRectangles, GaiaRectangle rectangle, TreeMap<Double, List<GaiaRectangle>> map_maxXrectangles) {
         // this function returns true if the rectangle intersects with any existent rectangle of the listRectangles.***
         boolean intersects = false;
         double error = 10E-5;
-        for (GaiaRectangle existentRectangle : listRectangles) {
-            if (existentRectangle == rectangle) {
-                continue;
-            }
-            if (existentRectangle.intersects(rectangle, error)) {
-                intersects = true;
-                break;
+
+        double currRectMinX = rectangle.getMinX();
+
+        // check with map_maxXrectangles all rectangles that have maxX > currRectMinX.***
+        for (Map.Entry<Double, List<GaiaRectangle>> entry : map_maxXrectangles.tailMap(currRectMinX).entrySet()) {
+            List<GaiaRectangle> existentRectangles = entry.getValue();
+
+            int existentRectanglesCount = existentRectangles.size();
+            for (int i = 0; i < existentRectanglesCount; i++) {
+                GaiaRectangle existentRectangle = existentRectangles.get(i);
+                if(existentRectangle == rectangle)
+                {
+                    continue;
+                }
+                if (existentRectangle.intersects(rectangle, error)) {
+                    return true;
+                }
             }
         }
+
+
+//        for (GaiaRectangle existentRectangle : listRectangles) {
+//            if (existentRectangle == rectangle) {
+//                continue;
+//            }
+//            if (existentRectangle.intersects(rectangle, error)) {
+//                intersects = true;
+//                break;
+//            }
+//        }
         return intersects;
     }
 

@@ -901,7 +901,7 @@ class UnitTest {
         //String path = "Tile_+000_+000_+000";
         //String path = "splittedTile";
         //String path = "Data_6buildings";
-        String path = "Data_10buildings";
+        String path = "Data_300buildings";
 
         String[] args = new String[]{
                 "-i", inputPath + path,
