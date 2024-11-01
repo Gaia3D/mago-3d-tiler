@@ -105,4 +105,10 @@ public class GaiaScene extends SceneStructure {
             node.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
         }
     }
+
+    public void doNormalLengthUnitary() {
+        for (GaiaNode node : this.nodes) {
+            node.doNormalLengthUnitary();
+        }
+    }
 }
