@@ -217,15 +217,59 @@ public class GaiaTextureCoordinator {
                 float scaleFactor = lod.getTextureScale();
 
                 // check if the texture is photorealistic and the lod level is greater than 2
+                int lodLevel = lod.getLevel();
                 if(isPhotorealistic)
                 {
-                    int lodLevel = lod.getLevel();
                     if(lodLevel > 1)
                     {
                         scaleFactor = 1.0f;
                     }
                 }
                 bufferedImage = texture.getBufferedImage(scaleFactor);
+
+                if(isPhotorealistic) {
+                    // limit the max image size to 4028
+                    boolean sizeChanged = false;
+                    int imageWidth = bufferedImage.getWidth();
+                    int imageHeight = bufferedImage.getHeight();
+
+                    if (lodLevel == 0) {
+                        if (imageWidth > 4028) {
+                            imageWidth = 4028;
+                            sizeChanged = true;
+                        }
+                        if (imageHeight > 4028) {
+                            imageHeight = 4028;
+                            sizeChanged = true;
+                        }
+                    }
+                    else if (lodLevel == 1) {
+                        if (imageWidth > 2048) {
+                            imageWidth = 2048;
+                            sizeChanged = true;
+                        }
+                        if (imageHeight > 2048) {
+                            imageHeight = 2048;
+                            sizeChanged = true;
+                        }
+                    }
+                    else if (lodLevel == 2) {
+                        if (imageWidth > 1024) {
+                            imageWidth = 1024;
+                            sizeChanged = true;
+                        }
+                        if (imageHeight > 1024) {
+                            imageHeight = 1024;
+                            sizeChanged = true;
+                        }
+                    }
+
+                    if (sizeChanged) {
+                        texture.resizeImage(imageWidth, imageHeight);
+                        bufferedImage = texture.getBufferedImage(1);
+                    }
+                }
+
             } else {
                 bufferedImage = createShamImage();
             }

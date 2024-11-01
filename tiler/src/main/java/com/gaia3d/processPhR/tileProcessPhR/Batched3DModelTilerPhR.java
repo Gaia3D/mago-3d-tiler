@@ -11,10 +11,7 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.halfedge.HalfEdgeScene;
 import com.gaia3d.basic.halfedge.HalfEdgeUtils;
 import com.gaia3d.basic.halfedge.PlaneType;
-import com.gaia3d.basic.model.GaiaAttribute;
-import com.gaia3d.basic.model.GaiaMaterial;
-import com.gaia3d.basic.model.GaiaScene;
-import com.gaia3d.basic.model.GaiaTexture;
+import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.KmlInfo;
@@ -385,6 +382,14 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             Path netSetPath = Paths.get(netSetFolderPathString + File.separator + "netSet_nodeDepth_" + nodeDepth + "_" + i + ".tmp");
             gaiaSet.writeFileInThePath(netSetPath);
 
+            List<GaiaNode> gaiaNodes = gaiaScene.getNodes();
+            int gaiaNodesCount = gaiaNodes.size();
+            for(int j = 0; j < gaiaNodesCount; j++)
+            {
+                GaiaNode gaiaNode = gaiaNodes.get(j);
+                gaiaNode.clear();
+            }
+
             //calculate lod.***
             int lod = maxDepth - nodeDepth;
             double netSurfaceGeometricError = 2*(lod+1);
@@ -578,6 +583,10 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             // load the file.***
             try {
                 GaiaSet gaiaSet = GaiaSet.readFile(path);
+                if(gaiaSet == null) {
+                    log.error("Error : gaiaSet is null. pth : " + path.toString());
+                    continue;
+                }
                 GaiaScene scene = new GaiaScene(gaiaSet);
 
                 HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
@@ -735,6 +744,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 gaiaSceneCut.getNodes().forEach(node -> {
                     node.clear();
                 });
+                // end delete the contents of the gaiaSceneCut.--------------------------------------------
 
                 // create a new tileInfo for the cut scene.***
                 TileInfo tileInfoCut = TileInfo.builder().scene(gaiaSceneCut).outputPath(tileInfo.getOutputPath()).build();
