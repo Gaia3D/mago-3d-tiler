@@ -54,7 +54,6 @@ public class AssimpConverter implements Converter {
 
         assert aiScene != null;
         GaiaScene gaiaScene = convertScene(aiScene, path, file.getName());
-
         gaiaScene.setOriginalPath(file.toPath());
 
         GaiaAttribute attribute = new GaiaAttribute();
@@ -183,7 +182,6 @@ public class AssimpConverter implements Converter {
                 File file = new File(filename + "." + ext);
                 filename = file.getName();
             }
-            pathName.close();
 
             try (BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(new File(path, filename)))) {
                 byte[] bytes = new byte[buffer.capacity()];
