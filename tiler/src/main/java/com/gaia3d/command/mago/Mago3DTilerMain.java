@@ -11,8 +11,6 @@ import java.io.IOException;
 
 /**
  * Main class for mago 3DTiler.
- *
- * @author znkim
  */
 @Slf4j
 public class Mago3DTilerMain {

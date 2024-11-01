@@ -18,9 +18,6 @@ import java.util.Iterator;
 
 /**
  * Utility class for image operations.
- *
- * @author znkim
- * @since 1.0.0
  */
 @Slf4j
 public class ImageUtils {

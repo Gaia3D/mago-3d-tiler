@@ -16,10 +16,6 @@ import java.util.List;
  * A class that represents a mesh of a Gaia object.
  * It contains the primitives.
  * The primitives are used for rendering.
- *
- * @author znkim
- * @see <a href="https://en.wikipedia.org/wiki/Polygon_mesh">Polygon mesh</a>
- * @since 1.0.0
  */
 @Getter
 @Setter

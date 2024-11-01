@@ -20,9 +20,6 @@ import java.util.List;
 /**
  * KmlReader is a class that reads kml files.
  * It reads kml files and returns the information of the kml file.
- * @author znkim
- * @since 1.0.0
- * @see DefaultKmlReader , KmlInfo
  */
 @Slf4j
 public class DefaultKmlReader implements AttributeReader {

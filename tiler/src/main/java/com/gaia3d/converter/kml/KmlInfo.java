@@ -8,9 +8,6 @@ import org.joml.Vector3d;
 /**
  * KmlInfo is a class that contains the information of the kml file.
  * It contains the information of the kml file, and the information of the buffer of each node.
- * @author znkim
- * @since 1.0.0
- * @see DefaultKmlReader
  */
 @Builder
 @Getter
