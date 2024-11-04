@@ -53,7 +53,7 @@ public class GaiaBufferDataSet implements Serializable {
                 if (!vertices.isEmpty()) {
                     int positionCount = 0;
                     for (GaiaVertex vertex : vertices) {
-                        Vector3d position = new Vector3d(positions[positionCount++], positions[positionCount++], positions[positionCount]);
+                        Vector3d position = new Vector3d(positions[positionCount++], positions[positionCount++], positions[positionCount++]);
                         vertex.setPosition(position);
                     }
                 } else {
