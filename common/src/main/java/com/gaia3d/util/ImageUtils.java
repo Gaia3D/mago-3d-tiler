@@ -212,8 +212,8 @@ public class ImageUtils {
                 result[0] = width;
                 result[1] = height;
 
-                System.out.println("Width: " + width);
-                System.out.println("Height: " + height);
+                log.info("Width: " + width);
+                log.info("Height: " + height);
 
                 reader.dispose();
 

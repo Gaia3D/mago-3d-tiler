@@ -1,5 +1,6 @@
 package com.gaia3d.renderer.engine;
 
+import lombok.extern.slf4j.Slf4j;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL20;
@@ -12,6 +13,7 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
+@Slf4j
 public class Window {
     private final long windowHandle;
     private int height;
@@ -32,7 +34,7 @@ public class Window {
     {
         int glError = GL20.glGetError();
         if(glError != GL20.GL_NO_ERROR) {
-            System.out.println("glError: " + glError);
+            log.error("glError: {}", glError);
             return true;
         }
         return false;
@@ -102,7 +104,7 @@ public class Window {
 
         glfwSetErrorCallback((int errorCode, long msgPtr) ->
                 //Logger.error("Error code [{}], msg [{}]", errorCode, MemoryUtil.memUTF8(msgPtr))
-                System.out.println("Error code [" + errorCode + "], msg [" + MemoryUtil.memUTF8(msgPtr) + "]")
+                log.info("Error code [" + errorCode + "], msg [" + MemoryUtil.memUTF8(msgPtr) + "]")
         );
 
 //        glfwSetKeyCallback(windowHandle, (window, key, scancode, action, mods) -> {
@@ -178,7 +180,7 @@ public class Window {
             resizeFunc.call();
         } catch (Exception excp) {
             //Logger.error("Error calling resize callback", excp);
-            System.out.println("Error calling resize callback");
+            log.info("Error calling resize callback");
         }
     }
 

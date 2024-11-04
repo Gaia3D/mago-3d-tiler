@@ -80,7 +80,7 @@ public class GltfCreator {
             ContentFeatureSource source = (ContentFeatureSource) dataStore.getFeatureSource(typeName);
             var query = new Query(typeName, Filter.INCLUDE);
             int totalCount = source.getCount(query);
-            System.out.println("Total count: " + totalCount);
+            log.info("Total count: " + totalCount);
 
 
 
@@ -126,7 +126,7 @@ public class GltfCreator {
             minLat += latOffset;
             maxLat += latOffset;
 
-            System.out.println("Start converting vector to raster");
+            log.info("Start converting vector to raster");
             CoordinateReferenceSystem sourceCRS = CRS.decode("EPSG:4326");
             ReferencedEnvelope envelope = new ReferencedEnvelope(minLon, maxLon, minLat, maxLat, sourceCRS);
 
@@ -146,7 +146,7 @@ public class GltfCreator {
             gridCoverage2D = new GridCoverageFactory().create("one", imageWorker.getRenderedImage(), envelope2);
 
 
-            System.out.println("End converting vector to raster");
+            log.info("End converting vector to raster");
 
             File outputFile = new File("D:/workspaces/sample.tiff");
             GeoTiffWriter writer = new GeoTiffWriter(outputFile);

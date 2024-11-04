@@ -49,6 +49,9 @@ public class RenderablePrimitive  extends RenderableObject{
 
         // remove all elements from map.
         mapAttribTypeRenderableBuffer.clear();
+        material = null;
+        originalGaiaPrimitive = null;
+        originalBufferDataSet = null;
 
     }
 }

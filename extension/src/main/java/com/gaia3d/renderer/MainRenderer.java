@@ -40,7 +40,7 @@ public class MainRenderer implements IAppLogic {
         try{
             engine.run();
         } catch (Exception e) {
-            log.error("Error initializing the engine: " + e.getMessage());
+            log.error("Error initializing the engine: ", e);
         }
 
     }
@@ -53,7 +53,7 @@ public class MainRenderer implements IAppLogic {
         try{
             engine.init();
         } catch (Exception e) {
-            log.error("Error initializing the engine: " + e.getMessage());
+            log.error("Error initializing the engine: " ,e);
         }
 
         int screenWidth = 1000; // no used var.***
@@ -133,6 +133,7 @@ public class MainRenderer implements IAppLogic {
         int scenesCount = sceneInfos.size();
         InternDataConverter internDataConverter = new InternDataConverter();
         List<RenderableGaiaScene> renderableGaiaScenes = new ArrayList<>();
+        int counter = 0;
         for(int i=0; i<scenesCount; i++)
         {
             // load and render, one by one.***
@@ -155,25 +156,22 @@ public class MainRenderer implements IAppLogic {
             renderableGaiaScenes.clear();
 
             // load the set file.***
-            GaiaSet gaiaSetToDelete = null;
-            GaiaScene gaiaSceneToDelete = null;
+            GaiaSet gaiaSet = null;
+            GaiaScene gaiaScene = null;
             Path path = Paths.get(scenePath);
             try
             {
-                GaiaSet gaiaSet = GaiaSet.readFile(path);
-                gaiaSetToDelete = gaiaSet;
-                GaiaScene gaiaScene = new GaiaScene(gaiaSet);
-                gaiaSceneToDelete = gaiaScene;
+                gaiaSet = GaiaSet.readFile(path);
+                gaiaScene = new GaiaScene(gaiaSet);
                 GaiaNode gaiaNode = gaiaScene.getNodes().get(0);
                 gaiaNode.setTransformMatrix(sceneTMatLC);
                 gaiaNode.setPreMultipliedTransformMatrix(sceneTMatLC);
-
                 RenderableGaiaScene renderableScene = internDataConverter.getRenderableGaiaScene(gaiaScene);
                 renderableGaiaScenes.add(renderableScene);
             }
             catch (Exception e)
             {
-                log.error("Error reading the file: " + e.getMessage());
+                log.error("Error reading the file: " ,e);
             }
 
             gaiaScenesContainer.setRenderableGaiaScenes(renderableGaiaScenes);
@@ -186,17 +184,19 @@ public class MainRenderer implements IAppLogic {
                 // render the scene.***
                 // Bind the fbo.***
                 colorFbo.bind();
+                log.info("Rendering the scene : " + i + " of scenesCount : " + scenesCount);
                 engine.getRenderSceneImage(sceneShaderProgram);
                 colorFbo.unbind();
 
                 // depth render.***
                 ShaderProgram depthShaderProgram = shaderManager.getShaderProgram("depth");
                 depthFbo.bind();
+                log.info("Rendering the depth : " + i + " of scenesCount : " + scenesCount);
                 engine.getRenderSceneImage(depthShaderProgram);
                 depthFbo.unbind();
 
             } catch (Exception e) {
-                log.error("Error initializing the engine: " + e.getMessage());
+                log.error("Error initializing the engine: ", e);
             }
 
             // delete renderableGaiaScenes.***
@@ -205,14 +205,21 @@ public class MainRenderer implements IAppLogic {
                 renderableScene.deleteGLBuffers();
             }
 
-            if(gaiaSetToDelete != null)
+            if(gaiaSet != null)
             {
-                gaiaSetToDelete.clear();
+                gaiaSet.clear();
             }
 
-            if(gaiaSceneToDelete != null)
+            if(gaiaScene != null)
             {
-                gaiaSceneToDelete.clear();
+                gaiaScene.clear();
+            }
+
+            counter++;
+            if(counter > 20)
+            {
+                System.gc();
+                counter = 0;
             }
         }
 
@@ -246,7 +253,7 @@ public class MainRenderer implements IAppLogic {
         try{
             engine.init();
         } catch (Exception e) {
-            log.error("Error initializing the engine: " + e.getMessage());
+            log.error("Error initializing the engine: ", e);
         }
 
         int screenWidth = 1000;
@@ -352,7 +359,7 @@ public class MainRenderer implements IAppLogic {
 
             resultImages.add(image);
         } catch (Exception e) {
-            log.error("Error initializing the engine: " + e.getMessage());
+            log.error("Error initializing the engine : ", e);
         }
 
         // delete renderableGaiaScenes.***

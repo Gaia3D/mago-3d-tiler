@@ -7,11 +7,11 @@ import lombok.Setter;
 @Setter
 @Getter
 public class GaiaTextureScissorData {
-    int originMaterialId;
-    int materialId;
-    GaiaRectangle originBoundary; // 0, 0, w, h
-    GaiaRectangle currentBoundary;
-    GaiaRectangle batchedBoundary;
+    private int originMaterialId;
+    private int materialId;
+    private GaiaRectangle originBoundary; // 0, 0, w, h
+    private GaiaRectangle currentBoundary;
+    private GaiaRectangle batchedBoundary;
 
     public GaiaRectangle getOriginBoundary() {
         if(originBoundary == null) {

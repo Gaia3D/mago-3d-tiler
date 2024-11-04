@@ -3,6 +3,7 @@ package com.gaia3d.basic.halfedge;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
@@ -16,7 +17,7 @@ import java.util.Map;
 
 @Setter
 @Getter
-
+@Slf4j
 public class HalfEdgeFace implements Serializable {
     private HalfEdge halfEdge = null;
     private Vector3d normal = null;
@@ -40,6 +41,39 @@ public class HalfEdgeFace implements Serializable {
         this.id = face.id;
         this.classifyId = face.classifyId;
         this.halfEdgeId = face.halfEdgeId;
+    }
+
+    public Vector3d calculatePlaneNormal()
+    {
+        List<HalfEdgeVertex> vertices = this.getVertices(null);
+        if(vertices == null)
+        {
+            return null;
+        }
+
+        if(vertices.size() < 3)
+        {
+            return null;
+        }
+
+        if(this.normal == null)
+        {
+            this.normal = new Vector3d();
+        }
+        HalfEdgeVertex vertex0 = vertices.get(0);
+        HalfEdgeVertex vertex1 = vertices.get(1);
+        HalfEdgeVertex vertex2 = vertices.get(2);
+
+        Vector3d v0 = new Vector3d(vertex1.getPosition());
+        v0.sub(vertex0.getPosition());
+
+        Vector3d v1 = new Vector3d(vertex2.getPosition());
+        v1.sub(vertex0.getPosition());
+
+        this.normal.cross(v0, v1);
+        this.normal.normalize();
+
+        return this.normal;
     }
 
     public List<HalfEdge> getHalfEdgesLoop(List<HalfEdge> resultHalfEdgesLoop) {
@@ -165,7 +199,7 @@ public class HalfEdgeFace implements Serializable {
             }
             outputStream.writeInt(halfEdgeId);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error Log : ", e);
         }
     }
 
@@ -185,7 +219,7 @@ public class HalfEdgeFace implements Serializable {
             status = (ObjectStatus)inputStream.readObject();
             halfEdgeId = inputStream.readInt();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error Log : ", e);
         }
     }
 

@@ -107,4 +107,11 @@ public class GaiaScene extends SceneStructure {
             node.doNormalLengthUnitary();
         }
     }
+
+    public void deleteNormals()
+    {
+        for (GaiaNode node : this.nodes) {
+            node.deleteNormals();
+        }
+    }
 }

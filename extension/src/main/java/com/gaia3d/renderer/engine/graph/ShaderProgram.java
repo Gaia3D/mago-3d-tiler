@@ -23,7 +23,7 @@ public class ShaderProgram {
         }
 
         List<Integer> shaderModules = new ArrayList<>();
-        shaderModuleDataList.forEach(s -> shaderModules.add(createShader(Utils.readFile(s.shaderFile), s.shaderType)));
+        shaderModuleDataList.forEach(s -> shaderModules.add(createShader(s.shaderSource, s.shaderType)));
 
         link(shaderModules);
     }
@@ -32,7 +32,8 @@ public class ShaderProgram {
         return GL20.glGetAttribLocation(programId, attribName);
     }
 
-    public record ShaderModuleData(String shaderFile, int shaderType) {
+    public record ShaderModuleData(String shaderSource, int shaderType) {
+
     }
 
     public void bind() {

@@ -25,6 +25,8 @@ import com.gaia3d.renderer.renderable.RenderablePrimitive;
 import com.gaia3d.renderer.renderable.SelectionColorManager;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ClassPathUtils;
 import org.joml.*;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -34,9 +36,13 @@ import org.lwjgl.opengl.GL30;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
+import java.io.*;
 import java.lang.Math;
+import java.net.URI;
+import java.net.URL;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,6 +55,7 @@ import static org.lwjgl.opengl.GL11.*;
 
 @Getter
 @Setter
+@Slf4j
 public class Engine {
     private Window window;
     private ShaderManager shaderManager;
@@ -73,7 +80,7 @@ public class Engine {
     {
         int glError = GL20.glGetError();
         if(glError != GL20.GL_NO_ERROR) {
-            System.out.println("glError: " + glError);
+            log.error("glError: {}", glError);
             return true;
         }
         return false;
@@ -100,7 +107,7 @@ public class Engine {
     }
 
     public void run() throws IOException {
-        System.out.println("Hello LWJGL " + Version.getVersion() + "!");
+        log.info("Hello LWJGL " + Version.getVersion() + "!");
 
         init();
         loop();
@@ -243,17 +250,53 @@ public class Engine {
         int hola2 = 0;
     }
 
+    private String readResource(String resourceLocation) {
+        InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream(resourceLocation);
+        byte[] bytes = null;
+        try {
+            bytes = resourceAsStream.readAllBytes();
+        } catch (IOException e) {
+            log.error("Error reading resource: {}", e);
+        }
+        return new String(bytes, StandardCharsets.UTF_8);
+    }
 
     private void setupShader() {
         shaderManager = new ShaderManager();
 
         GL.createCapabilities();
-        String shaderFolder = "D:/Java_Projects/mago-3d-tiler/extension/src/main/resources/shaders/";
+
+        // load shaders from classpath.***
+
+        //URL url = Engine.class.getResource("/shaders");
+
+        //D:\Java_Projects\mago-3d-tiler\tiler\build\libs\   file:\D:\Java_Projects\mago-3d-tiler\tiler\build\libs\mago-3d-tiler-1.10.0-natives-windows.jar!    \shaders
+        //URL url = ClassLoader.getSystemResource("shaders");
+
+        URL url = getClass().getClassLoader().getResource("shaders");
+        File shaderFolder = new File(url.getPath());
+        File vertexShaderFile = new File(shaderFolder, "sceneV330.vert");
+        File fragmentShaderFile = new File(shaderFolder, "sceneV330.frag");
+
+        log.info("shaderFolder: {}", shaderFolder.getAbsolutePath());
+
+
+        //InputStream vertexShaderStream = getClass().getClassLoader().getResourceAsStream("shaders/sceneV330.vert");
+        //InputStream fragmentShaderStream = getClass().getClassLoader().getResourceAsStream("shaders/sceneV330.frag");
+
+        String vertexShaderText = readResource("shaders/sceneV330.vert");
+        String fragmentShaderText = readResource("shaders/sceneV330.frag");
+
+
+        log.info("vertexShaderText: {}", vertexShaderText);
+        log.info("fragmentShaderText: {}", fragmentShaderText);
+
+        //String shaderFolder = "D:/Java_Projects/mago-3d-tiler/extension/src/main/resources/shaders/";
 
         // create a scene shader program.*************************************************************************************************
         java.util.List<ShaderProgram.ShaderModuleData> shaderModuleDataList = new ArrayList<>();
-        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(shaderFolder + "sceneV330.vert", GL20.GL_VERTEX_SHADER));
-        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(shaderFolder + "sceneV330.frag", GL20.GL_FRAGMENT_SHADER));
+        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(vertexShaderText, GL20.GL_VERTEX_SHADER));
+        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(fragmentShaderText, GL20.GL_FRAGMENT_SHADER));
         ShaderProgram sceneShaderProgram = shaderManager.createShaderProgram("scene", shaderModuleDataList);
 
 
@@ -266,37 +309,18 @@ public class Engine {
         uniformNames.add("uOneColor");
         sceneShaderProgram.createUniforms(uniformNames);
         sceneShaderProgram.validate();
-        //sceneShaderProgram.getUniformsMap().setUniform1i("texture0", 0); // texture channel 0
 
-        // create a screen shader program.*************************************************************************************************
-//        shaderModuleDataList = new ArrayList<>();
-//        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(shaderFolder + "screenV330.vert", GL20.GL_VERTEX_SHADER));
-//        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(shaderFolder + "screenV330.frag", GL20.GL_FRAGMENT_SHADER));
-//        ShaderProgram screenShaderProgram = shaderManager.createShaderProgram("screen", shaderModuleDataList);
-//
-//        uniformNames = new ArrayList<>();
-//        uniformNames.add("texture0");
-//        screenShaderProgram.createUniforms(uniformNames);
-//        screenShaderProgram.validate();
-
-        // create a colorCode shader program.****************************************************************************************************
-//        shaderModuleDataList = new ArrayList<>();
-//        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(shaderFolder + "colorCodeV330.vert", GL20.GL_VERTEX_SHADER));
-//        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(shaderFolder + "colorCodeV330.frag", GL20.GL_FRAGMENT_SHADER));
-//        ShaderProgram colorCodeShaderProgram = shaderManager.createShaderProgram("colorCode", shaderModuleDataList);
-//
-//        uniformNames = new ArrayList<>();
-//        uniformNames.add("uProjectionMatrix");
-//        uniformNames.add("uModelViewMatrix");
-//        uniformNames.add("uObjectMatrix");
-//        uniformNames.add("uColorCode");
-//        colorCodeShaderProgram.createUniforms(uniformNames);
-//        colorCodeShaderProgram.validate();
 
         // create depthShader.****************************************************************************************************
+        //vertexShaderFile = new File(shaderFolder, "depthV330.vert");
+        //fragmentShaderFile = new File(shaderFolder, "depthV330.frag");
+
+        vertexShaderText = readResource("shaders/depthV330.vert");
+        fragmentShaderText = readResource("shaders/depthV330.frag");
+
         shaderModuleDataList = new ArrayList<>();
-        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(shaderFolder + "depthV330.vert", GL20.GL_VERTEX_SHADER));
-        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(shaderFolder + "depthV330.frag", GL20.GL_FRAGMENT_SHADER));
+        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(vertexShaderText, GL20.GL_VERTEX_SHADER));
+        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(fragmentShaderText, GL20.GL_FRAGMENT_SHADER));
         sceneShaderProgram = shaderManager.createShaderProgram("depth", shaderModuleDataList);
 
         uniformNames = new ArrayList<>();

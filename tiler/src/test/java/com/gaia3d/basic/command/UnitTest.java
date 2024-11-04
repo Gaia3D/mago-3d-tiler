@@ -871,28 +871,6 @@ class UnitTest {
         Mago3DTilerMain.main(args);
     }
 
-    @Test
-    void test_RealisticMesh_Thailand_Data_1building() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\RealisticMesh_Thailand_multiTiles\\OBJ25sqkm\\";
-        String outputPath = "D:\\Result_mago3dTiler\\";
-        //String path = "Tile_+000_+000_+000";
-        //String path = "splittedTile";
-        String path = "Data_1building";
-
-        String[] args = new String[]{
-                "-i", inputPath + path,
-                "-it", "obj",
-                "-o", outputPath + path,
-                "-crs", "2096",
-                "-su",
-                "-glb",
-                "-pr", // photo realistic mesh
-                "-minLod", "0",
-                "-maxLod", "3",
-                "-debug"
-        };
-        Mago3DTilerMain.main(args);
-    }
 
     @Test
     void test_RealisticMesh_Thailand_Data_N_buildings() {
@@ -901,13 +879,13 @@ class UnitTest {
         //String path = "Tile_+000_+000_+000";
         //String path = "splittedTile";
         //String path = "Data_6buildings";
-        String path = "Data_300buildings";
+        String path = "Data_6buildings";
 
         String[] args = new String[]{
                 "-i", inputPath + path,
                 "-it", "obj",
                 "-o", outputPath + path,
-                "-crs", "2096",
+                "-crs", "32648",
                 "-su",
                 "-glb",
                 "-pr", // photo realistic mesh

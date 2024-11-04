@@ -27,15 +27,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+
 @Slf4j
 @AllArgsConstructor
 public class GaiaMinimizerPhR implements PreProcess {
     @Override
     public TileInfo run(TileInfo tileInfo) {
         GaiaScene scene = tileInfo.getScene();
+        scene.deleteNormals(); // test delete.**************************************
+
         if (scene != null) {
             log.info("Welding vertices in GaiaScene");
-
+            GlobalOptions globalOptions = GlobalOptions.getInstance();
 
             // 1rst, must weld vertices.***
             boolean checkTexCoord = true;
@@ -44,7 +47,10 @@ public class GaiaMinimizerPhR implements PreProcess {
             boolean checkBatchId = false;
             double error = 1e-8;
             scene.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
-            scene.doNormalLengthUnitary();
+//            HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
+//            halfEdgeScene.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
+//            scene.clear();
+//            scene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
 
 //            // Test create a rectangularNet scene.***
 //            boolean calculateTexCoords = true;
@@ -69,7 +75,7 @@ public class GaiaMinimizerPhR implements PreProcess {
             Path tempFolder = tileInfo.getTempPath();
 
             // Lod 0.************************************************************************************************************
-            log.info("Minimize GaiaScene LOD 0");
+            log.info("Minimize GaiaScene LOD 0 , Path : {}", tileInfo.getTempPath());
 
 //                        // test.***
 //                        HalfEdgeScene halfEdgeSceneLod0 = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
@@ -85,15 +91,17 @@ public class GaiaMinimizerPhR implements PreProcess {
             // Lod 1.************************************************************************************************************
             log.info("Minimize GaiaScene LOD 1");
             log.info("Making HalfEdgeScene from GaiaScene");
-            HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
+            HalfEdgeScene halfEdgeSceneLod1 = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 
             log.info("Doing triangles reduction in HalfEdgeScene");
-            halfEdgeScene.doTrianglesReduction();
+            double maxDiffAngDegrees = 55.0;
+            halfEdgeSceneLod1.doTrianglesReduction(maxDiffAngDegrees);
+            //halfEdgeScene.calculateNormals();
 
 
             log.info("Making GaiaScene from HalfEdgeScene");
-            GaiaScene sceneLod1 = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
-            halfEdgeScene.deleteObjects();
+            GaiaScene sceneLod1 = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneLod1);
+            halfEdgeSceneLod1.deleteObjects();
 
             GaiaSet tempSetLod1 = GaiaSet.fromGaiaScene(sceneLod1);
 
@@ -121,14 +129,15 @@ public class GaiaMinimizerPhR implements PreProcess {
             // test.***
             String sceneName = scene.getOriginalPath().getFileName().toString();
             String sceneRawName = sceneName.substring(0, sceneName.lastIndexOf("."));
-            File file = new File("D:" + File.separator + "Result_mago3dTiler" + File.separator + sceneRawName + ".jpg");
+            String outputFolderPath = globalOptions.getOutputPath();
+            File file = new File(outputFolderPath + sceneRawName + ".jpg");
             try
             {
                 ImageIO.write(resultImages.get(0), "JPG", file);
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                log.error("Error Log : ", e);
             }
             // end test.---
             // end change texture.-----------------------------------
@@ -138,17 +147,18 @@ public class GaiaMinimizerPhR implements PreProcess {
             scene.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
 
             log.info("Making HalfEdgeScene from GaiaScene");
-            halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
+            HalfEdgeScene halfEdgeSceneLod2 = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 
             log.info("Doing triangles reduction in HalfEdgeScene");
-            halfEdgeScene.doTrianglesReduction();
+            halfEdgeSceneLod2.doTrianglesReduction(50.0);
+            //halfEdgeScene.calculateNormals();
 
             // As we will change the texture by a topView render, must recalculate the texCoords.***
-            GaiaBoundingBox gaiaBoundingBox = halfEdgeScene.getBoundingBox();
-            halfEdgeScene.setBoxTexCoordsXY(gaiaBoundingBox);
+            GaiaBoundingBox gaiaBoundingBox = halfEdgeSceneLod2.getBoundingBox();
+            halfEdgeSceneLod2.setBoxTexCoordsXY(gaiaBoundingBox);
 
             // change the diffuse texture of the material by a topView render.***
-            List<GaiaMaterial> materials = halfEdgeScene.getUsingMaterialsWithTextures(null);
+            List<GaiaMaterial> materials = halfEdgeSceneLod2.getUsingMaterialsWithTextures(null);
             int materialsCount = materials.size();
             for (int i = 0; i < materialsCount; i++)
             {
@@ -184,7 +194,7 @@ public class GaiaMinimizerPhR implements PreProcess {
                     }
                     catch (Exception e)
                     {
-                        e.printStackTrace();
+                        log.error("Error Log : ", e);
                     }
 
                     // close the image.***
@@ -193,8 +203,8 @@ public class GaiaMinimizerPhR implements PreProcess {
             }
 
             log.info("Making GaiaScene from HalfEdgeScene");
-            GaiaScene sceneLod2 = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
-            halfEdgeScene.deleteObjects();
+            GaiaScene sceneLod2 = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneLod2);
+            halfEdgeSceneLod2.deleteObjects();
 
             GaiaSet tempSetLod2 = GaiaSet.fromGaiaScene(sceneLod2);
 

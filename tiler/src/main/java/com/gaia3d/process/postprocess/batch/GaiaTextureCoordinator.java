@@ -234,22 +234,22 @@ public class GaiaTextureCoordinator {
                     int imageHeight = bufferedImage.getHeight();
 
                     if (lodLevel == 0) {
-                        if (imageWidth > 4028) {
-                            imageWidth = 4028;
-                            sizeChanged = true;
-                        }
-                        if (imageHeight > 4028) {
-                            imageHeight = 4028;
-                            sizeChanged = true;
-                        }
-                    }
-                    else if (lodLevel == 1) {
                         if (imageWidth > 2048) {
                             imageWidth = 2048;
                             sizeChanged = true;
                         }
                         if (imageHeight > 2048) {
                             imageHeight = 2048;
+                            sizeChanged = true;
+                        }
+                    }
+                    else if (lodLevel == 1) {
+                        if (imageWidth > 1024) {
+                            imageWidth = 1024;
+                            sizeChanged = true;
+                        }
+                        if (imageHeight > 1024) {
+                            imageHeight = 1024;
                             sizeChanged = true;
                         }
                     }
@@ -260,6 +260,16 @@ public class GaiaTextureCoordinator {
                         }
                         if (imageHeight > 1024) {
                             imageHeight = 1024;
+                            sizeChanged = true;
+                        }
+                    }
+                    else if (lodLevel > 2) {
+                        if (imageWidth > 512) {
+                            imageWidth = 512;
+                            sizeChanged = true;
+                        }
+                        if (imageHeight > 512) {
+                            imageHeight = 512;
                             sizeChanged = true;
                         }
                     }

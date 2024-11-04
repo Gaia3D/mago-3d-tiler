@@ -4,6 +4,7 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaMaterial;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
@@ -15,6 +16,7 @@ import java.util.List;
 
 @Getter
 @Setter
+@Slf4j
 public class HalfEdgeNode implements Serializable {
     private HalfEdgeNode parent = null;
     private Matrix4d transformMatrix = new Matrix4d();
@@ -23,12 +25,12 @@ public class HalfEdgeNode implements Serializable {
     private List<HalfEdgeNode> children = new ArrayList<>();
     private GaiaBoundingBox boundingBox = null;
 
-    public void doTrianglesReduction() {
+    public void doTrianglesReduction(double maxDiffAngDeg) {
         for (HalfEdgeMesh mesh : meshes) {
-            mesh.doTrianglesReduction();
+            mesh.doTrianglesReduction(maxDiffAngDeg);
         }
         for (HalfEdgeNode child : children) {
-            child.doTrianglesReduction();
+            child.doTrianglesReduction(maxDiffAngDeg);
         }
     }
 
@@ -49,6 +51,16 @@ public class HalfEdgeNode implements Serializable {
         }
         for (HalfEdgeNode child : children) {
             child.checkSandClockFaces();
+        }
+    }
+
+    public void calculateNormals()
+    {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.calculateNormals();
+        }
+        for (HalfEdgeNode child : children) {
+            child.calculateNormals();
         }
     }
 
@@ -198,7 +210,7 @@ public class HalfEdgeNode implements Serializable {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error Log : ", e);
         }
     }
 
@@ -225,7 +237,7 @@ public class HalfEdgeNode implements Serializable {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error Log : ", e);
         }
     }
 
@@ -276,12 +288,21 @@ public class HalfEdgeNode implements Serializable {
         }
     }
 
-    public void doTrianglesReductionForNetSurface(double maxHeightDiff) {
+    public void doTrianglesReductionForNetSurface(double maxDiffAngDeg, double maxHeightDiff) {
         for (HalfEdgeMesh mesh : meshes) {
-            mesh.doTrianglesReductionForNetSurface(maxHeightDiff);
+            mesh.doTrianglesReductionForNetSurface(maxDiffAngDeg, maxHeightDiff);
         }
         for (HalfEdgeNode child : children) {
-            child.doTrianglesReductionForNetSurface(maxHeightDiff);
+            child.doTrianglesReductionForNetSurface(maxDiffAngDeg, maxHeightDiff);
+        }
+    }
+
+    public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
+        }
+        for (HalfEdgeNode child : children) {
+            child.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
         }
     }
 }

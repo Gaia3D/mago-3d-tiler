@@ -114,19 +114,20 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         double maxLonDeg = globalBoundingBox.getMaxX();
         double maxLatDeg = globalBoundingBox.getMaxY();
 
-        GaiaBoundingBox cartographicBoundingBox = new GaiaBoundingBox(minLonDeg, minLatDeg, globalBoundingBox.getMinZ(), maxLonDeg, maxLatDeg, globalBoundingBox.getMaxZ(), false);
+        // calculate the rootQuadtree size.*****************************************************************************
+        double minLatRad = Math.toRadians(minLatDeg);
+        double maxLatRad = Math.toRadians(maxLatDeg);
+        double distanceBetweenLat = GlobeUtils.distanceBetweenLatitudesRad(minLatRad, maxLatRad);
+        double desiredLeafDist = 80.0; // test value
 
-        double lonDegDiff = maxLonDeg - minLonDeg;
-        double latDegDiff = maxLatDeg - minLatDeg;
+        int desiredDepth = (int)Math.ceil(HalfEdgeUtils.log2(distanceBetweenLat/desiredLeafDist));
+        double desiredDistanceBetweenLat = desiredLeafDist*Math.pow(2, desiredDepth);
+        double desiredAngRad = GlobeUtils.angRadLatitudeForDistance(minLatRad, desiredDistanceBetweenLat);
+        double desiredAngDeg = Math.toDegrees(desiredAngRad);
+        maxLonDeg = minLonDeg + desiredAngDeg;
+        maxLatDeg = minLatDeg + desiredAngDeg;
+        // end calculate the rootQuadtree size.-------------------------------------------------------------------------
 
-        if(lonDegDiff > latDegDiff)
-        {
-            maxLatDeg = minLatDeg + lonDegDiff;
-        }
-        else if(latDegDiff > lonDegDiff)
-        {
-            maxLonDeg = minLonDeg + latDegDiff;
-        }
 
         globalBoundingBox = new GaiaBoundingBox(minLonDeg, minLatDeg, globalBoundingBox.getMinZ(), maxLonDeg, maxLatDeg, globalBoundingBox.getMaxZ(), false);
 
@@ -142,8 +143,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
         root.setGeometricError(geometricError);
 
-        double minLatLength = 200.0; // test value
-        makeQuadTree(root, minLatLength);
+        makeQuadTreeByDepth(root, desiredDepth);
+
 
         // lod 0.**********************************************************************************************************
         int lod = 0;
@@ -224,7 +225,9 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         lod = 3;
         for(int depth = maxDepth - lod; depth >= 0; depth--)
         {
-            createNetSurfaceNodes(root, tileInfos, depth, maxDepth);
+            tileInfosCopy.clear();
+            tileInfosCopy = this.getTileInfosCopy(tileInfos, 0, tileInfosCopy);
+            createNetSurfaceNodes(root, tileInfosCopy, depth, maxDepth);
         }
 
 
@@ -251,12 +254,14 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
     private void createNetSurfaceNodes(Node rootNode, List<TileInfo> tileInfos, int nodeDepth, int maxDepth)
     {
         // 1rst, find all tileInfos that intersects with the node.***
+        log.info("Creating netSurface nodes for nodeDepth : " + nodeDepth + " of maxDepth : " + maxDepth);
         List<Node> nodes = new ArrayList<>();
         rootNode.getNodesByDepth(nodeDepth, nodes);
         List<TileInfo> tileInfosOfNode = new ArrayList<>();
         int nodesCount = nodes.size();
         for(int i = 0; i < nodesCount; i++)
         {
+            tileInfosOfNode.clear();
             Node node = nodes.get(i);
             int tileInfosCount = tileInfos.size();
             for(int j = 0; j < tileInfosCount; j++)
@@ -305,6 +310,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             GaiaBoundingBox nodeBBoxLC = node.calculateLocalBoundingBox();
             GaiaBoundingBox nodeCartographicBBox = node.calculateCartographicBoundingBox();
 
+            log.info("nodeCode : " + node.getNodeCode() + "currNodeIdx : " + i + "of : " + nodesCount);
             tilerExtensionModule.getColorAndDepthRender(sceneInfos, bufferedImageType, resultImages, nodeBBoxLC, nodeTMatrix, 1024);
             BufferedImage bufferedImageColor = resultImages.get(0);
             BufferedImage bufferedImageDepth = resultImages.get(1);
@@ -344,7 +350,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 File file = new File(netSetImagesFolderPathString + File.separator + imagePath);
                 ImageIO.write(bufferedImageColor, "JPG", file);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Error : {}", e);
             }
 
             float[][] depthValues = bufferedImageToFloatMatrix(bufferedImageDepth);
@@ -352,7 +358,9 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             int numRows = bufferedImageDepth.getHeight();
             HalfEdgeScene halfEdgeScene = HalfEdgeUtils.getHalfEdgeSceneRectangularNet(numCols, numRows, depthValues, nodeBBoxLC);
             double hedgeMaxHeightDiff = 2.0;
-            halfEdgeScene.doTrianglesReductionForNetSurface(hedgeMaxHeightDiff);
+            double maxDiffAngDeg = 30.0;
+            halfEdgeScene.doTrianglesReductionForNetSurface(maxDiffAngDeg, hedgeMaxHeightDiff);
+            //halfEdgeScene.calculateNormals();
 
             if(halfEdgeScene.getTrianglesCount() == 0)
                 continue;
@@ -438,20 +446,21 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             String sceneName = "mosaicRenderTest_" + i + "_color";
             String sceneRawName = sceneName;
             imageExtension = "jpg";
+            String outputFolderPath = globalOptions.getOutputPath();
             try {
-                File file = new File("D:" + File.separator + "Result_mago3dTiler" + File.separator + sceneRawName + "." + imageExtension);
-                    ImageIO.write(bufferedImageColor, "JPG", file);
+                File outputFile = new File(outputFolderPath, sceneRawName + "." + imageExtension);
+                    ImageIO.write(bufferedImageColor, "JPG", outputFile);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Error : {}", e);
             }
 
             try {
                 sceneName = "mosaicRenderTest_" + i + "_depth";
                 imageExtension = "png";
-                File file = new File("D:" + File.separator + "Result_mago3dTiler" + File.separator + sceneName + "." + imageExtension);
-                ImageIO.write(bufferedImageDepth, "PNG", file);
+                File outputFile = new File(outputFolderPath, sceneName + "." + imageExtension);
+                ImageIO.write(bufferedImageDepth, "PNG", outputFile);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Error : {}", e);
             }
             int hola = 0;
         }
@@ -539,6 +548,10 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             Vector2d tileInfoCenterGeoCoordRad = new Vector2d(centerLonRad, centerLatRad);
 
             Node childNode = rootNode.getIntersectedNode(tileInfoCenterGeoCoordRad, nodeDepth);
+            if(childNode == null)
+            {
+                continue;
+            }
 
             nodeTileInfoMap.computeIfAbsent(childNode, k -> new ArrayList<>()).add(tileInfo);
             List<TileInfo> tileInfosInNode = nodeTileInfoMap.get(childNode);
@@ -561,11 +574,14 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
             // change the tempPath of the tileInfos by tempPathLod.***
             List<Path> tempPathLod = tileInfoCopy.getTempPathLod();
-            Path pathLod = tempPathLod.get(lod);
-            if(pathLod != null){
-                tileInfoCopy.setTempPath(pathLod);
+            if(tempPathLod != null)
+            {
+                Path pathLod = tempPathLod.get(lod);
+                if(pathLod != null){
+                    tileInfoCopy.setTempPath(pathLod);
+                }
             }
-
+            
             resultTileInfosCopy.add(tileInfoCopy);
         }
 
@@ -1093,6 +1109,27 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
     }
 
+    public void makeQuadTreeByDepth(Node node, int targetDepth)
+    {
+        if (node == null)
+            return;
+
+        if(node.getDepth() >= targetDepth)
+            return;
+
+        // must descend as quadtree.***
+        createQuadTreeChildrenForNode(node);
+
+        List<Node> children = node.getChildren();
+
+        int childrenCount = children.size();
+        for (int i = 0; i < childrenCount; i++)
+        {
+            Node child = children.get(i);
+            makeQuadTreeByDepth(child, targetDepth);
+        }
+    }
+
     public void splitMeshesByLod(List<TileInfo> tileInfos) {
         int minLod = globalOptions.getMinLod(); // most detailed level
         int maxLod = globalOptions.getMaxLod(); // least detailed level
@@ -1211,6 +1248,11 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         for(Map.Entry<Node, List<TileInfo>> entry : nodeTileInfoMap.entrySet())
         {
             Node childNode = entry.getKey();
+            if(childNode == null)
+            {
+                log.error("makeContentsForNodes() Error : childNode is null.");
+                continue;
+            }
             // Note : in each node, has NodeCode.***
 
             List<TileInfo> tileInfos = entry.getValue();

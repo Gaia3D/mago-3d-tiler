@@ -10,6 +10,7 @@ import com.gaia3d.renderer.engine.RenderableTexturesUtils;
 import com.gaia3d.renderer.renderable.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Matrix4f;
 import org.joml.Vector4d;
@@ -23,6 +24,7 @@ import java.util.Map;
 import static org.lwjgl.opengl.GL11.*;
 @Getter
 @Setter
+@Slf4j
 public class RenderEngine {
     private RenderableBasicAxis renderableBasicAxis;
     private boolean renderWireFrame = false;
@@ -190,7 +192,7 @@ public class RenderEngine {
     {
         int glError = GL20.glGetError();
         if(glError != GL20.GL_NO_ERROR) {
-            System.out.println("glError: " + glError);
+            log.info("glError: " + glError);
             return true;
         }
         return false;

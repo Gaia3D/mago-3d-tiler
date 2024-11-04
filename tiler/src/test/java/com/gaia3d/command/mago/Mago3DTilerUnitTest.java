@@ -687,7 +687,7 @@ class Mago3DTilerUnitTest {
                 FileUtils.writeStringToFile(outputFile, xml, "UTF-8");
             } catch (Exception e) {
                 log.error("Error : {}", e.getMessage());
-                e.printStackTrace();
+                log.error("Error Log : ", e);
             }
         }
     }
