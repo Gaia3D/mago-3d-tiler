@@ -288,6 +288,13 @@ public class GaiaPrimitive extends PrimitiveStructure {
         return gaiaPrimitive;
     }
 
+    public void deleteNormals()
+    {
+        for (GaiaVertex vertex : vertices) {
+            vertex.setNormal(null);
+        }
+    }
+
     public boolean check() {
         boolean result = true;
 
@@ -388,7 +395,8 @@ public class GaiaPrimitive extends PrimitiveStructure {
         this.vertices = newVerticesArray;
     }
 
-    private void getWeldableVertexMap(Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster, List<GaiaVertex> vertices, double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
+    private void getWeldableVertexMap(Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster, List<GaiaVertex> vertices, double error, boolean checkTexCoord, boolean checkNormal,
+                                      boolean checkColor, boolean checkBatchId) {
         Map<GaiaVertex, GaiaVertex> visitedMap = new HashMap<>();
         int verticesCount = vertices.size();
         for (int i = 0; i < verticesCount; i++) {

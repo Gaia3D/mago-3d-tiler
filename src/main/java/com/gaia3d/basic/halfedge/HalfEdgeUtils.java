@@ -370,6 +370,11 @@ public class HalfEdgeUtils {
         int meshesCount = gaiaMeshes.size();
         for (int i = 0; i < meshesCount; i++) {
             GaiaMesh gaiaMesh = gaiaMeshes.get(i);
+            if(gaiaMesh == null)
+            {
+                log.error("gaiaMesh == null.***");
+                continue;
+            }
             HalfEdgeMesh halfEdgeMesh = HalfEdgeUtils.halfEdgeMeshFromGaiaMesh(gaiaMesh);
             halfEdgeNode.getMeshes().add(halfEdgeMesh);
         }
@@ -380,6 +385,11 @@ public class HalfEdgeUtils {
 
         for (int i = 0; i < childrenCount; i++) {
             GaiaNode gaiaChild = gaiaChildren.get(i);
+            if(gaiaChild == null)
+            {
+                log.error("gaiaChild == null.***");
+                continue;
+            }
             HalfEdgeNode halfEdgeChild = HalfEdgeUtils.halfEdgeNodeFromGaiaNode(gaiaChild);
             halfEdgeChild.setParent(halfEdgeNode);
             halfEdgeNode.getChildren().add(halfEdgeChild);
@@ -397,6 +407,11 @@ public class HalfEdgeUtils {
         int primitivesCount = gaiaPrimitives.size();
         for (int i = 0; i < primitivesCount; i++) {
             GaiaPrimitive gaiaPrimitive = gaiaPrimitives.get(i);
+            if(gaiaPrimitive == null)
+            {
+                log.error("gaiaPrimitive == null.***");
+                continue;
+            }
             HalfEdgePrimitive halfEdgePrimitive = HalfEdgeUtils.halfEdgePrimitiveFromGaiaPrimitive(gaiaPrimitive);
             halfEdgeMesh.getPrimitives().add(halfEdgePrimitive);
         }
@@ -419,6 +434,11 @@ public class HalfEdgeUtils {
         }
         for (int i = 0; i < surfacesCount; i++) {
             GaiaSurface gaiaSurface = gaiaSurfaces.get(i);
+            if(gaiaSurface == null)
+            {
+                log.error("gaiaSurface == null.***");
+                continue;
+            }
             HalfEdgeSurface halfEdgeSurface = HalfEdgeUtils.halfEdgeSurfaceFromGaiaSurface(gaiaSurface, gaiaVertices);
             halfEdgePrimitive.getSurfaces().add(halfEdgeSurface);
         }
@@ -435,6 +455,12 @@ public class HalfEdgeUtils {
         return halfEdgePrimitive;
     }
 
+    public static double calculateAngleBetweenNormals(Vector3d normalA, Vector3d normalB) {
+        double dotProduct = normalA.dot(normalB);
+        double angle = Math.acos(dotProduct);
+        return angle;
+    }
+
     public List<GaiaFace> getGaiaTriangleFacesFromGaiaFace(GaiaFace gaiaFace) {
         List<GaiaFace> gaiaFaces = new ArrayList<>();
         int[] indices = gaiaFace.getIndices();
@@ -444,6 +470,7 @@ public class HalfEdgeUtils {
         for (int i = 0; i < indicesCount - 2; i += 3) {
             if(i + 2 >= indicesCount)
             {
+                log.error("i + 2 >= indicesCount.***");
                 int hola = 0;
             }
             GaiaFace gaiaTriangleFace = new GaiaFace();
@@ -466,10 +493,19 @@ public class HalfEdgeUtils {
         int facesCount = gaiaFaces.size();
         for (int i = 0; i < facesCount; i++) {
             GaiaFace gaiaFace = gaiaFaces.get(i);
+            if(gaiaFace == null)
+            {
+                log.error("gaiaFace == null.***");
+                continue;
+            }
             List<GaiaFace> gaiaTriangleFaces = new HalfEdgeUtils().getGaiaTriangleFacesFromGaiaFace(gaiaFace);
             int triangleFacesCount = gaiaTriangleFaces.size();
             for (int j = 0; j < triangleFacesCount; j++) {
                 GaiaFace gaiaTriangleFace = gaiaTriangleFaces.get(j);
+                if(gaiaTriangleFace == null)
+                {
+                    continue;
+                }
                 HalfEdgeFace halfEdgeFace = HalfEdgeUtils.halfEdgeFaceFromGaiaFace(gaiaTriangleFace, gaiaVertices, halfEdgeSurface, mapGaiaVertexToHalfEdgeVertex);
                 halfEdgeSurface.getFaces().add(halfEdgeFace);
             }
@@ -498,6 +534,10 @@ public class HalfEdgeUtils {
         int indicesCount = indices.length;
         for (int i = 0; i < indicesCount; i++) {
             int index = indices[i];
+            if(index >= gaiaVertices.size())
+            {
+                log.error("index >= gaiaVertices.size().***");
+            }
             GaiaVertex gaiaVertex = gaiaVertices.get(index);
             HalfEdgeVertex halfEdgeVertex = mapGaiaVertexToHalfEdgeVertex.get(gaiaVertex);
             if (halfEdgeVertex == null) {
@@ -974,6 +1014,50 @@ public class HalfEdgeUtils {
 
         // create a copy of the surface.***
         return getCopyHalfEdgeSurface(halfEdgeSurfaceTemp);
+    }
+
+    public static double log2(double x) {
+        return Math.log(x) / Math.log(2);
+    }
+
+    public static Vector3d calculateNormalAsConvex(List<HalfEdgeVertex> vertices, Vector3d resultNormal) {
+        if(resultNormal == null)
+        {
+            resultNormal = new Vector3d();
+        }
+        int verticesCount = vertices.size();
+        if(verticesCount < 3)
+        {
+            log.error("verticesCount < 3.***");
+            return resultNormal;
+        }
+        if(verticesCount > 3)
+        {verticesCount = 3;}
+
+        if(verticesCount == 3)
+        {
+            HalfEdgeVertex vertex1 = vertices.get(0);
+            HalfEdgeVertex vertex2 = vertices.get(1);
+            HalfEdgeVertex vertex3 = vertices.get(2);
+            Vector3d pos1 = vertex1.getPosition();
+            Vector3d pos2 = vertex2.getPosition();
+            Vector3d pos3 = vertex3.getPosition();
+            Vector3d v1 = new Vector3d();
+            Vector3d v2 = new Vector3d();
+            v1.set(pos2.x - pos1.x, pos2.y - pos1.y, pos2.z - pos1.z);
+            v2.set(pos3.x - pos1.x, pos3.y - pos1.y, pos3.z - pos1.z);
+            v1.cross(v2, resultNormal);
+            resultNormal.normalize();
+
+            // check if x, y, z is NaN.***
+            if(Double.isNaN(resultNormal.x) || Double.isNaN(resultNormal.y) || Double.isNaN(resultNormal.z))
+            {
+                log.error("resultNormal is NaN.***");
+                return null;
+            }
+        }
+
+        return resultNormal;
     }
 
 }

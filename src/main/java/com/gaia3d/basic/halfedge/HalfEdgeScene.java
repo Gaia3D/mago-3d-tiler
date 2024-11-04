@@ -29,16 +29,16 @@ public class HalfEdgeScene  implements Serializable{
     private List<GaiaMaterial> materials = new ArrayList<>();
     private GaiaBoundingBox boundingBox = null;
 
-    public void doTrianglesReduction() {
+    public void doTrianglesReduction(double maxDiffAngDeg) {
         for (HalfEdgeNode node : nodes) {
-            node.doTrianglesReduction();
+            node.doTrianglesReduction(maxDiffAngDeg);
         }
     }
 
-    public void doTrianglesReductionForNetSurface(double maxHeightDiff)
+    public void doTrianglesReductionForNetSurface(double maxDiffAngDeg, double maxHeightDiff)
     {
         for (HalfEdgeNode node : nodes) {
-            node.doTrianglesReductionForNetSurface(maxHeightDiff);
+            node.doTrianglesReductionForNetSurface(maxDiffAngDeg, maxHeightDiff);
         }
     }
 
@@ -385,6 +385,13 @@ public class HalfEdgeScene  implements Serializable{
         return resultMaterialsIds;
     }
 
+    public void calculateNormals()
+    {
+        for (HalfEdgeNode node : nodes) {
+            node.calculateNormals();
+        }
+    }
+
     public List<GaiaMaterial> getUsingMaterialsWithTextures(List<GaiaMaterial> resultMaterials) {
         //********************************************************************************
         // Usually, there are materials that are not using.***
@@ -410,6 +417,12 @@ public class HalfEdgeScene  implements Serializable{
     public void setMaterialId(int materialId) {
         for (HalfEdgeNode node : nodes) {
             node.setMaterialId(materialId);
+        }
+    }
+
+    public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
+        for (HalfEdgeNode node : nodes) {
+            node.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
         }
     }
 }

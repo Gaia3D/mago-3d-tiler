@@ -110,6 +110,13 @@ public class HalfEdge implements Serializable {
         if (startVertex == null || next == null) {
             return -1;
         }
+        HalfEdgeVertex endVertex = next.getStartVertex();
+        if(endVertex == null) {
+            return -1;
+        }
+        if(startVertex.getPosition() == null || endVertex.getPosition() == null) {
+            return -1;
+        }
         return startVertex.getPosition().distanceSquared(next.getStartVertex().getPosition());
     }
 

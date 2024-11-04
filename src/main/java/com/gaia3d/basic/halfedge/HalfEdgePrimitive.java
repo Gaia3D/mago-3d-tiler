@@ -4,6 +4,7 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaMaterial;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
@@ -15,6 +16,7 @@ import java.util.List;
 
 @Getter
 @Setter
+@Slf4j
 public class HalfEdgePrimitive implements Serializable {
     private Integer accessorIndices = -1;
     private Integer materialIndex = -1;
@@ -22,9 +24,9 @@ public class HalfEdgePrimitive implements Serializable {
     private List<HalfEdgeVertex> vertices = new ArrayList<>(); // vertices of all surfaces.***
     private GaiaBoundingBox boundingBox = null;
 
-    public void doTrianglesReduction() {
+    public void doTrianglesReduction(double maxDiffAngDeg) {
         for (HalfEdgeSurface surface : surfaces) {
-            surface.doTrianglesReduction();
+            surface.doTrianglesReduction(maxDiffAngDeg);
         }
 
         // Remake vertices.***
@@ -44,6 +46,13 @@ public class HalfEdgePrimitive implements Serializable {
             vertices.addAll(surface.getVertices());
         }
         return vertices;
+    }
+
+    public void calculateNormals()
+    {
+        for (HalfEdgeSurface surface : surfaces) {
+            surface.calculateNormals();
+        }
     }
 
     public void deleteObjects() {
@@ -135,7 +144,7 @@ public class HalfEdgePrimitive implements Serializable {
                 surface.writeFile(outputStream);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error Log : ", e);
         }
     }
 
@@ -153,7 +162,7 @@ public class HalfEdgePrimitive implements Serializable {
                 surfaces.add(surface);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error Log : ", e);
         }
     }
 
@@ -224,9 +233,15 @@ public class HalfEdgePrimitive implements Serializable {
         this.materialIndex = materialId;
     }
 
-    public void doTrianglesReductionForNetSurface(double maxHeightDiff) {
+    public void doTrianglesReductionForNetSurface(double maxDiffAngDeg, double maxHeightDiff) {
         for (HalfEdgeSurface surface : surfaces) {
-            surface.doTrianglesReductionForNetSurface(maxHeightDiff);
+            surface.doTrianglesReductionForNetSurface(maxDiffAngDeg, maxHeightDiff);
+        }
+    }
+
+    public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
+        for (HalfEdgeSurface surface : surfaces) {
+            surface.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
         }
     }
 }

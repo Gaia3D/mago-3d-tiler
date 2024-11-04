@@ -63,6 +63,11 @@ public class GlobeUtils {
         return avgRadius * (maxLatRad - minLatRad);
     }
 
+    public static double angRadLatitudeForDistance(double latRad, double distance) {
+        double radius = radiusAtLatitudeRad(latRad);
+        return distance / radius;
+    }
+
     public static Vector3d geographicToCartesianWgs84(Vector3d position) {
         double[] result = geographicToCartesianWgs84(position.x, position.y, position.z);
         return new Vector3d(result[0], result[1], result[2]);

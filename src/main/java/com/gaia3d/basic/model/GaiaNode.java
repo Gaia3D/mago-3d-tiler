@@ -253,4 +253,14 @@ public class GaiaNode extends NodeStructure {
             child.doNormalLengthUnitary();
         }
     }
+
+    public void deleteNormals()
+    {
+        for (GaiaMesh mesh : this.getMeshes()) {
+            mesh.deleteNormals();
+        }
+        for (GaiaNode child : this.getChildren()) {
+            child.deleteNormals();
+        }
+    }
 }
