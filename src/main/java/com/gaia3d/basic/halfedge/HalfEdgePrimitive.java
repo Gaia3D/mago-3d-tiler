@@ -24,9 +24,9 @@ public class HalfEdgePrimitive implements Serializable {
     private List<HalfEdgeVertex> vertices = new ArrayList<>(); // vertices of all surfaces.***
     private GaiaBoundingBox boundingBox = null;
 
-    public void doTrianglesReduction(double maxDiffAngDeg) {
+    public void doTrianglesReduction(double maxDiffAngDeg, double hedgeMinLength) {
         for (HalfEdgeSurface surface : surfaces) {
-            surface.doTrianglesReduction(maxDiffAngDeg);
+            surface.doTrianglesReduction(maxDiffAngDeg, hedgeMinLength);
         }
 
         // Remake vertices.***
@@ -233,9 +233,9 @@ public class HalfEdgePrimitive implements Serializable {
         this.materialIndex = materialId;
     }
 
-    public void doTrianglesReductionForNetSurface(double maxDiffAngDeg, double maxHeightDiff) {
+    public void doTrianglesReductionForNetSurface(double maxDiffAngDeg, double hedgeMinLength, double maxHeightDiff) {
         for (HalfEdgeSurface surface : surfaces) {
-            surface.doTrianglesReductionForNetSurface(maxDiffAngDeg, maxHeightDiff);
+            surface.doTrianglesReductionForNetSurface(maxDiffAngDeg, hedgeMinLength, maxHeightDiff);
         }
     }
 
