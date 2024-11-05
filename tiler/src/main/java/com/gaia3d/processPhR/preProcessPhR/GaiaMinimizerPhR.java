@@ -95,7 +95,8 @@ public class GaiaMinimizerPhR implements PreProcess {
 
             log.info("Doing triangles reduction in HalfEdgeScene");
             double maxDiffAngDegrees = 55.0;
-            halfEdgeSceneLod1.doTrianglesReduction(maxDiffAngDegrees);
+            double hedgeMinLength = 0.8;
+            halfEdgeSceneLod1.doTrianglesReduction(maxDiffAngDegrees, hedgeMinLength);
             //halfEdgeScene.calculateNormals();
 
 
@@ -150,7 +151,8 @@ public class GaiaMinimizerPhR implements PreProcess {
             HalfEdgeScene halfEdgeSceneLod2 = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 
             log.info("Doing triangles reduction in HalfEdgeScene");
-            halfEdgeSceneLod2.doTrianglesReduction(50.0);
+            hedgeMinLength = 1.0;
+            halfEdgeSceneLod2.doTrianglesReduction(50.0, hedgeMinLength);
             //halfEdgeScene.calculateNormals();
 
             // As we will change the texture by a topView render, must recalculate the texCoords.***
