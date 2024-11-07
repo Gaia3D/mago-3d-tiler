@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.IOException;
 
+@Deprecated
 @Slf4j
 class Mago3DTilerUnitTest {
     private static final String INPUT_PATH = "D:\\data\\mago-tiler-data\\input";

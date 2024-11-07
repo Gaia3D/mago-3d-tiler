@@ -17,6 +17,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 @Slf4j
 class UnitTest {
         private static final String INPUT_PATH = "D:\\data\\unit-test\\";
