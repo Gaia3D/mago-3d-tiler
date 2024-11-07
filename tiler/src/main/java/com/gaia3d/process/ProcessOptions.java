@@ -24,6 +24,9 @@ public enum ProcessOptions {
     // Coordinate Options
     CRS("crs", "c", "crs", true,"Coordinate Reference Systems, EPSG Code(4326, 3857, 32652, 5186...)"),
     PROJ4("proj", "p", "proj", true, "Proj4 parameters (ex: +proj=tmerc +la...)"),
+    X_OFFSET("xOffset", "xo", "xOffset", true, "X Offset value for coordinate transformation"),
+    Y_OFFSET("yOffset", "yo", "yOffset", true, "Y Offset value for coordinate transformation"),
+    Z_OFFSET("zOffset", "zo", "zOffset", true, "Z Offset value for coordinate transformation"),
 
     // Execution Options
     MULTI_THREAD_COUNT("multiThreadCount", "mc", "multiThreadCount", true, "set Multi-Thread count"),
@@ -37,7 +40,7 @@ public enum ProcessOptions {
     MAX_GEOMETRIC_ERROR("maxGeometricError", "mg", "maxGeometricError", true, "Maximum geometric error (Default: Integer max value)"),
     MAX_POINTS("maxPoints", "mp", "maxPoints", true, "Limiting the maximum number of points in point cloud data. (Default: 65536)"),
     POINT_SCALE("pointScale", "ps", "pointScale", true, "Pointscloud geometryError scale setting (Default: 2)"),
-    POINT_SKIP("pointSkip", "pk", "pointSkip", true, "Number of pointcloud omissions (ex: 1/4)(Default: 4)"),
+    POINT_SKIP("pointSkip", "pk", "pointSkip", true, "Number of Pointscloud omissions (ex: 1/4)(Default: 4)"),
 
     ROTATE_X_AXIS("rotateXAxis", "rx", "rotateXAxis", true, "Rotate the X-Axis in degrees (Unit: degrees)(Default: 0.0)"),
 

@@ -9,6 +9,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.lang3.StringUtils;
+import org.joml.Vector3d;
 import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 
@@ -74,6 +75,7 @@ public class GlobalOptions {
     // projection options
     private CoordinateReferenceSystem crs; // default crs
     private String proj; // proj4 string
+    private Vector3d translateOffset; // origin offset
 
     // point limit per tile
     private int pointLimit;
@@ -212,6 +214,22 @@ public class GlobalOptions {
             }
             instance.setCrs(crs);
         }
+
+
+        Vector3d translation = new Vector3d(0, 0, 0);
+        if (command.hasOption(ProcessOptions.X_OFFSET.getArgName())) {
+            double x = Double.parseDouble(command.getOptionValue(ProcessOptions.X_OFFSET.getArgName()));
+            translation.x = x;
+        }
+        if (command.hasOption(ProcessOptions.Y_OFFSET.getArgName())) {
+            double y = Double.parseDouble(command.getOptionValue(ProcessOptions.Y_OFFSET.getArgName()));
+            translation.y = y;
+        }
+        if (command.hasOption(ProcessOptions.Z_OFFSET.getArgName())) {
+            double z = Double.parseDouble(command.getOptionValue(ProcessOptions.Z_OFFSET.getArgName()));
+            translation.z = z;
+        }
+        instance.setTranslateOffset(translation);
 
         CRSFactory factory = new CRSFactory();
         if (command.hasOption(ProcessOptions.CRS.getArgName()) || command.hasOption(ProcessOptions.PROJ4.getArgName())) {
