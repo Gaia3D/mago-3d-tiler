@@ -83,6 +83,11 @@ public class HalfEdgeOctreeVertices {
         children[5].coordinate.setDepthAndCoord(L + 1, X * 2 + 1, Y * 2, Z * 2 + 1);
         children[6].coordinate.setDepthAndCoord(L + 1, X * 2 + 1, Y * 2 + 1, Z * 2 + 1);
         children[7].coordinate.setDepthAndCoord(L + 1, X * 2, Y * 2 + 1, Z * 2 + 1);
+
+        for(int i=0; i<8; i++) {
+            children[i].setMinBoxSize(minBoxSize);
+            children[i].setMaxDepth(maxDepth);
+        }
     }
 
     public void makeTreeByMinBoxSize(double minBoxSize) {
