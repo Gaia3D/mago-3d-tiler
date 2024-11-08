@@ -6,6 +6,7 @@ import com.gaia3d.command.Configurator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Level;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
@@ -19,9 +20,12 @@ class AssimpConverterTest {
      * Stress test for loading 3D models.
      */
     @Test
+    @Disabled
     void loadStressTest() {
         Configurator.initConsoleLogger("%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n");
         Configurator.setLevel(Level.DEBUG);
+
+        log.debug("Start loading files");
 
         AssimpConverter assimpConverter = new AssimpConverter();
         File inputFolder = new File("D:\\data\\mago-tiler-data\\input\\seoul-set\\");
@@ -45,7 +49,6 @@ class AssimpConverterTest {
     @Test
     void load() {
         Configurator.initConsoleLogger();
-
         ClassLoader classLoader = getClass().getClassLoader();
         File inputFolder = new File(classLoader.getResource("./sample-3ds").getFile());
         File inputFile = new File(inputFolder, "a_bd001.3ds");
@@ -73,7 +76,7 @@ class AssimpConverterTest {
         log.debug(gaiaSet.equals(readA) + "");
     }
 
-    void writeObject(GaiaSet gaiaSet, File outputFile) {
+    private void writeObject(GaiaSet gaiaSet, File outputFile) {
         try (ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(outputFile))) {
             outputStream.writeObject(gaiaSet);
         } catch (Exception e) {
@@ -81,7 +84,8 @@ class AssimpConverterTest {
         }
     }
 
-    GaiaSet readObject(File outputFile) {
+
+    private GaiaSet readObject(File outputFile) {
         try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(outputFile))) {
             GaiaSet gaiaSet = (GaiaSet) inputStream.readObject();
             return gaiaSet;

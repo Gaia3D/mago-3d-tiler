@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
+@Deprecated
 @Slf4j
 class Mago3DTilerSeoulTest {
 
