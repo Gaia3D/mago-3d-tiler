@@ -1,18 +1,31 @@
 package com.gaia3d.converter.loader;
 
 import com.gaia3d.basic.types.FormatType;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
+import org.apache.commons.io.FileUtils;
 import org.geotools.coverage.grid.GridCoverage2D;
 
 import java.io.File;
 import java.util.List;
 
 public interface FileLoader {
+    List<File> loadTemp(List<File> files);
+
     List<TileInfo> loadTileInfo(File file);
 
     List<File> loadFiles();
 
     List<GridCoverage2D> loadGridCoverages(List<GridCoverage2D> coverages);
+
+    default List<File> loadFileDefault() {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        File inputFile = new File(globalOptions.getInputPath());
+        boolean recursive = globalOptions.isRecursive();
+        FormatType formatType = globalOptions.getInputFormat();
+        String[] extensions = getExtensions(formatType);
+        return (List<File>) FileUtils.listFiles(inputFile, extensions, recursive);
+    }
 
     default String[] getExtensions(FormatType formatType) {
         String[] extensions = new String[4];

@@ -38,8 +38,8 @@ public class GlobalOptions {
     private static final int DEFAULT_MAX_NODE_DEPTH = 32;
     private static final int DEFAULT_MAX_INSTANCE = 512;
 
-    private static final int DEFAULT_POINT_LIMIT = 65536 / 2;
-    private static final int DEFAULT_POINT_SCALE = 2;
+    private static final int DEFAULT_POINT_LIMIT = 65536 * 2;
+    private static final int DEFAULT_POINT_SCALE = 1;
     private static final int DEFAULT_POINT_SKIP = 4;
 
     private static final String DEFAULT_CRS = "3857"; // 4326 -> 3857
@@ -79,7 +79,6 @@ public class GlobalOptions {
 
     // point limit per tile
     private int pointLimit;
-
     // point scale
     private int pointScale;
     // skip points value

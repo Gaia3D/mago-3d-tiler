@@ -7,6 +7,8 @@ import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -23,6 +25,7 @@ import java.util.List;
  * Loads files from the input directory.
  */
 @Slf4j
+@RequiredArgsConstructor
 public class InstancedFileLoader implements FileLoader {
     private final Converter converter;
     private final AttributeReader kmlReader;
@@ -31,9 +34,8 @@ public class InstancedFileLoader implements FileLoader {
     private File instanceFile = null;
     private GaiaScene instanceScene = null;
 
-    public InstancedFileLoader(Converter converter, AttributeReader kmlReader) {
-        this.converter = converter;
-        this.kmlReader = kmlReader;
+    public List<File> loadTemp(List<File> files) {
+        return files;
     }
 
     public List<GaiaScene> loadScene(File input) {
@@ -70,12 +72,7 @@ public class InstancedFileLoader implements FileLoader {
 
     @Override
     public List<File> loadFiles() {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
-        File inputFile = new File(globalOptions.getInputPath());
-        boolean recursive = globalOptions.isRecursive();
-        FormatType formatType = globalOptions.getInputFormat();
-        String[] extensions = getExtensions(formatType);
-        return (List<File>) FileUtils.listFiles(inputFile, extensions, recursive);
+        return loadFileDefault();
     }
 
     @Override

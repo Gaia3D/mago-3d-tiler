@@ -1,5 +1,6 @@
 package com.gaia3d.basic.geometry.octree;
 
+import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaVertex;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,8 +26,6 @@ public class GaiaOctreeVertices {
     private GaiaOctreeVertices[] children = null;
     //-----------------------------------------------------------------------------------
     private List<GaiaVertex> vertices = new ArrayList<>();
-
-
 
     public GaiaOctreeVertices(GaiaOctreeVertices parent) {
         this.parent = parent;
@@ -131,6 +130,135 @@ public class GaiaOctreeVertices {
         for (GaiaOctreeVertices child : children) {
             child.makeTreeByMinVertexCount(minVertexCount);
         }
+    }
+
+    public void printVertices() {
+        if (!vertices.isEmpty() && children == null) {
+            //log.info("vertices.size() : {}", vertices.size());
+        }
+
+        if (children != null) {
+            for (GaiaOctreeVertices child : children) {
+                child.printVertices();
+            }
+        }
+    }
+
+    public void reduceVerticesByDistance() {
+        /*GaiaBoundingBox boundingBox = new GaiaBoundingBox();
+        for (GaiaVertex vertex : vertices) {
+            boundingBox.addPoint(vertex.getPosition());
+        }
+        Vector3d centerPosition = boundingBox.getCenter();*/
+        List<GaiaVertex> newVertices = new ArrayList<>();
+        if (!vertices.isEmpty()) {
+            GaiaVertex vertex = vertices.get(0);
+            Vector3d vertexPosition = vertex.getPosition();
+            for (int i = 1; i < vertices.size(); i++) {
+                GaiaVertex compareVertex = vertices.get(i);
+                Vector3d comparePosition = compareVertex.getPosition();
+                if (vertexPosition.distance(comparePosition) < 0.003) {
+                    //
+                } else {
+                    newVertices.add(compareVertex);
+                }
+            }
+        }
+        vertices = newVertices;
+    }
+
+    /*public void reduceVerticesByDistance() {
+        GaiaBoundingBox boundingBox = new GaiaBoundingBox();
+        for (GaiaVertex vertex : vertices) {
+            boundingBox.addPoint(vertex.getPosition());
+        }
+        Vector3d center = boundingBox.getCenter();
+        GaiaVertex temp = vertices.get(0);
+        temp.setPosition(center);
+
+        vertices = new ArrayList<>();
+        vertices.add(temp);
+        *//*if (!vertices.isEmpty()) {
+            GaiaVertex vertex = vertices.get(0);
+            for (int i = 1; i < vertices.size(); i++) {
+                GaiaVertex compareVertex = vertices.get(i);
+                if (vertex.getPosition().distance(compareVertex.getPosition()) < minBoxSize) {
+                    vertices.remove(i);
+                    i--;
+                }
+            }
+        }*//*
+    }*/
+
+    public void reduceVertices(int maxVertexCount) {
+
+        if (!vertices.isEmpty() && children == null) {
+            reduceVerticesByDistance();
+            if (vertices.size() > maxVertexCount) {
+                reduceVerticesByDistance();
+            }
+
+            /*if (vertices.size() > maxVertexCount) {
+                //log.info("vertices.size() : {}", vertices.size());
+                //reduceVerticesByDistance();
+                createChildren();
+                distributeContents();
+                for (GaiaOctreeVertices child : children) {
+                    child.reduceVertices(maxVertexCount);
+                }
+            } else if (vertices.size() > 10) {
+                reduceVerticesByDistance();
+            }*/
+        }
+
+        if (children != null) {
+            for (GaiaOctreeVertices child : children) {
+                child.reduceVertices(maxVertexCount);
+            }
+        }
+
+        printVertices();
+    }
+
+    public int findMaximumDepth() {
+        int maxDepth = this.coordinate.getDepth();
+        if (children == null) {
+            return maxDepth;
+        }
+
+        for (GaiaOctreeVertices child : children) {
+            int depth = child.findMaximumDepth();
+            if (depth > maxDepth) {
+                maxDepth = depth;
+            }
+        }
+        return maxDepth;
+    }
+
+    public List<GaiaVertex> getAllVertices(List<GaiaVertex> allVertices) {
+        if (allVertices == null) {
+            allVertices = new ArrayList<>();
+        }
+        allVertices.addAll(vertices);
+        if (children != null) {
+            for (GaiaOctreeVertices child : children) {
+                child.getAllVertices(allVertices);
+            }
+        }
+        return allVertices;
+    }
+
+    public int calculateVerticesCount(int[] count) {
+        if (count == null) {
+            count = new int[1];
+        }
+        count[0] += vertices.size();
+        if (children != null) {
+            for (GaiaOctreeVertices child : children) {
+                child.calculateVerticesCount(count);
+            }
+        }
+        return count[0];
     }
 
     public void calculateSize() {

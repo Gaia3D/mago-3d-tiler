@@ -28,14 +28,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * BatchedProcessModel
+ */
 @Slf4j
 public class BatchedProcessModel implements ProcessFlowModel {
     private static final String MODEL_NAME = "BatchedProcessModel";
-    private final GlobalOptions globalOptions = GlobalOptions.getInstance();
 
+    @Override
     public void run() throws IOException {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
         FormatType inputFormat = globalOptions.getInputFormat();
-        boolean isRotateUpAxis = globalOptions.isSwapUpAxis();
 
         Converter converter = getConverter(inputFormat);
         AttributeReader kmlReader = new FastKmlReader();
@@ -45,29 +48,24 @@ public class BatchedProcessModel implements ProcessFlowModel {
         if (globalOptions.getTerrainPath() != null) {
             geoTiffs = fileLoader.loadGridCoverages(geoTiffs);
         }
+
+        /* Pre-process */
         List<PreProcess> preProcessors = new ArrayList<>();
         preProcessors.add(new GaiaTileInfoInitiator());
         preProcessors.add(new GaiaTexCoordCorrector());
         preProcessors.add(new GaiaScaler());
-
-
-
+        preProcessors.add(new GaiaRotator());
         if (globalOptions.isLargeMesh()) {
-            if (isRotateUpAxis) {
-                preProcessors.add(new GaiaRotator());
-                //preProcessors.add(new GaiaRotatorOld());
-            }
             preProcessors.add(new GaiaTranslatorExact(geoTiffs));
         } else {
-            preProcessors.add(new GaiaRotator());
-            //preProcessors.add(new GaiaRotatorOld());
             preProcessors.add(new GaiaTranslator(geoTiffs));
         }
-
         preProcessors.add(new GaiaMinimizer());
 
+        /* Main-process */
         TilingProcess tilingProcess = new Batched3DModelTiler();
 
+        /* Post-process */
         List<PostProcess> postProcessors = new ArrayList<>();
         postProcessors.add(new GaiaMaximizer());
         postProcessors.add(new GaiaRelocator());
@@ -78,6 +76,7 @@ public class BatchedProcessModel implements ProcessFlowModel {
     }
 
     private Converter getConverter(FormatType formatType) {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
         Converter converter;
         if (formatType == FormatType.CITYGML) {
             converter = new CityGmlConverter();
@@ -87,7 +86,6 @@ public class BatchedProcessModel implements ProcessFlowModel {
             converter = new ShapeConverter();
         } else if (formatType == FormatType.GEOJSON) {
             converter = new GeoJsonConverter();
-            //converter = new GeoJsonSurfaceConverter();
         } else {
             if (globalOptions.isLargeMesh()) {
                 converter = new LargeMeshConverter(new AssimpConverter());

@@ -38,6 +38,7 @@ public class TilingPipeline implements Pipeline {
     private final GlobalOptions globalOptions = GlobalOptions.getInstance();
 
     /* Tiling process info */
+    private List<File> fileList;
     private List<TileInfo> tileInfos;
     private Tileset tileset;
     private List<ContentInfo> contentInfos;
@@ -46,12 +47,15 @@ public class TilingPipeline implements Pipeline {
     public void process(FileLoader fileLoader) throws IOException {
         /* Pre-process */
         try {
-            createTemp();
-            startPreProcesses(fileLoader);
+            /* Load all files */
+            readAllFiles(fileLoader);
+            /* Pre-process */
+            createTemp(fileLoader);
+            executePreProcesses(fileLoader);
             /* Main-process */
-            startTilingProcess();
+            executeTilingProcess();
             /* Post-process */
-            startPostProcesses();
+            executePostProcesses();
             /* Delete temp files */
             deleteTemp();
         } catch (InterruptedException e) {
@@ -60,14 +64,15 @@ public class TilingPipeline implements Pipeline {
         }
     }
 
-    private void startPreProcesses(FileLoader fileLoader) throws InterruptedException {
+    private void readAllFiles(FileLoader fileLoader) {
+        log.info("[Load] Loading all files.");
+        fileList = fileLoader.loadFiles();
+        log.info("[Load] Finished loading all files");
+    }
+
+    private void executePreProcesses(FileLoader fileLoader) throws InterruptedException {
         log.info("[Pre] Start the pre-processing.");
         tileInfos = new ArrayList<>();
-
-        /* loading all file list */
-        log.info("[Pre] Loading all files.");
-        List<File> fileList = fileLoader.loadFiles();
-        log.info("[Pre] Finished loading all files");
 
         ExecutorService executorService = Executors.newFixedThreadPool(globalOptions.getMultiThreadCount());
         List<Runnable> tasks = new ArrayList<>();
@@ -105,7 +110,7 @@ public class TilingPipeline implements Pipeline {
         log.info("[Pre] End the pre-processing.");
     }
 
-    private void startTilingProcess() throws FileNotFoundException {
+    private void executeTilingProcess() throws FileNotFoundException {
         log.info("[Tile] Start the tiling process.");
         Tiler tiler = (Tiler) tilingProcess;
         log.info("[Tile] Writing tileset file.");
@@ -114,7 +119,7 @@ public class TilingPipeline implements Pipeline {
         log.info("[Tile] End the tiling process.");
     }
 
-    private void startPostProcesses() throws InterruptedException {
+    private void executePostProcesses() throws InterruptedException {
         log.info("[Post] Start the post-processing.");
 
         ExecutorService executorService = Executors.newFixedThreadPool(globalOptions.getMultiThreadCount());
@@ -152,12 +157,14 @@ public class TilingPipeline implements Pipeline {
         log.info("[Post] End the post-processing.");
     }
 
-    private void createTemp() throws IOException {
+    private void createTemp(FileLoader fileLoader) {
         /* create temp directory */
         File tempFile = new File(globalOptions.getOutputPath(), "temp");
         if (!tempFile.exists() && tempFile.mkdirs()) {
             log.info("[Pre] Created temp directory in {}", tempFile.getAbsolutePath());
         }
+
+
     }
 
     private void deleteTemp() throws IOException {

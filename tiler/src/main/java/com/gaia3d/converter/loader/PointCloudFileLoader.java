@@ -4,7 +4,9 @@ import com.gaia3d.basic.pointcloud.GaiaPointCloud;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.pointcloud.LasConverter;
+import com.gaia3d.converter.pointcloud.PointCloudTempGenerator;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -22,18 +24,20 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PointCloudFileLoader implements FileLoader {
     private final LasConverter converter;
+    private final PointCloudTempGenerator generator;
+
+    public List<File> loadTemp(List<File> files) {
+        generator.readAllHeaders();
+        generator.generateTempFiles();
+        return files;
+    }
 
     public List<GaiaPointCloud> loadPointCloud(File input) {
         return converter.load(input);
     }
 
     public List<File> loadFiles() {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
-        File inputFile = new File(globalOptions.getInputPath());
-        boolean recursive = globalOptions.isRecursive();
-        FormatType formatType = globalOptions.getInputFormat();
-        String[] extensions = getExtensions(formatType);
-        return (ArrayList<File>) FileUtils.listFiles(inputFile, extensions, recursive);
+        return loadFileDefault();
     }
 
     @Override
