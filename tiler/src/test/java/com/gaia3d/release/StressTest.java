@@ -9,8 +9,6 @@ public class StressTest {
     private static final String INPUT_PATH = "D:\\data\\mago-tiler-data\\stress-test-input";
     private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\mago-viewer\\data\\stress-test-output";
 
-
-    //
     @Test
     void testIfcMep() {
         String path = "LARGE-MEP-IFC";
@@ -140,7 +138,8 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-crs", "32648",
-                "-debug"
+                //"-pointSkip", "1",
+                //"-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -153,7 +152,27 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-crs", "32648",
-                "-pointSkip", "2",
+                //"-pointSkip", "8",
+                //"-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testDemoObj() {
+        String path = "DEMO-OBJ";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "obj",
+                "-crs", "32648",
+                "-xOffset", "268943",
+                "-yOffset", "1818915",
+                //"-proj", "+proj=utm +lat_0=0 +lon_0=0 +x_0=268943 +y_0=1818915 +zone=48 +datum=WGS84 +units=m +no_defs",
+                //"-proj", "+proj=gnom +lat_0=16.440659400004286 +lon_0=102.83604640169834 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs",
+                //"-rotateX", "-90",
+                "-minLod", "0",
+                "-maxLod", "0",
                 "-debug"
         };
         Mago3DTilerMain.main(args);

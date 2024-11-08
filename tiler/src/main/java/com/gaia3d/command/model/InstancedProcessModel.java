@@ -24,12 +24,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * InstancedProcessModel
+ */
 @Slf4j
 public class InstancedProcessModel implements ProcessFlowModel {
     private static final String MODEL_NAME = "InstancedProcessModel";
-    private final GlobalOptions globalOptions = GlobalOptions.getInstance();
 
+    @Override
     public void run() throws IOException {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
         FormatType inputFormat = globalOptions.getInputFormat();
 
         Converter converter = getConverter(inputFormat);
@@ -41,14 +45,17 @@ public class InstancedProcessModel implements ProcessFlowModel {
             geoTiffs = fileLoader.loadGridCoverages(geoTiffs);
         }
 
+        /* Pre-process */
         List<PreProcess> preProcessors = new ArrayList<>();
         preProcessors.add(new GaiaTileInfoInitiator());
         preProcessors.add(new GaiaRotator());
         preProcessors.add(new GaiaTexCoordCorrector());
         preProcessors.add(new GaiaInstanceTranslator(geoTiffs));
 
+        /* Main-process */
         TilingProcess tilingProcess = new Instanced3DModelTiler();
 
+        /* Post-process */
         List<PostProcess> postProcessors = new ArrayList<>();
         postProcessors.add(new Instanced3DModel());
 

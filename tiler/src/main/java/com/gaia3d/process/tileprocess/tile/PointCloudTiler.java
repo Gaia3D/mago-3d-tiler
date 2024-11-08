@@ -138,12 +138,12 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
             pointCloud.setCode((index++) + "");
             pointCloud.maximize();
             List<GaiaPointCloud> allPointClouds = new ArrayList<>();
-            createNode(allPointClouds, index, parentNode, pointCloud, 16.0d);
+            createNode(allPointClouds, index, parentNode, pointCloud);
             minimizeAllPointCloud(index, maximumIndex, allPointClouds);
         }
     }
 
-    private void createNode(List<GaiaPointCloud> allPointClouds, int index, Node parentNode, GaiaPointCloud pointCloud, double geometricError) {
+    private void createNode(List<GaiaPointCloud> allPointClouds, int index, Node parentNode, GaiaPointCloud pointCloud) {
         allPointClouds.add(pointCloud);
 
         GlobalOptions globalOptions = GlobalOptions.getInstance();
@@ -163,8 +163,10 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
 
         double geometricErrorCalc = calcGeometricError(selfPointCloud);
-        double calculatedGeometricError = geometricErrorCalc / pointScale / 12;
-        if (calculatedGeometricError < 1.0) {
+        double calculatedGeometricError = geometricErrorCalc / 16;
+        if (calculatedGeometricError > 8.0) {
+            calculatedGeometricError = 8.0;
+        } else if (calculatedGeometricError < 1.0) {
             calculatedGeometricError = 1.0;
         }
 
@@ -176,7 +178,6 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         childNode.setRefine(Node.RefineType.ADD);
         childNode.setChildren(new ArrayList<>());
         childNode.setNodeCode(parentNode.getNodeCode() + pointCloud.getCode());
-
         childNode.setGeometricError(calculatedGeometricError);
 
         TileInfo selfTileInfo = TileInfo.builder()
@@ -205,7 +206,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
             List<GaiaPointCloud> distributes = remainPointCloud.distribute();
             distributes.forEach(distribute -> {
                 if (!distribute.getVertices().isEmpty()) {
-                    createNode(allPointClouds, index, childNode, distribute, geometricError / 2);
+                    createNode(allPointClouds, index, childNode, distribute);
                 }
             });
         }

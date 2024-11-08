@@ -1,6 +1,7 @@
 package com.gaia3d.converter.pointcloud;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.octree.GaiaOctreeVertices;
 import com.gaia3d.basic.pointcloud.GaiaPointCloud;
 import com.gaia3d.basic.model.GaiaVertex;
 import com.gaia3d.command.mago.GlobalOptions;
@@ -76,15 +77,17 @@ public class LasConverter {
         CoordinateReferenceSystem crs = globalOptions.getCrs();
 
         BasicCoordinateTransform transformer = new BasicCoordinateTransform(crs, GlobeUtils.wgs84);
-        //ProjCoordinate minCoordinate = new ProjCoordinate(getMinX, getMinY, getMinZ);
-        //ProjCoordinate maxCoordinate = new ProjCoordinate(getMaxX, getMaxY, getMaxZ);
-        ProjCoordinate minCoordinate = transformer.transform(new ProjCoordinate(getMinX, getMinY, getMinZ), new ProjCoordinate());
-        ProjCoordinate maxCoordinate = transformer.transform(new ProjCoordinate(getMaxX, getMaxY, getMaxZ), new ProjCoordinate());
+        ProjCoordinate srsMinCoordinate = new ProjCoordinate(getMinX, getMinY, getMinZ);
+        ProjCoordinate srsMaxCoordinate = new ProjCoordinate(getMaxX, getMaxY, getMaxZ);
+        ProjCoordinate crsMinCoordinate = transformer.transform(srsMinCoordinate, new ProjCoordinate());
+        ProjCoordinate crsMaxCoordinate = transformer.transform(srsMaxCoordinate, new ProjCoordinate());
+        crsMinCoordinate.z = getMinZ;
+        crsMaxCoordinate.z = getMaxZ;
 
-        ProjCoordinate minTransformedCoordinate = GlobeUtils.transform(crs, minCoordinate);
-        ProjCoordinate maxTransformedCoordinate = GlobeUtils.transform(crs, maxCoordinate);
-        minTransformedCoordinate.z = getMinZ;
-        maxTransformedCoordinate.z = getMaxZ;
+        ProjCoordinate srsBoundingBox = new ProjCoordinate();
+        srsBoundingBox.x = srsMaxCoordinate.x - srsMinCoordinate.x;
+        srsBoundingBox.y = srsMaxCoordinate.y - srsMinCoordinate.y;
+        srsBoundingBox.z = srsMaxCoordinate.z - srsMinCoordinate.z;
 
         int pointSkip = globalOptions.getPointSkip();
         CloseablePointIterable pointIterable = reader.getCloseablePoints();
@@ -103,15 +106,20 @@ public class LasConverter {
         log.debug(" - LAS Total Point Records : {}", pointRecords);
         log.debug(" - LAS Total Legacy Point Records : {}", legacyPointRecords);
         log.debug(" - LAS Total Record size : {}", totalPointRecords * recordLength);
-        log.debug(" - LAS Min Coordinate : {}", minTransformedCoordinate);
-        log.debug(" - LAS Max Coordinate : {}", maxTransformedCoordinate);
+        log.debug(" - LAS Min Local Coordinate : {}", srsMinCoordinate);
+        log.debug(" - LAS Max Local Coordinate : {}", srsMaxCoordinate);
+        log.debug(" - LAS Min World Coordinate : {}", crsMinCoordinate);
+        log.debug(" - LAS Max World Coordinate : {}", crsMaxCoordinate);
+        log.debug(" - LAS Bounding Box : {}", srsBoundingBox);
         log.debug("----------------------------------------");
 
         long pointIndex = 0;
+        Vector3d recentPosition = null;
         for (LASPoint point : pointIterable) {
-            if (pointIndex % totalPointRecords1percent == 0 && pointIndex != 0) {
+            if (totalPointRecords1percent > 0 && pointIndex % totalPointRecords1percent == 0 && pointIndex != 0) {
                 log.debug(" - Las Records Loading progress. ({}/100)%", pointIndex / totalPointRecords1percent);
             }
+
             if (pointIndex % pointSkip == 0) {
                 double x = point.getX() * xScaleFactor + xOffset;
                 double y = point.getY() * yScaleFactor + yOffset;
@@ -120,8 +128,8 @@ public class LasConverter {
                 ProjCoordinate coordinate = new ProjCoordinate(x, y, z);
                 ProjCoordinate transformedCoordinate = new ProjCoordinate();
                 transformer.transform(coordinate, transformedCoordinate);
-                //ProjCoordinate transformedCoordinate = GlobeUtils.transform(crs, coordinate);
                 Vector3d position = new Vector3d(transformedCoordinate.x, transformedCoordinate.y, z);
+                recentPosition = position;
                 coordinate = null;
                 transformedCoordinate = null;
 
@@ -142,19 +150,70 @@ public class LasConverter {
             }
             pointIndex++;
         }
-        log.debug("----------------------------------------");
-
         pointIterable.close();
 
-        // randomize arrays
-        Collections.shuffle(vertices);
+        List<GaiaVertex> reducedPoints = vertices;
+        //List<GaiaVertex> reducedPoints = reducePointsA(vertices);
+        //List<GaiaVertex> reducedPoints = reducePointsB(vertices);
+        //log.info("original vertices count : {}", vertices.size());
+        //log.info("reduced vertices count : {}", reducedPoints.size());
 
-        pointCloud.setVertices(vertices);
-        pointClouds.add(pointCloud);
         System.gc();
+        Collections.shuffle(reducedPoints);
+        pointClouds.add(pointCloud);
+        pointCloud.setVertices(reducedPoints);
 
+        log.debug("----------------------------------------");
         return pointClouds;
     }
+
+    /**
+     * Reduce points by using HashMap
+     * @param vertices List<GaiaVertex>
+     * @return List<GaiaVertex>
+     */
+    private List<GaiaVertex> reducePointsA(List<GaiaVertex> vertices) {
+        String format = "%.5f";
+        Map<String, GaiaVertex> hashMap = new HashMap<>();
+        vertices.forEach((vertex) -> {
+            Vector3d position = vertex.getPosition();
+            double x = position.x;
+            double y = position.y;
+            double z = position.z;
+
+            String xStr = String.format(format, x);
+            String yStr = String.format(format, y);
+            String zStr = String.format(format, z);
+            String key = xStr + "-" + yStr + "-" + zStr;
+            if (hashMap.containsKey(key)) {
+                //log.error("Duplicated key : {}", key);
+            } else {
+                hashMap.put(key, vertex);
+            }
+        });
+        List<GaiaVertex> newVertices = new ArrayList<>(hashMap.values());
+        return newVertices;
+    }
+
+    /**
+     * Reduce points by using GaiaOctreeVertices
+     * @param vertices List<GaiaVertex>
+     * @return List<GaiaVertex>
+     */
+    private List<GaiaVertex> reducePointsB(List<GaiaVertex> vertices) {
+        GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null);
+        octreeVertices.getVertices().addAll(vertices);
+        octreeVertices.calculateSize();
+        octreeVertices.setAsCube();
+        //octreeVertices.setMinBoxSize(0.1); // 1m.***
+        //octreeVertices.makeTreeByMinBoxSize(1.0);
+        octreeVertices.setMaxDepth(20);
+        octreeVertices.makeTreeByMinBoxSize(0.1);
+        octreeVertices.reduceVertices(10);
+        List<GaiaVertex> newVertices = octreeVertices.getAllVertices(null);
+        return newVertices;
+    }
+
 
     private void transformPositions(List<GaiaVertex> vertices) {
         vertices.forEach((vertex) -> {

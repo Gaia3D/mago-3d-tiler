@@ -3,6 +3,7 @@ package com.gaia3d.command.model;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.loader.PointCloudFileLoader;
 import com.gaia3d.converter.pointcloud.LasConverter;
+import com.gaia3d.converter.pointcloud.PointCloudTempGenerator;
 import com.gaia3d.process.TilingPipeline;
 import com.gaia3d.process.postprocess.PostProcess;
 import com.gaia3d.process.postprocess.pointcloud.PointCloudModel;
@@ -17,19 +18,27 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * PointsCloudProcessModel
+ */
 @Slf4j
 public class PointCloudProcessModel implements ProcessFlowModel {
     private static final String MODEL_NAME = "PointCloudProcessModel";
-    private final GlobalOptions globalOptions = GlobalOptions.getInstance();
 
+    @Override
     public void run() throws IOException {
         LasConverter converter = new LasConverter();
+        PointCloudTempGenerator generator = new PointCloudTempGenerator();
+        PointCloudFileLoader fileLoader = new PointCloudFileLoader(converter, generator);
 
-        PointCloudFileLoader fileLoader = new PointCloudFileLoader(converter);
+        /* Pre-process */
         List<PreProcess> preProcessors = new ArrayList<>();
         preProcessors.add(new GaiaMinimizer());
 
+        /* Main-process */
         TilingProcess tilingProcess = new PointCloudTiler();
+
+        /* Post-process */
         List<PostProcess> postProcessors = new ArrayList<>();
         postProcessors.add(new PointCloudModel());
 
