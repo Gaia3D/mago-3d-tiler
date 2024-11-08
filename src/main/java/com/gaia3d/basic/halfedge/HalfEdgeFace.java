@@ -24,7 +24,7 @@ public class HalfEdgeFace implements Serializable {
     private ObjectStatus status = ObjectStatus.ACTIVE;
     private String note = null;
     private int id = -1;
-    private int classifyId = -1;
+    private int classifyId = -1;  // auxiliary variable.***
     private int halfEdgeId = -1;
 
     public void copyFrom(HalfEdgeFace face) {
@@ -136,6 +136,26 @@ public class HalfEdgeFace implements Serializable {
         this.normal = null;
 
         this.halfEdge = null;
+    }
+
+    public boolean isDegenerated()
+    {
+        // if area is 0, then is degenerated.***
+        List<HalfEdge> halfEdgesLoop = this.getHalfEdgesLoop(null);
+        if(halfEdgesLoop == null)
+        {
+            return true;
+        }
+
+        for(HalfEdge halfEdge : halfEdgesLoop)
+        {
+            if(halfEdge.isDegeneratedByPointers() || halfEdge.isDegeneratedByPositions())
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public boolean isApplauseFace(HalfEdgeFace face) {

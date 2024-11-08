@@ -263,4 +263,13 @@ public class GaiaNode extends NodeStructure {
             child.deleteNormals();
         }
     }
+
+    public void deleteDegeneratedFaces() {
+        for (GaiaMesh mesh : this.getMeshes()) {
+            mesh.deleteDegeneratedFaces();
+        }
+        for (GaiaNode child : this.getChildren()) {
+            child.deleteDegeneratedFaces();
+        }
+    }
 }
