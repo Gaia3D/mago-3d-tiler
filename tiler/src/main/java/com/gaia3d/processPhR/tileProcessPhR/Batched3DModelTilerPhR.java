@@ -319,10 +319,10 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             int numCols = bufferedImageDepth.getWidth();
             int numRows = bufferedImageDepth.getHeight();
             HalfEdgeScene halfEdgeScene = HalfEdgeUtils.getHalfEdgeSceneRectangularNet(numCols, numRows, depthValues, nodeBBoxLC);
-            double hedgeMaxHeightDiff = 2.0;
-            double maxDiffAngDeg = 50.0;
-            double hedgeMinLength = 2.0;
-            halfEdgeScene.doTrianglesReductionForNetSurface(maxDiffAngDeg, hedgeMinLength, hedgeMaxHeightDiff);
+            double maxDiffAngDeg = 30.0;
+            double hedgeMinLength = 1.0;
+            double frontierMaxDiffAngDeg = 10.0;
+            halfEdgeScene.doTrianglesReduction(maxDiffAngDeg, frontierMaxDiffAngDeg, hedgeMinLength);
             //halfEdgeScene.calculateNormals();
 
             if(halfEdgeScene.getTrianglesCount() == 0)
