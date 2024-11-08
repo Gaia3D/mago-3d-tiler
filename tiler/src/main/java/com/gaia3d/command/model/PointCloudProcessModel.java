@@ -28,7 +28,7 @@ public class PointCloudProcessModel implements ProcessFlowModel {
     @Override
     public void run() throws IOException {
         LasConverter converter = new LasConverter();
-        PointCloudTempGenerator generator = new PointCloudTempGenerator();
+        PointCloudTempGenerator generator = new PointCloudTempGenerator(converter);
         PointCloudFileLoader fileLoader = new PointCloudFileLoader(converter, generator);
 
         /* Pre-process */

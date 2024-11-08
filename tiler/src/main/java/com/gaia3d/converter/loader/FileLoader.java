@@ -10,7 +10,7 @@ import java.io.File;
 import java.util.List;
 
 public interface FileLoader {
-    List<File> loadTemp(List<File> files);
+    List<File> loadTemp(File tempPath, List<File> files);
 
     List<TileInfo> loadTileInfo(File file);
 
