@@ -145,22 +145,47 @@ public class HalfEdgeUtils {
     }
 
     public static GaiaFace gaiaFaceFromHalfEdgeFace(HalfEdgeFace halfEdgeFace, Map<HalfEdgeVertex, GaiaVertex> mapHalfEdgeVertexToGaiaVertex, Map<GaiaVertex, Integer> mapGaiaVertexToIndex, GaiaPrimitive gaiaPrimitiveOwner) {
+        if(halfEdgeFace == null)
+        {
+            return null;
+        }
+
+        if(halfEdgeFace.getStatus() == ObjectStatus.DELETED)
+        {
+            return null;
+        }
+
+        if(halfEdgeFace.isDegenerated())
+        {
+            return null;
+        }
+
         GaiaFace gaiaFace = new GaiaFace();
         List<HalfEdgeVertex> halfEdgeVertices = halfEdgeFace.getVertices(null);
         int verticesCount = halfEdgeVertices.size();
         int[] indices = new int[verticesCount];
+        int indicesCount = 0;
         for (int i = 0; i < verticesCount; i++) {
             HalfEdgeVertex halfEdgeVertex = halfEdgeVertices.get(i);
             GaiaVertex gaiaVertex = mapHalfEdgeVertexToGaiaVertex.get(halfEdgeVertex);
             if (gaiaVertex == null) {
-                int hola = 0;
+                continue;
             }
             if (mapGaiaVertexToIndex.get(gaiaVertex) == null) {
                 int hola = 0;
             }
             indices[i] = mapGaiaVertexToIndex.get(gaiaVertex);
+            indicesCount++;
         }
-        gaiaFace.setIndices(indices);
+
+        if(indicesCount > 2)
+        {
+            gaiaFace.setIndices(indices);
+        }
+        else
+        {
+            gaiaFace = null;
+        }
 
         return gaiaFace;
     }

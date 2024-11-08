@@ -46,14 +46,23 @@ public class GaiaSurface extends SurfaceStructure {
     }
 
     public void clear() {
-        faces.forEach(GaiaFace::clear);
+        int facesCount = faces.size();
+        for (int i = 0; i < facesCount; i++) {
+            GaiaFace face = faces.get(i);
+            if(face != null)
+            {
+                face.clear();
+            }
+        }
         faces.clear();
     }
 
     public GaiaSurface clone() {
         GaiaSurface clonedSurface = new GaiaSurface();
         for (GaiaFace face : faces) {
-            clonedSurface.getFaces().add(face.clone());
+            if(face != null) {
+                clonedSurface.getFaces().add(face.clone());
+            }
         }
         return clonedSurface;
     }
@@ -129,5 +138,16 @@ public class GaiaSurface extends SurfaceStructure {
 
             resultWeldedFaces.add(masterFaces);
         }
+    }
+
+    public void deleteDegeneratedFaces()
+    {
+        List<GaiaFace> facesToDelete = new ArrayList<>();
+        for (GaiaFace face : faces) {
+            if (face.isDegenerated()) {
+                facesToDelete.add(face);
+            }
+        }
+        faces.removeAll(facesToDelete);
     }
 }

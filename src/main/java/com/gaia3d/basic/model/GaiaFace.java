@@ -114,4 +114,16 @@ public class GaiaFace extends FaceStructure {
         }
         return area;
     }
+
+    public boolean isDegenerated() {
+        // if has equal indices, it is degenerated.
+        for (int i = 0; i < indices.length; i++) {
+            for (int j = i + 1; j < indices.length; j++) {
+                if (indices[i] == indices[j]) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }
