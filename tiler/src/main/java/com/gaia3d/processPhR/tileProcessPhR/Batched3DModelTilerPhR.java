@@ -58,44 +58,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
     private Vector3d vec3Aux9 = new Vector3d();
     private Vector3d vec3Aux10 = new Vector3d();
 
-    //@Override
-    public Tileset run_old(List<TileInfo> tileInfos) throws FileNotFoundException {
-        //**************************************************************
-        // In photoRealistic, 1rst make a empty quadTree.
-        // then use rectangleCakeCutter to fill the quadTree.
-        //**************************************************************
-        double geometricError = calcGeometricError(tileInfos);
-        geometricError = DecimalUtils.cut(geometricError);
-
-        GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
-        Matrix4d transformMatrix = getTransformMatrix(globalBoundingBox);
-        if (globalOptions.isClassicTransformMatrix()) {
-            rotateX90(transformMatrix);
-        }
-
-        Node root = createRoot();
-        root.setDepth(0);
-        root.setBoundingVolume(new BoundingVolume(globalBoundingBox));
-        root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
-        root.setGeometricError(geometricError);
-
-        //Old**************************************************************
-        try {
-            createNode(root, tileInfos, 0);
-        } catch (IOException e) {
-            log.error("Error : {}", e.getMessage());
-            throw new RuntimeException(e);
-        }
-        //End Old.---------------------------------------------------------
-
-        Asset asset = createAsset();
-        Tileset tileset = new Tileset();
-        tileset.setGeometricError(geometricError);
-        tileset.setAsset(asset);
-        tileset.setRoot(root);
-        return tileset;
-    }
-
     @Override
     public Tileset run(List<TileInfo> tileInfos) throws FileNotFoundException {
         //**************************************************************
@@ -118,7 +80,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         double minLatRad = Math.toRadians(minLatDeg);
         double maxLatRad = Math.toRadians(maxLatDeg);
         double distanceBetweenLat = GlobeUtils.distanceBetweenLatitudesRad(minLatRad, maxLatRad);
-        double desiredLeafDist = 80.0; // test value
+        double desiredLeafDist = 30.0; // test value
 
         int desiredDepth = (int)Math.ceil(HalfEdgeUtils.log2(distanceBetweenLat/desiredLeafDist));
         double desiredDistanceBetweenLat = desiredLeafDist*Math.pow(2, desiredDepth);
@@ -358,8 +320,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             int numRows = bufferedImageDepth.getHeight();
             HalfEdgeScene halfEdgeScene = HalfEdgeUtils.getHalfEdgeSceneRectangularNet(numCols, numRows, depthValues, nodeBBoxLC);
             double hedgeMaxHeightDiff = 2.0;
-            double maxDiffAngDeg = 55.0;
-            double hedgeMinLength = 1.0;
+            double maxDiffAngDeg = 50.0;
+            double hedgeMinLength = 2.0;
             halfEdgeScene.doTrianglesReductionForNetSurface(maxDiffAngDeg, hedgeMinLength, hedgeMaxHeightDiff);
             //halfEdgeScene.calculateNormals();
 

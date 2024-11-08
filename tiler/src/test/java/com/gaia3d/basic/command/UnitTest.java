@@ -899,32 +899,18 @@ class UnitTest {
 
 
     @Test
-    void testRenderScenes() {
-            // This is a sample code. NO WORKS.***
-        Configurator.initConsoleLogger();
-        List<GaiaScene> gaiaSceneList = new ArrayList<>();
-        GaiaScene gaiaScene = new GaiaScene();
-
-        gaiaSceneList.add(gaiaScene);
-
-        TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
-        List<BufferedImage> bufferedImageList = new ArrayList<>();
-        int bufferedImageType = BufferedImage.TYPE_INT_ARGB;
-        int maxScreenSize = 1024;
-        tilerExtensionModule.getRenderScene(gaiaSceneList, bufferedImageType, maxScreenSize, bufferedImageList);
-    }
-
-    @Test
-    void test_objAmyok() {
-        String inputPath = "D:\\temp2\\";
+    void test_RealisticMesh_Thailand_Data_N_buildings_normalTiling() {
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\RealisticMesh_Thailand_multiTiles\\OBJ25sqkm\\";
         String outputPath = "D:\\Result_mago3dTiler\\";
-        String path = "amyok_testOBJ";
+        String path = "Data_6buildings";
+
         String[] args = new String[]{
                 "-i", inputPath + path,
                 "-it", "obj",
                 "-o", outputPath + path,
-                "-crs", "5186",
-                "-su"
+                "-crs", "32648",
+                "-su",
+                "-debug"
         };
         Mago3DTilerMain.main(args);
     }

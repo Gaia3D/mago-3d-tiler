@@ -266,4 +266,10 @@ public class GaiaMesh extends MeshStructure {
             primitive.deleteObjects();
         }
     }
+
+    public void deleteDegeneratedFaces() {
+        for (GaiaPrimitive primitive : primitives) {
+            primitive.deleteDegeneratedFaces();
+        }
+    }
 }
