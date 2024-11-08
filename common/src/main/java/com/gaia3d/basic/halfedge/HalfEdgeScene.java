@@ -29,16 +29,9 @@ public class HalfEdgeScene  implements Serializable{
     private List<GaiaMaterial> materials = new ArrayList<>();
     private GaiaBoundingBox boundingBox = null;
 
-    public void doTrianglesReduction(double maxDiffAngDeg, double hedgeMinLength) {
+    public void doTrianglesReduction(double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength) {
         for (HalfEdgeNode node : nodes) {
-            node.doTrianglesReduction(maxDiffAngDeg, hedgeMinLength);
-        }
-    }
-
-    public void doTrianglesReductionForNetSurface(double maxDiffAngDeg, double hedgeMinLength, double maxHeightDiff)
-    {
-        for (HalfEdgeNode node : nodes) {
-            node.doTrianglesReductionForNetSurface(maxDiffAngDeg, hedgeMinLength, maxHeightDiff);
+            node.doTrianglesReduction(maxDiffAngDeg, frontierMaxDiffAngDeg, hedgeMinLength);
         }
     }
 
