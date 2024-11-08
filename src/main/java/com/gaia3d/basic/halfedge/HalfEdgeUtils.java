@@ -1077,7 +1077,6 @@ public class HalfEdgeUtils {
             // check if x, y, z is NaN.***
             if(Double.isNaN(resultNormal.x) || Double.isNaN(resultNormal.y) || Double.isNaN(resultNormal.z))
             {
-                log.error("resultNormal is NaN.***");
                 return null;
             }
         }
