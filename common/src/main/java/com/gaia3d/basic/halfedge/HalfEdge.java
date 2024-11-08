@@ -5,7 +5,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
-import org.joml.Vector4d;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -148,11 +147,31 @@ public class HalfEdge implements Serializable {
         return prev;
     }
 
-    public boolean isDegenerated() {
+    public Vector3d getVector(Vector3d resultVector) {
+        if (resultVector == null) {
+            resultVector = new Vector3d();
+        }
+        if (startVertex == null || next == null) {
+            return null;
+        }
+        HalfEdgeVertex endVertex = next.getStartVertex();
+        if (endVertex == null) {
+            return null;
+        }
+        return endVertex.getPosition().sub(startVertex.getPosition(), resultVector);
+    }
+
+    public boolean isDegeneratedByPointers() {
         HalfEdgeVertex startVertex = this.getStartVertex();
         HalfEdgeVertex endVertex = this.getEndVertex();
 
         return startVertex == endVertex;
+    }
+
+    public boolean isDegeneratedByPositions()
+    {
+        double squaredLength = this.getSquaredLength();
+        return squaredLength < 0.0000001;
     }
 
     public void breakRelations() {

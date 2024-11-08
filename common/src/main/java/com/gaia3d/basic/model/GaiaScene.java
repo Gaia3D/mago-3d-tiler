@@ -114,4 +114,10 @@ public class GaiaScene extends SceneStructure {
             node.deleteNormals();
         }
     }
+
+    public void deleteDegeneratedFaces() {
+        for (GaiaNode node : this.nodes) {
+            node.deleteDegeneratedFaces();
+        }
+    }
 }

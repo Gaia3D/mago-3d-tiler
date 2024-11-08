@@ -76,20 +76,26 @@ public class MainRenderer implements IAppLogic {
         FboManager fboManager = engine.getFboManager();
 
         // create the fbo.***
-        int fboWidth = maxScreenSize;
-        int fboHeight = maxScreenSize;
+        int fboWidthColor = maxScreenSize;
+        int fboHeightColor = maxScreenSize;
+        int fboWidthDepth = 600;
+        int fboHeightDepth = 600;
         if(xLength > yLength)
         {
-            fboWidth = maxScreenSize;
-            fboHeight = (int)(maxScreenSize * yLength / xLength);
+            fboWidthColor = maxScreenSize;
+            fboHeightColor = (int)(maxScreenSize * yLength / xLength);
+            fboWidthDepth = 600;
+            fboHeightDepth = (int)(600 * yLength / xLength);
         }
         else
         {
-            fboWidth = (int)(maxScreenSize * xLength / yLength);
-            fboHeight = maxScreenSize;
+            fboWidthColor = (int)(maxScreenSize * xLength / yLength);
+            fboHeightColor = maxScreenSize;
+            fboWidthDepth = (int)(600 * xLength / yLength);
+            fboHeightDepth = 600;
         }
-        fboManager.createFbo("colorRender", fboWidth, fboHeight);
-        fboManager.createFbo("depthRender", fboWidth, fboHeight);
+        fboManager.createFbo("colorRender", fboWidthColor, fboHeightColor);
+        fboManager.createFbo("depthRender", fboWidthDepth, fboHeightDepth);
         Fbo colorFbo = fboManager.getFbo("colorRender");
         Fbo depthFbo = fboManager.getFbo("depthRender");
 
@@ -115,10 +121,7 @@ public class MainRenderer implements IAppLogic {
 
         int[] width = new int[1];
         int[] height = new int[1];
-        width[0] = colorFbo.getFboWidth();
-        height[0] = colorFbo.getFboHeight();
 
-        glViewport(0, 0, width[0], height[0]);
 
         // disable cull face.***
         glEnable(GL_DEPTH_TEST);
@@ -183,12 +186,20 @@ public class MainRenderer implements IAppLogic {
 
                 // render the scene.***
                 // Bind the fbo.***
+                width[0] = colorFbo.getFboWidth();
+                height[0] = colorFbo.getFboHeight();
+
+                glViewport(0, 0, width[0], height[0]);
                 colorFbo.bind();
                 log.info("Rendering the scene : " + i + " of scenesCount : " + scenesCount);
                 engine.getRenderSceneImage(sceneShaderProgram);
                 colorFbo.unbind();
 
                 // depth render.***
+                width[0] = depthFbo.getFboWidth();
+                height[0] = depthFbo.getFboHeight();
+
+                glViewport(0, 0, width[0], height[0]);
                 ShaderProgram depthShaderProgram = shaderManager.getShaderProgram("depth");
                 depthFbo.bind();
                 log.info("Rendering the depth : " + i + " of scenesCount : " + scenesCount);

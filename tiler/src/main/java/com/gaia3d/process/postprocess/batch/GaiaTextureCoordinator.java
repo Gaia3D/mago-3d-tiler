@@ -9,6 +9,7 @@ import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.tileprocess.tile.LevelOfDetail;
+import com.gaia3d.util.ImageResizer;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector2d;
 
@@ -227,58 +228,7 @@ public class GaiaTextureCoordinator {
                 }
                 bufferedImage = texture.getBufferedImage(scaleFactor);
 
-                if(isPhotorealistic) {
-                    // limit the max image size to 4028
-                    boolean sizeChanged = false;
-                    int imageWidth = bufferedImage.getWidth();
-                    int imageHeight = bufferedImage.getHeight();
 
-                    if (lodLevel == 0) {
-                        if (imageWidth > 2048) {
-                            imageWidth = 2048;
-                            sizeChanged = true;
-                        }
-                        if (imageHeight > 2048) {
-                            imageHeight = 2048;
-                            sizeChanged = true;
-                        }
-                    }
-                    else if (lodLevel == 1) {
-                        if (imageWidth > 1024) {
-                            imageWidth = 1024;
-                            sizeChanged = true;
-                        }
-                        if (imageHeight > 1024) {
-                            imageHeight = 1024;
-                            sizeChanged = true;
-                        }
-                    }
-                    else if (lodLevel == 2) {
-                        if (imageWidth > 1024) {
-                            imageWidth = 1024;
-                            sizeChanged = true;
-                        }
-                        if (imageHeight > 1024) {
-                            imageHeight = 1024;
-                            sizeChanged = true;
-                        }
-                    }
-                    else if (lodLevel > 2) {
-                        if (imageWidth > 512) {
-                            imageWidth = 512;
-                            sizeChanged = true;
-                        }
-                        if (imageHeight > 512) {
-                            imageHeight = 512;
-                            sizeChanged = true;
-                        }
-                    }
-
-                    if (sizeChanged) {
-                        texture.resizeImage(imageWidth, imageHeight);
-                        bufferedImage = texture.getBufferedImage(1);
-                    }
-                }
 
             } else {
                 bufferedImage = createShamImage();
@@ -434,6 +384,60 @@ public class GaiaTextureCoordinator {
                     }
                 }
 
+            }
+        }
+
+        if(isPhotorealistic) {
+            // limit the max image size to 4028
+            int lodLevel = lod.getLevel();
+            boolean sizeChanged = false;
+            int imageWidth = this.atlasImage.getWidth();
+            int imageHeight = this.atlasImage.getHeight();
+
+            if (lodLevel == 0) {
+                if (imageWidth > 2048) {
+                    imageWidth = 2048;
+                    sizeChanged = true;
+                }
+                if (imageHeight > 2048) {
+                    imageHeight = 2048;
+                    sizeChanged = true;
+                }
+            }
+            else if (lodLevel == 1) {
+                if (imageWidth > 1024) {
+                    imageWidth = 1024;
+                    sizeChanged = true;
+                }
+                if (imageHeight > 1024) {
+                    imageHeight = 1024;
+                    sizeChanged = true;
+                }
+            }
+            else if (lodLevel == 2) {
+                if (imageWidth > 1024) {
+                    imageWidth = 1024;
+                    sizeChanged = true;
+                }
+                if (imageHeight > 1024) {
+                    imageHeight = 1024;
+                    sizeChanged = true;
+                }
+            }
+            else if (lodLevel > 2) {
+                if (imageWidth > 1024) {
+                    imageWidth = 1024;
+                    sizeChanged = true;
+                }
+                if (imageHeight > 1024) {
+                    imageHeight = 1024;
+                    sizeChanged = true;
+                }
+            }
+
+            if (sizeChanged) {
+                ImageResizer imageResizer = new ImageResizer();
+                this.atlasImage = imageResizer.resizeImageGraphic2D(this.atlasImage, imageWidth, imageHeight);
             }
         }
     }

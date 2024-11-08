@@ -497,4 +497,12 @@ public class GaiaPrimitive extends PrimitiveStructure {
         this.vertices = null;
         this.surfaces = null;
     }
+
+    public void deleteDegeneratedFaces() {
+        for (GaiaSurface surface : this.surfaces) {
+            surface.deleteDegeneratedFaces();
+        }
+
+        this.deleteNoUsedVertices();
+    }
 }
