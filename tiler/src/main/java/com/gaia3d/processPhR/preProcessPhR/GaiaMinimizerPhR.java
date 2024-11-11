@@ -45,7 +45,7 @@ public class GaiaMinimizerPhR implements PreProcess {
             boolean checkNormal = false;
             boolean checkColor = false;
             boolean checkBatchId = false;
-            double error = 1e-8;
+            double error = 1e-6;
             scene.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
             scene.deleteDegeneratedFaces();
 //            HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
@@ -95,10 +95,11 @@ public class GaiaMinimizerPhR implements PreProcess {
             HalfEdgeScene halfEdgeSceneLod1 = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 
             log.info("Doing triangles reduction in HalfEdgeScene");
-            double maxDiffAngDegrees = 30.0;
-            double hedgeMinLength = 1.0;
-            double frontierMaxDiffAngDeg = 10.0;
-            halfEdgeSceneLod1.doTrianglesReduction(maxDiffAngDegrees, frontierMaxDiffAngDeg, hedgeMinLength);
+            double maxDiffAngDegrees = 20.0;
+            double hedgeMinLength = 0.25;
+            double frontierMaxDiffAngDeg = 20.0;
+            double maxAspectRatio = 5.0;
+            halfEdgeSceneLod1.doTrianglesReduction(maxDiffAngDegrees, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio);
             //halfEdgeScene.calculateNormals();
 
 
@@ -154,10 +155,11 @@ public class GaiaMinimizerPhR implements PreProcess {
             HalfEdgeScene halfEdgeSceneLod2 = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 
             log.info("Doing triangles reduction in HalfEdgeScene");
-            maxDiffAngDegrees = 40.0;
-            hedgeMinLength = 2.0;
-            frontierMaxDiffAngDeg = 20.0;
-            halfEdgeSceneLod2.doTrianglesReduction(maxDiffAngDegrees, frontierMaxDiffAngDeg, hedgeMinLength);
+            maxDiffAngDegrees = 30.0;
+            hedgeMinLength = 0.5;
+            frontierMaxDiffAngDeg = 30.0;
+            maxAspectRatio = 5.0;
+            halfEdgeSceneLod2.doTrianglesReduction(maxDiffAngDegrees, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio);
             //halfEdgeScene.calculateNormals();
 
             // As we will change the texture by a topView render, must recalculate the texCoords.***

@@ -43,6 +43,22 @@ public class HalfEdgeFace implements Serializable {
         this.halfEdgeId = face.halfEdgeId;
     }
 
+    public double calculateAspectRatioAsTriangle()
+    {
+        List<HalfEdge> halfEdgesLoop = this.getHalfEdgesLoop(null);
+        if(halfEdgesLoop == null || halfEdgesLoop.size() < 3)
+        {
+            return 0.0;
+        }
+
+        HalfEdgeVertex a = halfEdgesLoop.get(0).getStartVertex();
+        HalfEdgeVertex b = halfEdgesLoop.get(1).getStartVertex();
+        HalfEdgeVertex c = halfEdgesLoop.get(2).getStartVertex();
+
+        double aspectRatio = HalfEdgeUtils.calculateAspectRatioAsTriangle(a, b, c);
+        return HalfEdgeUtils.calculateAspectRatioAsTriangle(a, b, c);
+    }
+
     public Vector3d calculatePlaneNormal()
     {
         List<HalfEdgeVertex> vertices = this.getVertices(null);
