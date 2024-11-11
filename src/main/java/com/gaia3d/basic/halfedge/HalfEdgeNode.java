@@ -25,12 +25,12 @@ public class HalfEdgeNode implements Serializable {
     private List<HalfEdgeNode> children = new ArrayList<>();
     private GaiaBoundingBox boundingBox = null;
 
-    public void doTrianglesReduction(double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength) {
+    public void doTrianglesReduction(double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength, double maxAspectRatio) {
         for (HalfEdgeMesh mesh : meshes) {
-            mesh.doTrianglesReduction(maxDiffAngDeg, frontierMaxDiffAngDeg, hedgeMinLength);
+            mesh.doTrianglesReduction(maxDiffAngDeg, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio);
         }
         for (HalfEdgeNode child : children) {
-            child.doTrianglesReduction(maxDiffAngDeg, frontierMaxDiffAngDeg, hedgeMinLength);
+            child.doTrianglesReduction(maxDiffAngDeg, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio);
         }
     }
 
