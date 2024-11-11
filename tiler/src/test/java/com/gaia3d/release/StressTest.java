@@ -138,7 +138,7 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-crs", "32648",
-                //"-pointSkip", "1",
+                "-pointSkip", "1",
                 //"-debug"
         };
         Mago3DTilerMain.main(args);

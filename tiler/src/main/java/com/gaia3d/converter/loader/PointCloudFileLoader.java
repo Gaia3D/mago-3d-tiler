@@ -26,10 +26,8 @@ public class PointCloudFileLoader implements FileLoader {
     private final LasConverter converter;
     private final PointCloudTempGenerator generator;
 
-    public List<File> loadTemp(List<File> files) {
-        generator.readAllHeaders();
-        generator.generateTempFiles();
-        return files;
+    public List<File> loadTemp(File tempPath, List<File> files) {
+        return generator.generate(tempPath, files);
     }
 
     public List<GaiaPointCloud> loadPointCloud(File input) {

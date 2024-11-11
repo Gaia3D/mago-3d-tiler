@@ -163,8 +163,7 @@ public class TilingPipeline implements Pipeline {
         if (!tempFile.exists() && tempFile.mkdirs()) {
             log.info("[Pre] Created temp directory in {}", tempFile.getAbsolutePath());
         }
-
-
+        fileList = fileLoader.loadTemp(tempFile, fileList);
     }
 
     private void deleteTemp() throws IOException {

@@ -34,7 +34,7 @@ public class InstancedFileLoader implements FileLoader {
     private File instanceFile = null;
     private GaiaScene instanceScene = null;
 
-    public List<File> loadTemp(List<File> files) {
+    public List<File> loadTemp(File tempPath, List<File> files) {
         return files;
     }
 

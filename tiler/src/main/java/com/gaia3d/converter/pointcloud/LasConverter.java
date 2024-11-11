@@ -4,7 +4,10 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.octree.GaiaOctreeVertices;
 import com.gaia3d.basic.pointcloud.GaiaPointCloud;
 import com.gaia3d.basic.model.GaiaVertex;
+import com.gaia3d.basic.pointcloud.GaiaPointCloudHeader;
+import com.gaia3d.basic.pointcloud.GaiaPointCloudTemp;
 import com.gaia3d.command.mago.GlobalOptions;
+import com.gaia3d.converter.loader.PointCloudFileLoader;
 import com.gaia3d.util.GlobeUtils;
 import com.github.mreutegg.laszip4j.CloseablePointIterable;
 import com.github.mreutegg.laszip4j.LASHeader;
@@ -17,7 +20,7 @@ import org.locationtech.proj4j.BasicCoordinateTransform;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 
-import java.io.File;
+import java.io.*;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -36,7 +39,129 @@ public class LasConverter {
         return convert(path.toFile());
     }
 
+    public void loadToTemp(GaiaPointCloudHeader pointCloudHeader, File file) {
+        LASReader reader = new LASReader(file);
+        LASHeader header = reader.getHeader();
+        double xScaleFactor = header.getXScaleFactor();
+        double xOffset = header.getXOffset();
+        double yScaleFactor = header.getYScaleFactor();
+        double yOffset = header.getYOffset();
+        double zScaleFactor = header.getZScaleFactor();
+        double zOffset = header.getZOffset();
+        CloseablePointIterable pointIterable = reader.getCloseablePoints();
+        for (LASPoint point : pointIterable) {
+            double x = point.getX() * xScaleFactor + xOffset;
+            double y = point.getY() * yScaleFactor + yOffset;
+            double z = point.getZ() * zScaleFactor + zOffset;
+            byte[] rgb = getColorByRGB(point);
+            Vector3d position = new Vector3d(x, y, z);
+
+            GaiaVertex vertex = new GaiaVertex();
+            vertex.setPosition(position);
+            vertex.setColor(rgb);
+            vertex.setBatchId(0);
+            GaiaPointCloudTemp tempFile = pointCloudHeader.findTemp(position);
+            tempFile.write(position, rgb);
+        }
+        //findTemp
+    }
+
+    public GaiaPointCloudHeader readHeader(File file) {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        LASReader reader = new LASReader(file);
+        LASHeader header = reader.getHeader();
+        /*byte major = header.getVersionMajor();
+        byte minor = header.getVersionMinor();
+        byte recordFormatValue = header.getPointDataRecordFormat();
+        long recordLength = header.getPointDataRecordLength();*/
+        //LasRecordFormat recordFormat = LasRecordFormat.fromFormatNumber(recordFormatValue);
+
+        double getMinX = header.getMinX();
+        double getMinY = header.getMinY();
+        double getMinZ = header.getMinZ();
+        double getMaxX = header.getMaxX();
+        double getMaxY = header.getMaxY();
+        double getMaxZ = header.getMaxZ();
+        Vector3d min = new Vector3d(getMinX, getMinY, getMinZ);
+        Vector3d max = new Vector3d(getMaxX, getMaxY, getMaxZ);
+
+        GaiaBoundingBox srsBoundingBox = new GaiaBoundingBox();
+        srsBoundingBox.addPoint(min);
+        srsBoundingBox.addPoint(max);
+
+        CoordinateReferenceSystem crs = globalOptions.getCrs();
+        BasicCoordinateTransform transformer = new BasicCoordinateTransform(crs, GlobeUtils.wgs84);
+        ProjCoordinate srsMinCoordinate = new ProjCoordinate(getMinX, getMinY, getMinZ);
+        ProjCoordinate srsMaxCoordinate = new ProjCoordinate(getMaxX, getMaxY, getMaxZ);
+        ProjCoordinate crsMinCoordinate = transformer.transform(srsMinCoordinate, new ProjCoordinate());
+        ProjCoordinate crsMaxCoordinate = transformer.transform(srsMaxCoordinate, new ProjCoordinate());
+        Vector3d minCrs = new Vector3d(crsMinCoordinate.x, crsMinCoordinate.y, crsMinCoordinate.z);
+        Vector3d maxCrs = new Vector3d(crsMaxCoordinate.x, crsMaxCoordinate.y, crsMaxCoordinate.z);
+
+        GaiaBoundingBox crsBoundingBox = new GaiaBoundingBox();
+        crsBoundingBox.addPoint(minCrs);
+        crsBoundingBox.addPoint(maxCrs);
+
+        long pointRecords = header.getNumberOfPointRecords();
+        long legacyPointRecords = header.getLegacyNumberOfPointRecords();
+        long totalPointRecords = pointRecords + legacyPointRecords;
+
+        return GaiaPointCloudHeader.builder()
+                .index(-1)
+                .uuid(UUID.randomUUID())
+                .size(totalPointRecords)
+                .srsBoundingBox(srsBoundingBox)
+                .crsBoundingBox(crsBoundingBox)
+                .build();
+    }
+
     private List<GaiaPointCloud> convert(File file) {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        List<GaiaPointCloud> pointClouds = new ArrayList<>();
+        GaiaPointCloud pointCloud = new GaiaPointCloud();
+        List<GaiaVertex> vertices = pointCloud.getVertices();
+
+        CoordinateReferenceSystem source = globalOptions.getCrs();
+
+        GaiaBoundingBox boundingBox = pointCloud.getGaiaBoundingBox();
+        short blockSize = (short) (8 * 3 + 3);
+        DataInputStream inputStream = null;
+        try {
+            GaiaPointCloudTemp tempFile = new GaiaPointCloudTemp(file, blockSize);
+            boolean isSuccess = tempFile.readHeader();
+            inputStream = tempFile.getInputStream();
+            if (isSuccess) {
+                vertices = tempFile.readTemp();
+                for (GaiaVertex vertex : vertices) {
+                    Vector3d position = vertex.getPosition();
+                    ProjCoordinate coordinate = new ProjCoordinate(position.x, position.y, position.z);
+                    ProjCoordinate transformedCoordinate = GlobeUtils.transform(source, coordinate);
+                    Vector3d newPosition = new Vector3d(transformedCoordinate.x, transformedCoordinate.y, position.z);
+                    boundingBox.addPoint(newPosition);
+                    vertex.setPosition(newPosition);
+                }
+                if (vertices.size() > 0) {
+                    Collections.shuffle(vertices);
+                    pointCloud.setVertices(vertices);
+                    pointClouds.add(pointCloud);
+                }
+                inputStream.close();
+            }
+        } catch (IOException e) {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (Exception ex) {
+                    log.error("Failed to close input stream", ex);
+                }
+            }
+            throw new RuntimeException(e);
+        }
+        return pointClouds;
+    }
+
+
+    private List<GaiaPointCloud> convertOld(File file) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         List<GaiaPointCloud> pointClouds = new ArrayList<>();
         GaiaPointCloud pointCloud = new GaiaPointCloud();
@@ -50,9 +175,9 @@ public class LasConverter {
         byte recordFormatValue = header.getPointDataRecordFormat();
         long recordLength = header.getPointDataRecordLength();
 
-        boolean hasRgbColor;
         LasRecordFormat recordFormat = LasRecordFormat.fromFormatNumber(recordFormatValue);
 
+        boolean hasRgbColor;
         if (recordFormat != null) {
             hasRgbColor = recordFormat.hasColor;
         } else {
@@ -225,7 +350,6 @@ public class LasConverter {
             positions.z = transformedCoordinate.z;
         });
     }
-
 
     /**
      * Get color by RGB

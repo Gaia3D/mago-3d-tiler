@@ -163,9 +163,9 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
 
         double geometricErrorCalc = calcGeometricError(selfPointCloud);
-        double calculatedGeometricError = geometricErrorCalc / 16;
-        if (calculatedGeometricError > 8.0) {
-            calculatedGeometricError = 8.0;
+        double calculatedGeometricError = geometricErrorCalc / 4;
+        if (calculatedGeometricError > 64.0) {
+            calculatedGeometricError = 64.0;
         } else if (calculatedGeometricError < 1.0) {
             calculatedGeometricError = 1.0;
         }
