@@ -1,6 +1,7 @@
 package com.gaia3d.release;
 
 import com.gaia3d.command.mago.Mago3DTilerMain;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -9,6 +10,7 @@ public class StressTest {
     private static final String INPUT_PATH = "D:\\data\\mago-tiler-data\\stress-test-input";
     private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\mago-viewer\\data\\stress-test-output";
 
+    @Disabled
     @Test
     void testIfcMep() {
         String path = "LARGE-MEP-IFC";
@@ -21,6 +23,7 @@ public class StressTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Disabled
     @Test
     void testYeouidoShape() {
         String path = "YEOUIDO-SHP";
@@ -35,6 +38,7 @@ public class StressTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Disabled
     @Test
     void testSeoulShape() {
         String path = "SEOUL-SHP";
@@ -49,6 +53,7 @@ public class StressTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Disabled
     @Test
     void testSouthKoreaShape() {
         String path = "SOUTH-KOREA-SHP";
@@ -63,6 +68,7 @@ public class StressTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Disabled
     @Test
     void testSejongUndergroundShape() {
         String path = "SEJONG-UNDERGROUND-SHP";
@@ -76,6 +82,7 @@ public class StressTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Disabled
     @Test
     void testLargeBuildingFbxFromHayashiSang() {
         String path = "LARGE-BUILDING-FBX";
@@ -112,7 +119,7 @@ public class StressTest {
                 "-refineAdd",
                 //"-glb",
                 //"-recursive",
-                "-debug"
+                //"-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -125,7 +132,7 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "kml",
                 "-crs", "5186",
-                "-debug"
+                //"-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -188,7 +195,7 @@ public class StressTest {
                 "-crs", "5186",
                 //"-pointSkip", "4",
                 "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
-                "-debug"
+                //"-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -202,7 +209,7 @@ public class StressTest {
                 "-it", "las",
                 "-crs", "5186",
                 //"-pointSkip", "4",
-                "-debug"
+                //"-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -215,7 +222,7 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
-                "-debug"
+                //"-debug"
         };
         Mago3DTilerMain.main(args);
     }

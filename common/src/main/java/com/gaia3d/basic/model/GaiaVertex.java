@@ -20,6 +20,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class GaiaVertex extends VertexStructure implements Serializable {
     private Vector3d position;
+    private short[] quantizedPosition;
     private Vector3d normal;
     private Vector2d texcoords;
     private byte[] color;

@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -36,11 +37,22 @@ public class PointCloudTempGenerator {
     private List<File> createTempGrid(File tempPath) throws FileNotFoundException {
         List<File> tempFiles = new ArrayList<>();
         GaiaPointCloudTemp[][] tempGrid = combinedHeader.getTempGrid();
+        Vector3d volume = combinedHeader.getSrsBoundingBox().getVolume();
+        Vector3d offset = combinedHeader.getSrsBoundingBox().getMinPosition();
         for (int i = 0; i < tempGrid.length; i++) {
             for (int j = 0; j < tempGrid[i].length; j++) {
                 String tempFileName = String.format("temp-%d-%d.bin", i, j);
                 File tempFile = new File(tempPath, tempFileName);
-                tempGrid[i][j] = new GaiaPointCloudTemp(tempFile, combinedHeader.getBlockSize());
+                tempGrid[i][j] = new GaiaPointCloudTemp(tempFile);
+
+                // Set quantized volume scale and offset
+                tempGrid[i][j].getQuantizedVolumeScale()[0] = volume.x;
+                tempGrid[i][j].getQuantizedVolumeScale()[1] = volume.y;
+                tempGrid[i][j].getQuantizedVolumeScale()[2] = volume.z;
+                tempGrid[i][j].getQuantizedVolumeOffset()[0] = offset.x;
+                tempGrid[i][j].getQuantizedVolumeOffset()[1] = offset.y;
+                tempGrid[i][j].getQuantizedVolumeOffset()[2] = offset.z;
+
                 tempGrid[i][j].openOutputStream();
                 tempGrid[i][j].writeHeader();
                 tempFiles.add(tempFile);
@@ -50,6 +62,7 @@ public class PointCloudTempGenerator {
     }
 
     private GaiaPointCloudHeader readAllHeaders(List<File> fileList) {
+        log.info("[Pre] Reading headers of all files");
         List<GaiaPointCloudHeader> headers = new ArrayList<>();
         for (File file : fileList) {
             headers.add(converter.readHeader(file));
@@ -66,9 +79,11 @@ public class PointCloudTempGenerator {
     }
 
     private void generateTempFiles(List<File> fileList) {
+        int fileLength = fileList.size();
+        AtomicInteger fileCount = new AtomicInteger(0);
         fileList.forEach((originalFile) -> {
             converter.loadToTemp(combinedHeader, originalFile);
-            log.info("Generated temp file for {}", originalFile.getName());
+            log.info("[Pre][{}/{}] Generated temp file for {}", fileCount.incrementAndGet(), fileLength, originalFile.getName());
         });
     }
 

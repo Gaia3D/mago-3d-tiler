@@ -7,7 +7,6 @@ import com.gaia3d.basic.model.GaiaVertex;
 import com.gaia3d.basic.pointcloud.GaiaPointCloudHeader;
 import com.gaia3d.basic.pointcloud.GaiaPointCloudTemp;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.loader.PointCloudFileLoader;
 import com.gaia3d.util.GlobeUtils;
 import com.github.mreutegg.laszip4j.CloseablePointIterable;
 import com.github.mreutegg.laszip4j.LASHeader;
@@ -60,8 +59,13 @@ public class LasConverter {
             vertex.setPosition(position);
             vertex.setColor(rgb);
             vertex.setBatchId(0);
+
             GaiaPointCloudTemp tempFile = pointCloudHeader.findTemp(position);
-            tempFile.write(position, rgb);
+            if (tempFile == null) {
+                log.error("Failed to find temp file.");
+            } else {
+                tempFile.writePosition(position, rgb);
+            }
         }
         //findTemp
     }
@@ -95,8 +99,8 @@ public class LasConverter {
         ProjCoordinate srsMaxCoordinate = new ProjCoordinate(getMaxX, getMaxY, getMaxZ);
         ProjCoordinate crsMinCoordinate = transformer.transform(srsMinCoordinate, new ProjCoordinate());
         ProjCoordinate crsMaxCoordinate = transformer.transform(srsMaxCoordinate, new ProjCoordinate());
-        Vector3d minCrs = new Vector3d(crsMinCoordinate.x, crsMinCoordinate.y, crsMinCoordinate.z);
-        Vector3d maxCrs = new Vector3d(crsMaxCoordinate.x, crsMaxCoordinate.y, crsMaxCoordinate.z);
+        Vector3d minCrs = new Vector3d(crsMinCoordinate.x, crsMinCoordinate.y, srsMinCoordinate.z);
+        Vector3d maxCrs = new Vector3d(crsMaxCoordinate.x, crsMaxCoordinate.y, srsMaxCoordinate.z);
 
         GaiaBoundingBox crsBoundingBox = new GaiaBoundingBox();
         crsBoundingBox.addPoint(minCrs);
@@ -127,7 +131,7 @@ public class LasConverter {
         short blockSize = (short) (8 * 3 + 3);
         DataInputStream inputStream = null;
         try {
-            GaiaPointCloudTemp tempFile = new GaiaPointCloudTemp(file, blockSize);
+            GaiaPointCloudTemp tempFile = new GaiaPointCloudTemp(file);
             boolean isSuccess = tempFile.readHeader();
             inputStream = tempFile.getInputStream();
             if (isSuccess) {
