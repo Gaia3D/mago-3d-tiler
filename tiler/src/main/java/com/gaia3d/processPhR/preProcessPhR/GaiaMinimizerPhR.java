@@ -95,9 +95,9 @@ public class GaiaMinimizerPhR implements PreProcess {
             HalfEdgeScene halfEdgeSceneLod1 = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 
             log.info("Doing triangles reduction in HalfEdgeScene");
-            double maxDiffAngDegrees = 20.0;
+            double maxDiffAngDegrees = 30.0;
             double hedgeMinLength = 0.25;
-            double frontierMaxDiffAngDeg = 20.0;
+            double frontierMaxDiffAngDeg = 30.0;
             double maxAspectRatio = 5.0;
             halfEdgeSceneLod1.doTrianglesReduction(maxDiffAngDegrees, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio);
             //halfEdgeScene.calculateNormals();

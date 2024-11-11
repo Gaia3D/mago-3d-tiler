@@ -399,7 +399,7 @@ public class HalfEdgeSurface implements Serializable {
         return resultMapFaceToHalfEdges;
     }
 
-    public void doTrianglesReduction(double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength, double maxAspectRatio) {
+    public void doTrianglesReduction_new(double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength, double maxAspectRatio) {
         // 1rst, find possible halfEdges to remove.***
         // Reasons to remove a halfEdge:
         // 1. The halfEdge is very short. (small length).
@@ -549,7 +549,7 @@ public class HalfEdgeSurface implements Serializable {
         int hola = 0;
     }
 
-    public void doTrianglesReduction_original(double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength, double maxAspectRatio) {
+    public void doTrianglesReduction(double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength, double maxAspectRatio) {
         // 1rst, find possible halfEdges to remove.***
         // Reasons to remove a halfEdge:
         // 1. The halfEdge is very short. (small length).
@@ -593,7 +593,7 @@ public class HalfEdgeSurface implements Serializable {
         Collections.shuffle(halfEdges);
 
         boolean finished = false;
-        int maxIterations = 1;
+        int maxIterations = 50;
         int iteration = 0;
         while(!finished && iteration < maxIterations) {
             boolean collapsed = false;
@@ -1138,7 +1138,21 @@ public class HalfEdgeSurface implements Serializable {
         Vector3d startPosition = startVertex.getPosition();
         Vector3d endPosition = endVertex.getPosition();
 
-        List<HalfEdge> outingEdgesOfStartVertex = vertexAllOutingEdgesMap.get(startVertex);
+
+        List<HalfEdgeVertex> samePosVertices = mapVertexToSamePosVertices.get(startVertex);
+        List<HalfEdge> outingEdgesOfSamePosVertices = new ArrayList<>();
+
+        int samePosVertexCount = samePosVertices.size();
+        for(int i = 0; i < samePosVertexCount; i++)
+        {
+            HalfEdgeVertex vertex = samePosVertices.get(i);
+            List<HalfEdge> outingEdges = vertexAllOutingEdgesMap.get(vertex);
+            outingEdgesOfSamePosVertices.addAll(outingEdges);
+        }
+
+
+
+        //List<HalfEdge> outingEdgesOfStartVertex = vertexAllOutingEdgesMap.get(startVertex);
 
 
         //*****************************************************************************************
@@ -1147,14 +1161,14 @@ public class HalfEdgeSurface implements Serializable {
 
         // check if collapse.**************************************************************************************************
         // In frontier halfEdges, must check the another frontier halfEdges that uses the startVertex.***
-        int outingEdgesOfStartVertexCount = outingEdgesOfStartVertex.size();
+        int outingEdgesOfStartVertexCount = outingEdgesOfSamePosVertices.size();
         if(outingEdgesOfStartVertexCount < 2)
         {
             return false;
         }
 
         for (int i = 0; i < outingEdgesOfStartVertexCount; i++) {
-            HalfEdge outingEdge = outingEdgesOfStartVertex.get(i);
+            HalfEdge outingEdge = outingEdgesOfSamePosVertices.get(i);
             if(outingEdge.getStatus() == ObjectStatus.DELETED)
             {
                 continue;
