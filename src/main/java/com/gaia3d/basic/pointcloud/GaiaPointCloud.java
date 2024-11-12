@@ -25,10 +25,12 @@ public class GaiaPointCloud implements Serializable {
     private Path originalPath;
     private GaiaBoundingBox gaiaBoundingBox = new GaiaBoundingBox();
     private List<GaiaVertex> vertices = new ArrayList<>();
+    private int vertexCount = 0;
     private GaiaAttribute gaiaAttribute = new GaiaAttribute();
 
     private boolean isMinimized = false;
     private File minimizedFile = null;
+    GaiaPointCloudTemp pointCloudTemp = null;
     private Vector3d quantizedVolumeScale = null;
     private Vector3d quantizedVolumeOffset = null;
 
@@ -38,7 +40,7 @@ public class GaiaPointCloud implements Serializable {
     }
 
     public void minimize(File minimizedFile) {
-        if (isMinimized) {
+        if (this.isMinimized) {
             log.warn("The point cloud is already minimized.");
             return;
         }
@@ -48,46 +50,30 @@ public class GaiaPointCloud implements Serializable {
         this.quantizedVolumeScale = quantizationScale;
         this.quantizedVolumeOffset = quantizationOffset;
 
-        List<GaiaVertex> vertices = this.vertices;
-        int size = vertices.size();
-        for (int i = 0; i < size; i++) {
-            GaiaVertex vertex = vertices.get(i).clone();
-            Vector3d position = vertex.getPosition();
-            if (position == null) {
-                continue;
-            }
+        this.pointCloudTemp = new GaiaPointCloudTemp(minimizedFile);
+        double[] volumeOffset = pointCloudTemp.getQuantizedVolumeOffset();
+        volumeOffset[0] = quantizationOffset.x;
+        volumeOffset[1] = quantizationOffset.y;
+        volumeOffset[2] = quantizationOffset.z;
+        double[] volumeScale = pointCloudTemp.getQuantizedVolumeScale();
+        volumeScale[0] = quantizationScale.x;
+        volumeScale[1] = quantizationScale.y;
+        volumeScale[2] = quantizationScale.z;
+        pointCloudTemp.writeHeader();
+        this.vertexCount = vertices.size();
 
-            double x = position.x();
-            double y = position.y();
-            double z = position.z();
-
-            double xQuantizedPosition = (x - quantizationOffset.x) / quantizationScale.x;
-            double yQuantizedPosition = (y - quantizationOffset.y) / quantizationScale.y;
-            double zQuantizedPosition = (z - quantizationOffset.z) / quantizationScale.z;
-
-            short[] quantizedPositions = new short[3];
-
-            int xQuantizedPositionInt = (int) (xQuantizedPosition * 65535);
-            int yQuantizedPositionInt = (int) (yQuantizedPosition * 65535);
-            int zQuantizedPositionInt = (int) (zQuantizedPosition * 65535);
-            quantizedPositions[0] = toUnsignedShort(xQuantizedPositionInt);
-            quantizedPositions[1] = toUnsignedShort(yQuantizedPositionInt);
-            quantizedPositions[2] = toUnsignedShort(zQuantizedPositionInt);
-
-            vertex.setQuantizedPosition(quantizedPositions);
-            vertex.setPosition(null);
-            vertices.set(i, vertex);
-        }
-
-        try (ObjectOutputStream objectInputStream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(minimizedFile)))) {
-            objectInputStream.writeObject(vertices);
-            this.vertices = null;
-        } catch (Exception e) {
+        pointCloudTemp.writePositionsFast(vertices);
+        this.vertices.clear();
+        try {
+            pointCloudTemp.getOutputStream().close();
+        } catch (IOException e) {
             log.error("[Error][minimize] : Failed to minimize the point cloud.", e);
+            throw new RuntimeException(e);
         }
 
         // Minimize the point cloud
-        isMinimized = true;
+        this.vertices = null;
+        this.isMinimized = true;
         this.minimizedFile = minimizedFile;
     }
 
@@ -97,6 +83,22 @@ public class GaiaPointCloud implements Serializable {
             return;
         }
 
+        pointCloudTemp.readHeader();
+        List<GaiaVertex> vertices = pointCloudTemp.readTemp();
+        vertexCount = vertices.size();
+        try {
+            pointCloudTemp.getInputStream().close();
+        } catch (IOException e) {
+            log.error("[Error][maximize] : Failed to maximize the point cloud.", e);
+        }
+        this.vertices = vertices;
+    }
+
+    public void maximizeTempOld() {
+        if (!isMinimized) {
+            log.warn("The point cloud is already maximized.");
+            return;
+        }
         try (ObjectInputStream objectInputStream = new ObjectInputStream(new BufferedInputStream(new FileInputStream(minimizedFile)))) {
             List<GaiaVertex> vertices = (List<GaiaVertex>) objectInputStream.readObject();
             this.vertices = vertices;
