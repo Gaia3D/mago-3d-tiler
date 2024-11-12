@@ -1,7 +1,6 @@
 package com.gaia3d.process.tileprocess.tile;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exception.TileProcessingException;
@@ -10,18 +9,14 @@ import com.gaia3d.basic.pointcloud.GaiaPointCloud;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.tileprocess.Tiler;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
-import com.gaia3d.process.tileprocess.tile.tileset.asset.*;
+import com.gaia3d.process.tileprocess.tile.tileset.asset.Asset;
 import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
-import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
-import org.locationtech.proj4j.BasicCoordinateTransform;
-import org.locationtech.proj4j.CoordinateReferenceSystem;
-import org.locationtech.proj4j.ProjCoordinate;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -34,11 +29,11 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
-public class PointCloudTiler extends DefaultTiler implements Tiler {
+@Deprecated
+public class PointCloudTilerOld extends DefaultTiler implements Tiler {
     @Override
     public Tileset run(List<TileInfo> tileInfos) {
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
-        GaiaBoundingBox originalCoordinateBoundingBox = originalCoordinateBoundingBox(globalBoundingBox);
 
         double minX = globalBoundingBox.getMinX();
         double maxX = globalBoundingBox.getMaxX();
@@ -65,18 +60,13 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         Matrix4d transformMatrix = getTransformMatrix(globalBoundingBox);
         rotateX90(transformMatrix);
 
-        //double geometricError = calcGeometricError(tileInfos);
-        double geometricError = calcGeometricError(originalCoordinateBoundingBox);
+        double geometricError = calcGeometricError(tileInfos);
         Node root = createRoot();
         root.setNodeCode("R");
         root.setBoundingBox(globalBoundingBox);
         root.setRefine(Node.RefineType.ADD);
-
-        BoundingVolume boundingVolume = new BoundingVolume(globalBoundingBox);
-        BoundingVolume square = boundingVolume.createSqureBoundingVolume();
-
         // root만 큐브로
-        root.setBoundingVolume(square);
+        root.setBoundingVolume(new BoundingVolume(globalBoundingBox));
         root.setTransformMatrix(transformMatrix, true);
         root.setGeometricError(geometricError);
 
@@ -113,10 +103,6 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
             log.error(e.getMessage());
             throw new TileProcessingException(e.getMessage());
         }
-    }
-
-    private double calcGeometricError(GaiaBoundingBox boundingBox) {
-        return boundingBox.getLongestDistance();
     }
 
     private double calcGeometricError(GaiaPointCloud pointCloud) {
@@ -176,10 +162,9 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         rotateX90(transformMatrix);
         BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
 
-        GaiaBoundingBox originalCoordinateBoundingBox = originalCoordinateBoundingBox(childBoundingBox);
-        double maximumGeometricError = 8.0;
-        double geometricErrorCalc = calcGeometricError(originalCoordinateBoundingBox);
-        double calculatedGeometricError = geometricErrorCalc / 64;
+        double maximumGeometricError = 16.0;
+        double geometricErrorCalc = calcGeometricError(selfPointCloud);
+        double calculatedGeometricError = geometricErrorCalc / 8;
         if (calculatedGeometricError > maximumGeometricError) {
             calculatedGeometricError = maximumGeometricError;
         } else if (calculatedGeometricError < 1.0) {
@@ -228,26 +213,6 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
                 }
             });
         }
-    }
-
-    private GaiaBoundingBox originalCoordinateBoundingBox(GaiaBoundingBox worldBoundingBox) {
-        Vector3d minPosition = worldBoundingBox.getMinPosition();
-        Vector3d maxPosition = worldBoundingBox.getMaxPosition();
-
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
-        CoordinateReferenceSystem source = globalOptions.getCrs();
-        BasicCoordinateTransform transformer = new BasicCoordinateTransform(GlobeUtils.wgs84, source);
-        ProjCoordinate minProjCoordinate = new ProjCoordinate(minPosition.x, minPosition.y);
-        ProjCoordinate maxProjCoordinate = new ProjCoordinate(maxPosition.x, maxPosition.y);
-        transformer.transform(minProjCoordinate, minProjCoordinate);
-        transformer.transform(maxProjCoordinate, maxProjCoordinate);
-
-        Vector3d localMin = new Vector3d(minProjCoordinate.x, minProjCoordinate.y, minPosition.z);
-        Vector3d localMax = new Vector3d(maxProjCoordinate.x, maxProjCoordinate.y, maxPosition.z);
-        GaiaBoundingBox boundingBox = new GaiaBoundingBox();
-        boundingBox.addPoint(localMin);
-        boundingBox.addPoint(localMax);
-        return boundingBox;
     }
 
     @Deprecated

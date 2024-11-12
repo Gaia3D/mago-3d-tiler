@@ -22,6 +22,7 @@ import org.locationtech.proj4j.ProjCoordinate;
 import java.io.*;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -48,11 +49,27 @@ public class LasConverter {
         double zScaleFactor = header.getZScaleFactor();
         double zOffset = header.getZOffset();
         CloseablePointIterable pointIterable = reader.getCloseablePoints();
+
+        GlobalOptions options = GlobalOptions.getInstance();
+        int pointSkip = options.getPointSkip();
+
+
+        long pointRecords = header.getNumberOfPointRecords();
+        long legacyPointRecords = header.getLegacyNumberOfPointRecords();
+        long totalPointRecords = pointRecords + legacyPointRecords;
+
+        AtomicInteger pointIndex = new AtomicInteger(0);
         for (LASPoint point : pointIterable) {
+            int index = pointIndex.getAndIncrement();
+            if (index % pointSkip != 0) {
+                continue;
+            }
+
             double x = point.getX() * xScaleFactor + xOffset;
             double y = point.getY() * yScaleFactor + yOffset;
             double z = point.getZ() * zScaleFactor + zOffset;
             byte[] rgb = getColorByRGB(point);
+            //byte[] rgb = getColorByByteRGB(point); // only for test
             Vector3d position = new Vector3d(x, y, z);
 
             GaiaVertex vertex = new GaiaVertex();
@@ -67,7 +84,6 @@ public class LasConverter {
                 tempFile.writePosition(position, rgb);
             }
         }
-        //findTemp
     }
 
     public GaiaPointCloudHeader readHeader(File file) {
@@ -123,49 +139,91 @@ public class LasConverter {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         List<GaiaPointCloud> pointClouds = new ArrayList<>();
         GaiaPointCloud pointCloud = new GaiaPointCloud();
-        List<GaiaVertex> vertices = pointCloud.getVertices();
-
         CoordinateReferenceSystem source = globalOptions.getCrs();
-
         GaiaBoundingBox boundingBox = pointCloud.getGaiaBoundingBox();
-        short blockSize = (short) (8 * 3 + 3);
+        UUID uuid = UUID.randomUUID();
+        File newTempFile = new File(file.getParent(), uuid.toString());
+        GaiaPointCloudTemp newTemp = new GaiaPointCloudTemp(newTempFile);
+
         DataInputStream inputStream = null;
+        DataOutputStream outputStream = null;
         try {
-            GaiaPointCloudTemp tempFile = new GaiaPointCloudTemp(file);
-            boolean isSuccess = tempFile.readHeader();
-            inputStream = tempFile.getInputStream();
+            BasicCoordinateTransform transformer = new BasicCoordinateTransform(source, GlobeUtils.wgs84);
+
+            GaiaPointCloudTemp readTemp = new GaiaPointCloudTemp(file);
+            boolean isSuccess = readTemp.readHeader();
             if (isSuccess) {
-                vertices = tempFile.readTemp();
-                for (GaiaVertex vertex : vertices) {
-                    Vector3d position = vertex.getPosition();
-                    ProjCoordinate coordinate = new ProjCoordinate(position.x, position.y, position.z);
-                    ProjCoordinate transformedCoordinate = GlobeUtils.transform(source, coordinate);
-                    Vector3d newPosition = new Vector3d(transformedCoordinate.x, transformedCoordinate.y, position.z);
-                    boundingBox.addPoint(newPosition);
-                    vertex.setPosition(newPosition);
+                inputStream = readTemp.getInputStream();
+
+                double[] quantizationOffset = readTemp.getQuantizedVolumeOffset();
+                double[] quantizationScale = readTemp.getQuantizedVolumeScale();
+                double[] originalMinPosition = new double[]{quantizationOffset[0], quantizationOffset[1], quantizationOffset[2]};
+                double[] originalMaxPosition = new double[]{quantizationOffset[0] + quantizationScale[0], quantizationOffset[1] + quantizationScale[1], quantizationOffset[2] + quantizationScale[2]};
+
+                ProjCoordinate transformedMinCoordinate = transformer.transform(new ProjCoordinate(originalMinPosition[0], originalMinPosition[1], originalMinPosition[2]), new ProjCoordinate());
+                Vector3d minPosition = new Vector3d(transformedMinCoordinate.x, transformedMinCoordinate.y, originalMinPosition[2]);
+                ProjCoordinate transformedMaxCoordinate = transformer.transform(new ProjCoordinate(originalMaxPosition[0], originalMaxPosition[1], originalMaxPosition[2]), new ProjCoordinate());
+                Vector3d maxPosition = new Vector3d(transformedMaxCoordinate.x, transformedMaxCoordinate.y, originalMaxPosition[2]);
+                boundingBox.addPoint(minPosition);
+                boundingBox.addPoint(maxPosition);
+
+                newTemp.getQuantizedVolumeOffset()[0] = minPosition.x;
+                newTemp.getQuantizedVolumeOffset()[1] = minPosition.y;
+                newTemp.getQuantizedVolumeOffset()[2] = minPosition.z;
+                newTemp.getQuantizedVolumeScale()[0] = maxPosition.x - minPosition.x;
+                newTemp.getQuantizedVolumeScale()[1] = maxPosition.y - minPosition.y;
+                newTemp.getQuantizedVolumeScale()[2] = maxPosition.z - minPosition.z;
+
+                newTemp.writeHeader();
+                outputStream = newTemp.getOutputStream();
+
+                log.info("original min position : {}", minPosition);
+                log.info("original max position : {}", maxPosition);
+                log.info("transformed min position : {}", minPosition);
+                log.info("transformed max position : {}", maxPosition);
+
+                int chunkSize = 65536 * 8 * 16;
+                boolean isEndFile = false;
+                while (!isEndFile) {
+                    List<GaiaVertex> vertices = readTemp.readTempChunk(chunkSize);
+                    if (vertices.isEmpty()) {
+                        isEndFile = true;
+                        break;
+                    }
+                    vertices.forEach((vertex) -> {
+                        Vector3d position = vertex.getPosition();
+                        ProjCoordinate coordinate = new ProjCoordinate(position.x, position.y, position.z);
+                        ProjCoordinate transformedCoordinate = transformer.transform(coordinate, new ProjCoordinate());
+                        Vector3d newPosition = new Vector3d(transformedCoordinate.x, transformedCoordinate.y, position.z);
+                        boundingBox.addPoint(newPosition);
+                        vertex.setPosition(newPosition);
+                    });
+                    newTemp.writePositionsFast(vertices);
                 }
-                if (vertices.size() > 0) {
-                    Collections.shuffle(vertices);
-                    pointCloud.setVertices(vertices);
-                    pointClouds.add(pointCloud);
-                }
+                pointCloud.setMinimized(true);
+                pointCloud.setVertices(null);
+                pointCloud.setPointCloudTemp(newTemp);
                 inputStream.close();
+                outputStream.close();
             }
         } catch (IOException e) {
+            log.error("Failed to read temp file.", e);
+        } finally {
             if (inputStream != null) {
                 try {
                     inputStream.close();
-                } catch (Exception ex) {
-                    log.error("Failed to close input stream", ex);
+                } catch (IOException e) {
+                    log.error("Failed to close input stream.", e);
                 }
             }
-            throw new RuntimeException(e);
         }
+
+        pointClouds.add(pointCloud);
         return pointClouds;
     }
 
 
-    private List<GaiaPointCloud> convertOld(File file) {
+    /*private List<GaiaPointCloud> convertOld(File file) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         List<GaiaPointCloud> pointClouds = new ArrayList<>();
         GaiaPointCloud pointCloud = new GaiaPointCloud();
@@ -294,7 +352,7 @@ public class LasConverter {
 
         log.debug("----------------------------------------");
         return pointClouds;
-    }
+    }*/
 
     /**
      * Reduce points by using HashMap
@@ -329,7 +387,7 @@ public class LasConverter {
      * @param vertices List<GaiaVertex>
      * @return List<GaiaVertex>
      */
-    private List<GaiaVertex> reducePointsB(List<GaiaVertex> vertices) {
+    /*private List<GaiaVertex> reducePointsB(List<GaiaVertex> vertices) {
         GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null);
         octreeVertices.getVertices().addAll(vertices);
         octreeVertices.calculateSize();
@@ -341,7 +399,7 @@ public class LasConverter {
         octreeVertices.reduceVertices(10);
         List<GaiaVertex> newVertices = octreeVertices.getAllVertices(null);
         return newVertices;
-    }
+    }*/
 
 
     private void transformPositions(List<GaiaVertex> vertices) {

@@ -156,65 +156,6 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         }
     }
 
-    private void createNode_original(Node parentNode, List<TileInfo> tileInfos) throws IOException {
-        BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
-        BoundingVolume squareBoundingVolume = parentBoundingVolume.createSqureBoundingVolume();
-
-        long instanceLimit = globalOptions.getMaxInstance() * 4;
-        long instanceCount = tileInfos.size();
-        boolean isRefineAdd = globalOptions.isRefineAdd();
-//=======
-//        //int nodeLimit = globalOptions.getNodeLimit() * 4;
-//
-//        //long triangleLimit = 65536 * 8; // original.***
-//        long triangleLimit = 65536 * 1024;
-//        long totalTriangleCount = tileInfos.stream().mapToLong(TileInfo::getTriangleCount).sum();
-//        log.info("[TriangleCount] Total : {}", totalTriangleCount);
-//>>>>>>> Stashed changes
-
-        if (instanceCount > instanceLimit) {
-            List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
-            for (int index = 0; index < childrenScenes.size(); index++) {
-                List<TileInfo> childTileInfos = childrenScenes.get(index);
-                Node childNode = createLogicalNode(parentNode, childTileInfos, index);
-                if (childNode != null) {
-                    parentNode.getChildren().add(childNode);
-                    createNode(childNode, childTileInfos);
-                }
-            }
-        } else if (instanceCount > 1) {
-            List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
-            for (int index = 0; index < childrenScenes.size(); index++) {
-                List<TileInfo> childTileInfos = childrenScenes.get(index);
-
-                Node childNode = createContentNode(parentNode, childTileInfos, index);
-                if (childNode != null) {
-                    parentNode.getChildren().add(childNode);
-                    Content content = childNode.getContent();
-                    if (content != null) {
-                        ContentInfo contentInfo = content.getContentInfo();
-                        createNode(childNode, contentInfo.getRemainTileInfos());
-                    } else {
-                        ContentInfo contentInfo = content.getContentInfo();
-                        createNode(childNode, contentInfo.getTileInfos());
-                    }
-                }
-            }
-        } else if (!tileInfos.isEmpty()) {
-            Node childNode = createContentNode(parentNode, tileInfos, 0);
-            if (childNode != null) {
-                parentNode.getChildren().add(childNode);
-                Content content = childNode.getContent();
-                if (content != null) {
-                    ContentInfo contentInfo = content.getContentInfo();
-                    createNode(childNode, contentInfo.getRemainTileInfos());
-                } else {
-                    createNode(childNode, tileInfos);
-                }
-            }
-        }
-    }
-
     private Node createLogicalNode(Node parentNode, List<TileInfo> tileInfos, int index) {
         if (tileInfos.isEmpty()) {
             return null;

@@ -1,7 +1,6 @@
 package com.gaia3d.converter.pointcloud;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.model.GaiaVertex;
 import com.gaia3d.basic.pointcloud.GaiaPointCloudHeader;
 import com.gaia3d.basic.pointcloud.GaiaPointCloudTemp;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +9,7 @@ import org.joml.Vector3d;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 @RequiredArgsConstructor
 public class PointCloudTempGenerator {
-    private final float GRID_SIZE = 100.0f; // in meters
+    private final float GRID_SIZE = 300.0f; // in meters
     private final LasConverter converter;
     private GaiaPointCloudHeader combinedHeader;
 
@@ -28,6 +28,8 @@ public class PointCloudTempGenerator {
             tempFiles = createTempGrid(tempPath);
             generateTempFiles(fileList);
             closeAllStreams();
+            tempFiles = removeEmptyFiles(tempFiles);
+            tempFiles = shuffleTempFiles(tempFiles);
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -41,20 +43,21 @@ public class PointCloudTempGenerator {
         Vector3d offset = combinedHeader.getSrsBoundingBox().getMinPosition();
         for (int i = 0; i < tempGrid.length; i++) {
             for (int j = 0; j < tempGrid[i].length; j++) {
-                String tempFileName = String.format("temp-%d-%d.bin", i, j);
+                String tempFileName = String.format("grid-%d-%d.bin", i, j);
                 File tempFile = new File(tempPath, tempFileName);
-                tempGrid[i][j] = new GaiaPointCloudTemp(tempFile);
+
+                GaiaPointCloudTemp temp = new GaiaPointCloudTemp(tempFile);
+                tempGrid[i][j] = temp;
 
                 // Set quantized volume scale and offset
-                tempGrid[i][j].getQuantizedVolumeScale()[0] = volume.x;
-                tempGrid[i][j].getQuantizedVolumeScale()[1] = volume.y;
-                tempGrid[i][j].getQuantizedVolumeScale()[2] = volume.z;
-                tempGrid[i][j].getQuantizedVolumeOffset()[0] = offset.x;
-                tempGrid[i][j].getQuantizedVolumeOffset()[1] = offset.y;
-                tempGrid[i][j].getQuantizedVolumeOffset()[2] = offset.z;
+                temp.getQuantizedVolumeScale()[0] = volume.x;
+                temp.getQuantizedVolumeScale()[1] = volume.y;
+                temp.getQuantizedVolumeScale()[2] = volume.z;
+                temp.getQuantizedVolumeOffset()[0] = offset.x;
+                temp.getQuantizedVolumeOffset()[1] = offset.y;
+                temp.getQuantizedVolumeOffset()[2] = offset.z;
 
-                tempGrid[i][j].openOutputStream();
-                tempGrid[i][j].writeHeader();
+                temp.writeHeader();
                 tempFiles.add(tempFile);
             }
         }
@@ -75,6 +78,13 @@ public class PointCloudTempGenerator {
 
         GaiaPointCloudTemp[][] tempGrid = new GaiaPointCloudTemp[gridXCount][gridYCount];
         combinedHeader.setTempGrid(tempGrid);
+
+        log.debug("[Pre] Combined header: {}", combinedHeader);
+        log.debug("[Pre] Grid size: {}x{}", gridXCount, gridYCount);
+        log.debug("[Pre] Volume: {}", volume);
+        log.debug("[Pre] Get Points Size: {}", combinedHeader.getSize());
+        combinedHeader.getSize();
+
         return combinedHeader;
     }
 
@@ -87,12 +97,45 @@ public class PointCloudTempGenerator {
         });
     }
 
+    private List<File> shuffleTempFiles(List<File> tempFiles) {
+        List<File> shuffledTempFiles = new ArrayList<>();
+        tempFiles.forEach((tempFile) -> {
+            log.info("[Pre] Shuffling temp file: {}", tempFile.getName());
+            GaiaPointCloudTemp temp = new GaiaPointCloudTemp(tempFile);
+            temp.shuffleTemp();
+            shuffledTempFiles.add(temp.getTempFile());
+        });
+        return shuffledTempFiles;
+    }
+
     private void closeAllStreams() {
         GaiaPointCloudTemp[][] tempGrid = combinedHeader.getTempGrid();
         for (GaiaPointCloudTemp[] gaiaPointCloudTemps : tempGrid) {
-            for (GaiaPointCloudTemp gaiaPointCloudTemp : gaiaPointCloudTemps) {
-                gaiaPointCloudTemp.closeSteam();
+            for (GaiaPointCloudTemp temp : gaiaPointCloudTemps) {
+                OutputStream outputStream = temp.getOutputStream();
+                if (outputStream != null) {
+                    try {
+                        outputStream.flush();
+                        outputStream.close();
+                    } catch (Exception e) {
+                        log.error("Failed to close input stream", e);
+                    }
+                }
             }
         }
+    }
+
+    private List<File> removeEmptyFiles(List<File> tempFiles) {
+        List<File> newTempFiles = new ArrayList<>();
+        tempFiles.forEach((tempFile) -> {
+            if (tempFile.length() <= 52) {
+                if (!tempFile.delete()) {
+                    log.error("Failed to delete empty temp file: {}", tempFile);
+                }
+            } else {
+                newTempFiles.add(tempFile);
+            }
+        });
+        return newTempFiles;
     }
 }

@@ -54,7 +54,10 @@ public class PointCloudFileLoader implements FileLoader {
                 log.error("Failed to load scene: {}", file.getAbsolutePath());
                 return null;
             } else {
-                TileInfo tileInfo = TileInfo.builder().pointCloud(pointCloud).outputPath(outputPath).build();
+                TileInfo tileInfo = TileInfo.builder()
+                        .pointCloud(pointCloud)
+                        .outputPath(outputPath)
+                        .build();
                 tileInfos.add(tileInfo);
             }
         }

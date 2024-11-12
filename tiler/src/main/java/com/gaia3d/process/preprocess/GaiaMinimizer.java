@@ -21,7 +21,7 @@ public class GaiaMinimizer implements PreProcess {
         GaiaPointCloud pointCloud = tileInfo.getPointCloud();
 
         minimizeGaiaScene(tileInfo, scene);
-        minimizeGaiaPointCloud(tileInfo, pointCloud);
+        //minimizeGaiaPointCloud(tileInfo, pointCloud);
         return tileInfo;
     }
 
@@ -47,6 +47,8 @@ public class GaiaMinimizer implements PreProcess {
 
             File tempFile = new File(tileInfo.getTempPath().toString(), id);
             pointCloud.minimize(tempFile);
+
+            log.info("Minimized point cloud: {}", tempFile.getAbsolutePath());
         }
     }
 }
