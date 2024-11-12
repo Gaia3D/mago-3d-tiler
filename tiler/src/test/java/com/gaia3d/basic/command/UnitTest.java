@@ -887,6 +887,8 @@ class UnitTest {
                 "-it", "obj",
                 "-o", outputPath + path,
                 "-crs", "32648",
+                "-xOffset", "268943",
+                "-yOffset", "1818915",
                 "-su",
                 "-glb",
                 "-pr", // photo realistic mesh

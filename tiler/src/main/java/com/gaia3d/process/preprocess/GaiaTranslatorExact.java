@@ -133,6 +133,7 @@ public class GaiaTranslatorExact implements PreProcess {
             parentMatrix.mul(transformMatrix, transformMatrix);
         }
 
+        Vector3d offset = globalOptions.getTranslateOffset();
 
         List <GaiaMesh> meshes = node.getMeshes();
         if (meshes != null) {
@@ -144,6 +145,7 @@ public class GaiaTranslatorExact implements PreProcess {
                         if (vertices != null && !vertices.isEmpty()) {
                             for (GaiaVertex vertex : vertices) {
                                 Vector3d pos = new Vector3d(vertex.getPosition());
+                                pos.add(offset);
                                 transformMatrix.transformPosition(pos); // CRS coords.***
 
                                 // calculate the geoCoords of the "pos".***
