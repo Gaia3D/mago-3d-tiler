@@ -51,6 +51,7 @@ public class RenderableGaiaScene {
                         GL20.glDeleteTextures(textureId);
                         gaiaTexture.setTextureId(-1);
                     }
+                    gaiaTexture.deleteObjects();
                     gaiaTexture.setByteBuffer(null);
                     gaiaTexture.setBufferedImage(null);
                 }
