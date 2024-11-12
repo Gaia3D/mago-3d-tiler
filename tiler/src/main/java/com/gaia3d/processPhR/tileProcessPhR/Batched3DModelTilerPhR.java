@@ -213,6 +213,15 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         return tileset;
     }
 
+    private double getNodeLatitudesLengthInMeters(Node node)
+    {
+        // make globalBoundingBox as square.***
+        double[] region = node.getBoundingVolume().getRegion();
+        double minLatRad = region[1];
+        double maxLatRad = region[3];
+        return GlobeUtils.distanceBetweenLatitudesRad(minLatRad, maxLatRad);
+    }
+
     private void createNetSurfaceNodes(Node rootNode, List<TileInfo> tileInfos, int nodeDepth, int maxDepth)
     {
         // 1rst, find all tileInfos that intersects with the node.***
@@ -319,10 +328,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             int numCols = bufferedImageDepth.getWidth();
             int numRows = bufferedImageDepth.getHeight();
             HalfEdgeScene halfEdgeScene = HalfEdgeUtils.getHalfEdgeSceneRectangularNet(numCols, numRows, depthValues, nodeBBoxLC);
-            double maxDiffAngDeg = 30.0;
+            double maxDiffAngDeg = 25.0;
+            //double hedgeMinLength = getNodeLatitudesLengthInMeters(node)/1000.0;
             double hedgeMinLength = 1.0;
             double frontierMaxDiffAngDeg = 10.0;
-            halfEdgeScene.doTrianglesReduction(maxDiffAngDeg, frontierMaxDiffAngDeg, hedgeMinLength);
+            double maxAspectRatio = 5.0;
+            halfEdgeScene.doTrianglesReduction(maxDiffAngDeg, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio);
             //halfEdgeScene.calculateNormals();
 
             if(halfEdgeScene.getTrianglesCount() == 0)
@@ -946,9 +957,18 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         // remove from tileInfos the deleted tileInfos.***
         for(Map.Entry<TileInfo, TileInfo> entry : deletedTileInfoMap.entrySet())
         {
+            // delete the temp folder of the tileInfo.***
             TileInfo tileInfo = entry.getKey();
+            Path tempPath = tileInfo.getTempPath();
+            Path tempPathFolder = tempPath.getParent();
+            File tempPathFile = tempPathFolder.toFile();
+            if(tempPathFile.exists())
+            {
+                tempPathFile.delete(); // no works. TODO: must delete the folder and all its contents.***
+            }
             tileInfo.clear();
             tileInfos.remove(tileInfo);
+
         }
 
         // add the cutTileInfos to tileInfos.***

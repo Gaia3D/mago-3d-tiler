@@ -218,6 +218,16 @@ public class HalfEdgeSurface implements Serializable {
         return true;
     }
 
+    public void calculatePlaneNormals()
+    {
+        int facesCount = faces.size();
+        for(int i = 0; i < facesCount; i++)
+        {
+            HalfEdgeFace face = faces.get(i);
+            face.calculatePlaneNormal();
+        }
+    }
+
     public void calculateNormals()
     {
         Map<HalfEdgeVertex, List<HalfEdgeFace>> vertexAllFacesMap = this.getMapVertexAllFaces(null);
@@ -355,23 +365,17 @@ public class HalfEdgeSurface implements Serializable {
                     }
                     Vector3d pos = vertex.getPosition();
                     Vector3d pos2 = vertex2.getPosition();
-                    if(pos.distance(pos2) < 0.005)
+                    if(pos.distance(pos2) < 0.001)
                     {
                         List<HalfEdgeVertex> samePosVertices = resultMapVertexToSamePosVertices.get(vertex2);
                         samePosVertices.add(vertex);
 
                         List<HalfEdgeVertex> samePosVertices2 = resultMapVertexToSamePosVertices.get(vertex);
                         samePosVertices2.add(vertex2);
-                        break;
                     }
                 }
             }
         }
-
-
-
-
-
 
         return resultMapVertexToSamePosVertices;
     }
@@ -395,7 +399,7 @@ public class HalfEdgeSurface implements Serializable {
         return resultMapFaceToHalfEdges;
     }
 
-    public void doTrianglesReduction(double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength) {
+    public void doTrianglesReduction_new(double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength, double maxAspectRatio) {
         // 1rst, find possible halfEdges to remove.***
         // Reasons to remove a halfEdge:
         // 1. The halfEdge is very short. (small length).
@@ -411,7 +415,6 @@ public class HalfEdgeSurface implements Serializable {
 
         Map<HalfEdge, Vector3d> mapHalfEdgeToInitialDirection = this.getMapHalfEdgeToDirection(null);
         Map<HalfEdgeVertex, List<HalfEdge>> vertexAllOutingEdgesMap = this.getMapVertexAllOutingEdges(null);
-        Map<Vector3d, List<HalfEdgeVertex>> mapPositionToVertices = this.getMapPositionToVertices(null);
         Map<HalfEdgeFace, List<HalfEdge>> mapFaceToHalfEdges = this.getMapFaceToHalfEdges(null);
         Map<HalfEdgeVertex, List<HalfEdgeVertex>> mapVertexToSamePosVertices = this.getMapVertexToSamePosVertices(null);
 
@@ -429,10 +432,168 @@ public class HalfEdgeSurface implements Serializable {
         }
         // end classify vertices.---
 
+//        // set classifying ids for all HEdges.***
+//        int hedgesCount = halfEdges.size();
+//        for (int i = 0; i < hedgesCount; i++) {
+//            HalfEdge halfEdge = halfEdges.get(i);
+//            halfEdge.setClassifyId(0);
+//        }
+
+        calculatePlaneNormals();
+
+
         Collections.shuffle(halfEdges);
 
         boolean finished = false;
-        int maxIterations = 1;
+        int maxIterations = 50;
+        int iteration = 0;
+        while(!finished && iteration < maxIterations) {
+            boolean collapsed = false;
+            int facesCount = faces.size();
+            for (int i = 0; i < facesCount; i++) {
+                HalfEdgeFace face = faces.get(i);
+                if (face.getStatus() == ObjectStatus.DELETED) {
+                    continue;
+                }
+
+//                if (face.isDegenerated()) {
+//                    continue;
+//                }
+
+                List<HalfEdge> halfEdges = face.getHalfEdgesLoop(null);
+                int halfEdgesCount = halfEdges.size();
+                for(int j = 0; j < halfEdgesCount; j++) {
+                    HalfEdge halfEdge = halfEdges.get(j);
+                    if (halfEdge.getStatus() == ObjectStatus.DELETED) {
+                        continue;
+                    }
+                    if (halfEdge.isDegeneratedByPointers()) {
+                        continue;
+                    }
+//                    if (halfEdge.isApplauseEdge()) {
+//                        //continue;
+//                    }
+
+                    HalfEdgeVertex startVertex = halfEdge.getStartVertex();
+
+                    PositionType positionType = PositionType.INTERIOR;
+                    List<HalfEdge> outingEdges = vertexAllOutingEdgesMap.get(startVertex);
+                    int outingEdgesCount = outingEdges.size();
+                    for (int k = 0; k < outingEdgesCount; k++) {
+                        HalfEdge outingEdge = outingEdges.get(k);
+                        if (!outingEdge.hasTwin()) {
+                            positionType = PositionType.BOUNDARY_EDGE;
+                            break;
+                        }
+                    }
+
+                    if (halfEdge.hasTwin() && positionType == PositionType.BOUNDARY_EDGE) {
+                        continue;
+                    }
+
+                    boolean testDebug = false;
+//                    if (halfEdge.isApplauseEdge()) {
+//                        //continue;
+//                    }
+
+                    if (halfEdge.hasTwin() && positionType == PositionType.INTERIOR) {
+                        if (collapseHalfEdge(halfEdge, i, vertexAllOutingEdgesMap, mapVertexToSamePosVertices, maxDiffAngDeg, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio, testDebug)) {
+                            hedgesCollapsedCount += 6;
+                            counterAux++;
+                            collapsed = true;
+                        }
+                    } else if (!halfEdge.hasTwin() && positionType == PositionType.BOUNDARY_EDGE) {
+                        if (collapseFrontierHalfEdge(halfEdge, i, vertexAllOutingEdgesMap, mapHalfEdgeToInitialDirection, mapVertexToSamePosVertices, maxDiffAngDeg, frontierMaxDiffAngDeg,
+                                hedgeMinLength, maxAspectRatio, testDebug)) {
+                            hedgesCollapsedCount += 3;
+                            counterAux++;
+                            collapsed = true;
+                        }
+                    }
+                    if (counterAux >= 2000) {
+                        counterAux = 0;
+                        log.info("halfEdges deleted = " + hedgesCollapsedCount);
+                    }
+                }
+
+            }
+
+            iteration++;
+
+            if(collapsed == false)
+            {
+                finished = true;
+            }
+        }
+
+        log.info("*** TOTAL HALFEDGES DELETED = " + hedgesCollapsedCount);
+        log.info("total iteration = " + iteration);
+
+        // delete objects that status is DELETED.***
+        deleteDegeneratedFaces(mapFaceToHalfEdges);
+        deleteNoUsedVertices();
+        this.removeDeletedObjects();
+
+        int finalFacesCount = faces.size();
+        int finalHalfEdgesCount = halfEdges.size();
+        int finalVerticesCount = vertices.size();
+
+        int facesCountDiff = originalFacesCount - finalFacesCount;
+        int halfEdgesCountDiff = originalHalfEdgesCount - finalHalfEdgesCount;
+        int verticesCountDiff = originalVerticesCount - finalVerticesCount;
+
+        log.info("faces % deleted = " + (facesCountDiff * 100.0) / originalFacesCount);
+        log.info("halfEdges % deleted = " + (halfEdgesCountDiff * 100.0) / originalHalfEdgesCount);
+        log.info("vertices % deleted = " + (verticesCountDiff * 100.0) / originalVerticesCount);
+
+        int hola = 0;
+    }
+
+    public void doTrianglesReduction(double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength, double maxAspectRatio) {
+        // 1rst, find possible halfEdges to remove.***
+        // Reasons to remove a halfEdge:
+        // 1. The halfEdge is very short. (small length).
+        // 2. All triangles around the startVertex has a similar normal.
+        //----------------------------------------------------------------
+        int originalFacesCount = faces.size();
+        int originalHalfEdgesCount = halfEdges.size();
+        int originalVerticesCount = vertices.size();
+
+        log.info("halfEdgesCount = " + originalHalfEdgesCount);
+        int counterAux = 0;
+        int hedgesCollapsedCount = 0;
+
+        Map<HalfEdge, Vector3d> mapHalfEdgeToInitialDirection = this.getMapHalfEdgeToDirection(null);
+        Map<HalfEdgeVertex, List<HalfEdge>> vertexAllOutingEdgesMap = this.getMapVertexAllOutingEdges(null);
+        Map<HalfEdgeFace, List<HalfEdge>> mapFaceToHalfEdges = this.getMapFaceToHalfEdges(null);
+        Map<HalfEdgeVertex, List<HalfEdgeVertex>> mapVertexToSamePosVertices = this.getMapVertexToSamePosVertices(null);
+
+        // classify vertices.***
+        List<List<HalfEdgeFace>> weldedFacesGroups = getWeldedFacesGroups(null);
+        int weldedFacesGroupsCount = weldedFacesGroups.size();
+        for (int i = 0; i < weldedFacesGroupsCount; i++) {
+            List<HalfEdgeFace> weldedFacesGroup = weldedFacesGroups.get(i);
+            for (HalfEdgeFace face : weldedFacesGroup) {
+                List<HalfEdgeVertex> vertices = face.getVertices(null);
+                for (HalfEdgeVertex vertex : vertices) {
+                    vertex.setClassifyId(i);
+                }
+            }
+        }
+        // end classify vertices.---
+
+//        // set classifying ids for all HEdges.***
+//        int hedgesCount = halfEdges.size();
+//        for (int i = 0; i < hedgesCount; i++) {
+//            HalfEdge halfEdge = halfEdges.get(i);
+//            halfEdge.setClassifyId(0);
+//        }
+
+
+        Collections.shuffle(halfEdges);
+
+        boolean finished = false;
+        int maxIterations = 50;
         int iteration = 0;
         while(!finished && iteration < maxIterations) {
             boolean collapsed = false;
@@ -444,6 +605,12 @@ public class HalfEdgeSurface implements Serializable {
                 }
 
                 if (halfEdge.isDegeneratedByPointers()) {
+                    continue;
+                }
+
+                HalfEdgeFace face = halfEdge.getFace();
+                if(face.isDegenerated())
+                {
                     continue;
                 }
 
@@ -473,14 +640,15 @@ public class HalfEdgeSurface implements Serializable {
                 }
 
                 if(halfEdge.hasTwin() && positionType == PositionType.INTERIOR) {
-                    if (collapseHalfEdge(halfEdge, i, vertexAllOutingEdgesMap, mapVertexToSamePosVertices, maxDiffAngDeg, frontierMaxDiffAngDeg, hedgeMinLength, testDebug)) {
+                    if (collapseHalfEdge(halfEdge, i, vertexAllOutingEdgesMap, mapVertexToSamePosVertices, maxDiffAngDeg, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio, testDebug)) {
                         hedgesCollapsedCount += 6;
                         counterAux++;
                         collapsed = true;
                     }
                 }
                 else  if(!halfEdge.hasTwin() && positionType == PositionType.BOUNDARY_EDGE){
-                    if(collapseFrontierHalfEdge(halfEdge, i, vertexAllOutingEdgesMap, mapHalfEdgeToInitialDirection, mapVertexToSamePosVertices, maxDiffAngDeg, frontierMaxDiffAngDeg, hedgeMinLength, testDebug)) {
+                    if(collapseFrontierHalfEdge(halfEdge, i, vertexAllOutingEdgesMap, mapHalfEdgeToInitialDirection, mapVertexToSamePosVertices, maxDiffAngDeg, frontierMaxDiffAngDeg,
+                            hedgeMinLength, maxAspectRatio, testDebug)) {
                         hedgesCollapsedCount += 3;
                         counterAux++;
                         collapsed = true;
@@ -962,14 +1130,29 @@ public class HalfEdgeSurface implements Serializable {
     }
 
     public boolean collapseFrontierHalfEdge(HalfEdge halfEdge, int iteration, Map<HalfEdgeVertex, List<HalfEdge>> vertexAllOutingEdgesMap, Map<HalfEdge, Vector3d> mapHalfEdgeToInitialDirection,
-                                            Map<HalfEdgeVertex, List<HalfEdgeVertex>> mapVertexToSamePosVertices, double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength, boolean testDebug) {
+                                            Map<HalfEdgeVertex, List<HalfEdgeVertex>> mapVertexToSamePosVertices, double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength,
+                                            double maxAspectRatio, boolean testDebug) {
 
         HalfEdgeVertex startVertex = halfEdge.getStartVertex();
         HalfEdgeVertex endVertex = halfEdge.getEndVertex();
         Vector3d startPosition = startVertex.getPosition();
         Vector3d endPosition = endVertex.getPosition();
 
-        List<HalfEdge> outingEdgesOfStartVertex = vertexAllOutingEdgesMap.get(startVertex);
+
+        List<HalfEdgeVertex> samePosVertices = mapVertexToSamePosVertices.get(startVertex);
+        List<HalfEdge> outingEdgesOfSamePosVertices = new ArrayList<>();
+
+        int samePosVertexCount = samePosVertices.size();
+        for(int i = 0; i < samePosVertexCount; i++)
+        {
+            HalfEdgeVertex vertex = samePosVertices.get(i);
+            List<HalfEdge> outingEdges = vertexAllOutingEdgesMap.get(vertex);
+            outingEdgesOfSamePosVertices.addAll(outingEdges);
+        }
+
+
+
+        //List<HalfEdge> outingEdgesOfStartVertex = vertexAllOutingEdgesMap.get(startVertex);
 
 
         //*****************************************************************************************
@@ -978,14 +1161,14 @@ public class HalfEdgeSurface implements Serializable {
 
         // check if collapse.**************************************************************************************************
         // In frontier halfEdges, must check the another frontier halfEdges that uses the startVertex.***
-        int outingEdgesOfStartVertexCount = outingEdgesOfStartVertex.size();
+        int outingEdgesOfStartVertexCount = outingEdgesOfSamePosVertices.size();
         if(outingEdgesOfStartVertexCount < 2)
         {
             return false;
         }
 
         for (int i = 0; i < outingEdgesOfStartVertexCount; i++) {
-            HalfEdge outingEdge = outingEdgesOfStartVertex.get(i);
+            HalfEdge outingEdge = outingEdgesOfSamePosVertices.get(i);
             if(outingEdge.getStatus() == ObjectStatus.DELETED)
             {
                 continue;
@@ -1016,12 +1199,20 @@ public class HalfEdgeSurface implements Serializable {
 
                     // check the angle before and after collapse.***
                     Vector3d v1 = mapHalfEdgeToInitialDirection.get(outingEdge2);
+                    v1 = outingEdge2.getVector(v1);
+                    v1.normalize();
+                    if(isNaN(v1.x) || isNaN(v1.y) || isNaN(v1.z))
+                    {
+                        //log.error("HalfEdgeSurface.collapseFrontierHalfEdge() : v2 is NaN.");
+                        continue;
+                    }
+
                     Vector3d v2 = new Vector3d(endPosition.x - startPosition2.x, endPosition.y - startPosition2.y, endPosition.z - startPosition2.z);
                     v2.normalize();
 
                     if(isNaN(v2.x) || isNaN(v2.y) || isNaN(v2.z))
                     {
-                        log.error("HalfEdgeSurface.collapseFrontierHalfEdge() : v2 is NaN.");
+                        //log.error("HalfEdgeSurface.collapseFrontierHalfEdge() : v2 is NaN.");
                         continue;
                     }
 
@@ -1040,7 +1231,7 @@ public class HalfEdgeSurface implements Serializable {
         }
 
         if(halfEdge.getLength() > hedgeMinLength) {
-            if (!decideIfCollapseCheckingFaces(halfEdge, vertexAllOutingEdgesMap, maxDiffAngDeg)) {
+            if (!decideIfCollapseCheckingFaces(halfEdge, vertexAllOutingEdgesMap, mapVertexToSamePosVertices, maxDiffAngDeg, maxAspectRatio)) {
                 return false;
             }
         }
@@ -1054,10 +1245,9 @@ public class HalfEdgeSurface implements Serializable {
         for(int i = 0; i < samePositionVerticesCount; i++)
         {
             HalfEdgeVertex vertex = listVertexSamePosition.get(i);
-
             List<HalfEdge> outingEdgesOfVertex = vertexAllOutingEdgesMap.get(vertex);
-
             int outingEdgesOfVertexCount = outingEdgesOfVertex.size();
+
             for(int j = 0; j < outingEdgesOfVertexCount; j++)
             {
                 HalfEdge outingEdge = outingEdgesOfVertex.get(j);
@@ -1084,10 +1274,7 @@ public class HalfEdgeSurface implements Serializable {
                             break;
                         }
                     }
-
-
                 }
-
             }
 
             outingEdgesOfVertex.clear();
@@ -1097,17 +1284,8 @@ public class HalfEdgeSurface implements Serializable {
         return true;
     }
 
-    private void moveVertices(Vector3d startPos, Vector3d endPos, Map<Vector3d, List<HalfEdgeVertex>> mapPositionToVertices)
-    {
-        List<HalfEdgeVertex> listVertexStartPos = mapPositionToVertices.get(startPos);
-        List<HalfEdgeVertex> listVertexEndPos = mapPositionToVertices.get(endPos);
-        int samePositionStartPos = listVertexStartPos.size();
-        for(int i = 0; i < samePositionStartPos; i++)
-        {
-            HalfEdgeVertex vertex = listVertexStartPos.get(i);
-            int classifyId = vertex.getClassifyId();
-            HalfEdgeVertex vertex2 = getVertexWithClassifyId(listVertexEndPos, classifyId);
-        }
+    private void setStartVertexToHalfEdge(HalfEdge hedge, HalfEdgeVertex startVertex, Map<HalfEdgeVertex, List<HalfEdgeVertex>> mapVertexToSamePosVertices) {
+
     }
 
     private HalfEdgeVertex getVertexWithClassifyId(List<HalfEdgeVertex> listVertices, int classifyId)
@@ -1126,21 +1304,24 @@ public class HalfEdgeSurface implements Serializable {
     }
 
     public boolean collapseHalfEdge(HalfEdge halfEdge, int iteration, Map<HalfEdgeVertex, List<HalfEdge>> vertexAllOutingEdgesMap, Map<HalfEdgeVertex, List<HalfEdgeVertex>> mapVertexToSamePosVertices,
-                                    double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength, boolean testDebug) {
+                                    double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength, double maxAspectRatio, boolean testDebug) {
         // When collapse a halfEdge, we delete the face, the twin's face, the twin & the startVertex.***
         // When deleting a face, must delete all halfEdges of the face.***
         // must find all halfEdges that startVertex is the deletingVertex, and set as startVertex the endVertex of the deletingHalfEdge.***
 
+        HalfEdgeVertex startVertex = halfEdge.getStartVertex();
+        HalfEdgeVertex endVertex = halfEdge.getEndVertex();
+
+
         // check if collapse.**************************************************************************************************
         if(halfEdge.getLength() > hedgeMinLength) {
-            if (!decideIfCollapseCheckingFaces(halfEdge, vertexAllOutingEdgesMap, maxDiffAngDeg)) {
+            if (!decideIfCollapseCheckingFaces(halfEdge, vertexAllOutingEdgesMap, mapVertexToSamePosVertices, maxDiffAngDeg, maxAspectRatio)) {
                 return false;
             }
         }
         // end check if collapse.------------------------------------------------------------------------------------------
 
-        HalfEdgeVertex startVertex = halfEdge.getStartVertex();
-        HalfEdgeVertex endVertex = halfEdge.getEndVertex();
+
         int endVertexClassifyId = endVertex.getClassifyId();
         Vector3d endPosition = endVertex.getPosition();
 
@@ -1214,20 +1395,30 @@ public class HalfEdgeSurface implements Serializable {
         return true;
     }
 
-    public boolean decideIfCollapseCheckingFaces(HalfEdge halfEdge, Map<HalfEdgeVertex, List<HalfEdge>> vertexAllOutingEdgesMap,
-                                                 double maxDiffAngDeg) {
+    public boolean decideIfCollapseCheckingFaces(HalfEdge halfEdge, Map<HalfEdgeVertex, List<HalfEdge>> vertexAllOutingEdgesMap,Map<HalfEdgeVertex,
+            List<HalfEdgeVertex>> mapVertexToSamePosVertices, double maxDiffAngDeg, double maxAspectRatio) {
 
         HalfEdgeVertex deletingVertex = halfEdge.getStartVertex();
         HalfEdgeVertex endVertex = halfEdge.getEndVertex();
-
         HalfEdge twin = halfEdge.getTwin();
 
-        List<HalfEdge> outingEdgesOfDeletingVertex = vertexAllOutingEdgesMap.get(deletingVertex);
+        List<HalfEdgeVertex> samePosVertices = mapVertexToSamePosVertices.get(deletingVertex);
+        List<HalfEdge> outingEdgesOfSamePosVertices = new ArrayList<>();
 
-        int outingEdgesOfDeletingVertexCount2 = outingEdgesOfDeletingVertex.size();
+        int samePosVertexCount = samePosVertices.size();
+        for(int i = 0; i < samePosVertexCount; i++)
+        {
+            HalfEdgeVertex vertex = samePosVertices.get(i);
+            List<HalfEdge> outingEdges = vertexAllOutingEdgesMap.get(vertex);
+            outingEdgesOfSamePosVertices.addAll(outingEdges);
+        }
+
+        //List<HalfEdge> outingEdgesOfDeletingVertex = vertexAllOutingEdgesMap.get(deletingVertex);
+
+        int outingEdgesOfDeletingVertexCount2 = outingEdgesOfSamePosVertices.size();
         int normalNullsCount = 0;
         for (int i = 0; i < outingEdgesOfDeletingVertexCount2; i++) {
-            HalfEdge outingEdge = outingEdgesOfDeletingVertex.get(i);
+            HalfEdge outingEdge = outingEdgesOfSamePosVertices.get(i);
             if (outingEdge.getStatus() == ObjectStatus.DELETED) {
                 continue;
             }
@@ -1272,12 +1463,19 @@ public class HalfEdgeSurface implements Serializable {
                 }
             }
 
+
+
             Vector3d normalB = HalfEdgeUtils.calculateNormalAsConvex(verticesB, null);
 
             if (normalB == null) {
-                //log.error("normalB is NaN.***");
                 normalNullsCount++;
                 continue;
+            }
+
+            double aspectRatio = HalfEdgeUtils.calculateAspectRatioAsTriangle(verticesB.get(0), verticesB.get(1), verticesB.get(2));
+            if(aspectRatio > maxAspectRatio)
+            {
+                return false;
             }
 
             double angDeg = Math.toDegrees(HalfEdgeUtils.calculateAngleBetweenNormals(normalA, normalB));

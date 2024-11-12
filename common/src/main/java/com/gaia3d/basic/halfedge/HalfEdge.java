@@ -28,6 +28,7 @@ public class HalfEdge implements Serializable {
     private int nextId = -1;
     private int startVertexId = -1;
     private int faceId = -1;
+    private int classifyId = -1; // auxiliary variable.***
 
     public void setStartVertex(HalfEdgeVertex startVertex) {
         this.startVertex = startVertex;

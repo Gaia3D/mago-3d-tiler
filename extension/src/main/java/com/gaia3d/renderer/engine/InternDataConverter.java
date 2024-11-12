@@ -39,7 +39,7 @@ public class InternDataConverter {
         // nodes
         List<GaiaNode> nodes = gaiaScene.getNodes();
         for (GaiaNode node : nodes) {
-            RenderableNode renderableNode = getRenderableNode(node, null, gaiaScene);
+            RenderableNode renderableNode = getRenderableNode(node, null, gaiaScene, renderableGaiaScene);
             renderableNode.calculatePreMultipliedTransformMatrix();
             renderableGaiaScene.addRenderableNode(renderableNode);
         }
@@ -47,7 +47,7 @@ public class InternDataConverter {
         return renderableGaiaScene;
     }
 
-    public static RenderableNode getRenderableNode(GaiaNode gaiaNode, Matrix4d parentTransformMatrix, GaiaScene scene) {
+    public static RenderableNode getRenderableNode(GaiaNode gaiaNode, Matrix4d parentTransformMatrix, GaiaScene scene, RenderableGaiaScene parentRenderableGaiaScene) {
         RenderableNode renderableNode = new RenderableNode();
 
         String name = gaiaNode.getName();
@@ -64,7 +64,7 @@ public class InternDataConverter {
         int meshesCount = meshes.size();
         for (int i = 0; i < meshesCount; i++) {
             GaiaMesh gaiaMesh = meshes.get(i);
-            RenderableMesh renderableMesh = getRenderableMesh(gaiaMesh, transformMatrix, scene);
+            RenderableMesh renderableMesh = getRenderableMesh(gaiaMesh, transformMatrix, scene, parentRenderableGaiaScene);
             renderableNode.addRenderableMesh(renderableMesh);
         }
 
@@ -73,7 +73,7 @@ public class InternDataConverter {
         int childrenCount = children.size();
         for (int i = 0; i < childrenCount; i++) {
             GaiaNode child = children.get(i);
-            RenderableNode renderableChildNode = getRenderableNode(child, transformMatrix, scene);
+            RenderableNode renderableChildNode = getRenderableNode(child, transformMatrix, scene, parentRenderableGaiaScene);
             renderableChildNode.setParent(renderableNode);
             renderableNode.addChild(renderableChildNode);
         }
@@ -81,7 +81,7 @@ public class InternDataConverter {
         return renderableNode;
     }
 
-    public static RenderableMesh getRenderableMesh(GaiaMesh gaiaMesh, Matrix4d transformMatrix, GaiaScene scene) {
+    public static RenderableMesh getRenderableMesh(GaiaMesh gaiaMesh, Matrix4d transformMatrix, GaiaScene scene, RenderableGaiaScene parentRenderableGaiaScene) {
         RenderableMesh renderableMesh = new RenderableMesh();
         renderableMesh.setOriginalGaiaMesh(gaiaMesh);
 
@@ -92,14 +92,14 @@ public class InternDataConverter {
             GaiaPrimitive gaiaPrimitive = primitives.get(i);
             GaiaBufferDataSet bufferDataSet = gaiaPrimitive.toGaiaBufferSet(transformMatrix);
             bufferDataSet.setMaterialId(gaiaPrimitive.getMaterialIndex());
-            RenderablePrimitive renderablePrimitive = getRenderablePrimitive(gaiaPrimitive, bufferDataSet, scene);
+            RenderablePrimitive renderablePrimitive = getRenderablePrimitive(gaiaPrimitive, bufferDataSet, scene, parentRenderableGaiaScene);
             renderableMesh.addRenderablePrimitive(renderablePrimitive);
         }
 
         return renderableMesh;
     }
 
-    public static RenderablePrimitive getRenderablePrimitive(GaiaPrimitive gaiaPrimitive, GaiaBufferDataSet bufferDataSet, GaiaScene scene)
+    public static RenderablePrimitive getRenderablePrimitive(GaiaPrimitive gaiaPrimitive, GaiaBufferDataSet bufferDataSet, GaiaScene scene, RenderableGaiaScene parentRenderableGaiaScene)
     {
         RenderablePrimitive renderablePrimitive = new RenderablePrimitive();
         renderablePrimitive.setOriginalBufferDataSet(bufferDataSet);
@@ -116,7 +116,7 @@ public class InternDataConverter {
             GaiaMaterial material = null;
 
             if(matId >= 0) {
-                material = scene.getMaterials().stream().filter((materialToFind) -> {
+                material = parentRenderableGaiaScene.getMaterials().stream().filter((materialToFind) -> {
                     return materialToFind.getId() == matId;
                 }).findFirst().get();
             }
