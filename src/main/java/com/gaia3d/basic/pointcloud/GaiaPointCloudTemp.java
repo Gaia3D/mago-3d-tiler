@@ -89,7 +89,7 @@ public class GaiaPointCloudTemp {
         }
     }
 
-    public List<GaiaVertex> readTempChunk(int chunkSize) {
+    /*public List<GaiaVertex> readTempChunk(int chunkSize) {
         List<GaiaVertex> result = new ArrayList<>();
         chunkSize = chunkSize - (chunkSize % BLOCK_SIZE);
         try {
@@ -123,9 +123,9 @@ public class GaiaPointCloudTemp {
             throw new RuntimeException(e);
         }
         return result;
-    }
+    }*/
 
-    public List<GaiaVertex> readTempFast() {
+    /*public List<GaiaVertex> readTempFast() {
         List<GaiaVertex> vertices = new ArrayList<>();
         try {
             int availableSize = inputStream.available();
@@ -152,7 +152,7 @@ public class GaiaPointCloudTemp {
             throw new RuntimeException(e);
         }
         return vertices;
-    }
+    }*/
 
     public List<GaiaVertex> readTemp() {
         List<GaiaVertex> vertices = new ArrayList<>();
@@ -165,8 +165,25 @@ public class GaiaPointCloudTemp {
                 inputStream.read(bytes);
                 inputStream.readByte(); // padding
 
+                /*if (floatX < 0) {
+                    floatX = 0;
+                } else if (floatX > 1) {
+                    floatX = 1;
+                }*/
                 double x = floatX * quantizedVolumeScale[0] + quantizedVolumeOffset[0];
+
+                /*if (floatY < 0) {
+                    floatY = 0;
+                } else if (floatY > 1) {
+                    floatY = 1;
+                }*/
                 double y = floatY * quantizedVolumeScale[1] + quantizedVolumeOffset[1];
+
+                /*if (floatZ < 0) {
+                    floatZ = 0;
+                } else if (floatZ > 1) {
+                    floatZ = 1;
+                }*/
                 double z = floatZ * quantizedVolumeScale[2] + quantizedVolumeOffset[2];
 
                 GaiaVertex vertex = new GaiaVertex();
@@ -188,10 +205,14 @@ public class GaiaPointCloudTemp {
             for (GaiaVertex vertex : vertices) {
                 Vector3d position = vertex.getPosition();
                 byte[] color = vertex.getColor();
+                float x = (float) ((position.x - quantizedVolumeOffset[0]) / quantizedVolumeScale[0]);
+                float y = (float) ((position.y - quantizedVolumeOffset[1]) / quantizedVolumeScale[1]);
+                float z = (float) ((position.z - quantizedVolumeOffset[2]) / quantizedVolumeScale[2]);
+
                 // XYZ
-                byte[] xBytes = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putFloat((float) ((position.x - quantizedVolumeOffset[0]) / quantizedVolumeScale[0])).array();
-                byte[] yBytes = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putFloat((float) ((position.y - quantizedVolumeOffset[1]) / quantizedVolumeScale[1])).array();
-                byte[] zBytes = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putFloat((float) ((position.z - quantizedVolumeOffset[2]) / quantizedVolumeScale[2])).array();
+                byte[] xBytes = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putFloat(x).array();
+                byte[] yBytes = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putFloat(y).array();
+                byte[] zBytes = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putFloat(z).array();
                 System.arraycopy(xBytes, 0, bytes, index, 4);
                 System.arraycopy(yBytes, 0, bytes, index + 4, 4);
                 System.arraycopy(zBytes, 0, bytes, index + 8, 4);
@@ -209,10 +230,14 @@ public class GaiaPointCloudTemp {
 
     public void writePosition(Vector3d position, byte[] bytes) {
         try {
+            float x = (float) ((position.x - quantizedVolumeOffset[0]) / quantizedVolumeScale[0]);
+            float y = (float) ((position.y - quantizedVolumeOffset[1]) / quantizedVolumeScale[1]);
+            float z = (float) ((position.z - quantizedVolumeOffset[2]) / quantizedVolumeScale[2]);
+
             // XYZ
-            outputStream.writeFloat((float) ((position.x - quantizedVolumeOffset[0]) / quantizedVolumeScale[0]));
-            outputStream.writeFloat((float) ((position.y - quantizedVolumeOffset[1]) / quantizedVolumeScale[1]));
-            outputStream.writeFloat((float) ((position.z - quantizedVolumeOffset[2]) / quantizedVolumeScale[2]));
+            outputStream.writeFloat(x);
+            outputStream.writeFloat(y);
+            outputStream.writeFloat(z);
             // RGB
             outputStream.write(bytes);
             // padding
