@@ -328,11 +328,11 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             int numCols = bufferedImageDepth.getWidth();
             int numRows = bufferedImageDepth.getHeight();
             HalfEdgeScene halfEdgeScene = HalfEdgeUtils.getHalfEdgeSceneRectangularNet(numCols, numRows, depthValues, nodeBBoxLC);
-            double maxDiffAngDeg = 25.0;
+            double maxDiffAngDeg = 35.0;
             //double hedgeMinLength = getNodeLatitudesLengthInMeters(node)/1000.0;
-            double hedgeMinLength = 1.0;
-            double frontierMaxDiffAngDeg = 10.0;
-            double maxAspectRatio = 5.0;
+            double hedgeMinLength = 0.5;
+            double frontierMaxDiffAngDeg = 30.0;
+            double maxAspectRatio = 6.0;
             halfEdgeScene.doTrianglesReduction(maxDiffAngDeg, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio);
             //halfEdgeScene.calculateNormals();
 
@@ -374,7 +374,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
             //calculate lod.***
             int lod = maxDepth - nodeDepth;
-            double netSurfaceGeometricError = 2*(lod+1);
+            double netSurfaceGeometricError = 1*(lod+1);
             node.setGeometricError(netSurfaceGeometricError);
 
             // make contents for the node.***
@@ -1266,11 +1266,11 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
             else if(lod == 1)
             {
-                lodError = 2;
+                lodError = 1;
             }
             else if(lod == 2)
             {
-                lodError = 4;
+                lodError = 3;
             }
 
             childNode.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());

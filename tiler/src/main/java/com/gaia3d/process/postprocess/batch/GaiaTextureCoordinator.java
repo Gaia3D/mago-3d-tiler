@@ -393,6 +393,7 @@ public class GaiaTextureCoordinator {
             boolean sizeChanged = false;
             int imageWidth = this.atlasImage.getWidth();
             int imageHeight = this.atlasImage.getHeight();
+            int lod2size = 512;
 
             if (lodLevel == 0) {
                 if (imageWidth > 2048) {
@@ -415,22 +416,22 @@ public class GaiaTextureCoordinator {
                 }
             }
             else if (lodLevel == 2) {
-                if (imageWidth > 1024) {
-                    imageWidth = 1024;
+                if (imageWidth > lod2size) {
+                    imageWidth = lod2size;
                     sizeChanged = true;
                 }
-                if (imageHeight > 1024) {
-                    imageHeight = 1024;
+                if (imageHeight > lod2size) {
+                    imageHeight = lod2size;
                     sizeChanged = true;
                 }
             }
             else if (lodLevel > 2) {
-                if (imageWidth > 1024) {
-                    imageWidth = 1024;
+                if (imageWidth > lod2size) {
+                    imageWidth = lod2size;
                     sizeChanged = true;
                 }
-                if (imageHeight > 1024) {
-                    imageHeight = 1024;
+                if (imageHeight > lod2size) {
+                    imageHeight = lod2size;
                     sizeChanged = true;
                 }
             }
