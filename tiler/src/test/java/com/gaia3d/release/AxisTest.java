@@ -10,7 +10,7 @@ import java.io.File;
 @Slf4j
 class AxisTest {
     private static final String INPUT_PATH = "D:\\data\\mago-tiler-data\\axis-test-input";
-    private static final String OUTPUT_PATH = "C:\\Workspaces\\GitSources\\mago-viewer\\data\\axis-test-output";
+    private static final String OUTPUT_PATH = "D:\\workspaces\\mago-viewer\\data\\axis-test-output";
 
     @Test
     void zUp() {

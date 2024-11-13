@@ -4,6 +4,7 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 
 import java.util.List;
@@ -11,14 +12,15 @@ import java.util.UUID;
 
 @Getter
 @Setter
+@Slf4j
 @Builder
 public class GaiaPointCloudHeader {
     private UUID uuid;
     private int index;
     private long size;
-    private short blockSize = (8 * 3) + 3; // POSITION(DOUBLE * 3), RGB(byte * 3)
-    private GaiaBoundingBox srsBoundingBox;
-    private GaiaBoundingBox crsBoundingBox;
+    //private short blockSize = (8 * 3) + 3; // POSITION(DOUBLE * 3), RGB(byte * 3)
+    private GaiaBoundingBox srsBoundingBox; // original bounding box
+    private GaiaBoundingBox crsBoundingBox; // transformed bounding box
     private GaiaPointCloudTemp[][] tempGrid;
 
     public GaiaPointCloudTemp findTemp(Vector3d position) {
@@ -28,6 +30,12 @@ public class GaiaPointCloudHeader {
         Vector3d volume = srsBoundingBox.getVolume();
         int gridX = (int) Math.floor((position.x - srsBoundingBox.getMinX()) / volume.x * gridXLength);
         int gridY = (int) Math.floor((position.y - srsBoundingBox.getMinY()) / volume.y * gridYLength);
+
+        // Check if the point is outside the bounding box
+        if (gridX < 0 || gridX >= gridXLength || gridY < 0 || gridY >= gridYLength) {
+            log.warn("Point is outside the bounding box: [[{}/{}], [{}/{}]]", gridX, gridXLength, gridY, gridYLength);
+            return null;
+        }
         return tempGrid[gridX][gridY];
     }
 

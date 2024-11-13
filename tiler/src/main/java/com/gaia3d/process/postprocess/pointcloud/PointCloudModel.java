@@ -48,11 +48,11 @@ public class PointCloudModel implements TileModel {
         AtomicInteger vertexCount = new AtomicInteger();
         tileInfos.forEach((tileInfo) -> {
             GaiaPointCloud pointCloud = tileInfo.getPointCloud();
-            pointCloud.maximizeTemp();
-            List<GaiaVertex> gaiaVertex = pointCloud.getVertices();
-            vertexCount.addAndGet(gaiaVertex.size());
+            //pointCloud.maximizeTemp();
+            //List<GaiaVertex> gaiaVertex = pointCloud.getVertices();
+            vertexCount.addAndGet(pointCloud.getVertexCount());
             boundingBox.addBoundingBox(pointCloud.getGaiaBoundingBox());
-            pointCloud.minimizeTemp();
+            //pointCloud.minimizeTemp();
         });
 
         int vertexLength = vertexCount.get();
@@ -80,6 +80,7 @@ public class PointCloudModel implements TileModel {
             gaiaVertex.forEach((vertex) -> {
                 int index = mainIndex.getAndIncrement();
                 if (index >= vertexLength) {
+                    log.error("Index out of bound");
                     return;
                 }
                 Vector3d position = vertex.getPosition();
@@ -106,13 +107,26 @@ public class PointCloudModel implements TileModel {
             pointCloud.minimizeTemp();
         });
 
+        if (vertexLength <= 1 || positions.length < 3) {
+            log.error("No vertex data");
+            log.info("VERTEX LENGTH : {}", vertexLength);
+            return contentInfo;
+        }
+
         // quantization
-        Vector3d quantizationScale = calcQuantizedVolumeScale(quantizedVolume );
+        Vector3d quantizationScale = calcQuantizedVolumeScale(quantizedVolume);
         Vector3d quantizationOffset = calcQuantizedVolumeOffset(quantizedVolume);
         for (int i = 0; i < vertexLength; i+=3) {
             double x = positions[i];
             double y = positions[i+1];
             double z = positions[i+2];
+
+            if (Double.isNaN(x) || Double.isNaN(y) || Double.isNaN(z)) {
+                log.error("Invalid position data");
+                x = 0;
+                y = 0;
+                z = 0;
+            }
 
             double xQuantized = (x - quantizationOffset.x) / quantizationScale.x;
             double yQuantized = (y - quantizationOffset.y) / quantizationScale.y;

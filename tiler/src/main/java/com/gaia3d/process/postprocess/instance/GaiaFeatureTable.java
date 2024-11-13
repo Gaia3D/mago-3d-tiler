@@ -17,8 +17,6 @@ public class GaiaFeatureTable {
     @JsonProperty("BATCH_LENGTH")
     private int batchLength;
 
-
-
     @JsonProperty("RTC_CENTER")
     private double[] rctCenter = new double[3];
 
