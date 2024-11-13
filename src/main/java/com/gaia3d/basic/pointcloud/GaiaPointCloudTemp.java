@@ -20,6 +20,8 @@ import java.util.List;
 public class GaiaPointCloudTemp {
     private File tempFile;
     private final short VERSION = 1106;
+    /* Header Total Size 52 byte */
+    private final short HEADER_SIZE = 52; // 2 (Version) + 2 (Block Size) + 24 (Quantized Volume Scale) + 24 (Quantized Volume Offset)
     private final short BLOCK_SIZE = 16; // 12 (FLOAT XYZ) + 3 (RGB) + 1 (Padding)
     private final int BUFFER_SIZE = 1024 * 8;
     private final double[] quantizedVolumeScale = new double[3];
@@ -81,7 +83,6 @@ public class GaiaPointCloudTemp {
             outputStream.writeDouble(quantizedVolumeOffset[0]);
             outputStream.writeDouble(quantizedVolumeOffset[1]);
             outputStream.writeDouble(quantizedVolumeOffset[2]);
-
             outputStream.flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -95,7 +96,7 @@ public class GaiaPointCloudTemp {
             int availableSize = inputStream.available();
             if (availableSize < chunkSize) {
                 chunkSize = availableSize;
-                return result;
+                //return result;
             } else if (availableSize == 0) {
                 log.info("End of file");
                 return result;
@@ -262,8 +263,13 @@ public class GaiaPointCloudTemp {
             }
             Collections.shuffle(indexes);
 
+            int loop = indexes.size();
+            int limitSize = 65536 * 8;
+            if (loop > limitSize) {
+                loop = limitSize;
+            }
             byte[] bytes = new byte[blockSize];
-            for (int i = 0; i < blockCount; i++) {
+            for (int i = 0; i < loop; i++) {
                 randomAccessFile.seek(headerSize + (indexes.get(i) * blockSize));
                 randomAccessFile.read(bytes);
                 dataOutputStream.write(bytes);
