@@ -59,6 +59,7 @@ public class PointCloudBinary {
 
     private short toUnsignedShort(int value) {
         if (value < 0 || value > 65535) {
+            //value = value & 0xffff;
             throw new IllegalArgumentException("Value out of range for unsigned short: " + value);
         }
         if (value <= 32767) {

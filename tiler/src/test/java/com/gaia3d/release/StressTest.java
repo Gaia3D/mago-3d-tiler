@@ -190,6 +190,20 @@ public class StressTest {
     }
 
     @Test
+    void testThaiAll() {
+        String path = "THAILAND-LAS";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "las",
+                "-crs", "32648",
+                "-pointSkip", "1",
+                //"-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
     void testSangAmLas() {
         String path = "SANGAM-LAS";
         String[] args = new String[] {

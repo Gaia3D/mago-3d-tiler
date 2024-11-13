@@ -84,6 +84,7 @@ public class GaiaPointCloud implements Serializable {
         }
 
         pointCloudTemp.readHeader();
+
         List<GaiaVertex> vertices = pointCloudTemp.readTemp();
         vertexCount = vertices.size();
         try {

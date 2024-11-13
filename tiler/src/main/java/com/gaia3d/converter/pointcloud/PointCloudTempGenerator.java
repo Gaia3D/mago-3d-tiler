@@ -17,8 +17,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 @RequiredArgsConstructor
 public class PointCloudTempGenerator {
-    private final float HORIZONTAL_GRID_SIZE = 300.0f; // in meters
-    private final float VERTICAL_GRID_SIZE = 30.0f; // in meters
+    private final float HORIZONTAL_GRID_SIZE = 500.0f; // in meters
+    private final float VERTICAL_GRID_SIZE = 50.0f; // in meters
     private final LasConverter converter;
     private GaiaPointCloudHeader combinedHeader;
 
@@ -103,8 +103,11 @@ public class PointCloudTempGenerator {
 
     private List<File> shuffleTempFiles(List<File> tempFiles) {
         List<File> shuffledTempFiles = new ArrayList<>();
+        int fileLength = tempFiles.size();
+        AtomicInteger tempCount = new AtomicInteger(0);
         tempFiles.forEach((tempFile) -> {
-            log.info("[Pre] Shuffling temp file: {}", tempFile.getName());
+            int count = tempCount.incrementAndGet();
+            log.info("[Pre][{}/{}] Shuffling temp file: {}", count, fileLength, tempFile.getName());
             GaiaPointCloudTemp temp = new GaiaPointCloudTemp(tempFile);
             temp.shuffleTemp();
             shuffledTempFiles.add(temp.getTempFile());

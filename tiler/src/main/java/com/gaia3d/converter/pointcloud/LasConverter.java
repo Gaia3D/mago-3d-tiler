@@ -51,20 +51,7 @@ public class LasConverter {
         CloseablePointIterable pointIterable = reader.getCloseablePoints();
 
         GlobalOptions options = GlobalOptions.getInstance();
-        int pointSkip = options.getPointSkip();
-
-
-        long pointRecords = header.getNumberOfPointRecords();
-        long legacyPointRecords = header.getLegacyNumberOfPointRecords();
-        long totalPointRecords = pointRecords + legacyPointRecords;
-
-        AtomicInteger pointIndex = new AtomicInteger(0);
         for (LASPoint point : pointIterable) {
-            int index = pointIndex.getAndIncrement();
-            if (index % pointSkip != 0) {
-                continue;
-            }
-
             double x = point.getX() * xScaleFactor + xOffset;
             double y = point.getY() * yScaleFactor + yOffset;
             double z = point.getZ() * zScaleFactor + zOffset;
@@ -75,7 +62,7 @@ public class LasConverter {
             GaiaVertex vertex = new GaiaVertex();
             vertex.setPosition(position);
             vertex.setColor(rgb);
-            vertex.setBatchId(0);
+            //vertex.setBatchId(0);
 
             GaiaPointCloudTemp tempFile = pointCloudHeader.findTemp(position);
             if (tempFile == null) {
@@ -87,14 +74,8 @@ public class LasConverter {
     }
 
     public GaiaPointCloudHeader readHeader(File file) {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
         LASReader reader = new LASReader(file);
         LASHeader header = reader.getHeader();
-        /*byte major = header.getVersionMajor();
-        byte minor = header.getVersionMinor();
-        byte recordFormatValue = header.getPointDataRecordFormat();
-        long recordLength = header.getPointDataRecordLength();*/
-        //LasRecordFormat recordFormat = LasRecordFormat.fromFormatNumber(recordFormatValue);
 
         double getMinX = header.getMinX();
         double getMinY = header.getMinY();
@@ -109,19 +90,6 @@ public class LasConverter {
         srsBoundingBox.addPoint(min);
         srsBoundingBox.addPoint(max);
 
-        CoordinateReferenceSystem crs = globalOptions.getCrs();
-        BasicCoordinateTransform transformer = new BasicCoordinateTransform(crs, GlobeUtils.wgs84);
-        //ProjCoordinate srsMinCoordinate = new ProjCoordinate(getMinX, getMinY, getMinZ);
-        //ProjCoordinate srsMaxCoordinate = new ProjCoordinate(getMaxX, getMaxY, getMaxZ);
-        //ProjCoordinate crsMinCoordinate = transformer.transform(srsMinCoordinate, new ProjCoordinate());
-        //ProjCoordinate crsMaxCoordinate = transformer.transform(srsMaxCoordinate, new ProjCoordinate());
-        //Vector3d minCrs = new Vector3d(crsMinCoordinate.x, crsMinCoordinate.y, srsMinCoordinate.z);
-        //Vector3d maxCrs = new Vector3d(crsMaxCoordinate.x, crsMaxCoordinate.y, srsMaxCoordinate.z);
-
-        //GaiaBoundingBox crsBoundingBox = new GaiaBoundingBox();
-        //crsBoundingBox.addPoint(minCrs);
-        //crsBoundingBox.addPoint(maxCrs);
-
         long pointRecords = header.getNumberOfPointRecords();
         long legacyPointRecords = header.getLegacyNumberOfPointRecords();
         long totalPointRecords = pointRecords + legacyPointRecords;
@@ -131,7 +99,6 @@ public class LasConverter {
                 .uuid(UUID.randomUUID())
                 .size(totalPointRecords)
                 .srsBoundingBox(srsBoundingBox)
-                //.crsBoundingBox(crsBoundingBox)
                 .build();
     }
 

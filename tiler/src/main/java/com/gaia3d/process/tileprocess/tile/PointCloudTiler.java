@@ -40,7 +40,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
 
-        /*double minX = globalBoundingBox.getMinX();
+       /* double minX = globalBoundingBox.getMinX();
         double maxX = globalBoundingBox.getMaxX();
         double minY = globalBoundingBox.getMinY();
         double maxY = globalBoundingBox.getMaxY();
@@ -57,9 +57,8 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         maxY += yoffset;
         GaiaBoundingBox cubeBoundingBox = new GaiaBoundingBox();
         cubeBoundingBox.addPoint(new Vector3d(minX, minY, minZ));
-        cubeBoundingBox.addPoint(new Vector3d(maxX, maxY, maxZ));
-        globalBoundingBox = cubeBoundingBox;*/
-
+        cubeBoundingBox.addPoint(new Vector3d(maxX, maxY, maxZ));*/
+        globalBoundingBox = calcSquareBoundingBox(globalBoundingBox);
 
         CoordinateReferenceSystem source = globalOptions.getCrs();
         GaiaBoundingBox originalBoundingBox = globalBoundingBox;
@@ -201,7 +200,6 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         transformedBoundingBox.addPoint(minPosition);
         transformedBoundingBox.addPoint(maxPosition);
 
-
         Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
         rotateX90(transformMatrix);
         BoundingVolume boundingVolume = new BoundingVolume(transformedBoundingBox);
@@ -251,6 +249,8 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         log.info("[{}][Tile][ContentNode][{}]", index, childNode.getNodeCode());
 
         if (vertexLength > 0) { // vertexLength > DEFUALT_MAX_COUNT
+            GaiaBoundingBox remainBoundingBox = calcSquareBoundingBox(remainPointCloud.getGaiaBoundingBox());
+            remainPointCloud.setGaiaBoundingBox(remainBoundingBox);
             List<GaiaPointCloud> distributes = remainPointCloud.distribute();
             distributes.forEach(distribute -> {
                 if (!distribute.getVertices().isEmpty()) {
@@ -280,7 +280,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         return boundingBox;
     }
 
-    @Deprecated
+    /*@Deprecated
     private void minimizeTreeNode(Node node) {
         List<Node> children = node.getChildren();
         children.forEach(this::minimizeTreeNode);
@@ -298,16 +298,37 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
             pointCloud.minimize(tempFile);
             log.info("[Tile][Minimize][{}]", tempFile.getName());
         });
+    }*/
+
+    private GaiaBoundingBox calcSquareBoundingBox(GaiaBoundingBox gaiaBoundingBox) {
+        double minX = gaiaBoundingBox.getMinX();
+        double maxX = gaiaBoundingBox.getMaxX();
+        double minY = gaiaBoundingBox.getMinY();
+        double maxY = gaiaBoundingBox.getMaxY();
+        double minZ = gaiaBoundingBox.getMinZ();
+        double maxZ = gaiaBoundingBox.getMaxZ();
+
+        double x = (maxX - minX);
+        double y = (maxY - minY);
+        double maxLength = Math.max(x, y);
+
+        double xOffset = maxLength - x;
+        double yOffset = maxLength - y;
+        double xOffsetHalf = xOffset / 2;
+        double yOffsetHalf = yOffset / 2;
+
+        minX -= xOffsetHalf;
+        minY -= yOffsetHalf;
+        maxX += xOffsetHalf;
+        maxY += yOffsetHalf;
+        GaiaBoundingBox cubeBoundingBox = new GaiaBoundingBox();
+        cubeBoundingBox.addPoint(new Vector3d(minX, minY, minZ));
+        cubeBoundingBox.addPoint(new Vector3d(maxX, maxY, maxZ));
+        return cubeBoundingBox;
     }
 
     private void minimizeAllPointCloud(int index, int maximumIndex, List<GaiaPointCloud> allPointClouds) {
         allPointClouds.forEach(pointCloud -> {
-            if (pointCloud.isMinimized()) {
-                log.info("[Tile][Minimize][{}/{}][{}]", index, maximumIndex, pointCloud.getPointCloudTemp().getTempFile().getName());
-                log.debug("-> ALREADY MINIMIZED");
-                return;
-            }
-
             File tempPath = new File(GlobalOptions.getInstance().getOutputPath(), "temp");
             File tempFile = new File(tempPath, UUID.randomUUID().toString());
             pointCloud.minimize(tempFile);
