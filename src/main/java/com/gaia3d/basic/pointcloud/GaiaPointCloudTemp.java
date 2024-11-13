@@ -250,13 +250,12 @@ public class GaiaPointCloudTemp {
     /**
      * Shuffles the temp file
      */
-    public void shuffleTemp() {
+    public void shuffleTemp(int limitSize) {
         String fileName = "shuffled-" + this.tempFile.getName();
         File shuffledFile = new File(this.tempFile.getParent(), fileName);
         try {
             RandomAccessFile randomAccessFile = new RandomAccessFile(this.tempFile, "r");
-            //RandomAccessFile randomAccessFileOutput = new RandomAccessFile(shuffledFile, "rw");
-            DataOutputStream dataOutputStream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(shuffledFile, true), BUFFER_SIZE));
+            DataOutputStream dataOutputStream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(shuffledFile, false), BUFFER_SIZE));
             int headerSize = 52;
             int blockCount = (int) ((randomAccessFile.length() - headerSize) / BLOCK_SIZE);
 
@@ -289,8 +288,10 @@ public class GaiaPointCloudTemp {
             Collections.shuffle(indexes);
 
             int loop = indexes.size();
-            int limitSize = 65536 * 8;
-            if (loop > limitSize) {
+            log.debug("- Shuffling points limit {}/{}", limitSize, loop);
+            if (limitSize < 0) {
+                // original
+            } else if (loop > limitSize) {
                 loop = limitSize;
             }
             byte[] bytes = new byte[blockSize];
