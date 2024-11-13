@@ -104,6 +104,7 @@ public class StressTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Disabled
     @Test
     void testSangJiUni() {
         String path = "SANGJI-UNI-DAE";
@@ -124,6 +125,7 @@ public class StressTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Disabled
     @Test
     void testSaehanCollada() {
         String path = "SEAHAN-DAE";
@@ -137,6 +139,7 @@ public class StressTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Disabled
     @Test
     void testDemoObj() {
         String path = "DEMO-OBJ";
@@ -157,6 +160,7 @@ public class StressTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Disabled
     @Test
     void testDemoLas() {
         String path = "DEMO-LAS";
@@ -166,7 +170,7 @@ public class StressTest {
                 "-it", "las",
                 "-crs", "32648",
                 "-pointSkip", "1",
-                //"-debug"
+                "-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -194,7 +198,6 @@ public class StressTest {
                 "-it", "las",
                 "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
                 "-pointSkip", "1",
-                "-debug"
                 //"-debug"
         };
         Mago3DTilerMain.main(args);

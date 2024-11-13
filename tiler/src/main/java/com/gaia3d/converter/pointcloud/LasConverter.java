@@ -111,16 +111,16 @@ public class LasConverter {
 
         CoordinateReferenceSystem crs = globalOptions.getCrs();
         BasicCoordinateTransform transformer = new BasicCoordinateTransform(crs, GlobeUtils.wgs84);
-        ProjCoordinate srsMinCoordinate = new ProjCoordinate(getMinX, getMinY, getMinZ);
-        ProjCoordinate srsMaxCoordinate = new ProjCoordinate(getMaxX, getMaxY, getMaxZ);
-        ProjCoordinate crsMinCoordinate = transformer.transform(srsMinCoordinate, new ProjCoordinate());
-        ProjCoordinate crsMaxCoordinate = transformer.transform(srsMaxCoordinate, new ProjCoordinate());
-        Vector3d minCrs = new Vector3d(crsMinCoordinate.x, crsMinCoordinate.y, srsMinCoordinate.z);
-        Vector3d maxCrs = new Vector3d(crsMaxCoordinate.x, crsMaxCoordinate.y, srsMaxCoordinate.z);
+        //ProjCoordinate srsMinCoordinate = new ProjCoordinate(getMinX, getMinY, getMinZ);
+        //ProjCoordinate srsMaxCoordinate = new ProjCoordinate(getMaxX, getMaxY, getMaxZ);
+        //ProjCoordinate crsMinCoordinate = transformer.transform(srsMinCoordinate, new ProjCoordinate());
+        //ProjCoordinate crsMaxCoordinate = transformer.transform(srsMaxCoordinate, new ProjCoordinate());
+        //Vector3d minCrs = new Vector3d(crsMinCoordinate.x, crsMinCoordinate.y, srsMinCoordinate.z);
+        //Vector3d maxCrs = new Vector3d(crsMaxCoordinate.x, crsMaxCoordinate.y, srsMaxCoordinate.z);
 
-        GaiaBoundingBox crsBoundingBox = new GaiaBoundingBox();
-        crsBoundingBox.addPoint(minCrs);
-        crsBoundingBox.addPoint(maxCrs);
+        //GaiaBoundingBox crsBoundingBox = new GaiaBoundingBox();
+        //crsBoundingBox.addPoint(minCrs);
+        //crsBoundingBox.addPoint(maxCrs);
 
         long pointRecords = header.getNumberOfPointRecords();
         long legacyPointRecords = header.getLegacyNumberOfPointRecords();
@@ -131,7 +131,7 @@ public class LasConverter {
                 .uuid(UUID.randomUUID())
                 .size(totalPointRecords)
                 .srsBoundingBox(srsBoundingBox)
-                .crsBoundingBox(crsBoundingBox)
+                //.crsBoundingBox(crsBoundingBox)
                 .build();
     }
 
@@ -143,9 +143,36 @@ public class LasConverter {
         GaiaBoundingBox boundingBox = pointCloud.getGaiaBoundingBox();
         UUID uuid = UUID.randomUUID();
         File newTempFile = new File(file.getParent(), uuid.toString());
-        GaiaPointCloudTemp newTemp = new GaiaPointCloudTemp(newTempFile);
+        //GaiaPointCloudTemp newTemp = new GaiaPointCloudTemp(newTempFile);
 
-        DataInputStream inputStream = null;
+        try {
+            GaiaPointCloudTemp readTemp = new GaiaPointCloudTemp(file);
+            readTemp.readHeader();
+
+            double[] quantizationOffset = readTemp.getQuantizedVolumeOffset();
+            double[] quantizationScale = readTemp.getQuantizedVolumeScale();
+            double[] originalMinPosition = new double[]{quantizationOffset[0], quantizationOffset[1], quantizationOffset[2]};
+            double[] originalMaxPosition = new double[]{quantizationOffset[0] + quantizationScale[0], quantizationOffset[1] + quantizationScale[1], quantizationOffset[2] + quantizationScale[2]};
+            Vector3d minPosition = new Vector3d(originalMinPosition[0], originalMinPosition[1], originalMinPosition[2]);
+            Vector3d maxPosition = new Vector3d(originalMaxPosition[0], originalMaxPosition[1], originalMaxPosition[2]);
+
+            boundingBox.addPoint(minPosition);
+            boundingBox.addPoint(maxPosition);
+
+            readTemp.getInputStream().close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        GaiaPointCloudTemp readTemp = new GaiaPointCloudTemp(file);
+        pointCloud.setMinimized(true);
+        pointCloud.setVertices(null);
+        pointCloud.setGaiaBoundingBox(boundingBox);
+        pointCloud.setPointCloudTemp(readTemp);
+
+
+        /*DataInputStream inputStream = null;
         DataOutputStream outputStream = null;
         try {
             BasicCoordinateTransform transformer = new BasicCoordinateTransform(source, GlobeUtils.wgs84);
@@ -153,17 +180,16 @@ public class LasConverter {
             GaiaPointCloudTemp readTemp = new GaiaPointCloudTemp(file);
             boolean isSuccess = readTemp.readHeader();
             if (isSuccess) {
-                inputStream = readTemp.getInputStream();
-
+                *//*inputStream = readTemp.getInputStream();
                 double[] quantizationOffset = readTemp.getQuantizedVolumeOffset();
                 double[] quantizationScale = readTemp.getQuantizedVolumeScale();
                 double[] originalMinPosition = new double[]{quantizationOffset[0], quantizationOffset[1], quantizationOffset[2]};
                 double[] originalMaxPosition = new double[]{quantizationOffset[0] + quantizationScale[0], quantizationOffset[1] + quantizationScale[1], quantizationOffset[2] + quantizationScale[2]};
 
-                ProjCoordinate transformedMinCoordinate = transformer.transform(new ProjCoordinate(originalMinPosition[0], originalMinPosition[1], originalMinPosition[2]), new ProjCoordinate());
-                Vector3d minPosition = new Vector3d(transformedMinCoordinate.x, transformedMinCoordinate.y, originalMinPosition[2]);
-                ProjCoordinate transformedMaxCoordinate = transformer.transform(new ProjCoordinate(originalMaxPosition[0], originalMaxPosition[1], originalMaxPosition[2]), new ProjCoordinate());
-                Vector3d maxPosition = new Vector3d(transformedMaxCoordinate.x, transformedMaxCoordinate.y, originalMaxPosition[2]);
+                //ProjCoordinate transformedMinCoordinate = transformer.transform(new ProjCoordinate(originalMinPosition[0], originalMinPosition[1], originalMinPosition[2]), new ProjCoordinate());
+                //Vector3d minPosition = new Vector3d(transformedMinCoordinate.x, transformedMinCoordinate.y, originalMinPosition[2]);
+                //ProjCoordinate transformedMaxCoordinate = transformer.transform(new ProjCoordinate(originalMaxPosition[0], originalMaxPosition[1], originalMaxPosition[2]), new ProjCoordinate());
+                //Vector3d maxPosition = new Vector3d(transformedMaxCoordinate.x, transformedMaxCoordinate.y, originalMaxPosition[2]);
                 boundingBox.addPoint(minPosition);
                 boundingBox.addPoint(maxPosition);
 
@@ -192,19 +218,21 @@ public class LasConverter {
                     }
                     vertices.forEach((vertex) -> {
                         Vector3d position = vertex.getPosition();
-                        ProjCoordinate coordinate = new ProjCoordinate(position.x, position.y, position.z);
+                        *//**//*ProjCoordinate coordinate = new ProjCoordinate(position.x, position.y, position.z);
                         ProjCoordinate transformedCoordinate = transformer.transform(coordinate, new ProjCoordinate());
                         Vector3d newPosition = new Vector3d(transformedCoordinate.x, transformedCoordinate.y, position.z);
-                        boundingBox.addPoint(newPosition);
-                        vertex.setPosition(newPosition);
+                        if (newPosition.x < minPosition.x || newPosition.x > maxPosition.x || newPosition.y < minPosition.y || newPosition.y > maxPosition.y) {
+                            log.error("Out of bound : {}", newPosition);
+                        } else {
+                            boundingBox.addPoint(newPosition);
+                        }*//**//*
+                        vertex.setPosition(position);
                     });
                     newTemp.writePositionsFast(vertices);
-                }
-                pointCloud.setMinimized(true);
-                pointCloud.setVertices(null);
-                pointCloud.setPointCloudTemp(newTemp);
-                inputStream.close();
-                outputStream.close();
+                }*//*
+
+                //inputStream.close();
+                //outputStream.close();
             }
         } catch (IOException e) {
             log.error("Failed to read temp file.", e);
@@ -216,7 +244,7 @@ public class LasConverter {
                     log.error("Failed to close input stream.", e);
                 }
             }
-        }
+        }*/
 
         pointClouds.add(pointCloud);
         return pointClouds;

@@ -19,8 +19,12 @@ import com.gaia3d.util.GlobeUtils;
 import com.gaia3d.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.joml.Matrix3d;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
+import org.locationtech.proj4j.BasicCoordinateTransform;
+import org.locationtech.proj4j.CoordinateReferenceSystem;
+import org.locationtech.proj4j.ProjCoordinate;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -55,6 +59,19 @@ public class PointCloudModel implements TileModel {
             //pointCloud.minimizeTemp();
         });
 
+        Vector3d originalMinPosition = boundingBox.getMinPosition();
+        Vector3d originalMaxPosition = boundingBox.getMaxPosition();
+        CoordinateReferenceSystem source = globalOptions.getCrs();
+        BasicCoordinateTransform transformer = new BasicCoordinateTransform(source, GlobeUtils.wgs84);
+
+        ProjCoordinate transformedMinCoordinate = transformer.transform(new ProjCoordinate(originalMinPosition.x, originalMinPosition.y, originalMinPosition.z), new ProjCoordinate());
+        Vector3d minPosition = new Vector3d(transformedMinCoordinate.x, transformedMinCoordinate.y, originalMinPosition.z);
+        ProjCoordinate transformedMaxCoordinate = transformer.transform(new ProjCoordinate(originalMaxPosition.x, originalMaxPosition.y, originalMaxPosition.z), new ProjCoordinate());
+        Vector3d maxPosition = new Vector3d(transformedMaxCoordinate.x, transformedMaxCoordinate.y, originalMaxPosition.z);
+        GaiaBoundingBox wgs84BoundingBox = new GaiaBoundingBox();
+        wgs84BoundingBox.addPoint(minPosition);
+        wgs84BoundingBox.addPoint(maxPosition);
+
         int vertexLength = vertexCount.get();
 
         float[] positions = new float[vertexLength * 3];
@@ -62,7 +79,7 @@ public class PointCloudModel implements TileModel {
         byte[] colors = new byte[vertexLength * 3];
         float[] batchIds = new float[vertexLength];
 
-        Vector3d center = boundingBox.getCenter();
+        Vector3d center = wgs84BoundingBox.getCenter();
         Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
         Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
         Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
@@ -83,10 +100,38 @@ public class PointCloudModel implements TileModel {
                     log.error("Index out of bound");
                     return;
                 }
+
+                Matrix3d rotationMatrix3d = transformMatrix.get3x3(new Matrix3d());
+                Matrix3d xRotationMatrix3d = new Matrix3d();
+                xRotationMatrix3d.identity();
+                xRotationMatrix3d.rotateX(Math.toRadians(-90));
+                xRotationMatrix3d.mul(rotationMatrix3d, rotationMatrix3d);
+                Matrix4d rotationMatrix4d = new Matrix4d(rotationMatrix3d);
+
                 Vector3d position = vertex.getPosition();
-                Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
+                double posX = position.x;
+                double posY = position.y;
+                double poxZ = position.z;
+                if (Double.isNaN(posX) || Double.isNaN(posY) || Double.isNaN(poxZ)) {
+                    log.error("Invalid position data");
+                    log.error("VERTEX : {}", vertex);
+                } else if (Double.isInfinite(posX) || Double.isInfinite(posY) || Double.isInfinite(poxZ)) {
+                    log.error("Invalid position data");
+                    log.error("VERTEX : {}", vertex);
+                } else if (posX == 0 || posY == 0 || poxZ == 0) {
+                    log.error("Invalid position data");
+                    log.error("VERTEX : {}", vertex);
+                }
+
+
+                ProjCoordinate transformedCoordinate = transformer.transform(new ProjCoordinate(position.x, position.y, position.z), new ProjCoordinate());
+                Vector3d wgs84Position = new Vector3d(transformedCoordinate.x, transformedCoordinate.y, position.z);
+
+                Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(wgs84Position);
                 Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv, new Vector3d());
                 float batchId = vertex.getBatchId();
+
+                localPosition.mulPosition(rotationMatrix4d, localPosition);
 
                 float x = (float) localPosition.x;
                 float y = (float) -localPosition.z;
@@ -123,9 +168,19 @@ public class PointCloudModel implements TileModel {
 
             if (Double.isNaN(x) || Double.isNaN(y) || Double.isNaN(z)) {
                 log.error("Invalid position data");
-                x = 0;
-                y = 0;
-                z = 0;
+                //x = 0;
+                //y = 0;
+                //z = 0;
+            } else if (Double.isInfinite(x) || Double.isInfinite(y) || Double.isInfinite(z)) {
+                log.error("Invalid position data");
+                //x = 0;
+                //y = 0;
+                //z = 0;
+            } else if (x == 0 && y == 0 && z == 0) {
+                log.error("Invalid position data");
+                //x = 0;
+                //y = 0;
+                //z = 0;
             }
 
             double xQuantized = (x - quantizationOffset.x) / quantizationScale.x;
@@ -158,6 +213,16 @@ public class PointCloudModel implements TileModel {
         featureTable.setQuantizedVolumeOffset(new float[]{(float) quantizationOffset.x, (float) quantizationOffset.y, (float) quantizationOffset.z});
         featureTable.setQuantizedVolumeScale(new float[]{(float) quantizationScale.x, (float) quantizationScale.y, (float) quantizationScale.z});
         featureTable.setColor(new Color(positionBytes.length));
+
+        if (!globalOptions.isClassicTransformMatrix()) {
+            double[] rtcCenter = new double[3];
+            rtcCenter[0] = transformMatrix.m30();
+            rtcCenter[1] = transformMatrix.m31();
+            rtcCenter[2] = transformMatrix.m32();
+            featureTable.setRctCenter(rtcCenter);
+        }
+
+
         //featureTable.setBatchLength(1);
 
         //BatchId batchIdObject = new BatchId(0, "FLOAT");
