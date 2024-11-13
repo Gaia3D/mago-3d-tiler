@@ -52,6 +52,9 @@ public class GlobalOptions {
     private static final double DEFAULT_SKIRT_HEIGHT = 4.0d;
     private static final boolean DEFAULT_DEBUG_LOD = false;
 
+    public final float POINTSCLOUD_HORIZONTAL_GRID = 500.0f; // in meters
+    public final float POINTSCLOUD_VERTICAL_GRID = 50.0f; // in meters
+
     private String version; // version flag
     private String javaVersionInfo; // java version flag
     private String programInfo; // program info flag
@@ -77,11 +80,11 @@ public class GlobalOptions {
     private String proj; // proj4 string
     private Vector3d translateOffset; // origin offset
 
-    // point limit per tile
+
+    private boolean isSourcePrecision = false;
+    private int pointsPerGrid = 65536 * 8; // Points Per Grid
     private int pointLimit;
-    // point scale
     private int pointScale;
-    // skip points value
     private int pointSkip;
 
     // Level of Detail

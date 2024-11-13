@@ -113,7 +113,7 @@ public class PointCloudModel implements TileModel {
                     ProjCoordinate transformedCoordinate = transformer.transform(new ProjCoordinate(position.x, position.y, position.z), new ProjCoordinate());
                     wgs84Position = new Vector3d(transformedCoordinate.x, transformedCoordinate.y, position.z);
                 } catch (InvalidValueException e) {
-                    log.error("Invalid value exception", e);
+                    log.debug("Invalid value exception", e);
                 }
 
                 Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(wgs84Position);

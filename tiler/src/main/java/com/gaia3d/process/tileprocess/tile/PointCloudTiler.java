@@ -207,7 +207,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         //GaiaBoundingBox originalCoordinateBoundingBox = originalCoordinateBoundingBox(childBoundingBox);
         double maximumGeometricError = 8.0;
         double geometricErrorCalc = calcGeometricError(childBoundingBox);
-        double calculatedGeometricError = geometricErrorCalc / 64;
+        double calculatedGeometricError = geometricErrorCalc / 128;
         if (calculatedGeometricError > maximumGeometricError) {
             calculatedGeometricError = maximumGeometricError;
         } else if (calculatedGeometricError < 1.0) {
