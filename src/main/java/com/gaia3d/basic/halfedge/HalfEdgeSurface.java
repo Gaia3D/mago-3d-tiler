@@ -747,6 +747,7 @@ public class HalfEdgeSurface implements Serializable {
     public void removeDeletedObjects() {
         // delete objects that status is DELETED.***
         // delete halfEdges that status is DELETED.***
+        log.info("removing deleted halfEdges...");
         int halfEdgesCount = this.halfEdges.size();
         List<HalfEdge> copyHalfEdges = new ArrayList<>(this.halfEdges);
         this.halfEdges.clear();
@@ -761,6 +762,7 @@ public class HalfEdgeSurface implements Serializable {
         copyHalfEdges.clear();
 
         // delete vertices that status is DELETED.***
+        log.info("removing deleted vertices...");
         int verticesCount = this.vertices.size();
         List<HalfEdgeVertex> copyVertices = new ArrayList<>(this.vertices);
         this.vertices.clear();
@@ -775,6 +777,7 @@ public class HalfEdgeSurface implements Serializable {
         copyVertices.clear();
 
         // delete faces that status is DELETED.***
+        log.info("removing deleted faces...");
         int facesCount = this.faces.size();
         List<HalfEdgeFace> copyFaces = new ArrayList<>(this.faces);
         this.faces.clear();
@@ -2595,7 +2598,11 @@ public class HalfEdgeSurface implements Serializable {
         if(texture.getPath().endsWith(".png") || texture.getPath().endsWith(".PNG")) {
             existPngTextures = true;
         }
-        texture.loadImage(); // load the image.***
+
+        if(texture.getBufferedImage() == null) {
+            // here loads the image.***
+            return;
+        }
         int texWidth = texture.getWidth();
         int texHeight = texture.getHeight();
 
