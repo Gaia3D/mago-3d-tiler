@@ -25,10 +25,14 @@ public class GaiaPointCloud implements Serializable {
     private Path originalPath;
     private GaiaBoundingBox gaiaBoundingBox = new GaiaBoundingBox();
     private List<GaiaVertex> vertices = new ArrayList<>();
+    private int vertexCount = 0;
     private GaiaAttribute gaiaAttribute = new GaiaAttribute();
 
     private boolean isMinimized = false;
     private File minimizedFile = null;
+    GaiaPointCloudTemp pointCloudTemp = null;
+    private Vector3d quantizedVolumeScale = null;
+    private Vector3d quantizedVolumeOffset = null;
 
     public void minimizeTemp() {
         vertices = null;
@@ -36,20 +40,40 @@ public class GaiaPointCloud implements Serializable {
     }
 
     public void minimize(File minimizedFile) {
-        if (isMinimized) {
+        if (this.isMinimized) {
             log.warn("The point cloud is already minimized.");
             return;
         }
 
-        try (ObjectOutputStream objectInputStream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(minimizedFile)))) {
-            objectInputStream.writeObject(vertices);
-            this.vertices = null;
-        } catch (Exception e) {
+        Vector3d quantizationOffset = gaiaBoundingBox.getMinPosition();
+        Vector3d quantizationScale = gaiaBoundingBox.getVolume();
+        this.quantizedVolumeScale = quantizationScale;
+        this.quantizedVolumeOffset = quantizationOffset;
+
+        this.pointCloudTemp = new GaiaPointCloudTemp(minimizedFile);
+        double[] volumeOffset = pointCloudTemp.getQuantizedVolumeOffset();
+        volumeOffset[0] = quantizationOffset.x;
+        volumeOffset[1] = quantizationOffset.y;
+        volumeOffset[2] = quantizationOffset.z;
+        double[] volumeScale = pointCloudTemp.getQuantizedVolumeScale();
+        volumeScale[0] = quantizationScale.x;
+        volumeScale[1] = quantizationScale.y;
+        volumeScale[2] = quantizationScale.z;
+        pointCloudTemp.writeHeader();
+        this.vertexCount = vertices.size();
+
+        pointCloudTemp.writePositionsFast(vertices);
+        this.vertices.clear();
+        try {
+            pointCloudTemp.getOutputStream().close();
+        } catch (IOException e) {
             log.error("[Error][minimize] : Failed to minimize the point cloud.", e);
+            throw new RuntimeException(e);
         }
 
         // Minimize the point cloud
-        isMinimized = true;
+        this.vertices = null;
+        this.isMinimized = true;
         this.minimizedFile = minimizedFile;
     }
 
@@ -59,8 +83,44 @@ public class GaiaPointCloud implements Serializable {
             return;
         }
 
+        pointCloudTemp.readHeader();
+        List<GaiaVertex> vertices = pointCloudTemp.readTemp();
+        vertexCount = vertices.size();
+        try {
+            pointCloudTemp.getInputStream().close();
+        } catch (IOException e) {
+            log.error("[Error][maximize] : Failed to maximize the point cloud.", e);
+        }
+        this.vertices = vertices;
+    }
+
+    public void maximizeTempOld() {
+        if (!isMinimized) {
+            log.warn("The point cloud is already maximized.");
+            return;
+        }
         try (ObjectInputStream objectInputStream = new ObjectInputStream(new BufferedInputStream(new FileInputStream(minimizedFile)))) {
-            this.vertices = (List<GaiaVertex>) objectInputStream.readObject();
+            List<GaiaVertex> vertices = (List<GaiaVertex>) objectInputStream.readObject();
+            this.vertices = vertices;
+
+            vertices.forEach(vertex -> {
+                short[] quantizedPosition = vertex.getQuantizedPosition();
+                int xQuantizedPositionInt = toDoubleFromUnsignedShort(quantizedPosition[0]);
+                int yQuantizedPositionInt = toDoubleFromUnsignedShort(quantizedPosition[1]);
+                int zQuantizedPositionInt = toDoubleFromUnsignedShort(quantizedPosition[2]);
+
+                double xQuantizedPosition = xQuantizedPositionInt / 65535.0;
+                double yQuantizedPosition = yQuantizedPositionInt / 65535.0;
+                double zQuantizedPosition = zQuantizedPositionInt / 65535.0;
+
+                Vector3d position = new Vector3d(
+                        quantizedVolumeScale.x * xQuantizedPosition + quantizedVolumeOffset.x,
+                        quantizedVolumeScale.y * yQuantizedPosition + quantizedVolumeOffset.y,
+                        quantizedVolumeScale.z * zQuantizedPosition + quantizedVolumeOffset.z
+                );
+                vertex.setPosition(position);
+                vertex.setQuantizedPosition(null);
+            });
         } catch (Exception e) {
             log.error("[Error][maximize] : Failed to maximize the point cloud.", e);
         }
@@ -72,6 +132,8 @@ public class GaiaPointCloud implements Serializable {
         // Maximize the point cloud
         isMinimized = false;
         this.minimizedFile = null;
+        this.quantizedVolumeScale = null;
+        this.quantizedVolumeOffset = null;
     }
 
 
@@ -315,5 +377,24 @@ public class GaiaPointCloud implements Serializable {
         pointClouds.add(chunkPointCloud);
         pointClouds.add(remainderPointCloud);
         return pointClouds;
+    }
+
+    private short toUnsignedShort(int value) {
+        if (value < 0 || value > 65535) {
+            throw new IllegalArgumentException("Value out of range for unsigned short: " + value);
+        }
+        if (value <= 32767) {
+            return (short) value;
+        } else {
+            return (short) (value - 65536);
+        }
+    }
+
+    private int toDoubleFromUnsignedShort(short value) {
+        if (value < 0) {
+            return value + 65536;
+        } else {
+            return value;
+        }
     }
 }

@@ -187,9 +187,7 @@ public class GlobeUtils {
 
     public static ProjCoordinate transform(CoordinateReferenceSystem source, ProjCoordinate coordinate) {
         BasicCoordinateTransform transformer = new BasicCoordinateTransform(source, wgs84);
-        ProjCoordinate result = new ProjCoordinate();
-        transformer.transform(coordinate, result);
-        return result;
+        return transformer.transform(coordinate, new ProjCoordinate());
     }
 
     public static Coordinate transformOnGeotools(org.opengis.referencing.crs.CoordinateReferenceSystem source, Coordinate coordinate) {
