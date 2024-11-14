@@ -1,7 +1,6 @@
 package com.gaia3d.process.tileprocess.tile;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exception.TileProcessingException;
@@ -95,17 +94,9 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
         BoundingVolume squareBoundingVolume = parentBoundingVolume.createSqureBoundingVolume();
 
-        long instanceLimit = globalOptions.getMaxInstance() * 4;
+        long instanceLimit = globalOptions.getMaxInstance() * 4L;
         long instanceCount = tileInfos.size();
         boolean isRefineAdd = globalOptions.isRefineAdd();
-//=======
-//        //int nodeLimit = globalOptions.getNodeLimit() * 4;
-//
-//        //long triangleLimit = 65536 * 8; // original.***
-//        long triangleLimit = 65536 * 1024;
-//        long totalTriangleCount = tileInfos.stream().mapToLong(TileInfo::getTriangleCount).sum();
-//        log.info("[TriangleCount] Total : {}", totalTriangleCount);
-//>>>>>>> Stashed changes
 
         if (instanceCount > instanceLimit) {
             List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
@@ -128,12 +119,9 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
                     Content content = childNode.getContent();
                     if (content != null) {
                         ContentInfo contentInfo = content.getContentInfo();
-                        if(isRefineAdd)
-                        {
+                        if (isRefineAdd) {
                             createNode(childNode, contentInfo.getRemainTileInfos());
-                        }
-                        else
-                        {
+                        } else {
                             createNode(childNode, childTileInfos);
                         }
                     } else {
@@ -242,12 +230,9 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         childNode.setChildren(new ArrayList<>());
 
         //childNode.setRefine(refineAdd ? Node.RefineType.ADD : Node.RefineType.REPLACE);
-        if(refineAdd)
-        {
+        if (refineAdd) {
             childNode.setRefine(Node.RefineType.ADD);
-        }
-        else
-        {
+        } else {
             childNode.setRefine(Node.RefineType.REPLACE);
         }
 
