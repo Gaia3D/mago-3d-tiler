@@ -1,5 +1,6 @@
 package com.gaia3d.command.model;
 
+import com.gaia3d.TilerExtensionModule;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
@@ -20,6 +21,7 @@ import com.gaia3d.process.postprocess.batch.Batched3DModel;
 import com.gaia3d.process.preprocess.*;
 import com.gaia3d.process.tileprocess.Pipeline;
 import com.gaia3d.process.tileprocess.TilingProcess;
+import com.gaia3d.processPhR.TilingPipeLinePhR;
 import com.gaia3d.processPhR.tileProcessPhR.Batched3DModelTilerPhR;
 import com.gaia3d.processPhR.preProcessPhR.GaiaMinimizerPhR;
 import lombok.extern.slf4j.Slf4j;
@@ -60,7 +62,8 @@ public class BatchedProcessModelPhR implements ProcessFlowModel {
             preProcessors.add(new GaiaRotator());
         }
         preProcessors.add(new GaiaTranslatorExact(geoTiffs));
-        preProcessors.add(new GaiaMinimizerPhR());
+        GaiaMinimizerPhR gaiaMinimizerPhR = new GaiaMinimizerPhR();
+        preProcessors.add(gaiaMinimizerPhR);
 
         // tileProcess (Batched3DModelTilerPhR).***
         TilingProcess tilingProcess = new Batched3DModelTilerPhR();
@@ -75,7 +78,7 @@ public class BatchedProcessModelPhR implements ProcessFlowModel {
         //globalOptions.setDebugLod(true);// Test. delete this.!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         // end Test.---
 
-        Pipeline processPipeline = new TilingPipeline(preProcessors, tilingProcess, postProcessors);
+        Pipeline processPipeline = new TilingPipeLinePhR(preProcessors, tilingProcess, postProcessors);
         processPipeline.process(fileLoader);
     }
 

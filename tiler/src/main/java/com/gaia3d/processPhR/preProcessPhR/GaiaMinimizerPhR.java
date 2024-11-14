@@ -11,7 +11,6 @@ import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.model.GaiaTexture;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.process.preprocess.PreProcess;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.AllArgsConstructor;
@@ -20,16 +19,13 @@ import lombok.extern.slf4j.Slf4j;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 
 @Slf4j
-@AllArgsConstructor
+//@AllArgsConstructor
 public class GaiaMinimizerPhR implements PreProcess {
     @Override
     public TileInfo run(TileInfo tileInfo) {
@@ -97,8 +93,8 @@ public class GaiaMinimizerPhR implements PreProcess {
             log.info("Doing triangles reduction in HalfEdgeScene");
             double maxDiffAngDegrees = 70.0;
             double hedgeMinLength = 0.25;
-            double frontierMaxDiffAngDeg = 55.0;
-            double maxAspectRatio = 7.5;
+            double frontierMaxDiffAngDeg = 40.0;
+            double maxAspectRatio = 6.0;
             halfEdgeSceneLod1.doTrianglesReduction(maxDiffAngDegrees, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio);
             //halfEdgeScene.calculateNormals();
 
@@ -118,10 +114,11 @@ public class GaiaMinimizerPhR implements PreProcess {
             // In Lod2, change the texture by a topView render.***
             List<GaiaScene> gaiaSceneList = new ArrayList<>();
             gaiaSceneList.add(scene);
-            TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
+            //TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
             List<BufferedImage> resultImages = new ArrayList<>();
             int bufferedImageType = BufferedImage.TYPE_INT_RGB;
             int maxScreenSize = 1024;
+            TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
             tilerExtensionModule.getRenderScene(gaiaSceneList, bufferedImageType, maxScreenSize, resultImages);
 
             if(resultImages.size() == 0)
@@ -155,9 +152,9 @@ public class GaiaMinimizerPhR implements PreProcess {
             HalfEdgeScene halfEdgeSceneLod2 = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 
             log.info("Doing triangles reduction in HalfEdgeScene");
-            maxDiffAngDegrees = 65.0;
+            maxDiffAngDegrees = 45.0;
             hedgeMinLength = 0.5;
-            frontierMaxDiffAngDeg = 55.0;
+            frontierMaxDiffAngDeg = 30.0;
             maxAspectRatio = 6.0;
             halfEdgeSceneLod2.doTrianglesReduction(maxDiffAngDegrees, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio);
             //halfEdgeScene.calculateNormals();

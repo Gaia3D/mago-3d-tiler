@@ -250,6 +250,7 @@ public class RenderEngine {
                         int textureId = RenderableTexturesUtils.createGlTextureFromBufferedImage(bufferedImage, minFilter, magFilter, wrapS, wrapT);
 
                         diffuseTexture.setTextureId(textureId);
+                        diffuseTexture.setBufferedImage(null);
                     }
 
                     // colorMode = 0: oneColor, 1: vertexColor, 2: textureColor

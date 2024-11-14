@@ -20,6 +20,7 @@ import com.gaia3d.renderer.renderable.RenderableGaiaScene;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
+import org.lwjgl.opengl.GL;
 
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
@@ -33,6 +34,7 @@ import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 @Slf4j
 public class MainRenderer implements IAppLogic {
     private Engine engine = new Engine("MagoVisual3D", new Window.WindowOptions(), this);
+    private InternDataConverter internDataConverter = new InternDataConverter();
 
     public void render() {
         // render the scene
@@ -47,7 +49,7 @@ public class MainRenderer implements IAppLogic {
 
     public void getColorAndDepthRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<BufferedImage> resultImages, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize) {
         // render the scene
-        log.info("Rendering the scene...");
+        log.info("Rendering the scene...getColorAndDepthRender");
 
         // Must init gl.***
         try{
@@ -134,7 +136,6 @@ public class MainRenderer implements IAppLogic {
 
         // render the scenes.***
         int scenesCount = sceneInfos.size();
-        InternDataConverter internDataConverter = new InternDataConverter();
         List<RenderableGaiaScene> renderableGaiaScenes = new ArrayList<>();
         int counter = 0;
         for(int i=0; i<scenesCount; i++)
@@ -252,8 +253,6 @@ public class MainRenderer implements IAppLogic {
         {
             renderableScene.deleteGLBuffers();
         }
-
-        engine.deleteObjects();
     }
 
     public void render(List<GaiaScene> gaiaScenes, int bufferedImageType, List<BufferedImage> resultImages, int maxScreenSize) {
@@ -270,7 +269,6 @@ public class MainRenderer implements IAppLogic {
         int screenWidth = 1000;
         int screenHeight = 600;
 
-        InternDataConverter internDataConverter = new InternDataConverter();
         List<RenderableGaiaScene> renderableGaiaScenes = new ArrayList<>();
         GaiaBoundingBox gaiaBoundingBox = null;
 
@@ -295,7 +293,6 @@ public class MainRenderer implements IAppLogic {
         if(gaiaBoundingBox == null)
         {
             log.error("Error: gaiaBoundingBox is null.");
-            engine.deleteObjects();
             return;
         }
 
@@ -379,8 +376,11 @@ public class MainRenderer implements IAppLogic {
             renderableScene.deleteGLBuffers();
         }
 
-        engine.deleteObjects();
+    }
 
+    public void deleteObjects()
+    {
+        engine.deleteObjects();
     }
 
     @Override
