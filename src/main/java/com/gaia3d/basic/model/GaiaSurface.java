@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,7 +19,7 @@ import java.util.Map;
 @Slf4j
 @Getter
 @Setter
-public class GaiaSurface extends SurfaceStructure {
+public class GaiaSurface extends SurfaceStructure implements Serializable {
     public void calculateNormal(List<GaiaVertex> vertices) {
         for (GaiaFace face : faces) {
             face.calculateFaceNormal(vertices);
