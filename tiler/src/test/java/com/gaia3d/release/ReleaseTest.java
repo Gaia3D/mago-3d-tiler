@@ -256,8 +256,9 @@ class ReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "geojson",
+                "-crs", "4326",
                 "-nameColumn", "layer",
-                //"-debug"
+                "-debug"
         };
         Mago3DTilerMain.main(args);
     }

@@ -8,6 +8,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -18,7 +19,7 @@ import java.util.List;
 @Slf4j
 @Getter
 @Setter
-public class GaiaFace extends FaceStructure {
+public class GaiaFace extends FaceStructure implements Serializable {
 
     public void calculateFaceNormal(List<GaiaVertex> vertices) {
         if (indices.length < 3) {

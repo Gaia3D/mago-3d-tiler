@@ -82,22 +82,56 @@ public class LasConverter {
         double zOffset = header.getZOffset();
         CloseablePointIterable pointIterable = reader.getCloseablePoints();
 
-        long totalPointsSize = pointCloudHeader.getSize();
-        int pointsPerGrid = globalOptions.getPointsPerGrid();
-        int factor = (int) (totalPointsSize / pointsPerGrid);
+        long pointRecords = header.getNumberOfPointRecords();
+        long legacyPointRecords = header.getLegacyNumberOfPointRecords();
+        long totalPointsSize = pointRecords + legacyPointRecords;
 
-        // 
-        if (globalOptions.isSourcePrecision()) {
-            factor = 1;
-        } else if (factor > 8) {
-            factor = 8;
-        } else if (factor > 1) {
-            factor = factor - 1;
+        //long totalPointsSize = pointCloudHeader.getSize();
+        int pointsPerGrid = globalOptions.getPointsPerGrid();
+        //int factor = (int) (totalPointsSize / pointsPerGrid);
+
+        double getMinX = header.getMinX();
+        double getMinY = header.getMinY();
+        double getMinZ = header.getMinZ();
+        double getMaxX = header.getMaxX();
+        double getMaxY = header.getMaxY();
+        double getMaxZ = header.getMaxZ();
+        Vector3d min = new Vector3d(getMinX, getMinY, getMinZ);
+        Vector3d max = new Vector3d(getMaxX, getMaxY, getMaxZ);
+
+        GaiaBoundingBox gaiaBoundingBox = new GaiaBoundingBox();
+        gaiaBoundingBox.addPoint(min);
+        gaiaBoundingBox.addPoint(max);
+        Vector3d volumeVector = gaiaBoundingBox.getVolume();
+
+        int volume = (int) (volumeVector.x * volumeVector.y * volumeVector.z);
+        int width = 1;
+        int height = 1;
+        int depth = 1;
+        int cubeVolume = width * height * depth;
+
+        int cubeCount = (int) Math.floor(volume / cubeVolume);
+        if (cubeCount < 1) {
+            cubeCount = 1;
         }
+
+        int pointCountPerCube = (int) Math.floor(totalPointsSize / cubeCount);
+        int minFactor = 4;
+        int maxFactor = 64;
+        int volumeFactor = pointCountPerCube;
+        if (globalOptions.isSourcePrecision()) {
+            volumeFactor = 1;
+        } else if (volumeFactor < minFactor) {
+            volumeFactor = minFactor;
+        } else if (volumeFactor > maxFactor) {
+            volumeFactor = maxFactor;
+        }
+        log.debug("Point Count Per Cube: {}", pointCountPerCube);
+        log.debug("Points: {} Volume: {}, Factor {}",totalPointsSize, volume, volumeFactor);
 
         int count = 0;
         for (LASPoint point : pointIterable) {
-            if (count++ % factor != 0) {
+            if (count++ % volumeFactor != 0) {
                 continue;
             }
             double x = point.getX() * xScaleFactor + xOffset;

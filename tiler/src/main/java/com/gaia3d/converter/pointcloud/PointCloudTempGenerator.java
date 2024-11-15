@@ -26,6 +26,15 @@ public class PointCloudTempGenerator {
     public List<File> generate(File tempPath, List<File> fileList) {
         List<File> tempFiles;
         combinedHeader = readAllHeaders(fileList);
+        GaiaBoundingBox boundingBox = combinedHeader.getSrsBoundingBox();
+        Vector3d volume = boundingBox.getVolume();
+        GaiaPointCloudTemp[][][] tempGrid = combinedHeader.getTempGrid();
+        int length = tempGrid.length;
+        int width = tempGrid[0].length;
+        int height = tempGrid[0][0].length;
+
+        log.info("[Pre] Total Volume: {}, {}, {}", volume.x, volume.y, volume.z);
+        log.info("[Pre] Generating temp files");
         try {
             tempFiles = createTempGrid(tempPath);
             generateTempFiles(fileList);
@@ -111,12 +120,20 @@ public class PointCloudTempGenerator {
         List<File> shuffledTempFiles = new ArrayList<>();
         int fileLength = tempFiles.size();
         AtomicInteger tempCount = new AtomicInteger(0);
+
+        double width = globalOptions.POINTSCLOUD_HORIZONTAL_GRID;
+        double height = globalOptions.POINTSCLOUD_HORIZONTAL_GRID;
+        double depth = globalOptions.POINTSCLOUD_VERTICAL_GRID;
+        int volume = (int) Math.ceil(width * height * depth);
+
         int limitSize;
         if (globalOptions.isSourcePrecision()) {
             limitSize = -1;
         } else {
-            limitSize = 65536 * 16;
+            limitSize = volume;
         }
+        log.info("[Pre] Shuffling temp files with limit size: {}", limitSize);
+
         tempFiles.forEach((tempFile) -> {
             int count = tempCount.incrementAndGet();
             log.info("[Pre][{}/{}] Shuffling temp file: {}", count, fileLength, tempFile.getName());

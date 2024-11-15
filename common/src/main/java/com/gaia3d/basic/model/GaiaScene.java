@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.joml.Matrix4d;
 
+import java.io.Serializable;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaScene extends SceneStructure {
+public class GaiaScene extends SceneStructure implements Serializable {
     private Path originalPath;
     private GaiaBoundingBox gaiaBoundingBox;
     private GaiaAttribute attribute;

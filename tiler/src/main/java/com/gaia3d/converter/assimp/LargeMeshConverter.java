@@ -3,6 +3,7 @@ package com.gaia3d.converter.assimp;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.splitter.GaiaSceneSplitter;
 import com.gaia3d.converter.Converter;
+import com.gaia3d.converter.geometry.GaiaSceneTempHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
@@ -42,6 +43,11 @@ public class LargeMeshConverter implements Converter {
         return separateScenes(scenes);
     }
 
+    @Override
+    public List<GaiaSceneTempHolder> convertTemp(File input, File output) {
+        return null;
+    }
+
     private List<GaiaScene> separateScenes(List<GaiaScene> scenes) {
         int size = scenes.size();
         List<GaiaScene> removedScenes = new ArrayList<>();
@@ -53,10 +59,8 @@ public class LargeMeshConverter implements Converter {
                 separatedScenes.addAll(separatedMeshes);
             }
         }
-
         scenes.removeAll(removedScenes);
         scenes.addAll(separatedScenes);
-
         log.info("[LargeMeshConverter] Before Scenes : {}, After Scenes : {}", size, scenes.size());
         return scenes;
     }

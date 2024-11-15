@@ -4,6 +4,7 @@ import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
+import com.gaia3d.converter.geometry.ExtrusionTempGenerator;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
@@ -27,9 +28,10 @@ import java.util.List;
 public class BatchedFileLoader implements FileLoader {
     private final Converter converter;
     private final AttributeReader kmlReader;
+    private final ExtrusionTempGenerator tempGenerator;
 
     public List<File> loadTemp(File tempPath, List<File> files) {
-        return files;
+        return tempGenerator.generate(tempPath, files);
     }
 
     public List<GaiaScene> loadScene(File input) {

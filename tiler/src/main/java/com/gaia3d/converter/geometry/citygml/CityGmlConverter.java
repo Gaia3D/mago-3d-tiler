@@ -73,6 +73,11 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
         return convert(path.toFile());
     }
 
+    @Override
+    public List<GaiaSceneTempHolder> convertTemp(File input, File output) {
+        return null;
+    }
+
     protected List<GaiaScene> convert(File file) {
         List<GaiaScene> scenes = new ArrayList<>();
 

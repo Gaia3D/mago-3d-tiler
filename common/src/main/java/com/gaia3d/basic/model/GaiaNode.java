@@ -14,6 +14,7 @@ import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,7 @@ import java.util.Map;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaNode extends NodeStructure {
+public class GaiaNode extends NodeStructure implements Serializable {
     private String name = "node";
     private Matrix4d transformMatrix = new Matrix4d();
     private Matrix4d preMultipliedTransformMatrix = new Matrix4d();

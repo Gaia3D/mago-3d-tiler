@@ -5,6 +5,7 @@ import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
+import com.gaia3d.converter.geometry.GaiaSceneTempHolder;
 import com.gaia3d.util.ImageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -68,6 +69,11 @@ public class AssimpConverter implements Converter {
 
         Assimp.aiFreeScene(aiScene);
         return gaiaScenes;
+    }
+
+    @Override
+    public List<GaiaSceneTempHolder> convertTemp(File input, File output) {
+        return null;
     }
 
     private Matrix4d convertMatrix4dFromAIMatrix4x4(AIMatrix4x4 aiMatrix4x4, GaiaNode parentNode, FormatType isYUpFormat) {
