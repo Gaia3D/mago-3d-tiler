@@ -13,6 +13,7 @@ import java.util.Map;
 
 @Slf4j
 public class TilerExtensionModule implements ExtensionModuleFrame {
+    MainRenderer renderer;
 
     @Override
     public String getName() {
@@ -37,14 +38,27 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
 
     public void getColorAndDepthRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<BufferedImage> resultImages, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize)
     {
-        MainRenderer renderer = new MainRenderer();
+        if(renderer == null)
+            renderer = new MainRenderer();
+
         renderer.getColorAndDepthRender(sceneInfos, bufferedImageType, resultImages, nodeBBox, nodeTMatrix, maxScreenSize);
+        deleteObjects();
     }
 
 
     public void getRenderScene(List<GaiaScene> scenes, int bufferedImageType, int maxScreenSize, List<BufferedImage> resultImages)
     {
-        MainRenderer renderer = new MainRenderer();
+        if(renderer == null)
+            renderer = new MainRenderer();
         renderer.render(scenes, bufferedImageType, resultImages, maxScreenSize);
+        deleteObjects();
+    }
+
+    public void deleteObjects()
+    {
+        if(renderer != null) {
+            renderer.deleteObjects();
+            renderer = null;
+        }
     }
 }

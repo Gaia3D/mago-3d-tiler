@@ -229,6 +229,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         List<Node> nodes = new ArrayList<>();
         rootNode.getNodesByDepth(nodeDepth, nodes);
         List<TileInfo> tileInfosOfNode = new ArrayList<>();
+        TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
+
         int nodesCount = nodes.size();
         for(int i = 0; i < nodesCount; i++)
         {
@@ -266,7 +268,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
 
             // render the sceneInfos and obtain the color and depth images.************************************************************
-            TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
+            //TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
             List<BufferedImage> resultImages = new ArrayList<>();
             int bufferedImageType = BufferedImage.TYPE_INT_RGB;
 

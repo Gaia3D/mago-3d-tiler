@@ -52,6 +52,5 @@ public class RenderablePrimitive  extends RenderableObject{
         material = null;
         originalGaiaPrimitive = null;
         originalBufferDataSet = null;
-
     }
 }

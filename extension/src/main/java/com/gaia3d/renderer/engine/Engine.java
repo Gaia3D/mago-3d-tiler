@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ClassPathUtils;
 import org.joml.*;
 import org.lwjgl.Version;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL20;
@@ -140,74 +141,20 @@ public class Engine {
     public void init() {
         GLFWErrorCallback.createPrint(System.err).set();
 
+        if(window == null) {
+            window = new Window("Mago3D", new Window.WindowOptions(), () -> {
+                resize();
+                return null;
+            });
+
+            GL.createCapabilities();
+        }
 
         long windowHandle = window.getWindowHandle();
-//        glfwSetCursorPosCallback(windowHandle, (window, xpos, ypos) -> {
-//            if (this.midButtonClicked) {
-//                Vector3d pivot = new Vector3d(0.0d,0.0d,-1.0d);
-//                float xoffset = (float) (this.midButtonXpos - xpos) * 0.01f;
-//                float yoffset = (float) (this.midButtonYpos - ypos) * 0.01f;
-//                camera.rotationOrbit(xoffset, yoffset, pivot);
-//            }
-//            this.midButtonXpos = xpos;
-//            this.midButtonYpos = ypos;
-//
-//            if(this.leftButtonClicked)
-//            {
-//                // translate camera
-//                Vector3d translation = new Vector3d((xpos - this.leftButtonXpos) * 0.01f, (ypos - this.leftButtonYpos) * 0.01f, 0);
-//                //translation.y *= -1;
-//                camera.translate(translation);
-//            }
-//
-//            this.leftButtonXpos = xpos;
-//            this.leftButtonYpos = ypos;
-//        });
 
-
-//        glfwSetMouseButtonCallback(windowHandle, (window, key, action, mode) -> {
-//            if (key == GLFW_MOUSE_BUTTON_3 && action == GLFW_PRESS) {
-//                this.midButtonClicked = true;
-//            } else if (key == GLFW_MOUSE_BUTTON_3 && action == GLFW_RELEASE) {
-//                this.midButtonClicked = false;
-//            }
-//
-//            // check left button
-//            if (key == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
-//                this.leftButtonClicked = true;
-//            } else if (key == GLFW_MOUSE_BUTTON_1 && action == GLFW_RELEASE) {
-//                this.leftButtonClicked = false;
-//            }
-//
-//        });
-//
-//        glfwSetScrollCallback(windowHandle, (window, xoffset, yoffset) -> {
-//            camera.moveFront((float)yoffset * 10.0f);
-//        });
-//
-//        glfwSetKeyCallback(windowHandle, (window, key, scancode, action, mods) -> {
-//            if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-//                glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
-//            }
-//
-//            float rotationOffset = 0.1f;
-//            Vector3d pivot = new Vector3d(0.0d,0.0d,-1.0d);
-//            if (key == GLFW_KEY_W) {
-//                //camera.rotationOrbit(0, -rotationOffset, pivot);
-//                camera.moveFront(-0.1f);
-//            }
-//            if (key == GLFW_KEY_A) {
-//                camera.rotationOrbit(rotationOffset, 0, pivot);
-//            }
-//            if (key == GLFW_KEY_S) {
-//                camera.rotationOrbit(0, rotationOffset, pivot);
-//            }
-//            if (key == GLFW_KEY_D) {
-//                camera.rotationOrbit(-rotationOffset, 0, pivot);
-//            }
-//        });
-
-        setupShader();
+        if(this.shaderManager == null) {
+            setupShader();
+        }
 
         if(renderer == null)
         {
@@ -227,12 +174,6 @@ public class Engine {
         if(fboManager == null)
         {
             fboManager = new FboManager();
-//            int windowWidth = window.getWidth();
-//            int windowHeight = window.getHeight();
-//            fboManager.createFbo("colorRender", windowWidth, windowHeight);
-//
-//            // now, create a 500 x 500 fbo for colorCode render.***
-//            fboManager.createFbo("colorCodeRender", 500, 500);
         }
 
         if(screenQuad == null) {
@@ -266,23 +207,10 @@ public class Engine {
 
         GL.createCapabilities();
 
-        // load shaders from classpath.***
-
-        //URL url = Engine.class.getResource("/shaders");
-
-        //D:\Java_Projects\mago-3d-tiler\tiler\build\libs\   file:\D:\Java_Projects\mago-3d-tiler\tiler\build\libs\mago-3d-tiler-1.10.0-natives-windows.jar!    \shaders
-        //URL url = ClassLoader.getSystemResource("shaders");
-
         URL url = getClass().getClassLoader().getResource("shaders");
         File shaderFolder = new File(url.getPath());
-        File vertexShaderFile = new File(shaderFolder, "sceneV330.vert");
-        File fragmentShaderFile = new File(shaderFolder, "sceneV330.frag");
 
         log.info("shaderFolder: {}", shaderFolder.getAbsolutePath());
-
-
-        //InputStream vertexShaderStream = getClass().getClassLoader().getResourceAsStream("shaders/sceneV330.vert");
-        //InputStream fragmentShaderStream = getClass().getClassLoader().getResourceAsStream("shaders/sceneV330.frag");
 
         String vertexShaderText = readResource("shaders/sceneV330.vert");
         String fragmentShaderText = readResource("shaders/sceneV330.frag");
@@ -291,7 +219,6 @@ public class Engine {
         log.info("vertexShaderText: {}", vertexShaderText);
         log.info("fragmentShaderText: {}", fragmentShaderText);
 
-        //String shaderFolder = "D:/Java_Projects/mago-3d-tiler/extension/src/main/resources/shaders/";
 
         // create a scene shader program.*************************************************************************************************
         java.util.List<ShaderProgram.ShaderModuleData> shaderModuleDataList = new ArrayList<>();
@@ -312,8 +239,6 @@ public class Engine {
 
 
         // create depthShader.****************************************************************************************************
-        //vertexShaderFile = new File(shaderFolder, "depthV330.vert");
-        //fragmentShaderFile = new File(shaderFolder, "depthV330.frag");
 
         vertexShaderText = readResource("shaders/depthV330.vert");
         fragmentShaderText = readResource("shaders/depthV330.frag");
@@ -629,7 +554,7 @@ public class Engine {
     private void renderScreenQuad(int texId)
     {
         // render to windows using screenQuad.***
-        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0); // any frame buffer binded.***
+        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
 
         int windowWidth = window.getWidth();
         int windowHeight = window.getHeight();

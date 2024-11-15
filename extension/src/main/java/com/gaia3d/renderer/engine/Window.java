@@ -100,34 +100,12 @@ public class Window {
             throw new RuntimeException("Failed to create the GLFW window");
         }
 
-        //glfwSetFramebufferSizeCallback(windowHandle, (window, w, h) -> resized(w, h));
 
         glfwSetErrorCallback((int errorCode, long msgPtr) ->
-                //Logger.error("Error code [{}], msg [{}]", errorCode, MemoryUtil.memUTF8(msgPtr))
                 log.info("Error code [" + errorCode + "], msg [" + MemoryUtil.memUTF8(msgPtr) + "]")
         );
 
-//        glfwSetKeyCallback(windowHandle, (window, key, scancode, action, mods) -> {
-//            keyCallBack(key, action);
-//        });
-
         glfwMakeContextCurrent(windowHandle); // all drawing happens in the current context
-//
-//        if (opts.fps > 0) {
-//            glfwSwapInterval(0);
-//        } else {
-//            glfwSwapInterval(1);
-//        }
-
-        //glfwShowWindow(windowHandle);
-
-//        int[] arrWidth = new int[1];
-//        int[] arrHeight = new int[1];
-//        glfwGetFramebufferSize(windowHandle, arrWidth, arrHeight);
-//        width = arrWidth[0];
-//        height = arrHeight[0];
-//
-//        mouseInput = new MouseInput(windowHandle);
     }
 
     public void glMakeContextCurrent() {

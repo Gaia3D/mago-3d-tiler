@@ -396,22 +396,22 @@ public class GaiaTextureCoordinator {
             int lod2size = 512;
 
             if (lodLevel == 0) {
-                if (imageWidth > 2048) {
-                    imageWidth = 2048;
-                    sizeChanged = true;
-                }
-                if (imageHeight > 2048) {
-                    imageHeight = 2048;
-                    sizeChanged = true;
-                }
-            }
-            else if (lodLevel == 1) {
                 if (imageWidth > 1024) {
                     imageWidth = 1024;
                     sizeChanged = true;
                 }
                 if (imageHeight > 1024) {
                     imageHeight = 1024;
+                    sizeChanged = true;
+                }
+            }
+            else if (lodLevel == 1) {
+                if (imageWidth > lod2size) {
+                    imageWidth = lod2size;
+                    sizeChanged = true;
+                }
+                if (imageHeight > lod2size) {
+                    imageHeight = lod2size;
                     sizeChanged = true;
                 }
             }
