@@ -562,6 +562,7 @@ public class HalfEdgeSurface implements Serializable {
         log.info("halfEdgesCount = " + originalHalfEdgesCount);
         int counterAux = 0;
         int hedgesCollapsedCount = 0;
+        int hedgesCollapsedInOneIteration = 0;
 
         Map<HalfEdge, Vector3d> mapHalfEdgeToInitialDirection = this.getMapHalfEdgeToDirection(null);
         Map<HalfEdgeVertex, List<HalfEdge>> vertexAllOutingEdgesMap = this.getMapVertexAllOutingEdges(null);
@@ -593,10 +594,11 @@ public class HalfEdgeSurface implements Serializable {
         Collections.shuffle(halfEdges);
 
         boolean finished = false;
-        int maxIterations = 50;
+        int maxIterations = 30;
         int iteration = 0;
         while(!finished && iteration < maxIterations) {
             boolean collapsed = false;
+            hedgesCollapsedInOneIteration = 0;
             int halfEdgesCount = halfEdges.size();
             for (int i = 0; i < halfEdgesCount; i++) {
                 HalfEdge halfEdge = halfEdges.get(i);
@@ -608,11 +610,11 @@ public class HalfEdgeSurface implements Serializable {
                     continue;
                 }
 
-                HalfEdgeFace face = halfEdge.getFace();
-                if(face.isDegenerated())
-                {
-                    continue;
-                }
+//                HalfEdgeFace face = halfEdge.getFace();
+//                if(face.isDegenerated())
+//                {
+//                    continue;
+//                }
 
                 HalfEdgeVertex startVertex = halfEdge.getStartVertex();
 
@@ -642,6 +644,7 @@ public class HalfEdgeSurface implements Serializable {
                 if(halfEdge.hasTwin() && positionType == PositionType.INTERIOR) {
                     if (collapseHalfEdge(halfEdge, i, vertexAllOutingEdgesMap, mapVertexToSamePosVertices, maxDiffAngDeg, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio, testDebug)) {
                         hedgesCollapsedCount += 6;
+                        hedgesCollapsedInOneIteration += 6;
                         counterAux++;
                         collapsed = true;
                     }
@@ -650,6 +653,7 @@ public class HalfEdgeSurface implements Serializable {
                     if(collapseFrontierHalfEdge(halfEdge, i, vertexAllOutingEdgesMap, mapHalfEdgeToInitialDirection, mapVertexToSamePosVertices, maxDiffAngDeg, frontierMaxDiffAngDeg,
                             hedgeMinLength, maxAspectRatio, testDebug)) {
                         hedgesCollapsedCount += 3;
+                        hedgesCollapsedInOneIteration += 3;
                         counterAux++;
                         collapsed = true;
                     }
@@ -662,6 +666,11 @@ public class HalfEdgeSurface implements Serializable {
             }
 
             iteration++;
+
+            if(hedgesCollapsedInOneIteration < 100)
+            {
+                finished = true;
+            }
 
             if(collapsed == false)
             {
@@ -687,6 +696,12 @@ public class HalfEdgeSurface implements Serializable {
         log.info("faces % deleted = " + (facesCountDiff * 100.0) / originalFacesCount);
         log.info("halfEdges % deleted = " + (halfEdgesCountDiff * 100.0) / originalHalfEdgesCount);
         log.info("vertices % deleted = " + (verticesCountDiff * 100.0) / originalVerticesCount);
+
+        // clear maps.***
+        mapHalfEdgeToInitialDirection.clear();
+        vertexAllOutingEdgesMap.clear();
+        mapFaceToHalfEdges.clear();
+        mapVertexToSamePosVertices.clear();
 
         int hola = 0;
     }
@@ -1153,11 +1168,6 @@ public class HalfEdgeSurface implements Serializable {
             outingEdgesOfSamePosVertices.addAll(outingEdges);
         }
 
-
-
-        //List<HalfEdge> outingEdgesOfStartVertex = vertexAllOutingEdgesMap.get(startVertex);
-
-
         //*****************************************************************************************
         // Note : if a hedge length < hedgeMinLength, then sure collapse because is very short.***
         //*****************************************************************************************
@@ -1176,6 +1186,7 @@ public class HalfEdgeSurface implements Serializable {
             {
                 continue;
             }
+
             List<HalfEdge> outingLoop = outingEdge.getLoop(null);
             int outingLoopCount = outingLoop.size();
             for (int j = 0; j < outingLoopCount; j++) {
@@ -1206,7 +1217,6 @@ public class HalfEdgeSurface implements Serializable {
                     v1.normalize();
                     if(isNaN(v1.x) || isNaN(v1.y) || isNaN(v1.z))
                     {
-                        //log.error("HalfEdgeSurface.collapseFrontierHalfEdge() : v2 is NaN.");
                         continue;
                     }
 
@@ -1215,7 +1225,6 @@ public class HalfEdgeSurface implements Serializable {
 
                     if(isNaN(v2.x) || isNaN(v2.y) || isNaN(v2.z))
                     {
-                        //log.error("HalfEdgeSurface.collapseFrontierHalfEdge() : v2 is NaN.");
                         continue;
                     }
 
@@ -1442,15 +1451,14 @@ public class HalfEdgeSurface implements Serializable {
             }
 
             HalfEdgeFace faceA = outingEdge.getFace();
-            if(faceA.isDegenerated())
-            {
-                continue;
-            }
+//            if(faceA.isDegenerated())
+//            {
+//                continue;
+//            }
 
             List<HalfEdgeVertex> verticesA = faceA.getVertices(null);
             Vector3d normalA = HalfEdgeUtils.calculateNormalAsConvex(verticesA, null);
             if (normalA == null) {
-                log.error("normalA is NaN.***");
                 continue;
             }
 
