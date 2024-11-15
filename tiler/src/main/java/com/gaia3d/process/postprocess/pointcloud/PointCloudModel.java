@@ -79,6 +79,11 @@ public class PointCloudModel implements TileModel {
         byte[] colors = new byte[vertexLength * 3];
         float[] batchIds = new float[vertexLength];
 
+        if (vertexLength == 1) {
+            log.error("Vertex length is 1");
+            return contentInfo;
+        }
+
         Vector3d center = wgs84BoundingBox.getCenter();
         Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
         Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);

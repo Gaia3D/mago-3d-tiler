@@ -288,7 +288,7 @@ public class GaiaPointCloudTemp {
             Collections.shuffle(indexes);
 
             int loop = indexes.size();
-            log.debug("- Shuffling points limit {}/{}", limitSize, loop);
+            log.info("- Shuffling points limit {}/{} ({})%", loop, limitSize, (limitSize < 0) ? "original" : (loop * 100 / limitSize));
             if (limitSize < 0) {
                 // original
             } else if (loop > limitSize) {
