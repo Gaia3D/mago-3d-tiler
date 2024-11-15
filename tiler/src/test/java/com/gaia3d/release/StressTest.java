@@ -25,6 +25,20 @@ public class StressTest {
 
     @Disabled
     @Test
+    void testOSMShape() {
+        String path = "OSM-SHP";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "shp",
+                "-crs", "4326",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Disabled
+    @Test
     void testYeouidoShape() {
         String path = "YEOUIDO-SHP";
         String[] args = new String[] {
@@ -162,6 +176,20 @@ public class StressTest {
 
     @Disabled
     @Test
+    void testPostLas() {
+        String path = "POST-LAS";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "las",
+                "-crs", "3857",
+                //"-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Disabled
+    @Test
     void testDemoLas() {
         String path = "DEMO-LAS";
         String[] args = new String[] {
@@ -170,7 +198,7 @@ public class StressTest {
                 "-it", "las",
                 "-crs", "32648",
                 "-pointSkip", "1",
-                "-debug"
+                //"-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -189,6 +217,7 @@ public class StressTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Disabled
     @Test
     void testThaiAll() {
         String path = "THAILAND-LAS";
@@ -232,6 +261,7 @@ public class StressTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Disabled
     @Test
     void testSewoonLas() {
         String path = "SEWOON-LAS";
@@ -246,6 +276,7 @@ public class StressTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Disabled
     @Test
     void testSangjiUniLas() {
         String path = "SANGJI-UNI-LAS";

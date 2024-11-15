@@ -41,6 +41,7 @@ public enum ProcessOptions {
     MAX_POINTS("maxPoints", "mp", "maxPoints", true, "Limiting the maximum number of points in point cloud data. (Default: 65536)"),
     POINT_SCALE("pointScale", "ps", "pointScale", true, "Pointscloud geometryError scale setting (Default: 2)"),
     POINT_SKIP("pointSkip", "pk", "pointSkip", true, "Number of Pointscloud omissions (ex: 1/4)(Default: 4)"),
+    POINT_PRECISION("sourcePrecision", "sp", "sourcePrecision", false, "Create pointscloud tile with original precision. (Slow)"),
 
     ROTATE_X_AXIS("rotateXAxis", "rx", "rotateXAxis", true, "Rotate the X-Axis in degrees (Unit: degrees)(Default: 0.0)"),
 

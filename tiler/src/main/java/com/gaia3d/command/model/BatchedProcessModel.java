@@ -5,6 +5,7 @@ import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.assimp.LargeMeshConverter;
+import com.gaia3d.converter.geometry.ExtrusionTempGenerator;
 import com.gaia3d.converter.geometry.citygml.CityGmlConverter;
 import com.gaia3d.converter.geometry.geojson.GeoJsonConverter;
 import com.gaia3d.converter.geometry.indoorgml.IndoorGmlConverter;
@@ -42,7 +43,8 @@ public class BatchedProcessModel implements ProcessFlowModel {
 
         Converter converter = getConverter(inputFormat);
         AttributeReader kmlReader = new FastKmlReader();
-        BatchedFileLoader fileLoader = new BatchedFileLoader(converter, kmlReader);
+        ExtrusionTempGenerator tempGenerator = new ExtrusionTempGenerator(converter);
+        BatchedFileLoader fileLoader = new BatchedFileLoader(converter, kmlReader, tempGenerator);
 
         List<GridCoverage2D> geoTiffs = new ArrayList<>();
         if (globalOptions.getTerrainPath() != null) {

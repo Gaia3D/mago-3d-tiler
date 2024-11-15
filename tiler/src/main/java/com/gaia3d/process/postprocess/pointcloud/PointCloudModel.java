@@ -79,6 +79,11 @@ public class PointCloudModel implements TileModel {
         byte[] colors = new byte[vertexLength * 3];
         float[] batchIds = new float[vertexLength];
 
+        if (vertexLength == 1) {
+            log.error("Vertex length is 1");
+            return contentInfo;
+        }
+
         Vector3d center = wgs84BoundingBox.getCenter();
         Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
         Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
@@ -113,7 +118,7 @@ public class PointCloudModel implements TileModel {
                     ProjCoordinate transformedCoordinate = transformer.transform(new ProjCoordinate(position.x, position.y, position.z), new ProjCoordinate());
                     wgs84Position = new Vector3d(transformedCoordinate.x, transformedCoordinate.y, position.z);
                 } catch (InvalidValueException e) {
-                    log.error("Invalid value exception", e);
+                    log.debug("Invalid value exception", e);
                 }
 
                 Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(wgs84Position);

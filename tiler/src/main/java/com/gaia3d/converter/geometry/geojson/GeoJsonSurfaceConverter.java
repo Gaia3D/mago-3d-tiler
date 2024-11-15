@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @RequiredArgsConstructor
+@Deprecated
 public class GeoJsonSurfaceConverter extends AbstractGeometryConverter implements Converter {
 
     @Override
@@ -47,6 +48,11 @@ public class GeoJsonSurfaceConverter extends AbstractGeometryConverter implement
     @Override
     public List<GaiaScene> load(Path path) {
         return convert(path.toFile());
+    }
+
+    @Override
+    public List<GaiaSceneTempHolder> convertTemp(File input, File output) {
+        return null;
     }
 
     @Override

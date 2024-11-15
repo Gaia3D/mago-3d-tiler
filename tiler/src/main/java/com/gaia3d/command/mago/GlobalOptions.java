@@ -38,9 +38,9 @@ public class GlobalOptions {
     private static final int DEFAULT_MAX_NODE_DEPTH = 32;
     private static final int DEFAULT_MAX_INSTANCE = 512;
 
-    private static final int DEFAULT_POINT_LIMIT = 65536;
+    private static final int DEFAULT_POINT_LIMIT = 300000;
     private static final int DEFAULT_POINT_SCALE = 1;
-    private static final int DEFAULT_POINT_SKIP = 4;
+    private static final int DEFAULT_POINT_SKIP = 2;
 
     private static final String DEFAULT_CRS = "3857"; // 4326 -> 3857
     private static final String DEFAULT_NAME_COLUMN = "name";
@@ -51,6 +51,9 @@ public class GlobalOptions {
     private static final double DEFAULT_MINIMUM_HEIGHT = 1.0d;
     private static final double DEFAULT_SKIRT_HEIGHT = 4.0d;
     private static final boolean DEFAULT_DEBUG_LOD = false;
+
+    public final float POINTSCLOUD_HORIZONTAL_GRID = 1000.0f; // in meters
+    public final float POINTSCLOUD_VERTICAL_GRID = 25.0f; // in meters
 
     private String version; // version flag
     private String javaVersionInfo; // java version flag
@@ -77,12 +80,11 @@ public class GlobalOptions {
     private String proj; // proj4 string
     private Vector3d translateOffset; // origin offset
 
-    // point limit per tile
+    private boolean isSourcePrecision = false;
+    private int pointsPerGrid = 1000000; // Points Per Grid
     private int pointLimit;
-    // point scale
     private int pointScale;
-    // skip points value
-    private int pointSkip;
+    private int pointSkip; // Deprecated
 
     // Level of Detail
     private int minLod;
@@ -296,9 +298,13 @@ public class GlobalOptions {
         boolean isRefineAdd = false;
 
         if (command.hasOption(ProcessOptions.FLIP_UP_AXIS.getArgName())) {
+            log.warn("FLIP_UP_AXIS is Deprecated option: {}", ProcessOptions.FLIP_UP_AXIS.getArgName());
+            log.warn("Please use ROTATE_X_AXIS option instead of FLIP_UP_AXIS option.");
             isFlipUpAxis = true;
         }
         if (command.hasOption(ProcessOptions.SWAP_UP_AXIS.getArgName())) {
+            log.warn("SWAP_UP_AXIS is Deprecated option: {}", ProcessOptions.SWAP_UP_AXIS.getArgName());
+            log.warn("Please use ROTATE_X_AXIS option instead of SWAP_UP_AXIS option.");
             isSwapUpAxis = true;
         }
         if (command.hasOption(ProcessOptions.REFINE_ADD.getArgName())) {
@@ -315,19 +321,12 @@ public class GlobalOptions {
             isRefineAdd = true;
         }
 
-        /*if (command.hasOption(ProcessOptions.SWAP_UP_AXIS.getArgName())) {
-            isSwapUpAxis = !isSwapUpAxis;
-        }*/
-
         instance.setSwapUpAxis(isSwapUpAxis);
         instance.setFlipUpAxis(isFlipUpAxis);
         instance.setRotateX(rotateXAxis);
         instance.setRefineAdd(isRefineAdd);
         instance.setGlb(command.hasOption(ProcessOptions.DEBUG_GLB.getArgName()));
         instance.setFlipCoordinate(command.hasOption(ProcessOptions.FLIP_COORDINATE.getArgName()));
-
-
-
 
         if (command.hasOption(ProcessOptions.MULTI_THREAD_COUNT.getArgName())) {
             instance.setMultiThreadCount(Byte.parseByte(command.getOptionValue(ProcessOptions.MULTI_THREAD_COUNT.getArgName())));
@@ -381,6 +380,7 @@ public class GlobalOptions {
         log.debug("Maximum LOD: {}", maxLod);
         log.debug("Minimum GeometricError: {}", minGeometricError);
         log.debug("Maximum GeometricError: {}", maxGeometricError);
+        log.debug("Points Per Grid: {}", pointsPerGrid);
         log.debug("PointCloud Point Limit: {}", pointLimit);
         log.debug("PointCloud Scale: {}", pointScale);
         log.debug("PointCloud Skip Interval: {}", pointSkip);
@@ -392,6 +392,7 @@ public class GlobalOptions {
 
         // 3D Data Options
         log.debug("========================================");
+        log.debug("Rotate X-Axis: {}", rotateX);
         log.debug("Swap Up-Axis: {}", swapUpAxis);
         log.debug("Flip Up-Axis: {}", flipUpAxis);
         log.debug("RefineAdd: {}", refineAdd);
