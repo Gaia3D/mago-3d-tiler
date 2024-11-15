@@ -33,11 +33,16 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
         return null;
     }
 
-    public void getColorAndDepthRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<BufferedImage> resultImages, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize) {
+    @Override
+    public void getColorAndDepthRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<BufferedImage> resultImages, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize, int maxDepthScreenSize) {
 
     }
 
     @Override
     public void getRenderScene(List<GaiaScene> scene, int bufferedImageType, int maxScreenSize, List<BufferedImage> resultImages) {
+    }
+
+    @Override
+    public void deleteObjects() {
     }
 }

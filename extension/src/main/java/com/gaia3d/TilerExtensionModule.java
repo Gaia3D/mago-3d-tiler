@@ -35,17 +35,18 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
 
         return null;
     }
-
-    public void getColorAndDepthRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<BufferedImage> resultImages, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize)
+    @Override
+    public void getColorAndDepthRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<BufferedImage> resultImages, GaiaBoundingBox nodeBBox,
+                                       Matrix4d nodeTMatrix, int maxScreenSize, int maxDepthScreenSize)
     {
         if(renderer == null)
             renderer = new MainRenderer();
 
-        renderer.getColorAndDepthRender(sceneInfos, bufferedImageType, resultImages, nodeBBox, nodeTMatrix, maxScreenSize);
+        renderer.getColorAndDepthRender(sceneInfos, bufferedImageType, resultImages, nodeBBox, nodeTMatrix, maxScreenSize, maxDepthScreenSize);
         deleteObjects();
     }
 
-
+    @Override
     public void getRenderScene(List<GaiaScene> scenes, int bufferedImageType, int maxScreenSize, List<BufferedImage> resultImages)
     {
         if(renderer == null)
@@ -54,6 +55,7 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
         deleteObjects();
     }
 
+    @Override
     public void deleteObjects()
     {
         if(renderer != null) {

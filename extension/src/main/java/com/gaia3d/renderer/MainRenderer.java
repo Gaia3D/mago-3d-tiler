@@ -47,7 +47,8 @@ public class MainRenderer implements IAppLogic {
 
     }
 
-    public void getColorAndDepthRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<BufferedImage> resultImages, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize) {
+    public void getColorAndDepthRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<BufferedImage> resultImages, GaiaBoundingBox nodeBBox,
+                                       Matrix4d nodeTMatrix, int maxScreenSize, int maxDepthScreenSize) {
         // render the scene
         log.info("Rendering the scene...getColorAndDepthRender");
 
@@ -80,26 +81,25 @@ public class MainRenderer implements IAppLogic {
         // create the fbo.***
         int fboWidthColor = maxScreenSize;
         int fboHeightColor = maxScreenSize;
-        int fboWidthDepth = 600;
-        int fboHeightDepth = 600;
+        int fboWidthDepth = maxDepthScreenSize;
+        int fboHeightDepth = maxDepthScreenSize;
         if(xLength > yLength)
         {
             fboWidthColor = maxScreenSize;
             fboHeightColor = (int)(maxScreenSize * yLength / xLength);
-            fboWidthDepth = 600;
-            fboHeightDepth = (int)(600 * yLength / xLength);
+            fboWidthDepth = maxDepthScreenSize;
+            fboHeightDepth = (int)(maxDepthScreenSize * yLength / xLength);
         }
         else
         {
             fboWidthColor = (int)(maxScreenSize * xLength / yLength);
             fboHeightColor = maxScreenSize;
-            fboWidthDepth = (int)(600 * xLength / yLength);
-            fboHeightDepth = 600;
+            fboWidthDepth = (int)(maxDepthScreenSize * xLength / yLength);
+            fboHeightDepth = maxDepthScreenSize;
         }
-        fboManager.createFbo("colorRender", fboWidthColor, fboHeightColor);
-        fboManager.createFbo("depthRender", fboWidthDepth, fboHeightDepth);
-        Fbo colorFbo = fboManager.getFbo("colorRender");
-        Fbo depthFbo = fboManager.getFbo("depthRender");
+
+        Fbo colorFbo = fboManager.getOrCreateFbo("colorRender", fboWidthColor, fboHeightColor);
+        Fbo depthFbo = fboManager.getOrCreateFbo("depthRender", fboWidthDepth, fboHeightDepth);
 
         // now set camera position.***
         Camera camera = new Camera();
@@ -107,7 +107,6 @@ public class MainRenderer implements IAppLogic {
         camera.setDirection(new Vector3d(0, 0, -1));
         camera.setUp(new Vector3d(0, 1, 0));
         gaiaScenesContainer.setCamera(camera);
-
 
 
         // clear the colorFbo.***
@@ -326,8 +325,8 @@ public class MainRenderer implements IAppLogic {
             fboWidth = (int)(maxScreenSize * xLength / yLength);
             fboHeight = maxScreenSize;
         }
-        fboManager.createFbo("colorRender", fboWidth, fboHeight);
-        Fbo colorFbo = fboManager.getFbo("colorRender");
+
+        Fbo colorFbo = fboManager.getOrCreateFbo("colorRender", fboWidth, fboHeight);
 
         // now set camera position.***
         Camera camera = new Camera();

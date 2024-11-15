@@ -284,7 +284,9 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             GaiaBoundingBox nodeCartographicBBox = node.calculateCartographicBoundingBox();
 
             log.info("nodeCode : " + node.getNodeCode() + "currNodeIdx : " + i + "of : " + nodesCount);
-            tilerExtensionModule.getColorAndDepthRender(sceneInfos, bufferedImageType, resultImages, nodeBBoxLC, nodeTMatrix, 1024);
+            int maxScreenSize = 512;
+            int maxDepthScreenSize = 512;
+            tilerExtensionModule.getColorAndDepthRender(sceneInfos, bufferedImageType, resultImages, nodeBBoxLC, nodeTMatrix, maxScreenSize, maxDepthScreenSize);
             BufferedImage bufferedImageColor = resultImages.get(0);
             BufferedImage bufferedImageDepth = resultImages.get(1);
 
