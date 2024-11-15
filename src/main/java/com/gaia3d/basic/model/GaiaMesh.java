@@ -9,6 +9,7 @@ import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +20,7 @@ import java.util.List;
  */
 @Getter
 @Setter
-public class GaiaMesh extends MeshStructure {
+public class GaiaMesh extends MeshStructure implements Serializable {
     //private List<GaiaPrimitive> primitives = new ArrayList<>();
 
     public GaiaBoundingBox getBoundingBox(Matrix4d transform) {

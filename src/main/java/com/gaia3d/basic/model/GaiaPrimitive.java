@@ -19,6 +19,7 @@ import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.lwjgl.opengl.GL20;
 
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -32,7 +33,7 @@ import java.util.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaPrimitive extends PrimitiveStructure {
+public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
     private Integer accessorIndices = -1;
     private Integer materialIndex = -1;
 

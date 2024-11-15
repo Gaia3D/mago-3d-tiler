@@ -18,9 +18,7 @@ public class GaiaPointCloudHeader {
     private UUID uuid;
     private int index;
     private long size;
-    //private short blockSize = (8 * 3) + 3; // POSITION(DOUBLE * 3), RGB(byte * 3)
     private GaiaBoundingBox srsBoundingBox; // original bounding box
-    //private GaiaBoundingBox crsBoundingBox; // transformed bounding box
     private GaiaPointCloudTemp[][][] tempGrid;
 
     public GaiaPointCloudTemp findTemp(Vector3d position) {
