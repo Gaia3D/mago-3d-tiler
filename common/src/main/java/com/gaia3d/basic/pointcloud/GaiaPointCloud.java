@@ -21,16 +21,15 @@ import java.util.List;
 @Getter
 @Setter
 public class GaiaPointCloud implements Serializable {
+    GaiaPointCloudTemp pointCloudTemp = null;
     private String code = "A";
     private Path originalPath;
     private GaiaBoundingBox gaiaBoundingBox = new GaiaBoundingBox();
     private List<GaiaVertex> vertices = new ArrayList<>();
     private int vertexCount = 0;
     private GaiaAttribute gaiaAttribute = new GaiaAttribute();
-
     private boolean isMinimized = false;
     private File minimizedFile = null;
-    GaiaPointCloudTemp pointCloudTemp = null;
     private Vector3d quantizedVolumeScale = null;
     private Vector3d quantizedVolumeOffset = null;
 
@@ -114,11 +113,7 @@ public class GaiaPointCloud implements Serializable {
                 double yQuantizedPosition = yQuantizedPositionInt / 65535.0;
                 double zQuantizedPosition = zQuantizedPositionInt / 65535.0;
 
-                Vector3d position = new Vector3d(
-                        quantizedVolumeScale.x * xQuantizedPosition + quantizedVolumeOffset.x,
-                        quantizedVolumeScale.y * yQuantizedPosition + quantizedVolumeOffset.y,
-                        quantizedVolumeScale.z * zQuantizedPosition + quantizedVolumeOffset.z
-                );
+                Vector3d position = new Vector3d(quantizedVolumeScale.x * xQuantizedPosition + quantizedVolumeOffset.x, quantizedVolumeScale.y * yQuantizedPosition + quantizedVolumeOffset.y, quantizedVolumeScale.z * zQuantizedPosition + quantizedVolumeOffset.z);
                 vertex.setPosition(position);
                 vertex.setQuantizedPosition(null);
             });

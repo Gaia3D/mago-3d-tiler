@@ -17,14 +17,13 @@ public class ExtrusionTempGenerator {
     private final Converter converter;
     public List<File> generate(File tempPath, List<File> fileList) {
         GlobalOptions options = GlobalOptions.getInstance();
-        List<GaiaSceneTempHolder> sceneList = new ArrayList<>();
-        for (File file : fileList) {
-            List<GaiaSceneTempHolder> tempList = converter.convertTemp(file, tempPath);
-            sceneList.addAll(tempList);
-        }
-
         FormatType formatType = options.getInputFormat();
         if (formatType.equals(FormatType.GEOJSON) || formatType.equals(FormatType.SHP)) {
+            List<GaiaSceneTempHolder> sceneList = new ArrayList<>();
+            for (File file : fileList) {
+                List<GaiaSceneTempHolder> tempList = converter.convertTemp(file, tempPath);
+                sceneList.addAll(tempList);
+            }
             return sceneList.stream().map(GaiaSceneTempHolder::getTempFile).collect(Collectors.toList());
         } else {
             return fileList;
