@@ -93,7 +93,7 @@ public class GaiaMinimizerPhR implements PreProcess {
             log.info("Doing triangles reduction in HalfEdgeScene");
             double maxDiffAngDegrees = 70.0;
             double hedgeMinLength = 0.25;
-            double frontierMaxDiffAngDeg = 40.0;
+            double frontierMaxDiffAngDeg = 5.0;
             double maxAspectRatio = 6.0;
             halfEdgeSceneLod1.doTrianglesReduction(maxDiffAngDegrees, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio);
             //halfEdgeScene.calculateNormals();
@@ -117,7 +117,7 @@ public class GaiaMinimizerPhR implements PreProcess {
             //TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
             List<BufferedImage> resultImages = new ArrayList<>();
             int bufferedImageType = BufferedImage.TYPE_INT_RGB;
-            int maxScreenSize = 1024;
+            int maxScreenSize = 512;
             TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
             tilerExtensionModule.getRenderScene(gaiaSceneList, bufferedImageType, maxScreenSize, resultImages);
 
@@ -154,7 +154,7 @@ public class GaiaMinimizerPhR implements PreProcess {
             log.info("Doing triangles reduction in HalfEdgeScene");
             maxDiffAngDegrees = 45.0;
             hedgeMinLength = 0.5;
-            frontierMaxDiffAngDeg = 30.0;
+            frontierMaxDiffAngDeg = 5.0;
             maxAspectRatio = 6.0;
             halfEdgeSceneLod2.doTrianglesReduction(maxDiffAngDegrees, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio);
             //halfEdgeScene.calculateNormals();

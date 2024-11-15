@@ -221,15 +221,9 @@ public class GaiaTextureCoordinator {
                 int lodLevel = lod.getLevel();
                 if(isPhotorealistic)
                 {
-                    if(lodLevel > 1)
-                    {
-                        scaleFactor = 1.0f;
-                    }
+                    scaleFactor = 1.0f;
                 }
                 bufferedImage = texture.getBufferedImage(scaleFactor);
-
-
-
             } else {
                 bufferedImage = createShamImage();
             }
