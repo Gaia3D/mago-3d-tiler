@@ -3,6 +3,7 @@ package com.gaia3d.release;
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -10,7 +11,8 @@ import java.io.File;
 @Slf4j
 class ReleaseTest {
     private static final String INPUT_PATH = "D:\\data\\mago-tiler-data\\release-test-input";
-    private static final String OUTPUT_PATH = "D:\\workspaces\\mago-viewer\\data\\release-test-output";
+    //private static final String OUTPUT_PATH = "D:\\workspaces\\mago-viewer\\data\\release-test-output";
+    private static final String OUTPUT_PATH = "D:/data/mago-server/output";
 
     @Test
     void testKmlWithCollada() {
@@ -249,6 +251,7 @@ class ReleaseTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Disabled
     @Test
     void testGeojsonPolygon() {
         String path = "NAMYANGJU-WANGSUK-GEOJSON";

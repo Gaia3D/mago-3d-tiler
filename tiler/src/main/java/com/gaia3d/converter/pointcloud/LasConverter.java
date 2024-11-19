@@ -7,7 +7,6 @@ import com.gaia3d.basic.model.GaiaVertex;
 import com.gaia3d.basic.pointcloud.GaiaPointCloudHeader;
 import com.gaia3d.basic.pointcloud.GaiaPointCloudTemp;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.util.GlobeUtils;
 import com.github.mreutegg.laszip4j.CloseablePointIterable;
 import com.github.mreutegg.laszip4j.LASHeader;
 import com.github.mreutegg.laszip4j.LASPoint;
@@ -15,15 +14,10 @@ import com.github.mreutegg.laszip4j.LASReader;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
-import org.locationtech.proj4j.BasicCoordinateTransform;
-import org.locationtech.proj4j.CoordinateReferenceSystem;
-import org.locationtech.proj4j.ProjCoordinate;
 
 import java.io.*;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -60,7 +54,6 @@ public class LasConverter {
         long pointRecords = header.getNumberOfPointRecords();
         long legacyPointRecords = header.getLegacyNumberOfPointRecords();
         long totalPointRecords = pointRecords + legacyPointRecords;
-
         return GaiaPointCloudHeader.builder()
                 .index(-1)
                 .uuid(UUID.randomUUID())
@@ -80,17 +73,17 @@ public class LasConverter {
         double yOffset = header.getYOffset();
         double zScaleFactor = header.getZScaleFactor();
         double zOffset = header.getZOffset();
-        CloseablePointIterable pointIterable = reader.getCloseablePoints();
 
+        CloseablePointIterable pointIterable = reader.getCloseablePoints();
         long pointRecords = header.getNumberOfPointRecords();
         long legacyPointRecords = header.getLegacyNumberOfPointRecords();
         long totalPointsSize = pointRecords + legacyPointRecords;
 
         //long totalPointsSize = pointCloudHeader.getSize();
-        int pointsPerGrid = globalOptions.getPointsPerGrid();
+        //int pointsPerGrid = globalOptions.getPointsPerGrid();
         //int factor = (int) (totalPointsSize / pointsPerGrid);
 
-        double getMinX = header.getMinX();
+        /*double getMinX = header.getMinX();
         double getMinY = header.getMinY();
         double getMinZ = header.getMinZ();
         double getMaxX = header.getMaxX();
@@ -99,12 +92,22 @@ public class LasConverter {
         Vector3d min = new Vector3d(getMinX, getMinY, getMinZ);
         Vector3d max = new Vector3d(getMaxX, getMaxY, getMaxZ);
 
+        Vector3d scale = new Vector3d(xScaleFactor, yScaleFactor, zScaleFactor);
+        Vector3d offset = new Vector3d(xOffset, yOffset, zOffset);
+
         GaiaBoundingBox gaiaBoundingBox = new GaiaBoundingBox();
         gaiaBoundingBox.addPoint(min);
         gaiaBoundingBox.addPoint(max);
-        Vector3d volumeVector = gaiaBoundingBox.getVolume();
 
-        int volume = (int) (volumeVector.x * volumeVector.y * volumeVector.z);
+        int newGoodVolume = calcOctreeVolume(1, pointIterable, scale, offset);
+        int newVolume = calcOctreeVolume(16, pointIterable, scale, offset);
+        Vector3d volumeVector = gaiaBoundingBox.getVolume();
+        int volume = (int) (volumeVector.x * volumeVector.y * volumeVector.z);*/
+        //log.info("Volume: {}", volume);
+        //log.info("New Good Volume: {}", newGoodVolume);
+        //log.info("New Volume: {}", newVolume);
+
+        /*int volume = (int) (volumeVector.x * volumeVector.y * volumeVector.z);
         int width = 1;
         int height = 1;
         int depth = 1;
@@ -113,11 +116,11 @@ public class LasConverter {
         int cubeCount = (int) Math.floor(volume / cubeVolume);
         if (cubeCount < 1) {
             cubeCount = 1;
-        }
+        }*/
 
-        int pointCountPerCube = (int) Math.floor(totalPointsSize / cubeCount);
-        int minFactor = 4;
-        int maxFactor = 64;
+        /*int pointCountPerCube = (int) Math.floor(totalPointsSize / cubeCount);
+        int minFactor = 8;
+        int maxFactor = 32;
         int volumeFactor = pointCountPerCube;
         if (globalOptions.isSourcePrecision()) {
             volumeFactor = 1;
@@ -125,10 +128,22 @@ public class LasConverter {
             volumeFactor = minFactor;
         } else if (volumeFactor > maxFactor) {
             volumeFactor = maxFactor;
-        }
-        log.debug("Point Count Per Cube: {}", pointCountPerCube);
-        log.debug("Points: {} Volume: {}, Factor {}",totalPointsSize, volume, volumeFactor);
+        }*/
 
+        //long totalPoints = pointCloudHeader.getSize();
+        //int pointCountInMaxCube = 50;
+        //int volumeFactor = (int) Math.ceil(totalPointsSize / (newVolume * pointCountInMaxCube));
+
+        int percentage = globalOptions.getPointRatio();
+
+        if (percentage < 1) {
+            percentage = 1;
+        } else if (percentage > 100) {
+            percentage = 100;
+        }
+        int volumeFactor = (int) Math.ceil(100 / percentage);
+        //log.info("Total Points: {}", totalPointsSize);
+        //log.info("Volume Factor: {}", volumeFactor);
         int count = 0;
         for (LASPoint point : pointIterable) {
             if (count++ % volumeFactor != 0) {
@@ -152,6 +167,45 @@ public class LasConverter {
                 tempFile.writePosition(position, rgb);
             }
         }
+    }
+
+    // Detail Volume
+    private int calcOctreeVolume(int sampleSize, CloseablePointIterable pointIterable, Vector3d scale, Vector3d offset) {
+        List<GaiaVertex> vertices = new ArrayList<>();
+        int count = 0;
+        for (LASPoint point : pointIterable) {
+            if (count++ % sampleSize != 0) {
+                continue;
+            } else {
+                double x = point.getX();
+                double y = point.getY();
+                double z = point.getZ();
+
+                x = x * scale.x + offset.x;
+                y = y * scale.y + offset.y;
+                z = z * scale.z + offset.z;
+                Vector3d position = new Vector3d(x, y, z);
+                GaiaVertex vertex = new GaiaVertex();
+                vertex.setPosition(position);
+                vertices.add(vertex);
+            }
+        }
+
+        double length = 1.0;
+        GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null);
+        octreeVertices.setVertices(vertices);
+        octreeVertices.calculateSize();
+        octreeVertices.setMaxDepth(25);
+
+        /*octreeVertices.setMaxX(length);
+        octreeVertices.setMaxY(length);
+        octreeVertices.setMaxZ(length);*/
+        octreeVertices.makeTreeByMinBoxSize(length); // 1m
+
+        List<GaiaOctreeVertices> result = new ArrayList<>();
+        octreeVertices.extractOctreesWithContents(result);
+
+        return result.size();
     }
 
     private List<GaiaPointCloud> convert(File file) {

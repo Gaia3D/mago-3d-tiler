@@ -8,7 +8,8 @@ import java.io.File;
 
 public class StressTest {
     private static final String INPUT_PATH = "D:\\data\\mago-tiler-data\\stress-test-input";
-    private static final String OUTPUT_PATH = "D:\\workspaces\\mago-viewer\\data\\stress-test-output";
+    //private static final String OUTPUT_PATH = "D:\\workspaces\\mago-viewer\\data\\stress-test-output";
+    private static final String OUTPUT_PATH = "D:/data/mago-server/output";
 
     @Disabled
     @Test
@@ -197,7 +198,7 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-crs", "32648",
-                "-pointSkip", "1",
+                //"-pointSkip", "1",
                 //"-debug"
         };
         Mago3DTilerMain.main(args);
@@ -211,13 +212,26 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-crs", "32648",
-                "-pointSkip", "1",
+                //"-pointSkip", "1",
                 //"-debug"
         };
         Mago3DTilerMain.main(args);
     }
 
-    @Disabled
+    @Test
+    void testThaiQuarter() {
+        String path = "THAILAND-QUARTER-LAS";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "las",
+                "-crs", "32648",
+                //"-pointSkip", "1",
+                //"-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
     @Test
     void testThaiAll() {
         String path = "THAILAND-LAS";
@@ -226,7 +240,7 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-crs", "32648",
-                "-pointSkip", "1",
+                //"-pointSkip", "1",
                 //"-debug"
         };
         Mago3DTilerMain.main(args);
@@ -240,7 +254,7 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
-                "-pointSkip", "1",
+                //"-pointSkip", "1",
                 //"-debug"
         };
         Mago3DTilerMain.main(args);
@@ -254,7 +268,7 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-crs", "5186",
-                "-pointSkip", "1",
+                //"-pointSkip", "1",
                 //"-pointSkip", "4",
                 //"-debug"
         };
@@ -270,7 +284,7 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
-                "-pointSkip", "1",
+                //"-pointSkip", "1",
                 //"-debug"
         };
         Mago3DTilerMain.main(args);
@@ -285,7 +299,7 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-crs", "5186",
-                "-pointSkip", "1",
+                //"-pointSkip", "1",
                 //"-debug"
         };
         Mago3DTilerMain.main(args);
@@ -299,7 +313,7 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-crs", "5186",
-                "-pointSkip", "1",
+                //"-pointSkip", "1",
                 //"-debug"
         };
         Mago3DTilerMain.main(args);
@@ -313,7 +327,7 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
-                "-pointSkip", "1",
+                //"-pointSkip", "1",
                 //"-crs", "5186",
                 //"-pointSkip", "8",
                 //"-debug"

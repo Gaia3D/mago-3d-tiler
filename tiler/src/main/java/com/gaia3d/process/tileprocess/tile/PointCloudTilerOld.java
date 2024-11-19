@@ -149,10 +149,10 @@ public class PointCloudTilerOld extends DefaultTiler implements Tiler {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         int vertexLength = pointCloud.getVertices().size();
 
-        int pointLimit = globalOptions.getPointLimit();
-        int pointScale = globalOptions.getPointScale();
+        int pointLimit = globalOptions.getMaximumPointPerTile();
+        //int pointScale = globalOptions.getPointScale();
 
-        List<GaiaPointCloud> divided = pointCloud.divideChunkSize(pointLimit * pointScale);
+        List<GaiaPointCloud> divided = pointCloud.divideChunkSize(pointLimit);
         GaiaPointCloud selfPointCloud = divided.get(0);
         allPointClouds.add(selfPointCloud);
         GaiaPointCloud remainPointCloud = divided.get(1);

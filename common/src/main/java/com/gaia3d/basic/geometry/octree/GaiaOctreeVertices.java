@@ -22,7 +22,7 @@ public class GaiaOctreeVertices {
     private int idx = -1;
     private GaiaOctreeCoordinate coordinate = new GaiaOctreeCoordinate();
     private int maxDepth = 5;
-    private double minBoxSize = 0.1;
+    private double minBoxSize = 1.0;
     private GaiaOctreeVertices[] children = null;
     //-----------------------------------------------------------------------------------
     private List<GaiaVertex> vertices = new ArrayList<>();
@@ -51,6 +51,7 @@ public class GaiaOctreeVertices {
         for (int i = 0; i < 8; i++) {
             children[i] = new GaiaOctreeVertices(this);
             children[i].idx = i;
+            children[i].minBoxSize = this.minBoxSize;
         }
 
         // now set children sizes.***
