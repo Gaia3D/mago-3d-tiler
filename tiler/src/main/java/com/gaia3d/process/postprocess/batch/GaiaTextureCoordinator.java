@@ -237,6 +237,11 @@ public class GaiaTextureCoordinator {
             splittedImages.add(splittedImage);
         }
 
+        if(splittedImages.size() < 2)
+        {
+            return;
+        }
+
         // 사이즈 큰->작은 정렬
         splittedImages = splittedImages.stream().sorted(Comparator.comparing(splittedImage -> splittedImage.getOriginBoundary().getArea())).collect(Collectors.toList());
         Collections.reverse(splittedImages);
@@ -330,7 +335,8 @@ public class GaiaTextureCoordinator {
                 if (existPngTextures) {
                     extension = "png";
                 }
-                this.writeBatchedImage(extension);
+                String imageName = ATLAS_IMAGE + "_" + target.getMaterialId();
+                this.writeBatchedImage(imageName, extension);
             }
             // end test.----------------------------------------------
 
@@ -437,8 +443,8 @@ public class GaiaTextureCoordinator {
         }
     }
 
-    private void writeBatchedImage(String imageExtension) {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
+    private void writeBatchedImage(String imageName, String imageExtension) {
+        String outputPathString = globalOptions.getOutputPath();
         File file = new File(globalOptions.getOutputPath(), "temp" + File.separator + "atlas");
         if (!file.exists()) {
             if (!file.mkdirs()) {
@@ -447,7 +453,7 @@ public class GaiaTextureCoordinator {
         }
 
         Path outputPath = file.toPath();
-        Path output = file.toPath().resolve(ATLAS_IMAGE + "." + imageExtension);
+        Path output = file.toPath().resolve(imageName + "." + imageExtension);
         if (!outputPath.toFile().exists()) {
             if (!outputPath.toFile().mkdir()) {
                 log.error("Failed to create directory");

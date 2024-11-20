@@ -74,6 +74,160 @@ public class GaiaMinimizerPhR implements PreProcess {
             // Lod 0.************************************************************************************************************
             log.info("Minimize GaiaScene LOD 0 , Path : {}", tileInfo.getTempPath());
 
+            GaiaSet tempSetLod0 = GaiaSet.fromGaiaScene(scene);
+            Path tempPathLod0 = tempSetLod0.writeFile(tileInfo.getTempPath(), tileInfo.getSerial(), tempSetLod0.getAttribute());
+            tileInfo.setTempPath(tempPathLod0);
+            tempPathLod.add(tempPathLod0);
+
+            // Lod 1.************************************************************************************************************
+            log.info("Minimize GaiaScene LOD 1");
+            log.info("Making HalfEdgeScene from GaiaScene");
+            HalfEdgeScene halfEdgeSceneLod1 = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
+
+            log.info("Doing triangles reduction in HalfEdgeScene");
+            double maxDiffAngDegrees = 70.0;
+            double hedgeMinLength = 0.25;
+            double frontierMaxDiffAngDeg = 5.0;
+            double maxAspectRatio = 6.0;
+            halfEdgeSceneLod1.doTrianglesReduction(maxDiffAngDegrees, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio);
+            //halfEdgeScene.calculateNormals();
+
+
+            log.info("Making GaiaScene from HalfEdgeScene");
+            GaiaScene sceneLod1 = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneLod1);
+            //halfEdgeSceneLod1.deleteObjects();
+
+            GaiaSet tempSetLod1 = GaiaSet.fromGaiaScene(sceneLod1);
+
+            Path tempFolderLod1 = tempFolder.resolve("lod1");
+            Path tempPathLod1 = tempSetLod1.writeFile(tempFolderLod1, tileInfo.getSerial(), tempSetLod1.getAttribute());
+            tempPathLod.add(tempPathLod1);
+
+
+            // Lod 2.************************************************************************************************************
+            log.info("Minimize GaiaScene LOD 2");
+            log.info("Making HalfEdgeScene from GaiaScene");
+            HalfEdgeScene halfEdgeSceneLod2 = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(sceneLod1);
+
+            log.info("Doing triangles reduction in HalfEdgeScene");
+            maxDiffAngDegrees = 90.0;
+            hedgeMinLength = 0.25;
+            frontierMaxDiffAngDeg = 7.0;
+            maxAspectRatio = 7.0;
+            halfEdgeSceneLod2.doTrianglesReduction(maxDiffAngDegrees, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio);
+            //halfEdgeScene.calculateNormals();
+
+
+            log.info("Making GaiaScene from HalfEdgeScene");
+            GaiaScene sceneLod2 = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneLod2);
+            halfEdgeSceneLod2.deleteObjects();
+
+            GaiaSet tempSetLod2 = GaiaSet.fromGaiaScene(sceneLod2);
+
+            Path tempFolderLod2 = tempFolder.resolve("lod2");
+            Path tempPathLod2 = tempSetLod2.writeFile(tempFolderLod2, tileInfo.getSerial(), tempSetLod2.getAttribute());
+            tempPathLod.add(tempPathLod2);
+
+            // set tempPathLod to tileInfo.***
+            tileInfo.setTempPathLod(tempPathLod);
+
+            /*
+            log.info("Making GaiaScene from HalfEdgeScene");
+            GaiaScene sceneLod2 = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneLod2);
+            halfEdgeSceneLod2.deleteObjects();
+
+            GaiaSet tempSetLod2 = GaiaSet.fromGaiaScene(sceneLod2);
+
+            Path tempFolderLod2 = tempFolder.resolve("lod2");
+            Path tempPathLod2 = tempSetLod2.writeFile(tempFolderLod2, tileInfo.getSerial(), tempSetLod2.getAttribute());
+            tempPathLod.add(tempPathLod2);
+
+             */
+
+            if (tempSetLod0 != null) {
+                tempSetLod0.clear();
+                tempSetLod0 = null;
+            }
+
+            if (tempSetLod1 != null) {
+                tempSetLod1.clear();
+                tempSetLod1 = null;
+            }
+
+            if (tempSetLod2 != null) {
+                tempSetLod2.clear();
+                tempSetLod2 = null;
+            }
+
+            if (scene != null) {
+                scene.clear();
+                scene = null;
+            }
+
+            if(sceneLod1 != null)
+            {
+                sceneLod1.clear();
+                sceneLod1 = null;
+            }
+
+            if(sceneLod2 != null)
+            {
+                sceneLod2.clear();
+                sceneLod2 = null;
+            }
+
+        }
+
+        System.gc();
+        return tileInfo;
+    }
+
+    public TileInfo run_old(TileInfo tileInfo) {
+        GaiaScene scene = tileInfo.getScene();
+        scene.deleteNormals(); // test delete.**************************************
+
+        if (scene != null) {
+            log.info("Welding vertices in GaiaScene");
+            GlobalOptions globalOptions = GlobalOptions.getInstance();
+
+            // 1rst, must weld vertices.***
+            boolean checkTexCoord = true;
+            boolean checkNormal = false;
+            boolean checkColor = false;
+            boolean checkBatchId = false;
+            double error = 1e-6;
+            scene.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
+            scene.deleteDegeneratedFaces();
+//            HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
+//            halfEdgeScene.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
+//            scene.clear();
+//            scene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
+
+//            // Test create a rectangularNet scene.***
+//            boolean calculateTexCoords = true;
+//            int numCols = 157;
+//            int numRows = 214;
+//            double width = 100;
+//            double height = 100;
+//            GaiaScene rectScene = GaiaSceneUtils.getSceneRectangularNet(numCols, numRows, width, height, calculateTexCoords);
+//            GaiaNode rootNode = rectScene.getNodes().get(0);
+//            GaiaNode node = rootNode.getChildren().get(0);
+//            GaiaMesh mesh = node.getMeshes().get(0);
+//            GaiaPrimitive primitive = mesh.getPrimitives().get(0);
+//            Vector3d translate = new Vector3d(0, 0, 20);
+//            primitive.translate(translate);
+//            primitive.setMaterialIndex(0);
+//            scene.getNodes().clear();
+//            scene.getNodes().add(rootNode);
+//            // End test.------------------------
+
+
+            List<Path> tempPathLod = new ArrayList<>();
+            Path tempFolder = tileInfo.getTempPath();
+
+            // Lod 0.************************************************************************************************************
+            log.info("Minimize GaiaScene LOD 0 , Path : {}", tileInfo.getTempPath());
+
 //                        // test.***
 //                        HalfEdgeScene halfEdgeSceneLod0 = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 //                        halfEdgeSceneLod0.TEST_cutScene();

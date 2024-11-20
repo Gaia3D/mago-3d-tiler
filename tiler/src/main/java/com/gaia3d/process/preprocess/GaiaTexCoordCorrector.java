@@ -3,16 +3,14 @@ package com.gaia3d.process.preprocess;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.FormatType;
+import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.GeometryUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.joml.Vector2d;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class GaiaTexCoordCorrector implements PreProcess {
 
@@ -37,6 +35,21 @@ public class GaiaTexCoordCorrector implements PreProcess {
         for (GaiaMesh mesh : allMeshes) {
             List<GaiaPrimitive> allPrimitives = mesh.getPrimitives();
             for (GaiaPrimitive primitive : allPrimitives) {
+                int matIdx = primitive.getMaterialIndex();
+                GaiaMaterial material = gaiaScene.getMaterials().get(matIdx);
+                // check textures name.***
+                Map<TextureType, List<GaiaTexture>> texturesMap = material.getTextures();
+                List<GaiaTexture> diffuseTextures = texturesMap.get(TextureType.DIFFUSE);
+                int texturesCount = diffuseTextures.size();
+                for(int i=0; i<texturesCount; i++) {
+                    GaiaTexture texture = diffuseTextures.get(i);
+                    String texPath = texture.getPath();
+                    if(Objects.equals(texPath, "textures/door_02.png"))
+                    {
+                        int hola = 0;
+                    }
+                }
+
                 translatePrimitiveTexCoordsToPositiveQuadrant(primitive);
             }
         }
