@@ -13,6 +13,10 @@ import java.io.FileNotFoundException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
@@ -38,9 +42,11 @@ public class PointCloudTempGenerator {
         try {
             tempFiles = createTempGrid(tempPath);
             generateTempFiles(fileList);
+            //generateTempFilesOnThread(fileList);
             closeAllStreams();
             tempFiles = removeEmptyFiles(tempFiles);
-            tempFiles = shuffleTempFiles(tempFiles);
+            //tempFiles = shuffleTempFiles(tempFiles);
+            tempFiles = shuffleTempFilesOnThread(tempFiles);
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -55,9 +61,13 @@ public class PointCloudTempGenerator {
         for (int i = 0; i < tempGrid.length; i++) {
             for (int j = 0; j < tempGrid[i].length; j++) {
                 for (int k = 0; k < tempGrid[i][j].length; k++) {
-                    String tempFileName = String.format("grid-%d-%d-%d.bin", i, j, k);
-                    File tempFile = new File(tempPath, tempFileName);
+                    //String tempFileName = String.format("grid-%d-%d-%d.bin", i, j, k);
 
+                    String tempFileName = String.format("%d/%d/%d.bin", i, j, k);
+                    File tempFile = new File(tempPath, tempFileName);
+                    if (!tempFile.getParentFile().exists()) {
+                        tempFile.getParentFile().mkdirs();
+                    }
                     GaiaPointCloudTemp temp = new GaiaPointCloudTemp(tempFile);
                     tempGrid[i][j][k] = temp;
 
@@ -79,9 +89,8 @@ public class PointCloudTempGenerator {
 
     private GaiaPointCloudHeader readAllHeaders(List<File> fileList) {
         log.info("[Pre] Reading headers of all files");
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
-        float horizontalGridSize = globalOptions.POINTSCLOUD_HORIZONTAL_GRID;
-        float verticalGridSize = globalOptions.POINTSCLOUD_VERTICAL_GRID;
+        float horizontalGridSize = GlobalOptions.POINTSCLOUD_HORIZONTAL_GRID;
+        float verticalGridSize = GlobalOptions.POINTSCLOUD_VERTICAL_GRID;
 
         List<GaiaPointCloudHeader> headers = new ArrayList<>();
         for (File file : fileList) {
@@ -115,7 +124,26 @@ public class PointCloudTempGenerator {
         });
     }
 
-    private List<File> shuffleTempFiles(List<File> tempFiles) {
+    private void generateTempFilesOnThread(List<File> fileList) {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        ExecutorService executorService = Executors.newFixedThreadPool(globalOptions.getMultiThreadCount());
+        List<Runnable> tasks = new ArrayList<>();
+        fileList.forEach((originalFile) -> {
+            Runnable callableTask = () -> {
+                log.info("[Pre] Generated temp file for {}", originalFile.getName());
+                converter.loadToTemp(combinedHeader, originalFile);
+            };
+            tasks.add(callableTask);
+        });
+        try {
+            executeThread(executorService, tasks);
+        } catch (InterruptedException e) {
+            log.error("Failed to generate temp files on thread.", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    /*private List<File> shuffleTempFiles(List<File> tempFiles) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         List<File> shuffledTempFiles = new ArrayList<>();
         int fileLength = tempFiles.size();
@@ -124,6 +152,7 @@ public class PointCloudTempGenerator {
         double width = globalOptions.POINTSCLOUD_HORIZONTAL_GRID;
         double height = globalOptions.POINTSCLOUD_HORIZONTAL_GRID;
         double depth = globalOptions.POINTSCLOUD_VERTICAL_GRID;
+        depth = 1.0;
         int volume = (int) Math.ceil(width * height * depth);
 
         int limitSize;
@@ -132,15 +161,56 @@ public class PointCloudTempGenerator {
         } else {
             limitSize = volume;
         }
+        limitSize = globalOptions.getPointLimit() * 5;
+        limitSize = -1;
         log.info("[Pre] Shuffling temp files with limit size: {}", limitSize);
 
+        int finalLimitSize = limitSize;
         tempFiles.forEach((tempFile) -> {
             int count = tempCount.incrementAndGet();
             log.info("[Pre][{}/{}] Shuffling temp file: {}", count, fileLength, tempFile.getName());
             GaiaPointCloudTemp temp = new GaiaPointCloudTemp(tempFile);
-            temp.shuffleTemp(limitSize);
+            temp.shuffleTemp(finalLimitSize);
             shuffledTempFiles.add(temp.getTempFile());
         });
+        log.info("[Pre] Shuffled temp files");
+        return shuffledTempFiles;
+    }*/
+    private List<File> shuffleTempFilesOnThread(List<File> tempFiles) {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        List<File> shuffledTempFiles = new ArrayList<>();
+        ExecutorService executorService = Executors.newFixedThreadPool(globalOptions.getMultiThreadCount());
+        List<Runnable> tasks = new ArrayList<>();
+        AtomicInteger tempCount = new AtomicInteger(0);
+        int fileLength = tempFiles.size();
+
+        int depth = 1 + 4 + 16 + 64;
+        int limitSize;
+        if (globalOptions.isSourcePrecision()) {
+            limitSize = -1;
+        } else {
+            limitSize = globalOptions.getMaximumPointPerTile() * depth;
+        }
+
+        log.info("[Pre] Shuffling temp files with limit size: {}", limitSize);
+
+        int finalLimitSize = limitSize;
+        tempFiles.forEach((tempFile) -> {
+            Runnable callableTask = () -> {
+                int count = tempCount.incrementAndGet();
+                log.info("[Pre][{}/{}] Shuffling temp file: {}", count, fileLength, tempFile.getAbsoluteFile());
+                GaiaPointCloudTemp temp = new GaiaPointCloudTemp(tempFile);
+                temp.shuffleTemp(finalLimitSize);
+                shuffledTempFiles.add(temp.getTempFile());
+            };
+            tasks.add(callableTask);
+        });
+        try {
+            executeThread(executorService, tasks);
+        } catch (InterruptedException e) {
+            log.error("Failed to shuffle temp files on thread.", e);
+            throw new RuntimeException(e);
+        }
         return shuffledTempFiles;
     }
 
@@ -175,5 +245,26 @@ public class PointCloudTempGenerator {
             }
         });
         return newTempFiles;
+    }
+
+    private void executeThread(ExecutorService executorService, List<Runnable> tasks) throws InterruptedException {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        try {
+            for (Runnable task : tasks) {
+                Future<?> future = executorService.submit(task);
+                if (globalOptions.isDebug()) {
+                    future.get();
+                }
+            }
+        } catch (Exception e) {
+            log.error("Failed to execute thread.", e);
+            throw new RuntimeException(e);
+        }
+        executorService.shutdown();
+        do {
+            if (executorService.isTerminated()) {
+                executorService.shutdownNow();
+            }
+        } while (!executorService.awaitTermination(2, TimeUnit.SECONDS));
     }
 }

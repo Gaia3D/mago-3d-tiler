@@ -38,9 +38,10 @@ public class GlobalOptions {
     private static final int DEFAULT_MAX_NODE_DEPTH = 32;
     private static final int DEFAULT_MAX_INSTANCE = 512;
 
-    private static final int DEFAULT_POINT_LIMIT = 300000;
-    private static final int DEFAULT_POINT_SCALE = 1;
-    private static final int DEFAULT_POINT_SKIP = 2;
+    public static final int DEFAULT_POINT_PER_TILE = 100000;
+    public static final int DEFAULT_POINT_RATIO = 25;
+    public static final float POINTSCLOUD_HORIZONTAL_GRID = 2500.0f; // in meters
+    public static final float POINTSCLOUD_VERTICAL_GRID = 50.0f; // in meters
 
     private static final String DEFAULT_CRS = "3857"; // 4326 -> 3857
     private static final String DEFAULT_NAME_COLUMN = "name";
@@ -51,9 +52,6 @@ public class GlobalOptions {
     private static final double DEFAULT_MINIMUM_HEIGHT = 1.0d;
     private static final double DEFAULT_SKIRT_HEIGHT = 4.0d;
     private static final boolean DEFAULT_DEBUG_LOD = false;
-
-    public final float POINTSCLOUD_HORIZONTAL_GRID = 1000.0f; // in meters
-    public final float POINTSCLOUD_VERTICAL_GRID = 25.0f; // in meters
 
     private String version; // version flag
     private String javaVersionInfo; // java version flag
@@ -81,10 +79,9 @@ public class GlobalOptions {
     private Vector3d translateOffset; // origin offset
 
     private boolean isSourcePrecision = false;
-    private int pointsPerGrid = 1000000; // Points Per Grid
-    private int pointLimit;
-    private int pointScale;
-    private int pointSkip; // Deprecated
+    private int pointsPerGrid = 65536; // Points Per Grid
+    private int maximumPointPerTile = 0; // Maximum number of points per a tile
+    private int pointRatio = 25; // Percentage of points from original data
 
     // Level of Detail
     private int minLod;
@@ -219,16 +216,13 @@ public class GlobalOptions {
 
         Vector3d translation = new Vector3d(0, 0, 0);
         if (command.hasOption(ProcessOptions.X_OFFSET.getArgName())) {
-            double x = Double.parseDouble(command.getOptionValue(ProcessOptions.X_OFFSET.getArgName()));
-            translation.x = x;
+            translation.x = Double.parseDouble(command.getOptionValue(ProcessOptions.X_OFFSET.getArgName()));
         }
         if (command.hasOption(ProcessOptions.Y_OFFSET.getArgName())) {
-            double y = Double.parseDouble(command.getOptionValue(ProcessOptions.Y_OFFSET.getArgName()));
-            translation.y = y;
+            translation.y = Double.parseDouble(command.getOptionValue(ProcessOptions.Y_OFFSET.getArgName()));
         }
         if (command.hasOption(ProcessOptions.Z_OFFSET.getArgName())) {
-            double z = Double.parseDouble(command.getOptionValue(ProcessOptions.Z_OFFSET.getArgName()));
-            translation.z = z;
+            translation.z = Double.parseDouble(command.getOptionValue(ProcessOptions.Z_OFFSET.getArgName()));
         }
         instance.setTranslateOffset(translation);
 
@@ -277,9 +271,10 @@ public class GlobalOptions {
         }
 
         /* Point Cloud Options */
-        instance.setPointLimit(command.hasOption(ProcessOptions.MAX_POINTS.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_POINTS.getArgName())) : DEFAULT_POINT_LIMIT);
-        instance.setPointScale(command.hasOption(ProcessOptions.POINT_SCALE.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.POINT_SCALE.getArgName())) : DEFAULT_POINT_SCALE);
-        instance.setPointSkip(command.hasOption(ProcessOptions.POINT_SKIP.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.POINT_SKIP.getArgName())) : DEFAULT_POINT_SKIP);
+        instance.setMaximumPointPerTile(command.hasOption(ProcessOptions.MAX_POINTS.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_POINTS.getArgName())) : DEFAULT_POINT_PER_TILE);
+        instance.setPointRatio(command.hasOption(ProcessOptions.POINT_PRECISION.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.POINT_PRECISION.getArgName())) : DEFAULT_POINT_RATIO);
+        //instance.setPointScale(command.hasOption(ProcessOptions.POINT_SCALE.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.POINT_SCALE.getArgName())) : DEFAULT_POINT_SCALE);
+        //instance.setPointSkip(command.hasOption(ProcessOptions.POINT_SKIP.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.POINT_SKIP.getArgName())) : DEFAULT_POINT_SKIP);
 
         /* 2D Data Column Options */
         instance.setNameColumn(command.hasOption(ProcessOptions.NAME_COLUMN.getArgName()) ? command.getOptionValue(ProcessOptions.NAME_COLUMN.getArgName()) : DEFAULT_NAME_COLUMN);
@@ -380,10 +375,10 @@ public class GlobalOptions {
         log.debug("Maximum LOD: {}", maxLod);
         log.debug("Minimum GeometricError: {}", minGeometricError);
         log.debug("Maximum GeometricError: {}", maxGeometricError);
-        log.debug("Points Per Grid: {}", pointsPerGrid);
-        log.debug("PointCloud Point Limit: {}", pointLimit);
-        log.debug("PointCloud Scale: {}", pointScale);
-        log.debug("PointCloud Skip Interval: {}", pointSkip);
+        log.debug("Maximum number of points per a tile: {}", maximumPointPerTile);
+        //log.debug("Points Per Grid: {}", pointsPerGrid);
+        //log.debug("PointCloud Scale: {}", pointScale);
+        //log.debug("PointCloud Skip Interval: {}", pointSkip);
         log.debug("Debug Mode: {}", debug);
         log.debug("Debug LOD: {}", debugLod);
         log.debug("Debug GLB: {}", glb);

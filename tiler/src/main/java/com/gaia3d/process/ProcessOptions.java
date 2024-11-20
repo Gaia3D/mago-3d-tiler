@@ -38,9 +38,10 @@ public enum ProcessOptions {
     MAX_LOD("maxLod", "xl", "maxLod", true, "Max Level of detail (Default: 3)"),
     MIN_GEOMETRIC_ERROR("minGeometricError", "ng", "minGeometricError", true, "Minimum geometric error (Default: 16.0)"),
     MAX_GEOMETRIC_ERROR("maxGeometricError", "mg", "maxGeometricError", true, "Maximum geometric error (Default: Integer max value)"),
-    MAX_POINTS("maxPoints", "mp", "maxPoints", true, "Limiting the maximum number of points in point cloud data. (Default: 65536)"),
-    POINT_SCALE("pointScale", "ps", "pointScale", true, "Pointscloud geometryError scale setting (Default: 2)"),
-    POINT_SKIP("pointSkip", "pk", "pointSkip", true, "Number of Pointscloud omissions (ex: 1/4)(Default: 4)"),
+    MAX_POINTS("maxPoints", "mp", "maxPoints", true, "Maximum number of points per a tile (Default: 100000)"),
+    //POINT_SCALE("pointScale", "ps", "pointScale", true, "Pointscloud geometryError scale setting (Default: 2)"),
+    //POINT_SKIP("pointSkip", "pk", "pointSkip", true, "Number of Pointscloud omissions (ex: 1/4)(Default: 4)"),
+    POINT_RATIO("pointRatio", "pr", "pointRatio", true, "Percentage of points from original data (Default: 50)"),
     POINT_PRECISION("sourcePrecision", "sp", "sourcePrecision", false, "Create pointscloud tile with original precision. (Slow)"),
 
     ROTATE_X_AXIS("rotateXAxis", "rx", "rotateXAxis", true, "Rotate the X-Axis in degrees (Unit: degrees)(Default: 0.0)"),

@@ -3,12 +3,21 @@ package com.gaia3d.converter.kml.kml;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.gaia3d.basic.pointcloud.UniqueRandomNumbers;
+import com.gaia3d.command.Configurator;
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,5 +34,36 @@ class KmlRootTest {
             log.error("Error : {}", e.getMessage());
             throw new RuntimeException(e);
         }
+    }
+
+    @Test
+    void hashSet() {
+        Configurator.initConsoleLogger();
+
+        log.info("start");
+        List<Integer> temp = UniqueRandomNumbers.generateUniqueRandomCache(1000000);
+        log.info("{}", temp.size());
+
+        temp = UniqueRandomNumbers.generateUniqueRandomCache(100000000);
+        log.info("{}", temp.size());
+        temp = UniqueRandomNumbers.generateUniqueRandomCache(5000000);
+        log.info("{}", temp.size());
+        temp = UniqueRandomNumbers.generateUniqueRandomCache(75000000);
+        log.info("{}", temp.size());
+        temp = UniqueRandomNumbers.generateUniqueRandomCache(4000000);
+        log.info("{}", temp.size());
+
+        /*List<Integer> list = IntStream.range(0, 1000).boxed().collect(Collectors.toList());
+        HashSet<Integer> hashSet = new HashSet<>(list);
+        *//*int count = 1000;
+        Random random = new Random();
+        while (hashSet.size() < count) {
+            int num = random.nextInt(count);
+            hashSet.add(num);
+        }*//*
+
+        hashSet.iterator().forEachRemaining(i -> {
+            log.info("{}", i);
+        });*/
     }
 }

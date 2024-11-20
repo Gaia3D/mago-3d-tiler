@@ -141,15 +141,75 @@ public class GaiaPointCloud implements Serializable {
         double maxY = gaiaBoundingBox.getMaxY();
         double maxZ = gaiaBoundingBox.getMaxZ();
 
-        double offsetX = maxX - minX;
-        double offsetY = maxY - minY;
-        double offsetZ = maxZ - minZ;
+        Vector3d volume = gaiaBoundingBox.getVolume();
+        double offsetX = volume.x;
+        double offsetY = volume.y;
+        double offsetZ = volume.z;
 
-        if (offsetZ < offsetX || offsetZ < offsetY) {
+        double halfX = offsetX / 2;
+        double halfY = offsetY / 2;
+        double halfZ = offsetZ / 2;
+
+        if (halfX > offsetY) {
+            return distributeHalf(true);
+        } else if (halfY > offsetX) {
+            return distributeHalf(false);
+        } else if (offsetZ < offsetX || offsetZ < offsetY) {
             return distributeQuad();
         } else {
             return distributeOct();
         }
+    }
+
+    // Quarter based on the bounding box
+    public List<GaiaPointCloud> distributeHalf(boolean isX) {
+        List<GaiaPointCloud> pointClouds = new ArrayList<>();
+
+        GaiaBoundingBox gaiaBoundingBoxA = new GaiaBoundingBox();
+        GaiaPointCloud gaiaPointCloudA = new GaiaPointCloud();
+        gaiaPointCloudA.setCode("A");
+        gaiaPointCloudA.setOriginalPath(originalPath);
+        gaiaPointCloudA.setGaiaBoundingBox(gaiaBoundingBoxA);
+        List<GaiaVertex> verticesA = gaiaPointCloudA.getVertices();
+
+        GaiaBoundingBox gaiaBoundingBoxB = new GaiaBoundingBox();
+        GaiaPointCloud gaiaPointCloudB = new GaiaPointCloud();
+        gaiaPointCloudB.setCode("B");
+        gaiaPointCloudB.setOriginalPath(originalPath);
+        gaiaPointCloudB.setGaiaBoundingBox(gaiaBoundingBoxB);
+        List<GaiaVertex> verticesB = gaiaPointCloudB.getVertices();
+
+        double minX = gaiaBoundingBox.getMinX();
+        double minY = gaiaBoundingBox.getMinY();
+        double maxX = gaiaBoundingBox.getMaxX();
+        double maxY = gaiaBoundingBox.getMaxY();
+        double midX = (minX + maxX) / 2;
+        double midY = (minY + maxY) / 2;
+
+        for (GaiaVertex vertex : this.vertices) {
+            Vector3d center = vertex.getPosition();
+            if (isX) {
+                if (midX < center.x()) {
+                    verticesB.add(vertex);
+                    gaiaBoundingBoxB.addPoint(center);
+                } else {
+                    verticesA.add(vertex);
+                    gaiaBoundingBoxA.addPoint(center);
+                }
+            } else {
+                if (midY < center.y()) {
+                    verticesB.add(vertex);
+                    gaiaBoundingBoxB.addPoint(center);
+                } else {
+                    verticesA.add(vertex);
+                    gaiaBoundingBoxA.addPoint(center);
+                }
+            }
+        }
+
+        pointClouds.add(gaiaPointCloudA);
+        pointClouds.add(gaiaPointCloudB);
+        return pointClouds;
     }
 
     // Quarter based on the bounding box

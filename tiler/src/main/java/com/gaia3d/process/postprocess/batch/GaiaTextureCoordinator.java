@@ -66,7 +66,7 @@ public class GaiaTextureCoordinator {
         return intersects;
     }
 
-    private Vector2d getBestPositionMosaicInAtlas(List<GaiaBatchImage> listProcessSplitDatas, GaiaBatchImage splitData_toPutInMosaic) {
+    private Vector2d getBestPositionMosaicInAtlas(List<GaiaBatchImage> listProcessSplitDataList, GaiaBatchImage splitDataToPutInMosaic) {
         Vector2d resultVec = new Vector2d();
 
         double currPosX, currPosY;
@@ -74,14 +74,14 @@ public class GaiaTextureCoordinator {
         double currMosaicPerimeter, candidateMosaicPerimeter;
         candidateMosaicPerimeter = -1.0;
 
-        //GaiaRectangle rect_toPutInMosaic = splitData_toPutInMosaic.getOriginBoundary();
+        //GaiaRectangle rect_toPutInMosaic = splitDataToPutInMosaic.getOriginBoundary();
 
-        // make existent rectangles list using listProcessSplitDatas.***
+        // make existent rectangles list using listProcessSplitDataList.***
         List<GaiaRectangle> list_rectangles = new ArrayList<>();
         GaiaRectangle beforeMosaicRectangle = new GaiaRectangle(0.0, 0.0, 0.0, 0.0);
-        int existentSplitDatasCount = listProcessSplitDatas.size();
+        int existentSplitDatasCount = listProcessSplitDataList.size();
         for (int i = 0; i < existentSplitDatasCount; i++) {
-            GaiaBatchImage existentSplitData = listProcessSplitDatas.get(i);
+            GaiaBatchImage existentSplitData = listProcessSplitDataList.get(i);
             GaiaRectangle batchedBoundary = existentSplitData.batchedBoundary;
             if (i == 0) {
                 beforeMosaicRectangle.copyFrom(batchedBoundary);
@@ -93,37 +93,37 @@ public class GaiaTextureCoordinator {
 
         // Now, try to find the best positions to put our rectangle.***
         for (int i = 0; i < existentSplitDatasCount; i++) {
-            GaiaBatchImage existentSplitData = listProcessSplitDatas.get(i);
+            GaiaBatchImage existentSplitData = listProcessSplitDataList.get(i);
             GaiaRectangle currRect = existentSplitData.batchedBoundary;
 
             // for each existent rectangles, there are 2 possibles positions: leftUp & rightDown.***
-            // in this 2 possibles positions we put our leftDownCorner of rectangle of "splitData_toPutInMosaic".***
+            // in this 2 possibles positions we put our leftDownCorner of rectangle of "splitDataToPutInMosaic".***
 
             // If in some of two positions our rectangle intersects with any other rectangle, then discard.***
             // If no intersects with others rectangles, then calculate the mosaic-perimeter.
             // We choose the minor perimeter of the mosaic.***
 
-            double width = splitData_toPutInMosaic.getOriginBoundary().getWidth();
-            double height = splitData_toPutInMosaic.getOriginBoundary().getHeight();
+            double width = splitDataToPutInMosaic.getOriginBoundary().getWidth();
+            double height = splitDataToPutInMosaic.getOriginBoundary().getHeight();
 
             // 1- leftUp corner.***
             currPosX = currRect.getMinX();
             currPosY = currRect.getMaxY();
 
             // setup our rectangle.***
-            if (splitData_toPutInMosaic.batchedBoundary == null) {
-                splitData_toPutInMosaic.batchedBoundary = new GaiaRectangle(0.0, 0.0, 0.0, 0.0);
+            if (splitDataToPutInMosaic.batchedBoundary == null) {
+                splitDataToPutInMosaic.batchedBoundary = new GaiaRectangle(0.0, 0.0, 0.0, 0.0);
             }
-            splitData_toPutInMosaic.batchedBoundary.setMinX(currPosX);
-            splitData_toPutInMosaic.batchedBoundary.setMinY(currPosY);
-            splitData_toPutInMosaic.batchedBoundary.setMaxX(currPosX + width);
-            splitData_toPutInMosaic.batchedBoundary.setMaxY(currPosY + height);
+            splitDataToPutInMosaic.batchedBoundary.setMinX(currPosX);
+            splitDataToPutInMosaic.batchedBoundary.setMinY(currPosY);
+            splitDataToPutInMosaic.batchedBoundary.setMaxX(currPosX + width);
+            splitDataToPutInMosaic.batchedBoundary.setMaxY(currPosY + height);
 
             // put our rectangle into mosaic & check that no intersects with another rectangles.***
-            if (!this.intersectsRectangleAtlasingProcess(list_rectangles, splitData_toPutInMosaic.batchedBoundary)) {
+            if (!this.intersectsRectangleAtlasingProcess(list_rectangles, splitDataToPutInMosaic.batchedBoundary)) {
                 GaiaRectangle afterMosaicRectangle = new GaiaRectangle(0.0, 0.0, 0.0, 0.0);
                 afterMosaicRectangle.copyFrom(beforeMosaicRectangle);
-                afterMosaicRectangle.addBoundingRectangle(splitData_toPutInMosaic.batchedBoundary);
+                afterMosaicRectangle.addBoundingRectangle(splitDataToPutInMosaic.batchedBoundary);
 
                 // calculate the perimeter of the mosaic.***
                 if (candidateMosaicPerimeter < 0.0) {
@@ -145,16 +145,16 @@ public class GaiaTextureCoordinator {
             currPosY = currRect.getMinY();
 
             // setup our rectangle.***
-            splitData_toPutInMosaic.batchedBoundary.setMinX(currPosX);
-            splitData_toPutInMosaic.batchedBoundary.setMinY(currPosY);
-            splitData_toPutInMosaic.batchedBoundary.setMaxX(currPosX + width);
-            splitData_toPutInMosaic.batchedBoundary.setMaxY(currPosY + height);
+            splitDataToPutInMosaic.batchedBoundary.setMinX(currPosX);
+            splitDataToPutInMosaic.batchedBoundary.setMinY(currPosY);
+            splitDataToPutInMosaic.batchedBoundary.setMaxX(currPosX + width);
+            splitDataToPutInMosaic.batchedBoundary.setMaxY(currPosY + height);
 
             // put our rectangle into mosaic & check that no intersects with another rectangles.***
-            if (!this.intersectsRectangleAtlasingProcess(list_rectangles, splitData_toPutInMosaic.batchedBoundary)) {
+            if (!this.intersectsRectangleAtlasingProcess(list_rectangles, splitDataToPutInMosaic.batchedBoundary)) {
                 GaiaRectangle afterMosaicRectangle = new GaiaRectangle(0.0, 0.0, 0.0, 0.0);
                 afterMosaicRectangle.copyFrom(beforeMosaicRectangle);
-                afterMosaicRectangle.addBoundingRectangle(splitData_toPutInMosaic.batchedBoundary);
+                afterMosaicRectangle.addBoundingRectangle(splitDataToPutInMosaic.batchedBoundary);
 
                 // calculate the perimeter of the mosaic.***
                 if (candidateMosaicPerimeter < 0.0) {
@@ -387,7 +387,7 @@ public class GaiaTextureCoordinator {
             }
         }
 
-        if(isPhotorealistic) {
+        if (isPhotorealistic) {
             // limit the max image size to 4028
             int lodLevel = lod.getLevel();
             boolean sizeChanged = false;

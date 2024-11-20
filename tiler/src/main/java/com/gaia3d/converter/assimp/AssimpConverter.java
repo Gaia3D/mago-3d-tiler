@@ -279,7 +279,6 @@ public class AssimpConverter implements Converter {
             } else {
                 log.error("Diffuse Texture is not found: {}", diffTexPath);
             }
-
         } else {
             material.setName("NoTexture");
             List<GaiaTexture> textures = new ArrayList<>();

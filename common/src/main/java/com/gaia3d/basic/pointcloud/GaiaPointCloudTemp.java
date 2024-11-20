@@ -9,10 +9,11 @@ import org.joml.Vector3d;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.nio.channels.FileChannel;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Setter
 @Getter
@@ -255,6 +256,7 @@ public class GaiaPointCloudTemp {
         File shuffledFile = new File(this.tempFile.getParent(), fileName);
         try {
             RandomAccessFile randomAccessFile = new RandomAccessFile(this.tempFile, "r");
+            //FileChannel fileChannel = randomAccessFile.getChannel();
             DataOutputStream dataOutputStream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(shuffledFile, false), BUFFER_SIZE));
             int headerSize = 52;
             int blockCount = (int) ((randomAccessFile.length() - headerSize) / BLOCK_SIZE);
@@ -286,21 +288,48 @@ public class GaiaPointCloudTemp {
                 indexes.add(i);
             }
             Collections.shuffle(indexes);
+            //List<Integer> indexes = UniqueRandomNumbers.generateUniqueRandom(blockCount, 0, blockCount - 1);
 
-            int loop = indexes.size();
+            /*int[] array = IntStream.range(0, blockCount).toArray();
+            Arrays.parallelSetAll(array, i -> array[ThreadLocalRandom.current().nextInt(array.length)]);
+            List<Integer> indexes = new ArrayList<>();
+            for (int i : array) {
+                indexes.add(i);
+            }*/
+
+            /*int loop = indexes.size();
             log.info("- Shuffling points limit {}/{} ({})%", loop, limitSize, (limitSize < 0) ? "original" : (loop * 100 / limitSize));
             if (limitSize < 0) {
                 // original
             } else if (loop > limitSize) {
                 loop = limitSize;
             }
+            ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);*/
+
+            int loop = indexes.size();
+            if (limitSize < 0) {
+                // original
+            } else if (loop > limitSize) {
+                loop = limitSize;
+            }
+            //List<Integer> indexes = UniqueRandomNumbers.generateUniqueRandom(limitSize, blockCount);
+            //Random random = new Random();
             byte[] bytes = new byte[blockSize];
+            //ByteBuffer buffer = ByteBuffer.allocate(BLOCK_SIZE);
+            log.info("- Shuffling points limit {}/{} ({})%", loop, blockCount, (blockCount < 0) ? "original" : (loop * 100 / blockCount));
             for (int i = 0; i < loop; i++) {
+                //int j = random.nextInt(blockCount);
+                //swapBlocks(fileChannel, i, j, headerSize);
+                //fileChannel.position(headerSize + (indexes.get(i) * blockSize));
+                //fileChannel.read(buffer);
+                //buffer.flip();
+                //buffer.get(bytes);
                 randomAccessFile.seek(headerSize + (indexes.get(i) * blockSize));
                 randomAccessFile.read(bytes);
                 dataOutputStream.write(bytes);
             }
             randomAccessFile.close();
+            //fileChannel.close();
             dataOutputStream.close();
             this.tempFile.delete();
             this.tempFile = shuffledFile;
@@ -312,4 +341,29 @@ public class GaiaPointCloudTemp {
             throw new RuntimeException(e);
         }
     }
+
+    // 두 블록을 교환하는 메서드
+    private void swapBlocks(FileChannel channel, long index1, long index2, int headerSize) throws IOException {
+        ByteBuffer buffer1 = ByteBuffer.allocate(BLOCK_SIZE);
+        ByteBuffer buffer2 = ByteBuffer.allocate(BLOCK_SIZE);
+
+        // 첫 번째 블록 읽기
+        channel.position(headerSize + (index1 * BLOCK_SIZE));
+        channel.read(buffer1);
+        buffer1.flip();
+
+        // 두 번째 블록 읽기
+        channel.position(headerSize + (index2 * BLOCK_SIZE));
+        channel.read(buffer2);
+        buffer2.flip();
+
+        // 첫 번째 블록을 두 번째 위치에 쓰기
+        channel.position(headerSize + (index2 * BLOCK_SIZE));
+        channel.write(buffer1);
+
+        // 두 번째 블록을 첫 번째 위치에 쓰기
+        channel.position(headerSize + (index1 * BLOCK_SIZE));
+        channel.write(buffer2);
+    }
+
 }
