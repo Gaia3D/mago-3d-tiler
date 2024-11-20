@@ -899,23 +899,18 @@ class UnitTest {
         Mago3DTilerMain.main(args);
     }
 
-
     @Test
-    void test_RealisticMesh_Thailand_Data_N_buildings_normalTiling() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\RealisticMesh_Thailand_multiTiles\\OBJ25sqkm\\";
-        String outputPath = "D:\\Result_mago3dTiler\\";
-        String path = "Data_6buildings";
-
+    void GYANGGYO_INTERIOR_OBJ() {
+        String inputPath = "D:\\data\\positiveQuadrantErrorData\\GYANGGYO-INTERIOR-OBJ\\";
+        String outputPath = "D:\\data\\mago-server\\output\\GYANGGYO-INTERIOR-OBJ\\";
         String[] args = new String[]{
-                "-i", inputPath + path,
+                "-i", inputPath,
                 "-it", "obj",
-                "-o", outputPath + path,
-                "-crs", "32648",
-                "-su",
+                "-o", outputPath,
+                "-crs", "5186",
+                "-glb",
                 "-debug"
         };
         Mago3DTilerMain.main(args);
     }
-
-
 }

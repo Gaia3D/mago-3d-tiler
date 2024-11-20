@@ -792,6 +792,10 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         double error = 1e-8;
         Path path;
         Vector3d samplePointLC = new Vector3d();
+        if(lod > 0)
+        {
+            int hola = 0;
+        }
         for(int i = 0; i < tileInfosCount; i++)
         {
             TileInfo tileInfo = tileInfos.get(i);
