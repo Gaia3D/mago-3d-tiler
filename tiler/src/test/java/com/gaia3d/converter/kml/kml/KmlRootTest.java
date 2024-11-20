@@ -62,10 +62,8 @@ class KmlRootTest {
             hashSet.add(num);
         }*//*
 
-
         hashSet.iterator().forEachRemaining(i -> {
             log.info("{}", i);
         });*/
-
     }
 }

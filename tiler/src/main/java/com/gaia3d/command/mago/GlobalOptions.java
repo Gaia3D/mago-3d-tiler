@@ -82,8 +82,6 @@ public class GlobalOptions {
     private int pointsPerGrid = 65536; // Points Per Grid
     private int maximumPointPerTile = 0; // Maximum number of points per a tile
     private int pointRatio = 25; // Percentage of points from original data
-    /*private int pointScale; // Deprecated
-    private int pointSkip; // Deprecated*/
 
     // Level of Detail
     private int minLod;
@@ -218,16 +216,13 @@ public class GlobalOptions {
 
         Vector3d translation = new Vector3d(0, 0, 0);
         if (command.hasOption(ProcessOptions.X_OFFSET.getArgName())) {
-            double x = Double.parseDouble(command.getOptionValue(ProcessOptions.X_OFFSET.getArgName()));
-            translation.x = x;
+            translation.x = Double.parseDouble(command.getOptionValue(ProcessOptions.X_OFFSET.getArgName()));
         }
         if (command.hasOption(ProcessOptions.Y_OFFSET.getArgName())) {
-            double y = Double.parseDouble(command.getOptionValue(ProcessOptions.Y_OFFSET.getArgName()));
-            translation.y = y;
+            translation.y = Double.parseDouble(command.getOptionValue(ProcessOptions.Y_OFFSET.getArgName()));
         }
         if (command.hasOption(ProcessOptions.Z_OFFSET.getArgName())) {
-            double z = Double.parseDouble(command.getOptionValue(ProcessOptions.Z_OFFSET.getArgName()));
-            translation.z = z;
+            translation.z = Double.parseDouble(command.getOptionValue(ProcessOptions.Z_OFFSET.getArgName()));
         }
         instance.setTranslateOffset(translation);
 

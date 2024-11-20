@@ -13,6 +13,19 @@ public class StressTest {
 
     @Disabled
     @Test
+    void cityGmlLod1() {
+        String path = "CITYGML-LOD1";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "citygml",
+                "-crs", "5186",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Disabled
+    @Test
     void testIfcMep() {
         String path = "LARGE-MEP-IFC";
         String[] args = new String[] {
@@ -189,7 +202,6 @@ public class StressTest {
         Mago3DTilerMain.main(args);
     }
 
-    @Disabled
     @Test
     void testDemoLas() {
         String path = "DEMO-LAS";

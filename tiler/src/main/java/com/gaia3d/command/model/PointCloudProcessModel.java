@@ -1,6 +1,5 @@
 package com.gaia3d.command.model;
 
-import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.loader.PointCloudFileLoader;
 import com.gaia3d.converter.pointcloud.LasConverter;
 import com.gaia3d.converter.pointcloud.PointCloudTempGenerator;
