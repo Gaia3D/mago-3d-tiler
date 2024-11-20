@@ -389,7 +389,7 @@ class ReleaseTest {
                 "-inputType", "3ds",
                 "-crs", "5186",
                 "-output", output.getAbsolutePath(),
-                //"-debug",
+                "-debug",
         };
         Mago3DTilerMain.main(args);
     }
@@ -405,7 +405,7 @@ class ReleaseTest {
                 "-inputType", "obj",
                 "-crs", "5186",
                 "-output", output.getAbsolutePath(),
-                //"-debug",
+                "-debug",
         };
         Mago3DTilerMain.main(args);
     }

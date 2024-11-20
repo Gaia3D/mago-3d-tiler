@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -134,7 +136,6 @@ public class AssimpConverter implements Converter {
 
     private GaiaScene convertScene(AIScene aiScene, String filePath, String fileName) {
         FormatType formatType = FormatType.fromExtension(FilenameUtils.getExtension(fileName));
-
         GaiaScene gaiaScene = new GaiaScene();
         AINode aiNode = aiScene.mRootNode();
         List<String> embeddedTextures = getEmbeddedTexturePath(aiScene, filePath, fileName);
@@ -157,6 +158,7 @@ public class AssimpConverter implements Converter {
         node.setTransformMatrix(rootTransform);
         node.recalculateTransform();
         gaiaScene.getNodes().add(node);
+
 
         return gaiaScene;
     }
@@ -204,11 +206,37 @@ public class AssimpConverter implements Converter {
     private GaiaMaterial processMaterial(AIMaterial aiMaterial, String path, List<String> embeddedTextures) {
         GaiaMaterial material = new GaiaMaterial();
 
+
+        float opacity = 1.0f;
+        int properties = aiMaterial.mNumProperties();
+        for (int i = 0; i < properties; i++) {
+            long address = aiMaterial.mProperties().get(i);
+
+            /*AIString aiString = AIString.create();
+            Assimp.aiGetMaterialString(aiMaterial, Assimp.AI_MATKEY_NAME, 0, 0, aiString);
+            log.info("Material Name: {}", aiString.dataString());*/
+            AIMaterialProperty aiMaterialProperty = AIMaterialProperty.create(address);
+
+            ByteBuffer buffer = aiMaterialProperty.mData();
+            byte[] data = new byte[aiMaterialProperty.mDataLength()];
+            buffer.get(data);
+
+            if (aiMaterialProperty.mKey().dataString().contains("opacity")) {
+                ByteBuffer byteBuffer = ByteBuffer.wrap(data);
+                byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+                float opacityValue = byteBuffer.getFloat();
+                if (opacityValue < 1.0f) {
+                    opacity = opacityValue;
+                    log.info("Opacity: {}", opacityValue);
+                }
+            }
+        }
+
         Vector4d diffVector4d;
         AIColor4D diffColor = AIColor4D.create();
         int diffResult = Assimp.aiGetMaterialColor(aiMaterial, Assimp.AI_MATKEY_COLOR_DIFFUSE, Assimp.aiTextureType_NONE, 0, diffColor);
         if (diffResult == 0) {
-            diffVector4d = new Vector4d(diffColor.r(), diffColor.g(), diffColor.b(), diffColor.a());
+            diffVector4d = new Vector4d(diffColor.r(), diffColor.g(), diffColor.b(), opacity);
             material.setDiffuseColor(diffVector4d);
         }
 
@@ -227,6 +255,14 @@ public class AssimpConverter implements Converter {
             specVector4d = new Vector4d(specColor.r(), specColor.g(), specColor.b(), specColor.a());
             material.setSpecularColor(specVector4d);
         }
+
+        /*Vector4d transparentVector4d;
+        AIColor4D transparentColor = AIColor4D.create();
+        int transparentResult = Assimp.aiGetMaterialColor(aiMaterial, Assimp.AI_MATKEY_COLOR_TRANSPARENT, Assimp.aiTextureType_NONE, 0, transparentColor);
+        if (transparentResult == 0) {
+            transparentVector4d = new Vector4d(transparentColor.r(), transparentColor.g(), transparentColor.b(), transparentColor.a());
+            log.info("Transparent Color: {}", transparentVector4d);
+        }*/
 
         AIString diffPath = AIString.calloc();
         Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_DIFFUSE, 0, diffPath, (IntBuffer) null, null, null, null, null, null);
@@ -338,6 +374,10 @@ public class AssimpConverter implements Converter {
         } else {
             textures = new ArrayList<>();
             material.getTextures().put(TextureType.SHININESS, textures);
+        }
+
+        if (opacity < 1.0f) {
+            material.setBlend(true);
         }
 
         return material;

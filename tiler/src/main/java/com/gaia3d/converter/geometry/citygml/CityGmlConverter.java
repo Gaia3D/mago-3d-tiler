@@ -1260,7 +1260,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
         } else if (abstractSpaceBoundary instanceof WaterSurface) {
             return Classification.WATER;
         }else if (abstractSpaceBoundary instanceof WaterGroundSurface) {
-            return Classification.WATER;
+            return Classification.GROUND;
         } else if (abstractSpaceBoundary instanceof ReliefFeature) {
             return Classification.GROUND;
         } else {
