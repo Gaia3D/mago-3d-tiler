@@ -1004,11 +1004,9 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                     double x = list.get(i);
                     double y = list.get(i + 1);
                     double z = list.get(i + 2);
-
                     coords.add(x);
                     coords.add(y);
                     coords.add(z);
-                    log.info("Triangle: {}, {}, {}", x, y, z);
                 }
                 directPositions.setValue(coords);
 
