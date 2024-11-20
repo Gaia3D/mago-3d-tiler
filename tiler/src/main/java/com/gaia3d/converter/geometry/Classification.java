@@ -16,6 +16,9 @@ public enum Classification {
     STAIRS("Stairs", new Vector4d(0.4, 0.4, 0.4, 1.0)),
     GROUND("Ground", new Vector4d(0.0, 1.0, 0.0, 1.0)),
     WATER("Water", new Vector4d(0.0, 0.0, 1.0, 0.5)),
+    FURNITURE("Furniture", new Vector4d(1.0, 0.05, 0.05, 1.0)), // Light red
+    INSTALLATION("Installation", new Vector4d(1.0, 0.5, 0.25, 1.0)), // Orange
+    INFRASTRUCTURE("Infrastructure", new Vector4d(1.0, 0.25, 0.0, 1.0)), // Dark orange
     UNKNOWN("Unknown", new Vector4d(0.5, 0.5, 0.5, 1.0));
 
     private final String value;

@@ -253,6 +253,11 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         gaiaBufferDataSet.setTexcoordBoundingRectangle(texcoordBoundingRectangle);
         gaiaBufferDataSet.setBoundingBox(boundingBox);
 
+        GaiaBuffer buffer = gaiaBufferDataSet.getBuffers().get(AttributeType.POSITION);
+        if (buffer == null) {
+            log.error("No position buffer");
+        }
+
         return gaiaBufferDataSet;
     }
 

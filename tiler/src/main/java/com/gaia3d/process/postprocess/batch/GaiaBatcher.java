@@ -131,6 +131,10 @@ public class GaiaBatcher {
             for (GaiaBufferDataSet dataSet : dataSets) {
                 Map<AttributeType, GaiaBuffer> buffers = dataSet.getBuffers();
                 GaiaBuffer positionBuffer = buffers.get(AttributeType.POSITION);
+                if (positionBuffer == null) {
+                    continue;
+                }
+
                 int elementsCount = positionBuffer.getElementsCount();
                 float[] batchIdList = new float[elementsCount];
                 Arrays.fill(batchIdList, i);
@@ -154,14 +158,23 @@ public class GaiaBatcher {
 
         sets = sets.stream().filter((set -> {
             List<GaiaBufferDataSet> dataSets = set.getBufferDataList();
-            for (GaiaBufferDataSet dataSet : dataSets) {
-                Map<AttributeType, GaiaBuffer> buffers = dataSet.getBuffers();
-                GaiaBuffer positionBuffer = buffers.get(AttributeType.POSITION);
-                if (positionBuffer == null) {
+            dataSets = dataSets.stream().filter((dataSet) -> {
+                Map<AttributeType, GaiaBuffer> bufferMap = dataSet.getBuffers();
+                GaiaBuffer positionBuffer = bufferMap.get(AttributeType.POSITION);
+                boolean hasPositionBuffer = positionBuffer != null;
+                if (!hasPositionBuffer) {
                     log.error("Position buffer is null");
-                    return false;
+                    log.error("NodeCode: {}", nodeCode);
+                    log.error("Set: {}", set.getProjectName());
                 }
+                return hasPositionBuffer;
+            }).collect(Collectors.toList());
+
+            if (dataSets.isEmpty()) {
+                log.error("Position buffer is null");
+                return false;
             }
+            set.setBufferDataList(dataSets);
             return true;
         })).collect(Collectors.toList());
 

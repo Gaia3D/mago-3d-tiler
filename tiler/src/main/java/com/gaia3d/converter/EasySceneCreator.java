@@ -59,6 +59,9 @@ public class EasySceneCreator {
         materials.add(createMaterial(3, Classification.ROOF.getColor()));
         materials.add(createMaterial(4, Classification.WATER.getColor()));
         materials.add(createMaterial(5, Classification.GROUND.getColor()));
+        materials.add(createMaterial(6, Classification.FURNITURE.getColor()));
+        materials.add(createMaterial(7, Classification.INSTALLATION.getColor()));
+        materials.add(createMaterial(8, Classification.INFRASTRUCTURE.getColor()));
         return materials;
     }
 
