@@ -63,7 +63,6 @@ public class GaiaMaterial extends MaterialStructure implements Serializable {
                 this.isOpaque = false;
             }
         }
-
         if (diffuseColor.w < 1.0) {
             this.isOpaque = false;
             this.isBlend = true;
