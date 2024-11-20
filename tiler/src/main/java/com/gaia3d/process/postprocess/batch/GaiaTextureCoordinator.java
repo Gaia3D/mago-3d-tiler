@@ -445,7 +445,7 @@ public class GaiaTextureCoordinator {
 
     private void writeBatchedImage(String imageName, String imageExtension) {
         String outputPathString = globalOptions.getOutputPath();
-        File file = new File(outputPathString + "\\atlasImages\\");
+        File file = new File(globalOptions.getOutputPath(), "temp" + File.separator + "atlas");
         if (!file.exists()) {
             if (!file.mkdirs()) {
                 log.error("Failed to create directory");
