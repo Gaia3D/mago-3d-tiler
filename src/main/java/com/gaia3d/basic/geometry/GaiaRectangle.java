@@ -127,11 +127,19 @@ public class GaiaRectangle implements Serializable {
         }
     }
 
-    public int getWidth() {
+    public double getWidth() {
+        return maxX - minX;
+    }
+
+    public double getHeight() {
+        return maxY - minY;
+    }
+
+    public int getWidthInt() {
         return (int)Math.ceil(maxX) - (int)Math.floor(minX);
     }
 
-    public int getHeight() {
+    public int getHeightInt() {
         return (int)Math.ceil(maxY) - (int)Math.floor(minY);
     }
 
