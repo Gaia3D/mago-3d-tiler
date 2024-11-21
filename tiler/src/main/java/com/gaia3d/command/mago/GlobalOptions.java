@@ -213,7 +213,6 @@ public class GlobalOptions {
             instance.setCrs(crs);
         }
 
-
         Vector3d translation = new Vector3d(0, 0, 0);
         if (command.hasOption(ProcessOptions.X_OFFSET.getArgName())) {
             translation.x = Double.parseDouble(command.getOptionValue(ProcessOptions.X_OFFSET.getArgName()));

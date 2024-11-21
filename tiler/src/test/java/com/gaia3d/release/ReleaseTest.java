@@ -297,7 +297,7 @@ class ReleaseTest {
     }
 
     @Test
-    void testCityGmlLod1() {
+    void testCityGmlLod1Moran() {
         String path = "JAPAN-MORAN-CITYGML-LOD1";
         File input = new File(INPUT_PATH, path);
         File output = new File(OUTPUT_PATH, path);
@@ -323,7 +323,23 @@ class ReleaseTest {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "citygml",
                 "-output", output.getAbsolutePath(),
-                //"-debug",
+                "-debug",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testCityGmlLod4WithTerrain() {
+        String path = "RAIL-WAY-CITYGML3-TERRAIN";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-inputType", "citygml",
+                "-output", output.getAbsolutePath(),
+                "-glb",
+                "-debug",
         };
         Mago3DTilerMain.main(args);
     }
@@ -373,7 +389,7 @@ class ReleaseTest {
                 "-inputType", "3ds",
                 "-crs", "5186",
                 "-output", output.getAbsolutePath(),
-                //"-debug",
+                "-debug",
         };
         Mago3DTilerMain.main(args);
     }
@@ -389,7 +405,7 @@ class ReleaseTest {
                 "-inputType", "obj",
                 "-crs", "5186",
                 "-output", output.getAbsolutePath(),
-                //"-debug",
+                "-debug",
         };
         Mago3DTilerMain.main(args);
     }

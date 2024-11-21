@@ -14,11 +14,15 @@ import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.citygml4j.core.model.bridge.Bridge;
+import org.citygml4j.core.model.bridge.BridgeFurniture;
+import org.citygml4j.core.model.bridge.BridgeInstallation;
 import org.citygml4j.core.model.building.*;
 import org.citygml4j.core.model.cityfurniture.CityFurniture;
 import org.citygml4j.core.model.cityobjectgroup.CityObjectGroup;
 import org.citygml4j.core.model.construction.*;
 import org.citygml4j.core.model.core.*;
+import org.citygml4j.core.model.deprecated.DeprecatedProperties;
+import org.citygml4j.core.model.deprecated.cityobjectgroup.DeprecatedPropertiesOfCityObjectGroup;
 import org.citygml4j.core.model.generics.GenericOccupiedSpace;
 import org.citygml4j.core.model.relief.AbstractReliefComponent;
 import org.citygml4j.core.model.relief.AbstractReliefComponentProperty;
@@ -26,6 +30,8 @@ import org.citygml4j.core.model.relief.ReliefFeature;
 import org.citygml4j.core.model.relief.TINRelief;
 import org.citygml4j.core.model.transportation.Railway;
 import org.citygml4j.core.model.tunnel.Tunnel;
+import org.citygml4j.core.model.tunnel.TunnelFurniture;
+import org.citygml4j.core.model.tunnel.TunnelInstallation;
 import org.citygml4j.core.model.vegetation.SolitaryVegetationObject;
 import org.citygml4j.core.model.waterbody.WaterBody;
 import org.citygml4j.core.model.waterbody.WaterGroundSurface;
@@ -39,16 +45,16 @@ import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
-import org.xmlobjects.gml.model.geometry.DirectPosition;
-import org.xmlobjects.gml.model.geometry.DirectPositionList;
-import org.xmlobjects.gml.model.geometry.GeometricPosition;
-import org.xmlobjects.gml.model.geometry.GeometricPositionList;
+import org.xmlobjects.builder.ObjectBuildException;
+import org.xmlobjects.gml.adapter.geometry.primitives.AbstractRingPropertyAdapter;
+import org.xmlobjects.gml.model.geometry.*;
 import org.xmlobjects.gml.model.geometry.aggregates.MultiSurface;
 import org.xmlobjects.gml.model.geometry.aggregates.MultiSurfaceProperty;
 import org.xmlobjects.gml.model.geometry.complexes.CompositeSurface;
 import org.xmlobjects.gml.model.geometry.primitives.*;
 import org.xmlobjects.model.Child;
 
+import javax.xml.namespace.QName;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
@@ -82,8 +88,8 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
         List<GaiaScene> scenes = new ArrayList<>();
 
         try {
-            OldTessellator oldTessellator = new OldTessellator();
-            OldExtruder extruder = new OldExtruder(oldTessellator);
+            //OldTessellator oldTessellator = new OldTessellator();
+            //OldExtruder extruder = new OldExtruder(oldTessellator);
 
             CityGMLContext context = CityGMLContext.newInstance();
             CityGMLInputFactory factory = context.createCityGMLInputFactory();
@@ -91,18 +97,17 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             CityModel cityModel = (CityModel) reader.next();
 
             double skirtHeight = globalOptions.getSkirtHeight();
-
             List<GaiaExtrusionBuilding> buildingList = new ArrayList<>();
             List<List<GaiaBuildingSurface>> buildingSurfacesList = new ArrayList<>();
-
             List<AbstractCityObjectProperty> cityObjectMembers = cityModel.getCityObjectMembers();
             for (AbstractCityObjectProperty cityObjectProperty : cityObjectMembers) {
                 AbstractCityObject cityObject = cityObjectProperty.getObject();
 
                 List<SolidProperty> solidProperties = extractSolid(cityObject);
-                for (SolidProperty solidPropertie : solidProperties) {
-                    AbstractSolid solid = solidPropertie.getObject();
-                    buildingList.addAll(convertSolidProperty(cityObject, solid));
+                for (SolidProperty solidProperty : solidProperties) {
+                    AbstractSolid solid = solidProperty.getObject();
+                    //buildingList.addAll(convertSolidProperty(cityObject, solid));
+                    buildingSurfacesList.add(convertSolidSurfaceProperty(cityObject, solid));
                 }
 
                 List<MultiSurfaceProperty> multiSurfaceProperties = extractMultiSurfaceProperty(cityObject);
@@ -110,15 +115,15 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                     buildingSurfacesList.add(convertMultiSurfaceProperty(cityObject, multiSurfaceProperty));
                 }
 
-                // TinRelief
+                /*// TinRelief
                 List<TriangleArrayProperty> triangleArrayProperties = extractTriangleArrayProperty(cityObject);
                 for (TriangleArrayProperty triangleArrayProperty : triangleArrayProperties) {
                     buildingSurfacesList.add(convertTriangleArrayProperty(cityObject, triangleArrayProperty));
-                }
+                }*/
             }
 
             EasySceneCreator easySceneCreator = new EasySceneCreator();
-            for (GaiaExtrusionBuilding gaiaBuilding : buildingList) {
+            /*for (GaiaExtrusionBuilding gaiaBuilding : buildingList) {
                 GaiaScene scene = easySceneCreator.createScene(file);
                 GaiaMaterial material = getMaterialByClassification(scene.getMaterials(), gaiaBuilding.getClassification());
                 GaiaNode rootNode = scene.getNodes().get(0);
@@ -155,7 +160,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                     continue;
                 }
                 scenes.add(scene);
-            }
+            }*/
 
             for (List<GaiaBuildingSurface> surfaces : buildingSurfacesList) {
                 if (surfaces.isEmpty()) {
@@ -180,7 +185,6 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                 Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
 
                 for (GaiaBuildingSurface buildingSurface : surfaces) {
-
                     GaiaMaterial material = getMaterialByClassification(scene.getMaterials(), buildingSurface.getClassification());
 
                     // Check if buildingSurface has holes.***
@@ -206,6 +210,10 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                         GaiaPrimitive primitive = createPrimitiveFromPolygons(polygons);
 
                         primitive.setMaterialIndex(material.getId());
+                        if (primitive.getVertices().size() < 3) {
+                            log.debug("Invalid Geometry : {}", buildingSurface.getId());
+                            continue;
+                        }
                         mesh.getPrimitives().add(primitive);
                         rootNode.getChildren().add(node);
                     } else {
@@ -237,7 +245,15 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                             continue;
                         }
 
+                        if (primitive.getVertices().size() < 3) {
+                            log.debug("Invalid Geometry : {}", buildingSurface.getId());
+                        }
+
                         primitive.setMaterialIndex(material.getId());
+                        if (primitive.getVertices().size() < 3) {
+                            log.debug("Invalid Geometry : {}", buildingSurface.getId());
+                            continue;
+                        }
                         mesh.getPrimitives().add(primitive);
                         rootNode.getChildren().add(node);
                     }
@@ -258,11 +274,10 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             log.error("Failed to read citygml file: {}", file.getName());
             throw new RuntimeException(e);
         }
-
         return scenes;
     }
 
-    private List<GaiaExtrusionBuilding> convertSolidProperty(AbstractCityObject cityObject, AbstractSolid abstractSolid) {
+    /*private List<GaiaExtrusionBuilding> convertSolidProperty(AbstractCityObject cityObject, AbstractSolid abstractSolid) {
         List<GaiaExtrusionBuilding> buildingList = new ArrayList<>();
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         boolean flipCoordinate = globalOptions.isFlipCoordinate();
@@ -328,10 +343,93 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             buildingList.add(gaiaBuilding);
         }
         return buildingList;
+    }*/
+
+    private List<GaiaBuildingSurface> convertSolidSurfaceProperty(AbstractCityObject cityObject, AbstractSolid abstractSolid) {
+        List<GaiaBuildingSurface> buildingSurfaces = new ArrayList<>();
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        boolean flipCoordinate = globalOptions.isFlipCoordinate();
+        double skirtHeight = globalOptions.getSkirtHeight();
+        double height = 1.0d;
+
+        Solid solid = (Solid) abstractSolid;
+        ShellProperty exterior = solid.getExterior();
+
+        if (exterior == null) {
+            return buildingSurfaces;
+        }
+        Shell shell = exterior.getObject();
+        Classification classification = getClassification(cityObject);
+        List<SurfaceProperty> surfaceProperties = shell.getSurfaceMembers();
+        List<GaiaBuildingSurface> compositeSurfaces = convertSurfaceProperty(cityObject, classification, surfaceProperties);
+        buildingSurfaces.addAll(compositeSurfaces);
+
+        for (SurfaceProperty surfaceProperty : surfaceProperties) {
+            AbstractSurface abstractSurface = surfaceProperty.getObject();
+            /*if (abstractSurface instanceof CompositeSurface compositeSurface) {
+
+                continue;
+            }*/
+
+            /*List<GaiaBuildingSurface> compositeSurfaces = convertSurfaceProperty(cityObject, classification, abstractSurface.getSurfaceMembers());
+            buildingSurfaces.addAll(compositeSurfaces);
+
+
+            GaiaBoundingBox boundingBox = new GaiaBoundingBox();*/
+
+            /*Map<String, String> properties = new HashMap<>();
+            properties.put("name", cityObject.getId());
+            //GaiaExtrusionBuilding gaiaBuilding = GaiaExtrusionBuilding.builder().id(cityObject.getId()).name(cityObject.getId()).floorHeight(0).roofHeight(height).properties(properties).build();
+
+            List<Vector3d> polygon = new Vector<>();
+
+            Polygon surface = (Polygon) surfaceProperty.getObject();
+            if (surface == null) {
+                log.error("No surface found for city object: {}", cityObject.getId());
+                continue;
+            }
+
+            LinearRing linearRing = (LinearRing) surface.getExterior().getObject();
+            DirectPositionList directPositions = linearRing.getControlPoints().getPosList();
+            List<Double> positions = directPositions.getValue();
+
+            double heightSum = 0d;
+            for (int i = 0; i < positions.size(); i += 3) {
+                double x, y, z = 0.0d;
+                if (flipCoordinate) {
+                    x = positions.get(i + 1);
+                    y = positions.get(i);
+                } else {
+                    x = positions.get(i);
+                    y = positions.get(i + 1);
+                }
+                heightSum += positions.get(i + 2);
+                Vector3d position = new Vector3d(x, y, z);
+                CoordinateReferenceSystem crs = globalOptions.getCrs();
+                if (crs != null) {
+                    ProjCoordinate projCoordinate = new ProjCoordinate(x, y, boundingBox.getMinZ());
+                    ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
+                    position = new Vector3d(centerWgs84.x, centerWgs84.y, z);
+                }
+                polygon.add(position);
+                boundingBox.addPoint(position);
+            }
+
+            double floorHeight = heightSum / positions.size();
+            gaiaBuilding.setPositions(polygon);
+            gaiaBuilding.setFloorHeight(floorHeight);
+            gaiaBuilding.setRoofHeight(floorHeight + height + skirtHeight);
+            gaiaBuilding.setClassification(getClassification(cityObject));
+            gaiaBuilding.setBoundingBox(boundingBox);
+            buildingList.add(gaiaBuilding);*/
+        }
+        return buildingSurfaces;
     }
 
     private List<GaiaBuildingSurface> convertTriangleArrayProperty(AbstractCityObject cityObject, TriangleArrayProperty triangleArrayProperty) {
         List<GaiaBuildingSurface> buildingSurfaces = new ArrayList<>();
+
+
         // TODO: triangleArrayProperty
         return buildingSurfaces;
     }
@@ -340,10 +438,29 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
         List<GaiaBuildingSurface> buildingSurfaces = new ArrayList<>();
 
         MultiSurface multiSurface = multiSurfaceProperty.getObject();
+        if (multiSurface == null) {
+            log.error("No multi surface found for city object: {}", cityObject.getId());
+            return buildingSurfaces;
+        }
+
+        SurfaceArrayProperty surfaceArrayProperty = multiSurface.getSurfaceMembers();
         List<SurfaceProperty> surfaceProperties = multiSurface.getSurfaceMember();
-        if (surfaceProperties.isEmpty()) {
+        if (surfaceProperties == null && surfaceArrayProperty == null) {
             log.error("No surface properties found for city object: {}", cityObject.getId());
             return buildingSurfaces;
+        }
+
+        if (surfaceProperties == null && surfaceArrayProperty != null) {
+            List<AbstractSurface> surfaces = surfaceArrayProperty.getObjects();
+            if (surfaces == null) {
+                log.error("No surfaces found for city object: {}", cityObject.getId());
+                return buildingSurfaces;
+            }
+            List<SurfaceProperty> newSurfaceProperties = new ArrayList<>();
+            for (AbstractSurface surface : surfaces) {
+                newSurfaceProperties.add(new SurfaceProperty(surface));
+            }
+            surfaceProperties = newSurfaceProperties;
         }
 
         Classification classification = getClassification(cityObject);
@@ -352,6 +469,8 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             classification = getClassification((AbstractSpaceBoundary) parent);
         } else if (parent instanceof AbstractCityObject) {
             classification = getClassification((AbstractCityObject) parent);
+        } else {
+            log.info("Parent is not AbstractSpaceBoundary or AbstractCityObject:");
         }
         buildingSurfaces = convertSurfaceProperty(cityObject, classification, surfaceProperties);
         return buildingSurfaces;
@@ -360,14 +479,23 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
     private List<Vector3d> convertLinearRingToPolygon(LinearRing linearRing, GaiaBoundingBox resultBBox) {
         List<Vector3d> polygon = new ArrayList<>();
 
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        boolean flipCoordinate = globalOptions.isFlipCoordinate();
+
         GeometricPositionList geometricPositionList = linearRing.getControlPoints();
         DirectPositionList directPositions = geometricPositionList.getPosList();
         if (directPositions != null) {
             List<Double> positions = directPositions.getValue();
             for (int i = 0; i < positions.size(); i += 3) {
                 double x, y, z = 0.0d;
-                x = positions.get(i);
-                y = positions.get(i + 1);
+
+                if (flipCoordinate) {
+                    x = positions.get(i + 1);
+                    y = positions.get(i);
+                } else {
+                    x = positions.get(i);
+                    y = positions.get(i + 1);
+                }
                 z = positions.get(i + 2);
                 Vector3d position = new Vector3d(x, y, z);
                 CoordinateReferenceSystem crs = globalOptions.getCrs();
@@ -508,6 +636,10 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             lod1Solid = object.getLod1Solid();
             lod2Solid = object.getLod2Solid();
             lod3Solid = object.getLod3Solid();
+        } else if (cityObject instanceof TunnelInstallation object) {
+            lod1Solid = object.getLod1Solid();
+            lod2Solid = object.getLod2Solid();
+            lod3Solid = object.getLod3Solid();
         } else if (cityObject instanceof WaterBody object) {
             lod1Solid = object.getLod1Solid();
             lod2Solid = object.getLod2Solid();
@@ -565,12 +697,6 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
         return solids;
     }
 
-    private List<TriangleArrayProperty> extractTriangleArrayProperty(AbstractCityObject cityObject) {
-        List<TriangleArrayProperty> triangleArrays = new ArrayList<>();
-        // TODO: triangleArrays
-        return triangleArrays;
-    }
-
     private List<MultiSurfaceProperty> extractMultiSurfaceProperty(AbstractCityObject cityObject) {
         List<MultiSurfaceProperty> multiSurfaces = new ArrayList<>();
         MultiSurfaceProperty lod0MultiSurface = null;
@@ -580,6 +706,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
 
         List<AbstractSpaceBoundary> boundaries = new ArrayList<>();
         List<AbstractCityObject> childCityObjects = new ArrayList<>();
+        List<ImplicitGeometryProperty> implicitGeometryProperties = new ArrayList<>();
 
         if (cityObject instanceof Building object) {
             lod0MultiSurface = object.getLod0MultiSurface();
@@ -594,6 +721,15 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             object.getBuildingParts().forEach(childProperty -> {
                 childCityObjects.add(childProperty.getObject());
             });
+            object.getBuildingInstallations().forEach(childProperty -> {
+                childCityObjects.add(childProperty.getObject());
+            });
+            object.getBuildingFurniture().forEach(childProperty -> {
+                childCityObjects.add(childProperty.getObject());
+            });
+            object.getBuildingConstructiveElements().forEach(childProperty -> {
+                childCityObjects.add(childProperty.getObject());
+            });
         } else if (cityObject instanceof BuildingPart object) {
             lod0MultiSurface = object.getLod0MultiSurface();
             lod2MultiSurface = object.getLod2MultiSurface();
@@ -605,6 +741,15 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                 childCityObjects.add(childProperty.getObject());
             });
             object.getBoundaries().forEach(childProperty -> {
+                childCityObjects.add(childProperty.getObject());
+            });
+            object.getBuildingInstallations().forEach(childProperty -> {
+                childCityObjects.add(childProperty.getObject());
+            });
+            object.getBuildingFurniture().forEach(childProperty -> {
+                childCityObjects.add(childProperty.getObject());
+            });
+            object.getBuildingConstructiveElements().forEach(childProperty -> {
                 childCityObjects.add(childProperty.getObject());
             });
         } else if (cityObject instanceof BuildingRoom object) {
@@ -622,6 +767,20 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             });
             object.getBoundaries().forEach(childProperty -> {
                 childCityObjects.add(childProperty.getObject());
+            });
+        } else if (cityObject instanceof BuildingInstallation object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+            object.getBoundaries().forEach(childProperty -> {
+                boundaries.add(childProperty.getObject());
+            });
+        } else if (cityObject instanceof BuildingFurniture object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
+            object.getBoundaries().forEach(childProperty -> {
+                boundaries.add(childProperty.getObject());
             });
         } else if (cityObject instanceof DoorSurface object) {
             lod0MultiSurface = object.getLod0MultiSurface();
@@ -668,6 +827,9 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             lod1MultiSurface = object.getLod1MultiSurface();
             lod2MultiSurface = object.getLod2MultiSurface();
             lod3MultiSurface = object.getLod3MultiSurface();
+        } else if (cityObject instanceof ReliefFeature object) {
+            List<MultiSurfaceProperty> multiSurfaceProperties = extractMultiSurfaceProperty(object);
+            multiSurfaces.addAll(multiSurfaceProperties);
         } else if (cityObject instanceof AbstractSpaceBoundary object) {
             List<MultiSurfaceProperty> multiSurfaceProperties = extractMultiSurfaceProperty(object);
             multiSurfaces.addAll(multiSurfaceProperties);
@@ -678,11 +840,29 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             object.getBoundaries().forEach(childProperty -> {
                 boundaries.add(childProperty.getObject());
             });
+            if (object.getLod1ImplicitRepresentation() != null) {
+                implicitGeometryProperties.add(object.getLod1ImplicitRepresentation());
+            }
+            if (object.getLod2ImplicitRepresentation() != null) {
+                implicitGeometryProperties.add(object.getLod2ImplicitRepresentation());
+            }
+            if (object.getLod3ImplicitRepresentation() != null) {
+                implicitGeometryProperties.add(object.getLod3ImplicitRepresentation());
+            }
         } else if (cityObject instanceof Bridge object) {
             lod0MultiSurface = object.getLod0MultiSurface();
             lod2MultiSurface = object.getLod2MultiSurface();
             lod3MultiSurface = object.getLod3MultiSurface();
             object.getBridgeParts().forEach(childProperty -> {
+                childCityObjects.add(childProperty.getObject());
+            });
+            object.getBridgeInstallations().forEach(childProperty -> {
+                childCityObjects.add(childProperty.getObject());
+            });
+            object.getBridgeFurniture().forEach(childProperty -> {
+                childCityObjects.add(childProperty.getObject());
+            });
+            object.getBridgeConstructiveElements().forEach(childProperty -> {
                 childCityObjects.add(childProperty.getObject());
             });
             object.getBoundaries().forEach(childProperty -> {
@@ -692,9 +872,25 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             lod0MultiSurface = object.getLod0MultiSurface();
             lod2MultiSurface = object.getLod2MultiSurface();
             lod3MultiSurface = object.getLod3MultiSurface();
+            object.getTunnelFurniture().forEach(childProperty -> {
+                childCityObjects.add(childProperty.getObject());
+            });
+            object.getTunnelInstallations().forEach(childProperty -> {
+                childCityObjects.add(childProperty.getObject());
+            });
+            object.getTunnelConstructiveElements().forEach(childProperty -> {
+                childCityObjects.add(childProperty.getObject());
+            });
             object.getTunnelParts().forEach(childProperty -> {
                 childCityObjects.add(childProperty.getObject());
             });
+            object.getBoundaries().forEach(childProperty -> {
+                boundaries.add(childProperty.getObject());
+            });
+        } else if (cityObject instanceof TunnelInstallation object) {
+            lod0MultiSurface = object.getLod0MultiSurface();
+            lod2MultiSurface = object.getLod2MultiSurface();
+            lod3MultiSurface = object.getLod3MultiSurface();
             object.getBoundaries().forEach(childProperty -> {
                 boundaries.add(childProperty.getObject());
             });
@@ -748,7 +944,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                 boundaries.add(childProperty.getObject());
             });
         } else {
-            log.debug("Unsupported city object type: {}", cityObject.getClass().getSimpleName());
+            log.info("Unsupported city object type: {}", cityObject.getClass().getSimpleName());
         }
 
         if (lod0MultiSurface != null) {
@@ -774,10 +970,25 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             multiSurfaces.addAll(childMultiSurfaces);
         }
 
+        // Implicit Geometry, It is like instanced model
+        for (ImplicitGeometryProperty implicitGeometryProperty : implicitGeometryProperties) {
+            // TODO : Implicit Geometry
+            /*ImplicitGeometry implicitGeometry = implicitGeometryProperty.getObject();
+            log.info("Implicit Geometry: {}", implicitGeometry.getId());
+            GeometryProperty geometryProperty = implicitGeometry.getRelativeGeometry();
+            MultiSurface multiSurface = (MultiSurface) geometryProperty.getObject();
+            MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty(multiSurface);
+            multiSurfaces.add(multiSurfaceProperty);*/
+        }
+
         return multiSurfaces;
     }
 
     private List<MultiSurfaceProperty> extractMultiSurfaceProperty(AbstractReliefComponent abstractReliefComponent) {
+        List<MultiSurfaceProperty> multiSurfaceProperties = new ArrayList<>();
+
+        //SurfaceArrayProperty surfaceArrayProperty = new SurfaceArrayProperty();
+        List<SurfaceProperty> surfaceProperties = new ArrayList<>();
         if (abstractReliefComponent instanceof TINRelief object) {
             TriangulatedSurface triangulatedSurface = object.getTin().getObject();
             TriangleArrayProperty triangleArrayProperty = triangulatedSurface.getPatches();
@@ -785,12 +996,31 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             triangles.forEach(triangle -> {
                 AbstractRingProperty ringProperty = triangle.getExterior();
                 AbstractRing ring = ringProperty.getObject();
-                String id = ring.getId();
-                //log.debug("Ring id: {}", id);
-                // TODO : find ring
+                LinearRing linearRing = (LinearRing) ring;
+                DirectPositionList directPositions = linearRing.getControlPoints().getPosList();
+                List<Double> list = directPositions.getValue();
+                List<Double> coords = new ArrayList<>(list.size());
+                for (int i = 0; i < list.size(); i += 3) {
+                    double x = list.get(i);
+                    double y = list.get(i + 1);
+                    double z = list.get(i + 2);
+                    coords.add(x);
+                    coords.add(y);
+                    coords.add(z);
+                }
+                directPositions.setValue(coords);
+
+                GeometricPositionList geometricPositionList = new GeometricPositionList();
+                geometricPositionList.setPosList(directPositions);
+                linearRing.setControlPoints(geometricPositionList);
+                SurfaceProperty surfaceProperty = createSurfaceProperty(linearRing);
+                surfaceProperties.add(surfaceProperty);
             });
         }
-        return new ArrayList<>();
+        //surfaceArrayProperty.setObjects(surfaceProperties);
+        MultiSurfaceProperty multiSurfaceProperty = createMultiSurfaceProperties(surfaceProperties);
+        multiSurfaceProperties.add(multiSurfaceProperty);
+        return multiSurfaceProperties;
     }
 
     private List<MultiSurfaceProperty> extractMultiSurfaceProperty(AbstractSpaceBoundary spaceBoundary) {
@@ -802,12 +1032,8 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
         MultiSurfaceProperty lod4MultiSurface = null;
 
         List<AbstractFillingSurfaceProperty> fillingSurfaceProperties = null;
-
         List<AbstractReliefComponentProperty> reliefComponentProperties = null;
-
         List<AbstractCityObject> childCityObjects = new ArrayList<>();
-
-
         if (spaceBoundary instanceof CeilingSurface object) {
             lod0MultiSurface = object.getLod0MultiSurface();
             lod1MultiSurface = object.getLod1MultiSurface();
@@ -889,7 +1115,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
         } else if (spaceBoundary instanceof ReliefFeature object) {
             reliefComponentProperties = object.getReliefComponents();
         } else {
-            log.debug("Unsupported space boundary type: {}", spaceBoundary.getClass().getSimpleName());
+            log.info("Unsupported space boundary type: {}", spaceBoundary.getClass().getSimpleName());
         }
 
         if (lod0MultiSurface != null) {
@@ -920,11 +1146,96 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             for (AbstractReliefComponentProperty reliefComponentProperty : reliefComponentProperties) {
                 AbstractReliefComponent reliefComponent = reliefComponentProperty.getObject();
                 List<MultiSurfaceProperty> multiSurfaceProperties = extractMultiSurfaceProperty(reliefComponent);
-                //multiSurfaces.addAll(multiSurfaceProperties);
+                multiSurfaces.addAll(multiSurfaceProperties);
+
+                /*List<Double> positions = new ArrayList<>();
+
+                DirectPositionList directPositionList = new DirectPositionList();
+                directPositionList.setSrsDimension(3);
+                directPositionList.setValue(positions);
+                //directPositionList.setSrsName("urn:ogc:def:crs:EPSG::4326");
+
+                GeometricPositionList geometricPositionList = new GeometricPositionList();
+                geometricPositionList.setPosList(directPositionList);
+
+                LinearRing linearRing = new LinearRing();
+                linearRing.setControlPoints(geometricPositionList);
+
+                LinearRingProperty linearRingProperty = new LinearRingProperty();
+                linearRingProperty.setObject(linearRing);
+
+                Polygon polygon = new Polygon();
+
+                AbstractRingPropertyAdapter ringPropertyAdapter = new AbstractRingPropertyAdapter();
+                try {
+                    AbstractRingProperty ringProperty = ringPropertyAdapter.createObject(new QName("temp"), polygon);
+                    ringProperty.setObject(linearRing);
+                    polygon.setExterior(ringProperty);
+                } catch (ObjectBuildException e) {
+                    throw new RuntimeException(e);
+                }
+
+                List<SurfaceProperty> surfaceProperties = new ArrayList<>();
+                SurfaceProperty surfaceProperty = new SurfaceProperty();
+                surfaceProperty.setInlineObject(polygon);
+                surfaceProperties.add(surfaceProperty);
+
+                MultiSurface multiSurface = new MultiSurface();
+                multiSurface.setSurfaceMember(surfaceProperties);
+
+                MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
+                multiSurfaceProperty.setInlineObject(multiSurface);
+                //multiSurfaceProperty.set
+
+                List<MultiSurfaceProperty> multiSurfaceProperties = extractMultiSurfaceProperty(reliefComponent);
+                multiSurfaces.addAll(multiSurfaceProperties);*/
             }
         }
 
         return multiSurfaces;
+    }
+
+    private MultiSurfaceProperty createMultiSurfaceProperties(List<SurfaceProperty> surfaceProperties) {
+        //SurfaceArrayProperty surfaceArrayProperty = new SurfaceArrayProperty();
+        //surfaceArrayProperty.setObjects(surfaceProperties);
+
+        MultiSurface multiSurface = new MultiSurface();
+        multiSurface.setSurfaceMember(surfaceProperties);
+        //multiSurface.setSurfaceMembers(surfaceArrayProperty);
+        MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
+        multiSurfaceProperty.setInlineObject(multiSurface);
+        return multiSurfaceProperty;
+    }
+
+    private SurfaceProperty createSurfaceProperty(LinearRing linearRing) {
+       /* List<Double> positions = new ArrayList<>();
+        DirectPositionList directPositionList = new DirectPositionList();
+        directPositionList.setSrsDimension(3);
+        directPositionList.setValue(positions);
+        //directPositionList.setSrsName("urn:ogc:def:crs:EPSG::4326");
+
+        GeometricPositionList geometricPositionList = new GeometricPositionList();
+        geometricPositionList.setPosList(directPositionList);*/
+
+        //LinearRing linearRing = new LinearRing();
+        //linearRing.setControlPoints(geometricPositionList);
+
+        LinearRingProperty linearRingProperty = new LinearRingProperty();
+        linearRingProperty.setObject(linearRing);
+
+        Polygon polygon = new Polygon();
+        AbstractRingPropertyAdapter ringPropertyAdapter = new AbstractRingPropertyAdapter();
+        try {
+            AbstractRingProperty ringProperty = ringPropertyAdapter.createObject(new QName("handmade-polygon"), polygon);
+            ringProperty.setObject(linearRing);
+            polygon.setExterior(ringProperty);
+        } catch (ObjectBuildException e) {
+            throw new RuntimeException(e);
+        }
+        SurfaceProperty surfaceProperty = new SurfaceProperty();
+        surfaceProperty.setInlineObject(polygon);
+
+        return surfaceProperty;
     }
 
     private Classification getClassification(AbstractSpaceBoundary abstractSpaceBoundary) {
@@ -935,19 +1246,23 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
         } else if (abstractSpaceBoundary instanceof FloorSurface) {
             return Classification.FLOOR;
         } else if (abstractSpaceBoundary instanceof GroundSurface) {
-            return Classification.GROUND;
+            return Classification.FLOOR;
         } else if (abstractSpaceBoundary instanceof RoofSurface) {
             return Classification.ROOF;
         } else if (abstractSpaceBoundary instanceof WallSurface) {
             return Classification.WALL;
         } else if (abstractSpaceBoundary instanceof ClosureSurface) {
-            return Classification.WALL;
+            return Classification.WINDOW;
         } else if (abstractSpaceBoundary instanceof DoorSurface) {
             return Classification.DOOR;
         } else if (abstractSpaceBoundary instanceof WindowSurface) {
             return Classification.WINDOW;
         } else if (abstractSpaceBoundary instanceof WaterSurface) {
             return Classification.WATER;
+        }else if (abstractSpaceBoundary instanceof WaterGroundSurface) {
+            return Classification.GROUND;
+        } else if (abstractSpaceBoundary instanceof ReliefFeature) {
+            return Classification.GROUND;
         } else {
             return Classification.UNKNOWN;
         }
@@ -956,10 +1271,16 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
     private Classification getClassification(AbstractCityObject cityObject) {
         if (cityObject instanceof Building) {
             return Classification.WALL;
+        } else if (cityObject instanceof BuildingFurniture) {
+            return Classification.FURNITURE;
+        } else if (cityObject instanceof BuildingInstallation) {
+            return Classification.INSTALLATION;
         } else if (cityObject instanceof BuildingPart) {
             return Classification.WALL;
         } else if (cityObject instanceof BuildingRoom) {
             return Classification.WALL;
+        } else if (cityObject instanceof CityFurniture) {
+            return Classification.FURNITURE;
         } else if (cityObject instanceof DoorSurface) {
             return Classification.DOOR;
         } else if (cityObject instanceof WindowSurface) {
@@ -978,9 +1299,30 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             return Classification.ROOF;
         } else if (cityObject instanceof WallSurface) {
             return Classification.WALL;
+        } else if (cityObject instanceof Bridge) {
+            return Classification.INFRASTRUCTURE;
+        } else if (cityObject instanceof BridgeFurniture) {
+            return Classification.FURNITURE;
+        } else if (cityObject instanceof BridgeInstallation) {
+            return Classification.INSTALLATION;
+        } else if (cityObject instanceof Tunnel) {
+            return Classification.INFRASTRUCTURE;
+        } else if (cityObject instanceof TunnelFurniture) {
+            return Classification.FURNITURE;
+        } else if (cityObject instanceof TunnelInstallation) {
+            return Classification.INSTALLATION;
         } else if (cityObject instanceof AbstractSpaceBoundary abstractSpaceBoundary) {
             return getClassification(abstractSpaceBoundary);
+        } else if (cityObject instanceof WaterBody) {
+            return Classification.WATER;
+        } else if (cityObject instanceof Railway) {
+            return Classification.WALL;
+        } else if (cityObject instanceof GenericOccupiedSpace) {
+            return Classification.FURNITURE;
+        } else if (cityObject instanceof SolitaryVegetationObject) {
+            return Classification.GROUND;
         }
+        log.info("Unsupported city object type: {}", cityObject.getClass().getSimpleName());
         return Classification.UNKNOWN;
     }
 }

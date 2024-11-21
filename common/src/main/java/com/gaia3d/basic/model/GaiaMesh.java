@@ -5,6 +5,7 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.structure.MeshStructure;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
@@ -18,6 +19,7 @@ import java.util.List;
  * It contains the primitives.
  * The primitives are used for rendering.
  */
+@Slf4j
 @Getter
 @Setter
 public class GaiaMesh extends MeshStructure implements Serializable {
@@ -209,6 +211,10 @@ public class GaiaMesh extends MeshStructure implements Serializable {
             bufferSets = new ArrayList<>();
         }
         for (GaiaPrimitive primitive : primitives) {
+            if (primitive.getVertices().size() < 3) {
+                log.warn("The primitive has less than 3 vertices. It will be ignored.");
+                continue;
+            }
             GaiaBufferDataSet gaiaBufferDataSet = primitive.toGaiaBufferSet(transformMatrix);
             gaiaBufferDataSet.setMaterialId(primitive.getMaterialIndex());
             bufferSets.add(gaiaBufferDataSet);

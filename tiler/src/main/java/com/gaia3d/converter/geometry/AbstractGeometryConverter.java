@@ -780,6 +780,12 @@ public abstract class AbstractGeometryConverter {
             return gaiaMaterials.get(4);
         } else if (classification.equals(Classification.GROUND)) {
             return gaiaMaterials.get(5);
+        } else if (classification.equals(Classification.FURNITURE)) {
+            return gaiaMaterials.get(6);
+        } else if (classification.equals(Classification.INSTALLATION)) {
+            return gaiaMaterials.get(7);
+        } else if (classification.equals(Classification.INFRASTRUCTURE)) {
+            return gaiaMaterials.get(8);
         } else {
             return gaiaMaterials.get(0);
         }

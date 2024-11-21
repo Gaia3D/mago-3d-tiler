@@ -3,7 +3,9 @@ package com.gaia3d.converter.jgltf;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.AccessorType;
 import com.gaia3d.basic.types.AttributeType;
+import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.basic.types.TextureType;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.util.GeometryUtils;
 import com.gaia3d.util.ImageResizer;
 import com.gaia3d.util.ImageUtils;
@@ -447,7 +449,14 @@ public class GltfWriter {
 
         Material material = new Material();
         material.setName(gaiaMaterial.getName());
-        material.setDoubleSided(false);
+
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        FormatType formatType = globalOptions.getInputFormat();
+        if (formatType.equals(FormatType.CITYGML)) {
+            material.setDoubleSided(true);
+        } else {
+            material.setDoubleSided(false);
+        }
 
         // Set the alpha mode.***
         boolean isOpaque = gaiaMaterial.isOpaqueMaterial();
