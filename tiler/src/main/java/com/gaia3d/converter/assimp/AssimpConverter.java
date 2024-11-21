@@ -457,6 +457,7 @@ public class AssimpConverter implements Converter {
         AIVector3D.Buffer verticesBuffer = aiMesh.mVertices();
         AIVector3D.Buffer normalsBuffer = aiMesh.mNormals();
         AIVector3D.Buffer textureCoordiantesBuffer = aiMesh.mTextureCoords(0);
+        AIColor4D.Buffer colorsBuffer = aiMesh.mColors(0);
         for (int i = 0; i < mNumVertices; i++) {
             GaiaVertex vertex = new GaiaVertex();
             AIVector3D aiVertice = verticesBuffer.get(i);
@@ -477,7 +478,6 @@ public class AssimpConverter implements Converter {
                 vertex.setNormal(new Vector3d());
             }
 
-
             if (textureCoordiantesBuffer != null) {
                 AIVector3D textureCoordinate = textureCoordiantesBuffer.get(i);
                 if (Float.isNaN(textureCoordinate.x()) || Float.isNaN(textureCoordinate.y())) {
@@ -489,10 +489,24 @@ public class AssimpConverter implements Converter {
                 vertex.setTexcoords(new Vector2d());
             }
 
-            diffuseColor[0] = (byte) (diffuse.x * 255);
+            if (colorsBuffer != null) {
+                AIColor4D color = colorsBuffer.get(i);
+                if (Float.isNaN(color.r()) || Float.isNaN(color.g()) || Float.isNaN(color.b()) || Float.isNaN(color.a())) {
+                    vertex.setColor(new byte[]{0, 0, 0, 0});
+                } else {
+                    vertex.setColor(new byte[]{(byte) (color.r() * 255), (byte) (color.g() * 255), (byte) (color.b() * 255), (byte) (color.a() * 255)});
+                }
+            } else {
+                diffuseColor[0] = (byte) (diffuse.x * 255);
+                diffuseColor[1] = (byte) (diffuse.y * 255);
+                diffuseColor[2] = (byte) (diffuse.z * 255);
+                diffuseColor[3] = (byte) (diffuse.w * 255);
+            }
+
+            /*diffuseColor[0] = (byte) (diffuse.x * 255);
             diffuseColor[1] = (byte) (diffuse.y * 255);
             diffuseColor[2] = (byte) (diffuse.z * 255);
-            diffuseColor[3] = (byte) (diffuse.w * 255);
+            diffuseColor[3] = (byte) (diffuse.w * 255);*/
             primitive.getVertices().add(vertex);
         }
 
