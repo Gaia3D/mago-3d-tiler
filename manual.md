@@ -13,7 +13,7 @@ java -jar mago-3d-tiler.jar -input "/input_path" -output "/output_path"
 
 Same case :
 ```
-java -jar mago-3d-tiler.jar -input "/input_path" -output "/output_path" -crs 3857 -outputType b3dm
+java -jar mago-3d-tiler.jar -input "/input_path" -output "/output_path" -crs 3857
 ```
 
 ### Batched 3D Model (b3dm)
@@ -27,7 +27,7 @@ java -jar mago-3d-tiler.jar -input "/input_path/kml_with_collada" -output "/outp
 
 Same case :
 ```
-java -jar mago-3d-tiler.jar -input "/input_path/kml_with_collada" -output "/output_path/kml_with_collada" -outputType b3dm
+java -jar mago-3d-tiler.jar -input "/input_path/kml_with_collada" -output "/output_path/kml_with_collada"
 ```
 
 ### DEM elevation application case
@@ -78,7 +78,7 @@ java -jar mago-3d-tiler.jar -input "/input_path/shp" -inputType "shp" -output "/
 
 ### Instanced 3D Model (i3dm)
 
-When creating instance model data, the following options are available for conversion.
+When converting instance model data, the following options are available for conversion.
 (kml with collada) data, and the `outputType` option is required in the current version.
 
 ```
@@ -87,7 +87,7 @@ java -jar mago-3d-tiler.jar -input "/input_path/i3dm" -output "/output_path/i3dm
 
 ### Converting i3dm data to Shape
 
-To generate i3dm as a Shape file with Point geometry type, you can convert it with the following options.
+To converting i3dm as a Shape file with Point geometry type, you can convert it with the following options.
 You need to specify `inputType` as shp and specify the path to the instance file through the 'instance' option.
 
 ```
@@ -100,6 +100,7 @@ java -jar mago-3d-tiler.jar -input "/input_path/i3dm" -output "/output_path/i3dm
 ### Converting Point-Clouds data (Point Clouds)
 
 When converting point-clouds data, the following default options are available for conversion.
+If the input data is "las", the "-outputType" will automatically be "pnts".
 
 ```
 java -jar mago-3d-tiler.jar -input "/input_path/las" -inputType "las" -output "/output_path/las"
@@ -115,16 +116,22 @@ java -jar mago-3d-tiler.jar -input "/input_path/las" -inputType "las" -output "/
 # Other examples
 
 ### Up-Axis Swap Example
-mago3dTiler converts mesh z-up axis data to y-up axis. If your original data is y-up axis, you will need to add the `-swapUpAxis` option to avoid converting it.
+mago3dTiler converts mesh z-up axis data to y-up axis. If your original data is y-up axis, you will need to add the `-rotateX <degree>` option to avoid converting it.
 ```
-java -jar mago-3d-tiler.jar -input "/input_path/y-up-fbx" -inputType "fbx" -output "/output_path/y-up-fbx" -swapUpAxis
+java -jar mago-3d-tiler.jar -input "/input_path/y-up-fbx" -inputType "fbx" -output "/output_path/y-up-fbx" -rotateX "90"
 ```
 
 ### Data flipped upside down
-If the converted data is flipped upside down, add the `-flipUpAxis` option to convert it.
-Can be used with the -swapUpAxis option.
+If the converted data is flipped upside down, add the `-rotateX <degree>` option to convert it.
 ```
-java -jar mago-3d-tiler.jar -input "/input_path/flip-y-up-fbx" -inputType "fbx" -output "/output_path/flip-y-up-fbx" -swapUpAxis -flipUpAxis
+java -jar mago-3d-tiler.jar -input "/input_path/flip-y-up-fbx" -inputType "fbx" -output "/output_path/flip-y-up-fbx" -rotateX "180"
+```
+
+### Converting CityGML
+When converting to CityGML, it is recommended to give the InputType as ‘citygml’.
+This is because Citygml data can have different extensions: ‘.xml’, ‘.gml’, etc.
+```
+java -jar mago-3d-tiler.jar -input "/input_path/citygml" -inputType "citygml" -output "/output_path/citygml" -crs "5186"
 ```
 
 ### Converting Large 3D Mesh Data
@@ -137,10 +144,10 @@ java -jar mago-3d-tiler.jar -input "/input_path/ifc_large_mesh" -inputType "ifc"
 ```
 
 ### Converting Large Point-Clouds Data
-When converting large point-clouds, you can use the `-pointSkip` option to adjust the conversion speed and data size as follows.
+When converting large point-clouds, you can use the `-pointRatio` option to adjust the percentage of conversion points from the source data as follows.
 
 ```
-java -jar mago-3d-tiler.jar -input "/input_path/las" -inputType "las" -output "/output_path/las" -pointSkip 4
+java -jar mago-3d-tiler.jar -input "/input_path/las" -inputType "las" -output "/output_path/las" -pointRatio "100"
 ```
 
 ### How to run with Docker

@@ -32,7 +32,7 @@ console output:
 ┳┳┓┏┓┏┓┏┓  ┏┓┳┓  ┏┳┓┳┓ ┏┓┳┓
 ┃┃┃┣┫┃┓┃┃   ┫┃┃   ┃ ┃┃ ┣ ┣┫
 ┛ ┗┛┗┗┛┗┛  ┗┛┻┛   ┻ ┻┗┛┗┛┛┗
-3d-tiler(dev-version) by Gaia3D, Inc.
+3d-tiler(dev) by Gaia3D, Inc.
 ----------------------------------------
 usage: Gaia3D Tiler
  -aa,--absoluteAltitude <arg>    Absolute altitude value for extrusion
@@ -47,7 +47,8 @@ usage: Gaia3D Tiler
                                  model, Specify a length unit for Diameter
                                  in millimeters(mm) (Default Column:
                                  diameter)
- -fc,--flipCoordinate            Flip x, y Coordinate (Default: false)
+ -fc,--flipCoordinate            Flip x, y coordinate for 2D Original
+                                 Data. (Default: false)
  -glb,--glb                      Create glb file with B3DM.
  -h,--help                       Print Gelp
  -hc,--heightColumn <arg>        Height column setting for extrusion model
@@ -67,8 +68,8 @@ usage: Gaia3D Tiler
                                  max value)
  -mh,--minimumHeight <arg>       Minimum height value for extrusion model
                                  (Default: 1.0)
- -mp,--maxPoints <arg>           Limiting the maximum number of points in
-                                 point cloud data. (Default: 65536)
+ -mp,--maxPoints <arg>           Maximum number of points per a tile
+                                 (Default: 100000)
  -mx,--maxCount <arg>            Maximum number of triangles per node.
  -nc,--nameColumn <arg>          Name column setting for extrusion model
                                  (Default Column: name)
@@ -78,24 +79,32 @@ usage: Gaia3D Tiler
  -ot,--outputType <arg>          Output 3DTiles Type (b3dm, i3dm,
                                  pnts)(Default : b3dm)
  -p,--proj <arg>                 Proj4 parameters (ex: +proj=tmerc +la...)
- -pk,--pointSkip <arg>           Number of pointcloud omissions (ex:
-                                 1/4)(Default: 4)
- -ps,--pointScale <arg>          Pointscloud geometryError scale setting
-                                 (Default: 2)
+ -pr,--photorealistic            [Experimental] Photorealistic mode for
+                                 b3dm (Default: false)
  -q,--quiet                      Quiet mode/Silent mode
  -r,--recursive                  Tree directory deep navigation.
  -ra,--refineAdd                 Set 3D Tiles Refine 'ADD' mode
  -ru,--flipUpAxis                Rotate the matrix 180 degrees about the
                                  X-axis. (Default: false)
+ -rx,--rotateXAxis <arg>         Rotate the X-Axis in degrees (Unit:
+                                 degrees)(Default: 0.0)
  -sh,--skirtHeight <arg>         Building Skirt height setting for
                                  extrusion model (Default: 4.0)
+ -sp,--sourcePrecision           Create pointscloud tile with original
+                                 precision. (Slow)
  -su,--swapUpAxis                Rotate the matrix -90 degrees about the
                                  X-axis. (Default: false)
  -te,--terrain <arg>             GeoTiff Terrain file path, 3D Object
                                  applied as clampToGround (Supports
                                  geotiff format)
  -v,--version                    Print Version Info
+ -vl,--voxelLod                  [Experimental] Voxel Level Of Detail
+                                 setting for i3dm (Default: false)
  -xl,--maxLod <arg>              Max Level of detail (Default: 3)
+ -xo,--xOffset <arg>             X Offset value for coordinate
+                                 transformation
+ -yo,--yOffset <arg>             Y Offset value for coordinate
+                                 transformation
  -zo,--zeroOrigin                [Experimental] fix 3d root transformed
                                  matrix origin to zero point.
 ```
@@ -179,7 +188,7 @@ java -jar mago-3d-tiler-x.x.x-natives-windows.jar -h
 ┳┳┓┏┓┏┓┏┓  ┏┓┳┓  ┏┳┓┳┓ ┏┓┳┓
 ┃┃┃┣┫┃┓┃┃   ┫┃┃   ┃ ┃┃ ┣ ┣┫
 ┛ ┗┛┗┗┛┗┛  ┗┛┻┛   ┻ ┻┗┛┗┛┛┗
-3d-tiler(dev-version) by Gaia3D, Inc.
+3d-tiler(dev) by Gaia3D, Inc.
 ----------------------------------------
 usage: Gaia3D Tiler
  -aa,--absoluteAltitude <arg>    Absolute altitude value for extrusion
@@ -194,7 +203,8 @@ usage: Gaia3D Tiler
                                  model, Specify a length unit for Diameter
                                  in millimeters(mm) (Default Column:
                                  diameter)
- -fc,--flipCoordinate            Flip x, y Coordinate (Default: false)
+ -fc,--flipCoordinate            Flip x, y coordinate for 2D Original
+                                 Data. (Default: false)
  -glb,--glb                      Create glb file with B3DM.
  -h,--help                       Print Gelp
  -hc,--heightColumn <arg>        Height column setting for extrusion model
@@ -214,8 +224,8 @@ usage: Gaia3D Tiler
                                  max value)
  -mh,--minimumHeight <arg>       Minimum height value for extrusion model
                                  (Default: 1.0)
- -mp,--maxPoints <arg>           Limiting the maximum number of points in
-                                 point cloud data. (Default: 65536)
+ -mp,--maxPoints <arg>           Maximum number of points per a tile
+                                 (Default: 100000)
  -mx,--maxCount <arg>            Maximum number of triangles per node.
  -nc,--nameColumn <arg>          Name column setting for extrusion model
                                  (Default Column: name)
@@ -225,24 +235,32 @@ usage: Gaia3D Tiler
  -ot,--outputType <arg>          Output 3DTiles Type (b3dm, i3dm,
                                  pnts)(Default : b3dm)
  -p,--proj <arg>                 Proj4 parameters (ex: +proj=tmerc +la...)
- -pk,--pointSkip <arg>           Number of pointcloud omissions (ex:
-                                 1/4)(Default: 4)
- -ps,--pointScale <arg>          Pointscloud geometryError scale setting
-                                 (Default: 2)
+ -pr,--photorealistic            [Experimental] Photorealistic mode for
+                                 b3dm (Default: false)
  -q,--quiet                      Quiet mode/Silent mode
  -r,--recursive                  Tree directory deep navigation.
  -ra,--refineAdd                 Set 3D Tiles Refine 'ADD' mode
  -ru,--flipUpAxis                Rotate the matrix 180 degrees about the
                                  X-axis. (Default: false)
+ -rx,--rotateXAxis <arg>         Rotate the X-Axis in degrees (Unit:
+                                 degrees)(Default: 0.0)
  -sh,--skirtHeight <arg>         Building Skirt height setting for
                                  extrusion model (Default: 4.0)
+ -sp,--sourcePrecision           Create pointscloud tile with original
+                                 precision. (Slow)
  -su,--swapUpAxis                Rotate the matrix -90 degrees about the
                                  X-axis. (Default: false)
  -te,--terrain <arg>             GeoTiff Terrain file path, 3D Object
                                  applied as clampToGround (Supports
                                  geotiff format)
  -v,--version                    Print Version Info
+ -vl,--voxelLod                  [Experimental] Voxel Level Of Detail
+                                 setting for i3dm (Default: false)
  -xl,--maxLod <arg>              Max Level of detail (Default: 3)
+ -xo,--xOffset <arg>             X Offset value for coordinate
+                                 transformation
+ -yo,--yOffset <arg>             Y Offset value for coordinate
+                                 transformation
  -zo,--zeroOrigin                [Experimental] fix 3d root transformed
                                  matrix origin to zero point.
 ```
