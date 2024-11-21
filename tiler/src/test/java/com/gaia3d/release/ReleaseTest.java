@@ -251,7 +251,6 @@ class ReleaseTest {
         Mago3DTilerMain.main(args);
     }
 
-    @Disabled
     @Test
     void testGeojsonPolygon() {
         String path = "NAMYANGJU-WANGSUK-GEOJSON";
@@ -276,6 +275,7 @@ class ReleaseTest {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "kml",
                 "-output", output.getAbsolutePath(),
+                "-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -323,6 +323,7 @@ class ReleaseTest {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "citygml",
                 "-output", output.getAbsolutePath(),
+                "-crs", "5186",
                 "-debug",
         };
         Mago3DTilerMain.main(args);
@@ -437,9 +438,7 @@ class ReleaseTest {
                 "-inputType", "obj",
                 "-crs", "27700",
                 "-output", output.getAbsolutePath(),
-                //"-swapUpAxis",
-                //"-autoUpAxis",
-                //"-flipUpAxis",
+                "-rotateX", "-90",
                 //"-debug",
         };
         Mago3DTilerMain.main(args);
