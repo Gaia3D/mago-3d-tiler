@@ -2846,7 +2846,17 @@ public class HalfEdgeSurface implements Serializable {
             int subImageH = Math.max((int) currentBoundary.getHeightInt(), 1);
 
             BufferedImage subImage = image.getSubimage(subImageMinX, subImageMinY, subImageW, subImageH);
-            g2d.drawImage(subImage, (int) batchedBoundary.getMinX(), (int) batchedBoundary.getMinY(), null);
+
+            // test random color for each splitImage.***************************************************************************************************
+            Color randomColor = new Color((float) Math.random(), (float) Math.random(), (float) Math.random(), 0.8f);
+            BufferedImage randomColoredImage = new BufferedImage(subImage.getWidth(), subImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
+            Graphics2D randomGraphics = randomColoredImage.createGraphics();
+            randomGraphics.setColor(randomColor);
+            randomGraphics.fillRect(0, 0, subImage.getWidth(), subImage.getHeight());
+            randomGraphics.dispose();
+
+            // g2d.drawImage(subImage, (int) batchedBoundary.getMinX(), (int) batchedBoundary.getMinY(), null); // original code.***
+            g2d.drawImage(randomColoredImage, (int) batchedBoundary.getMinX(), (int) batchedBoundary.getMinY(), null); // test code.***
         }
         g2d.dispose();
 
