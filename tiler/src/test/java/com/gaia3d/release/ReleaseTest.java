@@ -290,7 +290,7 @@ class ReleaseTest {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "ifc",
                 "-output", output.getAbsolutePath(),
-                //"-debug",
+                "-debug",
                 //"-glb"
         };
         Mago3DTilerMain.main(args);

@@ -227,7 +227,7 @@ public class AssimpConverter implements Converter {
                 float opacityValue = byteBuffer.getFloat();
                 if (opacityValue < 1.0f) {
                     opacity = opacityValue;
-                    log.info("Opacity: {}", opacityValue);
+                    //log.info("Opacity: {}", opacityValue);
                 }
             }
         }
