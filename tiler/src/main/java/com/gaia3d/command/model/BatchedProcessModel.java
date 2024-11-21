@@ -51,6 +51,7 @@ public class BatchedProcessModel implements ProcessFlowModel {
             geoTiffs = fileLoader.loadGridCoverages(geoTiffs);
         }
 
+
         /* Pre-process */
         List<PreProcess> preProcessors = new ArrayList<>();
         preProcessors.add(new GaiaTileInfoInitiator());

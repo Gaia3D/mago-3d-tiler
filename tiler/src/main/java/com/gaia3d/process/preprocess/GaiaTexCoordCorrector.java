@@ -37,19 +37,6 @@ public class GaiaTexCoordCorrector implements PreProcess {
             for (GaiaPrimitive primitive : allPrimitives) {
                 int matIdx = primitive.getMaterialIndex();
                 GaiaMaterial material = gaiaScene.getMaterials().get(matIdx);
-                // check textures name.***
-                Map<TextureType, List<GaiaTexture>> texturesMap = material.getTextures();
-                List<GaiaTexture> diffuseTextures = texturesMap.get(TextureType.DIFFUSE);
-                int texturesCount = diffuseTextures.size();
-                for(int i=0; i<texturesCount; i++) {
-                    GaiaTexture texture = diffuseTextures.get(i);
-                    String texPath = texture.getPath();
-                    if(Objects.equals(texPath, "textures/door_02.png"))
-                    {
-                        int hola = 0;
-                    }
-                }
-
                 translatePrimitiveTexCoordsToPositiveQuadrant(primitive);
             }
         }
@@ -107,11 +94,11 @@ public class GaiaTexCoordCorrector implements PreProcess {
                 double offsetX = 0.0;
                 double offsetY = 0.0;
                 if (texCoordOriginX < 0.0 || texCoordOriginX > 1.0) {
-                    offsetX = Math.floor(texCoordOriginX);
+                    offsetX = Math.round(texCoordOriginX);
                 }
 
                 if (texCoordOriginY < 0.0 || texCoordOriginY > 1.0) {
-                    offsetY = Math.floor(texCoordOriginY);
+                    offsetY = Math.round(texCoordOriginY);
                 }
 
                 List<GaiaVertex> vertices = primitive.getVertices();

@@ -286,7 +286,17 @@ public class GaiaTextureCoordinator {
             if (!textures.isEmpty()) {
                 GaiaTexture texture = textures.get(0);
                 BufferedImage source = texture.getBufferedImage();
-                graphics.drawImage(source, (int) splittedRectangle.getMinX(), (int) splittedRectangle.getMinY(), null);
+
+//                // test random color for each splitImage.***************************************************************************************************
+//                Color randomColor = new Color((float) Math.random(), (float) Math.random(), (float) Math.random(), 0.8f);
+//                BufferedImage randomColoredImage = new BufferedImage(source.getWidth(), source.getHeight(), BufferedImage.TYPE_INT_ARGB);
+//                Graphics2D randomGraphics = randomColoredImage.createGraphics();
+//                randomGraphics.setColor(randomColor);
+//                randomGraphics.fillRect(0, 0, source.getWidth(), source.getHeight());
+//                randomGraphics.dispose();
+
+                graphics.drawImage(source, (int) splittedRectangle.getMinX(), (int) splittedRectangle.getMinY(), null); // original code.***
+                //graphics.drawImage(randomColoredImage, (int) splittedRectangle.getMinX(), (int) splittedRectangle.getMinY(), null); // test code.***
             }
         }
 
@@ -327,18 +337,6 @@ public class GaiaTextureCoordinator {
             } else {
                 texture.setPath(ATLAS_IMAGE + ".jpg");
             }
-
-            // test save atlasTexture image.****
-            // Test.**************************************************
-            if (globalOptions.isDebugLod()) {
-                String extension = "jpg";
-                if (existPngTextures) {
-                    extension = "png";
-                }
-                String imageName = ATLAS_IMAGE + "_" + target.getMaterialId();
-                this.writeBatchedImage(imageName, extension);
-            }
-            // end test.----------------------------------------------
 
             List<GaiaBufferDataSet> materialBufferDataSets = bufferDataSets.stream().filter((bufferDataSet) -> bufferDataSet.getMaterialId() == target.getMaterialId()).collect(Collectors.toList());
 
@@ -386,6 +384,20 @@ public class GaiaTextureCoordinator {
 
             }
         }
+
+        // test save atlasTexture image.****
+        // Test.**************************************************
+        if (globalOptions.isDebugLod()) {
+            String extension = "jpg";
+            if (existPngTextures) {
+                extension = "png";
+            }
+            double random = Math.random();
+            int intRandom = (int) (random * 100000);
+            String imageName = ATLAS_IMAGE + "_Lod_" + lod.getLevel() + "_" + intRandom;
+            this.writeBatchedImage(imageName, extension);
+        }
+        // end test.----------------------------------------------
 
         if (isPhotorealistic) {
             // limit the max image size to 4028
@@ -445,7 +457,8 @@ public class GaiaTextureCoordinator {
 
     private void writeBatchedImage(String imageName, String imageExtension) {
         String outputPathString = globalOptions.getOutputPath();
-        File file = new File(globalOptions.getOutputPath(), "temp" + File.separator + "atlas");
+        //File file = new File(globalOptions.getOutputPath(), "temp" + File.separator + "atlas");
+        File file = new File(globalOptions.getOutputPath(), "atlas");
         if (!file.exists()) {
             if (!file.mkdirs()) {
                 log.error("Failed to create directory");
