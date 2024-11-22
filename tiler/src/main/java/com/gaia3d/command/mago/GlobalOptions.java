@@ -41,7 +41,7 @@ public class GlobalOptions {
     public static final int DEFAULT_POINT_PER_TILE = 100000;
     public static final int DEFAULT_POINT_RATIO = 25;
     public static final float POINTSCLOUD_HORIZONTAL_GRID = 2500.0f; // in meters
-    public static final float POINTSCLOUD_VERTICAL_GRID = 50.0f; // in meters
+    public static final float POINTSCLOUD_VERTICAL_GRID = 100.0f; // in meters
 
     private static final String DEFAULT_CRS = "3857"; // 4326 -> 3857
     private static final String DEFAULT_NAME_COLUMN = "name";
@@ -81,7 +81,8 @@ public class GlobalOptions {
     private boolean isSourcePrecision = false;
     private int pointsPerGrid = 65536; // Points Per Grid
     private int maximumPointPerTile = 0; // Maximum number of points per a tile
-    private int pointRatio = 25; // Percentage of points from original data
+    private int pointRatio = 50; // Percentage of points from original data
+    private boolean force4ByteRGB = false; // Force 4Byte RGB for pointscloud tile
 
     // Level of Detail
     private int minLod;
@@ -272,6 +273,7 @@ public class GlobalOptions {
         /* Point Cloud Options */
         instance.setMaximumPointPerTile(command.hasOption(ProcessOptions.MAX_POINTS.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_POINTS.getArgName())) : DEFAULT_POINT_PER_TILE);
         instance.setPointRatio(command.hasOption(ProcessOptions.POINT_PRECISION.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.POINT_PRECISION.getArgName())) : DEFAULT_POINT_RATIO);
+        instance.setForce4ByteRGB(command.hasOption(ProcessOptions.POINT_FORCE_4BYTE_RGB.getArgName()));
         //instance.setPointScale(command.hasOption(ProcessOptions.POINT_SCALE.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.POINT_SCALE.getArgName())) : DEFAULT_POINT_SCALE);
         //instance.setPointSkip(command.hasOption(ProcessOptions.POINT_SKIP.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.POINT_SKIP.getArgName())) : DEFAULT_POINT_SKIP);
 
@@ -378,6 +380,9 @@ public class GlobalOptions {
         //log.debug("Points Per Grid: {}", pointsPerGrid);
         //log.debug("PointCloud Scale: {}", pointScale);
         //log.debug("PointCloud Skip Interval: {}", pointSkip);
+        log.debug("Source Precision: {}", isSourcePrecision);
+        log.debug("PointCloud Ratio: {}", pointRatio);
+        log.debug("Force 4Byte RGB: {}", force4ByteRGB);
         log.debug("Debug Mode: {}", debug);
         log.debug("Debug LOD: {}", debugLod);
         log.debug("Debug GLB: {}", glb);

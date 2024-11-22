@@ -314,6 +314,36 @@ class ReleaseTest {
     }
 
     @Test
+    void testNoiseResult() {
+        String path = "NOISE-RESULT-GLB";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-output", output.getAbsolutePath(),
+                "-rotateX", "-90",
+                "-debug",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testNoiseResultNight() {
+        String path = "NOISE-RESULT-GLB-NIGHT";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-output", output.getAbsolutePath(),
+                "-rotateX", "-90",
+                "-debug",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
     void testCityGmlLod4() {
         String path = "RAIL-WAY-CITYGML3";
         File input = new File(INPUT_PATH, path);

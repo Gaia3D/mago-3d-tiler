@@ -203,6 +203,20 @@ public class StressTest {
     }
 
     @Test
+    void testDemoJingu() {
+        String path = "JINGU-LAS-MINI";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "las",
+                "-crs", "5187",
+                "-pointRatio", "100",
+                //"-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
     void testDemoLas() {
         String path = "DEMO-LAS";
         String[] args = new String[] {
