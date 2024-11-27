@@ -141,11 +141,11 @@ public class GaiaSurface extends SurfaceStructure implements Serializable {
         }
     }
 
-    public void deleteDegeneratedFaces()
+    public void deleteDegeneratedFaces(List<GaiaVertex> vertices)
     {
         List<GaiaFace> facesToDelete = new ArrayList<>();
         for (GaiaFace face : faces) {
-            if (face.isDegenerated()) {
+            if (face.isDegenerated(vertices)) {
                 facesToDelete.add(face);
             }
         }

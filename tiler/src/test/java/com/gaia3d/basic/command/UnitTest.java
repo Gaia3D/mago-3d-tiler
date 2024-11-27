@@ -875,8 +875,8 @@ class UnitTest {
 
     @Test
     void test_RealisticMesh_Thailand_Data_N_buildings() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\RealisticMesh_Thailand_multiTiles\\OBJ25sqkm\\Data_6buildings\\";
-        String outputPath = "D:\\data\\mago-server\\output\\Data_6buildings\\";
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\RealisticMesh_Thailand_multiTiles\\OBJ25sqkm\\Data_4buildings\\";
+        String outputPath = "D:\\data\\mago-server\\output\\Data_4buildings\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
@@ -888,39 +888,7 @@ class UnitTest {
                 "-su",
                 "-glb",
                 "-pr", // photo realistic mesh
-                "-minLod", "0",
-                "-maxLod", "3",
                 "-debug"
-        };
-        Mago3DTilerMain.main(args);
-    }
-
-    @Test
-    void GYANGGYO_INTERIOR_OBJ() {
-        String inputPath = "D:\\data\\positiveQuadrantErrorData\\GYANGGYO-INTERIOR-OBJ\\";
-        String outputPath = "D:\\data\\mago-server\\output\\GYANGGYO-INTERIOR-OBJ\\";
-        String[] args = new String[]{
-                "-i", inputPath,
-                "-it", "obj",
-                "-o", outputPath,
-                "-crs", "5186",
-                "-glb",
-                "-debug"
-        };
-        Mago3DTilerMain.main(args);
-    }
-
-    @Test
-    void dcLib_3ds_kml() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\complicatedDCLibrary\\";
-        String outputPath = "D:\\data\\mago-server\\output\\DC_Library\\";
-        String[] args = new String[]{
-                "-i", inputPath,
-                "-it", "kml",
-                "-o", outputPath,
-                "-glb",
-                "-debug"
-
         };
         Mago3DTilerMain.main(args);
     }

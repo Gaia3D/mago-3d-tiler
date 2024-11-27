@@ -132,15 +132,15 @@ public class Fbo {
             return;
         }
 
-        // Actualizar los valores de ancho y alto
+        // update the size of the FBO.***
         this.fboWidth = newWidth;
         this.fboHeight = newHeight;
 
-        // Primero, eliminar las texturas y buffers existentes
+        // Delete the color texture and the depth render buffer
         GL30.glDeleteTextures(colorTextureId);
         GL30.glDeleteRenderbuffers(depthRenderBufferId);
 
-        // Crear la nueva textura de color
+        // Create the new color texture
         colorTextureId = GL30.glGenTextures();
         GL30.glBindTexture(GL30.GL_TEXTURE_2D, colorTextureId);
 
@@ -150,18 +150,18 @@ public class Fbo {
         GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MAG_FILTER, GL30.GL_NEAREST);
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL30.GL_TEXTURE_2D, colorTextureId, 0);
 
-        // Crear el nuevo render buffer de profundidad
+        // Create the new depth render buffer
         depthRenderBufferId = GL30.glGenRenderbuffers();
         GL30.glBindRenderbuffer(GL30.GL_RENDERBUFFER, depthRenderBufferId);
         GL30.glRenderbufferStorage(GL30.GL_RENDERBUFFER, GL30.GL_DEPTH_COMPONENT, fboWidth, fboHeight);
         GL30.glFramebufferRenderbuffer(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL30.GL_RENDERBUFFER, depthRenderBufferId);
 
-        // Verificar si el FBO está completo
+        // Verify if the framebuffer is complete
         if (GL30.glCheckFramebufferStatus(GL30.GL_FRAMEBUFFER) != GL30.GL_FRAMEBUFFER_COMPLETE) {
             System.err.println("Error: Framebuffer is not complete after resizing!");
         }
 
-        // Desvincular el framebuffer
+        // Unbind the framebuffer
         unbind();
     }
 }

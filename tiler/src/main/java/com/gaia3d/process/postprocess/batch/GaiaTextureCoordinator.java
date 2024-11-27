@@ -302,10 +302,10 @@ public class GaiaTextureCoordinator {
 
         // Test.****************************************************************************
         if (globalOptions.isDebugLod()) {
-            float[] debugColor = lod.getDebugColor();
-            Color color = new Color(debugColor[0], debugColor[1], debugColor[2], 0.6f);
-            graphics.setColor(color);
-            graphics.fillRect(0, 0, maxWidth, maxHeight);
+//            float[] debugColor = lod.getDebugColor();
+//            Color color = new Color(debugColor[0], debugColor[1], debugColor[2], 0.6f);
+//            graphics.setColor(color);
+//            graphics.fillRect(0, 0, maxWidth, maxHeight);
         }
         // End test.-------------------------------------------------------------------------
 
