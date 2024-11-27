@@ -492,13 +492,16 @@ public class GaiaBatcher {
             colorList[i + 3] = (byte) (diffuseColor.w * 255);
         }
 
-        GaiaBuffer colorBuffer = new GaiaBuffer();
-        colorBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
-        colorBuffer.setGlType(GL20.GL_UNSIGNED_BYTE);
-        colorBuffer.setElementsCount(elementsCount);
-        colorBuffer.setGlDimension((byte) 4);
-        colorBuffer.setBytes(colorList);
-        bufferDataSet.getBuffers().put(AttributeType.COLOR, colorBuffer);
+        GaiaBuffer colorBuffer = bufferMap.get(AttributeType.COLOR);
+        if (colorBuffer == null) {
+            colorBuffer = new GaiaBuffer();
+            colorBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
+            colorBuffer.setGlType(GL20.GL_UNSIGNED_BYTE);
+            colorBuffer.setElementsCount(elementsCount);
+            colorBuffer.setGlDimension((byte) 4);
+            colorBuffer.setBytes(colorList);
+            bufferDataSet.getBuffers().put(AttributeType.COLOR, colorBuffer);
+        }
     }
 
     private GaiaBufferDataSet batchVertices(List<GaiaBufferDataSet> bufferDataSets) {

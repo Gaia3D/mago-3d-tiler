@@ -219,8 +219,7 @@ public class GaiaTextureCoordinator {
 
                 // check if the texture is photorealistic and the lod level is greater than 2
                 int lodLevel = lod.getLevel();
-                if(isPhotorealistic)
-                {
+                if (isPhotorealistic) {
                     scaleFactor = 1.0f;
                 }
                 bufferedImage = texture.getBufferedImage(scaleFactor);
@@ -237,8 +236,7 @@ public class GaiaTextureCoordinator {
             splittedImages.add(splittedImage);
         }
 
-        if(splittedImages.size() < 2)
-        {
+        if (splittedImages.size() < 2) {
             return;
         }
 
@@ -416,8 +414,7 @@ public class GaiaTextureCoordinator {
                     imageHeight = 1024;
                     sizeChanged = true;
                 }
-            }
-            else if (lodLevel == 1) {
+            } else if (lodLevel == 1) {
                 if (imageWidth > lod2size) {
                     imageWidth = lod2size;
                     sizeChanged = true;
@@ -426,8 +423,7 @@ public class GaiaTextureCoordinator {
                     imageHeight = lod2size;
                     sizeChanged = true;
                 }
-            }
-            else if (lodLevel == 2) {
+            } else if (lodLevel == 2) {
                 if (imageWidth > lod2size) {
                     imageWidth = lod2size;
                     sizeChanged = true;
@@ -436,8 +432,7 @@ public class GaiaTextureCoordinator {
                     imageHeight = lod2size;
                     sizeChanged = true;
                 }
-            }
-            else if (lodLevel > 2) {
+            } else if (lodLevel > 2) {
                 if (imageWidth > lod2size) {
                     imageWidth = lod2size;
                     sizeChanged = true;

@@ -720,7 +720,7 @@ public abstract class AbstractGeometryConverter {
             pointsMap.put(vertex.getPosition(), m);
         }
 
-        primitive.setVertices(vertexList); // total vertex list.***
+        primitive.setVertices(vertexList);
 
         List<Integer> resultTrianglesIndices = new ArrayList<>();
 

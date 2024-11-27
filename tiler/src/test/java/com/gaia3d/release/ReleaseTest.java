@@ -251,7 +251,6 @@ class ReleaseTest {
         Mago3DTilerMain.main(args);
     }
 
-    @Disabled
     @Test
     void testGeojsonPolygon() {
         String path = "NAMYANGJU-WANGSUK-GEOJSON";
@@ -276,6 +275,7 @@ class ReleaseTest {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "kml",
                 "-output", output.getAbsolutePath(),
+                "-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -290,7 +290,7 @@ class ReleaseTest {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "ifc",
                 "-output", output.getAbsolutePath(),
-                //"-debug",
+                "-debug",
                 //"-glb"
         };
         Mago3DTilerMain.main(args);
@@ -314,6 +314,36 @@ class ReleaseTest {
     }
 
     @Test
+    void testNoiseResult() {
+        String path = "NOISE-RESULT-GLB";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-output", output.getAbsolutePath(),
+                "-rotateX", "-90",
+                "-debug",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testNoiseResultNight() {
+        String path = "NOISE-RESULT-GLB-NIGHT";
+        File input = new File(INPUT_PATH, path);
+        File output = new File(OUTPUT_PATH, path);
+        FileUtils.deleteQuietly(output);
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-output", output.getAbsolutePath(),
+                "-rotateX", "-90",
+                "-debug",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
     void testCityGmlLod4() {
         String path = "RAIL-WAY-CITYGML3";
         File input = new File(INPUT_PATH, path);
@@ -323,6 +353,7 @@ class ReleaseTest {
                 "-input", input.getAbsolutePath(),
                 "-inputType", "citygml",
                 "-output", output.getAbsolutePath(),
+                "-crs", "5186",
                 "-debug",
         };
         Mago3DTilerMain.main(args);
@@ -437,9 +468,7 @@ class ReleaseTest {
                 "-inputType", "obj",
                 "-crs", "27700",
                 "-output", output.getAbsolutePath(),
-                //"-swapUpAxis",
-                //"-autoUpAxis",
-                //"-flipUpAxis",
+                "-rotateX", "-90",
                 //"-debug",
         };
         Mago3DTilerMain.main(args);

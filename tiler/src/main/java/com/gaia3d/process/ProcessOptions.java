@@ -43,6 +43,7 @@ public enum ProcessOptions {
     //POINT_SKIP("pointSkip", "pk", "pointSkip", true, "Number of Pointscloud omissions (ex: 1/4)(Default: 4)"),
     POINT_RATIO("pointRatio", "pr", "pointRatio", true, "Percentage of points from original data (Default: 50)"),
     POINT_PRECISION("sourcePrecision", "sp", "sourcePrecision", false, "Create pointscloud tile with original precision. (Slow)"),
+    POINT_FORCE_4BYTE_RGB("force4ByteRGB", "f4", "force4ByteRGB", false, "Force 4Byte RGB for pointscloud tile."),
 
     ROTATE_X_AXIS("rotateXAxis", "rx", "rotateXAxis", true, "Rotate the X-Axis in degrees (Unit: degrees)(Default: 0.0)"),
 

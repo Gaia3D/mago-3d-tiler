@@ -307,6 +307,8 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             GaiaPrimitive primitive = createPrimitiveFromGaiaExtrusionSurfaces(extrusionSurfaces);
             if (primitive.getSurfaces().isEmpty() || primitive.getVertices().size() < 3) {
                 log.debug("Invalid Geometry : {}", building.getId());
+                log.debug("Vertices count : {}", primitive.getVertices().size());
+                log.debug("Surfaces count : {}", primitive.getSurfaces().size());
                 continue;
             }
 

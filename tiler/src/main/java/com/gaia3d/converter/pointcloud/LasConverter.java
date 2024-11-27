@@ -152,8 +152,12 @@ public class LasConverter {
             double x = point.getX() * xScaleFactor + xOffset;
             double y = point.getY() * yScaleFactor + yOffset;
             double z = point.getZ() * zScaleFactor + zOffset;
-            byte[] rgb = getColorByRGB(point);
-            //byte[] rgb = getColorByByteRGB(point); // only for test
+            byte[] rgb;
+            if (globalOptions.isForce4ByteRGB()) {
+                rgb = getColorByByteRGB(point); // only for test
+            } else {
+                rgb = getColorByRGB(point);
+            }
             Vector3d position = new Vector3d(x, y, z);
 
             GaiaVertex vertex = new GaiaVertex();

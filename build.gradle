@@ -1,6 +1,6 @@
 subprojects {
     group "com.gaia3d"
-    version "1.10.0"
+    version "1.10.1"
     apply plugin: 'java'
 
     dependencies {
