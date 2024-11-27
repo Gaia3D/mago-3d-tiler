@@ -47,7 +47,7 @@ public class Window {
         }
 
         glfwDefaultWindowHints();
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+        glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
         glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
         //glfwWindowHint(GLFW_SAMPLES, 4);
@@ -81,6 +81,8 @@ public class Window {
 //        }
         //-------------------------------------------------------------------------------------------------------------
 
+        glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
+
         if (opts.width > 0 && opts.height > 0) {
             this.width = opts.width;
             this.height = opts.height;
@@ -92,8 +94,8 @@ public class Window {
             height = vidMode.height();
         }
 
-        this.width = 1;
-        this.height = 1;
+        this.width = 3500;
+        this.height = 1800;
 
         windowHandle = glfwCreateWindow(width, height, title, NULL, NULL);
         if (windowHandle == NULL) {

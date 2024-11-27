@@ -273,4 +273,13 @@ public class GaiaNode extends NodeStructure implements Serializable {
             child.deleteDegeneratedFaces();
         }
     }
+
+    public void extractPrimitives(List<GaiaPrimitive> resultPrimitives) {
+        for (GaiaMesh mesh : this.getMeshes()) {
+            mesh.extractPrimitives(resultPrimitives);
+        }
+        for (GaiaNode child : this.getChildren()) {
+            child.extractPrimitives(resultPrimitives);
+        }
+    }
 }

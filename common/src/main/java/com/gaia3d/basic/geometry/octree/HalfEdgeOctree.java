@@ -1,7 +1,9 @@
 package com.gaia3d.basic.geometry.octree;
 
+import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
+import com.gaia3d.basic.halfedge.HalfEdgeFace;
+import com.gaia3d.basic.halfedge.HalfEdgeSurface;
 import com.gaia3d.basic.halfedge.HalfEdgeVertex;
-import com.gaia3d.basic.model.GaiaVertex;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -14,21 +16,23 @@ import java.util.List;
 @Setter
 @Getter
 
-public class HalfEdgeOctreeVertices {
-    private HalfEdgeOctreeVertices parent = null;
+public class HalfEdgeOctree {
+    private HalfEdgeOctree parent = null;
     private double minX, minY, minZ;
     private double maxX, maxY, maxZ;
     private int idx = -1;
     private GaiaOctreeCoordinate coordinate = new GaiaOctreeCoordinate();
     private int maxDepth = 5;
     private double minBoxSize = 0.1;
-    private HalfEdgeOctreeVertices[] children = null;
+    private HalfEdgeOctree[] children = null;
     //-----------------------------------------------------------------------------------
     private List<HalfEdgeVertex> vertices = new ArrayList<>();
+    private List<HalfEdgeFace> faces = new ArrayList<>();
+    private List<HalfEdgeSurface> surfaces = new ArrayList<>();
 
 
 
-    public HalfEdgeOctreeVertices(HalfEdgeOctreeVertices parent) {
+    public HalfEdgeOctree(HalfEdgeOctree parent) {
         this.parent = parent;
 
         if (parent != null) {
@@ -48,9 +52,9 @@ public class HalfEdgeOctreeVertices {
     }
 
     public void createChildren() {
-        children = new HalfEdgeOctreeVertices[8];
+        children = new HalfEdgeOctree[8];
         for (int i = 0; i < 8; i++) {
-            children[i] = new HalfEdgeOctreeVertices(this);
+            children[i] = new HalfEdgeOctree(this);
             children[i].idx = i;
         }
 
@@ -90,6 +94,19 @@ public class HalfEdgeOctreeVertices {
         }
     }
 
+    public void makeTreeByMaxDepth(int maxDepth) {
+        if (this.coordinate.getDepth() >= maxDepth) {
+            return;
+        }
+
+        createChildren();
+        distributeContents();
+
+        for (HalfEdgeOctree child : children) {
+            child.makeTreeByMaxDepth(maxDepth);
+        }
+    }
+
     public void makeTreeByMinBoxSize(double minBoxSize) {
         if ((maxX - minX) < minBoxSize || (maxY - minY) < minBoxSize || (maxZ - minZ) < minBoxSize) {
             return;
@@ -106,7 +123,7 @@ public class HalfEdgeOctreeVertices {
         createChildren();
         distributeContents();
 
-        for (HalfEdgeOctreeVertices child : children) {
+        for (HalfEdgeOctree child : children) {
             child.makeTreeByMinBoxSize(minBoxSize);
         }
     }
@@ -133,7 +150,7 @@ public class HalfEdgeOctreeVertices {
         createChildren();
         distributeContents();
 
-        for (HalfEdgeOctreeVertices child : children) {
+        for (HalfEdgeOctree child : children) {
             child.makeTreeByMinVertexCount(minVertexCount);
         }
     }
@@ -181,6 +198,71 @@ public class HalfEdgeOctreeVertices {
         this.maxX = maxX;
         this.maxY = maxY;
         this.maxZ = maxZ;
+    }
+
+    public void distributeFacesToLeaf()
+    {
+        if(this.faces.isEmpty())
+            return;
+
+        if(this.children == null)
+            return;
+
+        double midX = (minX + maxX) / 2.0;
+        double midY = (minY + maxY) / 2.0;
+        double midZ = (minZ + maxZ) / 2.0;
+
+        for(HalfEdgeFace face : this.faces)
+        {
+            Vector3d center = face.getBarycenter(null);
+            if(center.x < midX)
+            {
+                if(center.y < midY)
+                {
+                    if(center.z < midZ)
+                    {
+                        children[0].faces.add(face);
+                    }
+                    else
+                    {
+                        children[4].faces.add(face);
+                    }
+                }
+                else
+                {
+                    if(center.z < midZ)
+                    {
+                        children[3].faces.add(face);
+                    }
+                    else
+                    {
+                        children[7].faces.add(face);
+                    }
+                }
+            }
+            else {
+                if (center.y < midY) {
+                    if (center.z < midZ) {
+                        children[1].faces.add(face);
+                    } else {
+                        children[5].faces.add(face);
+                    }
+                } else {
+                    if (center.z < midZ) {
+                        children[2].faces.add(face);
+                    } else {
+                        children[6].faces.add(face);
+                    }
+                }
+            }
+        }
+
+        this.faces.clear();
+
+        for(HalfEdgeOctree child : children)
+        {
+            child.distributeFacesToLeaf();
+        }
     }
 
     public void distributeContents() {
@@ -233,13 +315,25 @@ public class HalfEdgeOctreeVertices {
         vertices.add(vertex);
     }
 
-    public void extractOctreesWithContents(List<HalfEdgeOctreeVertices> octrees) {
+    public void extractOctreesWithFaces(List<HalfEdgeOctree> octrees) {
+        if (!faces.isEmpty()) {
+            octrees.add(this);
+        }
+
+        if (children != null) {
+            for (HalfEdgeOctree child : children) {
+                child.extractOctreesWithFaces(octrees);
+            }
+        }
+    }
+
+    public void extractOctreesWithContents(List<HalfEdgeOctree> octrees) {
         if (!vertices.isEmpty()) {
             octrees.add(this);
         }
 
         if (children != null) {
-            for (HalfEdgeOctreeVertices child : children) {
+            for (HalfEdgeOctree child : children) {
                 child.extractOctreesWithContents(octrees);
             }
         }

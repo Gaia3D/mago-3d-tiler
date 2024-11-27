@@ -238,4 +238,22 @@ public class HalfEdgePrimitive implements Serializable {
             surface.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
         }
     }
+
+    public void translate(Vector3d translation) {
+        for (HalfEdgeSurface surface : surfaces) {
+            surface.translate(translation);
+        }
+    }
+
+    public void doTrianglesReductionOneIteration(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount) {
+        for (HalfEdgeSurface surface : surfaces) {
+            surface.doTrianglesReductionOneIteration(maxDiffAngDegrees, hedgeMinLength, frontierMaxDiffAngDeg, maxAspectRatio, maxCollapsesCount);
+        }
+    }
+
+    public void splitFacesByBestPlanesToProject() {
+        for (HalfEdgeSurface surface : surfaces) {
+            surface.splitFacesByBestPlanesToProject();
+        }
+    }
 }

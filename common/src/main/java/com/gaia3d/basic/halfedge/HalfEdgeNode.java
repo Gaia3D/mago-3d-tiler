@@ -296,4 +296,40 @@ public class HalfEdgeNode implements Serializable {
             child.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
         }
     }
+
+    public void translate(Vector3d translation) {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.translate(translation);
+        }
+        for (HalfEdgeNode child : children) {
+            child.translate(translation);
+        }
+    }
+
+    public void doTrianglesReductionOneIteration(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount) {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.doTrianglesReductionOneIteration(maxDiffAngDegrees, hedgeMinLength, frontierMaxDiffAngDeg, maxAspectRatio, maxCollapsesCount);
+        }
+        for (HalfEdgeNode child : children) {
+            child.doTrianglesReductionOneIteration(maxDiffAngDegrees, hedgeMinLength, frontierMaxDiffAngDeg, maxAspectRatio, maxCollapsesCount);
+        }
+    }
+
+    public void splitFacesByBestPlanesToProject() {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.splitFacesByBestPlanesToProject();
+        }
+        for (HalfEdgeNode child : children) {
+            child.splitFacesByBestPlanesToProject();
+        }
+    }
+
+    public void extractPrimitives(List<HalfEdgePrimitive> resultPrimitives) {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.extractPrimitives(resultPrimitives);
+        }
+        for (HalfEdgeNode child : children) {
+            child.extractPrimitives(resultPrimitives);
+        }
+    }
 }

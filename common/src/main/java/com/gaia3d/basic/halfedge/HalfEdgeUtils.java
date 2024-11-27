@@ -1,6 +1,7 @@
 package com.gaia3d.basic.halfedge;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.octree.GaiaOctreeVertices;
 import com.gaia3d.basic.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
@@ -534,9 +535,6 @@ public class HalfEdgeUtils {
                 HalfEdgeFace halfEdgeFace = HalfEdgeUtils.halfEdgeFaceFromGaiaFace(gaiaTriangleFace, gaiaVertices, halfEdgeSurface, mapGaiaVertexToHalfEdgeVertex);
                 halfEdgeSurface.getFaces().add(halfEdgeFace);
             }
-            // old.***
-//            HalfEdgeFace halfEdgeFace = HalfEdgeUtils.halfEdgeFaceFromGaiaFace(gaiaFace, gaiaVertices, halfEdgeSurface, mapGaiaVertexToHalfEdgeVertex);
-//            halfEdgeSurface.getFaces().add(halfEdgeFace);
         }
 
         List<HalfEdgeVertex> halfEdgeVertices = new ArrayList<>(mapGaiaVertexToHalfEdgeVertex.values());
@@ -1101,6 +1099,161 @@ public class HalfEdgeUtils {
         double height = 2.0 * area / longest;
 
         return longest / height;
+    }
+
+    private static void getWeldableVertexMap(Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster, List<GaiaVertex> vertices, double error, boolean checkTexCoord, boolean checkNormal,
+                                      boolean checkColor, boolean checkBatchId) {
+        Map<GaiaVertex, GaiaVertex> visitedMap = new HashMap<>();
+        int verticesCount = vertices.size();
+        for (int i = 0; i < verticesCount; i++) {
+            GaiaVertex vertex = vertices.get(i);
+            if (visitedMap.containsKey(vertex)) {
+                continue;
+            }
+
+            mapVertexToVertexMaster.put(vertex, vertex);
+
+            for (int j = i + 1; j < verticesCount; j++) {
+                GaiaVertex vertex2 = vertices.get(j);
+                if (visitedMap.containsKey(vertex2)) {
+                    continue;
+                }
+                if (vertex.isWeldable(vertex2, error, checkTexCoord, checkNormal, checkColor, checkBatchId)) {
+                    mapVertexToVertexMaster.put(vertex2, vertex);
+
+                    visitedMap.put(vertex, vertex);
+                    visitedMap.put(vertex2, vertex2);
+                }
+            }
+        }
+    }
+
+    public static void weldVerticesGaiaSurface(GaiaSurface gaiaSurface, List<GaiaVertex> gaiaVertices, double error, boolean checkTexCoord,
+                                               boolean checkNormal, boolean checkColor, boolean checkBatchId) {
+        // Weld the vertices.***
+        GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null);
+        octreeVertices.getVertices().addAll(gaiaVertices);
+        octreeVertices.calculateSize();
+        octreeVertices.setAsCube();
+        octreeVertices.setMaxDepth(10);
+        octreeVertices.setMinBoxSize(1.0); // 1m.***
+
+        octreeVertices.makeTreeByMinVertexCount(50);
+
+        List<GaiaOctreeVertices> octreesWithContents = new ArrayList<>();
+        octreeVertices.extractOctreesWithContents(octreesWithContents);
+
+        Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster = new HashMap<>();
+
+        for (GaiaOctreeVertices octree : octreesWithContents) {
+            List<GaiaVertex> vertices = octree.getVertices();
+            getWeldableVertexMap(mapVertexToVertexMaster, vertices, error, checkTexCoord, checkNormal, checkColor, checkBatchId);
+        }
+
+        Map<GaiaVertex, GaiaVertex> mapVertexMasters = new HashMap<>();
+        for (GaiaVertex vertexMaster : mapVertexToVertexMaster.values()) {
+            mapVertexMasters.put(vertexMaster, vertexMaster);
+        }
+
+        List<GaiaVertex> newVerticesArray = new ArrayList<>(mapVertexMasters.values());
+
+        Map<GaiaVertex, Integer> vertexIdxMap = new HashMap<>();
+        int verticesCount = newVerticesArray.size();
+        for (int i = 0; i < verticesCount; i++) {
+            vertexIdxMap.put(newVerticesArray.get(i), i);
+        }
+
+        // Now, update the indices of the faces.***
+        Map<GaiaFace, GaiaFace> mapDeleteFaces = new HashMap<>();
+
+        int facesCount = gaiaSurface.getFaces().size();
+        for (int j = 0; j < facesCount; j++) {
+            GaiaFace face = gaiaSurface.getFaces().get(j);
+            int[] indices = face.getIndices();
+            for (int k = 0; k < indices.length; k++) {
+                GaiaVertex vertex = gaiaVertices.get(indices[k]);
+                GaiaVertex vertexMaster = mapVertexToVertexMaster.get(vertex);
+                int index = vertexIdxMap.get(vertexMaster);
+                indices[k] = index;
+            }
+
+            // check indices.***
+            for (int k = 0; k < indices.length; k++) {
+                int index = indices[k];
+                for (int m = k + 1; m < indices.length; m++) {
+                    if (index == indices[m]) {
+                        // must remove the face.***
+                        mapDeleteFaces.put(face, face);
+                    }
+                }
+            }
+        }
+
+        if (!mapDeleteFaces.isEmpty()) {
+            List<GaiaFace> newFaces = new ArrayList<>();
+            for (int j = 0; j < facesCount; j++) {
+                GaiaFace face = gaiaSurface.getFaces().get(j);
+                if (!mapDeleteFaces.containsKey(face)) {
+                    newFaces.add(face);
+                }
+            }
+            gaiaSurface.setFaces(newFaces);
+        }
+
+        // delete no used vertices
+        for (GaiaVertex vertex : gaiaVertices) {
+            if (!mapVertexMasters.containsKey(vertex)) {
+                vertex.clear();
+            }
+        }
+        gaiaVertices.clear();
+        gaiaVertices.addAll(newVerticesArray);
+    }
+
+    public static Map<PlaneType, List<HalfEdgeFace>> makeMapPlaneTypeFacesList(List<HalfEdgeFace> facesList, Map<PlaneType, List<HalfEdgeFace>> mapPlaneTypeFacesList)
+    {
+        if(mapPlaneTypeFacesList == null)
+        {
+            mapPlaneTypeFacesList = new HashMap<>();
+        }
+        int facesCount = facesList.size();
+        for(int i=0; i<facesCount; i++)
+        {
+            HalfEdgeFace face = facesList.get(i);
+            PlaneType planeType = face.getBestPlaneToProject();
+            List<HalfEdgeFace> faces = mapPlaneTypeFacesList.computeIfAbsent(planeType, k -> new ArrayList<>());
+            faces.add(face);
+        }
+        return mapPlaneTypeFacesList;
+    }
+
+    public static GaiaBoundingBox getBoundingBoxOfFaces(List<HalfEdgeFace> faces)
+    {
+        GaiaBoundingBox boundingBox = new GaiaBoundingBox();
+        boundingBox.setMinX(Double.MAX_VALUE);
+        boundingBox.setMinY(Double.MAX_VALUE);
+        boundingBox.setMinZ(Double.MAX_VALUE);
+        boundingBox.setMaxX(-Double.MAX_VALUE);
+        boundingBox.setMaxY(-Double.MAX_VALUE);
+        boundingBox.setMaxZ(-Double.MAX_VALUE);
+
+        int facesCount = faces.size();
+        List<HalfEdgeVertex> vertices = new ArrayList<>();
+        for(int i=0; i<facesCount; i++)
+        {
+            HalfEdgeFace face = faces.get(i);
+            vertices = face.getVertices(vertices);
+        }
+
+        int verticesCount = vertices.size();
+        for(int i=0; i<verticesCount; i++)
+        {
+            HalfEdgeVertex vertex = vertices.get(i);
+            Vector3d pos = vertex.getPosition();
+            boundingBox.addPoint(pos);
+        }
+
+        return boundingBox;
     }
 
 }

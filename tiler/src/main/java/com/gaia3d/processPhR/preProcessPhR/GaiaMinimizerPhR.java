@@ -13,7 +13,6 @@ import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.preprocess.PreProcess;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.imageio.ImageIO;
@@ -41,7 +40,8 @@ public class GaiaMinimizerPhR implements PreProcess {
             boolean checkNormal = false;
             boolean checkColor = false;
             boolean checkBatchId = false;
-            double error = 1e-6;
+            double error = 1e-4;
+//            scene.joinAllSurfaces();
             scene.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
             scene.deleteDegeneratedFaces();
 //            HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
@@ -74,7 +74,33 @@ public class GaiaMinimizerPhR implements PreProcess {
             // Lod 0.************************************************************************************************************
             log.info("Minimize GaiaScene LOD 0 , Path : {}", tileInfo.getTempPath());
 
+            // Test triangles reduction for lod0.*********************************************************************************
+            HalfEdgeScene halfEdgeSceneLod0 = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
+
+            // Test decimate.******************************************************************************
+//            TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
+//            List<GaiaScene> gaiaSceneList = new ArrayList<>();
+//            gaiaSceneList.add(scene);
+//            List<GaiaScene> resultDecimatedScenes = new ArrayList<>();
+//            tilerExtensionModule.renderDecimate(gaiaSceneList, resultDecimatedScenes);
+            // End test decimate.--------------------------------------------------------------------------
+//
+//
+//            log.info("Doing triangles reduction in HalfEdgeScene");
+            double maxDiffAngDegrees = 45.0;
+            double hedgeMinLength = 0.25;
+            double frontierMaxDiffAngDeg = 5.0;
+            double maxAspectRatio = 10.0;
+//            halfEdgeSceneLod0.doTrianglesReduction(maxDiffAngDegrees, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio);
+//
+//            GaiaBoundingBox gaiaBoundingBox = halfEdgeSceneLod0.getBoundingBox();
+//            halfEdgeSceneLod0.setBoxTexCoordsXY(gaiaBoundingBox);
+//
+//            GaiaScene sceneLod0 = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneLod0);
+            //----------------------------------------------------------------------------------------------------------------------
+
             GaiaSet tempSetLod0 = GaiaSet.fromGaiaScene(scene);
+            //GaiaSet tempSetLod0 = GaiaSet.fromGaiaScene(sceneLod0);
             Path tempPathLod0 = tempSetLod0.writeFile(tileInfo.getTempPath(), tileInfo.getSerial(), tempSetLod0.getAttribute());
             tileInfo.setTempPath(tempPathLod0);
             tempPathLod.add(tempPathLod0);
@@ -85,11 +111,13 @@ public class GaiaMinimizerPhR implements PreProcess {
             HalfEdgeScene halfEdgeSceneLod1 = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 
             log.info("Doing triangles reduction in HalfEdgeScene");
-            double maxDiffAngDegrees = 70.0;
-            double hedgeMinLength = 0.25;
-            double frontierMaxDiffAngDeg = 5.0;
-            double maxAspectRatio = 12.0;
+            maxDiffAngDegrees = 70.0;
+            hedgeMinLength = 0.25;
+            frontierMaxDiffAngDeg = 5.0;
+            maxAspectRatio = 12.0;
             halfEdgeSceneLod1.doTrianglesReduction(maxDiffAngDegrees, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio);
+
+            //halfEdgeSceneLod1.setBoxTexCoordsXY(gaiaBoundingBox);
             //halfEdgeScene.calculateNormals();
 
 
@@ -115,6 +143,8 @@ public class GaiaMinimizerPhR implements PreProcess {
             frontierMaxDiffAngDeg = 20.0;
             maxAspectRatio = 7.0;
             halfEdgeSceneLod2.doTrianglesReduction(maxDiffAngDegrees, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio);
+
+            //halfEdgeSceneLod2.setBoxTexCoordsXY(gaiaBoundingBox);
             //halfEdgeScene.calculateNormals();
 
 

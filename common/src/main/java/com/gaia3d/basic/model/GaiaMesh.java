@@ -279,4 +279,13 @@ public class GaiaMesh extends MeshStructure implements Serializable {
             primitive.deleteDegeneratedFaces();
         }
     }
+
+    public void extractPrimitives(List<GaiaPrimitive> resultPrimitives) {
+        if (resultPrimitives == null) {
+            resultPrimitives = new ArrayList<>();
+        }
+        for (GaiaPrimitive primitive : primitives) {
+            resultPrimitives.add(primitive);
+        }
+    }
 }

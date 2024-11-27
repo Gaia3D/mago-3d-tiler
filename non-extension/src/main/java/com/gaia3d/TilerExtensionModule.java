@@ -43,6 +43,10 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
+    public void renderDecimate(List<GaiaScene> scenes, List<GaiaScene> resultScenes) {
+    }
+
+    @Override
     public void deleteObjects() {
     }
 }

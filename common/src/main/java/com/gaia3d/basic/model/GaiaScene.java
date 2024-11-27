@@ -103,6 +103,44 @@ public class GaiaScene extends SceneStructure implements Serializable {
         }
     }
 
+    public void joinAllSurfaces() {
+        GaiaNode rootNode = this.nodes.get(0);
+
+        GaiaMesh meshMaster = new GaiaMesh();
+        GaiaPrimitive primitiveMaster = new GaiaPrimitive();
+        GaiaSurface surfaceMaster = new GaiaSurface();
+        primitiveMaster.getSurfaces().add(surfaceMaster);
+        meshMaster.getPrimitives().add(primitiveMaster);
+
+        List<GaiaPrimitive> allPrimitives = this.extractPrimitives(null);
+        int primitivesCount = allPrimitives.size();
+        for (int i = 0; i < primitivesCount; i++) {
+            GaiaPrimitive primitive = allPrimitives.get(i);
+            primitiveMaster.addPrimitive(primitive);
+        }
+
+        List<GaiaNode> children = rootNode.getChildren();
+        for (GaiaNode child : children) {
+            child.getMeshes().clear();
+        }
+        children.clear();
+
+        GaiaNode node = new GaiaNode();
+        node.getMeshes().add(meshMaster);
+
+        children.add(node);
+    }
+
+    public List<GaiaPrimitive> extractPrimitives(List<GaiaPrimitive> resultPrimitives) {
+        if(resultPrimitives == null) {
+            resultPrimitives = new ArrayList<>();
+        }
+        for (GaiaNode node : this.nodes) {
+            node.extractPrimitives(resultPrimitives);
+        }
+        return resultPrimitives;
+    }
+
     public void doNormalLengthUnitary() {
         for (GaiaNode node : this.nodes) {
             node.doNormalLengthUnitary();

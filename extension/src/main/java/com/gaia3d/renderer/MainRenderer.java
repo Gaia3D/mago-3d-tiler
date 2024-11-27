@@ -3,6 +3,9 @@ package com.gaia3d.renderer;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.exchangable.SceneInfo;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.halfedge.HalfEdgeScene;
+import com.gaia3d.basic.halfedge.HalfEdgeUtils;
+import com.gaia3d.basic.model.GaiaMaterial;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.renderer.engine.Engine;
@@ -17,6 +20,8 @@ import com.gaia3d.renderer.engine.graph.ShaderProgram;
 import com.gaia3d.renderer.engine.scene.Camera;
 import com.gaia3d.renderer.engine.scene.Projection;
 import com.gaia3d.renderer.renderable.RenderableGaiaScene;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
@@ -32,6 +37,8 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 
 @Slf4j
+@Getter
+@Setter
 public class MainRenderer implements IAppLogic {
     private Engine engine = new Engine("MagoVisual3D", new Window.WindowOptions(), this);
     private InternDataConverter internDataConverter = new InternDataConverter();
@@ -45,6 +52,80 @@ public class MainRenderer implements IAppLogic {
             log.error("Error initializing the engine: ", e);
         }
 
+    }
+
+    public void setColorMode(int colorMode)
+    {
+        this.engine.getRenderer().setColorMode(colorMode);
+        this.engine.getHalfEdgeRenderer().setColorMode(colorMode);
+    }
+
+    public void renderDecimate(List<GaiaScene> scenes, List<GaiaScene> resultScenes) {
+
+        // Must init gl.***
+        try{
+            engine.init();
+        } catch (Exception e) {
+            log.error("Error initializing the engine: " ,e);
+        }
+
+        GaiaScenesContainer gaiaScenesContainer = engine.getGaiaScenesContainer();
+        List<HalfEdgeScene> halfEdgeScenes = new ArrayList<>();
+        int scenesCount = scenes.size();
+        List<RenderableGaiaScene> renderableGaiaScenes = new ArrayList<>();
+
+        boolean checkTexCoord = false;
+        boolean checkNormal = false;
+        boolean checkColor = false;
+        boolean checkBatchId = false;
+        double error = 1e-4;
+
+        for(int i = 0; i < scenesCount; i++)
+        {
+            GaiaScene gaiaScene = scenes.get(i);
+
+            // 1rst, make the renderableGaiaScene.***
+            RenderableGaiaScene renderableScene = internDataConverter.getRenderableGaiaScene(gaiaScene);
+            renderableGaiaScenes.add(renderableScene);
+
+            // 2nd, make the halfEdgeScene.***
+            gaiaScene.joinAllSurfaces();
+            gaiaScene.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
+            gaiaScene.deleteDegeneratedFaces();
+
+            // Must delete materials because we joined all surfaces into one surface.***
+            int materialsCount = gaiaScene.getMaterials().size();
+            for (int j = 0; j < materialsCount; j++) {
+                GaiaMaterial material = gaiaScene.getMaterials().get(j);
+                material.clear();
+            }
+            gaiaScene.getMaterials().clear();
+
+            HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaScene);
+            halfEdgeScenes.add(halfEdgeScene);
+        }
+
+        engine.setHalfEdgeScenes(halfEdgeScenes);
+
+        gaiaScenesContainer.setRenderableGaiaScenes(renderableGaiaScenes);
+        engine.setGaiaScenesContainer(gaiaScenesContainer);
+        engine.setRenderAxis(true);
+
+        Camera camera = engine.getCamera();
+        camera.setPosition(new Vector3d(0, 0, 200));
+
+        FboManager fboManager = engine.getFboManager();
+        Window window = engine.getWindow();
+        int fboWidthColor = window.getWidth();
+        int fboHeightColor = window.getHeight();
+        Fbo colorFbo = fboManager.getOrCreateFbo("colorRender", fboWidthColor, fboHeightColor);
+
+        log.info("Rendering the scene...");
+        try{
+            engine.run();
+        } catch (Exception e) {
+            log.error("Error initializing the engine: ", e);
+        }
     }
 
     public void getColorAndDepthRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<BufferedImage> resultImages, GaiaBoundingBox nodeBBox,

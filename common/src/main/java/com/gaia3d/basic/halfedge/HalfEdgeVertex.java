@@ -72,6 +72,7 @@ public class HalfEdgeVertex implements Serializable {
         this.positionType = vertex.positionType;
         this.id = vertex.id;
         this.outingHalfEdgeId = vertex.outingHalfEdgeId;
+        this.classifyId = vertex.classifyId;
     }
 
     public void copyFromGaiaVertex(GaiaVertex vertex) {

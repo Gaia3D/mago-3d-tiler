@@ -5,7 +5,9 @@ import com.gaia3d.util.ImageUtils;
 import org.lwjgl.opengl.GL20;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferInt;
 import java.nio.ByteBuffer;
 
 import static java.awt.image.BufferedImage.*;
@@ -93,7 +95,30 @@ public class RenderableTexturesUtils {
             int hola = 0;
         }
 
-        byte[] rgbaByteArray = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
+        byte[] rgbaByteArray = null;
+
+        // check if the data is DataBufferInt or DataBufferByte.***
+        DataBuffer dataBuffer = bufferedImage.getRaster().getDataBuffer();
+        if (dataBuffer instanceof DataBufferInt)
+        {
+            // DataBufferInt.***
+            int[] intArray = ((DataBufferInt) dataBuffer).getData();
+            rgbaByteArray = new byte[intArray.length * 3];
+
+            for(int i=0; i<intArray.length; i++)
+            {
+                int value = intArray[i];
+                rgbaByteArray[i * 3] = (byte) ((value >> 16) & 0xFF);  // Red
+                rgbaByteArray[i * 3 + 1] = (byte) ((value >> 8) & 0xFF); // Green
+                rgbaByteArray[i * 3 + 2] = (byte) (value & 0xFF);        // Blue
+            }
+        }
+        else {
+            // DataBufferByte.***
+            rgbaByteArray = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
+        }
+
+
         if(format == TYPE_INT_ARGB)
         {
             // change byte order.***

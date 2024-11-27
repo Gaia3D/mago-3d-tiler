@@ -28,6 +28,7 @@ import static org.lwjgl.opengl.GL11.*;
 public class RenderEngine {
     private RenderableBasicAxis renderableBasicAxis;
     private boolean renderWireFrame = false;
+    private int colorMode = 2; // 0 = oneColor, 1 = vertexColor, 2 = textureColor
     public RenderEngine() {
         renderableBasicAxis = new RenderableBasicAxis();
     }
@@ -206,6 +207,8 @@ public class RenderEngine {
             bindBuffer(renderableBuffer, shaderProgram);
         }
 
+        GL20.glLineWidth(5.0f);
+
         UniformsMap uniformsMap = shaderProgram.getUniformsMap();
         uniformsMap.setUniform1i("uColorMode", 0);
         uniformsMap.setUniform4fv("uOneColor", new Vector4f(1, 0, 0, 1));
@@ -216,6 +219,8 @@ public class RenderEngine {
 
         uniformsMap.setUniform4fv("uOneColor", new Vector4f(0, 0, 1, 1));
         GL20.glDrawArrays(GL20.GL_LINES, 4, 2);
+
+        GL20.glLineWidth(1.0f);
     }
     private void renderGaiaMesh(RenderableMesh renderableMesh, ShaderProgram shaderProgram) {
         UniformsMap uniformsMap = shaderProgram.getUniformsMap();
@@ -262,6 +267,17 @@ public class RenderEngine {
                 }
             }
 
+            if(this.colorMode == 0) {
+                uniformsMap.setUniform1i("uColorMode", 0);
+                uniformsMap.setUniform4fv("uOneColor", new Vector4f(0.9f, 0.3f, 0.6f, 1.0f));
+            }
+            else if(this.colorMode == 1) {
+                uniformsMap.setUniform1i("uColorMode", 1);
+            }
+            else if(this.colorMode == 2) {
+                uniformsMap.setUniform1i("uColorMode", 2);
+            }
+
             if(!textureBinded) {
                 // get diffuse color from material
                 Vector4d diffuseColor = material.getDiffuseColor();
@@ -272,8 +288,8 @@ public class RenderEngine {
             if(status == 1)
             {
                 // this object is exterior object.***
-                uniformsMap.setUniform1i("uColorMode", 0);
-                uniformsMap.setUniform4fv("uOneColor", new Vector4f(1.0f, 0.0f, 1.0f, 1.0f));
+//                uniformsMap.setUniform1i("uColorMode", 0);
+//                uniformsMap.setUniform4fv("uOneColor", new Vector4f(1.0f, 0.0f, 1.0f, 1.0f));
                 //continue;
             }
 

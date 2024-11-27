@@ -41,9 +41,24 @@ public class Camera {
         this.right = new Vector3d(1, 0, 0);
     }
 
+    public void setPosition(Vector3d position) {
+        this.position = position;
+        this.dirty = true;
+    }
+
+    public void setDirection(Vector3d direction) {
+        this.direction = direction;
+        this.dirty = true;
+    }
+
+    public void setUp(Vector3d up) {
+        this.up = up;
+        this.dirty = true;
+    }
+
     public Matrix4d getTransformMatrix() {
         if (this.dirty || this.transformMatrix == null) {
-            //this.calcRight();
+            this.calcRight();
             this.transformMatrix = new Matrix4d(this.right.get(0), this.right.get(1), this.right.get(2), 0,
                     this.up.get(0), this.up.get(1), this.up.get(2), 0,
                     -this.direction.get(0), -this.direction.get(1), -this.direction.get(2), 0,
