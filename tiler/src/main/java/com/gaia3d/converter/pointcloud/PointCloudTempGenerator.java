@@ -102,6 +102,7 @@ public class PointCloudTempGenerator {
         int gridXCount = (int) Math.ceil(volume.x / horizontalGridSize);
         int gridYCount = (int) Math.ceil(volume.y / horizontalGridSize);
         int gridZCount = (int) Math.ceil(volume.z / verticalGridSize);
+        gridZCount = 1;
 
         GaiaPointCloudTemp[][][] tempGrid = new GaiaPointCloudTemp[gridXCount][gridYCount][gridZCount];
         combinedHeader.setTempGrid(tempGrid);
