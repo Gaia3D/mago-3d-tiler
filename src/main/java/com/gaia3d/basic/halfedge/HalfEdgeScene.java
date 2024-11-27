@@ -125,6 +125,18 @@ public class HalfEdgeScene  implements Serializable{
         return resultHalfEdgeSurfaces;
     }
 
+    public List<HalfEdgePrimitive> extractPrimitives(List<HalfEdgePrimitive> resultPrimitives)
+    {
+        if(resultPrimitives == null) {
+            resultPrimitives = new ArrayList<>();
+        }
+        for (HalfEdgeNode node : nodes) {
+            node.extractPrimitives(resultPrimitives);
+        }
+
+        return resultPrimitives;
+    }
+
     public void removeDeletedObjects()
     {
         for (HalfEdgeNode node : nodes) {
@@ -172,6 +184,26 @@ public class HalfEdgeScene  implements Serializable{
             resultBBox = node.calculateBoundingBox(resultBBox);
         }
         return resultBBox;
+    }
+
+    public void translate(Vector3d translation) {
+        for (HalfEdgeNode node : nodes) {
+            node.translate(translation);
+        }
+    }
+
+    public void splitFacesByBestPlanesToProject()
+    {
+        for (HalfEdgeNode node : nodes) {
+            node.splitFacesByBestPlanesToProject();
+        }
+    }
+
+    public void translateToOrigin() {
+        GaiaBoundingBox bbox = getBoundingBox();
+        Vector3d center = bbox.getCenter();
+        center.negate();
+        translate(center);
     }
 
     public GaiaBoundingBox getBoundingBox() {
@@ -416,6 +448,12 @@ public class HalfEdgeScene  implements Serializable{
     public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
         for (HalfEdgeNode node : nodes) {
             node.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
+        }
+    }
+
+    public void doTrianglesReductionOneIteration(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount) {
+        for (HalfEdgeNode node : nodes) {
+            node.doTrianglesReductionOneIteration(maxDiffAngDegrees, hedgeMinLength, frontierMaxDiffAngDeg, maxAspectRatio, maxCollapsesCount);
         }
     }
 }

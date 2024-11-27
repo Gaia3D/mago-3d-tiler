@@ -1,6 +1,7 @@
 package com.gaia3d.basic.halfedge;
 
 import com.gaia3d.basic.geometry.GaiaRectangle;
+import com.gaia3d.util.GeometryUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -24,8 +25,11 @@ public class HalfEdgeFace implements Serializable {
     private ObjectStatus status = ObjectStatus.ACTIVE;
     private String note = null;
     private int id = -1;
-    private int classifyId = -1;  // auxiliary variable.***
     private int halfEdgeId = -1;
+
+    // auxiliary variables.***
+    private int classifyId = -1; // use to classify the face for some purpose.***
+    private PlaneType bestPlaneToProject; // use to classify the face for some purpose.***
 
     public void copyFrom(HalfEdgeFace face) {
         if (face == null) {
@@ -41,6 +45,7 @@ public class HalfEdgeFace implements Serializable {
         this.id = face.id;
         this.classifyId = face.classifyId;
         this.halfEdgeId = face.halfEdgeId;
+        this.bestPlaneToProject = face.bestPlaneToProject;
     }
 
     public double calculateAspectRatioAsTriangle()
@@ -57,6 +62,19 @@ public class HalfEdgeFace implements Serializable {
 
         double aspectRatio = HalfEdgeUtils.calculateAspectRatioAsTriangle(a, b, c);
         return HalfEdgeUtils.calculateAspectRatioAsTriangle(a, b, c);
+    }
+
+    public PlaneType calculateBestPlaneToProject()
+    {
+        Vector3d normal = this.calculatePlaneNormal();
+        Vector3d zAxis = new Vector3d(0, 0, 1);
+        double dotProd = normal.dot(zAxis);
+        if(dotProd > 0.2){
+            this.bestPlaneToProject = PlaneType.XY;
+            return this.bestPlaneToProject;
+        }
+        this.bestPlaneToProject = GeometryUtils.getBestPlaneToProject(normal);
+        return this.bestPlaneToProject;
     }
 
     public Vector3d calculatePlaneNormal()
@@ -86,7 +104,7 @@ public class HalfEdgeFace implements Serializable {
         Vector3d v1 = new Vector3d(vertex2.getPosition());
         v1.sub(vertex0.getPosition());
 
-        this.normal.cross(v0, v1);
+        this.normal = v0.cross(v1, this.normal);
         this.normal.normalize();
 
         return this.normal;
@@ -382,4 +400,5 @@ public class HalfEdgeFace implements Serializable {
 
         return resultRectangle;
     }
+
 }

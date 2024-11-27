@@ -183,4 +183,28 @@ public class HalfEdgeMesh implements Serializable {
             primitive.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
         }
     }
+
+    public void translate(Vector3d translation) {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.translate(translation);
+        }
+    }
+
+    public void doTrianglesReductionOneIteration(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount) {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.doTrianglesReductionOneIteration(maxDiffAngDegrees, hedgeMinLength, frontierMaxDiffAngDeg, maxAspectRatio, maxCollapsesCount);
+        }
+    }
+
+    public void splitFacesByBestPlanesToProject() {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.splitFacesByBestPlanesToProject();
+        }
+    }
+
+    public void extractPrimitives(List<HalfEdgePrimitive> resultPrimitives) {
+        for (HalfEdgePrimitive primitive : primitives) {
+            resultPrimitives.add(primitive);
+        }
+    }
 }

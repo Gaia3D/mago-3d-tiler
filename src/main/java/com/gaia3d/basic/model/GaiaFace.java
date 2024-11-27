@@ -116,7 +116,7 @@ public class GaiaFace extends FaceStructure implements Serializable {
         return area;
     }
 
-    public boolean isDegenerated() {
+    public boolean isDegenerated(List<GaiaVertex> vertices) {
         // if has equal indices, it is degenerated.
         for (int i = 0; i < indices.length; i++) {
             for (int j = i + 1; j < indices.length; j++) {
@@ -125,6 +125,25 @@ public class GaiaFace extends FaceStructure implements Serializable {
                 }
             }
         }
+
+        // check if has coincident positions.***
+        double error = 1e-5;
+        for (int i = 0; i < indices.length; i += 3) {
+            int indices1 = indices[i];
+            int indices2 = indices[i + 1];
+            int indices3 = indices[i + 2];
+            GaiaVertex vertex1 = vertices.get(indices1);
+            GaiaVertex vertex2 = vertices.get(indices2);
+            GaiaVertex vertex3 = vertices.get(indices3);
+            Vector3d vectorA = vertex1.getPosition();
+            Vector3d vectorB = vertex2.getPosition();
+            Vector3d vectorC = vertex3.getPosition();
+
+            if (vectorA.distance(vectorB) < error || vectorA.distance(vectorC) < error || vectorB.distance(vectorC) < error) {
+                return true;
+            }
+        }
+
         return false;
     }
 }
