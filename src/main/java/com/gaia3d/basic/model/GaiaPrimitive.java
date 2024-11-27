@@ -318,6 +318,25 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         return result;
     }
 
+    public void addPrimitive(GaiaPrimitive primitive) {
+        int verticesCount = this.vertices.size();
+        int primitiveVerticesCount = primitive.getVertices().size();
+        this.vertices.addAll(primitive.getVertices());
+        for (GaiaSurface surface : primitive.getSurfaces()) {
+            List<GaiaFace> faces = surface.getFaces();
+            for (GaiaFace face : faces) {
+                int[] indices = face.getIndices();
+                for (int i = 0; i < indices.length; i++) {
+                    indices[i] += verticesCount;
+                }
+
+                GaiaFace newFace = new GaiaFace();
+                newFace.setIndices(indices);
+                this.surfaces.get(0).getFaces().add(newFace);
+            }
+        }
+    }
+
     public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
         // Weld the vertices.***
         GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null);
@@ -506,7 +525,7 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
 
     public void deleteDegeneratedFaces() {
         for (GaiaSurface surface : this.surfaces) {
-            surface.deleteDegeneratedFaces();
+            surface.deleteDegeneratedFaces(this.vertices);
         }
 
         this.deleteNoUsedVertices();
