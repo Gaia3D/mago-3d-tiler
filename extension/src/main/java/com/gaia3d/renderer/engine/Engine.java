@@ -245,21 +245,21 @@ public class Engine {
             float rotationOffset = 0.1f;
             Vector3d pivot = new Vector3d(0.0d,0.0d,-1.0d);
             if (key == GLFW_KEY_C && action == GLFW_RELEASE) {
-                int colorType = renderer.getColorType();
+                int colorType = renderer.getColorMode();
                 colorType++;
                 if(colorType > 2)
                 {
                     colorType = 0;
                 }
-                renderer.setColorType(colorType);
+                renderer.setColorMode(colorType);
 
-                colorType = halfEdgeRenderer.getColorType();
+                colorType = halfEdgeRenderer.getColorMode();
                 colorType++;
                 if(colorType > 2)
                 {
                     colorType = 0;
                 }
-                halfEdgeRenderer.setColorType(colorType);
+                halfEdgeRenderer.setColorMode(colorType);
             }
             if (key == GLFW_KEY_W && action == GLFW_RELEASE) {
                 //camera.rotationOrbit(0, -rotationOffset, pivot);
