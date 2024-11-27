@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -80,6 +81,14 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         //double geometricError = calcGeometricError(tileInfos);
         //GaiaBoundingBox originalCoordinateBoundingBox = originalCoordinateBoundingBox(globalBoundingBox);
         double geometricError = calcGeometricError(originalBoundingBox);
+
+        // diagonal
+        if (geometricError < 32.0) {
+            geometricError = 32.0;
+        } else if (geometricError > 1000.0) {
+            geometricError = 1000.0;
+        }
+
         Node root = createRoot();
         root.setNodeCode("R");
         root.setBoundingBox(transformedBoundingBox);
@@ -91,7 +100,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         // root만 큐브로
         root.setBoundingVolume(boundingVolume);
         root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
-        root.setGeometricError(geometricError);
+        root.setGeometricError(geometricError / 3);
 
         try {
             createRootNode(root, tileInfos);
@@ -156,28 +165,27 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
     }
 
     private void createRootNode(Node parentNode, List<TileInfo> tileInfos) throws IOException {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
         List<GaiaPointCloud> pointClouds = tileInfos.stream()
                 .map(TileInfo::getPointCloud)
                 .collect(Collectors.toList());
         int index = 0;
         int maximumIndex = pointClouds.size();
+        int rootPointLimit = globalOptions.getMaximumPointPerTile() / 8;
         for (GaiaPointCloud pointCloud : pointClouds) {
             pointCloud.setCode((index++) + "");
             pointCloud.maximize();
             List<GaiaPointCloud> allPointClouds = new ArrayList<>();
-            createNode(allPointClouds, index, maximumIndex, parentNode, pointCloud);
+            createNode(allPointClouds, index, maximumIndex, parentNode, pointCloud, rootPointLimit);
             minimizeAllPointCloud(index, maximumIndex, allPointClouds);
         }
     }
 
-    private void createNode(List<GaiaPointCloud> allPointClouds, int index, int maximumIndex, Node parentNode, GaiaPointCloud pointCloud) {
+    private void createNode(List<GaiaPointCloud> allPointClouds, int index, int maximumIndex, Node parentNode, GaiaPointCloud pointCloud, int pointLimit) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
 
         allPointClouds.add(pointCloud);
         int vertexLength = pointCloud.getVertices().size();
-
-        int pointLimit = globalOptions.getMaximumPointPerTile();
-
         List<GaiaPointCloud> divided = pointCloud.divideChunkSize(pointLimit);
         GaiaPointCloud selfPointCloud = divided.get(0);
         allPointClouds.add(selfPointCloud);
@@ -201,15 +209,17 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
         rotateX90(transformMatrix);
         BoundingVolume boundingVolume = new BoundingVolume(transformedBoundingBox);
-        double maximumGeometricError = 20.0;
+        double maximumGeometricError = 24.0;
         double geometricErrorCalc = calcGeometricError(childBoundingBox);
         double calculatedGeometricError = geometricErrorCalc / 72;
         if (calculatedGeometricError > maximumGeometricError) {
             calculatedGeometricError = maximumGeometricError;
-        } else if (calculatedGeometricError < 1.0) {
-            calculatedGeometricError = 1.0;
         } else {
-            calculatedGeometricError = Math.ceil(calculatedGeometricError);
+            calculatedGeometricError = Math.floor(calculatedGeometricError);
+        }
+
+        if (calculatedGeometricError < 1.0) {
+            calculatedGeometricError = 1.0;
         }
 
         Node childNode = new Node();
@@ -242,7 +252,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         childNode.setContent(content);
 
         parentNode.getChildren().add(childNode);
-        log.info("[{}/{}][Tile][ContentNode][{}]", index, maximumIndex, childNode.getNodeCode());
+        log.info("[Tile][{}/{}][ContentNode][{}]", index, maximumIndex, childNode.getNodeCode());
 
         if (vertexLength > 0) { // vertexLength > DEFUALT_MAX_COUNT
             //GaiaBoundingBox remainBoundingBox = calcSquareBoundingBox(remainPointCloud.getGaiaBoundingBox());
@@ -250,7 +260,11 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
             List<GaiaPointCloud> distributes = remainPointCloud.distribute();
             distributes.forEach(distribute -> {
                 if (!distribute.getVertices().isEmpty()) {
-                    createNode(allPointClouds, index, maximumIndex, childNode, distribute);
+                    int newPointLimit = pointLimit / 3 * 5; // (5/3)
+                    if (newPointLimit > globalOptions.getMaximumPointPerTile()) {
+                        newPointLimit = globalOptions.getMaximumPointPerTile();
+                    }
+                    createNode(allPointClouds, index, maximumIndex, childNode, distribute, newPointLimit);
                 }
             });
         }
@@ -326,11 +340,13 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
     }
 
     private void minimizeAllPointCloud(int index, int maximumIndex, List<GaiaPointCloud> allPointClouds) {
+        int size = allPointClouds.size();
+        AtomicInteger atomicInteger = new AtomicInteger(0);
         allPointClouds.forEach(pointCloud -> {
             File tempPath = new File(GlobalOptions.getInstance().getOutputPath(), "temp");
             File tempFile = new File(tempPath, UUID.randomUUID().toString());
             pointCloud.minimize(tempFile);
-            log.info("[{}/{}][Tile][Minimize] Write temp file : {}", index, maximumIndex, tempFile.getName());
+            log.info("[Tile][{}/{}][Minimize][{}/{}] Write temp file : {}", index, maximumIndex, atomicInteger.getAndIncrement(), size, tempFile.getName());
         });
     }
 }

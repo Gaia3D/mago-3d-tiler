@@ -315,7 +315,7 @@ class ReleaseTest {
 
     @Test
     void testNoiseResult() {
-        String path = "NOISE-RESULT-GLB";
+        String path = "NOISE-RESULT-GLB-DAY";
         File input = new File(INPUT_PATH, path);
         File output = new File(OUTPUT_PATH, path);
         FileUtils.deleteQuietly(output);

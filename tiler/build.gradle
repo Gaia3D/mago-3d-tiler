@@ -134,8 +134,12 @@ jar {
     dependsOn 'test'
     finalizedBy shadowJar
     manifest {
-        attributes "Main-Class": "com.gaia3d.command.mago.Mago3DTilerMain",
-                "Implementation-Version": project.version
+        attributes "Main-Class": "com.gaia3d.command.mago.Mago3DTilerMain"
+        attributes 'Implementation-Version': project.version
+        attributes 'Implementation-Title': '3d-tiler'
+        attributes 'Implementation-Vendor': 'Gaia3d, Inc.'
+        attributes 'Implementation-Vendor-Id': 'com.gaia3d'
+        attributes 'Implementation-URL': 'http://java.sun.com/products/java-media/jai/forDevelopers/jai-imageio/'
     }
     from {
         configurations.runtimeClasspath.collect {
