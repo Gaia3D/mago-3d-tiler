@@ -2,6 +2,7 @@ package com.gaia3d;
 
 import com.gaia3d.basic.exchangable.SceneInfo;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.halfedge.HalfEdgeScene;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.renderer.MainRenderer;
 import lombok.extern.slf4j.Slf4j;
@@ -61,6 +62,15 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
         if(renderer == null)
             renderer = new MainRenderer();
         renderer.renderDecimate(scenes, resultScenes);
+        deleteObjects();
+    }
+
+    @Override
+    public void decimate(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes)
+    {
+        if(renderer == null)
+            renderer = new MainRenderer();
+        renderer.decimate(scenes, resultHalfEdgeScenes);
         deleteObjects();
     }
 
