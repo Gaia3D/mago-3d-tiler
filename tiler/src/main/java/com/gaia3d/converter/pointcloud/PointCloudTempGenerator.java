@@ -102,6 +102,7 @@ public class PointCloudTempGenerator {
         int gridXCount = (int) Math.ceil(volume.x / horizontalGridSize);
         int gridYCount = (int) Math.ceil(volume.y / horizontalGridSize);
         int gridZCount = (int) Math.ceil(volume.z / verticalGridSize);
+        gridZCount = 1;
 
         GaiaPointCloudTemp[][][] tempGrid = new GaiaPointCloudTemp[gridXCount][gridYCount][gridZCount];
         combinedHeader.setTempGrid(tempGrid);
@@ -176,6 +177,7 @@ public class PointCloudTempGenerator {
         log.info("[Pre] Shuffled temp files");
         return shuffledTempFiles;
     }*/
+
     private List<File> shuffleTempFilesOnThread(List<File> tempFiles) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         List<File> shuffledTempFiles = new ArrayList<>();
@@ -184,7 +186,7 @@ public class PointCloudTempGenerator {
         AtomicInteger tempCount = new AtomicInteger(0);
         int fileLength = tempFiles.size();
 
-        int depth = 1 + 4 + 16 + 64;
+        int depth = 1 + 4 + 16 + 64 + 256;
         int limitSize;
         if (globalOptions.isSourcePrecision()) {
             limitSize = -1;
@@ -200,7 +202,7 @@ public class PointCloudTempGenerator {
                 int count = tempCount.incrementAndGet();
                 log.info("[Pre][{}/{}] Shuffling temp file: {}", count, fileLength, tempFile.getAbsoluteFile());
                 GaiaPointCloudTemp temp = new GaiaPointCloudTemp(tempFile);
-                temp.shuffleTemp(finalLimitSize);
+                temp.shuffleTempMoreFast(finalLimitSize);
                 shuffledTempFiles.add(temp.getTempFile());
             };
             tasks.add(callableTask);

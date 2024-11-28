@@ -186,6 +186,26 @@ public class PointCloudModel implements TileModel {
                 log.error("Quantized position z is greater than 65535");
             }
         }
+
+        // check quantizationScale, quantizationOffset is NaN or Infinity
+        if (Double.isNaN(quantizationScale.x) || Double.isNaN(quantizationScale.y) || Double.isNaN(quantizationScale.z)) {
+            log.error("Quantization scale is NaN");
+            log.error("Quantization scale : {}", quantizationScale);
+            log.error("Quantized volume : {}", quantizedVolume);
+        } else if (Double.isInfinite(quantizationScale.x) || Double.isInfinite(quantizationScale.y) || Double.isInfinite(quantizationScale.z)) {
+            log.error("Quantization scale is Infinite");
+            log.error("Quantization scale : {}", quantizationScale);
+            log.error("Quantized volume : {}", quantizedVolume);
+        } else if (Double.isNaN(quantizationOffset.x) || Double.isNaN(quantizationOffset.y) || Double.isNaN(quantizationOffset.z)) {
+            log.error("Quantization offset is NaN");
+            log.error("Quantization offset : {}", quantizationOffset);
+            log.error("Quantized volume : {}", quantizedVolume);
+        } else if (Double.isInfinite(quantizationOffset.x) || Double.isInfinite(quantizationOffset.y) || Double.isInfinite(quantizationOffset.z)) {
+            log.error("Quantization offset is Infinite");
+            log.error("Quantization offset : {}", quantizationOffset);
+            log.error("Quantized volume : {}", quantizedVolume);
+        }
+
         PointCloudBinary pointCloudBinary = new PointCloudBinary();
         pointCloudBinary.setPositions(quantizedPositions);
         pointCloudBinary.setColors(colors);

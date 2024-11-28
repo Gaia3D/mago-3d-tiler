@@ -217,6 +217,20 @@ public class StressTest {
     }
 
     @Test
+    void testDemoJinguBig() {
+        String path = "JINGU-LAS-BIG";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "las",
+                "-crs", "5187",
+                "-pointRatio", "100",
+                //"-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
     void testDemoLas() {
         String path = "DEMO-LAS";
         String[] args = new String[] {
@@ -224,7 +238,7 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-crs", "32648",
-                //"-pointSkip", "1",
+                "-pointRatio", "50",
                 //"-debug"
         };
         Mago3DTilerMain.main(args);
@@ -238,7 +252,7 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-crs", "32648",
-                //"-pointSkip", "1",
+                "-pointRatio", "50",
                 //"-debug"
         };
         Mago3DTilerMain.main(args);
@@ -252,7 +266,7 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-crs", "32648",
-                //"-pointSkip", "1",
+                "-pointRatio", "25",
                 //"-debug"
         };
         Mago3DTilerMain.main(args);
@@ -266,7 +280,7 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-crs", "32648",
-                //"-pointSkip", "1",
+                "-pointRatio", "25",
                 //"-debug"
         };
         Mago3DTilerMain.main(args);
@@ -280,7 +294,7 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
-                //"-pointSkip", "1",
+                "-pointRatio", "25",
                 //"-debug"
         };
         Mago3DTilerMain.main(args);
@@ -304,6 +318,7 @@ public class StressTest {
     @Disabled
     @Test
     void testSewoonLas() {
+        // wrong bounding box
         String path = "SEWOON-LAS";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
@@ -325,7 +340,8 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-crs", "5186",
-                //"-pointSkip", "1",
+                "-force4ByteRGB",
+                "-pointRatio", "6",
                 //"-debug"
         };
         Mago3DTilerMain.main(args);
@@ -339,23 +355,22 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-crs", "5186",
-                //"-pointSkip", "1",
+                "-pointRatio", "25",
                 //"-debug"
         };
         Mago3DTilerMain.main(args);
     }
 
+    @Disabled
     @Test
-    void testSinChonLas() {
+    void testSinchonLas() {
         String path = "SINCHON-LAS";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
-                //"-pointSkip", "1",
-                //"-crs", "5186",
-                //"-pointSkip", "8",
+                "-pointRatio", "25",
                 //"-debug"
         };
         Mago3DTilerMain.main(args);
