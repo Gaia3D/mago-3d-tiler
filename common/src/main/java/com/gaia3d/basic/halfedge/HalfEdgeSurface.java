@@ -3803,6 +3803,11 @@ public class HalfEdgeSurface implements Serializable {
         for (int i = 0; i < facesCount; i++) {
             HalfEdgeFace face = faces.get(i);
             PlaneType bestPlaneType = face.calculateBestPlaneToProject();
+            if(bestPlaneType == PlaneType.XYNEG)
+            {
+                bestPlaneType = PlaneType.XY;
+                face.setBestPlaneToProject(bestPlaneType);
+            }
             int ClassifyId = face.getClassifyId();
 
             Map<PlaneType, List<HalfEdgeFace>> mapFaceGroupByPlaneType = mapFaceGroupByClassifyIdAndPlaneType.computeIfAbsent(ClassifyId, k -> new HashMap<>());

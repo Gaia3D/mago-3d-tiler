@@ -3,8 +3,11 @@ package com.gaia3d.basic.halfedge;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
 import com.gaia3d.basic.geometry.octree.HalfEdgeOctree;
+import com.gaia3d.basic.model.GaiaAttribute;
+import com.gaia3d.basic.model.GaiaMaterial;
 import org.joml.Vector3d;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -148,6 +151,7 @@ public class HalfEdgeCutter {
             uniqueSurface.joinSurface(newSurface);
         }
 
+        // create a new HalfEdgeScene.***
         HalfEdgeScene cuttedScene = new HalfEdgeScene();
         HalfEdgeNode rootNode = new HalfEdgeNode();
         cuttedScene.getNodes().add(rootNode);
@@ -158,6 +162,34 @@ public class HalfEdgeCutter {
         HalfEdgePrimitive primitive = new HalfEdgePrimitive();
         mesh.getPrimitives().add(primitive);
         primitive.getSurfaces().add(uniqueSurface);
+
+        // copy attributes, originalPath, boundingBox, etc.***
+        GaiaAttribute attribute = halfEdgeScene.getAttribute();
+        if(attribute != null)
+        {
+            GaiaAttribute newAttribute = attribute.getCopy();
+            cuttedScene.setAttribute(newAttribute);
+        }
+
+        GaiaBoundingBox newBBox = bbox.clone();
+        cuttedScene.setBoundingBox(newBBox);
+
+        Path originalPath = halfEdgeScene.getOriginalPath();
+        cuttedScene.setOriginalPath(originalPath);
+
+        List<GaiaMaterial> materials = halfEdgeScene.getMaterials();
+        if(materials != null)
+        {
+            List<GaiaMaterial> newMaterials = new ArrayList<>();
+            int materialsCount = materials.size();
+            for(int i=0; i<materialsCount; i++)
+            {
+                GaiaMaterial material = materials.get(i);
+                GaiaMaterial newMaterial = material.clone();
+                newMaterials.add(newMaterial);
+            }
+            cuttedScene.setMaterials(newMaterials);
+        }
 
         return cuttedScene;
     }

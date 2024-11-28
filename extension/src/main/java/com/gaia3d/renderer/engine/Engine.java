@@ -70,6 +70,8 @@ public class Engine {
     private boolean midButtonClicked = false;
     private boolean renderAxis = false;
 
+    private int boxRenderingMaxSize = 512;
+
     private int testsCount = 0;
 
     private boolean checkGlError()
@@ -206,31 +208,9 @@ public class Engine {
                 Vector3d keepCameraUp = new Vector3d(camera.getUp());
 
                 // do an iteration of decimation.***
-                double maxDiffAngDegrees = 15.0;
-                double hedgeMinLength = 0.5;
-                double frontierMaxDiffAngDeg = 5.0;
-                double maxAspectRatio = 6.0;
-                int maxCollapsesCount = 1000000;
-                int halfEdgeScenesCount = halfEdgeScenes.size();
-                for(int i=0; i<halfEdgeScenesCount; i++)
-                {
-                    HalfEdgeScene halfEdgeScene = halfEdgeScenes.get(i);
-                    halfEdgeScene.doTrianglesReductionOneIteration(maxDiffAngDegrees, hedgeMinLength, frontierMaxDiffAngDeg, maxAspectRatio, maxCollapsesCount);
-
-                    // now, cut the halfEdgeScene and make cube-textures by rendering.***
-                    double gridSpacing = 60.0;
-                    HalfEdgeOctree resultOctree = new HalfEdgeOctree(null);
-                    HalfEdgeScene cuttedScene = HalfEdgeCutter.cutHalfEdgeSceneGridXYZ(halfEdgeScene, gridSpacing, resultOctree);
-                    cuttedScene.splitFacesByBestPlanesToProject();
-
-                    // now make box textures for the cuttedScene.***
-                    makeBoxTexturesForHalfEdgeScene(cuttedScene);
-
-                    cuttedScene.translateToOrigin();
-                    halfEdgeScenes.set(i, cuttedScene);
-
-                    int hola = 0;
-                }
+                List<HalfEdgeScene> decimatedScenes = new ArrayList<>();
+                decimate(halfEdgeScenes, decimatedScenes);
+                halfEdgeScenes.set(0, decimatedScenes.get(0)); // provisionally, only one scene.***
 
                 // restore the camera position and target.***
                 camera.setPosition(keepCameraPosition);
@@ -322,6 +302,36 @@ public class Engine {
         int hola2 = 0;
     }
 
+    public void decimate(List<HalfEdgeScene> halfEdgeScenesToDecimate, List<HalfEdgeScene> resultHalfEdgeScenes)
+    {
+        // do an iteration of decimation.***
+        double maxDiffAngDegrees = 15.0;
+        double hedgeMinLength = 0.5;
+        double frontierMaxDiffAngDeg = 5.0;
+        double maxAspectRatio = 6.0;
+        int maxCollapsesCount = 1000000;
+        int halfEdgeScenesCount = halfEdgeScenesToDecimate.size();
+        for(int i=0; i<halfEdgeScenesCount; i++)
+        {
+            HalfEdgeScene halfEdgeScene = halfEdgeScenesToDecimate.get(i);
+            halfEdgeScene.doTrianglesReductionOneIteration(maxDiffAngDegrees, hedgeMinLength, frontierMaxDiffAngDeg, maxAspectRatio, maxCollapsesCount);
+
+            // now, cut the halfEdgeScene and make cube-textures by rendering.***
+            double gridSpacing = 60.0;
+            HalfEdgeOctree resultOctree = new HalfEdgeOctree(null);
+            HalfEdgeScene cuttedScene = HalfEdgeCutter.cutHalfEdgeSceneGridXYZ(halfEdgeScene, gridSpacing, resultOctree);
+            cuttedScene.splitFacesByBestPlanesToProject();
+
+            // now make box textures for the cuttedScene.***
+            makeBoxTexturesForHalfEdgeScene(cuttedScene);
+
+            ////cuttedScene.translateToOrigin();
+            resultHalfEdgeScenes.add(cuttedScene);
+
+            int hola = 0;
+        }
+    }
+
     private void makeBoxTexturesForHalfEdgeScene(HalfEdgeScene halfEdgeScene)
     {
         // Must know all faces classification ids.***
@@ -355,7 +365,7 @@ public class Engine {
 
             // now, set projection matrix as orthographic, and set camera's position and target.***
             // calculate the projectionMatrix for the camera.***
-            int maxScreenSize = 256;
+            int maxScreenSize = boxRenderingMaxSize;
             // ZNeg texture : plane XYPos.***
             log.info("boxTextures : classificationId : " + classificationId + " , ZNeg texture.");
             List<HalfEdgeFace> facesPlaneXYPos = mapPlaneTypeFacesList.get(PlaneType.XY);
@@ -459,18 +469,24 @@ public class Engine {
 
         doAtlasTextureProcess(halfEdgeScene, texturesAtlasDataList);
         recalculateTexCoordsAfterTextureAtlasing(halfEdgeScene, texturesAtlasDataList, mapClassificationPlaneTypeFacesList);
+        String originalPath = halfEdgeScene.getOriginalPath().toString();
 
-        String path = "D:\\temp2";
-        String fileName = "boxTexture_";
+        // extract the originalProjectName from the originalPath.***
+        String originalProjectName = originalPath.substring(originalPath.lastIndexOf(File.separator) + 1, originalPath.length());
+        String rawProjectName = originalProjectName.substring(0, originalProjectName.lastIndexOf("."));
+
+        //String path = "D:" +File.separator + "temp2";
+        String fileName = rawProjectName + "_Atlas";
         String extension = ".jpg";
         GaiaTexture atlasTexture = makeAtlasTexture(texturesAtlasDataList);
-        String atlasImagePath = path + "\\" + fileName + "_Atlas" + extension;
-        try {
-            File atlasFile = new File(atlasImagePath);
-            ImageIO.write(atlasTexture.getBufferedImage(), "jpg", atlasFile);
-        } catch (IOException e) {
-            log.error("Error writing image: {}", e);
-        }
+        atlasTexture.setPath(fileName + extension);
+        //String atlasImagePath = path + File.separator + fileName + extension;
+//        try {
+//            File atlasFile = new File(atlasImagePath);
+//            ImageIO.write(atlasTexture.getBufferedImage(), "jpg", atlasFile);
+//        } catch (IOException e) {
+//            log.error("Error writing image: {}", e);
+//        }
 
         // finally make material with texture for the halfEdgeScene.***
         GaiaMaterial material = new GaiaMaterial();
@@ -956,7 +972,7 @@ public class Engine {
             getRenderSceneImage(sceneShaderProgram);
 
             // make the bufferImage.***
-            int bufferedImageType = BufferedImage.TYPE_INT_RGB;
+            int bufferedImageType = BufferedImage.TYPE_INT_ARGB;
             BufferedImage image = fbo.getBufferedImage(bufferedImageType);
 
             fbo.unbind();

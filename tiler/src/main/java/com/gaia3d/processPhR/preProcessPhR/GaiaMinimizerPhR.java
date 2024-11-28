@@ -74,33 +74,7 @@ public class GaiaMinimizerPhR implements PreProcess {
             // Lod 0.************************************************************************************************************
             log.info("Minimize GaiaScene LOD 0 , Path : {}", tileInfo.getTempPath());
 
-            // Test triangles reduction for lod0.*********************************************************************************
-            HalfEdgeScene halfEdgeSceneLod0 = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
-
-            // Test decimate.******************************************************************************
-//            TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
-//            List<GaiaScene> gaiaSceneList = new ArrayList<>();
-//            gaiaSceneList.add(scene);
-//            List<GaiaScene> resultDecimatedScenes = new ArrayList<>();
-//            tilerExtensionModule.renderDecimate(gaiaSceneList, resultDecimatedScenes);
-            // End test decimate.--------------------------------------------------------------------------
-//
-//
-//            log.info("Doing triangles reduction in HalfEdgeScene");
-            double maxDiffAngDegrees = 45.0;
-            double hedgeMinLength = 0.25;
-            double frontierMaxDiffAngDeg = 5.0;
-            double maxAspectRatio = 10.0;
-//            halfEdgeSceneLod0.doTrianglesReduction(maxDiffAngDegrees, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio);
-//
-//            GaiaBoundingBox gaiaBoundingBox = halfEdgeSceneLod0.getBoundingBox();
-//            halfEdgeSceneLod0.setBoxTexCoordsXY(gaiaBoundingBox);
-//
-//            GaiaScene sceneLod0 = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneLod0);
-            //----------------------------------------------------------------------------------------------------------------------
-
             GaiaSet tempSetLod0 = GaiaSet.fromGaiaScene(scene);
-            //GaiaSet tempSetLod0 = GaiaSet.fromGaiaScene(sceneLod0);
             Path tempPathLod0 = tempSetLod0.writeFile(tileInfo.getTempPath(), tileInfo.getSerial(), tempSetLod0.getAttribute());
             tileInfo.setTempPath(tempPathLod0);
             tempPathLod.add(tempPathLod0);
@@ -108,24 +82,40 @@ public class GaiaMinimizerPhR implements PreProcess {
             // Lod 1.************************************************************************************************************
             log.info("Minimize GaiaScene LOD 1");
             log.info("Making HalfEdgeScene from GaiaScene");
-            HalfEdgeScene halfEdgeSceneLod1 = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 
-            log.info("Doing triangles reduction in HalfEdgeScene");
-            maxDiffAngDegrees = 70.0;
-            hedgeMinLength = 0.25;
-            frontierMaxDiffAngDeg = 5.0;
-            maxAspectRatio = 12.0;
-            halfEdgeSceneLod1.doTrianglesReduction(maxDiffAngDegrees, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio);
+            TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
+            List<GaiaScene> gaiaSceneList = new ArrayList<>();
+            gaiaSceneList.add(scene);
+            List<HalfEdgeScene> resultDecimatedScenes = new ArrayList<>();
+            tilerExtensionModule.decimate(gaiaSceneList, resultDecimatedScenes);
+            HalfEdgeScene halfEdgeSceneLod1 = resultDecimatedScenes.get(0);
 
-            //halfEdgeSceneLod1.setBoxTexCoordsXY(gaiaBoundingBox);
-            //halfEdgeScene.calculateNormals();
+            // Save the textures in a temp folder.***
+            List<GaiaMaterial> materials = halfEdgeSceneLod1.getMaterials();
+            int materialsCount = materials.size();
+            for (int i = 0; i < materialsCount; i++)
+            {
+                GaiaMaterial material = materials.get(i);
+                List<GaiaTexture> textures = material.getTextures().get(TextureType.DIFFUSE);
+                int texturesCount = textures.size();
+                for (int j = 0; j < texturesCount; j++)
+                {
+                    GaiaTexture texture = textures.get(j);
+                    // change the texture name.***
+                    String texturePath = texture.getPath();
+                    String rawTexturePath = texturePath.substring(0, texturePath.lastIndexOf("."));
+                    String extension = texturePath.substring(texturePath.lastIndexOf("."));
+                    String newTexturePath = rawTexturePath + "_lod1." + extension;
+                    texture.setPath(newTexturePath);
+                    texture.setParentPath(tempFolder.toString());
+                    texture.saveImage(texture.getFullPath());
+                }
+            }
 
-
-            log.info("Making GaiaScene from HalfEdgeScene");
             GaiaScene sceneLod1 = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneLod1);
-            //halfEdgeSceneLod1.deleteObjects();
 
             GaiaSet tempSetLod1 = GaiaSet.fromGaiaScene(sceneLod1);
+            halfEdgeSceneLod1.deleteObjects();
 
             Path tempFolderLod1 = tempFolder.resolve("lod1");
             Path tempPathLod1 = tempSetLod1.writeFile(tempFolderLod1, tileInfo.getSerial(), tempSetLod1.getAttribute());
@@ -135,23 +125,34 @@ public class GaiaMinimizerPhR implements PreProcess {
             // Lod 2.************************************************************************************************************
             log.info("Minimize GaiaScene LOD 2");
             log.info("Making HalfEdgeScene from GaiaScene");
-            HalfEdgeScene halfEdgeSceneLod2 = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(sceneLod1);
+            resultDecimatedScenes.clear();
+            tilerExtensionModule.decimate(gaiaSceneList, resultDecimatedScenes);
+            HalfEdgeScene halfEdgeSceneLod2 = resultDecimatedScenes.get(0);
 
-            log.info("Doing triangles reduction in HalfEdgeScene");
-            maxDiffAngDegrees = 90.0;
-            hedgeMinLength = 0.25;
-            frontierMaxDiffAngDeg = 20.0;
-            maxAspectRatio = 7.0;
-            halfEdgeSceneLod2.doTrianglesReduction(maxDiffAngDegrees, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio);
+            // Save the textures in a temp folder.***
+            List<GaiaMaterial> materialsLod2 = halfEdgeSceneLod2.getMaterials();
+            materialsCount = materialsLod2.size();
+            for (int i = 0; i < materialsCount; i++)
+            {
+                GaiaMaterial material = materialsLod2.get(i);
+                List<GaiaTexture> textures = material.getTextures().get(TextureType.DIFFUSE);
+                int texturesCount = textures.size();
+                for (int j = 0; j < texturesCount; j++)
+                {
+                    GaiaTexture texture = textures.get(j);
+                    // change the texture name.***
+                    String texturePath = texture.getPath();
+                    String rawTexturePath = texturePath.substring(0, texturePath.lastIndexOf("."));
+                    String extension = texturePath.substring(texturePath.lastIndexOf("."));
+                    String newTexturePath = rawTexturePath + "_lod2." + extension;
+                    texture.setPath(newTexturePath);
+                    texture.setParentPath(tempFolder.toString());
+                    texture.saveImage(texture.getFullPath());
+                }
+            }
 
-            //halfEdgeSceneLod2.setBoxTexCoordsXY(gaiaBoundingBox);
-            //halfEdgeScene.calculateNormals();
-
-
-            log.info("Making GaiaScene from HalfEdgeScene");
             GaiaScene sceneLod2 = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneLod2);
             halfEdgeSceneLod2.deleteObjects();
-
             GaiaSet tempSetLod2 = GaiaSet.fromGaiaScene(sceneLod2);
 
             Path tempFolderLod2 = tempFolder.resolve("lod2");
@@ -161,18 +162,6 @@ public class GaiaMinimizerPhR implements PreProcess {
             // set tempPathLod to tileInfo.***
             tileInfo.setTempPathLod(tempPathLod);
 
-            /*
-            log.info("Making GaiaScene from HalfEdgeScene");
-            GaiaScene sceneLod2 = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneLod2);
-            halfEdgeSceneLod2.deleteObjects();
-
-            GaiaSet tempSetLod2 = GaiaSet.fromGaiaScene(sceneLod2);
-
-            Path tempFolderLod2 = tempFolder.resolve("lod2");
-            Path tempPathLod2 = tempSetLod2.writeFile(tempFolderLod2, tileInfo.getSerial(), tempSetLod2.getAttribute());
-            tempPathLod.add(tempPathLod2);
-
-             */
 
             if (tempSetLod0 != null) {
                 tempSetLod0.clear();
