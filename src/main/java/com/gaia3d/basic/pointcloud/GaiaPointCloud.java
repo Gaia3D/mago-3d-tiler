@@ -64,6 +64,7 @@ public class GaiaPointCloud implements Serializable {
         pointCloudTemp.writePositionsFast(vertices);
         this.vertices.clear();
         try {
+            pointCloudTemp.getOutputStream().flush();
             pointCloudTemp.getOutputStream().close();
         } catch (IOException e) {
             log.error("[Error][minimize] : Failed to minimize the point cloud.", e);
