@@ -236,7 +236,11 @@ public class AssimpConverter implements Converter {
         AIColor4D diffColor = AIColor4D.create();
         int diffResult = Assimp.aiGetMaterialColor(aiMaterial, Assimp.AI_MATKEY_COLOR_DIFFUSE, Assimp.aiTextureType_NONE, 0, diffColor);
         if (diffResult == 0) {
-            diffVector4d = new Vector4d(diffColor.r(), diffColor.g(), diffColor.b(), opacity);
+            double alpha = diffColor.a();
+            if (0.0f < opacity && opacity < 1.0f) {
+                alpha = opacity;
+            }
+            diffVector4d = new Vector4d(diffColor.r(), diffColor.g(), diffColor.b(), alpha);
             material.setDiffuseColor(diffVector4d);
         }
 
@@ -376,7 +380,7 @@ public class AssimpConverter implements Converter {
             material.getTextures().put(TextureType.SHININESS, textures);
         }
 
-        if (opacity < 1.0f) {
+        if (0.0f < opacity && opacity < 1.0f) {
             material.setBlend(true);
         }
 
