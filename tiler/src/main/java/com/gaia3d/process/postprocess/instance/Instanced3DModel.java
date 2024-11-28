@@ -89,11 +89,8 @@ public class Instanced3DModel implements TileModel {
             Vector3d localPosition = positionWorldCoordinate.sub(centerWorldCoordinate, new Vector3d());
 
             //Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv, new Vector3d());
-
             // local position(Z-UP), gltf position(Y-UP)
             Vector3d localPositionYUp = new Vector3d(localPosition.x, localPosition.y, localPosition.z);
-
-
 
             Matrix3d worldRotationMatrix3d = transformMatrix.get3x3(new Matrix3d());
             //Matrix3d xRotationMatrix3d = new Matrix3d();
@@ -102,12 +99,10 @@ public class Instanced3DModel implements TileModel {
             //xRotationMatrix3d.mul(worldRotationMatrix3d, worldRotationMatrix3d);
             //Matrix4d worldRotationMatrix4d = new Matrix4d(worldRotationMatrix3d);
 
-
-
             // rotate
             double headingValue = Math.toRadians(kmlInfo.getHeading());
             Matrix3d rotationMatrix = new Matrix3d();
-            rotationMatrix.rotateZ(headingValue);
+            rotationMatrix.rotateZ(-headingValue);
             worldRotationMatrix3d.mul(rotationMatrix, worldRotationMatrix3d);
 
             normalUp = worldRotationMatrix3d.transform(normalUp);
