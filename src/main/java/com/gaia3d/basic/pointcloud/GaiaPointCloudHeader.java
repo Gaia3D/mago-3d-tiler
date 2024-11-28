@@ -30,6 +30,7 @@ public class GaiaPointCloudHeader {
         int gridX = (int) Math.floor((position.x - srsBoundingBox.getMinX()) / volume.x * gridXLength);
         int gridY = (int) Math.floor((position.y - srsBoundingBox.getMinY()) / volume.y * gridYLength);
         int gridZ = (int) Math.floor((position.z - srsBoundingBox.getMinZ()) / volume.z * gridZLength);
+        gridZ = 0;
 
         // Check if the point is outside the bounding box
         if (gridX < 0 || gridX >= gridXLength || gridY < 0 || gridY >= gridYLength || gridZ < 0 || gridZ >= gridZLength) {
