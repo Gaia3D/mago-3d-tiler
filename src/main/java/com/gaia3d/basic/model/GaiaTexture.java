@@ -89,6 +89,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
     private BufferedImage readImage(String filePath) {
         BufferedImage image = null;
         try (FileInputStream stream = new FileInputStream(filePath)) {
+            log.info("Reading image file : {}", filePath);
             image = ImageIO.read(stream);
         } catch (IOException e) {
             log.error(e.getMessage());
