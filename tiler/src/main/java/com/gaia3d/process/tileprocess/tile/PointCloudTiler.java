@@ -35,6 +35,10 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class PointCloudTiler extends DefaultTiler implements Tiler {
+
+    private double rootGeometricError = 0.0d;
+    private final int MAXIMUM_DEPTH = 8;
+
     @Override
     public Tileset run(List<TileInfo> tileInfos) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
@@ -82,12 +86,15 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         //GaiaBoundingBox originalCoordinateBoundingBox = originalCoordinateBoundingBox(globalBoundingBox);
         double geometricError = calcGeometricError(originalBoundingBox);
 
-        // diagonal
-        if (geometricError < 32.0) {
-            geometricError = 32.0;
-        } else if (geometricError > 1000.0) {
-            geometricError = 1000.0;
+
+        double minimumGeometricError = 64.0;
+        double maximumGeometricError = 1000.0;
+        if (geometricError < minimumGeometricError) {
+            geometricError = minimumGeometricError;
+        } else if (geometricError > maximumGeometricError) {
+            geometricError = maximumGeometricError;
         }
+        rootGeometricError = geometricError;
 
         Node root = createRoot();
         root.setNodeCode("R");
@@ -100,7 +107,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         // root만 큐브로
         root.setBoundingVolume(boundingVolume);
         root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
-        root.setGeometricError(geometricError / 3);
+        //root.setGeometricError(geometricError / 2);
 
         try {
             createRootNode(root, tileInfos);
@@ -171,17 +178,18 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
                 .collect(Collectors.toList());
         int index = 0;
         int maximumIndex = pointClouds.size();
-        int rootPointLimit = globalOptions.getMaximumPointPerTile() / 8;
+        int rootPointLimit = globalOptions.getMaximumPointPerTile() / 16;
         for (GaiaPointCloud pointCloud : pointClouds) {
             pointCloud.setCode((index++) + "");
             pointCloud.maximize();
             List<GaiaPointCloud> allPointClouds = new ArrayList<>();
-            createNode(allPointClouds, index, maximumIndex, parentNode, pointCloud, rootPointLimit);
+            int depth = 0;
+            createNode(allPointClouds, index, maximumIndex, parentNode, pointCloud, rootPointLimit, 0);
             minimizeAllPointCloud(index, maximumIndex, allPointClouds);
         }
     }
 
-    private void createNode(List<GaiaPointCloud> allPointClouds, int index, int maximumIndex, Node parentNode, GaiaPointCloud pointCloud, int pointLimit) {
+    private void createNode(List<GaiaPointCloud> allPointClouds, int index, int maximumIndex, Node parentNode, GaiaPointCloud pointCloud, int pointLimit, int depth) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
 
         allPointClouds.add(pointCloud);
@@ -209,9 +217,24 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
         rotateX90(transformMatrix);
         BoundingVolume boundingVolume = new BoundingVolume(transformedBoundingBox);
-        double maximumGeometricError = 24.0;
+
+        int attenuation;
+        if (depth < 2) {
+            attenuation = 48;
+        } else if (depth < 3) {
+            attenuation = 64;
+        } else if (depth < 4) {
+            attenuation = 80;
+        } else if (depth < 5) {
+            attenuation = 96;
+        } else {
+            attenuation = 128;
+        }
+
+        double calcValue = (1000 / rootGeometricError) * attenuation;
+        double maximumGeometricError = 36.0;
         double geometricErrorCalc = calcGeometricError(childBoundingBox);
-        double calculatedGeometricError = geometricErrorCalc / 72;
+        double calculatedGeometricError = geometricErrorCalc / calcValue;
         if (calculatedGeometricError > maximumGeometricError) {
             calculatedGeometricError = maximumGeometricError;
         } else {
@@ -260,11 +283,17 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
             List<GaiaPointCloud> distributes = remainPointCloud.distribute();
             distributes.forEach(distribute -> {
                 if (!distribute.getVertices().isEmpty()) {
-                    int newPointLimit = pointLimit / 3 * 5; // (5/3)
+                    int newPointLimit = (int) (pointLimit * 1.75d); // (/3)
                     if (newPointLimit > globalOptions.getMaximumPointPerTile()) {
                         newPointLimit = globalOptions.getMaximumPointPerTile();
                     }
-                    createNode(allPointClouds, index, maximumIndex, childNode, distribute, newPointLimit);
+
+                    int newDepth = depth + 1;
+                    if (newDepth < MAXIMUM_DEPTH) {
+                        createNode(allPointClouds, index, maximumIndex, childNode, distribute, newPointLimit, newDepth);
+                    } else {
+                        log.info("[Tile][{}/{}][DepthLimit][{}]", index, maximumIndex, newDepth);
+                    }
                 }
             });
         }
@@ -342,11 +371,24 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
     private void minimizeAllPointCloud(int index, int maximumIndex, List<GaiaPointCloud> allPointClouds) {
         int size = allPointClouds.size();
         AtomicInteger atomicInteger = new AtomicInteger(0);
+        printJvmMemory();
         allPointClouds.forEach(pointCloud -> {
             File tempPath = new File(GlobalOptions.getInstance().getOutputPath(), "temp");
             File tempFile = new File(tempPath, UUID.randomUUID().toString());
             pointCloud.minimize(tempFile);
             log.info("[Tile][{}/{}][Minimize][{}/{}] Write temp file : {}", index, maximumIndex, atomicInteger.getAndIncrement(), size, tempFile.getName());
         });
+        System.gc();
+    }
+
+    private void printJvmMemory() {
+        String javaHeapSize = System.getProperty("java.vm.name") + " " + Runtime.getRuntime().maxMemory() / 1024 / 1024 + "MB";
+        long maxMem = Runtime.getRuntime().maxMemory() / 1024 / 1024;
+        long totalMem = Runtime.getRuntime().totalMemory() / 1024 / 1024;
+        long freeMem = Runtime.getRuntime().freeMemory() / 1024 / 1024;
+        long usedMem = totalMem - freeMem;
+        // 퍼센트
+        double pct = usedMem * 100 / maxMem;
+        log.info("[Tile] Java Heap Size: {} / MaxMem: {}MB / TotalMem: {}MB / FreeMem: {}MB / UsedMem: {}MB / Pct: {}%", javaHeapSize, maxMem, totalMem, freeMem, usedMem, pct);
     }
 }

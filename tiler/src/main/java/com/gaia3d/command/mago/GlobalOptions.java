@@ -39,7 +39,7 @@ public class GlobalOptions {
     private static final int DEFAULT_MAX_INSTANCE = 512;
 
     //public static final int DEFAULT_POINT_PER_TILE = 100000;
-    public static final int DEFAULT_POINT_PER_TILE = 200000;
+    public static final int DEFAULT_POINT_PER_TILE = 300000;
     public static final int DEFAULT_POINT_RATIO = 25;
     public static final float POINTSCLOUD_HORIZONTAL_GRID = 500.0f; // in meters
     public static final float POINTSCLOUD_VERTICAL_GRID = 500.0f; // in meters

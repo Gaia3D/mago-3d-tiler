@@ -202,8 +202,9 @@ public class StressTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Disabled
     @Test
-    void testDemoJingu() {
+    void testDemoJinguMini() {
         String path = "JINGU-LAS-MINI";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
@@ -216,6 +217,7 @@ public class StressTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Disabled
     @Test
     void testDemoJinguBig() {
         String path = "JINGU-LAS-BIG";
@@ -230,6 +232,7 @@ public class StressTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Disabled
     @Test
     void testDemoLas() {
         String path = "DEMO-LAS";
@@ -244,6 +247,7 @@ public class StressTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Disabled
     @Test
     void testDemoLasAll() {
         String path = "DEMO-LAS-ALL";
@@ -252,12 +256,13 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-crs", "32648",
-                "-pointRatio", "50",
+                "-pointRatio", "100",
                 //"-debug"
         };
         Mago3DTilerMain.main(args);
     }
 
+    @Disabled
     @Test
     void testThaiQuarter() {
         String path = "THAILAND-QUARTER-LAS";
@@ -280,7 +285,7 @@ public class StressTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "las",
                 "-crs", "32648",
-                "-pointRatio", "25",
+                "-pointRatio", "50",
                 //"-debug"
         };
         Mago3DTilerMain.main(args);
@@ -331,7 +336,6 @@ public class StressTest {
         Mago3DTilerMain.main(args);
     }
 
-    @Disabled
     @Test
     void testSangjiUniLas() {
         String path = "SANGJI-UNI-LAS";
@@ -341,7 +345,7 @@ public class StressTest {
                 "-it", "las",
                 "-crs", "5186",
                 "-force4ByteRGB",
-                "-pointRatio", "6",
+                "-pointRatio", "100",
                 //"-debug"
         };
         Mago3DTilerMain.main(args);
@@ -361,7 +365,6 @@ public class StressTest {
         Mago3DTilerMain.main(args);
     }
 
-    @Disabled
     @Test
     void testSinchonLas() {
         String path = "SINCHON-LAS";
@@ -371,6 +374,47 @@ public class StressTest {
                 "-it", "las",
                 "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
                 "-pointRatio", "25",
+                //"-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testDaeryung01() {
+        String path = "DAERYUNG01-LAS";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "las",
+                "-crs", "5186",
+                "-pointRatio", "100",
+                //"-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testDaeryung02() {
+        String path = "DAERYUNG02-LAS";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "las",
+                "-crs", "5186",
+                "-pointRatio", "50",
+                //"-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testBAD() {
+        String path = "BAD-KML-GLB";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "kml",
+                "-ot", "i3dm",
                 //"-debug"
         };
         Mago3DTilerMain.main(args);
