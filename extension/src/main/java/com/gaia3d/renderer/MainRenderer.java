@@ -3,6 +3,7 @@ package com.gaia3d.renderer;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.exchangable.SceneInfo;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.halfedge.DecimateParameters;
 import com.gaia3d.basic.halfedge.HalfEdgeScene;
 import com.gaia3d.basic.halfedge.HalfEdgeUtils;
 import com.gaia3d.basic.model.GaiaMaterial;
@@ -128,7 +129,7 @@ public class MainRenderer implements IAppLogic {
         }
     }
 
-    public void decimate(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes) {
+    public void decimate(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters) {
 
         // Must init gl.***
         try{
@@ -195,7 +196,7 @@ public class MainRenderer implements IAppLogic {
 
         log.info("Rendering the scene...");
         try{
-            engine.decimate(halfEdgeScenes, resultHalfEdgeScenes);
+            engine.decimate(halfEdgeScenes, resultHalfEdgeScenes, decimateParameters);
         } catch (Exception e) {
             log.error("Error initializing the engine: ", e);
         }

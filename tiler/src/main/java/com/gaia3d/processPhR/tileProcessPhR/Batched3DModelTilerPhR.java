@@ -25,6 +25,7 @@ import com.gaia3d.process.tileprocess.tile.tileset.asset.Asset;
 import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
+import com.gaia3d.basic.halfedge.DecimateParameters;
 import com.gaia3d.util.DecimalUtils;
 import com.gaia3d.util.GlobeUtils;
 import lombok.NoArgsConstructor;
@@ -103,7 +104,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         root.setDepth(0);
         root.setBoundingVolume(new BoundingVolume(globalBoundingBox));
         root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
-        root.setGeometricError(geometricError);
+        //root.setGeometricError(geometricError);
+        root.setGeometricError(1000.0);
 
         makeQuadTreeByDepth(root, desiredDepth);
 
@@ -137,8 +139,14 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         tileInfosCopy.clear();
         nodeTileInfoMap.clear();
         tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
+        DecimateParameters decimateParameters = new DecimateParameters();
+        decimateParameters.setMaxAspectRatio(6.0);
+        decimateParameters.setMaxDiffAngDegrees(15.0);
+        decimateParameters.setHedgeMinLength(0.5);
+        decimateParameters.setFrontierMaxDiffAngDeg(4.0);
+        decimateParameters.setMaxCollapsesCount(1000000);
 
-        decimateScenes(tileInfosCopy, lod);
+        decimateScenes(tileInfosCopy, lod, decimateParameters);
 
         try {
             cutRectangleCake(tileInfosCopy, lod, root);
@@ -162,7 +170,13 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         nodeTileInfoMap.clear();
         tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
 
-        decimateScenes(tileInfosCopy, lod);
+        decimateParameters.setMaxAspectRatio(8.0);
+        decimateParameters.setMaxDiffAngDegrees(25.0);
+        decimateParameters.setHedgeMinLength(0.5);
+        decimateParameters.setFrontierMaxDiffAngDeg(4.0);
+        decimateParameters.setMaxCollapsesCount(1000000);
+
+        decimateScenes(tileInfosCopy, lod, decimateParameters);
 
         boolean someSceneCut = false;
         try {
@@ -183,10 +197,45 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         }
         makeContentsForNodes(nodeTileInfoMap, lod);
         nodeTileInfoMap.clear();
-        // End lod 2.---------------------------------------------------------
+        // End lod 2.-----------------------------------------------------------------------------------------------------
+
+        // make lod 3.**********************************************************************************************************
+        lod = 3;
+        tileInfosCopy.clear();
+        nodeTileInfoMap.clear();
+        tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
+
+        decimateParameters.setMaxAspectRatio(10.0);
+        decimateParameters.setMaxDiffAngDegrees(35.0);
+        decimateParameters.setHedgeMinLength(0.5);
+        decimateParameters.setFrontierMaxDiffAngDeg(4.0);
+        decimateParameters.setMaxCollapsesCount(1000000);
+
+        decimateScenes(tileInfosCopy, lod, decimateParameters);
+
+        someSceneCut = false;
+        try {
+            someSceneCut = cutRectangleCake(tileInfosCopy, lod, root);
+        } catch (IOException e) {
+            log.error("Error : {}", e.getMessage());
+            throw new RuntimeException(e);
+        }
+
+        // distribute contents to node in the correspondent depth.***
+        // After process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes.***
+        currDepth = maxDepth - lod;
+        distributeContentsToNodes(root, tileInfosCopy, currDepth, nodeTileInfoMap);
+
+        if(someSceneCut)
+        {
+            scissorTextures(tileInfosCopy);
+        }
+        makeContentsForNodes(nodeTileInfoMap, lod);
+        nodeTileInfoMap.clear();
+        // End lod 3.-----------------------------------------------------------------------------------------------------
 
         // Check if is necessary netSurfaces nodes.***********************************************************************
-        lod = 3;
+        lod = 4;
         for(int depth = maxDepth - lod; depth >= 0; depth--)
         {
             tileInfosCopy.clear();
@@ -215,7 +264,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         return tileset;
     }
 
-    private void decimateScenes(List<TileInfo> tileInfos, int lod)
+    private void decimateScenes(List<TileInfo> tileInfos, int lod, DecimateParameters decimateParameters)
     {
         log.info("Decimating scenes for lod : " + lod);
         TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
@@ -262,7 +311,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             gaiaSceneList.clear();
             resultDecimatedScenes.clear();
             gaiaSceneList.add(scene);
-            tilerExtensionModule.decimate(gaiaSceneList, resultDecimatedScenes);
+            tilerExtensionModule.decimate(gaiaSceneList, resultDecimatedScenes, decimateParameters);
 
             HalfEdgeScene halfEdgeSceneLod = resultDecimatedScenes.get(0);
 
@@ -899,13 +948,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             if(deletedTileInfoMap.containsKey(tileInfo))
                 continue;
 
-//            if(tileInfo.getTempPathLod() != null) {
-//                List<Path> paths = tileInfo.getTempPathLod();
-//                path = paths.get(0);
-//            }
-//            else {
-//                path = tileInfo.getTempPath();
-//            }
             path = tileInfo.getTempPath();
 
             GaiaBoundingBox setBBox = tileInfo.getBoundingBox();
@@ -1018,13 +1060,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             if(deletedTileInfoMap.containsKey(tileInfo))
                 continue;
             Path path;
-//            if(tileInfo.getTempPathLod() != null) {
-//                List<Path> paths = tileInfo.getTempPathLod();
-//                path = paths.get(0);
-//            }
-//            else {
-//                path = tileInfo.getTempPath();
-//            }
             path = tileInfo.getTempPath();
 
             GaiaBoundingBox setBBox = tileInfo.getBoundingBox();

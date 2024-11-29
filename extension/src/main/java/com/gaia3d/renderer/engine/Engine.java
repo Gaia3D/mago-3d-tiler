@@ -209,7 +209,8 @@ public class Engine {
 
                 // do an iteration of decimation.***
                 List<HalfEdgeScene> decimatedScenes = new ArrayList<>();
-                decimate(halfEdgeScenes, decimatedScenes);
+                DecimateParameters decimateParameters = new DecimateParameters();
+                decimate(halfEdgeScenes, decimatedScenes, decimateParameters);
                 halfEdgeScenes.set(0, decimatedScenes.get(0)); // provisionally, only one scene.***
 
                 // restore the camera position and target.***
@@ -302,15 +303,16 @@ public class Engine {
         int hola2 = 0;
     }
 
-    public void decimate(List<HalfEdgeScene> halfEdgeScenesToDecimate, List<HalfEdgeScene> resultHalfEdgeScenes)
+    public void decimate(List<HalfEdgeScene> halfEdgeScenesToDecimate, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters)
     {
         log.info("Engine.decimate() : halfEdgeScenesToDecimate count : " + halfEdgeScenesToDecimate.size());
         // do an iteration of decimation.***
-        double maxDiffAngDegrees = 15.0;
-        double hedgeMinLength = 0.5;
-        double frontierMaxDiffAngDeg = 4.0;
-        double maxAspectRatio = 6.0;
-        int maxCollapsesCount = 1000000;
+        double maxDiffAngDegrees = decimateParameters.getMaxDiffAngDegrees();
+        double hedgeMinLength = decimateParameters.getHedgeMinLength();
+        double frontierMaxDiffAngDeg = decimateParameters.getFrontierMaxDiffAngDeg();
+        double maxAspectRatio = decimateParameters.getMaxAspectRatio();
+        int maxCollapsesCount = decimateParameters.getMaxCollapsesCount();
+
         int halfEdgeScenesCount = halfEdgeScenesToDecimate.size();
         for(int i=0; i<halfEdgeScenesCount; i++)
         {

@@ -64,7 +64,7 @@ public class BatchedProcessModelPhR implements ProcessFlowModel {
             preProcessors.add(new GaiaRotator());
         }
         preProcessors.add(new GaiaTranslatorExact(geoTiffs));
-        GaiaMinimizer gaiaMinimizer = new GaiaMinimizer();
+        GaiaMinimizerPhR gaiaMinimizer = new GaiaMinimizerPhR();
         preProcessors.add(gaiaMinimizer);
 
         // tileProcess (Batched3DModelTilerPhR).***

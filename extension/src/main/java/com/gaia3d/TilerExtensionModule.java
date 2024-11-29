@@ -5,6 +5,7 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.halfedge.HalfEdgeScene;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.renderer.MainRenderer;
+import com.gaia3d.basic.halfedge.DecimateParameters;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 
@@ -66,11 +67,11 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
-    public void decimate(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes)
+    public void decimate(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters)
     {
         if(renderer == null)
             renderer = new MainRenderer();
-        renderer.decimate(scenes, resultHalfEdgeScenes);
+        renderer.decimate(scenes, resultHalfEdgeScenes, decimateParameters);
         deleteObjects();
     }
 
