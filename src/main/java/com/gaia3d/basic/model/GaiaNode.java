@@ -282,4 +282,13 @@ public class GaiaNode extends NodeStructure implements Serializable {
             child.extractPrimitives(resultPrimitives);
         }
     }
+
+    public void makeTriangleFaces() {
+        for (GaiaMesh mesh : this.getMeshes()) {
+            mesh.makeTriangleFaces();
+        }
+        for (GaiaNode child : this.getChildren()) {
+            child.makeTriangleFaces();
+        }
+    }
 }

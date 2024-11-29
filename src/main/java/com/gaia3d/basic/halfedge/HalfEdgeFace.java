@@ -67,12 +67,12 @@ public class HalfEdgeFace implements Serializable {
     public PlaneType calculateBestPlaneToProject()
     {
         Vector3d normal = this.calculatePlaneNormal();
-        Vector3d zAxis = new Vector3d(0, 0, 1);
-        double dotProd = normal.dot(zAxis);
-        if(dotProd > 0.2){
-            this.bestPlaneToProject = PlaneType.XY;
-            return this.bestPlaneToProject;
-        }
+//        Vector3d zAxis = new Vector3d(0, 0, 1);
+//        double dotProd = normal.dot(zAxis);
+//        if(dotProd > 0.5){
+//            this.bestPlaneToProject = PlaneType.XY;
+//            return this.bestPlaneToProject;
+//        }
         this.bestPlaneToProject = GeometryUtils.getBestPlaneToProject(normal);
         return this.bestPlaneToProject;
     }

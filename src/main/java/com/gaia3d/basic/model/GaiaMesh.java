@@ -288,4 +288,10 @@ public class GaiaMesh extends MeshStructure implements Serializable {
             resultPrimitives.add(primitive);
         }
     }
+
+    public void makeTriangleFaces() {
+        for (GaiaPrimitive primitive : primitives) {
+            primitive.makeTriangleFaces();
+        }
+    }
 }

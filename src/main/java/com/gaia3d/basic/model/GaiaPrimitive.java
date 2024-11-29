@@ -530,4 +530,10 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
 
         this.deleteNoUsedVertices();
     }
+
+    public void makeTriangleFaces() {
+        for (GaiaSurface surface : this.surfaces) {
+            surface.makeTriangleFaces();
+        }
+    }
 }

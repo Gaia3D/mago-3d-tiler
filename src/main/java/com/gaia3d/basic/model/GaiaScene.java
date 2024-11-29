@@ -101,6 +101,13 @@ public class GaiaScene extends SceneStructure implements Serializable {
         return triangleCount;
     }
 
+    public void makeTriangleFaces()
+    {
+        for (GaiaNode node : this.nodes) {
+            node.makeTriangleFaces();
+        }
+    }
+
     public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
         for (GaiaNode node : this.nodes) {
             node.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);

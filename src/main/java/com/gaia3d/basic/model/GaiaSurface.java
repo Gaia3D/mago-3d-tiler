@@ -1,5 +1,6 @@
 package com.gaia3d.basic.model;
 
+import com.gaia3d.basic.halfedge.HalfEdgeUtils;
 import com.gaia3d.basic.model.structure.SurfaceStructure;
 import lombok.Getter;
 import lombok.Setter;
@@ -150,5 +151,20 @@ public class GaiaSurface extends SurfaceStructure implements Serializable {
             }
         }
         faces.removeAll(facesToDelete);
+    }
+
+    public void makeTriangleFaces() {
+        int facesCount = faces.size();
+        List<GaiaFace> facesToAdd = new ArrayList<>();
+        List<GaiaFace> triFaces = new ArrayList<>();
+        for (int i = 0; i < facesCount; i++) {
+            GaiaFace face = faces.get(i);
+            triFaces.clear();
+            triFaces = face.getTriangleFaces(triFaces);
+            facesToAdd.addAll(triFaces);
+        }
+
+        faces.clear();
+        faces.addAll(facesToAdd);
     }
 }
