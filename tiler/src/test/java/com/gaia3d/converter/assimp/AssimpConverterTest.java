@@ -79,6 +79,8 @@ class AssimpConverterTest {
     private void writeObject(GaiaSet gaiaSet, File outputFile) {
         try (ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(outputFile))) {
             outputStream.writeObject(gaiaSet);
+            outputStream.flush();
+            outputStream.close();
         } catch (Exception e) {
             log.error("Error : {}", e.getMessage());
         }

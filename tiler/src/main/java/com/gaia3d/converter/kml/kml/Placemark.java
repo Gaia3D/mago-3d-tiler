@@ -16,6 +16,7 @@ import java.util.List;
 public class Placemark {
     @JacksonXmlProperty(localName = "name")
     private String name;
+
     @JacksonXmlProperty(localName = "description")
     private String description;
 

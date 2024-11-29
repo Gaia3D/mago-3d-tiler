@@ -94,6 +94,8 @@ public class GaiaSet implements Serializable {
         File tempFile = path.resolve(tempFileName).toFile();
         try (ObjectOutputStream outputStream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(tempFile)))) {
             outputStream.writeObject(this);
+            outputStream.flush();
+            outputStream.close();
 
             // Copy images to the temp directory
             for (GaiaMaterial material : materials) {
@@ -111,6 +113,8 @@ public class GaiaSet implements Serializable {
         File file = new File(String.valueOf(path));
         try (ObjectOutputStream outputStream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)))) {
             outputStream.writeObject(this);
+            outputStream.flush();
+            outputStream.close();
 
             // Copy images to the temp directory
             for (GaiaMaterial material : materials) {

@@ -25,14 +25,18 @@ public class GaiaInstanceTranslator implements PreProcess {
         Vector3d center = new Vector3d(position);
 
         AtomicReference<Double> altitude = new AtomicReference<>((double) 0);
-        coverages.forEach((coverage) -> {
-            DirectPosition2D memSave_posWorld = new DirectPosition2D(DefaultGeographicCRS.WGS84, center.x, center.y);
-            double[] memSave_alt = new double[1];
-            memSave_alt[0] = 0;
-            coverage.evaluate((DirectPosition) memSave_posWorld, memSave_alt);
-            //log.info("altitude[0] : {}", memSave_alt[0]);
-            altitude.set(memSave_alt[0]);
-        });
+        String altitudeMode = kmlInfo.getAltitudeMode();
+        if (altitudeMode.equals("absolute")) {
+            altitude.set(position.z);
+        } else {
+            coverages.forEach((coverage) -> {
+                DirectPosition2D memSave_posWorld = new DirectPosition2D(DefaultGeographicCRS.WGS84, center.x, center.y);
+                double[] memSave_alt = new double[1];
+                memSave_alt[0] = 0;
+                coverage.evaluate((DirectPosition) memSave_posWorld, memSave_alt);
+                altitude.set(memSave_alt[0]);
+            });
+        }
 
         position.set(position.x, position.y, altitude.get());
         return tileInfo;
