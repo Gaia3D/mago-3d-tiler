@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 public class PointCloudTiler extends DefaultTiler implements Tiler {
 
     private double rootGeometricError = 0.0d;
-    private final int MAXIMUM_DEPTH = 8;
+    private final int MAXIMUM_DEPTH = 12;
 
     @Override
     public Tileset run(List<TileInfo> tileInfos) {
@@ -183,7 +183,6 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
             pointCloud.setCode((index++) + "");
             pointCloud.maximize();
             List<GaiaPointCloud> allPointClouds = new ArrayList<>();
-            int depth = 0;
             createNode(allPointClouds, index, maximumIndex, parentNode, pointCloud, rootPointLimit, 0);
             minimizeAllPointCloud(index, maximumIndex, allPointClouds);
         }

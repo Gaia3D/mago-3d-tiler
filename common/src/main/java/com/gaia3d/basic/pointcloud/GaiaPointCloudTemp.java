@@ -25,7 +25,7 @@ public class GaiaPointCloudTemp {
     /* Header Total Size 52 byte */
     private final short HEADER_SIZE = 52; // 2 (Version) + 2 (Block Size) + 24 (Quantized Volume Scale) + 24 (Quantized Volume Offset)
     private final short BLOCK_SIZE = 16; // 12 (FLOAT XYZ) + 3 (RGB) + 1 (Padding)
-    private final int BUFFER_SIZE = 1024 * 1024; // 1MB
+    private final int BUFFER_SIZE = 8192; // 8KB
     private final double[] quantizedVolumeScale = new double[3];
     private final double[] quantizedVolumeOffset = new double[3];
     private DataOutputStream outputStream;
