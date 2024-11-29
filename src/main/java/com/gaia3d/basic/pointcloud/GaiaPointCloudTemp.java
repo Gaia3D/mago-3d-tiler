@@ -4,6 +4,7 @@ import com.gaia3d.basic.model.GaiaVertex;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.joml.Vector3d;
 
 import java.io.*;
@@ -24,11 +25,12 @@ public class GaiaPointCloudTemp {
     /* Header Total Size 52 byte */
     private final short HEADER_SIZE = 52; // 2 (Version) + 2 (Block Size) + 24 (Quantized Volume Scale) + 24 (Quantized Volume Offset)
     private final short BLOCK_SIZE = 16; // 12 (FLOAT XYZ) + 3 (RGB) + 1 (Padding)
-    private final int BUFFER_SIZE = 1024 * 1024;
+    private final int BUFFER_SIZE = 8192; // 8KB
     private final double[] quantizedVolumeScale = new double[3];
     private final double[] quantizedVolumeOffset = new double[3];
     private DataOutputStream outputStream;
     private DataInputStream inputStream;
+    private static List<Integer> SHUFFLE_INDEXES = null;
 
     public GaiaPointCloudTemp(File file) {
         this.tempFile = file;
@@ -251,7 +253,7 @@ public class GaiaPointCloudTemp {
     /**
      * Shuffles the temp file
      */
-    public void shuffleTemp(int limitSize) {
+    /*public void shuffleTemp(int limitSize) {
         String fileName = "shuffled-" + this.tempFile.getName();
         File shuffledFile = new File(this.tempFile.getParent(), fileName);
         try {
@@ -318,12 +320,12 @@ public class GaiaPointCloudTemp {
             log.error("Failed to shuffle temp file", e);
             throw new RuntimeException(e);
         }
-    }
+    }*/
 
     /**
      * Shuffles the temp file
      */
-    public void shuffleTempMoreFast(int limitSize) {
+    public void shuffleTempMoreFast(int shuffleNumber, int shuffleLength) {
         String fileName = "shuffled-" + this.tempFile.getName();
         File shuffledFile = new File(this.tempFile.getParent(), fileName);
         try {
@@ -332,9 +334,6 @@ public class GaiaPointCloudTemp {
             int headerSize = 52;
             int blockCount = (int) ((randomAccessFile.length() - headerSize) / BLOCK_SIZE);
             int loop = blockCount;
-            if (limitSize < 0) {
-                loop = blockCount;
-            }
 
             /*int calcSize = headerSize + (loop * BLOCK_SIZE);
             if (shuffledFile.exists() && shuffledFile.length() == calcSize) {
@@ -366,40 +365,49 @@ public class GaiaPointCloudTemp {
             dataOutputStream.writeDouble(volumeOffset[1]);
             dataOutputStream.writeDouble(volumeOffset[2]);
 
-            int shuffleSize = 1024;
-            int shuffleCount;
-            if (loop < shuffleSize) {
-                shuffleSize = 1;
-                shuffleCount = loop;
-            } else {
-                shuffleCount = loop / shuffleSize;
-            }
-            List<Integer> indexes = new ArrayList<>();
-            for (int i = 0; i < shuffleCount; i++) {
-                indexes.add(i);
-            }
-            Collections.shuffle(indexes);
 
-            int shuffleBlockSize = blockSize * shuffleSize;
-            byte[] bytes = new byte[blockSize];
-            byte[] shuffleBytes = new byte[shuffleBlockSize];
-            log.info("- Shuffling points limit {}/{} ({})%", loop, blockCount, (blockCount < 0) ? "original" : (loop * 100 / blockCount));
-            log.info("- Shuffle count: {}", shuffleCount);
-            log.info("- Shuffle block size: {}", blockSize);
-            int indexSize = indexes.size();
-            for (int i = 0; i < indexSize; i++) {
-                for (int j = 0; j < shuffleSize; j++) {
-                    int index = (shuffleCount * j) + indexes.get(i);
-                    int pointer = headerSize + (index * blockSize);
-                    randomAccessFile.seek(pointer);
-                    randomAccessFile.read(bytes);
-                    System.arraycopy(bytes, 0, shuffleBytes, (j * blockSize) + 0, blockSize);
-                }
-                dataOutputStream.write(shuffleBytes);
+            int shuffleBufferSize = 65536 * 8;
+            int shuffleCount = loop / shuffleBufferSize;
+            int remainder = loop % shuffleBufferSize;
+            if (remainder > 0) {
+                shuffleCount += 1;
             }
-            randomAccessFile.close();
+            List<Integer> indexes;
+            if (SHUFFLE_INDEXES == null) {
+                SHUFFLE_INDEXES = createShuffleIndexes(shuffleBufferSize);
+            }
+            indexes = SHUFFLE_INDEXES;
+
+            //int shuffleBlockSize = blockSize * shuffleCount;
+            byte[] bytes = new byte[blockSize];
+            //byte[] shuffleBytes = new byte[shuffleBlockSize];
+
+            log.info("[Pre][{}/{}][Shuffle] TotalPoints: {}, shuffleBufferSize: {}, shuffleCount: {}, blockSize: {}", shuffleNumber, shuffleLength, loop, shuffleBufferSize, shuffleCount, blockSize);
+
+            /*log.info("- Shuffling points limit {}/{} ({})%", loop, blockCount, (blockCount < 0) ? "original" : (loop * 100 / blockCount));
+            log.info("- Shuffle Buffer Size: {}", shuffleBufferSize);
+            log.info("- Shuffle Count: {}", shuffleCount);
+            log.info("- Shuffle block size: {}", blockSize);
+            log.info("- loop / shuffleCount : {}", loop / shuffleBufferSize);
+            log.info("- loop % shuffleCount : {}", loop % shuffleBufferSize);
+            log.info("- total loop : {}", shuffleBufferSize * shuffleCount);*/
+
+            int fileSize = (int) randomAccessFile.length();
+            for (Integer integer : indexes) {
+                for (int count = 0; count < shuffleCount; count++) {
+                    int index = (shuffleBufferSize * count) + integer;
+                    int pointer = headerSize + (index * blockSize);
+                    if ((pointer) <= fileSize) {
+                        randomAccessFile.seek(pointer);
+                        randomAccessFile.read(bytes);
+                        dataOutputStream.write(bytes);
+                    }
+                }
+            }
+            dataOutputStream.flush();
             dataOutputStream.close();
-            this.tempFile.delete();
+            randomAccessFile.close();
+            FileUtils.deleteQuietly(this.tempFile);
             this.tempFile = shuffledFile;
         } catch (FileNotFoundException e) {
             log.error("Failed to shuffle temp file", e);
@@ -408,6 +416,15 @@ public class GaiaPointCloudTemp {
             log.error("Failed to shuffle temp file", e);
             throw new RuntimeException(e);
         }
+    }
+
+    private List<Integer> createShuffleIndexes(int loop) {
+        List<Integer> indexes = new ArrayList<>();
+        for (int i = 0; i < loop; i++) {
+            indexes.add(i);
+        }
+        Collections.shuffle(indexes);
+        return indexes;
     }
 
     // 두 블록을 교환하는 메서드
