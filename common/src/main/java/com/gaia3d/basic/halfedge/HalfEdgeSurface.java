@@ -1494,12 +1494,7 @@ public class HalfEdgeSurface implements Serializable {
                     double angRad = Math.acos(v1.dot(v2));
                     double angDeg = Math.toDegrees(angRad);
 
-//                    if(angDeg > frontierMaxDiffAngDeg)
-//                    {
-//                        return false;
-//                    }
-
-                    if(angDeg > 45.0)
+                    if(angDeg > frontierMaxDiffAngDeg)
                     {
                         return false;
                     }

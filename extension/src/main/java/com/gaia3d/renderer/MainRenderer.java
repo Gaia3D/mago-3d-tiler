@@ -148,6 +148,8 @@ public class MainRenderer implements IAppLogic {
         boolean checkBatchId = false;
         double error = 1e-4;
 
+        log.info("MainRenderer : Decimating the scene...");
+
         for(int i = 0; i < scenesCount; i++)
         {
             GaiaScene gaiaScene = scenes.get(i);

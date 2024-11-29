@@ -304,10 +304,11 @@ public class Engine {
 
     public void decimate(List<HalfEdgeScene> halfEdgeScenesToDecimate, List<HalfEdgeScene> resultHalfEdgeScenes)
     {
+        log.info("Engine.decimate() : halfEdgeScenesToDecimate count : " + halfEdgeScenesToDecimate.size());
         // do an iteration of decimation.***
         double maxDiffAngDegrees = 15.0;
         double hedgeMinLength = 0.5;
-        double frontierMaxDiffAngDeg = 5.0;
+        double frontierMaxDiffAngDeg = 4.0;
         double maxAspectRatio = 6.0;
         int maxCollapsesCount = 1000000;
         int halfEdgeScenesCount = halfEdgeScenesToDecimate.size();
@@ -319,10 +320,12 @@ public class Engine {
             // now, cut the halfEdgeScene and make cube-textures by rendering.***
             double gridSpacing = 60.0;
             HalfEdgeOctree resultOctree = new HalfEdgeOctree(null);
+            log.info("Engine.decimate() : cutHalfEdgeSceneGridXYZ.");
             HalfEdgeScene cuttedScene = HalfEdgeCutter.cutHalfEdgeSceneGridXYZ(halfEdgeScene, gridSpacing, resultOctree);
             cuttedScene.splitFacesByBestPlanesToProject();
 
             // now make box textures for the cuttedScene.***
+            log.info("Engine.decimate() : makeBoxTexturesForHalfEdgeScene.");
             makeBoxTexturesForHalfEdgeScene(cuttedScene);
 
             ////cuttedScene.translateToOrigin();
