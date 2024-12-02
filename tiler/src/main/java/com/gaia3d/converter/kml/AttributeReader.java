@@ -4,6 +4,6 @@ import java.io.File;
 import java.util.List;
 
 public interface AttributeReader {
-    public KmlInfo read(File file);
-    public List<KmlInfo> readAll(File file);
+    KmlInfo read(File file);
+    List<KmlInfo> readAll(File file);
 }

@@ -36,7 +36,7 @@ public class GlobalOptions {
 
     private static final int DEFAULT_MAX_TRIANGLES = 65536 * 8;
     private static final int DEFAULT_MAX_NODE_DEPTH = 32;
-    private static final int DEFAULT_MAX_INSTANCE = 512;
+    private static final int DEFAULT_MAX_INSTANCE = 1024 * 8;
 
     //public static final int DEFAULT_POINT_PER_TILE = 100000;
     public static final int DEFAULT_POINT_PER_TILE = 300000;
@@ -48,6 +48,7 @@ public class GlobalOptions {
     private static final String DEFAULT_NAME_COLUMN = "name";
     private static final String DEFAULT_HEIGHT_COLUMN = "height";
     private static final String DEFAULT_ALTITUDE_COLUMN = "altitude";
+    private static final String DEFAULT_HEADING_COLUMN = "heading";
     private static final String DEFAULT_DIAMETER_COLUMN = "diameter";
     private static final double DEFAULT_ABSOLUTE_ALTITUDE = 0.0d;
     private static final double DEFAULT_MINIMUM_HEIGHT = 1.0d;
@@ -129,6 +130,7 @@ public class GlobalOptions {
     private String nameColumn;
     private String heightColumn;
     private String altitudeColumn;
+    private String headingColumn;
     private String diameterColumn;
     private double absoluteAltitude;
     private double minimumHeight;
@@ -281,6 +283,7 @@ public class GlobalOptions {
         instance.setNameColumn(command.hasOption(ProcessOptions.NAME_COLUMN.getArgName()) ? command.getOptionValue(ProcessOptions.NAME_COLUMN.getArgName()) : DEFAULT_NAME_COLUMN);
         instance.setHeightColumn(command.hasOption(ProcessOptions.HEIGHT_COLUMN.getArgName()) ? command.getOptionValue(ProcessOptions.HEIGHT_COLUMN.getArgName()) : DEFAULT_HEIGHT_COLUMN);
         instance.setAltitudeColumn(command.hasOption(ProcessOptions.ALTITUDE_COLUMN.getArgName()) ? command.getOptionValue(ProcessOptions.ALTITUDE_COLUMN.getArgName()) : DEFAULT_ALTITUDE_COLUMN);
+        instance.setHeadingColumn(command.hasOption(ProcessOptions.HEADING_COLUMN.getArgName()) ? command.getOptionValue(ProcessOptions.HEADING_COLUMN.getArgName()) : DEFAULT_HEADING_COLUMN);
         instance.setDiameterColumn(command.hasOption(ProcessOptions.DIAMETER_COLUMN.getArgName()) ? command.getOptionValue(ProcessOptions.DIAMETER_COLUMN.getArgName()) : DEFAULT_DIAMETER_COLUMN);
         instance.setAbsoluteAltitude(command.hasOption(ProcessOptions.ABSOLUTE_ALTITUDE.getArgName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.ABSOLUTE_ALTITUDE.getArgName())) : DEFAULT_ABSOLUTE_ALTITUDE);
         instance.setMinimumHeight(command.hasOption(ProcessOptions.MINIMUM_HEIGHT.getArgName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.MINIMUM_HEIGHT.getArgName())) : DEFAULT_MINIMUM_HEIGHT);
@@ -313,9 +316,12 @@ public class GlobalOptions {
         if (instance.getInputFormat().equals(FormatType.GEOJSON) || instance.getInputFormat().equals(FormatType.SHP) || instance.getInputFormat().equals(FormatType.CITYGML) || instance.getInputFormat().equals(FormatType.INDOORGML)) {
             isSwapUpAxis = false;
             isFlipUpAxis = false;
-            rotateXAxis = -90;
+            if (instance.getOutputFormat().equals(FormatType.B3DM)) {
+                rotateXAxis = -90;
+            }
             isRefineAdd = true;
         }
+
 
         instance.setSwapUpAxis(isSwapUpAxis);
         instance.setFlipUpAxis(isFlipUpAxis);

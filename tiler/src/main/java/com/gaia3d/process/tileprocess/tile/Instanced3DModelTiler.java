@@ -38,6 +38,9 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         if (!tileInfos.isEmpty()) {
             instanceGeometricError = calcGeometricError(List.of(tileInfos.get(0)));
         }
+        if (instanceGeometricError < 32.0) {
+            instanceGeometricError = 32.0;
+        }
 
         // Test set isRefineAdd to false.**********************************************************
         globalOptions.setRefineAdd(false);
@@ -64,7 +67,7 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
 
         Asset asset = createAsset();
         Tileset tileset = new Tileset();
-        tileset.setGeometricError(instanceGeometricError);
+        //tileset.setGeometricError(instanceGeometricError);
         tileset.setAsset(asset);
         tileset.setRoot(root);
         return tileset;
@@ -94,7 +97,7 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
         BoundingVolume squareBoundingVolume = parentBoundingVolume.createSqureBoundingVolume();
 
-        long instanceLimit = globalOptions.getMaxInstance() * 4L;
+        long instanceLimit = globalOptions.getMaxInstance();
         long instanceCount = tileInfos.size();
         boolean isRefineAdd = globalOptions.isRefineAdd();
 
@@ -226,7 +229,11 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         childNode.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
         childNode.setBoundingVolume(boundingVolume);
         childNode.setNodeCode(nodeCode);
-        childNode.setGeometricError(lodError + 0.1);
+
+        if (lodError < 1.0) {
+            lodError = 1;
+        }
+        childNode.setGeometricError(lodError);
         childNode.setChildren(new ArrayList<>());
 
         //childNode.setRefine(refineAdd ? Node.RefineType.ADD : Node.RefineType.REPLACE);

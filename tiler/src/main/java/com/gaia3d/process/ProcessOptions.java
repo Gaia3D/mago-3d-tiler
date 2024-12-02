@@ -58,6 +58,7 @@ public enum ProcessOptions {
     NAME_COLUMN("nameColumn", "nc", "nameColumn", true, "Name column setting for extrusion model (Default Column: name)"),
     HEIGHT_COLUMN("heightColumn", "hc", "heightColumn", true, "Height column setting for extrusion model ((Default Column: height)"),
     ALTITUDE_COLUMN("altitudeColumn", "ac", "altitudeColumn", true, "Altitude Column setting for extrusion model ((Default Column: altitude)"),
+    HEADING_COLUMN("headingColumn", "hd", "headingColumn", true, "Heading column setting for I3DM converting (Default Column: heading)"),
     DIAMETER_COLUMN("diameterColumn", "dc", "diameterColumn", true, "Diameter column setting for extrusion model, Specify a length unit for Diameter in millimeters(mm) (Default Column: diameter)"),
 
     MINIMUM_HEIGHT("minimumHeight", "mh", "minimumHeight", true, "Minimum height value for extrusion model (Default: 1.0)"),
