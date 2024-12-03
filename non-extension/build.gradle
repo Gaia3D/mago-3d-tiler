@@ -2,19 +2,6 @@ plugins {
     id 'java'
 }
 
-project.ext.lwjglVersion = "3.3.3"
-switch ( org.gradle.internal.os.OperatingSystem.current() ) {
-    case org.gradle.internal.os.OperatingSystem.WINDOWS:
-        project.ext.lwjglNatives = "natives-windows"
-        break
-    case org.gradle.internal.os.OperatingSystem.LINUX:
-        project.ext.lwjglNatives = "natives-linux"
-        break
-    case org.gradle.internal.os.OperatingSystem.MAC_OS:
-        project.ext.lwjglNatives = "natives-macos"
-        break
-}
-
 repositories {
     maven { url "https://repo.osgeo.org/repository/release/" }
     mavenCentral()
