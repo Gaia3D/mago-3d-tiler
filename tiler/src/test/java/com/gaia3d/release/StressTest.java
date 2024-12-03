@@ -420,6 +420,19 @@ public class StressTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Test
+    void convertKoreaSeoul() {
+        String path = "KOREA-SEOUL-SHP";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "shp",
+                "-crs", "5186",
+                "-terrain", getInputPath(path).getAbsolutePath() + File.separator + "korea-compressed.tif",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
 
     private File getInputPath(String path) {
         return new File(INPUT_PATH, path);

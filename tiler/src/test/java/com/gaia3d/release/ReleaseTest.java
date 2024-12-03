@@ -237,6 +237,38 @@ class ReleaseTest {
     }
 
     @Test
+    void testI3dmSeoulTrees() {
+        String path = "I3DM-SEOUL-TREES";
+        FileUtils.deleteQuietly(getOutputPath(path));
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "shp",
+                "-ot", "i3dm",
+                "-instance", getInputPath(path).getAbsolutePath() + "/tree.dae",
+                "-crs", "5186",
+                //"-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testI3dmSeoulTreesFromGeojson() {
+        String path = "I3DM-SEOUL-TREES-GEOJSON";
+        FileUtils.deleteQuietly(getOutputPath(path));
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "geojson",
+                "-ot", "i3dm",
+                "-instance", getInputPath(path).getAbsolutePath() + "/temp/tree.dae",
+                "-crs", "5186",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
     void testShapeSeoul() {
         String path = "SEOUL-PART-SHP";
         String[] args = new String[] {

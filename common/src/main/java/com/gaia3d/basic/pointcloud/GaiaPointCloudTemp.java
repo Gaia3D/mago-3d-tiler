@@ -20,17 +20,21 @@ import java.util.stream.IntStream;
 @Getter
 @Slf4j
 public class GaiaPointCloudTemp {
-    private File tempFile;
     private final short VERSION = 1106;
+    private final int BUFFER_SIZE = 8192; // 8KB
+    private final int RANDOM_SEED = 42;
+
+    private static List<Integer> SHUFFLE_INDEXES = null;
+
     /* Header Total Size 52 byte */
     private final short HEADER_SIZE = 52; // 2 (Version) + 2 (Block Size) + 24 (Quantized Volume Scale) + 24 (Quantized Volume Offset)
     private final short BLOCK_SIZE = 16; // 12 (FLOAT XYZ) + 3 (RGB) + 1 (Padding)
-    private final int BUFFER_SIZE = 8192; // 8KB
     private final double[] quantizedVolumeScale = new double[3];
     private final double[] quantizedVolumeOffset = new double[3];
+
+    private File tempFile;
     private DataOutputStream outputStream;
     private DataInputStream inputStream;
-    private static List<Integer> SHUFFLE_INDEXES = null;
 
     public GaiaPointCloudTemp(File file) {
         this.tempFile = file;
@@ -423,7 +427,7 @@ public class GaiaPointCloudTemp {
         for (int i = 0; i < loop; i++) {
             indexes.add(i);
         }
-        Collections.shuffle(indexes);
+        Collections.shuffle(indexes, new Random(RANDOM_SEED));
         return indexes;
     }
 

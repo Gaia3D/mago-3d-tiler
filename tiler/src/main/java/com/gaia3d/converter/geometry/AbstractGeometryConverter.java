@@ -38,7 +38,7 @@ public abstract class AbstractGeometryConverter {
         attribute.setNodeName(ROOT_NODE_NAME);
         scene.setAttribute(attribute);
 
-        Vector4d color = new Vector4d(0.9, 0.9, 0.9, 1);
+        Vector4d color = new Vector4d(0.8, 0.8, 0.8, 1);
         if (globalOptions.isDebugLod()) {
             Random random = new Random();
             float r = random.nextFloat();
