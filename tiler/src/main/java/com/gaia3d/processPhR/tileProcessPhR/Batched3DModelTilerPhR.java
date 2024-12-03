@@ -68,6 +68,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
         double geometricError = calcGeometricError(tileInfos);
         geometricError = DecimalUtils.cut(geometricError);
+        geometricError = 1000.0;
 
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
 
@@ -134,105 +135,49 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         makeContentsForNodes(nodeTileInfoMap, lod);
         // End lod 0.-----------------------------------------------------------------------------------------------------------
 
-        // make lod 1.**********************************************************************************************************
-        lod = 1;
-        tileInfosCopy.clear();
-        nodeTileInfoMap.clear();
-        tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
         DecimateParameters decimateParameters = new DecimateParameters();
-        decimateParameters.setMaxAspectRatio(6.0);
-        decimateParameters.setMaxDiffAngDegrees(15.0);
-        decimateParameters.setHedgeMinLength(0.5);
-        decimateParameters.setFrontierMaxDiffAngDeg(4.0);
-        decimateParameters.setMaxCollapsesCount(1000000);
+        for(int d = 1; d < maxDepth; d++) {
+            lod = d;
+            tileInfosCopy.clear();
+            nodeTileInfoMap.clear();
+            tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
+            // public void setBasicValues(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount)
+            decimateParameters.setBasicValues(6.0, 0.5, 3.0, 6.0, 1000000);
+            if(d == 1) {
+                decimateParameters.setBasicValues(6.0, 0.5, 3.0, 6.0, 1000000);
+            }
+            else if(d == 2) {
+                decimateParameters.setBasicValues(20.0, 0.5, 3.0, 8.0, 1000000);
+            }
+            else if(d == 3) {
+                decimateParameters.setBasicValues(30.0, 0.5, 3.0, 10.0, 1000000);
+            }
+            else if(d == 4) {
+                decimateParameters.setBasicValues(40.0, 0.5, 3.0, 12.0, 1000000);
+            }
 
-        decimateScenes(tileInfosCopy, lod, decimateParameters);
+            decimateScenes(tileInfosCopy, lod, decimateParameters);
+            boolean someSceneCut = false;
 
-        try {
-            cutRectangleCake(tileInfosCopy, lod, root);
-        } catch (IOException e) {
-            log.error("Error : {}", e.getMessage());
-            throw new RuntimeException(e);
+            try {
+                someSceneCut = cutRectangleCake(tileInfosCopy, lod, root);
+            } catch (IOException e) {
+                log.error("Error : {}", e.getMessage());
+                throw new RuntimeException(e);
+            }
+            currDepth = maxDepth - lod;
+            distributeContentsToNodes(root, tileInfosCopy, currDepth, nodeTileInfoMap);
+            if(someSceneCut)
+            {
+                scissorTextures(tileInfosCopy);
+            }
+            makeContentsForNodes(nodeTileInfoMap, lod);
+
+            if(d >= 3)
+            {
+                break;
+            }
         }
-
-        // distribute contents to node in the correspondent depth.***
-        // After process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes.***
-        currDepth = maxDepth - lod;
-        distributeContentsToNodes(root, tileInfosCopy, currDepth, nodeTileInfoMap);
-
-        scissorTextures(tileInfosCopy);
-        makeContentsForNodes(nodeTileInfoMap, lod);
-        // End lod 1.----------------------------------------------------------------------------------------------------------
-
-        // make lod 2.**********************************************************************************************************
-        lod = 2;
-        tileInfosCopy.clear();
-        nodeTileInfoMap.clear();
-        tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
-
-        decimateParameters.setMaxAspectRatio(8.0);
-        decimateParameters.setMaxDiffAngDegrees(25.0);
-        decimateParameters.setHedgeMinLength(0.5);
-        decimateParameters.setFrontierMaxDiffAngDeg(4.0);
-        decimateParameters.setMaxCollapsesCount(1000000);
-
-        decimateScenes(tileInfosCopy, lod, decimateParameters);
-
-        boolean someSceneCut = false;
-        try {
-            someSceneCut = cutRectangleCake(tileInfosCopy, lod, root);
-        } catch (IOException e) {
-            log.error("Error : {}", e.getMessage());
-            throw new RuntimeException(e);
-        }
-
-        // distribute contents to node in the correspondent depth.***
-        // After process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes.***
-        currDepth = maxDepth - lod;
-        distributeContentsToNodes(root, tileInfosCopy, currDepth, nodeTileInfoMap);
-
-        if(someSceneCut)
-        {
-            scissorTextures(tileInfosCopy);
-        }
-        makeContentsForNodes(nodeTileInfoMap, lod);
-        nodeTileInfoMap.clear();
-        // End lod 2.-----------------------------------------------------------------------------------------------------
-
-        // make lod 3.**********************************************************************************************************
-        lod = 3;
-        tileInfosCopy.clear();
-        nodeTileInfoMap.clear();
-        tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
-
-        decimateParameters.setMaxAspectRatio(10.0);
-        decimateParameters.setMaxDiffAngDegrees(35.0);
-        decimateParameters.setHedgeMinLength(0.5);
-        decimateParameters.setFrontierMaxDiffAngDeg(4.0);
-        decimateParameters.setMaxCollapsesCount(1000000);
-
-        decimateScenes(tileInfosCopy, lod, decimateParameters);
-
-        someSceneCut = false;
-        try {
-            someSceneCut = cutRectangleCake(tileInfosCopy, lod, root);
-        } catch (IOException e) {
-            log.error("Error : {}", e.getMessage());
-            throw new RuntimeException(e);
-        }
-
-        // distribute contents to node in the correspondent depth.***
-        // After process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes.***
-        currDepth = maxDepth - lod;
-        distributeContentsToNodes(root, tileInfosCopy, currDepth, nodeTileInfoMap);
-
-        if(someSceneCut)
-        {
-            scissorTextures(tileInfosCopy);
-        }
-        makeContentsForNodes(nodeTileInfoMap, lod);
-        nodeTileInfoMap.clear();
-        // End lod 3.-----------------------------------------------------------------------------------------------------
 
         // Check if is necessary netSurfaces nodes.***********************************************************************
         lod = 4;
@@ -256,12 +201,30 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 //        }
 //        //End Old.---------------------------------------------------------
 
+        setGeometryErrorToNodeAutomatic(root, maxDepth);
         Asset asset = createAsset();
         Tileset tileset = new Tileset();
-        tileset.setGeometricError(geometricError);
+        //tileset.setGeometricError(geometricError);
         tileset.setAsset(asset);
         tileset.setRoot(root);
         return tileset;
+    }
+
+    private void setGeometryErrorToNodeAutomatic(Node node, int maxDepth)
+    {
+        int lod = maxDepth - node.getDepth();
+        double geometricError = (lod + 1);
+        node.setGeometricError(geometricError);
+        List<Node> children = node.getChildren();
+        if(children != null)
+        {
+            int childrenCount = children.size();
+            for(int i = 0; i < childrenCount; i++)
+            {
+                Node child = children.get(i);
+                setGeometryErrorToNodeAutomatic(child, maxDepth);
+            }
+        }
     }
 
     private void decimateScenes(List<TileInfo> tileInfos, int lod, DecimateParameters decimateParameters)
