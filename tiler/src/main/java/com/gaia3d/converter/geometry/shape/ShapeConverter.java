@@ -104,7 +104,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 }
 
                 List<Polygon> polygons = new ArrayList<>();
-                List<LineString> LineStrings = new ArrayList<>();
+                List<LineString> lineStrings = new ArrayList<>();
                 if (geom instanceof MultiPolygon) {
                     int count = geom.getNumGeometries();
                     for (int i = 0; i < count; i++) {
@@ -114,12 +114,12 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 } else if (geom instanceof Polygon) {
                     polygons.add((Polygon) geom);
                 } else if (geom instanceof LineString) {
-                    LineStrings.add((LineString) geom);
+                    lineStrings.add((LineString) geom);
                 } else if (geom instanceof MultiLineString) {
                     int count = geom.getNumGeometries();
                     for (int i = 0; i < count; i++) {
                         LineString lineString = (LineString) geom.getGeometryN(i);
-                        LineStrings.add(lineString);
+                        lineStrings.add(lineString);
                     }
                 } else {
                     log.debug("Is Not Supported Geometry Type : {}", geom.getGeometryType());
@@ -139,7 +139,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                     attributes.put(attributeDescriptor.getName().getLocalPart(), attributeString);
                 });
 
-                for (LineString lineString : LineStrings) {
+                for (LineString lineString : lineStrings) {
                     Coordinate[] coordinates = lineString.getCoordinates();
                     List<Vector3d> positions = new ArrayList<>();
                     if (coordinates.length < 2) {

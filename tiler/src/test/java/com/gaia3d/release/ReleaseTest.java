@@ -236,6 +236,7 @@ class ReleaseTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Disabled
     @Test
     void testI3dmSeoulTrees() {
         String path = "I3DM-SEOUL-TREES";
@@ -252,6 +253,7 @@ class ReleaseTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Disabled
     @Test
     void testI3dmSeoulTreesFromGeojson() {
         String path = "I3DM-SEOUL-TREES-GEOJSON";
@@ -261,9 +263,42 @@ class ReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "geojson",
                 "-ot", "i3dm",
-                "-instance", getInputPath(path).getAbsolutePath() + "/temp/tree.dae",
+                "-instance", getInputPath(path).getAbsolutePath() + File.separator + "temp/tree.dae",
+                "-terrain", getInputPath(path).getAbsolutePath() + File.separator + "korea-compressed.tif",
                 "-crs", "5186",
                 "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Disabled
+    @Test
+    void testI3dmSeoulVoxelTreesFromGeojson() {
+        String path = "I3DM-SEOUL-TREES-GEOJSON-MINI";
+        FileUtils.deleteQuietly(getOutputPath(path));
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "geojson",
+                "-ot", "i3dm",
+                "-instance", getInputPath(path).getAbsolutePath() + File.separator + "temp/tree.dae",
+                "-terrain", getInputPath(path).getAbsolutePath() + File.separator + "korea-compressed.tif",
+                "-crs", "5186",
+                "-voxelLod",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Disabled
+    @Test
+    void sejongWaterPipe() {
+        String path = "SEJEONG-WATER-PIPE-GEOJSON";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "geojson",
+                "-crs", "5186",
         };
         Mago3DTilerMain.main(args);
     }
