@@ -377,12 +377,25 @@ public class Engine {
             if(facesPlaneXYPos != null && !facesPlaneXYPos.isEmpty()) {
                 GaiaBoundingBox bboxXYPos = HalfEdgeUtils.getBoundingBoxOfFaces(facesPlaneXYPos);
                 BufferedImage ZNegImage = makeZNegTexture(bboxXYPos, maxScreenSize);
-                TexturesAtlasData texturesAtlasDataZNeg = new TexturesAtlasData();
-                texturesAtlasDataZNeg.setClassifyId(classificationId);
-                texturesAtlasDataZNeg.setPlaneType(PlaneType.XY);
-                texturesAtlasDataZNeg.setTextureImage(ZNegImage);
-                texturesAtlasDataZNeg.setFaceGroupBBox(bboxXYPos);
-                texturesAtlasDataList.add(texturesAtlasDataZNeg);
+                if(ZNegImage != null)
+                {
+                    TexturesAtlasData texturesAtlasDataZNeg = new TexturesAtlasData();
+                    texturesAtlasDataZNeg.setClassifyId(classificationId);
+                    texturesAtlasDataZNeg.setPlaneType(PlaneType.XY);
+                    texturesAtlasDataZNeg.setTextureImage(ZNegImage);
+                    texturesAtlasDataZNeg.setFaceGroupBBox(bboxXYPos);
+                    texturesAtlasDataList.add(texturesAtlasDataZNeg);
+                }
+                else {
+                    // set texCoords as (0.0,0.0).***
+                    List<HalfEdgeVertex> vertices = HalfEdgeUtils.getVerticesOfFaces(facesPlaneXYPos, null);
+                    for (HalfEdgeVertex vertex : vertices) {
+                        if (vertex.getTexcoords() != null) {
+                            vertex.getTexcoords().set(0.0, 0.0);
+                        }
+                    }
+
+                }
             }
 
             // YPos texture : plane XZNeg.***
@@ -391,12 +404,25 @@ public class Engine {
             if(facesPlaneXZNeg != null && !facesPlaneXZNeg.isEmpty()) {
                 GaiaBoundingBox bboxXZNeg = HalfEdgeUtils.getBoundingBoxOfFaces(facesPlaneXZNeg);
                 BufferedImage YPosImage = makeYPosTexture(bboxXZNeg, maxScreenSize);
-                TexturesAtlasData texturesAtlasDataYPos = new TexturesAtlasData();
-                texturesAtlasDataYPos.setClassifyId(classificationId);
-                texturesAtlasDataYPos.setPlaneType(PlaneType.XZNEG);
-                texturesAtlasDataYPos.setTextureImage(YPosImage);
-                texturesAtlasDataYPos.setFaceGroupBBox(bboxXZNeg);
-                texturesAtlasDataList.add(texturesAtlasDataYPos);
+                if(YPosImage != null)
+                {
+                    TexturesAtlasData texturesAtlasDataYPos = new TexturesAtlasData();
+                    texturesAtlasDataYPos.setClassifyId(classificationId);
+                    texturesAtlasDataYPos.setPlaneType(PlaneType.XZNEG);
+                    texturesAtlasDataYPos.setTextureImage(YPosImage);
+                    texturesAtlasDataYPos.setFaceGroupBBox(bboxXZNeg);
+                    texturesAtlasDataList.add(texturesAtlasDataYPos);
+                }
+                else {
+                    // set texCoords as (0.0,0.0).***
+                    List<HalfEdgeVertex> vertices = HalfEdgeUtils.getVerticesOfFaces(facesPlaneXZNeg, null);
+                    for (HalfEdgeVertex vertex : vertices) {
+                        if (vertex.getTexcoords() != null) {
+                            vertex.getTexcoords().set(0.0, 0.0);
+                        }
+                    }
+
+                }
             }
 
             // XPos texture : plane YZNeg.***
@@ -405,12 +431,25 @@ public class Engine {
             if(facesPlaneYZNeg != null && !facesPlaneYZNeg.isEmpty()) {
                 GaiaBoundingBox bboxYZNeg = HalfEdgeUtils.getBoundingBoxOfFaces(facesPlaneYZNeg);
                 BufferedImage XPosImage = makeXPosTexture(bboxYZNeg, maxScreenSize);
-                TexturesAtlasData texturesAtlasDataXPos = new TexturesAtlasData();
-                texturesAtlasDataXPos.setClassifyId(classificationId);
-                texturesAtlasDataXPos.setPlaneType(PlaneType.YZNEG);
-                texturesAtlasDataXPos.setTextureImage(XPosImage);
-                texturesAtlasDataXPos.setFaceGroupBBox(bboxYZNeg);
-                texturesAtlasDataList.add(texturesAtlasDataXPos);
+                if(XPosImage != null)
+                {
+                    TexturesAtlasData texturesAtlasDataXPos = new TexturesAtlasData();
+                    texturesAtlasDataXPos.setClassifyId(classificationId);
+                    texturesAtlasDataXPos.setPlaneType(PlaneType.YZNEG);
+                    texturesAtlasDataXPos.setTextureImage(XPosImage);
+                    texturesAtlasDataXPos.setFaceGroupBBox(bboxYZNeg);
+                    texturesAtlasDataList.add(texturesAtlasDataXPos);
+                }
+                else {
+                    // set texCoords as (0.0,0.0).***
+                    List<HalfEdgeVertex> vertices = HalfEdgeUtils.getVerticesOfFaces(facesPlaneYZNeg, null);
+                    for (HalfEdgeVertex vertex : vertices) {
+                        if (vertex.getTexcoords() != null) {
+                            vertex.getTexcoords().set(0.0, 0.0);
+                        }
+                    }
+
+                }
             }
 
             // YNeg texture : plane XZPos.***
@@ -419,12 +458,25 @@ public class Engine {
             if(facesPlaneXZPos != null && !facesPlaneXZPos.isEmpty()) {
                 GaiaBoundingBox bboxXZPos = HalfEdgeUtils.getBoundingBoxOfFaces(facesPlaneXZPos);
                 BufferedImage YNegImage = makeYNegTexture(bboxXZPos, maxScreenSize);
-                TexturesAtlasData texturesAtlasDataYNeg = new TexturesAtlasData();
-                texturesAtlasDataYNeg.setClassifyId(classificationId);
-                texturesAtlasDataYNeg.setPlaneType(PlaneType.XZ);
-                texturesAtlasDataYNeg.setTextureImage(YNegImage);
-                texturesAtlasDataYNeg.setFaceGroupBBox(bboxXZPos);
-                texturesAtlasDataList.add(texturesAtlasDataYNeg);
+                if(YNegImage != null)
+                {
+                    TexturesAtlasData texturesAtlasDataYNeg = new TexturesAtlasData();
+                    texturesAtlasDataYNeg.setClassifyId(classificationId);
+                    texturesAtlasDataYNeg.setPlaneType(PlaneType.XZ);
+                    texturesAtlasDataYNeg.setTextureImage(YNegImage);
+                    texturesAtlasDataYNeg.setFaceGroupBBox(bboxXZPos);
+                    texturesAtlasDataList.add(texturesAtlasDataYNeg);
+                }
+                else {
+                    // set texCoords as (0.0,0.0).***
+                    List<HalfEdgeVertex> vertices = HalfEdgeUtils.getVerticesOfFaces(facesPlaneXZPos, null);
+                    for (HalfEdgeVertex vertex : vertices) {
+                        if (vertex.getTexcoords() != null) {
+                            vertex.getTexcoords().set(0.0, 0.0);
+                        }
+                    }
+
+                }
             }
 
             // XNeg texture : plane YZPos.***
@@ -433,12 +485,25 @@ public class Engine {
             if(facesPlaneYZPos != null && !facesPlaneYZPos.isEmpty()) {
                 GaiaBoundingBox bboxYZPos = HalfEdgeUtils.getBoundingBoxOfFaces(facesPlaneYZPos);
                 BufferedImage XNegImage = makeXNegTexture(bboxYZPos, maxScreenSize);
-                TexturesAtlasData texturesAtlasDataXNeg = new TexturesAtlasData();
-                texturesAtlasDataXNeg.setClassifyId(classificationId);
-                texturesAtlasDataXNeg.setPlaneType(PlaneType.YZ);
-                texturesAtlasDataXNeg.setTextureImage(XNegImage);
-                texturesAtlasDataXNeg.setFaceGroupBBox(bboxYZPos);
-                texturesAtlasDataList.add(texturesAtlasDataXNeg);
+                if(XNegImage != null)
+                {
+                    TexturesAtlasData texturesAtlasDataXNeg = new TexturesAtlasData();
+                    texturesAtlasDataXNeg.setClassifyId(classificationId);
+                    texturesAtlasDataXNeg.setPlaneType(PlaneType.YZ);
+                    texturesAtlasDataXNeg.setTextureImage(XNegImage);
+                    texturesAtlasDataXNeg.setFaceGroupBBox(bboxYZPos);
+                    texturesAtlasDataList.add(texturesAtlasDataXNeg);
+                }
+                else {
+                    // set texCoords as (0.0,0.0).***
+                    List<HalfEdgeVertex> vertices = HalfEdgeUtils.getVerticesOfFaces(facesPlaneYZPos, null);
+                    for (HalfEdgeVertex vertex : vertices) {
+                        if (vertex.getTexcoords() != null) {
+                            vertex.getTexcoords().set(0.0, 0.0);
+                        }
+                    }
+
+                }
             }
 
 
@@ -1019,6 +1084,9 @@ public class Engine {
             fboHeight = maxScreenSize;
         }
 
+        fboWidth = Math.max(fboWidth, 1);
+        fboHeight = Math.max(fboHeight, 1);
+
         Fbo colorFbo = fboManager.getOrCreateFbo("colorRenderBoxTex", fboWidth, fboHeight);
 
         // now set camera position.***
@@ -1065,6 +1133,9 @@ public class Engine {
             fboWidth = (int)(maxScreenSize * xLength / yLength);
             fboHeight = maxScreenSize;
         }
+
+        fboWidth = Math.max(fboWidth, 1);
+        fboHeight = Math.max(fboHeight, 1);
 
         Fbo colorFbo = fboManager.getOrCreateFbo("colorRenderBoxTex", fboWidth, fboHeight);
 
@@ -1113,6 +1184,9 @@ public class Engine {
             fboHeight = maxScreenSize;
         }
 
+        fboWidth = Math.max(fboWidth, 1);
+        fboHeight = Math.max(fboHeight, 1);
+
         Fbo colorFbo = fboManager.getOrCreateFbo("colorRenderBoxTex", fboWidth, fboHeight);
 
         // now set camera position.***
@@ -1160,6 +1234,9 @@ public class Engine {
             fboHeight = maxScreenSize;
         }
 
+        fboWidth = Math.max(fboWidth, 1);
+        fboHeight = Math.max(fboHeight, 1);
+
         Fbo colorFbo = fboManager.getOrCreateFbo("colorRenderBoxTex", fboWidth, fboHeight);
 
         // now set camera position.***
@@ -1206,6 +1283,9 @@ public class Engine {
             fboWidth = (int)(maxScreenSize * xLength / yLength);
             fboHeight = maxScreenSize;
         }
+
+        fboWidth = Math.max(fboWidth, 1);
+        fboHeight = Math.max(fboHeight, 1);
 
         Fbo colorFbo = fboManager.getOrCreateFbo("colorRenderBoxTex", fboWidth, fboHeight);
 

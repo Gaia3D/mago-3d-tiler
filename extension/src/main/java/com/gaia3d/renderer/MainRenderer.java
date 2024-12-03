@@ -28,6 +28,7 @@ import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.lwjgl.opengl.GL;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -200,6 +201,198 @@ public class MainRenderer implements IAppLogic {
         } catch (Exception e) {
             log.error("Error initializing the engine: ", e);
         }
+    }
+
+    public void getDepthRender(GaiaScene gaiaScene, int bufferedImageType, List<BufferedImage> resultImages, int maxDepthScreenSize) {
+        // render the scene
+        log.info("Rendering the scene...getColorAndDepthRender");
+
+        // Must init gl.***
+        try{
+            engine.init();
+        } catch (Exception e) {
+            log.error("Error initializing the engine: " ,e);
+        }
+
+        int screenWidth = 1000; // no used var.***
+        int screenHeight = 600; // no used var.***
+
+        GaiaScenesContainer gaiaScenesContainer = new GaiaScenesContainer(screenWidth, screenHeight);
+
+        // calculate the projectionMatrix for the camera.***
+        GaiaBoundingBox bbox = gaiaScene.getBoundingBox();
+        Vector3d bboxCenter = bbox.getCenter();
+        float xLength = (float)bbox.getSizeX();
+        float yLength = (float)bbox.getSizeY();
+        float zLength = (float)bbox.getSizeZ();
+
+        Projection projection = new Projection(0, screenWidth, screenHeight);
+        projection.setProjectionOrthographic(-xLength/2.0f, xLength/2.0f, -yLength/2.0f, yLength/2.0f, -zLength * 0.5f, zLength * 0.5f);
+        gaiaScenesContainer.setProjection(projection);
+        engine.setGaiaScenesContainer(gaiaScenesContainer);
+
+        // Take FboManager from engine.***
+        FboManager fboManager = engine.getFboManager();
+
+        // create the fbo.***
+        int fboWidthDepth = maxDepthScreenSize;
+        int fboHeightDepth = maxDepthScreenSize;
+        if(xLength > yLength)
+        {
+            fboWidthDepth = maxDepthScreenSize;
+            fboHeightDepth = (int)(maxDepthScreenSize * yLength / xLength);
+        }
+        else
+        {
+            fboWidthDepth = (int)(maxDepthScreenSize * xLength / yLength);
+            fboHeightDepth = maxDepthScreenSize;
+        }
+
+        fboWidthDepth = Math.max(fboWidthDepth, 1);
+        fboHeightDepth = Math.max(fboHeightDepth, 1);
+
+        Fbo depthFbo = fboManager.getOrCreateFbo("depthRender", fboWidthDepth, fboHeightDepth);
+
+        // now set camera position.***
+        Camera camera = new Camera();
+        camera.setPosition(bboxCenter);
+        camera.setDirection(new Vector3d(0, 0, -1));
+        camera.setUp(new Vector3d(0, 1, 0));
+        gaiaScenesContainer.setCamera(camera);
+
+        // render the scenes.***
+        int scenesCount = 1;
+        List<RenderableGaiaScene> renderableGaiaScenes = new ArrayList<>();
+        RenderableGaiaScene renderableScene = internDataConverter.getRenderableGaiaScene(gaiaScene);
+        renderableGaiaScenes.add(renderableScene);
+
+        gaiaScenesContainer.setRenderableGaiaScenes(renderableGaiaScenes);
+
+        try{
+            // shader program.***
+            ShaderManager shaderManager = engine.getShaderManager();
+            ShaderProgram sceneShaderProgram = shaderManager.getShaderProgram("scene");
+
+            // render the scene.***
+            // depth render.***
+            int[] width = new int[1];
+            int[] height = new int[1];
+            width[0] = depthFbo.getFboWidth();
+            height[0] = depthFbo.getFboHeight();
+
+            glViewport(0, 0, width[0], height[0]);
+            ShaderProgram depthShaderProgram = shaderManager.getShaderProgram("depth");
+            depthFbo.bind();
+
+            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            // disable cull face.***
+            glEnable(GL_DEPTH_TEST);
+
+            // disable cull face.***
+            glDisable(GL_CULL_FACE);
+
+            log.info("Rendering the depth : " + 0 + " of scenesCount : " + scenesCount);
+            engine.getRenderSceneImage(depthShaderProgram);
+            depthFbo.unbind();
+
+        } catch (Exception e) {
+            log.error("Error initializing the engine: ", e);
+        }
+
+        // delete renderableGaiaScenes.***
+        for(RenderableGaiaScene renderableSceneToDelete : renderableGaiaScenes) {
+            renderableSceneToDelete.deleteGLBuffers();
+        }
+
+        // take the final rendered depthBuffer of the fbo.***
+        int depthBufferedImageType = BufferedImage.TYPE_INT_ARGB;
+        depthFbo.bind();
+        BufferedImage depthImage = depthFbo.getBufferedImage(depthBufferedImageType);
+        resultImages.add(depthImage);
+        depthFbo.unbind();
+    }
+
+    private float[][] bufferedImageToFloatMatrix(BufferedImage image)
+    {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        float[][] floatMatrix = new float[width][height];
+        for(int i = 0; i < width; i++)
+        {
+            for(int j = 0; j < height; j++)
+            {
+                Color color = new Color(image.getRGB(i, j), true);
+                float r = color.getRed()/255.0f;
+                float g = color.getGreen()/255.0f;
+                float b = color.getBlue()/255.0f;
+                float a = color.getAlpha()/255.0f;
+
+                float depth = unpackDepth32(new float[]{r, g, b, a});
+                floatMatrix[i][j] = depth;
+                int hola = 0;
+            }
+        }
+
+        return floatMatrix;
+    }
+
+    public float unpackDepth32(float[] packedDepth)
+    {
+        if (packedDepth.length != 4) {
+            throw new IllegalArgumentException("packedDepth debe tener exactamente 4 elementos.");
+        }
+
+        // Ajuste del valor final (equivalente a packedDepth - 1.0 / 512.0)
+        for (int i = 0; i < 4; i++) {
+            packedDepth[i] -= 1.0f / 512.0f;
+        }
+
+        // Producto punto para recuperar la profundidad original
+        return packedDepth[0]
+                + packedDepth[1] / 256.0f
+                + packedDepth[2] / (256.0f * 256.0f)
+                + packedDepth[3] / 16777216.0f;
+    }
+
+    public void makeNetSurfaces(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, int maxDepthScreenSize) {
+
+        // Must init gl.***
+        try{
+            engine.init();
+        } catch (Exception e) {
+            log.error("Error initializing the engine: " ,e);
+        }
+
+        GaiaScenesContainer gaiaScenesContainer = engine.getGaiaScenesContainer();
+        List<HalfEdgeScene> halfEdgeScenes = new ArrayList<>();
+        int scenesCount = scenes.size();
+        List<RenderableGaiaScene> renderableGaiaScenes = new ArrayList<>();
+
+        boolean checkTexCoord = false;
+        boolean checkNormal = false;
+        boolean checkColor = false;
+        boolean checkBatchId = false;
+        double error = 1e-4;
+
+        for(int i = 0; i < scenesCount; i++)
+        {
+            GaiaScene gaiaScene = scenes.get(i);
+            GaiaBoundingBox bbox = gaiaScene.getBoundingBox();
+            List<BufferedImage> depthRenderedImages = new ArrayList<>();
+            getDepthRender(gaiaScene, BufferedImage.TYPE_INT_ARGB, depthRenderedImages, maxDepthScreenSize);
+
+            BufferedImage depthRenderedImage = depthRenderedImages.get(0);
+
+            // make the netSurface by using the depthRenderedImage.***
+            float[][] depthValues = bufferedImageToFloatMatrix(depthRenderedImage);
+            int numCols = depthRenderedImage.getWidth();
+            int numRows = depthRenderedImage.getHeight();
+            HalfEdgeScene halfEdgeScene = HalfEdgeUtils.getHalfEdgeSceneRectangularNet(numCols, numRows, depthValues, bbox);
+        }
+
+
     }
 
     public void getColorAndDepthRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<BufferedImage> resultImages, GaiaBoundingBox nodeBBox,

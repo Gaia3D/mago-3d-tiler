@@ -487,6 +487,27 @@ public class HalfEdgeUtils {
         return angle;
     }
 
+    public static List<HalfEdgeVertex> getVerticesOfFaces(List<HalfEdgeFace> facesPlaneXYPos, List<HalfEdgeVertex> resultVertices) {
+        Map<HalfEdgeVertex, HalfEdgeVertex> MapVertices = new HashMap<>();
+        if(resultVertices == null)
+        {
+            resultVertices = new ArrayList<>();
+        }
+        int facesCount = facesPlaneXYPos.size();
+        for (int i = 0; i < facesCount; i++) {
+            HalfEdgeFace face = facesPlaneXYPos.get(i);
+            List<HalfEdgeVertex> faceVertices = face.getVertices(null);
+            int faceVerticesCount = faceVertices.size();
+            for (int j = 0; j < faceVerticesCount; j++) {
+                HalfEdgeVertex vertex = faceVertices.get(j);
+                MapVertices.put(vertex, vertex);
+            }
+        }
+
+        resultVertices.addAll(MapVertices.values());
+        return resultVertices;
+    }
+
     public List<GaiaFace> getGaiaTriangleFacesFromGaiaFace(GaiaFace gaiaFace) {
         List<GaiaFace> gaiaFaces = new ArrayList<>();
         int[] indices = gaiaFace.getIndices();

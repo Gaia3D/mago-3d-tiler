@@ -60,6 +60,9 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     @Override
     public void renderDecimate(List<GaiaScene> scenes, List<GaiaScene> resultScenes)
     {
+        //***************************************************************
+        // test function to check if the decimate function is working.***
+        //***************************************************************
         if(renderer == null)
             renderer = new MainRenderer();
         renderer.renderDecimate(scenes, resultScenes);
@@ -72,6 +75,15 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
         if(renderer == null)
             renderer = new MainRenderer();
         renderer.decimate(scenes, resultHalfEdgeScenes, decimateParameters);
+        deleteObjects();
+    }
+
+    @Override
+    public void makeNetSurfaces(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, int maxDepthScreenSize)
+    {
+        if(renderer == null)
+            renderer = new MainRenderer();
+        renderer.makeNetSurfaces(scenes, resultHalfEdgeScenes, decimateParameters, maxDepthScreenSize);
         deleteObjects();
     }
 

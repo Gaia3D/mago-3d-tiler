@@ -54,6 +54,11 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
+    public void makeNetSurfaces(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, int maxDepthScreenSize){
+
+    }
+
+    @Override
     public void deleteObjects() {
     }
 }
