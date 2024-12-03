@@ -20,5 +20,8 @@ public interface ExtensionModuleFrame {
     void getRenderScene(List<GaiaScene> scene, int bufferedImageType, int maxScreenSize, List<BufferedImage> resultImages);
     void renderDecimate(List<GaiaScene> scenes, List<GaiaScene> resultScenes);
     void decimate(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters);
+
+    void makeNetSurfaces(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, int maxDepthScreenSize);
+
     void deleteObjects();
 }

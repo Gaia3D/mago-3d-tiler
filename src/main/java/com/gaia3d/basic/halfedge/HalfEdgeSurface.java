@@ -817,14 +817,16 @@ public class HalfEdgeSurface implements Serializable {
         resultHalfEdgesSortedByLength.clear();
         resultHalfEdgesSortedByLength = this.getHalfEdgesSortedByLength(resultHalfEdgesSortedByLength);
 
-        // classify halfEdges.***
-        int hedgesCount = resultHalfEdgesSortedByLength.size();
-        for (int i = 0; i < hedgesCount; i++) {
-            HalfEdge halfEdge = resultHalfEdgesSortedByLength.get(i);
-            halfEdge.setClassifyId(0);
-        }
+
 
         while(!finished && iteration < maxIterations) {
+
+            // classify halfEdges.***
+            int hedgesCount = resultHalfEdgesSortedByLength.size();
+            for (int i = 0; i < hedgesCount; i++) {
+                HalfEdge halfEdge = resultHalfEdgesSortedByLength.get(i);
+                halfEdge.setClassifyId(0);
+            }
 
             // clear maps.***
             vertexAllOutingEdgesMap.clear();
