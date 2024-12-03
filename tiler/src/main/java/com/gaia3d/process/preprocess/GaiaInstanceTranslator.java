@@ -26,7 +26,7 @@ public class GaiaInstanceTranslator implements PreProcess {
 
         AtomicReference<Double> altitude = new AtomicReference<>((double) 0);
         String altitudeMode = kmlInfo.getAltitudeMode();
-        if (altitudeMode.equals("absolute")) {
+        if (altitudeMode != null && altitudeMode.equals("absolute")) {
             altitude.set(position.z);
         } else {
             coverages.forEach((coverage) -> {
