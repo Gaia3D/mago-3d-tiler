@@ -293,7 +293,7 @@ class ReleaseTest {
     @Disabled
     @Test
     void sejongWaterPipe() {
-        String path = "SEJEONG-WATER-PIPE-GEOJSON";
+        String path = "SEJONG-WATER-PIPE-GEOJSON";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
