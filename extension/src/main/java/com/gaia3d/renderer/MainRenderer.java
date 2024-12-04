@@ -3,7 +3,9 @@ package com.gaia3d.renderer;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.exchangable.SceneInfo;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.octree.HalfEdgeOctree;
 import com.gaia3d.basic.halfedge.DecimateParameters;
+import com.gaia3d.basic.halfedge.HalfEdgeCutter;
 import com.gaia3d.basic.halfedge.HalfEdgeScene;
 import com.gaia3d.basic.halfedge.HalfEdgeUtils;
 import com.gaia3d.basic.model.GaiaMaterial;
@@ -301,10 +303,10 @@ public class MainRenderer implements IAppLogic {
             log.error("Error initializing the engine: ", e);
         }
 
-        // delete renderableGaiaScenes.***
-        for(RenderableGaiaScene renderableSceneToDelete : renderableGaiaScenes) {
-            renderableSceneToDelete.deleteGLBuffers();
-        }
+//        // delete renderableGaiaScenes.***
+//        for(RenderableGaiaScene renderableSceneToDelete : renderableGaiaScenes) {
+//            renderableSceneToDelete.deleteGLBuffers();
+//        }
 
         // take the final rendered depthBuffer of the fbo.***
         int depthBufferedImageType = BufferedImage.TYPE_INT_ARGB;
@@ -356,7 +358,7 @@ public class MainRenderer implements IAppLogic {
                 + packedDepth[3] / 16777216.0f;
     }
 
-    public void makeNetSurfaces(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, int maxDepthScreenSize) {
+    public void makeNetSurfaces(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, double pixelsForMeter) {
 
         // Must init gl.***
         try{
@@ -366,9 +368,9 @@ public class MainRenderer implements IAppLogic {
         }
 
         GaiaScenesContainer gaiaScenesContainer = engine.getGaiaScenesContainer();
-        List<HalfEdgeScene> halfEdgeScenes = new ArrayList<>();
         int scenesCount = scenes.size();
         List<RenderableGaiaScene> renderableGaiaScenes = new ArrayList<>();
+
 
         boolean checkTexCoord = false;
         boolean checkNormal = false;
@@ -379,7 +381,29 @@ public class MainRenderer implements IAppLogic {
         for(int i = 0; i < scenesCount; i++)
         {
             GaiaScene gaiaScene = scenes.get(i);
+
+            // 1rst, make the renderableGaiaScene.***
+//            renderableGaiaScenes.clear();
+//            RenderableGaiaScene renderableScene = internDataConverter.getRenderableGaiaScene(gaiaScene);
+//            renderableGaiaScenes.add(renderableScene);
+//            gaiaScenesContainer.setRenderableGaiaScenes(renderableGaiaScenes);
+
+
             GaiaBoundingBox bbox = gaiaScene.getBoundingBox();
+            double bboxMaxSize = Math.max(bbox.getSizeX(), bbox.getSizeY());
+            int maxDepthScreenSize = (int)Math.ceil(pixelsForMeter * bboxMaxSize);
+            if(maxDepthScreenSize < 8)
+            {
+                maxDepthScreenSize = 8;
+            }
+
+            if(maxDepthScreenSize > 1024)
+            {
+                maxDepthScreenSize = 1024;
+            }
+
+            log.info("Engine.makeNetSurfaces() : maxDepthScreenSize = " + maxDepthScreenSize);
+
             List<BufferedImage> depthRenderedImages = new ArrayList<>();
             getDepthRender(gaiaScene, BufferedImage.TYPE_INT_ARGB, depthRenderedImages, maxDepthScreenSize);
 
@@ -390,6 +414,26 @@ public class MainRenderer implements IAppLogic {
             int numCols = depthRenderedImage.getWidth();
             int numRows = depthRenderedImage.getHeight();
             HalfEdgeScene halfEdgeScene = HalfEdgeUtils.getHalfEdgeSceneRectangularNet(numCols, numRows, depthValues, bbox);
+            halfEdgeScene.setOriginalPath(gaiaScene.getOriginalPath());
+
+            // decimate.***
+            halfEdgeScene.doTrianglesReductionOneIteration(decimateParameters);
+
+            // now, cut the halfEdgeScene and make cube-textures by rendering.***
+            double gridSpacing = 60.0;
+            HalfEdgeOctree resultOctree = new HalfEdgeOctree(null);
+            log.info("Engine.decimate() : cutHalfEdgeSceneGridXYZ.");
+            HalfEdgeScene cuttedScene = HalfEdgeCutter.cutHalfEdgeSceneGridXYZ(halfEdgeScene, gridSpacing, resultOctree);
+            cuttedScene.splitFacesByBestPlanesToProject();
+
+            // now make box textures for the cuttedScene.***
+            log.info("Engine.decimate() : makeBoxTexturesForHalfEdgeScene.");
+            engine.makeBoxTexturesForHalfEdgeScene(cuttedScene);
+
+            resultHalfEdgeScenes.add(cuttedScene);
+
+            gaiaScenesContainer.deleteObjects();
+            halfEdgeScene.deleteObjects();
         }
 
 

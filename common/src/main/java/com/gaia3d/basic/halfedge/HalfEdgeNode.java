@@ -306,12 +306,12 @@ public class HalfEdgeNode implements Serializable {
         }
     }
 
-    public void doTrianglesReductionOneIteration(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount) {
+    public void doTrianglesReductionOneIteration(DecimateParameters decimateParameters) {
         for (HalfEdgeMesh mesh : meshes) {
-            mesh.doTrianglesReductionOneIteration(maxDiffAngDegrees, hedgeMinLength, frontierMaxDiffAngDeg, maxAspectRatio, maxCollapsesCount);
+            mesh.doTrianglesReductionOneIteration(decimateParameters);
         }
         for (HalfEdgeNode child : children) {
-            child.doTrianglesReductionOneIteration(maxDiffAngDegrees, hedgeMinLength, frontierMaxDiffAngDeg, maxAspectRatio, maxCollapsesCount);
+            child.doTrianglesReductionOneIteration(decimateParameters);
         }
     }
 
