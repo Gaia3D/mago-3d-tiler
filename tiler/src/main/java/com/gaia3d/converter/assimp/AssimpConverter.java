@@ -506,11 +506,6 @@ public class AssimpConverter implements Converter {
                 diffuseColor[2] = (byte) (diffuse.z * 255);
                 diffuseColor[3] = (byte) (diffuse.w * 255);
             }
-
-            /*diffuseColor[0] = (byte) (diffuse.x * 255);
-            diffuseColor[1] = (byte) (diffuse.y * 255);
-            diffuseColor[2] = (byte) (diffuse.z * 255);
-            diffuseColor[3] = (byte) (diffuse.w * 255);*/
             primitive.getVertices().add(vertex);
         }
 

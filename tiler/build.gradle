@@ -1,22 +1,7 @@
-import org.gradle.internal.os.OperatingSystem
-
 plugins {
     id "java"
     id "com.google.cloud.tools.jib" version "3.4.0"
     id 'com.github.johnrengelman.shadow' version '8.1.0'
-}
-
-project.ext.lwjglVersion = "3.3.3"
-switch (OperatingSystem.current()) {
-    case OperatingSystem.WINDOWS:
-        project.ext.lwjglNatives = "natives-windows"
-        break
-    case OperatingSystem.LINUX:
-        project.ext.lwjglNatives = "natives-linux"
-        break
-    case OperatingSystem.MAC_OS:
-        project.ext.lwjglNatives = "natives-macos"
-        break
 }
 
 repositories {
@@ -158,13 +143,19 @@ shadowJar {
         attributes 'Implementation-Vendor-Id': 'com.gaia3d'
         attributes 'Implementation-URL': 'http://java.sun.com/products/java-media/jai/forDevelopers/jai-imageio/'
     }
-
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from sourceSets.main.runtimeClasspath
     configurations = [project.configurations.runtimeClasspath]
     archiveFileName = "mago-3d-tiler-${project.version}-${project.ext.lwjglNatives}.jar"
+    destinationDirectory.set(file("${projectDir}/dist"))
 }
 
 compileJava {
     options.encoding = 'UTF-8'
+}
+
+tasks.register('cleanDist') {
+    doLast {
+        delete fileTree(dir: 'dist', include: '*.jar')
+    }
 }

@@ -4,6 +4,8 @@ import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.assimp.AssimpConverter;
+import com.gaia3d.converter.geometry.geojson.GeoJsonConverter;
+import com.gaia3d.converter.geometry.geojson.GeojsonPointReader;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.JacksonKmlReader;
 import com.gaia3d.converter.geometry.shape.ShapePointReader;
@@ -66,9 +68,9 @@ public class InstancedProcessModel implements ProcessFlowModel {
         AttributeReader reader = null;
         if (formatType == FormatType.SHP) {
             reader = new ShapePointReader();
-        } /*else if (formatType == FormatType.GEOJSON) {
-            reader = new GeoJsonConverter();
-        }*/ else {
+        } else if (formatType == FormatType.GEOJSON) {
+            reader = new GeojsonPointReader();
+        } else {
             reader = new JacksonKmlReader();
         }
         return reader;

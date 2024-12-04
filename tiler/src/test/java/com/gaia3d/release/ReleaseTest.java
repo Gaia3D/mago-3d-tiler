@@ -236,6 +236,73 @@ class ReleaseTest {
         Mago3DTilerMain.main(args);
     }
 
+    @Disabled
+    @Test
+    void testI3dmSeoulTrees() {
+        String path = "I3DM-SEOUL-TREES";
+        FileUtils.deleteQuietly(getOutputPath(path));
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "shp",
+                "-ot", "i3dm",
+                "-instance", getInputPath(path).getAbsolutePath() + "/tree.dae",
+                "-crs", "5186",
+                //"-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Disabled
+    @Test
+    void testI3dmSeoulTreesFromGeojson() {
+        String path = "I3DM-SEOUL-TREES-GEOJSON";
+        FileUtils.deleteQuietly(getOutputPath(path));
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "geojson",
+                "-ot", "i3dm",
+                "-instance", getInputPath(path).getAbsolutePath() + File.separator + "temp/tree.dae",
+                "-terrain", getInputPath(path).getAbsolutePath() + File.separator + "korea-compressed.tif",
+                "-crs", "5186",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Disabled
+    @Test
+    void testI3dmSeoulVoxelTreesFromGeojson() {
+        String path = "I3DM-SEOUL-TREES-GEOJSON-MINI";
+        FileUtils.deleteQuietly(getOutputPath(path));
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "geojson",
+                "-ot", "i3dm",
+                "-instance", getInputPath(path).getAbsolutePath() + File.separator + "temp/tree.dae",
+                "-terrain", getInputPath(path).getAbsolutePath() + File.separator + "korea-compressed.tif",
+                "-crs", "5186",
+                "-voxelLod",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Disabled
+    @Test
+    void sejongWaterPipe() {
+        String path = "SEJONG-WATER-PIPE-GEOJSON";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "geojson",
+                "-crs", "5186",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
     @Test
     void testShapeSeoul() {
         String path = "SEOUL-PART-SHP";
