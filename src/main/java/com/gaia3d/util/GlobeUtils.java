@@ -16,9 +16,6 @@ import org.opengis.referencing.operation.TransformException;
 
 /**
  * Utility class for converting between geographic and cartesian coordinates.
- *
- * @author znkim
- * @since 1.0.0
  */
 @Slf4j
 public class GlobeUtils {
@@ -29,7 +26,7 @@ public class GlobeUtils {
     public static final double POLAR_RADIUS_SQUARED = 40408299984087.05552164d;
     public static final double FIRST_ECCENTRICITY_SQUARED = 6.69437999014E-3d;
     private static final CRSFactory factory = new CRSFactory();
-    private static final CoordinateReferenceSystem wgs84 = factory.createFromParameters("WGS84", "+proj=longlat +datum=WGS84 +no_defs");
+    public static final CoordinateReferenceSystem wgs84 = factory.createFromParameters("WGS84", "+proj=longlat +datum=WGS84 +no_defs");
 
     public static double[] geographicToCartesianWgs84(double longitude, double latitude, double altitude) {
         double[] result = new double[3];
@@ -64,6 +61,11 @@ public class GlobeUtils {
         double avgRadius = (radiusMin + radiusMax) / 2.0;
 
         return avgRadius * (maxLatRad - minLatRad);
+    }
+
+    public static double angRadLatitudeForDistance(double latRad, double distance) {
+        double radius = radiusAtLatitudeRad(latRad);
+        return distance / radius;
     }
 
     public static Vector3d geographicToCartesianWgs84(Vector3d position) {
@@ -185,9 +187,7 @@ public class GlobeUtils {
 
     public static ProjCoordinate transform(CoordinateReferenceSystem source, ProjCoordinate coordinate) {
         BasicCoordinateTransform transformer = new BasicCoordinateTransform(source, wgs84);
-        ProjCoordinate result = new ProjCoordinate();
-        transformer.transform(coordinate, result);
-        return result;
+        return transformer.transform(coordinate, new ProjCoordinate());
     }
 
     public static Coordinate transformOnGeotools(org.opengis.referencing.crs.CoordinateReferenceSystem source, Coordinate coordinate) {
@@ -195,8 +195,7 @@ public class GlobeUtils {
             org.opengis.referencing.crs.CoordinateReferenceSystem wgs84 = CRS.decode("EPSG:4326");
 
             MathTransform transform = CRS.findMathTransform(source, wgs84, false);
-            Coordinate result = JTS.transform(coordinate, coordinate, transform);
-            return result;
+            return JTS.transform(coordinate, coordinate, transform);
         } catch (FactoryException | TransformException e) {
             log.error("Failed to transform coordinate", e);
             throw new RuntimeException(e);

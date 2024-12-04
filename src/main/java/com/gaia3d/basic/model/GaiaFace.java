@@ -1,6 +1,7 @@
 package com.gaia3d.basic.model;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.halfedge.HalfEdgeUtils;
 import com.gaia3d.basic.model.structure.FaceStructure;
 import com.gaia3d.util.GeometryUtils;
 import lombok.Getter;
@@ -8,21 +9,20 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
  * A class that represents a face of a Gaia object.
  * It contains the indices and the face normal.
  * The face normal is calculated by the indices and the vertices.
- *
- * @author znkim
- * @see <a href="https://en.wikipedia.org/wiki/Face_normal">Face normal</a>
- * @since 1.0.0
  */
 @Slf4j
 @Getter
 @Setter
-public class GaiaFace extends FaceStructure {
+public class GaiaFace extends FaceStructure implements Serializable {
 
     public void calculateFaceNormal(List<GaiaVertex> vertices) {
         if (indices.length < 3) {
@@ -117,5 +117,62 @@ public class GaiaFace extends FaceStructure {
             area += GeometryUtils.getTriangleArea(vertex1, vertex2, vertex3);
         }
         return area;
+    }
+
+    public boolean isDegenerated(List<GaiaVertex> vertices) {
+        // if has equal indices, it is degenerated.
+        for (int i = 0; i < indices.length; i++) {
+            for (int j = i + 1; j < indices.length; j++) {
+                if (indices[i] == indices[j]) {
+                    return true;
+                }
+            }
+        }
+
+        // check if has coincident positions.***
+        double error = 1e-5;
+        for (int i = 0; i < indices.length; i += 3) {
+            int indices1 = indices[i];
+            int indices2 = indices[i + 1];
+            int indices3 = indices[i + 2];
+            GaiaVertex vertex1 = vertices.get(indices1);
+            GaiaVertex vertex2 = vertices.get(indices2);
+            GaiaVertex vertex3 = vertices.get(indices3);
+            Vector3d vectorA = vertex1.getPosition();
+            Vector3d vectorB = vertex2.getPosition();
+            Vector3d vectorC = vertex3.getPosition();
+
+            if (vectorA.distance(vectorB) < error || vectorA.distance(vectorC) < error || vectorB.distance(vectorC) < error) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public List<GaiaFace> getTriangleFaces(List<GaiaFace> resultGaiaFaces) {
+        if(resultGaiaFaces == null)
+        {
+            resultGaiaFaces = new ArrayList<>();
+        }
+        int[] indices = this.getIndices();
+        Vector3d normal = this.getFaceNormal();
+        int indicesCount = indices.length;
+
+        for (int i = 0; i < indicesCount - 2; i += 3) {
+            if(i + 2 >= indicesCount)
+            {
+                log.error("i + 2 >= indicesCount.***");
+                int hola = 0;
+            }
+            GaiaFace gaiaTriangleFace = new GaiaFace();
+            gaiaTriangleFace.setIndices(new int[]{indices[i], indices[i + 1], indices[i + 2]});
+            if(normal != null)
+            {
+                gaiaTriangleFace.setFaceNormal(new Vector3d(normal));
+            }
+            resultGaiaFaces.add(gaiaTriangleFace);
+        }
+        return resultGaiaFaces;
     }
 }

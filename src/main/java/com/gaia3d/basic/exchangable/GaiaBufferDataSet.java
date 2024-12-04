@@ -53,7 +53,7 @@ public class GaiaBufferDataSet implements Serializable {
                 if (!vertices.isEmpty()) {
                     int positionCount = 0;
                     for (GaiaVertex vertex : vertices) {
-                        Vector3d position = new Vector3d(positions[positionCount++], positions[positionCount++], positions[positionCount]);
+                        Vector3d position = new Vector3d(positions[positionCount++], positions[positionCount++], positions[positionCount++]);
                         vertex.setPosition(position);
                     }
                 } else {
@@ -66,11 +66,17 @@ public class GaiaBufferDataSet implements Serializable {
                 }
             } else if (attributeType.equals(AttributeType.NORMAL)) {
                 float[] normals = buffer.getFloats();
+                int bufferLength = normals.length;
                 if (!vertices.isEmpty()) {
                     int normalCount = 0;
                     for (GaiaVertex vertex : vertices) {
+                        if(normalCount + 2 >= bufferLength) {
+                            int hola = 0;
+                        }
                         Vector3d normal = new Vector3d(normals[normalCount++], normals[normalCount++], normals[normalCount++]);
                         vertex.setNormal(normal);
+
+
                     }
                 } else {
                     for (int i = 0; i < normals.length; i += 3) {

@@ -5,10 +5,12 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.structure.MeshStructure;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,14 +18,11 @@ import java.util.List;
  * A class that represents a mesh of a Gaia object.
  * It contains the primitives.
  * The primitives are used for rendering.
- *
- * @author znkim
- * @see <a href="https://en.wikipedia.org/wiki/Polygon_mesh">Polygon mesh</a>
- * @since 1.0.0
  */
+@Slf4j
 @Getter
 @Setter
-public class GaiaMesh extends MeshStructure {
+public class GaiaMesh extends MeshStructure implements Serializable {
     //private List<GaiaPrimitive> primitives = new ArrayList<>();
 
     public GaiaBoundingBox getBoundingBox(Matrix4d transform) {
@@ -212,9 +211,26 @@ public class GaiaMesh extends MeshStructure {
             bufferSets = new ArrayList<>();
         }
         for (GaiaPrimitive primitive : primitives) {
+            if (primitive.getVertices().size() < 3) {
+                log.warn("The primitive has less than 3 vertices. It will be ignored.");
+                continue;
+            }
             GaiaBufferDataSet gaiaBufferDataSet = primitive.toGaiaBufferSet(transformMatrix);
             gaiaBufferDataSet.setMaterialId(primitive.getMaterialIndex());
             bufferSets.add(gaiaBufferDataSet);
+        }
+    }
+
+    public void doNormalLengthUnitary() {
+        for (GaiaPrimitive primitive : primitives) {
+            primitive.doNormalLengthUnitary();
+        }
+    }
+
+    public void deleteNormals()
+    {
+        for (GaiaPrimitive primitive : primitives) {
+            primitive.deleteNormals();
         }
     }
 
@@ -246,5 +262,36 @@ public class GaiaMesh extends MeshStructure {
             primitive.deleteNoUsedVertices();
         }
 
+    }
+
+    public void scissorTextures(List<GaiaMaterial> materials) {
+
+    }
+
+    public void deleteObjects() {
+        for (GaiaPrimitive primitive : primitives) {
+            primitive.deleteObjects();
+        }
+    }
+
+    public void deleteDegeneratedFaces() {
+        for (GaiaPrimitive primitive : primitives) {
+            primitive.deleteDegeneratedFaces();
+        }
+    }
+
+    public void extractPrimitives(List<GaiaPrimitive> resultPrimitives) {
+        if (resultPrimitives == null) {
+            resultPrimitives = new ArrayList<>();
+        }
+        for (GaiaPrimitive primitive : primitives) {
+            resultPrimitives.add(primitive);
+        }
+    }
+
+    public void makeTriangleFaces() {
+        for (GaiaPrimitive primitive : primitives) {
+            primitive.makeTriangleFaces();
+        }
     }
 }

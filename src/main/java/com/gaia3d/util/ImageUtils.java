@@ -18,9 +18,6 @@ import java.util.Iterator;
 
 /**
  * Utility class for image operations.
- *
- * @author znkim
- * @since 1.0.0
  */
 @Slf4j
 public class ImageUtils {
@@ -215,8 +212,8 @@ public class ImageUtils {
                 result[0] = width;
                 result[1] = height;
 
-                System.out.println("Width: " + width);
-                System.out.println("Height: " + height);
+                log.info("Width: " + width);
+                log.info("Height: " + height);
 
                 reader.dispose();
 

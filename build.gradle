@@ -2,44 +2,16 @@ plugins {
     id 'java'
 }
 
-group = 'com.gaia3d'
-version "1.8.0"
-project.ext.lwjglVersion = "3.3.3"
-
-switch ( org.gradle.internal.os.OperatingSystem.current() ) {
-    case org.gradle.internal.os.OperatingSystem.WINDOWS:
-        project.ext.lwjglNatives = "natives-windows"
-        break
-    case org.gradle.internal.os.OperatingSystem.LINUX:
-        project.ext.lwjglNatives = "natives-linux"
-        break
-    case org.gradle.internal.os.OperatingSystem.MAC_OS:
-        project.ext.lwjglNatives = "natives-macos"
-        break
-}
-
 repositories {
     maven { url "https://repo.osgeo.org/repository/release/" }
     mavenCentral()
 }
 
 dependencies {
-    compileOnly "org.projectlombok:lombok:1.18.30"
-    annotationProcessor "org.projectlombok:lombok:1.18.30"
-
-    implementation 'org.slf4j:slf4j-api:1.7.25'
-
-    implementation 'commons-logging:commons-logging:1.2'
-    implementation 'commons-io:commons-io:2.11.0'
-    implementation 'commons-cli:commons-cli:1.5.0'
-    implementation 'org.apache.commons:commons-text:1.10.0'
-
     implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
     implementation "org.lwjgl:lwjgl"
     implementation "org.lwjgl:lwjgl-opengl"
     implementation "org.lwjgl:lwjgl-glfw"
-
-    implementation "org.joml:joml:1.10.5"
 
     implementation "org.locationtech.proj4j:proj4j:1.2.3"
     implementation "org.locationtech.proj4j:proj4j-epsg:1.2.3"
@@ -50,13 +22,14 @@ dependencies {
     runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"
+}
 
-    testCompileOnly "org.projectlombok:lombok:1.18.30"
-    testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
-    testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.0"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.0"
+javadoc {
+    enabled = false
 }
 
 test {
-
+    useJUnitPlatform {
+        includeTags 'release'
+    }
 }

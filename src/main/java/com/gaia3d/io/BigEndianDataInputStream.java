@@ -1,4 +1,4 @@
-package com.gaia3d.util.io;
+package com.gaia3d.io;
 
 import org.joml.Vector4d;
 
@@ -7,9 +7,6 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * BigEndianDataInputStream
- * @author znkim
- * @since 1.0.0
- * @see FilterInputStream
  */
 public class BigEndianDataInputStream extends DataInputStream implements DataInput {
     /**

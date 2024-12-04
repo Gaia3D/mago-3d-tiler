@@ -19,10 +19,6 @@ import java.util.Map;
  * It contains the diffuse color, ambient color, specular color, shininess, id, name and textures.
  * The textures are stored in a LinkedHashMap.
  * The key is the texture type and the value is the list of textures.
- *
- * @ author znkim
- * @ since 1.0.0
- * @ see <a href="https://en.wikipedia.org/wiki/Texture_mapping">Texture mapping</a>
  */
 @Slf4j
 @Getter
@@ -67,7 +63,6 @@ public class GaiaMaterial extends MaterialStructure implements Serializable {
                 this.isOpaque = false;
             }
         }
-
         if (diffuseColor.w < 1.0) {
             this.isOpaque = false;
             this.isBlend = true;
@@ -118,4 +113,18 @@ public class GaiaMaterial extends MaterialStructure implements Serializable {
         }
         return newMaterial;
     }
+
+    public boolean hasTextures() {
+        for (Map.Entry<TextureType, List<GaiaTexture>> entry : textures.entrySet()) {
+            List<GaiaTexture> gaiaTextures = entry.getValue();
+            for (GaiaTexture gaiaTexture : gaiaTextures) {
+                if (gaiaTexture != null) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
 }

@@ -94,6 +94,8 @@ public class GaiaSet implements Serializable {
         File tempFile = path.resolve(tempFileName).toFile();
         try (ObjectOutputStream outputStream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(tempFile)))) {
             outputStream.writeObject(this);
+            outputStream.flush();
+            outputStream.close();
 
             // Copy images to the temp directory
             for (GaiaMaterial material : materials) {
@@ -104,6 +106,25 @@ public class GaiaSet implements Serializable {
             tempFile.delete();
         }
         return tempFile.toPath();
+    }
+
+    public Path writeFileInThePath(Path path) {
+        Path folder = path.getParent();
+        File file = new File(String.valueOf(path));
+        try (ObjectOutputStream outputStream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)))) {
+            outputStream.writeObject(this);
+            outputStream.flush();
+            outputStream.close();
+
+            // Copy images to the temp directory
+            for (GaiaMaterial material : materials) {
+                copyTextures(material, folder);
+            }
+        } catch (Exception e) {
+            log.error("GaiaSet Write Error : ", e);
+            file.delete();
+        }
+        return file.toPath();
     }
 
     public Path writeFile(Path path, int serial, GaiaAttribute gaiaAttribute) {
@@ -149,6 +170,11 @@ public class GaiaSet implements Serializable {
 
             Path outputImagePath = imagesFolderPath.resolve(imageFile.getName());
             File outputImageFile = outputImagePath.toFile();
+
+            // check if the source and destination are the same
+            if (imageFile.getAbsolutePath().equals(outputImageFile.getAbsolutePath())) {
+                return;
+            }
 
             texture.setPath(imageFile.getName());
 
@@ -204,6 +230,12 @@ public class GaiaSet implements Serializable {
         materials.forEach(GaiaMaterial::deleteTextures);
     }
 
+    public void deleteMaterials()
+    {
+        deleteTextures();
+        materials.clear();
+    }
+
     public GaiaSet clone() {
         GaiaSet gaiaSet = new GaiaSet();
         gaiaSet.setBufferDataList(new ArrayList<>());
@@ -225,6 +257,12 @@ public class GaiaSet implements Serializable {
     public void clear() {
         this.bufferDataList.forEach(GaiaBufferDataSet::clear);
         this.bufferDataList.clear();
+
+        int materialsCount = this.materials.size();
+        for (int i = 0; i < materialsCount; i++) {
+            GaiaMaterial material = this.materials.get(i);
+            material.clear();
+        }
         this.materials.clear();
     }
 }

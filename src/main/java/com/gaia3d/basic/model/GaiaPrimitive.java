@@ -19,6 +19,7 @@ import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.lwjgl.opengl.GL20;
 
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -26,17 +27,13 @@ import java.util.*;
  * It contains the vertices and surfaces.
  * The vertices are used for rendering.
  * The surfaces are used for calculating normals.
- *
- * @author znkim
- * @see <a href="https://en.wikipedia.org/wiki/Polygon_mesh">Polygon mesh</a>
- * @since 1.0.0
  */
 @Slf4j
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaPrimitive extends PrimitiveStructure {
+public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
     private Integer accessorIndices = -1;
     private Integer materialIndex = -1;
 
@@ -84,6 +81,15 @@ public class GaiaPrimitive extends PrimitiveStructure {
             resultIndices = ArrayUtils.addAll(resultIndices, surface.getIndices());
         }
         return resultIndices;
+    }
+
+    public void doNormalLengthUnitary() {
+        for (GaiaVertex vertex : vertices) {
+            Vector3d normal = vertex.getNormal();
+            if (normal != null) {
+                normal.normalize();
+            }
+        }
     }
 
     public GaiaBufferDataSet toGaiaBufferSet(Matrix4d transformMatrixOrigin) {
@@ -247,6 +253,11 @@ public class GaiaPrimitive extends PrimitiveStructure {
         gaiaBufferDataSet.setTexcoordBoundingRectangle(texcoordBoundingRectangle);
         gaiaBufferDataSet.setBoundingBox(boundingBox);
 
+        GaiaBuffer buffer = gaiaBufferDataSet.getBuffers().get(AttributeType.POSITION);
+        if (buffer == null) {
+            log.error("No position buffer");
+        }
+
         return gaiaBufferDataSet;
     }
 
@@ -283,6 +294,13 @@ public class GaiaPrimitive extends PrimitiveStructure {
         return gaiaPrimitive;
     }
 
+    public void deleteNormals()
+    {
+        for (GaiaVertex vertex : vertices) {
+            vertex.setNormal(null);
+        }
+    }
+
     public boolean check() {
         boolean result = true;
 
@@ -298,6 +316,25 @@ public class GaiaPrimitive extends PrimitiveStructure {
         }
 
         return result;
+    }
+
+    public void addPrimitive(GaiaPrimitive primitive) {
+        int verticesCount = this.vertices.size();
+        int primitiveVerticesCount = primitive.getVertices().size();
+        this.vertices.addAll(primitive.getVertices());
+        for (GaiaSurface surface : primitive.getSurfaces()) {
+            List<GaiaFace> faces = surface.getFaces();
+            for (GaiaFace face : faces) {
+                int[] indices = face.getIndices();
+                for (int i = 0; i < indices.length; i++) {
+                    indices[i] += verticesCount;
+                }
+
+                GaiaFace newFace = new GaiaFace();
+                newFace.setIndices(indices);
+                this.surfaces.get(0).getFaces().add(newFace);
+            }
+        }
     }
 
     public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
@@ -383,7 +420,8 @@ public class GaiaPrimitive extends PrimitiveStructure {
         this.vertices = newVerticesArray;
     }
 
-    private void getWeldableVertexMap(Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster, List<GaiaVertex> vertices, double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
+    private void getWeldableVertexMap(Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster, List<GaiaVertex> vertices, double error, boolean checkTexCoord, boolean checkNormal,
+                                      boolean checkColor, boolean checkBatchId) {
         Map<GaiaVertex, GaiaVertex> visitedMap = new HashMap<>();
         int verticesCount = vertices.size();
         for (int i = 0; i < verticesCount; i++) {
@@ -429,6 +467,14 @@ public class GaiaPrimitive extends PrimitiveStructure {
         }
 
         int vertexCount = this.getVertices().size();
+        for(int i = 0; i < vertexCount; i++) {
+            GaiaVertex vertex = this.getVertices().get(i);
+            if (!vertexIdxMap.containsKey(vertex)) {
+                vertex.clear();
+            }
+        }
+
+        vertexCount = this.getVertices().size();
         int usedVertexCount = vertexIdxMap.size();
         if (vertexCount != usedVertexCount) {
             // Exists no used vertices.***
@@ -461,5 +507,33 @@ public class GaiaPrimitive extends PrimitiveStructure {
         }
 
         return false;
+    }
+
+    public void deleteObjects() {
+        if (this.vertices != null) {
+            this.vertices.forEach(GaiaVertex::clear);
+            this.vertices.clear();
+        }
+        if (this.surfaces != null) {
+            this.surfaces.forEach(GaiaSurface::clear);
+            this.surfaces.clear();
+        }
+
+        this.vertices = null;
+        this.surfaces = null;
+    }
+
+    public void deleteDegeneratedFaces() {
+        for (GaiaSurface surface : this.surfaces) {
+            surface.deleteDegeneratedFaces(this.vertices);
+        }
+
+        this.deleteNoUsedVertices();
+    }
+
+    public void makeTriangleFaces() {
+        for (GaiaSurface surface : this.surfaces) {
+            surface.makeTriangleFaces();
+        }
     }
 }

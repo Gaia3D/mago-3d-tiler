@@ -1,4 +1,4 @@
-package com.gaia3d.util.io;
+package com.gaia3d.io;
 
 import org.joml.Vector4d;
 
@@ -9,9 +9,6 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * LittleEndianDataInputStream
- * @author znkim
- * @since 1.0.0
- * @see FilterInputStream
  */
 public class LittleEndianDataInputStream extends FilterInputStream implements DataInput {
     /**

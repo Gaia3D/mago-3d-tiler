@@ -14,6 +14,7 @@ import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,17 +24,13 @@ import java.util.Map;
  * It contains the meshes and children.
  * The meshes are used for rendering.
  * The children are used for hierarchical structure.
- *
- * @author znkim
- * @see <a href="https://en.wikipedia.org/wiki/Scene_graph">Scene graph</a>
- * @since 1.0.0
  */
 @Slf4j
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaNode extends NodeStructure {
+public class GaiaNode extends NodeStructure implements Serializable {
     private String name = "node";
     private Matrix4d transformMatrix = new Matrix4d();
     private Matrix4d preMultipliedTransformMatrix = new Matrix4d();
@@ -234,6 +231,64 @@ public class GaiaNode extends NodeStructure {
         }
         for (GaiaNode child : this.getChildren()) {
             child.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
+        }
+    }
+
+
+    public void deleteObjects() {
+        for (GaiaMesh mesh : this.getMeshes()) {
+            mesh.deleteObjects();
+        }
+        for (GaiaNode child : this.getChildren()) {
+            child.deleteObjects();
+        }
+
+        this.clear();
+    }
+
+    public void doNormalLengthUnitary() {
+        for (GaiaMesh mesh : this.getMeshes()) {
+            mesh.doNormalLengthUnitary();
+        }
+        for (GaiaNode child : this.getChildren()) {
+            child.doNormalLengthUnitary();
+        }
+    }
+
+    public void deleteNormals()
+    {
+        for (GaiaMesh mesh : this.getMeshes()) {
+            mesh.deleteNormals();
+        }
+        for (GaiaNode child : this.getChildren()) {
+            child.deleteNormals();
+        }
+    }
+
+    public void deleteDegeneratedFaces() {
+        for (GaiaMesh mesh : this.getMeshes()) {
+            mesh.deleteDegeneratedFaces();
+        }
+        for (GaiaNode child : this.getChildren()) {
+            child.deleteDegeneratedFaces();
+        }
+    }
+
+    public void extractPrimitives(List<GaiaPrimitive> resultPrimitives) {
+        for (GaiaMesh mesh : this.getMeshes()) {
+            mesh.extractPrimitives(resultPrimitives);
+        }
+        for (GaiaNode child : this.getChildren()) {
+            child.extractPrimitives(resultPrimitives);
+        }
+    }
+
+    public void makeTriangleFaces() {
+        for (GaiaMesh mesh : this.getMeshes()) {
+            mesh.makeTriangleFaces();
+        }
+        for (GaiaNode child : this.getChildren()) {
+            child.makeTriangleFaces();
         }
     }
 }

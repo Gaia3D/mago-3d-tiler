@@ -1,8 +1,10 @@
 package com.gaia3d.basic.halfedge;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.model.GaiaMaterial;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
@@ -14,6 +16,7 @@ import java.util.List;
 
 @Getter
 @Setter
+@Slf4j
 public class HalfEdgePrimitive implements Serializable {
     private Integer accessorIndices = -1;
     private Integer materialIndex = -1;
@@ -21,9 +24,9 @@ public class HalfEdgePrimitive implements Serializable {
     private List<HalfEdgeVertex> vertices = new ArrayList<>(); // vertices of all surfaces.***
     private GaiaBoundingBox boundingBox = null;
 
-    public void doTrianglesReduction() {
+    public void doTrianglesReduction(double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength, double maxAspectRatio) {
         for (HalfEdgeSurface surface : surfaces) {
-            surface.doTrianglesReduction();
+            surface.doTrianglesReduction(maxDiffAngDeg, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio);
         }
 
         // Remake vertices.***
@@ -43,6 +46,13 @@ public class HalfEdgePrimitive implements Serializable {
             vertices.addAll(surface.getVertices());
         }
         return vertices;
+    }
+
+    public void calculateNormals()
+    {
+        for (HalfEdgeSurface surface : surfaces) {
+            surface.calculateNormals();
+        }
     }
 
     public void deleteObjects() {
@@ -134,7 +144,7 @@ public class HalfEdgePrimitive implements Serializable {
                 surface.writeFile(outputStream);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error Log : ", e);
         }
     }
 
@@ -152,11 +162,98 @@ public class HalfEdgePrimitive implements Serializable {
                 surfaces.add(surface);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error Log : ", e);
         }
     }
 
     public void extractSurfaces(List<HalfEdgeSurface> resultHalfEdgeSurfaces) {
         resultHalfEdgeSurfaces.addAll(surfaces);
+    }
+
+    public void deleteFacesWithClassifyId(int classifyId) {
+        for (HalfEdgeSurface surface : surfaces) {
+            surface.deleteFacesWithClassifyId(classifyId);
+        }
+    }
+
+    public void scissorTextures(List<GaiaMaterial> materials) {
+        int matId = this.materialIndex;
+        if(matId < 0 || matId >= materials.size()) {
+            return;
+        }
+
+        GaiaMaterial material = materials.get(matId);
+        if(material == null) {
+            return;
+        }
+
+        for (HalfEdgeSurface surface : surfaces) {
+            surface.scissorTextures(material);
+        }
+
+    }
+
+    public HalfEdgePrimitive clone()
+    {
+        HalfEdgePrimitive cloned = new HalfEdgePrimitive();
+        cloned.setAccessorIndices(accessorIndices);
+        cloned.setMaterialIndex(materialIndex);
+        for (HalfEdgeSurface surface : surfaces) {
+            cloned.getSurfaces().add(surface.clone());
+        }
+        return cloned;
+    }
+
+    public int getTrianglesCount() {
+        int trianglesCount = 0;
+        for (HalfEdgeSurface surface : surfaces) {
+            trianglesCount += surface.getTrianglesCount();
+        }
+        return trianglesCount;
+    }
+
+    public void setBoxTexCoordsXY(GaiaBoundingBox box) {
+        for (HalfEdgeSurface surface : surfaces) {
+            surface.setBoxTexCoordsXY(box);
+        }
+    }
+
+    public void getUsedMaterialsIds(List<Integer> resultMaterialsIds) {
+        if(resultMaterialsIds == null) {
+            resultMaterialsIds = new ArrayList<>();
+        }
+
+        int matId = this.materialIndex;
+        if(matId >= 0 && !resultMaterialsIds.contains(matId)) {
+            resultMaterialsIds.add(matId);
+        }
+    }
+
+    public void setMaterialId(int materialId) {
+        this.materialIndex = materialId;
+    }
+
+    public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
+        for (HalfEdgeSurface surface : surfaces) {
+            surface.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
+        }
+    }
+
+    public void translate(Vector3d translation) {
+        for (HalfEdgeSurface surface : surfaces) {
+            surface.translate(translation);
+        }
+    }
+
+    public void doTrianglesReductionOneIteration(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount) {
+        for (HalfEdgeSurface surface : surfaces) {
+            surface.doTrianglesReductionOneIteration(maxDiffAngDegrees, hedgeMinLength, frontierMaxDiffAngDeg, maxAspectRatio, maxCollapsesCount);
+        }
+    }
+
+    public void splitFacesByBestPlanesToProject() {
+        for (HalfEdgeSurface surface : surfaces) {
+            surface.splitFacesByBestPlanesToProject();
+        }
     }
 }

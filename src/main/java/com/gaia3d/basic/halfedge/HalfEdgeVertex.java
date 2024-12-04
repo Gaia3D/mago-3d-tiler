@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
@@ -14,6 +15,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Setter
 @Getter
 @NoArgsConstructor
@@ -30,6 +32,7 @@ public class HalfEdgeVertex implements Serializable {
     private PositionType positionType = null;
     private int id = -1;
     private int outingHalfEdgeId = -1;
+    private int classifyId = -1; // auxiliary variable.***
 
     public HalfEdgeVertex(GaiaVertex vertex) {
         copyFromGaiaVertex(vertex);
@@ -64,10 +67,12 @@ public class HalfEdgeVertex implements Serializable {
         }
 
         this.batchId = vertex.batchId;
-        this.outingHalfEdge = vertex.outingHalfEdge;
+        // no copy pointer.***
         this.status = vertex.status;
         this.positionType = vertex.positionType;
         this.id = vertex.id;
+        this.outingHalfEdgeId = vertex.outingHalfEdgeId;
+        this.classifyId = vertex.classifyId;
     }
 
     public void copyFromGaiaVertex(GaiaVertex vertex) {
@@ -121,7 +126,7 @@ public class HalfEdgeVertex implements Serializable {
         }
 
         if (this.outingHalfEdge.getStatus() == ObjectStatus.DELETED) {
-            System.out.println("HalfEdgeVertex.getIncomingHalfEdges() : outingHalfEdge is deleted!.");
+            log.info("HalfEdgeVertex.getIncomingHalfEdges() : outingHalfEdge is deleted!.");
             int hola = 0;
         }
 
@@ -148,7 +153,7 @@ public class HalfEdgeVertex implements Serializable {
         }
 
         if (this.outingHalfEdge.getStatus() == ObjectStatus.DELETED) {
-            System.out.println("HalfEdgeVertex.getOutingHalfEdges() : outingHalfEdge is deleted!.");
+            log.info("HalfEdgeVertex.getOutingHalfEdges() : outingHalfEdge is deleted!.");
             int hola = 0;
         }
 
@@ -167,7 +172,7 @@ public class HalfEdgeVertex implements Serializable {
             while (nextOutingEdge != this.outingHalfEdge) {
                 resultHalfEdges.add(nextOutingEdge);
                 if (resultHalfEdges.size() > 100) {
-                    System.out.println("Error: HalfEdgeVertex.getOutingHalfEdges() : resultHalfEdges.size() > 100");
+                    log.info("Error: HalfEdgeVertex.getOutingHalfEdges() : resultHalfEdges.size() > 100");
                 }
                 currTwin = nextOutingEdge.getTwin();
                 if (currTwin == null) {
@@ -204,7 +209,16 @@ public class HalfEdgeVertex implements Serializable {
     }
 
     public boolean changeOutingHalfEdge() {
+        if(this.outingHalfEdge.getStatus() != ObjectStatus.DELETED) {
+            return true;
+        }
+
         List<HalfEdge> outingEdges = this.getOutingHalfEdges(null);
+        if(outingEdges == null)
+        {
+            return false;
+        }
+
         int edgesCount = outingEdges.size();
         for (int i = 0; i < edgesCount; i++) {
             HalfEdge edge = outingEdges.get(i);
@@ -244,7 +258,7 @@ public class HalfEdgeVertex implements Serializable {
         }
 
         if (this.outingHalfEdge.getStatus() == ObjectStatus.DELETED) {
-            System.out.println("HalfEdgeVertex.getFaces() : outingHalfEdge is deleted!.");
+            log.info("HalfEdgeVertex.getFaces() : outingHalfEdge is deleted!.");
             int hola = 0;
         }
 
@@ -340,7 +354,7 @@ public class HalfEdgeVertex implements Serializable {
         }
         catch(Exception e)
         {
-            e.printStackTrace();
+            log.error("Error Log : ", e);
         }
     }
 
@@ -397,7 +411,42 @@ public class HalfEdgeVertex implements Serializable {
         }
         catch(Exception e)
         {
-            e.printStackTrace();
+            log.error("Error Log : ", e);
         }
+    }
+
+    public boolean isWeldable(HalfEdgeVertex vertex2, double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
+        // 1rst, check position.***
+        double distance = position.distance(vertex2.position);
+        if (distance > error) {
+            return false;
+        }
+
+        // 2nd, check texCoord.***
+        if (checkTexCoord && texcoords != null && vertex2.texcoords != null) {
+            double texCoordDist = texcoords.distance(vertex2.texcoords);
+            if (texCoordDist > error) {
+                return false;
+            }
+        }
+
+        // 3rd, check normal.***
+        if (checkNormal && normal != null && vertex2.normal != null) {
+            if (normal.distance(vertex2.normal) > error) {
+                return false;
+            }
+        }
+
+        // 4th, check color.***
+        if (checkColor && color != null && vertex2.color != null) {
+            for (int i = 0; i < color.length; i++) {
+                if (Math.abs(color[i] - vertex2.color[i]) > error) {
+                    return false;
+                }
+            }
+        }
+
+        // 5th, check batchId.***
+        return !checkBatchId || !(Math.abs(batchId - vertex2.batchId) > error);
     }
 }

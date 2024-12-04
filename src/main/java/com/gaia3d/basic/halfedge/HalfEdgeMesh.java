@@ -1,8 +1,10 @@
 package com.gaia3d.basic.halfedge;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.model.GaiaMaterial;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
@@ -12,15 +14,16 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 public class HalfEdgeMesh implements Serializable {
     @Setter
     @Getter
     private List<HalfEdgePrimitive> primitives = new ArrayList<>();
     private GaiaBoundingBox boundingBox = null;
 
-    public void doTrianglesReduction() {
+    public void doTrianglesReduction(double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength, double maxAspectRatio) {
         for (HalfEdgePrimitive primitive : primitives) {
-            primitive.doTrianglesReduction();
+            primitive.doTrianglesReduction(maxDiffAngDeg, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio);
         }
     }
 
@@ -73,6 +76,13 @@ public class HalfEdgeMesh implements Serializable {
         return boundingBox;
     }
 
+    public void calculateNormals()
+    {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.calculateNormals();
+        }
+    }
+
     public void classifyFacesIdByPlane(PlaneType planeType, Vector3d planePosition)
     {
         for (HalfEdgePrimitive primitive : primitives) {
@@ -92,7 +102,7 @@ public class HalfEdgeMesh implements Serializable {
                 primitive.writeFile(outputStream);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error Log : ", e);
         }
     }
 
@@ -105,7 +115,7 @@ public class HalfEdgeMesh implements Serializable {
                 primitives.add(primitive);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error Log : ", e);
         }
     }
 
@@ -119,5 +129,82 @@ public class HalfEdgeMesh implements Serializable {
         }
 
         return resultHalfEdgeSurfaces;
+    }
+
+    public void deleteFacesWithClassifyId(int classifyId) {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.deleteFacesWithClassifyId(classifyId);
+        }
+    }
+
+    public HalfEdgeMesh clone()
+    {
+        HalfEdgeMesh clonedMesh = new HalfEdgeMesh();
+        for (HalfEdgePrimitive primitive : primitives) {
+            clonedMesh.primitives.add(primitive.clone());
+        }
+        return clonedMesh;
+    }
+
+    public void scissorTextures(List<GaiaMaterial> materials) {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.scissorTextures(materials);
+        }
+    }
+
+    public int getTrianglesCount() {
+        int trianglesCount = 0;
+        for (HalfEdgePrimitive primitive : primitives) {
+            trianglesCount += primitive.getTrianglesCount();
+        }
+        return trianglesCount;
+    }
+
+    public void setBoxTexCoordsXY(GaiaBoundingBox box) {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.setBoxTexCoordsXY(box);
+        }
+    }
+
+    public void getUsedMaterialsIds(List<Integer> resultMaterialsIds) {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.getUsedMaterialsIds(resultMaterialsIds);
+        }
+    }
+
+    public void setMaterialId(int materialId) {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.setMaterialId(materialId);
+        }
+    }
+
+    public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
+        }
+    }
+
+    public void translate(Vector3d translation) {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.translate(translation);
+        }
+    }
+
+    public void doTrianglesReductionOneIteration(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount) {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.doTrianglesReductionOneIteration(maxDiffAngDegrees, hedgeMinLength, frontierMaxDiffAngDeg, maxAspectRatio, maxCollapsesCount);
+        }
+    }
+
+    public void splitFacesByBestPlanesToProject() {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.splitFacesByBestPlanesToProject();
+        }
+    }
+
+    public void extractPrimitives(List<HalfEdgePrimitive> resultPrimitives) {
+        for (HalfEdgePrimitive primitive : primitives) {
+            resultPrimitives.add(primitive);
+        }
     }
 }

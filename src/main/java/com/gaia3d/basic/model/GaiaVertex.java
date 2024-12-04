@@ -8,20 +8,19 @@ import lombok.Setter;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
+import java.io.Serializable;
+
 /**
  * A class that represents a vertex of a Gaia object.
  * It contains the texture coordinates, position, normal, color, and batchId.
- *
- * @author znkim
- * @see <a href="https://en.wikipedia.org/wiki/Vertex_(geometry)">Vertex (geometry)</a>
- * @since 1.0.0
  */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GaiaVertex extends VertexStructure {
+public class GaiaVertex extends VertexStructure implements Serializable {
     private Vector3d position;
+    private short[] quantizedPosition;
     private Vector3d normal;
     private Vector2d texcoords;
     private byte[] color;
@@ -87,6 +86,11 @@ public class GaiaVertex extends VertexStructure {
         }
 
         // 5th, check batchId.***
-        return !checkBatchId || !(Math.abs(batchId - vertex2.batchId) > error);
+        if(checkBatchId) {
+            if(batchId != vertex2.batchId) {
+                return false;
+            }
+        }
+        return true;
     }
 }

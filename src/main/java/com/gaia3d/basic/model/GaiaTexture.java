@@ -26,10 +26,6 @@ import java.nio.file.Path;
  * It contains the texture name, path, type, width, height, format, byteLength, and byteBuffer.
  * The byteBuffer is used to create a texture.
  * The byteBuffer is created by reading the texture file.
- *
- * @author znkim
- * @see <a href="https://en.wikipedia.org/wiki/Texture_mapping">Texture mapping</a>
- * @since 1.0.0
  */
 @Slf4j
 @Getter
@@ -40,7 +36,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
     private String parentPath;
     private String name;
     private String path;
-    private TextureType type;
+    private TextureType type; // DIFFUSE, NORMAL, SPECULAR, ETC
 
     private int width;
     private int height;
@@ -62,6 +58,16 @@ public class GaiaTexture extends TextureStructure implements Serializable {
             this.width = bufferedImage.getWidth();
             this.height = bufferedImage.getHeight();
             this.format = bufferedImage.getType();
+        }
+    }
+
+    public void saveImage(String savePath) {
+        try {
+            String imageExtension = savePath.substring(savePath.lastIndexOf(".") + 1);
+            File file = new File(savePath);
+            ImageIO.write(bufferedImage, imageExtension, file);
+        } catch (IOException e) {
+            log.error(e.getMessage());
         }
     }
 
@@ -90,6 +96,12 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         return image;
     }
 
+    public void createImage(int width, int height, int imageType) {
+        this.width = width;
+        this.height = height;
+        this.bufferedImage = new BufferedImage(width, height, imageType);
+    }
+
     private BufferedImage testImage() {
         BufferedImage bufferedImage = new BufferedImage(1, 1, BufferedImage.TYPE_3BYTE_BGR);
         Graphics2D graphics = bufferedImage.createGraphics();
@@ -108,6 +120,17 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         this.height = resizeHeight;
         ImageResizer imageResizer = new ImageResizer();
         this.bufferedImage = imageResizer.resizeImageGraphic2D(this.bufferedImage, resizeWidth, resizeHeight);
+    }
+
+    public void resizeImage(int width, int height) {
+        if(this.bufferedImage == null) {
+            loadImage();
+        }
+        if(this.bufferedImage == null) {
+            return;
+        }
+        ImageResizer imageResizer = new ImageResizer();
+        this.bufferedImage = imageResizer.resizeImageGraphic2D(this.bufferedImage, width, height);
     }
 
     // getBufferedImage
@@ -213,4 +236,5 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         clonedTexture.setParentPath(this.parentPath);
         return clonedTexture;
     }
+
 }

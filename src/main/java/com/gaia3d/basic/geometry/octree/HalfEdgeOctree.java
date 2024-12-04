@@ -1,7 +1,9 @@
 package com.gaia3d.basic.geometry.octree;
 
-import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.model.GaiaVertex;
+import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
+import com.gaia3d.basic.halfedge.HalfEdgeFace;
+import com.gaia3d.basic.halfedge.HalfEdgeSurface;
+import com.gaia3d.basic.halfedge.HalfEdgeVertex;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -14,20 +16,23 @@ import java.util.List;
 @Setter
 @Getter
 
-public class GaiaOctreeVertices {
-
-    private GaiaOctreeVertices parent = null;
+public class HalfEdgeOctree {
+    private HalfEdgeOctree parent = null;
     private double minX, minY, minZ;
     private double maxX, maxY, maxZ;
     private int idx = -1;
     private GaiaOctreeCoordinate coordinate = new GaiaOctreeCoordinate();
     private int maxDepth = 5;
-    private double minBoxSize = 1.0;
-    private GaiaOctreeVertices[] children = null;
+    private double minBoxSize = 0.1;
+    private HalfEdgeOctree[] children = null;
     //-----------------------------------------------------------------------------------
-    private List<GaiaVertex> vertices = new ArrayList<>();
+    private List<HalfEdgeVertex> vertices = new ArrayList<>();
+    private List<HalfEdgeFace> faces = new ArrayList<>();
+    private List<HalfEdgeSurface> surfaces = new ArrayList<>();
 
-    public GaiaOctreeVertices(GaiaOctreeVertices parent) {
+
+
+    public HalfEdgeOctree(HalfEdgeOctree parent) {
         this.parent = parent;
 
         if (parent != null) {
@@ -47,11 +52,10 @@ public class GaiaOctreeVertices {
     }
 
     public void createChildren() {
-        children = new GaiaOctreeVertices[8];
+        children = new HalfEdgeOctree[8];
         for (int i = 0; i < 8; i++) {
-            children[i] = new GaiaOctreeVertices(this);
+            children[i] = new HalfEdgeOctree(this);
             children[i].idx = i;
-            children[i].minBoxSize = this.minBoxSize;
         }
 
         // now set children sizes.***
@@ -83,6 +87,24 @@ public class GaiaOctreeVertices {
         children[5].coordinate.setDepthAndCoord(L + 1, X * 2 + 1, Y * 2, Z * 2 + 1);
         children[6].coordinate.setDepthAndCoord(L + 1, X * 2 + 1, Y * 2 + 1, Z * 2 + 1);
         children[7].coordinate.setDepthAndCoord(L + 1, X * 2, Y * 2 + 1, Z * 2 + 1);
+
+        for(int i=0; i<8; i++) {
+            children[i].setMinBoxSize(minBoxSize);
+            children[i].setMaxDepth(maxDepth);
+        }
+    }
+
+    public void makeTreeByMaxDepth(int maxDepth) {
+        if (this.coordinate.getDepth() >= maxDepth) {
+            return;
+        }
+
+        createChildren();
+        distributeContents();
+
+        for (HalfEdgeOctree child : children) {
+            child.makeTreeByMaxDepth(maxDepth);
+        }
     }
 
     public void makeTreeByMinBoxSize(double minBoxSize) {
@@ -101,7 +123,7 @@ public class GaiaOctreeVertices {
         createChildren();
         distributeContents();
 
-        for (GaiaOctreeVertices child : children) {
+        for (HalfEdgeOctree child : children) {
             child.makeTreeByMinBoxSize(minBoxSize);
         }
     }
@@ -128,138 +150,9 @@ public class GaiaOctreeVertices {
         createChildren();
         distributeContents();
 
-        for (GaiaOctreeVertices child : children) {
+        for (HalfEdgeOctree child : children) {
             child.makeTreeByMinVertexCount(minVertexCount);
         }
-    }
-
-    public void printVertices() {
-        if (!vertices.isEmpty() && children == null) {
-            //log.info("vertices.size() : {}", vertices.size());
-        }
-
-        if (children != null) {
-            for (GaiaOctreeVertices child : children) {
-                child.printVertices();
-            }
-        }
-    }
-
-    public void reduceVerticesByDistance() {
-        /*GaiaBoundingBox boundingBox = new GaiaBoundingBox();
-        for (GaiaVertex vertex : vertices) {
-            boundingBox.addPoint(vertex.getPosition());
-        }
-        Vector3d centerPosition = boundingBox.getCenter();*/
-        List<GaiaVertex> newVertices = new ArrayList<>();
-        if (!vertices.isEmpty()) {
-            GaiaVertex vertex = vertices.get(0);
-            Vector3d vertexPosition = vertex.getPosition();
-            for (int i = 1; i < vertices.size(); i++) {
-                GaiaVertex compareVertex = vertices.get(i);
-                Vector3d comparePosition = compareVertex.getPosition();
-                if (vertexPosition.distance(comparePosition) < 0.003) {
-                    //
-                } else {
-                    newVertices.add(compareVertex);
-                }
-            }
-        }
-        vertices = newVertices;
-    }
-
-    /*public void reduceVerticesByDistance() {
-        GaiaBoundingBox boundingBox = new GaiaBoundingBox();
-        for (GaiaVertex vertex : vertices) {
-            boundingBox.addPoint(vertex.getPosition());
-        }
-        Vector3d center = boundingBox.getCenter();
-        GaiaVertex temp = vertices.get(0);
-        temp.setPosition(center);
-
-        vertices = new ArrayList<>();
-        vertices.add(temp);
-        *//*if (!vertices.isEmpty()) {
-            GaiaVertex vertex = vertices.get(0);
-            for (int i = 1; i < vertices.size(); i++) {
-                GaiaVertex compareVertex = vertices.get(i);
-                if (vertex.getPosition().distance(compareVertex.getPosition()) < minBoxSize) {
-                    vertices.remove(i);
-                    i--;
-                }
-            }
-        }*//*
-    }*/
-
-    public void reduceVertices(int maxVertexCount) {
-
-        if (!vertices.isEmpty() && children == null) {
-            reduceVerticesByDistance();
-            if (vertices.size() > maxVertexCount) {
-                reduceVerticesByDistance();
-            }
-
-            /*if (vertices.size() > maxVertexCount) {
-                //log.info("vertices.size() : {}", vertices.size());
-                //reduceVerticesByDistance();
-                createChildren();
-                distributeContents();
-                for (GaiaOctreeVertices child : children) {
-                    child.reduceVertices(maxVertexCount);
-                }
-            } else if (vertices.size() > 10) {
-                reduceVerticesByDistance();
-            }*/
-        }
-
-        if (children != null) {
-            for (GaiaOctreeVertices child : children) {
-                child.reduceVertices(maxVertexCount);
-            }
-        }
-
-        printVertices();
-    }
-
-    public int findMaximumDepth() {
-        int maxDepth = this.coordinate.getDepth();
-        if (children == null) {
-            return maxDepth;
-        }
-
-        for (GaiaOctreeVertices child : children) {
-            int depth = child.findMaximumDepth();
-            if (depth > maxDepth) {
-                maxDepth = depth;
-            }
-        }
-        return maxDepth;
-    }
-
-    public List<GaiaVertex> getAllVertices(List<GaiaVertex> allVertices) {
-        if (allVertices == null) {
-            allVertices = new ArrayList<>();
-        }
-        allVertices.addAll(vertices);
-        if (children != null) {
-            for (GaiaOctreeVertices child : children) {
-                child.getAllVertices(allVertices);
-            }
-        }
-        return allVertices;
-    }
-
-    public int calculateVerticesCount(int[] count) {
-        if (count == null) {
-            count = new int[1];
-        }
-        count[0] += vertices.size();
-        if (children != null) {
-            for (GaiaOctreeVertices child : children) {
-                child.calculateVerticesCount(count);
-            }
-        }
-        return count[0];
     }
 
     public void calculateSize() {
@@ -275,7 +168,7 @@ public class GaiaOctreeVertices {
         maxY = -Double.MAX_VALUE;
         maxZ = -Double.MAX_VALUE;
 
-        for (GaiaVertex vertex : vertices) {
+        for (HalfEdgeVertex vertex : vertices) {
             Vector3d position = vertex.getPosition();
             if (position.x < minX) {
                 minX = position.x;
@@ -307,6 +200,71 @@ public class GaiaOctreeVertices {
         this.maxZ = maxZ;
     }
 
+    public void distributeFacesToLeaf()
+    {
+        if(this.faces.isEmpty())
+            return;
+
+        if(this.children == null)
+            return;
+
+        double midX = (minX + maxX) / 2.0;
+        double midY = (minY + maxY) / 2.0;
+        double midZ = (minZ + maxZ) / 2.0;
+
+        for(HalfEdgeFace face : this.faces)
+        {
+            Vector3d center = face.getBarycenter(null);
+            if(center.x < midX)
+            {
+                if(center.y < midY)
+                {
+                    if(center.z < midZ)
+                    {
+                        children[0].faces.add(face);
+                    }
+                    else
+                    {
+                        children[4].faces.add(face);
+                    }
+                }
+                else
+                {
+                    if(center.z < midZ)
+                    {
+                        children[3].faces.add(face);
+                    }
+                    else
+                    {
+                        children[7].faces.add(face);
+                    }
+                }
+            }
+            else {
+                if (center.y < midY) {
+                    if (center.z < midZ) {
+                        children[1].faces.add(face);
+                    } else {
+                        children[5].faces.add(face);
+                    }
+                } else {
+                    if (center.z < midZ) {
+                        children[2].faces.add(face);
+                    } else {
+                        children[6].faces.add(face);
+                    }
+                }
+            }
+        }
+
+        this.faces.clear();
+
+        for(HalfEdgeOctree child : children)
+        {
+            child.distributeFacesToLeaf();
+        }
+    }
+
     public void distributeContents() {
         if (vertices.isEmpty()) {
             return;
@@ -316,7 +274,7 @@ public class GaiaOctreeVertices {
         double midY = (minY + maxY) / 2.0;
         double midZ = (minZ + maxZ) / 2.0;
 
-        for (GaiaVertex vertex : vertices) {
+        for (HalfEdgeVertex vertex : vertices) {
             Vector3d position = vertex.getPosition();
             if (position.x < midX) {
                 if (position.y < midY) {
@@ -353,17 +311,29 @@ public class GaiaOctreeVertices {
         vertices.clear();
     }
 
-    private void addVertex(GaiaVertex vertex) {
+    private void addVertex(HalfEdgeVertex vertex) {
         vertices.add(vertex);
     }
 
-    public void extractOctreesWithContents(List<GaiaOctreeVertices> octrees) {
+    public void extractOctreesWithFaces(List<HalfEdgeOctree> octrees) {
+        if (!faces.isEmpty()) {
+            octrees.add(this);
+        }
+
+        if (children != null) {
+            for (HalfEdgeOctree child : children) {
+                child.extractOctreesWithFaces(octrees);
+            }
+        }
+    }
+
+    public void extractOctreesWithContents(List<HalfEdgeOctree> octrees) {
         if (!vertices.isEmpty()) {
             octrees.add(this);
         }
 
         if (children != null) {
-            for (GaiaOctreeVertices child : children) {
+            for (HalfEdgeOctree child : children) {
                 child.extractOctreesWithContents(octrees);
             }
         }

@@ -4,6 +4,7 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.geometry.octree.GaiaFaceData;
 import com.gaia3d.basic.geometry.octree.GaiaOctree;
+import com.gaia3d.basic.halfedge.PlaneType;
 import com.gaia3d.basic.model.*;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
@@ -14,9 +15,6 @@ import java.util.List;
 
 /**
  * GeometryUtils
- *
- * @author znkim
- * @since 1.0.0
  */
 public class GeometryUtils {
     public static boolean isIdentity(float[] matrix) {
@@ -717,10 +715,8 @@ public class GeometryUtils {
     public static Vector4d getAverageColor(List<GaiaFaceData> faceDataList) {
         Vector4d resultColor = new Vector4d();
         resultColor.set(0.0, 0.0, 0.0, 0.0);
-        int facesCount = faceDataList.size();
         int averageColorCount = 0;
-        for (int i = 0; i < facesCount; i++) {
-            GaiaFaceData faceData = faceDataList.get(i);
+        for (GaiaFaceData faceData : faceDataList) {
             Vector4d color = faceData.getAverageColor();
             if (color == null) {
                 continue;
@@ -729,7 +725,6 @@ public class GeometryUtils {
             resultColor.y += color.y;
             resultColor.z += color.z;
             resultColor.w += color.w;
-
             averageColorCount++;
         }
 
@@ -831,8 +826,7 @@ public class GeometryUtils {
         GaiaPrimitive primitiveMaster = new GaiaPrimitive();
         mesh.getPrimitives().add(primitiveMaster);
 
-        for (int i = 0; i < octreeList.size(); i++) {
-            GaiaOctree octree = octreeList.get(i);
+        for (GaiaOctree octree : octreeList) {
             boolean[] hasNeighbor = octree.hasNeighbor(); // left, right, front, rear, bottom, top.
             GaiaBoundingBox bbox = octree.getBoundingBox();
 
@@ -866,6 +860,10 @@ public class GeometryUtils {
         return resultScene;
     }
 
+    public static boolean isInvalidVector(Vector3d vector) {
+        return !isValidVector(vector);
+    }
+
     public static boolean isValidVector(Vector3d vector) {
         boolean valid = true;
         if (!Double.isNaN(vector.get(0)) && !Double.isNaN(vector.get(1)) && !Double.isNaN(vector.get(2))) {
@@ -874,7 +872,6 @@ public class GeometryUtils {
         } else {
             valid = false;
         }
-
         return valid;
     }
 
@@ -928,5 +925,35 @@ public class GeometryUtils {
         }
 
         resultNormal.normalize();
+    }
+
+    public static PlaneType getBestPlaneToProject(Vector3d normal) {
+
+        float absX = Math.abs((float) normal.x);
+        float absY = Math.abs((float) normal.y);
+        float absZ = Math.abs((float) normal.z);
+
+        if (absX > absY && absX > absZ) {
+            // the best plane is the YZ plane.***
+            if(normal.x > 0){
+                return PlaneType.YZ;
+            }else{
+                return PlaneType.YZNEG;
+            }
+        } else if (absY > absX && absY > absZ) {
+            // the best plane is the XZ plane.***
+            if(normal.y > 0){
+                return PlaneType.XZ;
+            }else{
+                return PlaneType.XZNEG;
+            }
+        } else {
+            // the best plane is the XY plane.***
+            if(normal.z > 0){
+                return PlaneType.XY;
+            }else{
+                return PlaneType.XYNEG;
+            }
+        }
     }
 }
