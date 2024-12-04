@@ -245,9 +245,9 @@ public class HalfEdgePrimitive implements Serializable {
         }
     }
 
-    public void doTrianglesReductionOneIteration(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount) {
+    public void doTrianglesReductionOneIteration(DecimateParameters decimateParameters) {
         for (HalfEdgeSurface surface : surfaces) {
-            surface.doTrianglesReductionOneIteration(maxDiffAngDegrees, hedgeMinLength, frontierMaxDiffAngDeg, maxAspectRatio, maxCollapsesCount);
+            surface.doTrianglesReductionOneIteration(decimateParameters);
         }
     }
 
