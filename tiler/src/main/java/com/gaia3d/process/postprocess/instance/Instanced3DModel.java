@@ -198,8 +198,8 @@ public class Instanced3DModel implements TileModel {
         AtomicInteger finalBatchIdIndex = new AtomicInteger();
         tileInfos.forEach((tileInfo) -> {
             GaiaAttribute attribute = tileInfo.getScene().getAttribute();
-            Map<String, String> attributes = attribute.getAttributes();
-            GaiaSet set = tileInfo.getSet();
+            Map<String, String> attributes = tileInfo.getKmlInfo().getProperties();
+            //GaiaSet set = tileInfo.getSet();
 
             String UUID = attribute.getIdentifier().toString();
             String FileName = attribute.getFileName();
@@ -222,11 +222,13 @@ public class Instanced3DModel implements TileModel {
             batchTableMap.computeIfAbsent("BatchId", k -> new ArrayList<>());
             batchTableMap.get("BatchId").add(String.valueOf(batchId[finalBatchIdIndex.getAndIncrement()]));
 
-            attributes.forEach((key, value) -> {
-                String utf8Value = StringUtils.convertUTF8(value);
-                batchTableMap.computeIfAbsent(key, k -> new ArrayList<>());
-                batchTableMap.get(key).add(utf8Value);
-            });
+            if (attributes != null) {
+                attributes.forEach((key, value) -> {
+                    String utf8Value = StringUtils.convertUTF8(value);
+                    batchTableMap.computeIfAbsent(key, k -> new ArrayList<>());
+                    batchTableMap.get(key).add(utf8Value);
+                });
+            }
         });
 
 

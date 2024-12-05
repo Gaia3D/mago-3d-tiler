@@ -25,14 +25,16 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.type.FeatureType;
+import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.filter.Filter;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * KmlReader is a class that reads kml files.
@@ -78,6 +80,19 @@ public class GeojsonPointReader implements AttributeReader {
                     continue;
                 }
 
+                Map<String, String> attributes = new HashMap<>();
+                FeatureType featureType = feature.getFeatureType();
+                Collection<PropertyDescriptor> featureDescriptors = featureType.getDescriptors();
+                AtomicInteger index = new AtomicInteger(0);
+                featureDescriptors.forEach(attributeDescriptor -> {
+                    Object attribute = feature.getAttribute(index.getAndIncrement());
+                    if (attribute instanceof Geometry) {
+                        return;
+                    }
+                    String attributeString = castStringFromObject(attribute, "null");
+                    attributes.put(attributeDescriptor.getName().getLocalPart(), attributeString);
+                });
+
                 double x = point.getX();
                 double y = point.getY();
                 double heading = getNumberAttribute(feature, headingColumnName, 0.0d);
@@ -102,6 +117,7 @@ public class GeojsonPointReader implements AttributeReader {
                         .scaleX(1.0d)
                         .scaleY(1.0d)
                         .scaleZ(1.0d)
+                        .properties(attributes)
                         .build();
                 result.add(kmlInfo);
             }
@@ -134,6 +150,26 @@ public class GeojsonPointReader implements AttributeReader {
             result = result + (double) attributeObject;
         } else if (attributeObject instanceof String) {
             result = Double.parseDouble((String) attributeObject);
+        }
+        return result;
+    }
+
+    private String castStringFromObject(Object object, String defaultValue) {
+        String result;
+        if (object == null) {
+            result = defaultValue;
+        } else if (object instanceof String) {
+            result = (String) object;
+        } else if (object instanceof Integer) {
+            result = String.valueOf((int) object);
+        } else if (object instanceof Long) {
+            result = String.valueOf(object);
+        } else if (object instanceof Double) {
+            result = String.valueOf((double) object);
+        } else if (object instanceof Short) {
+            result = String.valueOf((short) object);
+        } else {
+            result = object.toString();
         }
         return result;
     }

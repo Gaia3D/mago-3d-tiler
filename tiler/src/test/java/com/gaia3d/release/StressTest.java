@@ -345,7 +345,7 @@ public class StressTest {
                 "-it", "las",
                 "-crs", "5186",
                 "-force4ByteRGB",
-                "-pointRatio", "100",
+                "-pointRatio", "25",
                 //"-debug"
         };
         Mago3DTilerMain.main(args);

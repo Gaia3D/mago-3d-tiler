@@ -13,6 +13,7 @@ import org.joml.Vector3d;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -80,7 +81,23 @@ public class JacksonKmlReader implements AttributeReader {
                     double x = model.getScale().getX();
                     double y = model.getScale().getY();
                     double z = model.getScale().getZ();
-                    KmlInfo kmlInfo = KmlInfo.builder().name(name).position(new Vector3d(longitude, latitude, altitude)).altitudeMode(altitudeMode).heading(heading).tilt(tilt).roll(roll).href(href).scaleX(x).scaleY(y).scaleZ(z).build();
+
+                    HashMap<String, String> properties = new HashMap<>();
+                    properties.put("name", name);
+                    properties.put("description", description);
+                    KmlInfo kmlInfo = KmlInfo.builder()
+                            .name(name)
+                            .position(new Vector3d(longitude, latitude, altitude))
+                            .altitudeMode(altitudeMode)
+                            .heading(heading)
+                            .tilt(tilt)
+                            .roll(roll)
+                            .href(href)
+                            .scaleX(x)
+                            .scaleY(y)
+                            .scaleZ(z)
+                            .properties(properties)
+                            .build();
                     kmlInfos.add(kmlInfo);
                 }
             }
