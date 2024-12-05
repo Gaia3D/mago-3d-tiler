@@ -190,9 +190,9 @@ public class HalfEdgeMesh implements Serializable {
         }
     }
 
-    public void doTrianglesReductionOneIteration(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount) {
+    public void doTrianglesReductionOneIteration(DecimateParameters decimateParameters) {
         for (HalfEdgePrimitive primitive : primitives) {
-            primitive.doTrianglesReductionOneIteration(maxDiffAngDegrees, hedgeMinLength, frontierMaxDiffAngDeg, maxAspectRatio, maxCollapsesCount);
+            primitive.doTrianglesReductionOneIteration(decimateParameters);
         }
     }
 

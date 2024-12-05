@@ -759,7 +759,7 @@ public class HalfEdgeSurface implements Serializable {
         return resultHalfEdgesSortedByLength;
     }
 
-    public void doTrianglesReductionOneIteration(double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength, double maxAspectRatio, int maxCollapseCount) {
+    public void doTrianglesReductionOneIteration(DecimateParameters decimateParameters) {
         // 1rst, find possible halfEdges to remove.***
         // Reasons to remove a halfEdge:
         // 1. The halfEdge is very short. (small length).
@@ -776,6 +776,10 @@ public class HalfEdgeSurface implements Serializable {
         int hedgesCollapsedInOneIteration = 0;
         int frontierHedgesCollapsedInOneIteration = 0;
 
+        double maxDiffAngDeg = decimateParameters.getMaxDiffAngDegrees();
+        double frontierMaxDiffAngDeg = decimateParameters.getFrontierMaxDiffAngDeg();
+        double hedgeMinLength = decimateParameters.getHedgeMinLength();
+        double maxAspectRatio = decimateParameters.getMaxAspectRatio();
 
         double hedgeMinLengthCurrent = hedgeMinLength;
 

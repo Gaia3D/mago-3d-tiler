@@ -317,7 +317,7 @@ public class Engine {
         for(int i=0; i<halfEdgeScenesCount; i++)
         {
             HalfEdgeScene halfEdgeScene = halfEdgeScenesToDecimate.get(i);
-            halfEdgeScene.doTrianglesReductionOneIteration(maxDiffAngDegrees, hedgeMinLength, frontierMaxDiffAngDeg, maxAspectRatio, maxCollapsesCount);
+            halfEdgeScene.doTrianglesReductionOneIteration(decimateParameters);
 
             // now, cut the halfEdgeScene and make cube-textures by rendering.***
             double gridSpacing = 60.0;
@@ -337,7 +337,7 @@ public class Engine {
         }
     }
 
-    private void makeBoxTexturesForHalfEdgeScene(HalfEdgeScene halfEdgeScene)
+    public void makeBoxTexturesForHalfEdgeScene(HalfEdgeScene halfEdgeScene)
     {
         // Must know all faces classification ids.***
         // 1rst, extract all surfaces.***
@@ -579,7 +579,6 @@ public class Engine {
             HalfEdgePrimitive primitive = primitives.get(i);
             primitive.setMaterialId(materialsCount);
         }
-
 
         int hola = 0;
     }

@@ -26,6 +26,7 @@ import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 import com.gaia3d.basic.halfedge.DecimateParameters;
+import com.gaia3d.renderer.MainRenderer;
 import com.gaia3d.util.DecimalUtils;
 import com.gaia3d.util.GlobeUtils;
 import lombok.NoArgsConstructor;
@@ -142,19 +143,16 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             nodeTileInfoMap.clear();
             tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
             // public void setBasicValues(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount)
-            decimateParameters.setBasicValues(6.0, 0.5, 3.0, 6.0, 1000000);
+            decimateParameters.setBasicValues(15.0, 0.5, 3.0, 6.0, 1000000, 1);
             if(d == 1) {
-                decimateParameters.setBasicValues(6.0, 0.5, 3.0, 6.0, 1000000);
+                decimateParameters.setBasicValues(15.0, 0.5, 3.0, 6.0, 1000000, 1);
             }
             else if(d == 2) {
-                decimateParameters.setBasicValues(20.0, 0.5, 3.0, 8.0, 1000000);
+                decimateParameters.setBasicValues(20.0, 0.5, 3.0, 8.0, 1000000, 1);
             }
-            else if(d == 3) {
-                decimateParameters.setBasicValues(30.0, 0.5, 3.0, 10.0, 1000000);
-            }
-            else if(d == 4) {
-                decimateParameters.setBasicValues(40.0, 0.5, 3.0, 12.0, 1000000);
-            }
+//            else if(d == 3) {
+//                decimateParameters.setBasicValues(30.0, 0.5, 3.0, 10.0, 1000000, 1);
+//            }
 
             decimateScenes(tileInfosCopy, lod, decimateParameters);
             boolean someSceneCut = false;
@@ -173,14 +171,61 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
             makeContentsForNodes(nodeTileInfoMap, lod);
 
-            if(d >= 3)
+            if(d >= 2)
+            {
+                break;
+            }
+        }
+
+        // net surfaces with boxTextures.**************************************************************************************
+        for(int d = 3; d < maxDepth; d++) {
+            lod = d;
+            currDepth = maxDepth - lod;
+            double boxSizeForCurrDepth = desiredDistanceBetweenLat / Math.pow(2, currDepth);
+            double pixelsForMeter = 256.0/boxSizeForCurrDepth;
+            tileInfosCopy.clear();
+            nodeTileInfoMap.clear();
+            tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
+            // public void setBasicValues(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount)
+            decimateParameters.setBasicValues(15.0, 0.5, 3.0, 6.0, 1000000, 1);
+            if(d == 3) {
+                decimateParameters.setBasicValues(15.0, 0.5, 3.0, 6.0, 1000000, 1);
+            }
+            else if(d == 4) {
+                decimateParameters.setBasicValues(20.0, 0.5, 3.0, 8.0, 1000000, 1);
+            }
+            else if(d == 5) {
+                decimateParameters.setBasicValues(22.0, 0.5, 3.0, 10.0, 1000000, 1);
+            }
+            else if(d == 6) {
+                decimateParameters.setBasicValues(24.0, 0.5, 3.0, 12.0, 1000000, 1);
+            }
+
+            makeNetSurfaces(tileInfosCopy, lod, decimateParameters, pixelsForMeter);
+            boolean someSceneCut = false;
+
+            try {
+                someSceneCut = cutRectangleCake(tileInfosCopy, lod, root);
+            } catch (IOException e) {
+                log.error("Error : {}", e.getMessage());
+                throw new RuntimeException(e);
+            }
+            currDepth = maxDepth - lod;
+            distributeContentsToNodes(root, tileInfosCopy, currDepth, nodeTileInfoMap);
+            if(someSceneCut)
+            {
+                scissorTextures(tileInfosCopy);
+            }
+            makeContentsForNodes(nodeTileInfoMap, lod);
+
+            if(d >= 5)
             {
                 break;
             }
         }
 
         // Check if is necessary netSurfaces nodes.***********************************************************************
-        lod = 4;
+        lod = 6;
         for(int depth = maxDepth - lod; depth >= 0; depth--)
         {
             tileInfosCopy.clear();
@@ -227,6 +272,83 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         }
     }
 
+    private void makeNetSurfaces(List<TileInfo> tileInfos, int lod, DecimateParameters decimateParameters, double pixelsForMeter)
+    {
+        log.info("making netSurfaces scenes for lod : " + lod);
+        TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
+        List<GaiaScene> gaiaSceneList = new ArrayList<>();
+        List<HalfEdgeScene> resultDecimatedScenes = new ArrayList<>();
+
+        int tileInfosCount = tileInfos.size();
+        for(int i = 0; i < tileInfosCount; i++)
+        {
+            log.info("making netSurfaces scene : " + i + " of " + tileInfosCount);
+            TileInfo tileInfo = tileInfos.get(i);
+            Path tempPath = tileInfo.getTempPath();
+            Path tempFolder = tempPath.getParent();
+
+            // load the file.***
+            GaiaSet gaiaSet;
+            try {
+                gaiaSet = GaiaSet.readFile(tempPath);
+                if(gaiaSet == null) {
+                    log.error("Error : gaiaSet is null. pth : " + tempPath.toString());
+                    continue;
+                }
+            }
+            catch (IOException e)
+            {
+                log.error("Error : {}", e.getMessage());
+                throw new RuntimeException(e);
+            }
+            GaiaScene scene = new GaiaScene(gaiaSet);
+            scene.setOriginalPath(tileInfo.getScenePath());
+            scene.makeTriangleFaces();
+
+            gaiaSceneList.clear();
+            resultDecimatedScenes.clear();
+            gaiaSceneList.add(scene);
+            tilerExtensionModule.makeNetSurfaces(gaiaSceneList, resultDecimatedScenes, decimateParameters, pixelsForMeter);
+
+            HalfEdgeScene halfEdgeSceneLod = resultDecimatedScenes.get(0);
+
+            // Save the textures in a temp folder.***
+            List<GaiaMaterial> materials = halfEdgeSceneLod.getMaterials();
+            int materialsCount = materials.size();
+            for (int j = 0; j < materialsCount; j++)
+            {
+                GaiaMaterial material = materials.get(j);
+                List<GaiaTexture> textures = material.getTextures().get(TextureType.DIFFUSE);
+                int texturesCount = textures.size();
+                for (int k = 0; k < texturesCount; k++)
+                {
+                    GaiaTexture texture = textures.get(k);
+                    // change the texture name.***
+                    String texturePath = texture.getPath();
+                    String rawTexturePath = texturePath.substring(0, texturePath.lastIndexOf("."));
+                    String extension = texturePath.substring(texturePath.lastIndexOf("."));
+                    String newTexturePath = rawTexturePath + "_" + lod + "." + extension;
+                    texture.setPath(newTexturePath);
+                    texture.setParentPath(tempFolder.toString());
+                    texture.saveImage(texture.getFullPath());
+                }
+            }
+
+            GaiaScene sceneLod1 = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneLod);
+
+            GaiaSet tempSetLod1 = GaiaSet.fromGaiaScene(sceneLod1);
+            halfEdgeSceneLod.deleteObjects();
+
+            String aux = "lod" + lod;
+            Path tempFolderLod = tempFolder.resolve(aux);
+            Path currTempPathLod = tempSetLod1.writeFile(tempFolderLod, tileInfo.getSerial(), tempSetLod1.getAttribute());
+            tileInfo.setTempPath(currTempPathLod);
+            //tempPathLod.add(currTempPathLod);
+
+
+        }
+    }
+
     private void decimateScenes(List<TileInfo> tileInfos, int lod, DecimateParameters decimateParameters)
     {
         log.info("Decimating scenes for lod : " + lod);
@@ -241,17 +363,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             TileInfo tileInfo = tileInfos.get(i);
             Path tempPath = tileInfo.getTempPath();
             Path tempFolder = tempPath.getParent();
-//            List<Path> tempPathLod = tileInfo.getTempPathLod();
-//            if(tempPathLod == null)
-//            {
-//                tempPathLod = new ArrayList<>();
-//                tileInfo.setTempPathLod(tempPathLod);
-//            }
-//
-//            if(tempPathLod.size() == 0)
-//            {
-//                //tempPathLod.add(tempPath);
-//            }
 
             // load the file.***
             GaiaSet gaiaSet;
@@ -387,7 +498,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
             log.info("nodeCode : " + node.getNodeCode() + "currNodeIdx : " + i + "of : " + nodesCount);
             int maxScreenSize = 512;
-            int maxDepthScreenSize = 512;
+            int maxDepthScreenSize = 256;
             tilerExtensionModule.getColorAndDepthRender(sceneInfos, bufferedImageType, resultImages, nodeBBoxLC, nodeTMatrix, maxScreenSize, maxDepthScreenSize);
             BufferedImage bufferedImageColor = resultImages.get(0);
             BufferedImage bufferedImageDepth = resultImages.get(1);
