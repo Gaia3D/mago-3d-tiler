@@ -207,7 +207,7 @@ public class MainRenderer implements IAppLogic {
 
     public void getDepthRender(GaiaScene gaiaScene, int bufferedImageType, List<BufferedImage> resultImages, int maxDepthScreenSize) {
         // render the scene
-        log.info("Rendering the scene...getColorAndDepthRender");
+        log.info("Rendering the scene...getDepthRender");
 
         // Must init gl.***
         try{

@@ -26,8 +26,8 @@ import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 import com.gaia3d.basic.halfedge.DecimateParameters;
-import com.gaia3d.renderer.MainRenderer;
 import com.gaia3d.util.DecimalUtils;
+import com.gaia3d.util.GaiaSceneUtils;
 import com.gaia3d.util.GlobeUtils;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -116,17 +116,16 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         int lod = 0;
         List<TileInfo> tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, null);
 
+        int maxDepth = root.findMaxDepth();
+        int currDepth = maxDepth - lod;
+        Map<Node, List<TileInfo>> nodeTileInfoMap = new HashMap<>();
+
         try {
             cutRectangleCake(tileInfosCopy, lod, root);
         } catch (IOException e) {
             log.error("Error : {}", e.getMessage());
             throw new RuntimeException(e);
         }
-
-        Map<Node, List<TileInfo>> nodeTileInfoMap = new HashMap<>();
-
-        int maxDepth = root.findMaxDepth();
-        int currDepth = maxDepth - lod;
 
         // distribute contents to node in the correspondent depth.***
         // After process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes.***
@@ -143,16 +142,13 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             nodeTileInfoMap.clear();
             tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
             // public void setBasicValues(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount)
-            decimateParameters.setBasicValues(15.0, 0.5, 3.0, 6.0, 1000000, 1);
+            decimateParameters.setBasicValues(6.0, 0.5, 3.0, 12.0, 1000000, 1);
             if(d == 1) {
-                decimateParameters.setBasicValues(15.0, 0.5, 3.0, 6.0, 1000000, 1);
+                decimateParameters.setBasicValues(35.0, 0.5, 3.0, 15.0, 1000000, 1);
             }
             else if(d == 2) {
-                decimateParameters.setBasicValues(20.0, 0.5, 3.0, 8.0, 1000000, 1);
+                decimateParameters.setBasicValues(40.0, 0.6, 3.0, 16.0, 1000000, 1);
             }
-//            else if(d == 3) {
-//                decimateParameters.setBasicValues(30.0, 0.5, 3.0, 10.0, 1000000, 1);
-//            }
 
             decimateScenes(tileInfosCopy, lod, decimateParameters);
             boolean someSceneCut = false;
@@ -182,23 +178,23 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             lod = d;
             currDepth = maxDepth - lod;
             double boxSizeForCurrDepth = desiredDistanceBetweenLat / Math.pow(2, currDepth);
-            double pixelsForMeter = 256.0/boxSizeForCurrDepth;
+            double pixelsForMeter = 128.0/boxSizeForCurrDepth;
             tileInfosCopy.clear();
             nodeTileInfoMap.clear();
             tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
             // public void setBasicValues(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount)
-            decimateParameters.setBasicValues(15.0, 0.5, 3.0, 6.0, 1000000, 1);
+            decimateParameters.setBasicValues(10.0, 0.5, 3.0, 6.0, 1000000, 1);
             if(d == 3) {
-                decimateParameters.setBasicValues(15.0, 0.5, 3.0, 6.0, 1000000, 1);
+                decimateParameters.setBasicValues(45.0, 1.0, 3.0, 15.0, 1000000, 1);
             }
             else if(d == 4) {
-                decimateParameters.setBasicValues(20.0, 0.5, 3.0, 8.0, 1000000, 1);
+                decimateParameters.setBasicValues(50.0, 1.2, 3.0, 15.0, 1000000, 1);
             }
             else if(d == 5) {
-                decimateParameters.setBasicValues(22.0, 0.5, 3.0, 10.0, 1000000, 1);
+                decimateParameters.setBasicValues(55.0, 1.5, 3.0, 15.0, 1000000, 1);
             }
             else if(d == 6) {
-                decimateParameters.setBasicValues(24.0, 0.5, 3.0, 12.0, 1000000, 1);
+                decimateParameters.setBasicValues(60.0, 2.0, 3.0, 15.0, 1000000, 1);
             }
 
             makeNetSurfaces(tileInfosCopy, lod, decimateParameters, pixelsForMeter);
@@ -236,15 +232,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
         // now, delete nodes that have no contents.***
         root.deleteNoContentNodes();
-
-//        //Old**************************************************************
-//        try {
-//            createNode(root, tileInfos, 0);
-//        } catch (IOException e) {
-//            log.error("Error : {}", e.getMessage());
-//            throw new RuntimeException(e);
-//        }
-//        //End Old.---------------------------------------------------------
 
         setGeometryErrorToNodeAutomatic(root, maxDepth);
         Asset asset = createAsset();
@@ -302,13 +289,25 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 throw new RuntimeException(e);
             }
             GaiaScene scene = new GaiaScene(gaiaSet);
+
+
             scene.setOriginalPath(tileInfo.getScenePath());
             scene.makeTriangleFaces();
 
             gaiaSceneList.clear();
             resultDecimatedScenes.clear();
             gaiaSceneList.add(scene);
+
+            if(!GaiaSceneUtils.checkSceneMaterials(scene))
+            {
+                log.error("Error : scene has objects that uses materials that are not in the scene.");
+                continue;
+            }
+
             tilerExtensionModule.makeNetSurfaces(gaiaSceneList, resultDecimatedScenes, decimateParameters, pixelsForMeter);
+
+            gaiaSet.clear(); // delete gaiaSet.***
+            scene.clear(); // delete scene.***
 
             HalfEdgeScene halfEdgeSceneLod = resultDecimatedScenes.get(0);
 
@@ -338,6 +337,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
             GaiaSet tempSetLod1 = GaiaSet.fromGaiaScene(sceneLod1);
             halfEdgeSceneLod.deleteObjects();
+            sceneLod1.clear(); // delete sceneLod1.***
 
             String aux = "lod" + lod;
             Path tempFolderLod = tempFolder.resolve(aux);
@@ -345,6 +345,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             tileInfo.setTempPath(currTempPathLod);
             //tempPathLod.add(currTempPathLod);
 
+            tempSetLod1.clear(); // delete tempSetLod1.***
 
         }
     }

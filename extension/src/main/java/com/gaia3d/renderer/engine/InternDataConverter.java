@@ -6,6 +6,7 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.renderer.renderable.*;
+import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryStack;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class InternDataConverter {
     public static RenderableGaiaScene getRenderableGaiaScene(GaiaScene gaiaScene) {
         RenderableGaiaScene renderableGaiaScene = new RenderableGaiaScene();
