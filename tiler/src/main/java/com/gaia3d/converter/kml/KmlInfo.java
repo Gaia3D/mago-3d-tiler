@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.joml.Vector3d;
 
+import java.util.Map;
+
 /**
  * KmlInfo is a class that contains the information of the kml file.
  * It contains the information of the kml file, and the information of the buffer of each node.
@@ -23,4 +25,5 @@ public class KmlInfo {
     private double scaleX;
     private double scaleY;
     private double scaleZ;
+    private Map<String, String> properties;
 }
