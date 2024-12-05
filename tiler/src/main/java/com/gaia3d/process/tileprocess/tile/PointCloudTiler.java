@@ -369,7 +369,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
 
     private void minimizeAllPointCloud(int index, int maximumIndex, List<GaiaPointCloud> allPointClouds) {
         int size = allPointClouds.size();
-        AtomicInteger atomicInteger = new AtomicInteger(0);
+        AtomicInteger atomicInteger = new AtomicInteger(1);
         printJvmMemory();
         allPointClouds.forEach(pointCloud -> {
             File tempPath = new File(GlobalOptions.getInstance().getOutputPath(), "temp");
