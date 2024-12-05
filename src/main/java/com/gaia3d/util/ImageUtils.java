@@ -2,7 +2,6 @@ package com.gaia3d.util;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
-import org.lwjgl.BufferUtils;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -69,7 +68,7 @@ public class ImageUtils {
         Path path = file.toPath();
         try (var is = new BufferedInputStream(Files.newInputStream(path))) {
             int size = (int) Files.size(path);
-            ByteBuffer byteBuffer = BufferUtils.createByteBuffer(size);
+            ByteBuffer byteBuffer = ByteBuffer.allocate(size);
 
             int bufferSize = 8192;
             bufferSize = Math.min(size, bufferSize);
