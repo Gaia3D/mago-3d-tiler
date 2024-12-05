@@ -1779,12 +1779,20 @@ public class HalfEdgeSurface implements Serializable {
                 return false;
             }
 
-            double angDeg = Math.toDegrees(HalfEdgeUtils.calculateAngleBetweenNormals(normalA, normalB));
-            if (angDeg > maxDiffAngDeg) {
-                return false;
+            // for hedges with length less than 1.5m, apply a factor to the angle.***
+            double hedgeLength = halfEdge.getLength();
+            double angFactor = 1.0;
+            if(hedgeLength < 2.0)
+            {
+                angFactor = Math.min(hedgeLength, 2.0);
+                angFactor /= 2.0;
+                angFactor *= 0.5;
             }
-            else {
-                int hola = 0;
+
+            double angDeg = Math.toDegrees(HalfEdgeUtils.calculateAngleBetweenNormals(normalA, normalB));
+            if (angDeg * angFactor > maxDiffAngDeg) {
+                // if hedgeLength is small, then collapse.***
+                return false;
             }
         }
 

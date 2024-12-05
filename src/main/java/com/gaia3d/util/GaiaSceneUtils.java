@@ -21,4 +21,19 @@ public class GaiaSceneUtils {
         mesh.getPrimitives().add(primitive);
         return scene;
     }
+
+    public static boolean checkSceneMaterials(GaiaScene scene) {
+        for (GaiaNode node : scene.getNodes()) {
+            for (GaiaMesh mesh : node.getMeshes()) {
+                for (GaiaPrimitive primitive : mesh.getPrimitives()) {
+                    int matId = primitive.getMaterialIndex();
+
+                    if (matId < 0 || matId >= scene.getMaterials().size()) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
 }
