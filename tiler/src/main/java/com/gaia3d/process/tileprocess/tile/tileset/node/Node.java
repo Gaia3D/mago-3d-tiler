@@ -167,7 +167,33 @@ public class Node {
             double[] region = childBoundingVolume.getRegion();// minx, miny, maxx, maxy, minz, maxz
 
             // check if intersects centerLonRad and centerLatRad
-            if (cartographicRad.x >= region[0] && cartographicRad.x <= region[2] && cartographicRad.y >= region[1] && cartographicRad.y <= region[3]) {
+            if (cartographicRad.x >= region[0] && cartographicRad.x <= region[2] &&
+                    cartographicRad.y >= region[1] && cartographicRad.y <= region[3]) {
+                return childNode.getIntersectedNode(cartographicRad, depth);
+            }
+        }
+
+        return null;
+    }
+
+    public Node getIntersectedNode(Vector3d cartographicRad, int depth) {
+        if (this.depth == depth) {
+            return this;
+        }
+
+        if (children == null) {
+            return null;
+        }
+
+        for (Node childNode : children) {
+            BoundingVolume childBoundingVolume = childNode.getBoundingVolume();
+
+            double[] region = childBoundingVolume.getRegion();// minx, miny, maxx, maxy, minz, maxz
+
+            // check if intersects centerLonRad and centerLatRad
+            if (cartographicRad.x >= region[0] && cartographicRad.x <= region[2] &&
+                    cartographicRad.y >= region[1] && cartographicRad.y <= region[3] &&
+                    cartographicRad.z >= region[4] && cartographicRad.z <= region[5]) {
                 return childNode.getIntersectedNode(cartographicRad, depth);
             }
         }

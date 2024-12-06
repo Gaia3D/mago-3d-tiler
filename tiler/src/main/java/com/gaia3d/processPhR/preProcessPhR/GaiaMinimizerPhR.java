@@ -3,6 +3,7 @@ package com.gaia3d.processPhR.preProcessPhR;
 import com.gaia3d.TilerExtensionModule;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.halfedge.DecimateParameters;
 import com.gaia3d.basic.halfedge.HalfEdgeScene;
 import com.gaia3d.basic.halfedge.HalfEdgeUtils;
 import com.gaia3d.basic.halfedge.PlaneType;
@@ -278,7 +279,9 @@ public class GaiaMinimizerPhR implements PreProcess {
             double hedgeMinLength = 0.25;
             double frontierMaxDiffAngDeg = 5.0;
             double maxAspectRatio = 6.0;
-            halfEdgeSceneLod1.doTrianglesReduction(maxDiffAngDegrees, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio);
+            DecimateParameters decimateParameters = new DecimateParameters();
+            decimateParameters.setBasicValues(maxDiffAngDegrees, hedgeMinLength, frontierMaxDiffAngDeg, maxAspectRatio, 1000000, 2, 1.8);
+            halfEdgeSceneLod1.doTrianglesReduction(decimateParameters);
             //halfEdgeScene.calculateNormals();
 
 
@@ -339,7 +342,9 @@ public class GaiaMinimizerPhR implements PreProcess {
             hedgeMinLength = 0.5;
             frontierMaxDiffAngDeg = 5.0;
             maxAspectRatio = 6.0;
-            halfEdgeSceneLod2.doTrianglesReduction(maxDiffAngDegrees, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio);
+            decimateParameters = new DecimateParameters();
+            decimateParameters.setBasicValues(maxDiffAngDegrees, hedgeMinLength, frontierMaxDiffAngDeg, maxAspectRatio, 1000000, 2, 1.8);
+            halfEdgeSceneLod2.doTrianglesReduction(decimateParameters);
             //halfEdgeScene.calculateNormals();
 
             // As we will change the texture by a topView render, must recalculate the texCoords.***

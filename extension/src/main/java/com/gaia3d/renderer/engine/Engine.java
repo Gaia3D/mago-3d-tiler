@@ -320,7 +320,7 @@ public class Engine {
             halfEdgeScene.doTrianglesReductionOneIteration(decimateParameters);
 
             // now, cut the halfEdgeScene and make cube-textures by rendering.***
-            double gridSpacing = 60.0;
+            double gridSpacing = 50.0;
             HalfEdgeOctree resultOctree = new HalfEdgeOctree(null);
             log.info("Engine.decimate() : cutHalfEdgeSceneGridXYZ.");
             HalfEdgeScene cuttedScene = HalfEdgeCutter.cutHalfEdgeSceneGridXYZ(halfEdgeScene, gridSpacing, resultOctree);

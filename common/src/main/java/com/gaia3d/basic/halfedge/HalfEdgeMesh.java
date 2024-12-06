@@ -21,9 +21,9 @@ public class HalfEdgeMesh implements Serializable {
     private List<HalfEdgePrimitive> primitives = new ArrayList<>();
     private GaiaBoundingBox boundingBox = null;
 
-    public void doTrianglesReduction(double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength, double maxAspectRatio) {
+    public void doTrianglesReduction(DecimateParameters decimateParameters) {
         for (HalfEdgePrimitive primitive : primitives) {
-            primitive.doTrianglesReduction(maxDiffAngDeg, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio);
+            primitive.doTrianglesReduction(decimateParameters);
         }
     }
 
