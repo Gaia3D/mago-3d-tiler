@@ -24,9 +24,9 @@ public class HalfEdgePrimitive implements Serializable {
     private List<HalfEdgeVertex> vertices = new ArrayList<>(); // vertices of all surfaces.***
     private GaiaBoundingBox boundingBox = null;
 
-    public void doTrianglesReduction(double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength, double maxAspectRatio) {
+    public void doTrianglesReduction(DecimateParameters decimateParameters) {
         for (HalfEdgeSurface surface : surfaces) {
-            surface.doTrianglesReduction(maxDiffAngDeg, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio);
+            surface.doTrianglesReduction(decimateParameters);
         }
 
         // Remake vertices.***
