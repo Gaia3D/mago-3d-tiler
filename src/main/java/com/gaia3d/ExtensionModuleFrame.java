@@ -22,6 +22,7 @@ public interface ExtensionModuleFrame {
     void decimate(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters);
 
     void makeNetSurfaces(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, double pixelsForMeter);
+    void makeNetSurfacesByPyramidDeformationRender(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, double pixelsForMeter);
 
     void deleteObjects();
 }

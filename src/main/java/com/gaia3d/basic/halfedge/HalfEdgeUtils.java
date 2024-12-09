@@ -232,6 +232,12 @@ public class HalfEdgeUtils {
             }
         }
 
+        // check if some vertices are created.***
+        if(halfEdgeSurface.getVertices().isEmpty())
+        {
+            return null;
+        }
+
         // create halfEdges & halfEdgeFaces.***
         for (int r = 0; r < numRows - 1; r++) {
             for (int c = 0; c < numCols - 1; c++) {
@@ -302,6 +308,12 @@ public class HalfEdgeUtils {
         halfEdgeSurface.setTwins();
         halfEdgeSurface.removeDeletedObjects();
 
+        // check if exist geometry.***
+        if(halfEdgeSurface.getVertices().isEmpty() || halfEdgeSurface.getHalfEdges().isEmpty() || halfEdgeSurface.getFaces().isEmpty())
+        {
+            return null;
+        }
+
         return halfEdgeSurface;
     }
 
@@ -331,6 +343,11 @@ public class HalfEdgeUtils {
 
         // Create surface.***
         HalfEdgeSurface halfEdgeSurface = getHalfEdgeSurfaceRegularNet(numCols, numRows, depthValues, bbox);
+        if(halfEdgeSurface == null)
+        {
+            return null;
+        }
+
         halfEdgePrimitive.getSurfaces().add(halfEdgeSurface);
 
         return halfEdgeScene;
