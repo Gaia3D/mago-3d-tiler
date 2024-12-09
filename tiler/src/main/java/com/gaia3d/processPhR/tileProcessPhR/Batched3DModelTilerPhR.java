@@ -149,16 +149,16 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             // public void setBasicValues(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount)
             decimateParameters.setBasicValues(6.0, 0.5, 3.0, 12.0, 1000000, 2, 1.8);
             if(d == 1) {
-                decimateParameters.setBasicValues(15.0, 0.5, 3.0, 15.0, 1000000, 2, 1.8);
+                decimateParameters.setBasicValues(13.0, 0.5, 3.0, 15.0, 1000000, 2, 1.6);
             }
             else if(d == 2) {
-                decimateParameters.setBasicValues(20.0, 0.6, 3.0, 16.0, 1000000, 2, 2.0);
+                decimateParameters.setBasicValues(18.0, 0.6, 3.0, 16.0, 1000000, 2, 1.8);
             }
             else if(d == 3) {
-                decimateParameters.setBasicValues(25.0, 0.6, 3.0, 18.0, 1000000, 2, 2.5);
+                decimateParameters.setBasicValues(23.0, 0.6, 3.0, 18.0, 1000000, 2, 2.3);
             }
             else if(d == 4) {
-                decimateParameters.setBasicValues(30.0, 0.6, 3.0, 20.0, 1000000, 2, 3.5);
+                decimateParameters.setBasicValues(28.0, 0.6, 3.0, 20.0, 1000000, 2, 2.8);
             }
 
             decimateScenes(tileInfosCopy, lod, decimateParameters);
@@ -561,6 +561,11 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             int numCols = bufferedImageDepth.getWidth();
             int numRows = bufferedImageDepth.getHeight();
             HalfEdgeScene halfEdgeScene = HalfEdgeUtils.getHalfEdgeSceneRectangularNet(numCols, numRows, depthValues, nodeBBoxLC);
+            if(halfEdgeScene == null)
+            {
+                log.info("info : halfEdgeScene is null.");
+                continue;
+            }
             double maxDiffAngDeg = 35.0;
             //double hedgeMinLength = getNodeLatitudesLengthInMeters(node)/1000.0;
             double hedgeMinLength = 0.5;

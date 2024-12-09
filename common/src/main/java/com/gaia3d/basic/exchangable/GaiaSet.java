@@ -75,7 +75,7 @@ public class GaiaSet implements Serializable {
             }
             return gaiaSet;
         } catch (Exception e) {
-            log.error("GaiaSet Write Error : ", e);
+            log.error("GaiaSet Read Error : ", e);
         }
         return null;
     }
