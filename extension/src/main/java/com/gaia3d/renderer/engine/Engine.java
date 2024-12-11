@@ -721,6 +721,8 @@ public class Engine {
 
             double texWidth = texAtlasData.getTextureImage().getWidth();
             double texHeight = texAtlasData.getTextureImage().getHeight();
+            double xPixelSize = 1.0 / texWidth;
+            double yPixelSize = 1.0 / texHeight;
 
             // obtain all vertex of the faceGroup.***
             groupVertexMapMemSave.clear();
@@ -801,9 +803,9 @@ public class Engine {
                 double yRel = (pixelY - originalBoundary.getMinY()) / originalBoundary.getHeightInt();
 
                 // clamp the texRelCoords.***
-                double texError = 0.015; // sure that the texCoords are not in the border.***
-                xRel = Math.max(0.0 + texError, Math.min(1.0 - texError, xRel));
-                yRel = Math.max(0.0 + texError, Math.min(1.0 - texError, yRel));
+                //double texError = 0.015; // sure that the texCoords are not in the border.***
+                xRel = Math.max(0.0 + xPixelSize, Math.min(1.0 - xPixelSize, xRel));
+                yRel = Math.max(0.0 + yPixelSize, Math.min(1.0 - yPixelSize, yRel));
 
                 // transform the texCoordRelToCurrentBoundary to atlasBoundary using batchedBoundary.***
                 double xAtlas = (batchedBoundary.getMinX() + xRel * batchedBoundary.getWidthInt()) / maxWidth;
