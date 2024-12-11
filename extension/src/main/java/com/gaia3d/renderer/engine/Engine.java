@@ -19,6 +19,7 @@ import com.gaia3d.renderer.engine.screen.ScreenQuad;
 import com.gaia3d.renderer.renderable.RenderableGaiaScene;
 import com.gaia3d.renderer.renderable.RenderablePrimitive;
 import com.gaia3d.renderer.renderable.SelectionColorManager;
+import com.gaia3d.util.GaiaSceneUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -61,6 +62,7 @@ public class Engine {
     GaiaScenesContainer gaiaScenesContainer;
     SelectionColorManager selectionColorManager;
     List<HalfEdgeScene> halfEdgeScenes = new ArrayList<>();
+    List<GaiaScene> gaiaScenes = new ArrayList<>();
 
     private double midButtonXpos = 0;
     private double midButtonYpos = 0;
@@ -212,6 +214,38 @@ public class Engine {
                 DecimateParameters decimateParameters = new DecimateParameters();
                 decimate(halfEdgeScenes, decimatedScenes, decimateParameters);
                 halfEdgeScenes.set(0, decimatedScenes.get(0)); // provisionally, only one scene.***
+
+                // restore the camera position and target.***
+                camera.setPosition(keepCameraPosition);
+                camera.setDirection(keepCameraDirection);
+                camera.setUp(keepCameraUp);
+                camera.setDirty(true);
+
+                gaiaScenesContainer.setCamera(camera);
+                gaiaScenesContainer.getProjection().setProjectionType(0);
+            }
+
+            if(key == GLFW_KEY_P && action == GLFW_RELEASE)
+            {
+                // keep the camera position and target.***
+                Vector3d keepCameraPosition = new Vector3d(camera.getPosition());
+                Vector3d keepCameraDirection = new Vector3d(camera.getDirection());
+                Vector3d keepCameraUp = new Vector3d(camera.getUp());
+
+                // make a depthMap and normalMap.***
+
+                // do pyramidDeformation.***
+                GaiaScene gaiaScene = gaiaScenes.get(0);
+                GaiaBoundingBox bbox = gaiaScene.getBoundingBox(); // before to set the transformMatrix.***
+                double minH = bbox.getMinZ();
+                double maxH = bbox.getMaxZ() * 1.1;
+                double dist = 6.0;
+                GaiaSceneUtils.deformSceneByVerticesConvexity(gaiaScene, dist, minH, maxH);
+
+                // now, update the renderableScene.***
+                InternDataConverter internDataConverter = new InternDataConverter();
+                RenderableGaiaScene renderableScene = internDataConverter.getRenderableGaiaScene(gaiaScene);
+                this.getGaiaScenesContainer().getRenderableGaiaScenes().set(0, renderableScene);
 
                 // restore the camera position and target.***
                 camera.setPosition(keepCameraPosition);
@@ -765,6 +799,11 @@ public class Engine {
                 // transform the texCoords to texCoordRelToCurrentBoundary.***
                 double xRel = (pixelX - originalBoundary.getMinX()) / originalBoundary.getWidthInt();
                 double yRel = (pixelY - originalBoundary.getMinY()) / originalBoundary.getHeightInt();
+
+                // clamp the texRelCoords.***
+                double texError = 0.015; // sure that the texCoords are not in the border.***
+                xRel = Math.max(0.0 + texError, Math.min(1.0 - texError, xRel));
+                yRel = Math.max(0.0 + texError, Math.min(1.0 - texError, yRel));
 
                 // transform the texCoordRelToCurrentBoundary to atlasBoundary using batchedBoundary.***
                 double xAtlas = (batchedBoundary.getMinX() + xRel * batchedBoundary.getWidthInt()) / maxWidth;

@@ -3,6 +3,8 @@ package com.gaia3d.basic.model;
 import com.gaia3d.basic.exchangable.GaiaBuffer;
 import com.gaia3d.basic.exchangable.GaiaBufferDataSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.halfedge.HalfEdgeMesh;
+import com.gaia3d.basic.halfedge.HalfEdgeNode;
 import com.gaia3d.basic.model.structure.NodeStructure;
 import com.gaia3d.basic.types.AttributeType;
 import lombok.AllArgsConstructor;
@@ -289,6 +291,44 @@ public class GaiaNode extends NodeStructure implements Serializable {
         }
         for (GaiaNode child : this.getChildren()) {
             child.makeTriangleFaces();
+        }
+    }
+
+    public Matrix4d getFinalTransformMatrix() {
+        Matrix4d finalMatrix = new Matrix4d();
+        finalMatrix.set(transformMatrix);
+        if (parent != null) {
+            finalMatrix.mul(parent.getFinalTransformMatrix());
+        }
+        return finalMatrix;
+    }
+
+    public void spendTranformMatrix() {
+        Matrix4d finalMatrix = getFinalTransformMatrix();
+        Matrix4d identity = new Matrix4d();
+        identity.identity();
+
+        if(finalMatrix.equals(identity)) {
+            return;
+        }
+
+        for (GaiaMesh mesh : meshes) {
+            mesh.transformPoints(finalMatrix);
+        }
+        for (GaiaNode child : children) {
+            child.spendTranformMatrix();
+        }
+
+        // Clear the transform matrix.
+        transformMatrix.identity();
+    }
+
+    public void makeTriangularFaces() {
+        for (GaiaMesh mesh : meshes) {
+            mesh.makeTriangularFaces();
+        }
+        for (GaiaNode child : children) {
+            child.makeTriangularFaces();
         }
     }
 }

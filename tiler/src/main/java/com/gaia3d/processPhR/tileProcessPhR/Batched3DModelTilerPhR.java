@@ -86,7 +86,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         double minLatRad = Math.toRadians(minLatDeg);
         double maxLatRad = Math.toRadians(maxLatDeg);
         double distanceBetweenLat = GlobeUtils.distanceBetweenLatitudesRad(minLatRad, maxLatRad);
-        double desiredLeafDist = 25.0; // test value
+        double desiredLeafDist = 25.0;
+        //desiredLeafDist = 50.0; // test delete.*********************************************************************************************************
 
         int desiredDepth = (int)Math.ceil(HalfEdgeUtils.log2(distanceBetweenLat/desiredLeafDist));
         double desiredDistanceBetweenLat = desiredLeafDist*Math.pow(2, desiredDepth);
@@ -178,7 +179,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
             makeContentsForNodes(nodeTileInfoMap, lod);
 
-            if(d >= 4)
+            if(d >= 3)
             {
                 break;
             }
@@ -232,11 +233,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 //        }
 
         // Check if is necessary netSurfaces nodes.***********************************************************************
-        lod = 5;
+        lod = 4;
         for(int depth = maxDepth - lod; depth >= 0; depth--)
         {
             tileInfosCopy.clear();
             tileInfosCopy = this.getTileInfosCopy(tileInfos, 0, tileInfosCopy);
+            //createNetSurfaceNodesByPyramidDeformation(root, tileInfosCopy, depth, maxDepth);
             createNetSurfaceNodes(root, tileInfosCopy, depth, maxDepth);
         }
 
@@ -676,6 +678,242 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             } catch (Exception e) {
                 log.error("Error : {}", e);
             }
+            int hola = 0;
+        }
+    }
+
+    private void createNetSurfaceNodesByPyramidDeformation(Node rootNode, List<TileInfo> tileInfos, int nodeDepth, int maxDepth)
+    {
+        // 1rst, find all tileInfos that intersects with the node.***
+        log.info("Creating netSurface nodes for nodeDepth : " + nodeDepth + " of maxDepth : " + maxDepth);
+        List<Node> nodes = new ArrayList<>();
+        rootNode.getNodesByDepth(nodeDepth, nodes);
+        List<TileInfo> tileInfosOfNode = new ArrayList<>();
+        TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
+
+        int nodesCount = nodes.size();
+        for(int i = 0; i < nodesCount; i++)
+        {
+            tileInfosOfNode.clear();
+            Node node = nodes.get(i);
+            int tileInfosCount = tileInfos.size();
+            for(int j = 0; j < tileInfosCount; j++)
+            {
+                TileInfo tileInfo = tileInfos.get(j);
+                if(intersectsNodeWithTileInfo(node, tileInfo))
+                {
+                    tileInfosOfNode.add(tileInfo);
+                }
+            }
+
+            int tileInfosOfNodeCount = tileInfosOfNode.size();
+            if(tileInfosOfNodeCount == 0)
+                continue;
+
+            node.setRefine(Node.RefineType.REPLACE);
+
+            // create sceneInfos.***
+            List<SceneInfo> sceneInfos = new ArrayList<>();
+            for(int j = 0; j < tileInfosOfNodeCount; j++)
+            {
+                TileInfo tileInfo = tileInfosOfNode.get(j);
+                SceneInfo sceneInfo = new SceneInfo();
+                sceneInfo.setScenePath(tileInfo.getTempPath().toString());
+                KmlInfo kmlInfo = tileInfo.getKmlInfo();
+                Vector3d geoCoordPosition = kmlInfo.getPosition();
+                Vector3d posWC = GlobeUtils.geographicToCartesianWgs84(geoCoordPosition);
+                Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(posWC);
+                sceneInfo.setTransformMatrix(transformMatrix);
+                sceneInfos.add(sceneInfo);
+            }
+
+            // render the sceneInfos and obtain the color and depth images.************************************************************
+            //TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
+            List<BufferedImage> resultImages = new ArrayList<>();
+            int bufferedImageType = BufferedImage.TYPE_INT_RGB;
+
+            Vector3d nodeCenterGeoCoordRad = node.getBoundingVolume().calcCenter();
+            Vector3d nodeCenterGeoCoordDeg = new Vector3d(Math.toDegrees(nodeCenterGeoCoordRad.x), Math.toDegrees(nodeCenterGeoCoordRad.y), nodeCenterGeoCoordRad.z);
+            Vector3d nodePosWC = GlobeUtils.geographicToCartesianWgs84(nodeCenterGeoCoordDeg);
+            Matrix4d nodeTMatrix = node.getTransformMatrix();
+            if(nodeTMatrix == null)
+            {
+                nodeTMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(nodePosWC);
+            }
+            GaiaBoundingBox nodeBBoxLC = node.calculateLocalBoundingBox();
+            GaiaBoundingBox nodeCartographicBBox = node.calculateCartographicBoundingBox();
+
+            log.info("nodeCode : " + node.getNodeCode() + "currNodeIdx : " + i + "of : " + nodesCount);
+            int maxScreenSize = 512;
+            int maxDepthScreenSize = 256;
+            List<HalfEdgeScene> resultHalfEdgeScenes = new ArrayList<>();
+            tilerExtensionModule.makeNetSurfacesByPyramidDeformationRender(sceneInfos, bufferedImageType, resultHalfEdgeScenes, resultImages, nodeBBoxLC, nodeTMatrix, maxScreenSize, maxDepthScreenSize);
+
+            if(resultHalfEdgeScenes.size() == 0)
+            {
+                log.info("info : resultHalfEdgeScenes is empty.");
+                continue;
+            }
+
+
+            //tilerExtensionModule.getColorAndDepthRender(sceneInfos, bufferedImageType, resultImages, nodeBBoxLC, nodeTMatrix, maxScreenSize, maxDepthScreenSize);
+            BufferedImage bufferedImageColor = resultImages.get(0);
+            //BufferedImage bufferedImageDepth = resultImages.get(1);
+
+            // now, make a halfEdgeScene from the bufferedImages.*********************************************************************
+            String outputPathString = globalOptions.getOutputPath();
+            String netTempPathString = outputPathString + File.separator + "netTemp";
+            Path netTempPath = Paths.get(netTempPathString);
+            // create dirs if not exists.***
+            File netTempFile = netTempPath.toFile();
+            if (!netTempFile.exists())
+            {
+                netTempFile.mkdirs();
+            }
+
+            String netSetFolderPathString = netTempPathString + File.separator + "netSet_nodeDepth_" + nodeDepth + "_" + i;
+            Path netSetFolderPath = Paths.get(netSetFolderPathString);
+            // create dirs if not exists.***
+            File netSetFile = netSetFolderPath.toFile();
+            if(!netSetFile.exists())
+            {
+                netSetFile.mkdirs();
+            }
+            String netSetImagesFolderPathString = netSetFolderPathString + File.separator + "images";
+            Path netSetImagesFolderPath = Paths.get(netSetImagesFolderPathString);
+            // create dirs if not exists.***
+            File netSetImagesFolder = netSetImagesFolderPath.toFile();
+            if(!netSetImagesFolder.exists())
+            {
+                netSetImagesFolder.mkdirs();
+            }
+
+            // save the bufferedImageColor into the netSetImagesFolder.***
+            String imageExtension = "jpg";
+            String imagePath = "netScene_" + nodeDepth + "_" + i + "_color" + "." + imageExtension;
+            try {
+                File file = new File(netSetImagesFolderPathString + File.separator + imagePath);
+                ImageIO.write(bufferedImageColor, "JPG", file);
+            } catch (Exception e) {
+                log.error("Error : {}", e);
+            }
+
+            HalfEdgeScene halfEdgeScene = resultHalfEdgeScenes.get(0);
+            if(halfEdgeScene == null)
+            {
+                log.info("info : halfEdgeScene is null.");
+                continue;
+            }
+            double maxDiffAngDeg = 35.0;
+            //double hedgeMinLength = getNodeLatitudesLengthInMeters(node)/1000.0;
+            double hedgeMinLength = 0.5;
+            double frontierMaxDiffAngDeg = 30.0;
+            double maxAspectRatio = 6.0;
+            DecimateParameters decimateParameters = new DecimateParameters();
+            decimateParameters.setBasicValues(maxDiffAngDeg, hedgeMinLength, frontierMaxDiffAngDeg, maxAspectRatio, 1000000, 2, 1.8);
+            halfEdgeScene.doTrianglesReduction(decimateParameters);
+            //halfEdgeScene.calculateNormals();
+
+            if(halfEdgeScene.getTrianglesCount() == 0)
+                continue;
+
+            // now, create material for the halfEdgeScene.***
+            //GaiaMaterial material = new GaiaMaterial();
+            List<GaiaMaterial> materials = new ArrayList<>();
+            //materials.add(material);
+
+            GaiaMaterial material = new GaiaMaterial();
+            List<GaiaTexture> textures = new ArrayList<>();
+            GaiaTexture gaiaTexture = new GaiaTexture();
+            gaiaTexture.setPath(imagePath);
+            gaiaTexture.setParentPath(netSetImagesFolderPathString);
+            textures.add(gaiaTexture);
+            material.getTextures().put(TextureType.DIFFUSE, textures);
+            material.setId(0);
+            materials.add(material);
+            halfEdgeScene.setMaterials(materials);
+
+            // now set materialId to the halfEdgeScene.***
+            int materialId = 0;
+            halfEdgeScene.setMaterialId(materialId);
+
+            GaiaScene gaiaScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
+            GaiaSet gaiaSet = GaiaSet.fromGaiaScene(gaiaScene);
+            Path netSetPath = Paths.get(netSetFolderPathString + File.separator + "netSet_nodeDepth_" + nodeDepth + "_" + i + ".tmp");
+            gaiaSet.writeFileInThePath(netSetPath);
+
+            List<GaiaNode> gaiaNodes = gaiaScene.getNodes();
+            int gaiaNodesCount = gaiaNodes.size();
+            for(int j = 0; j < gaiaNodesCount; j++)
+            {
+                GaiaNode gaiaNode = gaiaNodes.get(j);
+                gaiaNode.clear();
+            }
+
+            //calculate lod.***
+            int lod = maxDepth - nodeDepth;
+            double netSurfaceGeometricError = 1*(lod+1);
+            node.setGeometricError(netSurfaceGeometricError);
+
+            // make contents for the node.***
+            List<TileInfo> netTileInfos = new ArrayList<>();
+            TileInfo tileInfoNet = TileInfo.builder().scene(gaiaScene).outputPath(netSetFolderPath).build();
+            tileInfoNet.setTempPath(netSetPath);
+            Matrix4d transformMatrixNet = new Matrix4d(nodeTMatrix);
+            tileInfoNet.setTransformMatrix(transformMatrixNet);
+            tileInfoNet.setBoundingBox(nodeBBoxLC);
+            tileInfoNet.setCartographicBBox(null);
+
+            // make a kmlInfo for the cut scene.***
+            KmlInfo kmlInfoCut = KmlInfo.builder().position(nodeCenterGeoCoordDeg).build();
+            tileInfoNet.setKmlInfo(kmlInfoCut);
+            netTileInfos.add(tileInfoNet);
+
+            ContentInfo contentInfo = new ContentInfo();
+            String nodeCode = node.getNodeCode();
+            contentInfo.setName(nodeCode);
+            LevelOfDetail lodLevel = LevelOfDetail.getByLevel(3);
+            int lodError = lodLevel.getGeometricError();
+            contentInfo.setLod(lodLevel);
+            contentInfo.setBoundingBox(nodeCartographicBBox); // must be cartographicBBox.***
+            contentInfo.setNodeCode(node.getNodeCode());
+            contentInfo.setTileInfos(netTileInfos);
+            contentInfo.setRemainTileInfos(null);
+            contentInfo.setTransformMatrix(nodeTMatrix);
+
+            Content content = new Content();
+            content.setUri("data/" + nodeCode + ".b3dm");
+            content.setContentInfo(contentInfo);
+            node.setContent(content);
+
+            // delete scenes.***
+            halfEdgeScene.deleteObjects();
+            gaiaScene.clear();
+            gaiaSet.clear();
+
+            System.gc();
+
+
+            // test save resultImages.***
+            String sceneName = "mosaicRenderTest_" + i + "_color";
+            String sceneRawName = sceneName;
+            imageExtension = "jpg";
+            String outputFolderPath = globalOptions.getOutputPath();
+            try {
+                File outputFile = new File(outputFolderPath, sceneRawName + "." + imageExtension);
+                ImageIO.write(bufferedImageColor, "JPG", outputFile);
+            } catch (Exception e) {
+                log.error("Error : {}", e);
+            }
+
+//            try {
+//                sceneName = "mosaicRenderTest_" + i + "_depth";
+//                imageExtension = "png";
+//                File outputFile = new File(outputFolderPath, sceneName + "." + imageExtension);
+//                ImageIO.write(bufferedImageDepth, "PNG", outputFile);
+//            } catch (Exception e) {
+//                log.error("Error : {}", e);
+//            }
             int hola = 0;
         }
     }

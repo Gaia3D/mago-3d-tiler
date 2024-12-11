@@ -50,10 +50,15 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
 
     @Override
     public void decimate(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters) {
-
     }
+
     @Override
-    public void makeNetSurfacesByPyramidDeformationRender(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, double pixelsForMeter) {
+    public void renderPyramidDeformation(List<GaiaScene> scenes, List<GaiaScene> resultScenes){
+    }
+
+    @Override
+    public void makeNetSurfacesByPyramidDeformationRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<HalfEdgeScene> resultHalfEdgeScenes, List<BufferedImage> resultImages,
+                                                          GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize, int maxDepthScreenSize) {
 
     }
 

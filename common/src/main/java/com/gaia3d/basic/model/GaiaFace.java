@@ -163,7 +163,6 @@ public class GaiaFace extends FaceStructure implements Serializable {
             if(i + 2 >= indicesCount)
             {
                 log.error("i + 2 >= indicesCount.***");
-                int hola = 0;
             }
             GaiaFace gaiaTriangleFace = new GaiaFace();
             gaiaTriangleFace.setIndices(new int[]{indices[i], indices[i + 1], indices[i + 2]});

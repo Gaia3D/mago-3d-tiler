@@ -70,6 +70,18 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
+    public void renderPyramidDeformation(List<GaiaScene> scenes, List<GaiaScene> resultScenes)
+    {
+        //***************************************************************
+        // test function to check if the decimate function is working.***
+        //***************************************************************
+        if(renderer == null)
+            renderer = new MainRenderer();
+        renderer.renderPyramidDeformation(scenes, resultScenes);
+        deleteObjects();
+    }
+
+    @Override
     public void decimate(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters)
     {
         if(renderer == null)
@@ -79,11 +91,12 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
-    public void makeNetSurfacesByPyramidDeformationRender(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, double pixelsForMeter)
+    public void makeNetSurfacesByPyramidDeformationRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<HalfEdgeScene> resultHalfEdgeScenes, List<BufferedImage> resultImages,
+                                                          GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize, int maxDepthScreenSize)
     {
         if(renderer == null)
             renderer = new MainRenderer();
-        renderer.makeNetSurfacesByPyramidDeformationRender(scenes, resultHalfEdgeScenes, decimateParameters, pixelsForMeter);
+        renderer.makeNetSurfacesByPyramidDeformationRender(sceneInfos, bufferedImageType, resultHalfEdgeScenes, resultImages, nodeBBox, nodeTMatrix, maxScreenSize, maxDepthScreenSize);
         deleteObjects();
     }
 

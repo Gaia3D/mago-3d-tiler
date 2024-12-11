@@ -167,4 +167,15 @@ public class GaiaSurface extends SurfaceStructure implements Serializable {
         faces.clear();
         faces.addAll(facesToAdd);
     }
+
+    public void makeTriangularFaces(List<GaiaVertex> vertices) {
+        List<GaiaFace> facesToAdd = new ArrayList<>();
+        List<GaiaFace> triangularFaces = new ArrayList<>();
+        for (GaiaFace face : faces) {
+            triangularFaces.clear();
+            facesToAdd.addAll(face.getTriangleFaces(triangularFaces));
+        }
+        faces.clear();
+        faces.addAll(facesToAdd);
+    }
 }
