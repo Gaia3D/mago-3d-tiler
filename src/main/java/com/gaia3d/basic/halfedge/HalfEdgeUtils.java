@@ -1,6 +1,7 @@
 package com.gaia3d.basic.halfedge;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.entities.GaiaPlane;
 import com.gaia3d.basic.geometry.octree.GaiaOctreeVertices;
 import com.gaia3d.basic.model.*;
 import lombok.extern.slf4j.Slf4j;
@@ -135,10 +136,6 @@ public class HalfEdgeUtils {
         for (int i = 0; i < facesCount; i++) {
             HalfEdgeFace halfEdgeFace = halfEdgeFaces.get(i);
             GaiaFace gaiaFace = gaiaFaceFromHalfEdgeFace(halfEdgeFace, mapHalfEdgeVertexToGaiaVertex, mapGaiaVertexToIndex, gaiaPrimitiveOwner);
-//            if(gaiaFace == null)
-//            {
-//                continue;
-//            }
             gaiaSurface.getFaces().add(gaiaFace);
         }
 
@@ -1308,6 +1305,122 @@ public class HalfEdgeUtils {
         }
 
         return boundingBox;
+    }
+
+    public static void deformHalfEdgeSurfaceByVerticesConvexConcave(HalfEdgeScene scene, double factor) {
+        List<HalfEdgeSurface> surfaces = scene.extractSurfaces(null);
+        int surfacesCount = surfaces.size();
+        for (int i = 0; i < surfacesCount; i++) {
+            HalfEdgeSurface surface = surfaces.get(i);
+            deformHalfEdgeSurfaceByVerticesConvexConcave(surface, factor);
+        }
+
+    }
+
+    public static void deformHalfEdgeSurfaceByVerticesConvexConcave(HalfEdgeSurface surface, double factor)
+    {
+        // 1rst, must determine if a vertex is convex or concave.***
+        surface.calculateNormals();
+        Map<HalfEdgeVertex, List<HalfEdgeFace>> mapVertexToFaces = new HashMap<>();
+        surface.getMapVertexAllFaces(mapVertexToFaces);
+
+        List<HalfEdgeVertex> convexVertices = new ArrayList<>();
+        List<HalfEdgeVertex> concaveVertices = new ArrayList<>();
+        List<HalfEdgeVertex> planeVertices = new ArrayList<>();
+
+        List<HalfEdgeVertex> faceVertices = new ArrayList<>();
+
+        List<HalfEdgeVertex> vertices = surface.getVertices();
+        int verticesCount = vertices.size();
+        for(int i=0; i<verticesCount; i++)
+        {
+            HalfEdgeVertex vertex = vertices.get(i);
+            Vector3d position = vertex.getPosition();
+            Vector3d normal = vertex.getNormal();
+            GaiaPlane plane = new GaiaPlane(position, normal);
+
+            List<HalfEdgeFace> faces = mapVertexToFaces.get(vertex);
+            if(faces == null)
+            {
+                continue;
+            }
+
+            int facesCount = faces.size();
+            boolean isConvex = true;
+            boolean isPlane = true;
+            double error = 0.01; // 1cm.***
+            for(int j=0; j<facesCount; j++)
+            {
+                HalfEdgeFace face = faces.get(j);
+                faceVertices.clear();
+                faceVertices = face.getVertices(faceVertices);
+                int faceVerticesCount = faceVertices.size();
+                for(int k=0; k<faceVerticesCount; k++)
+                {
+                    HalfEdgeVertex faceVertex = faceVertices.get(k);
+                    if(faceVertex == vertex)
+                    {
+                        continue;
+                    }
+
+                    Vector3d faceVertexPos = faceVertex.getPosition();
+                    double dist = plane.distanceToPoint(faceVertexPos);
+                    if(Math.abs(dist) > error) {
+                        if (dist < 0) {
+                            isConvex = false;
+                            isPlane = false;
+                            break;
+                        }
+                        else if(dist > 0)
+                        {
+                            isPlane = false;
+                        }
+                    }
+                }
+            }
+
+            if(isConvex)
+            {
+                convexVertices.add(vertex);
+            }
+            else if(isPlane)
+            {
+                planeVertices.add(vertex);
+            }
+            else
+            {
+                concaveVertices.add(vertex);
+            }
+        }
+
+        // now, move the vertex in the normal direction using factor.***
+        int convexVerticesCount = convexVertices.size();
+        for(int i=0; i<convexVerticesCount; i++)
+        {
+            // convex vertices move reverse to normal.***
+            HalfEdgeVertex vertex = convexVertices.get(i);
+            Vector3d position = vertex.getPosition();
+            Vector3d normal = vertex.getNormal();
+            Vector3d newPos = new Vector3d(position);
+            newPos.x -= normal.x * factor;
+            newPos.y -= normal.y * factor;
+            newPos.z -= normal.z * factor;
+            vertex.setPosition(newPos);
+        }
+
+        int concaveVerticesCount = concaveVertices.size();
+        for(int i=0; i<concaveVerticesCount; i++)
+        {
+            // concave vertices move in the normal direction.***
+            HalfEdgeVertex vertex = concaveVertices.get(i);
+            Vector3d position = vertex.getPosition();
+            Vector3d normal = vertex.getNormal();
+            Vector3d newPos = new Vector3d(position);
+            newPos.x += normal.x * factor;
+            newPos.y += normal.y * factor;
+            newPos.z += normal.z * factor;
+            vertex.setPosition(newPos);
+        }
     }
 
 }

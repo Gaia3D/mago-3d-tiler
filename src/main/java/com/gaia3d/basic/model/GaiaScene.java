@@ -170,4 +170,16 @@ public class GaiaScene extends SceneStructure implements Serializable {
             node.deleteDegeneratedFaces();
         }
     }
+
+    public void spendTranformMatrix() {
+        for (GaiaNode node : this.nodes) {
+            node.spendTranformMatrix();
+        }
+    }
+
+    public void makeTriangularFaces() {
+        for (GaiaNode node : this.nodes) {
+            node.makeTriangularFaces();
+        }
+    }
 }

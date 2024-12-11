@@ -337,6 +337,21 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         }
     }
 
+    public Map<GaiaVertex, List<GaiaFace>> getMapVertexToFaces() {
+        Map<GaiaVertex, List<GaiaFace>> mapVertexToFace = new HashMap<>();
+        for (GaiaSurface surface : this.surfaces) {
+            for (GaiaFace face : surface.getFaces()) {
+                int[] indices = face.getIndices();
+                for (int index : indices) {
+                    GaiaVertex vertex = this.vertices.get(index);
+                    List<GaiaFace> faces = mapVertexToFace.computeIfAbsent(vertex, k -> new ArrayList<>());
+                    faces.add(face);
+                }
+            }
+        }
+        return mapVertexToFace;
+    }
+
     public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
         // Weld the vertices.***
         GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null);
@@ -534,6 +549,21 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
     public void makeTriangleFaces() {
         for (GaiaSurface surface : this.surfaces) {
             surface.makeTriangleFaces();
+        }
+    }
+
+    public void transformPoints(Matrix4d finalMatrix) {
+        for (GaiaVertex vertex : vertices) {
+            Vector3d position = vertex.getPosition();
+            Vector3d transformedPosition = new Vector3d();
+            finalMatrix.transformPosition(position, transformedPosition);
+            vertex.setPosition(transformedPosition);
+        }
+    }
+
+    public void makeTriangularFaces() {
+        for (GaiaSurface surface : surfaces) {
+            surface.makeTriangularFaces(vertices);
         }
     }
 }

@@ -294,4 +294,16 @@ public class GaiaMesh extends MeshStructure implements Serializable {
             primitive.makeTriangleFaces();
         }
     }
+
+    public void transformPoints(Matrix4d finalMatrix) {
+        for (GaiaPrimitive primitive : primitives) {
+            primitive.transformPoints(finalMatrix);
+        }
+    }
+
+    public void makeTriangularFaces() {
+        for (GaiaPrimitive primitive : primitives) {
+            primitive.makeTriangularFaces();
+        }
+    }
 }

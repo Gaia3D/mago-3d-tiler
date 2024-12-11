@@ -27,4 +27,7 @@ public class GaiaPlane {
     }
 
 
+    public double distanceToPoint(Vector3d point) {
+        return a * point.x + b * point.y + c * point.z + d;
+    }
 }
