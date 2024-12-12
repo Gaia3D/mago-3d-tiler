@@ -65,4 +65,12 @@ public class UniformsMap {
             }
         }
     }
+
+    public void setUniform1f(String uniformName, float value) {
+        // check if exist uniform.***
+        int location = glGetUniformLocation(programId, uniformName);
+        if(location >= 0) {
+            glUniform1f(location, value);
+        }
+    }
 }

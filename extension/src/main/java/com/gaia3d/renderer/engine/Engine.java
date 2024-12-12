@@ -371,6 +371,78 @@ public class Engine {
         }
     }
 
+    public BufferedImage eliminateBackGroundColor(BufferedImage originalImage)
+    {
+        if(originalImage == null)
+            return null;
+
+        int fboWidth = originalImage.getWidth();
+        int fboHeight = originalImage.getHeight();
+        if(fboWidth <= 0 || fboHeight <= 0)
+            return null;
+
+        try{
+            Fbo fbo = fboManager.getOrCreateFbo("default", fboWidth, fboHeight);
+            fbo.bind();
+
+            int[] width = new int[1];
+            int[] height = new int[1];
+            width[0] = fbo.getFboWidth();
+            height[0] = fbo.getFboHeight();
+
+            glViewport(0, 0, width[0], height[0]);
+            glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+            glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+            glEnable(GL20.GL_DEPTH_TEST);
+
+            // enable cull face.***
+            glEnable(GL20.GL_CULL_FACE);
+
+            int test = GL_NEAREST;
+            int minFilter = GL20.GL_NEAREST; // GL_LINEAR, GL_NEAREST
+            int magFilter = GL20.GL_NEAREST;
+            int wrapS = GL20.GL_REPEAT; // GL_CLAMP_TO_EDGE
+            int wrapT = GL20.GL_REPEAT;
+            boolean resizeToPowerOf2 = false;
+            int textureId = RenderableTexturesUtils.createGlTextureFromBufferedImage(originalImage, minFilter, magFilter, wrapS, wrapT, resizeToPowerOf2);
+
+            GL20.glEnable(GL20.GL_TEXTURE_2D);
+            GL20.glActiveTexture(GL20.GL_TEXTURE0);
+            GL20.glBindTexture(GL20.GL_TEXTURE_2D, textureId);
+
+            // shader program.***
+            ShaderManager shaderManager = getShaderManager();
+            ShaderProgram shaderProgram = shaderManager.getShaderProgram("eliminateBackGroundColor");
+
+            shaderProgram.bind();
+
+            // set uniforms.***
+            UniformsMap uniformsMap = shaderProgram.getUniformsMap();
+            uniformsMap.setUniform1i("uTexture", 0);
+            uniformsMap.setUniform1f("uScreenWidth", (float)fboWidth);
+            uniformsMap.setUniform1f("uScreenHeight", (float)fboHeight);
+            uniformsMap.setUniform4fv("uBackgroundColor", new Vector4f(0.5f, 0.5f, 0.5f, 1.0f));
+
+            screenQuad.render();
+            shaderProgram.unbind();
+
+            // make the bufferImage.***
+            int bufferedImageType = BufferedImage.TYPE_INT_ARGB;
+            BufferedImage image = fbo.getBufferedImage(bufferedImageType);
+
+            fbo.unbind();
+
+            // delete the texture.***
+            GL20.glDeleteTextures(textureId);
+
+            return image;
+        } catch (Exception e) {
+            log.error("Error initializing the engine : ", e);
+        }
+
+        return null;
+    }
+
     public void makeBoxTexturesForHalfEdgeScene(HalfEdgeScene halfEdgeScene)
     {
         // Must know all faces classification ids.***
@@ -411,12 +483,21 @@ public class Engine {
             if(facesPlaneXYPos != null && !facesPlaneXYPos.isEmpty()) {
                 GaiaBoundingBox bboxXYPos = HalfEdgeUtils.getBoundingBoxOfFaces(facesPlaneXYPos);
                 BufferedImage ZNegImage = makeZNegTexture(bboxXYPos, maxScreenSize);
+                BufferedImage ZNegImageModified = eliminateBackGroundColor(ZNegImage);
+
+                // test save images.***
+                try {
+                    ImageIO.write(ZNegImageModified, "jpeg", new File("D:\\Result_mago3dTiler\\ZNegImageModified.jpg"));
+                    ImageIO.write(ZNegImage, "jpeg", new File("D:\\Result_mago3dTiler\\ZNegImage.jpg"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 if(ZNegImage != null)
                 {
                     TexturesAtlasData texturesAtlasDataZNeg = new TexturesAtlasData();
                     texturesAtlasDataZNeg.setClassifyId(classificationId);
                     texturesAtlasDataZNeg.setPlaneType(PlaneType.XY);
-                    texturesAtlasDataZNeg.setTextureImage(ZNegImage);
+                    texturesAtlasDataZNeg.setTextureImage(ZNegImageModified);
                     texturesAtlasDataZNeg.setFaceGroupBBox(bboxXYPos);
                     texturesAtlasDataList.add(texturesAtlasDataZNeg);
                 }
@@ -438,12 +519,22 @@ public class Engine {
             if(facesPlaneXZNeg != null && !facesPlaneXZNeg.isEmpty()) {
                 GaiaBoundingBox bboxXZNeg = HalfEdgeUtils.getBoundingBoxOfFaces(facesPlaneXZNeg);
                 BufferedImage YPosImage = makeYPosTexture(bboxXZNeg, maxScreenSize);
+                BufferedImage YPosImageModified = eliminateBackGroundColor(YPosImage);
+
+                // test save images.***
+                try {
+                    ImageIO.write(YPosImageModified, "jpeg", new File("D:\\Result_mago3dTiler\\YPosImageModified.jpg"));
+                    ImageIO.write(YPosImage, "jpeg", new File("D:\\Result_mago3dTiler\\YPosImage.jpg"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
                 if(YPosImage != null)
                 {
                     TexturesAtlasData texturesAtlasDataYPos = new TexturesAtlasData();
                     texturesAtlasDataYPos.setClassifyId(classificationId);
                     texturesAtlasDataYPos.setPlaneType(PlaneType.XZNEG);
-                    texturesAtlasDataYPos.setTextureImage(YPosImage);
+                    texturesAtlasDataYPos.setTextureImage(YPosImageModified);
                     texturesAtlasDataYPos.setFaceGroupBBox(bboxXZNeg);
                     texturesAtlasDataList.add(texturesAtlasDataYPos);
                 }
@@ -465,12 +556,21 @@ public class Engine {
             if(facesPlaneYZNeg != null && !facesPlaneYZNeg.isEmpty()) {
                 GaiaBoundingBox bboxYZNeg = HalfEdgeUtils.getBoundingBoxOfFaces(facesPlaneYZNeg);
                 BufferedImage XPosImage = makeXPosTexture(bboxYZNeg, maxScreenSize);
+                BufferedImage XPosImageModified = eliminateBackGroundColor(XPosImage);
+
+                // test save images.***
+                try {
+                    ImageIO.write(XPosImageModified, "jpeg", new File("D:\\Result_mago3dTiler\\XPosImageModified.jpg"));
+                    ImageIO.write(XPosImage, "jpeg", new File("D:\\Result_mago3dTiler\\XPosImage.jpg"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 if(XPosImage != null)
                 {
                     TexturesAtlasData texturesAtlasDataXPos = new TexturesAtlasData();
                     texturesAtlasDataXPos.setClassifyId(classificationId);
                     texturesAtlasDataXPos.setPlaneType(PlaneType.YZNEG);
-                    texturesAtlasDataXPos.setTextureImage(XPosImage);
+                    texturesAtlasDataXPos.setTextureImage(XPosImageModified);
                     texturesAtlasDataXPos.setFaceGroupBBox(bboxYZNeg);
                     texturesAtlasDataList.add(texturesAtlasDataXPos);
                 }
@@ -492,12 +592,21 @@ public class Engine {
             if(facesPlaneXZPos != null && !facesPlaneXZPos.isEmpty()) {
                 GaiaBoundingBox bboxXZPos = HalfEdgeUtils.getBoundingBoxOfFaces(facesPlaneXZPos);
                 BufferedImage YNegImage = makeYNegTexture(bboxXZPos, maxScreenSize);
+                BufferedImage YNegImageModified = eliminateBackGroundColor(YNegImage);
+
+                // test save images.***
+                try {
+                    ImageIO.write(YNegImageModified, "jpeg", new File("D:\\Result_mago3dTiler\\YNegImageModified.jpg"));
+                    ImageIO.write(YNegImage, "jpeg", new File("D:\\Result_mago3dTiler\\YNegImage.jpg"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 if(YNegImage != null)
                 {
                     TexturesAtlasData texturesAtlasDataYNeg = new TexturesAtlasData();
                     texturesAtlasDataYNeg.setClassifyId(classificationId);
                     texturesAtlasDataYNeg.setPlaneType(PlaneType.XZ);
-                    texturesAtlasDataYNeg.setTextureImage(YNegImage);
+                    texturesAtlasDataYNeg.setTextureImage(YNegImageModified);
                     texturesAtlasDataYNeg.setFaceGroupBBox(bboxXZPos);
                     texturesAtlasDataList.add(texturesAtlasDataYNeg);
                 }
@@ -519,12 +628,21 @@ public class Engine {
             if(facesPlaneYZPos != null && !facesPlaneYZPos.isEmpty()) {
                 GaiaBoundingBox bboxYZPos = HalfEdgeUtils.getBoundingBoxOfFaces(facesPlaneYZPos);
                 BufferedImage XNegImage = makeXNegTexture(bboxYZPos, maxScreenSize);
+                BufferedImage XNegImageModified = eliminateBackGroundColor(XNegImage);
+
+                // test save images.***
+                try {
+                    ImageIO.write(XNegImageModified, "jpeg", new File("D:\\Result_mago3dTiler\\XNegImageModified.jpg"));
+                    ImageIO.write(XNegImage, "jpeg", new File("D:\\Result_mago3dTiler\\XNegImage.jpg"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 if(XNegImage != null)
                 {
                     TexturesAtlasData texturesAtlasDataXNeg = new TexturesAtlasData();
                     texturesAtlasDataXNeg.setClassifyId(classificationId);
                     texturesAtlasDataXNeg.setPlaneType(PlaneType.YZ);
-                    texturesAtlasDataXNeg.setTextureImage(XNegImage);
+                    texturesAtlasDataXNeg.setTextureImage(XNegImageModified);
                     texturesAtlasDataXNeg.setFaceGroupBBox(bboxYZPos);
                     texturesAtlasDataList.add(texturesAtlasDataXNeg);
                 }
@@ -1094,6 +1212,7 @@ public class Engine {
         return null;
     }
 
+
     private BufferedImage makeXNegTexture(GaiaBoundingBox bbox, int maxScreenSize)
     {
         // x positive texture.***
@@ -1392,7 +1511,6 @@ public class Engine {
 
 
         // create depthShader.****************************************************************************************************
-
         vertexShaderText = readResource("shaders/depthV330.vert");
         fragmentShaderText = readResource("shaders/depthV330.frag");
 
@@ -1421,6 +1539,23 @@ public class Engine {
         uniformNames.add("texture0");
         screenShaderProgram.createUniforms(uniformNames);
         screenShaderProgram.validate();
+
+        // create eliminateBackGroundColor shader.******************************************************************************************
+        vertexShaderText = readResource("shaders/eliminateBackGroundColorV330.vert");
+        fragmentShaderText = readResource("shaders/eliminateBackGroundColorV330.frag");
+
+        shaderModuleDataList = new ArrayList<>();
+        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(vertexShaderText, GL20.GL_VERTEX_SHADER));
+        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(fragmentShaderText, GL20.GL_FRAGMENT_SHADER));
+        ShaderProgram eliminateBackGroundColorShaderProgram = shaderManager.createShaderProgram("eliminateBackGroundColor", shaderModuleDataList);
+
+        uniformNames = new ArrayList<>();
+        uniformNames.add("uScreenWidth");
+        uniformNames.add("uScreenHeight");
+        uniformNames.add("texture0");
+        uniformNames.add("uBackgroundColor");
+        eliminateBackGroundColorShaderProgram.createUniforms(uniformNames);
+        eliminateBackGroundColorShaderProgram.validate();
     }
 
     private void takeColorCodedPhoto(RenderableGaiaScene renderableGaiaScene, Fbo fbo, ShaderProgram shaderProgram)

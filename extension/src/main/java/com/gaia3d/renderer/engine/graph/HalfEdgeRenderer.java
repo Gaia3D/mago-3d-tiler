@@ -93,7 +93,7 @@ public class HalfEdgeRenderer {
                         int wrapS = GL_REPEAT; // GL_CLAMP_TO_EDGE
                         int wrapT = GL_REPEAT;
                         BufferedImage bufferedImage = diffuseTexture.getBufferedImage();
-                        int textureId = RenderableTexturesUtils.createGlTextureFromBufferedImage(bufferedImage, minFilter, magFilter, wrapS, wrapT);
+                        int textureId = RenderableTexturesUtils.createGlTextureFromBufferedImage(bufferedImage, minFilter, magFilter, wrapS, wrapT, true);
 
                         diffuseTexture.setTextureId(textureId);
                         diffuseTexture.setBufferedImage(null);

@@ -41,19 +41,21 @@ public class RenderableTexturesUtils {
 
         return textureId;
     }
-    static public int createGlTextureFromBufferedImage(BufferedImage bufferedImage, int minFilter, int magFilter, int wrapS, int wrapT) {
+    static public int createGlTextureFromBufferedImage(BufferedImage bufferedImage, int minFilter, int magFilter, int wrapS, int wrapT, boolean resizeToPowerOf2) {
         int width = bufferedImage.getWidth();
         int height = bufferedImage.getHeight();
 
         // resize image to nearest power of two.***
-        int resizeWidth = width;
-        int resizeHeight = height;
-        resizeWidth = ImageUtils.getNearestPowerOfTwo(resizeWidth);
-        resizeHeight = ImageUtils.getNearestPowerOfTwo(resizeHeight);
-        width = resizeWidth;
-        height = resizeHeight;
-        ImageResizer imageResizer = new ImageResizer();
-        bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight);
+        if(resizeToPowerOf2) {
+            int resizeWidth = width;
+            int resizeHeight = height;
+            resizeWidth = ImageUtils.getNearestPowerOfTwo(resizeWidth);
+            resizeHeight = ImageUtils.getNearestPowerOfTwo(resizeHeight);
+            width = resizeWidth;
+            height = resizeHeight;
+            ImageResizer imageResizer = new ImageResizer();
+            bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight);
+        }
         int format = bufferedImage.getType();
         // end resize image to nearest power of two.***
 
@@ -103,14 +105,28 @@ public class RenderableTexturesUtils {
         {
             // DataBufferInt.***
             int[] intArray = ((DataBufferInt) dataBuffer).getData();
-            rgbaByteArray = new byte[intArray.length * 3];
+            int intArrayLength = intArray.length;
+            if(format == TYPE_INT_RGB) {
+                rgbaByteArray = new byte[intArray.length * 3];
 
-            for(int i=0; i<intArray.length; i++)
-            {
-                int value = intArray[i];
-                rgbaByteArray[i * 3] = (byte) ((value >> 16) & 0xFF);  // Red
-                rgbaByteArray[i * 3 + 1] = (byte) ((value >> 8) & 0xFF); // Green
-                rgbaByteArray[i * 3 + 2] = (byte) (value & 0xFF);        // Blue
+                for (int i = 0; i < intArray.length; i++) {
+                    int value = intArray[i];
+                    rgbaByteArray[i * 3] = (byte) ((value >> 16) & 0xFF);  // Red
+                    rgbaByteArray[i * 3 + 1] = (byte) ((value >> 8) & 0xFF); // Green
+                    rgbaByteArray[i * 3 + 2] = (byte) (value & 0xFF);        // Blue
+                }
+            } else if(format == TYPE_INT_ARGB){
+                // DataBufferInt.***
+                rgbaByteArray = new byte[intArray.length * 4];
+
+                for(int i=0; i<intArray.length; i++)
+                {
+                    int value = intArray[i];
+                    rgbaByteArray[i * 4] = (byte) ((value >> 24) & 0xFF);  // Alpha
+                    rgbaByteArray[i * 4 + 1] = (byte) ((value >> 16) & 0xFF); // Red
+                    rgbaByteArray[i * 4 + 2] = (byte) ((value >> 8) & 0xFF);        // Green
+                    rgbaByteArray[i * 4 + 3] = (byte) (value & 0xFF); // Blue
+                }
             }
         }
         else {
@@ -161,4 +177,6 @@ public class RenderableTexturesUtils {
 
         return textureId;
     }
+
+
 }
