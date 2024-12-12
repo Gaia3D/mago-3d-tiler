@@ -195,18 +195,18 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 //            nodeTileInfoMap.clear();
 //            tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
 //            // public void setBasicValues(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount)
-//            decimateParameters.setBasicValues(10.0, 0.5, 3.0, 6.0, 1000000, 1);
+//            decimateParameters.setBasicValues(10.0, 0.5, 3.0, 6.0, 1000000, 1, 1.8);
 //            if(d == 3) {
-//                decimateParameters.setBasicValues(25.0, 1.0, 3.0, 15.0, 1000000, 1);
+//                decimateParameters.setBasicValues(25.0, 1.0, 3.0, 15.0, 1000000, 1, 1.8);
 //            }
 //            else if(d == 4) {
-//                decimateParameters.setBasicValues(30.0, 1.2, 3.0, 15.0, 1000000, 1);
+//                decimateParameters.setBasicValues(30.0, 1.2, 3.0, 15.0, 1000000, 1, 1.8);
 //            }
 //            else if(d == 5) {
-//                decimateParameters.setBasicValues(35.0, 1.5, 3.0, 15.0, 1000000, 1);
+//                decimateParameters.setBasicValues(35.0, 1.5, 3.0, 15.0, 1000000, 1, 1.8);
 //            }
 //            else if(d == 6) {
-//                decimateParameters.setBasicValues(40.0, 2.0, 3.0, 15.0, 1000000, 1);
+//                decimateParameters.setBasicValues(40.0, 2.0, 3.0, 15.0, 1000000, 1, 1.8);
 //            }
 //
 //            makeNetSurfaces(tileInfosCopy, lod, decimateParameters, pixelsForMeter);
@@ -260,7 +260,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
     private void setGeometryErrorToNodeAutomatic(Node node, int maxDepth)
     {
         int lod = maxDepth - node.getDepth();
-        double geometricError = (lod + 1);
+        double geometricError = (lod + 0.01);
         node.setGeometricError(geometricError);
         List<Node> children = node.getChildren();
         if(children != null)

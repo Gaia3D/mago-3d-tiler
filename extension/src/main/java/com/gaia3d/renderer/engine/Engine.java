@@ -803,7 +803,6 @@ public class Engine {
                 double yRel = (pixelY - originalBoundary.getMinY()) / originalBoundary.getHeightInt();
 
                 // clamp the texRelCoords.***
-                //double texError = 0.015; // sure that the texCoords are not in the border.***
                 xRel = Math.max(0.0 + xPixelSize, Math.min(1.0 - xPixelSize, xRel));
                 yRel = Math.max(0.0 + yPixelSize, Math.min(1.0 - yPixelSize, yRel));
 
