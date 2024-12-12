@@ -179,61 +179,61 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
             makeContentsForNodes(nodeTileInfoMap, lod);
 
-            if(d >= 3)
+            if(d >= 2)
             {
                 break;
             }
         }
 
         // net surfaces with boxTextures.**************************************************************************************
-//        for(int d = 4; d < maxDepth; d++) {
-//            lod = d;
-//            currDepth = maxDepth - lod;
-//            double boxSizeForCurrDepth = desiredDistanceBetweenLat / Math.pow(2, currDepth);
-//            double pixelsForMeter = 256.0/boxSizeForCurrDepth;
-//            tileInfosCopy.clear();
-//            nodeTileInfoMap.clear();
-//            tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
-//            // public void setBasicValues(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount)
-//            decimateParameters.setBasicValues(10.0, 0.5, 3.0, 6.0, 1000000, 1);
-//            if(d == 3) {
-//                decimateParameters.setBasicValues(25.0, 1.0, 3.0, 15.0, 1000000, 1);
-//            }
-//            else if(d == 4) {
-//                decimateParameters.setBasicValues(30.0, 1.2, 3.0, 15.0, 1000000, 1);
-//            }
-//            else if(d == 5) {
-//                decimateParameters.setBasicValues(35.0, 1.5, 3.0, 15.0, 1000000, 1);
-//            }
-//            else if(d == 6) {
-//                decimateParameters.setBasicValues(40.0, 2.0, 3.0, 15.0, 1000000, 1);
-//            }
-//
-//            makeNetSurfaces(tileInfosCopy, lod, decimateParameters, pixelsForMeter);
-//            boolean someSceneCut = false;
-//
-//            try {
-//                someSceneCut = cutRectangleCake(tileInfosCopy, lod, root);
-//            } catch (IOException e) {
-//                log.error("Error : {}", e.getMessage());
-//                throw new RuntimeException(e);
-//            }
-//            currDepth = maxDepth - lod;
-//            distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
-//            //if(someSceneCut)
-//            {
-//                scissorTextures(tileInfosCopy);
-//            }
-//            makeContentsForNodes(nodeTileInfoMap, lod);
-//
-//            if(d >= 4)
-//            {
-//                break;
-//            }
-//        }
+        for(int d = 3; d < maxDepth; d++) {
+            lod = d;
+            currDepth = maxDepth - lod;
+            double boxSizeForCurrDepth = desiredDistanceBetweenLat / Math.pow(2, currDepth);
+            double pixelsForMeter = 256.0/boxSizeForCurrDepth;
+            tileInfosCopy.clear();
+            nodeTileInfoMap.clear();
+            tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
+            // public void setBasicValues(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount)
+            decimateParameters.setBasicValues(10.0, 0.5, 3.0, 6.0, 1000000, 1, 1.8);
+            if(d == 3) {
+                decimateParameters.setBasicValues(25.0, 1.0, 3.0, 15.0, 1000000, 1, 1.8);
+            }
+            else if(d == 4) {
+                decimateParameters.setBasicValues(30.0, 1.2, 3.0, 15.0, 1000000, 1, 1.8);
+            }
+            else if(d == 5) {
+                decimateParameters.setBasicValues(35.0, 1.5, 3.0, 15.0, 1000000, 1, 1.8);
+            }
+            else if(d == 6) {
+                decimateParameters.setBasicValues(40.0, 2.0, 3.0, 15.0, 1000000, 1, 1.8);
+            }
+
+            makeNetSurfaces(tileInfosCopy, lod, decimateParameters, pixelsForMeter);
+            boolean someSceneCut = false;
+
+            try {
+                someSceneCut = cutRectangleCake(tileInfosCopy, lod, root);
+            } catch (IOException e) {
+                log.error("Error : {}", e.getMessage());
+                throw new RuntimeException(e);
+            }
+            currDepth = maxDepth - lod;
+            distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
+            //if(someSceneCut)
+            {
+                scissorTextures(tileInfosCopy);
+            }
+            makeContentsForNodes(nodeTileInfoMap, lod);
+
+            if(d >= 4)
+            {
+                break;
+            }
+        }
 
         // Check if is necessary netSurfaces nodes.***********************************************************************
-        lod = 4;
+        lod = 5;
         for(int depth = maxDepth - lod; depth >= 0; depth--)
         {
             tileInfosCopy.clear();
@@ -260,7 +260,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
     private void setGeometryErrorToNodeAutomatic(Node node, int maxDepth)
     {
         int lod = maxDepth - node.getDepth();
-        double geometricError = (lod + 1);
+        double geometricError = (lod + 0.01);
         node.setGeometricError(geometricError);
         List<Node> children = node.getChildren();
         if(children != null)
