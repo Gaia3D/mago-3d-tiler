@@ -300,7 +300,7 @@ public abstract class AbstractGeometryConverter {
     }
 
     protected double getDiameter(SimpleFeature feature, String column) {
-        double result = 1.0d;
+        double result = 10.0d;
         Object attributeLower = feature.getAttribute(column);
         Object attributeUpper = feature.getAttribute(column.toUpperCase());
         Object attributeObject = null;
