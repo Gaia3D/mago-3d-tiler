@@ -7,6 +7,7 @@ import org.lwjgl.BufferUtils;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -235,5 +236,46 @@ public class ImageUtils {
         } catch (IOException e) {
             log.error("Error saving image: {}", e.getMessage());
         }
+    }
+
+    public static float unpackDepth32(float[] packedDepth)
+    {
+        if (packedDepth.length != 4) {
+            throw new IllegalArgumentException("packedDepth debe tener exactamente 4 elementos.");
+        }
+
+        // Ajuste del valor final (equivalente a packedDepth - 1.0 / 512.0)
+        for (int i = 0; i < 4; i++) {
+            packedDepth[i] -= 1.0f / 512.0f;
+        }
+
+        // Producto punto para recuperar la profundidad original
+        return packedDepth[0]
+                + packedDepth[1] / 256.0f
+                + packedDepth[2] / (256.0f * 256.0f)
+                + packedDepth[3] / 16777216.0f;
+    }
+
+    public static float[][] bufferedImageToFloatMatrix(BufferedImage image)
+    {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        float[][] floatMatrix = new float[width][height];
+        for(int i = 0; i < width; i++)
+        {
+            for(int j = 0; j < height; j++)
+            {
+                Color color = new Color(image.getRGB(i, j), true);
+                float r = color.getRed()/255.0f;
+                float g = color.getGreen()/255.0f;
+                float b = color.getBlue()/255.0f;
+                float a = color.getAlpha()/255.0f;
+
+                float depth = unpackDepth32(new float[]{r, g, b, a});
+                floatMatrix[i][j] = depth;
+            }
+        }
+
+        return floatMatrix;
     }
 }
