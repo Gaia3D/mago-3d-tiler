@@ -20,7 +20,7 @@ public class TopologicalNetwork {
         edges = new ArrayList<>();
     }
 
-    public void makeTEdgesListForTNodes() {
+    public void makeTopologicalEdgesListForTopologicalNodes() {
         // 1rst, clear the edges list.
         for (TopologicalNode node : nodes) {
             node.getEdges().clear();
