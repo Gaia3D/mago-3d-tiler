@@ -38,9 +38,9 @@ public class GaiaBufferDataSet implements Serializable {
 
     public GaiaPrimitive toPrimitive() {
         int[] indices = new int[0];
-        //short[] indices = new short[0];
         List<GaiaVertex> vertices = new ArrayList<>();
         GaiaPrimitive primitive = new GaiaPrimitive();
+
 
         for (Map.Entry<AttributeType, GaiaBuffer> entry : buffers.entrySet()) {
             AttributeType attributeType = entry.getKey();
@@ -66,17 +66,11 @@ public class GaiaBufferDataSet implements Serializable {
                 }
             } else if (attributeType.equals(AttributeType.NORMAL)) {
                 float[] normals = buffer.getFloats();
-                int bufferLength = normals.length;
                 if (!vertices.isEmpty()) {
                     int normalCount = 0;
                     for (GaiaVertex vertex : vertices) {
-                        if(normalCount + 2 >= bufferLength) {
-                            int hola = 0;
-                        }
                         Vector3d normal = new Vector3d(normals[normalCount++], normals[normalCount++], normals[normalCount++]);
                         vertex.setNormal(normal);
-
-
                     }
                 } else {
                     for (int i = 0; i < normals.length; i += 3) {
@@ -105,26 +99,7 @@ public class GaiaBufferDataSet implements Serializable {
             }
         }
 
-        // set indices as face of a surface of the primitive 2023.07.19
         GaiaSurface surface = new GaiaSurface();
-
-//        // new 20240903 Son.******************************************
-//        int indicesLength = indices.length;
-//        int trianglesCount = indicesLength / 3;
-//        for(int i=0; i<trianglesCount; i++)
-//        {
-//            int index = i * 3;
-//            int[] triangleIndices = new int[3];
-//            triangleIndices[0] = indices[index];
-//            triangleIndices[1] = indices[index + 1];
-//            triangleIndices[2] = indices[index + 2];
-//            GaiaFace face = new GaiaFace();
-//            face.setIndices(triangleIndices);
-//            surface.getFaces().add(face);
-//        }
-//        // End new 20240903 Son.---------------------------------------------
-
-        // Old.**********************************************************************
         GaiaFace face = new GaiaFace();
 
         int[] indicesInt = new int[indices.length];
@@ -133,12 +108,10 @@ public class GaiaBufferDataSet implements Serializable {
         surface.setFaces(new ArrayList<>() {{
             add(face);
         }});
-        // End old.------------------------------------------------------------------
 
         primitive.setSurfaces(new ArrayList<>() {{
             add(surface);
         }});
-        ////primitive.setIndices(indices); // old. indices are now in faces of surface of the primitive
         primitive.setVertices(vertices);
         return primitive;
     }

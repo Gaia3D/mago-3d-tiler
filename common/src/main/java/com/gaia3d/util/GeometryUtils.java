@@ -950,23 +950,23 @@ public class GeometryUtils {
 
         if (absX > absY && absX > absZ) {
             // the best plane is the YZ plane.***
-            if(normal.x > 0){
+            if (normal.x > 0) {
                 return PlaneType.YZ;
-            }else{
+            } else {
                 return PlaneType.YZNEG;
             }
         } else if (absY > absX && absY > absZ) {
             // the best plane is the XZ plane.***
-            if(normal.y > 0){
+            if (normal.y > 0) {
                 return PlaneType.XZ;
-            }else{
+            } else {
                 return PlaneType.XZNEG;
             }
         } else {
             // the best plane is the XY plane.***
-            if(normal.z > 0){
+            if (normal.z > 0) {
                 return PlaneType.XY;
-            }else{
+            } else {
                 return PlaneType.XYNEG;
             }
         }

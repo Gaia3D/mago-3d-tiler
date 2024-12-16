@@ -53,6 +53,21 @@ public class StressTest {
 
     @Disabled
     @Test
+    void testOSMShapeWithTerrain() {
+        String path = "OSM-SHP";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath() + "-terrain",
+                "-it", "shp",
+                "-crs", "4326",
+                "-terrain", "G:\\(2024)\\(2024) 3차원 데이터 모음\\GeoTIFF\\korea\\korea.tif",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Disabled
+    @Test
     void testYeouidoShape() {
         String path = "YEOUIDO-SHP";
         String[] args = new String[] {

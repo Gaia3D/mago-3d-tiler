@@ -3,8 +3,6 @@ package com.gaia3d.basic.model;
 import com.gaia3d.basic.exchangable.GaiaBuffer;
 import com.gaia3d.basic.exchangable.GaiaBufferDataSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.halfedge.HalfEdgeMesh;
-import com.gaia3d.basic.halfedge.HalfEdgeNode;
 import com.gaia3d.basic.model.structure.NodeStructure;
 import com.gaia3d.basic.types.AttributeType;
 import lombok.AllArgsConstructor;
@@ -257,8 +255,7 @@ public class GaiaNode extends NodeStructure implements Serializable {
         }
     }
 
-    public void deleteNormals()
-    {
+    public void deleteNormals() {
         for (GaiaMesh mesh : this.getMeshes()) {
             mesh.deleteNormals();
         }
@@ -308,7 +305,7 @@ public class GaiaNode extends NodeStructure implements Serializable {
         Matrix4d identity = new Matrix4d();
         identity.identity();
 
-        if(finalMatrix.equals(identity)) {
+        if (finalMatrix.equals(identity)) {
             return;
         }
 

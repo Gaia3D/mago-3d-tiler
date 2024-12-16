@@ -34,4 +34,11 @@ class DecimalUtilsTest {
         double result = Double.parseDouble(decimalFormat.format(original));
         log.info("Success Case: {}", result);
     }
+
+    @Test
+    void millisecondToDisplayTime() {
+        long millis = 123456789;
+        String displayTime = DecimalUtils.millisecondToDisplayTime(millis);
+        assertEquals("34h 17m 36s 789ms", displayTime);
+    }
 }

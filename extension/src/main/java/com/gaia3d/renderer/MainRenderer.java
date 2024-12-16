@@ -359,7 +359,9 @@ public class MainRenderer implements IAppLogic {
         depthFbo.unbind();
     }
 
+
     public void makeNetSurfacesWithBoxTextures(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, double pixelsForMeter) {
+
 
         // Must init gl.***
         try{

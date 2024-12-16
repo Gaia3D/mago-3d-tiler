@@ -1,8 +1,8 @@
 package com.gaia3d.converter.geometry.pipe;
 
-import com.gaia3d.basic.geometry.network.modeler.TEdge;
-import com.gaia3d.basic.geometry.network.modeler.TNetwork;
-import com.gaia3d.basic.geometry.network.modeler.TNode;
+import com.gaia3d.basic.geometry.network.modeler.TopologicalEdge;
+import com.gaia3d.basic.geometry.network.modeler.TopologicalNetwork;
+import com.gaia3d.basic.geometry.network.modeler.TopologicalNode;
 import com.gaia3d.basic.model.*;
 import lombok.NoArgsConstructor;
 import org.joml.Matrix4d;
@@ -16,8 +16,8 @@ import java.util.Map;
 
 @NoArgsConstructor
 public class Modeler3D {
-    public TNetwork getPipeNetworkFromPipeElbows(List<PipeElbow> pipeElbows) {
-        TNetwork network = new TNetwork();
+    public TopologicalNetwork getPipeNetworkFromPipeElbows(List<PipeElbow> pipeElbows) {
+        TopologicalNetwork network = new TopologicalNetwork();
 
         // test value.***
         float pipeRadius = 0.5f;
@@ -36,8 +36,8 @@ public class Modeler3D {
 
         // 2nd create pipes.
         for (int i = 0; i < pipeElbows.size() - 1; i++) {
-            TNode startNode = network.getNodes().get(i);
-            TNode endNode = network.getNodes().get(i + 1);
+            TopologicalNode startNode = network.getNodes().get(i);
+            TopologicalNode endNode = network.getNodes().get(i + 1);
             Pipe pipe = new Pipe(startNode, endNode);
             pipe.setPipeRadius(pipeRadius);
             pipe.setProfileType(pipeProfileType);
@@ -45,16 +45,16 @@ public class Modeler3D {
             network.getEdges().add(pipe);
         }
 
-        network.makeTEdgesListForTNodes();
+        network.makeTopologicalEdgesListForTopologicalNodes();
         return network;
     }
 
-    public GaiaNode makeGeometry(TNetwork network) {
+    public GaiaNode makeGeometry(TopologicalNetwork network) {
         GaiaNode resultGaiaNode = new GaiaNode();
 
         // 1rst, calculate elbows.***
         for (int i = 0; i < network.getNodes().size(); i++) {
-            TNode node = network.getNodes().get(i);
+            TopologicalNode node = network.getNodes().get(i);
             if (node instanceof PipeElbow elbow) {
                 // make geometry for this elbow.
                 elbow.calculateElbowPositions();
@@ -62,7 +62,7 @@ public class Modeler3D {
         }
 
         for (int i = 0; i < network.getNodes().size(); i++) {
-            TNode node = network.getNodes().get(i);
+            TopologicalNode node = network.getNodes().get(i);
             if (node instanceof PipeElbow elbow) {
                 // make geometry for this elbow.
                 GaiaMesh elbowMesh = elbow.makeGeometry();
@@ -73,7 +73,7 @@ public class Modeler3D {
         }
 
         for (int i = 0; i < network.getEdges().size(); i++) {
-            TEdge edge = network.getEdges().get(i);
+            TopologicalEdge edge = network.getEdges().get(i);
             if (edge instanceof Pipe pipe) {
                 if (i == 0 || i == network.getEdges().size() - 1) {
                     pipe.setBottomCap(true);

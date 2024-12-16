@@ -11,21 +11,19 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
-import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
 
 @Setter
 @Getter
 @Slf4j
 public class GaiaPointCloudTemp {
+    private static List<Integer> SHUFFLE_INDEXES = null;
     private final short VERSION = 1106;
     private final int BUFFER_SIZE = 8192; // 8KB
     private final int RANDOM_SEED = 42;
-
-    private static List<Integer> SHUFFLE_INDEXES = null;
-
     /* Header Total Size 52 byte */
     private final short HEADER_SIZE = 52; // 2 (Version) + 2 (Block Size) + 24 (Quantized Volume Scale) + 24 (Quantized Volume Offset)
     private final short BLOCK_SIZE = 16; // 12 (FLOAT XYZ) + 3 (RGB) + 1 (Padding)
@@ -96,71 +94,6 @@ public class GaiaPointCloudTemp {
         }
     }
 
-    /*public List<GaiaVertex> readTempChunk(int chunkSize) {
-        List<GaiaVertex> result = new ArrayList<>();
-        chunkSize = chunkSize - (chunkSize % BLOCK_SIZE);
-        try {
-            int availableSize = inputStream.available();
-            if (availableSize < chunkSize) {
-                chunkSize = availableSize;
-                //return result;
-            } else if (availableSize == 0) {
-                log.info("End of file");
-                return result;
-            }
-            byte[] bytes = new byte[chunkSize];
-            inputStream.read(bytes);
-            for (int i = 0; i < chunkSize; i += BLOCK_SIZE) {
-                float floatX = ByteBuffer.wrap(bytes, i, 4).order(ByteOrder.BIG_ENDIAN).getFloat();
-                float floatY = ByteBuffer.wrap(bytes, i + 4, 4).order(ByteOrder.BIG_ENDIAN).getFloat();
-                float floatZ = ByteBuffer.wrap(bytes, i + 8, 4).order(ByteOrder.BIG_ENDIAN).getFloat();
-                byte[] color = Arrays.copyOfRange(bytes, i + 12, i + 15);
-
-                double x = floatX * quantizedVolumeScale[0] + quantizedVolumeOffset[0];
-                double y = floatY * quantizedVolumeScale[1] + quantizedVolumeOffset[1];
-                double z = floatZ * quantizedVolumeScale[2] + quantizedVolumeOffset[2];
-
-                GaiaVertex vertex = new GaiaVertex();
-                vertex.setColor(color);
-                vertex.setPosition(new Vector3d(x, y, z));
-                result.add(vertex);
-            }
-        } catch (IOException e) {
-            log.error("Failed to read temp from input stream", e);
-            throw new RuntimeException(e);
-        }
-        return result;
-    }*/
-
-    /*public List<GaiaVertex> readTempFast() {
-        List<GaiaVertex> vertices = new ArrayList<>();
-        try {
-            int availableSize = inputStream.available();
-            log.info("Available size: {}", availableSize);
-            byte[] bytes = new byte[availableSize];
-            inputStream.read(bytes);
-            for (int i = 0; i < availableSize; i += BLOCK_SIZE) {
-                float floatX = ByteBuffer.wrap(bytes, i, 4).order(ByteOrder.BIG_ENDIAN).getFloat();
-                float floatY = ByteBuffer.wrap(bytes, i + 4, 4).order(ByteOrder.BIG_ENDIAN).getFloat();
-                float floatZ = ByteBuffer.wrap(bytes, i + 8, 4).order(ByteOrder.BIG_ENDIAN).getFloat();
-                byte[] color = Arrays.copyOfRange(bytes, i + 12, i + 15);
-
-                double x = floatX * quantizedVolumeScale[0] + quantizedVolumeOffset[0];
-                double y = floatY * quantizedVolumeScale[1] + quantizedVolumeOffset[1];
-                double z = floatZ * quantizedVolumeScale[2] + quantizedVolumeOffset[2];
-
-                GaiaVertex vertex = new GaiaVertex();
-                vertex.setColor(color);
-                vertex.setPosition(new Vector3d(x, y, z));
-                vertices.add(vertex);
-            }
-        } catch (IOException e) {
-            log.error("Failed to read temp from input stream", e);
-            throw new RuntimeException(e);
-        }
-        return vertices;
-    }*/
-
     public List<GaiaVertex> readTemp() {
         List<GaiaVertex> vertices = new ArrayList<>();
         try {
@@ -172,25 +105,8 @@ public class GaiaPointCloudTemp {
                 inputStream.read(bytes);
                 inputStream.readByte(); // padding
 
-                /*if (floatX < 0) {
-                    floatX = 0;
-                } else if (floatX > 1) {
-                    floatX = 1;
-                }*/
                 double x = floatX * quantizedVolumeScale[0] + quantizedVolumeOffset[0];
-
-                /*if (floatY < 0) {
-                    floatY = 0;
-                } else if (floatY > 1) {
-                    floatY = 1;
-                }*/
                 double y = floatY * quantizedVolumeScale[1] + quantizedVolumeOffset[1];
-
-                /*if (floatZ < 0) {
-                    floatZ = 0;
-                } else if (floatZ > 1) {
-                    floatZ = 1;
-                }*/
                 double z = floatZ * quantizedVolumeScale[2] + quantizedVolumeOffset[2];
 
                 GaiaVertex vertex = new GaiaVertex();
@@ -257,78 +173,6 @@ public class GaiaPointCloudTemp {
     /**
      * Shuffles the temp file
      */
-    /*public void shuffleTemp(int limitSize) {
-        String fileName = "shuffled-" + this.tempFile.getName();
-        File shuffledFile = new File(this.tempFile.getParent(), fileName);
-        try {
-            RandomAccessFile randomAccessFile = new RandomAccessFile(this.tempFile, "r");
-            DataOutputStream dataOutputStream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(shuffledFile, false), BUFFER_SIZE));
-            int headerSize = 52;
-            int blockCount = (int) ((randomAccessFile.length() - headerSize) / BLOCK_SIZE);
-            int loop = blockCount;
-            if (loop > limitSize) {
-                loop = limitSize;
-            }
-
-            int calcSize = headerSize + (loop * BLOCK_SIZE);
-            if (shuffledFile.exists() && shuffledFile.length() == calcSize) {
-                log.info("Temp file already exists : {}", shuffledFile.getAbsolutePath());
-                return;
-            } else {
-                log.info("size diff => {} : {}", shuffledFile.length(), calcSize);
-            }
-
-            // Read header
-            short version = randomAccessFile.readShort();
-            short blockSize = randomAccessFile.readShort();
-            double[] volumeScale = new double[3];
-            volumeScale[0] = randomAccessFile.readDouble();
-            volumeScale[1] = randomAccessFile.readDouble();
-            volumeScale[2] = randomAccessFile.readDouble();
-            double[] volumeOffset = new double[3];
-            volumeOffset[0] = randomAccessFile.readDouble();
-            volumeOffset[1] = randomAccessFile.readDouble();
-            volumeOffset[2] = randomAccessFile.readDouble();
-
-            // Write header
-            dataOutputStream.writeShort(version);
-            dataOutputStream.writeShort(blockSize);
-            dataOutputStream.writeDouble(volumeScale[0]);
-            dataOutputStream.writeDouble(volumeScale[1]);
-            dataOutputStream.writeDouble(volumeScale[2]);
-            dataOutputStream.writeDouble(volumeOffset[0]);
-            dataOutputStream.writeDouble(volumeOffset[1]);
-            dataOutputStream.writeDouble(volumeOffset[2]);
-
-            List<Integer> indexes = new ArrayList<>();
-            for (int i = 0; i < blockCount; i++) {
-                indexes.add(i);
-            }
-            Collections.shuffle(indexes);
-
-            byte[] bytes = new byte[blockSize];
-            log.info("- Shuffling points limit {}/{} ({})%", loop, blockCount, (blockCount < 0) ? "original" : (loop * 100 / blockCount));
-            for (int i = 0; i < loop; i++) {
-                randomAccessFile.seek(headerSize + (indexes.get(i) * blockSize));
-                randomAccessFile.read(bytes);
-                dataOutputStream.write(bytes);
-            }
-            randomAccessFile.close();
-            dataOutputStream.close();
-            this.tempFile.delete();
-            this.tempFile = shuffledFile;
-        } catch (FileNotFoundException e) {
-            log.error("Failed to shuffle temp file", e);
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            log.error("Failed to shuffle temp file", e);
-            throw new RuntimeException(e);
-        }
-    }*/
-
-    /**
-     * Shuffles the temp file
-     */
     public void shuffleTempMoreFast(int shuffleNumber, int shuffleLength) {
         String fileName = "shuffled-" + this.tempFile.getName();
         File shuffledFile = new File(this.tempFile.getParent(), fileName);
@@ -338,14 +182,6 @@ public class GaiaPointCloudTemp {
             int headerSize = 52;
             int blockCount = (int) ((randomAccessFile.length() - headerSize) / BLOCK_SIZE);
             int loop = blockCount;
-
-            /*int calcSize = headerSize + (loop * BLOCK_SIZE);
-            if (shuffledFile.exists() && shuffledFile.length() == calcSize) {
-                log.info("Temp file already exists : {}", shuffledFile.getAbsolutePath());
-                return;
-            } else {
-                log.info("size diff => {} : {}", shuffledFile.length(), calcSize);
-            }*/
 
             // Read header
             short version = randomAccessFile.readShort();
@@ -382,19 +218,8 @@ public class GaiaPointCloudTemp {
             }
             indexes = SHUFFLE_INDEXES;
 
-            //int shuffleBlockSize = blockSize * shuffleCount;
             byte[] bytes = new byte[blockSize];
-            //byte[] shuffleBytes = new byte[shuffleBlockSize];
-
             log.info("[Pre][{}/{}][Shuffle] TotalPoints: {}, shuffleBufferSize: {}, shuffleCount: {}, blockSize: {}", shuffleNumber, shuffleLength, loop, shuffleBufferSize, shuffleCount, blockSize);
-
-            /*log.info("- Shuffling points limit {}/{} ({})%", loop, blockCount, (blockCount < 0) ? "original" : (loop * 100 / blockCount));
-            log.info("- Shuffle Buffer Size: {}", shuffleBufferSize);
-            log.info("- Shuffle Count: {}", shuffleCount);
-            log.info("- Shuffle block size: {}", blockSize);
-            log.info("- loop / shuffleCount : {}", loop / shuffleBufferSize);
-            log.info("- loop % shuffleCount : {}", loop % shuffleBufferSize);
-            log.info("- total loop : {}", shuffleBufferSize * shuffleCount);*/
 
             int fileSize = (int) randomAccessFile.length();
             for (Integer integer : indexes) {

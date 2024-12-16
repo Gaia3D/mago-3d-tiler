@@ -68,7 +68,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
             File file = new File(savePath);
             ImageIO.write(bufferedImage, imageExtension, file);
         } catch (IOException e) {
-            log.error(e.getMessage());
+            log.error("Error : ", e);
         }
     }
 
@@ -92,7 +92,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         try (FileInputStream stream = new FileInputStream(filePath)) {
             image = ImageIO.read(stream);
         } catch (IOException e) {
-            log.error(e.getMessage());
+            log.error("Error : ", e);
         }
         return image;
     }
