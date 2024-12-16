@@ -2976,11 +2976,11 @@ public class HalfEdgeSurface implements Serializable {
         int weldedFacesGroupsCount = resultWeldedFacesGroups.size();
 
         log.info("HalfEdgeSurface.scissorTextures() : create scissorData for each faceGroup.");
-        GaiaRectangle texCoordBRectMemSave = new GaiaRectangle();
+        GaiaRectangle texCoordBRect = new GaiaRectangle();
         GaiaRectangle groupTexCoordBRect = new GaiaRectangle();
-        List<HalfEdgeVertex> faceVerticesMemSave = new ArrayList<>();
-        Map<HalfEdgeVertex, HalfEdgeVertex> groupVertexMapMemSave = new HashMap<>();
-        Map<HalfEdgeVertex, HalfEdgeVertex> visitedVertexMapMemSave = new HashMap<>();
+        List<HalfEdgeVertex> faceVertices = new ArrayList<>();
+        Map<HalfEdgeVertex, HalfEdgeVertex> groupVertexMap = new HashMap<>();
+        Map<HalfEdgeVertex, HalfEdgeVertex> visitedVertexMap = new HashMap<>();
 
         boolean invertTexCoordY = false;
         for (int i = 0; i < weldedFacesGroupsCount; i++) {
@@ -2988,15 +2988,15 @@ public class HalfEdgeSurface implements Serializable {
             int weldedFacesCount = weldedFacesGroup.size();
             for (int j = 0; j < weldedFacesCount; j++) {
                 HalfEdgeFace face = weldedFacesGroup.get(j);
-                texCoordBRectMemSave = face.getTexCoordBoundingRectangle(texCoordBRectMemSave, invertTexCoordY);
+                texCoordBRect = face.getTexCoordBoundingRectangle(texCoordBRect, invertTexCoordY);
 
                 if(j == 0)
                 {
-                    groupTexCoordBRect.copyFrom(texCoordBRectMemSave);
+                    groupTexCoordBRect.copyFrom(texCoordBRect);
                 }
                 else
                 {
-                    groupTexCoordBRect.addBoundingRectangle(texCoordBRectMemSave);
+                    groupTexCoordBRect.addBoundingRectangle(texCoordBRect);
                 }
             }
 
@@ -3017,14 +3017,13 @@ public class HalfEdgeSurface implements Serializable {
 
                 // must translate to positive quadrant.***
                 int facesCount = weldedFacesGroup.size();
-                Map<HalfEdgeVertex, HalfEdgeVertex> visitedVertexMap = new HashMap<>();
                 for (int j = 0; j < facesCount; j++) {
                     HalfEdgeFace face = weldedFacesGroup.get(j);
-                    faceVerticesMemSave.clear();
-                    faceVerticesMemSave = face.getVertices(faceVerticesMemSave);
-                    int verticesCount = faceVerticesMemSave.size();
+                    faceVertices.clear();
+                    faceVertices = face.getVertices(faceVertices);
+                    int verticesCount = faceVertices.size();
                     for (int k = 0; k < verticesCount; k++) {
-                        HalfEdgeVertex vertex = faceVerticesMemSave.get(k);
+                        HalfEdgeVertex vertex = faceVertices.get(k);
                         if(visitedVertexMap.containsKey(vertex))
                         {
                             continue;
@@ -3105,7 +3104,7 @@ public class HalfEdgeSurface implements Serializable {
 
         //GaiaRectangle atlasBoundary = new GaiaRectangle(0.0, 0.0, maxWidth, maxHeight);
         //Map<HalfEdgeVertex, HalfEdgeVertex> visitedVertexMap = new HashMap<>();
-        visitedVertexMapMemSave.clear();
+        visitedVertexMap.clear();
         log.info("HalfEdgeSurface.scissorTextures() : recalculate texCoords for each faceGroup.");
 
 
@@ -3119,31 +3118,31 @@ public class HalfEdgeSurface implements Serializable {
             // obtain all vertex of the faceGroup.***
 
 
-            groupVertexMapMemSave.clear();
+            groupVertexMap.clear();
             int facesCount = faceGroup.size();
             for (int j = 0; j < facesCount; j++) {
                 HalfEdgeFace face = faceGroup.get(j);
-                faceVerticesMemSave.clear();
-                faceVerticesMemSave = face.getVertices(faceVerticesMemSave);
-                int verticesCount = faceVerticesMemSave.size();
+                faceVertices.clear();
+                faceVertices = face.getVertices(faceVertices);
+                int verticesCount = faceVertices.size();
                 for (int k = 0; k < verticesCount; k++) {
-                    HalfEdgeVertex vertex = faceVerticesMemSave.get(k);
-                    groupVertexMapMemSave.put(vertex, vertex);
+                    HalfEdgeVertex vertex = faceVertices.get(k);
+                    groupVertexMap.put(vertex, vertex);
                 }
             }
 
             // now, calculate the vertex list from the map.***
-            List<HalfEdgeVertex> vertexList = new ArrayList<>(groupVertexMapMemSave.values());
+            List<HalfEdgeVertex> vertexList = new ArrayList<>(groupVertexMap.values());
 
             int verticesCount = vertexList.size();
             for (int k = 0; k < verticesCount; k++) {
                 HalfEdgeVertex vertex = vertexList.get(k);
 
-                if(visitedVertexMapMemSave.containsKey(vertex))
+                if(visitedVertexMap.containsKey(vertex))
                 {
                     int hola = 0;
                 }
-                visitedVertexMapMemSave.put(vertex, vertex);
+                visitedVertexMap.put(vertex, vertex);
 
                 Vector2d texCoord = vertex.getTexcoords();
                 double x = texCoord.x;

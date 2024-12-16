@@ -23,9 +23,7 @@ public class Segment2DTess {
         if (resultLine == null) {
             resultLine = new Line2D(null, null);
         }
-
         resultLine.setBy2Points(this.startPoint.point, this.endPoint.point);
-
         return resultLine;
     }
 

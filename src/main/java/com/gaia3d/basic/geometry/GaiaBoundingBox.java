@@ -43,7 +43,10 @@ public class GaiaBoundingBox implements Serializable {
         return new Vector3d(maxX - minX, maxY - minY, maxZ - minZ);
     }
 
-    //addPoint
+    public void addPoint(double x, double y, double z) {
+        addPoint(new Vector3d(x, y, z));
+    }
+
     public void addPoint(Vector3d vector3d) {
         if (isInit) {
             if (vector3d.x < minX) {
@@ -97,23 +100,23 @@ public class GaiaBoundingBox implements Serializable {
 
     public void addBoundingBox(GaiaBoundingBox boundingBox) {
         if (isInit) {
-            if (boundingBox.minX < minX) {
-                minX = boundingBox.minX;
+            if (boundingBox.getMinX() < minX) {
+                minX = boundingBox.getMinX();
             }
-            if (boundingBox.minY < minY) {
-                minY = boundingBox.minY;
+            if (boundingBox.getMinY() < minY) {
+                minY = boundingBox.getMinY();
             }
-            if (boundingBox.minZ < minZ) {
-                minZ = boundingBox.minZ;
+            if (boundingBox.getMinZ() < minZ) {
+                minZ = boundingBox.getMinZ();
             }
-            if (boundingBox.maxX > maxX) {
-                maxX = boundingBox.maxX;
+            if (boundingBox.getMaxX() > maxX) {
+                maxX = boundingBox.getMaxX();
             }
-            if (boundingBox.maxY > maxY) {
-                maxY = boundingBox.maxY;
+            if (boundingBox.getMaxY() > maxY) {
+                maxY = boundingBox.getMaxY();
             }
-            if (boundingBox.maxZ > maxZ) {
-                maxZ = boundingBox.maxZ;
+            if (boundingBox.getMaxZ() > maxZ) {
+                maxZ = boundingBox.getMaxZ();
             }
         } else {
             isInit = true;
@@ -172,10 +175,48 @@ public class GaiaBoundingBox implements Serializable {
     }
 
     public boolean contains(GaiaBoundingBox boundingBox) {
-        return minX <= boundingBox.minX && minY <= boundingBox.minY && minZ <= boundingBox.minZ && maxX >= boundingBox.maxX && maxY >= boundingBox.maxY && maxZ >= boundingBox.maxZ;
+        return minX <= boundingBox.getMinX() && minY <= boundingBox.getMinY() && minZ <= boundingBox.getMinZ() && maxX >= boundingBox.getMaxX() && maxY >= boundingBox.getMaxY() && maxZ >= boundingBox.getMaxZ();
     }
 
     public GaiaBoundingBox clone() {
         return new GaiaBoundingBox(minX, minY, minZ, maxX, maxY, maxZ, isInit);
+    }
+
+    /* from terrainer */
+    public boolean intersectsPointXY(double pos_x, double pos_y) {
+        // this function checks if a point2D is intersected by the boundingBox only meaning xAxis and yAxis
+        return !(pos_x < minX) && !(pos_x > maxX) && !(pos_y < minY) && !(pos_y > maxY);
+    }
+
+    public boolean intersectsRectangleXY(double min_x, double min_y, double max_x, double max_y) {
+        // this function checks if a rectangle2D is intersected by the boundingBox only meaning xAxis and yAxis
+        return !(max_x < minX) && !(min_x > maxX) && !(max_y < minY) && !(min_y > maxY);
+    }
+
+    public boolean intersectsPointXYWithXAxis(double posX) {
+        // this function checks if a point2D is intersected by the boundingBox only meaning xAxis and yAxis
+        return !(posX < minX) && !(posX > maxX);
+    }
+
+    public boolean intersectsPointXYWithYAxis(double posY) {
+        // this function checks if a point2D is intersected by the boundingBox only meaning xAxis and yAxis
+        return !(posY < minY) && !(posY > maxY);
+    }
+
+    public double getLengthX() {
+        return maxX - minX;
+    }
+
+    public double getLengthY() {
+        return maxY - minY;
+    }
+
+    public double getLengthZ() {
+        return maxZ - minZ;
+    }
+
+    public double getLongestDistanceXY() {
+        Vector3d volume = getVolume();
+        return Math.sqrt(volume.x * volume.x + volume.y * volume.y);
     }
 }

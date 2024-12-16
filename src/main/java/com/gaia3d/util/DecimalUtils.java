@@ -48,15 +48,25 @@ public class DecimalUtils {
 
     public static String millisecondToDisplayTime(long millis) {
         String displayTime = "";
+
+        long hour = millis / 3600000L;
         if (millis / 3600000L > 0L) {
-            displayTime += millis / 3600000L + "h ";
+            displayTime += hour + "h ";
         }
+        millis %= 3600000L;
+
+        long min = millis / 60000L;
         if (millis / 60000L > 0L) {
             displayTime += millis / 60000L + "m ";
         }
+        millis %= 60000L;
+
+        long sec = millis / 1000L;
         if (millis / 1000L > 0L) {
             displayTime += millis / 1000L + "s ";
         }
+        millis %= 1000L;
+
         displayTime += millis % 1000L + "ms";
         return displayTime;
     }
