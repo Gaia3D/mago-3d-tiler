@@ -162,6 +162,38 @@ public class GaiaRectangle implements Serializable {
         } else return !(compare.maxY < this.minY + error);
     }
 
+    public boolean intersectsInXAxis(GaiaRectangle compare) {
+        return (minX < compare.maxX && maxX > compare.minX);
+    }
+
+    public boolean intersectsInYAxis(GaiaRectangle compare) {
+        return (minY < compare.maxY && maxY > compare.minY);
+    }
+
+    public boolean intersectsInSomeAxis(GaiaRectangle compare) {
+        // check axis x
+        boolean intersectsInX = false;
+        if (compare.minX > this.maxX) {
+            intersectsInX = false;
+        } else if (compare.maxX < this.minX) {
+            intersectsInX = false;
+        } else {
+            return true;
+        }
+
+        // check axis y
+        boolean intersectsInY = false;
+        if (compare.minY > this.maxY) {
+            intersectsInY = false;
+        } else if (compare.maxY < this.minY) {
+            intersectsInY = false;
+        } else {
+            return true;
+        }
+
+        return false;
+    }
+
     public GaiaRectangle clone() {
         return new GaiaRectangle(minX, minY, maxX, maxY);
     }

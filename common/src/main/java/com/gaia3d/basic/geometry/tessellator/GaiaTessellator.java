@@ -406,7 +406,7 @@ public class GaiaTessellator {
             }
             i++;
         }
-
+        
         if (!finished) {
             return exteriorPolygon;
         }

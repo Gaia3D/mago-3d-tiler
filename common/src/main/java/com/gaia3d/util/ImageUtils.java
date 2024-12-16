@@ -2,7 +2,6 @@ package com.gaia3d.util;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
-import org.lwjgl.BufferUtils;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -70,7 +69,7 @@ public class ImageUtils {
         Path path = file.toPath();
         try (var is = new BufferedInputStream(Files.newInputStream(path))) {
             int size = (int) Files.size(path);
-            ByteBuffer byteBuffer = BufferUtils.createByteBuffer(size);
+            ByteBuffer byteBuffer = ByteBuffer.allocate(size);
 
             int bufferSize = 8192;
             bufferSize = Math.min(size, bufferSize);
@@ -84,7 +83,7 @@ public class ImageUtils {
             if (flip) byteBuffer.flip();
             return byteBuffer;
         } catch (IOException e) {
-            log.error("FileUtils.readBytes: {}", e.getMessage());
+            log.error("Error:", e);
         }
         return null;
     }
@@ -223,7 +222,7 @@ public class ImageUtils {
                 System.err.println("No ImageReader found for the given format.");
             }
         } catch (IOException e) {
-            log.error("Error reading image size: {}", e.getMessage());
+            log.error("Error:", e);
         }
 
         return result;
@@ -233,7 +232,7 @@ public class ImageUtils {
         try {
             ImageIO.write(image, format, new File(path));
         } catch (IOException e) {
-            log.error("Error saving image: {}", e.getMessage());
+            log.error("Error:", e);
         }
     }
 }

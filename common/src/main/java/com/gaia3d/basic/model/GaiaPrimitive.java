@@ -7,6 +7,7 @@ import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.geometry.octree.GaiaOctreeVertices;
 import com.gaia3d.basic.model.structure.PrimitiveStructure;
 import com.gaia3d.basic.types.AttributeType;
+import com.gaia3d.basic.types.GLConstants;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,7 +18,6 @@ import org.joml.Matrix3d;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
-import org.lwjgl.opengl.GL20;
 
 import java.io.Serializable;
 import java.util.*;
@@ -198,8 +198,8 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         GaiaBufferDataSet gaiaBufferDataSet = new GaiaBufferDataSet();
         if (indices.length > 0) {
             GaiaBuffer indicesBuffer = new GaiaBuffer();
-            indicesBuffer.setGlTarget(GL20.GL_ELEMENT_ARRAY_BUFFER);
-            indicesBuffer.setGlType(GL20.GL_UNSIGNED_INT);
+            indicesBuffer.setGlTarget(GLConstants.GL_ELEMENT_ARRAY_BUFFER);
+            indicesBuffer.setGlType(GLConstants.GL_UNSIGNED_INT);
             indicesBuffer.setElementsCount(indices.length);
             indicesBuffer.setGlDimension((byte) 1);
             indicesBuffer.setInts(indices);
@@ -207,8 +207,8 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         }
         if (normalList.length > 0) {
             GaiaBuffer normalBuffer = new GaiaBuffer();
-            normalBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
-            normalBuffer.setGlType(GL20.GL_FLOAT);
+            normalBuffer.setGlTarget(GLConstants.GL_ARRAY_BUFFER);
+            normalBuffer.setGlType(GLConstants.GL_FLOAT);
             normalBuffer.setElementsCount(vertices.size());
             normalBuffer.setGlDimension((byte) 3);
             normalBuffer.setFloats(normalList);
@@ -216,8 +216,8 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         }
         if (colorList.length > 0) {
             GaiaBuffer colorBuffer = new GaiaBuffer();
-            colorBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
-            colorBuffer.setGlType(GL20.GL_UNSIGNED_BYTE);
+            colorBuffer.setGlTarget(GLConstants.GL_ARRAY_BUFFER);
+            colorBuffer.setGlType(GLConstants.GL_UNSIGNED_BYTE);
             colorBuffer.setElementsCount(vertices.size());
             colorBuffer.setGlDimension((byte) 1);
             colorBuffer.setBytes(colorList);
@@ -225,8 +225,8 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         }
         if (batchIdList.length > 0) {
             GaiaBuffer batchIdBuffer = new GaiaBuffer();
-            batchIdBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
-            batchIdBuffer.setGlType(GL20.GL_FLOAT);
+            batchIdBuffer.setGlTarget(GLConstants.GL_ARRAY_BUFFER);
+            batchIdBuffer.setGlType(GLConstants.GL_FLOAT);
             batchIdBuffer.setElementsCount(vertices.size());
             batchIdBuffer.setGlDimension((byte) 1);
             batchIdBuffer.setFloats(batchIdList);
@@ -234,8 +234,8 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         }
         if (positionList.length > 0) {
             GaiaBuffer positionBuffer = new GaiaBuffer();
-            positionBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
-            positionBuffer.setGlType(GL20.GL_FLOAT);
+            positionBuffer.setGlTarget(GLConstants.GL_ARRAY_BUFFER);
+            positionBuffer.setGlType(GLConstants.GL_FLOAT);
             positionBuffer.setElementsCount(vertices.size());
             positionBuffer.setGlDimension((byte) 3);
             positionBuffer.setFloats(positionList);
@@ -243,8 +243,8 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         }
         if (textureCoordinateList.length > 0) {
             GaiaBuffer textureCoordinateBuffer = new GaiaBuffer();
-            textureCoordinateBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
-            textureCoordinateBuffer.setGlType(GL20.GL_FLOAT);
+            textureCoordinateBuffer.setGlTarget(GLConstants.GL_ARRAY_BUFFER);
+            textureCoordinateBuffer.setGlType(GLConstants.GL_FLOAT);
             textureCoordinateBuffer.setElementsCount(vertices.size());
             textureCoordinateBuffer.setGlDimension((byte) 2);
             textureCoordinateBuffer.setFloats(textureCoordinateList);
