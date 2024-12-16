@@ -21,6 +21,26 @@ public class GaiaPointCloudHeader {
     private GaiaBoundingBox srsBoundingBox; // original bounding box
     private GaiaPointCloudTemp[][] tempGrid;
 
+    public static GaiaPointCloudHeader combineHeaders(List<GaiaPointCloudHeader> headers) {
+        UUID uuid = UUID.randomUUID();
+        int index = -1;
+        long size = 0;
+        GaiaBoundingBox srsBoundingBox = new GaiaBoundingBox();
+
+        for (GaiaPointCloudHeader header : headers) {
+            index = header.getIndex();
+            size += header.getSize();
+            srsBoundingBox.addBoundingBox(header.getSrsBoundingBox());
+        }
+
+        return GaiaPointCloudHeader.builder()
+                .uuid(uuid)
+                .index(index)
+                .size(size)
+                .srsBoundingBox(srsBoundingBox)
+                .build();
+    }
+
     public GaiaPointCloudTemp findTemp(Vector3d position) {
         int gridXLength = tempGrid.length;
         int gridYLength = tempGrid[0].length;
@@ -35,28 +55,5 @@ public class GaiaPointCloudHeader {
             return null;
         }
         return tempGrid[gridX][gridY];
-    }
-
-    public static GaiaPointCloudHeader combineHeaders(List<GaiaPointCloudHeader> headers){
-        UUID uuid = UUID.randomUUID();
-        int index = -1;
-        long size = 0;
-        GaiaBoundingBox srsBoundingBox = new GaiaBoundingBox();
-        //GaiaBoundingBox crsBoundingBox = new GaiaBoundingBox();
-
-        for (GaiaPointCloudHeader header : headers) {
-            index = header.getIndex();
-            size += header.getSize();
-            srsBoundingBox.addBoundingBox(header.getSrsBoundingBox());
-            //crsBoundingBox.addBoundingBox(header.getCrsBoundingBox());
-        }
-
-        return GaiaPointCloudHeader.builder()
-            .uuid(uuid)
-            .index(index)
-            .size(size)
-            .srsBoundingBox(srsBoundingBox)
-            //.crsBoundingBox(crsBoundingBox)
-            .build();
     }
 }

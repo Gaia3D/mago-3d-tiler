@@ -9,7 +9,7 @@ import lombok.Setter;
 public class GaiaTextureScissorData {
     private int originMaterialId;
     private int materialId;
-    private GaiaRectangle originBoundary; // 0, 0, w, h
+    private GaiaRectangle originBoundary;
     private GaiaRectangle currentBoundary;
     private GaiaRectangle batchedBoundary;
 
@@ -19,7 +19,6 @@ public class GaiaTextureScissorData {
             double h = currentBoundary.getMaxY() - currentBoundary.getMinY();
             originBoundary = new GaiaRectangle(0, 0, w, h);
         }
-
         return originBoundary;
     }
 }
