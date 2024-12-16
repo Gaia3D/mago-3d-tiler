@@ -83,7 +83,7 @@ public class ImageUtils {
             if (flip) byteBuffer.flip();
             return byteBuffer;
         } catch (IOException e) {
-            log.error("FileUtils.readBytes: {}", e.getMessage());
+            log.error("Error:", e);
         }
         return null;
     }
@@ -222,7 +222,7 @@ public class ImageUtils {
                 System.err.println("No ImageReader found for the given format.");
             }
         } catch (IOException e) {
-            log.error("Error reading image size: {}", e.getMessage());
+            log.error("Error:", e);
         }
 
         return result;
@@ -232,7 +232,7 @@ public class ImageUtils {
         try {
             ImageIO.write(image, format, new File(path));
         } catch (IOException e) {
-            log.error("Error saving image: {}", e.getMessage());
+            log.error("Error:", e);
         }
     }
 }
