@@ -120,6 +120,10 @@ public class GlobeUtils {
         return transformMatrixAtCartesianPointWgs84(position.x, position.y, position.z);
     }
 
+    public static Vector3d cartesianToGeographicWgs84(double x, double y, double z) {
+        return cartesianToGeographicWgs84(new Vector3d(x, y, z));
+    }
+
     public static Vector3d cartesianToGeographicWgs84(Vector3d position) {
         double x = position.x;
         double y = position.y;
@@ -200,5 +204,12 @@ public class GlobeUtils {
             log.error("Failed to transform coordinate", e);
             throw new RuntimeException(e);
         }
+    }
+
+    public static double getRadiusAtLatitude(double latitude) {
+        double latRad = latitude * DEGREE_TO_RADIAN_FACTOR;
+        double sinLat = Math.sin(latRad);
+        double e2 = FIRST_ECCENTRICITY_SQUARED;
+        return EQUATORIAL_RADIUS / Math.sqrt(1.0 - e2 * sinLat * sinLat);
     }
 }
