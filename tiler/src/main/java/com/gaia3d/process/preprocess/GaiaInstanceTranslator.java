@@ -8,6 +8,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.joml.Vector3d;
+import org.opengis.coverage.PointOutsideCoverageException;
 import org.opengis.geometry.DirectPosition;
 
 import java.util.List;
@@ -29,15 +30,18 @@ public class GaiaInstanceTranslator implements PreProcess {
         if (altitudeMode != null && altitudeMode.equals("absolute")) {
             altitude.set(position.z);
         } else {
-            coverages.forEach((coverage) -> {
-                DirectPosition2D memSave_posWorld = new DirectPosition2D(DefaultGeographicCRS.WGS84, center.x, center.y);
-                double[] memSave_alt = new double[1];
-                memSave_alt[0] = 0;
-                coverage.evaluate((DirectPosition) memSave_posWorld, memSave_alt);
-                altitude.set(memSave_alt[0]);
-            });
+            try {
+                coverages.forEach((coverage) -> {
+                    DirectPosition2D memSave_posWorld = new DirectPosition2D(DefaultGeographicCRS.WGS84, center.x, center.y);
+                    double[] memSave_alt = new double[1];
+                    memSave_alt[0] = 0;
+                    coverage.evaluate((DirectPosition) memSave_posWorld, memSave_alt);
+                    altitude.set(memSave_alt[0]);
+                });
+            } catch (PointOutsideCoverageException e) {
+                log.warn("Fail to get altitude from DEM coverage. : {}", e.getMessage());
+            }
         }
-
         position.set(position.x, position.y, altitude.get());
         return tileInfo;
     }
