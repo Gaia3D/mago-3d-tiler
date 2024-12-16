@@ -41,8 +41,7 @@ public class GaiaSet implements Serializable {
 
     public static GaiaSet fromGaiaScene(GaiaScene gaiaScene) {
         GaiaSet newGaiaSet = new GaiaSet();
-        String name = FilenameUtils.removeExtension(gaiaScene.getOriginalPath().getFileName().toString());
-        newGaiaSet.projectName = name;
+        newGaiaSet.projectName = FilenameUtils.removeExtension(gaiaScene.getOriginalPath().getFileName().toString());
         newGaiaSet.materials = gaiaScene.getMaterials();
         newGaiaSet.attribute = gaiaScene.getAttribute();
         List<GaiaBufferDataSet> bufferDataSets = new ArrayList<>();
@@ -55,7 +54,6 @@ public class GaiaSet implements Serializable {
     }
 
     public static GaiaSet readFile(Path path) throws FileNotFoundException {
-        // function used in TileInfo.java
         File input = path.toFile();
         Path imagesPath = path.getParent().resolve("images");
         try (ObjectInputStream inputStream = new ObjectInputStream(new BufferedInputStream(new FileInputStream(input)))) {
@@ -66,8 +64,6 @@ public class GaiaSet implements Serializable {
                         String texturePath = texture.getPath();
                         File file = new File(texturePath);
                         String fileName = file.getName();
-                        //Path imagePath = imagesPath.resolve(fileName);
-
                         texture.setParentPath(imagesPath.toString());
                         texture.setPath(fileName);
                     }
@@ -75,7 +71,7 @@ public class GaiaSet implements Serializable {
             }
             return gaiaSet;
         } catch (Exception e) {
-            log.error("GaiaSet Write Error : ", e);
+            log.error("GaiaSet Read Error : ", e);
         }
         return null;
     }
@@ -230,8 +226,7 @@ public class GaiaSet implements Serializable {
         materials.forEach(GaiaMaterial::deleteTextures);
     }
 
-    public void deleteMaterials()
-    {
+    public void deleteMaterials() {
         deleteTextures();
         materials.clear();
     }

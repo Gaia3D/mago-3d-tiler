@@ -28,7 +28,6 @@ public class StringUtils {
         return featureTableText.toString();
     }
 
-
     public static void splitString(String wordToSplit, String delimiter, Vector<String> resultSplittedStrings, boolean skipEmptyStrings) {
         String[] splitStrings = wordToSplit.split(delimiter);
         for (String word : splitStrings) {

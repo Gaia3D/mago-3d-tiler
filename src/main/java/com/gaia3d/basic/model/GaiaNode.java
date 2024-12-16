@@ -255,8 +255,7 @@ public class GaiaNode extends NodeStructure implements Serializable {
         }
     }
 
-    public void deleteNormals()
-    {
+    public void deleteNormals() {
         for (GaiaMesh mesh : this.getMeshes()) {
             mesh.deleteNormals();
         }
@@ -289,6 +288,44 @@ public class GaiaNode extends NodeStructure implements Serializable {
         }
         for (GaiaNode child : this.getChildren()) {
             child.makeTriangleFaces();
+        }
+    }
+
+    public Matrix4d getFinalTransformMatrix() {
+        Matrix4d finalMatrix = new Matrix4d();
+        finalMatrix.set(transformMatrix);
+        if (parent != null) {
+            finalMatrix.mul(parent.getFinalTransformMatrix());
+        }
+        return finalMatrix;
+    }
+
+    public void spendTranformMatrix() {
+        Matrix4d finalMatrix = getFinalTransformMatrix();
+        Matrix4d identity = new Matrix4d();
+        identity.identity();
+
+        if (finalMatrix.equals(identity)) {
+            return;
+        }
+
+        for (GaiaMesh mesh : meshes) {
+            mesh.transformPoints(finalMatrix);
+        }
+        for (GaiaNode child : children) {
+            child.spendTranformMatrix();
+        }
+
+        // Clear the transform matrix.
+        transformMatrix.identity();
+    }
+
+    public void makeTriangularFaces() {
+        for (GaiaMesh mesh : meshes) {
+            mesh.makeTriangularFaces();
+        }
+        for (GaiaNode child : children) {
+            child.makeTriangularFaces();
         }
     }
 }

@@ -294,8 +294,7 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         return gaiaPrimitive;
     }
 
-    public void deleteNormals()
-    {
+    public void deleteNormals() {
         for (GaiaVertex vertex : vertices) {
             vertex.setNormal(null);
         }
@@ -335,6 +334,21 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
                 this.surfaces.get(0).getFaces().add(newFace);
             }
         }
+    }
+
+    public Map<GaiaVertex, List<GaiaFace>> getMapVertexToFaces() {
+        Map<GaiaVertex, List<GaiaFace>> mapVertexToFace = new HashMap<>();
+        for (GaiaSurface surface : this.surfaces) {
+            for (GaiaFace face : surface.getFaces()) {
+                int[] indices = face.getIndices();
+                for (int index : indices) {
+                    GaiaVertex vertex = this.vertices.get(index);
+                    List<GaiaFace> faces = mapVertexToFace.computeIfAbsent(vertex, k -> new ArrayList<>());
+                    faces.add(face);
+                }
+            }
+        }
+        return mapVertexToFace;
     }
 
     public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
@@ -420,8 +434,7 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         this.vertices = newVerticesArray;
     }
 
-    private void getWeldableVertexMap(Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster, List<GaiaVertex> vertices, double error, boolean checkTexCoord, boolean checkNormal,
-                                      boolean checkColor, boolean checkBatchId) {
+    private void getWeldableVertexMap(Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster, List<GaiaVertex> vertices, double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
         Map<GaiaVertex, GaiaVertex> visitedMap = new HashMap<>();
         int verticesCount = vertices.size();
         for (int i = 0; i < verticesCount; i++) {
@@ -467,7 +480,7 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         }
 
         int vertexCount = this.getVertices().size();
-        for(int i = 0; i < vertexCount; i++) {
+        for (int i = 0; i < vertexCount; i++) {
             GaiaVertex vertex = this.getVertices().get(i);
             if (!vertexIdxMap.containsKey(vertex)) {
                 vertex.clear();
@@ -534,6 +547,21 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
     public void makeTriangleFaces() {
         for (GaiaSurface surface : this.surfaces) {
             surface.makeTriangleFaces();
+        }
+    }
+
+    public void transformPoints(Matrix4d finalMatrix) {
+        for (GaiaVertex vertex : vertices) {
+            Vector3d position = vertex.getPosition();
+            Vector3d transformedPosition = new Vector3d();
+            finalMatrix.transformPosition(position, transformedPosition);
+            vertex.setPosition(transformedPosition);
+        }
+    }
+
+    public void makeTriangularFaces() {
+        for (GaiaSurface surface : surfaces) {
+            surface.makeTriangularFaces(vertices);
         }
     }
 }

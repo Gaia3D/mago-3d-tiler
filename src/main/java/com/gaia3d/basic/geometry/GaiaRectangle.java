@@ -137,12 +137,12 @@ public class GaiaRectangle implements Serializable {
 
     public int getWidthInt() {
         //return (int)Math.ceil(maxX) - (int)Math.floor(minX);
-        return (int)Math.ceil(getWidth());
+        return (int) Math.ceil(getWidth());
     }
 
     public int getHeightInt() {
         //return (int)Math.ceil(maxY) - (int)Math.floor(minY);
-        return (int)Math.ceil(getHeight());
+        return (int) Math.ceil(getHeight());
     }
 
     public void copyFrom(GaiaRectangle rectangle) {
@@ -165,6 +165,7 @@ public class GaiaRectangle implements Serializable {
     public GaiaRectangle clone() {
         return new GaiaRectangle(minX, minY, maxX, maxY);
     }
+
     public void setSize(double minX, double minY, double maxX, double maxY) {
         this.minX = minX;
         this.minY = minY;

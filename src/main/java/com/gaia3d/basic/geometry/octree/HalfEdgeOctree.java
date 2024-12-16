@@ -1,6 +1,5 @@
 package com.gaia3d.basic.geometry.octree;
 
-import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
 import com.gaia3d.basic.halfedge.HalfEdgeFace;
 import com.gaia3d.basic.halfedge.HalfEdgeSurface;
 import com.gaia3d.basic.halfedge.HalfEdgeVertex;
@@ -25,12 +24,10 @@ public class HalfEdgeOctree {
     private int maxDepth = 5;
     private double minBoxSize = 0.1;
     private HalfEdgeOctree[] children = null;
-    //-----------------------------------------------------------------------------------
+
     private List<HalfEdgeVertex> vertices = new ArrayList<>();
     private List<HalfEdgeFace> faces = new ArrayList<>();
     private List<HalfEdgeSurface> surfaces = new ArrayList<>();
-
-
 
     public HalfEdgeOctree(HalfEdgeOctree parent) {
         this.parent = parent;
@@ -88,7 +85,7 @@ public class HalfEdgeOctree {
         children[6].coordinate.setDepthAndCoord(L + 1, X * 2 + 1, Y * 2 + 1, Z * 2 + 1);
         children[7].coordinate.setDepthAndCoord(L + 1, X * 2, Y * 2 + 1, Z * 2 + 1);
 
-        for(int i=0; i<8; i++) {
+        for (int i = 0; i < 8; i++) {
             children[i].setMinBoxSize(minBoxSize);
             children[i].setMaxDepth(maxDepth);
         }
@@ -200,47 +197,32 @@ public class HalfEdgeOctree {
         this.maxZ = maxZ;
     }
 
-    public void distributeFacesToLeaf()
-    {
-        if(this.faces.isEmpty())
-            return;
+    public void distributeFacesToLeaf() {
+        if (this.faces.isEmpty()) return;
 
-        if(this.children == null)
-            return;
+        if (this.children == null) return;
 
         double midX = (minX + maxX) / 2.0;
         double midY = (minY + maxY) / 2.0;
         double midZ = (minZ + maxZ) / 2.0;
 
-        for(HalfEdgeFace face : this.faces)
-        {
+        for (HalfEdgeFace face : this.faces) {
             Vector3d center = face.getBarycenter(null);
-            if(center.x < midX)
-            {
-                if(center.y < midY)
-                {
-                    if(center.z < midZ)
-                    {
+            if (center.x < midX) {
+                if (center.y < midY) {
+                    if (center.z < midZ) {
                         children[0].faces.add(face);
-                    }
-                    else
-                    {
+                    } else {
                         children[4].faces.add(face);
                     }
-                }
-                else
-                {
-                    if(center.z < midZ)
-                    {
+                } else {
+                    if (center.z < midZ) {
                         children[3].faces.add(face);
-                    }
-                    else
-                    {
+                    } else {
                         children[7].faces.add(face);
                     }
                 }
-            }
-            else {
+            } else {
                 if (center.y < midY) {
                     if (center.z < midZ) {
                         children[1].faces.add(face);
@@ -259,8 +241,7 @@ public class HalfEdgeOctree {
 
         this.faces.clear();
 
-        for(HalfEdgeOctree child : children)
-        {
+        for (HalfEdgeOctree child : children) {
             child.distributeFacesToLeaf();
         }
     }

@@ -875,6 +875,21 @@ public class GeometryUtils {
         return valid;
     }
 
+    public static Vector3d calcNormal3D(Vector3d p1, Vector3d p2, Vector3d p3) {
+        Vector3d p2SubP1 = new Vector3d(p2).sub(p1);
+        Vector3d p3SubP2 = new Vector3d(p3).sub(p2);
+        Vector3d normal = new Vector3d(p2SubP1).cross(p3SubP2);
+        normal.normalize();
+        return normal;
+    }
+
+    public static Vector3d calcNormal3D(GaiaVertex vertex1, GaiaVertex vertex2, GaiaVertex vertex3) {
+        Vector3d position1 = vertex1.getPosition();
+        Vector3d position2 = vertex2.getPosition();
+        Vector3d position3 = vertex3.getPosition();
+        return calcNormal3D(position1, position2, position3);
+    }
+
     public static void calculateNormal3D(List<Vector3d> polygon, Vector3d resultNormal) {
         // calculate the normal of the polygon.***
         int pointsCount = polygon.size();
@@ -935,23 +950,23 @@ public class GeometryUtils {
 
         if (absX > absY && absX > absZ) {
             // the best plane is the YZ plane.***
-            if(normal.x > 0){
+            if (normal.x > 0) {
                 return PlaneType.YZ;
-            }else{
+            } else {
                 return PlaneType.YZNEG;
             }
         } else if (absY > absX && absY > absZ) {
             // the best plane is the XZ plane.***
-            if(normal.y > 0){
+            if (normal.y > 0) {
                 return PlaneType.XZ;
-            }else{
+            } else {
                 return PlaneType.XZNEG;
             }
         } else {
             // the best plane is the XY plane.***
-            if(normal.z > 0){
+            if (normal.z > 0) {
                 return PlaneType.XY;
-            }else{
+            } else {
                 return PlaneType.XYNEG;
             }
         }

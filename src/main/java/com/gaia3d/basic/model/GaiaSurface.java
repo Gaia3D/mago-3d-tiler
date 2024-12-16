@@ -1,6 +1,5 @@
 package com.gaia3d.basic.model;
 
-import com.gaia3d.basic.halfedge.HalfEdgeUtils;
 import com.gaia3d.basic.model.structure.SurfaceStructure;
 import lombok.Getter;
 import lombok.Setter;
@@ -48,11 +47,8 @@ public class GaiaSurface extends SurfaceStructure implements Serializable {
     }
 
     public void clear() {
-        int facesCount = faces.size();
-        for (int i = 0; i < facesCount; i++) {
-            GaiaFace face = faces.get(i);
-            if(face != null)
-            {
+        for (GaiaFace face : faces) {
+            if (face != null) {
                 face.clear();
             }
         }
@@ -62,7 +58,7 @@ public class GaiaSurface extends SurfaceStructure implements Serializable {
     public GaiaSurface clone() {
         GaiaSurface clonedSurface = new GaiaSurface();
         for (GaiaFace face : faces) {
-            if(face != null) {
+            if (face != null) {
                 clonedSurface.getFaces().add(face.clone());
             }
         }
@@ -142,8 +138,7 @@ public class GaiaSurface extends SurfaceStructure implements Serializable {
         }
     }
 
-    public void deleteDegeneratedFaces(List<GaiaVertex> vertices)
-    {
+    public void deleteDegeneratedFaces(List<GaiaVertex> vertices) {
         List<GaiaFace> facesToDelete = new ArrayList<>();
         for (GaiaFace face : faces) {
             if (face.isDegenerated(vertices)) {
@@ -154,16 +149,25 @@ public class GaiaSurface extends SurfaceStructure implements Serializable {
     }
 
     public void makeTriangleFaces() {
-        int facesCount = faces.size();
         List<GaiaFace> facesToAdd = new ArrayList<>();
         List<GaiaFace> triFaces = new ArrayList<>();
-        for (int i = 0; i < facesCount; i++) {
-            GaiaFace face = faces.get(i);
+        for (GaiaFace face : faces) {
             triFaces.clear();
             triFaces = face.getTriangleFaces(triFaces);
             facesToAdd.addAll(triFaces);
         }
 
+        faces.clear();
+        faces.addAll(facesToAdd);
+    }
+
+    public void makeTriangularFaces(List<GaiaVertex> vertices) {
+        List<GaiaFace> facesToAdd = new ArrayList<>();
+        List<GaiaFace> triangularFaces = new ArrayList<>();
+        for (GaiaFace face : faces) {
+            triangularFaces.clear();
+            facesToAdd.addAll(face.getTriangleFaces(triangularFaces));
+        }
         faces.clear();
         faces.addAll(facesToAdd);
     }

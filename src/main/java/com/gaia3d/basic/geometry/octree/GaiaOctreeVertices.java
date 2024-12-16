@@ -1,6 +1,5 @@
 package com.gaia3d.basic.geometry.octree;
 
-import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaVertex;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,7 +23,7 @@ public class GaiaOctreeVertices {
     private int maxDepth = 5;
     private double minBoxSize = 1.0;
     private GaiaOctreeVertices[] children = null;
-    //-----------------------------------------------------------------------------------
+
     private List<GaiaVertex> vertices = new ArrayList<>();
 
     public GaiaOctreeVertices(GaiaOctreeVertices parent) {

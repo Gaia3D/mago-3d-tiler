@@ -449,4 +449,7 @@ public class HalfEdgeVertex implements Serializable {
         // 5th, check batchId.***
         return !checkBatchId || !(Math.abs(batchId - vertex2.batchId) > error);
     }
+
+
+
 }

@@ -1,7 +1,6 @@
 package com.gaia3d.basic.model;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.halfedge.HalfEdgeUtils;
 import com.gaia3d.basic.model.structure.FaceStructure;
 import com.gaia3d.util.GeometryUtils;
 import lombok.Getter;
@@ -11,7 +10,6 @@ import org.joml.Vector3d;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -151,8 +149,7 @@ public class GaiaFace extends FaceStructure implements Serializable {
     }
 
     public List<GaiaFace> getTriangleFaces(List<GaiaFace> resultGaiaFaces) {
-        if(resultGaiaFaces == null)
-        {
+        if (resultGaiaFaces == null) {
             resultGaiaFaces = new ArrayList<>();
         }
         int[] indices = this.getIndices();
@@ -160,15 +157,12 @@ public class GaiaFace extends FaceStructure implements Serializable {
         int indicesCount = indices.length;
 
         for (int i = 0; i < indicesCount - 2; i += 3) {
-            if(i + 2 >= indicesCount)
-            {
+            if (i + 2 >= indicesCount) {
                 log.error("i + 2 >= indicesCount.***");
-                int hola = 0;
             }
             GaiaFace gaiaTriangleFace = new GaiaFace();
             gaiaTriangleFace.setIndices(new int[]{indices[i], indices[i + 1], indices[i + 2]});
-            if(normal != null)
-            {
+            if (normal != null) {
                 gaiaTriangleFace.setFaceNormal(new Vector3d(normal));
             }
             resultGaiaFaces.add(gaiaTriangleFace);

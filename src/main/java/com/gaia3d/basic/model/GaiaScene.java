@@ -124,9 +124,7 @@ public class GaiaScene extends SceneStructure implements Serializable {
         meshMaster.getPrimitives().add(primitiveMaster);
 
         List<GaiaPrimitive> allPrimitives = this.extractPrimitives(null);
-        int primitivesCount = allPrimitives.size();
-        for (int i = 0; i < primitivesCount; i++) {
-            GaiaPrimitive primitive = allPrimitives.get(i);
+        for (GaiaPrimitive primitive : allPrimitives) {
             primitiveMaster.addPrimitive(primitive);
         }
 
@@ -168,6 +166,18 @@ public class GaiaScene extends SceneStructure implements Serializable {
     public void deleteDegeneratedFaces() {
         for (GaiaNode node : this.nodes) {
             node.deleteDegeneratedFaces();
+        }
+    }
+
+    public void spendTranformMatrix() {
+        for (GaiaNode node : this.nodes) {
+            node.spendTranformMatrix();
+        }
+    }
+
+    public void makeTriangularFaces() {
+        for (GaiaNode node : this.nodes) {
+            node.makeTriangularFaces();
         }
     }
 }

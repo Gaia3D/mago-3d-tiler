@@ -6,6 +6,7 @@ import org.apache.commons.io.FilenameUtils;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
+import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -225,5 +226,13 @@ public class ImageUtils {
         }
 
         return result;
+    }
+
+    public void saveBufferedImage(BufferedImage image, String format, String path) {
+        try {
+            ImageIO.write(image, format, new File(path));
+        } catch (IOException e) {
+            log.error("Error saving image: {}", e.getMessage());
+        }
     }
 }

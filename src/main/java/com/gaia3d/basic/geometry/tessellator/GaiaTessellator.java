@@ -80,12 +80,6 @@ public class GaiaTessellator {
         Vector3d normalTest = new Vector3d();
         calculateNormal3D(points3dArray, normalTest);
 
-        /*Map<Vector3d, Integer> mapPoints3dIndices = new HashMap<>();
-        int pointsCount = points3dArray.size();
-        for (int i = 0; i < pointsCount; i++) {
-            mapPoints3dIndices.put(points3dArray.get(i), i);
-        }
-*/
         // now, with the normal, find the best plane axis aligned to project the polygon.***
         // possible planes : XY, XZ, YZ.***
         // the best plane is the plane that has the normal more aligned to the plane normal.***
@@ -352,7 +346,6 @@ public class GaiaTessellator {
             i++;
         }
 
-
         return resultPolygon;
     }
 
@@ -411,7 +404,6 @@ public class GaiaTessellator {
                     break;
                 }
             }
-
             i++;
         }
         
@@ -492,9 +484,7 @@ public class GaiaTessellator {
         }
 
         // must sort the mapDistHolePolygon from small to big squaredDist.***
-        List<Polygon2DTess> sortedPolygons = mapDistHolePolygon.values()
-                .stream()
-                .collect(Collectors.toList());
+        List<Polygon2DTess> sortedPolygons = mapDistHolePolygon.values().stream().collect(Collectors.toList());
 
         for (Polygon2DTess hole : sortedPolygons) {
             exteriorPolygon = eliminateHole(exteriorPolygon, hole, null);

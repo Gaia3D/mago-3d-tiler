@@ -32,7 +32,6 @@ public class VectorUtils {
             return false;
         }
 
-
         double cross1 = cross(a, b, u);
         double cross2 = cross(a, b, v);
         if (cross1 == 0 && cross2 == 0) {
