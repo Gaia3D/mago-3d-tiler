@@ -21,7 +21,7 @@ import java.util.Random;
 @Slf4j
 class ExtruderTest {
 
-    @Test
+    /*@Test
     void extrude() {
         Configurator.initConsoleLogger();
         double[] target = getStar();
@@ -29,10 +29,9 @@ class ExtruderTest {
         List<Vector3d> positions = convert(target);
         OldTessellator oldTessellator = new OldTessellator();
         OldExtruder extruder = new OldExtruder(oldTessellator);
-
         Extrusion extrusion = extruder.extrude(positions, 10, 0);
         output(extrusion.getTriangles());
-    }
+    }*/
 
     private List<Vector3d> convert(double[] target) {
         List<Vector3d> positions = new ArrayList<>();

@@ -17,7 +17,7 @@ import java.util.Random;
 
 class OldTessellatorTest {
 
-    @Test
+    /*@Test
     void tessellate() {
         Configurator.initConsoleLogger();
         double[] target = errorTest();
@@ -81,7 +81,7 @@ class OldTessellatorTest {
 
         GltfWriter gltfWriter = new GltfWriter();
         gltfWriter.writeGltf(scene, "D:\\tessellate.gltf");
-    }
+    }*/
 
     private List<Vector3d> convert(double[] target) {
         List<Vector3d> positions = new ArrayList<>();

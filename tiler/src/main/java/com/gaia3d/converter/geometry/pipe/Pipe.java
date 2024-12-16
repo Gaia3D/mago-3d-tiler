@@ -1,7 +1,7 @@
 package com.gaia3d.converter.geometry.pipe;
 
-import com.gaia3d.basic.geometry.network.modeler.TEdge;
-import com.gaia3d.basic.geometry.network.modeler.TNode;
+import com.gaia3d.basic.geometry.network.modeler.TopologicalEdge;
+import com.gaia3d.basic.geometry.network.modeler.TopologicalNode;
 import com.gaia3d.basic.model.GaiaMesh;
 import com.gaia3d.basic.model.GaiaPrimitive;
 import lombok.Getter;
@@ -14,7 +14,7 @@ import java.util.List;
 
 @Setter
 @Getter
-public class Pipe extends TEdge {
+public class Pipe extends TopologicalEdge {
     private PipeType profileType = PipeType.UNKNOWN;
     // set pipeRadius.
     private float pipeRadius = 0.0f;
@@ -25,12 +25,12 @@ public class Pipe extends TEdge {
     private boolean topCap = false;
 
     // note : the startPosition & the endPosition are the link positions of the pipe, that are different from the startNode & the endNode.
-    public Pipe(TNode startNode, TNode endNode) {
+    public Pipe(TopologicalNode startNode, TopologicalNode endNode) {
         super(startNode, endNode);
     }
 
     public Vector3d getStartLinkPosition() {
-        TNode startNode = getStartNode();
+        TopologicalNode startNode = getStartNode();
         Vector3d startLinkPos = null;
         if (startNode instanceof PipeElbow startElbow) {
             startLinkPos = startElbow.getLinkPosition(this);
@@ -39,7 +39,7 @@ public class Pipe extends TEdge {
     }
 
     public Vector3d getEndLinkPosition() {
-        TNode endNode = getEndNode();
+        TopologicalNode endNode = getEndNode();
         Vector3d endLinkPos = null;
         if (endNode instanceof PipeElbow endElbow) {
             endLinkPos = endElbow.getLinkPosition(this);
