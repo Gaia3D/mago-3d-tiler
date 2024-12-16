@@ -60,8 +60,8 @@ public class InternDataConverter {
         Matrix4d transformMatrix = gaiaNode.getTransformMatrix();
         renderableNode.setOriginalGaiaNode(gaiaNode);
         renderableNode.setName(name);
-        renderableNode.setTransformMatrix(transformMatrix);
-        renderableNode.setPreMultipliedTransformMatrix(transformMatrix);
+        renderableNode.setTransformMatrix(new Matrix4d(transformMatrix));
+        renderableNode.setPreMultipliedTransformMatrix(new Matrix4d(transformMatrix));
         renderableNode.setGaiaBoundingBox(gaiaBoundingBox);
 
         List<GaiaMesh> meshes = gaiaNode.getMeshes();

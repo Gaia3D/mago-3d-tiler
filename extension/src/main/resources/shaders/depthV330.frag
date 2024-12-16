@@ -1,5 +1,5 @@
 #version 330
-//precision highp float;
+precision highp float;
 
 in float vDepth;
 

@@ -1,6 +1,7 @@
 package com.gaia3d.renderer.engine.graph;
 
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 
@@ -71,6 +72,16 @@ public class UniformsMap {
         int location = glGetUniformLocation(programId, uniformName);
         if(location >= 0) {
             glUniform1f(location, value);
+        }
+    }
+
+    public void setUniform3fv(String uBackgroundColor, Vector3f vector3f) {
+        // check if exist uniform.***
+        int location = glGetUniformLocation(programId, uBackgroundColor);
+        if(location >= 0) {
+            try (MemoryStack stack = MemoryStack.stackPush()) {
+                glUniform3fv(location, vector3f.get(stack.mallocFloat(3)));
+            }
         }
     }
 }

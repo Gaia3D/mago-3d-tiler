@@ -75,6 +75,7 @@ public class Engine {
     private int boxRenderingMaxSize = 512;
 
     private int testsCount = 0;
+    private String tempFolderPath = "D:\\Result_mago3dTiler\\temp";
 
     private boolean checkGlError()
     {
@@ -118,6 +119,26 @@ public class Engine {
 
         glfwTerminate();
         glfwSetErrorCallback(null).free();
+    }
+
+    public GaiaScenesContainer getGaiaScenesContainer()
+    {
+        if(gaiaScenesContainer == null)
+        {
+            int windowWidth = window.getWidth();
+            int windowHeight = window.getHeight();
+            gaiaScenesContainer = new GaiaScenesContainer(windowWidth, windowHeight);
+        }
+        return gaiaScenesContainer;
+    }
+
+    public FboManager getFboManager()
+    {
+        if(fboManager == null)
+        {
+            fboManager = new FboManager();
+        }
+        return fboManager;
     }
 
     public void getRenderSceneImage(ShaderProgram sceneShaderProgram)
@@ -227,6 +248,7 @@ public class Engine {
 
             if(key == GLFW_KEY_P && action == GLFW_RELEASE)
             {
+                // pyramid deformation.***
                 // keep the camera position and target.***
                 Vector3d keepCameraPosition = new Vector3d(camera.getPosition());
                 Vector3d keepCameraDirection = new Vector3d(camera.getDirection());
@@ -245,6 +267,48 @@ public class Engine {
                 // now, update the renderableScene.***
                 InternDataConverter internDataConverter = new InternDataConverter();
                 RenderableGaiaScene renderableScene = internDataConverter.getRenderableGaiaScene(gaiaScene);
+                this.getGaiaScenesContainer().getRenderableGaiaScenes().set(0, renderableScene);
+
+                // restore the camera position and target.***
+                camera.setPosition(keepCameraPosition);
+                camera.setDirection(keepCameraDirection);
+                camera.setUp(keepCameraUp);
+                camera.setDirty(true);
+
+                gaiaScenesContainer.setCamera(camera);
+                gaiaScenesContainer.getProjection().setProjectionType(0);
+            }
+
+            if(key == GLFW_KEY_E && action == GLFW_RELEASE)
+            {
+                // Eliminate the background color.***
+                // keep the camera position and target.***
+                Vector3d keepCameraPosition = new Vector3d(camera.getPosition());
+                Vector3d keepCameraDirection = new Vector3d(camera.getDirection());
+                Vector3d keepCameraUp = new Vector3d(camera.getUp());
+
+                // make a depthMap and normalMap.***
+
+                // do pyramidDeformation.***
+                GaiaScene gaiaScene = gaiaScenes.get(0);
+                GaiaBoundingBox bbox = gaiaScene.getBoundingBox(); // before to set the transformMatrix.***
+                double bboxMaxSize = bbox.getMaxSize();
+
+                List<HalfEdgeScene> resultHalfEdgeScenes = new ArrayList<>();
+                double pixelsForMeter = 128.0/bboxMaxSize;
+                DecimateParameters decimateParameters = new DecimateParameters();
+                decimateParameters.setBasicValues(10.0, 1.0, 3.0, 10.0, 1000000, 1, 0.5);
+                this.makeNetSurfaces_TEST(gaiaScenes, resultHalfEdgeScenes, decimateParameters, pixelsForMeter);
+
+                HalfEdgeScene halfEdgeSceneResult = resultHalfEdgeScenes.get(0);
+                this.getHalfEdgeScenes().clear();
+                this.getHalfEdgeScenes().add(halfEdgeSceneResult);
+
+                GaiaScene gaiaSceneResult = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneResult);
+
+                // now, update the renderableScene.***
+                InternDataConverter internDataConverter = new InternDataConverter();
+                RenderableGaiaScene renderableScene = internDataConverter.getRenderableGaiaScene(gaiaSceneResult);
                 this.getGaiaScenesContainer().getRenderableGaiaScenes().set(0, renderableScene);
 
                 // restore the camera position and target.***
@@ -337,6 +401,213 @@ public class Engine {
         int hola2 = 0;
     }
 
+    public void getDepthRender_TEST(GaiaScene gaiaScene, int bufferedImageType, List<BufferedImage> resultImages, int maxDepthScreenSize) {
+        // render the scene
+        log.info("Rendering the scene...getDepthRender");
+
+        int screenWidth = 1000; // no used var.***
+        int screenHeight = 600; // no used var.***
+
+        GaiaScenesContainer gaiaScenesContainer = this.getGaiaScenesContainer();
+
+        // calculate the projectionMatrix for the camera.***
+        GaiaBoundingBox bbox = gaiaScene.getBoundingBox();
+        Vector3d bboxCenter = bbox.getCenter();
+        float xLength = (float)bbox.getSizeX();
+        float yLength = (float)bbox.getSizeY();
+        float zLength = (float)bbox.getSizeZ();
+
+//        Vector3d translation = new Vector3d(-bboxCenter.x, -bboxCenter.y, -bboxCenter.z);
+//        gaiaScene.getNodes().get(0).translate(translation);
+
+        Projection projection = new Projection(0, screenWidth, screenHeight);
+        projection.setProjectionOrthographic(-xLength/2.0f, xLength/2.0f, -yLength/2.0f, yLength/2.0f, -zLength * 0.5f, zLength * 0.5f);
+        gaiaScenesContainer.setProjection(projection);
+
+        // Take FboManager from engine.***
+        FboManager fboManager = this.getFboManager();
+
+        // create the fbo.***
+        int fboWidthDepth = maxDepthScreenSize;
+        int fboHeightDepth = maxDepthScreenSize;
+        if(xLength > yLength)
+        {
+            fboWidthDepth = maxDepthScreenSize;
+            fboHeightDepth = (int)(maxDepthScreenSize * yLength / xLength);
+        }
+        else
+        {
+            fboWidthDepth = (int)(maxDepthScreenSize * xLength / yLength);
+            fboHeightDepth = maxDepthScreenSize;
+        }
+
+        fboWidthDepth = Math.max(fboWidthDepth, 1);
+        fboHeightDepth = Math.max(fboHeightDepth, 1);
+
+        Fbo colorFbo = fboManager.getOrCreateFbo("colorRender2", fboWidthDepth, fboHeightDepth);
+        Fbo depthFbo = fboManager.getOrCreateFbo("depthRender", fboWidthDepth, fboHeightDepth);
+
+        // now set camera position.***
+        Camera camera = this.camera;
+        camera.setPosition(bboxCenter);
+        camera.setDirection(new Vector3d(0, 0, -1));
+        camera.setUp(new Vector3d(0, 1, 0));
+        gaiaScenesContainer.setCamera(camera);
+
+        // render the scenes.***
+        int scenesCount = 1;
+        InternDataConverter internDataConverter = new InternDataConverter();
+        RenderableGaiaScene renderableScene = internDataConverter.getRenderableGaiaScene(gaiaScene);
+
+        gaiaScenesContainer.getRenderableGaiaScenes().clear();
+        gaiaScenesContainer.getRenderableGaiaScenes().add(renderableScene);
+
+        int[] width = new int[1];
+        int[] height = new int[1];
+
+        try{
+            // shader program.***
+            ShaderManager shaderManager = this.getShaderManager();
+            ShaderProgram sceneShaderProgram = shaderManager.getShaderProgram("scene");
+
+            // render the scene.***
+            // Bind the fbo.***
+            width[0] = colorFbo.getFboWidth();
+            height[0] = colorFbo.getFboHeight();
+
+            glViewport(0, 0, width[0], height[0]);
+            colorFbo.bind();
+            //log.info("Rendering the scene : " + i + " of scenesCount : " + scenesCount);
+            this.getRenderSceneImage(sceneShaderProgram);
+            colorFbo.unbind();
+
+            // render the scene.***
+            // depth render.***
+            width[0] = depthFbo.getFboWidth();
+            height[0] = depthFbo.getFboHeight();
+
+            glViewport(0, 0, width[0], height[0]);
+            ShaderProgram depthShaderProgram = shaderManager.getShaderProgram("depth");
+            depthFbo.bind();
+
+            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            // disable cull face.***
+            glEnable(GL_DEPTH_TEST);
+
+            // disable cull face.***
+            glDisable(GL_CULL_FACE);
+
+            log.info("Rendering the depth : " + 0 + " of scenesCount : " + scenesCount);
+            this.getRenderSceneImage(depthShaderProgram);
+            depthFbo.unbind();
+
+        } catch (Exception e) {
+            log.error("Error initializing the engine: ", e);
+        }
+
+//        // delete renderableGaiaScenes.***
+//        for(RenderableGaiaScene renderableSceneToDelete : renderableGaiaScenes) {
+//            renderableSceneToDelete.deleteGLBuffers();
+//        }
+
+        // take the final rendered depthBuffer of the fbo.***
+        int depthBufferedImageType = BufferedImage.TYPE_INT_ARGB;
+        depthFbo.bind();
+        BufferedImage depthImage = depthFbo.getBufferedImage(depthBufferedImageType);
+        resultImages.add(depthImage);
+        depthFbo.unbind();
+
+        // take the final rendered colorBuffer of the fbo.***
+        colorFbo.bind();
+        BufferedImage image = colorFbo.getBufferedImage(bufferedImageType);
+        resultImages.add(image);
+        colorFbo.unbind();
+    }
+
+    public void makeNetSurfaces_TEST(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, double pixelsForMeter) {
+
+        int scenesCount = scenes.size();
+        for(int i = 0; i < scenesCount; i++)
+        {
+            GaiaScene gaiaScene = scenes.get(i);
+            GaiaBoundingBox bbox = gaiaScene.getBoundingBox();
+            double bboxMaxSize = Math.max(bbox.getSizeX(), bbox.getSizeY());
+            int maxDepthScreenSize = (int)Math.ceil(pixelsForMeter * bboxMaxSize);
+            if(maxDepthScreenSize < 8)
+            {
+                maxDepthScreenSize = 8;
+            }
+
+            if(maxDepthScreenSize > 1024)
+            {
+                maxDepthScreenSize = 1024;
+            }
+
+            log.info("Engine.makeNetSurfaces() : maxDepthScreenSize = " + maxDepthScreenSize);
+
+            List<BufferedImage> depthRenderedImages = new ArrayList<>();
+            getDepthRender_TEST(gaiaScene, BufferedImage.TYPE_INT_ARGB, depthRenderedImages, maxDepthScreenSize);
+
+            BufferedImage depthRenderedImage = depthRenderedImages.get(0);
+            BufferedImage colorRenderedImage = depthRenderedImages.get(1);
+
+            // save depthRenderedImage as png.***************************************************************************
+            String tempFolderPath = "D:\\Result_mago3dTiler\\temp";
+            String depthRenderedImagePath = tempFolderPath + "\\depthRenderedImage_" + i + ".png";
+            // create the folder.***
+            File tempFolder = new File(tempFolderPath);
+            if(!tempFolder.exists())
+            {
+                tempFolder.mkdirs();
+            }
+            try {
+                ImageIO.write(depthRenderedImage, "png", new File(depthRenderedImagePath));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            String colorRenderedImagePath = tempFolderPath + "\\colorRenderedImage_" + i + ".png";
+            try {
+                ImageIO.write(colorRenderedImage, "png", new File(colorRenderedImagePath));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            // end save depthRenderedImage as png.-----------------------------------------------------------------------
+
+            // make the netSurface by using the depthRenderedImage.***
+            float[][] depthValues = com.gaia3d.util.ImageUtils.bufferedImageToFloatMatrix(depthRenderedImage);
+            int numCols = depthRenderedImage.getWidth();
+            int numRows = depthRenderedImage.getHeight();
+            HalfEdgeScene halfEdgeScene = HalfEdgeUtils.getHalfEdgeSceneRectangularNet(numCols, numRows, depthValues, bbox);
+            if(halfEdgeScene == null)
+            {
+                return;
+            }
+            halfEdgeScene.setOriginalPath(gaiaScene.getOriginalPath());
+
+            // decimate.***
+            halfEdgeScene.doTrianglesReductionOneIteration(decimateParameters);
+
+            // now, cut the halfEdgeScene and make cube-textures by rendering.***
+            double gridSpacing = 50.0;
+            HalfEdgeOctree resultOctree = new HalfEdgeOctree(null);
+            log.info("Engine.decimate() : cutHalfEdgeSceneGridXYZ.");
+            HalfEdgeScene cuttedScene = HalfEdgeCutter.cutHalfEdgeSceneGridXYZ(halfEdgeScene, gridSpacing, resultOctree);
+            cuttedScene.splitFacesByBestPlanesToProject();
+
+            // now make box textures for the cuttedScene.***
+            log.info("Engine.decimate() : makeBoxTexturesForHalfEdgeScene.");
+            this.makeBoxTexturesForHalfEdgeScene(cuttedScene);
+
+            resultHalfEdgeScenes.add(cuttedScene);
+            halfEdgeScene.deleteObjects();
+        }
+
+
+    }
+
     public void decimate(List<HalfEdgeScene> halfEdgeScenesToDecimate, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters)
     {
         log.info("Engine.decimate() : halfEdgeScenesToDecimate count : " + halfEdgeScenesToDecimate.size());
@@ -398,7 +669,6 @@ public class Engine {
             // enable cull face.***
             glEnable(GL20.GL_CULL_FACE);
 
-            int test = GL_NEAREST;
             int minFilter = GL20.GL_NEAREST; // GL_LINEAR, GL_NEAREST
             int magFilter = GL20.GL_NEAREST;
             int wrapS = GL20.GL_REPEAT; // GL_CLAMP_TO_EDGE
@@ -421,7 +691,7 @@ public class Engine {
             uniformsMap.setUniform1i("uTexture", 0);
             uniformsMap.setUniform1f("uScreenWidth", (float)fboWidth);
             uniformsMap.setUniform1f("uScreenHeight", (float)fboHeight);
-            uniformsMap.setUniform4fv("uBackgroundColor", new Vector4f(0.5f, 0.5f, 0.5f, 1.0f));
+            uniformsMap.setUniform3fv("uBackgroundColor", new Vector3f(0.5f, 0.5f, 0.5f));
 
             screenQuad.render();
             shaderProgram.unbind();
@@ -483,12 +753,15 @@ public class Engine {
             if(facesPlaneXYPos != null && !facesPlaneXYPos.isEmpty()) {
                 GaiaBoundingBox bboxXYPos = HalfEdgeUtils.getBoundingBoxOfFaces(facesPlaneXYPos);
                 BufferedImage ZNegImage = makeZNegTexture(bboxXYPos, maxScreenSize);
-                BufferedImage ZNegImageModified = eliminateBackGroundColor(ZNegImage);
+                ZNegImage = eliminateBackGroundColor(ZNegImage);
 
                 // test save images.***
                 try {
-                    ImageIO.write(ZNegImageModified, "jpeg", new File("D:\\Result_mago3dTiler\\ZNegImageModified.jpg"));
-                    ImageIO.write(ZNegImage, "jpeg", new File("D:\\Result_mago3dTiler\\ZNegImage.jpg"));
+                    String imagePath = "D:\\Result_mago3dTiler\\ZNegImageModified" + classificationId + ".jpg";
+                    File atlasFile = new File(imagePath);
+                    //ImageIO.write(ZNegImageModified, "jpg", atlasFile);
+
+                    ImageIO.write(ZNegImage, "jpg", new File("D:\\Result_mago3dTiler\\ZNegImage" + classificationId + ".jpg"));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -497,7 +770,7 @@ public class Engine {
                     TexturesAtlasData texturesAtlasDataZNeg = new TexturesAtlasData();
                     texturesAtlasDataZNeg.setClassifyId(classificationId);
                     texturesAtlasDataZNeg.setPlaneType(PlaneType.XY);
-                    texturesAtlasDataZNeg.setTextureImage(ZNegImageModified);
+                    texturesAtlasDataZNeg.setTextureImage(ZNegImage);
                     texturesAtlasDataZNeg.setFaceGroupBBox(bboxXYPos);
                     texturesAtlasDataList.add(texturesAtlasDataZNeg);
                 }
@@ -519,12 +792,12 @@ public class Engine {
             if(facesPlaneXZNeg != null && !facesPlaneXZNeg.isEmpty()) {
                 GaiaBoundingBox bboxXZNeg = HalfEdgeUtils.getBoundingBoxOfFaces(facesPlaneXZNeg);
                 BufferedImage YPosImage = makeYPosTexture(bboxXZNeg, maxScreenSize);
-                BufferedImage YPosImageModified = eliminateBackGroundColor(YPosImage);
+                YPosImage = eliminateBackGroundColor(YPosImage);
 
                 // test save images.***
                 try {
-                    ImageIO.write(YPosImageModified, "jpeg", new File("D:\\Result_mago3dTiler\\YPosImageModified.jpg"));
-                    ImageIO.write(YPosImage, "jpeg", new File("D:\\Result_mago3dTiler\\YPosImage.jpg"));
+                    //ImageIO.write(YPosImageModified, "jpeg", new File("D:\\Result_mago3dTiler\\YPosImageModified" + classificationId + ".jpg"));
+                    ImageIO.write(YPosImage, "jpeg", new File("D:\\Result_mago3dTiler\\YPosImage" + classificationId + ".jpg"));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -534,7 +807,7 @@ public class Engine {
                     TexturesAtlasData texturesAtlasDataYPos = new TexturesAtlasData();
                     texturesAtlasDataYPos.setClassifyId(classificationId);
                     texturesAtlasDataYPos.setPlaneType(PlaneType.XZNEG);
-                    texturesAtlasDataYPos.setTextureImage(YPosImageModified);
+                    texturesAtlasDataYPos.setTextureImage(YPosImage);
                     texturesAtlasDataYPos.setFaceGroupBBox(bboxXZNeg);
                     texturesAtlasDataList.add(texturesAtlasDataYPos);
                 }
@@ -556,12 +829,12 @@ public class Engine {
             if(facesPlaneYZNeg != null && !facesPlaneYZNeg.isEmpty()) {
                 GaiaBoundingBox bboxYZNeg = HalfEdgeUtils.getBoundingBoxOfFaces(facesPlaneYZNeg);
                 BufferedImage XPosImage = makeXPosTexture(bboxYZNeg, maxScreenSize);
-                BufferedImage XPosImageModified = eliminateBackGroundColor(XPosImage);
+                XPosImage = eliminateBackGroundColor(XPosImage);
 
                 // test save images.***
                 try {
-                    ImageIO.write(XPosImageModified, "jpeg", new File("D:\\Result_mago3dTiler\\XPosImageModified.jpg"));
-                    ImageIO.write(XPosImage, "jpeg", new File("D:\\Result_mago3dTiler\\XPosImage.jpg"));
+                    //ImageIO.write(XPosImageModified, "jpeg", new File("D:\\Result_mago3dTiler\\XPosImageModified" + classificationId + ".jpg"));
+                    ImageIO.write(XPosImage, "jpeg", new File("D:\\Result_mago3dTiler\\XPosImage" + classificationId + ".jpg"));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -570,7 +843,7 @@ public class Engine {
                     TexturesAtlasData texturesAtlasDataXPos = new TexturesAtlasData();
                     texturesAtlasDataXPos.setClassifyId(classificationId);
                     texturesAtlasDataXPos.setPlaneType(PlaneType.YZNEG);
-                    texturesAtlasDataXPos.setTextureImage(XPosImageModified);
+                    texturesAtlasDataXPos.setTextureImage(XPosImage);
                     texturesAtlasDataXPos.setFaceGroupBBox(bboxYZNeg);
                     texturesAtlasDataList.add(texturesAtlasDataXPos);
                 }
@@ -592,12 +865,12 @@ public class Engine {
             if(facesPlaneXZPos != null && !facesPlaneXZPos.isEmpty()) {
                 GaiaBoundingBox bboxXZPos = HalfEdgeUtils.getBoundingBoxOfFaces(facesPlaneXZPos);
                 BufferedImage YNegImage = makeYNegTexture(bboxXZPos, maxScreenSize);
-                BufferedImage YNegImageModified = eliminateBackGroundColor(YNegImage);
+                YNegImage = eliminateBackGroundColor(YNegImage);
 
                 // test save images.***
                 try {
-                    ImageIO.write(YNegImageModified, "jpeg", new File("D:\\Result_mago3dTiler\\YNegImageModified.jpg"));
-                    ImageIO.write(YNegImage, "jpeg", new File("D:\\Result_mago3dTiler\\YNegImage.jpg"));
+                    //ImageIO.write(YNegImageModified, "jpeg", new File("D:\\Result_mago3dTiler\\YNegImageModified" + classificationId + ".jpg"));
+                    ImageIO.write(YNegImage, "jpeg", new File("D:\\Result_mago3dTiler\\YNegImage" + classificationId + ".jpg"));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -606,7 +879,7 @@ public class Engine {
                     TexturesAtlasData texturesAtlasDataYNeg = new TexturesAtlasData();
                     texturesAtlasDataYNeg.setClassifyId(classificationId);
                     texturesAtlasDataYNeg.setPlaneType(PlaneType.XZ);
-                    texturesAtlasDataYNeg.setTextureImage(YNegImageModified);
+                    texturesAtlasDataYNeg.setTextureImage(YNegImage);
                     texturesAtlasDataYNeg.setFaceGroupBBox(bboxXZPos);
                     texturesAtlasDataList.add(texturesAtlasDataYNeg);
                 }
@@ -628,12 +901,12 @@ public class Engine {
             if(facesPlaneYZPos != null && !facesPlaneYZPos.isEmpty()) {
                 GaiaBoundingBox bboxYZPos = HalfEdgeUtils.getBoundingBoxOfFaces(facesPlaneYZPos);
                 BufferedImage XNegImage = makeXNegTexture(bboxYZPos, maxScreenSize);
-                BufferedImage XNegImageModified = eliminateBackGroundColor(XNegImage);
+                XNegImage = eliminateBackGroundColor(XNegImage);
 
                 // test save images.***
                 try {
-                    ImageIO.write(XNegImageModified, "jpeg", new File("D:\\Result_mago3dTiler\\XNegImageModified.jpg"));
-                    ImageIO.write(XNegImage, "jpeg", new File("D:\\Result_mago3dTiler\\XNegImage.jpg"));
+                    //ImageIO.write(XNegImageModified, "jpeg", new File("D:\\Result_mago3dTiler\\XNegImageModified" + classificationId + ".jpg"));
+                    ImageIO.write(XNegImage, "jpeg", new File("D:\\Result_mago3dTiler\\XNegImage" + classificationId + ".jpg"));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -642,7 +915,7 @@ public class Engine {
                     TexturesAtlasData texturesAtlasDataXNeg = new TexturesAtlasData();
                     texturesAtlasDataXNeg.setClassifyId(classificationId);
                     texturesAtlasDataXNeg.setPlaneType(PlaneType.YZ);
-                    texturesAtlasDataXNeg.setTextureImage(XNegImageModified);
+                    texturesAtlasDataXNeg.setTextureImage(XNegImage);
                     texturesAtlasDataXNeg.setFaceGroupBBox(bboxYZPos);
                     texturesAtlasDataList.add(texturesAtlasDataXNeg);
                 }
@@ -697,18 +970,25 @@ public class Engine {
         String originalProjectName = originalPath.substring(originalPath.lastIndexOf(File.separator) + 1, originalPath.length());
         String rawProjectName = originalProjectName.substring(0, originalProjectName.lastIndexOf("."));
 
-        //String path = "D:" +File.separator + "temp2";
+        // make tempFolder if no exists.***
+        String tempFolderPath = this.getTempFolderPath();
+        File tempFolder = new File(tempFolderPath);
+        if(!tempFolder.exists())
+        {
+            tempFolder.mkdirs();
+        }
         String fileName = rawProjectName + "_Atlas";
         String extension = ".jpg";
         GaiaTexture atlasTexture = makeAtlasTexture(texturesAtlasDataList);
         atlasTexture.setPath(fileName + extension);
-        //String atlasImagePath = path + File.separator + fileName + extension;
-//        try {
-//            File atlasFile = new File(atlasImagePath);
-//            ImageIO.write(atlasTexture.getBufferedImage(), "jpg", atlasFile);
-//        } catch (IOException e) {
-//            log.error("Error writing image: {}", e);
-//        }
+        atlasTexture.setParentPath(this.getTempFolderPath());
+        String atlasImagePath = atlasTexture.getParentPath() + File.separator + atlasTexture.getPath();
+        try {
+            File atlasFile = new File(atlasImagePath);
+            ImageIO.write(atlasTexture.getBufferedImage(), "jpg", atlasFile);
+        } catch (IOException e) {
+            log.error("Error writing image: {}", e);
+        }
 
         // finally make material with texture for the halfEdgeScene.***
         GaiaMaterial material = new GaiaMaterial();
@@ -1199,7 +1479,7 @@ public class Engine {
             getRenderSceneImage(sceneShaderProgram);
 
             // make the bufferImage.***
-            int bufferedImageType = BufferedImage.TYPE_INT_ARGB;
+            int bufferedImageType = BufferedImage.TYPE_INT_RGB;
             BufferedImage image = fbo.getBufferedImage(bufferedImageType);
 
             fbo.unbind();

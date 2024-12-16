@@ -10,7 +10,6 @@ import com.gaia3d.basic.halfedge.HalfEdgeScene;
 import com.gaia3d.basic.halfedge.HalfEdgeUtils;
 import com.gaia3d.basic.model.GaiaMaterial;
 import com.gaia3d.basic.model.GaiaNode;
-import com.gaia3d.basic.model.GaiaPrimitive;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.renderer.engine.Engine;
 import com.gaia3d.renderer.engine.IAppLogic;
@@ -24,17 +23,17 @@ import com.gaia3d.renderer.engine.graph.ShaderProgram;
 import com.gaia3d.renderer.engine.scene.Camera;
 import com.gaia3d.renderer.engine.scene.Projection;
 import com.gaia3d.renderer.renderable.RenderableGaiaScene;
-import com.gaia3d.util.GaiaPrimitiveUtils;
 import com.gaia3d.util.GaiaSceneUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
-import org.lwjgl.opengl.GL;
 
-import java.awt.*;
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -135,7 +134,9 @@ public class MainRenderer implements IAppLogic {
         }
     }
 
-    public void renderPyramidDeformation(List<GaiaScene> scenes, List<GaiaScene> resultScenes) {
+
+
+    public void renderGaiaSceneLoop(List<GaiaScene> scenes, List<GaiaScene> resultScenes) {
 
         // Must init gl.***
         try{
@@ -145,15 +146,8 @@ public class MainRenderer implements IAppLogic {
         }
 
         GaiaScenesContainer gaiaScenesContainer = engine.getGaiaScenesContainer();
-        List<HalfEdgeScene> halfEdgeScenes = new ArrayList<>();
         int scenesCount = scenes.size();
         List<RenderableGaiaScene> renderableGaiaScenes = new ArrayList<>();
-
-        boolean checkTexCoord = false;
-        boolean checkNormal = false;
-        boolean checkColor = false;
-        boolean checkBatchId = false;
-        double error = 1e-4;
 
         for(int i = 0; i < scenesCount; i++)
         {
@@ -172,12 +166,6 @@ public class MainRenderer implements IAppLogic {
 
         Camera camera = engine.getCamera();
         camera.setPosition(new Vector3d(0, 0, 200));
-
-        FboManager fboManager = engine.getFboManager();
-        Window window = engine.getWindow();
-        int fboWidthColor = window.getWidth();
-        int fboHeightColor = window.getHeight();
-        Fbo colorFbo = fboManager.getOrCreateFbo("colorRender", fboWidthColor, fboHeightColor);
 
         log.info("Rendering the scene...");
         try{
@@ -371,49 +359,7 @@ public class MainRenderer implements IAppLogic {
         depthFbo.unbind();
     }
 
-    private float[][] bufferedImageToFloatMatrix(BufferedImage image)
-    {
-        int width = image.getWidth();
-        int height = image.getHeight();
-        float[][] floatMatrix = new float[width][height];
-        for(int i = 0; i < width; i++)
-        {
-            for(int j = 0; j < height; j++)
-            {
-                Color color = new Color(image.getRGB(i, j), true);
-                float r = color.getRed()/255.0f;
-                float g = color.getGreen()/255.0f;
-                float b = color.getBlue()/255.0f;
-                float a = color.getAlpha()/255.0f;
-
-                float depth = unpackDepth32(new float[]{r, g, b, a});
-                floatMatrix[i][j] = depth;
-                int hola = 0;
-            }
-        }
-
-        return floatMatrix;
-    }
-
-    public float unpackDepth32(float[] packedDepth)
-    {
-        if (packedDepth.length != 4) {
-            throw new IllegalArgumentException("packedDepth debe tener exactamente 4 elementos.");
-        }
-
-        // Ajuste del valor final (equivalente a packedDepth - 1.0 / 512.0)
-        for (int i = 0; i < 4; i++) {
-            packedDepth[i] -= 1.0f / 512.0f;
-        }
-
-        // Producto punto para recuperar la profundidad original
-        return packedDepth[0]
-                + packedDepth[1] / 256.0f
-                + packedDepth[2] / (256.0f * 256.0f)
-                + packedDepth[3] / 16777216.0f;
-    }
-
-    public void makeNetSurfaces(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, double pixelsForMeter) {
+    public void makeNetSurfacesWithBoxTextures(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, double pixelsForMeter) {
 
         // Must init gl.***
         try{
@@ -424,26 +370,10 @@ public class MainRenderer implements IAppLogic {
 
         GaiaScenesContainer gaiaScenesContainer = engine.getGaiaScenesContainer();
         int scenesCount = scenes.size();
-        List<RenderableGaiaScene> renderableGaiaScenes = new ArrayList<>();
-
-
-        boolean checkTexCoord = false;
-        boolean checkNormal = false;
-        boolean checkColor = false;
-        boolean checkBatchId = false;
-        double error = 1e-4;
 
         for(int i = 0; i < scenesCount; i++)
         {
             GaiaScene gaiaScene = scenes.get(i);
-
-            // 1rst, make the renderableGaiaScene.***
-//            renderableGaiaScenes.clear();
-//            RenderableGaiaScene renderableScene = internDataConverter.getRenderableGaiaScene(gaiaScene);
-//            renderableGaiaScenes.add(renderableScene);
-//            gaiaScenesContainer.setRenderableGaiaScenes(renderableGaiaScenes);
-
-
             GaiaBoundingBox bbox = gaiaScene.getBoundingBox();
             double bboxMaxSize = Math.max(bbox.getSizeX(), bbox.getSizeY());
             int maxDepthScreenSize = (int)Math.ceil(pixelsForMeter * bboxMaxSize);
@@ -464,8 +394,24 @@ public class MainRenderer implements IAppLogic {
 
             BufferedImage depthRenderedImage = depthRenderedImages.get(0);
 
+            // save depthRenderedImage as png.***************************************************************************
+            String tempFolderPath = "D:\\Result_mago3dTiler\\temp";
+            String depthRenderedImagePath = tempFolderPath + "\\depthRenderedImage_" + i + ".png";
+            // create the folder.***
+            File tempFolder = new File(tempFolderPath);
+            if(!tempFolder.exists())
+            {
+                tempFolder.mkdirs();
+            }
+            try {
+                ImageIO.write(depthRenderedImage, "png", new File(depthRenderedImagePath));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            // end of saving depthRenderedImage as png.------------------------------------------------------------------
+
             // make the netSurface by using the depthRenderedImage.***
-            float[][] depthValues = bufferedImageToFloatMatrix(depthRenderedImage);
+            float[][] depthValues = com.gaia3d.util.ImageUtils.bufferedImageToFloatMatrix(depthRenderedImage);
             int numCols = depthRenderedImage.getWidth();
             int numRows = depthRenderedImage.getHeight();
             HalfEdgeScene halfEdgeScene = HalfEdgeUtils.getHalfEdgeSceneRectangularNet(numCols, numRows, depthValues, bbox);
@@ -1107,7 +1053,7 @@ public class MainRenderer implements IAppLogic {
         }
 
         // now make a halfEdgeScene from the depthImage.************************************************************************
-        float[][] depthValues = bufferedImageToFloatMatrix(depthImage);
+        float[][] depthValues = com.gaia3d.util.ImageUtils.bufferedImageToFloatMatrix(depthImage);
         int numCols = depthImage.getWidth();
         int numRows = depthImage.getHeight();
         HalfEdgeScene halfEdgeScene = HalfEdgeUtils.getHalfEdgeSceneRectangularNet(numCols, numRows, depthValues, nodeBBox);

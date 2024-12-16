@@ -27,7 +27,12 @@ public class FboManager {
             fbo = createFbo(name, fboWidth, fboHeight);
         }
 
-        fbo.resize(fboWidth, fboHeight);
+        if(fbo.getFboWidth() != fboWidth || fbo.getFboHeight() != fboHeight)
+        {
+            deleteFbo(name);
+            fbo = createFbo(name, fboWidth, fboHeight);
+        }
+        //fbo.resize(fboWidth, fboHeight);
 
         return fbo;
     }

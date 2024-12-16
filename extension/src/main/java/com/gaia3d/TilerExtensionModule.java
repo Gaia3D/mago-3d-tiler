@@ -77,7 +77,7 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
         //***************************************************************
         if(renderer == null)
             renderer = new MainRenderer();
-        renderer.renderPyramidDeformation(scenes, resultScenes);
+        renderer.renderGaiaSceneLoop(scenes, resultScenes);
         deleteObjects();
     }
 
@@ -101,11 +101,11 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
-    public void makeNetSurfaces(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, double pixelsForMeter)
+    public void makeNetSurfacesWithBoxTextures(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, double pixelsForMeter)
     {
         if(renderer == null)
             renderer = new MainRenderer();
-        renderer.makeNetSurfaces(scenes, resultHalfEdgeScenes, decimateParameters, pixelsForMeter);
+        renderer.makeNetSurfacesWithBoxTextures(scenes, resultHalfEdgeScenes, decimateParameters, pixelsForMeter);
         deleteObjects();
     }
 
