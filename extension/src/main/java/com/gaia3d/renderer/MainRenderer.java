@@ -388,7 +388,6 @@ public class MainRenderer implements IAppLogic {
 
                 float depth = unpackDepth32(new float[]{r, g, b, a});
                 floatMatrix[i][j] = depth;
-                int hola = 0;
             }
         }
 

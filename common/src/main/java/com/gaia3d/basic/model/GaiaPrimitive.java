@@ -294,8 +294,7 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         return gaiaPrimitive;
     }
 
-    public void deleteNormals()
-    {
+    public void deleteNormals() {
         for (GaiaVertex vertex : vertices) {
             vertex.setNormal(null);
         }
@@ -435,8 +434,7 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         this.vertices = newVerticesArray;
     }
 
-    private void getWeldableVertexMap(Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster, List<GaiaVertex> vertices, double error, boolean checkTexCoord, boolean checkNormal,
-                                      boolean checkColor, boolean checkBatchId) {
+    private void getWeldableVertexMap(Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster, List<GaiaVertex> vertices, double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
         Map<GaiaVertex, GaiaVertex> visitedMap = new HashMap<>();
         int verticesCount = vertices.size();
         for (int i = 0; i < verticesCount; i++) {
@@ -482,7 +480,7 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         }
 
         int vertexCount = this.getVertices().size();
-        for(int i = 0; i < vertexCount; i++) {
+        for (int i = 0; i < vertexCount; i++) {
             GaiaVertex vertex = this.getVertices().get(i);
             if (!vertexIdxMap.containsKey(vertex)) {
                 vertex.clear();

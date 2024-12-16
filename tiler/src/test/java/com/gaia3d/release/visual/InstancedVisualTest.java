@@ -32,6 +32,8 @@ class InstancedVisualTest {
                 "-it", "shp",
                 "-ot", "i3dm",
                 "-instance", getInputPath(path).getAbsolutePath() + "/tree.dae",
+                "-terrain", getInputPath(path).getAbsolutePath() + "/seoul-aster.tif",
+                "-debug",
                 "-c", "5186"
         };
         execute(args);
@@ -45,6 +47,7 @@ class InstancedVisualTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "geojson",
                 "-instance", getInputPath(path).getAbsolutePath() + "/tree.dae",
+                "-terrain", getInputPath(path).getAbsolutePath() + "/seoul-aster.tif",
                 "-ot", "i3dm",
                 "-c", "5186"
         };
