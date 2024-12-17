@@ -171,6 +171,7 @@ public class TilingPipeLinePhR  implements Pipeline {
 
     private void deleteTemp() throws IOException {
         /* delete temp directory */
+        log.info("[Temp] Delete temp directory.");
         File tempFile = new File(globalOptions.getOutputPath(), "temp");
         if (tempFile.exists() && tempFile.isDirectory()) {
             FileUtils.deleteDirectory(tempFile);

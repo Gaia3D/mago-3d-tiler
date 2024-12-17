@@ -100,6 +100,19 @@ class BatchedVisualTest {
     }
 
     @Test
+    void batched08() {
+        String path = "B08-seoul-shape";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-c", "5186",
+                "-skirtHeight", "10",
+                "-terrain", getInputPath(path).getAbsolutePath() + "/korea-compressed.tif",
+        };
+        execute(args);
+    }
+
+    @Test
     void batched50() {
         String path = "B50-wangsuk2-citygml";
         String[] args = new String[] {

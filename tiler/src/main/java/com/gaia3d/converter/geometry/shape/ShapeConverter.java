@@ -264,7 +264,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         double skirtHeight = globalOptions.getSkirtHeight();
         GaiaExtruder gaiaExtruder = new GaiaExtruder();
 
-        int sceneCount = 1000;
+        int sceneCount = 10000;
         List<GaiaScene> scenes = new ArrayList<>();
 
         EasySceneCreator easySceneCreator = new EasySceneCreator();
@@ -332,8 +332,13 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
 
             scenes.add(scene);
             if (scenes.size() >= sceneCount) {
-                String tempName = UUID.randomUUID().toString() + input.getName();
+                String tempName = UUID.randomUUID() + "_" + input.getName();
                 File tempFile = new File(output, tempName);
+
+                scenes.forEach((gaiaScene) -> {
+                    gaiaScene.setOriginalPath(tempFile.toPath());
+                });
+                log.info("[{}] write temp : {}", tempName, scenes.size());
                 GaiaSceneTempHolder sceneTemp = GaiaSceneTempHolder.builder()
                         .tempScene(scenes)
                         .tempFile(tempFile).build();
@@ -343,8 +348,13 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             }
         }
         if (!scenes.isEmpty()) {
-            String tempName = UUID.randomUUID().toString() + input.getName();
+            String tempName = UUID.randomUUID() + "_" + input.getName();
             File tempFile = new File(output, tempName);
+
+            scenes.forEach((gaiaScene) -> {
+                gaiaScene.setOriginalPath(tempFile.toPath());
+            });
+            log.info("[{}] write temp : {}", tempName, scenes.size());
             GaiaSceneTempHolder sceneTemp = GaiaSceneTempHolder.builder()
                     .tempScene(scenes)
                     .tempFile(tempFile).build();
