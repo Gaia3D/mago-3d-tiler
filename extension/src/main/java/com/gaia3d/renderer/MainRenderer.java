@@ -396,21 +396,21 @@ public class MainRenderer implements IAppLogic {
 
             BufferedImage depthRenderedImage = depthRenderedImages.get(0);
 
-            // save depthRenderedImage as png.***************************************************************************
-            String tempFolderPath = "D:\\Result_mago3dTiler\\temp";
-            String depthRenderedImagePath = tempFolderPath + "\\depthRenderedImage_" + i + ".png";
-            // create the folder.***
-            File tempFolder = new File(tempFolderPath);
-            if(!tempFolder.exists())
-            {
-                tempFolder.mkdirs();
-            }
-            try {
-                ImageIO.write(depthRenderedImage, "png", new File(depthRenderedImagePath));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            // end of saving depthRenderedImage as png.------------------------------------------------------------------
+//            // save depthRenderedImage as png.***************************************************************************
+//            String tempFolderPath = "D:\\Result_mago3dTiler\\temp";
+//            String depthRenderedImagePath = tempFolderPath + "\\depthRenderedImage_" + i + ".png";
+//            // create the folder.***
+//            File tempFolder = new File(tempFolderPath);
+//            if(!tempFolder.exists())
+//            {
+//                tempFolder.mkdirs();
+//            }
+//            try {
+//                ImageIO.write(depthRenderedImage, "png", new File(depthRenderedImagePath));
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//            // end of saving depthRenderedImage as png.------------------------------------------------------------------
 
             // make the netSurface by using the depthRenderedImage.***
             float[][] depthValues = com.gaia3d.util.ImageUtils.bufferedImageToFloatMatrix(depthRenderedImage);

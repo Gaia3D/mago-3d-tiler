@@ -553,28 +553,28 @@ public class Engine {
             BufferedImage depthRenderedImage = depthRenderedImages.get(0);
             BufferedImage colorRenderedImage = depthRenderedImages.get(1);
 
-            // save depthRenderedImage as png.***************************************************************************
-            String tempFolderPath = "D:\\Result_mago3dTiler\\temp";
-            String depthRenderedImagePath = tempFolderPath + "\\depthRenderedImage_" + i + ".png";
-            // create the folder.***
-            File tempFolder = new File(tempFolderPath);
-            if(!tempFolder.exists())
-            {
-                tempFolder.mkdirs();
-            }
-            try {
-                ImageIO.write(depthRenderedImage, "png", new File(depthRenderedImagePath));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            String colorRenderedImagePath = tempFolderPath + "\\colorRenderedImage_" + i + ".png";
-            try {
-                ImageIO.write(colorRenderedImage, "png", new File(colorRenderedImagePath));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            // end save depthRenderedImage as png.-----------------------------------------------------------------------
+//            // save depthRenderedImage as png.***************************************************************************
+//            String tempFolderPath = "D:\\Result_mago3dTiler\\temp";
+//            String depthRenderedImagePath = tempFolderPath + "\\depthRenderedImage_" + i + ".png";
+//            // create the folder.***
+//            File tempFolder = new File(tempFolderPath);
+//            if(!tempFolder.exists())
+//            {
+//                tempFolder.mkdirs();
+//            }
+//            try {
+//                ImageIO.write(depthRenderedImage, "png", new File(depthRenderedImagePath));
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//
+//            String colorRenderedImagePath = tempFolderPath + "\\colorRenderedImage_" + i + ".png";
+//            try {
+//                ImageIO.write(colorRenderedImage, "png", new File(colorRenderedImagePath));
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//            // end save depthRenderedImage as png.-----------------------------------------------------------------------
 
             // make the netSurface by using the depthRenderedImage.***
             float[][] depthValues = com.gaia3d.util.ImageUtils.bufferedImageToFloatMatrix(depthRenderedImage);
@@ -757,16 +757,12 @@ public class Engine {
                 BufferedImage ZNegImage = makeZNegTexture(bboxXYPos, maxScreenSize);
                 ZNegImage = eliminateBackGroundColor(ZNegImage);
 
-                // test save images.***
-                try {
-                    String imagePath = "D:\\Result_mago3dTiler\\ZNegImageModified" + classificationId + ".jpg";
-                    File atlasFile = new File(imagePath);
-                    //ImageIO.write(ZNegImageModified, "jpg", atlasFile);
-
-                    ImageIO.write(ZNegImage, "jpg", new File("D:\\Result_mago3dTiler\\ZNegImage" + classificationId + ".jpg"));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+//                // test save images.***
+//                try {
+//                    ImageIO.write(ZNegImage, "jpg", new File("D:\\Result_mago3dTiler\\ZNegImage" + classificationId + ".jpg"));
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
                 if(ZNegImage != null)
                 {
                     TexturesAtlasData texturesAtlasDataZNeg = new TexturesAtlasData();
@@ -796,13 +792,12 @@ public class Engine {
                 BufferedImage YPosImage = makeYPosTexture(bboxXZNeg, maxScreenSize);
                 YPosImage = eliminateBackGroundColor(YPosImage);
 
-                // test save images.***
-                try {
-                    //ImageIO.write(YPosImageModified, "jpeg", new File("D:\\Result_mago3dTiler\\YPosImageModified" + classificationId + ".jpg"));
-                    ImageIO.write(YPosImage, "jpeg", new File("D:\\Result_mago3dTiler\\YPosImage" + classificationId + ".jpg"));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+//                // test save images.***
+//                try {
+//                    ImageIO.write(YPosImage, "jpeg", new File("D:\\Result_mago3dTiler\\YPosImage" + classificationId + ".jpg"));
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
 
                 if(YPosImage != null)
                 {
@@ -833,13 +828,12 @@ public class Engine {
                 BufferedImage XPosImage = makeXPosTexture(bboxYZNeg, maxScreenSize);
                 XPosImage = eliminateBackGroundColor(XPosImage);
 
-                // test save images.***
-                try {
-                    //ImageIO.write(XPosImageModified, "jpeg", new File("D:\\Result_mago3dTiler\\XPosImageModified" + classificationId + ".jpg"));
-                    ImageIO.write(XPosImage, "jpeg", new File("D:\\Result_mago3dTiler\\XPosImage" + classificationId + ".jpg"));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+//                // test save images.***
+//                try {
+//                    ImageIO.write(XPosImage, "jpeg", new File("D:\\Result_mago3dTiler\\XPosImage" + classificationId + ".jpg"));
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
                 if(XPosImage != null)
                 {
                     TexturesAtlasData texturesAtlasDataXPos = new TexturesAtlasData();
@@ -869,13 +863,12 @@ public class Engine {
                 BufferedImage YNegImage = makeYNegTexture(bboxXZPos, maxScreenSize);
                 YNegImage = eliminateBackGroundColor(YNegImage);
 
-                // test save images.***
-                try {
-                    //ImageIO.write(YNegImageModified, "jpeg", new File("D:\\Result_mago3dTiler\\YNegImageModified" + classificationId + ".jpg"));
-                    ImageIO.write(YNegImage, "jpeg", new File("D:\\Result_mago3dTiler\\YNegImage" + classificationId + ".jpg"));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+//                // test save images.***
+//                try {
+//                    ImageIO.write(YNegImage, "jpeg", new File("D:\\Result_mago3dTiler\\YNegImage" + classificationId + ".jpg"));
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
                 if(YNegImage != null)
                 {
                     TexturesAtlasData texturesAtlasDataYNeg = new TexturesAtlasData();
@@ -905,13 +898,12 @@ public class Engine {
                 BufferedImage XNegImage = makeXNegTexture(bboxYZPos, maxScreenSize);
                 XNegImage = eliminateBackGroundColor(XNegImage);
 
-                // test save images.***
-                try {
-                    //ImageIO.write(XNegImageModified, "jpeg", new File("D:\\Result_mago3dTiler\\XNegImageModified" + classificationId + ".jpg"));
-                    ImageIO.write(XNegImage, "jpeg", new File("D:\\Result_mago3dTiler\\XNegImage" + classificationId + ".jpg"));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+//                // test save images.***
+//                try {
+//                    ImageIO.write(XNegImage, "jpeg", new File("D:\\Result_mago3dTiler\\XNegImage" + classificationId + ".jpg"));
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
                 if(XNegImage != null)
                 {
                     TexturesAtlasData texturesAtlasDataXNeg = new TexturesAtlasData();

@@ -111,12 +111,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         root.setDepth(0);
         root.setBoundingVolume(new BoundingVolume(globalBoundingBox));
         root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
-        //root.setGeometricError(geometricError);
 
-
-        //makeQuadTreeByDepth(root, desiredDepth);
         makeOctTreeByDepth(root, desiredDepth);
-
 
         // lod 0.**********************************************************************************************************
         int lod = 0;
@@ -238,7 +234,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         {
             tileInfosCopy.clear();
             tileInfosCopy = this.getTileInfosCopy(tileInfos, 0, tileInfosCopy);
-            //createNetSurfaceNodesByPyramidDeformation(root, tileInfosCopy, depth, maxDepth);
             createNetSurfaceNodes(root, tileInfosCopy, depth, maxDepth);
         }
 
@@ -1162,18 +1157,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
         }
 
-        // cut by latitudes.***
-        int latitudesCount = latDivisions.size();
-        for(int i = 0; i < latitudesCount; i++)
-        {
-            double latDeg = latDivisions.get(i);
-            if(cutRectangleCakeByLatitudeDeg(tileInfos, lod, latDeg))
-            {
-                someSceneCut = true;
-                System.gc();
-            }
-        }
-
         // cut by altitudes.***
         int altitudesCount = altDivisions.size();
         for(int i = 0; i < altitudesCount; i++)
@@ -1186,7 +1169,18 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
         }
 
-        int hola = 0;
+        // cut by latitudes.***
+        int latitudesCount = latDivisions.size();
+        for(int i = 0; i < latitudesCount; i++)
+        {
+            double latDeg = latDivisions.get(i);
+            if(cutRectangleCakeByLatitudeDeg(tileInfos, lod, latDeg))
+            {
+                someSceneCut = true;
+                System.gc();
+            }
+        }
+
         return someSceneCut;
     }
 
@@ -1759,121 +1753,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
     }
 
-    private void createQuadTreeChildrenForNode(Node node)
-    {
-        if (node == null)
-            return;
-
-        String parentNodeCode = node.getNodeCode();
-
-        BoundingVolume boundingVolume = node.getBoundingVolume();
-        double[] region = boundingVolume.getRegion();
-        double minLonDeg = Math.toDegrees(region[0]);
-        double minLatDeg = Math.toDegrees(region[1]);
-        double maxLonDeg = Math.toDegrees(region[2]);
-        double maxLatDeg = Math.toDegrees(region[3]);
-        double minAltitude = region[4];
-        double maxAltitude = region[5];
-
-        // must descend as quadtree.***
-        double midLonDeg = (minLonDeg + maxLonDeg) / 2.0;
-        double midLatDeg = (minLatDeg + maxLatDeg) / 2.0;
-
-        double parentGeometricError = node.getGeometricError();
-        double childGeometricError = parentGeometricError / 2.0;
-
-        //
-        List<Node> children = node.getChildren();
-        if (children == null)
-        {
-            children = new ArrayList<>();
-            node.setChildren(children);
-        }
-
-        //
-        //        +------------+------------+
-        //        |            |            |
-        //        |     3      |     2      |
-        //        |            |            |
-        //        +------------+------------+
-        //        |            |            |
-        //        |     0      |     1      |
-        //        |            |            |
-        //        +------------+------------+
-
-
-        // 0. left - down.***
-        Node child0 = new Node();
-        children.add(child0);
-        child0.setParent(node);
-        child0.setDepth(node.getDepth() + 1);
-        child0.setGeometricError(childGeometricError);
-        GaiaBoundingBox child0BoundingBox = new GaiaBoundingBox(minLonDeg, minLatDeg, minAltitude, midLonDeg, midLatDeg, maxAltitude, false);
-        child0.setBoundingVolume(new BoundingVolume(child0BoundingBox));
-        child0.setNodeCode(parentNodeCode + "0");
-
-        // 1. right - down.***
-        Node child1 = new Node();
-        children.add(child1);
-        child1.setParent(node);
-        child1.setDepth(node.getDepth() + 1);
-        child1.setGeometricError(childGeometricError);
-        GaiaBoundingBox child1BoundingBox = new GaiaBoundingBox(midLonDeg, minLatDeg, minAltitude, maxLonDeg, midLatDeg, maxAltitude, false);
-        child1.setBoundingVolume(new BoundingVolume(child1BoundingBox));
-        child1.setNodeCode(parentNodeCode + "1");
-
-        // 2. right - up.***
-        Node child2 = new Node();
-        children.add(child2);
-        child2.setParent(node);
-        child2.setDepth(node.getDepth() + 1);
-        child2.setGeometricError(childGeometricError);
-        GaiaBoundingBox child2BoundingBox = new GaiaBoundingBox(midLonDeg, midLatDeg, minAltitude, maxLonDeg, maxLatDeg, maxAltitude, false);
-        child2.setBoundingVolume(new BoundingVolume(child2BoundingBox));
-        child2.setNodeCode(parentNodeCode + "2");
-
-        // 3. left - up.***
-        Node child3 = new Node();
-        children.add(child3);
-        child3.setParent(node);
-        child3.setDepth(node.getDepth() + 1);
-        child3.setGeometricError(childGeometricError);
-        GaiaBoundingBox child3BoundingBox = new GaiaBoundingBox(minLonDeg, midLatDeg, minAltitude, midLonDeg, maxLatDeg, maxAltitude, false);
-        child3.setBoundingVolume(new BoundingVolume(child3BoundingBox));
-        child3.setNodeCode(parentNodeCode + "3");
-
-    }
-
-    public void makeQuadTree(Node node, double minLatLength)
-    {
-        if (node == null)
-            return;
-
-        BoundingVolume boundingVolume = node.getBoundingVolume();
-        double[] region = boundingVolume.getRegion();
-        double minLatRad = region[1];
-        double maxLatRad = region[3];
-        double distanceBetweenLat = GlobeUtils.distanceBetweenLatitudesRad(minLatRad, maxLatRad);
-
-        if(distanceBetweenLat < minLatLength)
-        {
-            return;
-        }
-
-        // must descend as quadtree.***
-        createQuadTreeChildrenForNode(node);
-
-        List<Node> children = node.getChildren();
-
-        int childrenCount = children.size();
-        for (int i = 0; i < childrenCount; i++)
-        {
-            Node child = children.get(i);
-            makeQuadTree(child, minLatLength);
-        }
-
-    }
-
     public void makeOctTreeByDepth(Node node, int targetDepth)
     {
         if(node == null)
@@ -1892,27 +1771,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         {
             Node child = children.get(i);
             makeOctTreeByDepth(child, targetDepth);
-        }
-    }
-
-    public void makeQuadTreeByDepth(Node node, int targetDepth)
-    {
-        if (node == null)
-            return;
-
-        if(node.getDepth() >= targetDepth)
-            return;
-
-        // must descend as quadtree.***
-        createQuadTreeChildrenForNode(node);
-
-        List<Node> children = node.getChildren();
-
-        int childrenCount = children.size();
-        for (int i = 0; i < childrenCount; i++)
-        {
-            Node child = children.get(i);
-            makeQuadTreeByDepth(child, targetDepth);
         }
     }
 
