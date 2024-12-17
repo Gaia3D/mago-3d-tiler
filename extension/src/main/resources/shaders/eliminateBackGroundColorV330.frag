@@ -33,9 +33,9 @@ void main(void) {
 //        fragColor = vec4(0.0f, 0.25f, 0.9f, 1.0f);
 //        return;
 
-        for(int i=-5; i<=5; i++)
+        for(int i=-10; i<=10; i++)
         {
-            for(int j=-5; j<=5; j++)
+            for(int j=-10; j<=10; j++)
             {
                 vec2 texCoord = vec2(screenPos.x + pixelSize_x * float(i), screenPos.y + pixelSize_y * float(j));
 

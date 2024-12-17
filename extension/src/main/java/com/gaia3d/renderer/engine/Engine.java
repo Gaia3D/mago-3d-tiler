@@ -612,20 +612,16 @@ public class Engine {
     {
         log.info("Engine.decimate() : halfEdgeScenesToDecimate count : " + halfEdgeScenesToDecimate.size());
         // do an iteration of decimation.***
-        double maxDiffAngDegrees = decimateParameters.getMaxDiffAngDegrees();
-        double hedgeMinLength = decimateParameters.getHedgeMinLength();
-        double frontierMaxDiffAngDeg = decimateParameters.getFrontierMaxDiffAngDeg();
-        double maxAspectRatio = decimateParameters.getMaxAspectRatio();
-        int maxCollapsesCount = decimateParameters.getMaxCollapsesCount();
-
         int halfEdgeScenesCount = halfEdgeScenesToDecimate.size();
         for(int i=0; i<halfEdgeScenesCount; i++)
         {
             HalfEdgeScene halfEdgeScene = halfEdgeScenesToDecimate.get(i);
+            GaiaBoundingBox bbox = halfEdgeScene.getBoundingBox();
+            double bboxMaxSize = bbox.getMaxSize();
             halfEdgeScene.doTrianglesReductionOneIteration(decimateParameters);
 
             // now, cut the halfEdgeScene and make cube-textures by rendering.***
-            double gridSpacing = 50.0;
+            double gridSpacing = bboxMaxSize / 5.0;
             HalfEdgeOctree resultOctree = new HalfEdgeOctree(null);
             log.info("Engine.decimate() : cutHalfEdgeSceneGridXYZ.");
             HalfEdgeScene cuttedScene = HalfEdgeCutter.cutHalfEdgeSceneGridXYZ(halfEdgeScene, gridSpacing, resultOctree);
@@ -635,10 +631,7 @@ public class Engine {
             log.info("Engine.decimate() : makeBoxTexturesForHalfEdgeScene.");
             makeBoxTexturesForHalfEdgeScene(cuttedScene);
 
-            ////cuttedScene.translateToOrigin();
             resultHalfEdgeScenes.add(cuttedScene);
-
-            int hola = 0;
         }
     }
 
@@ -664,7 +657,7 @@ public class Engine {
             glViewport(0, 0, width[0], height[0]);
             glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
             glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-            glEnable(GL20.GL_DEPTH_TEST);
+            glDisable(GL20.GL_DEPTH_TEST);
 
             // enable cull face.***
             glEnable(GL20.GL_CULL_FACE);
@@ -673,37 +666,46 @@ public class Engine {
             int magFilter = GL20.GL_NEAREST;
             int wrapS = GL20.GL_REPEAT; // GL_CLAMP_TO_EDGE
             int wrapT = GL20.GL_REPEAT;
+            int iterationsCount = 10;
+            BufferedImage image = originalImage;
             boolean resizeToPowerOf2 = false;
-            int textureId = RenderableTexturesUtils.createGlTextureFromBufferedImage(originalImage, minFilter, magFilter, wrapS, wrapT, resizeToPowerOf2);
 
             GL20.glEnable(GL20.GL_TEXTURE_2D);
             GL20.glActiveTexture(GL20.GL_TEXTURE0);
-            GL20.glBindTexture(GL20.GL_TEXTURE_2D, textureId);
 
             // shader program.***
             ShaderManager shaderManager = getShaderManager();
             ShaderProgram shaderProgram = shaderManager.getShaderProgram("eliminateBackGroundColor");
 
             shaderProgram.bind();
-
             // set uniforms.***
             UniformsMap uniformsMap = shaderProgram.getUniformsMap();
             uniformsMap.setUniform1i("uTexture", 0);
-            uniformsMap.setUniform1f("uScreenWidth", (float)fboWidth);
-            uniformsMap.setUniform1f("uScreenHeight", (float)fboHeight);
+            uniformsMap.setUniform1f("uScreenWidth", (float) fboWidth);
+            uniformsMap.setUniform1f("uScreenHeight", (float) fboHeight);
             uniformsMap.setUniform3fv("uBackgroundColor", new Vector3f(0.5f, 0.5f, 0.5f));
 
-            screenQuad.render();
-            shaderProgram.unbind();
-
-            // make the bufferImage.***
             int bufferedImageType = BufferedImage.TYPE_INT_ARGB;
-            BufferedImage image = fbo.getBufferedImage(bufferedImageType);
+
+            for(int i=0; i<iterationsCount; i++) {
+                // create the texture.***
+                int textureId = RenderableTexturesUtils.createGlTextureFromBufferedImage(image, minFilter, magFilter, wrapS, wrapT, resizeToPowerOf2);
+                GL20.glBindTexture(GL20.GL_TEXTURE_2D, textureId);
+
+                screenQuad.render();
+
+                // make the bufferImage.***
+                image = fbo.getBufferedImage(bufferedImageType);
+
+                // delete the texture.***
+                GL20.glDeleteTextures(textureId);
+            }
 
             fbo.unbind();
+            shaderProgram.unbind();
 
-            // delete the texture.***
-            GL20.glDeleteTextures(textureId);
+            // return depth test.***
+            glEnable(GL20.GL_DEPTH_TEST);
 
             return image;
         } catch (Exception e) {

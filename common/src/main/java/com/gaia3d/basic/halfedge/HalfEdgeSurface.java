@@ -2564,7 +2564,7 @@ public class HalfEdgeSurface implements Serializable {
                 } else if (z < planePosition.z) {
                     face.setClassifyId(1);
                 } else {
-                    face.setClassifyId(0);
+                    face.setClassifyId(1);
                 }
             }
         } else if (planeType == PlaneType.XZ) {
@@ -2581,7 +2581,7 @@ public class HalfEdgeSurface implements Serializable {
                 } else if (y < planePosition.y) {
                     face.setClassifyId(1);
                 } else {
-                    face.setClassifyId(0);
+                    face.setClassifyId(1);
                 }
             }
         } else if (planeType == PlaneType.YZ) {
@@ -2598,7 +2598,7 @@ public class HalfEdgeSurface implements Serializable {
                 } else if (x < planePosition.x) {
                     face.setClassifyId(1);
                 } else {
-                    face.setClassifyId(0);
+                    face.setClassifyId(1);
                 }
             }
         }
