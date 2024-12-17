@@ -124,7 +124,7 @@ public class GaiaSet implements Serializable {
     }
 
     public Path writeFile(Path path, int serial, GaiaAttribute gaiaAttribute) {
-        int dividedNumber = serial / 50000;
+        int dividedNumber = serial / 10000;
 
         String tempFileName = this.attribute.getIdentifier().toString() + "." + FormatType.TEMP.getExtension();
         Path tempDir = path.resolve(this.projectName).resolve(String.valueOf(dividedNumber));
