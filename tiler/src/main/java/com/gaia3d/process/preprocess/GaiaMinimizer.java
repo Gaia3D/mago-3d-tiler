@@ -18,9 +18,9 @@ public class GaiaMinimizer implements PreProcess {
     @Override
     public TileInfo run(TileInfo tileInfo) {
         GaiaScene scene = tileInfo.getScene();
-        GaiaPointCloud pointCloud = tileInfo.getPointCloud();
-
         minimizeGaiaScene(tileInfo, scene);
+
+        //GaiaPointCloud pointCloud = tileInfo.getPointCloud();
         //minimizeGaiaPointCloud(tileInfo, pointCloud);
         return tileInfo;
     }

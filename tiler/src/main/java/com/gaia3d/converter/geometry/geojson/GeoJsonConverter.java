@@ -230,10 +230,9 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                 }
             }
             iterator.close();
-
             EasySceneCreator easySceneCreator = new EasySceneCreator();
 
-            int sceneCount = 1000;
+            int sceneCount = 10000;
             List<GaiaScene> scenes = new ArrayList<>();
             for (GaiaExtrusionBuilding building : buildings) {
                 GaiaScene scene = easySceneCreator.createScene(input);
@@ -292,8 +291,13 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
 
                 scenes.add(scene);
                 if (scenes.size() >= sceneCount) {
-                    String tempName = UUID.randomUUID().toString() + input.getName();
+                    String tempName = UUID.randomUUID() + "_" + input.getName();
                     File tempFile = new File(output, tempName);
+
+                    scenes.forEach((gaiaScene) -> {
+                        gaiaScene.setOriginalPath(tempFile.toPath());
+                    });
+                    log.info("[{}] write temp : {}", tempName, scenes.size());
                     GaiaSceneTempHolder sceneTemp = GaiaSceneTempHolder.builder()
                             .tempScene(scenes)
                             .tempFile(tempFile).build();
@@ -304,14 +308,18 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
             }
             convertPipeLineStrings(pipeLineStrings, sceneTemps, input, output);
             if (!scenes.isEmpty()) {
-                String tempName = UUID.randomUUID().toString() + input.getName();
+                String tempName = UUID.randomUUID() + "_" + input.getName();
                 File tempFile = new File(output, tempName);
+
+                scenes.forEach((gaiaScene) -> {
+                    gaiaScene.setOriginalPath(tempFile.toPath());
+                });
+                log.info("[{}] write temp : {}", tempName, scenes.size());
                 GaiaSceneTempHolder sceneTemp = GaiaSceneTempHolder.builder()
                         .tempScene(scenes)
                         .tempFile(tempFile).build();
                 sceneTemp.minimize(tempFile);
                 sceneTemps.add(sceneTemp);
-                scenes.clear();
             }
         } catch (IOException e) {
             log.error("Failed to read GeoJSON file : {}", input.getAbsolutePath(), e);

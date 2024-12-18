@@ -43,17 +43,17 @@ public class GaiaTranslator implements PreProcess {
 
         // set position terrain height
         coverages.forEach((coverage) -> {
-            DirectPosition2D memSave_posWorld = new DirectPosition2D(DefaultGeographicCRS.WGS84, center.x, center.y);
-            double[] memSave_alt = new double[1];
-            memSave_alt[0] = 0;
+            DirectPosition worldPosition = new DirectPosition2D(DefaultGeographicCRS.WGS84, center.x, center.y);
+            double[] altitude = new double[1];
+            altitude[0] = 0;
             try {
-                coverage.evaluate((DirectPosition) memSave_posWorld, memSave_alt);
+                coverage.evaluate(worldPosition, altitude);
             } catch (Exception e) {
                 log.error("Error : {}", e.getMessage());
                 log.warn("Failed to evaluate terrain height", e);
             }
-            //log.info("memSave_alt[0] : {}", memSave_alt[0]);
-            center.z = memSave_alt[0];
+            //log.info("altitude[0] : {}", altitude[0]);
+            center.z = altitude[0];
         });
 
         KmlInfo kmlInfo = getKmlInfo(tileInfo, center);
