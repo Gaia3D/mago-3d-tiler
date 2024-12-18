@@ -32,6 +32,7 @@ import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 import com.gaia3d.util.DecimalUtils;
 import com.gaia3d.util.GaiaSceneUtils;
 import com.gaia3d.util.GlobeUtils;
+import com.gaia3d.util.StringUtils;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
@@ -48,20 +49,22 @@ import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.apache.commons.io.FileUtils.deleteDirectory;
+
 @Slf4j
 @NoArgsConstructor
 public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
     public final GlobalOptions globalOptions = GlobalOptions.getInstance();
-    private Vector3d vec3Aux1 = new Vector3d();
-    private Vector3d vec3Aux2 = new Vector3d();
-    private Vector3d vec3Aux3 = new Vector3d();
-    private Vector3d vec3Aux4 = new Vector3d();
-    private Vector3d vec3Aux5 = new Vector3d();
-    private Vector3d vec3Aux6 = new Vector3d();
-    private Vector3d vec3Aux7 = new Vector3d();
-    private Vector3d vec3Aux8 = new Vector3d();
-    private Vector3d vec3Aux9 = new Vector3d();
-    private Vector3d vec3Aux10 = new Vector3d();
+    private final Vector3d vec3Aux1 = new Vector3d();
+    private final Vector3d vec3Aux2 = new Vector3d();
+    private final Vector3d vec3Aux3 = new Vector3d();
+    private final Vector3d vec3Aux4 = new Vector3d();
+    private final Vector3d vec3Aux5 = new Vector3d();
+    private final Vector3d vec3Aux6 = new Vector3d();
+    private final Vector3d vec3Aux7 = new Vector3d();
+    private final Vector3d vec3Aux8 = new Vector3d();
+    private final Vector3d vec3Aux9 = new Vector3d();
+    private final Vector3d vec3Aux10 = new Vector3d();
 
     @Override
     public Tileset run(List<TileInfo> tileInfos) throws FileNotFoundException {
@@ -89,8 +92,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         double desiredLeafDist = 25.0;
 
 
-        int desiredDepth = (int)Math.ceil(HalfEdgeUtils.log2(distanceBetweenLat/desiredLeafDist));
-        double desiredDistanceBetweenLat = desiredLeafDist*Math.pow(2, desiredDepth);
+        int desiredDepth = (int) Math.ceil(HalfEdgeUtils.log2(distanceBetweenLat / desiredLeafDist));
+        double desiredDistanceBetweenLat = desiredLeafDist * Math.pow(2, desiredDepth);
         double desiredAngRad = GlobeUtils.angRadLatitudeForDistance(minLatRad, desiredDistanceBetweenLat);
         double desiredAngDeg = Math.toDegrees(desiredAngRad);
         maxLonDeg = minLonDeg + desiredAngDeg;
@@ -138,23 +141,20 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         // End lod 0.-----------------------------------------------------------------------------------------------------------
 
         DecimateParameters decimateParameters = new DecimateParameters();
-        for(int d = 1; d < maxDepth; d++) {
+        for (int d = 1; d < maxDepth; d++) {
             lod = d;
             tileInfosCopy.clear();
             nodeTileInfoMap.clear();
             tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
             // public void setBasicValues(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount)
             decimateParameters.setBasicValues(6.0, 0.5, 3.0, 12.0, 1000000, 2, 1.8);
-            if(d == 1) {
+            if (d == 1) {
                 decimateParameters.setBasicValues(13.0, 0.5, 3.0, 15.0, 1000000, 2, 1.6);
-            }
-            else if(d == 2) {
+            } else if (d == 2) {
                 decimateParameters.setBasicValues(18.0, 0.6, 3.0, 16.0, 1000000, 2, 1.8);
-            }
-            else if(d == 3) {
+            } else if (d == 3) {
                 decimateParameters.setBasicValues(23.0, 0.6, 3.0, 18.0, 1000000, 2, 2.3);
-            }
-            else if(d == 4) {
+            } else if (d == 4) {
                 decimateParameters.setBasicValues(28.0, 0.6, 3.0, 20.0, 1000000, 2, 2.8);
             }
 
@@ -169,39 +169,34 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
             currDepth = maxDepth - lod;
             distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
-            if(someSceneCut)
-            {
+            if (someSceneCut) {
                 scissorTextures(tileInfosCopy);
             }
             makeContentsForNodes(nodeTileInfoMap, lod);
 
-            if(d >= 2)
-            {
+            if (d >= 2) {
                 break;
             }
         }
 
         // net surfaces with boxTextures.**************************************************************************************
-        for(int d = 3; d < maxDepth; d++) {
+        for (int d = 3; d < maxDepth; d++) {
             lod = d;
             currDepth = maxDepth - lod;
             double boxSizeForCurrDepth = desiredDistanceBetweenLat / Math.pow(2, currDepth);
-            double pixelsForMeter = 256.0/boxSizeForCurrDepth;
+            double pixelsForMeter = 256.0 / boxSizeForCurrDepth;
             tileInfosCopy.clear();
             nodeTileInfoMap.clear();
             tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
             // public void setBasicValues(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount)
             decimateParameters.setBasicValues(10.0, 0.5, 3.0, 6.0, 1000000, 1, 1.8);
-            if(d == 3) {
+            if (d == 3) {
                 decimateParameters.setBasicValues(25.0, 1.0, 3.0, 15.0, 1000000, 1, 1.8);
-            }
-            else if(d == 4) {
+            } else if (d == 4) {
                 decimateParameters.setBasicValues(30.0, 1.2, 3.0, 15.0, 1000000, 1, 1.8);
-            }
-            else if(d == 5) {
+            } else if (d == 5) {
                 decimateParameters.setBasicValues(35.0, 1.5, 3.0, 15.0, 1000000, 1, 1.8);
-            }
-            else if(d == 6) {
+            } else if (d == 6) {
                 decimateParameters.setBasicValues(40.0, 2.0, 3.0, 15.0, 1000000, 1, 1.8);
             }
 
@@ -222,16 +217,14 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
             makeContentsForNodes(nodeTileInfoMap, lod);
 
-            if(d >= 5)
-            {
+            if (d >= 5) {
                 break;
             }
         }
 
         // Check if is necessary netSurfaces nodes.***********************************************************************
         lod = 6;
-        for(int depth = maxDepth - lod; depth >= 0; depth--)
-        {
+        for (int depth = maxDepth - lod; depth >= 0; depth--) {
             tileInfosCopy.clear();
             tileInfosCopy = this.getTileInfosCopy(tileInfos, 0, tileInfosCopy);
             createNetSurfaceNodes(root, tileInfosCopy, depth, maxDepth);
@@ -251,33 +244,28 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         return tileset;
     }
 
-    private void setGeometryErrorToNodeAutomatic(Node node, int maxDepth)
-    {
+    private void setGeometryErrorToNodeAutomatic(Node node, int maxDepth) {
         int lod = maxDepth - node.getDepth();
         double geometricError = (lod * 2.0 + 0.01);
         node.setGeometricError(geometricError);
         List<Node> children = node.getChildren();
-        if(children != null)
-        {
+        if (children != null) {
             int childrenCount = children.size();
-            for(int i = 0; i < childrenCount; i++)
-            {
+            for (int i = 0; i < childrenCount; i++) {
                 Node child = children.get(i);
                 setGeometryErrorToNodeAutomatic(child, maxDepth);
             }
         }
     }
 
-    private void makeNetSurfacesWithBoxTextures(List<TileInfo> tileInfos, int lod, DecimateParameters decimateParameters, double pixelsForMeter)
-    {
+    private void makeNetSurfacesWithBoxTextures(List<TileInfo> tileInfos, int lod, DecimateParameters decimateParameters, double pixelsForMeter) {
         log.info("making netSurfaces scenes for lod : " + lod);
         TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
         List<GaiaScene> gaiaSceneList = new ArrayList<>();
         List<HalfEdgeScene> resultDecimatedScenes = new ArrayList<>();
 
         int tileInfosCount = tileInfos.size();
-        for(int i = 0; i < tileInfosCount; i++)
-        {
+        for (int i = 0; i < tileInfosCount; i++) {
             log.info("making netSurfaces scene : " + i + " of " + tileInfosCount);
             TileInfo tileInfo = tileInfos.get(i);
             Path tempPath = tileInfo.getTempPath();
@@ -287,13 +275,11 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             GaiaSet gaiaSet;
             try {
                 gaiaSet = GaiaSet.readFile(tempPath);
-                if(gaiaSet == null) {
-                    log.error("Error : gaiaSet is null. pth : " + tempPath.toString());
+                if (gaiaSet == null) {
+                    log.error("Error : gaiaSet is null. pth : " + tempPath);
                     continue;
                 }
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 log.error("Error : {}", e.getMessage());
                 throw new RuntimeException(e);
             }
@@ -307,8 +293,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             resultDecimatedScenes.clear();
             gaiaSceneList.add(scene);
 
-            if(!GaiaSceneUtils.checkSceneMaterials(scene))
-            {
+            if (!GaiaSceneUtils.checkSceneMaterials(scene)) {
                 log.error("Error : scene has objects that uses materials that are not in the scene.");
                 continue;
             }
@@ -320,13 +305,11 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             // Save the textures in a temp folder.***
             List<GaiaMaterial> materials = halfEdgeSceneLod.getMaterials();
             int materialsCount = materials.size();
-            for (int j = 0; j < materialsCount; j++)
-            {
+            for (int j = 0; j < materialsCount; j++) {
                 GaiaMaterial material = materials.get(j);
                 List<GaiaTexture> textures = material.getTextures().get(TextureType.DIFFUSE);
                 int texturesCount = textures.size();
-                for (int k = 0; k < texturesCount; k++)
-                {
+                for (int k = 0; k < texturesCount; k++) {
                     GaiaTexture texture = textures.get(k);
                     // change the texture name.***
                     String texturePath = texture.getPath();
@@ -357,16 +340,14 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         }
     }
 
-    private void decimateScenes(List<TileInfo> tileInfos, int lod, DecimateParameters decimateParameters)
-    {
+    private void decimateScenes(List<TileInfo> tileInfos, int lod, DecimateParameters decimateParameters) {
         log.info("Decimating scenes for lod : " + lod);
         TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
         List<GaiaScene> gaiaSceneList = new ArrayList<>();
         List<HalfEdgeScene> resultDecimatedScenes = new ArrayList<>();
 
         int tileInfosCount = tileInfos.size();
-        for(int i = 0; i < tileInfosCount; i++)
-        {
+        for (int i = 0; i < tileInfosCount; i++) {
             log.info("Decimating scene : " + i + " of " + tileInfosCount);
             TileInfo tileInfo = tileInfos.get(i);
             Path tempPath = tileInfo.getTempPath();
@@ -376,13 +357,11 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             GaiaSet gaiaSet;
             try {
                 gaiaSet = GaiaSet.readFile(tempPath);
-                if(gaiaSet == null) {
-                    log.error("Error : gaiaSet is null. pth : " + tempPath.toString());
+                if (gaiaSet == null) {
+                    log.error("Error : gaiaSet is null. pth : " + tempPath);
                     continue;
                 }
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 log.error("Error : {}", e.getMessage());
                 throw new RuntimeException(e);
             }
@@ -400,13 +379,11 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             // Save the textures in a temp folder.***
             List<GaiaMaterial> materials = halfEdgeSceneLod.getMaterials();
             int materialsCount = materials.size();
-            for (int j = 0; j < materialsCount; j++)
-            {
+            for (int j = 0; j < materialsCount; j++) {
                 GaiaMaterial material = materials.get(j);
                 List<GaiaTexture> textures = material.getTextures().get(TextureType.DIFFUSE);
                 int texturesCount = textures.size();
-                for (int k = 0; k < texturesCount; k++)
-                {
+                for (int k = 0; k < texturesCount; k++) {
                     GaiaTexture texture = textures.get(k);
                     // change the texture name.***
                     String texturePath = texture.getPath();
@@ -434,8 +411,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         }
     }
 
-    private double getNodeLatitudesLengthInMeters(Node node)
-    {
+    private double getNodeLatitudesLengthInMeters(Node node) {
         // make globalBoundingBox as square.***
         double[] region = node.getBoundingVolume().getRegion();
         double minLatRad = region[1];
@@ -443,8 +419,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         return GlobeUtils.distanceBetweenLatitudesRad(minLatRad, maxLatRad);
     }
 
-    private void createNetSurfaceNodes(Node rootNode, List<TileInfo> tileInfos, int nodeDepth, int maxDepth)
-    {
+    private void createNetSurfaceNodes(Node rootNode, List<TileInfo> tileInfos, int nodeDepth, int maxDepth) {
         // 1rst, find all tileInfos that intersects with the node.***
         log.info("Creating netSurface nodes for nodeDepth : " + nodeDepth + " of maxDepth : " + maxDepth);
         List<Node> nodes = new ArrayList<>();
@@ -453,30 +428,26 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
 
         int nodesCount = nodes.size();
-        for(int i = 0; i < nodesCount; i++)
-        {
+        for (int i = 0; i < nodesCount; i++) {
             tileInfosOfNode.clear();
             Node node = nodes.get(i);
             int tileInfosCount = tileInfos.size();
-            for(int j = 0; j < tileInfosCount; j++)
-            {
+            for (int j = 0; j < tileInfosCount; j++) {
                 TileInfo tileInfo = tileInfos.get(j);
-                if(intersectsNodeWithTileInfo(node, tileInfo))
-                {
+                if (intersectsNodeWithTileInfo(node, tileInfo)) {
                     tileInfosOfNode.add(tileInfo);
                 }
             }
 
             int tileInfosOfNodeCount = tileInfosOfNode.size();
-            if(tileInfosOfNodeCount == 0)
+            if (tileInfosOfNodeCount == 0)
                 continue;
 
             node.setRefine(Node.RefineType.REPLACE);
 
             // create sceneInfos.***
             List<SceneInfo> sceneInfos = new ArrayList<>();
-            for(int j = 0; j < tileInfosOfNodeCount; j++)
-            {
+            for (int j = 0; j < tileInfosOfNodeCount; j++) {
                 TileInfo tileInfo = tileInfosOfNode.get(j);
                 SceneInfo sceneInfo = new SceneInfo();
                 sceneInfo.setScenePath(tileInfo.getTempPath().toString());
@@ -497,8 +468,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             Vector3d nodeCenterGeoCoordDeg = new Vector3d(Math.toDegrees(nodeCenterGeoCoordRad.x), Math.toDegrees(nodeCenterGeoCoordRad.y), nodeCenterGeoCoordRad.z);
             Vector3d nodePosWC = GlobeUtils.geographicToCartesianWgs84(nodeCenterGeoCoordDeg);
             Matrix4d nodeTMatrix = node.getTransformMatrix();
-            if(nodeTMatrix == null)
-            {
+            if (nodeTMatrix == null) {
                 nodeTMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(nodePosWC);
             }
             GaiaBoundingBox nodeBBoxLC = node.calculateLocalBoundingBox();
@@ -517,8 +487,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             Path netTempPath = Paths.get(netTempPathString);
             // create dirs if not exists.***
             File netTempFile = netTempPath.toFile();
-            if (!netTempFile.exists())
-            {
+            if (!netTempFile.exists()) {
                 netTempFile.mkdirs();
             }
 
@@ -526,16 +495,14 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             Path netSetFolderPath = Paths.get(netSetFolderPathString);
             // create dirs if not exists.***
             File netSetFile = netSetFolderPath.toFile();
-            if(!netSetFile.exists())
-            {
+            if (!netSetFile.exists()) {
                 netSetFile.mkdirs();
             }
             String netSetImagesFolderPathString = netSetFolderPathString + File.separator + "images";
             Path netSetImagesFolderPath = Paths.get(netSetImagesFolderPathString);
             // create dirs if not exists.***
             File netSetImagesFolder = netSetImagesFolderPath.toFile();
-            if(!netSetImagesFolder.exists())
-            {
+            if (!netSetImagesFolder.exists()) {
                 netSetImagesFolder.mkdirs();
             }
 
@@ -553,8 +520,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             int numCols = bufferedImageDepth.getWidth();
             int numRows = bufferedImageDepth.getHeight();
             HalfEdgeScene halfEdgeScene = HalfEdgeUtils.getHalfEdgeSceneRectangularNet(numCols, numRows, depthValues, nodeBBoxLC);
-            if(halfEdgeScene == null)
-            {
+            if (halfEdgeScene == null) {
                 log.info("info : halfEdgeScene is null.");
                 continue;
             }
@@ -568,7 +534,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             halfEdgeScene.doTrianglesReduction(decimateParameters);
             //halfEdgeScene.calculateNormals();
 
-            if(halfEdgeScene.getTrianglesCount() == 0)
+            if (halfEdgeScene.getTrianglesCount() == 0)
                 continue;
 
             // now, create material for the halfEdgeScene.***
@@ -598,15 +564,14 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
             List<GaiaNode> gaiaNodes = gaiaScene.getNodes();
             int gaiaNodesCount = gaiaNodes.size();
-            for(int j = 0; j < gaiaNodesCount; j++)
-            {
+            for (int j = 0; j < gaiaNodesCount; j++) {
                 GaiaNode gaiaNode = gaiaNodes.get(j);
                 gaiaNode.clear();
             }
 
             //calculate lod.***
             int lod = maxDepth - nodeDepth;
-            double netSurfaceGeometricError = 1*(lod+1);
+            double netSurfaceGeometricError = (lod + 1);
             node.setGeometricError(netSurfaceGeometricError);
 
             // make contents for the node.***
@@ -655,7 +620,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             String outputFolderPath = globalOptions.getOutputPath();
             try {
                 File outputFile = new File(outputFolderPath, sceneRawName + "." + imageExtension);
-                    ImageIO.write(bufferedImageColor, "JPG", outputFile);
+                ImageIO.write(bufferedImageColor, "JPG", outputFile);
             } catch (Exception e) {
                 log.error("Error : {}", e);
             }
@@ -672,8 +637,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         }
     }
 
-    private void createNetSurfaceNodesByPyramidDeformation(Node rootNode, List<TileInfo> tileInfos, int nodeDepth, int maxDepth)
-    {
+    private void createNetSurfaceNodesByPyramidDeformation(Node rootNode, List<TileInfo> tileInfos, int nodeDepth, int maxDepth) {
         // 1rst, find all tileInfos that intersects with the node.***
         log.info("Creating netSurface nodes for nodeDepth : " + nodeDepth + " of maxDepth : " + maxDepth);
         List<Node> nodes = new ArrayList<>();
@@ -682,30 +646,26 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
 
         int nodesCount = nodes.size();
-        for(int i = 0; i < nodesCount; i++)
-        {
+        for (int i = 0; i < nodesCount; i++) {
             tileInfosOfNode.clear();
             Node node = nodes.get(i);
             int tileInfosCount = tileInfos.size();
-            for(int j = 0; j < tileInfosCount; j++)
-            {
+            for (int j = 0; j < tileInfosCount; j++) {
                 TileInfo tileInfo = tileInfos.get(j);
-                if(intersectsNodeWithTileInfo(node, tileInfo))
-                {
+                if (intersectsNodeWithTileInfo(node, tileInfo)) {
                     tileInfosOfNode.add(tileInfo);
                 }
             }
 
             int tileInfosOfNodeCount = tileInfosOfNode.size();
-            if(tileInfosOfNodeCount == 0)
+            if (tileInfosOfNodeCount == 0)
                 continue;
 
             node.setRefine(Node.RefineType.REPLACE);
 
             // create sceneInfos.***
             List<SceneInfo> sceneInfos = new ArrayList<>();
-            for(int j = 0; j < tileInfosOfNodeCount; j++)
-            {
+            for (int j = 0; j < tileInfosOfNodeCount; j++) {
                 TileInfo tileInfo = tileInfosOfNode.get(j);
                 SceneInfo sceneInfo = new SceneInfo();
                 sceneInfo.setScenePath(tileInfo.getTempPath().toString());
@@ -726,8 +686,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             Vector3d nodeCenterGeoCoordDeg = new Vector3d(Math.toDegrees(nodeCenterGeoCoordRad.x), Math.toDegrees(nodeCenterGeoCoordRad.y), nodeCenterGeoCoordRad.z);
             Vector3d nodePosWC = GlobeUtils.geographicToCartesianWgs84(nodeCenterGeoCoordDeg);
             Matrix4d nodeTMatrix = node.getTransformMatrix();
-            if(nodeTMatrix == null)
-            {
+            if (nodeTMatrix == null) {
                 nodeTMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(nodePosWC);
             }
             GaiaBoundingBox nodeBBoxLC = node.calculateLocalBoundingBox();
@@ -739,8 +698,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             List<HalfEdgeScene> resultHalfEdgeScenes = new ArrayList<>();
             tilerExtensionModule.makeNetSurfacesByPyramidDeformationRender(sceneInfos, bufferedImageType, resultHalfEdgeScenes, resultImages, nodeBBoxLC, nodeTMatrix, maxScreenSize, maxDepthScreenSize);
 
-            if(resultHalfEdgeScenes.size() == 0)
-            {
+            if (resultHalfEdgeScenes.size() == 0) {
                 log.info("info : resultHalfEdgeScenes is empty.");
                 continue;
             }
@@ -756,8 +714,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             Path netTempPath = Paths.get(netTempPathString);
             // create dirs if not exists.***
             File netTempFile = netTempPath.toFile();
-            if (!netTempFile.exists())
-            {
+            if (!netTempFile.exists()) {
                 netTempFile.mkdirs();
             }
 
@@ -765,16 +722,14 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             Path netSetFolderPath = Paths.get(netSetFolderPathString);
             // create dirs if not exists.***
             File netSetFile = netSetFolderPath.toFile();
-            if(!netSetFile.exists())
-            {
+            if (!netSetFile.exists()) {
                 netSetFile.mkdirs();
             }
             String netSetImagesFolderPathString = netSetFolderPathString + File.separator + "images";
             Path netSetImagesFolderPath = Paths.get(netSetImagesFolderPathString);
             // create dirs if not exists.***
             File netSetImagesFolder = netSetImagesFolderPath.toFile();
-            if(!netSetImagesFolder.exists())
-            {
+            if (!netSetImagesFolder.exists()) {
                 netSetImagesFolder.mkdirs();
             }
 
@@ -789,8 +744,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
 
             HalfEdgeScene halfEdgeScene = resultHalfEdgeScenes.get(0);
-            if(halfEdgeScene == null)
-            {
+            if (halfEdgeScene == null) {
                 log.info("info : halfEdgeScene is null.");
                 continue;
             }
@@ -804,7 +758,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             halfEdgeScene.doTrianglesReduction(decimateParameters);
             //halfEdgeScene.calculateNormals();
 
-            if(halfEdgeScene.getTrianglesCount() == 0)
+            if (halfEdgeScene.getTrianglesCount() == 0)
                 continue;
 
             // now, create material for the halfEdgeScene.***
@@ -834,15 +788,14 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
             List<GaiaNode> gaiaNodes = gaiaScene.getNodes();
             int gaiaNodesCount = gaiaNodes.size();
-            for(int j = 0; j < gaiaNodesCount; j++)
-            {
+            for (int j = 0; j < gaiaNodesCount; j++) {
                 GaiaNode gaiaNode = gaiaNodes.get(j);
                 gaiaNode.clear();
             }
 
             //calculate lod.***
             int lod = maxDepth - nodeDepth;
-            double netSurfaceGeometricError = 1*(lod+1);
+            double netSurfaceGeometricError = (lod + 1);
             node.setGeometricError(netSurfaceGeometricError);
 
             // make contents for the node.***
@@ -908,8 +861,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         }
     }
 
-    public float unpackDepth32(float[] packedDepth)
-    {
+    public float unpackDepth32(float[] packedDepth) {
         if (packedDepth.length != 4) {
             throw new IllegalArgumentException("packedDepth debe tener exactamente 4 elementos.");
         }
@@ -926,20 +878,17 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 + packedDepth[3] / 16777216.0f;
     }
 
-    private float[][] bufferedImageToFloatMatrix(BufferedImage image)
-    {
+    private float[][] bufferedImageToFloatMatrix(BufferedImage image) {
         int width = image.getWidth();
         int height = image.getHeight();
         float[][] floatMatrix = new float[width][height];
-        for(int i = 0; i < width; i++)
-        {
-            for(int j = 0; j < height; j++)
-            {
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
                 Color color = new Color(image.getRGB(i, j), true);
-                float r = color.getRed()/255.0f;
-                float g = color.getGreen()/255.0f;
-                float b = color.getBlue()/255.0f;
-                float a = color.getAlpha()/255.0f;
+                float r = color.getRed() / 255.0f;
+                float g = color.getGreen() / 255.0f;
+                float b = color.getBlue() / 255.0f;
+                float a = color.getAlpha() / 255.0f;
 
                 float depth = unpackDepth32(new float[]{r, g, b, a});
                 floatMatrix[i][j] = depth;
@@ -950,8 +899,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         return floatMatrix;
     }
 
-    private boolean intersectsNodeWithTileInfo(Node node, TileInfo tileInfo)
-    {
+    private boolean intersectsNodeWithTileInfo(Node node, TileInfo tileInfo) {
         BoundingVolume boundingVolume = node.getBoundingVolume();
         double[] region = boundingVolume.getRegion();  // [minLonDeg, minLatDeg, maxLonDeg, maxLatDeg]
 
@@ -960,33 +908,28 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         double maxLonDeg = Math.toDegrees(region[2]);
         GaiaBoundingBox tileBoundingBox = tileInfo.getCartographicBBox();
 
-        if(maxLonDeg < tileBoundingBox.getMinX() || minLonDeg > tileBoundingBox.getMaxX())
+        if (maxLonDeg < tileBoundingBox.getMinX() || minLonDeg > tileBoundingBox.getMaxX())
             return false;
 
         // compare latitudes.***
         double minLatDeg = Math.toDegrees(region[1]);
         double maxLatDeg = Math.toDegrees(region[3]);
 
-        if(maxLatDeg < tileBoundingBox.getMinY() || minLatDeg > tileBoundingBox.getMaxY())
+        if (maxLatDeg < tileBoundingBox.getMinY() || minLatDeg > tileBoundingBox.getMaxY())
             return false;
 
         // compare altitudes.***
         double minAlt = region[4];
         double maxAlt = region[5];
 
-        if(maxAlt < tileBoundingBox.getMinZ() || minAlt > tileBoundingBox.getMaxZ())
-            return false;
-
-        return true;
+        return !(maxAlt < tileBoundingBox.getMinZ()) && !(minAlt > tileBoundingBox.getMaxZ());
     }
 
-    private void distributeContentsToNodesQuadTree(Node rootNode, List<TileInfo> tileInfos, int nodeDepth, Map<Node, List<TileInfo>> nodeTileInfoMap)
-    {
+    private void distributeContentsToNodesQuadTree(Node rootNode, List<TileInfo> tileInfos, int nodeDepth, Map<Node, List<TileInfo>> nodeTileInfoMap) {
         // distribute contents to node in the correspondent depth.***
         // Here, the tileInfos are cutTileInfos by node's boundary planes, so we can use tileInfoCenterGeoCoordRad.***
         int tileInfosCount = tileInfos.size();
-        for(int i = 0; i < tileInfosCount; i++)
-        {
+        for (int i = 0; i < tileInfosCount; i++) {
             TileInfo tileInfo = tileInfos.get(i);
             Matrix4d tileTransformMatrix = tileInfo.getTransformMatrix();
             GaiaBoundingBox tileBoundingBox = tileInfo.getBoundingBox();
@@ -997,8 +940,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             Vector2d tileInfoCenterGeoCoordRad = new Vector2d(centerLonRad, centerLatRad);
 
             Node childNode = rootNode.getIntersectedNode(tileInfoCenterGeoCoordRad, nodeDepth);
-            if(childNode == null)
-            {
+            if (childNode == null) {
                 continue;
             }
 
@@ -1008,13 +950,11 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         }
     }
 
-    private void distributeContentsToNodesOctTree(Node rootNode, List<TileInfo> tileInfos, int nodeDepth, Map<Node, List<TileInfo>> nodeTileInfoMap)
-    {
+    private void distributeContentsToNodesOctTree(Node rootNode, List<TileInfo> tileInfos, int nodeDepth, Map<Node, List<TileInfo>> nodeTileInfoMap) {
         // distribute contents to node in the correspondent depth.***
         // Here, the tileInfos are cutTileInfos by node's boundary planes, so we can use tileInfoCenterGeoCoordRad.***
         int tileInfosCount = tileInfos.size();
-        for(int i = 0; i < tileInfosCount; i++)
-        {
+        for (int i = 0; i < tileInfosCount; i++) {
             TileInfo tileInfo = tileInfos.get(i);
             Matrix4d tileTransformMatrix = tileInfo.getTransformMatrix();
             GaiaBoundingBox tileBoundingBox = tileInfo.getBoundingBox();
@@ -1026,8 +966,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             Vector3d tileInfoCenterGeoCoordRad = new Vector3d(centerLonRad, centerLatRad, centerAlt);
 
             Node childNode = rootNode.getIntersectedNode(tileInfoCenterGeoCoordRad, nodeDepth);
-            if(childNode == null)
-            {
+            if (childNode == null) {
                 continue;
             }
 
@@ -1037,48 +976,42 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         }
     }
 
-    private List<TileInfo> getTileInfosCopy(List<TileInfo> tileInfos, int lod, List<TileInfo> resultTileInfosCopy)
-    {
-        if(resultTileInfosCopy == null)
-        {
+    private List<TileInfo> getTileInfosCopy(List<TileInfo> tileInfos, int lod, List<TileInfo> resultTileInfosCopy) {
+        if (resultTileInfosCopy == null) {
             resultTileInfosCopy = new ArrayList<>();
         }
 
         int tileInfosCount = tileInfos.size();
-        for(int i = 0; i < tileInfosCount; i++)
-        {
+        for (int i = 0; i < tileInfosCount; i++) {
             TileInfo tileInfo = tileInfos.get(i);
             TileInfo tileInfoCopy = tileInfo.clone();
 
             // change the tempPath of the tileInfos by tempPathLod.***
             List<Path> tempPathLod = tileInfoCopy.getTempPathLod();
-            if(tempPathLod != null)
-            {
+            if (tempPathLod != null) {
                 Path pathLod = tempPathLod.get(lod);
-                if(pathLod != null){
+                if (pathLod != null) {
                     tileInfoCopy.setTempPath(pathLod);
                 }
             }
-            
+
             resultTileInfosCopy.add(tileInfoCopy);
         }
 
         return resultTileInfosCopy;
     }
 
-    private void scissorTextures(List<TileInfo> tileInfos)
-    {
+    private void scissorTextures(List<TileInfo> tileInfos) {
         int tileInfosCount = tileInfos.size();
-        for(int i = 0; i < tileInfosCount; i++)
-        {
+        for (int i = 0; i < tileInfosCount; i++) {
             TileInfo tileInfo = tileInfos.get(i);
             Path path = tileInfo.getTempPath();
 
             // load the file.***
             try {
                 GaiaSet gaiaSet = GaiaSet.readFile(path);
-                if(gaiaSet == null) {
-                    log.error("Error : gaiaSet is null. pth : " + path.toString());
+                if (gaiaSet == null) {
+                    log.error("Error : gaiaSet is null. pth : " + path);
                     continue;
                 }
                 GaiaScene scene = new GaiaScene(gaiaSet);
@@ -1101,9 +1034,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
                 if (gaiaSet == null)
                     continue;
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 log.error("Error : {}", e.getMessage());
                 throw new RuntimeException(e);
             }
@@ -1136,8 +1067,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         double altStep = (maxAlt - minAlt) / divisionsCount;
 
         // exclude the first and last divisions, so i = 1 and i < divisionsCount.***
-        for (int i = 1; i < divisionsCount; i++)
-        {
+        for (int i = 1; i < divisionsCount; i++) {
             lonDivisions.add(minLonDeg + i * lonStep);
             latDivisions.add(minLatDeg + i * latStep);
             altDivisions.add(minAlt + i * altStep);
@@ -1147,11 +1077,9 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
         // cut by longitudes.***
         int longitudesCount = lonDivisions.size();
-        for(int i = 0; i < longitudesCount; i++)
-        {
+        for (int i = 0; i < longitudesCount; i++) {
             double lonDeg = lonDivisions.get(i);
-            if(cutRectangleCakeByLongitudeDeg(tileInfos, lod, lonDeg))
-            {
+            if (cutRectangleCakeByLongitudeDeg(tileInfos, lod, lonDeg)) {
                 someSceneCut = true;
                 System.gc();
             }
@@ -1159,11 +1087,9 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
         // cut by altitudes.***
         int altitudesCount = altDivisions.size();
-        for(int i = 0; i < altitudesCount; i++)
-        {
+        for (int i = 0; i < altitudesCount; i++) {
             double alt = altDivisions.get(i);
-            if(cutRectangleCakeByAltitude(tileInfos, lod, alt))
-            {
+            if (cutRectangleCakeByAltitude(tileInfos, lod, alt)) {
                 someSceneCut = true;
                 System.gc();
             }
@@ -1171,11 +1097,9 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
         // cut by latitudes.***
         int latitudesCount = latDivisions.size();
-        for(int i = 0; i < latitudesCount; i++)
-        {
+        for (int i = 0; i < latitudesCount; i++) {
             double latDeg = latDivisions.get(i);
-            if(cutRectangleCakeByLatitudeDeg(tileInfos, lod, latDeg))
-            {
+            if (cutRectangleCakeByLatitudeDeg(tileInfos, lod, latDeg)) {
                 someSceneCut = true;
                 System.gc();
             }
@@ -1185,8 +1109,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
     }
 
     private boolean cutHalfEdgeSceneByPlane(HalfEdgeScene halfEdgeScene, PlaneType planeType, Vector3d samplePointLC, TileInfo tileInfo, Path cutTempLodPath,
-                                         List<TileInfo> cutTileInfos, double error)
-    {
+                                            List<TileInfo> cutTileInfos, double error) {
         KmlInfo kmlInfo = tileInfo.getKmlInfo();
         Vector3d geoCoordPosition = kmlInfo.getPosition();
         Vector3d posWC = GlobeUtils.geographicToCartesianWgs84(geoCoordPosition);
@@ -1194,16 +1117,14 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         Matrix4d transformMatrixInv = new Matrix4d(transformMatrix);
         transformMatrixInv.invert();
 
-        if(halfEdgeScene.cutByPlane(planeType, samplePointLC, error))
-        {
+        if (halfEdgeScene.cutByPlane(planeType, samplePointLC, error)) {
             // once scene is cut, then save the 2 scenes and delete the original.***
             halfEdgeScene.classifyFacesIdByPlane(planeType, samplePointLC);
 
             List<HalfEdgeScene> halfEdgeCutScenes = HalfEdgeUtils.getCopyHalfEdgeScenesByFaceClassifyId(halfEdgeScene, null);
 
             // create tileInfos for the cut scenes.***
-            for(HalfEdgeScene halfEdgeCutScene : halfEdgeCutScenes)
-            {
+            for (HalfEdgeScene halfEdgeCutScene : halfEdgeCutScenes) {
                 GaiaScene gaiaSceneCut = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeCutScene);
                 GaiaBoundingBox boundingBoxCutLC = gaiaSceneCut.getBoundingBox();
 
@@ -1244,8 +1165,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 GaiaSet gaiaSetCut = GaiaSet.fromGaiaScene(gaiaSceneCut);
                 UUID identifier = UUID.randomUUID();
                 Path gaiaSetCutFolderPath = cutTempLodPath.resolve(identifier.toString());
-                if(!gaiaSetCutFolderPath.toFile().exists())
-                {
+                if (!gaiaSetCutFolderPath.toFile().exists()) {
                     gaiaSetCutFolderPath.toFile().mkdirs();
                 }
 
@@ -1264,7 +1184,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 tileInfoCut.setTransformMatrix(transformMatrixCut);
                 tileInfoCut.setBoundingBox(boundingBoxCutLC);
                 tileInfoCut.setCartographicBBox(cartographicBoundingBox);
-
 
 
                 // make a kmlInfo for the cut scene.***
@@ -1293,14 +1212,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         String cutTempPathString = outputPathString + File.separator + "cutTemp";
         Path cutTempPath = Paths.get(cutTempPathString);
         // create directory if not exists.***
-        if(!cutTempPath.toFile().exists())
-        {
+        if (!cutTempPath.toFile().exists()) {
             cutTempPath.toFile().mkdirs();
         }
 
         Path cutTempLodPath = cutTempPath.resolve("lod" + lod);
-        if(!cutTempLodPath.toFile().exists())
-        {
+        if (!cutTempLodPath.toFile().exists()) {
             cutTempLodPath.toFile().mkdirs();
         }
 
@@ -1309,10 +1226,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         double error = 1e-8;
         Path path;
         Vector3d samplePointLC = new Vector3d();
-        if(lod > 0)
-        {
-            int hola = 0;
-        }
 
         boolean checkTexCoord = true;
         boolean checkNormal = false;
@@ -1320,16 +1233,15 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         boolean checkBatchId = false;
         double errorWeld = 1e-4;
 
-        for(int i = 0; i < tileInfosCount; i++)
-        {
+        for (int i = 0; i < tileInfosCount; i++) {
             TileInfo tileInfo = tileInfos.get(i);
-            if(deletedTileInfoMap.containsKey(tileInfo))
+            if (deletedTileInfoMap.containsKey(tileInfo))
                 continue;
 
             path = tileInfo.getTempPath();
 
             GaiaBoundingBox setBBox = tileInfo.getBoundingBox();
-            if(setBBox == null) {
+            if (setBBox == null) {
                 log.error("Error : setBBox is null.");
                 int hola = 0;
             }
@@ -1348,12 +1260,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             transformMatrixInv.transformPosition(samplePointWC, samplePointLC);
 
             // check if the planeLC cuts the setBBox.***
-            if(samplePointLC.z < setBBox.getMinZ() || samplePointLC.z > setBBox.getMaxZ())
+            if (samplePointLC.z < setBBox.getMinZ() || samplePointLC.z > setBBox.getMaxZ())
                 continue;
 
             // load the file.***
             GaiaSet gaiaSet = GaiaSet.readFile(path);
-            if(gaiaSet == null)
+            if (gaiaSet == null)
                 continue;
 
 
@@ -1363,8 +1275,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             scene.weldVertices(errorWeld, checkTexCoord, checkNormal, checkColor, checkBatchId);
             HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 
-            if(this.cutHalfEdgeSceneByPlane(halfEdgeScene, planeType, samplePointLC, tileInfo, cutTempLodPath, cutTileInfos, error))
-            {
+            if (this.cutHalfEdgeSceneByPlane(halfEdgeScene, planeType, samplePointLC, tileInfo, cutTempLodPath, cutTileInfos, error)) {
                 deletedTileInfoMap.put(tileInfo, tileInfo);
                 someSceneCutted = true;
             }
@@ -1372,21 +1283,24 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             halfEdgeScene.deleteObjects();
             scene.clear();
             gaiaSet.clear();
-
-            int hola = 0;
         }
 
         // remove from tileInfos the deleted tileInfos.***
-        for(Map.Entry<TileInfo, TileInfo> entry : deletedTileInfoMap.entrySet())
-        {
+        for (Map.Entry<TileInfo, TileInfo> entry : deletedTileInfoMap.entrySet()) {
             // delete the temp folder of the tileInfo.***
             TileInfo tileInfo = entry.getKey();
             Path tempPath = tileInfo.getTempPath();
             Path tempPathFolder = tempPath.getParent();
             File tempPathFile = tempPathFolder.toFile();
-            if(tempPathFile.exists())
-            {
-                tempPathFile.delete(); // no works. TODO: must delete the folder and all its contents.***
+            String tempFolderName = StringUtils.findFirstDifferentFolder(tempPath.toString(), outputPathString);
+            if (tempFolderName.equals("cutTemp")) {
+                if (tempPathFile.exists()) {
+                    try {
+                        deleteDirectory(tempPathFolder.toFile());
+                    } catch (IOException e) {
+                        log.error("Error : {}", e.getMessage());
+                    }
+                }
             }
             tileInfo.clear();
             tileInfos.remove(tileInfo);
@@ -1397,7 +1311,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
         System.gc();
 
-        int hola = 0;
         return someSceneCutted;
     }
 
@@ -1411,14 +1324,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         String cutTempPathString = outputPathString + File.separator + "cutTemp";
         Path cutTempPath = Paths.get(cutTempPathString);
         // create directory if not exists.***
-        if(!cutTempPath.toFile().exists())
-        {
+        if (!cutTempPath.toFile().exists()) {
             cutTempPath.toFile().mkdirs();
         }
 
         Path cutTempLodPath = cutTempPath.resolve("lod" + lod);
-        if(!cutTempLodPath.toFile().exists())
-        {
+        if (!cutTempLodPath.toFile().exists()) {
             cutTempLodPath.toFile().mkdirs();
         }
 
@@ -1427,10 +1338,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         double error = 1e-8;
         Path path;
         Vector3d samplePointLC = new Vector3d();
-        if(lod > 0)
-        {
-            int hola = 0;
-        }
 
         boolean checkTexCoord = true;
         boolean checkNormal = false;
@@ -1438,16 +1345,15 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         boolean checkBatchId = false;
         double errorWeld = 1e-4;
 
-        for(int i = 0; i < tileInfosCount; i++)
-        {
+        for (int i = 0; i < tileInfosCount; i++) {
             TileInfo tileInfo = tileInfos.get(i);
-            if(deletedTileInfoMap.containsKey(tileInfo))
+            if (deletedTileInfoMap.containsKey(tileInfo))
                 continue;
 
             path = tileInfo.getTempPath();
 
             GaiaBoundingBox setBBox = tileInfo.getBoundingBox();
-            if(setBBox == null) {
+            if (setBBox == null) {
                 log.error("Error : setBBox is null.");
                 int hola = 0;
             }
@@ -1466,12 +1372,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             transformMatrixInv.transformPosition(samplePointWC, samplePointLC);
 
             // check if the planeLC cuts the setBBox.***
-            if(samplePointLC.x < setBBox.getMinX() || samplePointLC.x > setBBox.getMaxX())
+            if (samplePointLC.x < setBBox.getMinX() || samplePointLC.x > setBBox.getMaxX())
                 continue;
 
             // load the file.***
             GaiaSet gaiaSet = GaiaSet.readFile(path);
-            if(gaiaSet == null)
+            if (gaiaSet == null)
                 continue;
 
 
@@ -1481,8 +1387,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             scene.weldVertices(errorWeld, checkTexCoord, checkNormal, checkColor, checkBatchId);
             HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 
-            if(this.cutHalfEdgeSceneByPlane(halfEdgeScene, planeType, samplePointLC, tileInfo, cutTempLodPath, cutTileInfos, error))
-            {
+            if (this.cutHalfEdgeSceneByPlane(halfEdgeScene, planeType, samplePointLC, tileInfo, cutTempLodPath, cutTileInfos, error)) {
                 deletedTileInfoMap.put(tileInfo, tileInfo);
                 someSceneCutted = true;
             }
@@ -1490,21 +1395,25 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             halfEdgeScene.deleteObjects();
             scene.clear();
             gaiaSet.clear();
-
-            int hola = 0;
         }
 
         // remove from tileInfos the deleted tileInfos.***
-        for(Map.Entry<TileInfo, TileInfo> entry : deletedTileInfoMap.entrySet())
-        {
+        for (Map.Entry<TileInfo, TileInfo> entry : deletedTileInfoMap.entrySet()) {
             // delete the temp folder of the tileInfo.***
             TileInfo tileInfo = entry.getKey();
             Path tempPath = tileInfo.getTempPath();
             Path tempPathFolder = tempPath.getParent();
             File tempPathFile = tempPathFolder.toFile();
-            if(tempPathFile.exists())
-            {
-                tempPathFile.delete(); // no works. TODO: must delete the folder and all its contents.***
+
+            String tempFolderName = StringUtils.findFirstDifferentFolder(tempPath.toString(), outputPathString);
+            if (tempFolderName.equals("cutTemp")) {
+                if (tempPathFile.exists()) {
+                    try {
+                        deleteDirectory(tempPathFolder.toFile());
+                    } catch (IOException e) {
+                        log.error("Error : {}", e.getMessage());
+                    }
+                }
             }
             tileInfo.clear();
             tileInfos.remove(tileInfo);
@@ -1515,7 +1424,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
         System.gc();
 
-        int hola = 0;
         return someSceneCutted;
     }
 
@@ -1529,14 +1437,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         String cutTempPathString = outputPathString + File.separator + "cutTemp";
         Path cutTempPath = Paths.get(cutTempPathString);
         // create directory if not exists.***
-        if(!cutTempPath.toFile().exists())
-        {
+        if (!cutTempPath.toFile().exists()) {
             cutTempPath.toFile().mkdirs();
         }
 
         Path cutTempLodPath = cutTempPath.resolve("lod" + lod);
-        if(!cutTempLodPath.toFile().exists())
-        {
+        if (!cutTempLodPath.toFile().exists()) {
             cutTempLodPath.toFile().mkdirs();
         }
 
@@ -1550,16 +1456,15 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         boolean checkBatchId = false;
         double errorWeld = 1e-4;
 
-        for(int i = 0; i < tileInfosCount; i++)
-        {
+        for (int i = 0; i < tileInfosCount; i++) {
             TileInfo tileInfo = tileInfos.get(i);
-            if(deletedTileInfoMap.containsKey(tileInfo))
+            if (deletedTileInfoMap.containsKey(tileInfo))
                 continue;
             Path path;
             path = tileInfo.getTempPath();
 
             GaiaBoundingBox setBBox = tileInfo.getBoundingBox();
-            if(setBBox == null) {
+            if (setBBox == null) {
                 log.error("Error : setBBox is null.");
                 int hola = 0;
             }
@@ -1578,12 +1483,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             transformMatrixInv.transformPosition(samplePointWC, samplePointLC);
 
             // check if the planeLC cuts the setBBox.***
-            if(samplePointLC.y < setBBox.getMinY() || samplePointLC.y > setBBox.getMaxY())
+            if (samplePointLC.y < setBBox.getMinY() || samplePointLC.y > setBBox.getMaxY())
                 continue;
 
             // load the file.***
             GaiaSet gaiaSet = GaiaSet.readFile(path);
-            if(gaiaSet == null)
+            if (gaiaSet == null)
                 continue;
 
             GaiaScene scene = new GaiaScene(gaiaSet);
@@ -1592,8 +1497,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             scene.weldVertices(errorWeld, checkTexCoord, checkNormal, checkColor, checkBatchId);
             HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 
-            if(this.cutHalfEdgeSceneByPlane(halfEdgeScene, planeType, samplePointLC, tileInfo, cutTempLodPath, cutTileInfos, error))
-            {
+            if (this.cutHalfEdgeSceneByPlane(halfEdgeScene, planeType, samplePointLC, tileInfo, cutTempLodPath, cutTileInfos, error)) {
                 deletedTileInfoMap.put(tileInfo, tileInfo);
                 someSceneCutted = true;
             }
@@ -1606,16 +1510,21 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         }
 
         // remove from tileInfos the deleted tileInfos.***
-        for(Map.Entry<TileInfo, TileInfo> entry : deletedTileInfoMap.entrySet())
-        {
+        for (Map.Entry<TileInfo, TileInfo> entry : deletedTileInfoMap.entrySet()) {
             // delete the temp folder of the tileInfo.***
             TileInfo tileInfo = entry.getKey();
             Path tempPath = tileInfo.getTempPath();
             Path tempPathFolder = tempPath.getParent();
             File tempPathFile = tempPathFolder.toFile();
-            if(tempPathFile.exists())
-            {
-                tempPathFile.delete(); // no works. TODO: must delete the folder and all its contents.***
+            String tempFolderName = StringUtils.findFirstDifferentFolder(tempPath.toString(), outputPathString);
+            if (tempFolderName.equals("cutTemp")) {
+                if (tempPathFile.exists()) {
+                    try {
+                        deleteDirectory(tempPathFolder.toFile());
+                    } catch (IOException e) {
+                        log.error("Error : {}", e.getMessage());
+                    }
+                }
             }
             tileInfo.clear();
             tileInfos.remove(tileInfo);
@@ -1627,9 +1536,9 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
         return someSceneCutted;
     }
-    private void createOctTreeChildrenForNode(Node node)
-    {
-        if(node == null)
+
+    private void createOctTreeChildrenForNode(Node node) {
+        if (node == null)
             return;
 
         String parentNodeCode = node.getNodeCode();
@@ -1653,8 +1562,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
         //
         List<Node> children = node.getChildren();
-        if(children == null)
-        {
+        if (children == null) {
             children = new ArrayList<>();
             node.setChildren(children);
         }
@@ -1753,12 +1661,11 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
     }
 
-    public void makeOctTreeByDepth(Node node, int targetDepth)
-    {
-        if(node == null)
+    public void makeOctTreeByDepth(Node node, int targetDepth) {
+        if (node == null)
             return;
 
-        if(node.getDepth() >= targetDepth)
+        if (node.getDepth() >= targetDepth)
             return;
 
         // must descend as octree.***
@@ -1767,8 +1674,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         List<Node> children = node.getChildren();
 
         int childrenCount = children.size();
-        for(int i = 0; i < childrenCount; i++)
-        {
+        for (int i = 0; i < childrenCount; i++) {
             Node child = children.get(i);
             makeOctTreeByDepth(child, targetDepth);
         }
@@ -1887,13 +1793,10 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         return childNode;
     }
 
-    private void makeContentsForNodes(Map<Node, List<TileInfo>> nodeTileInfoMap, int lod)
-    {
-        for(Map.Entry<Node, List<TileInfo>> entry : nodeTileInfoMap.entrySet())
-        {
+    private void makeContentsForNodes(Map<Node, List<TileInfo>> nodeTileInfoMap, int lod) {
+        for (Map.Entry<Node, List<TileInfo>> entry : nodeTileInfoMap.entrySet()) {
             Node childNode = entry.getKey();
-            if(childNode == null)
-            {
+            if (childNode == null) {
                 log.error("makeContentsForNodes() Error : childNode is null.");
                 continue;
             }
@@ -1902,12 +1805,10 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             List<TileInfo> tileInfos = entry.getValue();
 
             int tileInfosCount = tileInfos.size();
-            for(int i = 0; i < tileInfosCount; i++)
-            {
+            for (int i = 0; i < tileInfosCount; i++) {
                 TileInfo tileInfo = tileInfos.get(i);
                 GaiaScene scene = tileInfo.getScene();
-                if(scene == null)
-                {
+                if (scene == null) {
                     log.error("makeContentsForNodes() Error : scene is null.");
                 }
             }
@@ -1921,16 +1822,11 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             LevelOfDetail lodLevel = LevelOfDetail.getByLevel(lod);
             int lodError = lodLevel.getGeometricError();
 
-            if(lod == 0)
-            {
+            if (lod == 0) {
                 lodError = 0;
-            }
-            else if(lod == 1)
-            {
+            } else if (lod == 1) {
                 lodError = 1;
-            }
-            else if(lod == 2)
-            {
+            } else if (lod == 2) {
                 lodError = 3;
             }
 
