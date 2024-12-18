@@ -3001,8 +3001,7 @@ public class HalfEdgeSurface implements Serializable {
             }
 
             // check if must translate to positive quadrant.***
-            if(groupTexCoordBRect.getMinX() < 0.0 || groupTexCoordBRect.getMinX() > 0.0 || groupTexCoordBRect.getMinY() < 0.0 || groupTexCoordBRect.getMinY() > 0.0)
-            {
+            if(groupTexCoordBRect.getMinX() < 0.0 || groupTexCoordBRect.getMinX() > 0.0 || groupTexCoordBRect.getMinY() < 0.0 || groupTexCoordBRect.getMinY() > 0.0) {
                 double texCoordOriginX = groupTexCoordBRect.getMinX();
                 double texCoordOriginY = groupTexCoordBRect.getMinY();
                 double offsetX = 0.0;
@@ -3047,8 +3046,7 @@ public class HalfEdgeSurface implements Serializable {
             double width = groupTexCoordBRect.getWidthInt();
             double height = groupTexCoordBRect.getHeightInt();
 
-            if(width == 0 || height == 0)
-            {
+            if(width == 0 || height == 0) {
                 continue;
             }
 
@@ -3091,19 +3089,10 @@ public class HalfEdgeSurface implements Serializable {
         int maxWidth = getMaxWidth(textureScissorDatas);
         int maxHeight = getMaxHeight(textureScissorDatas);
 
-        if(maxWidth == 0 || maxHeight == 0)
-        {
+        if(maxWidth == 0 || maxHeight == 0) {
             return;
         }
 
-        // compare with the texture size.***
-        if(maxWidth * maxHeight > texWidth * texHeight)
-        {
-            int hola = 0;
-        }
-
-        //GaiaRectangle atlasBoundary = new GaiaRectangle(0.0, 0.0, maxWidth, maxHeight);
-        //Map<HalfEdgeVertex, HalfEdgeVertex> visitedVertexMap = new HashMap<>();
         visitedVertexMap.clear();
         log.info("HalfEdgeSurface.scissorTextures() : recalculate texCoords for each faceGroup.");
 
@@ -3235,8 +3224,6 @@ public class HalfEdgeSurface implements Serializable {
             log.info("HalfEdgeSurface.scissorTextures() : deleting texture = " + textureToDeletePath);
             textureToDelete.delete();
         }
-
-        int hola = 0;
     }
 
     private void doTextureAtlasProcess(List<GaiaTextureScissorData> textureScissorDates)
