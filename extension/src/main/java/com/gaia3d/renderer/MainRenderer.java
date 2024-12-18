@@ -11,6 +11,8 @@ import com.gaia3d.basic.halfedge.HalfEdgeUtils;
 import com.gaia3d.basic.model.GaiaMaterial;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
+import com.gaia3d.basic.model.GaiaTexture;
+import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.renderer.engine.Engine;
 import com.gaia3d.renderer.engine.IAppLogic;
 import com.gaia3d.renderer.engine.InternDataConverter;
@@ -29,6 +31,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
+import org.lwjgl.opengl.GL20;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -38,6 +41,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
@@ -262,7 +266,8 @@ public class MainRenderer implements IAppLogic {
         int screenWidth = 1000; // no used var.***
         int screenHeight = 600; // no used var.***
 
-        GaiaScenesContainer gaiaScenesContainer = new GaiaScenesContainer(screenWidth, screenHeight);
+        //GaiaScenesContainer gaiaScenesContainer = new GaiaScenesContainer(screenWidth, screenHeight); // original.***
+        GaiaScenesContainer gaiaScenesContainer = this.engine.getGaiaScenesContainer();
 
         // calculate the projectionMatrix for the camera.***
         GaiaBoundingBox bbox = gaiaScene.getBoundingBox();
@@ -339,7 +344,9 @@ public class MainRenderer implements IAppLogic {
             glDisable(GL_CULL_FACE);
 
             log.info("Rendering the depth : " + 0 + " of scenesCount : " + scenesCount);
+            engine.getRenderer().setColorMode(0); // set colorMode to 0 = uniqueColor.***
             engine.getRenderSceneImage(depthShaderProgram);
+            engine.getRenderer().setColorMode(2); // set colorMode to 2 = textureColor.***
             depthFbo.unbind();
 
         } catch (Exception e) {
@@ -392,6 +399,7 @@ public class MainRenderer implements IAppLogic {
             log.info("Engine.makeNetSurfaces() : maxDepthScreenSize = " + maxDepthScreenSize);
 
             List<BufferedImage> depthRenderedImages = new ArrayList<>();
+            this.engine.getGaiaScenesContainer().deleteObjects();
             getDepthRender(gaiaScene, BufferedImage.TYPE_INT_ARGB, depthRenderedImages, maxDepthScreenSize);
 
             BufferedImage depthRenderedImage = depthRenderedImages.get(0);
@@ -437,6 +445,21 @@ public class MainRenderer implements IAppLogic {
             // now make box textures for the cuttedScene.***
             log.info("Engine.decimate() : makeBoxTexturesForHalfEdgeScene.");
             engine.makeBoxTexturesForHalfEdgeScene(cuttedScene);
+
+            // delete glBuffers of the material.***
+            List<GaiaMaterial> materials = cuttedScene.getMaterials();
+            for (GaiaMaterial material : materials) {
+                Map<TextureType, List<GaiaTexture>> textures = material.getTextures();
+                for (List<GaiaTexture> gaiaTextures : textures.values()) {
+                    for (GaiaTexture gaiaTexture : gaiaTextures) {
+                        int textureId = gaiaTexture.getTextureId();
+                        if (textureId != -1) {
+                            GL20.glDeleteTextures(textureId);
+                            gaiaTexture.setTextureId(-1);
+                        }
+                    }
+                }
+            }
 
             resultHalfEdgeScenes.add(cuttedScene);
 

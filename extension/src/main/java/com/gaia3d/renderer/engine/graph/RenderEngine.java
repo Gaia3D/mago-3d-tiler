@@ -236,34 +236,33 @@ public class RenderEngine {
             int status = renderablePrimitive.getStatus();
 
             boolean textureBinded = false;
-            // colorMode = 0: oneColor, 1: vertexColor, 2: textureColor
-            uniformsMap.setUniform1i("uColorMode", 0);
-            Map<TextureType, List<GaiaTexture>> mapTextures = material.getTextures();
-            if(mapTextures.containsKey(TextureType.DIFFUSE))
-            {
-                List<GaiaTexture> diffuseTextures = mapTextures.get(TextureType.DIFFUSE);
-                if(diffuseTextures.size() > 0)
-                {
-                    GaiaTexture diffuseTexture = diffuseTextures.get(0);
-                    if(diffuseTexture.getTextureId() < 0)
-                    {
-                        int minFilter = GL_LINEAR; // GL_LINEAR, GL_NEAREST
-                        int magFilter = GL_LINEAR;
-                        int wrapS = GL_REPEAT; // GL_CLAMP_TO_EDGE
-                        int wrapT = GL_REPEAT;
-                        BufferedImage bufferedImage = diffuseTexture.getBufferedImage();
-                        int textureId = RenderableTexturesUtils.createGlTextureFromBufferedImage(bufferedImage, minFilter, magFilter, wrapS, wrapT, true);
+            if(this.colorMode == 2) {
+                // colorMode = 0: oneColor, 1: vertexColor, 2: textureColor
+                uniformsMap.setUniform1i("uColorMode", 0);
+                Map<TextureType, List<GaiaTexture>> mapTextures = material.getTextures();
+                if (mapTextures.containsKey(TextureType.DIFFUSE)) {
+                    List<GaiaTexture> diffuseTextures = mapTextures.get(TextureType.DIFFUSE);
+                    if (diffuseTextures.size() > 0) {
+                        GaiaTexture diffuseTexture = diffuseTextures.get(0);
+                        if (diffuseTexture.getTextureId() < 0) {
+                            int minFilter = GL_LINEAR; // GL_LINEAR, GL_NEAREST
+                            int magFilter = GL_LINEAR;
+                            int wrapS = GL_REPEAT; // GL_CLAMP_TO_EDGE
+                            int wrapT = GL_REPEAT;
+                            BufferedImage bufferedImage = diffuseTexture.getBufferedImage();
+                            int textureId = RenderableTexturesUtils.createGlTextureFromBufferedImage(bufferedImage, minFilter, magFilter, wrapS, wrapT, true);
 
-                        diffuseTexture.setTextureId(textureId);
-                        diffuseTexture.setBufferedImage(null);
+                            diffuseTexture.setTextureId(textureId);
+                            diffuseTexture.setBufferedImage(null);
+                        }
+
+                        // colorMode = 0: oneColor, 1: vertexColor, 2: textureColor
+                        uniformsMap.setUniform1i("uColorMode", 2);
+                        GL20.glEnable(GL20.GL_TEXTURE_2D);
+                        GL20.glActiveTexture(GL20.GL_TEXTURE0);
+                        GL20.glBindTexture(GL20.GL_TEXTURE_2D, diffuseTexture.getTextureId());
+                        textureBinded = true;
                     }
-
-                    // colorMode = 0: oneColor, 1: vertexColor, 2: textureColor
-                    uniformsMap.setUniform1i("uColorMode", 2);
-                    GL20.glEnable(GL20.GL_TEXTURE_2D);
-                    GL20.glActiveTexture(GL20.GL_TEXTURE0);
-                    GL20.glBindTexture(GL20.GL_TEXTURE_2D, diffuseTexture.getTextureId());
-                    textureBinded = true;
                 }
             }
 

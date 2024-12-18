@@ -312,6 +312,8 @@ public class GaiaTextureCoordinator {
 
             int width = (int) splittedRectangle.getMaxX() - (int) splittedRectangle.getMinX();
             int height = (int) splittedRectangle.getMaxY() - (int) splittedRectangle.getMinY();
+            double pixelXSize = 1.0 / splittedRectangle.getWidth();
+            double pixelYSize = 1.0 / splittedRectangle.getHeight();
 
             GaiaMaterial material = findMaterial(target.getMaterialId());
             Map<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
@@ -366,6 +368,20 @@ public class GaiaTextureCoordinator {
 
                         u = fractPart_x;
                         v = fractPart_y;
+
+                        // clamp the u, v values.***
+                        if(u < pixelXSize){
+                            u = pixelXSize;
+                        } else if(u > 1.0 - pixelXSize){
+                            u = 1.0 - pixelXSize;
+                        }
+
+                        if(v< pixelYSize){
+                            v = pixelYSize;
+                        } else if(v > 1.0 - pixelYSize){
+                            v = 1.0 - pixelYSize;
+                        }
+                        // end clamp the u, v values.---
 
                         if (u < 0.0) {
                             u = 1.0 + u;
