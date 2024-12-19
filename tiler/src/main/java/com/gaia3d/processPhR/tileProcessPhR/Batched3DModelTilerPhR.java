@@ -55,28 +55,13 @@ import static org.apache.commons.io.FileUtils.deleteDirectory;
 @NoArgsConstructor
 public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
     public final GlobalOptions globalOptions = GlobalOptions.getInstance();
-    private final Vector3d vec3Aux1 = new Vector3d();
-    private final Vector3d vec3Aux2 = new Vector3d();
-    private final Vector3d vec3Aux3 = new Vector3d();
-    private final Vector3d vec3Aux4 = new Vector3d();
-    private final Vector3d vec3Aux5 = new Vector3d();
-    private final Vector3d vec3Aux6 = new Vector3d();
-    private final Vector3d vec3Aux7 = new Vector3d();
-    private final Vector3d vec3Aux8 = new Vector3d();
-    private final Vector3d vec3Aux9 = new Vector3d();
-    private final Vector3d vec3Aux10 = new Vector3d();
 
     @Override
     public Tileset run(List<TileInfo> tileInfos) throws FileNotFoundException {
         //**************************************************************
-        // In photoRealistic, 1rst make a empty quadTree.
-        // then use rectangleCakeCutter to fill the quadTree.
+        // In photoRealistic, 1rst make an empty octTree.              *
+        // then use rectangleCakeCutter to fill the octTree.           *
         //**************************************************************
-
-        double geometricError = calcGeometricError(tileInfos);
-        geometricError = DecimalUtils.cut(geometricError);
-        geometricError = 1000.0;
-
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
 
         // make globalBoundingBox as square.***
@@ -85,20 +70,27 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         double maxLonDeg = globalBoundingBox.getMaxX();
         double maxLatDeg = globalBoundingBox.getMaxY();
 
-        // calculate the rootQuadtree size.*****************************************************************************
+        // calculate the rootOctTree size.***
         double minLatRad = Math.toRadians(minLatDeg);
         double maxLatRad = Math.toRadians(maxLatDeg);
+        double minLonRad = Math.toRadians(minLonDeg);
+        double maxLonRad = Math.toRadians(maxLonDeg);
+
+        // find max distance.***
         double distanceBetweenLat = GlobeUtils.distanceBetweenLatitudesRad(minLatRad, maxLatRad);
+        double distanceBetweenLon = GlobeUtils.distanceBetweenLongitudesRad(minLatRad, minLonRad, maxLonRad);
+        double distanceFinal = Math.max(distanceBetweenLat, distanceBetweenLon);
         double desiredLeafDist = 25.0;
 
-
-        int desiredDepth = (int) Math.ceil(HalfEdgeUtils.log2(distanceBetweenLat / desiredLeafDist));
+        int desiredDepth = (int) Math.ceil(HalfEdgeUtils.log2(distanceFinal / desiredLeafDist));
         double desiredDistanceBetweenLat = desiredLeafDist * Math.pow(2, desiredDepth);
-        double desiredAngRad = GlobeUtils.angRadLatitudeForDistance(minLatRad, desiredDistanceBetweenLat);
-        double desiredAngDeg = Math.toDegrees(desiredAngRad);
-        maxLonDeg = minLonDeg + desiredAngDeg;
-        maxLatDeg = minLatDeg + desiredAngDeg;
-        // end calculate the rootQuadtree size.-------------------------------------------------------------------------
+        double desiredAngRadLat = GlobeUtils.angRadLatitudeForDistance(minLatRad, desiredDistanceBetweenLat);
+        double desiredAngRadLon = GlobeUtils.angRadLongitudeForDistance(minLatRad, desiredDistanceBetweenLat);
+        double desiredAngDegLat = Math.toDegrees(desiredAngRadLat);
+        double desiredAngDegLon = Math.toDegrees(desiredAngRadLon);
+        maxLonDeg = minLonDeg + desiredAngDegLon;
+        maxLatDeg = minLatDeg + desiredAngDegLat;
+        // end calculate the rootOctTree size.---
 
         // make CUBE boundingBox.***
         globalBoundingBox.setMaxZ(globalBoundingBox.getMinZ() + desiredDistanceBetweenLat);// make CUBE boundingBox.***
@@ -117,7 +109,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
         makeOctTreeByDepth(root, desiredDepth);
 
-        // lod 0.**********************************************************************************************************
+        // lod 0.***
         int lod = 0;
         List<TileInfo> tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, null);
 
@@ -138,7 +130,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
         scissorTextures(tileInfosCopy);
         makeContentsForNodes(nodeTileInfoMap, lod);
-        // End lod 0.-----------------------------------------------------------------------------------------------------------
+        // End lod 0.---
 
         DecimateParameters decimateParameters = new DecimateParameters();
         for (int d = 1; d < maxDepth; d++) {
@@ -147,15 +139,15 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             nodeTileInfoMap.clear();
             tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
             // public void setBasicValues(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount)
-            decimateParameters.setBasicValues(6.0, 0.5, 3.0, 12.0, 1000000, 2, 1.8);
+            decimateParameters.setBasicValues(6.0, 0.5, 2.0, 12.0, 1000000, 2, 1.8);
             if (d == 1) {
-                decimateParameters.setBasicValues(13.0, 0.5, 3.0, 15.0, 1000000, 2, 1.6);
+                decimateParameters.setBasicValues(13.0, 0.5, 2.0, 15.0, 1000000, 2, 1.6);
             } else if (d == 2) {
-                decimateParameters.setBasicValues(18.0, 0.6, 3.0, 16.0, 1000000, 2, 1.8);
+                decimateParameters.setBasicValues(18.0, 0.6, 2.0, 16.0, 1000000, 2, 1.8);
             } else if (d == 3) {
-                decimateParameters.setBasicValues(23.0, 0.6, 3.0, 18.0, 1000000, 2, 2.3);
+                decimateParameters.setBasicValues(23.0, 0.6, 2.0, 18.0, 1000000, 2, 2.3);
             } else if (d == 4) {
-                decimateParameters.setBasicValues(28.0, 0.6, 3.0, 20.0, 1000000, 2, 2.8);
+                decimateParameters.setBasicValues(28.0, 0.6, 2.0, 20.0, 1000000, 2, 2.8);
             }
 
             decimateScenes(tileInfosCopy, lod, decimateParameters);
@@ -179,25 +171,25 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
         }
 
-        // net surfaces with boxTextures.**************************************************************************************
+        // net surfaces with boxTextures.***
         for (int d = 3; d < maxDepth; d++) {
             lod = d;
             currDepth = maxDepth - lod;
             double boxSizeForCurrDepth = desiredDistanceBetweenLat / Math.pow(2, currDepth);
-            double pixelsForMeter = 256.0 / boxSizeForCurrDepth;
+            double pixelsForMeter = 180.0 / boxSizeForCurrDepth;
             tileInfosCopy.clear();
             nodeTileInfoMap.clear();
             tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
             // public void setBasicValues(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount)
-            decimateParameters.setBasicValues(10.0, 0.5, 3.0, 6.0, 1000000, 1, 1.8);
+            decimateParameters.setBasicValues(10.0, 0.5, 2.0, 6.0, 1000000, 1, 1.8);
             if (d == 3) {
-                decimateParameters.setBasicValues(25.0, 1.0, 3.0, 15.0, 1000000, 1, 1.8);
+                decimateParameters.setBasicValues(25.0, 1.0, 2.0, 15.0, 1000000, 1, 1.8);
             } else if (d == 4) {
-                decimateParameters.setBasicValues(30.0, 1.2, 3.0, 15.0, 1000000, 1, 1.8);
+                decimateParameters.setBasicValues(30.0, 1.2, 2.0, 15.0, 1000000, 1, 1.8);
             } else if (d == 5) {
-                decimateParameters.setBasicValues(35.0, 1.5, 3.0, 15.0, 1000000, 1, 1.8);
+                decimateParameters.setBasicValues(35.0, 1.5, 2.0, 15.0, 1000000, 1, 1.8);
             } else if (d == 6) {
-                decimateParameters.setBasicValues(40.0, 2.0, 3.0, 15.0, 1000000, 1, 1.8);
+                decimateParameters.setBasicValues(40.0, 2.0, 2.0, 15.0, 1000000, 1, 1.8);
             }
 
             makeNetSurfacesWithBoxTextures(tileInfosCopy, lod, decimateParameters, pixelsForMeter);
@@ -217,13 +209,13 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
             makeContentsForNodes(nodeTileInfoMap, lod);
 
-            if (d >= 5) {
+            if (d >= 4) {
                 break;
             }
         }
 
-        // Check if is necessary netSurfaces nodes.***********************************************************************
-        lod = 6;
+        // Check if is necessary netSurfaces nodes.***
+        lod = 5;
         for (int depth = maxDepth - lod; depth >= 0; depth--) {
             tileInfosCopy.clear();
             tileInfosCopy = this.getTileInfosCopy(tileInfos, 0, tileInfosCopy);
@@ -460,7 +452,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
 
             // render the sceneInfos and obtain the color and depth images.************************************************************
-            //TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
             List<BufferedImage> resultImages = new ArrayList<>();
             int bufferedImageType = BufferedImage.TYPE_INT_RGB;
 
@@ -476,7 +467,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
             log.info("nodeCode : " + node.getNodeCode() + "currNodeIdx : " + i + "of : " + nodesCount);
             int maxScreenSize = 512;
-            int maxDepthScreenSize = 256;
+            int maxDepthScreenSize = 180;
             tilerExtensionModule.getColorAndDepthRender(sceneInfos, bufferedImageType, resultImages, nodeBBoxLC, nodeTMatrix, maxScreenSize, maxDepthScreenSize);
             BufferedImage bufferedImageColor = resultImages.get(0);
             BufferedImage bufferedImageDepth = resultImages.get(1);
@@ -532,15 +523,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             DecimateParameters decimateParameters = new DecimateParameters();
             decimateParameters.setBasicValues(maxDiffAngDeg, hedgeMinLength, frontierMaxDiffAngDeg, maxAspectRatio, 1000000, 2, 1.8);
             halfEdgeScene.doTrianglesReduction(decimateParameters);
-            //halfEdgeScene.calculateNormals();
 
             if (halfEdgeScene.getTrianglesCount() == 0)
                 continue;
 
             // now, create material for the halfEdgeScene.***
-            //GaiaMaterial material = new GaiaMaterial();
             List<GaiaMaterial> materials = new ArrayList<>();
-            //materials.add(material);
 
             GaiaMaterial material = new GaiaMaterial();
             List<GaiaTexture> textures = new ArrayList<>();
