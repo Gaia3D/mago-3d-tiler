@@ -366,6 +366,10 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             gaiaSceneList.add(scene);
             tilerExtensionModule.decimate(gaiaSceneList, resultDecimatedScenes, decimateParameters);
 
+            if(resultDecimatedScenes.isEmpty()) {
+                log.error("Error : resultDecimatedScenes is empty.");
+            }
+
             HalfEdgeScene halfEdgeSceneLod = resultDecimatedScenes.get(0);
 
             // Save the textures in a temp folder.***

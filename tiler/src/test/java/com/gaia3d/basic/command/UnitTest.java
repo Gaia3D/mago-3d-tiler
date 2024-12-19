@@ -891,4 +891,21 @@ class UnitTest {
         };
         Mago3DTilerMain.main(args);
     }
+
+    @Test
+    void test_RealisticMesh_LeeDongHun_Data_N_buildings() {
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\OBJ_정위치\\길천_OBJ\\";
+        String outputPath = "D:\\data\\mago-server\\output\\leeDongHun_Data_길천_OBJ\\";
+
+        String[] args = new String[]{
+                "-i", inputPath,
+                "-it", "obj",
+                "-o", outputPath,
+                "-crs", "5187",
+                "-su",
+                "-pr", // photo realistic mesh
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
 }

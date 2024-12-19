@@ -3180,12 +3180,19 @@ public class HalfEdgeSurface implements Serializable {
             int subImageW = Math.max((int) currentBoundary.getWidthInt(), 1);
             int subImageH = Math.max((int) currentBoundary.getHeightInt(), 1);
 
-//            int testImageWidth = image.getWidth();
-//            int testImageHeight = image.getHeight();
-//            if(subImageMinX + subImageW > testImageWidth || subImageMinY + subImageH > testImageHeight)
-//            {
-//                int hola = 0;
-//            }
+            int testImageWidth = image.getWidth();
+            int testImageHeight = image.getHeight();
+            if(subImageMinX + subImageW > testImageWidth) {
+                subImageW = testImageWidth - subImageMinX;
+            }
+
+            if(subImageMinY + subImageH > testImageHeight) {
+                subImageH = testImageHeight - subImageMinY;
+            }
+
+            if(subImageMinX < 0 || subImageMinX > testImageWidth || subImageMinY < 0 || subImageMinY > testImageHeight) {
+                continue;
+            }
 
             BufferedImage subImage = image.getSubimage(subImageMinX, subImageMinY, subImageW, subImageH);
 
