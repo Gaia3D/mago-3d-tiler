@@ -63,9 +63,19 @@ public class GlobeUtils {
         return avgRadius * (maxLatRad - minLatRad);
     }
 
+    public static double distanceBetweenLongitudesRad(double latRad, double minLonRad, double maxLonRad) {
+        double radius = radiusAtLatitudeRad(latRad);
+        return radius * Math.cos(latRad) * (maxLonRad - minLonRad);
+    }
+
     public static double angRadLatitudeForDistance(double latRad, double distance) {
         double radius = radiusAtLatitudeRad(latRad);
         return distance / radius;
+    }
+
+    public static double angRadLongitudeForDistance(double latRad, double distance) {
+        double radius = radiusAtLatitudeRad(latRad);
+        return distance / (radius * Math.cos(latRad));
     }
 
     public static Vector3d geographicToCartesianWgs84(Vector3d position) {
