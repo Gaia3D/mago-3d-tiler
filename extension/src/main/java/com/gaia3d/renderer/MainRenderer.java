@@ -384,7 +384,7 @@ public class MainRenderer implements IAppLogic {
         {
             GaiaScene gaiaScene = scenes.get(i);
             GaiaBoundingBox bbox = gaiaScene.getBoundingBox();
-            double bboxMaxSize = Math.max(bbox.getSizeX(), bbox.getSizeY());
+            double bboxMaxSize = bbox.getMaxSize();
             int maxDepthScreenSize = (int)Math.ceil(pixelsForMeter * bboxMaxSize);
             if(maxDepthScreenSize < 8)
             {

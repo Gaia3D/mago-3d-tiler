@@ -131,7 +131,7 @@ public class GaiaMinimizerPhR implements PreProcess {
 //                        halfEdgeSceneLod0.TEST_cutScene();
 //                        GaiaScene sceneLod0 = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneLod0);
 //                        // end test.***
-
+            GaiaBoundingBox testBoundingBox = scene.getBoundingBox();
             GaiaSet tempSetLod0 = GaiaSet.fromGaiaScene(scene);
             Path tempPathLod0 = tempSetLod0.writeFile(tileInfo.getTempPath(), tileInfo.getSerial(), tempSetLod0.getAttribute());
             tileInfo.setTempPath(tempPathLod0);

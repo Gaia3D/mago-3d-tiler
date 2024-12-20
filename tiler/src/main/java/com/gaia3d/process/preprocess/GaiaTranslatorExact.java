@@ -172,7 +172,7 @@ public class GaiaTranslatorExact implements PreProcess {
         if (node.getChildren() != null) {
             for (int i = 0; i < node.getChildren().size(); i++) {
                 GaiaNode childNode = node.getChildren().get(i);
-                this.transformNodeVertexPositionsToLocalCoords(childNode, globalTMatrixInv, parentMatrix, resultBBoxLC);
+                this.transformNodeVertexPositionsToLocalCoords(childNode, globalTMatrixInv, transformMatrix, resultBBoxLC);
             }
         }
     }

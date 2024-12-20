@@ -1,5 +1,6 @@
 package com.gaia3d.process.preprocess;
 
+import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
@@ -62,7 +63,8 @@ public class GaiaRotator implements PreProcess {
         /* set the transform matrix */
         rootNode.setTransformMatrix(transform);
         tileInfo.setTransformMatrix(transform);
-        gaiaScene.getBoundingBox();
+        GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox();
+        tileInfo.setBoundingBox(boundingBox.clone());
 
         //log.info("after transform");
         //log.info(transform.toString());
