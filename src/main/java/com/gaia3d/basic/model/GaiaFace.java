@@ -127,6 +127,10 @@ public class GaiaFace extends FaceStructure implements Serializable {
             }
         }
 
+        if(indices.length < 3) {
+            return true;
+        }
+
         // check if has coincident positions.***
         double error = 1e-5;
         for (int i = 0; i < indices.length; i += 3) {
