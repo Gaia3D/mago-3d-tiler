@@ -1,13 +1,13 @@
-package com.gaia3d.release;
+package com.gaia3d.release.old;
 
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
+@Deprecated
 @Slf4j
 class CityGmlTest {
     private static final String INPUT_PATH = "D:\\data\\mago-tiler-data\\release-test-input";

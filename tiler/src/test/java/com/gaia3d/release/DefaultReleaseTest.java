@@ -9,7 +9,7 @@ import java.io.File;
 
 @Tag("release")
 @Slf4j
-class DefaultTest {
+class DefaultReleaseTest {
     @Test
     void help() {
         String args[] = {

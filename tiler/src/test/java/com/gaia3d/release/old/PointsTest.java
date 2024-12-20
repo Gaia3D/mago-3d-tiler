@@ -1,4 +1,4 @@
-package com.gaia3d.release;
+package com.gaia3d.release.old;
 
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import org.junit.jupiter.api.Disabled;
@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
+@Deprecated
 public class PointsTest {
     private static final String INPUT_PATH = "D:\\data\\mago-tiler-data\\stress-test-input";
     //private static final String OUTPUT_PATH = "D:\\workspaces\\mago-viewer\\data\\stress-test-output";

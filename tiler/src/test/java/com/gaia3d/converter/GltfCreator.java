@@ -1,9 +1,8 @@
-package com.gaia3d;
+package com.gaia3d.converter;
 
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.Configurator;
-import com.gaia3d.converter.EasySceneCreator;
 import com.gaia3d.converter.jgltf.GltfWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.coverage.grid.GridCoverage2D;
