@@ -2848,7 +2848,6 @@ public class HalfEdgeSurface implements Serializable {
         }
 
         if(!noUsedVertices.isEmpty()) {
-            log.info("HalfEdgeSurface.existNoUsedVertices() : noUsedVertices.size() = " + noUsedVertices.size());
             return true;
         }
 

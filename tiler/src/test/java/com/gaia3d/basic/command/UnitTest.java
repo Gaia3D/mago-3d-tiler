@@ -885,9 +885,8 @@ class UnitTest {
                 "-crs", "32648",
                 "-xOffset", "268943",
                 "-yOffset", "1818915",
-                "-su",
-                "-pr", // photo realistic mesh
-                "-debug"
+                "-rx", "-90",
+                "-pr"
         };
         Mago3DTilerMain.main(args);
     }
