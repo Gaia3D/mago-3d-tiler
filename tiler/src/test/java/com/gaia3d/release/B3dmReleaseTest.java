@@ -1,4 +1,4 @@
-package com.gaia3d.release.visual;
+package com.gaia3d.release;
 
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import lombok.extern.slf4j.Slf4j;
@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 
 @Slf4j
-class BatchedVisualTest {
-    private static final String INPUT_PATH = "D:/data/mago-3d-tiler/visual-rendering";
+class B3dmReleaseTest {
+    private static final String INPUT_PATH = "D:/data/mago-3d-tiler/release-sample";
     private static final String OUTPUT_PATH = "D:/data/mago-server/output";
 
     @Test
@@ -23,7 +23,6 @@ class BatchedVisualTest {
         execute(args);
     }
 
-    @Disabled
     @Test
     void batched01() {
         String path = "B01-wangsuk2-3ds";
@@ -35,7 +34,6 @@ class BatchedVisualTest {
         execute(args);
     }
 
-    @Disabled
     @Test
     void batched02() {
         String path = "B02-wangsuk2-dae";
@@ -99,6 +97,8 @@ class BatchedVisualTest {
         execute(args);
     }
 
+    /* This test is disabled because it requires a large input file. */
+    @Disabled
     @Test
     void batched08() {
         String path = "B08-seoul-shape";

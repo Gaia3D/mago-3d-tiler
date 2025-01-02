@@ -1,4 +1,4 @@
-package com.gaia3d.release.visual;
+package com.gaia3d.release;
 
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import lombok.extern.slf4j.Slf4j;
@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 
 @Slf4j
-class FormatVisualTest {
-    private static final String INPUT_PATH = "D:/data/mago-3d-tiler/visual-rendering";
+class FormatReleaseTest {
+    private static final String INPUT_PATH = "D:/data/mago-3d-tiler/release-sample";
     private static final String OUTPUT_PATH = "D:/data/mago-server/output";
 
     @Test

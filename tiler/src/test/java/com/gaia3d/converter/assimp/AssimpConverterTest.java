@@ -60,19 +60,10 @@ class AssimpConverterTest {
 
         File outputPath = new File("D:/workbench");
         File outputFileA = new File(outputPath, "a.gaia");
-        //writeObject(gaiaSet, outputFileA);
-
-        //File outputFileB = new File(outputPath, "b.gaia");
-        //Path path = Paths.get(outputFileB.getAbsolutePath());
-        //gaiaSet.writeFile(path, 0, gaiaSet.getAttribute()) ;
-
-
         GaiaSet readA = readObject(outputFileA);
-        //GaiaSet readB = GaiaSet.fromGaiaScene(path);
 
         log.debug("gaiaScenes : {}", gaiaSet);
         log.debug("gaiaScenes : {}", readA);
-
         log.debug(gaiaSet.equals(readA) + "");
     }
 
@@ -89,8 +80,7 @@ class AssimpConverterTest {
 
     private GaiaSet readObject(File outputFile) {
         try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(outputFile))) {
-            GaiaSet gaiaSet = (GaiaSet) inputStream.readObject();
-            return gaiaSet;
+            return (GaiaSet) inputStream.readObject();
         } catch (Exception e) {
             log.error("Error : {}", e.getMessage());
         }
