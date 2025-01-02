@@ -173,7 +173,7 @@ public class ImageUtils {
             return result;
         }
 
-        throw new FileNotFoundException("File not found : " + file.getPath());
+        throw new FileNotFoundException("File not found : " + file.getAbsolutePath());
     }
 
     public static int[] readImageSize(String imagePath) {
