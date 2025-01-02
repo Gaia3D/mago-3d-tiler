@@ -5,11 +5,13 @@ import com.gaia3d.util.GlobeUtils;
 import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 
+@Slf4j
 @AllArgsConstructor
 public class GaiaRelocator implements PostProcess {
     @Override
@@ -33,6 +35,10 @@ public class GaiaRelocator implements PostProcess {
             Vector3d translation = new Vector3d(x, y, z);
 
             GaiaSet set = tileInfo.getSet();
+            if(set == null) {
+                log.error("GaiaSet is null");
+                continue;
+            }
             set.translate(translation);
         }
         return contentInfo;

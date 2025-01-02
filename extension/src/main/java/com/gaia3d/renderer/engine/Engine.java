@@ -706,7 +706,6 @@ public class Engine {
 
         Map<Integer, Map<PlaneType, List<HalfEdgeFace>>> mapClassificationPlaneTypeFacesList = new HashMap<>();
         for (Map.Entry<Integer, List<HalfEdgeFace>> entry : facesClassificationMap.entrySet()) {
-            log.info("boxTextures : classificationId : " + entry.getKey());
             int classificationId = entry.getKey();
             List<HalfEdgeFace> facesList = entry.getValue();
             Map<PlaneType, List<HalfEdgeFace>> mapPlaneTypeFacesList = HalfEdgeUtils.makeMapPlaneTypeFacesList(facesList, null);
@@ -716,7 +715,6 @@ public class Engine {
             // calculate the projectionMatrix for the camera.***
             int maxScreenSize = boxRenderingMaxSize;
             // ZNeg texture : plane XYPos.***
-            log.info("boxTextures : classificationId : " + classificationId + " , ZNeg texture.");
             List<HalfEdgeFace> facesPlaneXYPos = mapPlaneTypeFacesList.get(PlaneType.XY);
             if (facesPlaneXYPos != null && !facesPlaneXYPos.isEmpty()) {
                 GaiaBoundingBox bboxXYPos = HalfEdgeUtils.getBoundingBoxOfFaces(facesPlaneXYPos);
@@ -749,7 +747,6 @@ public class Engine {
             }
 
             // YPos texture : plane XZNeg.***
-            log.info("boxTextures : classificationId : " + classificationId + " , YPos texture.");
             List<HalfEdgeFace> facesPlaneXZNeg = mapPlaneTypeFacesList.get(PlaneType.XZNEG);
             if (facesPlaneXZNeg != null && !facesPlaneXZNeg.isEmpty()) {
                 GaiaBoundingBox bboxXZNeg = HalfEdgeUtils.getBoundingBoxOfFaces(facesPlaneXZNeg);
@@ -783,7 +780,6 @@ public class Engine {
             }
 
             // XPos texture : plane YZNeg.***
-            log.info("boxTextures : classificationId : " + classificationId + " , XPos texture.");
             List<HalfEdgeFace> facesPlaneYZNeg = mapPlaneTypeFacesList.get(PlaneType.YZNEG);
             if (facesPlaneYZNeg != null && !facesPlaneYZNeg.isEmpty()) {
                 GaiaBoundingBox bboxYZNeg = HalfEdgeUtils.getBoundingBoxOfFaces(facesPlaneYZNeg);
@@ -816,7 +812,6 @@ public class Engine {
             }
 
             // YNeg texture : plane XZPos.***
-            log.info("boxTextures : classificationId : " + classificationId + " , YNeg texture.");
             List<HalfEdgeFace> facesPlaneXZPos = mapPlaneTypeFacesList.get(PlaneType.XZ);
             if (facesPlaneXZPos != null && !facesPlaneXZPos.isEmpty()) {
                 GaiaBoundingBox bboxXZPos = HalfEdgeUtils.getBoundingBoxOfFaces(facesPlaneXZPos);
@@ -849,7 +844,6 @@ public class Engine {
             }
 
             // XNeg texture : plane YZPos.***
-            log.info("boxTextures : classificationId : " + classificationId + " , XNeg texture.");
             List<HalfEdgeFace> facesPlaneYZPos = mapPlaneTypeFacesList.get(PlaneType.YZ);
             if (facesPlaneYZPos != null && !facesPlaneYZPos.isEmpty()) {
                 GaiaBoundingBox bboxYZPos = HalfEdgeUtils.getBoundingBoxOfFaces(facesPlaneYZPos);
@@ -1664,8 +1658,8 @@ public class Engine {
         String fragmentShaderText = readResource("shaders/sceneV330.frag");
 
 
-        log.info("vertexShaderText: {}", vertexShaderText);
-        log.info("fragmentShaderText: {}", fragmentShaderText);
+//        log.info("vertexShaderText: {}", vertexShaderText);
+//        log.info("fragmentShaderText: {}", fragmentShaderText);
 
 
         // create a scene shader program.*************************************************************************************************

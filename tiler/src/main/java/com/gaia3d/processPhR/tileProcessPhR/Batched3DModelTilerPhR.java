@@ -47,6 +47,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.io.FileUtils.deleteDirectory;
@@ -117,18 +122,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         int currDepth = maxDepth - lod;
         Map<Node, List<TileInfo>> nodeTileInfoMap = new HashMap<>();
 
-        try {
-            cutRectangleCake(tileInfosCopy, lod, root);
-        } catch (IOException e) {
-            log.error("Error : {}", e.getMessage());
-            throw new RuntimeException(e);
-        }
+        // multi-threading.***
+        multiThreadCuttingAndScissorProcess(tileInfosCopy, lod, root);
 
         // distribute contents to node in the correspondent depth.***
         // After process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes.***
         distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
-
-        scissorTextures(tileInfosCopy);
         makeContentsForNodes(nodeTileInfoMap, lod);
         // End lod 0.---
 
@@ -139,31 +138,22 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             nodeTileInfoMap.clear();
             tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
             // public void setBasicValues(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount)
-            decimateParameters.setBasicValues(6.0, 0.5, 2.0, 12.0, 1000000, 2, 1.8);
+            decimateParameters.setBasicValues(6.0, 0.5, 1.0, 12.0, 1000000, 2, 1.8);
             if (d == 1) {
-                decimateParameters.setBasicValues(13.0, 0.5, 2.0, 15.0, 1000000, 2, 1.6);
+                decimateParameters.setBasicValues(10.0, 0.5, 0.9, 15.0, 1000000, 1, 1.2);
             } else if (d == 2) {
-                decimateParameters.setBasicValues(18.0, 0.6, 2.0, 16.0, 1000000, 2, 1.8);
+                decimateParameters.setBasicValues(18.0, 0.6, 1.0, 16.0, 1000000, 2, 1.8);
             } else if (d == 3) {
-                decimateParameters.setBasicValues(23.0, 0.6, 2.0, 18.0, 1000000, 2, 2.3);
+                decimateParameters.setBasicValues(23.0, 0.6, 1.0, 18.0, 1000000, 2, 2.3);
             } else if (d == 4) {
-                decimateParameters.setBasicValues(28.0, 0.6, 2.0, 20.0, 1000000, 2, 2.8);
+                decimateParameters.setBasicValues(28.0, 0.6, 1.0, 20.0, 1000000, 2, 2.8);
             }
 
             decimateScenes(tileInfosCopy, lod, decimateParameters);
-            boolean someSceneCut = false;
 
-            try {
-                someSceneCut = cutRectangleCake(tileInfosCopy, lod, root);
-            } catch (IOException e) {
-                log.error("Error : {}", e.getMessage());
-                throw new RuntimeException(e);
-            }
+            multiThreadCuttingAndScissorProcess(tileInfosCopy, lod, root);
             currDepth = maxDepth - lod;
             distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
-            if (someSceneCut) {
-                scissorTextures(tileInfosCopy);
-            }
             makeContentsForNodes(nodeTileInfoMap, lod);
 
             if (d >= 2) {
@@ -181,32 +171,21 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             nodeTileInfoMap.clear();
             tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
             // public void setBasicValues(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount)
-            decimateParameters.setBasicValues(10.0, 0.5, 2.0, 6.0, 1000000, 1, 1.8);
+            decimateParameters.setBasicValues(10.0, 0.5, 1.0, 6.0, 1000000, 1, 1.8);
             if (d == 3) {
-                decimateParameters.setBasicValues(25.0, 1.0, 2.0, 15.0, 1000000, 1, 1.8);
+                decimateParameters.setBasicValues(25.0, 1.0, 1.0, 15.0, 1000000, 1, 1.8);
             } else if (d == 4) {
-                decimateParameters.setBasicValues(30.0, 1.2, 2.0, 15.0, 1000000, 1, 1.8);
+                decimateParameters.setBasicValues(30.0, 1.2, 1.0, 15.0, 1000000, 1, 1.8);
             } else if (d == 5) {
-                decimateParameters.setBasicValues(35.0, 1.5, 2.0, 15.0, 1000000, 1, 1.8);
+                decimateParameters.setBasicValues(35.0, 1.5, 1.0, 15.0, 1000000, 1, 1.8);
             } else if (d == 6) {
-                decimateParameters.setBasicValues(40.0, 2.0, 2.0, 15.0, 1000000, 1, 1.8);
+                decimateParameters.setBasicValues(40.0, 2.0, 1.0, 15.0, 1000000, 1, 1.8);
             }
 
             makeNetSurfacesWithBoxTextures(tileInfosCopy, lod, decimateParameters, pixelsForMeter);
-            boolean someSceneCut = false;
-
-            try {
-                someSceneCut = cutRectangleCake(tileInfosCopy, lod, root);
-            } catch (IOException e) {
-                log.error("Error : {}", e.getMessage());
-                throw new RuntimeException(e);
-            }
+            multiThreadCuttingAndScissorProcess(tileInfosCopy, lod, root);
             currDepth = maxDepth - lod;
             distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
-            //if(someSceneCut)
-            {
-                scissorTextures(tileInfosCopy);
-            }
             makeContentsForNodes(nodeTileInfoMap, lod);
 
             if (d >= 4) {
@@ -234,6 +213,43 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         tileset.setAsset(asset);
         tileset.setRoot(root);
         return tileset;
+    }
+
+    private void multiThreadCuttingAndScissorProcess(List<TileInfo> tileInfos, int lod, Node rootNode)
+    {
+        // multi-threading.***
+        ExecutorService executorService = Executors.newFixedThreadPool(globalOptions.getMultiThreadCount());
+        List<Runnable> tasks = new ArrayList<>();
+        List<TileInfo> finalTileInfosCopy = new ArrayList<>();
+        AtomicInteger atomicProcessCount = new AtomicInteger(0);
+        for (TileInfo tileInfo : tileInfos) {
+            int finalLod = lod;
+            List<TileInfo> singleTileInfoList = new ArrayList<>();
+            singleTileInfoList.add(tileInfo);
+            Runnable callableTask = () -> {
+                try {
+                    int processCount = atomicProcessCount.incrementAndGet();
+                    log.info("Started Cutting and scissoring scene : {}", processCount);
+                    cutRectangleCake(singleTileInfoList, finalLod, rootNode);
+                    scissorTextures(singleTileInfoList);
+                    finalTileInfosCopy.addAll(singleTileInfoList);
+                } catch (IOException e) {
+                    log.error("Error :", e);
+                    throw new RuntimeException(e);
+                }
+            };
+            tasks.add(callableTask);
+        }
+
+        try {
+            executeThread(executorService, tasks);
+        } catch (InterruptedException e) {
+            log.error("Error :", e);
+            throw new RuntimeException(e);
+        }
+
+        tileInfos.clear();
+        tileInfos.addAll(finalTileInfosCopy);
     }
 
     private void setGeometryErrorToNodeAutomatic(Node node, int maxDepth) {
@@ -1931,5 +1947,27 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         } else {
             return maxLod;
         }
+    }
+
+
+    // for multi-threading
+    private void executeThread(ExecutorService executorService, List<Runnable> tasks) throws InterruptedException {
+        try {
+            for (Runnable task : tasks) {
+                Future<?> future = executorService.submit(task);
+                /*if (globalOptions.isDebug()) {
+                    future.get();
+                }*/
+            }
+        } catch (Exception e) {
+            log.error("Failed to execute thread.", e);
+            throw new RuntimeException(e);
+        }
+        executorService.shutdown();
+        do {
+            if (executorService.isTerminated()) {
+                executorService.shutdownNow();
+            }
+        } while (!executorService.awaitTermination(2, TimeUnit.SECONDS));
     }
 }

@@ -157,6 +157,10 @@ public class GaiaBatcher {
                 .collect(Collectors.toList());
 
         sets = sets.stream().filter((set -> {
+            if(set == null) {
+                log.error("Set is null");
+                return false;
+            }
             List<GaiaBufferDataSet> dataSets = set.getBufferDataList();
             dataSets = dataSets.stream().filter((dataSet) -> {
                 Map<AttributeType, GaiaBuffer> bufferMap = dataSet.getBuffers();

@@ -13,6 +13,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.joml.Matrix4d;
+import org.joml.Matrix4f;
 import org.joml.Vector3d;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
@@ -96,8 +97,17 @@ public class GaiaTranslatorExact implements PreProcess {
         // End calculate cartographicBoundingBox.-------------------------------------------------------------
 
         KmlInfo kmlInfo = getKmlInfo(tileInfo, centerGeoCoord);
+
+
+        //double rotateX = globalOptions.getRotateX();
+
+//        // test for leeDongHun data.***
+//        Matrix4f xRotMatrix = new Matrix4f().rotateX((float)Math.toRadians(-90.0f));// test for leeDongHun data.***
+//        // Rotate the scene 90 degrees around the x-axis.
+//        transform = transform.mul(xRotMatrix);// test for leeDongHun data.***
+
         rootNode.setTransformMatrix(transform);
-        tileInfo.setTransformMatrix(transform);
+        //tileInfo.setTransformMatrix(transform);
 
         GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox(); // new
         gaiaScene.setGaiaBoundingBox(boundingBox); // new

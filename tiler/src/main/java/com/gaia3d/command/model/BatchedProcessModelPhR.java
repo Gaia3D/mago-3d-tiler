@@ -77,7 +77,7 @@ public class BatchedProcessModelPhR implements ProcessFlowModel {
         globalOptions.setDebugLod(true);// Test. delete this.!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         // end Test.---
 
-        Pipeline processPipeline = new TilingPipeLinePhR(preProcessors, tilingProcess, postProcessors);
+        Pipeline processPipeline = new TilingPipeline(preProcessors, tilingProcess, postProcessors);
         processPipeline.process(fileLoader);
     }
 

@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
+@Deprecated
 public class TilingPipeLinePhR  implements Pipeline {
     private final List<PreProcess> preProcesses;
     private final TilingProcess tilingProcess;

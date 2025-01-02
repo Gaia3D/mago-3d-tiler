@@ -894,15 +894,15 @@ class UnitTest {
 
     @Test
     void test_RealisticMesh_LeeDongHun_Data_N_buildings() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\BANSONG\\";
-        String outputPath = "D:\\data\\mago-server\\output\\leeDongHun_Data_OBJ_BANSONG\\";
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\BANSONG_1building\\";
+        String outputPath = "D:\\data\\mago-server\\output\\leeDongHun_Data_OBJ_BANSONG_1building\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
                 "-it", "obj",
                 "-o", outputPath,
                 "-crs", "5187",
-                //"-rx", "90",
+                //"-rx", "-90",
                 "-pr", // photo realistic mesh
                 "-debug"
         };

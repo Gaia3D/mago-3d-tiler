@@ -915,11 +915,11 @@ public class HalfEdgeSurface implements Serializable {
                         collapsed = true;
                     }
                 }
-                if (counterAux >= 4000) {
-                    counterAux = 0;
-                    log.info("iteration = " + iteration + " halfEdges deleted = " + hedgesCollapsedCount);
-                    log.info("iteration = " + iteration + " frontierHedges deleted = " + frontierHedgesCollapsedCount);
-                }
+//                if (counterAux >= 4000) {
+//                    counterAux = 0;
+//                    log.info("iteration = " + iteration + " halfEdges deleted = " + hedgesCollapsedCount);
+//                    log.info("iteration = " + iteration + " frontierHedges deleted = " + frontierHedgesCollapsedCount);
+//                }
 
 //                if(hedgesCollapsedCount + frontierHedgesCollapsedCount >= maxCollapseCount)
 //                {
@@ -1042,7 +1042,6 @@ public class HalfEdgeSurface implements Serializable {
     public void removeDeletedObjects() {
         // delete objects that status is DELETED.***
         // delete halfEdges that status is DELETED.***
-        log.info("removing deleted halfEdges...");
         int halfEdgesCount = this.halfEdges.size();
         List<HalfEdge> copyHalfEdges = new ArrayList<>(this.halfEdges);
         this.halfEdges.clear();
@@ -1057,7 +1056,6 @@ public class HalfEdgeSurface implements Serializable {
         copyHalfEdges.clear();
 
         // delete vertices that status is DELETED.***
-        log.info("removing deleted vertices...");
         int verticesCount = this.vertices.size();
         List<HalfEdgeVertex> copyVertices = new ArrayList<>(this.vertices);
         this.vertices.clear();
@@ -1072,7 +1070,6 @@ public class HalfEdgeSurface implements Serializable {
         copyVertices.clear();
 
         // delete faces that status is DELETED.***
-        log.info("removing deleted faces...");
         int facesCount = this.faces.size();
         List<HalfEdgeFace> copyFaces = new ArrayList<>(this.faces);
         this.faces.clear();
@@ -1916,7 +1913,7 @@ public class HalfEdgeSurface implements Serializable {
                 hedgesCount = halfEdges.size();
 
                 hedgesCutCount++;
-                if (hedgesCutCount % 50 == 0) {
+                if (hedgesCutCount % 200 == 0) {
                     log.info("hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount + " , currIdx = " + i);
                 }
             }
@@ -1940,7 +1937,7 @@ public class HalfEdgeSurface implements Serializable {
                 hedgesCount = halfEdges.size();
 
                 hedgesCutCount++;
-                if (hedgesCutCount % 50 == 0) {
+                if (hedgesCutCount % 200 == 0) {
                     log.info("hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount + " , currIdx = " + i);
                 }
             }
@@ -1965,7 +1962,7 @@ public class HalfEdgeSurface implements Serializable {
                 splitHalfEdge(hedge, intersectionVertex);
                 hedgesCount = halfEdges.size();
                 hedgesCutCount++;
-                if(hedgesCutCount%50 == 0)
+                if(hedgesCutCount%200 == 0)
                 {
                     log.info("hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount + " , currIdx = " + i);
                 }
@@ -2643,7 +2640,6 @@ public class HalfEdgeSurface implements Serializable {
             }
 
             removeDeletedObjects();
-            log.info("HalfEdgeSurface.deleteFacesWithClassifyId() : existNoUsedVertices() == true.");
         }
 
         setObjectIdsInList();
@@ -2963,7 +2959,6 @@ public class HalfEdgeSurface implements Serializable {
 
         // must find welded face-groups (faces group that are not connected with other faces).***
         List<List<HalfEdgeFace>> resultWeldedFacesGroups = new ArrayList<>();
-        log.info("HalfEdgeSurface.scissorTextures() : findWeldedFacesGroups().");
         getWeldedFacesGroups(resultWeldedFacesGroups);
 
         // now, for each faceGroup, create a scissorData.***
@@ -2975,7 +2970,6 @@ public class HalfEdgeSurface implements Serializable {
         List<GaiaTextureScissorData> textureScissorDatasHeight = new ArrayList<>();
         int weldedFacesGroupsCount = resultWeldedFacesGroups.size();
 
-        log.info("HalfEdgeSurface.scissorTextures() : create scissorData for each faceGroup.");
         GaiaRectangle texCoordBRect = new GaiaRectangle();
         GaiaRectangle groupTexCoordBRect = new GaiaRectangle();
         List<HalfEdgeVertex> faceVertices = new ArrayList<>();
@@ -3082,7 +3076,6 @@ public class HalfEdgeSurface implements Serializable {
         }
 
         // do texture atlas process.***
-        log.info("HalfEdgeSurface.scissorTextures() : doTextureAtlasProcess().");
         doTextureAtlasProcess(textureScissorDatas);
 
         // recalculate texCoords for each faceGroup.***************************************************************************************************
@@ -3094,7 +3087,6 @@ public class HalfEdgeSurface implements Serializable {
         }
 
         visitedVertexMap.clear();
-        log.info("HalfEdgeSurface.scissorTextures() : recalculate texCoords for each faceGroup.");
 
 
         int textureScissorDatasCount = textureScissorDatas.size();
@@ -3162,7 +3154,6 @@ public class HalfEdgeSurface implements Serializable {
         textureAtlas.createImage(maxWidth, maxHeight, imageType);
 
         // draw the images into textureAtlas.***
-        log.info("HalfEdgeSurface.scissorTextures() : draw the images into textureAtlas.");
         Graphics2D g2d = textureAtlas.getBufferedImage().createGraphics();
         textureScissorDatasCount = textureScissorDatas.size();
         for (int i = 0; i < textureScissorDatasCount; i++) {
@@ -3218,7 +3209,6 @@ public class HalfEdgeSurface implements Serializable {
 
         String textureAtlasName = textureRawName.substring(0, textureRawName.lastIndexOf(".")) + "_atlas" + textureImageExtension;
         String textureAtlasPath = imageParentPath + File.separator + textureAtlasName;
-        log.info("HalfEdgeSurface.scissorTextures() : save the textureAtlas into = " + textureAtlasPath);
         textureAtlas.saveImage(textureAtlasPath);
 
         // change the diffuseTexture path.***
@@ -3228,7 +3218,6 @@ public class HalfEdgeSurface implements Serializable {
         String textureToDeletePath = imageParentPath + File.separator + texturePath;
         File textureToDelete = new File(textureToDeletePath);
         if (textureToDelete.exists()) {
-            log.info("HalfEdgeSurface.scissorTextures() : deleting texture = " + textureToDeletePath);
             textureToDelete.delete();
         }
     }
