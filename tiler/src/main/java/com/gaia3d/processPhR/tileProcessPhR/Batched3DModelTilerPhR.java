@@ -140,7 +140,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             // public void setBasicValues(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount)
             decimateParameters.setBasicValues(6.0, 0.5, 1.0, 12.0, 1000000, 2, 1.8);
             if (d == 1) {
-                decimateParameters.setBasicValues(11.0, 0.5, 0.9, 15.0, 1000000, 1, 1.2);
+                decimateParameters.setBasicValues(12.0, 0.5, 0.9, 15.0, 1000000, 1, 1.2);
             } else if (d == 2) {
                 decimateParameters.setBasicValues(18.0, 0.6, 1.0, 16.0, 1000000, 2, 1.8);
             } else if (d == 3) {
@@ -975,6 +975,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
             Node childNode = rootNode.getIntersectedNode(tileInfoCenterGeoCoordRad, nodeDepth);
             if (childNode == null) {
+                log.error("Error : childNode is null.");
                 continue;
             }
 
@@ -1149,6 +1150,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 Vector3d rightDownBottomLC = new Vector3d(maxPosLCX, minPosLCY, minPosLCZ);
                 Vector3d rightUpBottomLC = new Vector3d(maxPosLCX, maxPosLCY, minPosLCZ);
 
+                Vector3d leftDownUpLC = new Vector3d(minPosLCX, minPosLCY, maxPosLCZ);
+
                 Vector3d leftDownBottomWC = transformMatrix.transformPosition(leftDownBottomLC);
                 Vector3d geoCoordLeftDownBottom = GlobeUtils.cartesianToGeographicWgs84(leftDownBottomWC);
 
@@ -1158,17 +1161,20 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 Vector3d rightUpBottomWC = transformMatrix.transformPosition(rightUpBottomLC);
                 Vector3d geoCoordRightUpBottom = GlobeUtils.cartesianToGeographicWgs84(rightUpBottomWC);
 
+                Vector3d leftDownUpWC = transformMatrix.transformPosition(leftDownUpLC);
+                Vector3d geoCoordLeftDownUp = GlobeUtils.cartesianToGeographicWgs84(leftDownUpWC);
+
                 double minLonDegCut = geoCoordLeftDownBottom.x;
                 double minLatDegCut = geoCoordLeftDownBottom.y;
                 double maxLonDegCut = geoCoordRightDownBottom.x;
                 double maxLatDegCut = geoCoordRightUpBottom.y;
 
-                GaiaBoundingBox cartographicBoundingBox = new GaiaBoundingBox(minLonDegCut, minLatDegCut, boundingBoxCutLC.getMinZ(), maxLonDegCut, maxLatDegCut, boundingBoxCutLC.getMaxZ(), false);
+                //GaiaBoundingBox cartographicBoundingBox = new GaiaBoundingBox(minLonDegCut, minLatDegCut, boundingBoxCutLC.getMinZ(), maxLonDegCut, maxLatDegCut, boundingBoxCutLC.getMaxZ(), false);
+                GaiaBoundingBox cartographicBoundingBox = new GaiaBoundingBox(minLonDegCut, minLatDegCut, geoCoordLeftDownBottom.z, maxLonDegCut, maxLatDegCut, geoCoordLeftDownUp.z, false);
 
                 // create an originalPath for the cut scene.***
                 Path cutScenePath = Paths.get("");
                 gaiaSceneCut.setOriginalPath(cutScenePath);
-                //GaiaAttribute gaiaAttribute = gaiaSceneCut.getAttribute();
 
                 GaiaSet gaiaSetCut = GaiaSet.fromGaiaScene(gaiaSceneCut);
                 UUID identifier = UUID.randomUUID();

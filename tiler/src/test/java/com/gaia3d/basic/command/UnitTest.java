@@ -893,8 +893,23 @@ class UnitTest {
 
     @Test
     void test_RealisticMesh_LeeDongHun_Data_N_buildings() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\BANSONG_1building\\";
-        String outputPath = "D:\\data\\mago-server\\output\\leeDongHun_Data_OBJ_BANSONG_1building\\";
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\BANSONG\\";
+        String outputPath = "D:\\data\\mago-server\\output\\leeDongHun_Data_OBJ_BANSONG\\";
+
+        String[] args = new String[]{
+                "-i", inputPath,
+                "-it", "obj",
+                "-o", outputPath,
+                "-crs", "5187",
+                "-pr"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void test_RealisticMesh_LeeDongHun_Data_SANGCHEON() {
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\SANGCHEON\\";
+        String outputPath = "D:\\data\\mago-server\\output\\leeDongHun_Data_OBJ_SANGCHEON\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
@@ -902,7 +917,22 @@ class UnitTest {
                 "-o", outputPath,
                 "-crs", "5187",
                 //"-rx", "-90",
-                "-pr", // photo realistic mesh
+                "-pr"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void test_RealisticMesh_LeeDongHun_Data_SANGCHEON_someBuildings() {
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\SANGCHEON_someBuildings\\";
+        String outputPath = "D:\\data\\mago-server\\output\\leeDongHun_Data_OBJ_SANGCHEON_someBuildings\\";
+
+        String[] args = new String[]{
+                "-i", inputPath,
+                "-it", "obj",
+                "-o", outputPath,
+                "-crs", "5187",
+                "-pr",
                 "-debug"
         };
         Mago3DTilerMain.main(args);

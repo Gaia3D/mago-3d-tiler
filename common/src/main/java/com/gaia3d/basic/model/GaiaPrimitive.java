@@ -38,6 +38,9 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
     private Integer materialIndex = -1;
 
     public GaiaBoundingBox getBoundingBox(Matrix4d transform) {
+        if(this.vertices == null || this.vertices.isEmpty()) {
+            return null;
+        }
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         for (GaiaVertex vertex : vertices) {
             Vector3d position = vertex.getPosition();

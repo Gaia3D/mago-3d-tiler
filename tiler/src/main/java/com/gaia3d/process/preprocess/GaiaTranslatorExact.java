@@ -94,17 +94,19 @@ public class GaiaTranslatorExact implements PreProcess {
 
         GaiaBoundingBox cartographicBoundingBox = new GaiaBoundingBox(minLonDegCut, minLatDegCut, bboxLC.getMinZ(), maxLonDegCut, maxLatDegCut, bboxLC.getMaxZ(), false);
         tileInfo.setCartographicBBox(cartographicBoundingBox);
-        // End calculate cartographicBoundingBox.-------------------------------------------------------------
+        // End calculate cartographicBoundingBox.---
 
         KmlInfo kmlInfo = getKmlInfo(tileInfo, centerGeoCoord);
 
-
-        //double rotateX = globalOptions.getRotateX();
-
-//        // test for leeDongHun data.***
-//        Matrix4f xRotMatrix = new Matrix4f().rotateX((float)Math.toRadians(-90.0f));// test for leeDongHun data.***
-//        // Rotate the scene 90 degrees around the x-axis.
-//        transform = transform.mul(xRotMatrix);// test for leeDongHun data.***
+        // test for leeDongHun data.***
+        double rotateX = globalOptions.getRotateX();
+        if(Math.abs(rotateX) < 1e-4) {
+            // if the rotateX is 0, then rotate the scene -90 degrees around the x-axis.***
+            Matrix4f xRotMatrix = new Matrix4f().rotateX((float) Math.toRadians(-90.0f));// test for leeDongHun data.***
+            // Rotate the scene 90 degrees around the x-axis.
+            transform = transform.mul(xRotMatrix);// test for leeDongHun data.***
+        }
+        // End test.---
 
         rootNode.setTransformMatrix(transform);
         //tileInfo.setTransformMatrix(transform);
