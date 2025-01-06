@@ -84,13 +84,17 @@ public class HalfEdgePrimitive implements Serializable {
     }
 
     public GaiaBoundingBox calculateBoundingBox(GaiaBoundingBox resultBBox) {
-        if(resultBBox == null) {
-            resultBBox = new GaiaBoundingBox();
-        }
         int surfacesCount = this.surfaces.size();
         for(int i = 0; i < surfacesCount; i++) {
             HalfEdgeSurface surface = this.surfaces.get(i);
             GaiaBoundingBox boundingBox = surface.getBoundingBox();
+            if(boundingBox == null) {
+                continue;
+            }
+
+            if(resultBBox == null) {
+                resultBBox = new GaiaBoundingBox();
+            }
             resultBBox.addBoundingBox(boundingBox);
         }
         return resultBBox;
@@ -254,6 +258,13 @@ public class HalfEdgePrimitive implements Serializable {
     public void splitFacesByBestPlanesToProject() {
         for (HalfEdgeSurface surface : surfaces) {
             surface.splitFacesByBestPlanesToProject();
+        }
+    }
+
+    public void getWestEastSouthNorthVertices(GaiaBoundingBox bbox, List<HalfEdgeVertex> westVertices, List<HalfEdgeVertex> eastVertices,
+                                              List<HalfEdgeVertex> southVertices, List<HalfEdgeVertex> northVertices, double error) {
+        for (HalfEdgeSurface surface : surfaces) {
+            surface.getWestEastSouthNorthVertices(bbox, westVertices, eastVertices, southVertices, northVertices, error);
         }
     }
 }

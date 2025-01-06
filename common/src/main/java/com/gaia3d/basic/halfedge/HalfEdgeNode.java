@@ -2,6 +2,8 @@ package com.gaia3d.basic.halfedge;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaMaterial;
+import com.gaia3d.basic.model.GaiaMesh;
+import com.gaia3d.basic.model.GaiaNode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -126,16 +128,44 @@ public class HalfEdgeNode implements Serializable {
     }
 
     public GaiaBoundingBox calculateBoundingBox(GaiaBoundingBox resultBBox) {
-        if(resultBBox == null) {
-            resultBBox = new GaiaBoundingBox();
+//        if(resultBBox == null) {
+//            resultBBox = new GaiaBoundingBox();
+//        }
+//        for (HalfEdgeMesh mesh : meshes) {
+//            resultBBox = mesh.calculateBoundingBox(resultBBox);
+//        }
+//        for (HalfEdgeNode child : children) {
+//            resultBBox = child.calculateBoundingBox(resultBBox);
+//        }
+//        return resultBBox;
+        GaiaBoundingBox boundingBox = null;
+//        Matrix4d transformMatrix = new Matrix4d(this.transformMatrix);
+//        if (parentTransformMatrix != null) {
+//            parentTransformMatrix.mul(transformMatrix, transformMatrix);
+//        }
+        for (HalfEdgeMesh mesh : this.getMeshes()) {
+            GaiaBoundingBox meshBoundingBox = mesh.calculateBoundingBox(null);
+            if(meshBoundingBox == null) {
+                continue;
+            }
+            if (boundingBox == null) {
+                boundingBox = meshBoundingBox;
+            } else {
+                boundingBox.addBoundingBox(meshBoundingBox);
+            }
         }
-        for (HalfEdgeMesh mesh : meshes) {
-            resultBBox = mesh.calculateBoundingBox(resultBBox);
+        for (HalfEdgeNode child : this.getChildren()) {
+            GaiaBoundingBox childBoundingBox = child.calculateBoundingBox(null);
+            if (childBoundingBox == null) {
+                continue;
+            }
+            if (boundingBox == null) {
+                boundingBox = childBoundingBox;
+            } else {
+                boundingBox.addBoundingBox(childBoundingBox);
+            }
         }
-        for (HalfEdgeNode child : children) {
-            resultBBox = child.calculateBoundingBox(resultBBox);
-        }
-        return resultBBox;
+        return boundingBox;
     }
 
     public GaiaBoundingBox getBoundingBox() {
@@ -330,6 +360,17 @@ public class HalfEdgeNode implements Serializable {
         }
         for (HalfEdgeNode child : children) {
             child.extractPrimitives(resultPrimitives);
+        }
+    }
+
+    public void getWestEastSouthNorthVertices(GaiaBoundingBox bbox, List<HalfEdgeVertex> westVertices, List<HalfEdgeVertex> eastVertices, List<HalfEdgeVertex> southVertices,
+                                              List<HalfEdgeVertex> northVertices, double error) {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.getWestEastSouthNorthVertices(bbox, westVertices, eastVertices, southVertices, northVertices, error);
+        }
+
+        for (HalfEdgeNode child : children) {
+            child.getWestEastSouthNorthVertices(bbox, westVertices, eastVertices, southVertices, northVertices, error);
         }
     }
 }

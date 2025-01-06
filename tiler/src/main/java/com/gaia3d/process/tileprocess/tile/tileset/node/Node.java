@@ -14,6 +14,7 @@ import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -176,13 +177,135 @@ public class Node {
         return null;
     }
 
+    private void createOctTreeChildren() {
+
+        String parentNodeCode = this.getNodeCode();
+
+        BoundingVolume boundingVolume = this.getBoundingVolume();
+        double[] region = boundingVolume.getRegion();
+        double minLonDeg = Math.toDegrees(region[0]);
+        double minLatDeg = Math.toDegrees(region[1]);
+        double maxLonDeg = Math.toDegrees(region[2]);
+        double maxLatDeg = Math.toDegrees(region[3]);
+        double minAltitude = region[4];
+        double maxAltitude = region[5];
+
+        // must descend as octree.***
+        double midLonDeg = (minLonDeg + maxLonDeg) / 2.0;
+        double midLatDeg = (minLatDeg + maxLatDeg) / 2.0;
+        double midAltitude = (minAltitude + maxAltitude) / 2.0;
+
+        double parentGeometricError = this.getGeometricError();
+        double childGeometricError = parentGeometricError / 2.0;
+
+        //
+        List<Node> children = this.getChildren();
+        if (children == null) {
+            children = new ArrayList<>();
+            this.setChildren(children);
+        }
+
+        //              bottom                                top
+        //        +------------+------------+        +------------+------------+
+        //        |            |            |        |            |            |
+        //        |     3      |     2      |        |     7      |     6      |
+        //        |            |            |        |            |            |
+        //        +------------+------------+        +------------+------------+
+        //        |            |            |        |            |            |
+        //        |     0      |     1      |        |     4      |     5      |
+        //        |            |            |        |            |            |
+        //        +------------+------------+        +------------+------------+
+
+        // 0. left - down - bottom.***
+        Node child0 = new Node();
+        children.add(child0);
+        child0.setParent(this);
+        child0.setDepth(this.getDepth() + 1);
+        child0.setGeometricError(childGeometricError);
+        GaiaBoundingBox child0BoundingBox = new GaiaBoundingBox(minLonDeg, minLatDeg, minAltitude, midLonDeg, midLatDeg, midAltitude, false);
+        child0.setBoundingVolume(new BoundingVolume(child0BoundingBox));
+        child0.setNodeCode(parentNodeCode + "0");
+
+        // 1. right - down - bottom.***
+        Node child1 = new Node();
+        children.add(child1);
+        child1.setParent(this);
+        child1.setDepth(this.getDepth() + 1);
+        child1.setGeometricError(childGeometricError);
+        GaiaBoundingBox child1BoundingBox = new GaiaBoundingBox(midLonDeg, minLatDeg, minAltitude, maxLonDeg, midLatDeg, midAltitude, false);
+        child1.setBoundingVolume(new BoundingVolume(child1BoundingBox));
+        child1.setNodeCode(parentNodeCode + "1");
+
+        // 2. right - up - bottom.***
+        Node child2 = new Node();
+        children.add(child2);
+        child2.setParent(this);
+        child2.setDepth(this.getDepth() + 1);
+        child2.setGeometricError(childGeometricError);
+        GaiaBoundingBox child2BoundingBox = new GaiaBoundingBox(midLonDeg, midLatDeg, minAltitude, maxLonDeg, maxLatDeg, midAltitude, false);
+        child2.setBoundingVolume(new BoundingVolume(child2BoundingBox));
+        child2.setNodeCode(parentNodeCode + "2");
+
+        // 3. left - up - bottom.***
+        Node child3 = new Node();
+        children.add(child3);
+        child3.setParent(this);
+        child3.setDepth(this.getDepth() + 1);
+        child3.setGeometricError(childGeometricError);
+        GaiaBoundingBox child3BoundingBox = new GaiaBoundingBox(minLonDeg, midLatDeg, minAltitude, midLonDeg, maxLatDeg, midAltitude, false);
+        child3.setBoundingVolume(new BoundingVolume(child3BoundingBox));
+        child3.setNodeCode(parentNodeCode + "3");
+
+        // 4. left - down - top.***
+        Node child4 = new Node();
+        children.add(child4);
+        child4.setParent(this);
+        child4.setDepth(this.getDepth() + 1);
+        child4.setGeometricError(childGeometricError);
+        GaiaBoundingBox child4BoundingBox = new GaiaBoundingBox(minLonDeg, minLatDeg, midAltitude, midLonDeg, midLatDeg, maxAltitude, false);
+        child4.setBoundingVolume(new BoundingVolume(child4BoundingBox));
+        child4.setNodeCode(parentNodeCode + "4");
+
+        // 5. right - down - top.***
+        Node child5 = new Node();
+        children.add(child5);
+        child5.setParent(this);
+        child5.setDepth(this.getDepth() + 1);
+        child5.setGeometricError(childGeometricError);
+        GaiaBoundingBox child5BoundingBox = new GaiaBoundingBox(midLonDeg, minLatDeg, midAltitude, maxLonDeg, midLatDeg, maxAltitude, false);
+        child5.setBoundingVolume(new BoundingVolume(child5BoundingBox));
+        child5.setNodeCode(parentNodeCode + "5");
+
+        // 6. right - up - top.***
+        Node child6 = new Node();
+        children.add(child6);
+        child6.setParent(this);
+        child6.setDepth(this.getDepth() + 1);
+        child6.setGeometricError(childGeometricError);
+        GaiaBoundingBox child6BoundingBox = new GaiaBoundingBox(midLonDeg, midLatDeg, midAltitude, maxLonDeg, maxLatDeg, maxAltitude, false);
+        child6.setBoundingVolume(new BoundingVolume(child6BoundingBox));
+        child6.setNodeCode(parentNodeCode + "6");
+
+        // 7. left - up - top.***
+        Node child7 = new Node();
+        children.add(child7);
+        child7.setParent(this);
+        child7.setDepth(this.getDepth() + 1);
+        child7.setGeometricError(childGeometricError);
+        GaiaBoundingBox child7BoundingBox = new GaiaBoundingBox(minLonDeg, midLatDeg, midAltitude, midLonDeg, maxLatDeg, maxAltitude, false);
+        child7.setBoundingVolume(new BoundingVolume(child7BoundingBox));
+        child7.setNodeCode(parentNodeCode + "7");
+
+
+    }
+
     public Node getIntersectedNode(Vector3d cartographicRad, int depth) {
         if (this.depth == depth) {
             return this;
         }
 
-        if (children == null) {
-            return null;
+        if (children == null || children.isEmpty()) {
+            this.createOctTreeChildren();
         }
 
         for (Node childNode : children) {

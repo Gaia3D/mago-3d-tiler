@@ -8,10 +8,7 @@ import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.exchangable.SceneInfo;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.halfedge.DecimateParameters;
-import com.gaia3d.basic.halfedge.HalfEdgeScene;
-import com.gaia3d.basic.halfedge.HalfEdgeUtils;
-import com.gaia3d.basic.halfedge.PlaneType;
+import com.gaia3d.basic.halfedge.*;
 import com.gaia3d.basic.model.GaiaMaterial;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
@@ -112,18 +109,17 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         root.setBoundingVolume(new BoundingVolume(globalBoundingBox));
         root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
 
-        makeOctTreeByDepth(root, desiredDepth);
-
         // lod 0.***
         int lod = 0;
         List<TileInfo> tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, null);
 
-        int maxDepth = root.findMaxDepth();
+        //int maxDepth = root.findMaxDepth();
+        int maxDepth = desiredDepth;
         int currDepth = maxDepth - lod;
         Map<Node, List<TileInfo>> nodeTileInfoMap = new HashMap<>();
 
         // multi-threading.***
-        multiThreadCuttingAndScissorProcess(tileInfosCopy, lod, root);
+        multiThreadCuttingAndScissorProcess(tileInfosCopy, lod, root, maxDepth);
 
         // distribute contents to node in the correspondent depth.***
         // After process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes.***
@@ -151,7 +147,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
             decimateScenes(tileInfosCopy, lod, decimateParameters);
 
-            multiThreadCuttingAndScissorProcess(tileInfosCopy, lod, root);
+            multiThreadCuttingAndScissorProcess(tileInfosCopy, lod, root, maxDepth);
             currDepth = maxDepth - lod;
             distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
             makeContentsForNodes(nodeTileInfoMap, lod);
@@ -183,7 +179,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
 
             makeNetSurfacesWithBoxTextures(tileInfosCopy, lod, decimateParameters, pixelsForMeter);
-            multiThreadCuttingAndScissorProcess(tileInfosCopy, lod, root);
+            multiThreadCuttingAndScissorProcess(tileInfosCopy, lod, root, maxDepth);
             currDepth = maxDepth - lod;
             distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
             makeContentsForNodes(nodeTileInfoMap, lod);
@@ -215,7 +211,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         return tileset;
     }
 
-    private void multiThreadCuttingAndScissorProcess(List<TileInfo> tileInfos, int lod, Node rootNode)
+    private void multiThreadCuttingAndScissorProcess(List<TileInfo> tileInfos, int lod, Node rootNode, int maxDepth)
     {
         // multi-threading.***
         ExecutorService executorService = Executors.newFixedThreadPool(globalOptions.getMultiThreadCount());
@@ -230,8 +226,9 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 try {
                     int processCount = atomicProcessCount.incrementAndGet();
                     log.info("Started Cutting and scissoring scene : {}", processCount);
-                    cutRectangleCake(singleTileInfoList, finalLod, rootNode);
+                    cutRectangleCake(singleTileInfoList, finalLod, rootNode, maxDepth);
                     scissorTextures(singleTileInfoList);
+                    makeSkirt(singleTileInfoList);
                     finalTileInfosCopy.addAll(singleTileInfoList);
                 } catch (IOException e) {
                     log.error("Error :", e);
@@ -1010,6 +1007,46 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         return resultTileInfosCopy;
     }
 
+    private void makeSkirt(List<TileInfo> tileInfos) {
+        int tileInfosCount = tileInfos.size();
+        for (int i = 0; i < tileInfosCount; i++) {
+            TileInfo tileInfo = tileInfos.get(i);
+            Path path = tileInfo.getTempPath();
+
+            // load the file.***
+            try {
+                GaiaSet gaiaSet = GaiaSet.readFile(path);
+                if (gaiaSet == null) {
+                    log.error("Error : gaiaSet is null. pth : " + path);
+                    continue;
+                }
+                GaiaScene scene = new GaiaScene(gaiaSet);
+
+                HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
+                halfEdgeScene.makeSkirt();
+
+                // once scene is scissored, must change the materials of the gaiaSet and overwrite the file.***
+                GaiaScene skirtScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
+                GaiaSet gaiaSet2 = GaiaSet.fromGaiaScene(skirtScene);
+
+                // overwrite the file.***
+                gaiaSet2.writeFileInThePath(path);
+
+                scene.clear();
+                gaiaSet.clear();
+                halfEdgeScene.deleteObjects();
+                gaiaSet2.clear();
+                skirtScene.clear();
+
+                if (gaiaSet == null)
+                    continue;
+            } catch (IOException e) {
+                log.error("Error : {}", e.getMessage());
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     private void scissorTextures(List<TileInfo> tileInfos) {
         int tileInfosCount = tileInfos.size();
         for (int i = 0; i < tileInfosCount; i++) {
@@ -1026,6 +1063,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 GaiaScene scene = new GaiaScene(gaiaSet);
 
                 HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
+                log.info("Scissoring textures of tile : " + i + " of : " + tileInfosCount);
                 halfEdgeScene.scissorTextures();
 
                 // once scene is scissored, must change the materials of the gaiaSet and overwrite the file.***
@@ -1050,8 +1088,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         }
     }
 
-    private boolean cutRectangleCake(List<TileInfo> tileInfos, int lod, Node rootNode) throws FileNotFoundException {
-        int maxDepth = rootNode.findMaxDepth();
+    private boolean cutRectangleCake(List<TileInfo> tileInfos, int lod, Node rootNode, int maxDepth) throws FileNotFoundException {
+       // int maxDepth = rootNode.findMaxDepth();
         int currDepth = maxDepth - lod;
 
         // the maxDepth corresponds to lod0.***
@@ -1169,7 +1207,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 double maxLonDegCut = geoCoordRightDownBottom.x;
                 double maxLatDegCut = geoCoordRightUpBottom.y;
 
-                //GaiaBoundingBox cartographicBoundingBox = new GaiaBoundingBox(minLonDegCut, minLatDegCut, boundingBoxCutLC.getMinZ(), maxLonDegCut, maxLatDegCut, boundingBoxCutLC.getMaxZ(), false);
                 GaiaBoundingBox cartographicBoundingBox = new GaiaBoundingBox(minLonDegCut, minLatDegCut, geoCoordLeftDownBottom.z, maxLonDegCut, maxLatDegCut, geoCoordLeftDownUp.z, false);
 
                 // create an originalPath for the cut scene.***
@@ -1549,154 +1586,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         tileInfos.addAll(cutTileInfos);
 
         return someSceneCutted;
-    }
-
-    private void createOctTreeChildrenForNode(Node node) {
-        if (node == null)
-            return;
-
-        String parentNodeCode = node.getNodeCode();
-
-        BoundingVolume boundingVolume = node.getBoundingVolume();
-        double[] region = boundingVolume.getRegion();
-        double minLonDeg = Math.toDegrees(region[0]);
-        double minLatDeg = Math.toDegrees(region[1]);
-        double maxLonDeg = Math.toDegrees(region[2]);
-        double maxLatDeg = Math.toDegrees(region[3]);
-        double minAltitude = region[4];
-        double maxAltitude = region[5];
-
-        // must descend as octree.***
-        double midLonDeg = (minLonDeg + maxLonDeg) / 2.0;
-        double midLatDeg = (minLatDeg + maxLatDeg) / 2.0;
-        double midAltitude = (minAltitude + maxAltitude) / 2.0;
-
-        double parentGeometricError = node.getGeometricError();
-        double childGeometricError = parentGeometricError / 2.0;
-
-        //
-        List<Node> children = node.getChildren();
-        if (children == null) {
-            children = new ArrayList<>();
-            node.setChildren(children);
-        }
-
-        //              bottom                                top
-        //        +------------+------------+        +------------+------------+
-        //        |            |            |        |            |            |
-        //        |     3      |     2      |        |     7      |     6      |
-        //        |            |            |        |            |            |
-        //        +------------+------------+        +------------+------------+
-        //        |            |            |        |            |            |
-        //        |     0      |     1      |        |     4      |     5      |
-        //        |            |            |        |            |            |
-        //        +------------+------------+        +------------+------------+
-
-        // 0. left - down - bottom.***
-        Node child0 = new Node();
-        children.add(child0);
-        child0.setParent(node);
-        child0.setDepth(node.getDepth() + 1);
-        child0.setGeometricError(childGeometricError);
-        GaiaBoundingBox child0BoundingBox = new GaiaBoundingBox(minLonDeg, minLatDeg, minAltitude, midLonDeg, midLatDeg, midAltitude, false);
-        child0.setBoundingVolume(new BoundingVolume(child0BoundingBox));
-        child0.setNodeCode(parentNodeCode + "0");
-
-        // 1. right - down - bottom.***
-        Node child1 = new Node();
-        children.add(child1);
-        child1.setParent(node);
-        child1.setDepth(node.getDepth() + 1);
-        child1.setGeometricError(childGeometricError);
-        GaiaBoundingBox child1BoundingBox = new GaiaBoundingBox(midLonDeg, minLatDeg, minAltitude, maxLonDeg, midLatDeg, midAltitude, false);
-        child1.setBoundingVolume(new BoundingVolume(child1BoundingBox));
-        child1.setNodeCode(parentNodeCode + "1");
-
-        // 2. right - up - bottom.***
-        Node child2 = new Node();
-        children.add(child2);
-        child2.setParent(node);
-        child2.setDepth(node.getDepth() + 1);
-        child2.setGeometricError(childGeometricError);
-        GaiaBoundingBox child2BoundingBox = new GaiaBoundingBox(midLonDeg, midLatDeg, minAltitude, maxLonDeg, maxLatDeg, midAltitude, false);
-        child2.setBoundingVolume(new BoundingVolume(child2BoundingBox));
-        child2.setNodeCode(parentNodeCode + "2");
-
-        // 3. left - up - bottom.***
-        Node child3 = new Node();
-        children.add(child3);
-        child3.setParent(node);
-        child3.setDepth(node.getDepth() + 1);
-        child3.setGeometricError(childGeometricError);
-        GaiaBoundingBox child3BoundingBox = new GaiaBoundingBox(minLonDeg, midLatDeg, minAltitude, midLonDeg, maxLatDeg, midAltitude, false);
-        child3.setBoundingVolume(new BoundingVolume(child3BoundingBox));
-        child3.setNodeCode(parentNodeCode + "3");
-
-        // 4. left - down - top.***
-        Node child4 = new Node();
-        children.add(child4);
-        child4.setParent(node);
-        child4.setDepth(node.getDepth() + 1);
-        child4.setGeometricError(childGeometricError);
-        GaiaBoundingBox child4BoundingBox = new GaiaBoundingBox(minLonDeg, minLatDeg, midAltitude, midLonDeg, midLatDeg, maxAltitude, false);
-        child4.setBoundingVolume(new BoundingVolume(child4BoundingBox));
-        child4.setNodeCode(parentNodeCode + "4");
-
-        // 5. right - down - top.***
-        Node child5 = new Node();
-        children.add(child5);
-        child5.setParent(node);
-        child5.setDepth(node.getDepth() + 1);
-        child5.setGeometricError(childGeometricError);
-        GaiaBoundingBox child5BoundingBox = new GaiaBoundingBox(midLonDeg, minLatDeg, midAltitude, maxLonDeg, midLatDeg, maxAltitude, false);
-        child5.setBoundingVolume(new BoundingVolume(child5BoundingBox));
-        child5.setNodeCode(parentNodeCode + "5");
-
-        // 6. right - up - top.***
-        Node child6 = new Node();
-        children.add(child6);
-        child6.setParent(node);
-        child6.setDepth(node.getDepth() + 1);
-        child6.setGeometricError(childGeometricError);
-        GaiaBoundingBox child6BoundingBox = new GaiaBoundingBox(midLonDeg, midLatDeg, midAltitude, maxLonDeg, maxLatDeg, maxAltitude, false);
-        child6.setBoundingVolume(new BoundingVolume(child6BoundingBox));
-        child6.setNodeCode(parentNodeCode + "6");
-
-        // 7. left - up - top.***
-        Node child7 = new Node();
-        children.add(child7);
-        child7.setParent(node);
-        child7.setDepth(node.getDepth() + 1);
-        child7.setGeometricError(childGeometricError);
-        GaiaBoundingBox child7BoundingBox = new GaiaBoundingBox(minLonDeg, midLatDeg, midAltitude, midLonDeg, maxLatDeg, maxAltitude, false);
-        child7.setBoundingVolume(new BoundingVolume(child7BoundingBox));
-        child7.setNodeCode(parentNodeCode + "7");
-
-
-    }
-
-    public void makeOctTreeByDepth(Node node, int targetDepth) {
-        if (node == null)
-            return;
-
-        if (node.getDepth() >= targetDepth)
-            return;
-
-        // must descend as octree.***
-        createOctTreeChildrenForNode(node);
-
-        List<Node> children = node.getChildren();
-
-        int childrenCount = children.size();
-        for (int i = 0; i < childrenCount; i++) {
-            Node child = children.get(i);
-            makeOctTreeByDepth(child, targetDepth);
-        }
-    }
-
-    public void splitMeshesByLod(List<TileInfo> tileInfos) {
-        int minLod = globalOptions.getMinLod(); // most detailed level
-        int maxLod = globalOptions.getMaxLod(); // least detailed level
     }
 
     public void writeTileset(Tileset tileset) {

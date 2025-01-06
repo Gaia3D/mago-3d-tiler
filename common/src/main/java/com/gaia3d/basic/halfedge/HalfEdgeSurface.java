@@ -1862,18 +1862,28 @@ public class HalfEdgeSurface implements Serializable {
     }
 
     public GaiaBoundingBox calculateBoundingBox(GaiaBoundingBox resultBBox) {
-        if (resultBBox == null) {
-            resultBBox = new GaiaBoundingBox();
+        if(vertices == null || vertices.isEmpty())
+        {
+            return resultBBox;
         }
-        resultBBox.setInit(true);
+
+        GaiaBoundingBox myBBox = new GaiaBoundingBox();
         int vertexCount = vertices.size();
         for (int i = 0; i < vertexCount; i++) {
             HalfEdgeVertex vertex = vertices.get(i);
             Vector3d position = vertex.getPosition();
             if (position != null) {
-                resultBBox.addPoint(position);
+                myBBox.addPoint(position);
             }
         }
+
+        if (resultBBox == null) {
+            resultBBox = myBBox;
+        }
+        else {
+            resultBBox.addBoundingBox(myBBox);
+        }
+
         return resultBBox;
     }
 
@@ -2931,7 +2941,6 @@ public class HalfEdgeSurface implements Serializable {
 
     public void scissorTextures(GaiaMaterial material) {
         // Provisionally scissor only the "DiffuseTexture".***
-        log.info("HalfEdgeSurface.scissorTextures()");
         if (material == null) {
             return;
         }
@@ -3844,5 +3853,27 @@ public class HalfEdgeSurface implements Serializable {
 
         this.deleteObjects();
         this.joinSurface(newSurfaceMaster);
+    }
+
+    public void getWestEastSouthNorthVertices(GaiaBoundingBox bbox, List<HalfEdgeVertex> westVertices, List<HalfEdgeVertex> eastVertices,
+                                              List<HalfEdgeVertex> southVertices, List<HalfEdgeVertex> northVertices, double error) {
+        int verticesCount = vertices.size();
+        double west = bbox.getMinX();
+        double east = bbox.getMaxX();
+        double south = bbox.getMinY();
+        double north = bbox.getMaxY();
+        for (int i = 0; i < verticesCount; i++) {
+            HalfEdgeVertex vertex = vertices.get(i);
+            Vector3d position = vertex.getPosition();
+            if (Math.abs(position.x - west) < error) {
+                westVertices.add(vertex);
+            } else if (Math.abs(position.x - east) < error) {
+                eastVertices.add(vertex);
+            } else if (Math.abs(position.y - south) < error) {
+                southVertices.add(vertex);
+            } else if (Math.abs(position.y - north) < error) {
+                northVertices.add(vertex);
+            }
+        }
     }
 }

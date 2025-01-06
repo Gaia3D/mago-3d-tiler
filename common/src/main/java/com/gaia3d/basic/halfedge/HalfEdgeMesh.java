@@ -207,4 +207,11 @@ public class HalfEdgeMesh implements Serializable {
             resultPrimitives.add(primitive);
         }
     }
+
+    public void getWestEastSouthNorthVertices(GaiaBoundingBox bbox, List<HalfEdgeVertex> westVertices, List<HalfEdgeVertex> eastVertices,
+                                              List<HalfEdgeVertex> southVertices, List<HalfEdgeVertex> northVertices, double error) {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.getWestEastSouthNorthVertices(bbox, westVertices, eastVertices, southVertices, northVertices, error);
+        }
+    }
 }
