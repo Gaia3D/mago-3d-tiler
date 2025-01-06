@@ -456,4 +456,49 @@ public class HalfEdgeScene  implements Serializable{
             node.doTrianglesReductionOneIteration(decimateParameters);
         }
     }
+
+    public void makeSkirt() {
+        GaiaBoundingBox bbox = getBoundingBox();
+        double error = 1e-5;
+        List<HalfEdgeVertex> westVertices = new ArrayList<>();
+        List<HalfEdgeVertex> eastVertices = new ArrayList<>();
+        List<HalfEdgeVertex> southVertices = new ArrayList<>();
+        List<HalfEdgeVertex> northVertices = new ArrayList<>();
+        for (HalfEdgeNode node : nodes) {
+            node.getWestEastSouthNorthVertices(bbox, westVertices, eastVertices, southVertices, northVertices, error);
+        }
+
+        double bboxLengthX = bbox.getLengthX();
+        double bboxLengthY = bbox.getLengthY();
+        double bboxMaxSize = Math.max(bboxLengthX, bboxLengthY);
+        double expandDistance = bboxMaxSize * 0.005;
+        // provisionally, only expand the perimeter vertices.***
+        if(westVertices.size() > 1) {
+            for (HalfEdgeVertex vertex : westVertices) {
+                Vector3d position = vertex.getPosition();
+                position.x -= expandDistance;
+            }
+        }
+
+        if(eastVertices.size() > 1) {
+            for (HalfEdgeVertex vertex : eastVertices) {
+                Vector3d position = vertex.getPosition();
+                position.x += expandDistance;
+            }
+        }
+
+        if(southVertices.size() > 1) {
+            for (HalfEdgeVertex vertex : southVertices) {
+                Vector3d position = vertex.getPosition();
+                position.y -= expandDistance;
+            }
+        }
+
+        if(northVertices.size() > 1) {
+            for (HalfEdgeVertex vertex : northVertices) {
+                Vector3d position = vertex.getPosition();
+                position.y += expandDistance;
+            }
+        }
+    }
 }
