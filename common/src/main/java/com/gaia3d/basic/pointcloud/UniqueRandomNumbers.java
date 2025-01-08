@@ -9,7 +9,7 @@ public class UniqueRandomNumbers {
 
     public static List<Integer> generateUniqueRandom(int count, int max) {
         if (count > max) {
-            throw new IllegalArgumentException("범위 내에서 중복 없는 값을 찾을 수 없습니다.");
+            throw new IllegalArgumentException("count must be less than max");
         }
         Set<Integer> set = new LinkedHashSet<>();
         Random random = new Random();

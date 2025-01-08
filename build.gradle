@@ -2,7 +2,7 @@ import org.gradle.internal.os.OperatingSystem
 
 subprojects {
     group "com.gaia3d"
-    version "1.10.4-beta" // release, beta, alpha
+    version "1.10.5-beta" // release, beta, alpha
     apply plugin: 'java'
 
     project.ext.lwjglVersion = "3.3.3"

@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Main-Class: com.gaia3d.command.mago.Mago3DTilerMain
-Implementation-Version: 1.10.4-beta
+Implementation-Version: 1.10.5-beta
 Implementation-Title: 3d-tiler
 Implementation-Vendor: Gaia3d, Inc.
 Implementation-Vendor-Id: com.gaia3d
