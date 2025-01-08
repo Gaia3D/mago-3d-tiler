@@ -238,9 +238,6 @@ public class GaiaPointCloudTemp {
             randomAccessFile.close();
             FileUtils.deleteQuietly(this.tempFile);
             this.tempFile = shuffledFile;
-        } catch (FileNotFoundException e) {
-            log.error("Failed to shuffle temp file", e);
-            throw new RuntimeException(e);
         } catch (IOException e) {
             log.error("Failed to shuffle temp file", e);
             throw new RuntimeException(e);
