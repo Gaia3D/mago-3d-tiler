@@ -225,7 +225,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             Runnable callableTask = () -> {
                 try {
                     int processCount = atomicProcessCount.incrementAndGet();
-                    log.info("Started Cutting and scissoring scene : {}", processCount);
+                    log.info("[PR] Started Cutting and scissoring scene : {}", processCount);
                     cutRectangleCake(singleTileInfoList, finalLod, rootNode, maxDepth);
                     scissorTextures(singleTileInfoList);
                     makeSkirt(singleTileInfoList);
@@ -615,7 +615,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             gaiaScene.clear();
             gaiaSet.clear();
 
-            System.gc();
+            //System.gc();
 
 
             // test save resultImages.***
@@ -839,7 +839,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             gaiaScene.clear();
             gaiaSet.clear();
 
-            System.gc();
+            //System.gc();
 
 
             // test save resultImages.***
@@ -1089,7 +1089,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
     }
 
     private boolean cutRectangleCake(List<TileInfo> tileInfos, int lod, Node rootNode, int maxDepth) throws FileNotFoundException {
-       // int maxDepth = rootNode.findMaxDepth();
+        // calculate the divisions of the rectangle cake.***
+        // int maxDepth = rootNode.findMaxDepth();
         int currDepth = maxDepth - lod;
 
         // the maxDepth corresponds to lod0.***
@@ -1128,7 +1129,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             double lonDeg = lonDivisions.get(i);
             if (cutRectangleCakeByLongitudeDeg(tileInfos, lod, lonDeg)) {
                 someSceneCut = true;
-                System.gc();
+                //System.gc();
             }
         }
 
@@ -1138,7 +1139,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             double alt = altDivisions.get(i);
             if (cutRectangleCakeByAltitude(tileInfos, lod, alt)) {
                 someSceneCut = true;
-                System.gc();
+                //System.gc();
             }
         }
 
@@ -1148,10 +1149,11 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             double latDeg = latDivisions.get(i);
             if (cutRectangleCakeByLatitudeDeg(tileInfos, lod, latDeg)) {
                 someSceneCut = true;
-                System.gc();
+                //System.gc();
             }
         }
 
+        System.gc();
         return someSceneCut;
     }
 
@@ -1255,8 +1257,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
     private boolean cutRectangleCakeByAltitude(List<TileInfo> tileInfos, int lod, double altitude) throws FileNotFoundException {
         boolean someSceneCutted = false;
-        log.info("lod : {}", lod);
-        log.info(" #Cutting by altitude : {}", altitude);
+        log.info("[cut][{}] #Cutting by altitude : {}", lod, altitude);
         int tileInfosCount = tileInfos.size();
         PlaneType planeType = PlaneType.XY;
         String outputPathString = globalOptions.getOutputPath();
@@ -1360,15 +1361,14 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         // add the cutTileInfos to tileInfos.***
         tileInfos.addAll(cutTileInfos);
 
-        System.gc();
+        //System.gc();
 
         return someSceneCutted;
     }
 
     private boolean cutRectangleCakeByLongitudeDeg(List<TileInfo> tileInfos, int lod, double lonDeg) throws FileNotFoundException {
         boolean someSceneCutted = false;
-        log.info("lod : {}", lod);
-        log.info(" #Cutting by longitude : {}", lonDeg);
+        log.info("[PR][cut][{}] #Cutting by longitude : {}", lod, lonDeg);
         int tileInfosCount = tileInfos.size();
         PlaneType planeType = PlaneType.YZ;
         String outputPathString = globalOptions.getOutputPath();
@@ -1473,15 +1473,14 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         // add the cutTileInfos to tileInfos.***
         tileInfos.addAll(cutTileInfos);
 
-        System.gc();
+        //System.gc();
 
         return someSceneCutted;
     }
 
     private boolean cutRectangleCakeByLatitudeDeg(List<TileInfo> tileInfos, int lod, double latDeg) throws FileNotFoundException {
         boolean someSceneCutted = false;
-        log.info("lod : {}", lod);
-        log.info(" #Cutting by latitude : {}", latDeg);
+        log.info("[cut][{}] #Cutting by latitude : {}", lod, latDeg);
         int tileInfosCount = tileInfos.size();
         PlaneType planeType = PlaneType.XZ;
         String outputPathString = globalOptions.getOutputPath();
@@ -1804,7 +1803,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         childNode.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
         childNode.setBoundingVolume(boundingVolume);
         childNode.setNodeCode(nodeCode);
-        childNode.setGeometricError(lodError + 0.1);
+        childNode.setGeometricError(lodError + 0.01);
         childNode.setChildren(new ArrayList<>());
 
         childNode.setRefine(refineAdd ? Node.RefineType.ADD : Node.RefineType.REPLACE);

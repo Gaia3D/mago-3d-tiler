@@ -13,7 +13,7 @@ class RealisticReleaseTest {
     private static final String OUTPUT_PATH = "D:/data/mago-server/output";
 
     @Test
-    void realistic01() {
+    void realistic00() {
         String path = "R00-bansong-obj";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
@@ -25,8 +25,20 @@ class RealisticReleaseTest {
     }
 
     @Test
+    void realistic01() {
+        String path = "R01-bansong-part-obj";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-pr",
+                "-c", "5187",
+        };
+        execute(args);
+    }
+
+    @Test
     void realistic02() {
-        String path = "R01-bansong-obj";
+        String path = "R02-bansong-all-obj";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),

@@ -210,7 +210,7 @@ public class GaiaMesh extends MeshStructure implements Serializable {
         }
         for (GaiaPrimitive primitive : primitives) {
             if (primitive.getVertices().size() < 3) {
-                log.warn("The primitive has less than 3 vertices. It will be ignored.");
+                log.debug("The primitive has less than 3 vertices. It will be ignored.");
                 continue;
             }
             GaiaBufferDataSet gaiaBufferDataSet = primitive.toGaiaBufferSet(transformMatrix);

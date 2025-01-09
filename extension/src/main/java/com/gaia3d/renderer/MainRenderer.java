@@ -652,7 +652,7 @@ public class MainRenderer implements IAppLogic {
             counter++;
             if(counter > 20)
             {
-                System.gc();
+                //System.gc();
                 counter = 0;
             }
         }
@@ -1052,7 +1052,7 @@ public class MainRenderer implements IAppLogic {
             counter++;
             if(counter > 20)
             {
-                System.gc();
+                //System.gc();
                 counter = 0;
             }
 
