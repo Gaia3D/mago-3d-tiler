@@ -14,10 +14,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 
@@ -66,6 +63,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         try {
             String imageExtension = savePath.substring(savePath.lastIndexOf(".") + 1);
             File file = new File(savePath);
+            ImageIO.setUseCache(false);
             ImageIO.write(bufferedImage, imageExtension, file);
         } catch (IOException e) {
             log.error("Error : ", e);
@@ -89,7 +87,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
 
     private BufferedImage readImage(String filePath) {
         BufferedImage image = null;
-        try (FileInputStream stream = new FileInputStream(filePath)) {
+        try (BufferedInputStream stream = new BufferedInputStream(new FileInputStream(filePath))) {
             image = ImageIO.read(stream);
         } catch (IOException e) {
             log.error("Error : ", e);
@@ -139,7 +137,17 @@ public class GaiaTexture extends TextureStructure implements Serializable {
     // getBufferedImage
     public BufferedImage getBufferedImage() {
         if (this.bufferedImage == null) {
-            loadImage();
+
+            BufferedImage bufferedImage = GaiaTextureImageStorage.findBufferedImage(this.path);
+            if (bufferedImage != null) {
+                this.bufferedImage = GaiaTextureImageStorage.findBufferedImage(this.path);
+                log.info("reuse image : {}", path);
+            } else {
+                loadImage();
+                GaiaTextureImageStorage.putBufferedImage(this.path, this.bufferedImage);
+                log.info("load image : {}", path);
+            }
+            //log.info("Read image : {}", path);
         }
         return this.bufferedImage;
     }

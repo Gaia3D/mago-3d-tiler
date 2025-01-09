@@ -1924,7 +1924,7 @@ public class HalfEdgeSurface implements Serializable {
 
                 hedgesCutCount++;
                 if (hedgesCutCount % 200 == 0) {
-                    log.info("hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount + " , currIdx = " + i);
+                    log.info("[cutByPlaneXY] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount + " , currIdx = " + i);
                 }
             }
         }
@@ -1948,7 +1948,7 @@ public class HalfEdgeSurface implements Serializable {
 
                 hedgesCutCount++;
                 if (hedgesCutCount % 200 == 0) {
-                    log.info("hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount + " , currIdx = " + i);
+                    log.info("[cutByPlaneXZ] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount + " , currIdx = " + i);
                 }
             }
         }
@@ -1974,7 +1974,7 @@ public class HalfEdgeSurface implements Serializable {
                 hedgesCutCount++;
                 if(hedgesCutCount%200 == 0)
                 {
-                    log.info("hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount + " , currIdx = " + i);
+                    log.info("[cutByPlaneYZ] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount + " , currIdx = " + i);
                 }
             }
         }
