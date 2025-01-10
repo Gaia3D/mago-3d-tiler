@@ -14,6 +14,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.beans.Transient;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
@@ -40,7 +41,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
     private int format;
 
     private int byteLength;
-    private BufferedImage bufferedImage;
+    private transient BufferedImage bufferedImage;
     private ByteBuffer byteBuffer;
 
     private int textureId = -1;
@@ -137,16 +138,16 @@ public class GaiaTexture extends TextureStructure implements Serializable {
     // getBufferedImage
     public BufferedImage getBufferedImage() {
         if (this.bufferedImage == null) {
-            loadImage();
-//            BufferedImage bufferedImage = GaiaTextureImageStorage.findBufferedImage(this.path);
-//            if (bufferedImage != null) {
-//                this.bufferedImage = GaiaTextureImageStorage.findBufferedImage(this.path);
-//                log.info("reuse image : {}", path);
-//            } else {
-//                loadImage();
-//                GaiaTextureImageStorage.putBufferedImage(this.path, this.bufferedImage);
-//                log.info("load image : {}", path);
-//            }
+
+            BufferedImage bufferedImage = GaiaTextureImageStorage.findBufferedImage(this.path);
+            if (bufferedImage != null) {
+                this.bufferedImage = GaiaTextureImageStorage.findBufferedImage(this.path);
+                log.debug("reuse image : {}", path);
+            } else {
+                loadImage();
+                GaiaTextureImageStorage.putBufferedImage(this.path, this.bufferedImage);
+                log.debug("load image : {}", path);
+            }
             //log.info("Read image : {}", path);
         }
         return this.bufferedImage;

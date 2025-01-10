@@ -83,9 +83,7 @@ public class HalfEdgePrimitive implements Serializable {
     }
 
     public GaiaBoundingBox calculateBoundingBox(GaiaBoundingBox resultBBox) {
-        int surfacesCount = this.surfaces.size();
-        for (int i = 0; i < surfacesCount; i++) {
-            HalfEdgeSurface surface = this.surfaces.get(i);
+        for (HalfEdgeSurface surface : this.surfaces) {
             GaiaBoundingBox boundingBox = surface.getBoundingBox();
             if (boundingBox == null) {
                 continue;

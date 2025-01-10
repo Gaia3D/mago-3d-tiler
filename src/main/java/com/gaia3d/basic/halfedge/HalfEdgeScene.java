@@ -333,9 +333,7 @@ public class HalfEdgeScene implements Serializable {
             return;
         }
 
-        int nodesSize = nodes.size();
-        for (int i = 0; i < nodesSize; i++) {
-            HalfEdgeNode node = nodes.get(i);
+        for (HalfEdgeNode node : nodes) {
             node.scissorTextures(materials);
         }
     }
@@ -380,9 +378,7 @@ public class HalfEdgeScene implements Serializable {
         }
 
         List<Integer> usedMaterialsIds = getUsedMaterialsIds(null);
-        int usedMaterialsIdsSize = usedMaterialsIds.size();
-        for (int i = 0; i < usedMaterialsIdsSize; i++) {
-            int materialId = usedMaterialsIds.get(i);
+        for (int materialId : usedMaterialsIds) {
             GaiaMaterial material = materials.get(materialId);
             if (material.hasTextures()) {
                 resultMaterials.add(material);
