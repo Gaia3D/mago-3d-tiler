@@ -84,6 +84,9 @@ public class GaiaTranslator implements PreProcess {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         Vector3d position;
         Vector3d offset = globalOptions.getTranslateOffset();
+        if (offset == null) {
+            offset = new Vector3d();
+        }
         if (formatType == FormatType.CITYGML || formatType == FormatType.INDOORGML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON) {
             GaiaNode rootNode = gaiaScene.getNodes().get(0);
             Matrix4d transform = rootNode.getTransformMatrix();

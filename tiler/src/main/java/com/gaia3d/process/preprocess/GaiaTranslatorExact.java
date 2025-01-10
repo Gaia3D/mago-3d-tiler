@@ -55,17 +55,16 @@ public class GaiaTranslatorExact implements PreProcess {
                 log.error("Error : {}", e.getMessage());
                 log.warn("Failed to evaluate terrain height", e);
             }
-            //log.info("memSave_alt[0] : {}", memSave_alt[0]);
             centerGeoCoord.z = memSave_alt[0];
         });
 
-        // calculate cartographic bounding box.*****************************************************************
+        // calculate cartographic bounding box
         double[] centerCartesianWC = GlobeUtils.geographicToCartesianWgs84(centerGeoCoord.x, centerGeoCoord.y, centerGeoCoord.z);
         Matrix4d tMatrixAtCenterGeoCoord = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerCartesianWC[0], centerCartesianWC[1], centerCartesianWC[2]);
         Matrix4d globalTMatrixInv = new Matrix4d(tMatrixAtCenterGeoCoord);
         globalTMatrixInv.invert();
 
-        // Calculate cartographicBoundingBox.***
+        // Calculate cartographicBoundingBox
         double minPosLCX = bboxLC.getMinX();
         double minPosLCY = bboxLC.getMinY();
         double minPosLCZ = bboxLC.getMinZ();
@@ -100,19 +99,16 @@ public class GaiaTranslatorExact implements PreProcess {
 
         // test for leeDongHun data.***
         double rotateX = globalOptions.getRotateX();
-        if(Math.abs(rotateX) < 1e-4) {
+        if (Math.abs(rotateX) < 1e-4) {
             // if the rotateX is 0, then rotate the scene -90 degrees around the x-axis.***
             Matrix4f xRotMatrix = new Matrix4f().rotateX((float) Math.toRadians(-90.0f));// test for leeDongHun data.***
             // Rotate the scene 90 degrees around the x-axis.
             transform = transform.mul(xRotMatrix);// test for leeDongHun data.***
         }
         // End test.---
-
         rootNode.setTransformMatrix(transform);
-        //tileInfo.setTransformMatrix(transform);
-
-        GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox(); // new
-        gaiaScene.setGaiaBoundingBox(boundingBox); // new
+        GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox();
+        gaiaScene.setGaiaBoundingBox(boundingBox);
 
         tileInfo.setBoundingBox(boundingBox);
         tileInfo.setKmlInfo(kmlInfo);
@@ -146,8 +142,11 @@ public class GaiaTranslatorExact implements PreProcess {
         }
 
         Vector3d offset = globalOptions.getTranslateOffset();
+        if (offset == null) {
+            offset = new Vector3d();
+        }
 
-        List <GaiaMesh> meshes = node.getMeshes();
+        List<GaiaMesh> meshes = node.getMeshes();
         if (meshes != null) {
             for (GaiaMesh gaiaMesh : meshes) {
                 List<GaiaPrimitive> primitives = gaiaMesh.getPrimitives();
@@ -215,6 +214,10 @@ public class GaiaTranslatorExact implements PreProcess {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         Vector3d position;
         Vector3d offset = globalOptions.getTranslateOffset();
+        if (offset == null) {
+            offset = new Vector3d();
+        }
+
         if (formatType == FormatType.CITYGML || formatType == FormatType.INDOORGML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON) {
             GaiaNode rootNode = gaiaScene.getNodes().get(0);
             Matrix4d transform = rootNode.getTransformMatrix();

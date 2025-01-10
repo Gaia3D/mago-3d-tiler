@@ -453,7 +453,7 @@ public class GltfWriter {
 
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         FormatType formatType = globalOptions.getInputFormat();
-        if (formatType.equals(FormatType.CITYGML)) {
+        if (formatType != null && formatType.equals(FormatType.CITYGML)) {
             material.setDoubleSided(true);
         } else {
             material.setDoubleSided(false);
