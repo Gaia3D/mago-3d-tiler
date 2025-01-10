@@ -142,11 +142,11 @@ public class GaiaTexture extends TextureStructure implements Serializable {
             BufferedImage bufferedImage = GaiaTextureImageStorage.findBufferedImage(this.path);
             if (bufferedImage != null) {
                 this.bufferedImage = GaiaTextureImageStorage.findBufferedImage(this.path);
-                log.info("reuse image : {}", path);
+                log.debug("reuse image : {}", path);
             } else {
                 loadImage();
                 GaiaTextureImageStorage.putBufferedImage(this.path, this.bufferedImage);
-                log.info("load image : {}", path);
+                log.debug("load image : {}", path);
             }
             //log.info("Read image : {}", path);
         }

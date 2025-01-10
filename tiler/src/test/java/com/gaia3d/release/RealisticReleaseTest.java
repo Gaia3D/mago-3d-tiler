@@ -20,6 +20,7 @@ class RealisticReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-pr",
                 "-c", "5187",
+                //"-debug",
         };
         execute(args);
     }
@@ -32,7 +33,7 @@ class RealisticReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-pr",
                 "-c", "5187",
-                "-debug",
+                //"-debug",
         };
         execute(args);
     }
@@ -45,6 +46,7 @@ class RealisticReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-pr",
                 "-c", "5187",
+                //"-debug",
         };
         execute(args);
     }

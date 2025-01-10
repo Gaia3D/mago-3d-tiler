@@ -965,11 +965,11 @@ public class Engine {
         int maxHeight = getMaxHeight(texAtlasDatasList);
 
         GaiaTexture textureAtlas = new GaiaTexture();
-        log.info("atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
+        log.debug("Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
         textureAtlas.createImage(maxWidth, maxHeight, imageType);
 
         // draw the images into textureAtlas.***
-        log.info("HalfEdgeSurface.scissorTextures() : draw the images into textureAtlas.");
+        log.debug("HalfEdgeSurface.scissorTextures() : draw the images into textureAtlas.");
         Graphics2D g2d = textureAtlas.getBufferedImage().createGraphics();
         int textureAtlasDatasCount = texAtlasDatasList.size();
         for (int i = 0; i < textureAtlasDatasCount; i++) {
