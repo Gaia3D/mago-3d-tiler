@@ -14,6 +14,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.beans.Transient;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
@@ -40,7 +41,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
     private int format;
 
     private int byteLength;
-    private BufferedImage bufferedImage;
+    private transient BufferedImage bufferedImage;
     private ByteBuffer byteBuffer;
 
     private int textureId = -1;
