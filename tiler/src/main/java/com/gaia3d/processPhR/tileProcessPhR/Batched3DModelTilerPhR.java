@@ -208,6 +208,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         Tileset tileset = new Tileset();
         tileset.setAsset(asset);
         tileset.setRoot(root);
+        tileset.setGeometricError(1000.0);
         return tileset;
     }
 
@@ -304,6 +305,14 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
 
             tilerExtensionModule.makeNetSurfacesWithBoxTextures(gaiaSceneList, resultDecimatedScenes, decimateParameters, pixelsForMeter);
+
+            if(resultDecimatedScenes.isEmpty()) {
+                // sometimes the resultDecimatedScenes is empty because when rendering the scene, the scene is almost out of the camera.***
+                log.error("Error : resultDecimatedScenes is empty.");
+                gaiaSet.clear(); // delete gaiaSet.***
+                scene.clear(); // delete scene.***
+                continue;
+            }
 
             HalfEdgeScene halfEdgeSceneLod = resultDecimatedScenes.get(0);
 
@@ -961,9 +970,13 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         int tileInfosCount = tileInfos.size();
         for (int i = 0; i < tileInfosCount; i++) {
             TileInfo tileInfo = tileInfos.get(i);
-            Matrix4d tileTransformMatrix = tileInfo.getTransformMatrix();
-            GaiaBoundingBox tileBoundingBox = tileInfo.getBoundingBox();
+
             GaiaBoundingBox cartographicBBox = tileInfo.getCartographicBBox();
+            if(cartographicBBox == null) {
+                log.error("Error : cartographicBBox is null.");
+                continue;
+            }
+
             Vector3d geoCoordCenter = cartographicBBox.getCenter();
             double centerLonRad = Math.toRadians(geoCoordCenter.x);
             double centerLatRad = Math.toRadians(geoCoordCenter.y);
@@ -1406,7 +1419,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             GaiaBoundingBox setBBox = tileInfo.getBoundingBox();
             if (setBBox == null) {
                 log.error("Error : setBBox is null.");
-                int hola = 0;
             }
             KmlInfo kmlInfo = tileInfo.getKmlInfo();
             Vector3d geoCoordPosition = kmlInfo.getPosition();
@@ -1593,8 +1605,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
+        //objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+        //objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(tilesetFile))) {
             String result = objectMapper.writeValueAsString(tileset);
             log.info("[Tile][Tileset] write 'tileset.json' file.");

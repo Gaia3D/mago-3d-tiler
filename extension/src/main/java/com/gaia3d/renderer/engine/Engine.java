@@ -923,6 +923,10 @@ public class Engine {
         String fileName = rawProjectName + "_Atlas";
         String extension = ".jpg";
         GaiaTexture atlasTexture = makeAtlasTexture(texturesAtlasDataList);
+        if(atlasTexture == null) {
+            log.info("makeAtlasTexture() : atlasTexture is null.");
+            return;
+        }
         atlasTexture.setPath(fileName + extension);
         atlasTexture.setParentPath(this.getTempFolderPath());
         String atlasImagePath = atlasTexture.getParentPath() + File.separator + atlasTexture.getPath();
@@ -970,6 +974,11 @@ public class Engine {
 
         int maxWidth = getMaxWidth(texAtlasDatasList);
         int maxHeight = getMaxHeight(texAtlasDatasList);
+
+        if(maxWidth == 0 || maxHeight == 0) {
+            log.error("makeAtlasTexture() : maxWidth or maxHeight is 0.");
+            return null;
+        }
 
         GaiaTexture textureAtlas = new GaiaTexture();
         log.info("atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);

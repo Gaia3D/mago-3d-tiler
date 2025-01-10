@@ -45,6 +45,15 @@ public class GaiaTextureCoordinator {
         // TYPE_4BYTE_ABGR = 6
         if (width > 0 || height > 0) {
             this.atlasImage = new BufferedImage(width, height, imageType);
+
+            // TEST.***
+            // now fill the image with white fuchsia.***
+            Graphics2D graphics = this.atlasImage.createGraphics();
+            graphics.setColor(new Color(255, 0, 255));
+            graphics.fillRect(0, 0, width, height);
+            graphics.dispose();
+            // End test.---
+
         } else {
             this.atlasImage = null;
         }
@@ -422,12 +431,12 @@ public class GaiaTextureCoordinator {
             int lod2size = 512;
 
             if (lodLevel == 0) {
-                if (imageWidth > 1024) {
-                    imageWidth = 1024;
+                if (imageWidth > 512) {
+                    imageWidth = 512;
                     sizeChanged = true;
                 }
-                if (imageHeight > 1024) {
-                    imageHeight = 1024;
+                if (imageHeight > 512) {
+                    imageHeight = 512;
                     sizeChanged = true;
                 }
             } else if (lodLevel == 1) {

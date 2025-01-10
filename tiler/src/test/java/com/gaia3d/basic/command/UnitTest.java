@@ -5,6 +5,7 @@ import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.Configurator;
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import com.gaia3d.util.GlobeUtils;
+import com.gaia3d.util.ImageUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 import org.junit.jupiter.api.Test;
@@ -13,7 +14,11 @@ import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -901,7 +906,8 @@ class UnitTest {
                 "-it", "obj",
                 "-o", outputPath,
                 "-crs", "5187",
-                "-pr"
+                "-pr",
+                "-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -936,5 +942,37 @@ class UnitTest {
                 "-debug"
         };
         Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void test_RealisticMesh_LeeDongHun_Data_BANSONG_someBuildings() {
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\BANSONG_someBuildings\\";
+        String outputPath = "D:\\data\\mago-server\\output\\leeDongHun_Data_OBJ_BANSONG_someBuildings\\";
+
+        String[] args = new String[]{
+                "-i", inputPath,
+                "-it", "obj",
+                "-o", outputPath,
+                "-crs", "5187",
+                "-pr"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void test_changeBackGroundColor() {
+            Configurator.initConsoleLogger();
+        String inputPath = "D:\\data\\mago-server\\output\\pinkTest.png";
+        String outputPath = "D:\\data\\mago-server\\output\\pinkTest_result.jpg";
+
+        BufferedImage image = null;
+        try {
+            image = ImageIO.read(new File(inputPath));
+            BufferedImage newImage = ImageUtils.clampBackGroundColor(image, new Color(255, 0, 255), 1, 20);
+            ImageIO.write(newImage, "jpg", new File(outputPath));
+            log.info("newImage: " + newImage);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
