@@ -277,4 +277,72 @@ public class ImageUtils {
 
         return floatMatrix;
     }
+
+    public static BufferedImage clampBackGroundColor(BufferedImage image, Color backGroundColor, int borderSize, int iterations) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        int noBackGroundColor = 0;
+        int it = 0;
+        boolean changed = false;
+
+        BufferedImage newImage = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
+        BufferedImage oldImage = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
+
+        // fill the new image with the background color
+        Graphics2D graphics = newImage.createGraphics();
+        graphics.setColor(backGroundColor);
+        // copy the image to the new image
+        graphics.drawImage(image, 0, 0, null);
+        graphics.dispose();
+
+        graphics = oldImage.createGraphics();
+        graphics.setColor(backGroundColor);
+        // copy the image to the new image
+        graphics.drawImage(image, 0, 0, null);
+        graphics.dispose();
+
+
+        while(it < iterations) {
+            changed = false;
+            log.info("Iteration: " + it);
+            for (int i = 0; i < width; i++) {
+                for (int j = 0; j < height; j++) {
+                    Color pixel = new Color(oldImage.getRGB(i, j), true);
+                    // now check if pixel is background color
+                    if (pixel.equals(backGroundColor)) {
+                        // take a pixelMatrix of 5x5 around the pixel
+                        for (int x = i - borderSize; x <= i + borderSize; x++) {
+                            for (int y = j - borderSize; y <= j + borderSize; y++) {
+                                if (x >= 0 && x < width && y >= 0 && y < height) {
+                                    noBackGroundColor = oldImage.getRGB(x, y);
+                                    if (!new Color(noBackGroundColor, true).equals(backGroundColor)) {
+                                        newImage.setRGB(i, j, noBackGroundColor);
+                                        changed = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        newImage.setRGB(i, j, newImage.getRGB(i, j));
+                    }
+                }
+            }
+
+            graphics = oldImage.createGraphics();
+            graphics.setColor(backGroundColor);
+            // copy the image to the new image
+            graphics.drawImage(newImage, 0, 0, null);
+            graphics.dispose();
+
+            if(!changed) {
+                break;
+            }
+
+
+            it++;
+        }
+
+        return newImage;
+    }
 }
