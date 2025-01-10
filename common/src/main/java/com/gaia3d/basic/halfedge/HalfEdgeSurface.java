@@ -2562,7 +2562,7 @@ public class HalfEdgeSurface implements Serializable {
         int imageType = existPngTextures ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
 
         GaiaTexture textureAtlas = new GaiaTexture();
-        log.info("atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
+        log.debug("Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
         textureAtlas.createImage(maxWidth, maxHeight, imageType);
 
         // TEST.***
@@ -2670,7 +2670,7 @@ public class HalfEdgeSurface implements Serializable {
         Vector2d bestPosition = new Vector2d();
         List<GaiaTextureScissorData> currProcessScissorDates = new ArrayList<>();
         int textureScissorDatasCount = textureScissorDates.size();
-        log.info("HalfEdgeSurface.doTextureAtlasProcess() : textureScissorDatasCount = " + textureScissorDatasCount);
+        log.debug("HalfEdgeSurface.doTextureAtlasProcess() : textureScissorDatasCount = " + textureScissorDatasCount);
 
         for (int i = 0; i < textureScissorDatasCount; i++) {
             GaiaTextureScissorData textureScissorData = textureScissorDates.get(i);
