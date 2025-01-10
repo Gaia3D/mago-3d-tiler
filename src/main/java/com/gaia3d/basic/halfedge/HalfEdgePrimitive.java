@@ -48,8 +48,7 @@ public class HalfEdgePrimitive implements Serializable {
         return vertices;
     }
 
-    public void calculateNormals()
-    {
+    public void calculateNormals() {
         for (HalfEdgeSurface surface : surfaces) {
             surface.calculateNormals();
         }
@@ -84,15 +83,13 @@ public class HalfEdgePrimitive implements Serializable {
     }
 
     public GaiaBoundingBox calculateBoundingBox(GaiaBoundingBox resultBBox) {
-        int surfacesCount = this.surfaces.size();
-        for(int i = 0; i < surfacesCount; i++) {
-            HalfEdgeSurface surface = this.surfaces.get(i);
+        for (HalfEdgeSurface surface : this.surfaces) {
             GaiaBoundingBox boundingBox = surface.getBoundingBox();
-            if(boundingBox == null) {
+            if (boundingBox == null) {
                 continue;
             }
 
-            if(resultBBox == null) {
+            if (resultBBox == null) {
                 resultBBox = new GaiaBoundingBox();
             }
             resultBBox.addBoundingBox(boundingBox);
@@ -107,22 +104,19 @@ public class HalfEdgePrimitive implements Serializable {
         return this.boundingBox;
     }
 
-    public void classifyFacesIdByPlane(PlaneType planeType, Vector3d planePosition)
-    {
+    public void classifyFacesIdByPlane(PlaneType planeType, Vector3d planePosition) {
         for (HalfEdgeSurface surface : surfaces) {
             surface.classifyFacesIdByPlane(planeType, planePosition);
         }
     }
 
-    public void removeDeletedObjects()
-    {
+    public void removeDeletedObjects() {
         for (HalfEdgeSurface surface : surfaces) {
             surface.removeDeletedObjects();
         }
     }
 
-    public void setObjectIdsInList()
-    {
+    public void setObjectIdsInList() {
         for (HalfEdgeSurface surface : surfaces) {
             surface.setObjectIdsInList();
         }
@@ -182,12 +176,12 @@ public class HalfEdgePrimitive implements Serializable {
 
     public void scissorTextures(List<GaiaMaterial> materials) {
         int matId = this.materialIndex;
-        if(matId < 0 || matId >= materials.size()) {
+        if (matId < 0 || matId >= materials.size()) {
             return;
         }
 
         GaiaMaterial material = materials.get(matId);
-        if(material == null) {
+        if (material == null) {
             return;
         }
 
@@ -197,8 +191,7 @@ public class HalfEdgePrimitive implements Serializable {
 
     }
 
-    public HalfEdgePrimitive clone()
-    {
+    public HalfEdgePrimitive clone() {
         HalfEdgePrimitive cloned = new HalfEdgePrimitive();
         cloned.setAccessorIndices(accessorIndices);
         cloned.setMaterialIndex(materialIndex);
@@ -223,12 +216,12 @@ public class HalfEdgePrimitive implements Serializable {
     }
 
     public void getUsedMaterialsIds(List<Integer> resultMaterialsIds) {
-        if(resultMaterialsIds == null) {
+        if (resultMaterialsIds == null) {
             resultMaterialsIds = new ArrayList<>();
         }
 
         int matId = this.materialIndex;
-        if(matId >= 0 && !resultMaterialsIds.contains(matId)) {
+        if (matId >= 0 && !resultMaterialsIds.contains(matId)) {
             resultMaterialsIds.add(matId);
         }
     }
@@ -261,8 +254,7 @@ public class HalfEdgePrimitive implements Serializable {
         }
     }
 
-    public void getWestEastSouthNorthVertices(GaiaBoundingBox bbox, List<HalfEdgeVertex> westVertices, List<HalfEdgeVertex> eastVertices,
-                                              List<HalfEdgeVertex> southVertices, List<HalfEdgeVertex> northVertices, double error) {
+    public void getWestEastSouthNorthVertices(GaiaBoundingBox bbox, List<HalfEdgeVertex> westVertices, List<HalfEdgeVertex> eastVertices, List<HalfEdgeVertex> southVertices, List<HalfEdgeVertex> northVertices, double error) {
         for (HalfEdgeSurface surface : surfaces) {
             surface.getWestEastSouthNorthVertices(bbox, westVertices, eastVertices, southVertices, northVertices, error);
         }

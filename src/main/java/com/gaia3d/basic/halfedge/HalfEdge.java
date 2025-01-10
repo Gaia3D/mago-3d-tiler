@@ -111,10 +111,10 @@ public class HalfEdge implements Serializable {
             return -1;
         }
         HalfEdgeVertex endVertex = next.getStartVertex();
-        if(endVertex == null) {
+        if (endVertex == null) {
             return -1;
         }
-        if(startVertex.getPosition() == null || endVertex.getPosition() == null) {
+        if (startVertex.getPosition() == null || endVertex.getPosition() == null) {
             return -1;
         }
         return startVertex.getPosition().distanceSquared(next.getStartVertex().getPosition());
@@ -169,8 +169,7 @@ public class HalfEdge implements Serializable {
         return startVertex == endVertex;
     }
 
-    public boolean isDegeneratedByPositions()
-    {
+    public boolean isDegeneratedByPositions() {
         double squaredLength = this.getSquaredLength();
         return squaredLength < 0.0000001;
     }
@@ -264,9 +263,7 @@ public class HalfEdge implements Serializable {
 
         // calculate the intersection point
         double t = (planePosition.z - startVertexPosition.z) / (endVertexPosition.z - startVertexPosition.z);
-        resultIntersectionPoint.set(startVertexPosition.x + t * (endVertexPosition.x - startVertexPosition.x),
-                startVertexPosition.y + t * (endVertexPosition.y - startVertexPosition.y),
-                planePosition.z);
+        resultIntersectionPoint.set(startVertexPosition.x + t * (endVertexPosition.x - startVertexPosition.x), startVertexPosition.y + t * (endVertexPosition.y - startVertexPosition.y), planePosition.z);
 
         // check if the intersection point is in the range of the halfEdge
         if (resultIntersectionPoint.x < Math.min(startVertexPosition.x, endVertexPosition.x) - error) {
@@ -282,9 +279,7 @@ public class HalfEdge implements Serializable {
             Vector3d resultIntersectionNormal = new Vector3d();
             Vector3d startVertexNormal = startVertex.getNormal();
             Vector3d endVertexNormal = endVertex.getNormal();
-            resultIntersectionNormal.set(startVertexNormal.x + t * (endVertexNormal.x - startVertexNormal.x),
-                    startVertexNormal.y + t * (endVertexNormal.y - startVertexNormal.y),
-                    startVertexNormal.z + t * (endVertexNormal.z - startVertexNormal.z));
+            resultIntersectionNormal.set(startVertexNormal.x + t * (endVertexNormal.x - startVertexNormal.x), startVertexNormal.y + t * (endVertexNormal.y - startVertexNormal.y), startVertexNormal.z + t * (endVertexNormal.z - startVertexNormal.z));
 
             resultIntesectionVertex.setNormal(resultIntersectionNormal);
         }
@@ -294,8 +289,7 @@ public class HalfEdge implements Serializable {
             Vector2d resultIntersectionTexCoord = new Vector2d();
             Vector2d startVertexTexCoord = startVertex.getTexcoords();
             Vector2d endVertexTexCoord = endVertex.getTexcoords();
-            resultIntersectionTexCoord.set(startVertexTexCoord.x + t * (endVertexTexCoord.x - startVertexTexCoord.x),
-                    startVertexTexCoord.y + t * (endVertexTexCoord.y - startVertexTexCoord.y));
+            resultIntersectionTexCoord.set(startVertexTexCoord.x + t * (endVertexTexCoord.x - startVertexTexCoord.x), startVertexTexCoord.y + t * (endVertexTexCoord.y - startVertexTexCoord.y));
 
             resultIntesectionVertex.setTexcoords(resultIntersectionTexCoord);
         }
@@ -341,9 +335,7 @@ public class HalfEdge implements Serializable {
 
         // calculate the intersection point
         double t = (planePosition.x - startVertexPosition.x) / (endVertexPosition.x - startVertexPosition.x);
-        resultIntersectionPoint.set(planePosition.x,
-                startVertexPosition.y + t * (endVertexPosition.y - startVertexPosition.y),
-                startVertexPosition.z + t * (endVertexPosition.z - startVertexPosition.z));
+        resultIntersectionPoint.set(planePosition.x, startVertexPosition.y + t * (endVertexPosition.y - startVertexPosition.y), startVertexPosition.z + t * (endVertexPosition.z - startVertexPosition.z));
 
         // t represents
 
@@ -361,9 +353,7 @@ public class HalfEdge implements Serializable {
             Vector3d resultIntersectionNormal = new Vector3d();
             Vector3d startVertexNormal = startVertex.getNormal();
             Vector3d endVertexNormal = endVertex.getNormal();
-            resultIntersectionNormal.set(startVertexNormal.x + t * (endVertexNormal.x - startVertexNormal.x),
-                    startVertexNormal.y + t * (endVertexNormal.y - startVertexNormal.y),
-                    startVertexNormal.z + t * (endVertexNormal.z - startVertexNormal.z));
+            resultIntersectionNormal.set(startVertexNormal.x + t * (endVertexNormal.x - startVertexNormal.x), startVertexNormal.y + t * (endVertexNormal.y - startVertexNormal.y), startVertexNormal.z + t * (endVertexNormal.z - startVertexNormal.z));
 
             resultIntesectionVertex.setNormal(resultIntersectionNormal);
         }
@@ -373,8 +363,7 @@ public class HalfEdge implements Serializable {
             Vector2d resultIntersectionTexCoord = new Vector2d();
             Vector2d startVertexTexCoord = startVertex.getTexcoords();
             Vector2d endVertexTexCoord = endVertex.getTexcoords();
-            resultIntersectionTexCoord.set(startVertexTexCoord.x + t * (endVertexTexCoord.x - startVertexTexCoord.x),
-                    startVertexTexCoord.y + t * (endVertexTexCoord.y - startVertexTexCoord.y));
+            resultIntersectionTexCoord.set(startVertexTexCoord.x + t * (endVertexTexCoord.x - startVertexTexCoord.x), startVertexTexCoord.y + t * (endVertexTexCoord.y - startVertexTexCoord.y));
 
             resultIntesectionVertex.setTexcoords(resultIntersectionTexCoord);
         }
@@ -420,9 +409,7 @@ public class HalfEdge implements Serializable {
 
         // calculate the intersection point
         double t = (planePosition.y - startVertexPosition.y) / (endVertexPosition.y - startVertexPosition.y);
-        resultIntersectionPoint.set(startVertexPosition.x + t * (endVertexPosition.x - startVertexPosition.x),
-                planePosition.y,
-                startVertexPosition.z + t * (endVertexPosition.z - startVertexPosition.z));
+        resultIntersectionPoint.set(startVertexPosition.x + t * (endVertexPosition.x - startVertexPosition.x), planePosition.y, startVertexPosition.z + t * (endVertexPosition.z - startVertexPosition.z));
 
         // check if the intersection point is in the range of the halfEdge
         if (resultIntersectionPoint.x < Math.min(startVertexPosition.x, endVertexPosition.x) - error) {
@@ -438,9 +425,7 @@ public class HalfEdge implements Serializable {
             Vector3d resultIntersectionNormal = new Vector3d();
             Vector3d startVertexNormal = startVertex.getNormal();
             Vector3d endVertexNormal = endVertex.getNormal();
-            resultIntersectionNormal.set(startVertexNormal.x + t * (endVertexNormal.x - startVertexNormal.x),
-                    startVertexNormal.y + t * (endVertexNormal.y - startVertexNormal.y),
-                    startVertexNormal.z + t * (endVertexNormal.z - startVertexNormal.z));
+            resultIntersectionNormal.set(startVertexNormal.x + t * (endVertexNormal.x - startVertexNormal.x), startVertexNormal.y + t * (endVertexNormal.y - startVertexNormal.y), startVertexNormal.z + t * (endVertexNormal.z - startVertexNormal.z));
 
             resultIntesectionVertex.setNormal(resultIntersectionNormal);
         }
@@ -450,8 +435,7 @@ public class HalfEdge implements Serializable {
             Vector2d resultIntersectionTexCoord = new Vector2d();
             Vector2d startVertexTexCoord = startVertex.getTexcoords();
             Vector2d endVertexTexCoord = endVertex.getTexcoords();
-            resultIntersectionTexCoord.set(startVertexTexCoord.x + t * (endVertexTexCoord.x - startVertexTexCoord.x),
-                    startVertexTexCoord.y + t * (endVertexTexCoord.y - startVertexTexCoord.y));
+            resultIntersectionTexCoord.set(startVertexTexCoord.x + t * (endVertexTexCoord.x - startVertexTexCoord.x), startVertexTexCoord.y + t * (endVertexTexCoord.y - startVertexTexCoord.y));
 
             resultIntesectionVertex.setTexcoords(resultIntersectionTexCoord);
         }

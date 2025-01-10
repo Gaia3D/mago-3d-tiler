@@ -2,8 +2,6 @@ package com.gaia3d.basic.halfedge;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaMaterial;
-import com.gaia3d.basic.model.GaiaMesh;
-import com.gaia3d.basic.model.GaiaNode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -56,8 +54,7 @@ public class HalfEdgeNode implements Serializable {
         }
     }
 
-    public void calculateNormals()
-    {
+    public void calculateNormals() {
         for (HalfEdgeMesh mesh : meshes) {
             mesh.calculateNormals();
         }
@@ -80,7 +77,7 @@ public class HalfEdgeNode implements Serializable {
         Matrix4d identity = new Matrix4d();
         identity.identity();
 
-        if(finalMatrix.equals(identity)) {
+        if (finalMatrix.equals(identity)) {
             return;
         }
 
@@ -113,9 +110,8 @@ public class HalfEdgeNode implements Serializable {
         }
     }
 
-    public List<HalfEdgeSurface> extractSurfaces(List<HalfEdgeSurface> resultHalfEdgeSurfaces)
-    {
-        if(resultHalfEdgeSurfaces == null) {
+    public List<HalfEdgeSurface> extractSurfaces(List<HalfEdgeSurface> resultHalfEdgeSurfaces) {
+        if (resultHalfEdgeSurfaces == null) {
             resultHalfEdgeSurfaces = new ArrayList<>();
         }
         for (HalfEdgeMesh mesh : meshes) {
@@ -145,7 +141,7 @@ public class HalfEdgeNode implements Serializable {
 //        }
         for (HalfEdgeMesh mesh : this.getMeshes()) {
             GaiaBoundingBox meshBoundingBox = mesh.calculateBoundingBox(null);
-            if(meshBoundingBox == null) {
+            if (meshBoundingBox == null) {
                 continue;
             }
             if (boundingBox == null) {
@@ -175,8 +171,7 @@ public class HalfEdgeNode implements Serializable {
         return boundingBox;
     }
 
-    public void classifyFacesIdByPlane(PlaneType planeType, Vector3d planePosition)
-    {
+    public void classifyFacesIdByPlane(PlaneType planeType, Vector3d planePosition) {
         for (HalfEdgeMesh mesh : meshes) {
             mesh.classifyFacesIdByPlane(planeType, planePosition);
         }
@@ -185,8 +180,7 @@ public class HalfEdgeNode implements Serializable {
         }
     }
 
-    public void deleteFacesWithClassifyId(int classifyId)
-    {
+    public void deleteFacesWithClassifyId(int classifyId) {
         for (HalfEdgeMesh mesh : meshes) {
             mesh.deleteFacesWithClassifyId(classifyId);
         }
@@ -215,14 +209,6 @@ public class HalfEdgeNode implements Serializable {
 
     public void writeFile(ObjectOutputStream outputStream) {
         try {
-            /*
-            private HalfEdgeNode parent = null;
-            private Matrix4d transformMatrix = new Matrix4d();
-            private Matrix4d preMultipliedTransformMatrix = new Matrix4d();
-            private List<HalfEdgeMesh> meshes = new ArrayList<>();
-            private List<HalfEdgeNode> children = new ArrayList<>();
-            private GaiaBoundingBox boundingBox = null;
-             */
             // transformMatrix
             outputStream.writeObject(transformMatrix);
             // preMultipliedTransformMatrix
@@ -363,8 +349,7 @@ public class HalfEdgeNode implements Serializable {
         }
     }
 
-    public void getWestEastSouthNorthVertices(GaiaBoundingBox bbox, List<HalfEdgeVertex> westVertices, List<HalfEdgeVertex> eastVertices, List<HalfEdgeVertex> southVertices,
-                                              List<HalfEdgeVertex> northVertices, double error) {
+    public void getWestEastSouthNorthVertices(GaiaBoundingBox bbox, List<HalfEdgeVertex> westVertices, List<HalfEdgeVertex> eastVertices, List<HalfEdgeVertex> southVertices, List<HalfEdgeVertex> northVertices, double error) {
         for (HalfEdgeMesh mesh : meshes) {
             mesh.getWestEastSouthNorthVertices(bbox, westVertices, eastVertices, southVertices, northVertices, error);
         }

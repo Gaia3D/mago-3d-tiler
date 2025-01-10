@@ -14,12 +14,10 @@ import java.util.List;
 import java.util.Map;
 
 public class HalfEdgeCutter {
-    public static void getPlanesGridXYZForBox(GaiaBoundingBox bbox, double gridSpacing, List<GaiaAAPlane> resultPlanesYZ, List<GaiaAAPlane> resultPlanesXZ, List<GaiaAAPlane> resultPlanesXY,
-                                              HalfEdgeOctree resultOctree)
-    {
+    public static void getPlanesGridXYZForBox(GaiaBoundingBox bbox, double gridSpacing, List<GaiaAAPlane> resultPlanesYZ, List<GaiaAAPlane> resultPlanesXZ, List<GaiaAAPlane> resultPlanesXY, HalfEdgeOctree resultOctree) {
         // Note : the grid is regularly spaced in the 3 axis.***
         double maxSize = bbox.getMaxSize();
-        int desiredDepth = (int)Math.ceil(HalfEdgeUtils.log2(maxSize/gridSpacing));
+        int desiredDepth = (int) Math.ceil(HalfEdgeUtils.log2(maxSize / gridSpacing));
         double desiredDistanceRoot = gridSpacing * Math.pow(2, desiredDepth);
 
         GaiaBoundingBox cubeBBox = bbox.clone();
@@ -32,7 +30,7 @@ public class HalfEdgeCutter {
 
         // create GaiaAAPlanes.***
         int leafOctreesCountForAxis = (int) Math.pow(2, desiredDepth);
-        for(int i=1; i<leafOctreesCountForAxis; i++) // 'i' starts in 1 because the first plane is the bbox min.***
+        for (int i = 1; i < leafOctreesCountForAxis; i++) // 'i' starts in 1 because the first plane is the bbox min.***
         {
             // planes_YZ.***
             GaiaAAPlane planeYZ = new GaiaAAPlane();
@@ -66,8 +64,7 @@ public class HalfEdgeCutter {
         }
     }
 
-    public static HalfEdgeScene cutHalfEdgeSceneGridXYZ(HalfEdgeScene halfEdgeScene, double gridSpacing, HalfEdgeOctree resultOctree)
-    {
+    public static HalfEdgeScene cutHalfEdgeSceneGridXYZ(HalfEdgeScene halfEdgeScene, double gridSpacing, HalfEdgeOctree resultOctree) {
         GaiaBoundingBox bbox = halfEdgeScene.getBoundingBox();
 
         List<GaiaAAPlane> resultPlanesYZ = new ArrayList<>();
@@ -77,22 +74,19 @@ public class HalfEdgeCutter {
 
         double error = 1e-8;
         int planesCount = resultPlanesYZ.size();
-        for(int i=0; i<planesCount; i++)
-        {
+        for (int i = 0; i < planesCount; i++) {
             GaiaAAPlane planeYZ = resultPlanesYZ.get(i);
             halfEdgeScene.cutByPlane(planeYZ.getPlaneType(), planeYZ.getPoint(), error);
         }
 
         planesCount = resultPlanesXZ.size();
-        for(int i=0; i<planesCount; i++)
-        {
+        for (int i = 0; i < planesCount; i++) {
             GaiaAAPlane planeXZ = resultPlanesXZ.get(i);
             halfEdgeScene.cutByPlane(planeXZ.getPlaneType(), planeXZ.getPoint(), error);
         }
 
         planesCount = resultPlanesXY.size();
-        for(int i=0; i<planesCount; i++)
-        {
+        for (int i = 0; i < planesCount; i++) {
             GaiaAAPlane planeXY = resultPlanesXY.get(i);
             halfEdgeScene.cutByPlane(planeXY.getPlaneType(), planeXY.getPoint(), error);
         }
@@ -100,15 +94,9 @@ public class HalfEdgeCutter {
         // now, distribute faces into octree.***
         resultOctree.getFaces().clear();
         List<HalfEdgeSurface> surfaces = halfEdgeScene.extractSurfaces(null);
-        int surfacesCount = surfaces.size();
-        for(int i=0; i<surfacesCount; i++)
-        {
-            HalfEdgeSurface surface = surfaces.get(i);
+        for (HalfEdgeSurface surface : surfaces) {
             List<HalfEdgeFace> faces = surface.getFaces();
-            int facesCount = faces.size();
-            for(int j=0; j<facesCount; j++)
-            {
-                HalfEdgeFace face = faces.get(j);
+            for (HalfEdgeFace face : faces) {
                 resultOctree.getFaces().add(face);
             }
         }
@@ -121,14 +109,10 @@ public class HalfEdgeCutter {
         // set the classifyId for each face.***
         List<HalfEdgeSurface> newSurfaces = new ArrayList<>();
         int octreesCount = octreesWithContents.size();
-        for(int j=0; j<octreesCount; j++)
-        {
+        for (int j = 0; j < octreesCount; j++) {
             HalfEdgeOctree octree = octreesWithContents.get(j);
             List<HalfEdgeFace> faces = octree.getFaces();
-            int facesCount = faces.size();
-            for(int k=0; k<facesCount; k++)
-            {
-                HalfEdgeFace face = faces.get(k);
+            for (HalfEdgeFace face : faces) {
                 face.setClassifyId(j);
             }
 
@@ -144,10 +128,7 @@ public class HalfEdgeCutter {
 
         // now join all newSurfaces into a one surface.***
         HalfEdgeSurface uniqueSurface = new HalfEdgeSurface();
-        int newSurfacesCount = newSurfaces.size();
-        for(int i=0; i<newSurfacesCount; i++)
-        {
-            HalfEdgeSurface newSurface = newSurfaces.get(i);
+        for (HalfEdgeSurface newSurface : newSurfaces) {
             uniqueSurface.joinSurface(newSurface);
         }
 
@@ -165,8 +146,7 @@ public class HalfEdgeCutter {
 
         // copy attributes, originalPath, boundingBox, etc.***
         GaiaAttribute attribute = halfEdgeScene.getAttribute();
-        if(attribute != null)
-        {
+        if (attribute != null) {
             GaiaAttribute newAttribute = attribute.getCopy();
             cuttedScene.setAttribute(newAttribute);
         }
@@ -178,13 +158,9 @@ public class HalfEdgeCutter {
         cuttedScene.setOriginalPath(originalPath);
 
         List<GaiaMaterial> materials = halfEdgeScene.getMaterials();
-        if(materials != null)
-        {
+        if (materials != null) {
             List<GaiaMaterial> newMaterials = new ArrayList<>();
-            int materialsCount = materials.size();
-            for(int i=0; i<materialsCount; i++)
-            {
-                GaiaMaterial material = materials.get(i);
+            for (GaiaMaterial material : materials) {
                 GaiaMaterial newMaterial = material.clone();
                 newMaterials.add(newMaterial);
             }
@@ -194,8 +170,7 @@ public class HalfEdgeCutter {
         return cuttedScene;
     }
 
-    private static HalfEdgeSurface createHalfEdgeSurfaceByFacesCopyCheckingClassifiedId(List<HalfEdgeFace> faces)
-    {
+    private static HalfEdgeSurface createHalfEdgeSurfaceByFacesCopyCheckingClassifiedId(List<HalfEdgeFace> faces) {
         HalfEdgeSurface newSurface = new HalfEdgeSurface();
 
         Map<HalfEdgeVertex, HalfEdgeVertex> vertexToNewVertexMap = new HashMap<>();
@@ -204,21 +179,13 @@ public class HalfEdgeCutter {
 
         List<HalfEdge> faceEdges = new ArrayList<>();
 
-        int facesCount = faces.size();
-        for(int i=0; i<facesCount; i++)
-        {
-            HalfEdgeFace face = faces.get(i);
+        for (HalfEdgeFace face : faces) {
             faceEdges.clear();
             faceEdges = face.getHalfEdgesLoop(faceEdges);
-            int faceEdgesCount = faceEdges.size();
-            for(int j=0; j<faceEdgesCount; j++)
-            {
-                HalfEdge edge = faceEdges.get(j);
-
+            for (HalfEdge edge : faceEdges) {
                 // copy vertex.***
                 HalfEdgeVertex startVertex = edge.getStartVertex();
-                if(!vertexToNewVertexMap.containsKey(startVertex))
-                {
+                if (!vertexToNewVertexMap.containsKey(startVertex)) {
                     HalfEdgeVertex copyStartVertex = new HalfEdgeVertex();
                     copyStartVertex.copyFrom(startVertex);
                     vertexToNewVertexMap.put(startVertex, copyStartVertex);
@@ -237,10 +204,7 @@ public class HalfEdgeCutter {
 
         // original halfEdges.***
         List<HalfEdge> edges = new ArrayList<>(edgeToNewEdgeMap.keySet());
-        int halfEdgesCount = edges.size();
-        for(int i=0; i<halfEdgesCount; i++)
-        {
-            HalfEdge edge = edges.get(i);
+        for (HalfEdge edge : edges) {
             HalfEdge copyEdge = edgeToNewEdgeMap.get(edge);
 
             // startVertex.***
@@ -264,12 +228,10 @@ public class HalfEdgeCutter {
 
             // copy twin (check the classifiedId of the face).***
             HalfEdge twin = edge.getTwin();
-            if(twin != null)
-            {
+            if (twin != null) {
                 HalfEdgeFace twinFace = twin.getFace();
                 int twinClassifyId = twinFace.getClassifyId();
-                if(classifyId == twinClassifyId)
-                {
+                if (classifyId == twinClassifyId) {
                     HalfEdge copyTwin = edgeToNewEdgeMap.get(twin);
                     copyEdge.setTwin(copyTwin);
                 }
@@ -287,8 +249,7 @@ public class HalfEdgeCutter {
         return newSurface;
     }
 
-    public static HalfEdgeSurface createHalfEdgeSurfaceByFacesCopy(List<HalfEdgeFace> faces, boolean checkClassifyId, boolean checkBestPlaneToProject)
-    {
+    public static HalfEdgeSurface createHalfEdgeSurfaceByFacesCopy(List<HalfEdgeFace> faces, boolean checkClassifyId, boolean checkBestPlaneToProject) {
         HalfEdgeSurface newSurface = new HalfEdgeSurface();
 
         Map<HalfEdgeVertex, HalfEdgeVertex> vertexToNewVertexMap = new HashMap<>();
@@ -296,27 +257,17 @@ public class HalfEdgeCutter {
         Map<HalfEdgeFace, HalfEdgeFace> faceToNewFaceMap = new HashMap<>();
 
         List<HalfEdge> faceEdges = new ArrayList<>();
-
-        int facesCount = faces.size();
-        for(int i=0; i<facesCount; i++)
-        {
-            HalfEdgeFace face = faces.get(i);
+        for (HalfEdgeFace face : faces) {
             faceEdges.clear();
             faceEdges = face.getHalfEdgesLoop(faceEdges);
-            int faceEdgesCount = faceEdges.size();
-            for(int j=0; j<faceEdgesCount; j++)
-            {
-                HalfEdge edge = faceEdges.get(j);
-
+            for (HalfEdge edge : faceEdges) {
                 // copy vertex.***
                 HalfEdgeVertex startVertex = edge.getStartVertex();
-                if(!vertexToNewVertexMap.containsKey(startVertex))
-                {
+                if (!vertexToNewVertexMap.containsKey(startVertex)) {
                     HalfEdgeVertex copyStartVertex = new HalfEdgeVertex();
                     copyStartVertex.copyFrom(startVertex);
                     vertexToNewVertexMap.put(startVertex, copyStartVertex);
                 }
-
                 // copy edge.***
                 HalfEdge copyEdge = new HalfEdge();
                 edgeToNewEdgeMap.put(edge, copyEdge);
@@ -330,10 +281,7 @@ public class HalfEdgeCutter {
 
         // original halfEdges.***
         List<HalfEdge> edges = new ArrayList<>(edgeToNewEdgeMap.keySet());
-        int halfEdgesCount = edges.size();
-        for(int i=0; i<halfEdgesCount; i++)
-        {
-            HalfEdge edge = edges.get(i);
+        for (HalfEdge edge : edges) {
             HalfEdge copyEdge = edgeToNewEdgeMap.get(edge);
 
             // startVertex.***
@@ -360,31 +308,27 @@ public class HalfEdgeCutter {
             boolean classifyIdOk = false;
             boolean bestPlaneTypeOk = false;
             HalfEdge twin = edge.getTwin();
-            if(twin != null)
-            {
+            if (twin != null) {
                 HalfEdgeFace twinFace = twin.getFace();
                 int twinClassifyId = twinFace.getClassifyId();
                 PlaneType twinBestPlaneType = twinFace.getBestPlaneToProject();
-                if(checkClassifyId) {
-                    if(classifyId == twinClassifyId){
+                if (checkClassifyId) {
+                    if (classifyId == twinClassifyId) {
                         classifyIdOk = true;
                     }
-                }
-                else {
+                } else {
                     classifyIdOk = true;
                 }
 
-                if(checkBestPlaneToProject) {
-                    if(bestPlaneType == twinBestPlaneType) {
+                if (checkBestPlaneToProject) {
+                    if (bestPlaneType == twinBestPlaneType) {
                         bestPlaneTypeOk = true;
                     }
-                }
-                else {
+                } else {
                     bestPlaneTypeOk = true;
                 }
 
-                if(bestPlaneTypeOk && classifyIdOk)
-                {
+                if (bestPlaneTypeOk && classifyIdOk) {
                     HalfEdge copyTwin = edgeToNewEdgeMap.get(twin);
                     copyEdge.setTwin(copyTwin);
                 }
