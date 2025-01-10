@@ -453,19 +453,6 @@ public class PipeElbow extends TopologicalNode {
         double increSweepAngRad = this.sweepAngRad / this.elbowRadiusInterpolationCount;
         elbowAxisRotMat.rotate(-increSweepAngRad, elbowAxis);
 
-        // check if the elbowAxisRotMat has nan components.
-//        for(int col = 0; col<4; col++)
-//        {
-//            for(int row = 0; row<4; row++)
-//            {
-//                if(Double.isNaN(elbowAxisRotMat.get(row, col)))
-//                {
-//                    int hola = 0;
-//                }
-//            }
-//        }
-
-
         // calculate the 1rst transversal circle.***********************************************
         List<Vector3d> transversalCircle1 = new ArrayList<Vector3d>();
         Matrix4d tMat = modeler3D.getMatrix4FromZDir(dir1);

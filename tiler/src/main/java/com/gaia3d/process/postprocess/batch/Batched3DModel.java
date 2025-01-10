@@ -244,7 +244,7 @@ public class Batched3DModel implements TileModel {
             assert glbBytes != null;
             stream.write(glbBytes);
         } catch (IOException e) {
-            log.error("Error : {}", e.getMessage());
+            log.error("Error : ", e);
             throw new RuntimeException(e);
         }
     }

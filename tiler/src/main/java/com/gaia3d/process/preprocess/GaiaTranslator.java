@@ -49,7 +49,7 @@ public class GaiaTranslator implements PreProcess {
             try {
                 coverage.evaluate(worldPosition, altitude);
             } catch (Exception e) {
-                log.error("Error : {}", e.getMessage());
+                log.error("Error : ", e);
                 log.warn("Failed to evaluate terrain height", e);
             }
             //log.info("altitude[0] : {}", altitude[0]);
@@ -84,6 +84,9 @@ public class GaiaTranslator implements PreProcess {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         Vector3d position;
         Vector3d offset = globalOptions.getTranslateOffset();
+        if (offset == null) {
+            offset = new Vector3d();
+        }
         if (formatType == FormatType.CITYGML || formatType == FormatType.INDOORGML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON) {
             GaiaNode rootNode = gaiaScene.getNodes().get(0);
             Matrix4d transform = rootNode.getTransformMatrix();

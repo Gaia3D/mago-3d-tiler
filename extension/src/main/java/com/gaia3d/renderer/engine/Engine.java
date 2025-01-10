@@ -376,9 +376,6 @@ public class Engine {
             gaiaScenesContainer = new GaiaScenesContainer(windowWidth, windowHeight);
         }
         gaiaScenesContainer.setCamera(camera);
-
-
-        int hola2 = 0;
     }
 
     public void getDepthRender_TEST(GaiaScene gaiaScene, int bufferedImageType, List<BufferedImage> resultImages, int maxDepthScreenSize) {
@@ -952,13 +949,9 @@ public class Engine {
 
         List<HalfEdgePrimitive> primitives = new ArrayList<>();
         halfEdgeScene.extractPrimitives(primitives);
-        int primitivesCount = primitives.size();
-        for (int i = 0; i < primitivesCount; i++) {
-            HalfEdgePrimitive primitive = primitives.get(i);
+        for (HalfEdgePrimitive primitive : primitives) {
             primitive.setMaterialId(materialsCount);
         }
-
-        int hola = 0;
     }
 
     private int getMaxWidth(List<TexturesAtlasData> compareImages) {
@@ -981,11 +974,11 @@ public class Engine {
         }
 
         GaiaTexture textureAtlas = new GaiaTexture();
-        log.info("atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
+        log.debug("Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
         textureAtlas.createImage(maxWidth, maxHeight, imageType);
 
         // draw the images into textureAtlas.***
-        log.info("HalfEdgeSurface.scissorTextures() : draw the images into textureAtlas.");
+        log.debug("HalfEdgeSurface.scissorTextures() : draw the images into textureAtlas.");
         Graphics2D g2d = textureAtlas.getBufferedImage().createGraphics();
         int textureAtlasDatasCount = texAtlasDatasList.size();
         for (int i = 0; i < textureAtlasDatasCount; i++) {
@@ -1231,8 +1224,6 @@ public class Engine {
             List<GaiaRectangle> list_rectanglesMaxX = map_maxXrectangles.computeIfAbsent(maxX, k -> new ArrayList<>());
             list_rectanglesMaxX.add(batchedBoundary);
         }
-
-        int hola = 0;
     }
 
     private Vector2d getBestPositionMosaicInAtlas(List<TexturesAtlasData> currProcessTextureAtlasDates, TexturesAtlasData texAtlasData_toPutInMosaic, Vector2d resultVec,

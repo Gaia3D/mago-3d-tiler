@@ -136,7 +136,10 @@ public class HalfEdgeSurface implements Serializable {
 //            int hola = 0;
 //        }
 
+
+        int hola = 0;
     }
+
 
     public void calculatePlaneNormals() {
         int facesCount = faces.size();
@@ -573,7 +576,6 @@ public class HalfEdgeSurface implements Serializable {
                     log.info("iteration = " + iteration + " frontierHedges deleted = " + frontierHedgesCollapsedCount);
                 }
             }
-
 
             if (hedgesCollapsedInOneIteration + frontierHedgesCollapsedInOneIteration < 0) {
                 finished = true;
@@ -1096,6 +1098,7 @@ public class HalfEdgeSurface implements Serializable {
                                             Map<HalfEdge, Vector3d> mapHalfEdgeToInitialDirection, Map<HalfEdgeVertex, List<HalfEdgeVertex>> mapVertexToSamePosVertices,
                                             double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength, double maxAspectRatio, double smallHedgeSize, boolean testDebug) {
 
+
         HalfEdgeVertex startVertex = halfEdge.getStartVertex();
         HalfEdgeVertex endVertex = halfEdge.getEndVertex();
         Vector3d startPosition = startVertex.getPosition();
@@ -1106,6 +1109,8 @@ public class HalfEdgeSurface implements Serializable {
         List<HalfEdge> outingEdgesOfSamePosVertices = new ArrayList<>();
 
         for (HalfEdgeVertex vertex : samePosVertices) {
+        boolean isFrontierWithOtherFrontier = false;
+
             List<HalfEdge> outingEdges = vertexAllOutingEdgesMap.get(vertex);
             outingEdgesOfSamePosVertices.addAll(outingEdges);
         }
@@ -1121,13 +1126,17 @@ public class HalfEdgeSurface implements Serializable {
             return false;
         }
 
+
         for (HalfEdge outingEdge : outingEdgesOfSamePosVertices) {
+
             if (outingEdge.getStatus() == ObjectStatus.DELETED) {
                 continue;
             }
 
             List<HalfEdge> outingLoop = outingEdge.getLoop(null);
+
             for (HalfEdge outingEdge2 : outingLoop) {
+
                 if (outingEdge2.getStatus() == ObjectStatus.DELETED) {
                     continue;
                 }
@@ -1185,6 +1194,7 @@ public class HalfEdgeSurface implements Serializable {
         for (HalfEdgeVertex vertex : listVertexSamePosition) {
             List<HalfEdge> outingEdgesOfVertex = vertexAllOutingEdgesMap.get(vertex);
             for (HalfEdge outingEdge : outingEdgesOfVertex) {
+
                 HalfEdgeVertex startVertex2 = outingEdge.getStartVertex();
                 int startVertex2ClassifyId = startVertex2.getClassifyId();
                 if (startVertex2ClassifyId == endVertexClassifyId) {
@@ -1196,7 +1206,9 @@ public class HalfEdgeSurface implements Serializable {
                     // must find another endVertex that has the same classifyId.***
                     List<HalfEdgeVertex> listVertexEndPos = mapVertexToSamePosVertices.get(endVertex);
                     boolean isFound = false;
+
                     for (HalfEdgeVertex endVertex2 : listVertexEndPos) {
+
                         int endVertex2ClassifyId = endVertex2.getClassifyId();
                         if (endVertex2ClassifyId == startVertex2ClassifyId) {
                             outingEdge.setStartVertex(endVertex2);
@@ -1232,6 +1244,7 @@ public class HalfEdgeSurface implements Serializable {
     public boolean collapseHalfEdge(HalfEdge halfEdge, int iteration, Map<HalfEdgeVertex, List<HalfEdge>> vertexAllOutingEdgesMap, Map<HalfEdgeVertex,
             List<HalfEdgeVertex>> mapVertexToSamePosVertices, double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength, double maxAspectRatio,
                                     double smallHedgeSize, boolean testDebug) {
+
         // When collapse a halfEdge, we delete the face, the twin's face, the twin & the startVertex.***
         // When deleting a face, must delete all halfEdges of the face.***
         // must find all halfEdges that startVertex is the deletingVertex, and set as startVertex the endVertex of the deletingHalfEdge.***
@@ -1240,7 +1253,9 @@ public class HalfEdgeSurface implements Serializable {
         HalfEdgeVertex endVertex = halfEdge.getEndVertex();
 
 
+
         // check if collapse.***
+
         if (halfEdge.getLength() > hedgeMinLength) {
             if (!decideIfCollapseCheckingFaces(halfEdge, vertexAllOutingEdgesMap, mapVertexToSamePosVertices, maxDiffAngDeg, maxAspectRatio, smallHedgeSize)) {
                 return false;
@@ -1254,9 +1269,11 @@ public class HalfEdgeSurface implements Serializable {
 
         List<HalfEdge> outingEdgesOfEndVertex = vertexAllOutingEdgesMap.get(endVertex);
         List<HalfEdgeVertex> listVertexSamePosition = mapVertexToSamePosVertices.get(startVertex);
+
         for (HalfEdgeVertex vertex : listVertexSamePosition) {
             List<HalfEdge> outingEdgesOfVertex = vertexAllOutingEdgesMap.get(vertex);
             for (HalfEdge outingEdge : outingEdgesOfVertex) {
+
                 HalfEdgeVertex startVertex2 = outingEdge.getStartVertex();
                 int startVertex2ClassifyId = startVertex2.getClassifyId();
                 if (startVertex2ClassifyId == endVertexClassifyId) {
@@ -1268,6 +1285,7 @@ public class HalfEdgeSurface implements Serializable {
                     // must find another endVertex that has the same classifyId.***
                     List<HalfEdgeVertex> listVertexEndPos = mapVertexToSamePosVertices.get(endVertex);
                     for (HalfEdgeVertex endVertex2 : listVertexEndPos) {
+
                         int endVertex2ClassifyId = endVertex2.getClassifyId();
                         if (endVertex2ClassifyId == startVertex2ClassifyId) {
                             outingEdge.setStartVertex(endVertex2);
@@ -1315,7 +1333,9 @@ public class HalfEdgeSurface implements Serializable {
         List<HalfEdgeVertex> samePosVertices = mapVertexToSamePosVertices.get(deletingVertex);
         List<HalfEdge> outingEdgesOfSamePosVertices = new ArrayList<>();
 
+
         for (HalfEdgeVertex vertex : samePosVertices) {
+
             List<HalfEdge> outingEdges = vertexAllOutingEdgesMap.get(vertex);
             outingEdgesOfSamePosVertices.addAll(outingEdges);
         }
@@ -1559,6 +1579,7 @@ public class HalfEdgeSurface implements Serializable {
             }
         }
     }
+
 
     private void splitHalfEdge(HalfEdge halfEdge, HalfEdgeVertex intersectionVertex) {
         // When split a halfEdge, must split the face too.***
@@ -2007,10 +2028,12 @@ public class HalfEdgeSurface implements Serializable {
             // finally break the relations of the halfEdgesLoopA.***
             for (int i = 0; i < hedgesACount; i++) {
                 HalfEdge hedgeA = halfEdgesLoopA.get(i);
+
                 hedgeA.setStatus(ObjectStatus.DELETED);
                 hedgeA.breakRelations();
             }
         }
+
     }
 
 

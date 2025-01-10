@@ -248,14 +248,6 @@ public class HalfEdgeNode implements Serializable {
 
     public void writeFile(ObjectOutputStream outputStream) {
         try {
-            /*
-            private HalfEdgeNode parent = null;
-            private Matrix4d transformMatrix = new Matrix4d();
-            private Matrix4d preMultipliedTransformMatrix = new Matrix4d();
-            private List<HalfEdgeMesh> meshes = new ArrayList<>();
-            private List<HalfEdgeNode> children = new ArrayList<>();
-            private GaiaBoundingBox boundingBox = null;
-             */
             // transformMatrix
             outputStream.writeObject(transformMatrix);
             // preMultipliedTransformMatrix

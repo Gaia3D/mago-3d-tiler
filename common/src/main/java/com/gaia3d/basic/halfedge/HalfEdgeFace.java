@@ -145,8 +145,7 @@ public class HalfEdgeFace implements Serializable {
         resultBaricenter.set(0, 0, 0);
 
         int verticesSize = vertices.size();
-        for (int i = 0; i < verticesSize; i++) {
-            HalfEdgeVertex vertex = vertices.get(i);
+        for (HalfEdgeVertex vertex : vertices) {
             resultBaricenter.add(vertex.getPosition());
         }
 
@@ -194,16 +193,12 @@ public class HalfEdgeFace implements Serializable {
 
         List<HalfEdgeVertex> vertices = this.getVertices(null);
         Map<HalfEdgeVertex, HalfEdgeVertex> vertexMap = new HashMap<>();
-        int verticesSize = vertices.size();
-        for (int i = 0; i < verticesSize; i++) {
-            HalfEdgeVertex vertex = vertices.get(i);
+        for (HalfEdgeVertex vertex : vertices) {
             vertexMap.put(vertex, vertex);
         }
 
         List<HalfEdgeVertex> faceVertices = face.getVertices(null);
-        int faceVerticesSize = faceVertices.size();
-        for (int i = 0; i < faceVerticesSize; i++) {
-            HalfEdgeVertex vertex = faceVertices.get(i);
+        for (HalfEdgeVertex vertex : faceVertices) {
             if (vertexMap.get(vertex) == null) {
                 return false;
             }
@@ -213,13 +208,6 @@ public class HalfEdgeFace implements Serializable {
     }
 
     public void writeFile(ObjectOutputStream outputStream) {
-        /*
-        private Vector3d normal = null;
-        private ObjectStatus status = ObjectStatus.ACTIVE;
-        private int id = -1;
-        private int halfEdgeId = -1;
-         */
-
         try {
             if (normal != null) {
                 outputStream.writeBoolean(true);
@@ -284,11 +272,6 @@ public class HalfEdgeFace implements Serializable {
             return false;
         }
 
-//        if(mapVisitedFaces.get(this) != null)
-//        {
-//            return false;
-//        }
-
         mapVisitedFaces.put(this, this);
         resultWeldedFaces.add(this);
 
@@ -297,9 +280,7 @@ public class HalfEdgeFace implements Serializable {
             return false;
         }
 
-        int adjacentFacesSize = adjacentFaces.size();
-        for (int i = 0; i < adjacentFacesSize; i++) {
-            HalfEdgeFace adjacentFace = adjacentFaces.get(i);
+        for (HalfEdgeFace adjacentFace : adjacentFaces) {
             if (adjacentFace != null) {
                 // check if is visited.***
                 if (mapVisitedFaces.get(adjacentFace) == null) {
@@ -329,9 +310,7 @@ public class HalfEdgeFace implements Serializable {
             return false;
         }
 
-        int adjacentFacesSize = adjacentFaces.size();
-        for (int i = 0; i < adjacentFacesSize; i++) {
-            HalfEdgeFace adjacentFace = adjacentFaces.get(i);
+        for (HalfEdgeFace adjacentFace : adjacentFaces) {
             if (adjacentFace != null) {
                 // check if is visited.***
                 if (mapVisitedFaces.get(adjacentFace) == null) {

@@ -112,7 +112,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         try {
             createRootNode(root, tileInfos);
         } catch (IOException e) {
-            log.error("Error : {}", e.getMessage());
+            log.error("Error : ", e);
             throw new TileProcessingException(e.getMessage());
         }
 

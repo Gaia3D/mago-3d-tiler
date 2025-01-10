@@ -51,7 +51,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         try {
             createNode(root, tileInfos, 0);
         } catch (IOException e) {
-            log.error("Error : {}", e.getMessage());
+            log.error("Error : ", e);
             throw new RuntimeException(e);
         }
 
@@ -77,7 +77,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
             writer.write(result);
             globalOptions.setTilesetSize(result.length());
         } catch (IOException e) {
-            log.error("Error : {}", e.getMessage());
+            log.error("Error : ", e);
             throw new TileProcessingException(e.getMessage());
         }
     }
