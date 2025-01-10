@@ -49,7 +49,7 @@ public class GaiaTranslator implements PreProcess {
             try {
                 coverage.evaluate(worldPosition, altitude);
             } catch (Exception e) {
-                log.error("Error : {}", e.getMessage());
+                log.error("Error : ", e);
                 log.warn("Failed to evaluate terrain height", e);
             }
             //log.info("altitude[0] : {}", altitude[0]);

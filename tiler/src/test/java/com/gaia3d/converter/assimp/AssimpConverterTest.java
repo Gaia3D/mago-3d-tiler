@@ -73,7 +73,7 @@ class AssimpConverterTest {
             outputStream.flush();
             outputStream.close();
         } catch (Exception e) {
-            log.error("Error : {}", e.getMessage());
+            log.error("Error : ", e);
         }
     }
 
@@ -82,7 +82,7 @@ class AssimpConverterTest {
         try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(outputFile))) {
             return (GaiaSet) inputStream.readObject();
         } catch (Exception e) {
-            log.error("Error : {}", e.getMessage());
+            log.error("Error : ", e);
         }
         return null;
     }

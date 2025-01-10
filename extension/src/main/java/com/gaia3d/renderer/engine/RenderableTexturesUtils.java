@@ -92,10 +92,6 @@ public class RenderableTexturesUtils {
         {
             glFormat = GL_RGBA;
         }
-        else
-        {
-            int hola = 0;
-        }
 
         byte[] rgbaByteArray = null;
 

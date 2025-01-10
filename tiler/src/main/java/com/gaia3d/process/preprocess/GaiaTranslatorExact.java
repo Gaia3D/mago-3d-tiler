@@ -52,7 +52,7 @@ public class GaiaTranslatorExact implements PreProcess {
             try {
                 coverage.evaluate((DirectPosition) memSave_posWorld, memSave_alt);
             } catch (Exception e) {
-                log.error("Error : {}", e.getMessage());
+                log.error("Error : ", e);
                 log.warn("Failed to evaluate terrain height", e);
             }
             centerGeoCoord.z = memSave_alt[0];

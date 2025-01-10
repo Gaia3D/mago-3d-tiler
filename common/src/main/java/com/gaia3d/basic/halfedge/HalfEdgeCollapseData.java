@@ -7,7 +7,6 @@ import java.util.List;
 
 @Setter
 @Getter
-
 public class HalfEdgeCollapseData {
     public String note = "";
     // This class contains the data that is implicated to collapse an edge.
@@ -27,15 +26,10 @@ public class HalfEdgeCollapseData {
             return false;
         }
 
-        //////////////////////////////////////////////////////////////////////////////////////////////////
         int halfEdgesLoopASize = halfEdgesLoopA.size();
         int halfEdgesLoopBSize = halfEdgesLoopB.size();
-        int halfEdgesAExteriorSize = halfEdgesAExterior.size();
-        int halfEdgesBExteriorSize = halfEdgesBExterior.size();
-
         // check exteriorA with interiorB.***
-        for (int i = 0; i < halfEdgesAExteriorSize; i++) {
-            HalfEdge halfEdgeAExt = halfEdgesAExterior.get(i);
+        for (HalfEdge halfEdgeAExt : halfEdgesAExterior) {
             if (halfEdgeAExt == null) {
                 note = "halfEdgeAExt == null";
                 return false;
@@ -56,8 +50,7 @@ public class HalfEdgeCollapseData {
         }
 
         // check exteriorB with interiorA.***
-        for (int i = 0; i < halfEdgesBExteriorSize; i++) {
-            HalfEdge halfEdgeBExt = halfEdgesBExterior.get(i);
+        for (HalfEdge halfEdgeBExt : halfEdgesBExterior) {
             if (halfEdgeBExt == null) {
                 note = "halfEdgeBExt == null";
                 return false;
@@ -77,9 +70,7 @@ public class HalfEdgeCollapseData {
             }
         }
 
-        //////////////////////////////////////////////////////////////////////////////////////////////////
-
-        note = "all noraml";
+        note = "all normal";
         return false;
     }
 
@@ -88,11 +79,7 @@ public class HalfEdgeCollapseData {
             return false;
         }
 
-        int halfEdgesAExteriorSize = halfEdgesAExterior.size();
-        int halfEdgesBExteriorSize = halfEdgesBExterior.size();
-
-        for (int i = 0; i < halfEdgesAExteriorSize; i++) {
-            HalfEdge halfEdgeAExt = halfEdgesAExterior.get(i);
+        for (HalfEdge halfEdgeAExt : halfEdgesAExterior) {
             if (halfEdgeAExt == null) {
                 return false;
             }
@@ -102,8 +89,7 @@ public class HalfEdgeCollapseData {
             }
         }
 
-        for (int i = 0; i < halfEdgesBExteriorSize; i++) {
-            HalfEdge halfEdgeBExt = halfEdgesBExterior.get(i);
+        for (HalfEdge halfEdgeBExt : halfEdgesBExterior) {
             if (halfEdgeBExt == null) {
                 return false;
             }
@@ -131,29 +117,18 @@ public class HalfEdgeCollapseData {
             return false;
         }
 
-        int halfEdgesLoopASize = halfEdgesLoopA.size();
-        for (int i = 0; i < halfEdgesLoopASize; i++) {
-            HalfEdge halfEdgeLoopA = halfEdgesLoopA.get(i);
+        for (HalfEdge halfEdgeLoopA : halfEdgesLoopA) {
             if (halfEdgeLoopA == null) {
                 note = "halfEdgeLoopA == null";
                 return false;
             }
-
-//            if(halfEdgeLoopA.getStatus() == ObjectStatus.DELETED)
-//            {
-//                note = "halfEdgeLoopA is deleted";
-//                return false;
-//            }
         }
-        //////////////////////////////////////////////////////////////////////////////////////////////
         if (halfEdgesAExterior == null) {
             note = "halfEdgesAExterior == null";
             return false;
         }
 
-        int halfEdgesAExteriorSize = halfEdgesAExterior.size();
-        for (int i = 0; i < halfEdgesAExteriorSize; i++) {
-            HalfEdge halfEdgeAExt = halfEdgesAExterior.get(i);
+        for (HalfEdge halfEdgeAExt : halfEdgesAExterior) {
             if (halfEdgeAExt == null) {
                 note = "halfEdgeAExt == null";
                 return false;
@@ -164,7 +139,6 @@ public class HalfEdgeCollapseData {
                 return false;
             }
         }
-
 
         return true;
     }
