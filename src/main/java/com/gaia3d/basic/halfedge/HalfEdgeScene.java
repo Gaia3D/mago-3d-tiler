@@ -100,6 +100,7 @@ public class HalfEdgeScene implements Serializable {
             node.deleteObjects();
         }
         nodes.clear();
+        int materialsCount = this.materials.size();
         for (GaiaMaterial material : this.materials) {
             material.clear();
         }
@@ -122,6 +123,37 @@ public class HalfEdgeScene implements Serializable {
         for (HalfEdgeNode node : nodes) {
             node.deleteFacesWithClassifyId(classifyId);
         }
+    }
+
+    public void TEST_cutScene() {
+        // Test.***
+        GaiaBoundingBox bbox = getBoundingBox();
+        Vector3d center = bbox.getCenter();
+        double error = 1e-8;
+//        if(error < 1)
+//        {
+//            return;
+//        }
+        PlaneType planeType = PlaneType.YZ;
+        cutByPlane(planeType, center, error);
+        classifyFacesIdByPlane(planeType, center);
+
+        // check if there are no used vertices.***
+        List<HalfEdgeSurface> resultHalfEdgeSurfaces = new ArrayList<>();
+        extractSurfaces(resultHalfEdgeSurfaces);
+        List<HalfEdgeVertex> noUsedVertices = new ArrayList<>();
+        for (HalfEdgeSurface surface : resultHalfEdgeSurfaces) {
+            noUsedVertices.clear();
+            if (surface.existNoUsedVertices(noUsedVertices)) {
+                log.error("Error: existNoUsedVertices.***");
+            }
+        }
+
+        // now, remove faces with classifyId = 1.***
+//        for (HalfEdgeNode node : nodes) {
+//            node.TEST_removeFacesWithClassifyId(1);
+//        }
+
     }
 
     public List<HalfEdgeSurface> extractSurfaces(List<HalfEdgeSurface> resultHalfEdgeSurfaces) {
