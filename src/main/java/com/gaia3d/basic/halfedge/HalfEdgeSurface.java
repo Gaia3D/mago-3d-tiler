@@ -1567,15 +1567,25 @@ public class HalfEdgeSurface implements Serializable {
             return false;
         }
 
+        List<HalfEdge> outingEdgesOfVertex = null;
+
         int samePositionVerticesCount = listVertexSamePosition.size();
         for (int i = 0; i < samePositionVerticesCount; i++) {
             HalfEdgeVertex vertex = listVertexSamePosition.get(i);
-            List<HalfEdge> outingEdgesOfVertex = vertexAllOutingEdgesMap.get(vertex);
+            outingEdgesOfVertex = vertexAllOutingEdgesMap.get(vertex);
             if(outingEdgesOfVertex == null) {
                 log.error("HalfEdgeSurface.collapseHalfEdge() : outingEdgesOfVertex == null.");
                 continue;
             }
-            for (HalfEdge outingEdge : outingEdgesOfVertex) {
+            log.info("HalfEdgeSurface.collapseHalfEdge() : outingEdgesOfVertex.size() = " + outingEdgesOfVertex.size() + " iteration = " + i);
+
+            int count = 0;
+            int outingEdgesOfVertexCount = outingEdgesOfVertex.size();
+            //for (HalfEdge outingEdge : outingEdgesOfVertex) {
+            for (int gg = 0; gg < outingEdgesOfVertexCount; gg++) {
+                HalfEdge outingEdge = outingEdgesOfVertex.get(gg);
+                log.info("HalfEdgeSurface.collapseHalfEdge() : outingEdge = " + count++);
+
                 if(outingEdge == null)
                 {
                     log.error("HalfEdgeSurface.collapseHalfEdge() : outingEdge == null.");
@@ -1607,7 +1617,7 @@ public class HalfEdgeSurface implements Serializable {
                 }
             }
 
-            outingEdgesOfVertex.clear();
+            //outingEdgesOfVertex.clear();
         }
 
 //        halfEdge.setStatus(ObjectStatus.DELETED);
@@ -3106,11 +3116,8 @@ public class HalfEdgeSurface implements Serializable {
         String textureAtlasName = textureRawName.substring(0, textureRawName.lastIndexOf(".")) + "_atlas" + textureImageExtension;
         String textureAtlasPath = imageParentPath + File.separator + textureAtlasName;
 
-<<<<<<< HEAD
         textureAtlas.setBufferedImage(ImageUtils.clampBackGroundColor(textureAtlas.getBufferedImage(), new Color(255, 0, 255), 1, 35));
-=======
-        textureAtlas.setBufferedImage(ImageUtils.clampBackGroundColor(textureAtlas.getBufferedImage(), new Color(255, 0, 255), 2, 15));
->>>>>>> 2ce880ed26e9622b902687ac1e4ff1be7a52a335
+
         textureAtlas.saveImage(textureAtlasPath);
 
         // change the diffuseTexture path.***
