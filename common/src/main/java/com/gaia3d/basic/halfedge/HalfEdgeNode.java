@@ -180,52 +180,13 @@ public class HalfEdgeNode implements Serializable {
         }
     }
 
-    public boolean hasContents() {
-        if (!this.getMeshes().isEmpty()) {
-            return true;
-        }
-
-        if (this.getChildren().isEmpty()) {
-            return false;
-        }
-
-        for (HalfEdgeNode child : this.getChildren()) {
-            if (child.hasContents()) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     public void deleteFacesWithClassifyId(int classifyId) {
-        List<HalfEdgeMesh> emptyMeshes = new ArrayList<>();
         for (HalfEdgeMesh mesh : meshes) {
             mesh.deleteFacesWithClassifyId(classifyId);
-//            if (mesh.getPrimitives().isEmpty()) {
-//                mesh.deleteObjects();
-//                emptyMeshes.add(mesh);
-//            }
         }
-
-//        for (HalfEdgeMesh emptyMesh : emptyMeshes) {
-//            meshes.remove(emptyMesh);
-//        }
-
-        List<HalfEdgeNode> emptyChildren = new ArrayList<>();
         for (HalfEdgeNode child : children) {
             child.deleteFacesWithClassifyId(classifyId);
         }
-
-//        for (HalfEdgeNode child : children) {
-//            if (!child.hasContents()) {
-//                emptyChildren.add(child);
-//            }
-//        }
-//
-//        for (HalfEdgeNode emptyChild : emptyChildren) {
-//            children.remove(emptyChild);
-//        }
     }
 
     public HalfEdgeNode clone() {

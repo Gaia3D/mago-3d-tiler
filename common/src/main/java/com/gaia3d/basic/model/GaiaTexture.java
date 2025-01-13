@@ -137,6 +137,20 @@ public class GaiaTexture extends TextureStructure implements Serializable {
 
     // getBufferedImage
     public BufferedImage getBufferedImage() {
+        /*if (this.bufferedImage == null) {
+            String keyPath = this.path;
+            ImageCacheQueue imageCacheQueue = ImageCacheQueue.getInstance();
+            boolean hasKey = imageCacheQueue.hasBufferedImage(keyPath);
+            if (hasKey) {
+                BufferedImage tempImage = imageCacheQueue.getBufferedImage(keyPath);
+                log.info("ImageCacheQueue hit: {}", keyPath);
+                this.bufferedImage = tempImage;
+            } else {
+                log.info("ImageCacheQueue put: {}", keyPath);
+                loadImage();
+                imageCacheQueue.putBufferedImage(keyPath, this.bufferedImage);
+            }
+        }*/
         if (this.bufferedImage == null) {
             loadImage();
         }

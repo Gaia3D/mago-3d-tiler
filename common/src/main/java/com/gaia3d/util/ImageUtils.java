@@ -229,16 +229,7 @@ public class ImageUtils {
         return result;
     }
 
-    public void saveBufferedImage(BufferedImage image, String format, String path) {
-        try {
-            ImageIO.write(image, format, new File(path));
-        } catch (IOException e) {
-            log.error("Error:", e);
-        }
-    }
-
-    public static float unpackDepth32(float[] packedDepth)
-    {
+    public static float unpackDepth32(float[] packedDepth) {
         if (packedDepth.length != 4) {
             throw new IllegalArgumentException("packedDepth debe tener exactamente 4 elementos.");
         }
@@ -249,26 +240,20 @@ public class ImageUtils {
         }
 
         // Producto punto para recuperar la profundidad original
-        return packedDepth[0]
-                + packedDepth[1] / 256.0f
-                + packedDepth[2] / (256.0f * 256.0f)
-                + packedDepth[3] / 16777216.0f;
+        return packedDepth[0] + packedDepth[1] / 256.0f + packedDepth[2] / (256.0f * 256.0f) + packedDepth[3] / 16777216.0f;
     }
 
-    public static float[][] bufferedImageToFloatMatrix(BufferedImage image)
-    {
+    public static float[][] bufferedImageToFloatMatrix(BufferedImage image) {
         int width = image.getWidth();
         int height = image.getHeight();
         float[][] floatMatrix = new float[width][height];
-        for(int i = 0; i < width; i++)
-        {
-            for(int j = 0; j < height; j++)
-            {
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
                 Color color = new Color(image.getRGB(i, j), true);
-                float r = color.getRed()/255.0f;
-                float g = color.getGreen()/255.0f;
-                float b = color.getBlue()/255.0f;
-                float a = color.getAlpha()/255.0f;
+                float r = color.getRed() / 255.0f;
+                float g = color.getGreen() / 255.0f;
+                float b = color.getBlue() / 255.0f;
+                float a = color.getAlpha() / 255.0f;
 
                 float depth = unpackDepth32(new float[]{r, g, b, a});
                 floatMatrix[i][j] = depth;
@@ -337,14 +322,20 @@ public class ImageUtils {
             graphics.drawImage(newImage, 0, 0, null);
             graphics.dispose();
 
-            if(!changed) {
+            if (!changed) {
                 break;
             }
-
-
             it++;
         }
 
         return newImage;
+    }
+
+    public void saveBufferedImage(BufferedImage image, String format, String path) {
+        try {
+            ImageIO.write(image, format, new File(path));
+        } catch (IOException e) {
+            log.error("Error:", e);
+        }
     }
 }

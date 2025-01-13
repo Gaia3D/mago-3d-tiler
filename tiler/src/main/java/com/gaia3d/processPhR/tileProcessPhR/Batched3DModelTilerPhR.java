@@ -228,7 +228,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             String tileInfoName = tileInfo.getTempPath().getFileName().toString();
             Runnable callableTask = () -> {
                 try {
-                    int processCount = atomicProcessCount.incrementAndGet() + 1;
+                    int processCount = atomicProcessCount.incrementAndGet();
                     log.info("[Tile][PhotoRealistic][{}/{}] Generating tile : {}", processCount, tileInfosCount, tileInfoName);
                     log.info("[Tile][PhotoRealistic][{}/{}] - Cut RectangleCake... : {}", processCount, tileInfosCount, tileInfoName);
                     cutRectangleCake(singleTileInfoList, lod, rootNode, maxDepth);
