@@ -169,18 +169,9 @@ public class HalfEdgePrimitive implements Serializable {
     }
 
     public void deleteFacesWithClassifyId(int classifyId) {
-        List<HalfEdgeSurface> emptySurfaces = new ArrayList<>();
         for (HalfEdgeSurface surface : surfaces) {
             surface.deleteFacesWithClassifyId(classifyId);
-
-//            // check if the surface is empty
-//            if(surface.getFaces().isEmpty()) {
-//                surface.deleteObjects();
-//                emptySurfaces.add(surface);
-//            }
         }
-
-        //surfaces.removeAll(emptySurfaces);
     }
 
     public void scissorTextures(List<GaiaMaterial> materials) {

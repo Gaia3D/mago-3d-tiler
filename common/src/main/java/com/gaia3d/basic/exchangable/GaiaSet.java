@@ -171,9 +171,7 @@ public class GaiaSet implements Serializable {
             if (imageFile.getAbsolutePath().equals(outputImageFile.getAbsolutePath())) {
                 return;
             }
-
             texture.setPath(imageFile.getName());
-
             if (!imageFile.exists()) {
                 log.error("Texture Input Image Path is not exists. {}", diffusePath);
             } else {
