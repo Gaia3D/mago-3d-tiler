@@ -624,13 +624,16 @@ public class HalfEdgeUtils {
         return copyHalfEdgeSurface;
     }
 
-    public static List<HalfEdgeScene> getCopyHalfEdgeScenesByFaceClassifyId(HalfEdgeScene halfEdgeScene, List<HalfEdgeScene> resultHalfEdgeScenes)
-    {
-        if(resultHalfEdgeScenes == null)
-        {
+    public static List<HalfEdgeScene> getCopyHalfEdgeScenesByFaceClassifyId(HalfEdgeScene halfEdgeScene, List<HalfEdgeScene> resultHalfEdgeScenes) {
+        // TEST FUNCTION.***
+        if (resultHalfEdgeScenes == null) {
             resultHalfEdgeScenes = new ArrayList<>();
         }
 
+        Map<Integer, HalfEdgeScene> mapClassifyIdToHalfEdgeScene = new HashMap<>();
+        GaiaAttribute gaiaAttribute = halfEdgeScene.getAttribute();
+
+        // test : delete faces with classifyId = 1.***
         HalfEdgeScene halfEdgeScene1 = halfEdgeScene.clone();
         HalfEdgeScene halfEdgeScene2 = halfEdgeScene.clone();
 
@@ -644,6 +647,52 @@ public class HalfEdgeUtils {
         if (halfEdgeScene2.getTrianglesCount() > 0) {
             resultHalfEdgeScenes.add(halfEdgeScene2);
         }
+
+
+//        List<HalfEdgeNode> halfEdgeNodes = halfEdgeScene.getNodes();
+//        int nodesCount = halfEdgeNodes.size();
+//        for(int j=0; j<nodesCount; j++)
+//        {
+//            HalfEdgeNode rootNode = halfEdgeNodes.get(j);
+//            Map<Integer,HalfEdgeNode> mapClassifyIdToNode = getMapHalfEdgeNodeByFaceClassifyId(rootNode, null);
+//            for(Integer key : mapClassifyIdToNode.keySet())
+//            {
+//                int faceClassifyId = key;
+//                HalfEdgeNode halfEdgeNode = mapClassifyIdToNode.get(faceClassifyId);
+//                HalfEdgeScene halfEdgeSceneCopy = mapClassifyIdToHalfEdgeScene.get(faceClassifyId);
+//                if(halfEdgeSceneCopy == null)
+//                {
+//                    halfEdgeSceneCopy = new HalfEdgeScene();
+//
+//                    // copy original path.***
+//                    halfEdgeSceneCopy.setOriginalPath(halfEdgeScene.getOriginalPath());
+//
+//                    // copy gaiaAttributes.***
+//                    GaiaAttribute newGaiaAttribute = gaiaAttribute.getCopy();
+//                    halfEdgeSceneCopy.setAttribute(newGaiaAttribute);
+//
+//                    mapClassifyIdToHalfEdgeScene.put(faceClassifyId, halfEdgeSceneCopy);
+//                }
+//                halfEdgeSceneCopy.getNodes().add(halfEdgeNode);
+//            }
+//
+//        }
+//
+//        for(Integer key : mapClassifyIdToHalfEdgeScene.keySet())
+//        {
+//            HalfEdgeScene halfEdgeSceneCopy = mapClassifyIdToHalfEdgeScene.get(key);
+//
+//            // copy materials.***
+//            List<GaiaMaterial> gaiaMaterials = halfEdgeScene.getMaterials();
+//            int materialsCount = gaiaMaterials.size();
+//            for(int i=0; i<materialsCount; i++)
+//            {
+//                GaiaMaterial gaiaMaterial = gaiaMaterials.get(i);
+//                GaiaMaterial newGaiaMaterial = gaiaMaterial.clone();
+//                halfEdgeSceneCopy.getMaterials().add(newGaiaMaterial);
+//            }
+//            resultHalfEdgeScenes.add(halfEdgeSceneCopy);
+//        }
 
         return resultHalfEdgeScenes;
     }

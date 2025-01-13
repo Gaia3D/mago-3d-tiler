@@ -33,6 +33,10 @@ public class ImageCacheQueue {
         log.info("[GaiaTextureImageStorage] Texture image is stored: {}", textureName);
     }
 
+    public boolean hasBufferedImage(String textureName) {
+        return textures.containsKey(textureName);
+    }
+
     public BufferedImage getBufferedImage(String textureName) {
         BufferedImage image = textures.get(textureName);
         if (image != null) {
@@ -56,7 +60,8 @@ public class ImageCacheQueue {
         return sizeResult;
     }
 
-    private BufferedImage deepCopy(BufferedImage bufferedImage) {
+    public BufferedImage deepCopy(BufferedImage bufferedImage) {
+        log.info("[GaiaTextureImageStorage] Deep copy of the texture image: {}", bufferedImage);
         ColorModel colorModel = bufferedImage.getColorModel();
         boolean isAlphaPremultiplied = colorModel.isAlphaPremultiplied();
         WritableRaster raster = bufferedImage.copyData(null);
