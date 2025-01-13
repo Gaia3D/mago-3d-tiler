@@ -18,6 +18,7 @@ class RealisticReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
+                "-log", getOutputPath("log.txt").getAbsolutePath(),
                 "-pr",
                 "-c", "5187",
                 "-debug",
@@ -31,6 +32,7 @@ class RealisticReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
+                "-log", getOutputPath("log.txt").getAbsolutePath(),
                 "-pr",
                 "-c", "5187",
                 //"-debug",
@@ -44,6 +46,7 @@ class RealisticReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
+                "-log", getOutputPath("log.txt").getAbsolutePath(),
                 "-pr",
                 "-c", "5187",
                 //"-debug",

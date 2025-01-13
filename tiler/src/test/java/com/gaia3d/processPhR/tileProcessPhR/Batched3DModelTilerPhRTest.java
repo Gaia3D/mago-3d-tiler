@@ -81,9 +81,9 @@ class Batched3DModelTilerPhRTest {
         GltfWriter gltfWriter = new GltfWriter();
         gltfWriter.writeGlb(newScene, new File("D:/workspace/output/BlockBABB-before-batched.glb"));
 
-        Batched3DModelTilerPhR photoRealisticTiler = new Batched3DModelTilerPhR();
-        GaiaScene decimatedScene = photoRealisticTiler.decimate(newScene, decimateParameters);
-        gltfWriter.writeGlb(decimatedScene, new File("D:/workspace/output/BlockBABB-after-batched.glb"));
+        //Batched3DModelTilerPhR photoRealisticTiler = new Batched3DModelTilerPhR();
+        //GaiaScene decimatedScene = photoRealisticTiler.decimate(newScene, decimateParameters);
+        //gltfWriter.writeGlb(decimatedScene, new File("D:/workspace/output/BlockBABB-after-batched.glb"));
 /*
         List<TileInfo> deciTileInfoList = new ArrayList<>();
         TileInfo deciTileInfo = TileInfo.builder()
