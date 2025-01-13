@@ -1269,11 +1269,24 @@ public class HalfEdgeSurface implements Serializable {
 
         List<HalfEdge> outingEdgesOfEndVertex = vertexAllOutingEdgesMap.get(endVertex);
         List<HalfEdgeVertex> listVertexSamePosition = mapVertexToSamePosVertices.get(startVertex);
+        if(listVertexSamePosition == null)
+        {
+            log.error("HalfEdgeSurface.collapseHalfEdge() : listVertexSamePosition == null.");
+            return false;
+        }
 
         for (HalfEdgeVertex vertex : listVertexSamePosition) {
             List<HalfEdge> outingEdgesOfVertex = vertexAllOutingEdgesMap.get(vertex);
+            if(outingEdgesOfVertex == null) {
+                log.error("HalfEdgeSurface.collapseHalfEdge() : outingEdgesOfVertex == null.");
+                continue;
+            }
             for (HalfEdge outingEdge : outingEdgesOfVertex) {
-
+                if(outingEdge == null)
+                {
+                    log.error("HalfEdgeSurface.collapseHalfEdge() : outingEdge == null.");
+                    continue;
+                }
                 HalfEdgeVertex startVertex2 = outingEdge.getStartVertex();
                 int startVertex2ClassifyId = startVertex2.getClassifyId();
                 if (startVertex2ClassifyId == endVertexClassifyId) {
@@ -2630,7 +2643,7 @@ public class HalfEdgeSurface implements Serializable {
         String textureAtlasName = textureRawName.substring(0, textureRawName.lastIndexOf(".")) + "_atlas" + textureImageExtension;
         String textureAtlasPath = imageParentPath + File.separator + textureAtlasName;
 
-        textureAtlas.setBufferedImage(ImageUtils.clampBackGroundColor(textureAtlas.getBufferedImage(), new Color(255, 0, 255), 1, 25));
+        textureAtlas.setBufferedImage(ImageUtils.clampBackGroundColor(textureAtlas.getBufferedImage(), new Color(255, 0, 255), 1, 35));
         textureAtlas.saveImage(textureAtlasPath);
 
         // change the diffuseTexture path.***

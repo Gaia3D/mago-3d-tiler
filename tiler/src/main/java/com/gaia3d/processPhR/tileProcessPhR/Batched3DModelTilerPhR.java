@@ -389,7 +389,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             tilerExtensionModule.decimate(gaiaSceneList, resultDecimatedScenes, decimateParameters);
 
             if (resultDecimatedScenes.isEmpty()) {
-                log.error("Error : resultDecimatedScenes is empty.");
+                log.error("Error : resultDecimatedScenes is empty." + tempPath);
+                continue;
             }
 
             HalfEdgeScene halfEdgeSceneLod = resultDecimatedScenes.get(0);
@@ -469,6 +470,11 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 sceneInfos.add(sceneInfo);
             }
 
+            if(sceneInfos.isEmpty()) {
+                log.info("Error : sceneInfos is empty.");
+                continue;
+            }
+
             // render the sceneInfos and obtain the color and depth images.************************************************************
             List<BufferedImage> resultImages = new ArrayList<>();
             int bufferedImageType = BufferedImage.TYPE_INT_RGB;
@@ -487,6 +493,11 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             int maxScreenSize = 512;
             int maxDepthScreenSize = 180;
             tilerExtensionModule.getColorAndDepthRender(sceneInfos, bufferedImageType, resultImages, nodeBBoxLC, nodeTMatrix, maxScreenSize, maxDepthScreenSize);
+
+            if(resultImages.size() < 2) {
+                log.info("Error : resultImages size is less than 2.");
+                continue;
+            }
             BufferedImage bufferedImageColor = resultImages.get(0);
             BufferedImage bufferedImageDepth = resultImages.get(1);
 
