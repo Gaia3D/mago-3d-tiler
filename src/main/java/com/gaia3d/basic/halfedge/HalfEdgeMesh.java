@@ -129,18 +129,9 @@ public class HalfEdgeMesh implements Serializable {
     }
 
     public void deleteFacesWithClassifyId(int classifyId) {
-        List<HalfEdgePrimitive> emptyPrimitives = new ArrayList<>();
         for (HalfEdgePrimitive primitive : primitives) {
             primitive.deleteFacesWithClassifyId(classifyId);
-//            if (primitive.getSurfaces().isEmpty()) {
-//                primitive.deleteObjects();
-//                emptyPrimitives.add(primitive);
-//            }
         }
-
-//        for (HalfEdgePrimitive emptyPrimitive : emptyPrimitives) {
-//            primitives.remove(emptyPrimitive);
-//        }
     }
 
     public HalfEdgeMesh clone() {
