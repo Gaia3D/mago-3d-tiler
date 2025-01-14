@@ -12,27 +12,30 @@ class RealisticReleaseTest {
     private static final String INPUT_PATH = "D:/data/mago-3d-tiler/release-sample";
     private static final String OUTPUT_PATH = "D:/data/mago-server/output";
 
+    @Disabled
     @Test
     void realistic00() {
         String path = "R00-bansong-obj";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                "-log", getOutputPath("log.txt").getAbsolutePath(),
+                "-log", getLogPath(path).getAbsolutePath(),
                 "-pr",
                 "-c", "5187",
-                "-debug",
+                "-glb",
+                //"-debug",
         };
         execute(args);
     }
 
+    @Disabled
     @Test
     void realistic01() {
         String path = "R01-bansong-part-obj";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                "-log", getOutputPath("log.txt").getAbsolutePath(),
+                "-log", getLogPath(path).getAbsolutePath(),
                 "-pr",
                 "-c", "5187",
                 //"-debug",
@@ -46,7 +49,7 @@ class RealisticReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                "-log", getOutputPath("log.txt").getAbsolutePath(),
+                "-log", getLogPath(path).getAbsolutePath(),
                 "-pr",
                 "-c", "5187",
                 //"-debug",
@@ -54,6 +57,64 @@ class RealisticReleaseTest {
         execute(args);
     }
 
+    @Disabled
+    @Test
+    void realistic03() {
+        String path = "R03-gilcheon-part-obj";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-log", getLogPath(path).getAbsolutePath(),
+                "-pr",
+                "-c", "5187",
+                //"-debug",
+        };
+        execute(args);
+    }
+
+    @Test
+    void realistic04() {
+        String path = "R04-gilcheon-all-obj";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-log", getLogPath(path).getAbsolutePath(),
+                "-pr",
+                "-c", "5187",
+                //"-debug",
+        };
+        execute(args);
+    }
+
+    @Test
+    void realistic05() {
+        String path = "R05-sangcheon-all-obj";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-log", getLogPath(path).getAbsolutePath(),
+                "-pr",
+                "-c", "5187",
+                //"-debug",
+        };
+        execute(args);
+    }
+
+    @Disabled
+    @Test
+    void realistic06() {
+        String path = "R06-khonkhan-part-obj";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-log", getLogPath(path).getAbsolutePath(),
+                "-pr",
+                "-c", "32648",
+                "-rotateX", "-90",
+                //"-debug",
+        };
+        execute(args);
+    }
 
     private void execute(String[] args) {
         Mago3DTilerMain.main(args);
@@ -65,5 +126,10 @@ class RealisticReleaseTest {
 
     private File getOutputPath(String path) {
         return new File(OUTPUT_PATH, path);
+    }
+
+    private File getLogPath(String path) {
+        File logPath = new File(OUTPUT_PATH, path);
+        return new File(logPath, "log.txt");
     }
 }

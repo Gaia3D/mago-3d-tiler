@@ -136,7 +136,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             nodeTileInfoMap.clear();
             tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
             // public void setBasicValues(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount)
-            decimateParameters.setBasicValues(6.0, 0.5, 1.0, 12.0, 1000000, 2, 1.8);
+            /*decimateParameters.setBasicValues(6.0, 0.5, 1.0, 12.0, 1000000, 2, 1.8);
             if (d == 1) {
                 decimateParameters.setBasicValues(12.0, 0.5, 0.9, 15.0, 1000000, 1, 1.2);
             } else if (d == 2) {
@@ -145,6 +145,18 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 decimateParameters.setBasicValues(23.0, 0.6, 1.0, 18.0, 1000000, 2, 2.3);
             } else if (d == 4) {
                 decimateParameters.setBasicValues(28.0, 0.6, 1.0, 20.0, 1000000, 2, 2.8);
+            }*/
+
+            if (d == 1) {
+                decimateParameters.setBasicValues(3.0, 0.4, 0.9, 32.0, 1000000, 1, 1.0);
+            } else if (d == 2) {
+                decimateParameters.setBasicValues(5.0, 0.4, 1.0, 32.0, 1000000, 2, 1.5);
+            } else if (d == 3) {
+                decimateParameters.setBasicValues(15.0, 0.6, 1.0, 32.0, 1000000, 2, 2.0);
+            } else if (d == 4) {
+                decimateParameters.setBasicValues(20.0, 0.8, 1.0, 32.0, 1000000, 2, 2.5);
+            } else {
+                decimateParameters.setBasicValues(5.0, 0.2, 0.9, 32.0, 1000000, 2, 1.0);
             }
 
             decimateScenes(tileInfosCopy, lod, decimateParameters);
@@ -171,13 +183,13 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             // public void setBasicValues(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount)
             decimateParameters.setBasicValues(10.0, 0.5, 1.0, 6.0, 1000000, 1, 1.8);
             if (d == 3) {
-                decimateParameters.setBasicValues(25.0, 1.0, 1.0, 15.0, 1000000, 1, 1.8);
+                decimateParameters.setBasicValues(15.0, 1.0, 1.0, 15.0, 1000000, 1, 1.8);
             } else if (d == 4) {
-                decimateParameters.setBasicValues(30.0, 1.2, 1.0, 15.0, 1000000, 1, 1.8);
+                decimateParameters.setBasicValues(20.0, 1.2, 1.0, 15.0, 1000000, 1, 1.8);
             } else if (d == 5) {
-                decimateParameters.setBasicValues(35.0, 1.5, 1.0, 15.0, 1000000, 1, 1.8);
+                decimateParameters.setBasicValues(25.0, 1.5, 1.0, 15.0, 1000000, 1, 1.8);
             } else if (d == 6) {
-                decimateParameters.setBasicValues(40.0, 2.0, 1.0, 15.0, 1000000, 1, 1.8);
+                decimateParameters.setBasicValues(30.0, 2.0, 1.0, 15.0, 1000000, 1, 1.8);
             }
 
             makeNetSurfacesWithBoxTextures(tileInfosCopy, lod, decimateParameters, pixelsForMeter);
@@ -259,7 +271,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
     private void setGeometryErrorToNodeAutomatic(Node node, int maxDepth) {
         int lod = maxDepth - node.getDepth();
-        double geometricError = (lod * 2.0 + 0.01);
+        double geometricError = (lod * 1.0 + 0.01);
         node.setGeometricError(geometricError);
         List<Node> children = node.getChildren();
         if (children != null) {

@@ -135,9 +135,15 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         this.bufferedImage = imageResizer.resizeImageGraphic2D(this.bufferedImage, width, height);
     }
 
-    // getBufferedImage
     public BufferedImage getBufferedImage() {
-        /*if (this.bufferedImage == null) {
+        if (this.bufferedImage == null) {
+            loadImage();
+        }
+        return this.bufferedImage;
+    }
+
+    public BufferedImage getBufferedImageWithCache() {
+        if (this.bufferedImage == null) {
             String keyPath = this.path;
             ImageCacheQueue imageCacheQueue = ImageCacheQueue.getInstance();
             boolean hasKey = imageCacheQueue.hasBufferedImage(keyPath);
@@ -150,9 +156,6 @@ public class GaiaTexture extends TextureStructure implements Serializable {
                 loadImage();
                 imageCacheQueue.putBufferedImage(keyPath, this.bufferedImage);
             }
-        }*/
-        if (this.bufferedImage == null) {
-            loadImage();
         }
         return this.bufferedImage;
     }
