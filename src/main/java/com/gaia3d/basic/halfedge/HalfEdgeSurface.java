@@ -1577,14 +1577,15 @@ public class HalfEdgeSurface implements Serializable {
                 log.error("HalfEdgeSurface.collapseHalfEdge() : outingEdgesOfVertex == null.");
                 continue;
             }
-            log.info("HalfEdgeSurface.collapseHalfEdge() : outingEdgesOfVertex.size() = " + outingEdgesOfVertex.size() + " iteration = " + i);
+            //log.info("HalfEdgeSurface.collapseHalfEdge() : outingEdgesOfVertex.size() = " + outingEdgesOfVertex.size() + " iteration = " + i);
 
             int count = 0;
             int outingEdgesOfVertexCount = outingEdgesOfVertex.size();
             //for (HalfEdge outingEdge : outingEdgesOfVertex) {
+            // do not use the iterator because the list is modified.
             for (int gg = 0; gg < outingEdgesOfVertexCount; gg++) {
                 HalfEdge outingEdge = outingEdgesOfVertex.get(gg);
-                log.info("HalfEdgeSurface.collapseHalfEdge() : outingEdge = " + count++);
+                //log.info("HalfEdgeSurface.collapseHalfEdge() : outingEdge = " + count++);
 
                 if(outingEdge == null)
                 {
@@ -1689,8 +1690,10 @@ public class HalfEdgeSurface implements Serializable {
 //            }
 
             List<HalfEdgeVertex> verticesA = faceA.getVertices(null);
+
+            // TODO
             double areaA = HalfEdgeUtils.calculateArea(verticesA.get(0), verticesA.get(1), verticesA.get(2));
-            if (areaA < 0.4) {
+            if (areaA < 0.05) {
                 // is a small triangle, so continue.***
                 continue;
             }
@@ -1713,7 +1716,7 @@ public class HalfEdgeSurface implements Serializable {
             }
 
             double areaB = HalfEdgeUtils.calculateArea(verticesB.get(0), verticesB.get(1), verticesB.get(2));
-            if (areaB < 0.4) {
+            if (areaB < 0.05) {
                 // is a small triangle, so continue.***
                 continue;
             }
@@ -3059,6 +3062,9 @@ public class HalfEdgeSurface implements Serializable {
         log.info("atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
         textureAtlas.createImage(maxWidth, maxHeight, imageType);
 
+        BufferedImage clampedBufferedImage = ImageUtils.clampBackGroundColor(textureAtlas.getBufferedImage(), new Color(255, 0, 255), 1, 35);
+        textureAtlas.setBufferedImage(clampedBufferedImage);
+
         // draw the images into textureAtlas.***
         Graphics2D g2d = textureAtlas.getBufferedImage().createGraphics();
         textureScissorDatasCount = textureScissorDatas.size();
@@ -3117,7 +3123,6 @@ public class HalfEdgeSurface implements Serializable {
         String textureAtlasPath = imageParentPath + File.separator + textureAtlasName;
 
         textureAtlas.setBufferedImage(ImageUtils.clampBackGroundColor(textureAtlas.getBufferedImage(), new Color(255, 0, 255), 1, 35));
-
         textureAtlas.saveImage(textureAtlasPath);
 
         // change the diffuseTexture path.***
