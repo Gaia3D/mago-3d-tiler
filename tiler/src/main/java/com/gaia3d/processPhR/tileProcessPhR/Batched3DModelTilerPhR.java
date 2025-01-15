@@ -717,6 +717,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             log.info("nodeCode : " + node.getNodeCode() + "currNodeIdx : " + i + "of : " + nodesCount);
             int maxScreenSize = 512;
             int maxDepthScreenSize = 256;
+
+            // TODO: TEST
+            maxScreenSize = 1024; // power of 2
+            maxDepthScreenSize = 150;
+
+
             List<HalfEdgeScene> resultHalfEdgeScenes = new ArrayList<>();
             tilerExtensionModule.makeNetSurfacesByPyramidDeformationRender(sceneInfos, bufferedImageType, resultHalfEdgeScenes, resultImages, nodeBBoxLC, nodeTMatrix, maxScreenSize, maxDepthScreenSize);
 

@@ -17,17 +17,17 @@ public class ImageResizer {
         // check if the width and height are within the bounds.
         if (width < MIN_TEXTURE_SIZE) {
             width = MIN_TEXTURE_SIZE;
-            log.info("width is less than {}", MIN_TEXTURE_SIZE);
+            log.debug("width is less than {}", MIN_TEXTURE_SIZE);
         } else if (width > MAX_TEXTURE_SIZE) {
             width = MAX_TEXTURE_SIZE;
-            log.info("width is greater than {}", MAX_TEXTURE_SIZE);
+            log.debug("width is greater than {}", MAX_TEXTURE_SIZE);
         }
         if (height < MIN_TEXTURE_SIZE) {
             height = MIN_TEXTURE_SIZE;
-            log.info("height is less than {}", MIN_TEXTURE_SIZE);
+            log.debug("height is less than {}", MIN_TEXTURE_SIZE);
         } else if (height > MAX_TEXTURE_SIZE) {
             height = MAX_TEXTURE_SIZE;
-            log.info("height is greater than {}", MAX_TEXTURE_SIZE);
+            log.debug("height is greater than {}", MAX_TEXTURE_SIZE);
         }
 
 

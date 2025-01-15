@@ -116,6 +116,19 @@ class RealisticReleaseTest {
         execute(args);
     }
 
+    @Disabled
+    @Test
+    void realistic07() {
+        String path = "R07-sejong-bridge-ifc";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-c", "5186",
+                "-pr",
+        };
+        execute(args);
+    }
+
     private void execute(String[] args) {
         Mago3DTilerMain.main(args);
     }
