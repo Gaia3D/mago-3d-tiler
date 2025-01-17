@@ -43,10 +43,8 @@ public class StringUtils {
     }
 
     public static String getFileNameFromPath(String path) {
-        Vector<String> resultSplittedStrings = new Vector<>();
-        String fileSeparator = File.separator + File.separator;
-        splitString(path, fileSeparator, resultSplittedStrings, true);
-        return resultSplittedStrings.lastElement();
+        File file = new File(path);
+        return file.getName();
     }
 
     public static String getRawFileName(String fileName) {
