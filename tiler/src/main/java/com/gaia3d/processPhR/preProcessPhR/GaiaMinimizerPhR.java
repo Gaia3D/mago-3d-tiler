@@ -26,7 +26,7 @@ public class GaiaMinimizerPhR implements PreProcess {
             boolean checkColor = false;
             boolean checkBatchId = false;
             double error = 1e-4;
-            log.info("[PR][Pre] Welding vertices in GaiaScene : {}", tileInfo.getTempPath());
+            log.info("[Pre][PhotoRealistic] Welding vertices in GaiaScene : {}", tileInfo.getTempPath());
             scene.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
             scene.deleteDegeneratedFaces();
 
@@ -38,7 +38,7 @@ public class GaiaMinimizerPhR implements PreProcess {
             tilerExtensionModule.renderPyramidDeformation(gaiaSceneList, resultScenes);*/
             // End test.-----------------------------------------------------------------
 
-            log.info("[PR][Pre] Minimize GaiaScene LOD 0 , Path : {}", tileInfo.getTempPath());
+            log.info("[Pre][PhotoRealistic] Minimize GaiaScene LOD 0 , Path : {}", tileInfo.getTempPath());
 
             GaiaSet tempSetLod0 = GaiaSet.fromGaiaScene(scene);
             Path tempPathLod0 = tempSetLod0.writeFile(tileInfo.getTempPath(), tileInfo.getSerial(), tempSetLod0.getAttribute());

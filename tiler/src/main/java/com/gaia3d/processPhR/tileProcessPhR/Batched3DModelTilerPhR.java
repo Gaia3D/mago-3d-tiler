@@ -129,6 +129,9 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         makeContentsForNodes(nodeTileInfoMap, lod);
         // End lod 0.---
 
+
+        int netSurfaceStartLod = 3;
+
         DecimateParameters decimateParameters = new DecimateParameters();
         for (int d = 1; d < desiredDepth; d++) {
             lod = d;
@@ -148,15 +151,15 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }*/
 
             if (d == 1) {
-                decimateParameters.setBasicValues(3.0, 0.4, 0.9, 32.0, 1000000, 1, 1.0);
+                decimateParameters.setBasicValues(5.0, 0.4, 0.9, 32.0, 1000000, 1, 1.0);
             } else if (d == 2) {
-                decimateParameters.setBasicValues(5.0, 0.4, 1.0, 32.0, 1000000, 2, 1.5);
+                decimateParameters.setBasicValues(10.0, 0.4, 1.0, 32.0, 1000000, 2, 1.5);
             } else if (d == 3) {
                 decimateParameters.setBasicValues(15.0, 0.6, 1.0, 32.0, 1000000, 2, 2.0);
             } else if (d == 4) {
                 decimateParameters.setBasicValues(20.0, 0.8, 1.0, 32.0, 1000000, 2, 2.5);
             } else {
-                decimateParameters.setBasicValues(5.0, 0.2, 0.9, 32.0, 1000000, 2, 1.0);
+                decimateParameters.setBasicValues(25.0, 0.2, 0.9, 32.0, 1000000, 2, 1.0);
             }
 
             decimateScenes(tileInfosCopy, lod, decimateParameters);
@@ -166,13 +169,13 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
             makeContentsForNodes(nodeTileInfoMap, lod);
 
-            if (d >= 2) {
+            if (d >= (netSurfaceStartLod - 1)) {
                 break;
             }
         }
 
         // net surfaces with boxTextures.***
-        for (int d = 3; d < desiredDepth; d++) {
+        for (int d = netSurfaceStartLod; d < desiredDepth; d++) {
             lod = d;
             currDepth = desiredDepth - lod;
             double boxSizeForCurrDepth = desiredDistanceBetweenLat / Math.pow(2, currDepth);
@@ -215,7 +218,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         // now, delete nodes that have no contents.***
         root.deleteNoContentNodes();
 
-        setGeometryErrorToNodeAutomatic(root, desiredDepth);
+        //setGeometryErrorToNodeAutomatic(root, desiredDepth);
+        setGeometryErrorToNodeManual(root, desiredDepth);
 
         root.setGeometricError(1000.0);
         Asset asset = createAsset();
@@ -269,9 +273,48 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         tileInfos.addAll(finalTileInfosCopy);
     }
 
+    private void setGeometryErrorToNodeManual(Node node, int maxDepth) {
+        int lod = maxDepth - node.getDepth();
+
+        double geometricError;
+        if (lod == 0) {
+            geometricError = 0.01;
+        } else if (lod == 1) {
+            geometricError = 1.0;
+        } else if (lod == 2) {
+            geometricError = 2.0;
+        } else if (lod == 3) {
+            geometricError = 4.0;
+        } else if (lod == 4) {
+            geometricError = 8.0;
+        } else if (lod == 5) {
+            geometricError = 16.0;
+        } else if (lod == 6) {
+            geometricError = 32.0;
+        } else if (lod == 7) {
+            geometricError = 64.0;
+        } else if (lod > 7) {
+            geometricError = 128.0;
+        } else {
+            // less than 0
+            geometricError = 0.01;
+        }
+
+        //double geometricError = (lod * factor + 0.01);
+        node.setGeometricError(geometricError);
+        List<Node> children = node.getChildren();
+        if (children != null) {
+            for (Node child : children) {
+                setGeometryErrorToNodeManual(child, maxDepth);
+            }
+        }
+    }
+
+    // automatic calculate geometric error
     private void setGeometryErrorToNodeAutomatic(Node node, int maxDepth) {
         int lod = maxDepth - node.getDepth();
-        double geometricError = (lod * 1.0 + 0.01);
+        double factor = 1.0;
+        double geometricError = (lod * factor + 0.01);
         node.setGeometricError(geometricError);
         List<Node> children = node.getChildren();
         if (children != null) {
@@ -308,7 +351,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 throw new RuntimeException(e);
             }
             GaiaScene scene = new GaiaScene(gaiaSet);
-
 
             scene.setOriginalPath(tileInfo.getScenePath());
             scene.makeTriangleFaces();
@@ -502,7 +544,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             GaiaBoundingBox nodeCartographicBBox = node.calculateCartographicBoundingBox();
 
             log.info("nodeCode : " + node.getNodeCode() + "currNodeIdx : " + i + "of : " + nodesCount);
-            int maxScreenSize = 512;
+            int maxScreenSize = 1024;
             int maxDepthScreenSize = 180;
             tilerExtensionModule.getColorAndDepthRender(sceneInfos, bufferedImageType, resultImages, nodeBBoxLC, nodeTMatrix, maxScreenSize, maxDepthScreenSize);
 
@@ -543,6 +585,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             String imagePath = "netScene_" + nodeDepth + "_" + i + "_color" + "." + imageExtension;
             try {
                 File file = new File(netSetImagesFolderPathString + File.separator + imagePath);
+                log.info("[Write Image] : {}", file.getAbsoluteFile());
                 ImageIO.write(bufferedImageColor, "JPG", file);
             } catch (Exception e) {
                 log.error("error: ", e);
@@ -646,6 +689,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             String outputFolderPath = globalOptions.getOutputPath();
             try {
                 File outputFile = new File(outputFolderPath, sceneRawName + "." + imageExtension);
+                log.info("[Write Image] : {}", outputFile.getAbsoluteFile());
                 ImageIO.write(bufferedImageColor, "JPG", outputFile);
             } catch (Exception e) {
                 log.error("error : ", e);
@@ -655,6 +699,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 sceneName = "mosaicRenderTest_" + i + "_depth";
                 imageExtension = "png";
                 File outputFile = new File(outputFolderPath, sceneName + "." + imageExtension);
+                log.info("[Write Image] : {}", outputFile.getAbsoluteFile());
                 ImageIO.write(bufferedImageDepth, "PNG", outputFile);
             } catch (Exception e) {
                 log.error("error : ", e);
@@ -766,6 +811,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             String imagePath = "netScene_" + nodeDepth + "_" + i + "_color" + "." + imageExtension;
             try {
                 File file = new File(netSetImagesFolderPathString + File.separator + imagePath);
+                log.info("[Write Image] : {}", file.getAbsoluteFile());
                 ImageIO.write(bufferedImageColor, "JPG", file);
             } catch (Exception e) {
                 log.error("error : ", e);
@@ -868,6 +914,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             String outputFolderPath = globalOptions.getOutputPath();
             try {
                 File outputFile = new File(outputFolderPath, sceneName + "." + imageExtension);
+                log.info("[Write Image] : {}", outputFile.getAbsoluteFile());
                 ImageIO.write(bufferedImageColor, "JPG", outputFile);
             } catch (Exception e) {
                 log.error("error : ", e);
@@ -1217,7 +1264,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
     private boolean cutRectangleCakeByAltitude(List<TileInfo> tileInfos, int lod, double altitude) throws FileNotFoundException {
         boolean someSceneCutted = false;
-        log.info("[cut][{}] #Cutting by altitude : {}", lod, altitude);
+        log.info("[Tile][PhotoRealistic][cut][{}] #Cutting by altitude : {}", lod, altitude);
         int tileInfosCount = tileInfos.size();
         PlaneType planeType = PlaneType.XY;
         String outputPathString = globalOptions.getOutputPath();
@@ -1324,7 +1371,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
     private boolean cutRectangleCakeByLongitudeDeg(List<TileInfo> tileInfos, int lod, double lonDeg) throws FileNotFoundException {
         boolean someSceneCutted = false;
-        log.info("[PR][cut][{}] #Cutting by longitude : {}", lod, lonDeg);
+        log.info("[Tile][PhotoRealistic][cut][{}] #Cutting by longitude : {}", lod, lonDeg);
         int tileInfosCount = tileInfos.size();
         PlaneType planeType = PlaneType.YZ;
         String outputPathString = globalOptions.getOutputPath();
@@ -1431,7 +1478,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
     private boolean cutRectangleCakeByLatitudeDeg(List<TileInfo> tileInfos, int lod, double latDeg) throws FileNotFoundException {
         boolean someSceneCutted = false;
-        log.info("[PR][{}] #Cutting by latitude : {}", lod, latDeg);
+        log.info("[Tile][PhotoRealistic][cut][{}] #Cutting by latitude : {}", lod, latDeg);
         int tileInfosCount = tileInfos.size();
         PlaneType planeType = PlaneType.XZ;
         String outputPathString = globalOptions.getOutputPath();

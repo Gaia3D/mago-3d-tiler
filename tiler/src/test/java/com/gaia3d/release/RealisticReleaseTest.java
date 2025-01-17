@@ -22,7 +22,7 @@ class RealisticReleaseTest {
                 "-log", getLogPath(path).getAbsolutePath(),
                 "-pr",
                 "-c", "5187",
-                "-glb",
+                //"-glb",
                 //"-debug",
         };
         execute(args);
@@ -100,7 +100,6 @@ class RealisticReleaseTest {
         execute(args);
     }
 
-    @Disabled
     @Test
     void realistic06() {
         String path = "R06-khonkhan-part-obj";

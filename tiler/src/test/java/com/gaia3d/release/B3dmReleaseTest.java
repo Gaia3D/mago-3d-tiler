@@ -70,6 +70,7 @@ class B3dmReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
+                "-terrain", getInputPath(path).getAbsolutePath() + "/seoul.tif",
                 "-c", "5186"
         };
         execute(args);
@@ -81,6 +82,7 @@ class B3dmReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
+                "-terrain", getInputPath(path).getAbsolutePath() + "/seoul.tif",
                 "-c", "5186"
         };
         execute(args);

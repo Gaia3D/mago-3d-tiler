@@ -430,8 +430,8 @@ public class GaiaTextureCoordinator {
             int imageWidth = this.atlasImage.getWidth();
             int imageHeight = this.atlasImage.getHeight();
 
-            int lod0size = 2048;
-            int lod1size = 2048;
+            int lod0size = 1024;
+            int lod1size = 1024;
             int lod2size = 1024;
             int overSize = 1024;
 
@@ -492,8 +492,8 @@ public class GaiaTextureCoordinator {
 
     private void writeBatchedImage(String imageName, String imageExtension) {
         String outputPathString = globalOptions.getOutputPath();
-        //File file = new File(globalOptions.getOutputPath(), "temp" + File.separator + "atlas");
-        File file = new File(globalOptions.getOutputPath(), "atlas");
+        //File file = new File(outputPathString, "temp" + File.separator + "atlas");
+        File file = new File(outputPathString, "atlas");
         if (!file.exists()) {
             if (!file.mkdirs()) {
                 log.error("Failed to create directory");
@@ -509,7 +509,9 @@ public class GaiaTextureCoordinator {
         }
         if (this.atlasImage != null) {
             try {
-                ImageIO.write(this.atlasImage, imageExtension, output.toFile());
+                File outputImage = output.toFile();
+                log.info("[Write Image IO] : {}", outputImage.getAbsolutePath());
+                ImageIO.write(this.atlasImage, imageExtension, outputImage);
             } catch (IOException e) {
                 log.error(e.getMessage());
             }

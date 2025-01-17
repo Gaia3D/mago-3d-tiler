@@ -42,6 +42,7 @@ public class ImageCacheQueue {
         if (image != null) {
             // Return a deep copy of the image to prevent the original image from being modified.
             return deepCopy(image);
+            //return image;
         } else {
             return null;
         }
