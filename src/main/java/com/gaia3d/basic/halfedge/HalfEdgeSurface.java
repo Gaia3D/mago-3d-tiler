@@ -1693,7 +1693,7 @@ public class HalfEdgeSurface implements Serializable {
 
             // TODO
             double areaA = HalfEdgeUtils.calculateArea(verticesA.get(0), verticesA.get(1), verticesA.get(2));
-            if (areaA < 0.05) {
+            if (areaA < 0.01) {
                 // is a small triangle, so continue.***
                 continue;
             }
@@ -1716,7 +1716,7 @@ public class HalfEdgeSurface implements Serializable {
             }
 
             double areaB = HalfEdgeUtils.calculateArea(verticesB.get(0), verticesB.get(1), verticesB.get(2));
-            if (areaB < 0.05) {
+            if (areaB < 0.01) {
                 // is a small triangle, so continue.***
                 continue;
             }
@@ -1852,7 +1852,7 @@ public class HalfEdgeSurface implements Serializable {
 
                 hedgesCutCount++;
                 if (hedgesCutCount % 200 == 0) {
-                    log.info("[cutByPlaneXY] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount + " , currIdx = " + i);
+                    log.info("[Tile][PhotoRealistic][cut][cutByPlaneXY] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount + " , currIdx = " + i);
                 }
             }
         }
@@ -1876,7 +1876,7 @@ public class HalfEdgeSurface implements Serializable {
 
                 hedgesCutCount++;
                 if (hedgesCutCount % 200 == 0) {
-                    log.info("[cutByPlaneXZ] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount + " , currIdx = " + i);
+                    log.info("[Tile][PhotoRealistic][cut][cutByPlaneXZ] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount + " , currIdx = " + i);
                 }
             }
         }
@@ -1901,7 +1901,7 @@ public class HalfEdgeSurface implements Serializable {
                 hedgesCount = halfEdges.size();
                 hedgesCutCount++;
                 if (hedgesCutCount % 200 == 0) {
-                    log.info("[cutByPlaneYZ] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount + " , currIdx = " + i);
+                    log.info("[Tile][PhotoRealistic][cut][cutByPlaneYZ] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount + " , currIdx = " + i);
                 }
             }
         }
@@ -3059,11 +3059,10 @@ public class HalfEdgeSurface implements Serializable {
         int imageType = existPngTextures ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
 
         GaiaTexture textureAtlas = new GaiaTexture();
-        log.info("atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
+        log.info("[Tile][PhotoRealistic][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
         textureAtlas.createImage(maxWidth, maxHeight, imageType);
-
-        BufferedImage clampedBufferedImage = ImageUtils.clampBackGroundColor(textureAtlas.getBufferedImage(), new Color(255, 0, 255), 1, 35);
-        textureAtlas.setBufferedImage(clampedBufferedImage);
+        //BufferedImage clampedBufferedImage = ImageUtils.clampBackGroundColor(textureAtlas.getBufferedImage(), new Color(255, 0, 255), 1, 15);
+        //textureAtlas.setBufferedImage(clampedBufferedImage);
 
         // draw the images into textureAtlas.***
         Graphics2D g2d = textureAtlas.getBufferedImage().createGraphics();
@@ -3121,8 +3120,7 @@ public class HalfEdgeSurface implements Serializable {
 
         String textureAtlasName = textureRawName.substring(0, textureRawName.lastIndexOf(".")) + "_atlas" + textureImageExtension;
         String textureAtlasPath = imageParentPath + File.separator + textureAtlasName;
-
-        textureAtlas.setBufferedImage(ImageUtils.clampBackGroundColor(textureAtlas.getBufferedImage(), new Color(255, 0, 255), 1, 35));
+        textureAtlas.setBufferedImage(ImageUtils.clampBackGroundColor(textureAtlas.getBufferedImage(), new Color(255, 0, 255), 1, 30));
         textureAtlas.saveImage(textureAtlasPath);
 
         // change the diffuseTexture path.***
@@ -3162,7 +3160,7 @@ public class HalfEdgeSurface implements Serializable {
         Vector2d bestPosition = new Vector2d();
         List<GaiaTextureScissorData> currProcessScissorDates = new ArrayList<>();
         int textureScissorDatasCount = textureScissorDates.size();
-        log.info("HalfEdgeSurface.doTextureAtlasProcess() : textureScissorDatasCount = " + textureScissorDatasCount);
+        log.info("[Tile][PhotoRealistic][Atlas] doTextureAtlasProcess() : textureScissorDatasCount = " + textureScissorDatasCount);
 
         for (int i = 0; i < textureScissorDatasCount; i++) {
             GaiaTextureScissorData textureScissorData = textureScissorDates.get(i);
