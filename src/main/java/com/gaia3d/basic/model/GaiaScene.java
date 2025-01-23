@@ -114,6 +114,22 @@ public class GaiaScene extends SceneStructure implements Serializable {
         }
     }
 
+    public void unWeldVertices() {
+        for (GaiaNode node : this.nodes) {
+            node.unWeldVertices();
+        }
+    }
+
+    public List<GaiaFace> extractGaiaFaces(List<GaiaFace> resultFaces) {
+        if(resultFaces == null) {
+            resultFaces = new ArrayList<>();
+        }
+        for (GaiaNode node : this.nodes) {
+            node.extractGaiaFaces(resultFaces);
+        }
+        return resultFaces;
+    }
+
     public void joinAllSurfaces() {
         GaiaNode rootNode = this.nodes.get(0);
 

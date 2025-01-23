@@ -42,6 +42,72 @@ public class HalfEdgeUtils {
     }
 
 
+
+    public static GaiaScene gaiaSceneFromHalfEdgeFaces(List<HalfEdgeFace> halfEdgeFaces, Map<GaiaFace, HalfEdgeFace> mapGaiaFaceToHalfEdgeFace) {
+        GaiaScene gaiaScene = new GaiaScene();
+        GaiaNode gaiaRootNode = new GaiaNode();
+        gaiaScene.getNodes().add(gaiaRootNode);
+        GaiaNode gaiaNode = new GaiaNode();
+        gaiaRootNode.getChildren().add(gaiaNode);
+
+        GaiaMesh gaiaMesh = new GaiaMesh();
+        gaiaNode.getMeshes().add(gaiaMesh);
+        GaiaPrimitive gaiaPrimitive = new GaiaPrimitive();
+        gaiaMesh.getPrimitives().add(gaiaPrimitive);
+        GaiaSurface gaiaSurface = new GaiaSurface();
+        gaiaPrimitive.getSurfaces().add(gaiaSurface);
+
+        // make halfEdgeVertices.***
+        List<HalfEdgeVertex> halfEdgeVertices = new ArrayList<>();
+        Map<HalfEdgeVertex, HalfEdgeVertex> mapUniqueHalfEdgeVertex = new HashMap<>();
+        for (HalfEdgeFace halfEdgeFace : halfEdgeFaces) {
+            halfEdgeVertices.clear();
+            halfEdgeFace.getVertices(halfEdgeVertices);
+
+            for (HalfEdgeVertex halfEdgeVertex : halfEdgeVertices) {
+                mapUniqueHalfEdgeVertex.put(halfEdgeVertex, halfEdgeVertex);
+            }
+        }
+
+        halfEdgeVertices.clear();
+        halfEdgeVertices.addAll(mapUniqueHalfEdgeVertex.keySet());
+
+        Map<HalfEdgeVertex, Integer> mapHalfEdgeVertexToIndex = new HashMap<>();
+        for (int i = 0; i < halfEdgeVertices.size(); i++) {
+            HalfEdgeVertex halfEdgeVertex = halfEdgeVertices.get(i);
+            mapHalfEdgeVertexToIndex.put(halfEdgeVertex, i);
+        }
+
+        // copy vertices.***
+        List<GaiaVertex> gaiaVertices = new ArrayList<>();
+        for (HalfEdgeVertex halfEdgeVertex : halfEdgeVertices) {
+            GaiaVertex gaiaVertex = halfEdgeVertex.toGaiaVertex();
+            gaiaVertices.add(gaiaVertex);
+        }
+
+        // make faces.***
+        for (HalfEdgeFace halfEdgeFace : halfEdgeFaces) {
+            GaiaFace gaiaFace = new GaiaFace();
+            List<HalfEdgeVertex> faceVertices = halfEdgeFace.getVertices(null);
+            int verticesCount = faceVertices.size();
+            int[] indices = new int[verticesCount];
+            for (int i = 0; i < verticesCount; i++) {
+                HalfEdgeVertex halfEdgeVertex = faceVertices.get(i);
+                int index = mapHalfEdgeVertexToIndex.get(halfEdgeVertex);
+                indices[i] = index;
+            }
+            gaiaFace.setIndices(indices);
+            gaiaFace.setClassifyId(halfEdgeFace.getClassifyId());
+            gaiaSurface.getFaces().add(gaiaFace);
+
+            mapGaiaFaceToHalfEdgeFace.put(gaiaFace, halfEdgeFace);
+        }
+
+        gaiaPrimitive.setVertices(gaiaVertices);
+
+        return gaiaScene;
+    }
+
     public static GaiaNode gaiaNodeFromHalfEdgeNode(HalfEdgeNode halfEdgeNode) {
         GaiaNode gaiaNode = new GaiaNode();
 
@@ -1092,6 +1158,21 @@ public class HalfEdgeUtils {
             faces.add(face);
         }
         return mapPlaneTypeFacesList;
+    }
+
+    public static Map<CameraDirectionType, List<HalfEdgeFace>> makeMapCameraDirectionTypeFacesList(List<HalfEdgeFace> facesList) {
+        Map<CameraDirectionType, List<HalfEdgeFace>>  mapCameraDirectionFacesList = new HashMap<>();
+        List<HalfEdgeFace> faces;
+
+        int facesCount = facesList.size();
+        for (int i = 0; i < facesCount; i++) {
+            HalfEdgeFace face = facesList.get(i);
+            CameraDirectionType cameraDirectionType = face.getCameraDirectionType();
+            faces = mapCameraDirectionFacesList.computeIfAbsent(cameraDirectionType, k -> new ArrayList<>());
+            faces.add(face);
+
+        }
+        return mapCameraDirectionFacesList;
     }
 
     public static GaiaBoundingBox getBoundingBoxOfFaces(List<HalfEdgeFace> faces) {

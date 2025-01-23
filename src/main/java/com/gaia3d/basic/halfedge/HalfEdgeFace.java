@@ -30,6 +30,7 @@ public class HalfEdgeFace implements Serializable {
     // auxiliary variables.***
     private int classifyId = -1; // use to classify the face for some purpose.***
     private PlaneType bestPlaneToProject; // use to classify the face for some purpose.***
+    private CameraDirectionType cameraDirectionType; // use to classify the face for some purpose.***
 
     public void copyFrom(HalfEdgeFace face) {
         if (face == null) {
@@ -45,6 +46,7 @@ public class HalfEdgeFace implements Serializable {
         this.classifyId = face.classifyId;
         this.halfEdgeId = face.halfEdgeId;
         this.bestPlaneToProject = face.bestPlaneToProject;
+        this.cameraDirectionType = face.cameraDirectionType;
     }
 
     public double calculateAspectRatioAsTriangle() {

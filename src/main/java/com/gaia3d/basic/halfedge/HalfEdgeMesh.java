@@ -192,6 +192,12 @@ public class HalfEdgeMesh implements Serializable {
         }
     }
 
+    public void splitFacesByBestObliqueCameraDirectionToProject() {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.splitFacesByBestObliqueCameraDirectionToProject();
+        }
+    }
+
     public void splitFacesByBestPlanesToProject() {
         for (HalfEdgePrimitive primitive : primitives) {
             primitive.splitFacesByBestPlanesToProject();

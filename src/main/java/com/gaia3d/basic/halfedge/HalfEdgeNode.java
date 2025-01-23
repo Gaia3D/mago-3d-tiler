@@ -331,6 +331,15 @@ public class HalfEdgeNode implements Serializable {
         }
     }
 
+    public void splitFacesByBestObliqueCameraDirectionToProject() {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.splitFacesByBestObliqueCameraDirectionToProject();
+        }
+        for (HalfEdgeNode child : children) {
+            child.splitFacesByBestObliqueCameraDirectionToProject();
+        }
+    }
+
     public void splitFacesByBestPlanesToProject() {
         for (HalfEdgeMesh mesh : meshes) {
             mesh.splitFacesByBestPlanesToProject();
