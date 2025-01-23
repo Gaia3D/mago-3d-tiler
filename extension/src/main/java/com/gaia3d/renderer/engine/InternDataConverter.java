@@ -8,6 +8,7 @@ import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.renderer.renderable.*;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryStack;
 
@@ -205,8 +206,13 @@ public class InternDataConverter {
                 // TODO :
             } else if (glType == GL20.GL_BYTE || glType == GL20.GL_UNSIGNED_BYTE) {
                 byte[] colors = buffer.getBytes();
+                ByteBuffer byteBuffer = BufferUtils.createByteBuffer(colors.length);
+                byteBuffer.put(colors);
+                byteBuffer.flip();
+
                 GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId[0]);
-                GL20.glBufferData(GL20.GL_ARRAY_BUFFER, ByteBuffer.wrap(colors), GL20.GL_STATIC_DRAW);
+                //GL20.glBufferData(GL20.GL_ARRAY_BUFFER, ByteBuffer.wrap(colors), GL20.GL_STATIC_DRAW);
+                GL20.glBufferData(GL20.GL_ARRAY_BUFFER, byteBuffer, GL20.GL_STATIC_DRAW);
             }
 
             renderableBuffer.setVboId(vboId[0]);

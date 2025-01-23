@@ -179,6 +179,78 @@ public class MainRenderer implements IAppLogic {
         }
     }
 
+    public void decimateByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters) {
+        // Must init gl.***
+        try{
+            engine.init();
+        } catch (Exception e) {
+            log.error("Error initializing the engine: " ,e);
+        }
+
+        GaiaScenesContainer gaiaScenesContainer = engine.getGaiaScenesContainer();
+        List<HalfEdgeScene> halfEdgeScenes = new ArrayList<>();
+        int scenesCount = scenes.size();
+        List<RenderableGaiaScene> renderableGaiaScenes = new ArrayList<>();
+
+        boolean checkTexCoord = false;
+        boolean checkNormal = false;
+        boolean checkColor = false;
+        boolean checkBatchId = false;
+        double error = 1e-4;
+
+        log.info("MainRenderer : Decimating the scene...");
+
+        for(int i = 0; i < scenesCount; i++)
+        {
+            GaiaScene gaiaScene = scenes.get(i);
+
+            // copy the gaiaScene.***
+            GaiaScene gaiaSceneCopy = gaiaScene.clone();
+
+            // 1rst, make the renderableGaiaScene.***
+            RenderableGaiaScene renderableScene = internDataConverter.getRenderableGaiaScene(gaiaSceneCopy);
+            renderableGaiaScenes.add(renderableScene);
+
+            // 2nd, make the halfEdgeScene.***
+            gaiaSceneCopy.joinAllSurfaces();
+            gaiaSceneCopy.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
+            gaiaSceneCopy.deleteDegeneratedFaces();
+
+            // Must delete materials because we joined all surfaces into one surface.***
+            int materialsCount = gaiaSceneCopy.getMaterials().size();
+            for (int j = 0; j < materialsCount; j++) {
+                GaiaMaterial material = gaiaSceneCopy.getMaterials().get(j);
+                material.clear();
+            }
+            gaiaSceneCopy.getMaterials().clear();
+
+            HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaSceneCopy);
+            halfEdgeScenes.add(halfEdgeScene);
+        }
+
+        engine.setHalfEdgeScenes(halfEdgeScenes);
+
+        gaiaScenesContainer.setRenderableGaiaScenes(renderableGaiaScenes);
+        engine.setGaiaScenesContainer(gaiaScenesContainer);
+        engine.setRenderAxis(true);
+
+        Camera camera = engine.getCamera();
+        camera.setPosition(new Vector3d(0, 0, 200));
+
+        FboManager fboManager = engine.getFboManager();
+        Window window = engine.getWindow();
+        int fboWidthColor = window.getWidth();
+        int fboHeightColor = window.getHeight();
+        Fbo colorFbo = fboManager.getOrCreateFbo("colorRender", fboWidthColor, fboHeightColor);
+
+        log.info("Rendering the scene...");
+        try{
+            engine.decimateByObliqueCamera(halfEdgeScenes, resultHalfEdgeScenes, decimateParameters);
+        } catch (Exception e) {
+            log.error("Error initializing the engine: ", e);
+        }
+    }
+
     public void decimate(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters) {
 
         // Must init gl.***
@@ -1105,4 +1177,6 @@ public class MainRenderer implements IAppLogic {
         restoredGaiaScene.clear();
 
     }
+
+
 }

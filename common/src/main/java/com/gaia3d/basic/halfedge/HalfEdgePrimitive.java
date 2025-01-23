@@ -248,6 +248,12 @@ public class HalfEdgePrimitive implements Serializable {
         }
     }
 
+    public void splitFacesByBestObliqueCameraDirectionToProject() {
+        for (HalfEdgeSurface surface : surfaces) {
+            surface.splitFacesByBestObliqueCameraDirectionToProject();
+        }
+    }
+
     public void splitFacesByBestPlanesToProject() {
         for (HalfEdgeSurface surface : surfaces) {
             surface.splitFacesByBestPlanesToProject();

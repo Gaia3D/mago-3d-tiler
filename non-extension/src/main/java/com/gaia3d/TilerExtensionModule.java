@@ -53,6 +53,10 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
+    public void decimateByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters){
+    }
+
+    @Override
     public void renderPyramidDeformation(List<GaiaScene> scenes, List<GaiaScene> resultScenes){
     }
 

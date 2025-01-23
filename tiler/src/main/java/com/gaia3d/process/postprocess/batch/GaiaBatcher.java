@@ -38,6 +38,10 @@ public class GaiaBatcher {
             if (visitedMap.containsKey(dataSet)) {
                 continue;
             }
+            int matId = dataSet.getMaterialId();
+            if(matId < 0 || matId >= batchedMaterials.size()) {
+                int hola = 0;
+            }
             GaiaMaterial material = batchedMaterials.get(dataSet.getMaterialId());
             for (int  j= i + 1; j < datasetsCount; j++) {
                 GaiaBufferDataSet dataSet2 = dataSets.get(j);

@@ -258,11 +258,22 @@ public class GaiaMesh extends MeshStructure implements Serializable {
             primitive.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
             primitive.deleteNoUsedVertices();
         }
-
     }
 
-    public void scissorTextures(List<GaiaMaterial> materials) {
+    public void unWeldVertices() {
+        for (GaiaPrimitive primitive : primitives) {
+            primitive.unWeldVertices();
+        }
+    }
 
+    public List<GaiaFace> extractGaiaFaces(List<GaiaFace> resultFaces) {
+        if (resultFaces == null) {
+            resultFaces = new ArrayList<>();
+        }
+        for (GaiaPrimitive primitive : primitives) {
+            primitive.extractGaiaFaces(resultFaces);
+        }
+        return resultFaces;
     }
 
     public void deleteObjects() {

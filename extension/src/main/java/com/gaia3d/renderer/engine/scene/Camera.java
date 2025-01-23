@@ -176,6 +176,16 @@ public class Camera {
         this.dirty = true;
     }
 
+    public Vector3d calculateUpVector(Vector3d direction) {
+        Vector3d zAxis = new Vector3d(0, 0, 1);
+        Vector3d right = new Vector3d(direction);
+        right.cross(zAxis);
+        right.normalize();
+        Vector3d up = new Vector3d(right);
+        up.cross(direction);
+        up.normalize();
+        return up;
+    }
 
     private void calcRight() {
         Vector3d direction = new Vector3d(this.direction);

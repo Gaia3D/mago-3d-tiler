@@ -91,6 +91,15 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
+    public void decimateByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters)
+    {
+        if(renderer == null)
+            renderer = new MainRenderer();
+        renderer.decimateByObliqueCamera(scenes, resultHalfEdgeScenes, decimateParameters);
+        deleteObjects();
+    }
+
+    @Override
     public void makeNetSurfacesByPyramidDeformationRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<HalfEdgeScene> resultHalfEdgeScenes, List<BufferedImage> resultImages,
                                                           GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize, int maxDepthScreenSize)
     {

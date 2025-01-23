@@ -4,6 +4,8 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.geometry.octree.GaiaFaceData;
 import com.gaia3d.basic.geometry.octree.GaiaOctree;
+import com.gaia3d.basic.halfedge.CameraDirectionType;
+import com.gaia3d.basic.halfedge.HalfEdgeFace;
 import com.gaia3d.basic.halfedge.PlaneType;
 import com.gaia3d.basic.model.*;
 import org.joml.Vector2d;
@@ -941,6 +943,8 @@ public class GeometryUtils {
 
         resultNormal.normalize();
     }
+
+
 
     public static PlaneType getBestPlaneToProject(Vector3d normal) {
 

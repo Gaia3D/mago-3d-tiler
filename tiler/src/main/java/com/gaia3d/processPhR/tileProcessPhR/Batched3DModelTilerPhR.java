@@ -120,14 +120,14 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         int currDepth = desiredDepth - lod;
         Map<Node, List<TileInfo>> nodeTileInfoMap = new HashMap<>();
 
-        // multi-threading.***
-        multiThreadCuttingAndScissorProcess(tileInfosCopy, lod, root, desiredDepth);
-
-        // distribute contents to node in the correspondent depth.***
-        // After process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes.***
-        distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
-        makeContentsForNodes(nodeTileInfoMap, lod);
-        // End lod 0.---
+//        // multi-threading.***
+//        multiThreadCuttingAndScissorProcess(tileInfosCopy, lod, root, desiredDepth);
+//
+//        // distribute contents to node in the correspondent depth.***
+//        // After process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes.***
+//        distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
+//        makeContentsForNodes(nodeTileInfoMap, lod);
+//        // End lod 0.---
 
         DecimateParameters decimateParameters = new DecimateParameters();
         for (int d = 1; d < desiredDepth; d++) {
@@ -386,7 +386,78 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             gaiaSceneList.clear();
             resultDecimatedScenes.clear();
             gaiaSceneList.add(scene);
-            tilerExtensionModule.decimate(gaiaSceneList, resultDecimatedScenes, decimateParameters);
+            //tilerExtensionModule.decimate(gaiaSceneList, resultDecimatedScenes, decimateParameters); // old.*** old.*** old.*** old.*** old.*** old.*** old.*** old.*** old.*** old.*** old.***
+            tilerExtensionModule.decimateByObliqueCamera(gaiaSceneList, resultDecimatedScenes, decimateParameters);
+
+            if (resultDecimatedScenes.isEmpty()) {
+                log.error("Error : resultDecimatedScenes is empty." + tempPath);
+                continue;
+            }
+
+            HalfEdgeScene halfEdgeSceneLod = resultDecimatedScenes.get(0);
+
+            // Save the textures in a temp folder.***
+            List<GaiaMaterial> materials = halfEdgeSceneLod.getMaterials();
+            for (GaiaMaterial material : materials) {
+                List<GaiaTexture> textures = material.getTextures().get(TextureType.DIFFUSE);
+                for (GaiaTexture texture : textures) {
+                    // change the texture name.***
+                    String texturePath = texture.getPath();
+                    String rawTexturePath = texturePath.substring(0, texturePath.lastIndexOf("."));
+                    String extension = texturePath.substring(texturePath.lastIndexOf("."));
+                    String newTexturePath = rawTexturePath + "_" + lod + "." + extension;
+                    texture.setPath(newTexturePath);
+                    texture.setParentPath(tempFolder.toString());
+                    texture.saveImage(texture.getFullPath());
+                }
+            }
+
+            GaiaScene sceneLod1 = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneLod);
+
+            GaiaSet tempSetLod1 = GaiaSet.fromGaiaScene(sceneLod1);
+            halfEdgeSceneLod.deleteObjects();
+
+            String aux = "lod" + lod;
+            Path tempFolderLod = tempFolder.resolve(aux);
+            Path currTempPathLod = tempSetLod1.writeFile(tempFolderLod, tileInfo.getSerial(), tempSetLod1.getAttribute());
+            tileInfo.setTempPath(currTempPathLod);
+            //tempPathLod.add(currTempPathLod);
+        }
+    }
+
+    public void decimateScenesByObliqueCamera(List<TileInfo> tileInfos, int lod, DecimateParameters decimateParameters) {
+        log.info("Decimating scenes for lod : " + lod);
+        TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
+        List<GaiaScene> gaiaSceneList = new ArrayList<>();
+        List<HalfEdgeScene> resultDecimatedScenes = new ArrayList<>();
+
+        int tileInfosCount = tileInfos.size();
+        for (int i = 0; i < tileInfosCount; i++) {
+            log.info("Decimating scene : " + i + " of " + tileInfosCount);
+            TileInfo tileInfo = tileInfos.get(i);
+            Path tempPath = tileInfo.getTempPath();
+            Path tempFolder = tempPath.getParent();
+
+            // load the file.***
+            GaiaSet gaiaSet;
+            try {
+                gaiaSet = GaiaSet.readFile(tempPath);
+                if (gaiaSet == null) {
+                    log.error("Error : gaiaSet is null. pth : " + tempPath);
+                    continue;
+                }
+            } catch (IOException e) {
+                log.error("Error : ", e);
+                throw new RuntimeException(e);
+            }
+            GaiaScene scene = new GaiaScene(gaiaSet);
+            scene.setOriginalPath(tileInfo.getScenePath());
+            scene.makeTriangleFaces();
+
+            gaiaSceneList.clear();
+            resultDecimatedScenes.clear();
+            gaiaSceneList.add(scene);
+            tilerExtensionModule.decimateByObliqueCamera(gaiaSceneList, resultDecimatedScenes, decimateParameters);
 
             if (resultDecimatedScenes.isEmpty()) {
                 log.error("Error : resultDecimatedScenes is empty." + tempPath);

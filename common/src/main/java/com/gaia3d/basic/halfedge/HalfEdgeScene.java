@@ -230,6 +230,12 @@ public class HalfEdgeScene implements Serializable {
         }
     }
 
+    public void splitFacesByBestObliqueCameraDirectionToProject() {
+        for (HalfEdgeNode node : nodes) {
+            node.splitFacesByBestObliqueCameraDirectionToProject();
+        }
+    }
+
     public void splitFacesByBestPlanesToProject() {
         for (HalfEdgeNode node : nodes) {
             node.splitFacesByBestPlanesToProject();

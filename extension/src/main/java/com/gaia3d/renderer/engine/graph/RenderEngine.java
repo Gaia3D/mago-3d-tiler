@@ -371,11 +371,11 @@ public class RenderEngine {
             }
         }
         else if (attributeType == AttributeType.COLOR) {
-//            int location = shaderProgram.enableAttribLocation("aColor");
-//            if(location >= 0) {
-//                GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId);
-//                GL20.glVertexAttribPointer(location, glDimension, glType, false, 0, 0);
-//            }
+            int location = shaderProgram.enableAttribLocation("aColor");
+            if(location >= 0) {
+                GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId);
+                GL20.glVertexAttribPointer(location, glDimension, glType, true, 0, 0);
+            }
         }
         else if (attributeType == AttributeType.TEXCOORD) {
             int location = shaderProgram.enableAttribLocation("aTexCoord");

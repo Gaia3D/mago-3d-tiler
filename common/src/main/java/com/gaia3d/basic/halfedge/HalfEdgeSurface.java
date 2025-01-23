@@ -1577,14 +1577,10 @@ public class HalfEdgeSurface implements Serializable {
                 log.error("HalfEdgeSurface.collapseHalfEdge() : outingEdgesOfVertex == null.");
                 continue;
             }
-            log.info("HalfEdgeSurface.collapseHalfEdge() : outingEdgesOfVertex.size() = " + outingEdgesOfVertex.size() + " iteration = " + i);
 
-            int count = 0;
             int outingEdgesOfVertexCount = outingEdgesOfVertex.size();
-            //for (HalfEdge outingEdge : outingEdgesOfVertex) {
             for (int gg = 0; gg < outingEdgesOfVertexCount; gg++) {
                 HalfEdge outingEdge = outingEdgesOfVertex.get(gg);
-                log.info("HalfEdgeSurface.collapseHalfEdge() : outingEdge = " + count++);
 
                 if(outingEdge == null)
                 {
@@ -3710,6 +3706,45 @@ public class HalfEdgeSurface implements Serializable {
         boolean checkClassifyId = true;
         boolean checkBestPlaneToProject = true;
         for (Map<PlaneType, List<HalfEdgeFace>> mapFaceGroupByPlaneType : mapFaceGroupByClassifyIdAndPlaneType.values()) {
+            for (List<HalfEdgeFace> faceGroup : mapFaceGroupByPlaneType.values()) {
+                HalfEdgeSurface newSurface = HalfEdgeCutter.createHalfEdgeSurfaceByFacesCopy(faceGroup, checkClassifyId, checkBestPlaneToProject);
+                newSurfaceMaster.joinSurface(newSurface);
+            }
+        }
+
+        this.deleteObjects();
+        this.joinSurface(newSurfaceMaster);
+    }
+
+    public Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> getMapClassifyIdToCameraDirectionTypeToFaces(Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapFaceGroupByClassifyIdAndObliqueCamDirType)
+    {
+        if(mapFaceGroupByClassifyIdAndObliqueCamDirType == null) {
+            mapFaceGroupByClassifyIdAndObliqueCamDirType = new HashMap<>();
+        }
+
+        int facesCount = faces.size();
+        for (int i = 0; i < facesCount; i++) {
+            HalfEdgeFace face = faces.get(i);
+            CameraDirectionType bestObliqueCameraDirectionType = face.getCameraDirectionType();
+            int ClassifyId = face.getClassifyId();
+
+            Map<CameraDirectionType, List<HalfEdgeFace>> mapFaceGroupByPlaneType = mapFaceGroupByClassifyIdAndObliqueCamDirType.computeIfAbsent(ClassifyId, k -> new HashMap<>());
+            List<HalfEdgeFace> faceGroup = mapFaceGroupByPlaneType.computeIfAbsent(bestObliqueCameraDirectionType, k -> new ArrayList<>());
+            faceGroup.add(face);
+        }
+
+        return mapFaceGroupByClassifyIdAndObliqueCamDirType;
+    }
+
+    public void splitFacesByBestObliqueCameraDirectionToProject() {
+        // make faceGroups by classifyId & bestObliqueCameraDirectionType.***
+        Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapFaceGroupByClassifyIdAndObliqueCamDirType = this.getMapClassifyIdToCameraDirectionTypeToFaces(null);
+
+        // for each faceGroups make a surface.***
+        HalfEdgeSurface newSurfaceMaster = new HalfEdgeSurface();
+        boolean checkClassifyId = true;
+        boolean checkBestPlaneToProject = true;
+        for (Map<CameraDirectionType, List<HalfEdgeFace>> mapFaceGroupByPlaneType : mapFaceGroupByClassifyIdAndObliqueCamDirType.values()) {
             for (List<HalfEdgeFace> faceGroup : mapFaceGroupByPlaneType.values()) {
                 HalfEdgeSurface newSurface = HalfEdgeCutter.createHalfEdgeSurfaceByFacesCopy(faceGroup, checkClassifyId, checkBestPlaneToProject);
                 newSurfaceMaster.joinSurface(newSurface);

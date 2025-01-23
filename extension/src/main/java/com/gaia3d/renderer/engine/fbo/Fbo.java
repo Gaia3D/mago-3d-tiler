@@ -36,7 +36,9 @@ public class Fbo {
         GL30.glBindTexture(GL30.GL_TEXTURE_2D, colorTextureId);
 
         GL30.glEnable(GL30.GL_TEXTURE_2D);
-        GL30.glTexImage2D(GL30.GL_TEXTURE_2D, 0, GL30.GL_RGBA, fboWidth, fboHeight, 0, GL30.GL_RGBA, GL30.GL_UNSIGNED_BYTE, 0);
+        GL30.glTexImage2D(GL30.GL_TEXTURE_2D, 0, GL30.GL_RGBA, fboWidth, fboHeight, 0, GL30.GL_RGBA, GL30.GL_UNSIGNED_BYTE, (ByteBuffer)null);
+        GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_WRAP_S, GL30.GL_CLAMP_TO_EDGE);
+        GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_WRAP_T, GL30.GL_CLAMP_TO_EDGE);
         GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MIN_FILTER, GL30.GL_NEAREST);
         GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MAG_FILTER, GL30.GL_NEAREST);
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL30.GL_TEXTURE_2D, colorTextureId, 0);
@@ -69,6 +71,9 @@ public class Fbo {
 
     public BufferedImage getBufferedImage(int bufferedImageType)
     {
+        //****************************************************************
+        // Note : before to call this function must bind the (this)FBO.***
+        //****************************************************************
         int format = GL30.GL_RGBA;
 
         if(bufferedImageType == BufferedImage.TYPE_INT_RGB)
@@ -91,21 +96,21 @@ public class Fbo {
             for (int x = 0; x < fboWidth; x++) {
                 if(bufferedImageType == BufferedImage.TYPE_INT_ARGB)
                 {
-                    int r = byteBuffer.get() & 0xFF; // Rojo
-                    int g = byteBuffer.get() & 0xFF; // Verde
-                    int b = byteBuffer.get() & 0xFF; // Azul
-                    int a = byteBuffer.get() & 0xFF; // Alpha
+                    int r = byteBuffer.get() & 0xFF;
+                    int g = byteBuffer.get() & 0xFF;
+                    int b = byteBuffer.get() & 0xFF;
+                    int a = byteBuffer.get() & 0xFF;
 
-                    int color = (a << 24) | (r << 16) | (g << 8) | b; // Formato ARGB
+                    int color = (a << 24) | (r << 16) | (g << 8) | b;
                     image.setRGB(x, fboHeight - y - 1, color);
                 }
                 else if(bufferedImageType == BufferedImage.TYPE_INT_RGB)
                 {
-                    int r = byteBuffer.get() & 0xFF; // Rojo
-                    int g = byteBuffer.get() & 0xFF; // Verde
-                    int b = byteBuffer.get() & 0xFF; // Azul
+                    int r = byteBuffer.get() & 0xFF;
+                    int g = byteBuffer.get() & 0xFF;
+                    int b = byteBuffer.get() & 0xFF;
 
-                    int color = (r << 16) | (g << 8) | b; // Formato RGB
+                    int color = (r << 16) | (g << 8) | b;
                     image.setRGB(x, fboHeight - y - 1, color);
                 }
 
