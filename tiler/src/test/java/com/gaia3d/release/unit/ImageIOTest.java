@@ -1,4 +1,4 @@
-package com.gaia3d.release;
+package com.gaia3d.release.unit;
 
 import com.gaia3d.basic.model.ImageCacheQueue;
 import com.gaia3d.command.Configurator;
@@ -23,10 +23,10 @@ public class ImageIOTest {
     @Test
     void testJpgQuality() {
         Configurator.initConsoleLogger();
-        File input = new File("D:/workspace/input/pizza.jpg");
+        File input = new File("D:/workspace/input/texture-test.jpg");
         for (int i = 0; i < 100; i++) {
             log.info("Quality: {}", 0.01f * i);
-            File output = new File("D:/workspace/output/compressed_pizza" + i + ".jpg");
+            File output = new File("D:/workspace/output/compressed_texture-test" + i + ".jpg");
             writeImage(input, output, 0.01f * i);
         }
     }

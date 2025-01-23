@@ -51,7 +51,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         String imagePath = parentPath + File.separator + diffusePath;
         if (this.bufferedImage == null) {
             BufferedImage bufferedImage = readImage(imagePath);
-            if(bufferedImage != null) {
+            if (bufferedImage != null) {
                 this.bufferedImage = bufferedImage;
                 this.width = bufferedImage.getWidth();
                 this.height = bufferedImage.getHeight();
@@ -135,12 +135,25 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         this.bufferedImage = imageResizer.resizeImageGraphic2D(this.bufferedImage, width, height);
     }
 
-    // getBufferedImage
     public BufferedImage getBufferedImage() {
-        /*if (this.bufferedImage == null) {
+        if (this.bufferedImage == null) {
+            File fullPath = new File(this.parentPath, this.path);
+            log.info("[Load Image IO] : {}", fullPath.getAbsolutePath());
+            loadImage();
+        }
+        return this.bufferedImage;
+    }
+
+    public BufferedImage getBufferedImageWithCache() {
+        if (this.bufferedImage == null) {
             String keyPath = this.path;
             ImageCacheQueue imageCacheQueue = ImageCacheQueue.getInstance();
             boolean hasKey = imageCacheQueue.hasBufferedImage(keyPath);
+            if (keyPath.contains("_atlas_")) {
+                loadImage();
+                return this.bufferedImage;
+            }
+
             if (hasKey) {
                 BufferedImage tempImage = imageCacheQueue.getBufferedImage(keyPath);
                 log.info("ImageCacheQueue hit: {}", keyPath);
@@ -150,9 +163,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
                 loadImage();
                 imageCacheQueue.putBufferedImage(keyPath, this.bufferedImage);
             }
-        }*/
-        if (this.bufferedImage == null) {
-            loadImage();
+            log.info("bufferedImage : {} -> ({} x {})", this.path, this.bufferedImage.getHeight(), this.bufferedImage.getWidth());
         }
         return this.bufferedImage;
     }

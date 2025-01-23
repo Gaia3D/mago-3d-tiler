@@ -34,79 +34,51 @@ console output:
 ┛ ┗┛┗┗┛┗┛  ┗┛┻┛   ┻ ┻┗┛┗┛┛┗
 3d-tiler(dev) by Gaia3D, Inc.
 ----------------------------------------
-usage: Gaia3D Tiler
- -aa,--absoluteAltitude <arg>    Absolute altitude value for extrusion
-                                 model
- -ac,--altitudeColumn <arg>      Altitude Column setting for extrusion
-                                 model ((Default Column: altitude)
- -c,--crs <arg>                  Coordinate Reference Systems, EPSG
-                                 Code(4326, 3857, 32652, 5186...)
- -d,--debug                      More detailed log output and stops on
-                                 Multi-Thread bugs.
- -dc,--diameterColumn <arg>      Diameter column setting for extrusion
-                                 model, Specify a length unit for Diameter
-                                 in millimeters(mm) (Default Column:
-                                 diameter)
- -fc,--flipCoordinate            Flip x, y coordinate for 2D Original
-                                 Data. (Default: false)
+usage: mago 3DTiler help
+ -aa,--absoluteAltitude <arg>    Absolute altitude value for extrusion model
+ -ac,--altitudeColumn <arg>      Altitude Column setting for extrusion model ((Default Column: altitude)
+ -c,--crs <arg>                  Coordinate Reference Systems, EPSG Code(4326, 3857, 32652, 5186...)
+ -d,--debug                      More detailed log output and stops on Multi-Thread bugs.
+ -dc,--diameterColumn <arg>      Diameter column setting for extrusion model, Specify a length unit for Diameter in millimeters(mm) (Default Column: diameter)
+ -f4,--force4ByteRGB             Force 4Byte RGB for pointscloud tile.
+ -fc,--flipCoordinate            Flip x, y coordinate for 2D Original Data. (Default: false)
  -glb,--glb                      Create glb file with B3DM.
  -h,--help                       Print Gelp
- -hc,--heightColumn <arg>        Height column setting for extrusion model
-                                 ((Default Column: height)
+ -hc,--heightColumn <arg>        Height column setting for extrusion model ((Default Column: height)
+ -hd,--headingColumn <arg>       Heading column setting for I3DM converting (Default Column: heading)
  -i,--input <arg>                Input directory path
- -if,--instance <arg>            Instance file path for I3DM (Default:
-                                 {OUTPUT}/instance.dae)
+ -if,--instance <arg>            Instance file path for I3DM (Default: {OUTPUT}/instance.dae)
  -igtx,--ignoreTextures          Ignore diffuse textures.
- -it,--inputType <arg>           Input files type (kml, 3ds, fbx, obj,
-                                 gltf, glb, las, laz, citygml, indoorgml,
-                                 shp, geojson)(Default: kml)
+ -it,--inputType <arg>           Input files type (kml, 3ds, fbx, obj, gltf, glb, las, laz, citygml, indoorgml, shp, geojson)(Default: kml)
  -l,--log <arg>                  Output log file path.
- -lm,--largeMesh                 [Experimental] Large Mesh Splitting Mode
-                                 (Default: false)
+ -lm,--largeMesh                 [Experimental] Large Mesh Splitting Mode (Default: false)
  -mc,--multiThreadCount <arg>    set Multi-Thread count
- -mg,--maxGeometricError <arg>   Maximum geometric error (Default: Integer
-                                 max value)
- -mh,--minimumHeight <arg>       Minimum height value for extrusion model
-                                 (Default: 1.0)
- -mp,--maxPoints <arg>           Maximum number of points per a tile
-                                 (Default: 100000)
+ -mg,--maxGeometricError <arg>   Maximum geometric error (Default: Integer max value)
+ -mh,--minimumHeight <arg>       Minimum height value for extrusion model (Default: 1.0)
+ -mp,--maxPoints <arg>           Maximum number of points per a tile (Default: 100000)
  -mx,--maxCount <arg>            Maximum number of triangles per node.
- -nc,--nameColumn <arg>          Name column setting for extrusion model
-                                 (Default Column: name)
+ -nc,--nameColumn <arg>          Name column setting for extrusion model (Default Column: name)
  -ng,--minGeometricError <arg>   Minimum geometric error (Default: 16.0)
  -nl,--minLod <arg>              min level of detail (Default: 0)
  -o,--output <arg>               Output directory file path
- -ot,--outputType <arg>          Output 3DTiles Type (b3dm, i3dm,
-                                 pnts)(Default : b3dm)
+ -ot,--outputType <arg>          Output 3DTiles Type (b3dm, i3dm, pnts)(Default : b3dm)
  -p,--proj <arg>                 Proj4 parameters (ex: +proj=tmerc +la...)
- -pr,--photorealistic            [Experimental] Photorealistic mode for
-                                 b3dm (Default: false)
+ -pr,--photorealistic            [Experimental] Photorealistic mode for b3dm (Default: false)
  -q,--quiet                      Quiet mode/Silent mode
  -r,--recursive                  Tree directory deep navigation.
  -ra,--refineAdd                 Set 3D Tiles Refine 'ADD' mode
- -ru,--flipUpAxis                Rotate the matrix 180 degrees about the
-                                 X-axis. (Default: false)
- -rx,--rotateXAxis <arg>         Rotate the X-Axis in degrees (Unit:
-                                 degrees)(Default: 0.0)
- -sh,--skirtHeight <arg>         Building Skirt height setting for
-                                 extrusion model (Default: 4.0)
- -sp,--sourcePrecision           Create pointscloud tile with original
-                                 precision. (Slow)
- -su,--swapUpAxis                Rotate the matrix -90 degrees about the
-                                 X-axis. (Default: false)
- -te,--terrain <arg>             GeoTiff Terrain file path, 3D Object
-                                 applied as clampToGround (Supports
-                                 geotiff format)
+ -ru,--flipUpAxis                Rotate the matrix 180 degrees about the X-axis. (Default: false)
+ -rx,--rotateXAxis <arg>         Rotate the X-Axis in degrees (Unit: degrees)(Default: 0.0)
+ -sh,--skirtHeight <arg>         Building Skirt height setting for extrusion model (Default: 4.0)
+ -sp,--sourcePrecision           Create pointscloud tile with original precision. (Slow)
+ -su,--swapUpAxis                Rotate the matrix -90 degrees about the X-axis. (Default: false)
+ -te,--terrain <arg>             GeoTiff Terrain file path, 3D Object applied as clampToGround (Supports geotiff format)
  -v,--version                    Print Version Info
- -vl,--voxelLod                  [Experimental] Voxel Level Of Detail
-                                 setting for i3dm (Default: false)
+ -vl,--voxelLod                  [Experimental] Voxel Level Of Detail setting for i3dm (Default: false)
  -xl,--maxLod <arg>              Max Level of detail (Default: 3)
- -xo,--xOffset <arg>             X Offset value for coordinate
-                                 transformation
- -yo,--yOffset <arg>             Y Offset value for coordinate
-                                 transformation
- -zo,--zeroOrigin                [Experimental] fix 3d root transformed
-                                 matrix origin to zero point.
+ -xo,--xOffset <arg>             X Offset value for coordinate transformation
+ -yo,--yOffset <arg>             Y Offset value for coordinate transformation
+ -zo,--zeroOrigin                [Experimental] fix 3d root transformed matrix origin to zero point.
 ```
 This is a simple kml/collada -> 3dTiles conversion code with the mandatory argument values.    
 ```
@@ -160,7 +132,7 @@ In this case, please contact us at sales@gaia3d.com
 mago 3DTiler: The Premier OGC 3D Tiles Solution!
 --
 
-### 개요
+### 개요:
 mago 3DTiler는 오픈소스 기반의 OGC 3D Tiles 변환기입니다.   
 다양한 공간정보 데이터를 디지털트윈 서비스의 근간이 되는 OGC 3D Tiles로 변환해 줍니다.   
 mago 3DTiler는 Java 기반으로 뛰어난 이식성, 유연함과 함께 빠른 속도를 자랑합니다.   
@@ -190,79 +162,51 @@ java -jar mago-3d-tiler-x.x.x-natives-windows.jar -h
 ┛ ┗┛┗┗┛┗┛  ┗┛┻┛   ┻ ┻┗┛┗┛┛┗
 3d-tiler(dev) by Gaia3D, Inc.
 ----------------------------------------
-usage: Gaia3D Tiler
- -aa,--absoluteAltitude <arg>    Absolute altitude value for extrusion
-                                 model
- -ac,--altitudeColumn <arg>      Altitude Column setting for extrusion
-                                 model ((Default Column: altitude)
- -c,--crs <arg>                  Coordinate Reference Systems, EPSG
-                                 Code(4326, 3857, 32652, 5186...)
- -d,--debug                      More detailed log output and stops on
-                                 Multi-Thread bugs.
- -dc,--diameterColumn <arg>      Diameter column setting for extrusion
-                                 model, Specify a length unit for Diameter
-                                 in millimeters(mm) (Default Column:
-                                 diameter)
- -fc,--flipCoordinate            Flip x, y coordinate for 2D Original
-                                 Data. (Default: false)
+usage: mago 3DTiler help
+ -aa,--absoluteAltitude <arg>    Absolute altitude value for extrusion model
+ -ac,--altitudeColumn <arg>      Altitude Column setting for extrusion model ((Default Column: altitude)
+ -c,--crs <arg>                  Coordinate Reference Systems, EPSG Code(4326, 3857, 32652, 5186...)
+ -d,--debug                      More detailed log output and stops on Multi-Thread bugs.
+ -dc,--diameterColumn <arg>      Diameter column setting for extrusion model, Specify a length unit for Diameter in millimeters(mm) (Default Column: diameter)
+ -f4,--force4ByteRGB             Force 4Byte RGB for pointscloud tile.
+ -fc,--flipCoordinate            Flip x, y coordinate for 2D Original Data. (Default: false)
  -glb,--glb                      Create glb file with B3DM.
  -h,--help                       Print Gelp
- -hc,--heightColumn <arg>        Height column setting for extrusion model
-                                 ((Default Column: height)
+ -hc,--heightColumn <arg>        Height column setting for extrusion model ((Default Column: height)
+ -hd,--headingColumn <arg>       Heading column setting for I3DM converting (Default Column: heading)
  -i,--input <arg>                Input directory path
- -if,--instance <arg>            Instance file path for I3DM (Default:
-                                 {OUTPUT}/instance.dae)
+ -if,--instance <arg>            Instance file path for I3DM (Default: {OUTPUT}/instance.dae)
  -igtx,--ignoreTextures          Ignore diffuse textures.
- -it,--inputType <arg>           Input files type (kml, 3ds, fbx, obj,
-                                 gltf, glb, las, laz, citygml, indoorgml,
-                                 shp, geojson)(Default: kml)
+ -it,--inputType <arg>           Input files type (kml, 3ds, fbx, obj, gltf, glb, las, laz, citygml, indoorgml, shp, geojson)(Default: kml)
  -l,--log <arg>                  Output log file path.
- -lm,--largeMesh                 [Experimental] Large Mesh Splitting Mode
-                                 (Default: false)
+ -lm,--largeMesh                 [Experimental] Large Mesh Splitting Mode (Default: false)
  -mc,--multiThreadCount <arg>    set Multi-Thread count
- -mg,--maxGeometricError <arg>   Maximum geometric error (Default: Integer
-                                 max value)
- -mh,--minimumHeight <arg>       Minimum height value for extrusion model
-                                 (Default: 1.0)
- -mp,--maxPoints <arg>           Maximum number of points per a tile
-                                 (Default: 100000)
+ -mg,--maxGeometricError <arg>   Maximum geometric error (Default: Integer max value)
+ -mh,--minimumHeight <arg>       Minimum height value for extrusion model (Default: 1.0)
+ -mp,--maxPoints <arg>           Maximum number of points per a tile (Default: 100000)
  -mx,--maxCount <arg>            Maximum number of triangles per node.
- -nc,--nameColumn <arg>          Name column setting for extrusion model
-                                 (Default Column: name)
+ -nc,--nameColumn <arg>          Name column setting for extrusion model (Default Column: name)
  -ng,--minGeometricError <arg>   Minimum geometric error (Default: 16.0)
  -nl,--minLod <arg>              min level of detail (Default: 0)
  -o,--output <arg>               Output directory file path
- -ot,--outputType <arg>          Output 3DTiles Type (b3dm, i3dm,
-                                 pnts)(Default : b3dm)
+ -ot,--outputType <arg>          Output 3DTiles Type (b3dm, i3dm, pnts)(Default : b3dm)
  -p,--proj <arg>                 Proj4 parameters (ex: +proj=tmerc +la...)
- -pr,--photorealistic            [Experimental] Photorealistic mode for
-                                 b3dm (Default: false)
+ -pr,--photorealistic            [Experimental] Photorealistic mode for b3dm (Default: false)
  -q,--quiet                      Quiet mode/Silent mode
  -r,--recursive                  Tree directory deep navigation.
  -ra,--refineAdd                 Set 3D Tiles Refine 'ADD' mode
- -ru,--flipUpAxis                Rotate the matrix 180 degrees about the
-                                 X-axis. (Default: false)
- -rx,--rotateXAxis <arg>         Rotate the X-Axis in degrees (Unit:
-                                 degrees)(Default: 0.0)
- -sh,--skirtHeight <arg>         Building Skirt height setting for
-                                 extrusion model (Default: 4.0)
- -sp,--sourcePrecision           Create pointscloud tile with original
-                                 precision. (Slow)
- -su,--swapUpAxis                Rotate the matrix -90 degrees about the
-                                 X-axis. (Default: false)
- -te,--terrain <arg>             GeoTiff Terrain file path, 3D Object
-                                 applied as clampToGround (Supports
-                                 geotiff format)
+ -ru,--flipUpAxis                Rotate the matrix 180 degrees about the X-axis. (Default: false)
+ -rx,--rotateXAxis <arg>         Rotate the X-Axis in degrees (Unit: degrees)(Default: 0.0)
+ -sh,--skirtHeight <arg>         Building Skirt height setting for extrusion model (Default: 4.0)
+ -sp,--sourcePrecision           Create pointscloud tile with original precision. (Slow)
+ -su,--swapUpAxis                Rotate the matrix -90 degrees about the X-axis. (Default: false)
+ -te,--terrain <arg>             GeoTiff Terrain file path, 3D Object applied as clampToGround (Supports geotiff format)
  -v,--version                    Print Version Info
- -vl,--voxelLod                  [Experimental] Voxel Level Of Detail
-                                 setting for i3dm (Default: false)
+ -vl,--voxelLod                  [Experimental] Voxel Level Of Detail setting for i3dm (Default: false)
  -xl,--maxLod <arg>              Max Level of detail (Default: 3)
- -xo,--xOffset <arg>             X Offset value for coordinate
-                                 transformation
- -yo,--yOffset <arg>             Y Offset value for coordinate
-                                 transformation
- -zo,--zeroOrigin                [Experimental] fix 3d root transformed
-                                 matrix origin to zero point.
+ -xo,--xOffset <arg>             X Offset value for coordinate transformation
+ -yo,--yOffset <arg>             Y Offset value for coordinate transformation
+ -zo,--zeroOrigin                [Experimental] fix 3d root transformed matrix origin to zero point.
 ```
 
 필수 인자 값으로 작성한 간단한 kml/collada -> 3dTiles 변환코드 입니다.

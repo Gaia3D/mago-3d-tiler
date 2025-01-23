@@ -291,7 +291,7 @@ public class ImageUtils {
 
         while(it < iterations) {
             changed = false;
-            log.info("Iteration: " + it);
+            log.debug("Iteration: " + it);
             for (int i = 0; i < width; i++) {
                 for (int j = 0; j < height; j++) {
                     Color pixel = new Color(oldImage.getRGB(i, j), true);
@@ -333,6 +333,7 @@ public class ImageUtils {
 
     public void saveBufferedImage(BufferedImage image, String format, String path) {
         try {
+            File file = new File(path);
             ImageIO.write(image, format, new File(path));
         } catch (IOException e) {
             log.error("Error:", e);

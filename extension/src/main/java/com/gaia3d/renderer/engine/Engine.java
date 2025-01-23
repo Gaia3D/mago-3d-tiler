@@ -564,12 +564,12 @@ public class Engine {
             // now, cut the halfEdgeScene and make cube-textures by rendering.***
             double gridSpacing = 50.0;
             HalfEdgeOctree resultOctree = new HalfEdgeOctree(null);
-            log.info("Engine.decimate() : cutHalfEdgeSceneGridXYZ.");
+            log.info("[Tile][PhotoRealistic][Decimate] Engine.decimate() : cutHalfEdgeSceneGridXYZ.");
             HalfEdgeScene cuttedScene = HalfEdgeCutter.cutHalfEdgeSceneGridXYZ(halfEdgeScene, gridSpacing, resultOctree);
             cuttedScene.splitFacesByBestPlanesToProject();
 
             // now make box textures for the cuttedScene.***
-            log.info("Engine.decimate() : makeBoxTexturesForHalfEdgeScene.");
+            log.info("[Tile][PhotoRealistic][Decimate] Engine.decimate() : makeBoxTexturesForHalfEdgeScene.");
             this.makeBoxTexturesForHalfEdgeScene(cuttedScene);
 
             resultHalfEdgeScenes.add(cuttedScene);
@@ -642,7 +642,7 @@ public class Engine {
     }
 
     public void decimate(List<HalfEdgeScene> halfEdgeScenesToDecimate, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters) {
-        log.info("Engine.decimate() : halfEdgeScenesToDecimate count : " + halfEdgeScenesToDecimate.size());
+        log.info("[Tile][PhotoRealistic][Decimate] Engine.decimate() : halfEdgeScenesToDecimate count : " + halfEdgeScenesToDecimate.size());
         // do an iteration of decimation.***
         int halfEdgeScenesCount = halfEdgeScenesToDecimate.size();
         for (int i = 0; i < halfEdgeScenesCount; i++) {
@@ -654,12 +654,12 @@ public class Engine {
             // now, cut the halfEdgeScene and make cube-textures by rendering.***
             double gridSpacing = bboxMaxSize / 5.0;
             HalfEdgeOctree resultOctree = new HalfEdgeOctree(null);
-            log.info("Engine.decimate() : cutHalfEdgeSceneGridXYZ.");
+            log.info("[Tile][PhotoRealistic][Decimate] Engine.decimate() : cutHalfEdgeSceneGridXYZ.");
             HalfEdgeScene cuttedScene = HalfEdgeCutter.cutHalfEdgeSceneGridXYZ(halfEdgeScene, gridSpacing, resultOctree);
             cuttedScene.splitFacesByBestPlanesToProject();
 
             // now make box textures for the cuttedScene.***
-            log.info("Engine.decimate() : makeBoxTexturesForHalfEdgeScene.");
+            log.info("[Tile][PhotoRealistic][Decimate] Engine.decimate() : makeBoxTexturesForHalfEdgeScene.");
             makeBoxTexturesForHalfEdgeScene(cuttedScene);
 
             resultHalfEdgeScenes.add(cuttedScene);
@@ -983,7 +983,7 @@ public class Engine {
         if (!tempFolder.exists()) {
             tempFolder.mkdirs();
         }
-        String fileName = rawProjectName + "_Atlas";
+        String fileName = rawProjectName + "_atlas";
         String extension = ".jpg";
         GaiaTexture atlasTexture = makeAtlasTexture(texturesAtlasDataList);
         if(atlasTexture == null) {
@@ -995,6 +995,7 @@ public class Engine {
         String atlasImagePath = atlasTexture.getParentPath() + File.separator + atlasTexture.getPath();
         try {
             File atlasFile = new File(atlasImagePath);
+            log.info("[Engine] write atlas image : {}", atlasFile.getAbsoluteFile());
             ImageIO.write(atlasTexture.getBufferedImage(), "jpg", atlasFile);
         } catch (IOException e) {
             log.error("Error writing image: {}", e);

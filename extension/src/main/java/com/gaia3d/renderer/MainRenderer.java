@@ -510,12 +510,12 @@ public class MainRenderer implements IAppLogic {
             //double gridSpacing = 50.0; // original.***
             double gridSpacing = bboxMaxSize / 5.0;
             HalfEdgeOctree resultOctree = new HalfEdgeOctree(null);
-            log.info("Engine.decimate() : cutHalfEdgeSceneGridXYZ.");
+            log.info("[Tile][PhotoRealistic][Decimate] Engine.decimate() : cutHalfEdgeSceneGridXYZ.");
             HalfEdgeScene cuttedScene = HalfEdgeCutter.cutHalfEdgeSceneGridXYZ(halfEdgeScene, gridSpacing, resultOctree);
             cuttedScene.splitFacesByBestPlanesToProject();
 
             // now make box textures for the cuttedScene.***
-            log.info("Engine.decimate() : makeBoxTexturesForHalfEdgeScene.");
+            log.info("[Tile][PhotoRealistic][Decimate]  Engine.decimate() : makeBoxTexturesForHalfEdgeScene.");
             engine.makeBoxTexturesForHalfEdgeScene(cuttedScene);
 
             // delete glBuffers of the material.***

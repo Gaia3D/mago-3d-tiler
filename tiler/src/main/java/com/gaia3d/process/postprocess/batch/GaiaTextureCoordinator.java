@@ -49,7 +49,7 @@ public class GaiaTextureCoordinator {
             // TEST.***
             // now fill the image with white fuchsia.***
             Graphics2D graphics = this.atlasImage.createGraphics();
-            graphics.setColor(new Color(255, 0, 255));
+            graphics.setColor(new Color(0.25f, 0.25f, 0.25f));
             graphics.fillRect(0, 0, width, height);
             graphics.dispose();
             // End test.---
@@ -200,7 +200,7 @@ public class GaiaTextureCoordinator {
         return bufferedImage;
     }
 
-    public void batchTextures(LevelOfDetail lod) {
+    public BufferedImage batchTextures(LevelOfDetail lod) {
         // We have MaterialList & BufferDataSetList.********
         // 1- List<GaiaMaterial> this.materials;
         // 2- List<GaiaBufferDataSet> this.bufferDataSets;
@@ -245,9 +245,10 @@ public class GaiaTextureCoordinator {
             splittedImages.add(splittedImage);
         }
 
-        if (splittedImages.size() < 2) {
-            return;
-        }
+        /*if (splittedImages.size() < 2) {
+            log.error("There are no textures to batch.");
+            return null;
+        }*/
 
         // 사이즈 큰->작은 정렬
         splittedImages = splittedImages.stream().sorted(Comparator.comparing(splittedImage -> splittedImage.getOriginBoundary().getArea())).collect(Collectors.toList());
@@ -279,7 +280,7 @@ public class GaiaTextureCoordinator {
         initBatchImage(maxWidth, maxHeight, imageType);
         if (this.atlasImage == null) {
             log.error("atlasImage is null");
-            return;
+            return null;
         }
 
         Graphics graphics = this.atlasImage.getGraphics();
@@ -308,12 +309,12 @@ public class GaiaTextureCoordinator {
         }
 
         // Test.****************************************************************************
-        if (globalOptions.isDebugLod()) {
-//            float[] debugColor = lod.getDebugColor();
-//            Color color = new Color(debugColor[0], debugColor[1], debugColor[2], 0.6f);
-//            graphics.setColor(color);
-//            graphics.fillRect(0, 0, maxWidth, maxHeight);
-        }
+        /*if (globalOptions.isDebugLod()) {
+            float[] debugColor = lod.getDebugColor();
+            Color color = new Color(debugColor[0], debugColor[1], debugColor[2], 0.6f);
+            graphics.setColor(color);
+            graphics.fillRect(0, 0, maxWidth, maxHeight);
+        }*/
         // End test.-------------------------------------------------------------------------
 
         for (GaiaBatchImage target : splittedImages) {
@@ -423,29 +424,33 @@ public class GaiaTextureCoordinator {
         // end test.----------------------------------------------
 
         if (isPhotorealistic) {
-            // limit the max image size to 4028
+            // limit the max image size to 4096
             int lodLevel = lod.getLevel();
             boolean sizeChanged = false;
             int imageWidth = this.atlasImage.getWidth();
             int imageHeight = this.atlasImage.getHeight();
-            int lod2size = 512;
+
+            int lod0size = 1024;
+            int lod1size = 1024;
+            int lod2size = 1024;
+            int overSize = 1024;
 
             if (lodLevel == 0) {
-                if (imageWidth > 512) {
-                    imageWidth = 512;
+                if (imageWidth > lod0size) {
+                    imageWidth = lod0size;
                     sizeChanged = true;
                 }
-                if (imageHeight > 512) {
-                    imageHeight = 512;
+                if (imageHeight > lod0size) {
+                    imageHeight = lod0size;
                     sizeChanged = true;
                 }
             } else if (lodLevel == 1) {
-                if (imageWidth > lod2size) {
-                    imageWidth = lod2size;
+                if (imageWidth > lod1size) {
+                    imageWidth = lod1size;
                     sizeChanged = true;
                 }
-                if (imageHeight > lod2size) {
-                    imageHeight = lod2size;
+                if (imageHeight > lod1size) {
+                    imageHeight = lod1size;
                     sizeChanged = true;
                 }
             } else if (lodLevel == 2) {
@@ -458,27 +463,37 @@ public class GaiaTextureCoordinator {
                     sizeChanged = true;
                 }
             } else if (lodLevel > 2) {
-                if (imageWidth > lod2size) {
-                    imageWidth = lod2size;
+                if (imageWidth > overSize) {
+                    imageWidth = overSize;
                     sizeChanged = true;
                 }
-                if (imageHeight > lod2size) {
-                    imageHeight = lod2size;
+                if (imageHeight > overSize) {
+                    imageHeight = overSize;
+                    sizeChanged = true;
+                }
+            } else {
+                if (imageWidth > overSize) {
+                    imageWidth = overSize;
+                    sizeChanged = true;
+                }
+                if (imageHeight > overSize) {
+                    imageHeight = overSize;
                     sizeChanged = true;
                 }
             }
-
             if (sizeChanged) {
                 ImageResizer imageResizer = new ImageResizer();
                 this.atlasImage = imageResizer.resizeImageGraphic2D(this.atlasImage, imageWidth, imageHeight);
             }
         }
+
+        return this.atlasImage;
     }
 
     private void writeBatchedImage(String imageName, String imageExtension) {
         String outputPathString = globalOptions.getOutputPath();
-        //File file = new File(globalOptions.getOutputPath(), "temp" + File.separator + "atlas");
-        File file = new File(globalOptions.getOutputPath(), "atlas");
+        //File file = new File(outputPathString, "temp" + File.separator + "atlas");
+        File file = new File(outputPathString, "atlas");
         if (!file.exists()) {
             if (!file.mkdirs()) {
                 log.error("Failed to create directory");
@@ -494,7 +509,9 @@ public class GaiaTextureCoordinator {
         }
         if (this.atlasImage != null) {
             try {
-                ImageIO.write(this.atlasImage, imageExtension, output.toFile());
+                File outputImage = output.toFile();
+                log.info("[Write Image IO] : {}", outputImage.getAbsolutePath());
+                ImageIO.write(this.atlasImage, imageExtension, outputImage);
             } catch (IOException e) {
                 log.error(e.getMessage());
             }
