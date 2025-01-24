@@ -2495,10 +2495,8 @@ public class Engine {
         float minY = (float) bboxTransformed.getMinY();
         float minZ = (float) bboxTransformed.getMinZ();
 
-        float offsetZ = 40.0f;
-
         Projection projection = gaiaScenesContainer.getProjection();
-        projection.setProjectionOrthographic(minX, maxX, minY, maxY, minZ, maxZ + offsetZ);
+        projection.setProjectionOrthographic(minX, maxX, minY, maxY, -maxZ, -minZ);
         gaiaScenesContainer.setProjection(projection);
 
         // Take FboManager from engine.***
