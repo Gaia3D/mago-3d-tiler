@@ -3123,9 +3123,12 @@ public class HalfEdgeSurface implements Serializable {
         String textureRawName = texturePath.substring(texturePath.lastIndexOf(File.separator) + 1);
         String textureImageExtension = textureRawName.substring(textureRawName.lastIndexOf("."));
 
+        // TODO : test
+        textureImageExtension = ".png";
+
         String textureAtlasName = textureRawName.substring(0, textureRawName.lastIndexOf(".")) + "_atlas" + textureImageExtension;
         String textureAtlasPath = imageParentPath + File.separator + textureAtlasName;
-        textureAtlas.setBufferedImage(ImageUtils.clampBackGroundColor(textureAtlas.getBufferedImage(), new Color(255, 0, 255), 3, 50));
+        //textureAtlas.setBufferedImage(ImageUtils.clampBackGroundColor(textureAtlas.getBufferedImage(), new Color(255, 0, 255), 1, 200));
         textureAtlas.saveImage(textureAtlasPath);
 
         // change the diffuseTexture path.***

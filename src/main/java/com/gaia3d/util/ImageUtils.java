@@ -286,9 +286,6 @@ public class ImageUtils {
         graphics.drawImage(image, 0, 0, null);
         graphics.dispose();
 
-        int startCol = 0;
-        int startRow = 0;
-
         while(it < iterations) {
             changed = false;
             log.debug("Iteration: " + it);
