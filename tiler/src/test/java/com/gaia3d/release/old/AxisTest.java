@@ -11,7 +11,7 @@ import java.io.File;
 class AxisTest {
     private static final String INPUT_PATH = "D:\\data\\mago-tiler-data\\axis-test-input";
     //private static final String OUTPUT_PATH = "D:\\workspaces\\mago-viewer\\data\\axis-test-output";
-    private static final String OUTPUT_PATH = "D:/data/mago-server/output";
+    private static final String OUTPUT_PATH = "E:/data/mago-server/output";
 
     @Test
     void zUp() {

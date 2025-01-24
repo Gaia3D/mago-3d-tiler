@@ -9,7 +9,7 @@ import java.io.File;
 @Slf4j
 class PntsReleaseTest {
     private static final String INPUT_PATH = "D:/data/mago-3d-tiler/release-sample";
-    private static final String OUTPUT_PATH = "D:/data/mago-server/output";
+    private static final String OUTPUT_PATH = "E:/data/mago-server/output";
 
     @Test
     void pointcloud00() {
@@ -56,7 +56,7 @@ class PntsReleaseTest {
         };
         execute(args);
     }
-    
+
     private void execute(String[] args) {
         Mago3DTilerMain.main(args);
     }

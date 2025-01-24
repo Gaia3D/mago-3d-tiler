@@ -11,7 +11,7 @@ import java.io.File;
 @Slf4j
 class CityGmlTest {
     private static final String INPUT_PATH = "D:\\data\\mago-tiler-data\\release-test-input";
-    private static final String OUTPUT_PATH = "D:/data/mago-server/output";
+    private static final String OUTPUT_PATH = "E:/data/mago-server/output";
 
     @Test
     void citygml01() {

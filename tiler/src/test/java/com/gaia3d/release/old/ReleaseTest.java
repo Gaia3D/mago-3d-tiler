@@ -13,7 +13,7 @@ import java.io.File;
 class ReleaseTest {
     private static final String INPUT_PATH = "D:\\data\\mago-tiler-data\\release-test-input";
     //private static final String OUTPUT_PATH = "D:\\workspaces\\mago-viewer\\data\\release-test-output";
-    private static final String OUTPUT_PATH = "D:/data/mago-server/output";
+    private static final String OUTPUT_PATH = "E:/data/mago-server/output";
 
     @Test
     void testKmlWithCollada() {

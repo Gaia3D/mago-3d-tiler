@@ -10,7 +10,7 @@ import java.io.File;
 public class StressTest {
     private static final String INPUT_PATH = "D:\\data\\mago-tiler-data\\stress-test-input";
     //private static final String OUTPUT_PATH = "D:\\workspaces\\mago-viewer\\data\\stress-test-output";
-    private static final String OUTPUT_PATH = "D:/data/mago-server/output";
+    private static final String OUTPUT_PATH = "E:/data/mago-server/output";
 
     @Disabled
     @Test
