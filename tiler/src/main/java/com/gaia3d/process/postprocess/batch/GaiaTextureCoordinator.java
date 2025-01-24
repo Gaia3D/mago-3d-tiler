@@ -49,7 +49,7 @@ public class GaiaTextureCoordinator {
 
             // now fill the image with white fuchsia.***
             Graphics2D graphics = this.atlasImage.createGraphics();
-            graphics.setColor(new Color(1.0f, 0.0f, 1.0f));
+            graphics.setColor(new Color(1.0f, 1.0f, 0.0f));
             graphics.fillRect(0, 0, width, height);
             graphics.dispose();
 
@@ -408,6 +408,9 @@ public class GaiaTextureCoordinator {
             }
         }
 
+        Color backGroundColor = new Color(1, 1, 0, 1);
+        this.atlasImage = ImageUtils.clampBackGroundColor(this.atlasImage, backGroundColor, 3, 50);
+
         // test save atlasTexture image.****
         // Test.**************************************************
         if (globalOptions.isDebugLod()) {
@@ -421,8 +424,6 @@ public class GaiaTextureCoordinator {
             this.writeBatchedImage(imageName, extension);
         }
         // end test.----------------------------------------------
-        Color backGroundColor = new Color(1, 0, 1, 1);
-        this.atlasImage = ImageUtils.clampBackGroundColor(this.atlasImage, backGroundColor, 1, 35);
 
         if (isPhotorealistic) {
             // limit the max image size to 4096
