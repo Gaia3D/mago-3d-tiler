@@ -652,12 +652,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
 
             // save the bufferedImageColor into the netSetImagesFolder.***
-            String imageExtension = "jpg";
+            String imageExtension = "png";
             String imagePath = "netScene_" + nodeDepth + "_" + i + "_color" + "." + imageExtension;
             try {
                 File file = new File(netSetImagesFolderPathString + File.separator + imagePath);
                 log.info("[Write Image] : {}", file.getAbsoluteFile());
-                ImageIO.write(bufferedImageColor, "JPG", file);
+                ImageIO.write(bufferedImageColor, "png", file);
             } catch (Exception e) {
                 log.error("error: ", e);
             }
@@ -756,12 +756,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             // test save resultImages.***
             String sceneName = "mosaicRenderTest_" + i + "_color";
             String sceneRawName = sceneName;
-            imageExtension = "jpg";
+            imageExtension = "png";
             String outputFolderPath = globalOptions.getOutputPath();
             try {
                 File outputFile = new File(outputFolderPath, sceneRawName + "." + imageExtension);
                 log.info("[Write Image] : {}", outputFile.getAbsoluteFile());
-                ImageIO.write(bufferedImageColor, "JPG", outputFile);
+                ImageIO.write(bufferedImageColor, "png", outputFile);
             } catch (Exception e) {
                 log.error("error : ", e);
             }
@@ -771,7 +771,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 imageExtension = "png";
                 File outputFile = new File(outputFolderPath, sceneName + "." + imageExtension);
                 log.info("[Write Image] : {}", outputFile.getAbsoluteFile());
-                ImageIO.write(bufferedImageDepth, "PNG", outputFile);
+                ImageIO.write(bufferedImageDepth, "png", outputFile);
             } catch (Exception e) {
                 log.error("error : ", e);
             }
@@ -878,12 +878,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
 
             // save the bufferedImageColor into the netSetImagesFolder.***
-            String imageExtension = "jpg";
+            String imageExtension = "png";
             String imagePath = "netScene_" + nodeDepth + "_" + i + "_color" + "." + imageExtension;
             try {
                 File file = new File(netSetImagesFolderPathString + File.separator + imagePath);
                 log.info("[Write Image] : {}", file.getAbsoluteFile());
-                ImageIO.write(bufferedImageColor, "JPG", file);
+                ImageIO.write(bufferedImageColor, "png", file);
             } catch (Exception e) {
                 log.error("error : ", e);
             }
@@ -981,12 +981,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
             // test save resultImages.***
             String sceneName = "mosaicRenderTest_" + i + "_color";
-            imageExtension = "jpg";
+            imageExtension = "png";
             String outputFolderPath = globalOptions.getOutputPath();
             try {
                 File outputFile = new File(outputFolderPath, sceneName + "." + imageExtension);
                 log.info("[Write Image] : {}", outputFile.getAbsoluteFile());
-                ImageIO.write(bufferedImageColor, "JPG", outputFile);
+                ImageIO.write(bufferedImageColor, "png", outputFile);
             } catch (Exception e) {
                 log.error("error : ", e);
             }

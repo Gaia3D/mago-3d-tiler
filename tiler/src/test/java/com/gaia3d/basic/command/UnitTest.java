@@ -969,7 +969,7 @@ class UnitTest {
         BufferedImage image = null;
         try {
             image = ImageIO.read(new File(inputPath));
-            BufferedImage newImage = ImageUtils.clampBackGroundColor(image, new Color(255, 0, 255), 3, 50);
+            BufferedImage newImage = ImageUtils.clampBackGroundColor(image, new Color(255, 0, 255), 1, 50);
             ImageIO.write(newImage, "jpg", new File(outputPath));
             log.info("newImage: " + newImage);
         } catch (IOException e) {

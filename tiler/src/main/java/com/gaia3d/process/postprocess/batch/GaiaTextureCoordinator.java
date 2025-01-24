@@ -49,10 +49,9 @@ public class GaiaTextureCoordinator {
 
             // now fill the image with white fuchsia.***
             Graphics2D graphics = this.atlasImage.createGraphics();
-            graphics.setColor(new Color(1.0f, 1.0f, 0.0f));
+            graphics.setColor(new Color(255, 0, 255));
             graphics.fillRect(0, 0, width, height);
             graphics.dispose();
-
         } else {
             this.atlasImage = null;
         }
@@ -408,23 +407,6 @@ public class GaiaTextureCoordinator {
             }
         }
 
-        Color backGroundColor = new Color(1, 1, 0, 1);
-        this.atlasImage = ImageUtils.clampBackGroundColor(this.atlasImage, backGroundColor, 3, 50);
-
-        // test save atlasTexture image.****
-        // Test.**************************************************
-        if (globalOptions.isDebugLod()) {
-            String extension = "jpg";
-            if (existPngTextures) {
-                extension = "png";
-            }
-            double random = Math.random();
-            int intRandom = (int) (random * 100000);
-            String imageName = ATLAS_IMAGE + "_Lod_" + lod.getLevel() + "_" + intRandom;
-            this.writeBatchedImage(imageName, extension);
-        }
-        // end test.----------------------------------------------
-
         if (isPhotorealistic) {
             // limit the max image size to 4096
             int lodLevel = lod.getLevel();
@@ -488,6 +470,27 @@ public class GaiaTextureCoordinator {
                 this.atlasImage = imageResizer.resizeImageGraphic2D(this.atlasImage, imageWidth, imageHeight);
             }
         }
+
+        Color backGroundColor = new Color(255, 0, 255, 255);
+        BufferedImage clamped = ImageUtils.clampBackGroundColor(this.atlasImage, backGroundColor, 1, 30);
+
+        Graphics2D graphics2D = this.atlasImage.createGraphics();
+        graphics2D.drawImage(clamped, 0, 0, null);
+        graphics2D.dispose();
+
+        // test save atlasTexture image.****
+        // Test.----------------------------------------------
+        if (globalOptions.isDebugLod()) {
+            String extension = "jpg";
+            if (existPngTextures) {
+                extension = "png";
+            }
+            double random = Math.random();
+            int intRandom = (int) (random * 100000);
+            String imageName = ATLAS_IMAGE + "_Lod_" + lod.getLevel() + "_" + intRandom;
+            this.writeBatchedImage(imageName, extension);
+        }
+        // end test.----------------------------------------------
 
         return this.atlasImage;
     }

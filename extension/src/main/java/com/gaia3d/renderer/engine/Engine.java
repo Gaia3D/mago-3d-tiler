@@ -1001,7 +1001,7 @@ public class Engine {
             tempFolder.mkdirs();
         }
         String fileName = rawProjectName + "_atlas";
-        String extension = ".jpg";
+        String extension = ".png";
         GaiaTexture atlasTexture = makeAtlasTexture(texturesAtlasDataList);
         if(atlasTexture == null) {
             log.info("makeAtlasTexture() : atlasTexture is null.");
@@ -1013,7 +1013,7 @@ public class Engine {
         try {
             File atlasFile = new File(atlasImagePath);
             log.info("[Engine] write atlas image : {}", atlasFile.getAbsoluteFile());
-            ImageIO.write(atlasTexture.getBufferedImage(), "jpg", atlasFile);
+            ImageIO.write(atlasTexture.getBufferedImage(), "png", atlasFile);
         } catch (IOException e) {
             log.error("Error writing image: {}", e);
         }
@@ -1235,7 +1235,7 @@ public class Engine {
             tempFolder.mkdirs();
         }
         String fileName = rawProjectName + "_Atlas";
-        String extension = ".jpg";
+        String extension = ".png";
         GaiaTexture atlasTexture = makeAtlasTexture(texturesAtlasDataList);
         if(atlasTexture == null) {
             log.info("makeAtlasTexture() : atlasTexture is null.");
@@ -1246,7 +1246,7 @@ public class Engine {
         String atlasImagePath = atlasTexture.getParentPath() + File.separator + atlasTexture.getPath();
         try {
             File atlasFile = new File(atlasImagePath);
-            ImageIO.write(atlasTexture.getBufferedImage(), "jpg", atlasFile);
+            ImageIO.write(atlasTexture.getBufferedImage(), "png", atlasFile);
         } catch (IOException e) {
             log.error("Error writing image: {}", e);
         }
@@ -1507,7 +1507,7 @@ public class Engine {
             tempFolder.mkdirs();
         }
         String fileName = rawProjectName + "_Atlas";
-        String extension = ".jpg";
+        String extension = ".png";
         GaiaTexture atlasTexture = makeAtlasTexture(texturesAtlasDataList);
         if(atlasTexture == null) {
             log.info("makeAtlasTexture() : atlasTexture is null.");
@@ -1518,7 +1518,7 @@ public class Engine {
         String atlasImagePath = atlasTexture.getParentPath() + File.separator + atlasTexture.getPath();
         try {
             File atlasFile = new File(atlasImagePath);
-            ImageIO.write(atlasTexture.getBufferedImage(), "jpg", atlasFile);
+            ImageIO.write(atlasTexture.getBufferedImage(), "png", atlasFile);
         } catch (IOException e) {
             log.error("Error writing image: {}", e);
         }
