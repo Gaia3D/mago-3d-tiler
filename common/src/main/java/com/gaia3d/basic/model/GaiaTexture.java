@@ -102,6 +102,12 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         this.bufferedImage = new BufferedImage(width, height, imageType);
     }
 
+    public void fillImage(Color color) {
+        Graphics2D graphics = this.bufferedImage.createGraphics();
+        graphics.setColor(color);
+        graphics.fillRect(0, 0, this.width, this.height);
+    }
+
     private BufferedImage testImage() {
         BufferedImage bufferedImage = new BufferedImage(1, 1, BufferedImage.TYPE_3BYTE_BGR);
         Graphics2D graphics = bufferedImage.createGraphics();

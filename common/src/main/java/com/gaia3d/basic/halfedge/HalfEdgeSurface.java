@@ -3059,11 +3059,18 @@ public class HalfEdgeSurface implements Serializable {
         GaiaTexture textureAtlas = new GaiaTexture();
         log.info("[Tile][PhotoRealistic][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
         textureAtlas.createImage(maxWidth, maxHeight, imageType);
+        // fill the textureAtlas with fuchia color.***
+        Color fuchiaColor = new Color(255, 0, 255);
+        Graphics2D g2d = textureAtlas.getBufferedImage().createGraphics();
+        g2d.setColor(fuchiaColor);
+        g2d.fillRect(0, 0, maxWidth, maxHeight);
+        g2d.dispose();
+
         //BufferedImage clampedBufferedImage = ImageUtils.clampBackGroundColor(textureAtlas.getBufferedImage(), new Color(255, 0, 255), 1, 15);
         //textureAtlas.setBufferedImage(clampedBufferedImage);
 
         // draw the images into textureAtlas.***
-        Graphics2D g2d = textureAtlas.getBufferedImage().createGraphics();
+        g2d = textureAtlas.getBufferedImage().createGraphics();
         textureScissorDatasCount = textureScissorDatas.size();
         for (int i = 0; i < textureScissorDatasCount; i++) {
             GaiaTextureScissorData textureScissorData = textureScissorDatas.get(i);

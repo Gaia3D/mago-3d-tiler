@@ -10,6 +10,7 @@ import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.tileprocess.tile.LevelOfDetail;
 import com.gaia3d.util.ImageResizer;
+import com.gaia3d.util.ImageUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector2d;
 
@@ -46,13 +47,11 @@ public class GaiaTextureCoordinator {
         if (width > 0 || height > 0) {
             this.atlasImage = new BufferedImage(width, height, imageType);
 
-            // TEST.***
             // now fill the image with white fuchsia.***
             Graphics2D graphics = this.atlasImage.createGraphics();
-            graphics.setColor(new Color(0.25f, 0.25f, 0.25f));
+            graphics.setColor(new Color(1.0f, 0.0f, 1.0f));
             graphics.fillRect(0, 0, width, height);
             graphics.dispose();
-            // End test.---
 
         } else {
             this.atlasImage = null;
@@ -422,6 +421,8 @@ public class GaiaTextureCoordinator {
             this.writeBatchedImage(imageName, extension);
         }
         // end test.----------------------------------------------
+        Color backGroundColor = new Color(1, 0, 1, 1);
+        ImageUtils.clampBackGroundColor(this.atlasImage, backGroundColor, 35, 1);
 
         if (isPhotorealistic) {
             // limit the max image size to 4096
