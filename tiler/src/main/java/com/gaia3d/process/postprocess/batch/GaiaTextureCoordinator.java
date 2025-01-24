@@ -422,7 +422,7 @@ public class GaiaTextureCoordinator {
         }
         // end test.----------------------------------------------
         Color backGroundColor = new Color(1, 0, 1, 1);
-        ImageUtils.clampBackGroundColor(this.atlasImage, backGroundColor, 35, 1);
+        this.atlasImage = ImageUtils.clampBackGroundColor(this.atlasImage, backGroundColor, 1, 35);
 
         if (isPhotorealistic) {
             // limit the max image size to 4096
