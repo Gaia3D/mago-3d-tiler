@@ -795,10 +795,27 @@ public class Engine {
             Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox = mapClassificationCamDirTypeBBox.computeIfAbsent(classificationId, k -> new HashMap<>());
             Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix = mapClassificationCamDirTypeModelViewMatrix.computeIfAbsent(classificationId, k -> new HashMap<>());
 
+            double camDirNormalMinAngDeg = 120.0;
+
+            // ZNeg texture.***
+            CameraDirectionType cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_ZNEG;
+            BufferedImage imageZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
+                    mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, camDirNormalMinAngDeg);
+            imageZNeg = eliminateBackGroundColor(imageZNeg);
+
+            if(imageZNeg != null)
+            {
+                TexturesAtlasData texturesAtlasDataYPosZNeg = new TexturesAtlasData();
+                texturesAtlasDataYPosZNeg.setClassifyId(classificationId);
+                texturesAtlasDataYPosZNeg.setCameraDirectionType(CameraDirectionType.CAMERA_DIRECTION_ZNEG);
+                texturesAtlasDataYPosZNeg.setTextureImage(imageZNeg);
+                texturesAtlasDataList.add(texturesAtlasDataYPosZNeg);
+            }
+
             // YPosZNeg texture.***
-            CameraDirectionType cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_YPOS_ZNEG;
+            cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_YPOS_ZNEG;
             BufferedImage imageYpoZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
-                    mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix);
+                    mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, camDirNormalMinAngDeg);
             imageYpoZNeg = eliminateBackGroundColor(imageYpoZNeg);
 
             if(imageYpoZNeg != null)
@@ -813,7 +830,7 @@ public class Engine {
             // XNegZNeg texture.***
             cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_XNEG_ZNEG;
             BufferedImage imageXNegZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
-                    mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix);
+                    mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, camDirNormalMinAngDeg);
             imageXNegZNeg = eliminateBackGroundColor(imageXNegZNeg);
 
             if(imageXNegZNeg != null)
@@ -828,7 +845,7 @@ public class Engine {
             // YNegZNeg texture.***
             cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_YNEG_ZNEG;
             BufferedImage imageYNegZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
-                    mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix);
+                    mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, camDirNormalMinAngDeg);
             imageYNegZNeg = eliminateBackGroundColor(imageYNegZNeg);
 
             if(imageYNegZNeg != null)
@@ -843,7 +860,7 @@ public class Engine {
             // XPosZNeg texture.***
             cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_XPOS_ZNEG;
             BufferedImage imageXPosZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
-                    mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix);
+                    mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, camDirNormalMinAngDeg);
             imageXPosZNeg = eliminateBackGroundColor(imageXPosZNeg);
 
             if(imageXPosZNeg != null)
@@ -1601,6 +1618,10 @@ public class Engine {
             //PlaneType planeType = texAtlasData.getPlaneType(); // old.*** old.*** old.*** old.*** old.*** old.***
             CameraDirectionType cameraDirectionType = texAtlasData.getCameraDirectionType();
             List<HalfEdgeFace> faceGroup = mapClassificationCamDirTypeFacesList.get(classifyId).get(cameraDirectionType);
+
+            if(faceGroup == null) {
+                continue;
+            }
 
             GaiaRectangle originalBoundary = texAtlasData.getOriginalBoundary();
             GaiaRectangle batchedBoundary = texAtlasData.getBatchedBoundary();
@@ -2423,7 +2444,7 @@ public class Engine {
                                                                 Map<CameraDirectionType, List<GaiaFace>> mapCameraDirectionTypeFacesList,
                                                                 Map<GaiaFace, CameraDirectionTypeInfo> mapGaiaFaceToCameraDirectionTypeInfo,
                                                                 Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox,
-                                                                Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix) {
+                                                                Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix, double camDirNormalMinAngDeg) {
         // Calculate bbox relative to camera direction.***
         //List<HalfEdgeVertex> facesVertices = HalfEdgeUtils.getVerticesOfFaces(faces, null);
         GaiaBoundingBox bbox = gaiaScene.getBoundingBox();
@@ -2618,7 +2639,7 @@ public class Engine {
                         double angDeg = Math.toDegrees(angRad);
 
 
-                        if(angDeg > 120.0)
+                        if(angDeg > camDirNormalMinAngDeg)
                         {
                             // put it into map
                             mapCameraDirectionTypeFacesList.computeIfAbsent(cameraDirectionType, k -> new ArrayList<>()).add(face);

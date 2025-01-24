@@ -120,14 +120,14 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         int currDepth = desiredDepth - lod;
         Map<Node, List<TileInfo>> nodeTileInfoMap = new HashMap<>();
 
-//        // multi-threading.***
-//        multiThreadCuttingAndScissorProcess(tileInfosCopy, lod, root, desiredDepth);
-//
-//        // distribute contents to node in the correspondent depth.***
-//        // After process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes.***
-//        distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
-//        makeContentsForNodes(nodeTileInfoMap, lod);
-//        // End lod 0.---
+        // multi-threading.***
+        multiThreadCuttingAndScissorProcess(tileInfosCopy, lod, root, desiredDepth);
+
+        // distribute contents to node in the correspondent depth.***
+        // After process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes.***
+        distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
+        makeContentsForNodes(nodeTileInfoMap, lod);
+        // End lod 0.---
 
 
         int netSurfaceStartLod = 3;
@@ -364,7 +364,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 continue;
             }
 
-            tilerExtensionModule.makeNetSurfacesWithBoxTextures(gaiaSceneList, resultDecimatedScenes, decimateParameters, pixelsForMeter);
+            tilerExtensionModule.makeNetSurfacesWithBoxTexturesObliqueCamera(gaiaSceneList, resultDecimatedScenes, decimateParameters, pixelsForMeter);
 
             if(resultDecimatedScenes.isEmpty()) {
                 // sometimes the resultDecimatedScenes is empty because when rendering the scene, the scene is almost out of the camera.***
@@ -440,7 +440,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             gaiaSceneList.clear();
             resultDecimatedScenes.clear();
             gaiaSceneList.add(scene);
-            //tilerExtensionModule.decimate(gaiaSceneList, resultDecimatedScenes, decimateParameters); // old.*** old.*** old.*** old.*** old.*** old.*** old.*** old.*** old.*** old.*** old.***
+
             tilerExtensionModule.decimateByObliqueCamera(gaiaSceneList, resultDecimatedScenes, decimateParameters);
 
             if (resultDecimatedScenes.isEmpty()) {

@@ -119,6 +119,15 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
+    public void makeNetSurfacesWithBoxTexturesObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, double pixelsForMeter)
+    {
+        if(renderer == null)
+            renderer = new MainRenderer();
+        renderer.makeNetSurfacesWithBoxTexturesObliqueCamera(scenes, resultHalfEdgeScenes, decimateParameters, pixelsForMeter);
+        deleteObjects();
+    }
+
+    @Override
     public void deleteObjects()
     {
         if(renderer != null) {

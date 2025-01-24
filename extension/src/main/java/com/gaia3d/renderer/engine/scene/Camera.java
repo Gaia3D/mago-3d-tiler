@@ -177,7 +177,11 @@ public class Camera {
     }
 
     public Vector3d calculateUpVector(Vector3d direction) {
+        // check if the direction is perpendicular to the z axis
         Vector3d zAxis = new Vector3d(0, 0, 1);
+        if (Math.abs(direction.dot(zAxis)) > 0.9999) {
+            return new Vector3d(0, 1, 0);
+        }
         Vector3d right = new Vector3d(direction);
         right.cross(zAxis);
         right.normalize();
