@@ -36,6 +36,14 @@ public class ImageUtils {
         }
     }
 
+    public static int getNearestPowerOfTwoHigher(int value) {
+        int power = 1;
+        while (power < value) {
+            power *= 2;
+        }
+        return power;
+    }
+
     public static String getFormatNameByMimeType(String mimeType) {
         return switch (mimeType) {
             case "image/png" -> "png";
