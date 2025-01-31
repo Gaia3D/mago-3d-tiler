@@ -7,13 +7,13 @@ import static org.lwjgl.glfw.GLFW.*;
 
 public class MouseInput {
     @Getter
-    private Vector2f currentPos;
+    private final Vector2f currentPos;
     @Getter
-    private Vector2f displVec;
+    private final Vector2f displVec;
     private boolean inWindow;
     @Getter
     private boolean leftButtonPressed;
-    private Vector2f previousPos;
+    private final Vector2f previousPos;
     @Getter
     private boolean rightButtonPressed;
 

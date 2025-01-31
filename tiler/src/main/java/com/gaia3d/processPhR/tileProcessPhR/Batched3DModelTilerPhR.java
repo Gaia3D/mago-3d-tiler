@@ -112,7 +112,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         root.setBoundingVolume(new BoundingVolume(globalBoundingBox));
         root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
 
-        // lod 0.***
+        /* Start lod 0 process */
         int lod = 0;
         List<TileInfo> tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, null);
 
@@ -120,15 +120,14 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         int currDepth = desiredDepth - lod;
         Map<Node, List<TileInfo>> nodeTileInfoMap = new HashMap<>();
 
-        // multi-threading.***
         multiThreadCuttingAndScissorProcess(tileInfosCopy, lod, root, desiredDepth);
 
         // distribute contents to node in the correspondent depth.***
         // After process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes.***
         distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
         makeContentsForNodes(nodeTileInfoMap, lod);
-        // End lod 0.---
 
+        /* End lod 0 process */
 
         int netSurfaceStartLod = 3;
 
@@ -397,9 +396,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             GaiaSet tempSetLod1 = GaiaSet.fromGaiaScene(sceneLod1);
             halfEdgeSceneLod.deleteObjects();
 
+            LevelOfDetail levelOfDetail = LevelOfDetail.getByLevel(lod - 1);
+            float scale = levelOfDetail.getTextureScale();
+
             String aux = "lod" + lod;
             Path tempFolderLod = tempFolder.resolve(aux);
-            Path currTempPathLod = tempSetLod1.writeFile(tempFolderLod, tileInfo.getSerial(), tempSetLod1.getAttribute());
+            Path currTempPathLod = tempSetLod1.writeFile(tempFolderLod, tileInfo.getSerial(), tempSetLod1.getAttribute(), scale);
             tileInfo.setTempPath(currTempPathLod);
             gaiaSet.clear(); // delete gaiaSet.***
             scene.clear(); // delete scene.***
@@ -471,9 +473,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             GaiaSet tempSetLod1 = GaiaSet.fromGaiaScene(sceneLod1);
             halfEdgeSceneLod.deleteObjects();
 
+            LevelOfDetail levelOfDetail = LevelOfDetail.getByLevel(lod - 1);
+            float scale = levelOfDetail.getTextureScale();
+
             String aux = "lod" + lod;
             Path tempFolderLod = tempFolder.resolve(aux);
-            Path currTempPathLod = tempSetLod1.writeFile(tempFolderLod, tileInfo.getSerial(), tempSetLod1.getAttribute());
+            Path currTempPathLod = tempSetLod1.writeFile(tempFolderLod, tileInfo.getSerial(), tempSetLod1.getAttribute(), scale);
             tileInfo.setTempPath(currTempPathLod);
             //tempPathLod.add(currTempPathLod);
         }
@@ -541,9 +546,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             GaiaSet tempSetLod1 = GaiaSet.fromGaiaScene(sceneLod1);
             halfEdgeSceneLod.deleteObjects();
 
+            LevelOfDetail levelOfDetail = LevelOfDetail.getByLevel(lod - 1);
+            float scale = levelOfDetail.getTextureScale();
+
             String aux = "lod" + lod;
             Path tempFolderLod = tempFolder.resolve(aux);
-            Path currTempPathLod = tempSetLod1.writeFile(tempFolderLod, tileInfo.getSerial(), tempSetLod1.getAttribute());
+            Path currTempPathLod = tempSetLod1.writeFile(tempFolderLod, tileInfo.getSerial(), tempSetLod1.getAttribute(), scale);
             tileInfo.setTempPath(currTempPathLod);
             //tempPathLod.add(currTempPathLod);
         }

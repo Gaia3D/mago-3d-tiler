@@ -70,10 +70,14 @@ public class Engine {
     private boolean midButtonClicked = false;
     private boolean renderAxis = false;
 
-    private int boxRenderingMaxSize = 1024;
+    private int boxRenderingMaxSize = 1024; // 1024
+    private float boxRenderingMaxSizeFactor = 10.0f;
 
     private int testsCount = 0;
+
+    // TODO : change this path to a relative path. **********************************************************************
     private String tempFolderPath = "D:\\Result_mago3dTiler\\temp";
+    // end TODO.--------------------------------------------------------------------------------------------------------
 
     public Engine(String windowTitle, Window.WindowOptions opts, IAppLogic appLogic) {
         window = new Window(windowTitle, opts, () -> {
@@ -286,7 +290,7 @@ public class Engine {
                 double pixelsForMeter = 128.0 / bboxMaxSize;
                 DecimateParameters decimateParameters = new DecimateParameters();
                 decimateParameters.setBasicValues(10.0, 1.0, 3.0, 10.0, 1000000, 1, 0.5);
-                this.makeNetSurfaces_TEST(gaiaScenes, resultHalfEdgeScenes, decimateParameters, pixelsForMeter);
+                //this.makeNetSurfaces_TEST(gaiaScenes, resultHalfEdgeScenes, decimateParameters, pixelsForMeter);
 
                 HalfEdgeScene halfEdgeSceneResult = resultHalfEdgeScenes.get(0);
                 this.getHalfEdgeScenes().clear();
@@ -408,12 +412,21 @@ public class Engine {
         // create the fbo.***
         int fboWidthDepth = maxDepthScreenSize;
         int fboHeightDepth = maxDepthScreenSize;
-        if (xLength > yLength) {
-            fboWidthDepth = maxDepthScreenSize;
-            fboHeightDepth = (int) (maxDepthScreenSize * yLength / xLength);
+        /*if (xLength > yLength) {
+            fboWidth = maxScreenSize;
+            fboHeight = (int) (maxScreenSize * yLength / xLength);
         } else {
-            fboWidthDepth = (int) (maxDepthScreenSize * xLength / yLength);
-            fboHeightDepth = maxDepthScreenSize;
+            fboWidth = (int) (maxScreenSize * xLength / yLength);
+            fboHeight = maxScreenSize;
+        }*/
+        float xLengthFactor = xLength * boxRenderingMaxSizeFactor;
+        float yLengthFactor = yLength * boxRenderingMaxSizeFactor;
+        if (xLengthFactor > yLengthFactor) {
+            fboWidthDepth = (int) xLengthFactor;
+            fboHeightDepth = (int) yLengthFactor;
+        } else {
+            fboWidthDepth = (int) xLengthFactor;
+            fboHeightDepth = (int) yLengthFactor;
         }
 
         fboWidthDepth = Math.max(fboWidthDepth, 1);
@@ -520,7 +533,7 @@ public class Engine {
             log.info("Engine.makeNetSurfaces() : maxDepthScreenSize = " + maxDepthScreenSize);
 
             List<BufferedImage> depthRenderedImages = new ArrayList<>();
-            getDepthRender_TEST(gaiaScene, BufferedImage.TYPE_INT_ARGB, depthRenderedImages, maxDepthScreenSize);
+            //getDepthRender_TEST(gaiaScene, BufferedImage.TYPE_INT_ARGB, depthRenderedImages, maxDepthScreenSize);
 
             BufferedImage depthRenderedImage = depthRenderedImages.get(0);
             BufferedImage colorRenderedImage = depthRenderedImages.get(1);
@@ -579,33 +592,28 @@ public class Engine {
 
     }
 
-    private RenderableGaiaScene getColorCodedRenderableScene(GaiaScene gaiaScene)
-    {
+    private RenderableGaiaScene getColorCodedRenderableScene(GaiaScene gaiaScene) {
         // 1rst, unWeld the vertices.***
         gaiaScene.unWeldVertices();
 
         // now, make a map<GaiaFace, Integer> for the faces.***
         List<GaiaFace> faces = gaiaScene.extractGaiaFaces(null);
         int facesCount = faces.size();
-        for(int i=0; i<facesCount; i++)
-        {
+        for (int i = 0; i < facesCount; i++) {
             GaiaFace face = faces.get(i);
             face.setId(i);
         }
 
         List<GaiaPrimitive> primitives = gaiaScene.extractPrimitives(null);
         int primitivesCount = primitives.size();
-        for(int i=0; i<primitivesCount; i++)
-        {
+        for (int i = 0; i < primitivesCount; i++) {
             GaiaPrimitive primitive = primitives.get(i);
             List<GaiaFace> primitiveFaces = primitive.extractGaiaFaces(null);
-            for(GaiaFace face : primitiveFaces)
-            {
+            for (GaiaFace face : primitiveFaces) {
                 int faceId = face.getId();
                 byte[] byteColor = GaiaColorUtils.decodeColor4(faceId);
                 int[] faceIndices = face.getIndices();
-                for(int index : faceIndices)
-                {
+                for (int index : faceIndices) {
                     GaiaVertex vertex = primitive.getVertices().get(index);
                     vertex.setColor(byteColor);
                 }
@@ -667,13 +675,11 @@ public class Engine {
     }
 
     public BufferedImage eliminateBackGroundColor(BufferedImage originalImage) {
-        if (originalImage == null)
-            return null;
+        if (originalImage == null) return null;
 
         int fboWidth = originalImage.getWidth();
         int fboHeight = originalImage.getHeight();
-        if (fboWidth <= 0 || fboHeight <= 0)
-            return null;
+        if (fboWidth <= 0 || fboHeight <= 0) return null;
 
         try {
             Fbo fbo = fboManager.getOrCreateFbo("default", fboWidth, fboHeight);
@@ -799,12 +805,10 @@ public class Engine {
 
             // ZNeg texture.***
             CameraDirectionType cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_ZNEG;
-            BufferedImage imageZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
-                    mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, camDirNormalMinAngDeg);
+            BufferedImage imageZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize, mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, camDirNormalMinAngDeg);
             imageZNeg = eliminateBackGroundColor(imageZNeg);
 
-            if(imageZNeg != null)
-            {
+            if (imageZNeg != null) {
                 TexturesAtlasData texturesAtlasDataYPosZNeg = new TexturesAtlasData();
                 texturesAtlasDataYPosZNeg.setClassifyId(classificationId);
                 texturesAtlasDataYPosZNeg.setCameraDirectionType(CameraDirectionType.CAMERA_DIRECTION_ZNEG);
@@ -814,12 +818,10 @@ public class Engine {
 
             // YPosZNeg texture.***
             cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_YPOS_ZNEG;
-            BufferedImage imageYpoZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
-                    mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, camDirNormalMinAngDeg);
+            BufferedImage imageYpoZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize, mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, camDirNormalMinAngDeg);
             imageYpoZNeg = eliminateBackGroundColor(imageYpoZNeg);
 
-            if(imageYpoZNeg != null)
-            {
+            if (imageYpoZNeg != null) {
                 TexturesAtlasData texturesAtlasDataYPosZNeg = new TexturesAtlasData();
                 texturesAtlasDataYPosZNeg.setClassifyId(classificationId);
                 texturesAtlasDataYPosZNeg.setCameraDirectionType(CameraDirectionType.CAMERA_DIRECTION_YPOS_ZNEG);
@@ -829,12 +831,10 @@ public class Engine {
 
             // XNegZNeg texture.***
             cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_XNEG_ZNEG;
-            BufferedImage imageXNegZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
-                    mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, camDirNormalMinAngDeg);
+            BufferedImage imageXNegZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize, mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, camDirNormalMinAngDeg);
             imageXNegZNeg = eliminateBackGroundColor(imageXNegZNeg);
 
-            if(imageXNegZNeg != null)
-            {
+            if (imageXNegZNeg != null) {
                 TexturesAtlasData texturesAtlasDataXNegZNeg = new TexturesAtlasData();
                 texturesAtlasDataXNegZNeg.setClassifyId(classificationId);
                 texturesAtlasDataXNegZNeg.setCameraDirectionType(CameraDirectionType.CAMERA_DIRECTION_XNEG_ZNEG);
@@ -844,12 +844,10 @@ public class Engine {
 
             // YNegZNeg texture.***
             cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_YNEG_ZNEG;
-            BufferedImage imageYNegZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
-                    mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, camDirNormalMinAngDeg);
+            BufferedImage imageYNegZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize, mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, camDirNormalMinAngDeg);
             imageYNegZNeg = eliminateBackGroundColor(imageYNegZNeg);
 
-            if(imageYNegZNeg != null)
-            {
+            if (imageYNegZNeg != null) {
                 TexturesAtlasData texturesAtlasDataYNegZNeg = new TexturesAtlasData();
                 texturesAtlasDataYNegZNeg.setClassifyId(classificationId);
                 texturesAtlasDataYNegZNeg.setCameraDirectionType(CameraDirectionType.CAMERA_DIRECTION_YNEG_ZNEG);
@@ -859,12 +857,10 @@ public class Engine {
 
             // XPosZNeg texture.***
             cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_XPOS_ZNEG;
-            BufferedImage imageXPosZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
-                    mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, camDirNormalMinAngDeg);
+            BufferedImage imageXPosZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize, mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, camDirNormalMinAngDeg);
             imageXPosZNeg = eliminateBackGroundColor(imageXPosZNeg);
 
-            if(imageXPosZNeg != null)
-            {
+            if (imageXPosZNeg != null) {
                 TexturesAtlasData texturesAtlasDataXPosZNeg = new TexturesAtlasData();
                 texturesAtlasDataXPosZNeg.setClassifyId(classificationId);
                 texturesAtlasDataXPosZNeg.setCameraDirectionType(CameraDirectionType.CAMERA_DIRECTION_XPOS_ZNEG);
@@ -873,8 +869,7 @@ public class Engine {
             }
 
             // There are no visible faces, so 1rst set the CAMERA_DIRECTION_YPOS_ZNEG to all the halfEdgeFaces as default.***
-            for(HalfEdgeFace halfEdgeFace : facesList)
-            {
+            for (HalfEdgeFace halfEdgeFace : facesList) {
                 halfEdgeFace.setCameraDirectionType(CameraDirectionType.CAMERA_DIRECTION_YPOS_ZNEG);
             }
 
@@ -886,49 +881,48 @@ public class Engine {
                 halfEdgeFace.setCameraDirectionType(cameraDirectionTypeInfo.getCameraDirectionType());
             }
 
-            int hola = 0;
-//            List<HalfEdgeFace> facesCamDirYNegZNeg = mapCameraDirectionTypeFacesList.get(CameraDirectionType.CAMERA_DIRECTION_YNEG_ZNEG);
-//            if (facesCamDirYNegZNeg != null && !facesCamDirYNegZNeg.isEmpty()) {
-//                Vector3d camDirYNegZNeg = new Vector3d(0, -1, -1);
-//                camDirYNegZNeg.normalize();
-//
-//                BufferedImage YNegZNegImage = makeTextureAndTexCoordsByCameraDirection(facesCamDirYNegZNeg, camDirYNegZNeg, maxScreenSize);
-//                YNegZNegImage = eliminateBackGroundColor(YNegZNegImage);
-//
-//                // test save images.***
-//                try {
-//                    String path = "D:\\Result_mago3dTiler";
-//                    String fileName = "texImage_" + classificationId;
-//                    String extension = ".png";
-//                    String imagePath = path + "\\" + fileName + "_YNegZNeg" + extension;
-//                    File imageFile = new File(imagePath);
-//                    ImageIO.write(YNegZNegImage, "png", imageFile);
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//                // end test save images.***
-//                if (YNegZNegImage != null) {
-//                    TexturesAtlasData texturesAtlasDataYPosZNeg = new TexturesAtlasData();
-//                    texturesAtlasDataYPosZNeg.setClassifyId(classificationId);
-//                    texturesAtlasDataYPosZNeg.setCameraDirectionType(CameraDirectionType.CAMERA_DIRECTION_YNEG_ZNEG);
-//                    texturesAtlasDataYPosZNeg.setTextureImage(YNegZNegImage);
-//                    texturesAtlasDataList.add(texturesAtlasDataYPosZNeg);
-//                } else {
-//                    // set texCoords as (0.0,0.0).***
-//                    List<HalfEdgeVertex> vertices = HalfEdgeUtils.getVerticesOfFaces(facesCamDirYNegZNeg, null);
-//                    for (HalfEdgeVertex vertex : vertices) {
-//                        if (vertex.getTexcoords() != null) {
-//                            vertex.getTexcoords().set(0.0, 0.0);
-//                        }
-//                    }
-//                }
-//            }
+            /*int hola = 0;
+            List<HalfEdgeFace> facesCamDirYNegZNeg = mapCameraDirectionTypeFacesList.get(CameraDirectionType.CAMERA_DIRECTION_YNEG_ZNEG);
+            if (facesCamDirYNegZNeg != null && !facesCamDirYNegZNeg.isEmpty()) {
+                Vector3d camDirYNegZNeg = new Vector3d(0, -1, -1);
+                camDirYNegZNeg.normalize();
+
+                BufferedImage YNegZNegImage = makeTextureAndTexCoordsByCameraDirection(facesCamDirYNegZNeg, camDirYNegZNeg, maxScreenSize);
+                YNegZNegImage = eliminateBackGroundColor(YNegZNegImage);
+
+                // test save images.***
+                try {
+                    String path = "D:\\Result_mago3dTiler";
+                    String fileName = "texImage_" + classificationId;
+                    String extension = ".png";
+                    String imagePath = path + "\\" + fileName + "_YNegZNeg" + extension;
+                    File imageFile = new File(imagePath);
+                    ImageIO.write(YNegZNegImage, "png", imageFile);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                // end test save images.***
+                if (YNegZNegImage != null) {
+                    TexturesAtlasData texturesAtlasDataYPosZNeg = new TexturesAtlasData();
+                    texturesAtlasDataYPosZNeg.setClassifyId(classificationId);
+                    texturesAtlasDataYPosZNeg.setCameraDirectionType(CameraDirectionType.CAMERA_DIRECTION_YNEG_ZNEG);
+                    texturesAtlasDataYPosZNeg.setTextureImage(YNegZNegImage);
+                    texturesAtlasDataList.add(texturesAtlasDataYPosZNeg);
+                } else {
+                    // set texCoords as (0.0,0.0).***
+                    List<HalfEdgeVertex> vertices = HalfEdgeUtils.getVerticesOfFaces(facesCamDirYNegZNeg, null);
+                    for (HalfEdgeVertex vertex : vertices) {
+                        if (vertex.getTexcoords() != null) {
+                            vertex.getTexcoords().set(0.0, 0.0);
+                        }
+                    }
+                }
+            }*/
 
 
         }
 
         halfEdgeScene.splitFacesByBestObliqueCameraDirectionToProject();
-
 
 
         // now, for each classifyId - CameraDirectionType, calculate the texCoords.***
@@ -938,17 +932,17 @@ public class Engine {
             halfEdgeSurface.getMapClassifyIdToCameraDirectionTypeToFaces(mapFaceGroupByClassifyIdAndObliqueCamDirType);
 
             // test create texCoords for all vertices.***
-            for(HalfEdgeVertex vertex : halfEdgeSurface.getVertices()) {
+            for (HalfEdgeVertex vertex : halfEdgeSurface.getVertices()) {
                 vertex.setTexcoords(new Vector2d(0.0, 0.0));
             }
         }
 
         List<HalfEdgeVertex> verticesOfFaces = new ArrayList<>();
 
-        for(Map.Entry<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> entry : mapFaceGroupByClassifyIdAndObliqueCamDirType.entrySet()) {
+        for (Map.Entry<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> entry : mapFaceGroupByClassifyIdAndObliqueCamDirType.entrySet()) {
             int classifyId = entry.getKey();
             Map<CameraDirectionType, List<HalfEdgeFace>> mapCameraDirectionTypeFacesList = entry.getValue();
-            for(Map.Entry<CameraDirectionType, List<HalfEdgeFace>> entry1 : mapCameraDirectionTypeFacesList.entrySet()) {
+            for (Map.Entry<CameraDirectionType, List<HalfEdgeFace>> entry1 : mapCameraDirectionTypeFacesList.entrySet()) {
                 CameraDirectionType cameraDirectionType = entry1.getKey();
                 List<HalfEdgeFace> facesList = entry1.getValue();
                 verticesOfFaces.clear();
@@ -962,12 +956,12 @@ public class Engine {
                 GaiaBoundingBox bbox = mapClassificationCamDirTypeBBox.get(classifyId).get(cameraDirectionType);
                 Matrix4d modelViewMatrix = mapClassificationCamDirTypeModelViewMatrix.get(classifyId).get(cameraDirectionType);
 
-                if(modelViewMatrix == null) {
+                if (modelViewMatrix == null) {
                     log.info("makeBoxTexturesByObliqueCamera() : modelViewMatrix is null.");
                     continue;
                 }
 
-                for(HalfEdgeVertex vertex : verticesOfFaces) {
+                for (HalfEdgeVertex vertex : verticesOfFaces) {
                     Vector3d vertexPosition = vertex.getPosition();
                     Vector4d vertexPosition4d = new Vector4d(vertexPosition.x, vertexPosition.y, vertexPosition.z, 1.0);
                     modelViewMatrix.transform(vertexPosition4d);
@@ -985,7 +979,6 @@ public class Engine {
             }
         }
 
-
         doAtlasTextureProcess(halfEdgeScene, texturesAtlasDataList);
         recalculateTexCoordsAfterTextureAtlasingObliqueCamera(halfEdgeScene, texturesAtlasDataList, mapClassificationCamDirTypeFacesList);
         String originalPath = halfEdgeScene.getOriginalPath().toString();
@@ -1000,10 +993,10 @@ public class Engine {
         if (!tempFolder.exists()) {
             tempFolder.mkdirs();
         }
-        String fileName = rawProjectName + "_atlas";
+        String fileName = rawProjectName + "_AtlasB";
         String extension = ".png";
         GaiaTexture atlasTexture = makeAtlasTexture(texturesAtlasDataList);
-        if(atlasTexture == null) {
+        if (atlasTexture == null) {
             log.info("makeAtlasTexture() : atlasTexture is null.");
             return;
         }
@@ -1040,7 +1033,7 @@ public class Engine {
 
     }
 
-    public void makeBoxTexturesByObliqueCamera_original(HalfEdgeScene halfEdgeScene) {
+    /*public void makeBoxTexturesByObliqueCamera_original(HalfEdgeScene halfEdgeScene) {
         // Must know all faces classification ids.***
         // 1rst, extract all surfaces.***
         List<HalfEdgeSurface> surfaces = halfEdgeScene.extractSurfaces(null);
@@ -1081,7 +1074,7 @@ public class Engine {
                 YNegZNegImage = eliminateBackGroundColor(YNegZNegImage);
 
                 // test save images.***
-                try {
+                *//*try {
                     String path = "D:\\Result_mago3dTiler";
                     String fileName = "texImage_" + classificationId;
                     String extension = ".png";
@@ -1089,8 +1082,9 @@ public class Engine {
                     File imageFile = new File(imagePath);
                     ImageIO.write(YNegZNegImage, "png", imageFile);
                 } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                    log.debug("Error writing image: {}", e);
+                }*//*
+
                 if (YNegZNegImage != null) {
                     TexturesAtlasData texturesAtlasDataYPosZNeg = new TexturesAtlasData();
                     texturesAtlasDataYPosZNeg.setClassifyId(classificationId);
@@ -1118,7 +1112,7 @@ public class Engine {
                 XNegZNegImage = eliminateBackGroundColor(XNegZNegImage);
 
                 // test save images.***
-                try {
+                *//*try {
                     String path = "D:\\Result_mago3dTiler";
                     String fileName = "texImage_" + classificationId;
                     String extension = ".png";
@@ -1126,8 +1120,8 @@ public class Engine {
                     File imageFile = new File(imagePath);
                     ImageIO.write(XNegZNegImage, "png", imageFile);
                 } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                    log.debug("Error writing image: {}", e);
+                }*//*
                 if (XNegZNegImage != null) {
                     TexturesAtlasData texturesAtlasDataYPosZNeg = new TexturesAtlasData();
                     texturesAtlasDataYPosZNeg.setClassifyId(classificationId);
@@ -1155,7 +1149,7 @@ public class Engine {
                 YPosZNegImage = eliminateBackGroundColor(YPosZNegImage);
 
                 // test save images.***
-                try {
+                *//*try {
                     String path = "D:\\Result_mago3dTiler";
                     String fileName = "texImage_" + classificationId;
                     String extension = ".png";
@@ -1163,8 +1157,8 @@ public class Engine {
                     File imageFile = new File(imagePath);
                     ImageIO.write(YPosZNegImage, "png", imageFile);
                 } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                    log.debug("Error writing image: {}", e);
+                }*//*
                 if (YPosZNegImage != null) {
                     TexturesAtlasData texturesAtlasDataYPosZNeg = new TexturesAtlasData();
                     texturesAtlasDataYPosZNeg.setClassifyId(classificationId);
@@ -1192,7 +1186,7 @@ public class Engine {
                 XPosZNegImage = eliminateBackGroundColor(XPosZNegImage);
 
                 // test save images.***
-                try {
+                *//*try {
                     String path = "D:\\Result_mago3dTiler";
                     String fileName = "texImage_" + classificationId;
                     String extension = ".png";
@@ -1200,8 +1194,8 @@ public class Engine {
                     File imageFile = new File(imagePath);
                     ImageIO.write(XPosZNegImage, "png", imageFile);
                 } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                    log.debug("Error writing image: {}", e);
+                }*//*
                 if (XPosZNegImage != null) {
                     TexturesAtlasData texturesAtlasDataXPosZNeg = new TexturesAtlasData();
                     texturesAtlasDataXPosZNeg.setClassifyId(classificationId);
@@ -1269,7 +1263,7 @@ public class Engine {
         for (HalfEdgePrimitive primitive : primitives) {
             primitive.setMaterialId(materialsCount);
         }
-    }
+    }*/
 
     public void makeBoxTexturesForHalfEdgeScene(HalfEdgeScene halfEdgeScene) {
         // Must know all faces classification ids.***
@@ -1404,12 +1398,12 @@ public class Engine {
                 BufferedImage YNegImage = makeYNegTexture(bboxXZPos, maxScreenSize);
                 YNegImage = eliminateBackGroundColor(YNegImage);
 
-//                // test save images.***
-//                try {
-//                    ImageIO.write(YNegImage, "jpeg", new File("D:\\Result_mago3dTiler\\YNegImage" + classificationId + ".jpg"));
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
+                // test save images.***
+                /*try {
+                    ImageIO.write(YNegImage, "jpeg", new File("D:\\Result_mago3dTiler\\YNegImage" + classificationId + ".jpg"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }*/
                 if (YNegImage != null) {
                     TexturesAtlasData texturesAtlasDataYNeg = new TexturesAtlasData();
                     texturesAtlasDataYNeg.setClassifyId(classificationId);
@@ -1436,12 +1430,14 @@ public class Engine {
                 BufferedImage XNegImage = makeXNegTexture(bboxYZPos, maxScreenSize);
                 XNegImage = eliminateBackGroundColor(XNegImage);
 
-//                // test save images.***
-//                try {
-//                    ImageIO.write(XNegImage, "jpeg", new File("D:\\Result_mago3dTiler\\XNegImage" + classificationId + ".jpg"));
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
+
+                // test save images.***
+                /*try {
+                    ImageIO.write(XNegImage, "jpeg", new File("D:\\Result_mago3dTiler\\XNegImage" + classificationId + ".jpg"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }*/
+
                 if (XNegImage != null) {
                     TexturesAtlasData texturesAtlasDataXNeg = new TexturesAtlasData();
                     texturesAtlasDataXNeg.setClassifyId(classificationId);
@@ -1462,34 +1458,33 @@ public class Engine {
             }
 
 
-//            // provisionally, save the images.***
-//            String path = "D:\\temp2";
-//            String fileName = "boxTexture_" + classificationId;
-//            String extension = ".jpg";
-//            String ZNegImagePath = path + "\\" + fileName + "_ZNeg" + extension;
-//            String YPosImagePath = path + "\\" + fileName + "_YPos" + extension;
-//            String XPosImagePath = path + "\\" + fileName + "_XPos" + extension;
-//            String YNegImagePath = path + "\\" + fileName + "_YNeg" + extension;
-//            String XNegImagePath = path + "\\" + fileName + "_XNeg" + extension;
-//
-//
-//            try {
-//                File ZNegFile = new File(ZNegImagePath);
-//                File YPosFile = new File(YPosImagePath);
-//                File XPosFile = new File(XPosImagePath);
-//                File YNegFile = new File(YNegImagePath);
-//                File XNegFile = new File(XNegImagePath);
-//
-//                log.info("boxTextures : save images.");
-//                ImageIO.write(ZNegImage, "jpg", ZNegFile);
-//                ImageIO.write(YPosImage, "jpg", YPosFile);
-//                ImageIO.write(XPosImage, "jpg", XPosFile);
-//                ImageIO.write(YNegImage, "jpg", YNegFile);
-//                ImageIO.write(XNegImage, "jpg", XNegFile);
-//            } catch (IOException e) {
-//                log.error("Error writing image: {}", e);
-//            }
+            /*// provisionally, save the images.***
+            String path = "D:\\temp2";
+            String fileName = "boxTexture_" + classificationId;
+            String extension = ".jpg";
+            String ZNegImagePath = path + "\\" + fileName + "_ZNeg" + extension;
+            String YPosImagePath = path + "\\" + fileName + "_YPos" + extension;
+            String XPosImagePath = path + "\\" + fileName + "_XPos" + extension;
+            String YNegImagePath = path + "\\" + fileName + "_YNeg" + extension;
+            String XNegImagePath = path + "\\" + fileName + "_XNeg" + extension;
 
+
+            try {
+                File ZNegFile = new File(ZNegImagePath);
+                File YPosFile = new File(YPosImagePath);
+                File XPosFile = new File(XPosImagePath);
+                File YNegFile = new File(YNegImagePath);
+                File XNegFile = new File(XNegImagePath);
+
+                log.info("boxTextures : save images.");
+                ImageIO.write(ZNegImage, "jpg", ZNegFile);
+                ImageIO.write(YPosImage, "jpg", YPosFile);
+                ImageIO.write(XPosImage, "jpg", XPosFile);
+                ImageIO.write(YNegImage, "jpg", YNegFile);
+                ImageIO.write(XNegImage, "jpg", XNegFile);
+            } catch (IOException e) {
+                log.error("Error writing image: {}", e);
+            }*/
         }
 
         doAtlasTextureProcess(halfEdgeScene, texturesAtlasDataList);
@@ -1506,10 +1501,10 @@ public class Engine {
         if (!tempFolder.exists()) {
             tempFolder.mkdirs();
         }
-        String fileName = rawProjectName + "_Atlas";
+        String fileName = rawProjectName + "_AtlasA";
         String extension = ".png";
         GaiaTexture atlasTexture = makeAtlasTexture(texturesAtlasDataList);
-        if(atlasTexture == null) {
+        if (atlasTexture == null) {
             log.info("makeAtlasTexture() : atlasTexture is null.");
             return;
         }
@@ -1544,26 +1539,30 @@ public class Engine {
     }
 
     private int getMaxWidth(List<TexturesAtlasData> compareImages) {
-        return compareImages.stream().mapToInt(textureScissorData -> (int) textureScissorData.getBatchedBoundary().getMaxX()).max().orElse(0);
+        int result = compareImages.stream().mapToInt(textureScissorData -> (int) textureScissorData.getBatchedBoundary().getMaxX()).max().orElse(0);
+        return result;
     }
 
     private int getMaxHeight(List<TexturesAtlasData> compareImages) {
-        return compareImages.stream().mapToInt(textureScissorData -> (int) textureScissorData.getBatchedBoundary().getMaxY()).max().orElse(0);
+        int result = compareImages.stream().mapToInt(textureScissorData -> (int) textureScissorData.getBatchedBoundary().getMaxY()).max().orElse(0);
+        return result;
     }
 
     private GaiaTexture makeAtlasTexture(List<TexturesAtlasData> texAtlasDatasList) {
         int imageType = BufferedImage.TYPE_INT_RGB;
 
+        // calculate the maxWidth and maxHeight.***
+        // TODO : is it wrong to calculate the maxWidth and maxHeight by using the batchedBoundary?***
         int maxWidth = getMaxWidth(texAtlasDatasList);
         int maxHeight = getMaxHeight(texAtlasDatasList);
 
-        if(maxWidth == 0 || maxHeight == 0) {
+        if (maxWidth == 0 || maxHeight == 0) {
             log.error("makeAtlasTexture() : maxWidth or maxHeight is 0.");
             return null;
         }
 
         GaiaTexture textureAtlas = new GaiaTexture();
-        log.debug("Atlas maxWidth : {}, maxHeight : {}", maxWidth, maxHeight);
+        log.info("[Tile][PhotoRealistic][makeAtlasTexture] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
         textureAtlas.createImage(maxWidth, maxHeight, imageType);
 
         // draw the images into textureAtlas.***
@@ -1596,8 +1595,7 @@ public class Engine {
         return textureAtlas;
     }
 
-    private void recalculateTexCoordsAfterTextureAtlasingObliqueCamera(HalfEdgeScene halfEdgeScene, List<TexturesAtlasData> texAtlasDatasList,
-                                                                       Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapClassificationCamDirTypeFacesList) {
+    private void recalculateTexCoordsAfterTextureAtlasingObliqueCamera(HalfEdgeScene halfEdgeScene, List<TexturesAtlasData> texAtlasDatasList, Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapClassificationCamDirTypeFacesList) {
         int maxWidth = getMaxWidth(texAtlasDatasList);
         int maxHeight = getMaxHeight(texAtlasDatasList);
 
@@ -1619,7 +1617,7 @@ public class Engine {
             CameraDirectionType cameraDirectionType = texAtlasData.getCameraDirectionType();
             List<HalfEdgeFace> faceGroup = mapClassificationCamDirTypeFacesList.get(classifyId).get(cameraDirectionType);
 
-            if(faceGroup == null) {
+            if (faceGroup == null) {
                 continue;
             }
 
@@ -1680,8 +1678,7 @@ public class Engine {
     }
 
 
-    private void recalculateTexCoordsAfterTextureAtlasing(HalfEdgeScene halfEdgeScene, List<TexturesAtlasData> texAtlasDatasList,
-                                                          Map<Integer, Map<PlaneType, List<HalfEdgeFace>>> mapClassificationPlaneTypeFacesList) {
+    private void recalculateTexCoordsAfterTextureAtlasing(HalfEdgeScene halfEdgeScene, List<TexturesAtlasData> texAtlasDatasList, Map<Integer, Map<PlaneType, List<HalfEdgeFace>>> mapClassificationPlaneTypeFacesList) {
         int maxWidth = getMaxWidth(texAtlasDatasList);
         int maxHeight = getMaxHeight(texAtlasDatasList);
 
@@ -1860,9 +1857,9 @@ public class Engine {
 
         // now, make the atlas texture.***************************************************************************************
         GaiaRectangle beforeMosaicRectangle = new GaiaRectangle(0.0, 0.0, 0.0, 0.0);
-        List<GaiaRectangle> list_rectangles = new ArrayList<>();
+        List<GaiaRectangle> rectangleList = new ArrayList<>();
 
-        TreeMap<Double, List<GaiaRectangle>> map_maxXrectangles = new TreeMap<>();
+        TreeMap<Double, List<GaiaRectangle>> maxXrectanglesMap = new TreeMap<>();
 
         Vector2d bestPosition = new Vector2d();
         List<TexturesAtlasData> currProcessTextureAtlasDates = new ArrayList<>();
@@ -1879,25 +1876,24 @@ public class Engine {
                 beforeMosaicRectangle.copyFrom(batchedBoundary);
             } else {
                 // 1rst, find the best position for image into atlas.***
-                bestPosition = this.getBestPositionMosaicInAtlas(currProcessTextureAtlasDates, texAtlasDataAux, bestPosition, beforeMosaicRectangle, list_rectangles, map_maxXrectangles);
+                bestPosition = this.getBestPositionMosaicInAtlas(currProcessTextureAtlasDates, texAtlasDataAux, bestPosition, beforeMosaicRectangle, rectangleList, maxXrectanglesMap);
                 batchedBoundary = new GaiaRectangle(bestPosition.x, bestPosition.y, bestPosition.x + originBoundary.getWidthInt(), bestPosition.y + originBoundary.getHeightInt());
                 texAtlasDataAux.setBatchedBoundary(batchedBoundary);
                 beforeMosaicRectangle.addBoundingRectangle(batchedBoundary);
             }
 
-            list_rectangles.add(batchedBoundary);
+            rectangleList.add(batchedBoundary);
             currProcessTextureAtlasDates.add(texAtlasDataAux);
 
             // map.************************************************************************************************************************
             double maxX = batchedBoundary.getMaxX();
 
-            List<GaiaRectangle> list_rectanglesMaxX = map_maxXrectangles.computeIfAbsent(maxX, k -> new ArrayList<>());
+            List<GaiaRectangle> list_rectanglesMaxX = maxXrectanglesMap.computeIfAbsent(maxX, k -> new ArrayList<>());
             list_rectanglesMaxX.add(batchedBoundary);
         }
     }
 
-    private Vector2d getBestPositionMosaicInAtlas(List<TexturesAtlasData> currProcessTextureAtlasDates, TexturesAtlasData texAtlasData_toPutInMosaic, Vector2d resultVec,
-                                                  GaiaRectangle beforeMosaicRectangle, List<GaiaRectangle> list_rectangles, TreeMap<Double, List<GaiaRectangle>> map_maxXrectangles) {
+    private Vector2d getBestPositionMosaicInAtlas(List<TexturesAtlasData> currProcessTextureAtlasDates, TexturesAtlasData texAtlasDataToPutInMosaic, Vector2d resultVec, GaiaRectangle beforeMosaicRectangle, List<GaiaRectangle> list_rectangles, TreeMap<Double, List<GaiaRectangle>> map_maxXrectangles) {
         if (resultVec == null) {
             resultVec = new Vector2d();
         }
@@ -1909,8 +1905,8 @@ public class Engine {
         double error = 1.0 - 1e-6;
 
         // Now, try to find the best positions to put our rectangle.***
-        int existentTexAtlasDatasCount = currProcessTextureAtlasDates.size();
-        for (int i = 0; i < existentTexAtlasDatasCount; i++) {
+        int existentTexAtlasDataCount = currProcessTextureAtlasDates.size();
+        for (int i = 0; i < existentTexAtlasDataCount; i++) {
             TexturesAtlasData existentTexAtlasData = currProcessTextureAtlasDates.get(i);
             GaiaRectangle currRect = existentTexAtlasData.getBatchedBoundary();
 
@@ -1921,27 +1917,27 @@ public class Engine {
             // If no intersects with others rectangles, then calculate the mosaic-perimeter.
             // We choose the minor perimeter of the mosaic.***
 
-            double width = texAtlasData_toPutInMosaic.getOriginalBoundary().getWidthInt();
-            double height = texAtlasData_toPutInMosaic.getOriginalBoundary().getHeightInt();
+            double width = texAtlasDataToPutInMosaic.getOriginalBoundary().getWidthInt();
+            double height = texAtlasDataToPutInMosaic.getOriginalBoundary().getHeightInt();
 
             // 1- leftUp corner.***
             currPosX = currRect.getMinX();
             currPosY = currRect.getMaxY();
 
             // setup our rectangle.***
-            if (texAtlasData_toPutInMosaic.getBatchedBoundary() == null) {
-                texAtlasData_toPutInMosaic.setBatchedBoundary(new GaiaRectangle(0.0, 0.0, 0.0, 0.0));
+            if (texAtlasDataToPutInMosaic.getBatchedBoundary() == null) {
+                texAtlasDataToPutInMosaic.setBatchedBoundary(new GaiaRectangle(0.0, 0.0, 0.0, 0.0));
             }
-            texAtlasData_toPutInMosaic.getBatchedBoundary().setMinX(currPosX);
-            texAtlasData_toPutInMosaic.getBatchedBoundary().setMinY(currPosY);
-            texAtlasData_toPutInMosaic.getBatchedBoundary().setMaxX(currPosX + width);
-            texAtlasData_toPutInMosaic.getBatchedBoundary().setMaxY(currPosY + height);
+            texAtlasDataToPutInMosaic.getBatchedBoundary().setMinX(currPosX);
+            texAtlasDataToPutInMosaic.getBatchedBoundary().setMinY(currPosY);
+            texAtlasDataToPutInMosaic.getBatchedBoundary().setMaxX(currPosX + width);
+            texAtlasDataToPutInMosaic.getBatchedBoundary().setMaxY(currPosY + height);
 
             // put our rectangle into mosaic & check that no intersects with another rectangles.***
-            if (!this.intersectsRectangleAtlasingProcess(list_rectangles, texAtlasData_toPutInMosaic.getBatchedBoundary(), map_maxXrectangles)) {
+            if (!this.intersectsRectangleAtlasingProcess(list_rectangles, texAtlasDataToPutInMosaic.getBatchedBoundary(), map_maxXrectangles)) {
                 GaiaRectangle afterMosaicRectangle = new GaiaRectangle(0.0, 0.0, 0.0, 0.0);
                 afterMosaicRectangle.copyFrom(beforeMosaicRectangle);
-                afterMosaicRectangle.addBoundingRectangle(texAtlasData_toPutInMosaic.getBatchedBoundary());
+                afterMosaicRectangle.addBoundingRectangle(texAtlasDataToPutInMosaic.getBatchedBoundary());
 
                 // calculate the perimeter of the mosaic.***
                 if (candidateMosaicPerimeter < 0.0) {
@@ -1964,16 +1960,16 @@ public class Engine {
             currPosY = currRect.getMinY();
 
             // setup our rectangle.***
-            texAtlasData_toPutInMosaic.getBatchedBoundary().setMinX(currPosX);
-            texAtlasData_toPutInMosaic.getBatchedBoundary().setMinY(currPosY);
-            texAtlasData_toPutInMosaic.getBatchedBoundary().setMaxX(currPosX + width);
-            texAtlasData_toPutInMosaic.getBatchedBoundary().setMaxY(currPosY + height);
+            texAtlasDataToPutInMosaic.getBatchedBoundary().setMinX(currPosX);
+            texAtlasDataToPutInMosaic.getBatchedBoundary().setMinY(currPosY);
+            texAtlasDataToPutInMosaic.getBatchedBoundary().setMaxX(currPosX + width);
+            texAtlasDataToPutInMosaic.getBatchedBoundary().setMaxY(currPosY + height);
 
             // put our rectangle into mosaic & check that no intersects with another rectangles.***
-            if (!this.intersectsRectangleAtlasingProcess(list_rectangles, texAtlasData_toPutInMosaic.getBatchedBoundary(), map_maxXrectangles)) {
+            if (!this.intersectsRectangleAtlasingProcess(list_rectangles, texAtlasDataToPutInMosaic.getBatchedBoundary(), map_maxXrectangles)) {
                 GaiaRectangle afterMosaicRectangle = new GaiaRectangle(0.0, 0.0, 0.0, 0.0);
                 afterMosaicRectangle.copyFrom(beforeMosaicRectangle);
-                afterMosaicRectangle.addBoundingRectangle(texAtlasData_toPutInMosaic.getBatchedBoundary());
+                afterMosaicRectangle.addBoundingRectangle(texAtlasDataToPutInMosaic.getBatchedBoundary());
 
                 // calculate the perimeter of the mosaic.***
                 if (candidateMosaicPerimeter < 0.0) {
@@ -2044,7 +2040,7 @@ public class Engine {
             height[0] = fbo.getFboHeight();
 
             glViewport(0, 0, width[0], height[0]);
-            if(clearColor != null) {
+            if (clearColor != null) {
                 glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
                 glClear(GL_COLOR_BUFFER_BIT);
             }
@@ -2055,7 +2051,7 @@ public class Engine {
             glEnable(GL_CULL_FACE);
 
             // set blend func.***
-            if(blendColors) {
+            if (blendColors) {
                 glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             } else {
@@ -2191,12 +2187,21 @@ public class Engine {
         // create the fbo.***
         int fboWidth = maxScreenSize;
         int fboHeight = maxScreenSize;
-        if (xLength > yLength) {
+        /*if (xLength > yLength) {
             fboWidth = maxScreenSize;
             fboHeight = (int) (maxScreenSize * yLength / xLength);
         } else {
             fboWidth = (int) (maxScreenSize * xLength / yLength);
             fboHeight = maxScreenSize;
+        }*/
+        float xLengthFactor = xLength * boxRenderingMaxSizeFactor;
+        float yLengthFactor = yLength * boxRenderingMaxSizeFactor;
+        if (xLengthFactor > yLengthFactor) {
+            fboWidth = (int) xLengthFactor;
+            fboHeight = (int) yLengthFactor;
+        } else {
+            fboWidth = (int) xLengthFactor;
+            fboHeight = (int) yLengthFactor;
         }
 
         fboWidth = Math.max(fboWidth, 1);
@@ -2217,11 +2222,7 @@ public class Engine {
         return image;
     }
 
-    private BufferedImage makeColorCodeTextureByCameraDirection_current(GaiaScene gaiaScene, RenderableGaiaScene renderableScene, CameraDirectionType cameraDirectionType, int maxScreenSize,
-                                                                Map<CameraDirectionType, List<GaiaFace>> mapCameraDirectionTypeFacesList,
-                                                                Map<GaiaFace, CameraDirectionTypeInfo> mapGaiaFaceToCameraDirectionTypeInfo,
-                                                                Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox,
-                                                                Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix) {
+    private BufferedImage makeColorCodeTextureByCameraDirection_current(GaiaScene gaiaScene, RenderableGaiaScene renderableScene, CameraDirectionType cameraDirectionType, int maxScreenSize, Map<CameraDirectionType, List<GaiaFace>> mapCameraDirectionTypeFacesList, Map<GaiaFace, CameraDirectionTypeInfo> mapGaiaFaceToCameraDirectionTypeInfo, Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox, Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix) {
         // Calculate bbox relative to camera direction.***
         //List<HalfEdgeVertex> facesVertices = HalfEdgeUtils.getVerticesOfFaces(faces, null);
         GaiaBoundingBox bbox = gaiaScene.getBoundingBox();
@@ -2284,12 +2285,21 @@ public class Engine {
         // create the fbo.***
         int fboWidth = maxScreenSize;
         int fboHeight = maxScreenSize;
-        if (xLength > yLength) {
+        /*if (xLength > yLength) {
             fboWidth = maxScreenSize;
             fboHeight = (int) (maxScreenSize * yLength / xLength);
         } else {
             fboWidth = (int) (maxScreenSize * xLength / yLength);
             fboHeight = maxScreenSize;
+        }*/
+        float xLengthFactor = xLength * boxRenderingMaxSizeFactor;
+        float yLengthFactor = yLength * boxRenderingMaxSizeFactor;
+        if (xLengthFactor > yLengthFactor) {
+            fboWidth = (int) xLengthFactor;
+            fboHeight = (int) yLengthFactor;
+        } else {
+            fboWidth = (int) xLengthFactor;
+            fboHeight = (int) yLengthFactor;
         }
 
         fboWidth = Math.max(fboWidth, 1);
@@ -2329,7 +2339,7 @@ public class Engine {
         gaiaScenesContainer.getRenderableGaiaScenes().add(renderableSceneCurrent);
 
         // test save images.***
-        try {
+        /*try {
             String randomId = UUID.randomUUID().toString();
             String path = "D:\\Result_mago3dTiler";
             String fileName = "albedo_" + randomId;
@@ -2338,11 +2348,11 @@ public class Engine {
             File imageFile = new File(imagePath);
             ImageIO.write(image, "png", imageFile);
         } catch (IOException e) {
-            e.printStackTrace();
-        }
+            log.debug("Error writing image: {}", e);
+        }*/
 
         // test save images.***
-        try {
+        /*try {
             String randomId = UUID.randomUUID().toString();
             String path = "D:\\Result_mago3dTiler";
             String fileName = "colorCoded_" + randomId;
@@ -2351,8 +2361,8 @@ public class Engine {
             File imageFile = new File(imagePath);
             ImageIO.write(imageColorCode, "png", imageFile);
         } catch (IOException e) {
-            e.printStackTrace();
-        }
+            log.debug("Error writing image: {}", e);
+        }*/
 
         // check the colorCoded image.***
         colorCodeFbo.bind();
@@ -2440,11 +2450,7 @@ public class Engine {
         return image;
     }
 
-    private BufferedImage makeColorCodeTextureByCameraDirection(GaiaScene gaiaScene, RenderableGaiaScene renderableScene, CameraDirectionType cameraDirectionType, int maxScreenSize,
-                                                                Map<CameraDirectionType, List<GaiaFace>> mapCameraDirectionTypeFacesList,
-                                                                Map<GaiaFace, CameraDirectionTypeInfo> mapGaiaFaceToCameraDirectionTypeInfo,
-                                                                Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox,
-                                                                Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix, double camDirNormalMinAngDeg) {
+    private BufferedImage makeColorCodeTextureByCameraDirection(GaiaScene gaiaScene, RenderableGaiaScene renderableScene, CameraDirectionType cameraDirectionType, int maxScreenSize, Map<CameraDirectionType, List<GaiaFace>> mapCameraDirectionTypeFacesList, Map<GaiaFace, CameraDirectionTypeInfo> mapGaiaFaceToCameraDirectionTypeInfo, Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox, Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix, double camDirNormalMinAngDeg) {
         // Calculate bbox relative to camera direction.***
         //List<HalfEdgeVertex> facesVertices = HalfEdgeUtils.getVerticesOfFaces(faces, null);
         GaiaBoundingBox bbox = gaiaScene.getBoundingBox();
@@ -2505,12 +2511,22 @@ public class Engine {
         // create the fbo.***
         int fboWidth = maxScreenSize;
         int fboHeight = maxScreenSize;
-        if (xLength > yLength) {
+        /*if (xLength > yLength) {
             fboWidth = maxScreenSize;
             fboHeight = (int) (maxScreenSize * yLength / xLength);
         } else {
             fboWidth = (int) (maxScreenSize * xLength / yLength);
             fboHeight = maxScreenSize;
+        }*/
+
+        float xLengthFactor = xLength * boxRenderingMaxSizeFactor;
+        float yLengthFactor = yLength * boxRenderingMaxSizeFactor;
+        if (xLengthFactor > yLengthFactor) {
+            fboWidth = (int) xLengthFactor;
+            fboHeight = (int) yLengthFactor;
+        } else {
+            fboWidth = (int) xLengthFactor;
+            fboHeight = (int) yLengthFactor;
         }
 
         fboWidth = Math.max(fboWidth, 1);
@@ -2559,7 +2575,7 @@ public class Engine {
 //            File imageFile = new File(imagePath);
 //            ImageIO.write(image, "png", imageFile);
 //        } catch (IOException e) {
-//            e.printStackTrace();
+//            log.debug("Error writing image: {}", e);
 //        }
 //
 //        // test save images.***
@@ -2572,7 +2588,7 @@ public class Engine {
 //            File imageFile = new File(imagePath);
 //            ImageIO.write(imageColorCode, "png", imageFile);
 //        } catch (IOException e) {
-//            e.printStackTrace();
+//            log.debug("Error writing image: {}", e);
 //        }
 
         // check the colorCoded image.***
@@ -2619,7 +2635,7 @@ public class Engine {
                 List<GaiaFace> faces = surface.getFaces();
                 for (GaiaFace face : faces) {
                     // check if the face was visited.***
-                    if(mapGaiaFaceToCameraDirectionTypeInfo.containsKey(face)) {
+                    if (mapGaiaFaceToCameraDirectionTypeInfo.containsKey(face)) {
                         continue;
                     }
 
@@ -2637,8 +2653,7 @@ public class Engine {
                         double angDeg = Math.toDegrees(angRad);
 
 
-                        if(angDeg > camDirNormalMinAngDeg)
-                        {
+                        if (angDeg > camDirNormalMinAngDeg) {
                             // put it into map
                             mapCameraDirectionTypeFacesList.computeIfAbsent(cameraDirectionType, k -> new ArrayList<>()).add(face);
 
@@ -2691,13 +2706,23 @@ public class Engine {
         // create the fbo.***
         int fboWidth = maxScreenSize;
         int fboHeight = maxScreenSize;
-        if (xLength > yLength) {
+        /*if (xLength > yLength) {
             fboWidth = maxScreenSize;
             fboHeight = (int) (maxScreenSize * yLength / xLength);
         } else {
             fboWidth = (int) (maxScreenSize * xLength / yLength);
             fboHeight = maxScreenSize;
+        }*/
+        float xLengthFactor = xLength * boxRenderingMaxSizeFactor;
+        float yLengthFactor = yLength * boxRenderingMaxSizeFactor;
+        if (xLengthFactor > yLengthFactor) {
+            fboWidth = (int) xLengthFactor;
+            fboHeight = (int) yLengthFactor;
+        } else {
+            fboWidth = (int) xLengthFactor;
+            fboHeight = (int) yLengthFactor;
         }
+
 
         fboWidth = Math.max(fboWidth, 1);
         fboHeight = Math.max(fboHeight, 1);
@@ -2737,12 +2762,21 @@ public class Engine {
         // create the fbo.***
         int fboWidth = maxScreenSize;
         int fboHeight = maxScreenSize;
-        if (xLength > yLength) {
+        /*if (xLength > yLength) {
             fboWidth = maxScreenSize;
             fboHeight = (int) (maxScreenSize * yLength / xLength);
         } else {
             fboWidth = (int) (maxScreenSize * xLength / yLength);
             fboHeight = maxScreenSize;
+        }*/
+        float xLengthFactor = xLength * boxRenderingMaxSizeFactor;
+        float yLengthFactor = yLength * boxRenderingMaxSizeFactor;
+        if (xLengthFactor > yLengthFactor) {
+            fboWidth = (int) xLengthFactor;
+            fboHeight = (int) yLengthFactor;
+        } else {
+            fboWidth = (int) xLengthFactor;
+            fboHeight = (int) yLengthFactor;
         }
 
         fboWidth = Math.max(fboWidth, 1);
@@ -2783,12 +2817,21 @@ public class Engine {
         // create the fbo.***
         int fboWidth = maxScreenSize;
         int fboHeight = maxScreenSize;
-        if (xLength > yLength) {
+        /*if (xLength > yLength) {
             fboWidth = maxScreenSize;
             fboHeight = (int) (maxScreenSize * yLength / xLength);
         } else {
             fboWidth = (int) (maxScreenSize * xLength / yLength);
             fboHeight = maxScreenSize;
+        }*/
+        float xLengthFactor = xLength * boxRenderingMaxSizeFactor;
+        float yLengthFactor = yLength * boxRenderingMaxSizeFactor;
+        if (xLengthFactor > yLengthFactor) {
+            fboWidth = (int) xLengthFactor;
+            fboHeight = (int) yLengthFactor;
+        } else {
+            fboWidth = (int) xLengthFactor;
+            fboHeight = (int) yLengthFactor;
         }
 
         fboWidth = Math.max(fboWidth, 1);
@@ -2829,12 +2872,21 @@ public class Engine {
         // create the fbo.***
         int fboWidth = maxScreenSize;
         int fboHeight = maxScreenSize;
-        if (xLength > yLength) {
+        /*if (xLength > yLength) {
             fboWidth = maxScreenSize;
             fboHeight = (int) (maxScreenSize * yLength / xLength);
         } else {
             fboWidth = (int) (maxScreenSize * xLength / yLength);
             fboHeight = maxScreenSize;
+        }*/
+        float xLengthFactor = xLength * boxRenderingMaxSizeFactor;
+        float yLengthFactor = yLength * boxRenderingMaxSizeFactor;
+        if (xLengthFactor > yLengthFactor) {
+            fboWidth = (int) xLengthFactor;
+            fboHeight = (int) yLengthFactor;
+        } else {
+            fboWidth = (int) xLengthFactor;
+            fboHeight = (int) yLengthFactor;
         }
 
         fboWidth = Math.max(fboWidth, 1);
@@ -2875,12 +2927,21 @@ public class Engine {
         // create the fbo.***
         int fboWidth = maxScreenSize;
         int fboHeight = maxScreenSize;
-        if (xLength > yLength) {
+        /*if (xLength > yLength) {
             fboWidth = maxScreenSize;
             fboHeight = (int) (maxScreenSize * yLength / xLength);
         } else {
             fboWidth = (int) (maxScreenSize * xLength / yLength);
             fboHeight = maxScreenSize;
+        }*/
+        float xLengthFactor = xLength * boxRenderingMaxSizeFactor;
+        float yLengthFactor = yLength * boxRenderingMaxSizeFactor;
+        if (xLengthFactor > yLengthFactor) {
+            fboWidth = (int) xLengthFactor;
+            fboHeight = (int) yLengthFactor;
+        } else {
+            fboWidth = (int) xLengthFactor;
+            fboHeight = (int) yLengthFactor;
         }
 
         fboWidth = Math.max(fboWidth, 1);

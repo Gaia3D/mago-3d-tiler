@@ -10,10 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL20;
-import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,8 +31,7 @@ public class InternDataConverter {
         // materials
         List<GaiaMaterial> materials = gaiaScene.getMaterials();
         List<GaiaMaterial> newMaterials = new ArrayList<>();
-        for(int i=0; i<materials.size(); i++)
-        {
+        for (int i = 0; i < materials.size(); i++) {
             GaiaMaterial material = materials.get(i);
             GaiaMaterial newMaterial = material.clone();
             newMaterials.add(newMaterial);
@@ -104,8 +101,7 @@ public class InternDataConverter {
         return renderableMesh;
     }
 
-    public static RenderablePrimitive getRenderablePrimitive(GaiaPrimitive gaiaPrimitive, GaiaBufferDataSet bufferDataSet, GaiaScene scene, RenderableGaiaScene parentRenderableGaiaScene)
-    {
+    public static RenderablePrimitive getRenderablePrimitive(GaiaPrimitive gaiaPrimitive, GaiaBufferDataSet bufferDataSet, GaiaScene scene, RenderableGaiaScene parentRenderableGaiaScene) {
         RenderablePrimitive renderablePrimitive = new RenderablePrimitive();
         renderablePrimitive.setOriginalBufferDataSet(bufferDataSet);
         renderablePrimitive.setOriginalGaiaPrimitive(gaiaPrimitive);
@@ -120,7 +116,7 @@ public class InternDataConverter {
             int matId = bufferDataSet.getMaterialId();
             GaiaMaterial material = null;
 
-            if(matId >= 0) {
+            if (matId >= 0) {
                 material = parentRenderableGaiaScene.getMaterials().stream().filter((materialToFind) -> {
                     return materialToFind.getId() == matId;
                 }).findFirst().get();

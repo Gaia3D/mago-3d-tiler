@@ -578,16 +578,16 @@ public class GltfWriter {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             int width = bufferedImage.getWidth();
             int height = bufferedImage.getHeight();
-            int powerOfTwoWidth = ImageUtils.getNearestPowerOfTwo(width);
-            int powerOfTwoHeight = ImageUtils.getNearestPowerOfTwo(height);
+            int powerOfTwoWidth = ImageUtils.getNearestPowerOfTwoHigher(width);
+            int powerOfTwoHeight = ImageUtils.getNearestPowerOfTwoHigher(height);
 
             if (width != powerOfTwoWidth || height != powerOfTwoHeight) {
-                bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, powerOfTwoWidth, powerOfTwoHeight);
+                bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, powerOfTwoWidth, powerOfTwoHeight, true);
             }
             assert formatName != null;
 
             if (mimeType.equals("image/jpeg")) {
-                float quality = 0.8f;
+                float quality = 0.75f;
                 imageString = writeJpegImage(bufferedImage, quality);
             } else {
                 ImageIO.write(bufferedImage, formatName, baos);
