@@ -21,7 +21,7 @@ public class ImageResizer {
         if (width == originalImage.getWidth() && height == originalImage.getHeight()) {
             return originalImage;
         } else {
-            log.info("ImageResizer.resizeImageGraphic2D() : originalImage: {}x{} -> resized: {}x{}", originalImage.getWidth(), originalImage.getHeight(), width, height);
+            log.debug("ImageResizer.resizeImageGraphic2D() : originalImage: {}x{} -> resized: {}x{}", originalImage.getWidth(), originalImage.getHeight(), width, height);
         }
 
         // check if the width and height are within the bounds.

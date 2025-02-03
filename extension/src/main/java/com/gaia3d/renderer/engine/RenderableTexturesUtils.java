@@ -49,8 +49,8 @@ public class RenderableTexturesUtils {
         if (resizeToPowerOf2) {
             int resizeWidth = width;
             int resizeHeight = height;
-            resizeWidth = ImageUtils.getNearestPowerOfTwoHigher(resizeWidth);
-            resizeHeight = ImageUtils.getNearestPowerOfTwoHigher(resizeHeight);
+            resizeWidth = ImageUtils.getNearestPowerOfTwo(resizeWidth);
+            resizeHeight = ImageUtils.getNearestPowerOfTwo(resizeHeight);
 
             width = resizeWidth;
             height = resizeHeight;

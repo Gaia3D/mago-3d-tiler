@@ -44,26 +44,6 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
 
-       /* double minX = globalBoundingBox.getMinX();
-        double maxX = globalBoundingBox.getMaxX();
-        double minY = globalBoundingBox.getMinY();
-        double maxY = globalBoundingBox.getMaxY();
-        double minZ = globalBoundingBox.getMinZ();
-        double maxZ = globalBoundingBox.getMaxZ();
-
-        double x = (maxX - minX);
-        double y = (maxY - minY);
-        double maxLength = Math.max(x, y);
-
-        double xoffset = maxLength - x;
-        double yoffset = maxLength - y;
-        maxX += xoffset;
-        maxY += yoffset;
-        GaiaBoundingBox cubeBoundingBox = new GaiaBoundingBox();
-        cubeBoundingBox.addPoint(new Vector3d(minX, minY, minZ));
-        cubeBoundingBox.addPoint(new Vector3d(maxX, maxY, maxZ));*/
-        //globalBoundingBox = calcSquareBoundingBox(globalBoundingBox);
-
         CoordinateReferenceSystem source = globalOptions.getCrs();
         GaiaBoundingBox originalBoundingBox = globalBoundingBox;
         Vector3d originalMinPosition = originalBoundingBox.getMinPosition();
@@ -82,11 +62,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         Matrix4d transformMatrix = getTransformMatrix(originalBoundingBox);
         rotateX90(transformMatrix);
 
-        //double geometricError = calcGeometricError(tileInfos);
-        //GaiaBoundingBox originalCoordinateBoundingBox = originalCoordinateBoundingBox(globalBoundingBox);
         double geometricError = calcGeometricError(originalBoundingBox);
-
-
         double minimumGeometricError = 64.0;
         double maximumGeometricError = 1000.0;
         if (geometricError < minimumGeometricError) {
@@ -102,13 +78,10 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         root.setRefine(Node.RefineType.ADD);
 
         BoundingVolume boundingVolume = new BoundingVolume(transformedBoundingBox);
-        //BoundingVolume square = boundingVolume.createSqureBoundingVolume();
 
         // root만 큐브로
         root.setBoundingVolume(boundingVolume);
         root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
-        //root.setGeometricError(geometricError / 2);
-
         try {
             createRootNode(root, tileInfos);
         } catch (IOException e) {
@@ -296,75 +269,6 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
                 }
             });
         }
-    }
-
-    private GaiaBoundingBox originalCoordinateBoundingBox(GaiaBoundingBox worldBoundingBox) {
-        Vector3d minPosition = worldBoundingBox.getMinPosition();
-        Vector3d maxPosition = worldBoundingBox.getMaxPosition();
-
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
-        CoordinateReferenceSystem source = globalOptions.getCrs();
-        BasicCoordinateTransform transformer = new BasicCoordinateTransform(GlobeUtils.wgs84, source);
-        ProjCoordinate minProjCoordinate = new ProjCoordinate(minPosition.x, minPosition.y);
-        ProjCoordinate maxProjCoordinate = new ProjCoordinate(maxPosition.x, maxPosition.y);
-        transformer.transform(minProjCoordinate, minProjCoordinate);
-        transformer.transform(maxProjCoordinate, maxProjCoordinate);
-
-        Vector3d localMin = new Vector3d(minProjCoordinate.x, minProjCoordinate.y, minPosition.z);
-        Vector3d localMax = new Vector3d(maxProjCoordinate.x, maxProjCoordinate.y, maxPosition.z);
-        GaiaBoundingBox boundingBox = new GaiaBoundingBox();
-        boundingBox.addPoint(localMin);
-        boundingBox.addPoint(localMax);
-        return boundingBox;
-    }
-
-    /*@Deprecated
-    private void minimizeTreeNode(Node node) {
-        List<Node> children = node.getChildren();
-        children.forEach(this::minimizeTreeNode);
-
-        Content content = node.getContent();
-        if (content == null) {
-            return;
-        }
-        ContentInfo contentInfo = content.getContentInfo();
-        List<TileInfo> tileInfos = contentInfo.getTileInfos();
-        tileInfos.forEach(tileInfo -> {
-            GaiaPointCloud pointCloud = tileInfo.getPointCloud();
-            File tempPath = new File(GlobalOptions.getInstance().getOutputPath(), "temp");
-            File tempFile = new File(tempPath, UUID.randomUUID().toString());
-            pointCloud.minimize(tempFile);
-            log.info("[Tile][Minimize][{}]", tempFile.getName());
-        });
-    }*/
-
-    private GaiaBoundingBox calcSquareBoundingBox(GaiaBoundingBox gaiaBoundingBox) {
-        double minX = gaiaBoundingBox.getMinX();
-        double maxX = gaiaBoundingBox.getMaxX();
-        double minY = gaiaBoundingBox.getMinY();
-        double maxY = gaiaBoundingBox.getMaxY();
-        double minZ = gaiaBoundingBox.getMinZ();
-        double maxZ = gaiaBoundingBox.getMaxZ();
-
-        double x = (maxX - minX);
-        double y = (maxY - minY);
-        double maxLength = Math.max(x, y);
-
-        double xOffset = maxLength - x;
-        double yOffset = maxLength - y;
-        maxX += xOffset;
-        maxY += yOffset;
-
-        /*double xOffsetHalf = xOffset / 2;
-        double yOffsetHalf = yOffset / 2;
-        minX -= xOffsetHalf;
-        minY -= yOffsetHalf;
-        maxX += xOffsetHalf;
-        maxY += yOffsetHalf;*/
-        GaiaBoundingBox cubeBoundingBox = new GaiaBoundingBox();
-        cubeBoundingBox.addPoint(new Vector3d(minX, minY, minZ));
-        cubeBoundingBox.addPoint(new Vector3d(maxX, maxY, maxZ));
-        return cubeBoundingBox;
     }
 
     private void minimizeAllPointCloud(int index, int maximumIndex, List<GaiaPointCloud> allPointClouds) {

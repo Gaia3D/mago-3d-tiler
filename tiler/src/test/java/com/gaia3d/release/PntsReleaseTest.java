@@ -17,7 +17,7 @@ class PntsReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                "-c", "32652",
+                //"-c", "32652",
         };
         execute(args);
     }
@@ -28,7 +28,7 @@ class PntsReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                "-c", "5186"
+                //"-c", "5186"
         };
         execute(args);
     }
@@ -41,6 +41,7 @@ class PntsReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-c", "5187",
                 "-pointRatio", "25",
+                "-debug",
         };
         execute(args);
     }
@@ -53,6 +54,18 @@ class PntsReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-c", "32648",
                 "-pointRatio", "25",
+        };
+        execute(args);
+    }
+
+    @Test
+    void pointcloud04() {
+        String path = "P04-github-posikifi-las";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                //"-c", "5186",
+                //"-pointRatio", "25",
         };
         execute(args);
     }

@@ -27,10 +27,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GaiaTextureCoordinator {
     private final String ATLAS_IMAGE;
+    private final Color BACKGROUND_COLOR = new Color(255, 0, 255, 0);
+
     private final List<GaiaMaterial> materials;
     private final List<GaiaBufferDataSet> bufferDataSets;
     private final GlobalOptions globalOptions = GlobalOptions.getInstance();
     private BufferedImage atlasImage;
+
 
     public GaiaTextureCoordinator(String name, List<GaiaMaterial> materials, List<GaiaBufferDataSet> bufferDataSets) {
         this.ATLAS_IMAGE = name;
@@ -49,7 +52,7 @@ public class GaiaTextureCoordinator {
 
             // now fill the image with white fuchsia.***
             Graphics2D graphics = this.atlasImage.createGraphics();
-            graphics.setColor(new Color(255, 0, 255));
+            graphics.setColor(BACKGROUND_COLOR);
             graphics.fillRect(0, 0, width, height);
             graphics.dispose();
         } else {
@@ -470,12 +473,13 @@ public class GaiaTextureCoordinator {
             }
         }
 
-        Color backGroundColor = new Color(255, 0, 255, 255);
-        BufferedImage clamped = ImageUtils.clampBackGroundColor(this.atlasImage, backGroundColor, 1, 30);
-
-        Graphics2D graphics2D = this.atlasImage.createGraphics();
-        graphics2D.drawImage(clamped, 0, 0, null);
-        graphics2D.dispose();
+        // clamp the backGroundColor.***
+        if (isPhotorealistic) {
+            BufferedImage clamped = ImageUtils.clampBackGroundColor(this.atlasImage, BACKGROUND_COLOR, 1, 30);
+            Graphics2D graphics2D = this.atlasImage.createGraphics();
+            graphics2D.drawImage(clamped, 0, 0, null);
+            graphics2D.dispose();
+        }
 
         // test save atlasTexture image.****
         // Test.----------------------------------------------
