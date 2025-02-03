@@ -43,6 +43,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RequiredArgsConstructor
 public class GeoJsonConverter extends AbstractGeometryConverter implements Converter {
 
+    private final GlobalOptions globalOptions = GlobalOptions.getInstance();
+
     @Override
     public List<GaiaScene> load(String path) {
         return convert(new File(path));
@@ -60,14 +62,11 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
 
     @Override
     public List<GaiaSceneTempHolder> convertTemp(File input, File output) {
-        //String tempName = UUID.randomUUID().toString() + ".scene";
-        //File tempFile = new File(input, name);
-        //List<GaiaScene> scenes = new ArrayList<>();
         List<GaiaSceneTempHolder> sceneTemps = new ArrayList<>();
         GaiaExtruder gaiaExtruder = new GaiaExtruder();
         InnerRingRemover innerRingRemover = new InnerRingRemover();
 
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalOptions.DEFAULT_CRS);
         boolean flipCoordinate = globalOptions.isFlipCoordinate();
         String nameColumnName = globalOptions.getNameColumn();
         String heightColumnName = globalOptions.getHeightColumn();
@@ -84,6 +83,13 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
             SimpleFeatureCollection featureCollection = (SimpleFeatureCollection) geojson.readFeatureCollection(bufferedInputStream);
             FeatureIterator<SimpleFeature> iterator = featureCollection.features();
             log.info("Reading GeoJSON file : {} done", input.getAbsolutePath());
+
+            var coordinateReferenceSystem = featureCollection.getSchema().getCoordinateReferenceSystem();
+            if (isDefaultCrs && coordinateReferenceSystem != null) {
+                CoordinateReferenceSystem crs = GlobeUtils.convertProj4jCrsFromGeotoolsCrs(coordinateReferenceSystem);
+                log.info(" - Coordinate Reference System : {}", crs.getName());
+                globalOptions.setCrs(crs);
+            }
 
             List<GaiaExtrusionBuilding> buildings = new ArrayList<>();
             List<GaiaPipeLineString> pipeLineStrings = new ArrayList<>();

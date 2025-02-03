@@ -53,6 +53,7 @@ public class ShapePointReader implements AttributeReader {
         ShpFiles shpFiles = null;
         ShapefileReader reader = null;
 
+        boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalOptions.DEFAULT_CRS);
         boolean flipCoordinate = globalOptions.isFlipCoordinate();
         String nameColumnName = globalOptions.getNameColumn();
         String heightColumnName = globalOptions.getHeightColumn();
@@ -74,6 +75,14 @@ public class ShapePointReader implements AttributeReader {
 
             SimpleFeatureCollection features = source.getFeatures(query);
             FeatureIterator<SimpleFeature> iterator = features.features();
+
+            var coordinateReferenceSystem = features.getSchema().getCoordinateReferenceSystem();
+            if (isDefaultCrs && coordinateReferenceSystem != null) {
+                CoordinateReferenceSystem crs = GlobeUtils.convertProj4jCrsFromGeotoolsCrs(coordinateReferenceSystem);
+                log.info(" - Coordinate Reference System : {}", crs.getName());
+                globalOptions.setCrs(crs);
+            }
+
             while (iterator.hasNext()) {
                 SimpleFeature feature = iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();

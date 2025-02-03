@@ -27,16 +27,16 @@ public class GlobalOptions {
     /* singleton */
     private static final GlobalOptions instance = new GlobalOptions();
 
-    private static final String DEFAULT_INPUT_FORMAT = "kml";
-    private static final String DEFAULT_INSTANCE_FILE = "instance.dae";
-    private static final int DEFAULT_MIN_LOD = 0;
-    private static final int DEFAULT_MAX_LOD = 3;
-    private static final int DEFAULT_MIN_GEOMETRIC_ERROR = 16;
-    private static final int DEFAULT_MAX_GEOMETRIC_ERROR = Integer.MAX_VALUE;
+    public static final String DEFAULT_INPUT_FORMAT = "kml";
+    public static final String DEFAULT_INSTANCE_FILE = "instance.dae";
+    public static final int DEFAULT_MIN_LOD = 0;
+    public static final int DEFAULT_MAX_LOD = 3;
+    public static final int DEFAULT_MIN_GEOMETRIC_ERROR = 16;
+    public static final int DEFAULT_MAX_GEOMETRIC_ERROR = Integer.MAX_VALUE;
 
-    private static final int DEFAULT_MAX_TRIANGLES = 65536 * 8;
-    private static final int DEFAULT_MAX_NODE_DEPTH = 32;
-    private static final int DEFAULT_MAX_INSTANCE = 1024 * 8;
+    public static final int DEFAULT_MAX_TRIANGLES = 65536 * 8;
+    public static final int DEFAULT_MAX_NODE_DEPTH = 32;
+    public static final int DEFAULT_MAX_INSTANCE = 1024 * 8;
 
     //public static final int DEFAULT_POINT_PER_TILE = 100000;
     public static final int DEFAULT_POINT_PER_TILE = 300000;
@@ -44,16 +44,17 @@ public class GlobalOptions {
     public static final float POINTSCLOUD_HORIZONTAL_GRID = 500.0f; // in meters
     public static final float POINTSCLOUD_VERTICAL_GRID = 500.0f; // in meters
 
-    private static final String DEFAULT_CRS = "3857"; // 4326 -> 3857
-    private static final String DEFAULT_NAME_COLUMN = "name";
-    private static final String DEFAULT_HEIGHT_COLUMN = "height";
-    private static final String DEFAULT_ALTITUDE_COLUMN = "altitude";
-    private static final String DEFAULT_HEADING_COLUMN = "heading";
-    private static final String DEFAULT_DIAMETER_COLUMN = "diameter";
-    private static final double DEFAULT_ABSOLUTE_ALTITUDE = 0.0d;
-    private static final double DEFAULT_MINIMUM_HEIGHT = 1.0d;
-    private static final double DEFAULT_SKIRT_HEIGHT = 4.0d;
-    private static final boolean DEFAULT_DEBUG_LOD = false;
+    public static final CoordinateReferenceSystem DEFAULT_CRS = new CRSFactory().createFromName("EPSG:3857");
+    public static final String DEFAULT_CRS_CODE = "3857"; // 4326 -> 3857
+    public static final String DEFAULT_NAME_COLUMN = "name";
+    public static final String DEFAULT_HEIGHT_COLUMN = "height";
+    public static final String DEFAULT_ALTITUDE_COLUMN = "altitude";
+    public static final String DEFAULT_HEADING_COLUMN = "heading";
+    public static final String DEFAULT_DIAMETER_COLUMN = "diameter";
+    public static final double DEFAULT_ABSOLUTE_ALTITUDE = 0.0d;
+    public static final double DEFAULT_MINIMUM_HEIGHT = 1.0d;
+    public static final double DEFAULT_SKIRT_HEIGHT = 4.0d;
+    public static final boolean DEFAULT_DEBUG_LOD = false;
 
     private String version; // version flag
     private String javaVersionInfo; // java version flag
@@ -239,11 +240,11 @@ public class GlobalOptions {
             } else if (crsString != null && !crsString.isEmpty()) {
                 source = factory.createFromName("EPSG:" + crsString);
             } else {
-                source = factory.createFromName("EPSG:" + DEFAULT_CRS);
+                source = DEFAULT_CRS;
             }
             instance.setCrs(source);
         } else {
-            CoordinateReferenceSystem source = factory.createFromName("EPSG:" + DEFAULT_CRS);
+            CoordinateReferenceSystem source = DEFAULT_CRS;
 
             // GeoJSON Default CRS
             if (instance.getInputFormat().equals(FormatType.GEOJSON)) {

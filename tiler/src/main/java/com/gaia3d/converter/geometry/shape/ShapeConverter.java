@@ -25,6 +25,7 @@ import org.geotools.data.shapefile.shp.ShapefileReader;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.store.ContentFeatureSource;
 import org.geotools.feature.FeatureIterator;
+import org.geotools.referencing.CRS;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.locationtech.jts.geom.*;
@@ -34,6 +35,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.filter.Filter;
+import org.opengis.referencing.FactoryException;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,9 +67,9 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
     @Override
     public List<GaiaSceneTempHolder> convertTemp(File input, File output) {
         List<GaiaSceneTempHolder> sceneTemps = new ArrayList<>();
-
         InnerRingRemover innerRingRemover = new InnerRingRemover();
 
+        boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalOptions.DEFAULT_CRS);
         boolean flipCoordinate = globalOptions.isFlipCoordinate();
         String nameColumnName = globalOptions.getNameColumn();
         String heightColumnName = globalOptions.getHeightColumn();
@@ -95,6 +97,14 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             FeatureIterator<SimpleFeature> iterator = features.features();
             List<GaiaExtrusionBuilding> buildings = new ArrayList<>();
             List<GaiaPipeLineString> pipeLineStrings = new ArrayList<>();
+
+            var coordinateReferenceSystem = features.getSchema().getCoordinateReferenceSystem();
+            if (isDefaultCrs && coordinateReferenceSystem != null) {
+                CoordinateReferenceSystem crs = GlobeUtils.convertProj4jCrsFromGeotoolsCrs(coordinateReferenceSystem);
+                log.info(" - Coordinate Reference System : {}", crs.getName());
+                globalOptions.setCrs(crs);
+            }
+
             while (iterator.hasNext()) {
                 SimpleFeature feature = iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();

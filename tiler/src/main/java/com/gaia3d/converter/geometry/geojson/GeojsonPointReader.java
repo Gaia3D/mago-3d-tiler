@@ -6,17 +6,9 @@ import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.util.GlobeUtils;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.geotools.data.DataStore;
-import org.geotools.data.Query;
-import org.geotools.data.geojson.GeoJSONDataStore;
-import org.geotools.data.shapefile.ShapefileDataStore;
-import org.geotools.data.shapefile.files.ShpFiles;
-import org.geotools.data.shapefile.shp.ShapefileReader;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geojson.feature.FeatureJSON;
-import org.geotools.util.factory.Hints;
 import org.joml.Vector3d;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -27,7 +19,6 @@ import org.locationtech.proj4j.ProjCoordinate;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
-import org.opengis.filter.Filter;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -55,16 +46,25 @@ public class GeojsonPointReader implements AttributeReader {
     public List<KmlInfo> readAll(File file) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
 
+        boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalOptions.DEFAULT_CRS);
         List<KmlInfo> result = new ArrayList<>();
         String altitudeColumnName = globalOptions.getAltitudeColumn();
         String headingColumnName = globalOptions.getHeadingColumn();
 
-        try (BufferedInputStream bufferedInputStream = new BufferedInputStream(Files.newInputStream(file.toPath()))){
+        try (BufferedInputStream bufferedInputStream = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
             FeatureJSON geojson = new FeatureJSON();
             log.info("Reading GeoJSON file : {}", file.getAbsolutePath());
             SimpleFeatureCollection featureCollection = (SimpleFeatureCollection) geojson.readFeatureCollection(bufferedInputStream);
             FeatureIterator<SimpleFeature> iterator = featureCollection.features();
             log.info("Reading GeoJSON file : {} done", file.getAbsolutePath());
+
+            var coordinateReferenceSystem = featureCollection.getSchema().getCoordinateReferenceSystem();
+            if (isDefaultCrs && coordinateReferenceSystem != null) {
+                CoordinateReferenceSystem crs = GlobeUtils.convertProj4jCrsFromGeotoolsCrs(coordinateReferenceSystem);
+                log.info(" - Coordinate Reference System : {}", crs.getName());
+                globalOptions.setCrs(crs);
+            }
+
             while (iterator.hasNext()) {
                 SimpleFeature feature = iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
@@ -108,17 +108,7 @@ public class GeojsonPointReader implements AttributeReader {
                     position = new Vector3d(x, y, altitude);
                 }
 
-                KmlInfo kmlInfo = KmlInfo.builder()
-                        .name("I3dmFromGeojson")
-                        .position(position)
-                        .heading(heading)
-                        .tilt(0.0d)
-                        .roll(0.0d)
-                        .scaleX(1.0d)
-                        .scaleY(1.0d)
-                        .scaleZ(1.0d)
-                        .properties(attributes)
-                        .build();
+                KmlInfo kmlInfo = KmlInfo.builder().name("I3dmFromGeojson").position(position).heading(heading).tilt(0.0d).roll(0.0d).scaleX(1.0d).scaleY(1.0d).scaleZ(1.0d).properties(attributes).build();
                 result.add(kmlInfo);
             }
             iterator.close();
