@@ -13,16 +13,15 @@ import java.util.Map;
 
 @Getter
 @Setter
-public class RenderablePrimitive  extends RenderableObject{
-    int id;
-    String guid;
-    Map<AttributeType, RenderableBuffer> mapAttribTypeRenderableBuffer;
-    GaiaMaterial material;
-    GaiaPrimitive originalGaiaPrimitive;
-    GaiaBufferDataSet originalBufferDataSet;
+public class RenderablePrimitive extends RenderableObject {
+    private int id;
+    private String guid;
+    private Map<AttributeType, RenderableBuffer> mapAttribTypeRenderableBuffer;
+    private GaiaMaterial material;
+    private GaiaPrimitive originalGaiaPrimitive;
+    private GaiaBufferDataSet originalBufferDataSet;
 
-    public RenderablePrimitive()
-    {
+    public RenderablePrimitive() {
         id = -1;
         guid = "no_guid";
         mapAttribTypeRenderableBuffer = new HashMap<>();
@@ -31,17 +30,14 @@ public class RenderablePrimitive  extends RenderableObject{
         colorCode = -1; // 36-bit RGBA color.***
     }
 
-    public void setAttribTypeRenderableBuffer(AttributeType attribType, RenderableBuffer renderableBuffer)
-    {
+    public void setAttribTypeRenderableBuffer(AttributeType attribType, RenderableBuffer renderableBuffer) {
         mapAttribTypeRenderableBuffer.put(attribType, renderableBuffer);
     }
 
     public void deleteGLBuffers() {
-        for (RenderableBuffer renderableBuffer : mapAttribTypeRenderableBuffer.values())
-        {
+        for (RenderableBuffer renderableBuffer : mapAttribTypeRenderableBuffer.values()) {
             int vboId = renderableBuffer.getVboId();
-            if(vboId != -1)
-            {
+            if (vboId != -1) {
                 GL20.glDeleteBuffers(vboId);
                 renderableBuffer.setVboId(-1);
             }

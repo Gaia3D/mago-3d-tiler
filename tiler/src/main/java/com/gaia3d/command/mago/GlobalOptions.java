@@ -266,10 +266,10 @@ public class GlobalOptions {
         instance.setPhotorealistic(command.hasOption(ProcessOptions.PHOTOREALISTIC.getArgName()));
 
         TilerExtensionModule extensionModule = new TilerExtensionModule();
-        if (extensionModule.isSupported()/* && instance.isPhotorealistic()*/) {
-            extensionModule.executePhotorealistic(null, null);
-        } else {
-            extensionModule.executePhotorealistic(null, null);
+        extensionModule.executePhotorealistic(null, null);
+        if (!extensionModule.isSupported() && instance.isPhotorealistic()) {
+            log.error("*** Extension Module is not supported ***");
+            throw new IllegalArgumentException("Extension Module is not supported.");
         }
 
         /* Point Cloud Options */

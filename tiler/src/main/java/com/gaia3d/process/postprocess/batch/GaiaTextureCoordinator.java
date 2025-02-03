@@ -49,10 +49,9 @@ public class GaiaTextureCoordinator {
 
             // now fill the image with white fuchsia.***
             Graphics2D graphics = this.atlasImage.createGraphics();
-            graphics.setColor(new Color(1.0f, 1.0f, 0.0f));
+            graphics.setColor(new Color(255, 0, 255));
             graphics.fillRect(0, 0, width, height);
             graphics.dispose();
-
         } else {
             this.atlasImage = null;
         }
@@ -85,7 +84,7 @@ public class GaiaTextureCoordinator {
         //GaiaRectangle rect_toPutInMosaic = splitDataToPutInMosaic.getOriginBoundary();
 
         // make existent rectangles list using listProcessSplitDataList.***
-        List<GaiaRectangle> list_rectangles = new ArrayList<>();
+        List<GaiaRectangle> listRectangles = new ArrayList<>();
         GaiaRectangle beforeMosaicRectangle = new GaiaRectangle(0.0, 0.0, 0.0, 0.0);
         int existentSplitDatasCount = listProcessSplitDataList.size();
         for (int i = 0; i < existentSplitDatasCount; i++) {
@@ -96,7 +95,7 @@ public class GaiaTextureCoordinator {
             } else {
                 beforeMosaicRectangle.addBoundingRectangle(batchedBoundary);
             }
-            list_rectangles.add(batchedBoundary);
+            listRectangles.add(batchedBoundary);
         }
 
         // Now, try to find the best positions to put our rectangle.***
@@ -128,7 +127,7 @@ public class GaiaTextureCoordinator {
             splitDataToPutInMosaic.batchedBoundary.setMaxY(currPosY + height);
 
             // put our rectangle into mosaic & check that no intersects with another rectangles.***
-            if (!this.intersectsRectangleAtlasingProcess(list_rectangles, splitDataToPutInMosaic.batchedBoundary)) {
+            if (!this.intersectsRectangleAtlasingProcess(listRectangles, splitDataToPutInMosaic.batchedBoundary)) {
                 GaiaRectangle afterMosaicRectangle = new GaiaRectangle(0.0, 0.0, 0.0, 0.0);
                 afterMosaicRectangle.copyFrom(beforeMosaicRectangle);
                 afterMosaicRectangle.addBoundingRectangle(splitDataToPutInMosaic.batchedBoundary);
@@ -159,7 +158,7 @@ public class GaiaTextureCoordinator {
             splitDataToPutInMosaic.batchedBoundary.setMaxY(currPosY + height);
 
             // put our rectangle into mosaic & check that no intersects with another rectangles.***
-            if (!this.intersectsRectangleAtlasingProcess(list_rectangles, splitDataToPutInMosaic.batchedBoundary)) {
+            if (!this.intersectsRectangleAtlasingProcess(listRectangles, splitDataToPutInMosaic.batchedBoundary)) {
                 GaiaRectangle afterMosaicRectangle = new GaiaRectangle(0.0, 0.0, 0.0, 0.0);
                 afterMosaicRectangle.copyFrom(beforeMosaicRectangle);
                 afterMosaicRectangle.addBoundingRectangle(splitDataToPutInMosaic.batchedBoundary);
@@ -223,14 +222,13 @@ public class GaiaTextureCoordinator {
                 if (texture.getPath().endsWith(".png") || texture.getPath().endsWith(".PNG")) {
                     existPngTextures = true;
                 }
-                float scaleFactor = lod.getTextureScale();
 
-                // check if the texture is photorealistic and the lod level is greater than 2
-                int lodLevel = lod.getLevel();
                 if (isPhotorealistic) {
-                    scaleFactor = 1.0f;
+                    bufferedImage = texture.getBufferedImage();
+                } else {
+                    float scaleFactor = lod.getTextureScale();
+                    bufferedImage = texture.getBufferedImage(scaleFactor);
                 }
-                bufferedImage = texture.getBufferedImage(scaleFactor);
             } else {
                 bufferedImage = createShamImage();
             }
@@ -349,8 +347,8 @@ public class GaiaTextureCoordinator {
 
             List<GaiaBufferDataSet> materialBufferDataSets = bufferDataSets.stream().filter((bufferDataSet) -> bufferDataSet.getMaterialId() == target.getMaterialId()).collect(Collectors.toList());
 
-            Double intPart_x = null, intPart_y = null;
-            double fractPart_x, fractPart_y;
+            Double intPartX = null, intPartY = null;
+            double fractPartX, fractPartY;
             double error = 1e-8;
             for (GaiaBufferDataSet materialBufferDataSet : materialBufferDataSets) {
                 GaiaBuffer texcoordBuffer = materialBufferDataSet.getBuffers().get(AttributeType.TEXCOORD);
@@ -364,30 +362,30 @@ public class GaiaTextureCoordinator {
                         double u2, v2;
 
                         if (Math.abs(originX) - 1.0 < error) {
-                            fractPart_x = originX;
+                            fractPartX = originX;
                         } else {
-                            fractPart_x = this.modf(originX, intPart_x);
+                            fractPartX = this.modf(originX, intPartX);
                         }
 
                         if (Math.abs(originY) - 1.0 < error) {
-                            fractPart_y = originY;
+                            fractPartY = originY;
                         } else {
-                            fractPart_y = this.modf(originY, intPart_y);
+                            fractPartY = this.modf(originY, intPartY);
                         }
 
-                        u = fractPart_x;
-                        v = fractPart_y;
+                        u = fractPartX;
+                        v = fractPartY;
 
                         // clamp the u, v values.***
-                        if(u < pixelXSize){
+                        if (u < pixelXSize) {
                             u = pixelXSize;
-                        } else if(u > 1.0 - pixelXSize){
+                        } else if (u > 1.0 - pixelXSize) {
                             u = 1.0 - pixelXSize;
                         }
 
-                        if(v< pixelYSize){
+                        if (v < pixelYSize) {
                             v = pixelYSize;
-                        } else if(v > 1.0 - pixelYSize){
+                        } else if (v > 1.0 - pixelYSize) {
                             v = 1.0 - pixelYSize;
                         }
                         // end clamp the u, v values.---
@@ -396,7 +394,7 @@ public class GaiaTextureCoordinator {
                             u = 1.0 + u;
                         }
 
-                        // "width" is the width of the splittedRectangle.***
+                        // "width" is the width of the splitRectangle.***
                         u2 = (splittedRectangle.getMinX() + u * width) / maxWidth;
                         v2 = (splittedRectangle.getMinY() + v * height) / maxHeight;
 
@@ -408,23 +406,6 @@ public class GaiaTextureCoordinator {
             }
         }
 
-        Color backGroundColor = new Color(1, 1, 0, 1);
-        this.atlasImage = ImageUtils.clampBackGroundColor(this.atlasImage, backGroundColor, 3, 50);
-
-        // test save atlasTexture image.****
-        // Test.**************************************************
-        if (globalOptions.isDebugLod()) {
-            String extension = "jpg";
-            if (existPngTextures) {
-                extension = "png";
-            }
-            double random = Math.random();
-            int intRandom = (int) (random * 100000);
-            String imageName = ATLAS_IMAGE + "_Lod_" + lod.getLevel() + "_" + intRandom;
-            this.writeBatchedImage(imageName, extension);
-        }
-        // end test.----------------------------------------------
-
         if (isPhotorealistic) {
             // limit the max image size to 4096
             int lodLevel = lod.getLevel();
@@ -432,7 +413,7 @@ public class GaiaTextureCoordinator {
             int imageWidth = this.atlasImage.getWidth();
             int imageHeight = this.atlasImage.getHeight();
 
-            int lod0size = 1024;
+            int lod0size = 2048;
             int lod1size = 1024;
             int lod2size = 1024;
             int overSize = 1024;
@@ -446,7 +427,7 @@ public class GaiaTextureCoordinator {
                     imageHeight = lod0size;
                     sizeChanged = true;
                 }
-            } else if (lodLevel == 1) {
+            } /*else if (lodLevel == 1) {
                 if (imageWidth > lod1size) {
                     imageWidth = lod1size;
                     sizeChanged = true;
@@ -482,12 +463,33 @@ public class GaiaTextureCoordinator {
                     imageHeight = overSize;
                     sizeChanged = true;
                 }
-            }
+            }*/
             if (sizeChanged) {
                 ImageResizer imageResizer = new ImageResizer();
                 this.atlasImage = imageResizer.resizeImageGraphic2D(this.atlasImage, imageWidth, imageHeight);
             }
         }
+
+        Color backGroundColor = new Color(255, 0, 255, 255);
+        BufferedImage clamped = ImageUtils.clampBackGroundColor(this.atlasImage, backGroundColor, 1, 30);
+
+        Graphics2D graphics2D = this.atlasImage.createGraphics();
+        graphics2D.drawImage(clamped, 0, 0, null);
+        graphics2D.dispose();
+
+        // test save atlasTexture image.****
+        // Test.----------------------------------------------
+        if (globalOptions.isDebugLod()) {
+            String extension = "jpg";
+            if (existPngTextures) {
+                extension = "png";
+            }
+            double random = Math.random();
+            int intRandom = (int) (random * 100000);
+            String imageName = ATLAS_IMAGE + "_Lod_" + lod.getLevel() + "_" + intRandom;
+            this.writeBatchedImage(imageName, extension);
+        }
+        // end test.----------------------------------------------
 
         return this.atlasImage;
     }

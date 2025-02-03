@@ -16,10 +16,11 @@ import java.util.Map;
 @Getter
 @Setter
 public class RenderableGaiaScene {
+    List<RenderableNode> renderableNodes;
     private GaiaScene originalGaiaScene;
     private Path originalPath;
-    List<RenderableNode> renderableNodes;
     private List<GaiaMaterial> materials = new ArrayList<>();
+
     public RenderableGaiaScene() {
         renderableNodes = new ArrayList<>();
         originalGaiaScene = null;
@@ -35,8 +36,7 @@ public class RenderableGaiaScene {
         }
     }
 
-    public void deleteGLBuffers()
-    {
+    public void deleteGLBuffers() {
         for (RenderableNode renderableNode : renderableNodes) {
             renderableNode.deleteGLBuffers();
         }

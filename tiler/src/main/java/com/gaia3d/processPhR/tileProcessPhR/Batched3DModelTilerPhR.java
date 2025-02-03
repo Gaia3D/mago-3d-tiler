@@ -112,7 +112,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         root.setBoundingVolume(new BoundingVolume(globalBoundingBox));
         root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
 
-        // lod 0.***
+        /* Start lod 0 process */
         int lod = 0;
         List<TileInfo> tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, null);
 
@@ -120,15 +120,14 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         int currDepth = desiredDepth - lod;
         Map<Node, List<TileInfo>> nodeTileInfoMap = new HashMap<>();
 
-        // multi-threading.***
         multiThreadCuttingAndScissorProcess(tileInfosCopy, lod, root, desiredDepth);
 
         // distribute contents to node in the correspondent depth.***
         // After process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes.***
         distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
         makeContentsForNodes(nodeTileInfoMap, lod);
-        // End lod 0.---
 
+        /* End lod 0 process */
 
         int netSurfaceStartLod = 3;
 
@@ -397,9 +396,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             GaiaSet tempSetLod1 = GaiaSet.fromGaiaScene(sceneLod1);
             halfEdgeSceneLod.deleteObjects();
 
+            LevelOfDetail levelOfDetail = LevelOfDetail.getByLevel(lod - 1);
+            float scale = levelOfDetail.getTextureScale();
+
             String aux = "lod" + lod;
             Path tempFolderLod = tempFolder.resolve(aux);
-            Path currTempPathLod = tempSetLod1.writeFile(tempFolderLod, tileInfo.getSerial(), tempSetLod1.getAttribute());
+            Path currTempPathLod = tempSetLod1.writeFile(tempFolderLod, tileInfo.getSerial(), tempSetLod1.getAttribute(), scale);
             tileInfo.setTempPath(currTempPathLod);
             gaiaSet.clear(); // delete gaiaSet.***
             scene.clear(); // delete scene.***
@@ -471,9 +473,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             GaiaSet tempSetLod1 = GaiaSet.fromGaiaScene(sceneLod1);
             halfEdgeSceneLod.deleteObjects();
 
+            LevelOfDetail levelOfDetail = LevelOfDetail.getByLevel(lod - 1);
+            float scale = levelOfDetail.getTextureScale();
+
             String aux = "lod" + lod;
             Path tempFolderLod = tempFolder.resolve(aux);
-            Path currTempPathLod = tempSetLod1.writeFile(tempFolderLod, tileInfo.getSerial(), tempSetLod1.getAttribute());
+            Path currTempPathLod = tempSetLod1.writeFile(tempFolderLod, tileInfo.getSerial(), tempSetLod1.getAttribute(), scale);
             tileInfo.setTempPath(currTempPathLod);
             //tempPathLod.add(currTempPathLod);
         }
@@ -541,9 +546,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             GaiaSet tempSetLod1 = GaiaSet.fromGaiaScene(sceneLod1);
             halfEdgeSceneLod.deleteObjects();
 
+            LevelOfDetail levelOfDetail = LevelOfDetail.getByLevel(lod - 1);
+            float scale = levelOfDetail.getTextureScale();
+
             String aux = "lod" + lod;
             Path tempFolderLod = tempFolder.resolve(aux);
-            Path currTempPathLod = tempSetLod1.writeFile(tempFolderLod, tileInfo.getSerial(), tempSetLod1.getAttribute());
+            Path currTempPathLod = tempSetLod1.writeFile(tempFolderLod, tileInfo.getSerial(), tempSetLod1.getAttribute(), scale);
             tileInfo.setTempPath(currTempPathLod);
             //tempPathLod.add(currTempPathLod);
         }
@@ -652,12 +660,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
 
             // save the bufferedImageColor into the netSetImagesFolder.***
-            String imageExtension = "jpg";
+            String imageExtension = "png";
             String imagePath = "netScene_" + nodeDepth + "_" + i + "_color" + "." + imageExtension;
             try {
                 File file = new File(netSetImagesFolderPathString + File.separator + imagePath);
                 log.info("[Write Image] : {}", file.getAbsoluteFile());
-                ImageIO.write(bufferedImageColor, "JPG", file);
+                ImageIO.write(bufferedImageColor, "png", file);
             } catch (Exception e) {
                 log.error("error: ", e);
             }
@@ -756,12 +764,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             // test save resultImages.***
             String sceneName = "mosaicRenderTest_" + i + "_color";
             String sceneRawName = sceneName;
-            imageExtension = "jpg";
+            imageExtension = "png";
             String outputFolderPath = globalOptions.getOutputPath();
             try {
                 File outputFile = new File(outputFolderPath, sceneRawName + "." + imageExtension);
                 log.info("[Write Image] : {}", outputFile.getAbsoluteFile());
-                ImageIO.write(bufferedImageColor, "JPG", outputFile);
+                ImageIO.write(bufferedImageColor, "png", outputFile);
             } catch (Exception e) {
                 log.error("error : ", e);
             }
@@ -771,7 +779,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 imageExtension = "png";
                 File outputFile = new File(outputFolderPath, sceneName + "." + imageExtension);
                 log.info("[Write Image] : {}", outputFile.getAbsoluteFile());
-                ImageIO.write(bufferedImageDepth, "PNG", outputFile);
+                ImageIO.write(bufferedImageDepth, "png", outputFile);
             } catch (Exception e) {
                 log.error("error : ", e);
             }
@@ -878,12 +886,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
 
             // save the bufferedImageColor into the netSetImagesFolder.***
-            String imageExtension = "jpg";
+            String imageExtension = "png";
             String imagePath = "netScene_" + nodeDepth + "_" + i + "_color" + "." + imageExtension;
             try {
                 File file = new File(netSetImagesFolderPathString + File.separator + imagePath);
                 log.info("[Write Image] : {}", file.getAbsoluteFile());
-                ImageIO.write(bufferedImageColor, "JPG", file);
+                ImageIO.write(bufferedImageColor, "png", file);
             } catch (Exception e) {
                 log.error("error : ", e);
             }
@@ -981,12 +989,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
             // test save resultImages.***
             String sceneName = "mosaicRenderTest_" + i + "_color";
-            imageExtension = "jpg";
+            imageExtension = "png";
             String outputFolderPath = globalOptions.getOutputPath();
             try {
                 File outputFile = new File(outputFolderPath, sceneName + "." + imageExtension);
                 log.info("[Write Image] : {}", outputFile.getAbsoluteFile());
-                ImageIO.write(bufferedImageColor, "JPG", outputFile);
+                ImageIO.write(bufferedImageColor, "png", outputFile);
             } catch (Exception e) {
                 log.error("error : ", e);
             }

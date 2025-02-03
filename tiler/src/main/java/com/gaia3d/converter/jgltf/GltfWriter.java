@@ -92,7 +92,7 @@ public class GltfWriter {
 
         gaiaScene.getMaterials().forEach(gaiaMaterial -> createMaterial(gltf, gaiaMaterial));
         convertNode(gltf, binary, null, gaiaScene.getNodes());
-        
+
         binary.fill();
         if (binary.getBody() != null) {
             GltfAssetV2 asset = new GltfAssetV2(gltf, binary.getBody());
@@ -578,31 +578,23 @@ public class GltfWriter {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             int width = bufferedImage.getWidth();
             int height = bufferedImage.getHeight();
-            int powerOfTwoWidth = ImageUtils.getNearestPowerOfTwo(width);
-            int powerOfTwoHeight = ImageUtils.getNearestPowerOfTwo(height);
+            int powerOfTwoWidth = ImageUtils.getNearestPowerOfTwoHigher(width);
+            int powerOfTwoHeight = ImageUtils.getNearestPowerOfTwoHigher(height);
 
             if (width != powerOfTwoWidth || height != powerOfTwoHeight) {
-                bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, powerOfTwoWidth, powerOfTwoHeight);
+                bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, powerOfTwoWidth, powerOfTwoHeight, true);
             }
             assert formatName != null;
 
-
             if (mimeType.equals("image/jpeg")) {
-                float quality = 0.5f;
+                float quality = 0.75f;
                 imageString = writeJpegImage(bufferedImage, quality);
             } else {
                 ImageIO.write(bufferedImage, formatName, baos);
                 byte[] bytes = baos.toByteArray();
                 imageString = "data:" + mimeType + ";base64," + Base64.getEncoder().encodeToString(bytes);
                 bufferedImage.flush();
-                bytes = null;
             }
-
-            /*ImageIO.write(bufferedImage, formatName, baos);
-            byte[] bytes = baos.toByteArray();
-            imageString = "data:" + mimeType +";base64," + Base64.getEncoder().encodeToString(bytes);
-            bufferedImage.flush();
-            bytes = null;*/
         } catch (IOException e) {
             log.error(e.getMessage());
             log.error("Error writing image");
