@@ -9,6 +9,7 @@ import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.tileprocess.tile.LevelOfDetail;
+import com.gaia3d.util.ImageResizer;
 import com.gaia3d.util.ImageUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector2d;
@@ -405,14 +406,14 @@ public class GaiaTextureCoordinator {
             }
         }
 
-        /*if (isPhotorealistic) {
+        if (isPhotorealistic) {
             // limit the max image size to 4096
             int lodLevel = lod.getLevel();
             boolean sizeChanged = false;
             int imageWidth = this.atlasImage.getWidth();
             int imageHeight = this.atlasImage.getHeight();
 
-            int lod0size = 1024;
+            int lod0size = 2048;
             int lod1size = 1024;
             int lod2size = 1024;
             int overSize = 1024;
@@ -426,7 +427,7 @@ public class GaiaTextureCoordinator {
                     imageHeight = lod0size;
                     sizeChanged = true;
                 }
-            } else if (lodLevel == 1) {
+            } /*else if (lodLevel == 1) {
                 if (imageWidth > lod1size) {
                     imageWidth = lod1size;
                     sizeChanged = true;
@@ -462,12 +463,12 @@ public class GaiaTextureCoordinator {
                     imageHeight = overSize;
                     sizeChanged = true;
                 }
-            }
+            }*/
             if (sizeChanged) {
                 ImageResizer imageResizer = new ImageResizer();
                 this.atlasImage = imageResizer.resizeImageGraphic2D(this.atlasImage, imageWidth, imageHeight);
             }
-        }*/
+        }
 
         Color backGroundColor = new Color(255, 0, 255, 255);
         BufferedImage clamped = ImageUtils.clampBackGroundColor(this.atlasImage, backGroundColor, 1, 30);
