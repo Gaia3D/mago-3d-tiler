@@ -71,8 +71,6 @@ public class Engine {
     private boolean renderAxis = false;
 
     private int boxRenderingMaxSize = 1024; // 1024
-    private float boxRenderingMaxSizeFactor = 10.0f;
-
     private int testsCount = 0;
 
     // TODO : change this path to a relative path. **********************************************************************
@@ -412,21 +410,12 @@ public class Engine {
         // create the fbo.***
         int fboWidthDepth = maxDepthScreenSize;
         int fboHeightDepth = maxDepthScreenSize;
-        /*if (xLength > yLength) {
-            fboWidth = maxScreenSize;
-            fboHeight = (int) (maxScreenSize * yLength / xLength);
+        if (xLength > yLength) {
+            fboWidthDepth = maxDepthScreenSize;
+            fboHeightDepth = (int) (maxDepthScreenSize * yLength / xLength);
         } else {
-            fboWidth = (int) (maxScreenSize * xLength / yLength);
-            fboHeight = maxScreenSize;
-        }*/
-        float xLengthFactor = xLength * boxRenderingMaxSizeFactor;
-        float yLengthFactor = yLength * boxRenderingMaxSizeFactor;
-        if (xLengthFactor > yLengthFactor) {
-            fboWidthDepth = (int) xLengthFactor;
-            fboHeightDepth = (int) yLengthFactor;
-        } else {
-            fboWidthDepth = (int) xLengthFactor;
-            fboHeightDepth = (int) yLengthFactor;
+            fboWidthDepth = (int) (maxDepthScreenSize * xLength / yLength);
+            fboHeightDepth = maxDepthScreenSize;
         }
 
         fboWidthDepth = Math.max(fboWidthDepth, 1);
@@ -2187,21 +2176,12 @@ public class Engine {
         // create the fbo.***
         int fboWidth = maxScreenSize;
         int fboHeight = maxScreenSize;
-        /*if (xLength > yLength) {
+        if (xLength > yLength) {
             fboWidth = maxScreenSize;
             fboHeight = (int) (maxScreenSize * yLength / xLength);
         } else {
             fboWidth = (int) (maxScreenSize * xLength / yLength);
             fboHeight = maxScreenSize;
-        }*/
-        float xLengthFactor = xLength * boxRenderingMaxSizeFactor;
-        float yLengthFactor = yLength * boxRenderingMaxSizeFactor;
-        if (xLengthFactor > yLengthFactor) {
-            fboWidth = (int) xLengthFactor;
-            fboHeight = (int) yLengthFactor;
-        } else {
-            fboWidth = (int) xLengthFactor;
-            fboHeight = (int) yLengthFactor;
         }
 
         fboWidth = Math.max(fboWidth, 1);
@@ -2285,21 +2265,12 @@ public class Engine {
         // create the fbo.***
         int fboWidth = maxScreenSize;
         int fboHeight = maxScreenSize;
-        /*if (xLength > yLength) {
+        if (xLength > yLength) {
             fboWidth = maxScreenSize;
             fboHeight = (int) (maxScreenSize * yLength / xLength);
         } else {
             fboWidth = (int) (maxScreenSize * xLength / yLength);
             fboHeight = maxScreenSize;
-        }*/
-        float xLengthFactor = xLength * boxRenderingMaxSizeFactor;
-        float yLengthFactor = yLength * boxRenderingMaxSizeFactor;
-        if (xLengthFactor > yLengthFactor) {
-            fboWidth = (int) xLengthFactor;
-            fboHeight = (int) yLengthFactor;
-        } else {
-            fboWidth = (int) xLengthFactor;
-            fboHeight = (int) yLengthFactor;
         }
 
         fboWidth = Math.max(fboWidth, 1);
@@ -2518,15 +2489,12 @@ public class Engine {
             fboWidth = (int) (maxScreenSize * xLength / yLength);
             fboHeight = maxScreenSize;
         }*/
-
-        float xLengthFactor = xLength * boxRenderingMaxSizeFactor;
-        float yLengthFactor = yLength * boxRenderingMaxSizeFactor;
-        if (xLengthFactor > yLengthFactor) {
-            fboWidth = (int) xLengthFactor;
-            fboHeight = (int) yLengthFactor;
+        if (xLength > yLength) {
+            fboWidth = maxScreenSize;
+            fboHeight = (int) (maxScreenSize * yLength / xLength);
         } else {
-            fboWidth = (int) xLengthFactor;
-            fboHeight = (int) yLengthFactor;
+            fboWidth = (int) (maxScreenSize * xLength / yLength);
+            fboHeight = maxScreenSize;
         }
 
         fboWidth = Math.max(fboWidth, 1);
@@ -2706,21 +2674,12 @@ public class Engine {
         // create the fbo.***
         int fboWidth = maxScreenSize;
         int fboHeight = maxScreenSize;
-        /*if (xLength > yLength) {
+        if (xLength > yLength) {
             fboWidth = maxScreenSize;
             fboHeight = (int) (maxScreenSize * yLength / xLength);
         } else {
             fboWidth = (int) (maxScreenSize * xLength / yLength);
             fboHeight = maxScreenSize;
-        }*/
-        float xLengthFactor = xLength * boxRenderingMaxSizeFactor;
-        float yLengthFactor = yLength * boxRenderingMaxSizeFactor;
-        if (xLengthFactor > yLengthFactor) {
-            fboWidth = (int) xLengthFactor;
-            fboHeight = (int) yLengthFactor;
-        } else {
-            fboWidth = (int) xLengthFactor;
-            fboHeight = (int) yLengthFactor;
         }
 
 
@@ -2762,21 +2721,12 @@ public class Engine {
         // create the fbo.***
         int fboWidth = maxScreenSize;
         int fboHeight = maxScreenSize;
-        /*if (xLength > yLength) {
+        if (xLength > yLength) {
             fboWidth = maxScreenSize;
             fboHeight = (int) (maxScreenSize * yLength / xLength);
         } else {
             fboWidth = (int) (maxScreenSize * xLength / yLength);
             fboHeight = maxScreenSize;
-        }*/
-        float xLengthFactor = xLength * boxRenderingMaxSizeFactor;
-        float yLengthFactor = yLength * boxRenderingMaxSizeFactor;
-        if (xLengthFactor > yLengthFactor) {
-            fboWidth = (int) xLengthFactor;
-            fboHeight = (int) yLengthFactor;
-        } else {
-            fboWidth = (int) xLengthFactor;
-            fboHeight = (int) yLengthFactor;
         }
 
         fboWidth = Math.max(fboWidth, 1);
@@ -2817,21 +2767,12 @@ public class Engine {
         // create the fbo.***
         int fboWidth = maxScreenSize;
         int fboHeight = maxScreenSize;
-        /*if (xLength > yLength) {
+        if (xLength > yLength) {
             fboWidth = maxScreenSize;
             fboHeight = (int) (maxScreenSize * yLength / xLength);
         } else {
             fboWidth = (int) (maxScreenSize * xLength / yLength);
             fboHeight = maxScreenSize;
-        }*/
-        float xLengthFactor = xLength * boxRenderingMaxSizeFactor;
-        float yLengthFactor = yLength * boxRenderingMaxSizeFactor;
-        if (xLengthFactor > yLengthFactor) {
-            fboWidth = (int) xLengthFactor;
-            fboHeight = (int) yLengthFactor;
-        } else {
-            fboWidth = (int) xLengthFactor;
-            fboHeight = (int) yLengthFactor;
         }
 
         fboWidth = Math.max(fboWidth, 1);
@@ -2872,21 +2813,12 @@ public class Engine {
         // create the fbo.***
         int fboWidth = maxScreenSize;
         int fboHeight = maxScreenSize;
-        /*if (xLength > yLength) {
+        if (xLength > yLength) {
             fboWidth = maxScreenSize;
             fboHeight = (int) (maxScreenSize * yLength / xLength);
         } else {
             fboWidth = (int) (maxScreenSize * xLength / yLength);
             fboHeight = maxScreenSize;
-        }*/
-        float xLengthFactor = xLength * boxRenderingMaxSizeFactor;
-        float yLengthFactor = yLength * boxRenderingMaxSizeFactor;
-        if (xLengthFactor > yLengthFactor) {
-            fboWidth = (int) xLengthFactor;
-            fboHeight = (int) yLengthFactor;
-        } else {
-            fboWidth = (int) xLengthFactor;
-            fboHeight = (int) yLengthFactor;
         }
 
         fboWidth = Math.max(fboWidth, 1);
@@ -2927,21 +2859,12 @@ public class Engine {
         // create the fbo.***
         int fboWidth = maxScreenSize;
         int fboHeight = maxScreenSize;
-        /*if (xLength > yLength) {
+        if (xLength > yLength) {
             fboWidth = maxScreenSize;
             fboHeight = (int) (maxScreenSize * yLength / xLength);
         } else {
             fboWidth = (int) (maxScreenSize * xLength / yLength);
             fboHeight = maxScreenSize;
-        }*/
-        float xLengthFactor = xLength * boxRenderingMaxSizeFactor;
-        float yLengthFactor = yLength * boxRenderingMaxSizeFactor;
-        if (xLengthFactor > yLengthFactor) {
-            fboWidth = (int) xLengthFactor;
-            fboHeight = (int) yLengthFactor;
-        } else {
-            fboWidth = (int) xLengthFactor;
-            fboHeight = (int) yLengthFactor;
         }
 
         fboWidth = Math.max(fboWidth, 1);

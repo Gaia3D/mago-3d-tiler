@@ -13,7 +13,7 @@ public class RenderableMesh {
     private GaiaMesh originalGaiaMesh = null;
     private List<RenderablePrimitive> renderablePrimitives = new ArrayList<>();
 
-    public void RenderableMesh() {
+    public RenderableMesh() {
         renderablePrimitives = new ArrayList<>();
     }
 

@@ -35,7 +35,7 @@ public class GaiaScenesContainer {
     }
 
     public List<RenderableGaiaScene> getRenderableGaiaScenes() {
-        if(renderableGaiaScenes == null) {
+        if (renderableGaiaScenes == null) {
             renderableGaiaScenes = new ArrayList<>();
         }
         return renderableGaiaScenes;

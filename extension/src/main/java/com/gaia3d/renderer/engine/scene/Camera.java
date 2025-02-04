@@ -59,14 +59,12 @@ public class Camera {
     public Matrix4d getTransformMatrix() {
         if (this.dirty || this.transformMatrix == null) {
             this.calcRight();
-            this.transformMatrix = new Matrix4d(this.right.get(0), this.right.get(1), this.right.get(2), 0,
-                    this.up.get(0), this.up.get(1), this.up.get(2), 0,
-                    -this.direction.get(0), -this.direction.get(1), -this.direction.get(2), 0,
-                    this.position.get(0), this.position.get(1), this.position.get(2), 1);
+            this.transformMatrix = new Matrix4d(this.right.get(0), this.right.get(1), this.right.get(2), 0, this.up.get(0), this.up.get(1), this.up.get(2), 0, -this.direction.get(0), -this.direction.get(1), -this.direction.get(2), 0, this.position.get(0), this.position.get(1), this.position.get(2), 1);
             this.dirty = false;
         }
         return this.transformMatrix;
     }
+
     public Matrix4d getModelViewMatrix() {
         if (this.dirty || this.modelViewMatrix == null) {
             Matrix4d transformMatrix = this.getTransformMatrix();
@@ -88,8 +86,7 @@ public class Camera {
         this.dirty = true;
     }
 
-    public void calculateCameraXYPlane(Vector3d camPos, Vector3d camTarget)
-    {
+    public void calculateCameraXYPlane(Vector3d camPos, Vector3d camTarget) {
         Vector3d camDirection = new Vector3d(camTarget);
         camDirection.sub(camPos);
         camDirection.normalize();

@@ -1,14 +1,16 @@
 package com.gaia3d.renderer.renderable;
 
 import com.gaia3d.basic.types.AttributeType;
+import lombok.Getter;
 import org.lwjgl.opengl.GL20;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Getter
 public class RenderableBasicAxis {
-    float axisLength;
-    Map<AttributeType, RenderableBuffer> mapAttribTypeRenderableBuffer;
+    private float axisLength;
+    private Map<AttributeType, RenderableBuffer> mapAttribTypeRenderableBuffer;
 
     public RenderableBasicAxis() {
         axisLength = 100.0f;
@@ -18,10 +20,6 @@ public class RenderableBasicAxis {
 
     public void setAttribTypeRenderableBuffer(AttributeType attribType, RenderableBuffer renderableBuffer) {
         mapAttribTypeRenderableBuffer.put(attribType, renderableBuffer);
-    }
-
-    public Map<AttributeType, RenderableBuffer> getMapAttribTypeRenderableBuffer() {
-        return mapAttribTypeRenderableBuffer;
     }
 
     public void init() {

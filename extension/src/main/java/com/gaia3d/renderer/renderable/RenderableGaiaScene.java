@@ -16,7 +16,7 @@ import java.util.Map;
 @Getter
 @Setter
 public class RenderableGaiaScene {
-    List<RenderableNode> renderableNodes;
+    private List<RenderableNode> renderableNodes;
     private GaiaScene originalGaiaScene;
     private Path originalPath;
     private List<GaiaMaterial> materials = new ArrayList<>();

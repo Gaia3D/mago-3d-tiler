@@ -1,43 +1,24 @@
 package com.gaia3d.renderer.engine.screen;
 
-import static org.lwjgl.opengl.GL11.GL_FLOAT;
-import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
-import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
-import static org.lwjgl.opengl.GL11.glDrawElements;
+import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL15.glDeleteBuffers;
 import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL20.glDisableVertexAttribArray;
 import static org.lwjgl.opengl.GL30.*;
 
 public class ScreenQuad {
-    private int vboId;
-    private int vaoId;
+    private final int vboId;
+    private final int vaoId;
 
-    private int vboTexCoordsId;
-    private int vboIndicesId;
-    private int vertexCount;
+    private final int vboTexCoordsId;
+    private final int vboIndicesId;
+    private final int vertexCount;
 
     public ScreenQuad() {
+        float[] vertices = new float[]{0, 0, 1, 0, 1, 1, 0, 1,};
 
-        float[] vertices = new float[] {
-                0, 0,
-                1, 0,
-                1, 1,
-                0, 1,
-        };
+        float[] texCoords = new float[]{0, 0, 1, 0, 1, 1, 0, 1};
 
-        float[] texCoords = new float[] {
-                0, 0,
-                1, 0,
-                1, 1,
-                0, 1
-        };
-
-        int[] indices = new int[] {
-                0, 1, 2,
-                2, 3, 0
-        };
+        int[] indices = new int[]{0, 1, 2, 2, 3, 0};
 
         vaoId = glGenVertexArrays();
         glBindVertexArray(vaoId);

@@ -15,8 +15,8 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 @Slf4j
 public class Window {
     private final long windowHandle;
-    private int height;
     private final Callable<Void> resizeFunc;
+    private int height;
     private int width;
 
     private MouseInput mouseInput;

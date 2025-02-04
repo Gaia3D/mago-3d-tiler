@@ -60,7 +60,7 @@ public class Projection {
     }
 
     public void updateProjMatrix(int width, int height) {
-        if(projectionType == 1) {
+        if (projectionType == 1) {
             projMatrix.setOrtho(left, right, bottom, top, near, far);
         } else {
             projMatrix.setPerspective(FOV, (float) width / height, Z_NEAR, Z_FAR);

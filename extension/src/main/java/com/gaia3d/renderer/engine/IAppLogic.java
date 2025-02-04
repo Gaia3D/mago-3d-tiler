@@ -2,8 +2,6 @@ package com.gaia3d.renderer.engine;
 
 import com.gaia3d.renderer.engine.dataStructure.GaiaScenesContainer;
 
-import java.awt.*;
-
 public interface IAppLogic {
     void cleanup();
 

@@ -1,29 +1,29 @@
 package com.gaia3d.renderer.engine.graph;
 
-import com.gaia3d.basic.exchangable.GaiaBuffer;
 import com.gaia3d.basic.halfedge.*;
 import com.gaia3d.basic.model.GaiaMaterial;
 import com.gaia3d.basic.model.GaiaTexture;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.renderer.engine.RenderableTexturesUtils;
-import com.gaia3d.renderer.engine.scene.Camera;
-import com.gaia3d.renderer.renderable.RenderableBuffer;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.joml.*;
+import org.joml.Vector2d;
+import org.joml.Vector3d;
+import org.joml.Vector4d;
+import org.joml.Vector4f;
 import org.lwjgl.opengl.GL20;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL11.GL_REPEAT;
 
 @Getter
 @Setter
@@ -31,23 +31,21 @@ import static org.lwjgl.opengl.GL11.GL_REPEAT;
 public class HalfEdgeRenderer {
     private boolean renderWireFrame = false;
     private int colorMode = 2; // 0 = oneColor, 1 = vertexColor, 2 = textureColor
-    public void renderHalfEdgeScenes(List<HalfEdgeScene> halfEdgeScenes, ShaderProgram shaderProgram)
-    {
+
+    public void renderHalfEdgeScenes(List<HalfEdgeScene> halfEdgeScenes, ShaderProgram shaderProgram) {
         for (HalfEdgeScene halfEdgeScene : halfEdgeScenes) {
             renderHalfEdgeScene(halfEdgeScene, shaderProgram);
         }
     }
 
-    public void renderHalfEdgeScene(HalfEdgeScene halfEdgeScene, ShaderProgram shaderProgram)
-    {
+    public void renderHalfEdgeScene(HalfEdgeScene halfEdgeScene, ShaderProgram shaderProgram) {
         List<HalfEdgeNode> halfEdgeNodes = halfEdgeScene.getNodes();
         for (HalfEdgeNode halfEdgeNode : halfEdgeNodes) {
             renderHalfEdgeNode(halfEdgeScene, halfEdgeNode, shaderProgram);
         }
     }
 
-    public void renderHalfEdgeNode(HalfEdgeScene halfEdgeScene, HalfEdgeNode halfEdgeNode, ShaderProgram shaderProgram)
-    {
+    public void renderHalfEdgeNode(HalfEdgeScene halfEdgeScene, HalfEdgeNode halfEdgeNode, ShaderProgram shaderProgram) {
         List<HalfEdgeMesh> halfEdgeMeshes = halfEdgeNode.getMeshes();
         for (HalfEdgeMesh halfEdgeMesh : halfEdgeMeshes) {
             renderHalfEdgeMesh(halfEdgeScene, halfEdgeMesh, shaderProgram);
@@ -71,7 +69,7 @@ public class HalfEdgeRenderer {
         // Check material textures.********************************************************************************************
         boolean textureBinded = false;
         int materialId = halfEdgePrimitive.getMaterialIndex();
-        if(materialId >= 0) {
+        if (materialId >= 0) {
             GaiaMaterial material = halfEdgeScene.getMaterials().get(materialId);
 
             if (material == null) {
@@ -118,8 +116,7 @@ public class HalfEdgeRenderer {
 
     public void renderHalfEdgeSurface(HalfEdgeSurface halfEdgeSurface, ShaderProgram shaderProgram, boolean textureBinded) {
         Map<AttributeType, HalfEdgeRenderableBuffer> mapAttribTypeRenderableBuffer = halfEdgeSurface.getMapAttribTypeRenderableBuffer();
-        if(mapAttribTypeRenderableBuffer == null || mapAttribTypeRenderableBuffer.isEmpty() || halfEdgeSurface.getDirty())
-        {
+        if (mapAttribTypeRenderableBuffer == null || mapAttribTypeRenderableBuffer.isEmpty() || halfEdgeSurface.getDirty()) {
             makeHalfEdgeSurfaceAttributes(halfEdgeSurface);
         }
 
@@ -138,19 +135,16 @@ public class HalfEdgeRenderer {
         UniformsMap uniformsMap = shaderProgram.getUniformsMap();
 
 
-
-        if(this.colorMode == 0) {
+        if (this.colorMode == 0) {
             uniformsMap.setUniform1i("uColorMode", 0);
             uniformsMap.setUniform4fv("uOneColor", new Vector4f(0.9f, 0.3f, 0.6f, 1.0f));
-        }
-        else if(this.colorMode == 1) {
+        } else if (this.colorMode == 1) {
             uniformsMap.setUniform1i("uColorMode", 1);
-        }
-        else if(this.colorMode == 2) {
+        } else if (this.colorMode == 2) {
             uniformsMap.setUniform1i("uColorMode", 2);
         }
 
-        if(!textureBinded) {
+        if (!textureBinded) {
             HalfEdgeRenderableBuffer renderableBufferColor = mapAttribTypeRenderableBuffer.get(AttributeType.COLOR);
             if (renderableBufferColor == null) {
                 uniformsMap.setUniform1i("uColorMode", 0);
@@ -161,7 +155,7 @@ public class HalfEdgeRenderer {
         }
 
         HalfEdgeRenderableBuffer renderableBuffer = mapAttribTypeRenderableBuffer.get(AttributeType.INDICE);
-        if(renderableBuffer == null) {
+        if (renderableBuffer == null) {
             // use glDrawArrays.***
             GL20.glEnable(GL20.GL_POLYGON_OFFSET_FILL);
             GL20.glPolygonOffset(1.0f, 1.0f);
@@ -177,7 +171,7 @@ public class HalfEdgeRenderer {
         GL20.glDrawElements(GL20.GL_TRIANGLES, elemsCount, type, 0);
 
         // render wireframe
-        if(renderWireFrame) {
+        if (renderWireFrame) {
             GL20.glLineWidth(1.0f);
 
             uniformsMap.setUniform1i("uColorMode", 0);
@@ -225,11 +219,9 @@ public class HalfEdgeRenderer {
             PositionType positionType = PositionType.INTERIOR;
             List<HalfEdge> outingEdges = vertexAllOutingEdgesMap.get(vertex);
             int outingEdgesCount = outingEdges.size();
-            for(int j = 0; j < outingEdgesCount; j++)
-            {
+            for (int j = 0; j < outingEdgesCount; j++) {
                 HalfEdge outingEdge = outingEdges.get(j);
-                if(!outingEdge.hasTwin())
-                {
+                if (!outingEdge.hasTwin()) {
                     positionType = PositionType.BOUNDARY_EDGE;
                     break;
                 }
@@ -265,10 +257,9 @@ public class HalfEdgeRenderer {
 
         // make vertex buffer
         Map<AttributeType, HalfEdgeRenderableBuffer> mapAttribTypeRenderableBuffer = halfEdgeSurface.getMapAttribTypeRenderableBuffer();
-        if(mapAttribTypeRenderableBuffer == null) {
+        if (mapAttribTypeRenderableBuffer == null) {
             mapAttribTypeRenderableBuffer = new HashMap<>();
-        }
-        else {
+        } else {
             // delete all buffers
             for (HalfEdgeRenderableBuffer renderableBuffer : mapAttribTypeRenderableBuffer.values()) {
                 int vboId = renderableBuffer.getVboId();
@@ -364,33 +355,29 @@ public class HalfEdgeRenderer {
 
         if (attributeType == AttributeType.POSITION) {
             int location = shaderProgram.enableAttribLocation("aPosition");
-            if(location >= 0) {
+            if (location >= 0) {
                 GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId);
                 GL20.glVertexAttribPointer(location, glDimension, glType, false, 0, 0);
             }
-        }
-        else if (attributeType == AttributeType.NORMAL) {
+        } else if (attributeType == AttributeType.NORMAL) {
             int location = shaderProgram.enableAttribLocation("aNormal");
-            if(location >= 0) {
+            if (location >= 0) {
                 GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId);
                 GL20.glVertexAttribPointer(location, glDimension, glType, false, 0, 0);
             }
-        }
-        else if (attributeType == AttributeType.COLOR) {
+        } else if (attributeType == AttributeType.COLOR) {
             int location = shaderProgram.enableAttribLocation("aColor");
-            if(location >= 0) {
+            if (location >= 0) {
                 GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId);
                 GL20.glVertexAttribPointer(location, glDimension, glType, true, 0, 0);
             }
-        }
-        else if (attributeType == AttributeType.TEXCOORD) {
+        } else if (attributeType == AttributeType.TEXCOORD) {
             int location = shaderProgram.enableAttribLocation("aTexCoord");
-            if(location >= 0) {
+            if (location >= 0) {
                 GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId);
                 GL20.glVertexAttribPointer(location, glDimension, glType, false, 0, 0);
             }
-        }
-        else if (attributeType == AttributeType.INDICE) {
+        } else if (attributeType == AttributeType.INDICE) {
             GL20.glBindBuffer(GL20.GL_ELEMENT_ARRAY_BUFFER, vboId);
         }
 

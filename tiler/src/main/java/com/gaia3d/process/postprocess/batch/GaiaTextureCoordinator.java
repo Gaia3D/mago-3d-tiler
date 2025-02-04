@@ -429,7 +429,7 @@ public class GaiaTextureCoordinator {
                     imageHeight = lod0size;
                     sizeChanged = true;
                 }
-            } /*else if (lodLevel == 1) {
+            } else if (lodLevel == 1) {
                 if (imageWidth > lod1size) {
                     imageWidth = lod1size;
                     sizeChanged = true;
@@ -465,7 +465,7 @@ public class GaiaTextureCoordinator {
                     imageHeight = overSize;
                     sizeChanged = true;
                 }
-            }*/
+            }
             if (sizeChanged) {
                 ImageResizer imageResizer = new ImageResizer();
                 this.atlasImage = imageResizer.resizeImageGraphic2D(this.atlasImage, imageWidth, imageHeight);

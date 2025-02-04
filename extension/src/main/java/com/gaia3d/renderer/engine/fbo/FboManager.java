@@ -27,8 +27,7 @@ public class FboManager {
             fbo = createFbo(name, fboWidth, fboHeight);
         }
 
-        if(fbo.getFboWidth() != fboWidth || fbo.getFboHeight() != fboHeight)
-        {
+        if (fbo.getFboWidth() != fboWidth || fbo.getFboHeight() != fboHeight) {
             deleteFbo(name);
             fbo = createFbo(name, fboWidth, fboHeight);
         }
@@ -39,8 +38,7 @@ public class FboManager {
 
     public Fbo getFbo(String name) {
         // 1rst check if exist
-        if(mapNameFbos.containsKey(name))
-        {
+        if (mapNameFbos.containsKey(name)) {
             return mapNameFbos.get(name);
         }
         return null;

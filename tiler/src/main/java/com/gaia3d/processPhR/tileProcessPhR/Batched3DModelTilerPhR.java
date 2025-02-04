@@ -120,12 +120,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         int currDepth = desiredDepth - lod;
         Map<Node, List<TileInfo>> nodeTileInfoMap = new HashMap<>();
 
-        multiThreadCuttingAndScissorProcess(tileInfosCopy, lod, root, desiredDepth);
+        /*multiThreadCuttingAndScissorProcess(tileInfosCopy, lod, root, desiredDepth);
 
         // distribute contents to node in the correspondent depth.***
         // After process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes.***
         distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
-        makeContentsForNodes(nodeTileInfoMap, lod);
+        makeContentsForNodes(nodeTileInfoMap, lod);*/
 
         /* End lod 0 process */
 
@@ -137,18 +137,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             tileInfosCopy.clear();
             nodeTileInfoMap.clear();
             tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
-            // public void setBasicValues(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount)
-            /*decimateParameters.setBasicValues(6.0, 0.5, 1.0, 12.0, 1000000, 2, 1.8);
-            if (d == 1) {
-                decimateParameters.setBasicValues(12.0, 0.5, 0.9, 15.0, 1000000, 1, 1.2);
-            } else if (d == 2) {
-                decimateParameters.setBasicValues(18.0, 0.6, 1.0, 16.0, 1000000, 2, 1.8);
-            } else if (d == 3) {
-                decimateParameters.setBasicValues(23.0, 0.6, 1.0, 18.0, 1000000, 2, 2.3);
-            } else if (d == 4) {
-                decimateParameters.setBasicValues(28.0, 0.6, 1.0, 20.0, 1000000, 2, 2.8);
-            }*/
-
             if (d == 1) {
                 decimateParameters.setBasicValues(5.0, 0.4, 0.9, 32.0, 1000000, 1, 1.0);
             } else if (d == 2) {
@@ -161,14 +149,14 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 decimateParameters.setBasicValues(25.0, 0.2, 0.9, 32.0, 1000000, 2, 1.0);
             }
 
+            multiThreadCuttingAndScissorProcess(tileInfosCopy, lod, root, desiredDepth);
             decimateScenes(tileInfosCopy, lod, decimateParameters);
 
-            multiThreadCuttingAndScissorProcess(tileInfosCopy, lod, root, desiredDepth);
             currDepth = desiredDepth - lod;
             distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
             makeContentsForNodes(nodeTileInfoMap, lod);
 
-            if (d >= (netSurfaceStartLod - 1)) {
+            if (d >= (netSurfaceStartLod)) {
                 break;
             }
         }
@@ -194,8 +182,9 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 decimateParameters.setBasicValues(30.0, 2.0, 1.0, 15.0, 1000000, 1, 1.8);
             }
 
-            makeNetSurfacesWithBoxTextures(tileInfosCopy, lod, decimateParameters, pixelsForMeter);
             multiThreadCuttingAndScissorProcess(tileInfosCopy, lod, root, desiredDepth);
+            makeNetSurfacesWithBoxTextures(tileInfosCopy, lod, decimateParameters, pixelsForMeter);
+
             currDepth = desiredDepth - lod;
             distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
             makeContentsForNodes(nodeTileInfoMap, lod);
@@ -350,8 +339,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 throw new RuntimeException(e);
             }
             GaiaScene scene = new GaiaScene(gaiaSet);
-
-            scene.setOriginalPath(tileInfo.getScenePath());
+            scene.setOriginalPath(tileInfo.getTempPath());
+            //scene.setOriginalPath(tileInfo.getScenePath());
             scene.makeTriangleFaces();
 
             gaiaSceneList.clear();
@@ -396,7 +385,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             GaiaSet tempSetLod1 = GaiaSet.fromGaiaScene(sceneLod1);
             halfEdgeSceneLod.deleteObjects();
 
-            LevelOfDetail levelOfDetail = LevelOfDetail.getByLevel(lod - 1);
+            LevelOfDetail levelOfDetail = LevelOfDetail.getByLevel(lod);
             float scale = levelOfDetail.getTextureScale();
 
             String aux = "lod" + lod;
@@ -436,7 +425,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 throw new RuntimeException(e);
             }
             GaiaScene scene = new GaiaScene(gaiaSet);
-            scene.setOriginalPath(tileInfo.getScenePath());
+            scene.setOriginalPath(tileInfo.getTempPath());
+            //scene.setOriginalPath(tileInfo.getScenePath());
             scene.makeTriangleFaces();
 
             gaiaSceneList.clear();
@@ -473,7 +463,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             GaiaSet tempSetLod1 = GaiaSet.fromGaiaScene(sceneLod1);
             halfEdgeSceneLod.deleteObjects();
 
-            LevelOfDetail levelOfDetail = LevelOfDetail.getByLevel(lod - 1);
+            LevelOfDetail levelOfDetail = LevelOfDetail.getByLevel(lod);
             float scale = levelOfDetail.getTextureScale();
 
             String aux = "lod" + lod;
@@ -546,7 +536,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             GaiaSet tempSetLod1 = GaiaSet.fromGaiaScene(sceneLod1);
             halfEdgeSceneLod.deleteObjects();
 
-            LevelOfDetail levelOfDetail = LevelOfDetail.getByLevel(lod - 1);
+            LevelOfDetail levelOfDetail = LevelOfDetail.getByLevel(lod);
             float scale = levelOfDetail.getTextureScale();
 
             String aux = "lod" + lod;
@@ -758,9 +748,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             gaiaScene.clear();
             gaiaSet.clear();
 
-            //System.gc();
-
-
             // test save resultImages.***
             String sceneName = "mosaicRenderTest_" + i + "_color";
             String sceneRawName = sceneName;
@@ -845,7 +832,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             // TODO: TEST
             maxScreenSize = 1024; // power of 2
             maxDepthScreenSize = 150;
-
 
             List<HalfEdgeScene> resultHalfEdgeScenes = new ArrayList<>();
             tilerExtensionModule.makeNetSurfacesByPyramidDeformationRender(sceneInfos, bufferedImageType, resultHalfEdgeScenes, resultImages, nodeBBoxLC, nodeTMatrix, maxScreenSize, maxDepthScreenSize);
