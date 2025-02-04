@@ -38,8 +38,8 @@ public class Mago3DTiler {
         if (FormatType.I3DM == outputFormat) {
             processFlow = new InstancedProcessModel();
         } else if (FormatType.B3DM == outputFormat) {
-            boolean isPhotorealisticMesh = GlobalOptions.getInstance().isPhotorealistic();
-            if (isPhotorealisticMesh) {
+            boolean isPhotorealistic = GlobalOptions.getInstance().isPhotorealistic();
+            if (isPhotorealistic) {
                 processFlow = new BatchedProcessModelPhR();
             } else {
                 processFlow = new BatchedProcessModel();

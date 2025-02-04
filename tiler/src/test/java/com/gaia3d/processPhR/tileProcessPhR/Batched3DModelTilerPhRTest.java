@@ -1,7 +1,6 @@
 package com.gaia3d.processPhR.tileProcessPhR;
 
 import com.gaia3d.basic.exchangable.GaiaSet;
-import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.halfedge.DecimateParameters;
 import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaScene;
@@ -12,11 +11,10 @@ import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.jgltf.GltfWriter;
 import com.gaia3d.process.postprocess.batch.GaiaBatcher;
 import com.gaia3d.process.preprocess.GaiaRotator;
-import com.gaia3d.process.preprocess.GaiaTranslatorExact;
+import com.gaia3d.process.preprocess.GaiaStrictTranslator;
 import com.gaia3d.process.tileprocess.tile.LevelOfDetail;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.extern.slf4j.Slf4j;
-import org.joml.Matrix4d;
 import org.junit.jupiter.api.Test;
 import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
@@ -58,7 +56,7 @@ class Batched3DModelTilerPhRTest {
                 .build();
 
         GaiaRotator rotator = new GaiaRotator();
-        GaiaTranslatorExact translatorExact = new GaiaTranslatorExact(new ArrayList<>());
+        GaiaStrictTranslator translatorExact = new GaiaStrictTranslator(new ArrayList<>());
         rotator.run(preTileInfo);
         translatorExact.run(preTileInfo);
         GaiaSet gaiaSet = GaiaSet.fromGaiaScene(scene);

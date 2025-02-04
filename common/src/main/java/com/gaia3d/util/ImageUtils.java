@@ -296,7 +296,7 @@ public class ImageUtils {
 
         while(it < iterations) {
             changed = false;
-            log.debug("Iteration: " + it);
+            log.info("Clamp Iteration : {}", it);
             for (int i = 0; i < width; i++) {
                 for (int j = 0; j < height; j++) {
                     Color pixel = new Color(oldImage.getRGB(i, j), true);

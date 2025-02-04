@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GaiaTextureCoordinator {
     private final String ATLAS_IMAGE;
-    private final Color BACKGROUND_COLOR = new Color(255, 0, 255, 0);
+    private final Color BACKGROUND_COLOR = new Color(255, 0, 255);
 
     private final List<GaiaMaterial> materials;
     private final List<GaiaBufferDataSet> bufferDataSets;
@@ -49,7 +49,6 @@ public class GaiaTextureCoordinator {
         // TYPE_4BYTE_ABGR = 6
         if (width > 0 || height > 0) {
             this.atlasImage = new BufferedImage(width, height, imageType);
-
             // now fill the image with white fuchsia.***
             Graphics2D graphics = this.atlasImage.createGraphics();
             graphics.setColor(BACKGROUND_COLOR);
