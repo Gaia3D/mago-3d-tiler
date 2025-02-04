@@ -2502,7 +2502,7 @@ public class Engine {
         float minZ = (float) bboxTransformed.getMinZ();
 
         Projection projection = gaiaScenesContainer.getProjection();
-        projection.setProjectionOrthographic(minX, maxX, minY, maxY, -maxZ, -minZ);
+        projection.setProjectionOrthographic(minX, maxX, minY, maxY, -maxZ, -minZ); // attention! : near = -maxZ, far = -minZ.***
         gaiaScenesContainer.setProjection(projection);
 
         // Take FboManager from engine.***
