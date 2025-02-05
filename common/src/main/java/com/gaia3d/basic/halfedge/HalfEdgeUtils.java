@@ -507,12 +507,12 @@ public class HalfEdgeUtils {
         return Math.acos(dotProduct);
     }
 
-    public static List<HalfEdgeVertex> getVerticesOfFaces(List<HalfEdgeFace> facesPlaneXYPos, List<HalfEdgeVertex> resultVertices) {
+    public static List<HalfEdgeVertex> getVerticesOfFaces(List<HalfEdgeFace> faces, List<HalfEdgeVertex> resultVertices) {
         Map<HalfEdgeVertex, HalfEdgeVertex> MapVertices = new HashMap<>();
         if (resultVertices == null) {
             resultVertices = new ArrayList<>();
         }
-        for (HalfEdgeFace face : facesPlaneXYPos) {
+        for (HalfEdgeFace face : faces) {
             List<HalfEdgeVertex> faceVertices = face.getVertices(null);
             for (HalfEdgeVertex vertex : faceVertices) {
                 MapVertices.put(vertex, vertex);
@@ -521,6 +521,24 @@ public class HalfEdgeUtils {
 
         resultVertices.addAll(MapVertices.values());
         return resultVertices;
+    }
+
+    public static List<HalfEdge> getHalfEdgesOfFaces(List<HalfEdgeFace> faces, List<HalfEdge> resultHalfEdges) {
+        Map<HalfEdge, HalfEdge> MapHalfEdges = new HashMap<>();
+        if (resultHalfEdges == null) {
+            resultHalfEdges = new ArrayList<>();
+        }
+        List<HalfEdge> faceHalfEdges = new ArrayList<>();
+        for (HalfEdgeFace face : faces) {
+            faceHalfEdges.clear();
+            faceHalfEdges = face.getHalfEdgesLoop(faceHalfEdges);
+            for (HalfEdge halfEdge : faceHalfEdges) {
+                MapHalfEdges.put(halfEdge, halfEdge);
+            }
+        }
+
+        resultHalfEdges.addAll(MapHalfEdges.values());
+        return resultHalfEdges;
     }
 
     public static HalfEdgeSurface halfEdgeSurfaceFromGaiaSurface(GaiaSurface gaiaSurface, List<GaiaVertex> gaiaVertices) {

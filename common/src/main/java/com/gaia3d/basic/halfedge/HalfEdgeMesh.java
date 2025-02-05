@@ -134,6 +134,20 @@ public class HalfEdgeMesh implements Serializable {
         }
     }
 
+    public HalfEdgeMesh cloneByClassifyId(int classifyId) {
+        HalfEdgeMesh clonedMesh = null;
+        for (HalfEdgePrimitive primitive : primitives) {
+            HalfEdgePrimitive clonedPrimitive = primitive.cloneByClassifyId(classifyId);
+            if (clonedPrimitive != null) {
+                if(clonedMesh == null) {
+                    clonedMesh = new HalfEdgeMesh();
+                }
+                clonedMesh.primitives.add(clonedPrimitive);
+            }
+        }
+        return clonedMesh;
+    }
+
     public HalfEdgeMesh clone() {
         HalfEdgeMesh clonedMesh = new HalfEdgeMesh();
         for (HalfEdgePrimitive primitive : primitives) {
@@ -213,4 +227,6 @@ public class HalfEdgeMesh implements Serializable {
             primitive.getWestEastSouthNorthVertices(bbox, westVertices, eastVertices, southVertices, northVertices, error);
         }
     }
+
+
 }

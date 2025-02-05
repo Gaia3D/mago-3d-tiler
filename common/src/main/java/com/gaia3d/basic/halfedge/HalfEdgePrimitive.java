@@ -191,6 +191,22 @@ public class HalfEdgePrimitive implements Serializable {
 
     }
 
+    public HalfEdgePrimitive cloneByClassifyId(int classifyId) {
+        HalfEdgePrimitive cloned = null;
+        for (HalfEdgeSurface surface : surfaces) {
+            HalfEdgeSurface clonedSurface = surface.cloneByClassifyId(classifyId);
+            if (clonedSurface != null) {
+                if (cloned == null) {
+                    cloned = new HalfEdgePrimitive();
+                    cloned.setAccessorIndices(accessorIndices);
+                    cloned.setMaterialIndex(materialIndex);
+                }
+                cloned.getSurfaces().add(clonedSurface);
+            }
+        }
+        return cloned;
+    }
+
     public HalfEdgePrimitive clone() {
         HalfEdgePrimitive cloned = new HalfEdgePrimitive();
         cloned.setAccessorIndices(accessorIndices);
@@ -265,4 +281,6 @@ public class HalfEdgePrimitive implements Serializable {
             surface.getWestEastSouthNorthVertices(bbox, westVertices, eastVertices, southVertices, northVertices, error);
         }
     }
+
+
 }

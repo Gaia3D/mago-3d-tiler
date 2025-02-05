@@ -2566,6 +2566,49 @@ public class HalfEdgeSurface implements Serializable {
         setObjectIdsInList();
     }
 
+    public void deleteFacesWithNoClassifyId(int classifyId) {
+        // must delete the faces, halfEdges, vertices.***
+        int facesCount = faces.size();
+        for (int i = 0; i < facesCount; i++) {
+            HalfEdgeFace face = faces.get(i);
+            if (face == null) {
+                log.error("HalfEdgeSurface.deleteFacesWithClassifyId() : face == null.");
+                continue;
+            }
+            if (face.getStatus() == ObjectStatus.DELETED) {
+                continue;
+            }
+
+            if (face.getClassifyId() != classifyId) {
+                face.setStatus(ObjectStatus.DELETED);
+                HalfEdge halfEdge = face.getHalfEdge();
+                List<HalfEdge> halfEdgesLoop = new ArrayList<>();
+                halfEdgesLoop = halfEdge.getLoop(halfEdgesLoop);
+                int hedgesLoopCount = halfEdgesLoop.size();
+                for (int j = 0; j < hedgesLoopCount; j++) {
+                    HalfEdge halfEdgeLoop = halfEdgesLoop.get(j);
+                    halfEdgeLoop.setStatus(ObjectStatus.DELETED);
+                }
+            }
+        }
+
+        removeDeletedObjects();
+
+        // check no used vertices.***
+        List<HalfEdgeVertex> noUsedVertices = new ArrayList<>();
+        if (existNoUsedVertices(noUsedVertices)) {
+            int noUsedVerticesCount = noUsedVertices.size();
+            for (int i = 0; i < noUsedVerticesCount; i++) {
+                HalfEdgeVertex vertex = noUsedVertices.get(i);
+                vertex.setStatus(ObjectStatus.DELETED);
+            }
+
+            removeDeletedObjects();
+        }
+
+        setObjectIdsInList();
+    }
+
     public void deleteFacesWithClassifyId_old(int classifyId) {
         // must delete the faces, halfEdges, vertices.***
         int halfEdgesCount = halfEdges.size();
@@ -2768,6 +2811,97 @@ public class HalfEdgeSurface implements Serializable {
         return !noUsedVertices.isEmpty();
     }
 
+    public HalfEdgeSurface cloneByClassifyId(int classifyId) {
+        List<HalfEdgeFace> faces = new ArrayList<>();
+        int facesCount = this.faces.size();
+        for (int i = 0; i < facesCount; i++) {
+            HalfEdgeFace face = this.faces.get(i);
+            if (face.getClassifyId() == classifyId) {
+                faces.add(face);
+            }
+        }
+
+        if(faces.isEmpty()) {
+            return null;
+        }
+
+        HalfEdgeSurface cloneSurface = new HalfEdgeSurface();
+
+        this.setObjectIdsInList();
+
+        // 1rst, copy vertices.***
+        Map<HalfEdgeVertex, HalfEdgeVertex> mapOriginalToCloneVertex = new HashMap<>();
+        List<HalfEdgeVertex> faceVertexList = new ArrayList<>();
+        HalfEdgeUtils.getVerticesOfFaces(faces, faceVertexList);
+        int verticesCount = faceVertexList.size();
+        for (int i = 0; i < verticesCount; i++) {
+            HalfEdgeVertex vertex = faceVertexList.get(i);
+            HalfEdgeVertex cloneVertex = new HalfEdgeVertex();
+            cloneVertex.copyFrom(vertex);
+            cloneSurface.vertices.add(cloneVertex);
+
+            mapOriginalToCloneVertex.put(vertex, cloneVertex);
+        }
+
+        // copy faces.***
+        Map<HalfEdgeFace, HalfEdgeFace> mapOriginalToCloneFace = new HashMap<>();
+        facesCount = faces.size();
+        for (int i = 0; i < facesCount; i++) {
+            HalfEdgeFace face = faces.get(i);
+            HalfEdgeFace cloneFace = new HalfEdgeFace();
+            cloneFace.copyFrom(face);
+            cloneSurface.faces.add(cloneFace);
+
+            mapOriginalToCloneFace.put(face, cloneFace);
+        }
+
+        // copy halfEdges.***
+        Map<HalfEdge, HalfEdge> mapOriginalToCloneHalfEdge = new HashMap<>();
+        List<HalfEdge> halfEdgesOfFaces = HalfEdgeUtils.getHalfEdgesOfFaces(faces, null);
+        int halfEdgesCount = halfEdgesOfFaces.size();
+        for (int i = 0; i < halfEdgesCount; i++) {
+            HalfEdge halfEdge = halfEdgesOfFaces.get(i);
+            HalfEdge cloneHalfEdge = new HalfEdge();
+            mapOriginalToCloneHalfEdge.put(halfEdge, cloneHalfEdge);
+        }
+        if(mapOriginalToCloneHalfEdge.isEmpty()) {
+            return null;
+        }
+
+        halfEdgesCount = halfEdgesOfFaces.size();
+        for (int i = 0; i < halfEdgesCount; i++) {
+            HalfEdge halfEdge = halfEdgesOfFaces.get(i);
+            HalfEdge cloneHalfEdge = mapOriginalToCloneHalfEdge.get(halfEdge);
+
+            // startVertex
+            HalfEdgeVertex startVertex = halfEdge.getStartVertex();
+            HalfEdgeVertex cloneStartVertex = mapOriginalToCloneVertex.get(startVertex);
+            cloneHalfEdge.setStartVertex(cloneStartVertex);
+            cloneStartVertex.setOutingHalfEdge(cloneHalfEdge);
+
+            // next
+            HalfEdge next = halfEdge.getNext();
+            HalfEdge cloneNext = mapOriginalToCloneHalfEdge.get(next);
+            cloneHalfEdge.setNext(cloneNext);
+
+            // twin
+            HalfEdge twin = halfEdge.getTwin();
+            HalfEdge cloneTwin = mapOriginalToCloneHalfEdge.get(twin);
+            cloneHalfEdge.setTwin(cloneTwin);
+
+            // face
+            HalfEdgeFace face = halfEdge.getFace();
+            HalfEdgeFace cloneFace = mapOriginalToCloneFace.get(face);
+            cloneHalfEdge.setFace(cloneFace);
+            cloneFace.setHalfEdge(cloneHalfEdge);
+
+            cloneSurface.halfEdges.add(cloneHalfEdge);
+        }
+
+        cloneSurface.setTwins();
+
+        return cloneSurface;
+    }
 
     public HalfEdgeSurface clone() {
         HalfEdgeSurface cloneSurface = new HalfEdgeSurface();
@@ -3798,4 +3932,6 @@ public class HalfEdgeSurface implements Serializable {
             }
         }
     }
+
+
 }

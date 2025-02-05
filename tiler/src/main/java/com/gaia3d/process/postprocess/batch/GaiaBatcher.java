@@ -39,9 +39,11 @@ public class GaiaBatcher {
             if (visitedMap.containsKey(dataSet)) {
                 continue;
             }
-            int matId = dataSet.getMaterialId();
-            if(matId < 0 || matId >= batchedMaterials.size()) {
-                int hola = 0;
+
+            int materialId = dataSet.getMaterialId();
+            if(materialId < 0 || materialId >= batchedMaterials.size()) {
+                log.error("MaterialId is out of range");
+                continue;
             }
             GaiaMaterial material = batchedMaterials.get(dataSet.getMaterialId());
             for (int  j= i + 1; j < datasetsCount; j++) {

@@ -357,6 +357,30 @@ public class HalfEdgeScene implements Serializable {
         return clonedScene;
     }
 
+    public HalfEdgeScene cloneByClassifyId(int classifyId) {
+        HalfEdgeScene clonedScene = null;
+
+        for (HalfEdgeNode node : nodes) {
+            HalfEdgeNode clonedNode = node.cloneByClassifyId(classifyId);
+            if (clonedNode != null) {
+                if (clonedScene == null) {
+                    clonedScene = new HalfEdgeScene();
+                    clonedScene.originalPath = originalPath;
+                    clonedScene.gaiaBoundingBox = gaiaBoundingBox;
+                    clonedScene.attribute = attribute;
+                }
+                clonedScene.nodes.add(clonedNode);
+            }
+        }
+        if (clonedScene != null) {
+            for (GaiaMaterial material : materials) {
+                clonedScene.materials.add(material.clone());
+            }
+        }
+
+        return clonedScene;
+    }
+
 
     public void scissorTextures() {
         boolean hasTextures = false;

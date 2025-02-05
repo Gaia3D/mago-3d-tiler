@@ -955,7 +955,8 @@ class UnitTest {
                 "-it", "obj",
                 "-o", outputPath,
                 "-crs", "5187",
-                "-pr"
+                "-pr",
+                "-debug"
         };
         Mago3DTilerMain.main(args);
     }

@@ -189,6 +189,38 @@ public class HalfEdgeNode implements Serializable {
         }
     }
 
+    public HalfEdgeNode cloneByClassifyId(int classifyId) {
+        HalfEdgeNode clonedNode = null;
+
+        for (HalfEdgeMesh mesh : meshes) {
+            HalfEdgeMesh clonedMesh = mesh.cloneByClassifyId(classifyId);
+            if (clonedMesh != null) {
+                if (clonedNode == null) {
+                    clonedNode = new HalfEdgeNode();
+                    clonedNode.transformMatrix = new Matrix4d(transformMatrix);
+                    clonedNode.preMultipliedTransformMatrix = new Matrix4d(preMultipliedTransformMatrix);
+                }
+                clonedNode.meshes.add(clonedMesh);
+            }
+        }
+        for (HalfEdgeNode child : children) {
+            HalfEdgeNode clonedChild = child.cloneByClassifyId(classifyId);
+            if (clonedChild != null) {
+                if (clonedNode == null) {
+                    clonedNode = new HalfEdgeNode();
+                    clonedNode.transformMatrix = new Matrix4d(transformMatrix);
+                    clonedNode.preMultipliedTransformMatrix = new Matrix4d(preMultipliedTransformMatrix);
+                }
+                clonedChild.parent = clonedNode;
+                clonedNode.children.add(clonedChild);
+            }
+        }
+        if (boundingBox != null && clonedNode != null) {
+            clonedNode.boundingBox = boundingBox.clone();
+        }
+        return clonedNode;
+    }
+
     public HalfEdgeNode clone() {
         HalfEdgeNode clonedNode = new HalfEdgeNode();
         clonedNode.transformMatrix = new Matrix4d(transformMatrix);
@@ -367,4 +399,6 @@ public class HalfEdgeNode implements Serializable {
             child.getWestEastSouthNorthVertices(bbox, westVertices, eastVertices, southVertices, northVertices, error);
         }
     }
+
+
 }
