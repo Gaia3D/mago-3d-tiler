@@ -54,8 +54,7 @@ public class HalfEdgeNode implements Serializable {
         }
     }
 
-    public void calculateNormals()
-    {
+    public void calculateNormals() {
         for (HalfEdgeMesh mesh : meshes) {
             mesh.calculateNormals();
         }
@@ -78,7 +77,7 @@ public class HalfEdgeNode implements Serializable {
         Matrix4d identity = new Matrix4d();
         identity.identity();
 
-        if(finalMatrix.equals(identity)) {
+        if (finalMatrix.equals(identity)) {
             return;
         }
 
@@ -111,9 +110,8 @@ public class HalfEdgeNode implements Serializable {
         }
     }
 
-    public List<HalfEdgeSurface> extractSurfaces(List<HalfEdgeSurface> resultHalfEdgeSurfaces)
-    {
-        if(resultHalfEdgeSurfaces == null) {
+    public List<HalfEdgeSurface> extractSurfaces(List<HalfEdgeSurface> resultHalfEdgeSurfaces) {
+        if (resultHalfEdgeSurfaces == null) {
             resultHalfEdgeSurfaces = new ArrayList<>();
         }
         for (HalfEdgeMesh mesh : meshes) {
@@ -126,16 +124,44 @@ public class HalfEdgeNode implements Serializable {
     }
 
     public GaiaBoundingBox calculateBoundingBox(GaiaBoundingBox resultBBox) {
-        if(resultBBox == null) {
-            resultBBox = new GaiaBoundingBox();
+//        if(resultBBox == null) {
+//            resultBBox = new GaiaBoundingBox();
+//        }
+//        for (HalfEdgeMesh mesh : meshes) {
+//            resultBBox = mesh.calculateBoundingBox(resultBBox);
+//        }
+//        for (HalfEdgeNode child : children) {
+//            resultBBox = child.calculateBoundingBox(resultBBox);
+//        }
+//        return resultBBox;
+        GaiaBoundingBox boundingBox = null;
+//        Matrix4d transformMatrix = new Matrix4d(this.transformMatrix);
+//        if (parentTransformMatrix != null) {
+//            parentTransformMatrix.mul(transformMatrix, transformMatrix);
+//        }
+        for (HalfEdgeMesh mesh : this.getMeshes()) {
+            GaiaBoundingBox meshBoundingBox = mesh.calculateBoundingBox(null);
+            if (meshBoundingBox == null) {
+                continue;
+            }
+            if (boundingBox == null) {
+                boundingBox = meshBoundingBox;
+            } else {
+                boundingBox.addBoundingBox(meshBoundingBox);
+            }
         }
-        for (HalfEdgeMesh mesh : meshes) {
-            resultBBox = mesh.calculateBoundingBox(resultBBox);
+        for (HalfEdgeNode child : this.getChildren()) {
+            GaiaBoundingBox childBoundingBox = child.calculateBoundingBox(null);
+            if (childBoundingBox == null) {
+                continue;
+            }
+            if (boundingBox == null) {
+                boundingBox = childBoundingBox;
+            } else {
+                boundingBox.addBoundingBox(childBoundingBox);
+            }
         }
-        for (HalfEdgeNode child : children) {
-            resultBBox = child.calculateBoundingBox(resultBBox);
-        }
-        return resultBBox;
+        return boundingBox;
     }
 
     public GaiaBoundingBox getBoundingBox() {
@@ -145,8 +171,7 @@ public class HalfEdgeNode implements Serializable {
         return boundingBox;
     }
 
-    public void classifyFacesIdByPlane(PlaneType planeType, Vector3d planePosition)
-    {
+    public void classifyFacesIdByPlane(PlaneType planeType, Vector3d planePosition) {
         for (HalfEdgeMesh mesh : meshes) {
             mesh.classifyFacesIdByPlane(planeType, planePosition);
         }
@@ -155,14 +180,45 @@ public class HalfEdgeNode implements Serializable {
         }
     }
 
-    public void deleteFacesWithClassifyId(int classifyId)
-    {
+    public void deleteFacesWithClassifyId(int classifyId) {
         for (HalfEdgeMesh mesh : meshes) {
             mesh.deleteFacesWithClassifyId(classifyId);
         }
         for (HalfEdgeNode child : children) {
             child.deleteFacesWithClassifyId(classifyId);
         }
+    }
+
+    public HalfEdgeNode cloneByClassifyId(int classifyId) {
+        HalfEdgeNode clonedNode = null;
+
+        for (HalfEdgeMesh mesh : meshes) {
+            HalfEdgeMesh clonedMesh = mesh.cloneByClassifyId(classifyId);
+            if (clonedMesh != null) {
+                if (clonedNode == null) {
+                    clonedNode = new HalfEdgeNode();
+                    clonedNode.transformMatrix = new Matrix4d(transformMatrix);
+                    clonedNode.preMultipliedTransformMatrix = new Matrix4d(preMultipliedTransformMatrix);
+                }
+                clonedNode.meshes.add(clonedMesh);
+            }
+        }
+        for (HalfEdgeNode child : children) {
+            HalfEdgeNode clonedChild = child.cloneByClassifyId(classifyId);
+            if (clonedChild != null) {
+                if (clonedNode == null) {
+                    clonedNode = new HalfEdgeNode();
+                    clonedNode.transformMatrix = new Matrix4d(transformMatrix);
+                    clonedNode.preMultipliedTransformMatrix = new Matrix4d(preMultipliedTransformMatrix);
+                }
+                clonedChild.parent = clonedNode;
+                clonedNode.children.add(clonedChild);
+            }
+        }
+        if (boundingBox != null && clonedNode != null) {
+            clonedNode.boundingBox = boundingBox.clone();
+        }
+        return clonedNode;
     }
 
     public HalfEdgeNode clone() {
@@ -185,14 +241,6 @@ public class HalfEdgeNode implements Serializable {
 
     public void writeFile(ObjectOutputStream outputStream) {
         try {
-            /*
-            private HalfEdgeNode parent = null;
-            private Matrix4d transformMatrix = new Matrix4d();
-            private Matrix4d preMultipliedTransformMatrix = new Matrix4d();
-            private List<HalfEdgeMesh> meshes = new ArrayList<>();
-            private List<HalfEdgeNode> children = new ArrayList<>();
-            private GaiaBoundingBox boundingBox = null;
-             */
             // transformMatrix
             outputStream.writeObject(transformMatrix);
             // preMultipliedTransformMatrix
@@ -315,6 +363,15 @@ public class HalfEdgeNode implements Serializable {
         }
     }
 
+    public void splitFacesByBestObliqueCameraDirectionToProject() {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.splitFacesByBestObliqueCameraDirectionToProject();
+        }
+        for (HalfEdgeNode child : children) {
+            child.splitFacesByBestObliqueCameraDirectionToProject();
+        }
+    }
+
     public void splitFacesByBestPlanesToProject() {
         for (HalfEdgeMesh mesh : meshes) {
             mesh.splitFacesByBestPlanesToProject();
@@ -332,4 +389,16 @@ public class HalfEdgeNode implements Serializable {
             child.extractPrimitives(resultPrimitives);
         }
     }
+
+    public void getWestEastSouthNorthVertices(GaiaBoundingBox bbox, List<HalfEdgeVertex> westVertices, List<HalfEdgeVertex> eastVertices, List<HalfEdgeVertex> southVertices, List<HalfEdgeVertex> northVertices, double error) {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.getWestEastSouthNorthVertices(bbox, westVertices, eastVertices, southVertices, northVertices, error);
+        }
+
+        for (HalfEdgeNode child : children) {
+            child.getWestEastSouthNorthVertices(bbox, westVertices, eastVertices, southVertices, northVertices, error);
+        }
+    }
+
+
 }

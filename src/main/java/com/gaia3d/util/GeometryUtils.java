@@ -4,6 +4,8 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.geometry.octree.GaiaFaceData;
 import com.gaia3d.basic.geometry.octree.GaiaOctree;
+import com.gaia3d.basic.halfedge.CameraDirectionType;
+import com.gaia3d.basic.halfedge.HalfEdgeFace;
 import com.gaia3d.basic.halfedge.PlaneType;
 import com.gaia3d.basic.model.*;
 import org.joml.Vector2d;
@@ -102,7 +104,7 @@ public class GeometryUtils {
     public static GaiaPrimitive getPrimitiveFromBoundingBox(GaiaBoundingBox bbox, boolean left, boolean right, boolean front, boolean rear, boolean bottom, boolean top) {
         GaiaPrimitive resultPrimitive = new GaiaPrimitive();
 
-        // make 6 GaiaSurface. Each surface has 2 gaiaFaces.***
+        // make 6 GaiaSurface. Each surface has 2 gaiaFaces.
         double minX = bbox.getMinX();
         double minY = bbox.getMinY();
         double minZ = bbox.getMinZ();
@@ -110,7 +112,7 @@ public class GeometryUtils {
         double maxY = bbox.getMaxY();
         double maxZ = bbox.getMaxZ();
 
-        // 24 vertices.***
+        // 24 vertices.
 
         //                           3--------2
         //                          /        /     <- top
@@ -138,7 +140,7 @@ public class GeometryUtils {
             GaiaPrimitive leftPrimitive = new GaiaPrimitive();
 
             GaiaVertex vertex0 = new GaiaVertex();
-            // Left.************************************************************
+            // Left
             Vector3d normalLeft = new Vector3d(-1, 0, 0);
             vertex0.setPosition(new Vector3d(minX, minY, minZ));
             vertex0.setNormal(normalLeft);
@@ -160,16 +162,16 @@ public class GeometryUtils {
             leftPrimitive.getVertices().add(vertex2);
             leftPrimitive.getVertices().add(vertex3);
 
-            // LeftSurface.************************************************************************************
+            // LeftSurface.
             GaiaSurface leftSurface = new GaiaSurface();
-            // 0, 3, 2, 1. The normal is (-1, 0, 0).***
+            // 0, 3, 2, 1. The normal is (-1, 0, 0).
 
-            // Face0 (0, 3, 2).***
+            // Face0 (0, 3, 2).
             GaiaFace face10 = new GaiaFace();
             face10.setIndices(new int[]{0, 3, 2});
             leftSurface.getFaces().add(face10);
 
-            // Face1 (0, 2, 1).***
+            // Face1 (0, 2, 1).
             GaiaFace face11 = new GaiaFace();
             face11.setIndices(new int[]{0, 2, 1});
             leftSurface.getFaces().add(face11);
@@ -181,7 +183,7 @@ public class GeometryUtils {
         if (right) {
             GaiaPrimitive rightPrimitive = new GaiaPrimitive();
 
-            // Right.************************************************************
+            // Right.
             Vector3d normalRight = new Vector3d(1, 0, 0);
             GaiaVertex vertex0 = new GaiaVertex(); // coincident with vertex5.***
             vertex0.setPosition(new Vector3d(maxX, minY, minZ));
@@ -941,6 +943,8 @@ public class GeometryUtils {
 
         resultNormal.normalize();
     }
+
+
 
     public static PlaneType getBestPlaneToProject(Vector3d normal) {
 

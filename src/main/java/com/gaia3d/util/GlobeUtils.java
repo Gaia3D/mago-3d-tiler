@@ -63,9 +63,19 @@ public class GlobeUtils {
         return avgRadius * (maxLatRad - minLatRad);
     }
 
+    public static double distanceBetweenLongitudesRad(double latRad, double minLonRad, double maxLonRad) {
+        double radius = radiusAtLatitudeRad(latRad);
+        return radius * Math.cos(latRad) * (maxLonRad - minLonRad);
+    }
+
     public static double angRadLatitudeForDistance(double latRad, double distance) {
         double radius = radiusAtLatitudeRad(latRad);
         return distance / radius;
+    }
+
+    public static double angRadLongitudeForDistance(double latRad, double distance) {
+        double radius = radiusAtLatitudeRad(latRad);
+        return distance / (radius * Math.cos(latRad));
     }
 
     public static Vector3d geographicToCartesianWgs84(Vector3d position) {
@@ -211,5 +221,57 @@ public class GlobeUtils {
         double sinLat = Math.sin(latRad);
         double e2 = FIRST_ECCENTRICITY_SQUARED;
         return EQUATORIAL_RADIUS / Math.sqrt(1.0 - e2 * sinLat * sinLat);
+    }
+
+    public static org.opengis.referencing.crs.CoordinateReferenceSystem convertWkt(String wkt) {
+        try {
+             return CRS.parseWKT(wkt);
+        } catch (FactoryException e) {
+            log.debug("Failed to parse WKT");
+            return null;
+        }
+    }
+
+    public static String extractEpsgCodeFromWTK(String wktCRS) {
+        try {
+            if (wktCRS.contains("PROJCS")) {
+                int start = wktCRS.lastIndexOf("AUTHORITY");
+                int end = wktCRS.lastIndexOf("]");
+                String epsg = wktCRS.substring(start, end);
+                epsg = epsg.replace("AUTHORITY[\"EPSG\",\"", "");
+                epsg = epsg.replace("\"]", "");
+                epsg = epsg.replace(" ", "");
+                return epsg;
+            } else {
+                return null;
+            }
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    public static CoordinateReferenceSystem convertProj4jCrsFromGeotoolsCrs(org.opengis.referencing.crs.CoordinateReferenceSystem crs) {
+        String epsg = null;
+        try {
+            epsg = CRS.lookupIdentifier(crs, true);
+        } catch (FactoryException e) {
+            log.error("Failed to lookup EPSG code", e);
+        }
+
+        if (epsg == null) {
+            epsg = extractEpsgCodeFromWTK(crs.toWKT());
+        }
+
+        if (epsg == null) {
+            return null;
+        } else {
+            String epsgCode = "EPSG:" + epsg;
+            CoordinateReferenceSystem crsWgs84 = factory.createFromName(epsgCode);
+            if (crsWgs84 == null) {
+                log.error("Failed to create CRS from EPSG code: {}", epsgCode);
+                return null;
+            }
+            return crsWgs84;
+        }
     }
 }

@@ -210,7 +210,7 @@ public class GaiaMesh extends MeshStructure implements Serializable {
         }
         for (GaiaPrimitive primitive : primitives) {
             if (primitive.getVertices().size() < 3) {
-                log.warn("The primitive has less than 3 vertices. It will be ignored.");
+                log.debug("The primitive has less than 3 vertices. It will be ignored.");
                 continue;
             }
             GaiaBufferDataSet gaiaBufferDataSet = primitive.toGaiaBufferSet(transformMatrix);
@@ -258,11 +258,22 @@ public class GaiaMesh extends MeshStructure implements Serializable {
             primitive.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
             primitive.deleteNoUsedVertices();
         }
-
     }
 
-    public void scissorTextures(List<GaiaMaterial> materials) {
+    public void unWeldVertices() {
+        for (GaiaPrimitive primitive : primitives) {
+            primitive.unWeldVertices();
+        }
+    }
 
+    public List<GaiaFace> extractGaiaFaces(List<GaiaFace> resultFaces) {
+        if (resultFaces == null) {
+            resultFaces = new ArrayList<>();
+        }
+        for (GaiaPrimitive primitive : primitives) {
+            primitive.extractGaiaFaces(resultFaces);
+        }
+        return resultFaces;
     }
 
     public void deleteObjects() {

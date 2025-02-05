@@ -127,7 +127,6 @@ public class HalfEdgeVertex implements Serializable {
 
         if (this.outingHalfEdge.getStatus() == ObjectStatus.DELETED) {
             log.info("HalfEdgeVertex.getIncomingHalfEdges() : outingHalfEdge is deleted!.");
-            int hola = 0;
         }
 
         if (resultHalfEdges == null) {
@@ -135,9 +134,7 @@ public class HalfEdgeVertex implements Serializable {
         }
 
         List<HalfEdge> outingEdges = this.getOutingHalfEdges(null);
-        int edgesCount = outingEdges.size();
-        for (int i = 0; i < edgesCount; i++) {
-            HalfEdge edge = outingEdges.get(i);
+        for (HalfEdge edge : outingEdges) {
             HalfEdge prevEdge = edge.getPrev();
             if (prevEdge != null) {
                 resultHalfEdges.add(prevEdge);
@@ -154,7 +151,6 @@ public class HalfEdgeVertex implements Serializable {
 
         if (this.outingHalfEdge.getStatus() == ObjectStatus.DELETED) {
             log.info("HalfEdgeVertex.getOutingHalfEdges() : outingHalfEdge is deleted!.");
-            int hola = 0;
         }
 
         if (resultHalfEdges == null) {
@@ -209,24 +205,22 @@ public class HalfEdgeVertex implements Serializable {
     }
 
     public boolean changeOutingHalfEdge() {
-        if(this.outingHalfEdge.getStatus() != ObjectStatus.DELETED) {
+        if (this.outingHalfEdge.getStatus() != ObjectStatus.DELETED) {
             return true;
         }
 
         List<HalfEdge> outingEdges = this.getOutingHalfEdges(null);
-        if(outingEdges == null)
-        {
+        if (outingEdges == null) {
             return false;
         }
 
-        int edgesCount = outingEdges.size();
-        for (int i = 0; i < edgesCount; i++) {
-            HalfEdge edge = outingEdges.get(i);
+        for (HalfEdge edge : outingEdges) {
             if (edge.getStatus() != ObjectStatus.DELETED) {
                 this.outingHalfEdge = edge;
                 return true;
             }
         }
+
 
         return true;
     }
@@ -235,9 +229,7 @@ public class HalfEdgeVertex implements Serializable {
         if (this.positionType == null) {
             if (this.outingHalfEdge != null) {
                 List<HalfEdge> outingEdges = this.getOutingHalfEdges(null);
-                int edgesCount = outingEdges.size();
-                for (int i = 0; i < edgesCount; i++) {
-                    HalfEdge edge = outingEdges.get(i);
+                for (HalfEdge edge : outingEdges) {
                     if (edge.getTwin() == null) {
                         this.positionType = PositionType.BOUNDARY_EDGE;
                         break;
@@ -259,7 +251,6 @@ public class HalfEdgeVertex implements Serializable {
 
         if (this.outingHalfEdge.getStatus() == ObjectStatus.DELETED) {
             log.info("HalfEdgeVertex.getFaces() : outingHalfEdge is deleted!.");
-            int hola = 0;
         }
 
         if (resultFaces == null) {
@@ -267,9 +258,7 @@ public class HalfEdgeVertex implements Serializable {
         }
 
         List<HalfEdge> outingEdges = this.getOutingHalfEdges(null);
-        int edgesCount = outingEdges.size();
-        for (int i = 0; i < edgesCount; i++) {
-            HalfEdge edge = outingEdges.get(i);
+        for (HalfEdge edge : outingEdges) {
             HalfEdgeFace face = edge.getFace();
             if (face != null) {
                 resultFaces.add(face);
@@ -279,8 +268,7 @@ public class HalfEdgeVertex implements Serializable {
         return resultFaces;
     }
 
-    public void writeFile(ObjectOutputStream outputStream)
-    {
+    public void writeFile(ObjectOutputStream outputStream) {
         /*
         public String note = null;
         private Vector2d texcoords;
@@ -295,47 +283,34 @@ public class HalfEdgeVertex implements Serializable {
         private int outingHalfEdgeId = -1;
          */
 
-        try
-        {
+        try {
             // position
-            if(position != null)
-            {
+            if (position != null) {
                 outputStream.writeBoolean(true);
                 outputStream.writeObject(position);
-            }
-            else
-            {
+            } else {
                 outputStream.writeBoolean(false);
             }
             // texcoords
-            if(texcoords != null)
-            {
+            if (texcoords != null) {
                 outputStream.writeBoolean(true);
                 outputStream.writeObject(texcoords);
-            }
-            else
-            {
+            } else {
                 outputStream.writeBoolean(false);
             }
             // normal
-            if(normal != null)
-            {
+            if (normal != null) {
                 outputStream.writeBoolean(true);
                 outputStream.writeObject(normal);
-            }
-            else
-            {
+            } else {
                 outputStream.writeBoolean(false);
             }
             // color
-            if(color != null)
-            {
+            if (color != null) {
                 outputStream.writeBoolean(true);
                 outputStream.writeInt(color.length);
                 outputStream.write(color);
-            }
-            else
-            {
+            } else {
                 outputStream.writeBoolean(false);
             }
             // batchId
@@ -346,71 +321,52 @@ public class HalfEdgeVertex implements Serializable {
 
             // outingHalfEdgeId
             int outingHalfEdgeId = -1;
-            if(outingHalfEdge != null)
-            {
+            if (outingHalfEdge != null) {
                 outingHalfEdgeId = outingHalfEdge.getId();
             }
             outputStream.writeInt(outingHalfEdgeId);
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             log.error("Error Log : ", e);
         }
     }
 
-    public void readFile(ObjectInputStream inputStream)
-    {
-        try
-        {
+    public void readFile(ObjectInputStream inputStream) {
+        try {
             // position
-            if(inputStream.readBoolean())
-            {
-                position = (Vector3d)inputStream.readObject();
-            }
-            else
-            {
+            if (inputStream.readBoolean()) {
+                position = (Vector3d) inputStream.readObject();
+            } else {
                 position = null;
             }
             // texcoords
-            if(inputStream.readBoolean())
-            {
-                texcoords = (Vector2d)inputStream.readObject();
-            }
-            else
-            {
+            if (inputStream.readBoolean()) {
+                texcoords = (Vector2d) inputStream.readObject();
+            } else {
                 texcoords = null;
             }
             // normal
-            if(inputStream.readBoolean())
-            {
-                normal = (Vector3d)inputStream.readObject();
-            }
-            else
-            {
+            if (inputStream.readBoolean()) {
+                normal = (Vector3d) inputStream.readObject();
+            } else {
                 normal = null;
             }
             // color
-            if(inputStream.readBoolean())
-            {
+            if (inputStream.readBoolean()) {
                 int colorLength = inputStream.readInt();
                 color = new byte[colorLength];
                 inputStream.readFully(color);
-            }
-            else
-            {
+            } else {
                 color = null;
             }
             // batchId
             batchId = inputStream.readFloat();
 
             // status
-            status = (ObjectStatus)inputStream.readObject();
+            status = (ObjectStatus) inputStream.readObject();
 
             // outingHalfEdgeId
             outingHalfEdgeId = inputStream.readInt();
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             log.error("Error Log : ", e);
         }
     }
@@ -449,7 +405,6 @@ public class HalfEdgeVertex implements Serializable {
         // 5th, check batchId.***
         return !checkBatchId || !(Math.abs(batchId - vertex2.batchId) > error);
     }
-
 
 
 }

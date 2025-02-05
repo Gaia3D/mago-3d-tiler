@@ -234,6 +234,25 @@ public class GaiaNode extends NodeStructure implements Serializable {
         }
     }
 
+    public void unWeldVertices() {
+        for (GaiaMesh mesh : this.getMeshes()) {
+            mesh.unWeldVertices();
+        }
+        for (GaiaNode child : this.getChildren()) {
+            child.unWeldVertices();
+        }
+    }
+
+    public List<GaiaFace> extractGaiaFaces(List<GaiaFace> resultFaces) {
+        for (GaiaMesh mesh : this.getMeshes()) {
+            mesh.extractGaiaFaces(resultFaces);
+        }
+        for (GaiaNode child : this.getChildren()) {
+            child.extractGaiaFaces(resultFaces);
+        }
+        return resultFaces;
+    }
+
 
     public void deleteObjects() {
         for (GaiaMesh mesh : this.getMeshes()) {

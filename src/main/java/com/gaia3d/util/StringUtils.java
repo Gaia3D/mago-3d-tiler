@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Vector;
 
@@ -65,5 +66,27 @@ public class StringUtils {
             return "";
         }
         return utf8EncodedString;
+    }
+
+    public static String findFirstDifferentFolder(String path1, String path2) {
+        String[] parts1 = Paths.get(path1).normalize().toString().split("\\\\");
+        String[] parts2 = Paths.get(path2).normalize().toString().split("\\\\");
+
+        int minLength = Math.min(parts1.length, parts2.length);
+        for (int i = 0; i < minLength; i++) {
+            if (!parts1[i].equals(parts2[i])) {
+                return parts1[i]; // Devolvemos el primer folder diferente
+            }
+        }
+
+        // Si no hay diferencias dentro del rango común
+        if (parts1.length > parts2.length) {
+            return parts1[minLength]; // Folder adicional en path1
+        } else if (parts2.length > parts1.length) {
+            return parts2[minLength]; // Folder adicional en path2
+        }
+
+        // Las rutas son iguales
+        return null;
     }
 }

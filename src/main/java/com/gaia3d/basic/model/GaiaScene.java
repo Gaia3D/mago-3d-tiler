@@ -87,7 +87,7 @@ public class GaiaScene extends SceneStructure implements Serializable {
         clone.setOriginalPath(this.originalPath);
         clone.setGaiaBoundingBox(this.gaiaBoundingBox);
 
-        // attribute is a reference type.***
+        // attribute is a reference type.
         GaiaAttribute attribute = this.attribute.getCopy();
         clone.setAttribute(attribute);
         return clone;
@@ -112,6 +112,22 @@ public class GaiaScene extends SceneStructure implements Serializable {
         for (GaiaNode node : this.nodes) {
             node.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
         }
+    }
+
+    public void unWeldVertices() {
+        for (GaiaNode node : this.nodes) {
+            node.unWeldVertices();
+        }
+    }
+
+    public List<GaiaFace> extractGaiaFaces(List<GaiaFace> resultFaces) {
+        if(resultFaces == null) {
+            resultFaces = new ArrayList<>();
+        }
+        for (GaiaNode node : this.nodes) {
+            node.extractGaiaFaces(resultFaces);
+        }
+        return resultFaces;
     }
 
     public void joinAllSurfaces() {

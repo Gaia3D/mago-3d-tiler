@@ -15,7 +15,7 @@ import java.util.List;
 public class GaiaOctreeUtils {
 
     public static void getFaceDataListOfNode(GaiaScene sceneParent, GaiaNode node, List<GaiaFaceData> resultFaceDataList) {
-        // 1rst, check meshes.***
+        // 1rst, check meshes.
         if (node.getMeshes() != null) {
             for (int i = 0, length = node.getMeshes().size(); i < length; i++) {
                 GaiaMesh mesh = node.getMeshes().get(i);
@@ -23,7 +23,7 @@ public class GaiaOctreeUtils {
                     for (int j = 0, primitivesLength = mesh.getPrimitives().size(); j < primitivesLength; j++) {
                         GaiaPrimitive primitive = mesh.getPrimitives().get(j);
 
-                        // Get the material.***
+                        // Get the material.
                         int matId = primitive.getMaterialIndex();
                         GaiaMaterial material = sceneParent.getMaterials().get(matId);
                         GaiaTexture diffuseTexture = null;
@@ -107,7 +107,7 @@ public class GaiaOctreeUtils {
             }
         }
 
-        // now, check children.***
+        // now, check children.
         if (node.getChildren() != null) {
             for (int i = 0, length = node.getChildren().size(); i < length; i++) {
                 GaiaNode child = node.getChildren().get(i);
@@ -149,18 +149,17 @@ public class GaiaOctreeUtils {
     }
 
     public static int getOctreeIndex(GaiaOctreeCoordinate coordinate) {
-        // children indices.************************************************
-        //        down                         up
-        //        +---------+---------+        +---------+---------+
-        //        |         |         |        |         |         |
-        //        |    3    |    2    |        |    7    |    6    |
-        //        |         |         |        |         |         |
-        //        +---------+---------+        +---------+---------+
-        //        |         |         |        |         |         |
-        //        |    0    |    1    |        |    4    |    5    |
-        //        |         |         |        |         |         |
-        //        +---------+---------+        +---------+---------+
-        //----------------------------------------------------------------
+        // children indices.
+        // down                         up
+        // +---------+---------+        +---------+---------+
+        // |         |         |        |         |         |
+        // |    3    |    2    |        |    7    |    6    |
+        // |         |         |        |         |         |
+        // +---------+---------+        +---------+---------+
+        // |         |         |        |         |         |
+        // |    0    |    1    |        |    4    |    5    |
+        // |         |         |        |         |         |
+        // +---------+---------+        +---------+---------+
 
         GaiaOctreeCoordinate parentCoord = coordinate.getParentCoord();
         if (parentCoord == null) {

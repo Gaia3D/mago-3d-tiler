@@ -6,6 +6,7 @@ import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.basic.types.TextureType;
+import com.gaia3d.util.ImageResizer;
 import com.gaia3d.util.ImageUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,6 +18,8 @@ import org.apache.commons.io.FilenameUtils;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -124,7 +127,7 @@ public class GaiaSet implements Serializable {
     }
 
     public Path writeFile(Path path, int serial, GaiaAttribute gaiaAttribute) {
-        int dividedNumber = serial / 50000;
+        int dividedNumber = serial / 10000;
 
         String tempFileName = this.attribute.getIdentifier().toString() + "." + FormatType.TEMP.getExtension();
         Path tempDir = path.resolve(this.projectName).resolve(String.valueOf(dividedNumber));
@@ -139,6 +142,30 @@ public class GaiaSet implements Serializable {
             // Copy images to the temp directory
             for (GaiaMaterial material : materials) {
                 copyTextures(material, tempDir);
+            }
+        } catch (Exception e) {
+            log.error("GaiaSet Write Error : ", e);
+            tempFile.delete();
+        }
+        return tempFile.toPath();
+    }
+
+    public Path writeFile(Path path, int serial, GaiaAttribute gaiaAttribute, float scale) {
+        int dividedNumber = serial / 10000;
+
+        String tempFileName = this.attribute.getIdentifier().toString() + "." + FormatType.TEMP.getExtension();
+        Path tempDir = path.resolve(this.projectName).resolve(String.valueOf(dividedNumber));
+        File tempDirFile = tempDir.toFile();
+        if (tempDirFile.mkdirs()) {
+            log.debug("Directory created: {}", tempDir);
+        }
+        File tempFile = tempDir.resolve(tempFileName).toFile();
+        try (ObjectOutputStream outputStream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(tempFile)))) {
+            outputStream.writeObject(this);
+
+            // Copy images to the temp directory
+            for (GaiaMaterial material : materials) {
+                copyTextures(material, tempDir, scale);
             }
         } catch (Exception e) {
             log.error("GaiaSet Write Error : ", e);
@@ -171,13 +198,57 @@ public class GaiaSet implements Serializable {
             if (imageFile.getAbsolutePath().equals(outputImageFile.getAbsolutePath())) {
                 return;
             }
-
             texture.setPath(imageFile.getName());
-
             if (!imageFile.exists()) {
                 log.error("Texture Input Image Path is not exists. {}", diffusePath);
             } else {
                 FileUtils.copyFile(imageFile, outputImageFile);
+            }
+        }
+    }
+
+    /**
+     * Copy textures to the output directory with scaling.
+     * @param material
+     * @param copyDirectory
+     * @param scale
+     * @throws IOException
+     */
+    private void copyTextures(GaiaMaterial material, Path copyDirectory, float scale) throws IOException {
+        Map<TextureType, List<GaiaTexture>> materialTextures = material.getTextures();
+        List<GaiaTexture> diffuseTextures = materialTextures.get(TextureType.DIFFUSE);
+        if (diffuseTextures != null && !diffuseTextures.isEmpty()) {
+            GaiaTexture texture = materialTextures.get(TextureType.DIFFUSE).get(0);
+            String parentPath = texture.getParentPath();
+            File parentFile = new File(parentPath);
+            String diffusePath = texture.getPath();
+            File diffuseFile = new File(diffusePath);
+
+            File imageFile = ImageUtils.correctPath(parentFile, diffuseFile);
+
+            Path imagesFolderPath = copyDirectory.resolve("images");
+            if (imagesFolderPath.toFile().mkdirs()) {
+                log.debug("Images Directory created: {}", imagesFolderPath);
+            }
+
+            Path outputImagePath = imagesFolderPath.resolve(imageFile.getName());
+            File outputImageFile = outputImagePath.toFile();
+
+            // check if the source and destination are the same
+            if (imageFile.getAbsolutePath().equals(outputImageFile.getAbsolutePath())) {
+                return;
+            }
+            texture.setPath(imageFile.getName());
+            if (!imageFile.exists()) {
+                log.error("Texture Input Image Path is not exists. {}", diffusePath);
+            } else {
+                //FileUtils.copyFile(imageFile, outputImageFile);
+                ImageResizer imageResizer = new ImageResizer();
+                BufferedImage bufferedImage = ImageIO.read(imageFile);
+                int resizeWidth = (int) (bufferedImage.getWidth() * scale);
+                int resizeHeight = (int) (bufferedImage.getHeight() * scale);
+                bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight);
+                ImageIO.write(bufferedImage, "png", outputImageFile);
             }
         }
     }

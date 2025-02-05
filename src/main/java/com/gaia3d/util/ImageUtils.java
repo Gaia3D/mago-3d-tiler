@@ -6,6 +6,7 @@ import org.apache.commons.io.FilenameUtils;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -21,6 +22,10 @@ import java.util.Iterator;
  */
 @Slf4j
 public class ImageUtils {
+
+    private final int MAX_IMAGE_SIZE = 16384;
+    private final int MIN_IMAGE_SIZE = 32;
+
     public static int getNearestPowerOfTwo(int value) {
         int power = 1;
         int powerDown = 1;
@@ -33,6 +38,30 @@ public class ImageUtils {
         } else {
             return powerDown;
         }
+    }
+
+    public static int getNearestPowerOfTwoHigher(int value) {
+        int power = 1;
+        while (power < value) {
+            power *= 2;
+        }
+        setMinMaxSize(power);
+        return power;
+    }
+
+    public static int getNearestPowerOfTwoLower(int value) {
+        int power = 1;
+        int powerDown = 1;
+        while (power < value) {
+            powerDown = power;
+            power *= 2;
+        }
+        setMinMaxSize(powerDown);
+        return powerDown;
+    }
+
+    public static int setMinMaxSize(int size) {
+        return Math.min(Math.max(size, 32), 16384);
     }
 
     public static String getFormatNameByMimeType(String mimeType) {
@@ -172,13 +201,10 @@ public class ImageUtils {
             return result;
         }
 
-        throw new FileNotFoundException("File not found : " + file.getPath());
+        throw new FileNotFoundException("File not found : " + file.getAbsolutePath());
     }
 
     public static int[] readImageSize(String imagePath) {
-        //**********************************************************************************************
-        // This function reads the size of an image file, without loading the entire image into memory.
-        //----------------------------------------------------------------------------------------------
         File imageFile = new File(imagePath);
 
         int[] result = new int[2];
@@ -228,8 +254,126 @@ public class ImageUtils {
         return result;
     }
 
+    public static float unpackDepth32(float[] packedDepth) {
+        if (packedDepth.length != 4) {
+            throw new IllegalArgumentException("packedDepth debe tener exactamente 4 elementos.");
+        }
+
+        // Ajuste del valor final (equivalente a packedDepth - 1.0 / 512.0)
+        for (int i = 0; i < 4; i++) {
+            packedDepth[i] -= 1.0f / 512.0f;
+        }
+
+        // Producto punto para recuperar la profundidad original
+        return packedDepth[0] + packedDepth[1] / 256.0f + packedDepth[2] / (256.0f * 256.0f) + packedDepth[3] / 16777216.0f;
+    }
+
+    public static float[][] bufferedImageToFloatMatrix(BufferedImage image) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        float[][] floatMatrix = new float[width][height];
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                Color color = new Color(image.getRGB(i, j), true);
+                float r = color.getRed() / 255.0f;
+                float g = color.getGreen() / 255.0f;
+                float b = color.getBlue() / 255.0f;
+                float a = color.getAlpha() / 255.0f;
+
+                float depth = unpackDepth32(new float[]{r, g, b, a});
+                floatMatrix[i][j] = depth;
+            }
+        }
+
+        return floatMatrix;
+    }
+
+    public static BufferedImage clampBackGroundColor(BufferedImage image, Color backGroundColor, int borderSize, int iterations) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        int noBackGroundColor = 0;
+        int it = 0;
+        boolean changed = false;
+
+        BufferedImage newImage = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
+        BufferedImage oldImage = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
+
+        // fill the new image with the background color
+        Graphics2D graphics = newImage.createGraphics();
+        graphics.setColor(backGroundColor);
+        // copy the image to the new image
+        graphics.drawImage(image, 0, 0, null);
+        graphics.dispose();
+
+        graphics = oldImage.createGraphics();
+        graphics.setColor(backGroundColor);
+        // copy the image to the new image
+        graphics.drawImage(image, 0, 0, null);
+        graphics.dispose();
+
+        while(it < iterations) {
+            changed = false;
+            log.debug("Clamp Iteration : {}", it);
+            for (int i = 0; i < width; i++) {
+                for (int j = 0; j < height; j++) {
+                    Color pixel = new Color(oldImage.getRGB(i, j), true);
+                    // now check if pixel is background color
+                    if (pixel.equals(backGroundColor)) {
+                        // take a pixelMatrix of 5x5 around the pixel
+                        for (int x = i - borderSize; x <= i + borderSize; x++) {
+                            for (int y = j - borderSize; y <= j + borderSize; y++) {
+                                if (x >= 0 && x < width && y >= 0 && y < height) {
+                                    noBackGroundColor = oldImage.getRGB(x, y);
+                                    if (!new Color(noBackGroundColor, true).equals(backGroundColor)) {
+                                        newImage.setRGB(i, j, noBackGroundColor);
+                                        changed = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        newImage.setRGB(i, j, newImage.getRGB(i, j));
+                    }
+                }
+            }
+
+            graphics = oldImage.createGraphics();
+            graphics.setColor(backGroundColor);
+            // copy the image to the new image
+            graphics.drawImage(newImage, 0, 0, null);
+            graphics.dispose();
+
+            if (!changed) {
+                break;
+            }
+            it++;
+        }
+
+        return newImage;
+    }
+
+    public static BufferedImage changeBackgroundColor(BufferedImage image, Color oldColor, Color newColor) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        BufferedImage newImage = new BufferedImage(width, height, image.getType());
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                Color pixel = new Color(image.getRGB(i, j), true);
+                if (pixel.equals(oldColor)) {
+                    newImage.setRGB(i, j, newColor.getRGB());
+                } else {
+                    newImage.setRGB(i, j, image.getRGB(i, j));
+                }
+            }
+        }
+        newImage.flush();
+        return newImage;
+    }
+
     public void saveBufferedImage(BufferedImage image, String format, String path) {
         try {
+            File file = new File(path);
             ImageIO.write(image, format, new File(path));
         } catch (IOException e) {
             log.error("Error:", e);

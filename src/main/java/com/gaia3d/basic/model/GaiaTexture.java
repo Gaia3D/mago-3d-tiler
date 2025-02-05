@@ -14,10 +14,8 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.Serializable;
+import java.beans.Transient;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 
@@ -43,7 +41,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
     private int format;
 
     private int byteLength;
-    private BufferedImage bufferedImage;
+    private transient BufferedImage bufferedImage;
     private ByteBuffer byteBuffer;
 
     private int textureId = -1;
@@ -53,7 +51,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         String imagePath = parentPath + File.separator + diffusePath;
         if (this.bufferedImage == null) {
             BufferedImage bufferedImage = readImage(imagePath);
-            if(bufferedImage != null) {
+            if (bufferedImage != null) {
                 this.bufferedImage = bufferedImage;
                 this.width = bufferedImage.getWidth();
                 this.height = bufferedImage.getHeight();
@@ -66,6 +64,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         try {
             String imageExtension = savePath.substring(savePath.lastIndexOf(".") + 1);
             File file = new File(savePath);
+            ImageIO.setUseCache(false);
             ImageIO.write(bufferedImage, imageExtension, file);
         } catch (IOException e) {
             log.error("Error : ", e);
@@ -88,8 +87,21 @@ public class GaiaTexture extends TextureStructure implements Serializable {
     }
 
     private BufferedImage readImage(String filePath) {
+        File imageFile = new File(filePath);
+        String fileName = imageFile.getName();
+        if (!imageFile.exists()) {
+            fileName = fileName.replace(".jpg", ".png");
+            fileName = fileName.replace(".jpeg", ".png");
+            fileName = fileName.replace(".JPG", ".png");
+            fileName = fileName.replace(".JPEG", ".png");
+            imageFile = new File(imageFile.getParent(), fileName);
+            if (!imageFile.exists()) {
+                log.error("Image file not found : {}", imageFile.getAbsolutePath());
+            }
+        }
+
         BufferedImage image = null;
-        try (FileInputStream stream = new FileInputStream(filePath)) {
+        try (BufferedInputStream stream = new BufferedInputStream(new FileInputStream(imageFile))) {
             image = ImageIO.read(stream);
         } catch (IOException e) {
             log.error("Error : ", e);
@@ -101,6 +113,12 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         this.width = width;
         this.height = height;
         this.bufferedImage = new BufferedImage(width, height, imageType);
+    }
+
+    public void fillImage(Color color) {
+        Graphics2D graphics = this.bufferedImage.createGraphics();
+        graphics.setColor(color);
+        graphics.fillRect(0, 0, this.width, this.height);
     }
 
     private BufferedImage testImage() {
@@ -136,10 +154,35 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         this.bufferedImage = imageResizer.resizeImageGraphic2D(this.bufferedImage, width, height);
     }
 
-    // getBufferedImage
     public BufferedImage getBufferedImage() {
         if (this.bufferedImage == null) {
+            File fullPath = new File(this.parentPath, this.path);
+            log.info("[Load Image IO] : {}", fullPath.getAbsolutePath());
             loadImage();
+        }
+        return this.bufferedImage;
+    }
+
+    public BufferedImage getBufferedImageWithCache() {
+        if (this.bufferedImage == null) {
+            String keyPath = this.path;
+            ImageCacheQueue imageCacheQueue = ImageCacheQueue.getInstance();
+            boolean hasKey = imageCacheQueue.hasBufferedImage(keyPath);
+            if (keyPath.contains("_atlas_")) {
+                loadImage();
+                return this.bufferedImage;
+            }
+
+            if (hasKey) {
+                BufferedImage tempImage = imageCacheQueue.getBufferedImage(keyPath);
+                log.info("ImageCacheQueue hit: {}", keyPath);
+                this.bufferedImage = tempImage;
+            } else {
+                log.info("ImageCacheQueue put: {}", keyPath);
+                loadImage();
+                imageCacheQueue.putBufferedImage(keyPath, this.bufferedImage);
+            }
+            log.info("bufferedImage : {} -> ({} x {})", this.path, this.bufferedImage.getHeight(), this.bufferedImage.getWidth());
         }
         return this.bufferedImage;
     }
@@ -185,7 +228,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         byte[] rgbaByteArray = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
         byte[] rgbaByteArray2 = ((DataBufferByte) comparebufferedImage.getRaster().getDataBuffer()).getData();
 
-        // compare the byte array by difference.***
+        // compare the byte array by difference.
         int length = rgbaByteArray.length;
         int length2 = rgbaByteArray2.length;
 
