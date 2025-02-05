@@ -52,9 +52,14 @@ public class GaiaTextureCoordinator {
             this.atlasImage = new BufferedImage(width, height, imageType);
             // now fill the image with white fuchsia.***
             Graphics2D graphics = this.atlasImage.createGraphics();
-            graphics.setColor(BACKGROUND_COLOR);
-            graphics.fillRect(0, 0, width, height);
-            graphics.dispose();
+
+            if (globalOptions.isPhotorealistic()) {
+                graphics.setColor(BACKGROUND_COLOR);
+                graphics.fillRect(0, 0, width, height);
+            } else {
+                graphics.setColor(new Color(0, 0, 0, 0));
+                graphics.fillRect(0, 0, width, height);
+            }
         } else {
             this.atlasImage = null;
         }

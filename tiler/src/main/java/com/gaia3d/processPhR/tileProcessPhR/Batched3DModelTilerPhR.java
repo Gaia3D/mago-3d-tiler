@@ -84,7 +84,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         double distanceBetweenLat = GlobeUtils.distanceBetweenLatitudesRad(minLatRad, maxLatRad);
         double distanceBetweenLon = GlobeUtils.distanceBetweenLongitudesRad(minLatRad, minLonRad, maxLonRad);
         double distanceFinal = Math.max(distanceBetweenLat, distanceBetweenLon);
-        double desiredLeafDist = 25.0;
+        double desiredLeafDist = GlobalOptions.REALISTIC_LEAF_TILE_SIZE;
 
         int desiredDepth = (int) Math.ceil(HalfEdgeUtils.log2(distanceFinal / desiredLeafDist));
         double desiredDistanceBetweenLat = desiredLeafDist * Math.pow(2, desiredDepth);
