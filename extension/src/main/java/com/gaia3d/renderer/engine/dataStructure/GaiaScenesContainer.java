@@ -25,4 +25,19 @@ public class GaiaScenesContainer {
     public void addRenderableGaiaScene(RenderableGaiaScene renderableGaiaScene) {
         renderableGaiaScenes.add(renderableGaiaScene);
     }
+
+    public void deleteObjects() {
+        int renderablesCount = renderableGaiaScenes.size();
+        for (int i = 0; i < renderablesCount; i++) {
+            renderableGaiaScenes.get(i).deleteGLBuffers();
+        }
+        renderableGaiaScenes.clear();
+    }
+
+    public List<RenderableGaiaScene> getRenderableGaiaScenes() {
+        if (renderableGaiaScenes == null) {
+            renderableGaiaScenes = new ArrayList<>();
+        }
+        return renderableGaiaScenes;
+    }
 }

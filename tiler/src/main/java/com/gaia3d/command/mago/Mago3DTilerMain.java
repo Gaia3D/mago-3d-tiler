@@ -47,7 +47,9 @@ public class Mago3DTilerMain {
                 printVersion();
             }
             if (isHelp) {
-                new HelpFormatter().printHelp("Gaia3D Tiler", options);
+                HelpFormatter formatter = new HelpFormatter();
+                formatter.setWidth(200);
+                formatter.printHelp("mago 3DTiler help", options);
                 return;
             }
             GlobalOptions.init(command);

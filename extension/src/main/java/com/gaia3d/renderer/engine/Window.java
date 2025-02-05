@@ -10,35 +10,16 @@ import java.util.concurrent.Callable;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 @Slf4j
 public class Window {
     private final long windowHandle;
+    private final Callable<Void> resizeFunc;
     private int height;
-    private Callable<Void> resizeFunc;
     private int width;
 
     private MouseInput mouseInput;
-
-    public static class WindowOptions {
-        public boolean compatibleProfile;
-        public int fps;
-        public int height;
-        //public int ups = Engine.TARGET_UPS;
-        public int width;
-    }
-
-    private boolean checkGlError()
-    {
-        int glError = GL20.glGetError();
-        if(glError != GL20.GL_NO_ERROR) {
-            log.error("glError: {}", glError);
-            return true;
-        }
-        return false;
-    }
 
     public Window(String title, WindowOptions opts, Callable<Void> resizeFunc) {
         this.resizeFunc = resizeFunc;
@@ -48,7 +29,8 @@ public class Window {
 
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+        //glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
+        //glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
         glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
         //glfwWindowHint(GLFW_SAMPLES, 4);
         glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_FALSE);
@@ -81,6 +63,8 @@ public class Window {
 //        }
         //-------------------------------------------------------------------------------------------------------------
 
+        glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
+
         if (opts.width > 0 && opts.height > 0) {
             this.width = opts.width;
             this.height = opts.height;
@@ -92,8 +76,8 @@ public class Window {
             height = vidMode.height();
         }
 
-        this.width = 1;
-        this.height = 1;
+        this.width = 3500;
+        this.height = 1800;
 
         windowHandle = glfwCreateWindow(width, height, title, NULL, NULL);
         if (windowHandle == NULL) {
@@ -101,11 +85,18 @@ public class Window {
         }
 
 
-        glfwSetErrorCallback((int errorCode, long msgPtr) ->
-                log.info("Error code [" + errorCode + "], msg [" + MemoryUtil.memUTF8(msgPtr) + "]")
-        );
+        glfwSetErrorCallback((int errorCode, long msgPtr) -> log.info("Error code [" + errorCode + "], msg [" + MemoryUtil.memUTF8(msgPtr) + "]"));
 
         glfwMakeContextCurrent(windowHandle); // all drawing happens in the current context
+    }
+
+    private boolean checkGlError() {
+        int glError = GL20.glGetError();
+        if (glError != GL20.GL_NO_ERROR) {
+            log.error("glError: {}", glError);
+            return true;
+        }
+        return false;
     }
 
     public void glMakeContextCurrent() {
@@ -135,6 +126,7 @@ public class Window {
     public int getWidth() {
         return width;
     }
+
     public MouseInput getMouseInput() {
         return mouseInput;
     }
@@ -168,5 +160,13 @@ public class Window {
 
     public boolean windowShouldClose() {
         return glfwWindowShouldClose(windowHandle);
+    }
+
+    public static class WindowOptions {
+        public boolean compatibleProfile;
+        public int fps;
+        public int height;
+        //public int ups = Engine.TARGET_UPS;
+        public int width;
     }
 }

@@ -6,17 +6,18 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.renderer.renderable.*;
+import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL20;
-import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class InternDataConverter {
     public static RenderableGaiaScene getRenderableGaiaScene(GaiaScene gaiaScene) {
         RenderableGaiaScene renderableGaiaScene = new RenderableGaiaScene();
@@ -30,8 +31,7 @@ public class InternDataConverter {
         // materials
         List<GaiaMaterial> materials = gaiaScene.getMaterials();
         List<GaiaMaterial> newMaterials = new ArrayList<>();
-        for(int i=0; i<materials.size(); i++)
-        {
+        for (int i = 0; i < materials.size(); i++) {
             GaiaMaterial material = materials.get(i);
             GaiaMaterial newMaterial = material.clone();
             newMaterials.add(newMaterial);
@@ -58,8 +58,8 @@ public class InternDataConverter {
         Matrix4d transformMatrix = gaiaNode.getTransformMatrix();
         renderableNode.setOriginalGaiaNode(gaiaNode);
         renderableNode.setName(name);
-        renderableNode.setTransformMatrix(transformMatrix);
-        renderableNode.setPreMultipliedTransformMatrix(transformMatrix);
+        renderableNode.setTransformMatrix(new Matrix4d(transformMatrix));
+        renderableNode.setPreMultipliedTransformMatrix(new Matrix4d(transformMatrix));
         renderableNode.setGaiaBoundingBox(gaiaBoundingBox);
 
         List<GaiaMesh> meshes = gaiaNode.getMeshes();
@@ -101,8 +101,7 @@ public class InternDataConverter {
         return renderableMesh;
     }
 
-    public static RenderablePrimitive getRenderablePrimitive(GaiaPrimitive gaiaPrimitive, GaiaBufferDataSet bufferDataSet, GaiaScene scene, RenderableGaiaScene parentRenderableGaiaScene)
-    {
+    public static RenderablePrimitive getRenderablePrimitive(GaiaPrimitive gaiaPrimitive, GaiaBufferDataSet bufferDataSet, GaiaScene scene, RenderableGaiaScene parentRenderableGaiaScene) {
         RenderablePrimitive renderablePrimitive = new RenderablePrimitive();
         renderablePrimitive.setOriginalBufferDataSet(bufferDataSet);
         renderablePrimitive.setOriginalGaiaPrimitive(gaiaPrimitive);
@@ -117,7 +116,7 @@ public class InternDataConverter {
             int matId = bufferDataSet.getMaterialId();
             GaiaMaterial material = null;
 
-            if(matId >= 0) {
+            if (matId >= 0) {
                 material = parentRenderableGaiaScene.getMaterials().stream().filter((materialToFind) -> {
                     return materialToFind.getId() == matId;
                 }).findFirst().get();
@@ -203,8 +202,13 @@ public class InternDataConverter {
                 // TODO :
             } else if (glType == GL20.GL_BYTE || glType == GL20.GL_UNSIGNED_BYTE) {
                 byte[] colors = buffer.getBytes();
+                ByteBuffer byteBuffer = BufferUtils.createByteBuffer(colors.length);
+                byteBuffer.put(colors);
+                byteBuffer.flip();
+
                 GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId[0]);
-                GL20.glBufferData(GL20.GL_ARRAY_BUFFER, ByteBuffer.wrap(colors), GL20.GL_STATIC_DRAW);
+                //GL20.glBufferData(GL20.GL_ARRAY_BUFFER, ByteBuffer.wrap(colors), GL20.GL_STATIC_DRAW);
+                GL20.glBufferData(GL20.GL_ARRAY_BUFFER, byteBuffer, GL20.GL_STATIC_DRAW);
             }
 
             renderableBuffer.setVboId(vboId[0]);

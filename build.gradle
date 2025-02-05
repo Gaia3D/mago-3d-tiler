@@ -1,7 +1,22 @@
+import org.gradle.internal.os.OperatingSystem
+
 subprojects {
     group "com.gaia3d"
-    version "1.10.0"
+    version "1.10.6-release" // release, beta, alpha
     apply plugin: 'java'
+
+    project.ext.lwjglVersion = "3.3.3"
+    switch (OperatingSystem.current()) {
+        case OperatingSystem.WINDOWS:
+            project.ext.lwjglNatives = "natives-windows"
+            break
+        case OperatingSystem.LINUX:
+            project.ext.lwjglNatives = "natives-linux"
+            break
+        case OperatingSystem.MAC_OS:
+            project.ext.lwjglNatives = "natives-macos"
+            break
+    }
 
     dependencies {
         // Lombok
@@ -32,7 +47,9 @@ subprojects {
     }
 }
 
-project(':mago-common') {}
+project(':mago-common') {
+    // Common module
+}
 
 project(':mago-extension') {
     // Extension module build configuration

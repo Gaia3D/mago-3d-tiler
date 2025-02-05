@@ -4,9 +4,9 @@ import com.gaia3d.basic.model.GaiaMaterial;
 import com.gaia3d.basic.model.GaiaTexture;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.TextureType;
+import com.gaia3d.renderer.engine.RenderableTexturesUtils;
 import com.gaia3d.renderer.engine.dataStructure.GaiaScenesContainer;
 import com.gaia3d.renderer.engine.scene.Camera;
-import com.gaia3d.renderer.engine.RenderableTexturesUtils;
 import com.gaia3d.renderer.renderable.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,12 +22,15 @@ import java.util.List;
 import java.util.Map;
 
 import static org.lwjgl.opengl.GL11.*;
+
 @Getter
 @Setter
 @Slf4j
 public class RenderEngine {
     private RenderableBasicAxis renderableBasicAxis;
     private boolean renderWireFrame = false;
+    private int colorMode = 2; // 0 = oneColor, 1 = vertexColor, 2 = textureColor
+
     public RenderEngine() {
         renderableBasicAxis = new RenderableBasicAxis();
     }
@@ -53,9 +56,8 @@ public class RenderEngine {
         }
     }
 
-    public void renderColorCoded(RenderableGaiaScene renderableGaiaScene, SelectionColorManager selectionColorManager, ShaderProgram shaderProgram)
-    {
-        if(shaderProgram == null) {
+    public void renderColorCoded(RenderableGaiaScene renderableGaiaScene, SelectionColorManager selectionColorManager, ShaderProgram shaderProgram) {
+        if (shaderProgram == null) {
             return;
         }
         UniformsMap uniformsMap = shaderProgram.getUniformsMap();
@@ -84,7 +86,7 @@ public class RenderEngine {
         identityMatrix.identity();
 
         //uniformsMap.setUniformMatrix4fv("uObjectMatrix", new Matrix4f(transformMatrix));
-        // note : use "identityMatrix" because the renderablePrimitive has transformed vertices.***
+        // note : use "identityMatrix" because the renderablePrimitive has transformed vertices
         uniformsMap.setUniformMatrix4fv("uObjectMatrix", identityMatrix);
 
         List<RenderableMesh> renderableMeshes = renderableNode.getRenderableMeshes();
@@ -118,15 +120,14 @@ public class RenderEngine {
 
             int currColor = renderablePrimitive.getColorCode();
 
-            if(renderablePrimitive.getStatus() == 1)
-            {
-                // this object is exterior object.***
-                currColor = -1; // inside the shader, -1 = background color (white).***
+            if (renderablePrimitive.getStatus() == 1) {
+                // this object is exterior object.
+                currColor = -1; // inside the shader, -1 = background color (white).
             }
 
             uniformsMap.setUniform1i("uColorCode", currColor);
 
-            // bind only "POSITION" & "INDICE" buffer ("INDICE" if exist).***
+            // bind only "POSITION" & "INDICE" buffer ("INDICE" if exist).
             Map<AttributeType, RenderableBuffer> mapAttribTypeRenderableBuffer = renderablePrimitive.getMapAttribTypeRenderableBuffer();
             AttributeType attributeType = AttributeType.POSITION;
             RenderableBuffer posBuffer = mapAttribTypeRenderableBuffer.get(attributeType);
@@ -135,7 +136,7 @@ public class RenderEngine {
 
             RenderableBuffer indicesBuffer = mapAttribTypeRenderableBuffer.get(AttributeType.INDICE);
             if (indicesBuffer == null) {
-                // use glDrawArrays.***
+                // use glDrawArrays.
                 GL20.glEnable(GL20.GL_POLYGON_OFFSET_FILL);
                 GL20.glPolygonOffset(1.0f, 1.0f);
                 GL20.glDrawArrays(GL_LINE_STRIP, 0, 16);
@@ -163,7 +164,7 @@ public class RenderEngine {
     private void renderGaiaNode(RenderableNode renderableNode, ShaderProgram shaderProgram) {
         UniformsMap uniformsMap = shaderProgram.getUniformsMap();
         Matrix4d transformMatrix = renderableNode.getPreMultipliedTransformMatrix();
-        if(transformMatrix == null) {
+        if (transformMatrix == null) {
             transformMatrix = new Matrix4d();
             transformMatrix.identity();
         }
@@ -171,7 +172,7 @@ public class RenderEngine {
         tMatF.set(transformMatrix);
 
         //uniformsMap.setUniformMatrix4fv("uObjectMatrix", new Matrix4f(transformMatrix));
-        // note : use "identityMatrix" because the renderablePrimitive has transformed vertices.***
+        // note : use "identityMatrix" because the renderablePrimitive has transformed vertices.
         uniformsMap.setUniformMatrix4fv("uObjectMatrix", tMatF);
 
         List<RenderableMesh> renderableMeshes = renderableNode.getRenderableMeshes();
@@ -188,10 +189,9 @@ public class RenderEngine {
     }
 
 
-    private boolean checkGlError()
-    {
+    private boolean checkGlError() {
         int glError = GL20.glGetError();
-        if(glError != GL20.GL_NO_ERROR) {
+        if (glError != GL20.GL_NO_ERROR) {
             log.info("glError: " + glError);
             return true;
         }
@@ -206,6 +206,8 @@ public class RenderEngine {
             bindBuffer(renderableBuffer, shaderProgram);
         }
 
+        GL20.glLineWidth(5.0f);
+
         UniformsMap uniformsMap = shaderProgram.getUniformsMap();
         uniformsMap.setUniform1i("uColorMode", 0);
         uniformsMap.setUniform4fv("uOneColor", new Vector4f(1, 0, 0, 1));
@@ -216,7 +218,10 @@ public class RenderEngine {
 
         uniformsMap.setUniform4fv("uOneColor", new Vector4f(0, 0, 1, 1));
         GL20.glDrawArrays(GL20.GL_LINES, 4, 2);
+
+        GL20.glLineWidth(1.0f);
     }
+
     private void renderGaiaMesh(RenderableMesh renderableMesh, ShaderProgram shaderProgram) {
         UniformsMap uniformsMap = shaderProgram.getUniformsMap();
 
@@ -224,62 +229,68 @@ public class RenderEngine {
         for (RenderablePrimitive renderablePrimitive : renderablePrimitives) {
             GaiaMaterial material = renderablePrimitive.getMaterial();
 
-            if(material  == null) {
+            if (material == null) {
                 material = new GaiaMaterial();
                 material.setDiffuseColor(new Vector4d(0.2, 0.95, 0.2, 1.0));
             }
             int status = renderablePrimitive.getStatus();
 
             boolean textureBinded = false;
-            // colorMode = 0: oneColor, 1: vertexColor, 2: textureColor
-            uniformsMap.setUniform1i("uColorMode", 0);
-            Map<TextureType, List<GaiaTexture>> mapTextures = material.getTextures();
-            if(mapTextures.containsKey(TextureType.DIFFUSE))
-            {
-                List<GaiaTexture> diffuseTextures = mapTextures.get(TextureType.DIFFUSE);
-                if(diffuseTextures.size() > 0)
-                {
-                    GaiaTexture diffuseTexture = diffuseTextures.get(0);
-                    if(diffuseTexture.getTextureId() < 0)
-                    {
-                        int minFilter = GL_LINEAR; // GL_LINEAR, GL_NEAREST
-                        int magFilter = GL_LINEAR;
-                        int wrapS = GL_REPEAT; // GL_CLAMP_TO_EDGE
-                        int wrapT = GL_REPEAT;
-                        BufferedImage bufferedImage = diffuseTexture.getBufferedImage();
-                        int textureId = RenderableTexturesUtils.createGlTextureFromBufferedImage(bufferedImage, minFilter, magFilter, wrapS, wrapT);
+            if (this.colorMode == 2) {
+                // colorMode = 0: oneColor, 1: vertexColor, 2: textureColor
+                uniformsMap.setUniform1i("uColorMode", 0);
+                Map<TextureType, List<GaiaTexture>> mapTextures = material.getTextures();
+                if (mapTextures.containsKey(TextureType.DIFFUSE)) {
+                    List<GaiaTexture> diffuseTextures = mapTextures.get(TextureType.DIFFUSE);
+                    if (diffuseTextures.size() > 0) {
+                        GaiaTexture diffuseTexture = diffuseTextures.get(0);
+                        if (diffuseTexture.getTextureId() < 0) {
+                            int minFilter = GL_LINEAR; // GL_LINEAR, GL_NEAREST
+                            int magFilter = GL_LINEAR;
+                            int wrapS = GL_REPEAT; // GL_CLAMP_TO_EDGE
+                            int wrapT = GL_REPEAT;
+                            BufferedImage bufferedImage = diffuseTexture.getBufferedImage();
+                            int textureId = RenderableTexturesUtils.createGlTextureFromBufferedImage(bufferedImage, minFilter, magFilter, wrapS, wrapT, true);
 
-                        diffuseTexture.setTextureId(textureId);
-                        diffuseTexture.setBufferedImage(null);
+                            diffuseTexture.setTextureId(textureId);
+                            diffuseTexture.setBufferedImage(null);
+                        }
+
+                        // colorMode = 0: oneColor, 1: vertexColor, 2: textureColor
+                        uniformsMap.setUniform1i("uColorMode", 2);
+                        GL20.glEnable(GL20.GL_TEXTURE_2D);
+                        GL20.glActiveTexture(GL20.GL_TEXTURE0);
+                        GL20.glBindTexture(GL20.GL_TEXTURE_2D, diffuseTexture.getTextureId());
+                        textureBinded = true;
                     }
-
-                    // colorMode = 0: oneColor, 1: vertexColor, 2: textureColor
-                    uniformsMap.setUniform1i("uColorMode", 2);
-                    GL20.glEnable(GL20.GL_TEXTURE_2D);
-                    GL20.glActiveTexture(GL20.GL_TEXTURE0);
-                    GL20.glBindTexture(GL20.GL_TEXTURE_2D, diffuseTexture.getTextureId());
-                    textureBinded = true;
                 }
             }
 
-            if(!textureBinded) {
+            if (this.colorMode == 0) {
+                uniformsMap.setUniform1i("uColorMode", 0);
+                uniformsMap.setUniform4fv("uOneColor", new Vector4f(0.9f, 0.3f, 0.6f, 1.0f));
+            } else if (this.colorMode == 1) {
+                uniformsMap.setUniform1i("uColorMode", 1);
+            } else if (this.colorMode == 2) {
+                uniformsMap.setUniform1i("uColorMode", 2);
+            }
+
+            if (!textureBinded) {
                 // get diffuse color from material
                 Vector4d diffuseColor = material.getDiffuseColor();
                 uniformsMap.setUniform1i("uColorMode", 0);
-                uniformsMap.setUniform4fv("uOneColor", new Vector4f((float)diffuseColor.x, (float)diffuseColor.y, (float)diffuseColor.z, (float)diffuseColor.w));
+                uniformsMap.setUniform4fv("uOneColor", new Vector4f((float) diffuseColor.x, (float) diffuseColor.y, (float) diffuseColor.z, (float) diffuseColor.w));
             }
 
-            if(status == 1)
-            {
-                // this object is exterior object.***
-                uniformsMap.setUniform1i("uColorMode", 0);
-                uniformsMap.setUniform4fv("uOneColor", new Vector4f(1.0f, 0.0f, 1.0f, 1.0f));
+            if (status == 1) {
+                // this object is exterior object.
+//                uniformsMap.setUniform1i("uColorMode", 0);
+//                uniformsMap.setUniform4fv("uOneColor", new Vector4f(1.0f, 0.0f, 1.0f, 1.0f));
                 //continue;
             }
 
-            if(status == 0)
-            {
-                // this object is interior object.***
+            if (status == 0) {
+                // this object is interior object.
                 //continue;
             }
 
@@ -296,8 +307,8 @@ public class RenderEngine {
             }
 
             RenderableBuffer renderableBuffer = mapAttribTypeRenderableBuffer.get(AttributeType.INDICE);
-            if(renderableBuffer == null) {
-                // use glDrawArrays.***
+            if (renderableBuffer == null) {
+                // use glDrawArrays.
                 GL20.glEnable(GL20.GL_POLYGON_OFFSET_FILL);
                 GL20.glPolygonOffset(1.0f, 1.0f);
                 uniformsMap.setUniform1i("uColorMode", 0);
@@ -312,7 +323,7 @@ public class RenderEngine {
             GL20.glDrawElements(GL20.GL_TRIANGLES, elemsCount, type, 0);
 
             // render wireframe
-            if(renderWireFrame) {
+            if (renderWireFrame) {
                 uniformsMap.setUniform1i("uColorMode", 0);
                 uniformsMap.setUniform4fv("uOneColor", new Vector4f(0.0f, 0.0f, 0.0f, 1.0f));
                 GL20.glPolygonMode(GL20.GL_FRONT_AND_BACK, GL20.GL_LINE);
@@ -343,33 +354,29 @@ public class RenderEngine {
 
         if (attributeType == AttributeType.POSITION) {
             int location = shaderProgram.enableAttribLocation("aPosition");
-            if(location >= 0) {
+            if (location >= 0) {
                 GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId);
                 GL20.glVertexAttribPointer(location, glDimension, glType, false, 0, 0);
             }
-        }
-        else if (attributeType == AttributeType.NORMAL) {
+        } else if (attributeType == AttributeType.NORMAL) {
             int location = shaderProgram.enableAttribLocation("aNormal");
-            if(location >= 0) {
+            if (location >= 0) {
                 GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId);
                 GL20.glVertexAttribPointer(location, glDimension, glType, false, 0, 0);
             }
-        }
-        else if (attributeType == AttributeType.COLOR) {
-//            int location = shaderProgram.enableAttribLocation("aColor");
-//            if(location >= 0) {
-//                GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId);
-//                GL20.glVertexAttribPointer(location, glDimension, glType, false, 0, 0);
-//            }
-        }
-        else if (attributeType == AttributeType.TEXCOORD) {
+        } else if (attributeType == AttributeType.COLOR) {
+            int location = shaderProgram.enableAttribLocation("aColor");
+            if (location >= 0) {
+                GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId);
+                GL20.glVertexAttribPointer(location, glDimension, glType, true, 0, 0);
+            }
+        } else if (attributeType == AttributeType.TEXCOORD) {
             int location = shaderProgram.enableAttribLocation("aTexCoord");
-            if(location >= 0) {
+            if (location >= 0) {
                 GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vboId);
                 GL20.glVertexAttribPointer(location, glDimension, glType, false, 0, 0);
             }
-        }
-        else if (attributeType == AttributeType.INDICE) {
+        } else if (attributeType == AttributeType.INDICE) {
             GL20.glBindBuffer(GL20.GL_ELEMENT_ARRAY_BUFFER, vboId);
         }
 

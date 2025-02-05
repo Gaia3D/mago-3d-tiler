@@ -27,15 +27,18 @@ public class FboManager {
             fbo = createFbo(name, fboWidth, fboHeight);
         }
 
-        fbo.resize(fboWidth, fboHeight);
+        if (fbo.getFboWidth() != fboWidth || fbo.getFboHeight() != fboHeight) {
+            deleteFbo(name);
+            fbo = createFbo(name, fboWidth, fboHeight);
+        }
+        //fbo.resize(fboWidth, fboHeight);
 
         return fbo;
     }
 
     public Fbo getFbo(String name) {
         // 1rst check if exist
-        if(mapNameFbos.containsKey(name))
-        {
+        if (mapNameFbos.containsKey(name)) {
             return mapNameFbos.get(name);
         }
         return null;

@@ -7,13 +7,13 @@ import com.gaia3d.basic.model.GaiaVertex;
 import com.gaia3d.basic.pointcloud.GaiaPointCloudHeader;
 import com.gaia3d.basic.pointcloud.GaiaPointCloudTemp;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.github.mreutegg.laszip4j.CloseablePointIterable;
-import com.github.mreutegg.laszip4j.LASHeader;
-import com.github.mreutegg.laszip4j.LASPoint;
-import com.github.mreutegg.laszip4j.LASReader;
+import com.gaia3d.util.GlobeUtils;
+import com.github.mreutegg.laszip4j.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
+import org.locationtech.proj4j.CRSFactory;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -79,71 +79,54 @@ public class LasConverter {
         long legacyPointRecords = header.getLegacyNumberOfPointRecords();
         long totalPointsSize = pointRecords + legacyPointRecords;
 
-        //long totalPointsSize = pointCloudHeader.getSize();
-        //int pointsPerGrid = globalOptions.getPointsPerGrid();
-        //int factor = (int) (totalPointsSize / pointsPerGrid);
+        byte recordFormatValue = header.getPointDataRecordFormat();
+        boolean hasRgbColor;
+        LasRecordFormat recordFormat = LasRecordFormat.fromFormatNumber(recordFormatValue);
+        if (recordFormat != null) {
+            hasRgbColor = recordFormat.hasColor;
+        } else {
+            hasRgbColor = false;
+        }
 
-        /*double getMinX = header.getMinX();
-        double getMinY = header.getMinY();
-        double getMinZ = header.getMinZ();
-        double getMaxX = header.getMaxX();
-        double getMaxY = header.getMaxY();
-        double getMaxZ = header.getMaxZ();
-        Vector3d min = new Vector3d(getMinX, getMinY, getMinZ);
-        Vector3d max = new Vector3d(getMaxX, getMaxY, getMaxZ);
+        String version = header.getVersionMajor() + "." + header.getVersionMinor();
+        String systemId = header.getSystemIdentifier();
+        String softwareId = header.getGeneratingSoftware();
+        String fileCreationDate = (short) header.getFileCreationYear() + "-" + (short) header.getFileCreationDayOfYear();
+        String headerSize = (short) header.getHeaderSize() + " bytes";
 
-        Vector3d scale = new Vector3d(xScaleFactor, yScaleFactor, zScaleFactor);
-        Vector3d offset = new Vector3d(xOffset, yOffset, zOffset);
+        log.debug("Version: {}", version);
+        log.debug("System ID: {}", systemId);
+        log.debug("Software ID: {}", softwareId);
+        log.debug("File Creation Date: {}", fileCreationDate);
+        log.debug("Header Size: {}", headerSize);
 
-        GaiaBoundingBox gaiaBoundingBox = new GaiaBoundingBox();
-        gaiaBoundingBox.addPoint(min);
-        gaiaBoundingBox.addPoint(max);
-
-        int newGoodVolume = calcOctreeVolume(1, pointIterable, scale, offset);
-        int newVolume = calcOctreeVolume(16, pointIterable, scale, offset);
-        Vector3d volumeVector = gaiaBoundingBox.getVolume();
-        int volume = (int) (volumeVector.x * volumeVector.y * volumeVector.z);*/
-        //log.info("Volume: {}", volume);
-        //log.info("New Good Volume: {}", newGoodVolume);
-        //log.info("New Volume: {}", newVolume);
-
-        /*int volume = (int) (volumeVector.x * volumeVector.y * volumeVector.z);
-        int width = 1;
-        int height = 1;
-        int depth = 1;
-        int cubeVolume = width * height * depth;
-
-        int cubeCount = (int) Math.floor(volume / cubeVolume);
-        if (cubeCount < 1) {
-            cubeCount = 1;
-        }*/
-
-        /*int pointCountPerCube = (int) Math.floor(totalPointsSize / cubeCount);
-        int minFactor = 8;
-        int maxFactor = 32;
-        int volumeFactor = pointCountPerCube;
-        if (globalOptions.isSourcePrecision()) {
-            volumeFactor = 1;
-        } else if (volumeFactor < minFactor) {
-            volumeFactor = minFactor;
-        } else if (volumeFactor > maxFactor) {
-            volumeFactor = maxFactor;
-        }*/
-
-        //long totalPoints = pointCloudHeader.getSize();
-        //int pointCountInMaxCube = 50;
-        //int volumeFactor = (int) Math.ceil(totalPointsSize / (newVolume * pointCountInMaxCube));
+        boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalOptions.DEFAULT_CRS);
+        header.getVariableLengthRecords().forEach((record) -> {
+            if (isDefaultCrs && record.getUserID().equals("LASF_Projection")) {
+                String wktCRS = record.getDataAsString();
+                CoordinateReferenceSystem crs = GlobeUtils.convertWkt(wktCRS);
+                if (crs != null) {
+                    var convertedCrs = GlobeUtils.convertProj4jCrsFromGeotoolsCrs(crs);
+                    globalOptions.setCrs(convertedCrs);
+                    log.info(" - Coordinate Reference System : {}", wktCRS);
+                } else {
+                    String epsg = GlobeUtils.extractEpsgCodeFromWTK(wktCRS);
+                    if (epsg != null) {
+                        CRSFactory factory = new CRSFactory();
+                        globalOptions.setCrs(factory.createFromName("EPSG:" + epsg));
+                        log.info(" - Coordinate Reference System : {}", epsg);
+                    }
+                }
+            }
+        });
 
         int percentage = globalOptions.getPointRatio();
-
         if (percentage < 1) {
             percentage = 1;
         } else if (percentage > 100) {
             percentage = 100;
         }
         int volumeFactor = (int) Math.ceil(100 / percentage);
-        //log.info("Total Points: {}", totalPointsSize);
-        //log.info("Volume Factor: {}", volumeFactor);
         int count = 0;
         for (LASPoint point : pointIterable) {
             if (count++ % volumeFactor != 0) {
@@ -152,8 +135,18 @@ public class LasConverter {
             double x = point.getX() * xScaleFactor + xOffset;
             double y = point.getY() * yScaleFactor + yOffset;
             double z = point.getZ() * zScaleFactor + zOffset;
-            byte[] rgb = getColorByRGB(point);
-            //byte[] rgb = getColorByByteRGB(point); // only for test
+            byte[] rgb;
+
+            if (hasRgbColor) {
+                if (globalOptions.isForce4ByteRGB()) {
+                    rgb = getColorByByteRGB(point); // only for test
+                } else {
+                    rgb = getColorByRGB(point);
+                }
+            } else {
+                //rgb = getColorIntensity(point);
+                rgb = getHeight(z);
+            }
             Vector3d position = new Vector3d(x, y, z);
 
             GaiaVertex vertex = new GaiaVertex();
@@ -316,4 +309,31 @@ public class LasConverter {
         rgb[2] = color;
         return rgb;
     }
+
+    /**
+     *
+     * @param point LASPoint
+     * @return byte[3]
+     */
+    private byte[] getClassification(LASPoint point) {
+        short classification = point.getClassification();
+        double classificatgionDouble = (double) classification / 65535;
+
+        byte color = (byte) (classificatgionDouble * 255);
+        byte[] rgb = new byte[3];
+        rgb[0] = color;
+        rgb[1] = color;
+        rgb[2] = color;
+        return rgb;
+    }
+
+    private byte[] getHeight(double z) {
+        byte color = (byte) (z / 65535 * 255);
+        byte[] rgb = new byte[3];
+        rgb[0] = color;
+        rgb[1] = color;
+        rgb[2] = color;
+        return rgb;
+    }
+
 }

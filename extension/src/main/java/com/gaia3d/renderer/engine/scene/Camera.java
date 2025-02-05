@@ -41,17 +41,30 @@ public class Camera {
         this.right = new Vector3d(1, 0, 0);
     }
 
+    public void setPosition(Vector3d position) {
+        this.position = position;
+        this.dirty = true;
+    }
+
+    public void setDirection(Vector3d direction) {
+        this.direction = direction;
+        this.dirty = true;
+    }
+
+    public void setUp(Vector3d up) {
+        this.up = up;
+        this.dirty = true;
+    }
+
     public Matrix4d getTransformMatrix() {
         if (this.dirty || this.transformMatrix == null) {
-            //this.calcRight();
-            this.transformMatrix = new Matrix4d(this.right.get(0), this.right.get(1), this.right.get(2), 0,
-                    this.up.get(0), this.up.get(1), this.up.get(2), 0,
-                    -this.direction.get(0), -this.direction.get(1), -this.direction.get(2), 0,
-                    this.position.get(0), this.position.get(1), this.position.get(2), 1);
+            this.calcRight();
+            this.transformMatrix = new Matrix4d(this.right.get(0), this.right.get(1), this.right.get(2), 0, this.up.get(0), this.up.get(1), this.up.get(2), 0, -this.direction.get(0), -this.direction.get(1), -this.direction.get(2), 0, this.position.get(0), this.position.get(1), this.position.get(2), 1);
             this.dirty = false;
         }
         return this.transformMatrix;
     }
+
     public Matrix4d getModelViewMatrix() {
         if (this.dirty || this.modelViewMatrix == null) {
             Matrix4d transformMatrix = this.getTransformMatrix();
@@ -73,8 +86,7 @@ public class Camera {
         this.dirty = true;
     }
 
-    public void calculateCameraXYPlane(Vector3d camPos, Vector3d camTarget)
-    {
+    public void calculateCameraXYPlane(Vector3d camPos, Vector3d camTarget) {
         Vector3d camDirection = new Vector3d(camTarget);
         camDirection.sub(camPos);
         camDirection.normalize();
@@ -161,6 +173,20 @@ public class Camera {
         this.dirty = true;
     }
 
+    public Vector3d calculateUpVector(Vector3d direction) {
+        // check if the direction is perpendicular to the z axis
+        Vector3d zAxis = new Vector3d(0, 0, 1);
+        if (Math.abs(direction.dot(zAxis)) > 0.9999) {
+            return new Vector3d(0, 1, 0);
+        }
+        Vector3d right = new Vector3d(direction);
+        right.cross(zAxis);
+        right.normalize();
+        Vector3d up = new Vector3d(right);
+        up.cross(direction);
+        up.normalize();
+        return up;
+    }
 
     private void calcRight() {
         Vector3d direction = new Vector3d(this.direction);

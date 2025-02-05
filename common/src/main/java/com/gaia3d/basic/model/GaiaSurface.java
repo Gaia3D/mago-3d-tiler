@@ -47,11 +47,8 @@ public class GaiaSurface extends SurfaceStructure implements Serializable {
     }
 
     public void clear() {
-        int facesCount = faces.size();
-        for (int i = 0; i < facesCount; i++) {
-            GaiaFace face = faces.get(i);
-            if(face != null)
-            {
+        for (GaiaFace face : faces) {
+            if (face != null) {
                 face.clear();
             }
         }
@@ -61,7 +58,7 @@ public class GaiaSurface extends SurfaceStructure implements Serializable {
     public GaiaSurface clone() {
         GaiaSurface clonedSurface = new GaiaSurface();
         for (GaiaFace face : faces) {
-            if(face != null) {
+            if (face != null) {
                 clonedSurface.getFaces().add(face.clone());
             }
         }
@@ -141,14 +138,37 @@ public class GaiaSurface extends SurfaceStructure implements Serializable {
         }
     }
 
-    public void deleteDegeneratedFaces()
-    {
+    public void deleteDegeneratedFaces(List<GaiaVertex> vertices) {
         List<GaiaFace> facesToDelete = new ArrayList<>();
         for (GaiaFace face : faces) {
-            if (face.isDegenerated()) {
+            if (face.isDegenerated(vertices)) {
                 facesToDelete.add(face);
             }
         }
         faces.removeAll(facesToDelete);
+    }
+
+    public void makeTriangleFaces() {
+        List<GaiaFace> facesToAdd = new ArrayList<>();
+        List<GaiaFace> triFaces = new ArrayList<>();
+        for (GaiaFace face : faces) {
+            triFaces.clear();
+            triFaces = face.getTriangleFaces(triFaces);
+            facesToAdd.addAll(triFaces);
+        }
+
+        faces.clear();
+        faces.addAll(facesToAdd);
+    }
+
+    public void makeTriangularFaces(List<GaiaVertex> vertices) {
+        List<GaiaFace> facesToAdd = new ArrayList<>();
+        List<GaiaFace> triangularFaces = new ArrayList<>();
+        for (GaiaFace face : faces) {
+            triangularFaces.clear();
+            facesToAdd.addAll(face.getTriangleFaces(triangularFaces));
+        }
+        faces.clear();
+        faces.addAll(facesToAdd);
     }
 }

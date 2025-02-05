@@ -1,7 +1,7 @@
 package com.gaia3d.converter.geometry.pipe;
 
-import com.gaia3d.basic.geometry.network.modeler.TEdge;
-import com.gaia3d.basic.geometry.network.modeler.TNode;
+import com.gaia3d.basic.geometry.network.modeler.TopologicalEdge;
+import com.gaia3d.basic.geometry.network.modeler.TopologicalNode;
 import com.gaia3d.basic.model.GaiaMesh;
 import com.gaia3d.basic.model.GaiaPrimitive;
 import lombok.Getter;
@@ -16,19 +16,19 @@ import java.util.Map;
 
 @Getter
 @Setter
-public class PipeElbow extends TNode {
+public class PipeElbow extends TopologicalNode {
     private PipeType profileType = PipeType.UNKNOWN;
     private float elbowRadius = 0.0f;
     private float pipeRadius = 0.0f;
     private float[] pipeRectangularSize = new float[2]; // for rectangular pipe.
     private double sweepAngRad = 0.0;
     private Vector3d elbowAxis = new Vector3d(0.0, 0.0, 1.0);
-    private Vector3d elbowCenterPosition = new Vector3d(); // this is NOT the position of the TNode's position.***
+    private Vector3d elbowCenterPosition = new Vector3d(); // this is NOT the position of the TopologicalNode's position.***
     private PipeElbowType elbowType = PipeElbowType.STRAIGHT; // 0 = unknown, 1 = straight, 2 = toroidal, 3 = spherical.***
 
     // linkPositions.***
-    private Map<TEdge, Vector3d> mapEdgeLinkPositions;
-    private Map<TEdge, Vector3d> mapEdgeLinkNormals;
+    private Map<TopologicalEdge, Vector3d> mapEdgeLinkPositions;
+    private Map<TopologicalEdge, Vector3d> mapEdgeLinkNormals;
     private int pipeRadiusInterpolationCount = 10; // 360 degrees / 10 = 36 degrees.***
     private int elbowRadiusInterpolationCount = 10; // 360 degrees / 10 = 36 degrees.***
     private boolean dirty = true;
@@ -44,11 +44,11 @@ public class PipeElbow extends TNode {
     }
 
     @Deprecated
-    private void calculateElbowPositionsIfExistOnlyOneTEdge() {
-        TEdge edge1 = this.getEdge(0);
+    private void calculateElbowPositionsIfExistOnlyOneTopologicalEdge() {
+        TopologicalEdge edge1 = this.getEdge(0);
 
-        TNode tNodeA = edge1.getTheAnotherNode(this);
-        //TNode tNodeB = null;
+        TopologicalNode tNodeA = edge1.getTheAnotherNode(this);
+        //TopologicalNode tNodeB = null;
 
         Vector3d posA = new Vector3d(tNodeA.getPosition());
         //Vector3d posB = null;
@@ -94,16 +94,16 @@ public class PipeElbow extends TNode {
             return;
         }
 
-        // if this TNode has only 1 edge, then return the position of the TNode.
+        // if this TopologicalNode has only 1 edge, then return the position of the TopologicalNode.
         if (tNodesCount == 1) {
             return;
         }
 
-        TEdge edge1 = this.getEdge(0);
-        TEdge edge2 = this.getEdge(1);
+        TopologicalEdge edge1 = this.getEdge(0);
+        TopologicalEdge edge2 = this.getEdge(1);
 
-        TNode tNodeA = edge1.getTheAnotherNode(this);
-        TNode tNodeB = edge2.getTheAnotherNode(this);
+        TopologicalNode tNodeA = edge1.getTheAnotherNode(this);
+        TopologicalNode tNodeB = edge2.getTheAnotherNode(this);
 
         Vector3d posA = new Vector3d(tNodeA.getPosition());
         Vector3d posB = new Vector3d(tNodeB.getPosition());
@@ -211,7 +211,7 @@ public class PipeElbow extends TNode {
     }
 
     public Vector3d getLinkPosition(Pipe pipe) {
-        // if this TNode has only 1 edge, then return the position of the TNode.
+        // if this TopologicalNode has only 1 edge, then return the position of the TopologicalNode.
         if (this.getEdges().size() == 1) {
             return this.getPosition();
         }
@@ -265,14 +265,14 @@ public class PipeElbow extends TNode {
         this.getPipeProfilePoints(circlePoints);
 
         // take the 1rst edge.
-        TEdge edge1 = this.getEdges().get(0);
+        TopologicalEdge edge1 = this.getEdges().get(0);
         Vector3d dir1 = mapEdgeLinkNormals.get(edge1);
         // in the start link normal, must negate the direction.
         dir1.negate();
         Vector3d linkPos1 = mapEdgeLinkPositions.get(edge1);
 
         // take the 2nd edge.
-        //TEdge edge2 = this.getEdges().get(1);
+        //TopologicalEdge edge2 = this.getEdges().get(1);
         //Vector3d dir2 = mapEdgeLinkNormals.get(edge2);
         //Vector3d linkPos2 = mapEdgeLinkPositions.get(edge2);
 
@@ -364,11 +364,11 @@ public class PipeElbow extends TNode {
             // if the 2 pipes are not physically buildable, then this elbow has no mesh.
             // make a straight elbow.***
             // if the sweep angle is less than 0.1 deg, then this elbow has no mesh.
-            TEdge edge1 = this.getEdge(0);
-            TEdge edge2 = this.getEdge(1);
+            TopologicalEdge edge1 = this.getEdge(0);
+            TopologicalEdge edge2 = this.getEdge(1);
 
-            TNode tNodeA = edge1.getTheAnotherNode(this);
-            TNode tNodeB = edge2.getTheAnotherNode(this);
+            TopologicalNode tNodeA = edge1.getTheAnotherNode(this);
+            TopologicalNode tNodeB = edge2.getTheAnotherNode(this);
 
             Vector3d posA = new Vector3d(tNodeA.getPosition());
             Vector3d posB = new Vector3d(tNodeB.getPosition());
@@ -414,14 +414,14 @@ public class PipeElbow extends TNode {
         this.getPipeProfilePoints(circlePoints);
 
         // take the 1rst edge.
-        TEdge edge1 = this.getEdges().get(0);
+        TopologicalEdge edge1 = this.getEdges().get(0);
         Vector3d dir1 = mapEdgeLinkNormals.get(edge1);
         // in the start link normal, must negate the direction.
         dir1.negate();
         Vector3d linkPos1 = mapEdgeLinkPositions.get(edge1);
 
         // take the 2nd edge.
-        //TEdge edge2 = this.getEdges().get(1);
+        //TopologicalEdge edge2 = this.getEdges().get(1);
         //Vector3d dir2 = mapEdgeLinkNormals.get(edge2);
         //Vector3d linkPos2 = mapEdgeLinkPositions.get(edge2);
 
@@ -452,19 +452,6 @@ public class PipeElbow extends TNode {
 
         double increSweepAngRad = this.sweepAngRad / this.elbowRadiusInterpolationCount;
         elbowAxisRotMat.rotate(-increSweepAngRad, elbowAxis);
-
-        // check if the elbowAxisRotMat has nan components.
-//        for(int col = 0; col<4; col++)
-//        {
-//            for(int row = 0; row<4; row++)
-//            {
-//                if(Double.isNaN(elbowAxisRotMat.get(row, col)))
-//                {
-//                    int hola = 0;
-//                }
-//            }
-//        }
-
 
         // calculate the 1rst transversal circle.***********************************************
         List<Vector3d> transversalCircle1 = new ArrayList<Vector3d>();

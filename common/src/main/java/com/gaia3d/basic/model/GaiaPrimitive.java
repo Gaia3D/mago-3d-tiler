@@ -7,20 +7,20 @@ import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.geometry.octree.GaiaOctreeVertices;
 import com.gaia3d.basic.model.structure.PrimitiveStructure;
 import com.gaia3d.basic.types.AttributeType;
+import com.gaia3d.basic.types.GLConstants;
+import com.gaia3d.util.GaiaColorUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
-import org.joml.Matrix3d;
-import org.joml.Matrix4d;
-import org.joml.Vector2d;
-import org.joml.Vector3d;
-import org.lwjgl.opengl.GL20;
+import org.joml.*;
 
 import java.io.Serializable;
+import java.lang.Math;
 import java.util.*;
+import java.util.Random;
 
 /**
  * A class that represents a primitive of a Gaia object.
@@ -38,6 +38,9 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
     private Integer materialIndex = -1;
 
     public GaiaBoundingBox getBoundingBox(Matrix4d transform) {
+        if(this.vertices == null || this.vertices.isEmpty()) {
+            return null;
+        }
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         for (GaiaVertex vertex : vertices) {
             Vector3d position = vertex.getPosition();
@@ -198,8 +201,8 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         GaiaBufferDataSet gaiaBufferDataSet = new GaiaBufferDataSet();
         if (indices.length > 0) {
             GaiaBuffer indicesBuffer = new GaiaBuffer();
-            indicesBuffer.setGlTarget(GL20.GL_ELEMENT_ARRAY_BUFFER);
-            indicesBuffer.setGlType(GL20.GL_UNSIGNED_INT);
+            indicesBuffer.setGlTarget(GLConstants.GL_ELEMENT_ARRAY_BUFFER);
+            indicesBuffer.setGlType(GLConstants.GL_UNSIGNED_INT);
             indicesBuffer.setElementsCount(indices.length);
             indicesBuffer.setGlDimension((byte) 1);
             indicesBuffer.setInts(indices);
@@ -207,8 +210,8 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         }
         if (normalList.length > 0) {
             GaiaBuffer normalBuffer = new GaiaBuffer();
-            normalBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
-            normalBuffer.setGlType(GL20.GL_FLOAT);
+            normalBuffer.setGlTarget(GLConstants.GL_ARRAY_BUFFER);
+            normalBuffer.setGlType(GLConstants.GL_FLOAT);
             normalBuffer.setElementsCount(vertices.size());
             normalBuffer.setGlDimension((byte) 3);
             normalBuffer.setFloats(normalList);
@@ -216,17 +219,17 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         }
         if (colorList.length > 0) {
             GaiaBuffer colorBuffer = new GaiaBuffer();
-            colorBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
-            colorBuffer.setGlType(GL20.GL_UNSIGNED_BYTE);
+            colorBuffer.setGlTarget(GLConstants.GL_ARRAY_BUFFER);
+            colorBuffer.setGlType(GLConstants.GL_UNSIGNED_BYTE);
             colorBuffer.setElementsCount(vertices.size());
-            colorBuffer.setGlDimension((byte) 1);
+            colorBuffer.setGlDimension((byte) 4);
             colorBuffer.setBytes(colorList);
             gaiaBufferDataSet.getBuffers().put(AttributeType.COLOR, colorBuffer);
         }
         if (batchIdList.length > 0) {
             GaiaBuffer batchIdBuffer = new GaiaBuffer();
-            batchIdBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
-            batchIdBuffer.setGlType(GL20.GL_FLOAT);
+            batchIdBuffer.setGlTarget(GLConstants.GL_ARRAY_BUFFER);
+            batchIdBuffer.setGlType(GLConstants.GL_FLOAT);
             batchIdBuffer.setElementsCount(vertices.size());
             batchIdBuffer.setGlDimension((byte) 1);
             batchIdBuffer.setFloats(batchIdList);
@@ -234,8 +237,8 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         }
         if (positionList.length > 0) {
             GaiaBuffer positionBuffer = new GaiaBuffer();
-            positionBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
-            positionBuffer.setGlType(GL20.GL_FLOAT);
+            positionBuffer.setGlTarget(GLConstants.GL_ARRAY_BUFFER);
+            positionBuffer.setGlType(GLConstants.GL_FLOAT);
             positionBuffer.setElementsCount(vertices.size());
             positionBuffer.setGlDimension((byte) 3);
             positionBuffer.setFloats(positionList);
@@ -243,8 +246,8 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         }
         if (textureCoordinateList.length > 0) {
             GaiaBuffer textureCoordinateBuffer = new GaiaBuffer();
-            textureCoordinateBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
-            textureCoordinateBuffer.setGlType(GL20.GL_FLOAT);
+            textureCoordinateBuffer.setGlTarget(GLConstants.GL_ARRAY_BUFFER);
+            textureCoordinateBuffer.setGlType(GLConstants.GL_FLOAT);
             textureCoordinateBuffer.setElementsCount(vertices.size());
             textureCoordinateBuffer.setGlDimension((byte) 2);
             textureCoordinateBuffer.setFloats(textureCoordinateList);
@@ -294,8 +297,7 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         return gaiaPrimitive;
     }
 
-    public void deleteNormals()
-    {
+    public void deleteNormals() {
         for (GaiaVertex vertex : vertices) {
             vertex.setNormal(null);
         }
@@ -318,8 +320,76 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         return result;
     }
 
+    public void addPrimitive(GaiaPrimitive primitive) {
+        int verticesCount = this.vertices.size();
+        int primitiveVerticesCount = primitive.getVertices().size();
+        this.vertices.addAll(primitive.getVertices());
+        for (GaiaSurface surface : primitive.getSurfaces()) {
+            List<GaiaFace> faces = surface.getFaces();
+            for (GaiaFace face : faces) {
+                int[] indices = face.getIndices();
+                for (int i = 0; i < indices.length; i++) {
+                    indices[i] += verticesCount;
+                }
+
+                GaiaFace newFace = new GaiaFace();
+                newFace.setIndices(indices);
+                this.surfaces.get(0).getFaces().add(newFace);
+            }
+        }
+    }
+
+    public Map<GaiaVertex, List<GaiaFace>> getMapVertexToFaces() {
+        Map<GaiaVertex, List<GaiaFace>> mapVertexToFace = new HashMap<>();
+        for (GaiaSurface surface : this.surfaces) {
+            for (GaiaFace face : surface.getFaces()) {
+                int[] indices = face.getIndices();
+                for (int index : indices) {
+                    GaiaVertex vertex = this.vertices.get(index);
+                    List<GaiaFace> faces = mapVertexToFace.computeIfAbsent(vertex, k -> new ArrayList<>());
+                    faces.add(face);
+                }
+            }
+        }
+        return mapVertexToFace;
+    }
+
+    public List<GaiaFace> extractGaiaFaces(List<GaiaFace> resultFaces) {
+        if(resultFaces == null) {
+            resultFaces = new ArrayList<>();
+        }
+
+        for(GaiaSurface surface : this.surfaces) {
+            resultFaces.addAll(surface.getFaces());
+        }
+        return resultFaces;
+    }
+
+    public void unWeldVertices() {
+        List<GaiaVertex> newVertices = new ArrayList<>();
+        List<GaiaFace> faces = this.extractGaiaFaces(null);
+        for (GaiaFace face : faces) {
+            int[] indices = face.getIndices();
+            int[] newIndices = new int[indices.length];
+            for (int j = 0; j < indices.length; j++) {
+                GaiaVertex vertex = this.vertices.get(indices[j]);
+                GaiaVertex newVertex = vertex.clone();
+                newVertices.add(newVertex);
+                newIndices[j] = newVertices.size() - 1;
+            }
+
+            face.setIndices(newIndices);
+        }
+
+        if (this.vertices != null) {
+            this.vertices.forEach(GaiaVertex::clear);
+            this.vertices.clear();
+        }
+        this.vertices = newVertices;
+    }
+
     public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
-        // Weld the vertices.***
+        // Weld the vertices.
         GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null);
         octreeVertices.getVertices().addAll(this.vertices);
         octreeVertices.calculateSize();
@@ -401,8 +471,7 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         this.vertices = newVerticesArray;
     }
 
-    private void getWeldableVertexMap(Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster, List<GaiaVertex> vertices, double error, boolean checkTexCoord, boolean checkNormal,
-                                      boolean checkColor, boolean checkBatchId) {
+    private void getWeldableVertexMap(Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster, List<GaiaVertex> vertices, double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
         Map<GaiaVertex, GaiaVertex> visitedMap = new HashMap<>();
         int verticesCount = vertices.size();
         for (int i = 0; i < verticesCount; i++) {
@@ -448,7 +517,7 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         }
 
         int vertexCount = this.getVertices().size();
-        for(int i = 0; i < vertexCount; i++) {
+        for (int i = 0; i < vertexCount; i++) {
             GaiaVertex vertex = this.getVertices().get(i);
             if (!vertexIdxMap.containsKey(vertex)) {
                 vertex.clear();
@@ -506,9 +575,30 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
 
     public void deleteDegeneratedFaces() {
         for (GaiaSurface surface : this.surfaces) {
-            surface.deleteDegeneratedFaces();
+            surface.deleteDegeneratedFaces(this.vertices);
         }
 
         this.deleteNoUsedVertices();
+    }
+
+    public void makeTriangleFaces() {
+        for (GaiaSurface surface : this.surfaces) {
+            surface.makeTriangleFaces();
+        }
+    }
+
+    public void transformPoints(Matrix4d finalMatrix) {
+        for (GaiaVertex vertex : vertices) {
+            Vector3d position = vertex.getPosition();
+            Vector3d transformedPosition = new Vector3d();
+            finalMatrix.transformPosition(position, transformedPosition);
+            vertex.setPosition(transformedPosition);
+        }
+    }
+
+    public void makeTriangularFaces() {
+        for (GaiaSurface surface : surfaces) {
+            surface.makeTriangularFaces(vertices);
+        }
     }
 }

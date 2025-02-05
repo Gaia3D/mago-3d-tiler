@@ -23,8 +23,6 @@ import java.util.List;
 @Getter
 @Setter
 public class GaiaMesh extends MeshStructure implements Serializable {
-    //private List<GaiaPrimitive> primitives = new ArrayList<>();
-
     public GaiaBoundingBox getBoundingBox(Matrix4d transform) {
         GaiaBoundingBox boundingBox = null;
         for (GaiaPrimitive primitive : primitives) {
@@ -212,7 +210,7 @@ public class GaiaMesh extends MeshStructure implements Serializable {
         }
         for (GaiaPrimitive primitive : primitives) {
             if (primitive.getVertices().size() < 3) {
-                log.warn("The primitive has less than 3 vertices. It will be ignored.");
+                log.debug("The primitive has less than 3 vertices. It will be ignored.");
                 continue;
             }
             GaiaBufferDataSet gaiaBufferDataSet = primitive.toGaiaBufferSet(transformMatrix);
@@ -227,8 +225,7 @@ public class GaiaMesh extends MeshStructure implements Serializable {
         }
     }
 
-    public void deleteNormals()
-    {
+    public void deleteNormals() {
         for (GaiaPrimitive primitive : primitives) {
             primitive.deleteNormals();
         }
@@ -261,11 +258,22 @@ public class GaiaMesh extends MeshStructure implements Serializable {
             primitive.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
             primitive.deleteNoUsedVertices();
         }
-
     }
 
-    public void scissorTextures(List<GaiaMaterial> materials) {
+    public void unWeldVertices() {
+        for (GaiaPrimitive primitive : primitives) {
+            primitive.unWeldVertices();
+        }
+    }
 
+    public List<GaiaFace> extractGaiaFaces(List<GaiaFace> resultFaces) {
+        if (resultFaces == null) {
+            resultFaces = new ArrayList<>();
+        }
+        for (GaiaPrimitive primitive : primitives) {
+            primitive.extractGaiaFaces(resultFaces);
+        }
+        return resultFaces;
     }
 
     public void deleteObjects() {
@@ -277,6 +285,33 @@ public class GaiaMesh extends MeshStructure implements Serializable {
     public void deleteDegeneratedFaces() {
         for (GaiaPrimitive primitive : primitives) {
             primitive.deleteDegeneratedFaces();
+        }
+    }
+
+    public void extractPrimitives(List<GaiaPrimitive> resultPrimitives) {
+        if (resultPrimitives == null) {
+            resultPrimitives = new ArrayList<>();
+        }
+        for (GaiaPrimitive primitive : primitives) {
+            resultPrimitives.add(primitive);
+        }
+    }
+
+    public void makeTriangleFaces() {
+        for (GaiaPrimitive primitive : primitives) {
+            primitive.makeTriangleFaces();
+        }
+    }
+
+    public void transformPoints(Matrix4d finalMatrix) {
+        for (GaiaPrimitive primitive : primitives) {
+            primitive.transformPoints(finalMatrix);
+        }
+    }
+
+    public void makeTriangularFaces() {
+        for (GaiaPrimitive primitive : primitives) {
+            primitive.makeTriangularFaces();
         }
     }
 }

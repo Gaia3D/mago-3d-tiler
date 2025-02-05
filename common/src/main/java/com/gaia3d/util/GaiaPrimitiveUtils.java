@@ -7,12 +7,13 @@ import com.gaia3d.basic.model.GaiaVertex;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class GaiaPrimitiveUtils {
 
     public static void mergePrimitives(GaiaPrimitive primitiveMaster, GaiaPrimitive primitive) {
-        // Merge the primitives
-        // 1rst, check if the primitiveMaster has the same material as the primitive : TODO.***
-
         int vertexCountMaster = primitiveMaster.getVertices().size();
 
         primitiveMaster.getVertices().addAll(primitive.getVertices());
@@ -80,4 +81,69 @@ public class GaiaPrimitiveUtils {
 
         return primitive;
     }
+
+    public static void getWeldableVertexMap(Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster, List<GaiaVertex> vertices, double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
+        Map<GaiaVertex, GaiaVertex> visitedMap = new HashMap<>();
+        int verticesCount = vertices.size();
+        for (int i = 0; i < verticesCount; i++) {
+            GaiaVertex vertex = vertices.get(i);
+            if (visitedMap.containsKey(vertex)) {
+                continue;
+            }
+
+            mapVertexToVertexMaster.put(vertex, vertex);
+
+            for (int j = i + 1; j < verticesCount; j++) {
+                GaiaVertex vertex2 = vertices.get(j);
+                if (visitedMap.containsKey(vertex2)) {
+                    continue;
+                }
+                if (vertex.isWeldable(vertex2, error, checkTexCoord, checkNormal, checkColor, checkBatchId)) {
+                    mapVertexToVertexMaster.put(vertex2, vertex);
+
+                    visitedMap.put(vertex, vertex);
+                    visitedMap.put(vertex2, vertex2);
+                }
+            }
+        }
+    }
+
+
+    public static int calculateConvexity(GaiaVertex vertex, Vector3d normal, List<GaiaVertex> neighborVertices, double error) {
+        int convexity = 1;
+        Vector3d vertexPosition = vertex.getPosition();
+        Vector3d v = new Vector3d();
+        boolean isPlane = true;
+        for (GaiaVertex neighborVertex : neighborVertices) {
+            if (neighborVertex == vertex) {
+                continue;
+            }
+            Vector3d position = neighborVertex.getPosition();
+            v.set(position).sub(vertexPosition);
+            v.normalize();
+
+            if (Double.isNaN(v.x) || Double.isNaN(v.y) || Double.isNaN(v.z)) {
+                continue;
+            }
+
+            double dot = v.dot(normal);
+            if (Math.abs(dot) < error) {
+                continue;
+            }
+
+            if (dot > 0.0) {
+                return -1;
+            } else if (dot < 0.0) {
+                isPlane = false;
+            }
+        }
+
+        if (isPlane) {
+            return 0;
+        }
+
+        return convexity;
+    }
+
+
 }

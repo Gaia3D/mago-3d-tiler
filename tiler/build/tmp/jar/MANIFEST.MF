@@ -1,4 +1,9 @@
 Manifest-Version: 1.0
 Main-Class: com.gaia3d.command.mago.Mago3DTilerMain
-Implementation-Version: 1.10.0
+Implementation-Version: 1.10.6-release
+Implementation-Title: 3d-tiler
+Implementation-Vendor: Gaia3d, Inc.
+Implementation-Vendor-Id: com.gaia3d
+Implementation-URL: http://java.sun.com/products/java-media/jai/forDevel
+ opers/jai-imageio/
 

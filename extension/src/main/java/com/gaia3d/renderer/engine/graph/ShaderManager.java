@@ -1,14 +1,14 @@
 package com.gaia3d.renderer.engine.graph;
 
+import lombok.NoArgsConstructor;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@NoArgsConstructor
 public class ShaderManager {
-    Map<String, ShaderProgram> mapNameShaderProgram = new HashMap<String, ShaderProgram>();
-
-    public ShaderManager() {
-    }
+    Map<String, ShaderProgram> mapNameShaderProgram = new HashMap<>();
 
     public ShaderProgram createShaderProgram(String shaderProgramName, List<ShaderProgram.ShaderModuleData> shaderModuleDataList) {
         ShaderProgram shaderProgram = new ShaderProgram(shaderModuleDataList);

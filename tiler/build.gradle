@@ -6,19 +6,6 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '8.1.0'
 }
 
-project.ext.lwjglVersion = "3.3.3"
-switch (OperatingSystem.current()) {
-    case OperatingSystem.WINDOWS:
-        project.ext.lwjglNatives = "natives-windows"
-        break
-    case OperatingSystem.LINUX:
-        project.ext.lwjglNatives = "natives-linux"
-        break
-    case OperatingSystem.MAC_OS:
-        project.ext.lwjglNatives = "natives-macos"
-        break
-}
-
 repositories {
     maven { url "https://repo.osgeo.org/repository/release/" }
     mavenCentral()

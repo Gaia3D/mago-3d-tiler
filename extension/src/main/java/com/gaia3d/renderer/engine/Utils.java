@@ -1,13 +1,14 @@
 package com.gaia3d.renderer.engine;
 
+import lombok.NoArgsConstructor;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+@Deprecated
+@NoArgsConstructor
 public class Utils {
-    private Utils() {
-        // Utility class
-    }
 
     public static String readFile(String filePath) {
         String str;

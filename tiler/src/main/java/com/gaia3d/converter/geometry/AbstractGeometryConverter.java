@@ -1,6 +1,6 @@
 package com.gaia3d.converter.geometry;
 
-import com.gaia3d.basic.geometry.network.modeler.TNetwork;
+import com.gaia3d.basic.geometry.network.modeler.TopologicalNetwork;
 import com.gaia3d.basic.geometry.tessellator.GaiaExtrusionSurface;
 import com.gaia3d.basic.geometry.tessellator.GaiaTessellator;
 import com.gaia3d.basic.model.*;
@@ -38,7 +38,7 @@ public abstract class AbstractGeometryConverter {
         attribute.setNodeName(ROOT_NODE_NAME);
         scene.setAttribute(attribute);
 
-        Vector4d color = new Vector4d(0.9, 0.9, 0.9, 1);
+        Vector4d color = new Vector4d(0.8, 0.8, 0.8, 1);
         if (globalOptions.isDebugLod()) {
             Random random = new Random();
             float r = random.nextFloat();
@@ -300,7 +300,7 @@ public abstract class AbstractGeometryConverter {
     }
 
     protected double getDiameter(SimpleFeature feature, String column) {
-        double result = 1.0d;
+        double result = 10.0d;
         Object attributeLower = feature.getAttribute(column);
         Object attributeUpper = feature.getAttribute(column.toUpperCase());
         Object attributeObject = null;
@@ -667,7 +667,7 @@ public abstract class AbstractGeometryConverter {
             }
 
             Modeler3D modeler3D = new Modeler3D();
-            TNetwork tNetwork = modeler3D.getPipeNetworkFromPipeElbows(pipeElbows);
+            TopologicalNetwork tNetwork = modeler3D.getPipeNetworkFromPipeElbows(pipeElbows);
             resultGaiaNode = modeler3D.makeGeometry(tNetwork);
         } else if (profileType == PipeType.RECTANGULAR) {
             // rectangular pipe.
@@ -688,7 +688,7 @@ public abstract class AbstractGeometryConverter {
             }
 
             Modeler3D modeler3D = new Modeler3D();
-            TNetwork tNetwork = modeler3D.getPipeNetworkFromPipeElbows(pipeElbows);
+            TopologicalNetwork tNetwork = modeler3D.getPipeNetworkFromPipeElbows(pipeElbows);
             resultGaiaNode = modeler3D.makeGeometry(tNetwork);
         }
         return resultGaiaNode;

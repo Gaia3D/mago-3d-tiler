@@ -31,17 +31,19 @@ public class Fbo {
         fboId = GL30.glGenFramebuffers();
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, fboId);
 
-        // color texture.***
+        // color texture.
         colorTextureId = GL30.glGenTextures();
         GL30.glBindTexture(GL30.GL_TEXTURE_2D, colorTextureId);
 
         GL30.glEnable(GL30.GL_TEXTURE_2D);
-        GL30.glTexImage2D(GL30.GL_TEXTURE_2D, 0, GL30.GL_RGBA, fboWidth, fboHeight, 0, GL30.GL_RGBA, GL30.GL_UNSIGNED_BYTE, 0);
+        GL30.glTexImage2D(GL30.GL_TEXTURE_2D, 0, GL30.GL_RGBA, fboWidth, fboHeight, 0, GL30.GL_RGBA, GL30.GL_UNSIGNED_BYTE, (ByteBuffer) null);
+        GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_WRAP_S, GL30.GL_CLAMP_TO_EDGE);
+        GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_WRAP_T, GL30.GL_CLAMP_TO_EDGE);
         GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MIN_FILTER, GL30.GL_NEAREST);
         GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MAG_FILTER, GL30.GL_NEAREST);
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL30.GL_TEXTURE_2D, colorTextureId, 0);
 
-        // depth render buffer.***
+        // depth render buffer.
         depthRenderBufferId = GL30.glGenRenderbuffers();
         GL30.glBindRenderbuffer(GL30.GL_RENDERBUFFER, depthRenderBufferId);
         GL30.glRenderbufferStorage(GL30.GL_RENDERBUFFER, GL30.GL_DEPTH_COMPONENT, fboWidth, fboHeight);
@@ -67,16 +69,12 @@ public class Fbo {
         return pixels;
     }
 
-    public BufferedImage getBufferedImage(int bufferedImageType)
-    {
+    public BufferedImage getBufferedImage(int bufferedImageType) {
         int format = GL30.GL_RGBA;
 
-        if(bufferedImageType == BufferedImage.TYPE_INT_RGB)
-        {
+        if (bufferedImageType == BufferedImage.TYPE_INT_RGB) {
             format = GL30.GL_RGB;
-        }
-        else if(bufferedImageType == BufferedImage.TYPE_INT_ARGB)
-        {
+        } else if (bufferedImageType == BufferedImage.TYPE_INT_ARGB) {
             format = GL30.GL_RGBA;
         }
         ByteBuffer byteBuffer = this.readPixels(format);
@@ -89,23 +87,20 @@ public class Fbo {
 
         for (int y = 0; y < fboHeight; y++) {
             for (int x = 0; x < fboWidth; x++) {
-                if(bufferedImageType == BufferedImage.TYPE_INT_ARGB)
-                {
-                    int r = byteBuffer.get() & 0xFF; // Rojo
-                    int g = byteBuffer.get() & 0xFF; // Verde
-                    int b = byteBuffer.get() & 0xFF; // Azul
-                    int a = byteBuffer.get() & 0xFF; // Alpha
+                if (bufferedImageType == BufferedImage.TYPE_INT_ARGB) {
+                    int r = byteBuffer.get() & 0xFF;
+                    int g = byteBuffer.get() & 0xFF;
+                    int b = byteBuffer.get() & 0xFF;
+                    int a = byteBuffer.get() & 0xFF;
 
-                    int color = (a << 24) | (r << 16) | (g << 8) | b; // Formato ARGB
+                    int color = (a << 24) | (r << 16) | (g << 8) | b;
                     image.setRGB(x, fboHeight - y - 1, color);
-                }
-                else if(bufferedImageType == BufferedImage.TYPE_INT_RGB)
-                {
-                    int r = byteBuffer.get() & 0xFF; // Rojo
-                    int g = byteBuffer.get() & 0xFF; // Verde
-                    int b = byteBuffer.get() & 0xFF; // Azul
+                } else if (bufferedImageType == BufferedImage.TYPE_INT_RGB) {
+                    int r = byteBuffer.get() & 0xFF;
+                    int g = byteBuffer.get() & 0xFF;
+                    int b = byteBuffer.get() & 0xFF;
 
-                    int color = (r << 16) | (g << 8) | b; // Formato RGB
+                    int color = (r << 16) | (g << 8) | b;
                     image.setRGB(x, fboHeight - y - 1, color);
                 }
 
@@ -115,8 +110,7 @@ public class Fbo {
         return image;
     }
 
-    public void cleanup()
-    {
+    public void cleanup() {
         GL30.glDeleteTextures(colorTextureId);
 
         // Eliminar el render buffer de profundidad
@@ -132,15 +126,15 @@ public class Fbo {
             return;
         }
 
-        // Actualizar los valores de ancho y alto
+        // update the size of the FBO.***
         this.fboWidth = newWidth;
         this.fboHeight = newHeight;
 
-        // Primero, eliminar las texturas y buffers existentes
+        // Delete the color texture and the depth render buffer
         GL30.glDeleteTextures(colorTextureId);
         GL30.glDeleteRenderbuffers(depthRenderBufferId);
 
-        // Crear la nueva textura de color
+        // Create the new color texture
         colorTextureId = GL30.glGenTextures();
         GL30.glBindTexture(GL30.GL_TEXTURE_2D, colorTextureId);
 
@@ -150,18 +144,18 @@ public class Fbo {
         GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MAG_FILTER, GL30.GL_NEAREST);
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL30.GL_TEXTURE_2D, colorTextureId, 0);
 
-        // Crear el nuevo render buffer de profundidad
+        // Create the new depth render buffer
         depthRenderBufferId = GL30.glGenRenderbuffers();
         GL30.glBindRenderbuffer(GL30.GL_RENDERBUFFER, depthRenderBufferId);
         GL30.glRenderbufferStorage(GL30.GL_RENDERBUFFER, GL30.GL_DEPTH_COMPONENT, fboWidth, fboHeight);
         GL30.glFramebufferRenderbuffer(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL30.GL_RENDERBUFFER, depthRenderBufferId);
 
-        // Verificar si el FBO está completo
+        // Verify if the framebuffer is complete
         if (GL30.glCheckFramebufferStatus(GL30.GL_FRAMEBUFFER) != GL30.GL_FRAMEBUFFER_COMPLETE) {
             System.err.println("Error: Framebuffer is not complete after resizing!");
         }
 
-        // Desvincular el framebuffer
+        // Unbind the framebuffer
         unbind();
     }
 }

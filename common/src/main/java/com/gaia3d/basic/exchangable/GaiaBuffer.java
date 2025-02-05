@@ -18,7 +18,6 @@ public class GaiaBuffer implements Serializable {
     private AccessorType accessorType;
 
     private int elementsCount = -1;
-
     private byte glDimension;
     private int glType;
     private int glTarget;

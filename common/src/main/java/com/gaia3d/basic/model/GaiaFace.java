@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,6 +21,8 @@ import java.util.List;
 @Getter
 @Setter
 public class GaiaFace extends FaceStructure implements Serializable {
+    private int id = -1;
+    private int classifyId = -1; // use to classify the face for some purpose.
 
     public void calculateFaceNormal(List<GaiaVertex> vertices) {
         if (indices.length < 3) {
@@ -33,10 +36,10 @@ public class GaiaFace extends FaceStructure implements Serializable {
             GaiaVertex vertex1 = vertices.get(indices1);
             GaiaVertex vertex2 = vertices.get(indices2);
             GaiaVertex vertex3 = vertices.get(indices3);
-            calcNormal(vertex1, vertex2, vertex3);
+            this.faceNormal = calcNormal(vertex1, vertex2, vertex3);
         }
-        Vector3d firstNormal = vertices.get(0).getNormal();
-        this.faceNormal = new Vector3d(firstNormal);
+//        Vector3d firstNormal = vertices.get(0).getNormal();
+//        this.faceNormal = new Vector3d(firstNormal);
     }
 
     public GaiaBoundingBox getBoundingBox(List<GaiaVertex> vertices, GaiaBoundingBox resultBoundingBox) {
@@ -64,7 +67,7 @@ public class GaiaFace extends FaceStructure implements Serializable {
         return normal;
     }
 
-    public void calcNormal(GaiaVertex vertex1, GaiaVertex vertex2, GaiaVertex vertex3) {
+    public Vector3d calcNormal(GaiaVertex vertex1, GaiaVertex vertex2, GaiaVertex vertex3) {
         Vector3d position1 = vertex1.getPosition();
         Vector3d position2 = vertex2.getPosition();
         Vector3d position3 = vertex3.getPosition();
@@ -77,6 +80,8 @@ public class GaiaFace extends FaceStructure implements Serializable {
         vertex1.setNormal(new Vector3d(resultNormal));
         vertex2.setNormal(new Vector3d(resultNormal));
         vertex3.setNormal(new Vector3d(resultNormal));
+
+        return resultNormal;
     }
 
     public void clear() {
@@ -116,7 +121,7 @@ public class GaiaFace extends FaceStructure implements Serializable {
         return area;
     }
 
-    public boolean isDegenerated() {
+    public boolean isDegenerated(List<GaiaVertex> vertices) {
         // if has equal indices, it is degenerated.
         for (int i = 0; i < indices.length; i++) {
             for (int j = i + 1; j < indices.length; j++) {
@@ -125,6 +130,51 @@ public class GaiaFace extends FaceStructure implements Serializable {
                 }
             }
         }
+
+        if(indices.length < 3) {
+            return true;
+        }
+
+        // check if has coincident positions.
+        double error = 1e-5;
+        for (int i = 0; i < indices.length; i += 3) {
+            int indices1 = indices[i];
+            int indices2 = indices[i + 1];
+            int indices3 = indices[i + 2];
+            GaiaVertex vertex1 = vertices.get(indices1);
+            GaiaVertex vertex2 = vertices.get(indices2);
+            GaiaVertex vertex3 = vertices.get(indices3);
+            Vector3d vectorA = vertex1.getPosition();
+            Vector3d vectorB = vertex2.getPosition();
+            Vector3d vectorC = vertex3.getPosition();
+
+            if (vectorA.distance(vectorB) < error || vectorA.distance(vectorC) < error || vectorB.distance(vectorC) < error) {
+                return true;
+            }
+        }
+
         return false;
+    }
+
+    public List<GaiaFace> getTriangleFaces(List<GaiaFace> resultGaiaFaces) {
+        if (resultGaiaFaces == null) {
+            resultGaiaFaces = new ArrayList<>();
+        }
+        int[] indices = this.getIndices();
+        Vector3d normal = this.getFaceNormal();
+        int indicesCount = indices.length;
+
+        for (int i = 0; i < indicesCount - 2; i += 3) {
+            if (i + 2 >= indicesCount) {
+                log.error("i + 2 >= indicesCount.");
+            }
+            GaiaFace gaiaTriangleFace = new GaiaFace();
+            gaiaTriangleFace.setIndices(new int[]{indices[i], indices[i + 1], indices[i + 2]});
+            if (normal != null) {
+                gaiaTriangleFace.setFaceNormal(new Vector3d(normal));
+            }
+            resultGaiaFaces.add(gaiaTriangleFace);
+        }
+        return resultGaiaFaces;
     }
 }

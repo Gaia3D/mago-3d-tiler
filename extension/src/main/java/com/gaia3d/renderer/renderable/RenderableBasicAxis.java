@@ -1,34 +1,28 @@
 package com.gaia3d.renderer.renderable;
 
 import com.gaia3d.basic.types.AttributeType;
+import lombok.Getter;
 import org.lwjgl.opengl.GL20;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Getter
 public class RenderableBasicAxis {
-    float axisLength;
-    Map<AttributeType, RenderableBuffer> mapAttribTypeRenderableBuffer;
+    private float axisLength;
+    private Map<AttributeType, RenderableBuffer> mapAttribTypeRenderableBuffer;
 
-    public RenderableBasicAxis()
-    {
+    public RenderableBasicAxis() {
         axisLength = 100.0f;
         mapAttribTypeRenderableBuffer = new HashMap<>();
         init();
     }
 
-    public void setAttribTypeRenderableBuffer(AttributeType attribType, RenderableBuffer renderableBuffer)
-    {
+    public void setAttribTypeRenderableBuffer(AttributeType attribType, RenderableBuffer renderableBuffer) {
         mapAttribTypeRenderableBuffer.put(attribType, renderableBuffer);
     }
 
-    public  Map<AttributeType, RenderableBuffer> getMapAttribTypeRenderableBuffer()
-    {
-        return mapAttribTypeRenderableBuffer;
-    }
-
-    public void init()
-    {
+    public void init() {
         AttributeType attribType = AttributeType.POSITION;
         int elemsCount = 6;
         byte glDimension = 3;
@@ -37,9 +31,7 @@ public class RenderableBasicAxis {
 
         // xyz axis.***
         RenderableBuffer axisBuffer = new RenderableBuffer(attribType, elemsCount, glDimension, glType, glTarget);
-        float[] axisPositions = new float[]{0.0f, 0.0f, 0.0f, axisLength, 0.0f, 0.0f,
-                0.0f, 0.0f, 0.0f, 0.0f, axisLength, 0.0f,
-                0.0f, 0.0f, 0.0f, 0.0f, 0.0f, axisLength};
+        float[] axisPositions = new float[]{0.0f, 0.0f, 0.0f, axisLength, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, axisLength, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, axisLength};
         int[] vboId = new int[1];
         GL20.glGenBuffers(vboId);
 
@@ -57,9 +49,7 @@ public class RenderableBasicAxis {
         glTarget = GL20.GL_ARRAY_BUFFER;
 
         RenderableBuffer colorBuffer = new RenderableBuffer(attribType, elemsCount, glDimension, glType, glTarget);
-        float[] colors = new float[]{1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-                0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f,
-                0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f};
+        float[] colors = new float[]{1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f};
         vboId = new int[1];
         GL20.glGenBuffers(vboId);
 

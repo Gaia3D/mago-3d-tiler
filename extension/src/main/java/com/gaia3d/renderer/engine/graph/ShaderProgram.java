@@ -1,6 +1,5 @@
 package com.gaia3d.renderer.engine.graph;
 
-import com.gaia3d.renderer.engine.Utils;
 import lombok.Getter;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
@@ -9,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL20.glDisableVertexAttribArray;
 
 @Getter
 public class ShaderProgram {
@@ -30,10 +28,6 @@ public class ShaderProgram {
 
     public int getAttribLocation(String attribName) {
         return GL20.glGetAttribLocation(programId, attribName);
-    }
-
-    public record ShaderModuleData(String shaderSource, int shaderType) {
-
     }
 
     public void bind() {
@@ -107,5 +101,9 @@ public class ShaderProgram {
         }
         glDisableVertexAttribArray(location);
         return true;
+    }
+
+    public record ShaderModuleData(String shaderSource, int shaderType) {
+
     }
 }

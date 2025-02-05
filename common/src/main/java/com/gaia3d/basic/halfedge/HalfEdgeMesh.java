@@ -14,16 +14,16 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+@Setter
+@Getter
 @Slf4j
 public class HalfEdgeMesh implements Serializable {
-    @Setter
-    @Getter
     private List<HalfEdgePrimitive> primitives = new ArrayList<>();
     private GaiaBoundingBox boundingBox = null;
 
-    public void doTrianglesReduction(double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength, double maxAspectRatio) {
+    public void doTrianglesReduction(DecimateParameters decimateParameters) {
         for (HalfEdgePrimitive primitive : primitives) {
-            primitive.doTrianglesReduction(maxDiffAngDeg, frontierMaxDiffAngDeg, hedgeMinLength, maxAspectRatio);
+            primitive.doTrianglesReduction(decimateParameters);
         }
     }
 
@@ -52,15 +52,14 @@ public class HalfEdgeMesh implements Serializable {
         }
     }
 
-    public void removeDeletedObjects()
-    {
+    public void removeDeletedObjects() {
         for (HalfEdgePrimitive primitive : primitives) {
             primitive.removeDeletedObjects();
         }
     }
 
     public GaiaBoundingBox calculateBoundingBox(GaiaBoundingBox resultBBox) {
-        if(resultBBox == null) {
+        if (resultBBox == null) {
             resultBBox = new GaiaBoundingBox();
         }
         for (HalfEdgePrimitive primitive : primitives) {
@@ -76,15 +75,13 @@ public class HalfEdgeMesh implements Serializable {
         return boundingBox;
     }
 
-    public void calculateNormals()
-    {
+    public void calculateNormals() {
         for (HalfEdgePrimitive primitive : primitives) {
             primitive.calculateNormals();
         }
     }
 
-    public void classifyFacesIdByPlane(PlaneType planeType, Vector3d planePosition)
-    {
+    public void classifyFacesIdByPlane(PlaneType planeType, Vector3d planePosition) {
         for (HalfEdgePrimitive primitive : primitives) {
             primitive.classifyFacesIdByPlane(planeType, planePosition);
         }
@@ -137,8 +134,21 @@ public class HalfEdgeMesh implements Serializable {
         }
     }
 
-    public HalfEdgeMesh clone()
-    {
+    public HalfEdgeMesh cloneByClassifyId(int classifyId) {
+        HalfEdgeMesh clonedMesh = null;
+        for (HalfEdgePrimitive primitive : primitives) {
+            HalfEdgePrimitive clonedPrimitive = primitive.cloneByClassifyId(classifyId);
+            if (clonedPrimitive != null) {
+                if(clonedMesh == null) {
+                    clonedMesh = new HalfEdgeMesh();
+                }
+                clonedMesh.primitives.add(clonedPrimitive);
+            }
+        }
+        return clonedMesh;
+    }
+
+    public HalfEdgeMesh clone() {
         HalfEdgeMesh clonedMesh = new HalfEdgeMesh();
         for (HalfEdgePrimitive primitive : primitives) {
             clonedMesh.primitives.add(primitive.clone());
@@ -183,4 +193,40 @@ public class HalfEdgeMesh implements Serializable {
             primitive.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
         }
     }
+
+    public void translate(Vector3d translation) {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.translate(translation);
+        }
+    }
+
+    public void doTrianglesReductionOneIteration(DecimateParameters decimateParameters) {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.doTrianglesReductionOneIteration(decimateParameters);
+        }
+    }
+
+    public void splitFacesByBestObliqueCameraDirectionToProject() {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.splitFacesByBestObliqueCameraDirectionToProject();
+        }
+    }
+
+    public void splitFacesByBestPlanesToProject() {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.splitFacesByBestPlanesToProject();
+        }
+    }
+
+    public void extractPrimitives(List<HalfEdgePrimitive> resultPrimitives) {
+        resultPrimitives.addAll(primitives);
+    }
+
+    public void getWestEastSouthNorthVertices(GaiaBoundingBox bbox, List<HalfEdgeVertex> westVertices, List<HalfEdgeVertex> eastVertices, List<HalfEdgeVertex> southVertices, List<HalfEdgeVertex> northVertices, double error) {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.getWestEastSouthNorthVertices(bbox, westVertices, eastVertices, southVertices, northVertices, error);
+        }
+    }
+
+
 }

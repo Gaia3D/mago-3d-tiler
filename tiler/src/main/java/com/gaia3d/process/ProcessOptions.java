@@ -41,8 +41,9 @@ public enum ProcessOptions {
     MAX_POINTS("maxPoints", "mp", "maxPoints", true, "Maximum number of points per a tile (Default: 100000)"),
     //POINT_SCALE("pointScale", "ps", "pointScale", true, "Pointscloud geometryError scale setting (Default: 2)"),
     //POINT_SKIP("pointSkip", "pk", "pointSkip", true, "Number of Pointscloud omissions (ex: 1/4)(Default: 4)"),
-    POINT_RATIO("pointRatio", "pr", "pointRatio", true, "Percentage of points from original data (Default: 50)"),
+    POINT_RATIO("pointRatio", "pcr", "pointRatio", true, "Percentage of points from original data (Default: 50)"),
     POINT_PRECISION("sourcePrecision", "sp", "sourcePrecision", false, "Create pointscloud tile with original precision. (Slow)"),
+    POINT_FORCE_4BYTE_RGB("force4ByteRGB", "f4", "force4ByteRGB", false, "Force 4Byte RGB for pointscloud tile."),
 
     ROTATE_X_AXIS("rotateXAxis", "rx", "rotateXAxis", true, "Rotate the X-Axis in degrees (Unit: degrees)(Default: 0.0)"),
 
@@ -57,6 +58,7 @@ public enum ProcessOptions {
     NAME_COLUMN("nameColumn", "nc", "nameColumn", true, "Name column setting for extrusion model (Default Column: name)"),
     HEIGHT_COLUMN("heightColumn", "hc", "heightColumn", true, "Height column setting for extrusion model ((Default Column: height)"),
     ALTITUDE_COLUMN("altitudeColumn", "ac", "altitudeColumn", true, "Altitude Column setting for extrusion model ((Default Column: altitude)"),
+    HEADING_COLUMN("headingColumn", "hd", "headingColumn", true, "Heading column setting for I3DM converting (Default Column: heading)"),
     DIAMETER_COLUMN("diameterColumn", "dc", "diameterColumn", true, "Diameter column setting for extrusion model, Specify a length unit for Diameter in millimeters(mm) (Default Column: diameter)"),
 
     MINIMUM_HEIGHT("minimumHeight", "mh", "minimumHeight", true, "Minimum height value for extrusion model (Default: 1.0)"),

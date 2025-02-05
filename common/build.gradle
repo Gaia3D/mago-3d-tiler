@@ -2,29 +2,16 @@ plugins {
     id 'java'
 }
 
-project.ext.lwjglVersion = "3.3.3"
-switch ( org.gradle.internal.os.OperatingSystem.current() ) {
-    case org.gradle.internal.os.OperatingSystem.WINDOWS:
-        project.ext.lwjglNatives = "natives-windows"
-        break
-    case org.gradle.internal.os.OperatingSystem.LINUX:
-        project.ext.lwjglNatives = "natives-linux"
-        break
-    case org.gradle.internal.os.OperatingSystem.MAC_OS:
-        project.ext.lwjglNatives = "natives-macos"
-        break
-}
-
 repositories {
     maven { url "https://repo.osgeo.org/repository/release/" }
     mavenCentral()
 }
 
 dependencies {
-    implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
+    /*implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
     implementation "org.lwjgl:lwjgl"
     implementation "org.lwjgl:lwjgl-opengl"
-    implementation "org.lwjgl:lwjgl-glfw"
+    implementation "org.lwjgl:lwjgl-glfw"*/
 
     implementation "org.locationtech.proj4j:proj4j:1.2.3"
     implementation "org.locationtech.proj4j:proj4j-epsg:1.2.3"
@@ -32,9 +19,9 @@ dependencies {
     implementation 'org.geotools:gt-geojson:26.5'
     implementation 'org.geotools:gt-geojsondatastore:26.5'
 
-    runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
+    /*runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
-    runtimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"*/
 }
 
 javadoc {

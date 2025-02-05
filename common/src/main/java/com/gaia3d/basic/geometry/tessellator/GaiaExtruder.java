@@ -58,7 +58,6 @@ public class GaiaExtruder {
             wallPositions.add(new Vector3dOnlyHashEquals(floorTriangle));
             wallPositions.add(new Vector3dOnlyHashEquals(floorTriangleNext));
             wallPositions.add(new Vector3dOnlyHashEquals(roofTriangleNext));
-            //wallPositions.add(new Vector3dOnlyHashEquals(roofTriangle));
             result.add(new GaiaExtrusionSurface(wallPositions));
         }
         return result;

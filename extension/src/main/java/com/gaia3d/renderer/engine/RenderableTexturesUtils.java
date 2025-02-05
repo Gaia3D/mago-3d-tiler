@@ -2,19 +2,21 @@ package com.gaia3d.renderer.engine;
 
 import com.gaia3d.util.ImageResizer;
 import com.gaia3d.util.ImageUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.lwjgl.opengl.GL20;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferInt;
 import java.nio.ByteBuffer;
 
 import static java.awt.image.BufferedImage.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL11.GL_RGBA;
 
+@Slf4j
 public class RenderableTexturesUtils {
-    static public int createGlTextureFromByteArray(byte[] byteArray, int width, int height, int glFormat,
-                                                   int minFilter, int magFilter, int wrapS, int wrapT) {
+    public static int createGlTextureFromByteArray(byte[] byteArray, int width, int height, int glFormat, int minFilter, int magFilter, int wrapS, int wrapT) {
 
         ByteBuffer buffer = ByteBuffer.allocateDirect(byteArray.length);
         buffer.put(byteArray);
@@ -34,24 +36,30 @@ public class RenderableTexturesUtils {
         GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_WRAP_S, wrapS);
         GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_WRAP_T, wrapT);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
-                glFormat, GL_UNSIGNED_BYTE, buffer);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, glFormat, GL_UNSIGNED_BYTE, buffer);
 
         return textureId;
     }
-    static public int createGlTextureFromBufferedImage(BufferedImage bufferedImage, int minFilter, int magFilter, int wrapS, int wrapT) {
+
+    public static int createGlTextureFromBufferedImage(BufferedImage bufferedImage, int minFilter, int magFilter, int wrapS, int wrapT, boolean resizeToPowerOf2) {
         int width = bufferedImage.getWidth();
         int height = bufferedImage.getHeight();
 
         // resize image to nearest power of two.***
-        int resizeWidth = width;
-        int resizeHeight = height;
-        resizeWidth = ImageUtils.getNearestPowerOfTwo(resizeWidth);
-        resizeHeight = ImageUtils.getNearestPowerOfTwo(resizeHeight);
-        width = resizeWidth;
-        height = resizeHeight;
-        ImageResizer imageResizer = new ImageResizer();
-        bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight);
+        if (resizeToPowerOf2) {
+            log.info("Resizing image to nearest power of two...");
+            log.info("Original image size: {}x{}", width, height);
+            int resizeWidth = width;
+            int resizeHeight = height;
+            resizeWidth = ImageUtils.getNearestPowerOfTwoHigher(resizeWidth);
+            resizeHeight = ImageUtils.getNearestPowerOfTwoHigher(resizeHeight);
+
+            width = resizeWidth;
+            height = resizeHeight;
+            ImageResizer imageResizer = new ImageResizer();
+            bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight, true);
+            log.info("Resized image size: {}x{}", resizeWidth, resizeHeight);
+        }
         int format = bufferedImage.getType();
         // end resize image to nearest power of two.***
 
@@ -72,68 +80,85 @@ public class RenderableTexturesUtils {
         // TYPE_CUSTOM
 
         int glFormat = -1; // GL_RGB, GL_RGBA, etc.
-        if(format == TYPE_INT_RGB)
-        {
+        if (format == TYPE_INT_RGB) {
             glFormat = GL_RGB;
-        }
-        else if(format == TYPE_INT_ARGB)
-        {
+        } else if (format == TYPE_INT_ARGB) {
             glFormat = GL_RGBA;
-        }
-        else if(format == TYPE_3BYTE_BGR)
-        {
+        } else if (format == TYPE_3BYTE_BGR) {
             glFormat = GL_RGB;
-        }
-        else if(format == TYPE_4BYTE_ABGR)
-        {
+        } else if (format == TYPE_4BYTE_ABGR) {
             glFormat = GL_RGBA;
-        }
-        else
-        {
-            int hola = 0;
         }
 
-        byte[] rgbaByteArray = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
-        if(format == TYPE_INT_ARGB)
-        {
-            // change byte order.***
-            byte temp;
-            for(int i=0; i<rgbaByteArray.length; i+=4)
-            {
-                temp = rgbaByteArray[i];
-                rgbaByteArray[i] = rgbaByteArray[i+1];
-                rgbaByteArray[i+1] = rgbaByteArray[i+2];
-                rgbaByteArray[i+2] = rgbaByteArray[i+3];
-                rgbaByteArray[i+3] = temp;
+        byte[] rgbaByteArray = null;
+
+        // check if the data is DataBufferInt or DataBufferByte.***
+        DataBuffer dataBuffer = bufferedImage.getRaster().getDataBuffer();
+        if (dataBuffer instanceof DataBufferInt) {
+            // DataBufferInt.***
+            int[] intArray = ((DataBufferInt) dataBuffer).getData();
+            int intArrayLength = intArray.length;
+            if (format == TYPE_INT_RGB) {
+                rgbaByteArray = new byte[intArray.length * 3];
+
+                for (int i = 0; i < intArray.length; i++) {
+                    int value = intArray[i];
+                    rgbaByteArray[i * 3] = (byte) ((value >> 16) & 0xFF);  // Red
+                    rgbaByteArray[i * 3 + 1] = (byte) ((value >> 8) & 0xFF); // Green
+                    rgbaByteArray[i * 3 + 2] = (byte) (value & 0xFF);        // Blue
+                }
+            } else if (format == TYPE_INT_ARGB) {
+                // DataBufferInt.***
+                rgbaByteArray = new byte[intArray.length * 4];
+
+                for (int i = 0; i < intArray.length; i++) {
+                    int value = intArray[i];
+                    rgbaByteArray[i * 4] = (byte) ((value >> 24) & 0xFF);  // Alpha
+                    rgbaByteArray[i * 4 + 1] = (byte) ((value >> 16) & 0xFF); // Red
+                    rgbaByteArray[i * 4 + 2] = (byte) ((value >> 8) & 0xFF);        // Green
+                    rgbaByteArray[i * 4 + 3] = (byte) (value & 0xFF); // Blue
+                }
             }
+        } else {
+            // DataBufferByte.***
+            rgbaByteArray = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
         }
-        else if(format == TYPE_4BYTE_ABGR)
-        {
+
+
+        if (format == TYPE_INT_ARGB) {
             // change byte order.***
             byte temp;
-            for(int i=0; i<rgbaByteArray.length; i+=4)
-            {
+            for (int i = 0; i < rgbaByteArray.length; i += 4) {
                 temp = rgbaByteArray[i];
-                rgbaByteArray[i] = rgbaByteArray[i+3];
-                rgbaByteArray[i+3] = temp;
-                temp = rgbaByteArray[i+1];
-                rgbaByteArray[i+1] = rgbaByteArray[i+2];
-                rgbaByteArray[i+2] = temp;
+                rgbaByteArray[i] = rgbaByteArray[i + 1];
+                rgbaByteArray[i + 1] = rgbaByteArray[i + 2];
+                rgbaByteArray[i + 2] = rgbaByteArray[i + 3];
+                rgbaByteArray[i + 3] = temp;
             }
-        }
-        else if(format == TYPE_3BYTE_BGR)
-        {
+        } else if (format == TYPE_4BYTE_ABGR) {
             // change byte order.***
             byte temp;
-            for(int i=0; i<rgbaByteArray.length; i+=3)
-            {
+            for (int i = 0; i < rgbaByteArray.length; i += 4) {
                 temp = rgbaByteArray[i];
-                rgbaByteArray[i] = rgbaByteArray[i+2];
-                rgbaByteArray[i+2] = temp;
+                rgbaByteArray[i] = rgbaByteArray[i + 3];
+                rgbaByteArray[i + 3] = temp;
+                temp = rgbaByteArray[i + 1];
+                rgbaByteArray[i + 1] = rgbaByteArray[i + 2];
+                rgbaByteArray[i + 2] = temp;
+            }
+        } else if (format == TYPE_3BYTE_BGR) {
+            // change byte order.***
+            byte temp;
+            for (int i = 0; i < rgbaByteArray.length; i += 3) {
+                temp = rgbaByteArray[i];
+                rgbaByteArray[i] = rgbaByteArray[i + 2];
+                rgbaByteArray[i + 2] = temp;
             }
         }
         int textureId = createGlTextureFromByteArray(rgbaByteArray, width, height, glFormat, minFilter, magFilter, wrapS, wrapT);
 
         return textureId;
     }
+
+
 }

@@ -1,20 +1,19 @@
 package com.gaia3d.renderer.engine;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.joml.Vector2f;
 
 import static org.lwjgl.glfw.GLFW.*;
 
+@Getter
+@Setter
 public class MouseInput {
-    @Getter
-    private Vector2f currentPos;
-    @Getter
-    private Vector2f displVec;
+    private final Vector2f currentPos;
+    private final Vector2f displVec;
+    private final Vector2f previousPos;
     private boolean inWindow;
-    @Getter
     private boolean leftButtonPressed;
-    private Vector2f previousPos;
-    @Getter
     private boolean rightButtonPressed;
 
     public MouseInput(long windowHandle) {

@@ -18,6 +18,7 @@ import org.joml.Vector2d;
 import org.joml.Vector4d;
 import org.lwjgl.opengl.GL20;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -36,6 +37,12 @@ public class GaiaBatcher {
         for (int i = 0; i < datasetsCount; i++) {
             GaiaBufferDataSet dataSet = dataSets.get(i);
             if (visitedMap.containsKey(dataSet)) {
+                continue;
+            }
+
+            int materialId = dataSet.getMaterialId();
+            if(materialId < 0 || materialId >= batchedMaterials.size()) {
+                log.error("MaterialId is out of range");
                 continue;
             }
             GaiaMaterial material = batchedMaterials.get(dataSet.getMaterialId());
@@ -157,6 +164,10 @@ public class GaiaBatcher {
                 .collect(Collectors.toList());
 
         sets = sets.stream().filter((set -> {
+            if(set == null) {
+                log.error("Set is null");
+                return false;
+            }
             List<GaiaBufferDataSet> dataSets = set.getBufferDataList();
             dataSets = dataSets.stream().filter((dataSet) -> {
                 Map<AttributeType, GaiaBuffer> bufferMap = dataSet.getBuffers();
@@ -280,13 +291,20 @@ public class GaiaBatcher {
         List<GaiaBufferDataSet> resultBufferDatas = new ArrayList<>();
         List<GaiaMaterial> resultMaterials = new ArrayList<>();
         if (!clampDataSets.isEmpty() && !clampMaterials.isEmpty()) {
-            atlasTextures(lod, nodeCode, clampDataSets, clampMaterials);
+            BufferedImage bufferedImage = atlasTextures(lod, nodeCode, clampDataSets, clampMaterials);
             List<List<GaiaBufferDataSet>> splitedDataSets = divisionByMaxVerticesCount(clampDataSets);
             List<GaiaBufferDataSet> batchedClampDataSets = batchClampMaterial(splitedDataSets);
             clampMaterials.removeIf((clampMaterial) -> {
                 return clampMaterial.getId() > 0;
             });
-            clampMaterials.get(0).setName("ATLAS");
+
+            GaiaMaterial atlasMaterial = clampMaterials.get(0);
+            atlasMaterial.setName("ATLAS");
+            Map<TextureType, List<GaiaTexture>> textures = atlasMaterial.getTextures();
+            List<GaiaTexture> textureList = textures.get(TextureType.DIFFUSE);
+            GaiaTexture texture = textureList.get(0);
+            texture.setBufferedImage(bufferedImage);
+
             resultMaterials.addAll(clampMaterials);
             resultBufferDatas.addAll(batchedClampDataSets);
         }
@@ -446,9 +464,9 @@ public class GaiaBatcher {
     }
 
     // 각 Material의 Texture들을 하나의 이미지로 변경
-    private void atlasTextures(LevelOfDetail lod, String codeName, List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials) {
+    private BufferedImage atlasTextures(LevelOfDetail lod, String codeName, List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials) {
         GaiaTextureCoordinator textureCoordinator = new GaiaTextureCoordinator(codeName, materials, dataSets);
-        textureCoordinator.batchTextures(lod);
+        return textureCoordinator.batchTextures(lod);
     }
 
     private boolean checkRepeat(GaiaMaterial material, GaiaBufferDataSet dataSet) {
@@ -492,13 +510,16 @@ public class GaiaBatcher {
             colorList[i + 3] = (byte) (diffuseColor.w * 255);
         }
 
-        GaiaBuffer colorBuffer = new GaiaBuffer();
-        colorBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
-        colorBuffer.setGlType(GL20.GL_UNSIGNED_BYTE);
-        colorBuffer.setElementsCount(elementsCount);
-        colorBuffer.setGlDimension((byte) 4);
-        colorBuffer.setBytes(colorList);
-        bufferDataSet.getBuffers().put(AttributeType.COLOR, colorBuffer);
+        GaiaBuffer colorBuffer = bufferMap.get(AttributeType.COLOR);
+        if (colorBuffer == null) {
+            colorBuffer = new GaiaBuffer();
+            colorBuffer.setGlTarget(GL20.GL_ARRAY_BUFFER);
+            colorBuffer.setGlType(GL20.GL_UNSIGNED_BYTE);
+            colorBuffer.setElementsCount(elementsCount);
+            colorBuffer.setGlDimension((byte) 4);
+            colorBuffer.setBytes(colorList);
+            bufferDataSet.getBuffers().put(AttributeType.COLOR, colorBuffer);
+        }
     }
 
     private GaiaBufferDataSet batchVertices(List<GaiaBufferDataSet> bufferDataSets) {

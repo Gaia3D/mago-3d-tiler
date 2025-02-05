@@ -22,12 +22,13 @@ import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.lwjgl.opengl.GL20;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
@@ -71,6 +72,7 @@ public class GltfWriter {
             GltfModel gltfModel = convert(gaiaScene);
             GltfModelWriter writer = new GltfModelWriter();
             writer.writeBinary(gltfModel, outputStream);
+            outputStream.flush();
             outputStream.close();
         } catch (IOException e) {
             log.error(e.getMessage());
@@ -90,7 +92,7 @@ public class GltfWriter {
 
         gaiaScene.getMaterials().forEach(gaiaMaterial -> createMaterial(gltf, gaiaMaterial));
         convertNode(gltf, binary, null, gaiaScene.getNodes());
-        
+
         binary.fill();
         if (binary.getBody() != null) {
             GltfAssetV2 asset = new GltfAssetV2(gltf, binary.getBody());
@@ -452,7 +454,7 @@ public class GltfWriter {
 
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         FormatType formatType = globalOptions.getInputFormat();
-        if (formatType.equals(FormatType.CITYGML)) {
+        if (formatType != null && formatType.equals(FormatType.CITYGML)) {
             material.setDoubleSided(true);
         } else {
             material.setDoubleSided(false);
@@ -578,20 +580,66 @@ public class GltfWriter {
             int height = bufferedImage.getHeight();
             int powerOfTwoWidth = ImageUtils.getNearestPowerOfTwo(width);
             int powerOfTwoHeight = ImageUtils.getNearestPowerOfTwo(height);
-
             if (width != powerOfTwoWidth || height != powerOfTwoHeight) {
-                bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, powerOfTwoWidth, powerOfTwoHeight);
+                bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, powerOfTwoWidth, powerOfTwoHeight, true);
             }
             assert formatName != null;
-            ImageIO.write(bufferedImage, formatName, baos);
-            byte[] bytes = baos.toByteArray();
-            imageString = "data:" + mimeType +";base64," + Base64.getEncoder().encodeToString(bytes);
-            bufferedImage.flush();
-            bytes = null;
+
+            if (mimeType.equals("image/jpeg")) {
+                float quality = 0.75f;
+                imageString = writeJpegImage(bufferedImage, quality);
+            } else {
+                ImageIO.write(bufferedImage, formatName, baos);
+                byte[] bytes = baos.toByteArray();
+                imageString = "data:" + mimeType + ";base64," + Base64.getEncoder().encodeToString(bytes);
+                bufferedImage.flush();
+            }
         } catch (IOException e) {
             log.error(e.getMessage());
             log.error("Error writing image");
         }
         return imageString;
+    }
+
+    private String writeJpegImage(BufferedImage bufferedImage, float quality) {
+        ByteArrayOutputStream baos = null;
+        ImageOutputStream ios = null;
+        try {
+            baos = new ByteArrayOutputStream();
+            ios = ImageIO.createImageOutputStream(baos);
+
+            // Image compression
+            Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpg"); // 1
+            ImageWriter writer = writers.next();
+            writer.setOutput(ios);
+            ImageWriteParam param = writer.getDefaultWriteParam(); // 2
+            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT); // 3
+            param.setCompressionQuality(quality);  // 4
+            writer.write(null, new IIOImage(bufferedImage, null, null), param); // 5
+            byte[] bytes = baos.toByteArray();
+            String imageString = "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(bytes);
+            bufferedImage.flush();
+            bytes = null;
+
+            baos.close();
+            ios.close();
+            return imageString;
+        } catch (IOException e) {
+            log.error(e.getMessage());
+            log.error("Error writing jpeg image");
+            try {
+                baos.close();
+            } catch (IOException ex) {
+                log.error(ex.getMessage());
+            }
+            if (ios != null) {
+                try {
+                    ios.close();
+                } catch (IOException ex) {
+                    log.error(ex.getMessage());
+                }
+            }
+        }
+        return null;
     }
 }

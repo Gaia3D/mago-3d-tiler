@@ -47,10 +47,9 @@ public class RenderableNode {
 
     public void calculatePreMultipliedTransformMatrix() {
         Matrix4d matrixAux = new Matrix4d();
-        if(this.parent == null) {
+        if (this.parent == null) {
             matrixAux.identity();
-        }
-        else {
+        } else {
             matrixAux.set(this.parent.getPreMultipliedTransformMatrix());
         }
         matrixAux.mul(this.transformMatrix);

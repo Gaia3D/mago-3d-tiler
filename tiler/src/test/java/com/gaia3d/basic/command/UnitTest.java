@@ -5,6 +5,7 @@ import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.Configurator;
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import com.gaia3d.util.GlobeUtils;
+import com.gaia3d.util.ImageUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 import org.junit.jupiter.api.Test;
@@ -13,7 +14,11 @@ import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -875,8 +880,8 @@ class UnitTest {
 
     @Test
     void test_RealisticMesh_Thailand_Data_N_buildings() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\RealisticMesh_Thailand_multiTiles\\OBJ25sqkm\\Data_6buildings\\";
-        String outputPath = "D:\\data\\mago-server\\output\\Data_6buildings\\";
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\RealisticMesh_Thailand_multiTiles\\OBJ25sqkm\\Data_1building\\";
+        String outputPath = "D:\\data\\mago-server\\output\\ResultData_1building\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
@@ -885,43 +890,91 @@ class UnitTest {
                 "-crs", "32648",
                 "-xOffset", "268943",
                 "-yOffset", "1818915",
-                "-su",
-                "-glb",
-                "-pr", // photo realistic mesh
-                "-minLod", "0",
-                "-maxLod", "3",
+                "-rx", "-90",
+                "-pr",
                 "-debug"
         };
         Mago3DTilerMain.main(args);
     }
 
     @Test
-    void GYANGGYO_INTERIOR_OBJ() {
-        String inputPath = "D:\\data\\positiveQuadrantErrorData\\GYANGGYO-INTERIOR-OBJ\\";
-        String outputPath = "D:\\data\\mago-server\\output\\GYANGGYO-INTERIOR-OBJ\\";
+    void test_RealisticMesh_LeeDongHun_Data_N_buildings() {
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\BANSONG\\";
+        String outputPath = "D:\\data\\mago-server\\output\\leeDongHun_Data_OBJ_BANSONG\\";
+
         String[] args = new String[]{
                 "-i", inputPath,
                 "-it", "obj",
                 "-o", outputPath,
-                "-crs", "5186",
-                "-glb",
+                "-crs", "5187",
+                "-pr",
                 "-debug"
         };
         Mago3DTilerMain.main(args);
     }
 
     @Test
-    void dcLib_3ds_kml() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\complicatedDCLibrary\\";
-        String outputPath = "D:\\data\\mago-server\\output\\DC_Library\\";
+    void test_RealisticMesh_LeeDongHun_Data_SANGCHEON() {
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\SANGCHEON\\";
+        String outputPath = "D:\\data\\mago-server\\output\\leeDongHun_Data_OBJ_SANGCHEON\\";
+
         String[] args = new String[]{
                 "-i", inputPath,
-                "-it", "kml",
+                "-it", "obj",
                 "-o", outputPath,
-                "-glb",
-                "-debug"
-
+                "-crs", "5187",
+                //"-rx", "-90",
+                "-pr"
         };
         Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void test_RealisticMesh_LeeDongHun_Data_SANGCHEON_someBuildings() {
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\SANGCHEON_someBuildings\\";
+        String outputPath = "D:\\data\\mago-server\\output\\leeDongHun_Data_OBJ_SANGCHEON_someBuildings\\";
+
+        String[] args = new String[]{
+                "-i", inputPath,
+                "-it", "obj",
+                "-o", outputPath,
+                "-crs", "5187",
+                "-pr",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void test_RealisticMesh_LeeDongHun_Data_BANSONG_someBuildings() {
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\BANSONG_someBuildings\\";
+        String outputPath = "D:\\data\\mago-server\\output\\leeDongHun_Data_OBJ_BANSONG_someBuildings\\";
+
+        String[] args = new String[]{
+                "-i", inputPath,
+                "-it", "obj",
+                "-o", outputPath,
+                "-crs", "5187",
+                "-pr",
+                "-debug"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void test_changeBackGroundColor() {
+            Configurator.initConsoleLogger();
+        String inputPath = "D:\\data\\mago-server\\output\\pinkTest.png";
+        String outputPath = "D:\\data\\mago-server\\output\\pinkTest_result.jpg";
+
+        BufferedImage image = null;
+        try {
+            image = ImageIO.read(new File(inputPath));
+            BufferedImage newImage = ImageUtils.clampBackGroundColor(image, new Color(255, 0, 255), 1, 50);
+            ImageIO.write(newImage, "jpg", new File(outputPath));
+            log.info("newImage: " + newImage);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

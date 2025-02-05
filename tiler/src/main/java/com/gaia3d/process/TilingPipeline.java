@@ -59,7 +59,7 @@ public class TilingPipeline implements Pipeline {
             /* Delete temp files */
             deleteTemp();
         } catch (InterruptedException e) {
-            log.error("Error : {}", e.getMessage());
+            log.error("Error : ", e);
             throw new RuntimeException(e);
         }
     }

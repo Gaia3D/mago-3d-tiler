@@ -3,7 +3,10 @@ package com.gaia3d.basic.geometry.entities;
 import org.joml.Vector3d;
 
 public class GaiaPlane {
-    private double a, b, c, d;
+    private final double a;
+    private final double b;
+    private final double c;
+    private final double d;
 
     public GaiaPlane() {
         this.a = 0;
@@ -26,5 +29,7 @@ public class GaiaPlane {
         this.d = -position.dot(normal);
     }
 
-
+    public double distanceToPoint(Vector3d point) {
+        return a * point.x + b * point.y + c * point.z + d;
+    }
 }

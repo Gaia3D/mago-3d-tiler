@@ -27,31 +27,41 @@ public class GlobalOptions {
     /* singleton */
     private static final GlobalOptions instance = new GlobalOptions();
 
-    private static final String DEFAULT_INPUT_FORMAT = "kml";
-    private static final String DEFAULT_INSTANCE_FILE = "instance.dae";
-    private static final int DEFAULT_MIN_LOD = 0;
-    private static final int DEFAULT_MAX_LOD = 3;
-    private static final int DEFAULT_MIN_GEOMETRIC_ERROR = 16;
-    private static final int DEFAULT_MAX_GEOMETRIC_ERROR = Integer.MAX_VALUE;
+    public static final String DEFAULT_INPUT_FORMAT = "kml";
+    public static final String DEFAULT_INSTANCE_FILE = "instance.dae";
+    public static final int DEFAULT_MIN_LOD = 0;
+    public static final int DEFAULT_MAX_LOD = 3;
+    public static final int DEFAULT_MIN_GEOMETRIC_ERROR = 16;
+    public static final int DEFAULT_MAX_GEOMETRIC_ERROR = Integer.MAX_VALUE;
 
-    private static final int DEFAULT_MAX_TRIANGLES = 65536 * 8;
-    private static final int DEFAULT_MAX_NODE_DEPTH = 32;
-    private static final int DEFAULT_MAX_INSTANCE = 512;
+    public static final int DEFAULT_MAX_TRIANGLES = 65536 * 8;
+    public static final int DEFAULT_MAX_NODE_DEPTH = 32;
+    public static final int DEFAULT_MAX_INSTANCE = 1024 * 8;
 
-    public static final int DEFAULT_POINT_PER_TILE = 100000;
+    //public static final int DEFAULT_POINT_PER_TILE = 100000;
+    public static final int DEFAULT_POINT_PER_TILE = 300000;
     public static final int DEFAULT_POINT_RATIO = 25;
-    public static final float POINTSCLOUD_HORIZONTAL_GRID = 2500.0f; // in meters
-    public static final float POINTSCLOUD_VERTICAL_GRID = 50.0f; // in meters
+    public static final float POINTSCLOUD_HORIZONTAL_GRID = 500.0f; // in meters
+    public static final float POINTSCLOUD_VERTICAL_GRID = 500.0f; // in meters
 
-    private static final String DEFAULT_CRS = "3857"; // 4326 -> 3857
-    private static final String DEFAULT_NAME_COLUMN = "name";
-    private static final String DEFAULT_HEIGHT_COLUMN = "height";
-    private static final String DEFAULT_ALTITUDE_COLUMN = "altitude";
-    private static final String DEFAULT_DIAMETER_COLUMN = "diameter";
-    private static final double DEFAULT_ABSOLUTE_ALTITUDE = 0.0d;
-    private static final double DEFAULT_MINIMUM_HEIGHT = 1.0d;
-    private static final double DEFAULT_SKIRT_HEIGHT = 4.0d;
-    private static final boolean DEFAULT_DEBUG_LOD = false;
+    public static final CoordinateReferenceSystem DEFAULT_CRS = new CRSFactory().createFromName("EPSG:3857");
+    public static final String DEFAULT_CRS_CODE = "3857"; // 4326 -> 3857
+    public static final String DEFAULT_NAME_COLUMN = "name";
+    public static final String DEFAULT_HEIGHT_COLUMN = "height";
+    public static final String DEFAULT_ALTITUDE_COLUMN = "altitude";
+    public static final String DEFAULT_HEADING_COLUMN = "heading";
+    public static final String DEFAULT_DIAMETER_COLUMN = "diameter";
+    public static final double DEFAULT_ABSOLUTE_ALTITUDE = 0.0d;
+    public static final double DEFAULT_MINIMUM_HEIGHT = 1.0d;
+    public static final double DEFAULT_SKIRT_HEIGHT = 4.0d;
+    public static final boolean DEFAULT_DEBUG_LOD = false;
+
+    public static final int REALISTIC_LOD0_MAX_TEXTURE_SIZE = 1024;
+    public static final int REALISTIC_MAX_TEXTURE_SIZE = 1024;
+    public static final int REALISTIC_MIN_TEXTURE_SIZE = 512;
+    public static final int REALISTIC_SCREEN_DEPTH_TEXTURE_SIZE = 256;
+    public static final int REALISTIC_SCREEN_COLOR_TEXTURE_SIZE = 1024;
+    public static final double REALISTIC_LEAF_TILE_SIZE = 20.0; // meters
 
     private String version; // version flag
     private String javaVersionInfo; // java version flag
@@ -79,9 +89,9 @@ public class GlobalOptions {
     private Vector3d translateOffset; // origin offset
 
     private boolean isSourcePrecision = false;
-    private int pointsPerGrid = 65536; // Points Per Grid
     private int maximumPointPerTile = 0; // Maximum number of points per a tile
-    private int pointRatio = 25; // Percentage of points from original data
+    private int pointRatio = 0; // Percentage of points from original data
+    private boolean force4ByteRGB = false; // Force 4Byte RGB for pointscloud tile
 
     // Level of Detail
     private int minLod;
@@ -128,6 +138,7 @@ public class GlobalOptions {
     private String nameColumn;
     private String heightColumn;
     private String altitudeColumn;
+    private String headingColumn;
     private String diameterColumn;
     private double absoluteAltitude;
     private double minimumHeight;
@@ -236,11 +247,11 @@ public class GlobalOptions {
             } else if (crsString != null && !crsString.isEmpty()) {
                 source = factory.createFromName("EPSG:" + crsString);
             } else {
-                source = factory.createFromName("EPSG:" + DEFAULT_CRS);
+                source = DEFAULT_CRS;
             }
             instance.setCrs(source);
         } else {
-            CoordinateReferenceSystem source = factory.createFromName("EPSG:" + DEFAULT_CRS);
+            CoordinateReferenceSystem source = DEFAULT_CRS;
 
             // GeoJSON Default CRS
             if (instance.getInputFormat().equals(FormatType.GEOJSON)) {
@@ -263,15 +274,16 @@ public class GlobalOptions {
         instance.setPhotorealistic(command.hasOption(ProcessOptions.PHOTOREALISTIC.getArgName()));
 
         TilerExtensionModule extensionModule = new TilerExtensionModule();
-        if (extensionModule.isSupported()/* && instance.isPhotorealistic()*/) {
-            extensionModule.executePhotorealistic(null, null);
-        } else {
-            extensionModule.executePhotorealistic(null, null);
+        extensionModule.executePhotorealistic(null, null);
+        if (!extensionModule.isSupported() && instance.isPhotorealistic()) {
+            log.error("*** Extension Module is not supported ***");
+            throw new IllegalArgumentException("Extension Module is not supported.");
         }
 
         /* Point Cloud Options */
         instance.setMaximumPointPerTile(command.hasOption(ProcessOptions.MAX_POINTS.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_POINTS.getArgName())) : DEFAULT_POINT_PER_TILE);
-        instance.setPointRatio(command.hasOption(ProcessOptions.POINT_PRECISION.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.POINT_PRECISION.getArgName())) : DEFAULT_POINT_RATIO);
+        instance.setPointRatio(command.hasOption(ProcessOptions.POINT_RATIO.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.POINT_RATIO.getArgName())) : DEFAULT_POINT_RATIO);
+        instance.setForce4ByteRGB(command.hasOption(ProcessOptions.POINT_FORCE_4BYTE_RGB.getArgName()));
         //instance.setPointScale(command.hasOption(ProcessOptions.POINT_SCALE.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.POINT_SCALE.getArgName())) : DEFAULT_POINT_SCALE);
         //instance.setPointSkip(command.hasOption(ProcessOptions.POINT_SKIP.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.POINT_SKIP.getArgName())) : DEFAULT_POINT_SKIP);
 
@@ -279,6 +291,7 @@ public class GlobalOptions {
         instance.setNameColumn(command.hasOption(ProcessOptions.NAME_COLUMN.getArgName()) ? command.getOptionValue(ProcessOptions.NAME_COLUMN.getArgName()) : DEFAULT_NAME_COLUMN);
         instance.setHeightColumn(command.hasOption(ProcessOptions.HEIGHT_COLUMN.getArgName()) ? command.getOptionValue(ProcessOptions.HEIGHT_COLUMN.getArgName()) : DEFAULT_HEIGHT_COLUMN);
         instance.setAltitudeColumn(command.hasOption(ProcessOptions.ALTITUDE_COLUMN.getArgName()) ? command.getOptionValue(ProcessOptions.ALTITUDE_COLUMN.getArgName()) : DEFAULT_ALTITUDE_COLUMN);
+        instance.setHeadingColumn(command.hasOption(ProcessOptions.HEADING_COLUMN.getArgName()) ? command.getOptionValue(ProcessOptions.HEADING_COLUMN.getArgName()) : DEFAULT_HEADING_COLUMN);
         instance.setDiameterColumn(command.hasOption(ProcessOptions.DIAMETER_COLUMN.getArgName()) ? command.getOptionValue(ProcessOptions.DIAMETER_COLUMN.getArgName()) : DEFAULT_DIAMETER_COLUMN);
         instance.setAbsoluteAltitude(command.hasOption(ProcessOptions.ABSOLUTE_ALTITUDE.getArgName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.ABSOLUTE_ALTITUDE.getArgName())) : DEFAULT_ABSOLUTE_ALTITUDE);
         instance.setMinimumHeight(command.hasOption(ProcessOptions.MINIMUM_HEIGHT.getArgName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.MINIMUM_HEIGHT.getArgName())) : DEFAULT_MINIMUM_HEIGHT);
@@ -311,9 +324,12 @@ public class GlobalOptions {
         if (instance.getInputFormat().equals(FormatType.GEOJSON) || instance.getInputFormat().equals(FormatType.SHP) || instance.getInputFormat().equals(FormatType.CITYGML) || instance.getInputFormat().equals(FormatType.INDOORGML)) {
             isSwapUpAxis = false;
             isFlipUpAxis = false;
-            rotateXAxis = -90;
+            if (instance.getOutputFormat().equals(FormatType.B3DM)) {
+                rotateXAxis = -90;
+            }
             isRefineAdd = true;
         }
+
 
         instance.setSwapUpAxis(isSwapUpAxis);
         instance.setFlipUpAxis(isFlipUpAxis);
@@ -378,6 +394,9 @@ public class GlobalOptions {
         //log.debug("Points Per Grid: {}", pointsPerGrid);
         //log.debug("PointCloud Scale: {}", pointScale);
         //log.debug("PointCloud Skip Interval: {}", pointSkip);
+        log.debug("Source Precision: {}", isSourcePrecision);
+        log.debug("PointCloud Ratio: {}", pointRatio);
+        log.debug("Force 4Byte RGB: {}", force4ByteRGB);
         log.debug("Debug Mode: {}", debug);
         log.debug("Debug LOD: {}", debugLod);
         log.debug("Debug GLB: {}", glb);

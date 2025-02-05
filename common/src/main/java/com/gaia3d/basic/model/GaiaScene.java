@@ -86,6 +86,10 @@ public class GaiaScene extends SceneStructure implements Serializable {
         }
         clone.setOriginalPath(this.originalPath);
         clone.setGaiaBoundingBox(this.gaiaBoundingBox);
+
+        // attribute is a reference type.
+        GaiaAttribute attribute = this.attribute.getCopy();
+        clone.setAttribute(attribute);
         return clone;
     }
 
@@ -97,10 +101,69 @@ public class GaiaScene extends SceneStructure implements Serializable {
         return triangleCount;
     }
 
+    public void makeTriangleFaces()
+    {
+        for (GaiaNode node : this.nodes) {
+            node.makeTriangleFaces();
+        }
+    }
+
     public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
         for (GaiaNode node : this.nodes) {
             node.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
         }
+    }
+
+    public void unWeldVertices() {
+        for (GaiaNode node : this.nodes) {
+            node.unWeldVertices();
+        }
+    }
+
+    public List<GaiaFace> extractGaiaFaces(List<GaiaFace> resultFaces) {
+        if(resultFaces == null) {
+            resultFaces = new ArrayList<>();
+        }
+        for (GaiaNode node : this.nodes) {
+            node.extractGaiaFaces(resultFaces);
+        }
+        return resultFaces;
+    }
+
+    public void joinAllSurfaces() {
+        GaiaNode rootNode = this.nodes.get(0);
+
+        GaiaMesh meshMaster = new GaiaMesh();
+        GaiaPrimitive primitiveMaster = new GaiaPrimitive();
+        GaiaSurface surfaceMaster = new GaiaSurface();
+        primitiveMaster.getSurfaces().add(surfaceMaster);
+        meshMaster.getPrimitives().add(primitiveMaster);
+
+        List<GaiaPrimitive> allPrimitives = this.extractPrimitives(null);
+        for (GaiaPrimitive primitive : allPrimitives) {
+            primitiveMaster.addPrimitive(primitive);
+        }
+
+        List<GaiaNode> children = rootNode.getChildren();
+        for (GaiaNode child : children) {
+            child.getMeshes().clear();
+        }
+        children.clear();
+
+        GaiaNode node = new GaiaNode();
+        node.getMeshes().add(meshMaster);
+
+        children.add(node);
+    }
+
+    public List<GaiaPrimitive> extractPrimitives(List<GaiaPrimitive> resultPrimitives) {
+        if(resultPrimitives == null) {
+            resultPrimitives = new ArrayList<>();
+        }
+        for (GaiaNode node : this.nodes) {
+            node.extractPrimitives(resultPrimitives);
+        }
+        return resultPrimitives;
     }
 
     public void doNormalLengthUnitary() {
@@ -119,6 +182,18 @@ public class GaiaScene extends SceneStructure implements Serializable {
     public void deleteDegeneratedFaces() {
         for (GaiaNode node : this.nodes) {
             node.deleteDegeneratedFaces();
+        }
+    }
+
+    public void spendTranformMatrix() {
+        for (GaiaNode node : this.nodes) {
+            node.spendTranformMatrix();
+        }
+    }
+
+    public void makeTriangularFaces() {
+        for (GaiaNode node : this.nodes) {
+            node.makeTriangularFaces();
         }
     }
 }

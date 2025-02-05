@@ -1,6 +1,5 @@
 package com.gaia3d.command.model;
 
-import com.gaia3d.TilerExtensionModule;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
@@ -22,7 +21,6 @@ import com.gaia3d.process.postprocess.batch.Batched3DModel;
 import com.gaia3d.process.preprocess.*;
 import com.gaia3d.process.tileprocess.Pipeline;
 import com.gaia3d.process.tileprocess.TilingProcess;
-import com.gaia3d.processPhR.TilingPipeLinePhR;
 import com.gaia3d.processPhR.tileProcessPhR.Batched3DModelTilerPhR;
 import com.gaia3d.processPhR.preProcessPhR.GaiaMinimizerPhR;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +38,6 @@ public class BatchedProcessModelPhR implements ProcessFlowModel {
     public void run() throws IOException {
         // Photorealistic Mesh.***
         FormatType inputFormat = globalOptions.getInputFormat();
-        boolean isRotateUpAxis = globalOptions.isSwapUpAxis();
 
         Converter converter = getConverter(inputFormat);
         AttributeReader kmlReader = new FastKmlReader();
@@ -57,15 +54,12 @@ public class BatchedProcessModelPhR implements ProcessFlowModel {
         preProcessors.add(new GaiaTileInfoInitiator());
         preProcessors.add(new GaiaTexCoordCorrector());
         preProcessors.add(new GaiaScaler());
-        // TODO rotXAngleDegree
-        //if (isRotateUpAxis)
-        {
-            //preProcessors.add(new GaiaRotatorOld());
-            preProcessors.add(new GaiaRotator());
-        }
-        preProcessors.add(new GaiaTranslatorExact(geoTiffs));
-        GaiaMinimizerPhR gaiaMinimizerPhR = new GaiaMinimizerPhR();
-        preProcessors.add(gaiaMinimizerPhR);
+
+
+        preProcessors.add(new GaiaRotator());
+        preProcessors.add(new GaiaStrictTranslator(geoTiffs));
+        GaiaMinimizerPhR gaiaMinimizer = new GaiaMinimizerPhR();
+        preProcessors.add(gaiaMinimizer);
 
         // tileProcess (Batched3DModelTilerPhR).***
         TilingProcess tilingProcess = new Batched3DModelTilerPhR();
@@ -80,7 +74,7 @@ public class BatchedProcessModelPhR implements ProcessFlowModel {
         globalOptions.setDebugLod(true);// Test. delete this.!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         // end Test.---
 
-        Pipeline processPipeline = new TilingPipeLinePhR(preProcessors, tilingProcess, postProcessors);
+        Pipeline processPipeline = new TilingPipeline(preProcessors, tilingProcess, postProcessors);
         processPipeline.process(fileLoader);
     }
 

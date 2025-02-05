@@ -7,14 +7,12 @@ import lombok.Setter;
 @Getter
 @Setter
 public class RenderableBuffer {
-    AttributeType attributeType;
-    int elementsCount = -1;
-    byte glDimension;
-    int glType;
-    int glTarget;
-
-    @Setter
     int vboId = -1;
+    private AttributeType attributeType;
+    private int elementsCount = -1;
+    private byte glDimension;
+    private int glType;
+    private int glTarget;
 
     public RenderableBuffer(AttributeType attributeType, int elementsCount, byte glDimension, int glType, int glTarget) {
         this.attributeType = attributeType;

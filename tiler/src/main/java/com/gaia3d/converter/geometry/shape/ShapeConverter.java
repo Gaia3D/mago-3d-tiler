@@ -25,6 +25,7 @@ import org.geotools.data.shapefile.shp.ShapefileReader;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.store.ContentFeatureSource;
 import org.geotools.feature.FeatureIterator;
+import org.geotools.referencing.CRS;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.locationtech.jts.geom.*;
@@ -34,6 +35,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.filter.Filter;
+import org.opengis.referencing.FactoryException;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,9 +67,9 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
     @Override
     public List<GaiaSceneTempHolder> convertTemp(File input, File output) {
         List<GaiaSceneTempHolder> sceneTemps = new ArrayList<>();
-
         InnerRingRemover innerRingRemover = new InnerRingRemover();
 
+        boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalOptions.DEFAULT_CRS);
         boolean flipCoordinate = globalOptions.isFlipCoordinate();
         String nameColumnName = globalOptions.getNameColumn();
         String heightColumnName = globalOptions.getHeightColumn();
@@ -95,6 +97,14 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             FeatureIterator<SimpleFeature> iterator = features.features();
             List<GaiaExtrusionBuilding> buildings = new ArrayList<>();
             List<GaiaPipeLineString> pipeLineStrings = new ArrayList<>();
+
+            var coordinateReferenceSystem = features.getSchema().getCoordinateReferenceSystem();
+            if (isDefaultCrs && coordinateReferenceSystem != null) {
+                CoordinateReferenceSystem crs = GlobeUtils.convertProj4jCrsFromGeotoolsCrs(coordinateReferenceSystem);
+                log.info(" - Coordinate Reference System : {}", crs.getName());
+                globalOptions.setCrs(crs);
+            }
+
             while (iterator.hasNext()) {
                 SimpleFeature feature = iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
@@ -104,7 +114,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 }
 
                 List<Polygon> polygons = new ArrayList<>();
-                List<LineString> LineStrings = new ArrayList<>();
+                List<LineString> lineStrings = new ArrayList<>();
                 if (geom instanceof MultiPolygon) {
                     int count = geom.getNumGeometries();
                     for (int i = 0; i < count; i++) {
@@ -114,12 +124,12 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 } else if (geom instanceof Polygon) {
                     polygons.add((Polygon) geom);
                 } else if (geom instanceof LineString) {
-                    LineStrings.add((LineString) geom);
+                    lineStrings.add((LineString) geom);
                 } else if (geom instanceof MultiLineString) {
                     int count = geom.getNumGeometries();
                     for (int i = 0; i < count; i++) {
                         LineString lineString = (LineString) geom.getGeometryN(i);
-                        LineStrings.add(lineString);
+                        lineStrings.add(lineString);
                     }
                 } else {
                     log.debug("Is Not Supported Geometry Type : {}", geom.getGeometryType());
@@ -139,7 +149,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                     attributes.put(attributeDescriptor.getName().getLocalPart(), attributeString);
                 });
 
-                for (LineString lineString : LineStrings) {
+                for (LineString lineString : lineStrings) {
                     Coordinate[] coordinates = lineString.getCoordinates();
                     List<Vector3d> positions = new ArrayList<>();
                     if (coordinates.length < 2) {
@@ -264,7 +274,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         double skirtHeight = globalOptions.getSkirtHeight();
         GaiaExtruder gaiaExtruder = new GaiaExtruder();
 
-        int sceneCount = 1000;
+        int sceneCount = 10000;
         List<GaiaScene> scenes = new ArrayList<>();
 
         EasySceneCreator easySceneCreator = new EasySceneCreator();
@@ -332,8 +342,13 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
 
             scenes.add(scene);
             if (scenes.size() >= sceneCount) {
-                String tempName = UUID.randomUUID().toString() + input.getName();
+                String tempName = UUID.randomUUID() + "_" + input.getName();
                 File tempFile = new File(output, tempName);
+
+                scenes.forEach((gaiaScene) -> {
+                    gaiaScene.setOriginalPath(tempFile.toPath());
+                });
+                log.info("[{}] write temp : {}", tempName, scenes.size());
                 GaiaSceneTempHolder sceneTemp = GaiaSceneTempHolder.builder()
                         .tempScene(scenes)
                         .tempFile(tempFile).build();
@@ -343,8 +358,13 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             }
         }
         if (!scenes.isEmpty()) {
-            String tempName = UUID.randomUUID().toString() + input.getName();
+            String tempName = UUID.randomUUID() + "_" + input.getName();
             File tempFile = new File(output, tempName);
+
+            scenes.forEach((gaiaScene) -> {
+                gaiaScene.setOriginalPath(tempFile.toPath());
+            });
+            log.info("[{}] write temp : {}", tempName, scenes.size());
             GaiaSceneTempHolder sceneTemp = GaiaSceneTempHolder.builder()
                     .tempScene(scenes)
                     .tempFile(tempFile).build();
