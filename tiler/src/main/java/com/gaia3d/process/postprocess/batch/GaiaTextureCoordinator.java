@@ -215,9 +215,9 @@ public class GaiaTextureCoordinator {
         // BufferedImage this.atlasImage;
         //--------------------------------------------------------
 
-        if (LevelOfDetail.LOD3.equals(lod)) {
+        /*if (LevelOfDetail.LOD3.equals(lod)) {
             log.info("=== BREAK ===");
-        }
+        }*/
 
         boolean isPhotorealistic = globalOptions.isPhotorealistic();
 
@@ -422,11 +422,11 @@ public class GaiaTextureCoordinator {
             }
         }
 
-        log.info("=== Batching textures is done ===");
-        log.info(" - splitImages count : {}", splittedImages.size());
-        log.info(" - atlasImage : {}", (ATLAS_IMAGE + "_L" + lod.getLevel()));
-        log.info(" - width : {}", this.atlasImage.getWidth());
-        log.info(" - height : {}", this.atlasImage.getHeight());
+        log.debug("=== Batching textures is done ===");
+        log.debug(" - splitImages count : {}", splittedImages.size());
+        log.debug(" - atlasImage : {}", (ATLAS_IMAGE + "_L" + lod.getLevel()));
+        log.debug(" - width : {}", this.atlasImage.getWidth());
+        log.debug(" - height : {}", this.atlasImage.getHeight());
 
         // test save atlasTexture image.****
         // Test.----------------------------------------------
