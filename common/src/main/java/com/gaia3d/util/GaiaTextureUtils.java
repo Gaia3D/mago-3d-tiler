@@ -11,24 +11,24 @@ public class GaiaTextureUtils {
         Vector2d positiveQuadrantTexCoord = new Vector2d(texCoord);
 
         if (positiveQuadrantTexCoord.x < 0) {
-            // is repeatMode, so, recalculate the col.***
+            // is repeatMode, so, recalculate the col.
             while (positiveQuadrantTexCoord.x < 0) {
                 positiveQuadrantTexCoord.x += 1.0;
             }
         } else if (positiveQuadrantTexCoord.x > 1.0) {
-            // is repeatMode, so, recalculate the col.***
+            // is repeatMode, so, recalculate the col.
             while (positiveQuadrantTexCoord.x > 1.0) {
                 positiveQuadrantTexCoord.x -= 1.0;
             }
         }
 
         if (positiveQuadrantTexCoord.y < 0) {
-            // is repeatMode, so, recalculate the row.***
+            // is repeatMode, so, recalculate the row.
             while (positiveQuadrantTexCoord.y < 0) {
                 positiveQuadrantTexCoord.y += 1.0;
             }
         } else if (positiveQuadrantTexCoord.y > 1.0) {
-            // is repeatMode, so, recalculate the row.***
+            // is repeatMode, so, recalculate the row.
             while (positiveQuadrantTexCoord.y > 1.0) {
                 positiveQuadrantTexCoord.y -= 1.0;
             }
@@ -83,7 +83,7 @@ public class GaiaTextureUtils {
     }
 
     public static Vector4d getAverageColorOfTexture(GaiaTexture texture, Vector2d texCoord0, Vector2d texCoord1, Vector2d texCoord2) {
-        // calculate the rectangle.***
+        // calculate the rectangle.
         Vector2d minTexCoord = new Vector2d();
         Vector2d maxTexCoord = new Vector2d();
 

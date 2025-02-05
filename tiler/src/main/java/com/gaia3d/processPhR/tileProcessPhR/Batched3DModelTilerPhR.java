@@ -137,6 +137,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             tileInfosCopy.clear();
             nodeTileInfoMap.clear();
             tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
+
             if (d == 1) {
                 decimateParameters.setBasicValues(5.0, 0.4, 0.9, 32.0, 1000000, 1, 1.0);
             } else if (d == 2) {
@@ -390,7 +391,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
             String aux = "lod" + lod;
             Path tempFolderLod = tempFolder.resolve(aux);
-            Path currTempPathLod = tempSetLod1.writeFile(tempFolderLod, tileInfo.getSerial(), tempSetLod1.getAttribute(), scale);
+            Path currTempPathLod = tempSetLod1.writeFile(tempFolderLod, tileInfo.getSerial(), tempSetLod1.getAttribute()/*, scale*/);
             tileInfo.setTempPath(currTempPathLod);
             gaiaSet.clear(); // delete gaiaSet.***
             scene.clear(); // delete scene.***
@@ -468,7 +469,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
             String aux = "lod" + lod;
             Path tempFolderLod = tempFolder.resolve(aux);
-            Path currTempPathLod = tempSetLod1.writeFile(tempFolderLod, tileInfo.getSerial(), tempSetLod1.getAttribute(), scale);
+            Path currTempPathLod = tempSetLod1.writeFile(tempFolderLod, tileInfo.getSerial(), tempSetLod1.getAttribute()/*, scale*/);
             tileInfo.setTempPath(currTempPathLod);
             //tempPathLod.add(currTempPathLod);
         }
@@ -537,11 +538,10 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             halfEdgeSceneLod.deleteObjects();
 
             LevelOfDetail levelOfDetail = LevelOfDetail.getByLevel(lod);
-            float scale = levelOfDetail.getTextureScale();
 
             String aux = "lod" + lod;
             Path tempFolderLod = tempFolder.resolve(aux);
-            Path currTempPathLod = tempSetLod1.writeFile(tempFolderLod, tileInfo.getSerial(), tempSetLod1.getAttribute(), scale);
+            Path currTempPathLod = tempSetLod1.writeFile(tempFolderLod, tileInfo.getSerial(), tempSetLod1.getAttribute()/*, scale*/);
             tileInfo.setTempPath(currTempPathLod);
             //tempPathLod.add(currTempPathLod);
         }
@@ -811,7 +811,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
 
             // render the sceneInfos and obtain the color and depth images.************************************************************
-            //TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
             List<BufferedImage> resultImages = new ArrayList<>();
             int bufferedImageType = BufferedImage.TYPE_INT_RGB;
 
@@ -826,12 +825,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             GaiaBoundingBox nodeCartographicBBox = node.calculateCartographicBoundingBox();
 
             log.info("nodeCode : " + node.getNodeCode() + "currNodeIdx : " + i + "of : " + nodesCount);
-            int maxScreenSize = 512;
-            int maxDepthScreenSize = 256;
-
-            // TODO: TEST
-            maxScreenSize = 1024; // power of 2
-            maxDepthScreenSize = 150;
+            int maxScreenSize = GlobalOptions.REALISTIC_SCREEN_COLOR_TEXTURE_SIZE;
+            int maxDepthScreenSize = GlobalOptions.REALISTIC_SCREEN_DEPTH_TEXTURE_SIZE;
 
             List<HalfEdgeScene> resultHalfEdgeScenes = new ArrayList<>();
             tilerExtensionModule.makeNetSurfacesByPyramidDeformationRender(sceneInfos, bufferedImageType, resultHalfEdgeScenes, resultImages, nodeBBoxLC, nodeTMatrix, maxScreenSize, maxDepthScreenSize);
@@ -841,10 +836,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 continue;
             }
 
-
-            //tilerExtensionModule.getColorAndDepthRender(sceneInfos, bufferedImageType, resultImages, nodeBBoxLC, nodeTMatrix, maxScreenSize, maxDepthScreenSize);
             BufferedImage bufferedImageColor = resultImages.get(0);
-            //BufferedImage bufferedImageDepth = resultImages.get(1);
 
             // now, make a halfEdgeScene from the bufferedImages.*********************************************************************
             String outputPathString = globalOptions.getOutputPath();
@@ -888,22 +880,15 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 continue;
             }
             double maxDiffAngDeg = 35.0;
-            //double hedgeMinLength = getNodeLatitudesLengthInMeters(node)/1000.0;
             double hedgeMinLength = 0.5;
             double frontierMaxDiffAngDeg = 30.0;
             double maxAspectRatio = 6.0;
             DecimateParameters decimateParameters = new DecimateParameters();
             decimateParameters.setBasicValues(maxDiffAngDeg, hedgeMinLength, frontierMaxDiffAngDeg, maxAspectRatio, 1000000, 2, 1.8);
             halfEdgeScene.doTrianglesReduction(decimateParameters);
-            //halfEdgeScene.calculateNormals();
-
             if (halfEdgeScene.getTrianglesCount() == 0) continue;
 
-            // now, create material for the halfEdgeScene.***
-            //GaiaMaterial material = new GaiaMaterial();
             List<GaiaMaterial> materials = new ArrayList<>();
-            //materials.add(material);
-
             GaiaMaterial material = new GaiaMaterial();
             List<GaiaTexture> textures = new ArrayList<>();
             GaiaTexture gaiaTexture = new GaiaTexture();
@@ -952,7 +937,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             String nodeCode = node.getNodeCode();
             contentInfo.setName(nodeCode);
             LevelOfDetail lodLevel = LevelOfDetail.getByLevel(3);
-            int lodError = lodLevel.getGeometricError();
             contentInfo.setLod(lodLevel);
             contentInfo.setBoundingBox(nodeCartographicBBox); // must be cartographicBBox.***
             contentInfo.setNodeCode(node.getNodeCode());
@@ -969,9 +953,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             halfEdgeScene.deleteObjects();
             gaiaScene.clear();
             gaiaSet.clear();
-
-            //System.gc();
-
 
             // test save resultImages.***
             String sceneName = "mosaicRenderTest_" + i + "_color";
@@ -993,12 +974,9 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             throw new IllegalArgumentException("packedDepth debe tener exactamente 4 elementos.");
         }
 
-        // Ajuste del valor final (equivalente a packedDepth - 1.0 / 512.0)
         for (int i = 0; i < 4; i++) {
             packedDepth[i] -= 1.0f / 512.0f;
         }
-
-        // Producto punto para recuperar la profundidad original
         return packedDepth[0] + packedDepth[1] / 256.0f + packedDepth[2] / (256.0f * 256.0f) + packedDepth[3] / 16777216.0f;
     }
 
@@ -1026,20 +1004,20 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         BoundingVolume boundingVolume = node.getBoundingVolume();
         double[] region = boundingVolume.getRegion();  // [minLonDeg, minLatDeg, maxLonDeg, maxLatDeg]
 
-        // compare longitudes.***
+        // compare longitudes
         double minLonDeg = Math.toDegrees(region[0]);
         double maxLonDeg = Math.toDegrees(region[2]);
         GaiaBoundingBox tileBoundingBox = tileInfo.getCartographicBBox();
 
         if (maxLonDeg < tileBoundingBox.getMinX() || minLonDeg > tileBoundingBox.getMaxX()) return false;
 
-        // compare latitudes.***
+        // compare latitudes
         double minLatDeg = Math.toDegrees(region[1]);
         double maxLatDeg = Math.toDegrees(region[3]);
 
         if (maxLatDeg < tileBoundingBox.getMinY() || minLatDeg > tileBoundingBox.getMaxY()) return false;
 
-        // compare altitudes.***
+        // compare altitudes
         double minAlt = region[4];
         double maxAlt = region[5];
 
@@ -1047,8 +1025,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
     }
 
     private void distributeContentsToNodesOctTree(Node rootNode, List<TileInfo> tileInfos, int nodeDepth, Map<Node, List<TileInfo>> nodeTileInfoMap) {
-        // distribute contents to node in the correspondent depth.***
-        // Here, the tileInfos are cutTileInfos by node's boundary planes, so we can use tileInfoCenterGeoCoordRad.***
+        // distribute contents to node in the correspondent depth
+        // Here, the tileInfos are cutTileInfos by node's boundary planes, so we can use tileInfoCenterGeoCoordRad
         for (TileInfo tileInfo : tileInfos) {
             GaiaBoundingBox cartographicBBox = tileInfo.getCartographicBBox();
             if(cartographicBBox == null) {

@@ -31,7 +31,7 @@ public class Fbo {
         fboId = GL30.glGenFramebuffers();
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, fboId);
 
-        // color texture.***
+        // color texture.
         colorTextureId = GL30.glGenTextures();
         GL30.glBindTexture(GL30.GL_TEXTURE_2D, colorTextureId);
 
@@ -43,7 +43,7 @@ public class Fbo {
         GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MAG_FILTER, GL30.GL_NEAREST);
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL30.GL_TEXTURE_2D, colorTextureId, 0);
 
-        // depth render buffer.***
+        // depth render buffer.
         depthRenderBufferId = GL30.glGenRenderbuffers();
         GL30.glBindRenderbuffer(GL30.GL_RENDERBUFFER, depthRenderBufferId);
         GL30.glRenderbufferStorage(GL30.GL_RENDERBUFFER, GL30.GL_DEPTH_COMPONENT, fboWidth, fboHeight);
@@ -70,9 +70,6 @@ public class Fbo {
     }
 
     public BufferedImage getBufferedImage(int bufferedImageType) {
-        //****************************************************************
-        // Note : before to call this function must bind the (this)FBO.***
-        //****************************************************************
         int format = GL30.GL_RGBA;
 
         if (bufferedImageType == BufferedImage.TYPE_INT_RGB) {

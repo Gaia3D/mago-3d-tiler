@@ -32,19 +32,17 @@ public class Node {
     private Matrix4d transformMatrixAux;
     @JsonIgnore
     private GaiaBoundingBox boundingBox;
+    @JsonIgnore
+    private int depth;
+
     private BoundingVolume boundingVolume;
     private RefineType refine = RefineType.ADD;
     @JsonInclude(JsonInclude.Include.USE_DEFAULTS)
     private double geometricError = 0.0d;
-    //@JsonIgnore
     private float[] transform;
     private List<Node> children;
     private Content content;
 
-    @JsonIgnore
-    private int depth;
-
-    // TransformMatrix
     public void setTransformMatrix(Matrix4d transformMatrixAux, boolean useTransform) {
         this.transformMatrixAux = transformMatrixAux;
         if (useTransform) {

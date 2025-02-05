@@ -22,7 +22,7 @@ import java.util.List;
 @Setter
 public class GaiaFace extends FaceStructure implements Serializable {
     private int id = -1;
-    private int classifyId = -1; // use to classify the face for some purpose.***
+    private int classifyId = -1; // use to classify the face for some purpose.
 
     public void calculateFaceNormal(List<GaiaVertex> vertices) {
         if (indices.length < 3) {
@@ -135,7 +135,7 @@ public class GaiaFace extends FaceStructure implements Serializable {
             return true;
         }
 
-        // check if has coincident positions.***
+        // check if has coincident positions.
         double error = 1e-5;
         for (int i = 0; i < indices.length; i += 3) {
             int indices1 = indices[i];
@@ -166,7 +166,7 @@ public class GaiaFace extends FaceStructure implements Serializable {
 
         for (int i = 0; i < indicesCount - 2; i += 3) {
             if (i + 2 >= indicesCount) {
-                log.error("i + 2 >= indicesCount.***");
+                log.error("i + 2 >= indicesCount.");
             }
             GaiaFace gaiaTriangleFace = new GaiaFace();
             gaiaTriangleFace.setIndices(new int[]{indices[i], indices[i + 1], indices[i + 2]});

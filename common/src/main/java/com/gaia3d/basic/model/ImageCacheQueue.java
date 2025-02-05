@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 @Setter
 @Getter
 @Slf4j
+@Deprecated
 public class ImageCacheQueue {
     private final int MAX_IMAGE_COUNT = 20;
     private final LinkedHashMap<String, BufferedImage> textures = new LinkedHashMap<>();

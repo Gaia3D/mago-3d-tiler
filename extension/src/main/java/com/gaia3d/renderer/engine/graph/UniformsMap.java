@@ -36,7 +36,7 @@ public class UniformsMap {
     }
 
     public boolean setUniform1i(String uniformName, int value) {
-        // check if exist uniform.***
+        // check if exist uniform.
         int location = glGetUniformLocation(programId, uniformName);
         if (location >= 0) {
             glUniform1i(location, value);
@@ -46,7 +46,7 @@ public class UniformsMap {
     }
 
     public void setUniform4fv(String uniformName, Vector4f value) {
-        // check if exist uniform.***
+        // check if exist uniform.
         int location = glGetUniformLocation(programId, uniformName);
         if (location >= 0) {
             try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -56,7 +56,7 @@ public class UniformsMap {
     }
 
     public void setUniformMatrix4fv(String uniformName, Matrix4f value) {
-        // check if exist uniform.***
+        // check if exist uniform.
         int location = glGetUniformLocation(programId, uniformName);
         if (location >= 0) {
             try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -66,7 +66,7 @@ public class UniformsMap {
     }
 
     public void setUniform1f(String uniformName, float value) {
-        // check if exist uniform.***
+        // check if exist uniform.
         int location = glGetUniformLocation(programId, uniformName);
         if (location >= 0) {
             glUniform1f(location, value);
@@ -74,7 +74,7 @@ public class UniformsMap {
     }
 
     public void setUniform3fv(String uBackgroundColor, Vector3f vector3f) {
-        // check if exist uniform.***
+        // check if exist uniform.
         int location = glGetUniformLocation(programId, uBackgroundColor);
         if (location >= 0) {
             try (MemoryStack stack = MemoryStack.stackPush()) {

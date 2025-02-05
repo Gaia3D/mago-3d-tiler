@@ -123,14 +123,14 @@ public class GaiaSceneUtils {
             }
         }
 
-        // 1rst, find the coincident vertices.***
+        // 1rst, find the coincident vertices.
         //List<GaiaVertex> primitiveVertices = primitive.getVertices();
         GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null);
         octreeVertices.getVertices().addAll(totalVertices);
         octreeVertices.calculateSize();
         octreeVertices.setAsCube();
         octreeVertices.setMaxDepth(10);
-        octreeVertices.setMinBoxSize(1.0); // 1m.***
+        octreeVertices.setMinBoxSize(1.0); // 1m.
 
         octreeVertices.makeTreeByMinVertexCount(50);
 
@@ -157,7 +157,7 @@ public class GaiaSceneUtils {
             listVertices.add(vertex);
         }
 
-        // now, make map<GaiaVertex, GaiaFace> for each vertex.***
+        // now, make map<GaiaVertex, GaiaFace> for each vertex.
         Map<GaiaVertex, List<GaiaFaceExplicit>> mapVertexToFaceExplicits = GaiaSceneUtils.getMapVertexToFaceExplicits(totalFacesExplicit, null);
 
         Map<GaiaFaceExplicit, GaiaFaceExplicit> mapVisitedFaces = new HashMap<>();
@@ -188,7 +188,7 @@ public class GaiaSceneUtils {
 
             int currListFacesCount = currListFaces.size();
             Vector3d normalFinal = new Vector3d(0.0, 0.0, 0.0);
-            mapVisitedFaces.clear(); // reset the visited faces.***
+            mapVisitedFaces.clear(); // reset the visited faces.
 
             for (int j = 0; j < currListFacesCount; j++) {
                 GaiaFaceExplicit face = currListFaces.get(j);
@@ -208,7 +208,7 @@ public class GaiaSceneUtils {
 
             normalFinal.normalize();
 
-            // finally set the normals.***
+            // finally set the normals.
             for (int j = 0; j < currListVerticesCount; j++) {
                 GaiaVertex vertex2 = currListVertices.get(j);
                 if(mapVisitedVertices.containsKey(vertex2)) {
@@ -228,7 +228,7 @@ public class GaiaSceneUtils {
 //        }
 
         if(iteration > 95) {
-            log.info("The iteration is 100.***");
+            log.info("The iteration is 100.");
         }
 
 
@@ -258,7 +258,7 @@ public class GaiaSceneUtils {
             GaiaFaceExplicit face = faces.get(i);
             Vector3d planeNormal = face.getPlaneNormal();
             if(isVerticalVector(planeNormal)) {
-                // check if the normals are vertical.***
+                // check if the normals are vertical.
                 GaiaVertex vertex1 = face.getVertex1();
                 GaiaVertex vertex2 = face.getVertex2();
                 GaiaVertex vertex3 = face.getVertex3();
@@ -281,9 +281,9 @@ public class GaiaSceneUtils {
                     mostHorizontalVertex = vertex3;
                 }
                 if(!isVerticalVector(mostHorizontalVector)) {
-                    // modify the vertical normal.***
+                    // modify the vertical normal.
                     if (isVerticalVector(normal1)) {
-                        // add to normal1 a fractional part of the normal of the vertex.***
+                        // add to normal1 a fractional part of the normal of the vertex.
                         //double dist = mostHorizontalVertex.getPosition().distance(vertex1.getPosition());
                         double factor = 0.9;
                         normal1.add(mostHorizontalVector.x * factor, mostHorizontalVector.y * factor, mostHorizontalVector.z * factor);
@@ -292,7 +292,7 @@ public class GaiaSceneUtils {
                     }
 
                     if (isVerticalVector(normal2)) {
-                        // add to normal2 a fractional part of the normal of the vertex.***
+                        // add to normal2 a fractional part of the normal of the vertex.
                         //double dist = mostHorizontalVertex.getPosition().distance(vertex2.getPosition());
                         double factor = 0.9;
                         normal2.add(mostHorizontalVector.x * factor, mostHorizontalVector.y * factor, mostHorizontalVector.z * factor);
@@ -301,7 +301,7 @@ public class GaiaSceneUtils {
                     }
 
                     if (isVerticalVector(normal3)) {
-                        // add to normal3 a fractional part of the normal of the vertex.***
+                        // add to normal3 a fractional part of the normal of the vertex.
                         //double dist = mostHorizontalVertex.getPosition().distance(vertex3.getPosition());
                         double factor = 0.9;
                         normal3.add(mostHorizontalVector.x * factor, mostHorizontalVector.y * factor, mostHorizontalVector.z * factor);

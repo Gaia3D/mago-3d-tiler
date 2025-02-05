@@ -389,7 +389,7 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
     }
 
     public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
-        // Weld the vertices.***
+        // Weld the vertices.
         GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null);
         octreeVertices.getVertices().addAll(this.vertices);
         octreeVertices.calculateSize();

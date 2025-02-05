@@ -40,7 +40,7 @@ public class GaiaMaterial extends MaterialStructure implements Serializable {
     public boolean isOpaqueMaterial() {
         this.isOpaque = true;
 
-        // 1rst check textures.***
+        // 1rst check textures.
         int texCount = textures.size();
         for (Map.Entry<TextureType, List<GaiaTexture>> entry : textures.entrySet()) {
             List<GaiaTexture> gaiaTextures = entry.getValue();
@@ -57,7 +57,7 @@ public class GaiaMaterial extends MaterialStructure implements Serializable {
             }
         }
 
-        // if there are no textures, then check the diffuse color.***
+        // if there are no textures, then check the diffuse color.
         if (texCount == 0) {
             if (diffuseColor.w < 1.0) {
                 this.isOpaque = false;

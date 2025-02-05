@@ -87,8 +87,21 @@ public class GaiaTexture extends TextureStructure implements Serializable {
     }
 
     private BufferedImage readImage(String filePath) {
+        File imageFile = new File(filePath);
+        String fileName = imageFile.getName();
+        if (!imageFile.exists()) {
+            fileName = fileName.replace(".jpg", ".png");
+            fileName = fileName.replace(".jpeg", ".png");
+            fileName = fileName.replace(".JPG", ".png");
+            fileName = fileName.replace(".JPEG", ".png");
+            imageFile = new File(imageFile.getParent(), fileName);
+            if (!imageFile.exists()) {
+                log.error("Image file not found : {}", imageFile.getAbsolutePath());
+            }
+        }
+
         BufferedImage image = null;
-        try (BufferedInputStream stream = new BufferedInputStream(new FileInputStream(filePath))) {
+        try (BufferedInputStream stream = new BufferedInputStream(new FileInputStream(imageFile))) {
             image = ImageIO.read(stream);
         } catch (IOException e) {
             log.error("Error : ", e);
@@ -215,7 +228,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         byte[] rgbaByteArray = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
         byte[] rgbaByteArray2 = ((DataBufferByte) comparebufferedImage.getRaster().getDataBuffer()).getData();
 
-        // compare the byte array by difference.***
+        // compare the byte array by difference.
         int length = rgbaByteArray.length;
         int length2 = rgbaByteArray2.length;
 
