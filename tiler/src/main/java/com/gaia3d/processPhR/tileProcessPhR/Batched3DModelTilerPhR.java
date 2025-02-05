@@ -120,12 +120,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         int currDepth = desiredDepth - lod;
         Map<Node, List<TileInfo>> nodeTileInfoMap = new HashMap<>();
 
-        /*multiThreadCuttingAndScissorProcess(tileInfosCopy, lod, root, desiredDepth);
+        multiThreadCuttingAndScissorProcess(tileInfosCopy, lod, root, desiredDepth);
 
         // distribute contents to node in the correspondent depth.***
         // After process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes.***
         distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
-        makeContentsForNodes(nodeTileInfoMap, lod);*/
+        makeContentsForNodes(nodeTileInfoMap, lod);
 
         /* End lod 0 process */
 
