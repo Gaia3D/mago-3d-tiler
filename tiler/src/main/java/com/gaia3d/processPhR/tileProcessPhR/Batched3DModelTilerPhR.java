@@ -224,6 +224,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         List<Runnable> tasks = new ArrayList<>();
         List<TileInfo> finalTileInfosCopy = new ArrayList<>();
 
+        log.info("Cutting and Scissor process is started. Total tileInfos : {}", tileInfos.size());
+
         int tileInfosCount = tileInfos.size();
         AtomicInteger atomicProcessCount = new AtomicInteger(0);
         for (TileInfo tileInfo : tileInfos) {
@@ -253,7 +255,10 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         }
 
 
+        log.info("Cutting and Scissor process is done. Total tileInfos : {}", finalTileInfosCopy.size());
+
         //******
+        ExecutorService executorService2 = Executors.newFixedThreadPool(globalOptions.getMultiThreadCount());
         List<Runnable> tasks2 = new ArrayList<>();
 
         int tileInfosCount2 = finalTileInfosCopy.size();
@@ -274,7 +279,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         }
 
         try {
-            executeThread(executorService, tasks2);
+            executeThread(executorService2, tasks2);
         } catch (InterruptedException e) {
             log.error("Error :", e);
             throw new RuntimeException(e);
