@@ -61,7 +61,7 @@ public class GlobalOptions {
     public static final int REALISTIC_MIN_TEXTURE_SIZE = 512;
     public static final int REALISTIC_SCREEN_DEPTH_TEXTURE_SIZE = 256;
     public static final int REALISTIC_SCREEN_COLOR_TEXTURE_SIZE = 1024;
-    public static final double REALISTIC_LEAF_TILE_SIZE = 10.0; // meters
+    public static final double REALISTIC_LEAF_TILE_SIZE = 20.0; // meters
 
     private String version; // version flag
     private String javaVersionInfo; // java version flag
