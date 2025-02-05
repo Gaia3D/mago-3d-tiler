@@ -55,13 +55,13 @@ public class GaiaVertex extends VertexStructure implements Serializable {
     }
 
     public boolean isWeldable(GaiaVertex vertex2, double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
-        // 1rst, check position.***
+        // 1rst, check position.
         double distance = position.distance(vertex2.position);
         if (distance > error) {
             return false;
         }
 
-        // 2nd, check texCoord.***
+        // 2nd, check texCoord.
         if (checkTexCoord && texcoords != null && vertex2.texcoords != null) {
             double texCoordDist = texcoords.distance(vertex2.texcoords);
             if (texCoordDist > error) {
@@ -69,14 +69,14 @@ public class GaiaVertex extends VertexStructure implements Serializable {
             }
         }
 
-        // 3rd, check normal.***
+        // 3rd, check normal.
         if (checkNormal && normal != null && vertex2.normal != null) {
             if (normal.distance(vertex2.normal) > error) {
                 return false;
             }
         }
 
-        // 4th, check color.***
+        // 4th, check color.
         if (checkColor && color != null && vertex2.color != null) {
             for (int i = 0; i < color.length; i++) {
                 if (Math.abs(color[i] - vertex2.color[i]) > error) {
@@ -85,7 +85,7 @@ public class GaiaVertex extends VertexStructure implements Serializable {
             }
         }
 
-        // 5th, check batchId.***
+        // 5th, check batchId.
         if(checkBatchId) {
             if(batchId != vertex2.batchId) {
                 return false;
