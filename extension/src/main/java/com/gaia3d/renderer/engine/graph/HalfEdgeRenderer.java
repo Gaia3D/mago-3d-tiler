@@ -156,7 +156,7 @@ public class HalfEdgeRenderer {
 
         HalfEdgeRenderableBuffer renderableBuffer = mapAttribTypeRenderableBuffer.get(AttributeType.INDICE);
         if (renderableBuffer == null) {
-            // use glDrawArrays.***
+            // use glDrawArrays.
             GL20.glEnable(GL20.GL_POLYGON_OFFSET_FILL);
             GL20.glPolygonOffset(1.0f, 1.0f);
 //            uniformsMap.setUniform1i("uColorMode", 0);
@@ -215,7 +215,7 @@ public class HalfEdgeRenderer {
             texCoords[i * 2] = (float) texCoord.x;
             texCoords[i * 2 + 1] = (float) texCoord.y;
 
-            // color.***
+            // color.
             PositionType positionType = PositionType.INTERIOR;
             List<HalfEdge> outingEdges = vertexAllOutingEdgesMap.get(vertex);
             int outingEdgesCount = outingEdges.size();

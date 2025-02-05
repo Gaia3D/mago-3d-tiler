@@ -56,6 +56,12 @@ public class GlobalOptions {
     public static final double DEFAULT_SKIRT_HEIGHT = 4.0d;
     public static final boolean DEFAULT_DEBUG_LOD = false;
 
+    public static final int REALISTIC_LOD0_MAX_TEXTURE_SIZE = 2048;
+    public static final int REALISTIC_MAX_TEXTURE_SIZE = 1024;
+    public static final int REALISTIC_MIN_TEXTURE_SIZE = 512;
+    public static final int REALISTIC_SCREEN_DEPTH_TEXTURE_SIZE = 256;
+    public static final int REALISTIC_SCREEN_COLOR_TEXTURE_SIZE = 1024;
+
     private String version; // version flag
     private String javaVersionInfo; // java version flag
     private String programInfo; // program info flag

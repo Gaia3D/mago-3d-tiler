@@ -86,7 +86,7 @@ public class RenderEngine {
         identityMatrix.identity();
 
         //uniformsMap.setUniformMatrix4fv("uObjectMatrix", new Matrix4f(transformMatrix));
-        // note : use "identityMatrix" because the renderablePrimitive has transformed vertices.***
+        // note : use "identityMatrix" because the renderablePrimitive has transformed vertices
         uniformsMap.setUniformMatrix4fv("uObjectMatrix", identityMatrix);
 
         List<RenderableMesh> renderableMeshes = renderableNode.getRenderableMeshes();
@@ -121,13 +121,13 @@ public class RenderEngine {
             int currColor = renderablePrimitive.getColorCode();
 
             if (renderablePrimitive.getStatus() == 1) {
-                // this object is exterior object.***
-                currColor = -1; // inside the shader, -1 = background color (white).***
+                // this object is exterior object.
+                currColor = -1; // inside the shader, -1 = background color (white).
             }
 
             uniformsMap.setUniform1i("uColorCode", currColor);
 
-            // bind only "POSITION" & "INDICE" buffer ("INDICE" if exist).***
+            // bind only "POSITION" & "INDICE" buffer ("INDICE" if exist).
             Map<AttributeType, RenderableBuffer> mapAttribTypeRenderableBuffer = renderablePrimitive.getMapAttribTypeRenderableBuffer();
             AttributeType attributeType = AttributeType.POSITION;
             RenderableBuffer posBuffer = mapAttribTypeRenderableBuffer.get(attributeType);
@@ -136,7 +136,7 @@ public class RenderEngine {
 
             RenderableBuffer indicesBuffer = mapAttribTypeRenderableBuffer.get(AttributeType.INDICE);
             if (indicesBuffer == null) {
-                // use glDrawArrays.***
+                // use glDrawArrays.
                 GL20.glEnable(GL20.GL_POLYGON_OFFSET_FILL);
                 GL20.glPolygonOffset(1.0f, 1.0f);
                 GL20.glDrawArrays(GL_LINE_STRIP, 0, 16);
@@ -172,7 +172,7 @@ public class RenderEngine {
         tMatF.set(transformMatrix);
 
         //uniformsMap.setUniformMatrix4fv("uObjectMatrix", new Matrix4f(transformMatrix));
-        // note : use "identityMatrix" because the renderablePrimitive has transformed vertices.***
+        // note : use "identityMatrix" because the renderablePrimitive has transformed vertices.
         uniformsMap.setUniformMatrix4fv("uObjectMatrix", tMatF);
 
         List<RenderableMesh> renderableMeshes = renderableNode.getRenderableMeshes();
@@ -283,14 +283,14 @@ public class RenderEngine {
             }
 
             if (status == 1) {
-                // this object is exterior object.***
+                // this object is exterior object.
 //                uniformsMap.setUniform1i("uColorMode", 0);
 //                uniformsMap.setUniform4fv("uOneColor", new Vector4f(1.0f, 0.0f, 1.0f, 1.0f));
                 //continue;
             }
 
             if (status == 0) {
-                // this object is interior object.***
+                // this object is interior object.
                 //continue;
             }
 
@@ -308,7 +308,7 @@ public class RenderEngine {
 
             RenderableBuffer renderableBuffer = mapAttribTypeRenderableBuffer.get(AttributeType.INDICE);
             if (renderableBuffer == null) {
-                // use glDrawArrays.***
+                // use glDrawArrays.
                 GL20.glEnable(GL20.GL_POLYGON_OFFSET_FILL);
                 GL20.glPolygonOffset(1.0f, 1.0f);
                 uniformsMap.setUniform1i("uColorMode", 0);

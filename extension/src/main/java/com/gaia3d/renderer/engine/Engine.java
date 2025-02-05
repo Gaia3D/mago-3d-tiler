@@ -70,7 +70,7 @@ public class Engine {
     private boolean midButtonClicked = false;
     private boolean renderAxis = false;
 
-    private int boxRenderingMaxSize = 1024; // 1024
+    private int boxRenderingMaxSize = 1024;
     private int testsCount = 0;
 
     // TODO : change this path to a relative path. **********************************************************************
@@ -783,7 +783,6 @@ public class Engine {
             // now, set projection matrix as orthographic, and set camera's position and target.***
             // calculate the projectionMatrix for the camera.***
             int maxScreenSize = boxRenderingMaxSize;
-
             Map<CameraDirectionType, List<GaiaFace>> mapCameraDirectionTypeFacesList = new HashMap<>();
 
             // to calculate the texCoords, we need the transformed bbox and the modelViewMatrix.***
@@ -869,46 +868,6 @@ public class Engine {
                 HalfEdgeFace halfEdgeFace = mapGaiaFaceToHalfEdgeFace.get(gaiaFace);
                 halfEdgeFace.setCameraDirectionType(cameraDirectionTypeInfo.getCameraDirectionType());
             }
-
-            /*int hola = 0;
-            List<HalfEdgeFace> facesCamDirYNegZNeg = mapCameraDirectionTypeFacesList.get(CameraDirectionType.CAMERA_DIRECTION_YNEG_ZNEG);
-            if (facesCamDirYNegZNeg != null && !facesCamDirYNegZNeg.isEmpty()) {
-                Vector3d camDirYNegZNeg = new Vector3d(0, -1, -1);
-                camDirYNegZNeg.normalize();
-
-                BufferedImage YNegZNegImage = makeTextureAndTexCoordsByCameraDirection(facesCamDirYNegZNeg, camDirYNegZNeg, maxScreenSize);
-                YNegZNegImage = eliminateBackGroundColor(YNegZNegImage);
-
-                // test save images.***
-                try {
-                    String path = "D:\\Result_mago3dTiler";
-                    String fileName = "texImage_" + classificationId;
-                    String extension = ".png";
-                    String imagePath = path + "\\" + fileName + "_YNegZNeg" + extension;
-                    File imageFile = new File(imagePath);
-                    ImageIO.write(YNegZNegImage, "png", imageFile);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                // end test save images.***
-                if (YNegZNegImage != null) {
-                    TexturesAtlasData texturesAtlasDataYPosZNeg = new TexturesAtlasData();
-                    texturesAtlasDataYPosZNeg.setClassifyId(classificationId);
-                    texturesAtlasDataYPosZNeg.setCameraDirectionType(CameraDirectionType.CAMERA_DIRECTION_YNEG_ZNEG);
-                    texturesAtlasDataYPosZNeg.setTextureImage(YNegZNegImage);
-                    texturesAtlasDataList.add(texturesAtlasDataYPosZNeg);
-                } else {
-                    // set texCoords as (0.0,0.0).***
-                    List<HalfEdgeVertex> vertices = HalfEdgeUtils.getVerticesOfFaces(facesCamDirYNegZNeg, null);
-                    for (HalfEdgeVertex vertex : vertices) {
-                        if (vertex.getTexcoords() != null) {
-                            vertex.getTexcoords().set(0.0, 0.0);
-                        }
-                    }
-                }
-            }*/
-
-
         }
 
         halfEdgeScene.splitFacesByBestObliqueCameraDirectionToProject();
@@ -2482,13 +2441,6 @@ public class Engine {
         // create the fbo.***
         int fboWidth = maxScreenSize;
         int fboHeight = maxScreenSize;
-        /*if (xLength > yLength) {
-            fboWidth = maxScreenSize;
-            fboHeight = (int) (maxScreenSize * yLength / xLength);
-        } else {
-            fboWidth = (int) (maxScreenSize * xLength / yLength);
-            fboHeight = maxScreenSize;
-        }*/
         if (xLength > yLength) {
             fboWidth = maxScreenSize;
             fboHeight = (int) (maxScreenSize * yLength / xLength);

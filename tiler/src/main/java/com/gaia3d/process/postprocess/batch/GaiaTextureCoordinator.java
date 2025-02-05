@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector2d;
 
 import javax.imageio.ImageIO;
+import javax.media.jai.Interpolation;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -27,7 +28,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GaiaTextureCoordinator {
     private final String ATLAS_IMAGE;
-    private final Color BACKGROUND_COLOR = new Color(255, 0, 255);
+    private final Color BACKGROUND_COLOR = new Color(255, 255, 0);
 
     private final List<GaiaMaterial> materials;
     private final List<GaiaBufferDataSet> bufferDataSets;
@@ -209,6 +210,10 @@ public class GaiaTextureCoordinator {
         // BufferedImage this.atlasImage;
         //--------------------------------------------------------
 
+        if (LevelOfDetail.LOD3.equals(lod)) {
+            log.info("=== BREAK ===");
+        }
+
         boolean isPhotorealistic = globalOptions.isPhotorealistic();
 
         // 1rst, make a list of GaiaBatchImage (splittedImage).********
@@ -226,6 +231,8 @@ public class GaiaTextureCoordinator {
                 }
 
                 if (isPhotorealistic) {
+                    // Reload the texture with the original image
+                    texture.setBufferedImage(null);
                     bufferedImage = texture.getBufferedImage();
                 } else {
                     float scaleFactor = lod.getTextureScale();
@@ -284,9 +291,9 @@ public class GaiaTextureCoordinator {
 
         Graphics graphics = this.atlasImage.getGraphics();
 
-        for (GaiaBatchImage splittedImage : splittedImages) {
-            GaiaRectangle splittedRectangle = splittedImage.getBatchedBoundary();
-            GaiaMaterial material = findMaterial(splittedImage.getMaterialId());
+        for (GaiaBatchImage splitImage : splittedImages) {
+            GaiaRectangle splitRectangle = splitImage.getBatchedBoundary();
+            GaiaMaterial material = findMaterial(splitImage.getMaterialId());
 
             Map<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
             List<GaiaTexture> textures = textureMap.get(TextureType.DIFFUSE);
@@ -302,7 +309,7 @@ public class GaiaTextureCoordinator {
 //                randomGraphics.fillRect(0, 0, source.getWidth(), source.getHeight());
 //                randomGraphics.dispose();
 
-                graphics.drawImage(source, (int) splittedRectangle.getMinX(), (int) splittedRectangle.getMinY(), null); // original code.***
+                graphics.drawImage(source, (int) splitRectangle.getMinX(), (int) splitRectangle.getMinY(), null); // original code.***
                 //graphics.drawImage(randomColoredImage, (int) splittedRectangle.getMinX(), (int) splittedRectangle.getMinY(), null); // test code.***
             }
         }
@@ -317,12 +324,12 @@ public class GaiaTextureCoordinator {
         // End test.-------------------------------------------------------------------------
 
         for (GaiaBatchImage target : splittedImages) {
-            GaiaRectangle splittedRectangle = target.getBatchedBoundary();
+            GaiaRectangle splitRectangle = target.getBatchedBoundary();
 
-            int width = (int) splittedRectangle.getMaxX() - (int) splittedRectangle.getMinX();
-            int height = (int) splittedRectangle.getMaxY() - (int) splittedRectangle.getMinY();
-            double pixelXSize = 1.0 / splittedRectangle.getWidth();
-            double pixelYSize = 1.0 / splittedRectangle.getHeight();
+            int width = (int) splitRectangle.getMaxX() - (int) splitRectangle.getMinX();
+            int height = (int) splitRectangle.getMaxY() - (int) splitRectangle.getMinY();
+            double pixelXSize = 1.0 / splitRectangle.getWidth();
+            double pixelYSize = 1.0 / splitRectangle.getHeight();
 
             GaiaMaterial material = findMaterial(target.getMaterialId());
             Map<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
@@ -347,7 +354,9 @@ public class GaiaTextureCoordinator {
                 texture.setPath(ATLAS_IMAGE + ".jpg");
             }
 
-            List<GaiaBufferDataSet> materialBufferDataSets = bufferDataSets.stream().filter((bufferDataSet) -> bufferDataSet.getMaterialId() == target.getMaterialId()).collect(Collectors.toList());
+            List<GaiaBufferDataSet> materialBufferDataSets = bufferDataSets.stream()
+                    .filter((bufferDataSet) -> bufferDataSet.getMaterialId() == target.getMaterialId())
+                    .collect(Collectors.toList());
 
             Double intPartX = null, intPartY = null;
             double fractPartX, fractPartY;
@@ -397,8 +406,8 @@ public class GaiaTextureCoordinator {
                         }
 
                         // "width" is the width of the splitRectangle.***
-                        u2 = (splittedRectangle.getMinX() + u * width) / maxWidth;
-                        v2 = (splittedRectangle.getMinY() + v * height) / maxHeight;
+                        u2 = (splitRectangle.getMinX() + u * width) / maxWidth;
+                        v2 = (splitRectangle.getMinY() + v * height) / maxHeight;
 
                         texcoords[i] = (float) (u2);
                         texcoords[i + 1] = (float) (v2);
@@ -408,73 +417,81 @@ public class GaiaTextureCoordinator {
             }
         }
 
+        log.info("=== Batching textures is done ===");
+        log.info(" - splitImages count : {}", splittedImages.size());
+        log.info(" - atlasImage : {}", (ATLAS_IMAGE + "_L" + lod.getLevel()));
+        log.info(" - width : {}", this.atlasImage.getWidth());
+        log.info(" - height : {}", this.atlasImage.getHeight());
+
+        // test save atlasTexture image.****
+        // Test.----------------------------------------------
+        if (globalOptions.isDebugLod()) {
+            String extension = "jpg";
+            if (existPngTextures) {
+                extension = "png";
+            }
+            double random = Math.random();
+            int intRandom = (int) (random * 100000);
+            String imageName = ATLAS_IMAGE + "_Lod_" + lod.getLevel() + "_" + intRandom + "_before";
+            this.writeBatchedImage(imageName, extension);
+        }
+        // end test.----------------------------------------------
+
         if (isPhotorealistic) {
             // limit the max image size to 4096
             int lodLevel = lod.getLevel();
-            boolean sizeChanged = false;
             int imageWidth = this.atlasImage.getWidth();
             int imageHeight = this.atlasImage.getHeight();
 
-            int lod0size = 2048;
-            int lod1size = 1024;
-            int lod2size = 1024;
-            int overSize = 1024;
+
+
+            int lod0size = GlobalOptions.REALISTIC_LOD0_MAX_TEXTURE_SIZE;
+            int maximumSize = GlobalOptions.REALISTIC_MAX_TEXTURE_SIZE;
+            int minimumSize = GlobalOptions.REALISTIC_MIN_TEXTURE_SIZE;
+
+            double scaleFactor = lod.getRealisticScale();
+            if (lodLevel > 0) {
+                imageHeight = (int) (imageHeight * scaleFactor);
+                imageWidth = (int) (imageWidth * scaleFactor);
+                imageHeight = ImageUtils.getNearestPowerOfTwo(imageHeight);
+                imageWidth = ImageUtils.getNearestPowerOfTwo(imageWidth);
+            }
 
             if (lodLevel == 0) {
                 if (imageWidth > lod0size) {
                     imageWidth = lod0size;
-                    sizeChanged = true;
+                } else if (imageWidth < minimumSize) {
+                    imageWidth = minimumSize;
                 }
                 if (imageHeight > lod0size) {
                     imageHeight = lod0size;
-                    sizeChanged = true;
-                }
-            } else if (lodLevel == 1) {
-                if (imageWidth > lod1size) {
-                    imageWidth = lod1size;
-                    sizeChanged = true;
-                }
-                if (imageHeight > lod1size) {
-                    imageHeight = lod1size;
-                    sizeChanged = true;
-                }
-            } else if (lodLevel == 2) {
-                if (imageWidth > lod2size) {
-                    imageWidth = lod2size;
-                    sizeChanged = true;
-                }
-                if (imageHeight > lod2size) {
-                    imageHeight = lod2size;
-                    sizeChanged = true;
-                }
-            } else if (lodLevel > 2) {
-                if (imageWidth > overSize) {
-                    imageWidth = overSize;
-                    sizeChanged = true;
-                }
-                if (imageHeight > overSize) {
-                    imageHeight = overSize;
-                    sizeChanged = true;
+                } else if (imageHeight < minimumSize) {
+                    imageHeight = minimumSize;
                 }
             } else {
-                if (imageWidth > overSize) {
-                    imageWidth = overSize;
-                    sizeChanged = true;
+                if (imageWidth > maximumSize) {
+                    imageWidth = maximumSize;
+                } else if (imageWidth < minimumSize) {
+                    imageWidth = minimumSize;
                 }
-                if (imageHeight > overSize) {
-                    imageHeight = overSize;
-                    sizeChanged = true;
+                if (imageHeight > maximumSize) {
+                    imageHeight = maximumSize;
+                } else if (imageHeight < minimumSize) {
+                    imageHeight = minimumSize;
                 }
             }
+
+            boolean sizeChanged = (atlasImage.getWidth() != imageWidth) || (atlasImage.getHeight() != imageHeight);
             if (sizeChanged) {
                 ImageResizer imageResizer = new ImageResizer();
-                this.atlasImage = imageResizer.resizeImageGraphic2D(this.atlasImage, imageWidth, imageHeight);
+                this.atlasImage = imageResizer.resizeImageGraphic2D(this.atlasImage, imageWidth, imageHeight, true);
             }
         }
 
         // clamp the backGroundColor.***
         if (isPhotorealistic) {
-            BufferedImage clamped = ImageUtils.clampBackGroundColor(this.atlasImage, BACKGROUND_COLOR, 1, 30);
+            BufferedImage clamped = ImageUtils.clampBackGroundColor(this.atlasImage, BACKGROUND_COLOR, 1, 15);
+            clamped = ImageUtils.changeBackgroundColor(clamped, BACKGROUND_COLOR, new Color(0, 0, 0, 0));
             Graphics2D graphics2D = this.atlasImage.createGraphics();
             graphics2D.drawImage(clamped, 0, 0, null);
             graphics2D.dispose();

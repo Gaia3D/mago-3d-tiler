@@ -580,7 +580,6 @@ public class GltfWriter {
             int height = bufferedImage.getHeight();
             int powerOfTwoWidth = ImageUtils.getNearestPowerOfTwo(width);
             int powerOfTwoHeight = ImageUtils.getNearestPowerOfTwo(height);
-
             if (width != powerOfTwoWidth || height != powerOfTwoHeight) {
                 bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, powerOfTwoWidth, powerOfTwoHeight, true);
             }

@@ -243,14 +243,10 @@ public class GaiaSet implements Serializable {
                 log.error("Texture Input Image Path is not exists. {}", diffusePath);
             } else {
                 //FileUtils.copyFile(imageFile, outputImageFile);
-                // scale the image
                 ImageResizer imageResizer = new ImageResizer();
                 BufferedImage bufferedImage = ImageIO.read(imageFile);
-                //String format = ImageUtils.getFormatNameByMimeType(FilenameUtils.getExtension(outputImageFile.getName()));
                 int resizeWidth = (int) (bufferedImage.getWidth() * scale);
                 int resizeHeight = (int) (bufferedImage.getHeight() * scale);
-                //resizeWidth = ImageUtils.getNearestPowerOfTwoHigher(resizeWidth);
-                //resizeHeight = ImageUtils.getNearestPowerOfTwoHigher(resizeHeight);
                 bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight);
                 ImageIO.write(bufferedImage, "png", outputImageFile);
             }
