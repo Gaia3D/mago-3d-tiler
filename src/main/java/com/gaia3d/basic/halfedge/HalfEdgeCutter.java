@@ -5,6 +5,7 @@ import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
 import com.gaia3d.basic.geometry.octree.HalfEdgeOctree;
 import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaMaterial;
+import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 
 import java.nio.file.Path;
@@ -13,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class HalfEdgeCutter {
     public static void getPlanesGridXYZForBox(GaiaBoundingBox bbox, double gridSpacing, List<GaiaAAPlane> resultPlanesYZ, List<GaiaAAPlane> resultPlanesXZ, List<GaiaAAPlane> resultPlanesXY, HalfEdgeOctree resultOctree) {
         // Note : the grid is regularly spaced in the 3 axis.***
@@ -62,6 +64,65 @@ public class HalfEdgeCutter {
             planeXY.setPoint(point);
             resultPlanesXY.add(planeXY);
         }
+    }
+
+    public static List<HalfEdgeScene> cutHalfEdgeSceneByGaiaAAPlanes(HalfEdgeScene halfEdgeScene, List<GaiaAAPlane> planes, HalfEdgeOctree resultOctree)
+    {
+        double error = 1e-8;
+        int planesCount = planes.size();
+        for (int i = 0; i < planesCount; i++)
+        {
+            GaiaAAPlane plane = planes.get(i);
+            halfEdgeScene.cutByPlane(plane.getPlaneType(), plane.getPoint(), error);
+        }
+
+        // now, distribute faces into octree.***
+        resultOctree.getFaces().clear();
+        List<HalfEdgeSurface> surfaces = halfEdgeScene.extractSurfaces(null);
+        for (HalfEdgeSurface surface : surfaces)
+        {
+            List<HalfEdgeFace> faces = surface.getFaces();
+            for (HalfEdgeFace face : faces)
+            {
+                resultOctree.getFaces().add(face);
+            }
+        }
+
+        resultOctree.distributeFacesToLeaf();
+        List<HalfEdgeOctree> octreesWithContents = new ArrayList<>();
+        resultOctree.extractOctreesWithFaces(octreesWithContents);
+
+        // now, separate the surface by the octrees.***
+        List<HalfEdgeScene> resultScenes = new ArrayList<>();
+
+        // set the classifyId for each face.***
+        List<HalfEdgeSurface> newSurfaces = new ArrayList<>();
+        int octreesCount = octreesWithContents.size();
+        for (int j = 0; j < octreesCount; j++)
+        {
+            HalfEdgeOctree octree = octreesWithContents.get(j);
+            List<HalfEdgeFace> faces = octree.getFaces();
+            for (HalfEdgeFace face : faces)
+            {
+                face.setClassifyId(j);
+            }
+        }
+
+        for (int j = 0; j < octreesCount; j++)
+        {
+            int classifyId = j;
+
+            // create a new HalfEdgeScene.***
+            HalfEdgeScene cuttedScene = halfEdgeScene.cloneByClassifyId(classifyId);
+
+            if(cuttedScene == null) {
+                log.info("cuttedScene is null");
+                continue;
+            }
+
+            resultScenes.add(cuttedScene);
+        }
+        return resultScenes;
     }
 
     public static HalfEdgeScene cutHalfEdgeSceneGridXYZ(HalfEdgeScene halfEdgeScene, double gridSpacing, HalfEdgeOctree resultOctree) {
