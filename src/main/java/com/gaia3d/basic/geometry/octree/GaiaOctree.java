@@ -24,23 +24,21 @@ public class GaiaOctree {
     private double maxX, maxY, maxZ;
     private int idx = -1;
     private GaiaOctreeCoordinate coordinate = new GaiaOctreeCoordinate();
-    private GaiaOctree[] children = null;
     private int maxDepth = 5;
-
     private List<GaiaFaceData> faceDataList = new ArrayList<>();
 
-    // children indices.************************************************
-    //        down                         up
-    //        +---------+---------+        +---------+---------+
-    //        |         |         |        |         |         |
-    //        |    3    |    2    |        |    7    |    6    |
-    //        |         |         |        |         |         |
-    //        +---------+---------+        +---------+---------+
-    //        |         |         |        |         |         |
-    //        |    0    |    1    |        |    4    |    5    |
-    //        |         |         |        |         |         |
-    //        +---------+---------+        +---------+---------+
-    //----------------------------------------------------------------
+    private GaiaOctree[] children = null;
+    // children indices
+    // down                         up
+    // +---------+---------+        +---------+---------+
+    // |         |         |        |         |         |
+    // |    3    |    2    |        |    7    |    6    |
+    // |         |         |        |         |         |
+    // +---------+---------+        +---------+---------+
+    // |         |         |        |         |         |
+    // |    0    |    1    |        |    4    |    5    |
+    // |         |         |        |         |         |
+    // +---------+---------+        +---------+---------+
 
     public GaiaOctree(GaiaOctree parent) {
         if (parent != null) {

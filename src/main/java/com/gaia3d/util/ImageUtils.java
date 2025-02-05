@@ -22,6 +22,10 @@ import java.util.Iterator;
  */
 @Slf4j
 public class ImageUtils {
+
+    private final int MAX_IMAGE_SIZE = 16384;
+    private final int MIN_IMAGE_SIZE = 32;
+
     public static int getNearestPowerOfTwo(int value) {
         int power = 1;
         int powerDown = 1;
@@ -41,7 +45,23 @@ public class ImageUtils {
         while (power < value) {
             power *= 2;
         }
+        setMinMaxSize(power);
         return power;
+    }
+
+    public static int getNearestPowerOfTwoLower(int value) {
+        int power = 1;
+        int powerDown = 1;
+        while (power < value) {
+            powerDown = power;
+            power *= 2;
+        }
+        setMinMaxSize(powerDown);
+        return powerDown;
+    }
+
+    public static int setMinMaxSize(int size) {
+        return Math.min(Math.max(size, 32), 16384);
     }
 
     public static String getFormatNameByMimeType(String mimeType) {
@@ -185,9 +205,6 @@ public class ImageUtils {
     }
 
     public static int[] readImageSize(String imagePath) {
-        //**********************************************************************************************
-        // This function reads the size of an image file, without loading the entire image into memory.
-        //----------------------------------------------------------------------------------------------
         File imageFile = new File(imagePath);
 
         int[] result = new int[2];
@@ -296,7 +313,7 @@ public class ImageUtils {
 
         while(it < iterations) {
             changed = false;
-            log.info("Clamp Iteration : {}", it);
+            log.debug("Clamp Iteration : {}", it);
             for (int i = 0; i < width; i++) {
                 for (int j = 0; j < height; j++) {
                     Color pixel = new Color(oldImage.getRGB(i, j), true);
@@ -333,6 +350,24 @@ public class ImageUtils {
             it++;
         }
 
+        return newImage;
+    }
+
+    public static BufferedImage changeBackgroundColor(BufferedImage image, Color oldColor, Color newColor) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        BufferedImage newImage = new BufferedImage(width, height, image.getType());
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                Color pixel = new Color(image.getRGB(i, j), true);
+                if (pixel.equals(oldColor)) {
+                    newImage.setRGB(i, j, newColor.getRGB());
+                } else {
+                    newImage.setRGB(i, j, image.getRGB(i, j));
+                }
+            }
+        }
+        newImage.flush();
         return newImage;
     }
 

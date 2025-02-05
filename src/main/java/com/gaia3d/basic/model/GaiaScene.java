@@ -87,7 +87,7 @@ public class GaiaScene extends SceneStructure implements Serializable {
         clone.setOriginalPath(this.originalPath);
         clone.setGaiaBoundingBox(this.gaiaBoundingBox);
 
-        // attribute is a reference type.***
+        // attribute is a reference type.
         GaiaAttribute attribute = this.attribute.getCopy();
         clone.setAttribute(attribute);
         return clone;
