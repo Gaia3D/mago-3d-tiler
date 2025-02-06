@@ -85,27 +85,26 @@ public class Fbo {
 
         BufferedImage image = new BufferedImage(fboWidth, fboHeight, bufferedImageType);
 
+        int[] pixels = new int[fboWidth * fboHeight];
+
+        byte[] bufferArray = new byte[byteBuffer.remaining()];
+        byteBuffer.get(bufferArray);
+
+        int index = 0;
         for (int y = 0; y < fboHeight; y++) {
             for (int x = 0; x < fboWidth; x++) {
-                if (bufferedImageType == BufferedImage.TYPE_INT_ARGB) {
-                    int r = byteBuffer.get() & 0xFF;
-                    int g = byteBuffer.get() & 0xFF;
-                    int b = byteBuffer.get() & 0xFF;
-                    int a = byteBuffer.get() & 0xFF;
+                int r = bufferArray[index++] & 0xFF;
+                int g = bufferArray[index++] & 0xFF;
+                int b = bufferArray[index++] & 0xFF;
+                int a = (bufferedImageType == BufferedImage.TYPE_INT_ARGB) ? (bufferArray[index++] & 0xFF) : 255;
 
-                    int color = (a << 24) | (r << 16) | (g << 8) | b;
-                    image.setRGB(x, fboHeight - y - 1, color);
-                } else if (bufferedImageType == BufferedImage.TYPE_INT_RGB) {
-                    int r = byteBuffer.get() & 0xFF;
-                    int g = byteBuffer.get() & 0xFF;
-                    int b = byteBuffer.get() & 0xFF;
-
-                    int color = (r << 16) | (g << 8) | b;
-                    image.setRGB(x, fboHeight - y - 1, color);
-                }
-
+                int color = (a << 24) | (r << 16) | (g << 8) | b;
+                pixels[(fboHeight - y - 1) * fboWidth + x] = color;
             }
         }
+
+        // Set the pixels of the image in one command.***
+        image.setRGB(0, 0, fboWidth, fboHeight, pixels, 0, fboWidth);
 
         return image;
     }

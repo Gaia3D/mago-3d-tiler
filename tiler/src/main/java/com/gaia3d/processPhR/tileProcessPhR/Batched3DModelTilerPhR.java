@@ -84,7 +84,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         double distanceBetweenLat = GlobeUtils.distanceBetweenLatitudesRad(minLatRad, maxLatRad);
         double distanceBetweenLon = GlobeUtils.distanceBetweenLongitudesRad(minLatRad, minLonRad, maxLonRad);
         double distanceFinal = Math.max(distanceBetweenLat, distanceBetweenLon);
-        double desiredLeafDist = 20.0;
+        double desiredLeafDist = 25.0;
+        desiredLeafDist = 25.0; // test.***
 
         int desiredDepth = (int) Math.ceil(HalfEdgeUtils.log2(distanceFinal / desiredLeafDist));
         double desiredDistanceBetweenLat = desiredLeafDist * Math.pow(2, desiredDepth);
@@ -1144,7 +1145,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
             // load the file.***
             try {
-                GaiaSet gaiaSet = GaiaSet.readFile(path);
+                GaiaSet gaiaSet = GaiaSet.readFileForPR(path); // "readFileForPR" do not modify the textures path.***
                 if (gaiaSet == null) {
                     log.error("Error : gaiaSet is null. pth : " + path);
                     continue;
@@ -1155,12 +1156,43 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 log.debug("Scissoring textures of tile : " + i + " of : " + tileInfosCount);
                 halfEdgeScene.scissorTextures();
 
+                // after scissors, the atlas images are into the textures of the materials.***
+                List<GaiaMaterial> materials = halfEdgeScene.getMaterials();
+
                 // once scene is scissored, must change the materials of the gaiaSet and overwrite the file.***
                 GaiaScene scissorsScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
                 GaiaSet gaiaSet2 = GaiaSet.fromGaiaScene(scissorsScene);
 
+                // save material atlas textures.***
+                Path parentPath = path.getParent();
+                Path imagesPath = parentPath.resolve("images");
+                // make directories if not exists.***
+                File imagesFolder = imagesPath.toFile();
+                if (!imagesFolder.exists() && imagesFolder.mkdirs()) {
+                    log.debug("images folder created.");
+                }
+                for (GaiaMaterial material : materials) {
+                    List<GaiaTexture> textures = material.getTextures().get(TextureType.DIFFUSE);
+                    for (GaiaTexture texture : textures) {
+                        // check if exist bufferedImage of the texture.***
+                        if(texture.getBufferedImage() == null) {
+                            // load the image.***
+                            texture.loadImage();
+                        }
+
+                        if(texture.getBufferedImage() == null) {
+                            int hola = 0;
+                        }
+
+                        texture.setParentPath(imagesPath.toString());
+                        texture.saveImage(texture.getFullPath());
+                    }
+                }
+
                 // overwrite the file.***
-                gaiaSet2.writeFileInThePath(path);
+                //gaiaSet2.writeFileInThePath(path); // old.***
+                boolean copyTextures = false;
+                gaiaSet2.writeFileForPR(parentPath, copyTextures);
 
                 scene.clear();
                 gaiaSet.clear();
@@ -1384,8 +1416,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             if (!gaiaSetCutFolderPath.toFile().exists() && gaiaSetCutFolderPath.toFile().mkdirs()) {
                 log.debug("gaiaSetCut folder created.");
             }
-
-            Path tempPathLod = gaiaSetCut.writeFile(gaiaSetCutFolderPath);
+            boolean copyTexturesToNewPath = false;
+            Path tempPathLod = gaiaSetCut.writeFileForPR(gaiaSetCutFolderPath, copyTexturesToNewPath);
 
             // delete the contents of the gaiaSceneCut.************************************************
             gaiaSceneCut.getNodes().forEach(GaiaNode::clear);

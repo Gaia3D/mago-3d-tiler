@@ -88,6 +88,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
 
     private BufferedImage readImage(String filePath) {
         File imageFile = new File(filePath);
+
         String fileName = imageFile.getName();
         if (!imageFile.exists()) {
             fileName = fileName.replace(".jpg", ".png");
@@ -97,6 +98,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
             imageFile = new File(imageFile.getParent(), fileName);
             if (!imageFile.exists()) {
                 log.error("Image file not found : {}", imageFile.getAbsolutePath());
+                return null;
             }
         }
 

@@ -29,6 +29,13 @@ public class GaiaRectangle implements Serializable {
         addPoint(maxPoint);
     }
 
+    public GaiaRectangle(GaiaRectangle rect) {
+        minX = rect.minX;
+        minY = rect.minY;
+        maxX = rect.maxX;
+        maxY = rect.maxY;
+    }
+
     public Vector2d getCenter() {
         return new Vector2d((minX + maxX) / 2, (minY + maxY) / 2);
     }
