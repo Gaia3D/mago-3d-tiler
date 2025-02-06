@@ -118,3 +118,25 @@ CityGML 데이터를 변환할 때 `inputType`을 "citygml"로 지정하는 것�
 ```
 java -jar mago-3d-tiler.jar -input "/input_path/citygml" -inputType "citygml" -output "/output_path/citygml" -crs "5186"
 ```
+
+### Converting Large Point-Clouds Data
+When converting large point-clouds, you can use the `-pointRatio` option to adjust the percentage of conversion points from the source data as follows.
+
+```
+java -jar mago-3d-tiler.jar -input "/input_path/las" -inputType "las" -output "/output_path/las" -pointRatio "100"
+```
+
+### How to run with Docker
+You can also conveniently convert to mago 3DTiler deployed on docker hub.
+Pull the image of gaia3d/mago-3d-tiler and create a container.
+
+
+```docker
+docker pull gaia3d/mago-3d-tiler
+```
+
+Specify the input and output data paths through the workspace volume.
+
+```docker
+docker run --rm -v "/workspace:/workspace" gaia3d/mago-3d-tiler -input /workspace/3ds-samples -output /workspace/sample-3d-tiles -inputType 3ds -crs 5186
+```
