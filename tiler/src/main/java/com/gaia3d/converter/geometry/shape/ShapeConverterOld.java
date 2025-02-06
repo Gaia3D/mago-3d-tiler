@@ -10,7 +10,7 @@ import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.EasySceneCreator;
 import com.gaia3d.converter.geometry.AbstractGeometryConverter;
 import com.gaia3d.converter.geometry.GaiaExtrusionBuilding;
-import com.gaia3d.converter.geometry.GaiaSceneTempHolder;
+import com.gaia3d.converter.geometry.GaiaSceneTempGroup;
 import com.gaia3d.converter.geometry.InnerRingRemover;
 import com.gaia3d.converter.geometry.pipe.GaiaPipeLineString;
 import com.gaia3d.converter.geometry.pipe.PipeType;
@@ -64,7 +64,7 @@ public class ShapeConverterOld extends AbstractGeometryConverter implements Conv
     }
 
     @Override
-    public List<GaiaSceneTempHolder> convertTemp(File input, File output) {
+    public List<GaiaSceneTempGroup> convertTemp(File input, File output) {
         return null;
     }
 

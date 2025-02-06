@@ -3,7 +3,7 @@ package com.gaia3d.converter.assimp;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.splitter.GaiaSceneSplitter;
 import com.gaia3d.converter.Converter;
-import com.gaia3d.converter.geometry.GaiaSceneTempHolder;
+import com.gaia3d.converter.geometry.GaiaSceneTempGroup;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
@@ -43,7 +43,7 @@ public class LargeMeshConverter implements Converter {
     }
 
     @Override
-    public List<GaiaSceneTempHolder> convertTemp(File input, File output) {
+    public List<GaiaSceneTempGroup> convertTemp(File input, File output) {
         return null;
     }
 

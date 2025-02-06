@@ -51,8 +51,8 @@ public class RenderableTexturesUtils {
             log.info("Original image size: {}x{}", width, height);
             int resizeWidth = width;
             int resizeHeight = height;
-            resizeWidth = ImageUtils.getNearestPowerOfTwo(resizeWidth);
-            resizeHeight = ImageUtils.getNearestPowerOfTwo(resizeHeight);
+            resizeWidth = ImageUtils.getNearestPowerOfTwoHigher(resizeWidth);
+            resizeHeight = ImageUtils.getNearestPowerOfTwoHigher(resizeHeight);
 
             width = resizeWidth;
             height = resizeHeight;

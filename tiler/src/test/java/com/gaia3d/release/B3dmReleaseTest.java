@@ -201,6 +201,16 @@ class B3dmReleaseTest {
         execute(args);
     }
 
+    @Test
+    void batched80() {
+        String path = "B80-kku-tile-dae-kml";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+        };
+        execute(args);
+    }
+
     private void execute(String[] args) {
         Mago3DTilerMain.main(args);
     }

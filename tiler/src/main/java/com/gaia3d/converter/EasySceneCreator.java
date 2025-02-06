@@ -1,8 +1,8 @@
 package com.gaia3d.converter;
 
 import com.gaia3d.basic.model.*;
+import com.gaia3d.basic.types.Classification;
 import com.gaia3d.basic.types.TextureType;
-import com.gaia3d.converter.geometry.Classification;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;

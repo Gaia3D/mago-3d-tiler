@@ -2,7 +2,8 @@ import org.gradle.internal.os.OperatingSystem
 
 subprojects {
     group "com.gaia3d"
-    version "1.10.5-beta" // release, beta, alpha
+    // release, beta, alpha
+    version "1.10.6-release"
     apply plugin: 'java'
 
     project.ext.lwjglVersion = "3.3.3"
@@ -18,28 +19,33 @@ subprojects {
             break
     }
 
+    repositories {
+        maven { url "https://repo.osgeo.org/repository/release/" }
+        mavenCentral()
+    }
+
     dependencies {
-        // Lombok
+        /* Lombok */
         compileOnly "org.projectlombok:lombok:1.18.30"
         annotationProcessor "org.projectlombok:lombok:1.18.30"
 
-        // Logging
+        /* Logging */
         implementation 'org.slf4j:slf4j-api:1.7.25'
-        implementation 'org.apache.logging.log4j:log4j-core:2.17.1'
-        implementation 'org.apache.logging.log4j:log4j-api:2.14.0'
-        implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.14.0'
+        implementation 'org.apache.logging.log4j:log4j-core:2.20.0'
+        implementation 'org.apache.logging.log4j:log4j-api:2.20.0'
+        implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.20.0'
 
-        // Math library
+        /* Math library */
         implementation "org.joml:joml:1.10.5"
 
-        // Apache commons
+        /* Apache commons */
         implementation 'commons-logging:commons-logging:1.2'
         implementation 'commons-io:commons-io:2.11.0'
         implementation 'commons-cli:commons-cli:1.5.0'
         implementation 'commons-collections:commons-collections:3.2.2'
         implementation 'org.apache.commons:commons-text:1.10.0'
 
-        // Development libraries
+        /* Development libraries */
         testCompileOnly "org.projectlombok:lombok:1.18.30"
         testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
         testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.0"

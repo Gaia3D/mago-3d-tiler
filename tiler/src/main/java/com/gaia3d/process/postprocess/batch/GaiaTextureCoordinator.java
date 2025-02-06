@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector2d;
 
 import javax.imageio.ImageIO;
-import javax.media.jai.Interpolation;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -28,13 +27,14 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GaiaTextureCoordinator {
     private final String ATLAS_IMAGE;
-    private final Color BACKGROUND_COLOR = new Color(255, 255, 0);
+    private final Color CLAMP_COLOR = new Color(255, 255, 0);
+    private final Color BACKGROUND_COLOR = new Color(10, 10, 10);
+    private final Color TRANSPARENT_COLOR = new Color(0, 0, 0, 0);
 
     private final List<GaiaMaterial> materials;
     private final List<GaiaBufferDataSet> bufferDataSets;
     private final GlobalOptions globalOptions = GlobalOptions.getInstance();
     private BufferedImage atlasImage;
-
 
     public GaiaTextureCoordinator(String name, List<GaiaMaterial> materials, List<GaiaBufferDataSet> bufferDataSets) {
         this.ATLAS_IMAGE = name;
@@ -52,9 +52,14 @@ public class GaiaTextureCoordinator {
             this.atlasImage = new BufferedImage(width, height, imageType);
             // now fill the image with white fuchsia.***
             Graphics2D graphics = this.atlasImage.createGraphics();
-            graphics.setColor(BACKGROUND_COLOR);
-            graphics.fillRect(0, 0, width, height);
-            graphics.dispose();
+
+            if (globalOptions.isPhotorealistic()) {
+                graphics.setColor(CLAMP_COLOR);
+                graphics.fillRect(0, 0, width, height);
+            } else {
+                graphics.setColor(TRANSPARENT_COLOR);
+                graphics.fillRect(0, 0, width, height);
+            }
         } else {
             this.atlasImage = null;
         }
@@ -210,9 +215,9 @@ public class GaiaTextureCoordinator {
         // BufferedImage this.atlasImage;
         //--------------------------------------------------------
 
-        if (LevelOfDetail.LOD3.equals(lod)) {
+        /*if (LevelOfDetail.LOD3.equals(lod)) {
             log.info("=== BREAK ===");
-        }
+        }*/
 
         boolean isPhotorealistic = globalOptions.isPhotorealistic();
 
@@ -300,28 +305,10 @@ public class GaiaTextureCoordinator {
             if (!textures.isEmpty()) {
                 GaiaTexture texture = textures.get(0);
                 BufferedImage source = texture.getBufferedImage();
-
-//                // test random color for each splitImage.***************************************************************************************************
-//                Color randomColor = new Color((float) Math.random(), (float) Math.random(), (float) Math.random(), 0.8f);
-//                BufferedImage randomColoredImage = new BufferedImage(source.getWidth(), source.getHeight(), BufferedImage.TYPE_INT_ARGB);
-//                Graphics2D randomGraphics = randomColoredImage.createGraphics();
-//                randomGraphics.setColor(randomColor);
-//                randomGraphics.fillRect(0, 0, source.getWidth(), source.getHeight());
-//                randomGraphics.dispose();
-
                 graphics.drawImage(source, (int) splitRectangle.getMinX(), (int) splitRectangle.getMinY(), null); // original code.***
                 //graphics.drawImage(randomColoredImage, (int) splittedRectangle.getMinX(), (int) splittedRectangle.getMinY(), null); // test code.***
             }
         }
-
-        // Test.****************************************************************************
-        /*if (globalOptions.isDebugLod()) {
-            float[] debugColor = lod.getDebugColor();
-            Color color = new Color(debugColor[0], debugColor[1], debugColor[2], 0.6f);
-            graphics.setColor(color);
-            graphics.fillRect(0, 0, maxWidth, maxHeight);
-        }*/
-        // End test.-------------------------------------------------------------------------
 
         for (GaiaBatchImage target : splittedImages) {
             GaiaRectangle splitRectangle = target.getBatchedBoundary();
@@ -354,9 +341,7 @@ public class GaiaTextureCoordinator {
                 texture.setPath(ATLAS_IMAGE + ".jpg");
             }
 
-            List<GaiaBufferDataSet> materialBufferDataSets = bufferDataSets.stream()
-                    .filter((bufferDataSet) -> bufferDataSet.getMaterialId() == target.getMaterialId())
-                    .collect(Collectors.toList());
+            List<GaiaBufferDataSet> materialBufferDataSets = bufferDataSets.stream().filter((bufferDataSet) -> bufferDataSet.getMaterialId() == target.getMaterialId()).toList();
 
             Double intPartX = null, intPartY = null;
             double fractPartX, fractPartY;
@@ -413,37 +398,21 @@ public class GaiaTextureCoordinator {
                         texcoords[i + 1] = (float) (v2);
                     }
                 }
-
             }
         }
 
-        log.info("=== Batching textures is done ===");
-        log.info(" - splitImages count : {}", splittedImages.size());
-        log.info(" - atlasImage : {}", (ATLAS_IMAGE + "_L" + lod.getLevel()));
-        log.info(" - width : {}", this.atlasImage.getWidth());
-        log.info(" - height : {}", this.atlasImage.getHeight());
-
-        // test save atlasTexture image.****
-        // Test.----------------------------------------------
-        if (globalOptions.isDebugLod()) {
-            String extension = "jpg";
-            if (existPngTextures) {
-                extension = "png";
-            }
-            double random = Math.random();
-            int intRandom = (int) (random * 100000);
-            String imageName = ATLAS_IMAGE + "_Lod_" + lod.getLevel() + "_" + intRandom + "_before";
-            this.writeBatchedImage(imageName, extension);
-        }
-        // end test.----------------------------------------------
-
+        /* Only Photorealistic Mode */
         if (isPhotorealistic) {
+            /* debug */
+            if (globalOptions.isDebugLod()) {
+                writeAtlasImageForTest(existPngTextures, lod, "-before");
+            }
+
             // limit the max image size to 4096
             int lodLevel = lod.getLevel();
             int imageWidth = this.atlasImage.getWidth();
             int imageHeight = this.atlasImage.getHeight();
-
-
+            float ratio = (float) imageWidth / imageHeight;
 
             int lod0size = GlobalOptions.REALISTIC_LOD0_MAX_TEXTURE_SIZE;
             int maximumSize = GlobalOptions.REALISTIC_MAX_TEXTURE_SIZE;
@@ -483,41 +452,50 @@ public class GaiaTextureCoordinator {
 
             boolean sizeChanged = (atlasImage.getWidth() != imageWidth) || (atlasImage.getHeight() != imageHeight);
             if (sizeChanged) {
+                log.info("=== Batching textures is done ===");
+                log.info(" - atlasImage name : {}", (ATLAS_IMAGE + "_L" + lod.getLevel()));
+                log.info(" - splitImages count : {}", splittedImages.size());
+                log.info(" - originalWidth : {}", this.atlasImage.getWidth());
+                log.info(" - originalHeight : {}", this.atlasImage.getHeight());
+                log.info(" - resizeWidth : {}", imageWidth);
+                log.info(" - resizeHeight : {}", imageHeight);
+                log.info(" - ratio : {}", ratio);
+                log.info(" - scaleFactor : {}", scaleFactor);
+                log.info(" - lodLevel : {}", lodLevel);
+                log.info("==================================");
                 ImageResizer imageResizer = new ImageResizer();
                 this.atlasImage = imageResizer.resizeImageGraphic2D(this.atlasImage, imageWidth, imageHeight, true);
             }
-        }
 
-        // clamp the backGroundColor.***
-        if (isPhotorealistic) {
-            BufferedImage clamped = ImageUtils.clampBackGroundColor(this.atlasImage, BACKGROUND_COLOR, 1, 15);
-            clamped = ImageUtils.changeBackgroundColor(clamped, BACKGROUND_COLOR, new Color(0, 0, 0, 0));
+            // clamp the backGroundColor.***
+            BufferedImage clamped = ImageUtils.clampBackGroundColor(this.atlasImage, CLAMP_COLOR, 1, 30);
+            clamped = ImageUtils.changeBackgroundColor(clamped, CLAMP_COLOR, BACKGROUND_COLOR);
             Graphics2D graphics2D = this.atlasImage.createGraphics();
             graphics2D.drawImage(clamped, 0, 0, null);
             graphics2D.dispose();
         }
 
-        // test save atlasTexture image.****
-        // Test.----------------------------------------------
+        /* debug */
         if (globalOptions.isDebugLod()) {
-            String extension = "jpg";
-            if (existPngTextures) {
-                extension = "png";
-            }
-            double random = Math.random();
-            int intRandom = (int) (random * 100000);
-            String imageName = ATLAS_IMAGE + "_Lod_" + lod.getLevel() + "_" + intRandom;
-            this.writeBatchedImage(imageName, extension);
+            writeAtlasImageForTest(existPngTextures, lod, "-after");
         }
-        // end test.----------------------------------------------
 
         return this.atlasImage;
     }
 
+
+    private void writeAtlasImageForTest(boolean existPngTextures, LevelOfDetail lod, String suffix) {
+        String extension = "jpg";
+        if (existPngTextures) {
+            extension = "png";
+        }
+        String imageName = ATLAS_IMAGE + "_Lod_" + lod.getLevel() + "_" + (int) (Math.random() * 100000) + suffix;
+        writeBatchedImage(imageName, extension);
+    }
+
     private void writeBatchedImage(String imageName, String imageExtension) {
         String outputPathString = globalOptions.getOutputPath();
-        //File file = new File(outputPathString, "temp" + File.separator + "atlas");
-        File file = new File(outputPathString, "atlas");
+        File file = new File(outputPathString, "temp" + File.separator + "altras");
         if (!file.exists()) {
             if (!file.mkdirs()) {
                 log.error("Failed to create directory");
@@ -542,7 +520,6 @@ public class GaiaTextureCoordinator {
         }
     }
 
-    //findMaterial
     private GaiaMaterial findMaterial(int materialId) {
         return materials.stream().filter(material -> material.getId() == materialId).findFirst().orElseThrow(() -> new RuntimeException("not found material"));
     }

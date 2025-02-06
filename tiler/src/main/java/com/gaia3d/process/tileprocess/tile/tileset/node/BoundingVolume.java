@@ -7,11 +7,13 @@ import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.DecimalUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 import org.locationtech.proj4j.ProjCoordinate;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +21,8 @@ import java.util.List;
 @Getter
 @Setter
 @EqualsAndHashCode
-public class BoundingVolume {
+@NoArgsConstructor
+public class BoundingVolume implements Serializable {
     private static final float GOLDEN_RATIO = 1.61803398875f;
 
     @JsonIgnore

@@ -4,6 +4,7 @@ import com.gaia3d.basic.geometry.network.modeler.TopologicalNetwork;
 import com.gaia3d.basic.geometry.tessellator.GaiaExtrusionSurface;
 import com.gaia3d.basic.geometry.tessellator.GaiaTessellator;
 import com.gaia3d.basic.model.*;
+import com.gaia3d.basic.types.Classification;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.geometry.pipe.GaiaPipeLineString;

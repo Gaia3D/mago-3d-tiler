@@ -32,13 +32,12 @@ public class GlobalOptions {
     public static final int DEFAULT_MIN_LOD = 0;
     public static final int DEFAULT_MAX_LOD = 3;
     public static final int DEFAULT_MIN_GEOMETRIC_ERROR = 16;
-    public static final int DEFAULT_MAX_GEOMETRIC_ERROR = Integer.MAX_VALUE;
+    public static final int DEFAULT_MAX_GEOMETRIC_ERROR = 1024;
 
     public static final int DEFAULT_MAX_TRIANGLES = 65536 * 8;
     public static final int DEFAULT_MAX_NODE_DEPTH = 32;
     public static final int DEFAULT_MAX_INSTANCE = 1024 * 8;
 
-    //public static final int DEFAULT_POINT_PER_TILE = 100000;
     public static final int DEFAULT_POINT_PER_TILE = 300000;
     public static final int DEFAULT_POINT_RATIO = 25;
     public static final float POINTSCLOUD_HORIZONTAL_GRID = 500.0f; // in meters
@@ -61,6 +60,7 @@ public class GlobalOptions {
     public static final int REALISTIC_MIN_TEXTURE_SIZE = 512;
     public static final int REALISTIC_SCREEN_DEPTH_TEXTURE_SIZE = 256;
     public static final int REALISTIC_SCREEN_COLOR_TEXTURE_SIZE = 1024;
+    public static final double REALISTIC_LEAF_TILE_SIZE = 25.0; // meters
 
     private String version; // version flag
     private String javaVersionInfo; // java version flag
@@ -105,8 +105,8 @@ public class GlobalOptions {
 
     // Debug Mode
     private boolean debug = false;
-    // Debug Level of Detail
     private boolean debugLod = false;
+    private boolean isLeaveTemp = false;
 
     private boolean gltf = false;
     private boolean glb = false;
@@ -271,6 +271,7 @@ public class GlobalOptions {
         instance.setLargeMesh(command.hasOption(ProcessOptions.LARGE_MESH.getArgName()));
         instance.setVoxelLod(command.hasOption(ProcessOptions.VOXEL_LOD.getArgName()));
         instance.setPhotorealistic(command.hasOption(ProcessOptions.PHOTOREALISTIC.getArgName()));
+        instance.setLeaveTemp(command.hasOption(ProcessOptions.LEAVE_TEMP.getArgName()));
 
         TilerExtensionModule extensionModule = new TilerExtensionModule();
         extensionModule.executePhotorealistic(null, null);
@@ -381,7 +382,7 @@ public class GlobalOptions {
         log.debug("Instance File Path: {}", instancePath);
         log.debug("Log Path: {}", logPath);
         log.debug("Recursive Path Search: {}", recursive);
-
+        log.debug("Leave Temp Files: {}", isLeaveTemp);
         log.debug("========================================");
         log.debug("Coordinate Reference System: {}", crs);
         log.debug("Proj4 Code: {}", proj);
@@ -390,9 +391,6 @@ public class GlobalOptions {
         log.debug("Minimum GeometricError: {}", minGeometricError);
         log.debug("Maximum GeometricError: {}", maxGeometricError);
         log.debug("Maximum number of points per a tile: {}", maximumPointPerTile);
-        //log.debug("Points Per Grid: {}", pointsPerGrid);
-        //log.debug("PointCloud Scale: {}", pointScale);
-        //log.debug("PointCloud Skip Interval: {}", pointSkip);
         log.debug("Source Precision: {}", isSourcePrecision);
         log.debug("PointCloud Ratio: {}", pointRatio);
         log.debug("Force 4Byte RGB: {}", force4ByteRGB);
@@ -401,8 +399,6 @@ public class GlobalOptions {
         log.debug("Debug GLB: {}", glb);
         log.debug("classicTransformMatrix: {}", classicTransformMatrix);
         log.debug("Multi-Thread Count: {}", multiThreadCount);
-
-        // 3D Data Options
         log.debug("========================================");
         log.debug("Rotate X-Axis: {}", rotateX);
         log.debug("Swap Up-Axis: {}", swapUpAxis);
@@ -418,12 +414,14 @@ public class GlobalOptions {
         log.debug("LargeMesh: {}", largeMesh);
         log.debug("Voxel LOD: {}", voxelLod);
         log.debug("Photorealistic: {}", photorealistic);
-
-        // 2D Data Column Options
+        log.debug("Point Cloud Horizontal Grid: {}", POINTSCLOUD_HORIZONTAL_GRID);
+        log.debug("Point Cloud Vertical Grid: {}", POINTSCLOUD_VERTICAL_GRID);
         log.debug("========================================");
         log.debug("Name Column: {}", nameColumn);
         log.debug("Height Column: {}", heightColumn);
         log.debug("Altitude Column: {}", altitudeColumn);
+        log.debug("Heading Column: {}", headingColumn);
+        log.debug("Diameter Column: {}", diameterColumn);
         log.debug("Absolute Altitude: {}", absoluteAltitude);
         log.debug("Minimum Height: {}", minimumHeight);
         log.debug("Skirt Height: {}", skirtHeight);

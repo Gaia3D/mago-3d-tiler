@@ -5,7 +5,7 @@ import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
-import com.gaia3d.converter.geometry.GaiaSceneTempHolder;
+import com.gaia3d.converter.geometry.GaiaSceneTempGroup;
 import com.gaia3d.util.ImageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -74,7 +73,7 @@ public class AssimpConverter implements Converter {
     }
 
     @Override
-    public List<GaiaSceneTempHolder> convertTemp(File input, File output) {
+    public List<GaiaSceneTempGroup> convertTemp(File input, File output) {
         return null;
     }
 

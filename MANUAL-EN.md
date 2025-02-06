@@ -134,15 +134,6 @@ This is because Citygml data can have different extensions: ‘.xml’, ‘.gml�
 java -jar mago-3d-tiler.jar -input "/input_path/citygml" -inputType "citygml" -output "/output_path/citygml" -crs "5186"
 ```
 
-### Converting Large 3D Mesh Data
-[Warning: Experimental]   
-This option tiles large mesh data by breaking it down into smaller units.
-This can be specified via the `-largeMesh` option.
-
-```
-java -jar mago-3d-tiler.jar -input "/input_path/ifc_large_mesh" -inputType "ifc" -output "/output_path/ifc_large_mesh" -largeMesh
-```
-
 ### Converting Large Point-Clouds Data
 When converting large point-clouds, you can use the `-pointRatio` option to adjust the percentage of conversion points from the source data as follows.
 

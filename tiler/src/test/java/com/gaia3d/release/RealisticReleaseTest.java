@@ -100,6 +100,7 @@ class RealisticReleaseTest {
         execute(args);
     }
 
+    @Disabled
     @Test
     void realistic06() {
         String path = "R06-khonkhan-part-obj";

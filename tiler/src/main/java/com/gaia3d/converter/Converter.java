@@ -1,7 +1,7 @@
 package com.gaia3d.converter;
 
 import com.gaia3d.basic.model.GaiaScene;
-import com.gaia3d.converter.geometry.GaiaSceneTempHolder;
+import com.gaia3d.converter.geometry.GaiaSceneTempGroup;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -14,6 +14,6 @@ public interface Converter {
     List<GaiaScene> load(String path);
     List<GaiaScene> load(File file);
     List<GaiaScene> load(Path path);
-    List<GaiaSceneTempHolder> convertTemp(File input, File output);
+    List<GaiaSceneTempGroup> convertTemp(File input, File output);
 }
 

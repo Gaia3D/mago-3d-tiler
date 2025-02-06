@@ -4,11 +4,6 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '8.1.0'
 }
 
-repositories {
-    maven { url "https://repo.osgeo.org/repository/release/" }
-    mavenCentral()
-}
-
 dependencies {
     implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
     implementation "org.lwjgl:lwjgl"
@@ -72,37 +67,6 @@ test {
     }
 }
 
-jib {
-    from {
-        image = "eclipse-temurin:17-jre"
-        platforms {
-            platform {
-                architecture = "amd64"
-                os = "linux"
-            }
-            platform {
-                architecture = "arm64"
-                os = "linux"
-            }
-        }
-    }
-    to {
-        image = "gaia3d/mago-3d-tiler"
-        tags = ["latest", project.version]
-    }
-    container {
-        appRoot = "/mago-3d-tiler"
-        creationTime = "USE_CURRENT_TIMESTAMP"
-        jvmFlags = [
-                "-Djava.awt.headless=true",
-                "-Dfile.encoding=UTF-8",
-                "-XX:+UseContainerSupport",
-                "-XX:MaxGCPauseMillis=100",
-                "-XX:+UseStringDeduplication"
-        ]
-    }
-}
-
 java {
     //withJavadocJar()
 }
@@ -119,7 +83,7 @@ jar {
     finalizedBy shadowJar
     manifest {
         attributes "Main-Class": "com.gaia3d.command.mago.Mago3DTilerMain"
-        attributes 'Implementation-Version': project.version
+        attributes "Implementation-Version": project.version
         attributes 'Implementation-Title': '3d-tiler'
         attributes 'Implementation-Vendor': 'Gaia3d, Inc.'
         attributes 'Implementation-Vendor-Id': 'com.gaia3d'
@@ -150,12 +114,46 @@ shadowJar {
     destinationDirectory.set(file("${projectDir}/dist"))
 }
 
-compileJava {
-    options.encoding = 'UTF-8'
+jib {
+    from {
+        image = "eclipse-temurin:17-jre"
+        platforms {
+            platform {
+                architecture = "amd64"
+                os = "linux"
+            }
+            platform {
+                architecture = "arm64"
+                os = "linux"
+            }
+        }
+    }
+    to {
+        image = "gaia3d/mago-3d-tiler"
+        tags = ["latest", project.version] as List<String>
+    }
+    container {
+        appRoot = "/mago-3d-tiler"
+        creationTime = "USE_CURRENT_TIMESTAMP"
+        jvmFlags = [
+                "-Djava.awt.headless=true",
+                "-Dfile.encoding=UTF-8",
+                "-XX:+UseContainerSupport",
+                "-XX:MaxGCPauseMillis=100",
+                "-XX:+UseStringDeduplication",
+        ]
+        entrypoint = ["java", "-jar", "/app/mago-3d-tiler-${project.version}-${project.ext.lwjglNatives}.jar"]
+    }
+    extraDirectories {
+        paths {
+            path {
+                from = file("build/libs")
+                into = "/app"
+            }
+        }
+    }
 }
 
-tasks.register('cleanDist') {
-    doLast {
-        delete fileTree(dir: 'dist', include: '*.jar')
-    }
+compileJava {
+    options.encoding = 'UTF-8'
 }
