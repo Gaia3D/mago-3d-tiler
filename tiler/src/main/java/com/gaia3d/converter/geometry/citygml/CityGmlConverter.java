@@ -3,13 +3,11 @@ package com.gaia3d.converter.geometry.citygml;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.tessellator.Vector3dOnlyHashEquals;
 import com.gaia3d.basic.model.*;
+import com.gaia3d.basic.types.Classification;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.EasySceneCreator;
 import com.gaia3d.converter.geometry.*;
-import com.gaia3d.converter.geometry.extrusion.OldExtruder;
-import com.gaia3d.converter.geometry.extrusion.Extrusion;
-import com.gaia3d.converter.geometry.extrusion.OldTessellator;
 import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,10 +19,7 @@ import org.citygml4j.core.model.cityfurniture.CityFurniture;
 import org.citygml4j.core.model.cityobjectgroup.CityObjectGroup;
 import org.citygml4j.core.model.construction.*;
 import org.citygml4j.core.model.core.*;
-import org.citygml4j.core.model.deprecated.DeprecatedProperties;
 import org.citygml4j.core.model.deprecated.bridge.DeprecatedPropertiesOfAbstractBridge;
-import org.citygml4j.core.model.deprecated.cityobjectgroup.DeprecatedPropertiesOfCityObjectGroup;
-import org.citygml4j.core.model.deprecated.core.DeprecatedPropertiesOfAbstractCityObject;
 import org.citygml4j.core.model.deprecated.transportation.DeprecatedPropertiesOfAbstractTransportationSpace;
 import org.citygml4j.core.model.deprecated.vegetation.DeprecatedPropertiesOfPlantCover;
 import org.citygml4j.core.model.deprecated.waterbody.DeprecatedPropertiesOfWaterBody;
@@ -88,7 +83,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
     }
 
     @Override
-    public List<GaiaSceneTempHolder> convertTemp(File input, File output) {
+    public List<GaiaSceneTempGroup> convertTemp(File input, File output) {
         return null;
     }
 

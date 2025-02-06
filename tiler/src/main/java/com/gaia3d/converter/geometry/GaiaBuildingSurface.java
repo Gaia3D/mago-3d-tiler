@@ -1,6 +1,7 @@
 package com.gaia3d.converter.geometry;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.types.Classification;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;

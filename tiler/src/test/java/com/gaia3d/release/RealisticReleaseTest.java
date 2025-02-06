@@ -30,21 +30,6 @@ class RealisticReleaseTest {
 
     @Disabled
     @Test
-    void realistic01_2() {
-        String path = "R01-bansong-part2-obj";
-        String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
-                "-log", getLogPath(path).getAbsolutePath(),
-                "-pr",
-                "-c", "5187",
-                //"-debug",
-        };
-        execute(args);
-    }
-
-    @Disabled
-    @Test
     void realistic01() {
         String path = "R01-bansong-part-obj";
         String[] args = new String[] {
@@ -87,7 +72,6 @@ class RealisticReleaseTest {
         execute(args);
     }
 
-    @Disabled
     @Test
     void realistic04() {
         String path = "R04-gilcheon-all-obj";
@@ -102,7 +86,6 @@ class RealisticReleaseTest {
         execute(args);
     }
 
-    @Disabled
     @Test
     void realistic05() {
         String path = "R05-sangcheon-all-obj";

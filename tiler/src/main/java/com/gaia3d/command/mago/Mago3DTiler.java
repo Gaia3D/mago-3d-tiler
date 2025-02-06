@@ -2,6 +2,7 @@ package com.gaia3d.command.mago;
 
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.model.*;
+import com.gaia3d.process.tileprocess.TileMerger;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -24,6 +25,11 @@ public class Mago3DTiler {
             log.error("Failed to run process.", e);
             throw new RuntimeException("Failed to run process.", e);
         }
+    }
+
+    public void merge() {
+        TileMerger tileMerger = new TileMerger();
+        tileMerger.merge();
     }
 
     /**

@@ -1,14 +1,7 @@
-import org.gradle.internal.os.OperatingSystem
-
 plugins {
     id "java"
     id "com.google.cloud.tools.jib" version "3.4.0"
     id 'com.github.johnrengelman.shadow' version '8.1.0'
-}
-
-repositories {
-    maven { url "https://repo.osgeo.org/repository/release/" }
-    mavenCentral()
 }
 
 dependencies {
@@ -74,37 +67,6 @@ test {
     }
 }
 
-jib {
-    from {
-        image = "eclipse-temurin:17-jre"
-        platforms {
-            platform {
-                architecture = "amd64"
-                os = "linux"
-            }
-            platform {
-                architecture = "arm64"
-                os = "linux"
-            }
-        }
-    }
-    to {
-        image = "gaia3d/mago-3d-tiler"
-        tags = ["latest", project.version]
-    }
-    container {
-        appRoot = "/mago-3d-tiler"
-        creationTime = "USE_CURRENT_TIMESTAMP"
-        jvmFlags = [
-                "-Djava.awt.headless=true",
-                "-Dfile.encoding=UTF-8",
-                "-XX:+UseContainerSupport",
-                "-XX:MaxGCPauseMillis=100",
-                "-XX:+UseStringDeduplication"
-        ]
-    }
-}
-
 java {
     //withJavadocJar()
 }
@@ -120,8 +82,12 @@ jar {
     dependsOn 'test'
     finalizedBy shadowJar
     manifest {
-        attributes "Main-Class": "com.gaia3d.command.mago.Mago3DTilerMain",
-                "Implementation-Version": project.version
+        attributes "Main-Class": "com.gaia3d.command.mago.Mago3DTilerMain"
+        attributes "Implementation-Version": project.version
+        attributes 'Implementation-Title': '3d-tiler'
+        attributes 'Implementation-Vendor': 'Gaia3d, Inc.'
+        attributes 'Implementation-Vendor-Id': 'com.gaia3d'
+        attributes 'Implementation-URL': 'http://java.sun.com/products/java-media/jai/forDevelopers/jai-imageio/'
     }
     from {
         configurations.runtimeClasspath.collect {
@@ -141,11 +107,51 @@ shadowJar {
         attributes 'Implementation-Vendor-Id': 'com.gaia3d'
         attributes 'Implementation-URL': 'http://java.sun.com/products/java-media/jai/forDevelopers/jai-imageio/'
     }
-
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from sourceSets.main.runtimeClasspath
     configurations = [project.configurations.runtimeClasspath]
     archiveFileName = "mago-3d-tiler-${project.version}-${project.ext.lwjglNatives}.jar"
+    destinationDirectory.set(file("${projectDir}/dist"))
+}
+
+jib {
+    from {
+        image = "eclipse-temurin:17-jre"
+        platforms {
+            platform {
+                architecture = "amd64"
+                os = "linux"
+            }
+            platform {
+                architecture = "arm64"
+                os = "linux"
+            }
+        }
+    }
+    to {
+        image = "gaia3d/mago-3d-tiler"
+        tags = ["latest", project.version] as List<String>
+    }
+    container {
+        appRoot = "/mago-3d-tiler"
+        creationTime = "USE_CURRENT_TIMESTAMP"
+        jvmFlags = [
+                "-Djava.awt.headless=true",
+                "-Dfile.encoding=UTF-8",
+                "-XX:+UseContainerSupport",
+                "-XX:MaxGCPauseMillis=100",
+                "-XX:+UseStringDeduplication",
+        ]
+        entrypoint = ["java", "-jar", "/app/mago-3d-tiler-${project.version}-${project.ext.lwjglNatives}.jar"]
+    }
+    extraDirectories {
+        paths {
+            path {
+                from = file("build/libs")
+                into = "/app"
+            }
+        }
+    }
 }
 
 compileJava {

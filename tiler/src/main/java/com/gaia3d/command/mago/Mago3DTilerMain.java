@@ -24,6 +24,7 @@ public class Mago3DTilerMain {
             boolean hasLogPath = command.hasOption(ProcessOptions.LOG.getArgName());
             boolean isDebug = command.hasOption(ProcessOptions.DEBUG.getArgName());
             boolean isVersion = command.hasOption(ProcessOptions.VERSION.getArgName());
+            boolean isMerge = command.hasOption(ProcessOptions.MERGE.getArgName());
 
             // Logging configuration
             if (isQuiet) {
@@ -54,7 +55,11 @@ public class Mago3DTilerMain {
             }
             GlobalOptions.init(command);
             Mago3DTiler mago3DTiler = new Mago3DTiler();
-            mago3DTiler.execute();
+            if (isMerge) {
+                mago3DTiler.merge();
+            } else {
+                mago3DTiler.execute();
+            }
         } catch (ParseException e) {
             log.error("Failed to parse command line options, Please check the arguments.", e);
             throw new RuntimeException("Failed to parse command line options, Please check the arguments.", e);

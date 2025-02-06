@@ -10,7 +10,7 @@ import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.EasySceneCreator;
 import com.gaia3d.converter.geometry.AbstractGeometryConverter;
 import com.gaia3d.converter.geometry.GaiaExtrusionBuilding;
-import com.gaia3d.converter.geometry.GaiaSceneTempHolder;
+import com.gaia3d.converter.geometry.GaiaSceneTempGroup;
 import com.gaia3d.converter.geometry.InnerRingRemover;
 import com.gaia3d.converter.geometry.pipe.GaiaPipeLineString;
 import com.gaia3d.converter.geometry.pipe.PipeType;
@@ -33,7 +33,6 @@ import org.opengis.feature.type.PropertyDescriptor;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -61,8 +60,8 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
     }
 
     @Override
-    public List<GaiaSceneTempHolder> convertTemp(File input, File output) {
-        List<GaiaSceneTempHolder> sceneTemps = new ArrayList<>();
+    public List<GaiaSceneTempGroup> convertTemp(File input, File output) {
+        List<GaiaSceneTempGroup> sceneTemps = new ArrayList<>();
         GaiaExtruder gaiaExtruder = new GaiaExtruder();
         InnerRingRemover innerRingRemover = new InnerRingRemover();
 
@@ -304,7 +303,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                         gaiaScene.setOriginalPath(tempFile.toPath());
                     });
                     log.info("[{}] write temp : {}", tempName, scenes.size());
-                    GaiaSceneTempHolder sceneTemp = GaiaSceneTempHolder.builder()
+                    GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder()
                             .tempScene(scenes)
                             .tempFile(tempFile).build();
                     sceneTemp.minimize(tempFile);
@@ -321,7 +320,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                     gaiaScene.setOriginalPath(tempFile.toPath());
                 });
                 log.info("[{}] write temp : {}", tempName, scenes.size());
-                GaiaSceneTempHolder sceneTemp = GaiaSceneTempHolder.builder()
+                GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder()
                         .tempScene(scenes)
                         .tempFile(tempFile).build();
                 sceneTemp.minimize(tempFile);
@@ -336,7 +335,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
 
     @Override
     protected List<GaiaScene> convert(File file) {
-        GaiaSceneTempHolder sceneTemp = GaiaSceneTempHolder.builder()
+        GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder()
                 .tempFile(file)
                 .isMinimized(true)
                 .build();
@@ -346,7 +345,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
     }
 
 
-    private void convertPipeLineStrings(List<GaiaPipeLineString> pipeLineStrings, List<GaiaSceneTempHolder> sceneTemps, File input, File output) {
+    private void convertPipeLineStrings(List<GaiaPipeLineString> pipeLineStrings, List<GaiaSceneTempGroup> sceneTemps, File input, File output) {
         if (pipeLineStrings.isEmpty()) {
             return;
         }
@@ -461,7 +460,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
             if (scenes.size() >= sceneCount) {
                 String tempName = UUID.randomUUID().toString() + input.getName();
                 File tempFile = new File(output, tempName);
-                GaiaSceneTempHolder sceneTemp = GaiaSceneTempHolder.builder()
+                GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder()
                         .tempScene(scenes)
                         .tempFile(tempFile).build();
                 sceneTemp.minimize(tempFile);
@@ -472,7 +471,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
         if (!scenes.isEmpty()) {
             String tempName = UUID.randomUUID().toString() + input.getName();
             File tempFile = new File(output, tempName);
-            GaiaSceneTempHolder sceneTemp = GaiaSceneTempHolder.builder()
+            GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder()
                     .tempScene(scenes)
                     .tempFile(tempFile).build();
             sceneTemp.minimize(tempFile);

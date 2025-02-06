@@ -10,6 +10,8 @@ public enum ProcessOptions {
     HELP("help", "h", "help", false, "Print Gelp"),
     VERSION("version", "v", "version", false, "Print Version Info"),
     QUIET("quiet", "q", "quiet", false, "Quiet mode/Silent mode"),
+    LEAVE_TEMP("leaveTemp", "lt", "leaveTemp", false, "Leave temporary files"),
+    MERGE("merge", "m", "merge", false, "Merge tileset.json files"),
 
     // Path Options
     INPUT("input", "i", "input", true, "Input directory path"),
@@ -39,8 +41,6 @@ public enum ProcessOptions {
     MIN_GEOMETRIC_ERROR("minGeometricError", "ng", "minGeometricError", true, "Minimum geometric error (Default: 16.0)"),
     MAX_GEOMETRIC_ERROR("maxGeometricError", "mg", "maxGeometricError", true, "Maximum geometric error (Default: Integer max value)"),
     MAX_POINTS("maxPoints", "mp", "maxPoints", true, "Maximum number of points per a tile (Default: 100000)"),
-    //POINT_SCALE("pointScale", "ps", "pointScale", true, "Pointscloud geometryError scale setting (Default: 2)"),
-    //POINT_SKIP("pointSkip", "pk", "pointSkip", true, "Number of Pointscloud omissions (ex: 1/4)(Default: 4)"),
     POINT_RATIO("pointRatio", "pcr", "pointRatio", true, "Percentage of points from original data (Default: 50)"),
     POINT_PRECISION("sourcePrecision", "sp", "sourcePrecision", false, "Create pointscloud tile with original precision. (Slow)"),
     POINT_FORCE_4BYTE_RGB("force4ByteRGB", "f4", "force4ByteRGB", false, "Force 4Byte RGB for pointscloud tile."),

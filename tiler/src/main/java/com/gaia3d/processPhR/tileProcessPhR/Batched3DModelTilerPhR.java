@@ -653,7 +653,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
             // now, make a halfEdgeScene from the bufferedImages.*********************************************************************
             String outputPathString = globalOptions.getOutputPath();
-            String netTempPathString = outputPathString + File.separator + "netTemp";
+            String netTempPathString = outputPathString + File.separator + "temp" + File.separator +  "netTemp";
             Path netTempPath = Paths.get(netTempPathString);
             // create dirs if not exists.***
             File netTempFile = netTempPath.toFile();
@@ -867,7 +867,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
             // now, make a halfEdgeScene from the bufferedImages.*********************************************************************
             String outputPathString = globalOptions.getOutputPath();
-            String netTempPathString = outputPathString + File.separator + "netTemp";
+            String netTempPathString = outputPathString + File.separator + "temp" + File.separator + "netTemp";
             Path netTempPath = Paths.get(netTempPathString);
             // create dirs if not exists.***
             File netTempFile = netTempPath.toFile();
@@ -1322,7 +1322,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
         // create tileInfos for the cut scenes.***
         String outputPathString = globalOptions.getOutputPath();
-        String cutTempPathString = outputPathString + File.separator + "cutTemp";
+        String cutTempPathString = outputPathString + File.separator + "temp" + File.separator + "cutTemp";
         Path cutTempPath = Paths.get(cutTempPathString);
         // create directory if not exists.***
         if (!cutTempPath.toFile().exists() && cutTempPath.toFile().mkdirs()) {

@@ -19,12 +19,12 @@ public class ExtrusionTempGenerator {
         GlobalOptions options = GlobalOptions.getInstance();
         FormatType formatType = options.getInputFormat();
         if (formatType.equals(FormatType.GEOJSON) || formatType.equals(FormatType.SHP)) {
-            List<GaiaSceneTempHolder> sceneList = new ArrayList<>();
+            List<GaiaSceneTempGroup> sceneList = new ArrayList<>();
             for (File file : fileList) {
-                List<GaiaSceneTempHolder> tempList = converter.convertTemp(file, tempPath);
+                List<GaiaSceneTempGroup> tempList = converter.convertTemp(file, tempPath);
                 sceneList.addAll(tempList);
             }
-            return sceneList.stream().map(GaiaSceneTempHolder::getTempFile).collect(Collectors.toList());
+            return sceneList.stream().map(GaiaSceneTempGroup::getTempFile).collect(Collectors.toList());
         } else {
             return fileList;
         }

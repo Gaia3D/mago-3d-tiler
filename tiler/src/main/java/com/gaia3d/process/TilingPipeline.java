@@ -167,6 +167,10 @@ public class TilingPipeline implements Pipeline {
     }
 
     private void deleteTemp() throws IOException {
+        if (globalOptions.isLeaveTemp()) {
+            return;
+        }
+
         /* delete temp directory */
         File tempFile = new File(globalOptions.getOutputPath(), "temp");
         if (tempFile.exists() && tempFile.isDirectory()) {
