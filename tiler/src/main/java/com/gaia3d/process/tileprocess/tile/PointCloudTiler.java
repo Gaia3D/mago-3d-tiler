@@ -277,7 +277,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         printJvmMemory();
         allPointClouds.forEach(pointCloud -> {
             File tempPath = new File(GlobalOptions.getInstance().getOutputPath(), "temp");
-            File tempFile = new File(tempPath, UUID.randomUUID());
+            File tempFile = new File(tempPath, UUID.randomUUID().toString());
             pointCloud.minimize(tempFile);
             log.info("[Tile][{}/{}][Minimize][{}/{}] Write temp file : {}", index, maximumIndex, atomicInteger.getAndIncrement(), size, tempFile.getName());
         });

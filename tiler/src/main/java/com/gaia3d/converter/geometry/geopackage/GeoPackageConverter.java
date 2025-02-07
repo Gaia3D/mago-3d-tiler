@@ -114,8 +114,6 @@ public class GeoPackageConverter extends AbstractGeometryConverter implements Co
                 SimpleFeatureReader simpleFeatureReader = geoPackage.reader(featureEntry, filter, transaction);
                 while (simpleFeatureReader.hasNext()) {
                     SimpleFeature feature = simpleFeatureReader.next();
-                    log.info("Feature: {}", feature);
-
                     Geometry geom = (Geometry) feature.getDefaultGeometry();
                     if (geom == null) {
                         log.debug("Is Null Geometry : {}", feature.getID());
@@ -156,7 +154,6 @@ public class GeoPackageConverter extends AbstractGeometryConverter implements Co
                         }
                         String attributeString = castStringFromObject(attribute, "null");
                         attributes.put(attributeDescriptor.getName().getLocalPart(), attributeString);
-                        log.info("Attribute: {} = {}", attribute.toString(), attributeString);
                     });
 
                     for (LineString lineString : lineStrings) {
@@ -479,7 +476,7 @@ public class GeoPackageConverter extends AbstractGeometryConverter implements Co
                 log.debug("Invalid Scene : {}", rootNode.getName());
                 continue;
             }
-        
+
             scenes.add(scene);
             if (scenes.size() >= sceneCount) {
                 String tempName = UUID.randomUUID() + input.getName();
