@@ -468,7 +468,7 @@ public class GaiaTextureCoordinator {
             }
 
             // clamp the backGroundColor.***
-            BufferedImage clamped = ImageUtils.clampBackGroundColor(this.atlasImage, CLAMP_COLOR, 1, 30);
+            BufferedImage clamped = ImageUtils.clampBackGroundColor(this.atlasImage, CLAMP_COLOR, 1, 20);
             clamped = ImageUtils.changeBackgroundColor(clamped, CLAMP_COLOR, BACKGROUND_COLOR);
             Graphics2D graphics2D = this.atlasImage.createGraphics();
             graphics2D.drawImage(clamped, 0, 0, null);
