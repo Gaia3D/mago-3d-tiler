@@ -62,6 +62,8 @@ public class GlobalOptions {
     public static final int REALISTIC_SCREEN_COLOR_TEXTURE_SIZE = 1024;
     public static final double REALISTIC_LEAF_TILE_SIZE = 25.0; // meters
 
+    public static final int INSTANCE_POLYGON_CONTAINS_POINT_COUNTS = -1;
+
     private String version; // version flag
     private String javaVersionInfo; // java version flag
     private String programInfo; // program info flag

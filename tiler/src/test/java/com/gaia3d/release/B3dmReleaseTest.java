@@ -120,7 +120,8 @@ class B3dmReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                "-c", "5186"
+                "-c", "5186",
+                "-terrain", getInputPath(path).getAbsolutePath() + "/seoul.tif",
         };
         execute(args);
     }
