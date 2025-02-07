@@ -1,4 +1,4 @@
-mago 3DTiler
+![mago-3d-tiler](https://github.com/user-attachments/assets/e7f8086d-ab5e-4848-9f51-99d444691f91)
 ===
 
 ### The Premier OGC 3D Tiles Solution!
