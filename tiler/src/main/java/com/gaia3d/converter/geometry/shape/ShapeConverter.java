@@ -267,7 +267,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         return scenes;
     }
 
-    //convertPipeLineStrings(pipeLineStrings, scenes);
     private void convertExtrusionBuildings(List<GaiaExtrusionBuilding> buildings, List<GaiaSceneTempGroup> sceneTemps, File input, File output) {
         double skirtHeight = globalOptions.getSkirtHeight();
         GaiaExtruder gaiaExtruder = new GaiaExtruder();
@@ -328,15 +327,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             Matrix4d rootTransformMatrix = new Matrix4d().identity();
             rootTransformMatrix.translate(center, rootTransformMatrix);
             rootNode.setTransformMatrix(rootTransformMatrix);
-
-            //resultScenes.add(scene);
-            /*String tempName = UUID.randomUUID().toString() + input.getName();
-            File tempFile = new File(output, tempName);
-            GaiaSceneTempHolder sceneTemp = GaiaSceneTempHolder.builder()
-                    .tempScene(scene)
-                    .tempFile(tempFile).build();
-            sceneTemp.minimize(tempFile);
-            sceneTemps.add(sceneTemp);*/
 
             scenes.add(scene);
             if (scenes.size() >= sceneCount) {
@@ -484,7 +474,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             //resultScenes.add(scene);
             scenes.add(scene);
             if (scenes.size() >= sceneCount) {
-                String tempName = UUID.randomUUID().toString() + input.getName();
+                String tempName = UUID.randomUUID() + input.getName();
                 File tempFile = new File(output, tempName);
                 GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder()
                         .tempScene(scenes)
@@ -495,7 +485,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             }
         }
         if (!scenes.isEmpty()) {
-            String tempName = UUID.randomUUID().toString() + input.getName();
+            String tempName = UUID.randomUUID() + input.getName();
             File tempFile = new File(output, tempName);
             GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder()
                     .tempScene(scenes)

@@ -86,7 +86,7 @@ public class InstancedProcessModel implements ProcessFlowModel {
     }
 
     private boolean getYUpAxis(FormatType formatType, boolean isYUpAxis) {
-        if (formatType == FormatType.CITYGML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON) {
+        if (formatType == FormatType.CITYGML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON  || formatType == FormatType.GEO_PACKAGE) {
             isYUpAxis = true;
         }
         return isYUpAxis;

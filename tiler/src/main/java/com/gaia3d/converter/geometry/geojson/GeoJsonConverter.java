@@ -458,7 +458,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
             //resultScenes.add(scene);
             scenes.add(scene);
             if (scenes.size() >= sceneCount) {
-                String tempName = UUID.randomUUID().toString() + input.getName();
+                String tempName = UUID.randomUUID() + input.getName();
                 File tempFile = new File(output, tempName);
                 GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder()
                         .tempScene(scenes)
@@ -469,7 +469,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
             }
         }
         if (!scenes.isEmpty()) {
-            String tempName = UUID.randomUUID().toString() + input.getName();
+            String tempName = UUID.randomUUID() + input.getName();
             File tempFile = new File(output, tempName);
             GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder()
                     .tempScene(scenes)

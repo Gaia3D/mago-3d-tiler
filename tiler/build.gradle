@@ -35,6 +35,7 @@ dependencies {
     implementation "org.geotools:gt-process:26.5"
     implementation "org.geotools:gt-process-raster:26.5"
     implementation "org.geotools:gt-process-feature:26.5"
+    implementation "org.geotools:gt-geopkg:26.5"
     implementation "javax.media:jai_core:1.1.3"
     implementation "javax.media:jai_imageio:1.1"
 
