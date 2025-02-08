@@ -10,10 +10,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geojson.feature.FeatureJSON;
 import org.joml.Vector3d;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.MultiPoint;
-import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.*;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 import org.opengis.feature.simple.SimpleFeature;
@@ -50,6 +47,7 @@ public class GeojsonPointReader implements AttributeReader {
         List<KmlInfo> result = new ArrayList<>();
         String altitudeColumnName = globalOptions.getAltitudeColumn();
         String headingColumnName = globalOptions.getHeadingColumn();
+        int instancePolygonContainsPointCounts = GlobalOptions.INSTANCE_POLYGON_CONTAINS_POINT_COUNTS;
 
         try (BufferedInputStream bufferedInputStream = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
             FeatureJSON geojson = new FeatureJSON();
@@ -69,47 +67,60 @@ public class GeojsonPointReader implements AttributeReader {
                 SimpleFeature feature = iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
 
-                Point point = null;
-                if (geom instanceof MultiPoint) {
+                List<Point> points = new ArrayList<>();
+                if (geom instanceof MultiPolygon multiPolygon) {
+                    for (int i = 0; i < multiPolygon.getNumGeometries(); i++) {
+                        Polygon polygon = (Polygon) multiPolygon.getGeometryN(i);
+                        points.addAll(getRandomContainsPoints(polygon, geom.getFactory(), instancePolygonContainsPointCounts));
+                    }
+                } else if (geom instanceof Polygon polygon) {
+                    points.addAll(getRandomContainsPoints(polygon, geom.getFactory(), instancePolygonContainsPointCounts));
+                } else if (geom instanceof MultiPoint) {
                     GeometryFactory factory = geom.getFactory();
-                    point = factory.createPoint(geom.getCoordinate());
-                } else if (geom instanceof Point) {
-                    point = (Point) geom;
+                    Coordinate[] coordinates = geom.getCoordinates();
+                    for (Coordinate coordinate : coordinates) {
+                        Point point = factory.createPoint(coordinate);
+                        points.add(point);
+                    }
+                } else if (geom instanceof Point point) {
+                    points.add(point);
                 } else {
                     log.error("Geometry type is not supported.");
                     continue;
                 }
 
-                Map<String, String> attributes = new HashMap<>();
-                FeatureType featureType = feature.getFeatureType();
-                Collection<PropertyDescriptor> featureDescriptors = featureType.getDescriptors();
-                AtomicInteger index = new AtomicInteger(0);
-                featureDescriptors.forEach(attributeDescriptor -> {
-                    Object attribute = feature.getAttribute(index.getAndIncrement());
-                    if (attribute instanceof Geometry) {
-                        return;
+                for (Point point : points) {
+                    Map<String, String> attributes = new HashMap<>();
+                    FeatureType featureType = feature.getFeatureType();
+                    Collection<PropertyDescriptor> featureDescriptors = featureType.getDescriptors();
+                    AtomicInteger index = new AtomicInteger(0);
+                    featureDescriptors.forEach(attributeDescriptor -> {
+                        Object attribute = feature.getAttribute(index.getAndIncrement());
+                        if (attribute instanceof Geometry) {
+                            return;
+                        }
+                        String attributeString = castStringFromObject(attribute, "null");
+                        attributes.put(attributeDescriptor.getName().getLocalPart(), attributeString);
+                    });
+
+                    double x = point.getX();
+                    double y = point.getY();
+                    double heading = getNumberAttribute(feature, headingColumnName, 0.0d);
+                    double altitude = getNumberAttribute(feature, altitudeColumnName, 0.0d);
+
+                    Vector3d position;
+                    CoordinateReferenceSystem crs = globalOptions.getCrs();
+                    if (crs != null) {
+                        ProjCoordinate projCoordinate = new ProjCoordinate(x, y, 0.0d);
+                        ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
+                        position = new Vector3d(centerWgs84.x, centerWgs84.y, altitude);
+                    } else {
+                        position = new Vector3d(x, y, altitude);
                     }
-                    String attributeString = castStringFromObject(attribute, "null");
-                    attributes.put(attributeDescriptor.getName().getLocalPart(), attributeString);
-                });
 
-                double x = point.getX();
-                double y = point.getY();
-                double heading = getNumberAttribute(feature, headingColumnName, 0.0d);
-                double altitude = getNumberAttribute(feature, altitudeColumnName, 0.0d);
-
-                Vector3d position;
-                CoordinateReferenceSystem crs = globalOptions.getCrs();
-                if (crs != null) {
-                    ProjCoordinate projCoordinate = new ProjCoordinate(x, y, 0.0d);
-                    ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
-                    position = new Vector3d(centerWgs84.x, centerWgs84.y, altitude);
-                } else {
-                    position = new Vector3d(x, y, altitude);
+                    KmlInfo kmlInfo = KmlInfo.builder().name("I3dmFromGeojson").position(position).heading(heading).tilt(0.0d).roll(0.0d).scaleX(1.0d).scaleY(1.0d).scaleZ(1.0d).properties(attributes).build();
+                    result.add(kmlInfo);
                 }
-
-                KmlInfo kmlInfo = KmlInfo.builder().name("I3dmFromGeojson").position(position).heading(heading).tilt(0.0d).roll(0.0d).scaleX(1.0d).scaleY(1.0d).scaleZ(1.0d).properties(attributes).build();
-                result.add(kmlInfo);
             }
             iterator.close();
         } catch (IOException e) {

@@ -91,7 +91,7 @@ public class GaiaTranslator implements PreProcess {
         if (offset == null) {
             offset = new Vector3d();
         }
-        if (formatType == FormatType.CITYGML || formatType == FormatType.INDOORGML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON) {
+        if (formatType == FormatType.CITYGML || formatType == FormatType.INDOORGML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON || formatType == FormatType.GEO_PACKAGE) {
             GaiaNode rootNode = gaiaScene.getNodes().get(0);
             Matrix4d transform = rootNode.getTransformMatrix();
             Vector3d center = new Vector3d(transform.get(3, 0), transform.get(3, 1), 0.0d);

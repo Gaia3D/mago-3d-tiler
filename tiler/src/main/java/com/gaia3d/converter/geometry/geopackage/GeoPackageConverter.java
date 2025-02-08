@@ -1,4 +1,4 @@
-package com.gaia3d.converter.geometry.shape;
+package com.gaia3d.converter.geometry.geopackage;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.tessellator.GaiaExtruder;
@@ -15,16 +15,22 @@ import com.gaia3d.converter.geometry.InnerRingRemover;
 import com.gaia3d.converter.geometry.pipe.GaiaPipeLineString;
 import com.gaia3d.converter.geometry.pipe.PipeType;
 import com.gaia3d.util.GlobeUtils;
-import lombok.RequiredArgsConstructor;
+import it.geosolutions.imageio.maskband.DatasetLayout;
 import lombok.extern.slf4j.Slf4j;
-import org.geotools.data.DataStore;
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.data.Query;
-import org.geotools.data.shapefile.ShapefileDataStore;
-import org.geotools.data.shapefile.files.ShpFiles;
-import org.geotools.data.shapefile.shp.ShapefileReader;
+import org.geotools.data.Transaction;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureReader;
 import org.geotools.data.store.ContentFeatureSource;
 import org.geotools.feature.FeatureIterator;
+import org.geotools.geometry.jts.Geometries;
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.geopkg.FeatureEntry;
+import org.geotools.geopkg.GeoPackage;
+import org.geotools.geopkg.mosaic.GeoPackageReader;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.locationtech.jts.geom.*;
@@ -32,20 +38,25 @@ import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.FeatureType;
+import org.opengis.feature.type.GeometryType;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.filter.Filter;
+import org.opengis.parameter.GeneralParameterValue;
 
+import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * GeoPackage Converter
+ */
 @Slf4j
-@RequiredArgsConstructor
-public class ShapeConverter extends AbstractGeometryConverter implements Converter {
+public class GeoPackageConverter extends AbstractGeometryConverter implements Converter {
 
-    private final GlobalOptions globalOptions = GlobalOptions.getInstance();
+    private static final GlobalOptions globalOptions = GlobalOptions.getInstance();
 
     @Override
     public List<GaiaScene> load(String path) {
@@ -78,185 +89,181 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         double minimumHeightValue = globalOptions.getMinimumHeight();
         double skirtHeight = globalOptions.getSkirtHeight();
 
-        ShpFiles shpFiles = null;
-        ShapefileReader reader = null;
+        GeoPackage geoPackage = null;
+        DataSource dataSource = null;
         try {
-            shpFiles = new ShpFiles(input);
-            reader = new ShapefileReader(shpFiles, true, true, new GeometryFactory());
-            DataStore dataStore = new ShapefileDataStore(input.toURI().toURL());
-            String typeName = dataStore.getTypeNames()[0];
-            ContentFeatureSource source = (ContentFeatureSource) dataStore.getFeatureSource(typeName);
-            var query = new Query(typeName, Filter.INCLUDE);
+            geoPackage = new GeoPackage(input);
+            dataSource = geoPackage.getDataSource();
+            List<FeatureEntry> features = geoPackage.features();
 
-            int totalCount = source.getCount(query);
-            log.info(" - Total Shape Feature Count : {}", totalCount);
+            for (FeatureEntry featureEntry : features) {
 
-            SimpleFeatureCollection features = source.getFeatures(query);
-            FeatureIterator<SimpleFeature> iterator = features.features();
+                Geometries geometryType = featureEntry.getGeometryType();
+                log.info("FeatureTableName: {}", featureEntry.getTableName());
+                log.info("GeometryType: {}", geometryType.getName());
+                log.info("GeometryColumn: {}", featureEntry.getGeometryColumn());
+                log.info("SRID: {}", featureEntry.getSrid());
+                log.info("TableName: {}", featureEntry.getTableName());
+            }
+
             List<GaiaExtrusionBuilding> buildings = new ArrayList<>();
             List<GaiaPipeLineString> pipeLineStrings = new ArrayList<>();
-
-            var coordinateReferenceSystem = features.getSchema().getCoordinateReferenceSystem();
-            if (isDefaultCrs && coordinateReferenceSystem != null) {
-                CoordinateReferenceSystem crs = GlobeUtils.convertProj4jCrsFromGeotoolsCrs(coordinateReferenceSystem);
-                log.info(" - Coordinate Reference System : {}", crs.getName());
-                globalOptions.setCrs(crs);
-            }
-
-            while (iterator.hasNext()) {
-                SimpleFeature feature = iterator.next();
-                Geometry geom = (Geometry) feature.getDefaultGeometry();
-                if (geom == null) {
-                    log.debug("Is Null Geometry : {}", feature.getID());
-                    continue;
-                }
-
-                List<Polygon> polygons = new ArrayList<>();
-                List<LineString> lineStrings = new ArrayList<>();
-                if (geom instanceof MultiPolygon) {
-                    int count = geom.getNumGeometries();
-                    for (int i = 0; i < count; i++) {
-                        Polygon polygon = (Polygon) geom.getGeometryN(i);
-                        polygons.add(polygon);
-                    }
-                } else if (geom instanceof Polygon) {
-                    polygons.add((Polygon) geom);
-                } else if (geom instanceof LineString) {
-                    lineStrings.add((LineString) geom);
-                } else if (geom instanceof MultiLineString) {
-                    int count = geom.getNumGeometries();
-                    for (int i = 0; i < count; i++) {
-                        LineString lineString = (LineString) geom.getGeometryN(i);
-                        lineStrings.add(lineString);
-                    }
-                } else {
-                    log.debug("Is Not Supported Geometry Type : {}", geom.getGeometryType());
-                    continue;
-                }
-
-                Map<String, String> attributes = new HashMap<>();
-                FeatureType featureType = feature.getFeatureType();
-                Collection<PropertyDescriptor> featureDescriptors = featureType.getDescriptors();
-                AtomicInteger index = new AtomicInteger(0);
-                featureDescriptors.forEach(attributeDescriptor -> {
-                    Object attribute = feature.getAttribute(index.getAndIncrement());
-                    if (attribute instanceof Geometry) {
-                        return;
-                    }
-                    String attributeString = castStringFromObject(attribute, "null");
-                    attributes.put(attributeDescriptor.getName().getLocalPart(), attributeString);
-                });
-
-                for (LineString lineString : lineStrings) {
-                    Coordinate[] coordinates = lineString.getCoordinates();
-                    List<Vector3d> positions = new ArrayList<>();
-                    if (coordinates.length < 2) {
-                        log.warn("Invalid LineString : {}", feature.getID());
+            for (FeatureEntry featureEntry : features) {
+                Filter filter = Filter.INCLUDE;
+                Transaction transaction = Transaction.AUTO_COMMIT;
+                SimpleFeatureReader simpleFeatureReader = geoPackage.reader(featureEntry, filter, transaction);
+                while (simpleFeatureReader.hasNext()) {
+                    SimpleFeature feature = simpleFeatureReader.next();
+                    Geometry geom = (Geometry) feature.getDefaultGeometry();
+                    if (geom == null) {
+                        log.debug("Is Null Geometry : {}", feature.getID());
                         continue;
                     }
-                    for (Coordinate coordinate : coordinates) {
-                        Point point = new GeometryFactory().createPoint(coordinate);
-                        double x, y, z;
-                        if (flipCoordinate) {
-                            x = point.getY();
-                            y = point.getX();
-                        } else {
-                            x = point.getX();
-                            y = point.getY();
+
+                    List<Polygon> polygons = new ArrayList<>();
+                    List<LineString> lineStrings = new ArrayList<>();
+                    if (geom instanceof MultiPolygon) {
+                        int count = geom.getNumGeometries();
+                        for (int i = 0; i < count; i++) {
+                            Polygon polygon = (Polygon) geom.getGeometryN(i);
+                            polygons.add(polygon);
                         }
-                        z = point.getCoordinate().getZ();
-                        Vector3d position = new Vector3d(x, y, z); // usually crs 3857.***
-                        positions.add(position);
-                    }
-                    double diameter = getDiameter(feature, diameterColumnName);
-
-                    GaiaPipeLineString pipeLineString = GaiaPipeLineString.builder().id(feature.getID()).profileType(PipeType.CIRCULAR).diameter(diameter).properties(attributes).positions(positions).build();
-                    pipeLineString.setOriginalFilePath(input.getPath());
-                    pipeLineStrings.add(pipeLineString);
-                }
-
-                for (Polygon polygon : polygons) {
-                    if (!polygon.isValid()) {
-                        log.warn("{} Is Invalid Polygon.", feature.getID());
-                        continue;
-                    }
-                    LineString lineString = polygon.getExteriorRing();
-                    Coordinate[] outerCoordinates = lineString.getCoordinates();
-
-                    int innerRingCount = polygon.getNumInteriorRing();
-                    List<Coordinate[]> innerCoordinates = new ArrayList<>();
-                    for (int i = 0; i < innerRingCount; i++) {
-                        LineString innerRing = polygon.getInteriorRingN(i);
-                        Coordinate[] innerCoordinatesArray = innerRing.getCoordinates();
-                        innerCoordinates.add(innerCoordinatesArray);
-                    }
-                    if (innerRingCount > 0) {
-                        outerCoordinates = innerRingRemover.removeAll(outerCoordinates, innerCoordinates);
-                    }
-
-                    GaiaBoundingBox boundingBox = new GaiaBoundingBox();
-                    List<Vector3d> positions = new ArrayList<>();
-
-                    for (Coordinate coordinate : outerCoordinates) {
-                        double x, y, z;
-                        if (flipCoordinate) {
-                            x = coordinate.getY();
-                            y = coordinate.getX();
-                        } else {
-                            x = coordinate.getX();
-                            y = coordinate.getY();
+                    } else if (geom instanceof Polygon) {
+                        polygons.add((Polygon) geom);
+                    } else if (geom instanceof LineString) {
+                        lineStrings.add((LineString) geom);
+                    } else if (geom instanceof MultiLineString) {
+                        int count = geom.getNumGeometries();
+                        for (int i = 0; i < count; i++) {
+                            LineString lineString = (LineString) geom.getGeometryN(i);
+                            lineStrings.add(lineString);
                         }
-                        z = coordinate.getZ();
-
-                        Vector3d position;
-                        CoordinateReferenceSystem crs = globalOptions.getCrs();
-                        if (crs != null && !crs.getName().equals("EPSG:4326")) {
-                            ProjCoordinate projCoordinate = new ProjCoordinate(x, y, boundingBox.getMinZ());
-                            ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
-                            position = new Vector3d(centerWgs84.x, centerWgs84.y, 0.0d);
-                        } else {
-                            position = new Vector3d(x, y, 0.0d);
-                        }
-
-                        positions.add(position);
-                        boundingBox.addPoint(position);
-                    }
-
-                    String name = getAttributeValueOfDefault(feature, nameColumnName, "Extrusion-Building");
-                    if (positions.size() >= 3) {
-                        double height = getHeight(feature, heightColumnName, minimumHeightValue);
-                        double altitude = absoluteAltitudeValue;
-                        if (altitudeColumnName != null) {
-                            altitude = getAltitude(feature, altitudeColumnName);
-                        }
-                        GaiaExtrusionBuilding building = GaiaExtrusionBuilding.builder().id(feature.getID())
-                                .name(name)
-                                .boundingBox(boundingBox)
-                                .floorHeight(altitude)
-                                .roofHeight(height + skirtHeight)
-                                .positions(positions)
-                                .originalFilePath(input.getPath()).properties(attributes).build();
-                        buildings.add(building);
                     } else {
-                        log.warn("Invalid Geometry : {}, {}", feature.getID(), name);
+                        log.debug("Is Not Supported Geometry Type : {}", geom.getGeometryType());
+                        continue;
+                    }
+
+                    Map<String, String> attributes = new HashMap<>();
+                    FeatureType featureType = feature.getFeatureType();
+                    Collection<PropertyDescriptor> featureDescriptors = featureType.getDescriptors();
+                    AtomicInteger index = new AtomicInteger(0);
+                    featureDescriptors.forEach(attributeDescriptor -> {
+                        Object attribute = feature.getAttribute(index.getAndIncrement());
+                        if (attribute instanceof Geometry) {
+                            return;
+                        }
+                        String attributeString = castStringFromObject(attribute, "null");
+                        attributes.put(attributeDescriptor.getName().getLocalPart(), attributeString);
+                    });
+
+                    for (LineString lineString : lineStrings) {
+                        Coordinate[] coordinates = lineString.getCoordinates();
+                        List<Vector3d> positions = new ArrayList<>();
+                        if (coordinates.length < 2) {
+                            log.warn("Invalid LineString : {}", feature.getID());
+                            continue;
+                        }
+                        for (Coordinate coordinate : coordinates) {
+                            Point point = new GeometryFactory().createPoint(coordinate);
+                            double x, y, z;
+                            if (flipCoordinate) {
+                                x = point.getY();
+                                y = point.getX();
+                            } else {
+                                x = point.getX();
+                                y = point.getY();
+                            }
+                            z = point.getCoordinate().getZ();
+                            Vector3d position = new Vector3d(x, y, z); // usually crs 3857.***
+                            positions.add(position);
+                        }
+                        double diameter = getDiameter(feature, diameterColumnName);
+
+                        GaiaPipeLineString pipeLineString = GaiaPipeLineString.builder().id(feature.getID()).profileType(PipeType.CIRCULAR).diameter(diameter).properties(attributes).positions(positions).build();
+                        pipeLineString.setOriginalFilePath(input.getPath());
+                        pipeLineStrings.add(pipeLineString);
+                    }
+
+                    for (Polygon polygon : polygons) {
+                        if (!polygon.isValid()) {
+                            log.warn("{} Is Invalid Polygon.", feature.getID());
+                            continue;
+                        }
+                        LineString lineString = polygon.getExteriorRing();
+                        Coordinate[] outerCoordinates = lineString.getCoordinates();
+
+                        int innerRingCount = polygon.getNumInteriorRing();
+                        List<Coordinate[]> innerCoordinates = new ArrayList<>();
+                        for (int i = 0; i < innerRingCount; i++) {
+                            LineString innerRing = polygon.getInteriorRingN(i);
+                            Coordinate[] innerCoordinatesArray = innerRing.getCoordinates();
+                            innerCoordinates.add(innerCoordinatesArray);
+                        }
+                        if (innerRingCount > 0) {
+                            outerCoordinates = innerRingRemover.removeAll(outerCoordinates, innerCoordinates);
+                        }
+
+                        GaiaBoundingBox boundingBox = new GaiaBoundingBox();
+                        List<Vector3d> positions = new ArrayList<>();
+
+                        for (Coordinate coordinate : outerCoordinates) {
+                            double x, y, z;
+                            if (flipCoordinate) {
+                                x = coordinate.getY();
+                                y = coordinate.getX();
+                            } else {
+                                x = coordinate.getX();
+                                y = coordinate.getY();
+                            }
+                            z = coordinate.getZ();
+
+                            Vector3d position;
+                            CoordinateReferenceSystem crs = globalOptions.getCrs();
+                            if (crs != null && !crs.getName().equals("EPSG:4326")) {
+                                ProjCoordinate projCoordinate = new ProjCoordinate(x, y, boundingBox.getMinZ());
+                                ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
+                                position = new Vector3d(centerWgs84.x, centerWgs84.y, 0.0d);
+                            } else {
+                                position = new Vector3d(x, y, 0.0d);
+                            }
+
+                            positions.add(position);
+                            boundingBox.addPoint(position);
+                        }
+
+                        String name = getAttributeValueOfDefault(feature, nameColumnName, "Extrusion-Building");
+                        if (positions.size() >= 3) {
+                            double height = getHeight(feature, heightColumnName, minimumHeightValue);
+                            double altitude = absoluteAltitudeValue;
+                            if (altitudeColumnName != null) {
+                                altitude = getAltitude(feature, altitudeColumnName);
+                            }
+                            GaiaExtrusionBuilding building = GaiaExtrusionBuilding.builder().id(feature.getID())
+                                    .name(name)
+                                    .boundingBox(boundingBox)
+                                    .floorHeight(altitude)
+                                    .roofHeight(height + skirtHeight)
+                                    .positions(positions)
+                                    .originalFilePath(input.getPath()).properties(attributes).build();
+                            buildings.add(building);
+                        } else {
+                            log.warn("Invalid Geometry : {}, {}", feature.getID(), name);
+                        }
                     }
                 }
             }
-            iterator.close();
-            reader.close();
-            shpFiles.dispose();
-            dataStore.dispose();
-
             convertPipeLineStrings(pipeLineStrings, sceneTemps, input, output);
             convertExtrusionBuildings(buildings, sceneTemps, input, output);
+            geoPackage.close();
         } catch (IOException e) {
-            shpFiles.dispose();
-            log.error("Error while reading shapefile", e);
+            if (geoPackage != null)
+                geoPackage.close();
             throw new RuntimeException(e);
         }
         return sceneTemps;
     }
 
+    @Override
     protected List<GaiaScene> convert(File file) {
         GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder()
                 .tempFile(file)
@@ -469,9 +476,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 log.debug("Invalid Scene : {}", rootNode.getName());
                 continue;
             }
-            //resultScenes.add(scene);
 
-            //resultScenes.add(scene);
             scenes.add(scene);
             if (scenes.size() >= sceneCount) {
                 String tempName = UUID.randomUUID() + input.getName();

@@ -6,6 +6,7 @@ import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.geometry.geojson.GeoJsonConverter;
 import com.gaia3d.converter.geometry.geojson.GeojsonPointReader;
+import com.gaia3d.converter.geometry.geopackage.GeoPackageInstanceConverter;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.JacksonKmlReader;
 import com.gaia3d.converter.geometry.shape.ShapePointReader;
@@ -70,6 +71,8 @@ public class InstancedProcessModel implements ProcessFlowModel {
             reader = new ShapePointReader();
         } else if (formatType == FormatType.GEOJSON) {
             reader = new GeojsonPointReader();
+        } else if (formatType == FormatType.GEO_PACKAGE) {
+            reader = new GeoPackageInstanceConverter();
         } else {
             reader = new JacksonKmlReader();
         }
@@ -86,7 +89,7 @@ public class InstancedProcessModel implements ProcessFlowModel {
     }
 
     private boolean getYUpAxis(FormatType formatType, boolean isYUpAxis) {
-        if (formatType == FormatType.CITYGML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON) {
+        if (formatType == FormatType.CITYGML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON  || formatType == FormatType.GEO_PACKAGE) {
             isYUpAxis = true;
         }
         return isYUpAxis;

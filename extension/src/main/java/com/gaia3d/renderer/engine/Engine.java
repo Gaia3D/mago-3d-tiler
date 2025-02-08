@@ -2097,7 +2097,7 @@ public class Engine {
 
 //        // test save images.***
 //        try {
-//            String randomId = UUID.randomUUID().toString();
+//            String randomId = UUID.randomUUID();
 //            String path = "D:\\Result_mago3dTiler";
 //            String fileName = "albedo_" + randomId;
 //            String extension = ".png";
@@ -2110,7 +2110,7 @@ public class Engine {
 //
 //        // test save images.***
 //        try {
-//            String randomId = UUID.randomUUID().toString();
+//            String randomId = UUID.randomUUID();
 //            String path = "D:\\Result_mago3dTiler";
 //            String fileName = "colorCoded_" + randomId;
 //            String extension = ".png";

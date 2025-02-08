@@ -64,6 +64,8 @@ public class ShapePointReader implements AttributeReader {
         double minimumHeightValue = globalOptions.getMinimumHeight();
         double skirtHeight = globalOptions.getSkirtHeight();
 
+        int instancePolygonContainsPointCounts = GlobalOptions.INSTANCE_POLYGON_CONTAINS_POINT_COUNTS;
+
         try {
             shpFiles = new ShpFiles(file);
             reader = new ShapefileReader(shpFiles, true, true, new GeometryFactory());
@@ -87,57 +89,70 @@ public class ShapePointReader implements AttributeReader {
                 SimpleFeature feature = iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
 
-                Point point = null;
-                if (geom instanceof MultiPoint) {
+                List<Point> points = new ArrayList<>();
+                if (geom instanceof MultiPolygon multiPolygon) {
+                    for (int i = 0; i < multiPolygon.getNumGeometries(); i++) {
+                        Polygon polygon = (Polygon) multiPolygon.getGeometryN(i);
+                        points.addAll(getRandomContainsPoints(polygon, geom.getFactory(), instancePolygonContainsPointCounts));
+                    }
+                } else if (geom instanceof Polygon polygon) {
+                    points.addAll(getRandomContainsPoints(polygon, geom.getFactory(), instancePolygonContainsPointCounts));
+                } else if (geom instanceof MultiPoint) {
                     GeometryFactory factory = geom.getFactory();
-                    point = factory.createPoint(geom.getCoordinate());
-                } else if (geom instanceof Point) {
-                    point = (Point) geom;
+                    Coordinate[] coordinates = geom.getCoordinates();
+                    for (Coordinate coordinate : coordinates) {
+                        Point point = factory.createPoint(coordinate);
+                        points.add(point);
+                    }
+                } else if (geom instanceof Point point) {
+                    points.add(point);
                 } else {
                     log.error("Geometry type is not supported.");
                     continue;
                 }
 
-                Map<String, String> attributes = new HashMap<>();
-                FeatureType featureType = feature.getFeatureType();
-                Collection<PropertyDescriptor> featureDescriptors = featureType.getDescriptors();
-                AtomicInteger index = new AtomicInteger(0);
-                featureDescriptors.forEach(attributeDescriptor -> {
-                    Object attribute = feature.getAttribute(index.getAndIncrement());
-                    if (attribute instanceof Geometry) {
-                        return;
+                for (Point point : points) {
+                    Map<String, String> attributes = new HashMap<>();
+                    FeatureType featureType = feature.getFeatureType();
+                    Collection<PropertyDescriptor> featureDescriptors = featureType.getDescriptors();
+                    AtomicInteger index = new AtomicInteger(0);
+                    featureDescriptors.forEach(attributeDescriptor -> {
+                        Object attribute = feature.getAttribute(index.getAndIncrement());
+                        if (attribute instanceof Geometry) {
+                            return;
+                        }
+                        String attributeString = castStringFromObject(attribute, "null");
+                        attributes.put(attributeDescriptor.getName().getLocalPart(), attributeString);
+                    });
+
+                    double x = point.getX();
+                    double y = point.getY();
+                    double heading = getNumberAttribute(feature, headingColumnName, 0.0d);
+                    double altitude = getNumberAttribute(feature, altitudeColumnName, 0.0d);
+
+                    Vector3d position;
+                    CoordinateReferenceSystem crs = globalOptions.getCrs();
+                    if (crs != null) {
+                        ProjCoordinate projCoordinate = new ProjCoordinate(x, y, 0.0d);
+                        ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
+                        position = new Vector3d(centerWgs84.x, centerWgs84.y, altitude);
+                    } else {
+                        position = new Vector3d(x, y, altitude);
                     }
-                    String attributeString = castStringFromObject(attribute, "null");
-                    attributes.put(attributeDescriptor.getName().getLocalPart(), attributeString);
-                });
 
-                double x = point.getX();
-                double y = point.getY();
-                double heading = getNumberAttribute(feature, headingColumnName, 0.0d);
-                double altitude = getNumberAttribute(feature, altitudeColumnName, 0.0d);
-
-                Vector3d position;
-                CoordinateReferenceSystem crs = globalOptions.getCrs();
-                if (crs != null) {
-                    ProjCoordinate projCoordinate = new ProjCoordinate(x, y, 0.0d);
-                    ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
-                    position = new Vector3d(centerWgs84.x, centerWgs84.y, altitude);
-                } else {
-                    position = new Vector3d(x, y, altitude);
+                    KmlInfo kmlInfo = KmlInfo.builder()
+                            .name("I3dmFromShape")
+                            .position(position)
+                            .heading(heading)
+                            .tilt(0.0d)
+                            .roll(0.0d)
+                            .scaleX(1.0d)
+                            .scaleY(1.0d)
+                            .scaleZ(1.0d)
+                            .properties(attributes)
+                            .build();
+                    result.add(kmlInfo);
                 }
-
-                KmlInfo kmlInfo = KmlInfo.builder()
-                        .name("I3dmFromShape")
-                        .position(position)
-                        .heading(heading)
-                        .tilt(0.0d)
-                        .roll(0.0d)
-                        .scaleX(1.0d)
-                        .scaleY(1.0d)
-                        .scaleZ(1.0d)
-                        .properties(attributes)
-                        .build();
-                result.add(kmlInfo);
             }
 
             iterator.close();

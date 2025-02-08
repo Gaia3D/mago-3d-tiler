@@ -62,6 +62,8 @@ public class GlobalOptions {
     public static final int REALISTIC_SCREEN_COLOR_TEXTURE_SIZE = 1024;
     public static final double REALISTIC_LEAF_TILE_SIZE = 25.0; // meters
 
+    public static final int INSTANCE_POLYGON_CONTAINS_POINT_COUNTS = -1;
+
     private String version; // version flag
     private String javaVersionInfo; // java version flag
     private String programInfo; // program info flag
@@ -321,7 +323,7 @@ public class GlobalOptions {
         double rotateXAxis = command.hasOption(ProcessOptions.ROTATE_X_AXIS.getArgName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.ROTATE_X_AXIS.getArgName())) : 0;
 
         // force setting
-        if (instance.getInputFormat().equals(FormatType.GEOJSON) || instance.getInputFormat().equals(FormatType.SHP) || instance.getInputFormat().equals(FormatType.CITYGML) || instance.getInputFormat().equals(FormatType.INDOORGML)) {
+        if (instance.getInputFormat().equals(FormatType.GEOJSON) || instance.getInputFormat().equals(FormatType.SHP) || instance.getInputFormat().equals(FormatType.CITYGML) || instance.getInputFormat().equals(FormatType.INDOORGML) || instance.getInputFormat().equals(FormatType.GEO_PACKAGE)) {
             isSwapUpAxis = false;
             isFlipUpAxis = false;
             if (instance.getOutputFormat().equals(FormatType.B3DM)) {

@@ -37,6 +37,7 @@ public enum FormatType {
     // 2D Formats,
     SHP("shp", "shp",false),
     GEOJSON("geojson", "json", false),
+    GEO_PACKAGE("gpkg", "gpkg", false),
     //JSON("json", "", false),
     LAS("las", "laz", false),
     LAZ("laz", "las", false),

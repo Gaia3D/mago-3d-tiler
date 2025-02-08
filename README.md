@@ -1,11 +1,9 @@
-mago 3DTiler
+![mago-3d-tiler](https://github.com/user-attachments/assets/e7f8086d-ab5e-4848-9f51-99d444691f91)
 ===
 
+## Overview
+
 ### The Premier OGC 3D Tiles Solution!
-
----
-
-### Overview
 mago 3DTiler is an open source-based OGC 3DTiles generator.   
 It converts various spatial information data into OGC 3D Tiles, the basis of the Digital Twin service.   
 Based on Java, mago 3DTiler is highly portable, flexible, and fast.
@@ -16,21 +14,17 @@ Based on Java, mago 3DTiler is highly portable, flexible, and fast.
 ![Static Badge](https://img.shields.io/badge/Gradle-darkorange?style=flat-square&logo=gradle)
 ![Static Badge](https://img.shields.io/badge/Docker%20Image-blue?style=flat-square&logo=docker)
 
-#### Why mago 3DTiler? 
+### Why mago 3DTiler? 
 mago 3DTiler isn’t just a converter;   
 developed with Java, this open-source marvel stands as a beacon for flexibility and performance in the world of 3D data conversion.
 
----
-
-### Key Features
-- **Multi-Format Mastery**: Effortlessly convert an array of 3D formats, including 3DS, OBJ, FBX, Collada DAE, GlTF, GLB , IFC and more. ​
-- **Point Cloud Precision**: Bring your detailed point cloud data (LAS, LAZ) into the fold with pinpoint accuracy.​
-- **2D to 3D Extrusion**: Turn 2D geospatial data (ESRI SHP, GeoJSON) into detailed 3D extrusion models, breathing life into flat representations.​
+## Key Features
+- **Multi-Format Mastery**: Effortlessly convert an array of 3D formats, including ***3DS, OBJ, FBX, Collada DAE, GlTF, GLB , IFC*** and more. ​
+- **Point Cloud Precision**: Bring your detailed point cloud data (***LAS, LAZ***) into the fold with pinpoint accuracy.​
+- **2D to 3D Extrusion**: Turn 2D geospatial data (***ESRI SHP, GeoJSON***) into detailed 3D extrusion models, breathing life into flat representations.​
 - **On-The-Fly CRS Conversion**: Leverage the power of multi-threading and on-the-fly coordinate conversion with comprehensive PCS and GCS support via the Proj4 library.​
-  
----
 
-### Usage
+## Usage
 You can download the released jar file or build the jar yourself via the mago-3d-tiler project gradle script.   
 The built jar is created in the ```/dist``` directory.
 
@@ -39,7 +33,7 @@ gradlew jar
 ```
 ###### The java version used in the release is openjdk 17.
 
-### Example help command
+## Example help command
 ```
 java -jar mago-3d-tiler-x.x.x-natives-windows.jar -help
 ```
@@ -106,7 +100,7 @@ or
 java -jar mago-3d-tiler-x.x.x-natives-windows.jar -i C:\data\kml-input-dir -o C:\data\kml-output-dir
 ```
 
-### Using Docker Versions
+## Using Docker Versions
 Alternatively, you can easily use mago-3d-tiler with docker.
 
 #### Installation command: 
@@ -118,21 +112,21 @@ docker pull gaia3d/mago-3d-tiler
 docker run --rm -v "/workspace:/workspace" gaia3d/mago-3d-tiler -inputType 3ds -input /workspace/3ds-samples -output /workspace/sample-3d-tiles -crs 5186
 ```
 
-### Supported Java versions:
-Supports long-term support (LTS) versions of the JDK, including JDK17 and JDK21.
+## Supported Java versions:
+Supports long-term support (LTS) versions of the JDK, including ***JDK17*** and ***JDK21***.
 
-### Experience the mago 3DTiler:
+## Experience the mago 3DTiler:
 ![image](https://github.com/Gaia3D/mago-3d-tiler/assets/87691347/c778f7e1-771c-4df6-8d4c-b46412c80c19)   
 <https://seoul.gaia3d.com:10903>
 
-### Explore and Experience:
+## Explore and Experience:
 - **Community and Code**: Join our vibrant community on GitHub and contribute to the future of 3D data conversion.​
 - **Freedom to Innovate**: Embrace the flexibility of MPL2.0 licensing(<https://www.mozilla.org/en-US/MPL/2.0/>)​,
   ensuring your freedom to use, modify, and distribute without hindrance.
 - **License**: If you prefer not to share your modified or improved code under the MPL2.0 license, you can opt for a commercial license instead.
 In this case, please contact us at sales@gaia3d.com
 
-### Library Dependencies:
+## Library Dependencies:
 - **LWJGL3** (Lightweight Java Game Library 3 Opengl, Assimp): <https://github.com/LWJGL/lwjgl3>
 - **JOML** (Java OpenGL Math Library): <https://github.com/JOML-CI/JOML>
 - **jgltf** (Java libraries for glTF): <https://github.com/javagl/JglTF>

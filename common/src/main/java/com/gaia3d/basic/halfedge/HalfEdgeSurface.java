@@ -3115,10 +3115,10 @@ public class HalfEdgeSurface implements Serializable {
         log.info("[Tile][PhotoRealistic][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
         textureAtlas.createImage(maxWidth, maxHeight, imageType);
         // fill the textureAtlas with fuchia color.***
-        Color fuchiaColor = new Color(255, 255, 0);
+        //Color fuchiaColor = new Color(255, 255, 0);
         Graphics2D g2d = textureAtlas.getBufferedImage().createGraphics();
-        g2d.setColor(fuchiaColor);
-        g2d.fillRect(0, 0, maxWidth, maxHeight);
+        //g2d.setColor(fuchiaColor);
+        //g2d.fillRect(0, 0, maxWidth, maxHeight);
         g2d.dispose();
 
         //BufferedImage clampedBufferedImage = ImageUtils.clampBackGroundColor(textureAtlas.getBufferedImage(), fuchiaColor, 1, 20);
@@ -3435,10 +3435,10 @@ public class HalfEdgeSurface implements Serializable {
         log.info("[Tile][PhotoRealistic][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
         textureAtlas.createImage(maxWidth, maxHeight, imageType);
         // fill the textureAtlas with fuchia color.***
-        Color fuchiaColor = new Color(255, 255, 0);
+        //Color fuchiaColor = new Color(255, 255, 0);
         Graphics2D g2d = textureAtlas.getBufferedImage().createGraphics();
-        g2d.setColor(fuchiaColor);
-        g2d.fillRect(0, 0, maxWidth, maxHeight);
+        //g2d.setColor(fuchiaColor);
+        //g2d.fillRect(0, 0, maxWidth, maxHeight);
         g2d.dispose();
 
         //BufferedImage clampedBufferedImage = ImageUtils.clampBackGroundColor(textureAtlas.getBufferedImage(), fuchiaColor, 1, 20);

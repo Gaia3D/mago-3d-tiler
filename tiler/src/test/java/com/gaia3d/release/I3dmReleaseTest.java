@@ -54,6 +54,36 @@ class I3dmReleaseTest {
         execute(args);
     }
 
+    @Test
+    void instanced03() {
+        String path = "I03-seoul-yeouido-gpkg";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-c", "5186",
+                "-it", "gpkg",
+                "-ot", "i3dm",
+                "-terrain", getInputPath(path).getAbsolutePath() + "/seoul-aster.tif",
+                "-instance", getInputPath(path).getAbsolutePath() + "/tree.dae",
+                "-debug"
+        };
+        execute(args);
+    }
+
+    @Test
+    void instanced04() {
+        String path = "I04-forest-shp";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-c", "5179",
+                "-ot", "i3dm",
+                "-instance", getInputPath(path).getAbsolutePath() + "/tree.dae",
+                "-debug"
+        };
+        execute(args);
+    }
+
     private void execute(String[] args) {
         Mago3DTilerMain.main(args);
     }

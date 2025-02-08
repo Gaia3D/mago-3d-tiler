@@ -8,6 +8,7 @@ import com.gaia3d.converter.assimp.LargeMeshConverter;
 import com.gaia3d.converter.geometry.ExtrusionTempGenerator;
 import com.gaia3d.converter.geometry.citygml.CityGmlConverter;
 import com.gaia3d.converter.geometry.geojson.GeoJsonConverter;
+import com.gaia3d.converter.geometry.geopackage.GeoPackageConverter;
 import com.gaia3d.converter.geometry.indoorgml.IndoorGmlConverter;
 import com.gaia3d.converter.geometry.shape.ShapeConverter;
 import com.gaia3d.converter.kml.AttributeReader;
@@ -89,6 +90,8 @@ public class BatchedProcessModel implements ProcessFlowModel {
             converter = new ShapeConverter();
         } else if (formatType == FormatType.GEOJSON) {
             converter = new GeoJsonConverter();
+        } else if (formatType == FormatType.GEO_PACKAGE) {
+            converter = new GeoPackageConverter();
         } else {
             if (globalOptions.isLargeMesh()) {
                 converter = new LargeMeshConverter(new AssimpConverter());

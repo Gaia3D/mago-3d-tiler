@@ -38,6 +38,7 @@ class RealisticReleaseTest {
                 "-log", getLogPath(path).getAbsolutePath(),
                 "-pr",
                 "-c", "5187",
+                "-leaveTemp",
                 //"-debug",
         };
         execute(args);

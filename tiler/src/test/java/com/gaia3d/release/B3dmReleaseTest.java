@@ -115,6 +115,18 @@ class B3dmReleaseTest {
     }
 
     @Test
+    void batched09() {
+        String path = "B09-seoul-yeouido-gpkg";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-c", "5186",
+                "-terrain", getInputPath(path).getAbsolutePath() + "/seoul.tif",
+        };
+        execute(args);
+    }
+
+    @Test
     void batched50() {
         String path = "B50-wangsuk2-citygml";
         String[] args = new String[] {

@@ -18,7 +18,7 @@ public class ExtrusionTempGenerator {
     public List<File> generate(File tempPath, List<File> fileList) {
         GlobalOptions options = GlobalOptions.getInstance();
         FormatType formatType = options.getInputFormat();
-        if (formatType.equals(FormatType.GEOJSON) || formatType.equals(FormatType.SHP)) {
+        if (formatType.equals(FormatType.GEOJSON) || formatType.equals(FormatType.SHP) || formatType.equals(FormatType.GEO_PACKAGE)) {
             List<GaiaSceneTempGroup> sceneList = new ArrayList<>();
             for (File file : fileList) {
                 List<GaiaSceneTempGroup> tempList = converter.convertTemp(file, tempPath);
