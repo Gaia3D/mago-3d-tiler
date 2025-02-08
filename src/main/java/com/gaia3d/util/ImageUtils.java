@@ -289,7 +289,7 @@ public class ImageUtils {
     }
 
     public static BufferedImage clampBackGroundColor(BufferedImage image, Color backGroundColor, int borderSize, int iterations) {
-        log.debug("Clamp Background Color");
+        //log.debug("Clamp Background Color");
         int width = image.getWidth();
         int height = image.getHeight();
         int noBackGroundColor = 0;
