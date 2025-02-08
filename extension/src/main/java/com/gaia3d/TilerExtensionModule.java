@@ -2,6 +2,8 @@ package com.gaia3d;
 
 import com.gaia3d.basic.exchangable.SceneInfo;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
+import com.gaia3d.basic.geometry.octree.HalfEdgeOctree;
 import com.gaia3d.basic.halfedge.DecimateParameters;
 import com.gaia3d.basic.halfedge.HalfEdgeScene;
 import com.gaia3d.basic.model.GaiaScene;
@@ -86,6 +88,22 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
+    public void decimateAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters,
+                                              HalfEdgeOctree octree, List<GaiaAAPlane> cuttingPlanes, double screenPixelsForMeter) {
+        if (renderer == null) renderer = new MainRenderer();
+        renderer.decimateAndCutByObliqueCamera(scenes, resultHalfEdgeScenes, decimateParameters, octree, cuttingPlanes, screenPixelsForMeter);
+        deleteObjects();
+    }
+
+    @Override
+    public void decimateNetSurfaceAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters,
+                                                        HalfEdgeOctree octree, List<GaiaAAPlane> cuttingPlanes, double depthTexPixelsForMeter, double screenPixelsForMeter) {
+        if (renderer == null) renderer = new MainRenderer();
+        renderer.decimateNetSurfaceAndCutByObliqueCamera(scenes, resultHalfEdgeScenes, decimateParameters, octree, cuttingPlanes, depthTexPixelsForMeter, screenPixelsForMeter);
+        deleteObjects();
+    }
+
+    @Override
     public void makeNetSurfacesByPyramidDeformationRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<HalfEdgeScene> resultHalfEdgeScenes, List<BufferedImage> resultImages, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize, int maxDepthScreenSize) {
         if (renderer == null) renderer = new MainRenderer();
         renderer.makeNetSurfacesByPyramidDeformationRender(sceneInfos, bufferedImageType, resultHalfEdgeScenes, resultImages, nodeBBox, nodeTMatrix, maxScreenSize, maxDepthScreenSize);
@@ -100,9 +118,9 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
-    public void makeNetSurfacesWithBoxTexturesObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, double pixelsForMeter) {
+    public void makeNetSurfacesWithBoxTexturesObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, double depthTexPixelsForMeter, double screenPixelsForMeter) {
         if (renderer == null) renderer = new MainRenderer();
-        renderer.makeNetSurfacesWithBoxTexturesObliqueCamera(scenes, resultHalfEdgeScenes, decimateParameters, pixelsForMeter);
+        renderer.makeNetSurfacesWithBoxTexturesObliqueCamera(scenes, resultHalfEdgeScenes, decimateParameters, depthTexPixelsForMeter, screenPixelsForMeter);
         deleteObjects();
     }
 

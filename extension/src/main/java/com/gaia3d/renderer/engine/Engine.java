@@ -432,7 +432,8 @@ public class Engine {
 
             // now make box textures for the cuttedScene.***
             log.info("Engine.decimate() : makeBoxTexturesByObliqueCamera.");
-            makeBoxTexturesByObliqueCamera(cuttedScene);
+            double screenPixelsForMeter = 128.0 / bboxMaxSize;
+            makeBoxTexturesByObliqueCamera(cuttedScene, screenPixelsForMeter);
 
             resultHalfEdgeScenes.add(cuttedScene);
         }
@@ -540,9 +541,14 @@ public class Engine {
         return null;
     }
 
-    public void makeBoxTexturesByObliqueCamera(HalfEdgeScene halfEdgeScene) {
+    public void makeBoxTexturesByObliqueCamera(HalfEdgeScene halfEdgeScene, double screenPixelsForMeter) {
         // Must know all faces classification ids.***
         // 1rst, extract all surfaces.***
+//        GaiaBoundingBox sceneBbox = halfEdgeScene.getBoundingBox();
+//        double sceneSizeX = sceneBbox.getSizeX();
+//        double sceneSizeY = sceneBbox.getSizeY();
+//        double sceneSizeZ = sceneBbox.getSizeZ();
+//        double sceneMaxSize = sceneBbox.getMaxSize();
         List<HalfEdgeSurface> surfaces = halfEdgeScene.extractSurfaces(null);
         Map<Integer, List<HalfEdgeFace>> facesClassificationMap = new HashMap<>();
         int surfacesCount = surfaces.size();
@@ -583,6 +589,11 @@ public class Engine {
             // now, set projection matrix as orthographic, and set camera's position and target.***
             // calculate the projectionMatrix for the camera.***
             int maxScreenSize = boxRenderingMaxSize;
+//            GaiaBoundingBox bbox = gaiaSceneFromFaces.getBoundingBox();
+//            double facesMaxSize = bbox.getMaxSize();
+//            double ratio = facesMaxSize / sceneMaxSize;
+//            maxScreenSize = (int) (maxScreenSize * ratio);
+
             Map<CameraDirectionType, List<GaiaFace>> mapCameraDirectionTypeFacesList = new HashMap<>();
 
             // to calculate the texCoords, we need the transformed bbox and the modelViewMatrix.***
@@ -593,7 +604,9 @@ public class Engine {
 
             // ZNeg texture.***
             CameraDirectionType cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_ZNEG;
-            BufferedImage imageZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize, mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, camDirNormalMinAngDeg);
+            BufferedImage imageZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
+                    mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox,
+                    mapCameraDirectionTypeModelViewMatrix, camDirNormalMinAngDeg, screenPixelsForMeter);
             imageZNeg = eliminateBackGroundColor(imageZNeg);
 
             if (imageZNeg != null) {
@@ -606,7 +619,9 @@ public class Engine {
 
             // YPosZNeg texture.***
             cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_YPOS_ZNEG;
-            BufferedImage imageYpoZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize, mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, camDirNormalMinAngDeg);
+            BufferedImage imageYpoZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
+                    mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox,
+                    mapCameraDirectionTypeModelViewMatrix, camDirNormalMinAngDeg, screenPixelsForMeter);
             imageYpoZNeg = eliminateBackGroundColor(imageYpoZNeg);
 
             if (imageYpoZNeg != null) {
@@ -619,7 +634,9 @@ public class Engine {
 
             // XNegZNeg texture.***
             cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_XNEG_ZNEG;
-            BufferedImage imageXNegZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize, mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, camDirNormalMinAngDeg);
+            BufferedImage imageXNegZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
+                    mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox,
+                    mapCameraDirectionTypeModelViewMatrix, camDirNormalMinAngDeg, screenPixelsForMeter);
             imageXNegZNeg = eliminateBackGroundColor(imageXNegZNeg);
 
             if (imageXNegZNeg != null) {
@@ -632,7 +649,9 @@ public class Engine {
 
             // YNegZNeg texture.***
             cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_YNEG_ZNEG;
-            BufferedImage imageYNegZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize, mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, camDirNormalMinAngDeg);
+            BufferedImage imageYNegZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
+                    mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox,
+                    mapCameraDirectionTypeModelViewMatrix, camDirNormalMinAngDeg, screenPixelsForMeter);
             imageYNegZNeg = eliminateBackGroundColor(imageYNegZNeg);
 
             if (imageYNegZNeg != null) {
@@ -645,7 +664,9 @@ public class Engine {
 
             // XPosZNeg texture.***
             cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_XPOS_ZNEG;
-            BufferedImage imageXPosZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize, mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, camDirNormalMinAngDeg);
+            BufferedImage imageXPosZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
+                    mapCameraDirectionTypeFacesList, mapGaiaFaceToCameraDirectionTypeInfo, mapCameraDirectionTypeBBox,
+                    mapCameraDirectionTypeModelViewMatrix, camDirNormalMinAngDeg, screenPixelsForMeter);
             imageXPosZNeg = eliminateBackGroundColor(imageXPosZNeg);
 
             if (imageXPosZNeg != null) {
@@ -749,15 +770,15 @@ public class Engine {
             return;
         }
         atlasTexture.setPath(fileName + extension);
-        atlasTexture.setParentPath(this.getTempFolderPath());
-        String atlasImagePath = atlasTexture.getParentPath() + File.separator + atlasTexture.getPath();
-        try {
-            File atlasFile = new File(atlasImagePath);
-            log.info("[Engine] write atlas image : {}", atlasFile.getAbsoluteFile());
-            ImageIO.write(atlasTexture.getBufferedImage(), "png", atlasFile);
-        } catch (IOException e) {
-            log.error("Error writing image: {}", e);
-        }
+//        atlasTexture.setParentPath(this.getTempFolderPath());
+        //String atlasImagePath = atlasTexture.getParentPath() + File.separator + atlasTexture.getPath();
+//        try {
+//            File atlasFile = new File(atlasImagePath);
+//            log.info("[Engine] write atlas image : {}", atlasFile.getAbsoluteFile());
+//            ImageIO.write(atlasTexture.getBufferedImage(), "png", atlasFile);
+//        } catch (IOException e) {
+//            log.error("Error writing image: {}", e);
+//        }
 
         // finally make material with texture for the halfEdgeScene.***
         GaiaMaterial material = new GaiaMaterial();
@@ -1962,7 +1983,11 @@ public class Engine {
     }
 
     private BufferedImage makeColorCodeTextureByCameraDirection(GaiaScene gaiaScene, RenderableGaiaScene renderableScene, CameraDirectionType cameraDirectionType,
-                                                                int maxScreenSize, Map<CameraDirectionType, List<GaiaFace>> mapCameraDirectionTypeFacesList, Map<GaiaFace, CameraDirectionTypeInfo> mapGaiaFaceToCameraDirectionTypeInfo, Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox, Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix, double camDirNormalMinAngDeg) {
+                                                                int maxScreenSize, Map<CameraDirectionType, List<GaiaFace>> mapCameraDirectionTypeFacesList,
+                                                                Map<GaiaFace, CameraDirectionTypeInfo> mapGaiaFaceToCameraDirectionTypeInfo,
+                                                                Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox,
+                                                                Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix,
+                                                                double camDirNormalMinAngDeg, double screenPixelsForMeter) {
         // Calculate bbox relative to camera direction.***
         //List<HalfEdgeVertex> facesVertices = HalfEdgeUtils.getVerticesOfFaces(faces, null);
         GaiaBoundingBox bbox = gaiaScene.getBoundingBox();
@@ -2023,13 +2048,16 @@ public class Engine {
         // create the fbo.***
         int fboWidth = maxScreenSize;
         int fboHeight = maxScreenSize;
-        if (xLength > yLength) {
-            fboWidth = maxScreenSize;
-            fboHeight = (int) (maxScreenSize * yLength / xLength);
-        } else {
-            fboWidth = (int) (maxScreenSize * xLength / yLength);
-            fboHeight = maxScreenSize;
-        }
+//        if (xLength > yLength) {
+//            fboWidth = maxScreenSize;
+//            fboHeight = (int) (maxScreenSize * yLength / xLength);
+//        } else {
+//            fboWidth = (int) (maxScreenSize * xLength / yLength);
+//            fboHeight = maxScreenSize;
+//        }
+
+        fboWidth = (int)(xLength * screenPixelsForMeter);
+        fboHeight = (int)(yLength * screenPixelsForMeter);
 
         fboWidth = Math.max(fboWidth, 1);
         fboHeight = Math.max(fboHeight, 1);

@@ -44,6 +44,16 @@ public class GaiaBoundingBox implements Serializable {
         return new Vector3d(maxX - minX, maxY - minY, maxZ - minZ);
     }
 
+    public void set(GaiaBoundingBox bbox) {
+        this.minX = bbox.minX;
+        this.minY = bbox.minY;
+        this.minZ = bbox.minZ;
+        this.maxX = bbox.maxX;
+        this.maxY = bbox.maxY;
+        this.maxZ = bbox.maxZ;
+        this.isInit = bbox.isInit;
+    }
+
     public void addPoint(double x, double y, double z) {
         addPoint(new Vector3d(x, y, z));
     }

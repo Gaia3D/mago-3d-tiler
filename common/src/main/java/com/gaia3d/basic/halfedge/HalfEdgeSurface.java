@@ -2965,22 +2965,24 @@ public class HalfEdgeSurface implements Serializable {
                     offsetY = Math.floor(texCoordOriginY);
                 }
 
-                // must translate to positive quadrant.***
-                int facesCount = weldedFacesGroup.size();
-                for (int j = 0; j < facesCount; j++) {
-                    HalfEdgeFace face = weldedFacesGroup.get(j);
-                    faceVertices.clear();
-                    faceVertices = face.getVertices(faceVertices);
-                    int verticesCount = faceVertices.size();
-                    for (int k = 0; k < verticesCount; k++) {
-                        HalfEdgeVertex vertex = faceVertices.get(k);
-                        if (visitedVertexMap.containsKey(vertex)) {
-                            continue;
+                if(offsetX != 0.0 || offsetY != 0.0) {
+                    // must translate to positive quadrant.***
+                    int facesCount = weldedFacesGroup.size();
+                    for (int j = 0; j < facesCount; j++) {
+                        HalfEdgeFace face = weldedFacesGroup.get(j);
+                        faceVertices.clear();
+                        faceVertices = face.getVertices(faceVertices);
+                        int verticesCount = faceVertices.size();
+                        for (int k = 0; k < verticesCount; k++) {
+                            HalfEdgeVertex vertex = faceVertices.get(k);
+                            if (visitedVertexMap.containsKey(vertex)) {
+                                continue;
+                            }
+                            Vector2d texCoord = vertex.getTexcoords();
+                            texCoord.x -= offsetX;
+                            texCoord.y -= offsetY;
+                            visitedVertexMap.put(vertex, vertex);
                         }
-                        Vector2d texCoord = vertex.getTexcoords();
-                        texCoord.x -= offsetX;
-                        texCoord.y -= offsetY;
-                        visitedVertexMap.put(vertex, vertex);
                     }
                 }
             }
@@ -3043,6 +3045,12 @@ public class HalfEdgeSurface implements Serializable {
             return;
         }
 
+//        if (maxWidth > 8192 || maxHeight > 8192) {
+//            log.warn("HalfEdgeSurface.scissorTextures() : maxWidth > 8192 || maxHeight > 8192.");
+//            // use the original images.***
+//            return;
+//        }
+
         visitedVertexMap.clear();
 
 
@@ -3054,8 +3062,6 @@ public class HalfEdgeSurface implements Serializable {
             GaiaRectangle batchedBoundary = textureScissorData.getBatchedBoundary();
 
             // obtain all vertex of the faceGroup.***
-
-
             groupVertexMap.clear();
             int facesCount = faceGroup.size();
             for (int j = 0; j < facesCount; j++) {
@@ -3165,6 +3171,20 @@ public class HalfEdgeSurface implements Serializable {
 
         }
         g2d.dispose();
+
+        // check if textureAtlas width > 8192 and or height > 8192.***
+        if (maxWidth > 8192 || maxHeight > 8192) {
+            // resize the textureAtlas.***
+            int newWidth = Math.min(maxWidth, 8192);
+            int newHeight = Math.min(maxHeight, 8192);
+            BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, imageType);
+            Graphics2D g2dResized = resizedImage.createGraphics();
+            g2dResized.drawImage(textureAtlas.getBufferedImage(), 0, 0, newWidth, newHeight, null);
+            g2dResized.dispose();
+            textureAtlas.setBufferedImage(resizedImage);
+            textureAtlas.setWidth(newWidth);
+            textureAtlas.setHeight(newHeight);
+        }
 
         // write the textureAtlas into a file.***
         String imageParentPath = texture.getParentPath();

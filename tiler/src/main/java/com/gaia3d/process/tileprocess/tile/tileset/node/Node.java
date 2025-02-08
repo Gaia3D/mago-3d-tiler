@@ -3,6 +3,8 @@ package com.gaia3d.process.tileprocess.tile.tileset.node;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.octree.GaiaOctree;
+import com.gaia3d.basic.geometry.octree.HalfEdgeOctree;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.util.DecimalUtils;
 import com.gaia3d.util.GlobeUtils;
