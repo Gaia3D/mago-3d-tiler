@@ -23,6 +23,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,6 +36,13 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
 
     @Override
     public Tileset run(List<TileInfo> tileInfos) {
+
+        // replace mode (LOD)
+        //globalOptions.setRefineAdd(false);
+        // add mode (Non LOD)
+        //globalOptions.setMaxInstance(512);
+        // add mode (Random)
+
         if (!tileInfos.isEmpty()) {
             instanceGeometricError = calcGeometricError(List.of(tileInfos.get(0)));
         }
@@ -42,16 +50,11 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
             instanceGeometricError = 32.0;
         }
 
-        // Test set isRefineAdd to false.**********************************************************
-        globalOptions.setRefineAdd(false);
-        // End test.-------------------------------------------------------------------------------
-
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
         Matrix4d transformMatrix = getTransformMatrix(globalBoundingBox);
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);
         }
-        //rotateX90(transformMatrix);
 
         Node root = createRoot();
         root.setBoundingVolume(new BoundingVolume(globalBoundingBox));
@@ -115,6 +118,8 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
             List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
+                // shuffle
+                Collections.shuffle(childTileInfos);
 
                 Node childNode = createContentNode(parentNode, childTileInfos, index);
                 if (childNode != null) {
@@ -122,11 +127,15 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
                     Content content = childNode.getContent();
                     if (content != null) {
                         ContentInfo contentInfo = content.getContentInfo();
+
                         if (isRefineAdd) {
                             createNode(childNode, contentInfo.getRemainTileInfos());
                         } else {
                             createNode(childNode, childTileInfos);
                         }
+
+                        //createNode(childNode, childTileInfos);
+
                     } else {
                         createNode(childNode, childTileInfos);
                     }
@@ -210,19 +219,24 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
 
         log.info("[Tile][ContentNode][" + nodeCode + "][LOD{}][OBJECT{}]", lod.getLevel(), tileInfos.size());
 
-        int lodError = refineAdd ? lod.getGeometricErrorBlock() : lod.getGeometricError();
-        int lodErrorDouble = lodError;
+        //int lodError = refineAdd ? lod.getGeometricErrorBlock() : lod.getGeometricError();
+        int lodError = lod.getGeometricError();
+        if (refineAdd) {
+            lodError = lod.getGeometricError() * 2;
+        }
 
-        List<TileInfo> resultInfos = new ArrayList<>();
-        List<TileInfo> remainInfos = new ArrayList<>();
-        resultInfos = tileInfos.stream().filter(tileInfo -> {
-            double geometricError = tileInfo.getBoundingBox().getLongestDistance();
-            return geometricError >= lodErrorDouble;
-        }).collect(Collectors.toList());
-        remainInfos = tileInfos.stream().filter(tileInfo -> {
-            double geometricError = tileInfo.getBoundingBox().getLongestDistance();
-            return geometricError < lodErrorDouble;
-        }).collect(Collectors.toList());
+        int divideSize = tileInfos.size() / 3;
+        if (divideSize < 64) {
+            divideSize = 64;
+        }
+
+        // divide by globalOptions.getMaxInstance()
+        List<TileInfo> resultInfos = tileInfos.stream()
+                .limit(divideSize)
+                .collect(Collectors.toList());
+        List<TileInfo> remainInfos = tileInfos.stream()
+                .skip(divideSize)
+                .collect(Collectors.toList());
 
         Node childNode = new Node();
         childNode.setParent(parentNode);

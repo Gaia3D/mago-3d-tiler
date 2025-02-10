@@ -15,6 +15,7 @@ import org.geotools.data.shapefile.shp.ShapefileReader;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.FeatureIterator;
+import org.geotools.process.vector.SimplifyProcess;
 import org.geotools.util.factory.Hints;
 import org.joml.Vector3d;
 import org.locationtech.jts.geom.*;
@@ -24,6 +25,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.filter.Filter;
+import org.w3.xlink.Simple;
 
 import java.io.File;
 import java.io.IOException;
@@ -85,13 +87,17 @@ public class ShapePointReader implements AttributeReader {
                 globalOptions.setCrs(crs);
             }
 
+            int count = 1;
+            int featuresCount = source.getCount(query);
             while (iterator.hasNext()) {
                 SimpleFeature feature = iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
 
+                log.info("[pre][{}/{}] Loading file : {}", count++, featuresCount, file.getName());
                 List<Point> points = new ArrayList<>();
                 if (geom instanceof MultiPolygon multiPolygon) {
-                    for (int i = 0; i < multiPolygon.getNumGeometries(); i++) {
+                    int numGeometries = multiPolygon.getNumGeometries();
+                    for (int i = 0; i < numGeometries; i++) {
                         Polygon polygon = (Polygon) multiPolygon.getGeometryN(i);
                         points.addAll(getRandomContainsPoints(polygon, geom.getFactory(), instancePolygonContainsPointCounts));
                     }
