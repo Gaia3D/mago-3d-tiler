@@ -317,6 +317,7 @@ public class MainRenderer implements IAppLogic {
             // now make box textures for the cuttedScene.***
             log.info("Engine.decimate() : makeBoxTexturesByObliqueCamera.");
             engine.makeBoxTexturesByObliqueCamera(cuttedScene, screenPixelsForMeter);
+            cuttedScene.makeSkirt();
             // cuttedScene.scissorTextures(); // no works. error. TODO: must fix this.***
 
             resultHalfEdgeScenes.add(cuttedScene);
@@ -398,6 +399,7 @@ public class MainRenderer implements IAppLogic {
             // now make box textures for the cuttedScene.***
             log.info("Engine.decimate() : makeBoxTexturesByObliqueCamera.");
             engine.makeBoxTexturesByObliqueCamera(cuttedScene, screenPixelsForMeter);
+            cuttedScene.makeSkirt();
             // cuttedScene.scissorTextures(); // no works. error. TODO: must fix this.***
 
             resultHalfEdgeScenes.add(cuttedScene);
