@@ -229,6 +229,14 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                         if (altitudeColumnName != null) {
                             altitude = getAltitude(feature, altitudeColumnName);
                         }
+
+                        /* If the height is less than the altitude, swap the values. */
+                        if (height < altitude) {
+                            double temp = height;
+                            height = altitude;
+                            altitude = temp;
+                        }
+
                         GaiaExtrusionBuilding building = GaiaExtrusionBuilding.builder().id(feature.getID())
                                 .name(name)
                                 .boundingBox(boundingBox)

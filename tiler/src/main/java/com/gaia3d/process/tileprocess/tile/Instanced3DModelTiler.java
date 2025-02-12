@@ -36,13 +36,6 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
 
     @Override
     public Tileset run(List<TileInfo> tileInfos) {
-
-        // replace mode (LOD)
-        //globalOptions.setRefineAdd(false);
-        // add mode (Non LOD)
-        //globalOptions.setMaxInstance(512);
-        // add mode (Random)
-
         if (!tileInfos.isEmpty()) {
             instanceGeometricError = calcGeometricError(List.of(tileInfos.get(0)));
         }
@@ -133,9 +126,6 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
                         } else {
                             createNode(childNode, childTileInfos);
                         }
-
-                        //createNode(childNode, childTileInfos);
-
                     } else {
                         createNode(childNode, childTileInfos);
                     }
