@@ -78,8 +78,24 @@ class I3dmReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-c", "5179",
                 "-ot", "i3dm",
+                "-instance", getInputPath(path).getAbsolutePath() + "/lowpoly-tree-needleleaf.glb",
+                "-terrain", INPUT_PATH + "/korea-compressed.tif",
+                //"-debug"
+        };
+        execute(args);
+    }
+
+    @Test
+    void instanced04Extend() {
+        String path = "I04-forest-shp-extend";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-c", "5179",
+                "-ot", "i3dm",
                 "-instance", getInputPath(path).getAbsolutePath() + "/tree.dae",
-                "-debug"
+                "-terrain", INPUT_PATH + "/korea-compressed.tif",
+                //"-debug"
         };
         execute(args);
     }

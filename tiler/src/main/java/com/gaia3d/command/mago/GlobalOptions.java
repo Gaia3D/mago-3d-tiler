@@ -63,6 +63,7 @@ public class GlobalOptions {
     public static final double REALISTIC_LEAF_TILE_SIZE = 25.0; // meters
 
     public static final int INSTANCE_POLYGON_CONTAINS_POINT_COUNTS = -1;
+    public static final int RANDOM_SEED = 2620;
 
     private String version; // version flag
     private String javaVersionInfo; // java version flag
