@@ -66,112 +66,6 @@ public class MainRenderer implements IAppLogic {
         this.engine.getHalfEdgeRenderer().setColorMode(colorMode);
     }
 
-    public void renderDecimate(List<GaiaScene> scenes, List<GaiaScene> resultScenes) {
-
-        // Must init gl.***
-        try {
-            engine.init();
-        } catch (Exception e) {
-            log.error("Error initializing the engine: ", e);
-        }
-
-        GaiaScenesContainer gaiaScenesContainer = engine.getGaiaScenesContainer();
-        List<HalfEdgeScene> halfEdgeScenes = new ArrayList<>();
-        int scenesCount = scenes.size();
-        List<RenderableGaiaScene> renderableGaiaScenes = new ArrayList<>();
-
-        boolean checkTexCoord = false;
-        boolean checkNormal = false;
-        boolean checkColor = false;
-        boolean checkBatchId = false;
-        double error = 1e-4;
-
-        for (int i = 0; i < scenesCount; i++) {
-            GaiaScene gaiaScene = scenes.get(i);
-
-            // 1rst, make the renderableGaiaScene.***
-            RenderableGaiaScene renderableScene = InternDataConverter.getRenderableGaiaScene(gaiaScene);
-            renderableGaiaScenes.add(renderableScene);
-
-            // 2nd, make the halfEdgeScene.***
-            gaiaScene.joinAllSurfaces();
-            gaiaScene.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
-            gaiaScene.deleteDegeneratedFaces();
-
-            // Must delete materials because we joined all surfaces into one surface.***
-            int materialsCount = gaiaScene.getMaterials().size();
-            for (int j = 0; j < materialsCount; j++) {
-                GaiaMaterial material = gaiaScene.getMaterials().get(j);
-                material.clear();
-            }
-            gaiaScene.getMaterials().clear();
-
-            HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaScene);
-            halfEdgeScenes.add(halfEdgeScene);
-        }
-
-        engine.setHalfEdgeScenes(halfEdgeScenes);
-
-        gaiaScenesContainer.setRenderableGaiaScenes(renderableGaiaScenes);
-        engine.setGaiaScenesContainer(gaiaScenesContainer);
-        engine.setRenderAxis(true);
-
-        Camera camera = engine.getCamera();
-        camera.setPosition(new Vector3d(0, 0, 200));
-
-        FboManager fboManager = engine.getFboManager();
-        Window window = engine.getWindow();
-        int fboWidthColor = window.getWidth();
-        int fboHeightColor = window.getHeight();
-        Fbo colorFbo = fboManager.getOrCreateFbo("colorRender", fboWidthColor, fboHeightColor);
-
-        log.info("Rendering the scene...");
-        try {
-            engine.run();
-        } catch (Exception e) {
-            log.error("Error initializing the engine: ", e);
-        }
-    }
-
-
-    public void renderGaiaSceneLoop(List<GaiaScene> scenes, List<GaiaScene> resultScenes) {
-
-        // Must init gl.***
-        try {
-            engine.init();
-        } catch (Exception e) {
-            log.error("Error initializing the engine: ", e);
-        }
-
-        GaiaScenesContainer gaiaScenesContainer = engine.getGaiaScenesContainer();
-        int scenesCount = scenes.size();
-        List<RenderableGaiaScene> renderableGaiaScenes = new ArrayList<>();
-
-        for (int i = 0; i < scenesCount; i++) {
-            GaiaScene gaiaScene = scenes.get(i);
-
-            // 1rst, make the renderableGaiaScene.***
-            RenderableGaiaScene renderableScene = InternDataConverter.getRenderableGaiaScene(gaiaScene);
-            renderableGaiaScenes.add(renderableScene);
-
-            engine.getGaiaScenes().add(gaiaScene);
-        }
-
-        gaiaScenesContainer.setRenderableGaiaScenes(renderableGaiaScenes);
-        engine.setGaiaScenesContainer(gaiaScenesContainer);
-        engine.setRenderAxis(true);
-
-        Camera camera = engine.getCamera();
-        camera.setPosition(new Vector3d(0, 0, 200));
-
-        log.info("Rendering the scene...");
-        try {
-            engine.run();
-        } catch (Exception e) {
-            log.error("Error initializing the engine: ", e);
-        }
-    }
-
     public void decimateByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters) {
         // Must init gl.***
         try {
@@ -268,7 +162,6 @@ public class MainRenderer implements IAppLogic {
         double error = 1e-4;
 
         log.info("MainRenderer : Decimating the scene...");
-
         for (int i = 0; i < scenesCount; i++) {
             GaiaScene gaiaScene = scenes.get(i);
 
@@ -305,22 +198,25 @@ public class MainRenderer implements IAppLogic {
         halfEdgeScene.doTrianglesReductionOneIteration(decimateParameters);
         List<HalfEdgeScene> resultCutHalfEdgeScenes = HalfEdgeCutter.cutHalfEdgeSceneByGaiaAAPlanes(halfEdgeScene, cuttingPlanes, octree);
 
+        int cutScenesCount = resultCutHalfEdgeScenes.size();
+        int i=0;
         for(HalfEdgeScene cutHalfEdgeScene : resultCutHalfEdgeScenes) {
+            log.info("makeBoxTexturesByObliqueCamera. cutScene : " + (i+1) + " / " + cutScenesCount);
             GaiaBoundingBox bbox = cutHalfEdgeScene.getBoundingBox();
             double bboxMaxSize = bbox.getMaxSize();
             // now, cut the halfEdgeScene and make cube-textures by rendering.***
             double gridSpacing = bboxMaxSize / 3.0;
             HalfEdgeOctree resultOctree = new HalfEdgeOctree(null);
-            log.info("Engine.decimate() : cutHalfEdgeSceneGridXYZ.");
             HalfEdgeScene cuttedScene = HalfEdgeCutter.cutHalfEdgeSceneGridXYZ(cutHalfEdgeScene, gridSpacing, resultOctree);
 
             // now make box textures for the cuttedScene.***
-            log.info("Engine.decimate() : makeBoxTexturesByObliqueCamera.");
             engine.makeBoxTexturesByObliqueCamera(cuttedScene, screenPixelsForMeter);
             cuttedScene.makeSkirt();
             // cuttedScene.scissorTextures(); // no works. error. TODO: must fix this.***
 
             resultHalfEdgeScenes.add(cuttedScene);
+
+            i++;
         }
     }
 
@@ -339,11 +235,12 @@ public class MainRenderer implements IAppLogic {
         int scenesCount = scenes.size();
 
         HalfEdgeScene netSurfaceHalfEdgeScene = null;
+        GaiaBoundingBox gaiaSceneBbox = null;
 
         for (int i = 0; i < scenesCount; i++) {
             GaiaScene gaiaScene = scenes.get(i);
-            GaiaBoundingBox bbox = gaiaScene.getBoundingBox();
-            double bboxMaxSize = bbox.getMaxSize();
+            gaiaSceneBbox = gaiaScene.getBoundingBox();
+            double bboxMaxSize = gaiaSceneBbox.getMaxSize();
             int maxDepthScreenSize = (int) Math.ceil(depthTexPixelsForMeter * bboxMaxSize);
             if (maxDepthScreenSize < 8) {
                 maxDepthScreenSize = 8;
@@ -366,7 +263,7 @@ public class MainRenderer implements IAppLogic {
             float[][] depthValues = com.gaia3d.util.ImageUtils.bufferedImageToFloatMatrix(depthRenderedImage);
             int numCols = depthRenderedImage.getWidth();
             int numRows = depthRenderedImage.getHeight();
-            netSurfaceHalfEdgeScene = HalfEdgeUtils.getHalfEdgeSceneRectangularNet(numCols, numRows, depthValues, bbox);
+            netSurfaceHalfEdgeScene = HalfEdgeUtils.getHalfEdgeSceneRectangularNet(numCols, numRows, depthValues, gaiaSceneBbox);
             if (netSurfaceHalfEdgeScene == null) {
                 return;
             }
@@ -384,25 +281,29 @@ public class MainRenderer implements IAppLogic {
 
         // take the halfEdgeScene and decimate and cut it.***
         HalfEdgeScene halfEdgeScene = halfEdgeScenes.get(0); // only one scene.***
+        //GaiaBoundingBox motherBbox = halfEdgeScene.getBoundingBox();
         halfEdgeScene.doTrianglesReductionOneIteration(decimateParameters);
         List<HalfEdgeScene> resultCutHalfEdgeScenes = HalfEdgeCutter.cutHalfEdgeSceneByGaiaAAPlanes(halfEdgeScene, cuttingPlanes, octree);
 
+        int cutScenesCount = resultCutHalfEdgeScenes.size();
+        int i=0;
         for(HalfEdgeScene cutHalfEdgeScene : resultCutHalfEdgeScenes) {
+            log.info("makeBoxTexturesByObliqueCamera. cutScene : " + (i+1) + " / " + cutScenesCount);
             GaiaBoundingBox bbox = cutHalfEdgeScene.getBoundingBox();
             double bboxMaxSize = bbox.getMaxSize();
             // now, cut the halfEdgeScene and make cube-textures by rendering.***
             double gridSpacing = bboxMaxSize / 3.0;
             HalfEdgeOctree resultOctree = new HalfEdgeOctree(null);
-            log.info("Engine.decimate() : cutHalfEdgeSceneGridXYZ.");
             HalfEdgeScene cuttedScene = HalfEdgeCutter.cutHalfEdgeSceneGridXYZ(cutHalfEdgeScene, gridSpacing, resultOctree);
 
             // now make box textures for the cuttedScene.***
-            log.info("Engine.decimate() : makeBoxTexturesByObliqueCamera.");
             engine.makeBoxTexturesByObliqueCamera(cuttedScene, screenPixelsForMeter);
             cuttedScene.makeSkirt();
             // cuttedScene.scissorTextures(); // no works. error. TODO: must fix this.***
 
             resultHalfEdgeScenes.add(cuttedScene);
+
+            i++;
         }
     }
 
@@ -788,7 +689,8 @@ public class MainRenderer implements IAppLogic {
 
     }
 
-    public void getColorAndDepthRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<BufferedImage> resultImages, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize, int maxDepthScreenSize) {
+    public void getColorAndDepthRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<BufferedImage> resultImages, GaiaBoundingBox nodeBBox,
+                                       Matrix4d nodeTMatrix, int maxScreenSize, int maxDepthScreenSize) {
         // render the scene
         log.info("Rendering the scene...getColorAndDepthRender");
 
@@ -982,120 +884,6 @@ public class MainRenderer implements IAppLogic {
         }
     }
 
-    public void render(List<GaiaScene> gaiaScenes, int bufferedImageType, List<BufferedImage> resultImages, int maxScreenSize) {
-        // render the scene
-        log.info("Rendering the scene...");
-
-        // Must init gl.***
-        try {
-            engine.init();
-        } catch (Exception e) {
-            log.error("Error initializing the engine: ", e);
-        }
-
-        int screenWidth = 1000;
-        int screenHeight = 600;
-
-        List<RenderableGaiaScene> renderableGaiaScenes = new ArrayList<>();
-        GaiaBoundingBox gaiaBoundingBox = null;
-
-        int gaiaSceneCount = gaiaScenes.size();
-        for (int i = 0; i < gaiaSceneCount; i++) {
-            GaiaScene gaiaScene = gaiaScenes.get(i);
-            GaiaBoundingBox bbox = gaiaScene.getBoundingBox();
-            if (i == 0) {
-                gaiaBoundingBox = bbox;
-            } else {
-                gaiaBoundingBox.addBoundingBox(bbox);
-                gaiaBoundingBox.addBoundingBox(bbox);
-            }
-            RenderableGaiaScene renderableScene = InternDataConverter.getRenderableGaiaScene(gaiaScene);
-            renderableGaiaScenes.add(renderableScene);
-        }
-
-        if (gaiaBoundingBox == null) {
-            log.error("Error: gaiaBoundingBox is null.");
-            return;
-        }
-
-        GaiaScenesContainer gaiaScenesContainer = new GaiaScenesContainer(screenWidth, screenHeight);
-        gaiaScenesContainer.setRenderableGaiaScenes(renderableGaiaScenes);
-
-        Vector3d bboxCenter = gaiaBoundingBox.getCenter();
-        float xLength = (float) gaiaBoundingBox.getSizeX();
-        float yLength = (float) gaiaBoundingBox.getSizeY();
-        float zLength = (float) gaiaBoundingBox.getSizeZ();
-
-        // calculate the projectionMatrix for the camera.***
-        Projection projection = new Projection(0, screenWidth, screenHeight);
-        projection.setProjectionOrthographic(-xLength / 2.0f, xLength / 2.0f, -yLength / 2.0f, yLength / 2.0f, -zLength * 2.0f, zLength * 2.0f);
-        gaiaScenesContainer.setProjection(projection);
-        engine.setGaiaScenesContainer(gaiaScenesContainer);
-
-        // Take FboManager from engine.***
-        FboManager fboManager = engine.getFboManager();
-
-        // create the fbo.***
-        int fboWidth = maxScreenSize;
-        int fboHeight = maxScreenSize;
-        if (xLength > yLength) {
-            fboWidth = maxScreenSize;
-            fboHeight = (int) (maxScreenSize * yLength / xLength);
-        } else {
-            fboWidth = (int) (maxScreenSize * xLength / yLength);
-            fboHeight = maxScreenSize;
-        }
-
-        Fbo colorFbo = fboManager.getOrCreateFbo("colorRender", fboWidth, fboHeight);
-
-        // now set camera position.***
-        Camera camera = new Camera();
-        camera.setPosition(bboxCenter);
-        camera.setDirection(new Vector3d(0, 0, -1));
-        camera.setUp(new Vector3d(0, 1, 0));
-        gaiaScenesContainer.setCamera(camera);
-
-        try {
-            colorFbo.bind();
-
-            int[] width = new int[1];
-            int[] height = new int[1];
-            width[0] = colorFbo.getFboWidth();
-            height[0] = colorFbo.getFboHeight();
-
-            glViewport(0, 0, width[0], height[0]);
-            //glClearColor(0.9f, 0.1f, 0.9f, 1.0f);
-            glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glEnable(GL_DEPTH_TEST);
-
-            // disable cull face.***
-            glDisable(GL_CULL_FACE);
-
-            // shader program.***
-            ShaderManager shaderManager = engine.getShaderManager();
-            ShaderProgram sceneShaderProgram = shaderManager.getShaderProgram("scene");
-
-            // render the scene.***
-            engine.getRenderSceneImage(sceneShaderProgram);
-
-            // make the bufferImage.***
-            BufferedImage image = colorFbo.getBufferedImage(bufferedImageType);
-
-            colorFbo.unbind();
-
-            resultImages.add(image);
-        } catch (Exception e) {
-            log.error("Error initializing the engine : ", e);
-        }
-
-        // delete renderableGaiaScenes.***
-        for (RenderableGaiaScene renderableScene : renderableGaiaScenes) {
-            renderableScene.deleteGLBuffers();
-        }
-
-    }
-
     public void deleteObjects() {
         engine.deleteObjects();
     }
@@ -1118,13 +906,6 @@ public class MainRenderer implements IAppLogic {
     public void update(Window window, GaiaScenesContainer gaiaScenesContainer, long diffTimeMillis) {
 
     }
-
-//    private void doPyramidDeformation(RenderableGaiaScene renderableScene, GaiaBoundingBox originalBBox, GaiaBoundingBox deformedBBox) {
-//        List<GaiaPrimitive> primitives = renderableScene.extractPrimitives(null);
-//        for (GaiaPrimitive primitive : primitives) {
-//            GaiaPrimitiveUtils.doPyramidDeformation(primitive, originalBBox, deformedBBox);
-//        }
-//    }
 
     public void makeNetSurfacesByPyramidDeformationRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<HalfEdgeScene> resultHalfEdgeScenes,
                                                           List<BufferedImage> resultImages, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize, int maxDepthScreenSize) {

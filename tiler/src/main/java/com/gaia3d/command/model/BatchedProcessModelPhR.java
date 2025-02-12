@@ -56,7 +56,7 @@ public class BatchedProcessModelPhR implements ProcessFlowModel {
         preProcessors.add(new GaiaScaler());
 
 
-        preProcessors.add(new GaiaRotator());
+        preProcessors.add(new GaiaRotatorPR());
         preProcessors.add(new GaiaStrictTranslator(geoTiffs));
         GaiaMinimizerPhR gaiaMinimizer = new GaiaMinimizerPhR();
         preProcessors.add(gaiaMinimizer);

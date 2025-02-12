@@ -43,14 +43,6 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
-    public void getRenderScene(List<GaiaScene> scene, int bufferedImageType, int maxScreenSize, List<BufferedImage> resultImages) {
-    }
-
-    @Override
-    public void renderDecimate(List<GaiaScene> scenes, List<GaiaScene> resultScenes) {
-    }
-
-    @Override
     public void decimate(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters) {
     }
 
@@ -65,10 +57,6 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     @Override
     public void decimateNetSurfaceAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters,
                                                         HalfEdgeOctree octree, List<GaiaAAPlane> cuttingPlanes, double depthTexPixelsForMeter, double screenPixelsForMeter) {
-    }
-
-    @Override
-    public void renderPyramidDeformation(List<GaiaScene> scenes, List<GaiaScene> resultScenes){
     }
 
     @Override

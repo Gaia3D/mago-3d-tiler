@@ -96,15 +96,26 @@ public class GaiaStrictTranslator implements PreProcess {
 
         KmlInfo kmlInfo = getKmlInfo(tileInfo, centerGeoCoord);
 
-        // test for leeDongHun data.***
-        double rotateX = globalOptions.getRotateX();
-        if (Math.abs(rotateX) < 1e-4) {
-            // if the rotateX is 0, then rotate the scene -90 degrees around the x-axis.***
-            Matrix4f xRotMatrix = new Matrix4f().rotateX((float) Math.toRadians(-90.0f));// test for leeDongHun data.***
-            // Rotate the scene 90 degrees around the x-axis.
-            transform = transform.mul(xRotMatrix);// test for leeDongHun data.***
-        }
+//        // test for leeDongHun data.***
+//        double rotateX = globalOptions.getRotateX();
+//        if (Math.abs(rotateX) < 1e-4) {
+//            // if the rotateX is 0, then rotate the scene -90 degrees around the x-axis.***
+//            Matrix4f xRotMatrix = new Matrix4f().rotateX((float) Math.toRadians(-90.0f));// test for leeDongHun data.***
+//            // Rotate the scene 90 degrees around the x-axis.
+//            transform = transform.mul(xRotMatrix);// test for leeDongHun data.***
+//        }
+//        // End test.---
+
+        // test for SangGiDe data.***
+//        double rotateX = globalOptions.getRotateX();
+//        Matrix4f xRotMatrix = new Matrix4f().rotateX((float) Math.toRadians(rotateX - 90.0f));
+//        // Rotate the scene 90 degrees around the x-axis.
+//        transform = transform.mul(xRotMatrix);// test for leeDongHun data.***
+
+//        Matrix4f translateMatrix = new Matrix4f().translate(0.0f, 200.0f,0.0f);
+//        transform = transform.mul(translateMatrix);
         // End test.---
+
         rootNode.setTransformMatrix(transform);
         GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox();
         gaiaScene.setGaiaBoundingBox(boundingBox);

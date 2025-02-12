@@ -88,6 +88,36 @@ public class Node {
         }
     }
 
+    public void setRefinementTypeAutomatic()
+    {
+        if(this.children == null || this.children.isEmpty()) {
+            return;
+        }
+        for (Node childNode : children) {
+            childNode.setRefinementTypeAutomatic();
+        }
+        if(this.content != null && this.content.getContentInfo() != null && !this.content.getContentInfo().getTileInfos().isEmpty()) {
+            this.refine = RefineType.REPLACE;
+        } else {
+            this.refine = RefineType.ADD;
+        }
+    }
+
+    public void extractNodes(int depth, List<Node> resultNodes) {
+        if(this.depth == depth) {
+            resultNodes.add(this);
+            return;
+        }
+
+        if(this.children == null) {
+            return;
+        }
+
+        for (Node childNode : children) {
+            childNode.extractNodes(depth, resultNodes);
+        }
+    }
+
     public enum RefineType {
         ADD,
         REPLACE,
@@ -295,8 +325,6 @@ public class Node {
         GaiaBoundingBox child7BoundingBox = new GaiaBoundingBox(minLonDeg, midLatDeg, midAltitude, midLonDeg, maxLatDeg, maxAltitude, false);
         child7.setBoundingVolume(new BoundingVolume(child7BoundingBox));
         child7.setNodeCode(parentNodeCode + "7");
-
-
     }
 
     public Node getIntersectedNode(Vector3d cartographicRad, int depth) {
@@ -387,4 +415,5 @@ public class Node {
 
         return bboxLC;
     }
+
 }

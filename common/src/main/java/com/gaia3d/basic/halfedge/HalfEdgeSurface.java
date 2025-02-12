@@ -1761,13 +1761,10 @@ public class HalfEdgeSurface implements Serializable {
             if (hedge.getIntersectionByPlane(PlaneType.XY, planePosition, intersectionVertex, error)) {
                 splitHalfEdge(hedge, intersectionVertex);
                 hedgesCount = halfEdges.size();
-
-                hedgesCutCount++;
-                if (hedgesCutCount % 500 == 0) {
-                    log.info("[Tile][PhotoRealistic][cut][cutByPlaneXY] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount + " , currIdx = " + i);
-                }
             }
         }
+
+        log.info("[Tile][PhotoRealistic][cut][cutByPlaneXY] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount);
     }
 
     private void cutByPlaneXZ(Vector3d planePosition, double error) {
@@ -1785,13 +1782,9 @@ public class HalfEdgeSurface implements Serializable {
             if (hedge.getIntersectionByPlane(PlaneType.XZ, planePosition, intersectionVertex, error)) {
                 splitHalfEdge(hedge, intersectionVertex);
                 hedgesCount = halfEdges.size();
-
-                hedgesCutCount++;
-                if (hedgesCutCount % 500 == 0) {
-                    log.info("[Tile][PhotoRealistic][cut][cutByPlaneXZ] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount + " , currIdx = " + i);
-                }
             }
         }
+        log.info("[Tile][PhotoRealistic][cut][cutByPlaneXZ] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount);
 
     }
 
@@ -1812,11 +1805,10 @@ public class HalfEdgeSurface implements Serializable {
                 splitHalfEdge(hedge, intersectionVertex);
                 hedgesCount = halfEdges.size();
                 hedgesCutCount++;
-                if (hedgesCutCount % 500 == 0) {
-                    log.info("[Tile][PhotoRealistic][cut][cutByPlaneYZ] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount + " , currIdx = " + i);
-                }
             }
         }
+
+        log.info("[Tile][PhotoRealistic][cut][cutByPlaneYZ] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount);
     }
 
     public boolean checkHalfEdgesFaces() {

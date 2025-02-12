@@ -47,33 +47,6 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
-    public void getRenderScene(List<GaiaScene> scenes, int bufferedImageType, int maxScreenSize, List<BufferedImage> resultImages) {
-        if (renderer == null) renderer = new MainRenderer();
-        renderer.render(scenes, bufferedImageType, resultImages, maxScreenSize);
-        deleteObjects();
-    }
-
-    @Override
-    public void renderDecimate(List<GaiaScene> scenes, List<GaiaScene> resultScenes) {
-        //***************************************************************
-        // test function to check if the decimate function is working.***
-        //***************************************************************
-        if (renderer == null) renderer = new MainRenderer();
-        renderer.renderDecimate(scenes, resultScenes);
-        deleteObjects();
-    }
-
-    @Override
-    public void renderPyramidDeformation(List<GaiaScene> scenes, List<GaiaScene> resultScenes) {
-        //***************************************************************
-        // test function to check if the decimate function is working.***
-        //***************************************************************
-        if (renderer == null) renderer = new MainRenderer();
-        renderer.renderGaiaSceneLoop(scenes, resultScenes);
-        deleteObjects();
-    }
-
-    @Override
     public void decimate(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters) {
         if (renderer == null) renderer = new MainRenderer();
         renderer.decimate(scenes, resultHalfEdgeScenes, decimateParameters);

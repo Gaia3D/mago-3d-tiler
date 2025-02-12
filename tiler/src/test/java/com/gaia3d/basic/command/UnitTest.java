@@ -637,29 +637,6 @@ class UnitTest {
     }
 
     @Test
-    void testColladaLargeMesh() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\";
-        String outputPath = "D:\\Result_mago3dTiler\\";
-        //String path = "Tile_+000_+000_+000";
-        //String path = "splittedTile";
-        String path = "(20240712)상지대 콜라다 데이터_6buildings";
-
-        String[] args = new String[]{
-                "-i", inputPath + path,
-                "-it", "dae",
-                "-o", outputPath + path,
-                "-crs", "2096",
-                "-minLod", "0",
-                "-maxLod", "0",
-                "-multiThreadCount", "1",
-                "-rotateUpAxis",
-                //"-largeMesh",
-                "-debug"
-        };
-        Mago3DTilerMain.main(args);
-    }
-
-    @Test
     void testGoyangChangRung() {
         String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\고양창릉데이터\\abs\\";
         String outputPath = "D:\\Result_mago3dTiler\\";
@@ -834,28 +811,6 @@ class UnitTest {
     }
 
     @Test
-    void test_RealisticMesh_SangJiDe() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\";
-        String outputPath = "D:\\Result_mago3dTiler\\";
-        //String path = "Tile_+000_+000_+000";
-        //String path = "splittedTile";
-        String path = "(20240712)상지대 콜라다 데이터_1building";
-
-        String[] args = new String[]{
-                "-i", inputPath + path,
-                "-it", "dae",
-                "-o", outputPath + path,
-                "-crs", "2096",
-                "-glb",
-                "-pr", // photo realistic mesh
-                "-minLod", "0",
-                "-maxLod", "0",
-                "-debug"
-        };
-        Mago3DTilerMain.main(args);
-    }
-
-    @Test
     void test_RealisticMesh_Thailand() {
         String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\";
         String outputPath = "D:\\Result_mago3dTiler\\";
@@ -880,8 +835,8 @@ class UnitTest {
 
     @Test
     void test_RealisticMesh_Thailand_Data_N_buildings() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\RealisticMesh_Thailand_multiTiles\\OBJ25sqkm\\Data_9buildings\\";
-        String outputPath = "D:\\data\\mago-server\\output\\ResultData_9buildings\\";
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\RealisticMesh_Thailand_multiTiles\\OBJ25sqkm\\Data_4buildings\\";
+        String outputPath = "D:\\data\\mago-server\\output\\ResultData_4buildings\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
@@ -890,9 +845,7 @@ class UnitTest {
                 "-crs", "32648",
                 "-xOffset", "268943",
                 "-yOffset", "1818915",
-                "-rx", "-90",
-                "-pr",
-                "-debug"
+                "-pr"
         };
         Mago3DTilerMain.main(args);
     }
@@ -956,7 +909,24 @@ class UnitTest {
                 "-o", outputPath,
                 "-crs", "5187",
                 "-pr",
-                "-debug"
+                "-rx", "-90",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void testCollada_SangGiDe() {
+            // _1building _2buildings _3buildings _4buildings _5buildings _6buildings
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\(20240712)상지대 콜라다 데이터\\";
+        String outputPath = "D:\\data\\mago-server\\output\\(20240712)상지대 콜라다 데이터\\";
+
+        String[] args = new String[]{
+                "-i", inputPath,
+                "-it", "dae",
+                "-o", outputPath,
+                "-proj", "+proj=tmerc +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=127.9296192 +lat_0=37.3702212",
+                "-pr",
+                "-rx", "90",
         };
         Mago3DTilerMain.main(args);
     }

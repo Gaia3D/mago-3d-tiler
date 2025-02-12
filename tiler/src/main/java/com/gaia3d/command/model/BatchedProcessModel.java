@@ -59,6 +59,7 @@ public class BatchedProcessModel implements ProcessFlowModel {
         preProcessors.add(new GaiaTexCoordCorrector());
         preProcessors.add(new GaiaScaler());
         preProcessors.add(new GaiaRotator());
+
         if (globalOptions.isLargeMesh()) {
             preProcessors.add(new GaiaStrictTranslator(geoTiffs));
         } else {
