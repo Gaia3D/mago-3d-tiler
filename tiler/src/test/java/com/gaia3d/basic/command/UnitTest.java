@@ -909,7 +909,7 @@ class UnitTest {
                 "-o", outputPath,
                 "-crs", "5187",
                 "-pr",
-                "-rx", "-90",
+                "-rx", "90",
         };
         Mago3DTilerMain.main(args);
     }
@@ -917,8 +917,8 @@ class UnitTest {
     @Test
     void testCollada_SangGiDe() {
             // _1building _2buildings _3buildings _4buildings _5buildings _6buildings
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\(20240712)상지대 콜라다 데이터\\";
-        String outputPath = "D:\\data\\mago-server\\output\\(20240712)상지대 콜라다 데이터\\";
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\BB00-sangji-university_2buildings\\";
+        String outputPath = "D:\\data\\mago-server\\output\\BB00-sangji-university_2buildings\\";
 
         String[] args = new String[]{
                 "-i", inputPath,

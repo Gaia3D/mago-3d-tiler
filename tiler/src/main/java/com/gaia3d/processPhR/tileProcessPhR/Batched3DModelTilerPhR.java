@@ -164,6 +164,10 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
             makeContentsForNodes(nodeTileInfoMap, lod);
 
+            if (d >= 2) {
+                break;
+            }
+
         }
 
         // net surfaces with boxTextures.***
@@ -215,8 +219,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
         // now, delete nodes that have no contents.***
         root.deleteNoContentNodes();
-        //root.setRefinementTypeAutomatic();
-
         setGeometryErrorToNodeManual(root, desiredDepth);
 
         root.setGeometricError(1000.0);
