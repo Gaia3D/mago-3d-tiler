@@ -225,6 +225,14 @@ public class ShapeConverterOld extends AbstractGeometryConverter implements Conv
                         if (altitudeColumnName != null) {
                             altitude = getAltitude(feature, altitudeColumnName);
                         }
+
+                        /* If the height is less than the altitude, swap the values. */
+                        if (height < altitude) {
+                            double temp = height;
+                            height = altitude;
+                            altitude = temp;
+                        }
+
                         GaiaExtrusionBuilding building = GaiaExtrusionBuilding.builder().id(feature.getID()).name(name).boundingBox(boundingBox).floorHeight(altitude).roofHeight(height + skirtHeight).positions(positions).originalFilePath(file.getPath()).properties(attributes).build();
                         buildings.add(building);
                     } else {
