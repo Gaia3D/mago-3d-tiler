@@ -96,6 +96,8 @@ jar {
         }
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    archiveFileName = "mago-3d-tiler-${project.version}.jar"
+    destinationDirectory.set(file("${projectDir}/dist"))
 }
 
 shadowJar {
@@ -137,6 +139,7 @@ jib {
         appRoot = "/mago-3d-tiler"
         creationTime = "USE_CURRENT_TIMESTAMP"
         jvmFlags = [
+                //"-Djava.library.path=/app/mago-3d-tiler-${project.version}-${project.ext.lwjglNatives}.jar",
                 "-Djava.awt.headless=true",
                 "-Dfile.encoding=UTF-8",
                 "-XX:+UseContainerSupport",
@@ -148,7 +151,7 @@ jib {
     extraDirectories {
         paths {
             path {
-                from = file("build/libs")
+                from = file("dist")
                 into = "/app"
             }
         }
