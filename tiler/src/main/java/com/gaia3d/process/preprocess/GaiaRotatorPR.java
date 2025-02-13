@@ -30,6 +30,7 @@ public class GaiaRotatorPR implements PreProcess {
 
         GaiaNode rootNode = gaiaScene.getNodes().get(0);
         Matrix4d transform = rootNode.getTransformMatrix();
+        //Matrix4d transformModified = new Matrix4d(transform);
 
         rotateX(transform, rotateX);
 

@@ -121,12 +121,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         int currDepth = desiredDepth - lod;
         Map<Node, List<TileInfo>> nodeTileInfoMap = new HashMap<>();
 
-        multiThreadCuttingAndScissorProcess(tileInfosCopy, lod, root, desiredDepth);
-
-        // distribute contents to node in the correspondent depth.***
-        // After process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes.***
-        distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
-        makeContentsForNodes(nodeTileInfoMap, lod);
+//        multiThreadCuttingAndScissorProcess(tileInfosCopy, lod, root, desiredDepth);
+//
+//        // distribute contents to node in the correspondent depth.***
+//        // After process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes.***
+//        distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
+//        makeContentsForNodes(nodeTileInfoMap, lod);
 
         /* End lod 0 process */
 
@@ -163,6 +163,10 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             currDepth = desiredDepth - lod;
             distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
             makeContentsForNodes(nodeTileInfoMap, lod);
+
+            if (d >= 2) {
+                break;
+            }
 
         }
 
@@ -215,8 +219,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
         // now, delete nodes that have no contents.***
         root.deleteNoContentNodes();
-        //root.setRefinementTypeAutomatic();
-
         setGeometryErrorToNodeManual(root, desiredDepth);
 
         root.setGeometricError(1000.0);
