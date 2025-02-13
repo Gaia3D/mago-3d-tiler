@@ -687,6 +687,7 @@ public class Engine {
                     for (GaiaFace face : faces) {
                         int faceId = face.getId();
                         CameraDirectionType bestCamDirType = faceVisibilityDataManager.getBestCameraDirectionTypeOfFace(faceId);
+
                         // put it into map
                         CameraDirectionTypeInfo cameraDirectionTypeInfo = mapGaiaFaceToCameraDirectionTypeInfo.get(face);
                         if (cameraDirectionTypeInfo == null) {
@@ -747,7 +748,7 @@ public class Engine {
                 Matrix4d modelViewMatrix = mapClassificationCamDirTypeModelViewMatrix.get(classifyId).get(cameraDirectionType);
 
                 if (modelViewMatrix == null) {
-                    log.info("makeBoxTexturesByObliqueCamera() : modelViewMatrix is null.");
+                    log.info("makeBoxTexturesByObliqueCamera() : modelViewMatrix is null." + "camDirype = " + cameraDirectionType);
                     continue;
                 }
 
@@ -1839,63 +1840,6 @@ public class Engine {
                 faceVisibilityData.incrementPixelFaceVisibility(colorCode);
             }
         }
-//
-//        // now set classification to the faces.***
-//        // 1rst, calculate the normals of the faces.***
-//        for (GaiaPrimitive gaiaPrimitive : gaiaPrimitives) {
-//            // calculate the normals.***
-//            gaiaPrimitive.calculateNormal();
-//        }
-//
-//        Matrix3d rotationMatrix = new Matrix3d();
-//        modelViewMatrix.normal(rotationMatrix);
-//        Vector3d camDirLocal = new Vector3d(0.0, 0.0, -1.0);
-//
-//        int primitivesCount = gaiaPrimitives.size();
-//        for (int i = 0; i < primitivesCount; i++) {
-//            GaiaPrimitive gaiaPrimitive = gaiaPrimitives.get(i);
-//            List<GaiaSurface> surfaces = gaiaPrimitive.getSurfaces();
-//            for (GaiaSurface surface : surfaces) {
-//                List<GaiaFace> faces = surface.getFaces();
-//                for (GaiaFace face : faces) {
-//                    // check if the face was visited.***
-//                    if (mapGaiaFaceToCameraDirectionTypeInfo.containsKey(face)) {
-//                        continue;
-//                    }
-//
-////                    int faceId = face.getId();
-////                    if (colorMap.containsKey(faceId) && colorMap.get(faceId) > 4) {
-////                        // check the face normal with the camDir.***
-////                        Vector3d faceNormal = face.getFaceNormal();
-////
-////                        // rotate the faceNormal to the camera direction.***
-////                        Vector3d rotatedNormal = new Vector3d();
-////                        rotationMatrix.transform(faceNormal, rotatedNormal);
-////
-////                        double dotProduct = rotatedNormal.dot(camDirLocal);
-////                        double angRad = Math.acos(dotProduct);
-////                        double angDeg = Math.toDegrees(angRad);
-////
-////
-////                        if (angDeg > camDirNormalMinAngDeg) {
-////                            // put it into map
-////                            mapCameraDirectionTypeFacesList.computeIfAbsent(cameraDirectionType, k -> new ArrayList<>()).add(face);
-////
-////                            // put it into map
-////                            CameraDirectionTypeInfo cameraDirectionTypeInfo = mapGaiaFaceToCameraDirectionTypeInfo.get(face);
-////                            if (cameraDirectionTypeInfo == null) {
-////                                cameraDirectionTypeInfo = new CameraDirectionTypeInfo();
-////                                mapGaiaFaceToCameraDirectionTypeInfo.put(face, cameraDirectionTypeInfo);
-////                            }
-////
-////                            cameraDirectionTypeInfo.setCameraDirectionType(cameraDirectionType);
-////                            cameraDirectionTypeInfo.setAngleDegree(angDeg);
-////                            mapGaiaFaceToCameraDirectionTypeInfo.put(face, cameraDirectionTypeInfo);
-////                        }
-////                    }
-//                }
-//            }
-//        }
 
         return image;
     }
