@@ -283,4 +283,11 @@ public class HalfEdgePrimitive implements Serializable {
     }
 
 
+    public double calculateArea() {
+        double area = 0;
+        for (HalfEdgeSurface surface : surfaces) {
+            area += surface.calculateArea();
+        }
+        return area;
+    }
 }

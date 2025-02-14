@@ -401,4 +401,14 @@ public class HalfEdgeNode implements Serializable {
     }
 
 
+    public double calculateArea() {
+        double area = 0;
+        for (HalfEdgeMesh mesh : meshes) {
+            area += mesh.calculateArea();
+        }
+        for (HalfEdgeNode child : children) {
+            area += child.calculateArea();
+        }
+        return area;
+    }
 }

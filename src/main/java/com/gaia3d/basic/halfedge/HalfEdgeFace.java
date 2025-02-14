@@ -63,6 +63,20 @@ public class HalfEdgeFace implements Serializable {
         return HalfEdgeUtils.calculateAspectRatioAsTriangle(a, b, c);
     }
 
+    public double calculateArea()
+    {
+        List<HalfEdge> halfEdgesLoop = this.getHalfEdgesLoop(null);
+        if (halfEdgesLoop == null || halfEdgesLoop.size() < 3) {
+            return 0.0;
+        }
+
+        HalfEdgeVertex a = halfEdgesLoop.get(0).getStartVertex();
+        HalfEdgeVertex b = halfEdgesLoop.get(1).getStartVertex();
+        HalfEdgeVertex c = halfEdgesLoop.get(2).getStartVertex();
+
+        return HalfEdgeUtils.calculateArea(a, b, c);
+    }
+
     public PlaneType calculateBestPlaneToProject() {
         Vector3d normal = this.calculatePlaneNormal();
 //        Vector3d zAxis = new Vector3d(0, 0, 1);
