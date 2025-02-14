@@ -30,11 +30,6 @@ public class FaceVisibilityDataManager {
                 bestCameraDirectionType = entry.getKey();
             }
         }
-
-        if(bestCameraDirectionType == null)
-        {
-            bestCameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_ZNEG; // default
-        }
         return bestCameraDirectionType;
     }
 

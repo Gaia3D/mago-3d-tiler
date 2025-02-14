@@ -864,7 +864,6 @@ public class HalfEdgeSurface implements Serializable {
             deleteNoUsedVertices();
             this.removeDeletedObjects();
             this.weldVertices(1e-4, false, false, false, false);
-
         }
 
 
@@ -4202,4 +4201,13 @@ public class HalfEdgeSurface implements Serializable {
     }
 
 
+    public double calculateArea() {
+        double area = 0.0;
+        int facesCount = faces.size();
+        for (int i = 0; i < facesCount; i++) {
+            HalfEdgeFace face = faces.get(i);
+            area += face.calculateArea();
+        }
+        return area;
+    }
 }

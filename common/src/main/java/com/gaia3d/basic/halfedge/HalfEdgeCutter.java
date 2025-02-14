@@ -133,7 +133,7 @@ public class HalfEdgeCutter {
         List<GaiaAAPlane> resultPlanesXY = new ArrayList<>();
         getPlanesGridXYZForBox(bbox, gridSpacing, resultPlanesYZ, resultPlanesXZ, resultPlanesXY, resultOctree);
 
-        double error = 1e-8;
+        double error = 1e-5;
         int planesCount = resultPlanesYZ.size();
         for (int i = 0; i < planesCount; i++) {
             GaiaAAPlane planeYZ = resultPlanesYZ.get(i);
@@ -211,9 +211,6 @@ public class HalfEdgeCutter {
             GaiaAttribute newAttribute = attribute.getCopy();
             cuttedScene.setAttribute(newAttribute);
         }
-
-        GaiaBoundingBox newBBox = bbox.clone();
-        cuttedScene.setBoundingBox(newBBox);
 
         Path originalPath = halfEdgeScene.getOriginalPath();
         cuttedScene.setOriginalPath(originalPath);

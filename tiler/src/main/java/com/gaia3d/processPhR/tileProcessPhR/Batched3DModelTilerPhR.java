@@ -11,10 +11,7 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
 import com.gaia3d.basic.geometry.octree.HalfEdgeOctree;
 import com.gaia3d.basic.halfedge.*;
-import com.gaia3d.basic.model.GaiaMaterial;
-import com.gaia3d.basic.model.GaiaNode;
-import com.gaia3d.basic.model.GaiaScene;
-import com.gaia3d.basic.model.GaiaTexture;
+import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.KmlInfo;
@@ -102,6 +99,15 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         globalBoundingBox.setMaxZ(globalBoundingBox.getMinZ() + desiredDistanceBetweenLat);// make CUBE boundingBox.***
         globalBoundingBox = new GaiaBoundingBox(minLonDeg, minLatDeg, globalBoundingBox.getMinZ(), maxLonDeg, maxLatDeg, globalBoundingBox.getMaxZ(), false);
 
+//        // test SangJiDe box.***
+//        globalBoundingBox.setMinX(127.92555873417285);
+//        globalBoundingBox.setMinY(37.367067250765444);
+//        globalBoundingBox.setMinZ(95.24140834438803);
+//        globalBoundingBox.setMaxX(127.94000862846416);
+//        globalBoundingBox.setMaxY(37.37855150076844);
+//        globalBoundingBox.setMaxZ(1375.241408344388);
+//        // end test.***
+
         Matrix4d transformMatrix = getTransformMatrix(globalBoundingBox);
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);
@@ -121,12 +127,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         int currDepth = desiredDepth - lod;
         Map<Node, List<TileInfo>> nodeTileInfoMap = new HashMap<>();
 
-//        multiThreadCuttingAndScissorProcess(tileInfosCopy, lod, root, desiredDepth);
-//
-//        // distribute contents to node in the correspondent depth.***
-//        // After process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes.***
-//        distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
-//        makeContentsForNodes(nodeTileInfoMap, lod);
+        multiThreadCuttingAndScissorProcess(tileInfosCopy, lod, root, desiredDepth);
+
+        // distribute contents to node in the correspondent depth.***
+        // After process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes.***
+        distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
+        makeContentsForNodes(nodeTileInfoMap, lod);
 
         /* End lod 0 process */
 
@@ -142,18 +148,23 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             double screenPixelsForMeter = 0.0;
             if (d == 1) {
                 decimateParameters.setBasicValues(5.0, 0.4, 0.9, 32.0, 1000000, 1, 1.0);
+                decimateParameters.setLod(d);
                 screenPixelsForMeter = screenPixelsForMeterLod1;
             } else if (d == 2) {
                 decimateParameters.setBasicValues(10.0, 0.4, 1.0, 32.0, 1000000, 2, 1.5);
+                decimateParameters.setLod(d);
                 screenPixelsForMeter = screenPixelsForMeterLod1 / 2.0;
             } else if (d == 3) {
                 decimateParameters.setBasicValues(15.0, 0.6, 1.0, 32.0, 1000000, 2, 2.0);
+                decimateParameters.setLod(d);
                 screenPixelsForMeter = screenPixelsForMeterLod1 / 4.0;
             } else if (d == 4) {
                 decimateParameters.setBasicValues(20.0, 0.8, 1.0, 32.0, 1000000, 2, 2.5);
+                decimateParameters.setLod(d);
                 screenPixelsForMeter = screenPixelsForMeterLod1 / 8.0;
             } else {
                 decimateParameters.setBasicValues(25.0, 0.2, 0.9, 32.0, 1000000, 2, 1.0);
+                decimateParameters.setLod(d);
                 screenPixelsForMeter = screenPixelsForMeterLod1 / 16.0;
             }
 
@@ -183,6 +194,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             double screenPixelsForMeter = 0.0;
             // public void setBasicValues(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount)
             decimateParameters.setBasicValues(10.0, 0.5, 1.0, 6.0, 1000000, 1, 1.8);
+            decimateParameters.setLod(2);
             if (d == 3) {
                 decimateParameters.setBasicValues(15.0, 1.0, 1.0, 15.0, 1000000, 1, 1.8);
                 screenPixelsForMeter = screenPixelsForMeterLod1 / 2.0;
@@ -653,7 +665,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 throw new RuntimeException(e);
             }
             GaiaScene scene = new GaiaScene(gaiaSet);
-            GaiaBoundingBox gaiaSceneBBox = scene.getBoundingBox();
+            //GaiaBoundingBox gaiaSceneBBox = scene.getBoundingBox();
             scene.setOriginalPath(tileInfo.getTempPath());
             //scene.setOriginalPath(tileInfo.getScenePath());
             scene.makeTriangleFaces();
@@ -671,8 +683,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 throw new RuntimeException(e);
             }
 
-            GaiaBoundingBox motherBBoxLC = new GaiaBoundingBox();
-            GaiaBoundingBox motherCartographicBoundingBox = this.calculateCartographicBoundingBox(scene, transformMatrix, motherBBoxLC);
+            //GaiaBoundingBox motherBBoxLC = new GaiaBoundingBox();
+            //GaiaBoundingBox motherCartographicBoundingBox = this.calculateCartographicBoundingBox(scene, transformMatrix, motherBBoxLC);
 
             tilerExtensionModule.decimateAndCutByObliqueCamera(gaiaSceneList, resultDecimatedScenes, decimateParameters, halfEdgeOctree, cuttingPlanes, screenPixelsForMeter);
 
@@ -701,17 +713,20 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
                 GaiaBoundingBox boundingBoxCutLC = new GaiaBoundingBox();
                 GaiaScene gaiaSceneCut = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneLod);
+
+                // test check gaiaSceneCut.***
+
                 GaiaBoundingBox cartographicBoundingBox = this.calculateCartographicBoundingBox(gaiaSceneCut, transformMatrix, boundingBoxCutLC);
-
-                if(motherCartographicBoundingBox.getMaxZ() < cartographicBoundingBox.getMaxZ()) {
-                    log.error("Error : motherCartographicBoundingBox.getMaxZ() < cartographicBoundingBox.getMaxZ()");
-                }
-
+//                double maxEdgeLength = TestUtils.getMaxEdgeLength(gaiaSceneCut);
+//                if(maxEdgeLength > 30.0)
+//                {
+//                    int hola = 0;
+//                    TestUtils.translateGaiaScene(gaiaSceneCut, 0.0, 0.0, 50.0);
+//                }
                 GaiaSet gaiaSetCut = GaiaSet.fromGaiaScene(gaiaSceneCut);
 
 
                 LevelOfDetail levelOfDetail = LevelOfDetail.getByLevel(lod);
-                float scale = levelOfDetail.getTextureScale();
 
                 Path cutScenePath = Paths.get("");
                 gaiaSceneCut.setOriginalPath(cutScenePath);

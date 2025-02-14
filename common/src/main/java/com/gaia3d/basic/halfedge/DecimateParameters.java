@@ -13,6 +13,7 @@ public class DecimateParameters {
     private int maxCollapsesCount = 1000000;
     private int iterationsCount = 1;
     private double smallHedgeSize = 1.0;
+    private int lod = -1;
 
     public void setBasicValues(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount, int iterationsCount, double smallHedgeSize) {
         this.maxDiffAngDegrees = maxDiffAngDegrees;

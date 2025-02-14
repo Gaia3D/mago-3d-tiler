@@ -266,9 +266,9 @@ public class HalfEdge implements Serializable {
         resultIntersectionPoint.set(startVertexPosition.x + t * (endVertexPosition.x - startVertexPosition.x), startVertexPosition.y + t * (endVertexPosition.y - startVertexPosition.y), planePosition.z);
 
         // check if the intersection point is in the range of the halfEdge
-        if (resultIntersectionPoint.x < Math.min(startVertexPosition.x, endVertexPosition.x) - error) {
+        if (resultIntersectionPoint.x < Math.min(startVertexPosition.x, endVertexPosition.x) + error) {
             return false;
-        } else if (resultIntersectionPoint.x > Math.max(startVertexPosition.x, endVertexPosition.x) + error) {
+        } else if (resultIntersectionPoint.x > Math.max(startVertexPosition.x, endVertexPosition.x) - error) {
             return false;
         }
 
@@ -340,9 +340,9 @@ public class HalfEdge implements Serializable {
         // t represents
 
         // check if the intersection point is in the range of the halfEdge
-        if (resultIntersectionPoint.y < Math.min(startVertexPosition.y, endVertexPosition.y) - error) {
+        if (resultIntersectionPoint.y < Math.min(startVertexPosition.y, endVertexPosition.y) + error) {
             return false;
-        } else if (resultIntersectionPoint.y > Math.max(startVertexPosition.y, endVertexPosition.y) + error) {
+        } else if (resultIntersectionPoint.y > Math.max(startVertexPosition.y, endVertexPosition.y) - error) {
             return false;
         }
 
@@ -412,9 +412,15 @@ public class HalfEdge implements Serializable {
         resultIntersectionPoint.set(startVertexPosition.x + t * (endVertexPosition.x - startVertexPosition.x), planePosition.y, startVertexPosition.z + t * (endVertexPosition.z - startVertexPosition.z));
 
         // check if the intersection point is in the range of the halfEdge
-        if (resultIntersectionPoint.x < Math.min(startVertexPosition.x, endVertexPosition.x) - error) {
+//        if (resultIntersectionPoint.x < Math.min(startVertexPosition.x, endVertexPosition.x) - error) {
+//            return false;
+//        } else if (resultIntersectionPoint.x > Math.max(startVertexPosition.x, endVertexPosition.x) + error) {
+//            return false;
+//        }
+
+        if (resultIntersectionPoint.x <= Math.min(startVertexPosition.x, endVertexPosition.x) + error) {
             return false;
-        } else if (resultIntersectionPoint.x > Math.max(startVertexPosition.x, endVertexPosition.x) + error) {
+        } else if (resultIntersectionPoint.x >= Math.max(startVertexPosition.x, endVertexPosition.x) - error) {
             return false;
         }
 

@@ -229,4 +229,11 @@ public class HalfEdgeMesh implements Serializable {
     }
 
 
+    public double calculateArea() {
+        double area = 0;
+        for (HalfEdgePrimitive primitive : primitives) {
+            area += primitive.calculateArea();
+        }
+        return area;
+    }
 }

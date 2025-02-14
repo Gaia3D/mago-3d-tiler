@@ -179,6 +179,9 @@ public class HalfEdgeUtils {
         List<HalfEdgeFace> halfEdgeFaces = halfEdgeSurface.getFaces();
         for (HalfEdgeFace halfEdgeFace : halfEdgeFaces) {
             GaiaFace gaiaFace = gaiaFaceFromHalfEdgeFace(halfEdgeFace, mapHalfEdgeVertexToGaiaVertex, mapGaiaVertexToIndex, gaiaPrimitiveOwner);
+            if(gaiaFace == null) {
+                continue;
+            }
             gaiaSurface.getFaces().add(gaiaFace);
         }
 
