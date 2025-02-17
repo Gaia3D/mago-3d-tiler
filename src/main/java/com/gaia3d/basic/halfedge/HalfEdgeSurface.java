@@ -4192,7 +4192,8 @@ public class HalfEdgeSurface implements Serializable {
                 westVertices.add(vertex);
             } else if (Math.abs(position.x - east) < error) {
                 eastVertices.add(vertex);
-            } else if (Math.abs(position.y - south) < error) {
+            }
+            if (Math.abs(position.y - south) < error) {
                 southVertices.add(vertex);
             } else if (Math.abs(position.y - north) < error) {
                 northVertices.add(vertex);
