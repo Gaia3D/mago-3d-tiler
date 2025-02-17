@@ -572,7 +572,10 @@ public class Engine {
         //Map<Integer, Map<PlaneType, List<HalfEdgeFace>>> mapClassificationPlaneTypeFacesList = new HashMap<>(); // old.*** old.*** old.*** old.*** old.*** old.***
         Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapClassificationCamDirTypeFacesList = new HashMap<>();
         CameraDirectionType cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_UNKNOWN;
+        int classifiedFacesCount = facesClassificationMap.size();
+        int count = 0;
         for (Map.Entry<Integer, List<HalfEdgeFace>> entry : facesClassificationMap.entrySet()) {
+            log.info("makeBoxTexturesByObliqueCamera : " + count + " / " + classifiedFacesCount);
             FaceVisibilityDataManager faceVisibilityDataManager = new FaceVisibilityDataManager();
             int classificationId = entry.getKey();
             List<HalfEdgeFace> facesList = entry.getValue();
@@ -714,6 +717,8 @@ public class Engine {
                 HalfEdgeFace halfEdgeFace = mapGaiaFaceToHalfEdgeFace.get(gaiaFace);
                 halfEdgeFace.setCameraDirectionType(cameraDirectionTypeInfo.getCameraDirectionType());
             }
+
+            count++;
         }
 
         halfEdgeScene.splitFacesByBestObliqueCameraDirectionToProject();

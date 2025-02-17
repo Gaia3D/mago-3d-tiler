@@ -352,6 +352,62 @@ public class Node {
         return null;
     }
 
+    public Node getIntersectedNodeAsOctree(Vector3d cartographicRad, int depth) {
+        if (this.depth == depth) {
+            return this;
+        }
+
+        if (children == null || children.isEmpty()) {
+            this.createOctTreeChildren();
+        }
+
+        double[] region = this.getBoundingVolume().getRegion();
+        double midLonRad = (region[0] + region[2]) / 2.0;
+        double midLatRad = (region[1] + region[3]) / 2.0;
+        double midAltitude = (region[4] + region[5]) / 2.0;
+
+        //              bottom                                top
+        //        +------------+------------+        +------------+------------+
+        //        |            |            |        |            |            |
+        //        |     3      |     2      |        |     7      |     6      |
+        //        |            |            |        |            |            |
+        //        +------------+------------+        +------------+------------+
+        //        |            |            |        |            |            |
+        //        |     0      |     1      |        |     4      |     5      |
+        //        |            |            |        |            |            |
+        //        +------------+------------+        +------------+------------+
+
+        if(cartographicRad.x < midLonRad) {
+            if(cartographicRad.y < midLatRad) {
+                if(cartographicRad.z < midAltitude) {
+                    return children.get(0).getIntersectedNodeAsOctree(cartographicRad, depth);
+                } else {
+                    return children.get(4).getIntersectedNodeAsOctree(cartographicRad, depth);
+                }
+            } else {
+                if(cartographicRad.z < midAltitude) {
+                    return children.get(3).getIntersectedNodeAsOctree(cartographicRad, depth);
+                } else {
+                    return children.get(7).getIntersectedNodeAsOctree(cartographicRad, depth);
+                }
+            }
+        } else {
+            if(cartographicRad.y < midLatRad) {
+                if(cartographicRad.z < midAltitude) {
+                    return children.get(1).getIntersectedNodeAsOctree(cartographicRad, depth);
+                } else {
+                    return children.get(5).getIntersectedNodeAsOctree(cartographicRad, depth);
+                }
+            } else {
+                if(cartographicRad.z < midAltitude) {
+                    return children.get(2).getIntersectedNodeAsOctree(cartographicRad, depth);
+                } else {
+                    return children.get(6).getIntersectedNodeAsOctree(cartographicRad, depth);
+                }
+            }
+        }
+    }
+
     public GaiaBoundingBox calculateCartographicBoundingBox()
     {
         if(this.boundingVolume == null) {

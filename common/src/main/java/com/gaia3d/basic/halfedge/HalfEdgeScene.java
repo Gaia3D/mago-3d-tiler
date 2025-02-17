@@ -478,7 +478,7 @@ public class HalfEdgeScene implements Serializable {
 
     public void makeSkirt() {
         GaiaBoundingBox bbox = getBoundingBox();
-        double error = 1e-4;
+        double error = 1e-3;
         List<HalfEdgeVertex> westVertices = new ArrayList<>();
         List<HalfEdgeVertex> eastVertices = new ArrayList<>();
         List<HalfEdgeVertex> southVertices = new ArrayList<>();

@@ -197,10 +197,63 @@ public class HalfEdgeOctree {
         this.maxZ = maxZ;
     }
 
-    public void distributeFacesToLeaf() {
+//    public void distributeFacesToLeaf() {
+//        if (this.faces.isEmpty()) return;
+//
+//        if (this.children == null) return;
+//
+//        double midX = (minX + maxX) / 2.0;
+//        double midY = (minY + maxY) / 2.0;
+//        double midZ = (minZ + maxZ) / 2.0;
+//
+//        for (HalfEdgeFace face : this.faces) {
+//            Vector3d center = face.getBarycenter(null);
+//            if (center.x < midX) {
+//                if (center.y < midY) {
+//                    if (center.z < midZ) {
+//                        children[0].faces.add(face);
+//                    } else {
+//                        children[4].faces.add(face);
+//                    }
+//                } else {
+//                    if (center.z < midZ) {
+//                        children[3].faces.add(face);
+//                    } else {
+//                        children[7].faces.add(face);
+//                    }
+//                }
+//            } else {
+//                if (center.y < midY) {
+//                    if (center.z < midZ) {
+//                        children[1].faces.add(face);
+//                    } else {
+//                        children[5].faces.add(face);
+//                    }
+//                } else {
+//                    if (center.z < midZ) {
+//                        children[2].faces.add(face);
+//                    } else {
+//                        children[6].faces.add(face);
+//                    }
+//                }
+//            }
+//        }
+//
+//        this.faces.clear();
+//
+//        for (HalfEdgeOctree child : children) {
+//            child.distributeFacesToLeaf();
+//        }
+//    }
+
+    public void distributeFacesToTargetDepth(int targetDepth) {
         if (this.faces.isEmpty()) return;
 
-        if (this.children == null) return;
+        if (this.getCoordinate().getDepth() >= targetDepth) return;
+
+        if (this.children == null) {
+            this.createChildren();
+        }
 
         double midX = (minX + maxX) / 2.0;
         double midY = (minY + maxY) / 2.0;
@@ -239,10 +292,13 @@ public class HalfEdgeOctree {
             }
         }
 
+        // clear the faces list.***
         this.faces.clear();
 
-        for (HalfEdgeOctree child : children) {
-            child.distributeFacesToLeaf();
+        if (this.getCoordinate().getDepth() < targetDepth) {
+            for (HalfEdgeOctree child : children) {
+                child.distributeFacesToTargetDepth(targetDepth);
+            }
         }
     }
 
@@ -318,5 +374,25 @@ public class HalfEdgeOctree {
                 child.extractOctreesWithContents(octrees);
             }
         }
+    }
+
+    public double getSizeX() {
+        return maxX - minX;
+    }
+
+    public double getSizeY() {
+        return maxY - minY;
+    }
+
+    public double getSizeZ() {
+        return maxZ - minZ;
+    }
+
+    public double getMaxSize()
+    {
+        double x = maxX - minX;
+        double y = maxY - minY;
+        double z = maxZ - minZ;
+        return Math.max(x, Math.max(y, z));
     }
 }

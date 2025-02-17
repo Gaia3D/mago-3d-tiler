@@ -3,7 +3,7 @@ import org.gradle.internal.os.OperatingSystem
 subprojects {
     group "com.gaia3d"
     // release, beta, alpha
-    version "1.10.7-beta"
+    version "1.10.6-release"
     apply plugin: 'java'
 
     project.ext.lwjglVersion = "3.3.3"
@@ -18,7 +18,6 @@ subprojects {
             project.ext.lwjglNatives = "natives-macos"
             break
     }
-    project.ext.lwjglNatives = "natives-linux"
 
     repositories {
         maven { url "https://repo.osgeo.org/repository/release/" }
@@ -75,7 +74,7 @@ project(':non-mago-extension') {
 project(':mago-tiler') {
     dependencies {
         implementation project(':mago-common')
-        //implementation project(':mago-extension')
         implementation project(':non-mago-extension')
+        //implementation project(':mago-extension')
     }
 }

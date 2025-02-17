@@ -16,7 +16,8 @@ import java.util.Map;
 
 @Slf4j
 public class HalfEdgeCutter {
-    public static void getPlanesGridXYZForBox(GaiaBoundingBox bbox, double gridSpacing, List<GaiaAAPlane> resultPlanesYZ, List<GaiaAAPlane> resultPlanesXZ, List<GaiaAAPlane> resultPlanesXY, HalfEdgeOctree resultOctree) {
+    public static void getPlanesGridXYZForBox(GaiaBoundingBox bbox, double gridSpacing, List<GaiaAAPlane> resultPlanesYZ, List<GaiaAAPlane> resultPlanesXZ,
+                                              List<GaiaAAPlane> resultPlanesXY, HalfEdgeOctree resultOctree) {
         // Note : the grid is regularly spaced in the 3 axis.***
         double maxSize = bbox.getMaxSize();
         int desiredDepth = (int) Math.ceil(HalfEdgeUtils.log2(maxSize / gridSpacing));
@@ -28,7 +29,8 @@ public class HalfEdgeCutter {
         cubeBBox.setMaxZ(cubeBBox.getMinZ() + desiredDistanceRoot);
 
         resultOctree.setSize(cubeBBox.getMinX(), cubeBBox.getMinY(), cubeBBox.getMinZ(), cubeBBox.getMaxX(), cubeBBox.getMaxY(), cubeBBox.getMaxZ());
-        resultOctree.makeTreeByMaxDepth(desiredDepth);
+        resultOctree.setMaxDepth(desiredDepth);
+
 
         // create GaiaAAPlanes.***
         int leafOctreesCountForAxis = (int) Math.pow(2, desiredDepth);
@@ -68,10 +70,9 @@ public class HalfEdgeCutter {
 
     public static List<HalfEdgeScene> cutHalfEdgeSceneByGaiaAAPlanes(HalfEdgeScene halfEdgeScene, List<GaiaAAPlane> planes, HalfEdgeOctree resultOctree)
     {
-        double error = 1e-8;
+        double error = 1e-4;
         int planesCount = planes.size();
-        for (int i = 0; i < planesCount; i++)
-        {
+        for (int i = 0; i < planesCount; i++) {
             GaiaAAPlane plane = planes.get(i);
             halfEdgeScene.cutByPlane(plane.getPlaneType(), plane.getPoint(), error);
         }
@@ -79,16 +80,14 @@ public class HalfEdgeCutter {
         // now, distribute faces into octree.***
         resultOctree.getFaces().clear();
         List<HalfEdgeSurface> surfaces = halfEdgeScene.extractSurfaces(null);
-        for (HalfEdgeSurface surface : surfaces)
-        {
+        for (HalfEdgeSurface surface : surfaces) {
             List<HalfEdgeFace> faces = surface.getFaces();
-            for (HalfEdgeFace face : faces)
-            {
+            for (HalfEdgeFace face : faces) {
                 resultOctree.getFaces().add(face);
             }
         }
 
-        resultOctree.distributeFacesToLeaf();
+        resultOctree.distributeFacesToTargetDepth(resultOctree.getMaxDepth());
         List<HalfEdgeOctree> octreesWithContents = new ArrayList<>();
         resultOctree.extractOctreesWithFaces(octreesWithContents);
 
@@ -96,20 +95,20 @@ public class HalfEdgeCutter {
         List<HalfEdgeScene> resultScenes = new ArrayList<>();
 
         // set the classifyId for each face.***
-        List<HalfEdgeSurface> newSurfaces = new ArrayList<>();
         int octreesCount = octreesWithContents.size();
-        for (int j = 0; j < octreesCount; j++)
-        {
+        for (int j = 0; j < octreesCount; j++) {
             HalfEdgeOctree octree = octreesWithContents.get(j);
+            double testOctreSize = octree.getMaxSize();
+            double octSizeX = octree.getSizeX();
+            double octSizeY = octree.getSizeY();
+            double octSizeZ = octree.getSizeZ();
             List<HalfEdgeFace> faces = octree.getFaces();
-            for (HalfEdgeFace face : faces)
-            {
+            for (HalfEdgeFace face : faces) {
                 face.setClassifyId(j);
             }
         }
 
-        for (int j = 0; j < octreesCount; j++)
-        {
+        for (int j = 0; j < octreesCount; j++) {
             int classifyId = j;
 
             // create a new HalfEdgeScene.***
@@ -162,7 +161,7 @@ public class HalfEdgeCutter {
             }
         }
 
-        resultOctree.distributeFacesToLeaf();
+        resultOctree.distributeFacesToTargetDepth(resultOctree.getMaxDepth());
         List<HalfEdgeOctree> octreesWithContents = new ArrayList<>();
         resultOctree.extractOctreesWithFaces(octreesWithContents);
 

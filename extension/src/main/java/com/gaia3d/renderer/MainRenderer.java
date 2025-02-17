@@ -201,70 +201,29 @@ public class MainRenderer implements IAppLogic {
         for(HalfEdgeScene cutHalfEdgeScene : resultCutHalfEdgeScenes) {
             log.info("makeBoxTexturesByObliqueCamera. cutScene : " + (i+1) + " / " + cutScenesCount);
             GaiaBoundingBox bbox = cutHalfEdgeScene.getBoundingBox();
-            //double areaPre = cutHalfEdgeScene.calculateArea();
-
-//            // test check.***
-//            double maxLength = 0.0;
-//            if(lod == 1) {
-//                maxLength = TestUtils.getMaxHalfEdgeLength(cutHalfEdgeScene);
-//            }
-//            boolean testCheck = false;
-//            if(maxLength > 30.0) {
-//                log.info("Test 1 - maxEdgeLength = " + maxLength);
-//                testCheck = true;
-//            }
-//            if(maxLength > 35.0) {
-//                log.info("Test 1 - maxEdgeLength = " + maxLength);
-//                testCheck = true;
-//            }
-//            // end test check.***
-
             double bboxMaxSize = bbox.getMaxSize();
             // now, cut the halfEdgeScene and make cube-textures by rendering.***
             double gridSpacing = bboxMaxSize / 3.0;
+            if(lod == 1)
+            {
+                gridSpacing = bboxMaxSize / 2.0;
+            }
             HalfEdgeOctree resultOctree = new HalfEdgeOctree(null);
             HalfEdgeScene cuttedScene = HalfEdgeCutter.cutHalfEdgeSceneGridXYZ(cutHalfEdgeScene, gridSpacing, resultOctree); // original.***
             //HalfEdgeScene cuttedScene = cutHalfEdgeScene; // test delete.***
-
-//            double areaAfter = cuttedScene.calculateArea();
-//
-//            double diffArea = Math.abs(areaPre - areaAfter);
-//            if(diffArea > 2.0) {
-//                log.info("diffArea = " + diffArea);
-//                TestUtils.translateHalfEdgeScene(cuttedScene, 0, 0, 30.0);
-//            }
-
-//            double maxLength2 = 0.0;
-//            if(lod == 1) {
-//                maxLength2 = TestUtils.getMaxHalfEdgeLength(cuttedScene);
-//            }
-//            boolean testCheck2 = false;
-//            if(maxLength2 > 30.0) {
-//                log.info("Test 2 - maxEdgeLength = " + maxLength);
-//                testCheck2 = true;
-//            }
-//            if(maxLength2 > 35.0) {
-//                log.info("Test 2 - maxEdgeLength = " + maxLength);
-//                testCheck2 = true;
-//            }
 
             // now make box textures for the cuttedScene.***
             engine.makeBoxTexturesByObliqueCamera(cuttedScene, screenPixelsForMeter);
             cuttedScene.makeSkirt();
             // cuttedScene.scissorTextures(); // no works. error. TODO: must fix this.***
-//            if(lod == 1) {
-//                if (testCheck) {
-//                    TestUtils.translateHalfEdgeScene(cuttedScene, 0, 0, 20.0);
-//                }
-//                if (testCheck2) {
-//                    TestUtils.rotateXAxisHalfEdgeScene(cuttedScene, 90.0);
-//                }
-//            }
 
             resultHalfEdgeScenes.add(cuttedScene);
 
             i++;
         }
+
+        engine.deleteObjects();
+        engine.getGaiaScenesContainer().deleteObjects();
     }
 
     public void decimateNetSurfaceAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters,
@@ -352,6 +311,9 @@ public class MainRenderer implements IAppLogic {
 
             i++;
         }
+
+        engine.deleteObjects();
+        engine.getGaiaScenesContainer().deleteObjects();
     }
 
     public void decimate(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters) {
