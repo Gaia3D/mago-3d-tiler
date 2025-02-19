@@ -62,7 +62,8 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         Matrix4d transformMatrix = getTransformMatrix(originalBoundingBox);
         rotateX90(transformMatrix);
 
-        double geometricError = calcGeometricError(originalBoundingBox);
+        //double geometricError = calcGeometricError(originalBoundingBox);
+        double geometricError = calcGeometricErrorFromWgs84(transformedBoundingBox);
         double minimumGeometricError = 64.0;
         double maximumGeometricError = 1000.0;
         if (geometricError < minimumGeometricError) {
@@ -71,6 +72,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
             geometricError = maximumGeometricError;
         }
         rootGeometricError = geometricError;
+        //rootGeometricError = 1000.0;
 
         Node root = createRoot();
         root.setNodeCode("R");
@@ -119,6 +121,21 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
 
     private double calcGeometricError(GaiaBoundingBox boundingBox) {
         return boundingBox.getLongestDistance();
+    }
+
+    // convert to meters
+    private double calcGeometricErrorFromWgs84(GaiaBoundingBox boundingBox) {
+        Vector3d minPosition = boundingBox.getMinPosition();
+        Vector3d maxPosition = boundingBox.getMaxPosition();
+
+        Vector3d minTransformed = GlobeUtils.geographicToCartesianWgs84(minPosition);
+        Vector3d maxTransformed = GlobeUtils.geographicToCartesianWgs84(maxPosition);
+
+        /*Matrix4d minTransformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(minPosition);
+        Matrix4d maxTransformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(maxPosition);
+        Vector3d minTransformed = minTransformMatrix.getTranslation(new Vector3d());
+        Vector3d maxTransformed = maxTransformMatrix.getTranslation(new Vector3d());*/
+        return minTransformed.distance(maxTransformed);
     }
 
     private double calcGeometricError(GaiaPointCloud pointCloud) {
@@ -205,7 +222,8 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
 
         double calcValue = (1000 / rootGeometricError) * attenuation;
         double maximumGeometricError = 36.0;
-        double geometricErrorCalc = calcGeometricError(childBoundingBox);
+        //double geometricErrorCalc = calcGeometricError(childBoundingBox);
+        double geometricErrorCalc = calcGeometricErrorFromWgs84(transformedBoundingBox);
         double calculatedGeometricError = geometricErrorCalc / calcValue;
         if (calculatedGeometricError > maximumGeometricError) {
             calculatedGeometricError = maximumGeometricError;
