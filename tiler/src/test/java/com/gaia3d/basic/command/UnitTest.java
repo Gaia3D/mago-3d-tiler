@@ -835,8 +835,8 @@ class UnitTest {
 
     @Test
     void test_RealisticMesh_Thailand_Data_N_buildings() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\RealisticMesh_Thailand_multiTiles\\OBJ25sqkm\\Data_1building\\";
-        String outputPath = "D:\\data\\mago-server\\output\\ResultData_1building\\";
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\RealisticMesh_Thailand_multiTiles\\OBJ25sqkm\\Data_16buildings\\";
+        String outputPath = "D:\\data\\mago-server\\output\\ResultData_16buildings\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
@@ -876,7 +876,7 @@ class UnitTest {
                 "-it", "obj",
                 "-o", outputPath,
                 "-crs", "5187",
-                //"-rx", "-90",
+                "-rx", "90",
                 "-pr"
         };
         Mago3DTilerMain.main(args);
@@ -893,7 +893,7 @@ class UnitTest {
                 "-o", outputPath,
                 "-crs", "5187",
                 "-pr",
-                "-debug"
+                "-rx", "90",
         };
         Mago3DTilerMain.main(args);
     }

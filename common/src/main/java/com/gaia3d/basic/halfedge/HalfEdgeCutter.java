@@ -1,5 +1,6 @@
 package com.gaia3d.basic.halfedge;
 
+import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
 import com.gaia3d.basic.geometry.octree.HalfEdgeOctree;
@@ -68,7 +69,8 @@ public class HalfEdgeCutter {
         }
     }
 
-    public static List<HalfEdgeScene> cutHalfEdgeSceneByGaiaAAPlanes(HalfEdgeScene halfEdgeScene, List<GaiaAAPlane> planes, HalfEdgeOctree resultOctree)
+    public static List<HalfEdgeScene> cutHalfEdgeSceneByGaiaAAPlanes(HalfEdgeScene halfEdgeScene, List<GaiaAAPlane> planes, HalfEdgeOctree resultOctree,
+                                                                     boolean scissorTextures, boolean makeSkirt)
     {
         double error = 1e-4;
         int planesCount = planes.size();
@@ -77,12 +79,17 @@ public class HalfEdgeCutter {
             halfEdgeScene.cutByPlane(plane.getPlaneType(), plane.getPoint(), error);
         }
 
+        halfEdgeScene.deleteDegeneratedFaces();
+
         // now, distribute faces into octree.***
         resultOctree.getFaces().clear();
         List<HalfEdgeSurface> surfaces = halfEdgeScene.extractSurfaces(null);
         for (HalfEdgeSurface surface : surfaces) {
             List<HalfEdgeFace> faces = surface.getFaces();
             for (HalfEdgeFace face : faces) {
+                if(face.getStatus() == ObjectStatus.DELETED) {
+                    continue;
+                }
                 resultOctree.getFaces().add(face);
             }
         }
@@ -113,6 +120,14 @@ public class HalfEdgeCutter {
 
             // create a new HalfEdgeScene.***
             HalfEdgeScene cuttedScene = halfEdgeScene.cloneByClassifyId(classifyId);
+            //cuttedScene.deleteNoUsedMaterials();
+            if(scissorTextures) {
+                cuttedScene.scissorTexturesByMotherScene(halfEdgeScene.getMaterials());
+            }
+
+            if(makeSkirt) {
+                cuttedScene.makeSkirt();
+            }
 
             if(cuttedScene == null) {
                 log.info("cuttedScene is null");
@@ -123,6 +138,7 @@ public class HalfEdgeCutter {
         }
         return resultScenes;
     }
+
 
     public static HalfEdgeScene cutHalfEdgeSceneGridXYZ(HalfEdgeScene halfEdgeScene, double gridSpacing, HalfEdgeOctree resultOctree) {
         GaiaBoundingBox bbox = halfEdgeScene.getBoundingBox();
@@ -151,12 +167,17 @@ public class HalfEdgeCutter {
             halfEdgeScene.cutByPlane(planeXY.getPlaneType(), planeXY.getPoint(), error);
         }
 
+        halfEdgeScene.deleteDegeneratedFaces();
+
         // now, distribute faces into octree.***
         resultOctree.getFaces().clear();
         List<HalfEdgeSurface> surfaces = halfEdgeScene.extractSurfaces(null);
         for (HalfEdgeSurface surface : surfaces) {
             List<HalfEdgeFace> faces = surface.getFaces();
             for (HalfEdgeFace face : faces) {
+                if(face.getStatus() == ObjectStatus.DELETED) {
+                    continue;
+                }
                 resultOctree.getFaces().add(face);
             }
         }

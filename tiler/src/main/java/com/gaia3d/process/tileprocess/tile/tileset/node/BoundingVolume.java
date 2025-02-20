@@ -61,6 +61,20 @@ public class BoundingVolume implements Serializable {
         this.setRegion(rootRegion);
     }
 
+    public BoundingVolume(BoundingVolume boundingVolume) {
+        this.type = boundingVolume.type;
+        if (BoundingVolumeType.REGION == type) {
+            region = new double[6];
+            System.arraycopy(boundingVolume.region, 0, region, 0, 6);
+        } else if (BoundingVolumeType.BOX == type) {
+            box = new double[12];
+            System.arraycopy(boundingVolume.box, 0, box, 0, 12);
+        } else if (BoundingVolumeType.SPHERE == type) {
+            sphere = new double[4];
+            System.arraycopy(boundingVolume.sphere, 0, sphere, 0, 4);
+        }
+    }
+
     public enum BoundingVolumeType {
         BOX,
         SPHERE,

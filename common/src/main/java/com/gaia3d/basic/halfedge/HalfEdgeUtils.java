@@ -150,6 +150,7 @@ public class HalfEdgeUtils {
         // surfaces.***
         List<HalfEdgeSurface> halfEdgeSurfaces = halfEdgePrimitive.getSurfaces();
         List<HalfEdgeVertex> halfEdgeVertices = halfEdgePrimitive.getVertices();
+
         Map<HalfEdgeVertex, GaiaVertex> mapHalfEdgeVertexToGaiaVertex = new HashMap<>();
         Map<GaiaVertex, Integer> mapGaiaVertexToIndex = new HashMap<>();
 
@@ -198,6 +199,7 @@ public class HalfEdgeUtils {
         }
 
         if (halfEdgeFace.isDegenerated()) {
+            halfEdgeFace.isDegenerated();
             return null;
         }
 

@@ -137,4 +137,8 @@ public class TileInfo {
                 .isI3dm(this.isI3dm)
                 .build();
     }
+
+    public void setGaiaSet(GaiaSet o) {
+        this.set = o;
+    }
 }

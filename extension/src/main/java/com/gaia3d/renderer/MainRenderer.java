@@ -193,7 +193,9 @@ public class MainRenderer implements IAppLogic {
         // take the halfEdgeScene and decimate and cut it.***
         HalfEdgeScene halfEdgeScene = halfEdgeScenes.get(0); // only one scene.***
         halfEdgeScene.doTrianglesReductionOneIteration(decimateParameters);
-        List<HalfEdgeScene> resultCutHalfEdgeScenes = HalfEdgeCutter.cutHalfEdgeSceneByGaiaAAPlanes(halfEdgeScene, cuttingPlanes, octree);
+        boolean scissorTextures = false;
+        boolean makeSkirt = false;
+        List<HalfEdgeScene> resultCutHalfEdgeScenes = HalfEdgeCutter.cutHalfEdgeSceneByGaiaAAPlanes(halfEdgeScene, cuttingPlanes, octree, scissorTextures, makeSkirt);
 
         int lod = decimateParameters.getLod();
         int cutScenesCount = resultCutHalfEdgeScenes.size();
@@ -289,7 +291,9 @@ public class MainRenderer implements IAppLogic {
         HalfEdgeScene halfEdgeScene = halfEdgeScenes.get(0); // only one scene.***
         //GaiaBoundingBox motherBbox = halfEdgeScene.getBoundingBox();
         halfEdgeScene.doTrianglesReductionOneIteration(decimateParameters);
-        List<HalfEdgeScene> resultCutHalfEdgeScenes = HalfEdgeCutter.cutHalfEdgeSceneByGaiaAAPlanes(halfEdgeScene, cuttingPlanes, octree);
+        boolean scissorTextures = false;
+        boolean makeSkirt = false;
+        List<HalfEdgeScene> resultCutHalfEdgeScenes = HalfEdgeCutter.cutHalfEdgeSceneByGaiaAAPlanes(halfEdgeScene, cuttingPlanes, octree, scissorTextures, makeSkirt);
 
         int cutScenesCount = resultCutHalfEdgeScenes.size();
         int i=0;
@@ -888,6 +892,7 @@ public class MainRenderer implements IAppLogic {
         depthFbo.unbind();
 
         // delete renderableGaiaScenes.***
+        engine.deleteObjects();
         for (RenderableGaiaScene renderableScene : renderableGaiaScenes) {
             renderableScene.deleteGLBuffers();
         }
