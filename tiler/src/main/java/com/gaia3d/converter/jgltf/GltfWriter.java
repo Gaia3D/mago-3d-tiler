@@ -585,7 +585,8 @@ public class GltfWriter {
             }
             assert formatName != null;
 
-            if (mimeType.equals("image/jpeg")) {
+            GlobalOptions globalOptions = GlobalOptions.getInstance();
+            if (globalOptions.isPhotorealistic() || mimeType.equals("image/jpeg")) {
                 float quality = 0.75f;
                 imageString = writeJpegImage(bufferedImage, quality);
             } else {
