@@ -1,6 +1,7 @@
 package com.gaia3d.basic.halfedge;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.model.GaiaMaterial;
 import com.gaia3d.basic.model.GaiaScene;
 import lombok.Getter;
@@ -320,5 +321,42 @@ public class HalfEdgePrimitive implements Serializable {
             deletedFacesCount += surface.deleteDegeneratedFaces();
         }
         return deletedFacesCount;
+    }
+
+    public GaiaRectangle getTexCoordinateBoundingRectangle(GaiaRectangle resultRectangle) {
+        if(resultRectangle == null) {
+            resultRectangle = new GaiaRectangle();
+        }
+        for (HalfEdgeSurface surface : surfaces) {
+            resultRectangle = surface.getTexCoordinateBoundingRectangle(resultRectangle);
+        }
+        return resultRectangle;
+    }
+
+    public void translateTexCoordsToPositiveQuadrant() {
+        GaiaRectangle texCoordBoundingRectangle = getTexCoordinateBoundingRectangle(null);
+        if (texCoordBoundingRectangle == null) {
+            return;
+        }
+
+        double rectWidth = texCoordBoundingRectangle.getWidth();
+        double rectHeight = texCoordBoundingRectangle.getHeight();
+
+        double minX = texCoordBoundingRectangle.getMinX();
+        double minY = texCoordBoundingRectangle.getMinY();
+
+        double maxX = texCoordBoundingRectangle.getMaxX();
+        double maxY = texCoordBoundingRectangle.getMaxY();
+
+        if(minX < 0 || minY < 0) {
+            int hola = 0;
+        }
+
+        if(minX > 1 || minY > 1) {
+            int hola = 0;
+        }
+
+
+        int hola = 0;
     }
 }

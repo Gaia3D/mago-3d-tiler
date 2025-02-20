@@ -12,6 +12,7 @@ public class GaiaTextureScissorData {
     private GaiaRectangle originBoundary;
     private GaiaRectangle currentBoundary;
     private GaiaRectangle batchedBoundary;
+    private GaiaRectangle texCoordBoundary;
 
     public GaiaRectangle getOriginBoundary() {
         if(originBoundary == null) {

@@ -545,6 +545,7 @@ public class HalfEdgeScene implements Serializable {
         double bboxLengthY = bbox.getLengthY();
         double bboxMaxSize = Math.max(bboxLengthX, bboxLengthY);
         double expandDistance = bboxMaxSize * 0.005;
+        expandDistance = bboxMaxSize * 0.01;
         // provisionally, only expand the perimeter vertices.***
         if (westVertices.size() > 1) {
             for (HalfEdgeVertex vertex : westVertices) {
@@ -572,6 +573,13 @@ public class HalfEdgeScene implements Serializable {
                 Vector3d position = vertex.getPosition();
                 position.y += expandDistance;
             }
+        }
+    }
+
+    public void translateTexCoordsToPositiveQuadrant()
+    {
+        for (HalfEdgeNode node : nodes) {
+            node.translateTexCoordsToPositiveQuadrant();
         }
     }
 }
