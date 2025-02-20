@@ -3113,13 +3113,9 @@ public class HalfEdgeSurface implements Serializable {
         List<GaiaTextureScissorData> textureScissorDatasHeight = new ArrayList<>();
         int weldedFacesGroupsCount = resultWeldedFacesGroups.size();
 
-        //GaiaRectangle texCoordBRect = new GaiaRectangle();
-        //GaiaRectangle groupTexCoordBRect = new GaiaRectangle();
         List<HalfEdgeVertex> faceVertices = new ArrayList<>();
         Map<HalfEdgeVertex, HalfEdgeVertex> groupVertexMap = new HashMap<>();
         Map<HalfEdgeVertex, HalfEdgeVertex> visitedVertexMap = new HashMap<>();
-
-        Map<List<HalfEdgeFace>, GaiaRectangle> faceGroupToTexCoordBRectMap_TEST = new HashMap<>();
 
         boolean invertTexCoordY = false;// original.***
         //invertTexCoordY = true;
@@ -3152,7 +3148,6 @@ public class HalfEdgeSurface implements Serializable {
                 }
             }
 
-            faceGroupToTexCoordBRectMap_TEST.put(weldedFacesGroup, groupTexCoordBRect);
 
             // check if must translate to positive quadrant.***
             if (groupTexCoordBRect.getMinX() < 0.0 || groupTexCoordBRect.getMinX() > 1.0 || groupTexCoordBRect.getMinY() < 0.0 || groupTexCoordBRect.getMinY() > 1.0) {

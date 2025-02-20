@@ -131,7 +131,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             tileInfosCopy.clear();
             nodeTileInfoMap.clear();
             tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
-            double screenPixelsForMeterLod1 = 10.0;
+            double screenPixelsForMeterLod1 = 20.0;
             double screenPixelsForMeter = 0.0;
             if (d == 1) {
                 decimateParameters.setBasicValues(6.0, 0.4, 0.9, 32.0, 1000000, 1, 1.0);
@@ -176,7 +176,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             tileInfosCopy.clear();
             nodeTileInfoMap.clear();
             tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
-            double screenPixelsForMeterLod1 = 10.0;
+            double screenPixelsForMeterLod1 = 20.0;
             double screenPixelsForMeter = 0.0;
             // public void setBasicValues(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount)
             decimateParameters.setBasicValues(10.0, 0.5, 1.0, 6.0, 1000000, 1, 1.8);
@@ -1828,15 +1828,9 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         scene.weldVertices(errorWeld, checkTexCoord, checkNormal, checkColor, checkBatchId);
         HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 
-        halfEdgeScene.translateTexCoordsToPositiveQuadrant();
-
-        //GaiaBoundingBox halfEdgeSceneBbox = halfEdgeScene.getBoundingBox();
         Matrix4d transformMatrix = new Matrix4d();
         HalfEdgeOctree resultOctree = this.getCuttingPlanesAndHalfEdgeOctree(tileInfo, lod, rootNodeBoundingVolume, depthIdx, allPlanes, transformMatrix);
 
-        // test mother cartographic bounding box.***
-        //GaiaBoundingBox motherBBoxLC = new GaiaBoundingBox();
-        //GaiaBoundingBox motherCartographicBoundingBox = this.calculateCartographicBoundingBox(scene, transformMatrix, motherBBoxLC);
         log.debug("cutting rectangle cake one shoot. lod : " + lod);
 
 
@@ -1941,7 +1935,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 continue;
             }
 
-            cuttedScene.translateTexCoordsToPositiveQuadrant();
+            //cuttedScene.translateTexCoordsToPositiveQuadrant();
 
             //TestUtils.checkHalfEdgeScene(cuttedScene);//!!!!!!!!!!!
             //***************************************************************************************************************************
