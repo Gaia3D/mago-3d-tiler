@@ -3,6 +3,7 @@ package com.gaia3d.basic.halfedge;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaMaterial;
+import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.model.GaiaTexture;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.util.ImageUtils;
@@ -105,6 +106,28 @@ public class HalfEdgeScene implements Serializable {
             material.clear();
         }
         materials.clear();
+    }
+
+    public void deleteNoUsedMaterials() {
+        List<Integer> usedMaterialsIds = getUsedMaterialsIds(null);
+        List<GaiaMaterial> noUsedMaterials = new ArrayList<>();
+        for (int i = 0; i < materials.size(); i++) {
+            if (!usedMaterialsIds.contains(i)) {
+                noUsedMaterials.add(materials.get(i));
+            }
+        }
+        for (GaiaMaterial material : noUsedMaterials) {
+            material.deleteTextures();
+            List<GaiaTexture> textures = material.getTextures().get(TextureType.DIFFUSE);
+            if (textures != null) {
+                for (GaiaTexture texture : textures) {
+                    texture.deleteObjects();
+                    texture.setParentPath("");
+                    texture.setName("");
+                    texture.setPath("");
+                }
+            }
+        }
     }
 
     public void checkSandClockFaces() {
@@ -389,6 +412,15 @@ public class HalfEdgeScene implements Serializable {
         return clonedScene;
     }
 
+    public int deleteDegeneratedFaces() {
+        int deletedFacesCount = 0;
+        for (HalfEdgeNode node : nodes) {
+            deletedFacesCount += node.deleteDegeneratedFaces();
+        }
+        removeDeletedObjects();
+        return deletedFacesCount;
+    }
+
 
     public void scissorTextures() {
         boolean hasTextures = false;
@@ -405,6 +437,24 @@ public class HalfEdgeScene implements Serializable {
 
         for (HalfEdgeNode node : nodes) {
             node.scissorTextures(materials);
+        }
+    }
+
+    public void scissorTexturesByMotherScene(List<GaiaMaterial> motherMaterials) {
+        boolean hasTextures = false;
+        for (GaiaMaterial material : materials) {
+            if (material.hasTextures()) {
+                hasTextures = true;
+                break;
+            }
+        }
+
+        if (!hasTextures) {
+            return;
+        }
+
+        for (HalfEdgeNode node : nodes) {
+            node.scissorTexturesByMotherScene(materials, motherMaterials);
         }
     }
 
@@ -478,6 +528,10 @@ public class HalfEdgeScene implements Serializable {
 
     public void makeSkirt() {
         GaiaBoundingBox bbox = getBoundingBox();
+        if(bbox == null) {
+            log.info("Making skirt : Error: bbox is null.***");
+            return;
+        }
         double error = 1e-3;
         List<HalfEdgeVertex> westVertices = new ArrayList<>();
         List<HalfEdgeVertex> eastVertices = new ArrayList<>();

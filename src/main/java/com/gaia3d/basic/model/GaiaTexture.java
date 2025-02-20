@@ -47,6 +47,14 @@ public class GaiaTexture extends TextureStructure implements Serializable {
     private int textureId = -1;
 
     public void loadImage() {
+        if(path == null || parentPath == null) {
+            return;
+        }
+
+        // check for empty strings
+        if (path.isEmpty() || parentPath.isEmpty()) {
+            return;
+        }
         Path diffusePath = new File(path).toPath();
         String imagePath = parentPath + File.separator + diffusePath;
         if (this.bufferedImage == null) {
@@ -158,9 +166,11 @@ public class GaiaTexture extends TextureStructure implements Serializable {
 
     public BufferedImage getBufferedImage() {
         if (this.bufferedImage == null) {
-            File fullPath = new File(this.parentPath, this.path);
-            log.info("[Load Image IO] : {}", fullPath.getAbsolutePath());
-            loadImage();
+            if(this.parentPath != null && this.path != null) {
+                File fullPath = new File(this.parentPath, this.path);
+                log.info("[Load Image IO] : {}", fullPath.getAbsolutePath());
+                loadImage();
+            }
         }
         return this.bufferedImage;
     }

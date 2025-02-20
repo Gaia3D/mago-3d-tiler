@@ -2,6 +2,7 @@ package com.gaia3d.basic.halfedge;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaMaterial;
+import com.gaia3d.basic.model.GaiaScene;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -162,6 +163,12 @@ public class HalfEdgeMesh implements Serializable {
         }
     }
 
+    public void scissorTexturesByMotherScene(List<GaiaMaterial> thisMaterials, List<GaiaMaterial> motherMaterials) {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.scissorTexturesByMotherScene(thisMaterials, motherMaterials);
+        }
+    }
+
     public int getTrianglesCount() {
         int trianglesCount = 0;
         for (HalfEdgePrimitive primitive : primitives) {
@@ -235,5 +242,14 @@ public class HalfEdgeMesh implements Serializable {
             area += primitive.calculateArea();
         }
         return area;
+    }
+
+
+    public int deleteDegeneratedFaces() {
+        int deletedFacesCount = 0;
+        for (HalfEdgePrimitive primitive : primitives) {
+            deletedFacesCount += primitive.deleteDegeneratedFaces();
+        }
+        return deletedFacesCount;
     }
 }
