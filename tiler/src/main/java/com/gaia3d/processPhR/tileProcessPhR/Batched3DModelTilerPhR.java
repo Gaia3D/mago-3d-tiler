@@ -242,7 +242,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
         int counter = 0;
         for (TileInfo tileInfo : tileInfos) {
-
+            log.info("cutRectangleCake : " + counter + " / " + tileInfos.size());
             BoundingVolume rootNodeBoundingVolume = rootNode.getBoundingVolume();
             BoundingVolume rootNodeBoundingVolumeCopy = new BoundingVolume(rootNodeBoundingVolume);
 
@@ -250,8 +250,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             List<TileInfo> singleTileInfoList = new ArrayList<>();
             singleTileInfoList.add(tileInfo);
             String tileInfoName = tileInfo.getTempPath().getFileName().toString();
-
-            log.info("[Tile][PhotoRealistic][{}/{}] Generating tile : {}", tileInfos.size(), tileInfoName);
             log.info("[Tile][PhotoRealistic][{}/{}] - Cut RectangleCake one shoot... : {}", tileInfos.size(), tileInfoName);
 
             List<TileInfo> resultTileInfoList = new ArrayList<>();
@@ -1829,7 +1827,10 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         scene.makeTriangleFaces();
         scene.weldVertices(errorWeld, checkTexCoord, checkNormal, checkColor, checkBatchId);
         HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
-        GaiaBoundingBox halfEdgeSceneBbox = halfEdgeScene.getBoundingBox();
+
+        halfEdgeScene.translateTexCoordsToPositiveQuadrant();
+
+        //GaiaBoundingBox halfEdgeSceneBbox = halfEdgeScene.getBoundingBox();
         Matrix4d transformMatrix = new Matrix4d();
         HalfEdgeOctree resultOctree = this.getCuttingPlanesAndHalfEdgeOctree(tileInfo, lod, rootNodeBoundingVolume, depthIdx, allPlanes, transformMatrix);
 
@@ -1925,6 +1926,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
             // create a new HalfEdgeScene.***
             HalfEdgeScene cuttedScene = halfEdgeScene.cloneByClassifyId(classifyId);
+
             cuttedScene.deleteNoUsedMaterials();
             if(scissorTextures) {
                 cuttedScene.scissorTexturesByMotherScene(halfEdgeScene.getMaterials());
@@ -1938,6 +1940,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 log.info("cuttedScene is null");
                 continue;
             }
+
+            cuttedScene.translateTexCoordsToPositiveQuadrant();
 
             //TestUtils.checkHalfEdgeScene(cuttedScene);//!!!!!!!!!!!
             //***************************************************************************************************************************

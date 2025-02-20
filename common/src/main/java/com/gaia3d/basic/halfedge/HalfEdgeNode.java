@@ -433,4 +433,13 @@ public class HalfEdgeNode implements Serializable {
         }
         return deletedFaces;
     }
+
+    public void translateTexCoordsToPositiveQuadrant() {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.translateTexCoordsToPositiveQuadrant();
+        }
+        for (HalfEdgeNode child : children) {
+            child.translateTexCoordsToPositiveQuadrant();
+        }
+    }
 }

@@ -252,4 +252,10 @@ public class HalfEdgeMesh implements Serializable {
         }
         return deletedFacesCount;
     }
+
+    public void translateTexCoordsToPositiveQuadrant() {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.translateTexCoordsToPositiveQuadrant();
+        }
+    }
 }
