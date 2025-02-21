@@ -10,6 +10,7 @@ import com.gaia3d.util.GeometryUtils;
 import com.gaia3d.util.ImageResizer;
 import com.gaia3d.util.ImageUtils;
 import de.javagl.jgltf.impl.v2.*;
+import de.javagl.jgltf.impl.v2.Image;
 import de.javagl.jgltf.model.GltfConstants;
 import de.javagl.jgltf.model.GltfModel;
 import de.javagl.jgltf.model.GltfModels;
@@ -27,11 +28,13 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
+import java.util.List;
 
 /**
  * GltfWriter is a class that writes the glTF file.
@@ -585,7 +588,8 @@ public class GltfWriter {
             }
             assert formatName != null;
 
-            if (mimeType.equals("image/jpeg")) {
+            GlobalOptions globalOptions = GlobalOptions.getInstance();
+            if (globalOptions.isPhotorealistic() || mimeType.equals("image/jpeg")) {
                 float quality = 0.75f;
                 imageString = writeJpegImage(bufferedImage, quality);
             } else {
@@ -615,6 +619,22 @@ public class GltfWriter {
             ImageWriteParam param = writer.getDefaultWriteParam(); // 2
             param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT); // 3
             param.setCompressionQuality(quality);  // 4
+
+            // when data 4 channel convert to 3 channel image
+            /*if (bufferedImage.getType() == BufferedImage.TYPE_4BYTE_ABGR) {
+                BufferedImage convertedImage = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+                Graphics2D graphics = convertedImage.createGraphics();
+                graphics.drawImage(bufferedImage, 0, 0, null);
+                graphics.dispose();
+                bufferedImage = convertedImage;
+            }*/
+
+            BufferedImage convertedImage = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+            Graphics2D graphics = convertedImage.createGraphics();
+            graphics.drawImage(bufferedImage, 0, 0, null);
+            graphics.dispose();
+            bufferedImage = convertedImage;
+
             writer.write(null, new IIOImage(bufferedImage, null, null), param); // 5
             byte[] bytes = baos.toByteArray();
             String imageString = "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(bytes);

@@ -49,20 +49,23 @@ import java.util.List;
 public class GltfCreator {
 
     @Test
-    public void run() {
+    public void createGrid() {
         Configurator.initConsoleLogger();
 
-        File file = new File("D:/workspaces/scene.gltf");
-        EasySceneCreator easySceneCreator = new EasySceneCreator();
-        GaiaScene gaiaScene = easySceneCreator.createScene(file);
-        GaiaNode rootNode = gaiaScene.getNodes().get(0);
+        int[] gridSizes = new int[] {8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192};
+        for (int gridSize : gridSizes) {
+            File file = new File("D:/workspace/", gridSize + "x" + gridSize + ".glb");
+            log.info("Creating gltf file: {}", file.getAbsolutePath());
+            EasySceneCreator easySceneCreator = new EasySceneCreator();
+            GaiaScene gaiaScene = easySceneCreator.createScene(file);
+            GaiaNode rootNode = gaiaScene.getNodes().get(0);
 
-        int gridSize = 512;
-        GaiaNode gridNode = easySceneCreator.createGridNode(gridSize, gridSize);
-        rootNode.getChildren().add(gridNode);
+            GaiaNode gridNode = easySceneCreator.createGridNode(gridSize, gridSize);
+            rootNode.getChildren().add(gridNode);
 
-        GltfWriter gltfWriter = new GltfWriter();
-        gltfWriter.writeGltf(gaiaScene, file);
+            GltfWriter gltfWriter = new GltfWriter();
+            gltfWriter.writeGlb(gaiaScene, file);
+        }
     }
 
     @Test
