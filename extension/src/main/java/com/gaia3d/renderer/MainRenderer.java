@@ -156,7 +156,7 @@ public class MainRenderer implements IAppLogic {
         boolean checkNormal = false;
         boolean checkColor = false;
         boolean checkBatchId = false;
-        double error = 1e-4;
+        double error = 1e-5; // weldError.***
 
         log.info("MainRenderer : Decimating the scene...");
         for (int i = 0; i < scenesCount; i++) {
@@ -218,6 +218,7 @@ public class MainRenderer implements IAppLogic {
             engine.makeBoxTexturesByObliqueCamera(cuttedScene, screenPixelsForMeter);
             cuttedScene.makeSkirt();
             // cuttedScene.scissorTextures(); // no works. error. TODO: must fix this.***
+
 
             resultHalfEdgeScenes.add(cuttedScene);
 

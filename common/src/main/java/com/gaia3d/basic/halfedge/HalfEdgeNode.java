@@ -216,9 +216,9 @@ public class HalfEdgeNode implements Serializable {
                 clonedNode.children.add(clonedChild);
             }
         }
-        if (boundingBox != null && clonedNode != null) {
-            clonedNode.boundingBox = boundingBox.clone();
-        }
+//        if (boundingBox != null && clonedNode != null) {
+//            clonedNode.boundingBox = boundingBox.clone();
+//        }
         return clonedNode;
     }
 
@@ -440,6 +440,44 @@ public class HalfEdgeNode implements Serializable {
         }
         for (HalfEdgeNode child : children) {
             child.translateTexCoordsToPositiveQuadrant();
+        }
+    }
+
+    public void updateVerticesList() {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.updateVerticesList();
+        }
+        for (HalfEdgeNode child : children) {
+            child.updateVerticesList();
+        }
+    }
+
+    public void updateFacesList() {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.updateFacesList();
+        }
+        for (HalfEdgeNode child : children) {
+            child.updateFacesList();
+        }
+    }
+
+    public int getFacesCount() {
+        int facesCount = 0;
+        for (HalfEdgeMesh mesh : meshes) {
+            facesCount += mesh.getFacesCount();
+        }
+        for (HalfEdgeNode child : children) {
+            facesCount += child.getFacesCount();
+        }
+        return facesCount;
+    }
+
+    public void getIntersectedFacesByPlane(PlaneType planeType, Vector3d planePosition, List<HalfEdgeFace> resultFaces, double error) {
+        for (HalfEdgeMesh mesh : meshes) {
+            mesh.getIntersectedFacesByPlane(planeType, planePosition, resultFaces, error);
+        }
+        for (HalfEdgeNode child : children) {
+            child.getIntersectedFacesByPlane(planeType, planePosition, resultFaces, error);
         }
     }
 }

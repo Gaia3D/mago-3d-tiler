@@ -22,6 +22,7 @@ import com.gaia3d.renderer.renderable.RenderablePrimitive;
 import com.gaia3d.renderer.renderable.SelectionColorManager;
 import com.gaia3d.util.GaiaColorUtils;
 import com.gaia3d.util.GaiaSceneUtils;
+import com.gaia3d.util.GaiaTextureUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -740,7 +741,7 @@ public class Engine {
         }
 
         List<HalfEdgeVertex> verticesOfFaces = new ArrayList<>();
-
+        double texCoordError = 0.005;
         for (Map.Entry<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> entry : mapFaceGroupByClassifyIdAndObliqueCamDirType.entrySet()) {
             int classifyId = entry.getKey();
             Map<CameraDirectionType, List<HalfEdgeFace>> mapCameraDirectionTypeFacesList = entry.getValue();
@@ -776,7 +777,11 @@ public class Engine {
 
                     // invert the texCoordY.***
                     texCoordY = 1.0 - texCoordY;
-                    vertex.setTexcoords(new Vector2d(texCoordX, texCoordY));
+
+                    // clamp the texCoords.***
+                    Vector2d texCoord = new Vector2d(texCoordX, texCoordY);
+                    GaiaTextureUtils.clampTextureCoordinate(texCoord, texCoordError);
+                    vertex.setTexcoords(texCoord);
                 }
             }
         }
@@ -1215,6 +1220,7 @@ public class Engine {
             // now, calculate the vertex list from the map.***
             List<HalfEdgeVertex> vertexList = new ArrayList<>(groupVertexMapMemSave.values());
             int verticesCount = vertexList.size();
+            double texCoordErrore = 0.005;
             for (int k = 0; k < verticesCount; k++) {
                 HalfEdgeVertex vertex = vertexList.get(k);
 
@@ -1238,8 +1244,10 @@ public class Engine {
                 double xAtlas = (batchedBoundary.getMinX() + xRel * batchedBoundary.getWidthInt()) / maxWidth;
                 double yAtlas = (batchedBoundary.getMinY() + yRel * batchedBoundary.getHeightInt()) / maxHeight;
 
-                texCoord.set(xAtlas, yAtlas);
-                vertex.setTexcoords(texCoord);
+                // clamp the texAtlasCoords.***
+                Vector2d texCoordFinal = new Vector2d(xAtlas, yAtlas);
+                GaiaTextureUtils.clampTextureCoordinate(texCoordFinal, texCoordErrore);
+                vertex.setTexcoords(texCoordFinal);
             }
 
         }

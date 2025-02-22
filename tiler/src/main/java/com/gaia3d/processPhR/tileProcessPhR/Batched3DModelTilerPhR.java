@@ -684,9 +684,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 throw new RuntimeException(e);
             }
             GaiaScene scene = new GaiaScene(gaiaSet);
-            //GaiaBoundingBox gaiaSceneBBox = scene.getBoundingBox();
             scene.setOriginalPath(tileInfo.getTempPath());
-            //scene.setOriginalPath(tileInfo.getScenePath());
             scene.makeTriangleFaces();
 
             gaiaSceneList.clear();
@@ -703,9 +701,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             }
-
-            //GaiaBoundingBox motherBBoxLC = new GaiaBoundingBox();
-            //GaiaBoundingBox motherCartographicBoundingBox = this.calculateCartographicBoundingBox(scene, transformMatrix, motherBBoxLC);
 
             tilerExtensionModule.decimateAndCutByObliqueCamera(gaiaSceneList, resultDecimatedScenes, decimateParameters, halfEdgeOctree, cuttingPlanes, screenPixelsForMeter);
 
@@ -732,8 +727,16 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             for(int j = 0; j < resultDecimatedScenesCount; j++) {
                 HalfEdgeScene halfEdgeSceneLod = resultDecimatedScenes.get(j);
 
+                int halfEdgeFacesCount = halfEdgeSceneLod.getFacesCount();
+
                 GaiaBoundingBox boundingBoxCutLC = new GaiaBoundingBox();
                 GaiaScene gaiaSceneCut = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneLod);
+
+                int gaiaSceneFacesCount = gaiaSceneCut.getFacesCount();
+
+                if(halfEdgeFacesCount != gaiaSceneFacesCount) {
+                    log.error("Error : halfEdgeFacesCount is different from gaiaSceneFacesCount.");
+                }
 
                 GaiaBoundingBox cartographicBoundingBox = this.calculateCartographicBoundingBox(gaiaSceneCut, transformMatrix, boundingBoxCutLC);
                 GaiaSet gaiaSetCut = GaiaSet.fromGaiaScene(gaiaSceneCut);
@@ -1567,9 +1570,10 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
         }
 
-        resultPlanes.addAll(planesYZ);
-        resultPlanes.addAll(planesXZ);
         resultPlanes.addAll(planesXY);
+        resultPlanes.addAll(planesXZ);
+        resultPlanes.addAll(planesYZ);
+
 
         HalfEdgeOctree resultOctree = new HalfEdgeOctree(null);
         resultOctree.setSize(localMinX, localMinY, localMinZ, localMaxX, localMaxY, localMaxZ);
@@ -1577,6 +1581,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
         return resultOctree;
     }
+
+
 
     private GaiaBoundingBox calculateCartographicBoundingBox(GaiaScene gaiaScene, Matrix4d transformMatrix, GaiaBoundingBox resultBoundingBoxLC)
     {
@@ -1735,10 +1741,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         int octreesCount = octreesWithContents.size();
         for (int j = 0; j < octreesCount; j++) {
             HalfEdgeOctree octree = octreesWithContents.get(j);
-            double testOctreSize = octree.getMaxSize();
-            double octSizeX = octree.getSizeX();
-            double octSizeY = octree.getSizeY();
-            double octSizeZ = octree.getSizeZ();
             List<HalfEdgeFace> faces = octree.getFaces();
             for (HalfEdgeFace face : faces) {
                 face.setClassifyId(j);
@@ -1750,7 +1752,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
             // create a new HalfEdgeScene.***
             HalfEdgeScene cuttedScene = halfEdgeScene.cloneByClassifyId(classifyId);
-
             cuttedScene.deleteNoUsedMaterials();
             if(scissorTextures) {
                 cuttedScene.scissorTexturesByMotherScene(halfEdgeScene.getMaterials());
@@ -1765,9 +1766,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 continue;
             }
 
-            //cuttedScene.translateTexCoordsToPositiveQuadrant();
 
-            //TestUtils.checkHalfEdgeScene(cuttedScene);//!!!!!!!!!!!
             //***************************************************************************************************************************
             GaiaScene gaiaSceneCut = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(cuttedScene);
 

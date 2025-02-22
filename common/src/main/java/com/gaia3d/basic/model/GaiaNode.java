@@ -347,4 +347,15 @@ public class GaiaNode extends NodeStructure implements Serializable {
             child.makeTriangularFaces();
         }
     }
+
+    public int getFacesCount() {
+        int count = 0;
+        for (GaiaMesh mesh : meshes) {
+            count += mesh.getFacesCount();
+        }
+        for (GaiaNode child : children) {
+            count += child.getFacesCount();
+        }
+        return count;
+    }
 }
