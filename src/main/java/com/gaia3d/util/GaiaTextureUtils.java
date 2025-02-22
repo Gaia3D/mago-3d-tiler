@@ -168,4 +168,25 @@ public class GaiaTextureUtils {
         averageColor.set(red / (count * 255.0), green / (count * 255.0), blue / (count * 255.0), alpha / (count * 255.0));
         return averageColor;
     }
+
+    public static void clampTextureCoordinate(Vector2d texCoord, double error)
+    {
+        if(texCoord.x < error)
+        {
+            texCoord.x = error;
+        }
+        else if(texCoord.x > 1.0 - error)
+        {
+            texCoord.x = 1.0 - error;
+        }
+
+        if(texCoord.y < error)
+        {
+            texCoord.y = error;
+        }
+        else if(texCoord.y > 1.0 - error)
+        {
+            texCoord.y = 1.0 - error;
+        }
+    }
 }

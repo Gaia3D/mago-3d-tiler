@@ -237,6 +237,12 @@ public class HalfEdgeScene implements Serializable {
         return true;
     }
 
+    public void getIntersectedFacesByPlane(PlaneType planeType, Vector3d planePosition, List<HalfEdgeFace> resultFaces, double error) {
+        for (HalfEdgeNode node : nodes) {
+            node.getIntersectedFacesByPlane(planeType, planePosition, resultFaces, error);
+        }
+    }
+
     public double calculateArea() {
         double area = 0;
         for (HalfEdgeNode node : nodes) {
@@ -526,13 +532,26 @@ public class HalfEdgeScene implements Serializable {
         }
     }
 
+    public void updateVerticesList() {
+        for (HalfEdgeNode node : nodes) {
+            node.updateVerticesList();
+        }
+    }
+
+    public void updateFacesList() {
+        for (HalfEdgeNode node : nodes) {
+            node.updateFacesList();
+        }
+    }
+
     public void makeSkirt() {
         GaiaBoundingBox bbox = getBoundingBox();
         if(bbox == null) {
             log.info("Making skirt : Error: bbox is null.***");
             return;
         }
-        double error = 1e-3;
+
+        double error = 1e-3; // 0.001
         List<HalfEdgeVertex> westVertices = new ArrayList<>();
         List<HalfEdgeVertex> eastVertices = new ArrayList<>();
         List<HalfEdgeVertex> southVertices = new ArrayList<>();
@@ -545,7 +564,6 @@ public class HalfEdgeScene implements Serializable {
         double bboxLengthY = bbox.getLengthY();
         double bboxMaxSize = Math.max(bboxLengthX, bboxLengthY);
         double expandDistance = bboxMaxSize * 0.005;
-        expandDistance = bboxMaxSize * 0.01;
         // provisionally, only expand the perimeter vertices.***
         if (westVertices.size() > 1) {
             for (HalfEdgeVertex vertex : westVertices) {
@@ -581,5 +599,13 @@ public class HalfEdgeScene implements Serializable {
         for (HalfEdgeNode node : nodes) {
             node.translateTexCoordsToPositiveQuadrant();
         }
+    }
+
+    public int getFacesCount() {
+        int facesCount = 0;
+        for (HalfEdgeNode node : nodes) {
+            facesCount += node.getFacesCount();
+        }
+        return facesCount;
     }
 }

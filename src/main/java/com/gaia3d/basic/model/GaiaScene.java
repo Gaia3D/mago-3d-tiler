@@ -196,4 +196,12 @@ public class GaiaScene extends SceneStructure implements Serializable {
             node.makeTriangularFaces();
         }
     }
+
+    public int getFacesCount() {
+        int facesCount = 0;
+        for (GaiaNode node : this.nodes) {
+            facesCount += node.getFacesCount();
+        }
+        return facesCount;
+    }
 }

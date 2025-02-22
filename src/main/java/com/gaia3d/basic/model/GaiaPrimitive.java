@@ -601,4 +601,12 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
             surface.makeTriangularFaces(vertices);
         }
     }
+
+    public int getFacesCount() {
+        int facesCount = 0;
+        for (GaiaSurface surface : surfaces) {
+            facesCount += surface.getFaces().size();
+        }
+        return facesCount;
+    }
 }

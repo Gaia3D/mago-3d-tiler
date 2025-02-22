@@ -359,4 +359,32 @@ public class HalfEdgePrimitive implements Serializable {
 
         int hola = 0;
     }
+
+    public void updateVerticesList() {
+        vertices.clear();
+        for (HalfEdgeSurface surface : surfaces) {
+            surface.updateVerticesList();
+            vertices.addAll(surface.getVertices());
+        }
+    }
+
+    public void updateFacesList() {
+        for (HalfEdgeSurface surface : surfaces) {
+            surface.updateFacesList();
+        }
+    }
+
+    public int getFacesCount() {
+        int facesCount = 0;
+        for (HalfEdgeSurface surface : surfaces) {
+            facesCount += surface.getFacesCount();
+        }
+        return facesCount;
+    }
+
+    public void getIntersectedFacesByPlane(PlaneType planeType, Vector3d planePosition, List<HalfEdgeFace> resultFaces, double error) {
+        for (HalfEdgeSurface surface : surfaces) {
+            surface.getIntersectedFacesByPlane(planeType, planePosition, resultFaces, error);
+        }
+    }
 }

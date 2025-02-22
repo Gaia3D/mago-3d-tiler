@@ -64,7 +64,10 @@ public class HalfEdgeMesh implements Serializable {
             resultBBox = new GaiaBoundingBox();
         }
         for (HalfEdgePrimitive primitive : primitives) {
-            resultBBox = primitive.calculateBoundingBox(resultBBox);
+            GaiaBoundingBox primitiveBBox = primitive.calculateBoundingBox(null);
+            if(primitiveBBox != null) {
+                resultBBox.addBoundingBox(primitiveBBox);
+            }
         }
         return resultBBox;
     }
@@ -256,6 +259,32 @@ public class HalfEdgeMesh implements Serializable {
     public void translateTexCoordsToPositiveQuadrant() {
         for (HalfEdgePrimitive primitive : primitives) {
             primitive.translateTexCoordsToPositiveQuadrant();
+        }
+    }
+
+    public void updateVerticesList() {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.updateVerticesList();
+        }
+    }
+
+    public void updateFacesList() {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.updateFacesList();
+        }
+    }
+
+    public int getFacesCount() {
+        int facesCount = 0;
+        for (HalfEdgePrimitive primitive : primitives) {
+            facesCount += primitive.getFacesCount();
+        }
+        return facesCount;
+    }
+
+    public void getIntersectedFacesByPlane(PlaneType planeType, Vector3d planePosition, List<HalfEdgeFace> resultFaces, double error) {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.getIntersectedFacesByPlane(planeType, planePosition, resultFaces, error);
         }
     }
 }

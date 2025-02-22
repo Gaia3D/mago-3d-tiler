@@ -371,4 +371,20 @@ public class HalfEdgeFace implements Serializable {
         return resultRectangle;
     }
 
+    public boolean intersectsPlane(PlaneType planeType, Vector3d planePosition, double error) {
+        List<HalfEdge> halfEdgesLoop = this.getHalfEdgesLoop(null);
+        if (halfEdgesLoop == null) {
+            return false;
+        }
+
+        boolean intersects = false;
+        for (HalfEdge halfEdge : halfEdgesLoop) {
+            intersects = halfEdge.intersectsPlane(planeType, planePosition, error);
+            if (intersects) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

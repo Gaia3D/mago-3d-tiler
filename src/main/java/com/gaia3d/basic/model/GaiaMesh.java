@@ -314,4 +314,12 @@ public class GaiaMesh extends MeshStructure implements Serializable {
             primitive.makeTriangularFaces();
         }
     }
+
+    public int getFacesCount() {
+        int facesCount = 0;
+        for (GaiaPrimitive primitive : primitives) {
+            facesCount += primitive.getFacesCount();
+        }
+        return facesCount;
+    }
 }
