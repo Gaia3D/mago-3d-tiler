@@ -77,20 +77,6 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
-    public void makeNetSurfacesByPyramidDeformationRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<HalfEdgeScene> resultHalfEdgeScenes, List<BufferedImage> resultImages, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize, int maxDepthScreenSize) {
-        if (renderer == null) renderer = new MainRenderer();
-        renderer.makeNetSurfacesByPyramidDeformationRender(sceneInfos, bufferedImageType, resultHalfEdgeScenes, resultImages, nodeBBox, nodeTMatrix, maxScreenSize, maxDepthScreenSize);
-        deleteObjects();
-    }
-
-    @Override
-    public void makeNetSurfacesWithBoxTextures(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, double pixelsForMeter) {
-        if (renderer == null) renderer = new MainRenderer();
-        renderer.makeNetSurfacesWithBoxTextures(scenes, resultHalfEdgeScenes, decimateParameters, pixelsForMeter);
-        deleteObjects();
-    }
-
-    @Override
     public void makeNetSurfacesWithBoxTexturesObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, double depthTexPixelsForMeter, double screenPixelsForMeter) {
         if (renderer == null) renderer = new MainRenderer();
         renderer.makeNetSurfacesWithBoxTexturesObliqueCamera(scenes, resultHalfEdgeScenes, decimateParameters, depthTexPixelsForMeter, screenPixelsForMeter);
