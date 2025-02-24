@@ -146,7 +146,10 @@ public class MainRenderer implements IAppLogic {
             // now make box textures for the cuttedScene.***
             engine.makeBoxTexturesByObliqueCamera(cuttedScene, screenPixelsForMeter);
             cuttedScene.makeSkirt();
-            // cuttedScene.scissorTextures(); // no works. error. TODO: must fix this.***
+
+//            cuttedScene.invertTexCoordY();
+//            boolean invertTexCoordY = false;
+//            cuttedScene.scissorTextures(invertTexCoordY); // no works. error. TODO: must fix this.***
 
 
             resultHalfEdgeScenes.add(cuttedScene);
@@ -175,8 +178,7 @@ public class MainRenderer implements IAppLogic {
         HalfEdgeScene netSurfaceHalfEdgeScene = null;
         GaiaBoundingBox gaiaSceneBbox = null;
 
-        for (int i = 0; i < scenesCount; i++) {
-            GaiaScene gaiaScene = scenes.get(i);
+        for (GaiaScene gaiaScene : scenes) {
             gaiaSceneBbox = gaiaScene.getBoundingBox();
             double bboxMaxSize = gaiaSceneBbox.getMaxSize();
             int maxDepthScreenSize = (int) Math.ceil(depthTexPixelsForMeter * bboxMaxSize);
@@ -286,11 +288,9 @@ public class MainRenderer implements IAppLogic {
         int fboWidthDepth = maxDepthScreenSize;
         int fboHeightDepth = maxDepthScreenSize;
         if (xLength > yLength) {
-            fboWidthDepth = maxDepthScreenSize;
             fboHeightDepth = (int) (maxDepthScreenSize * yLength / xLength);
         } else {
             fboWidthDepth = (int) (maxDepthScreenSize * xLength / yLength);
-            fboHeightDepth = maxDepthScreenSize;
         }
 
         fboWidthDepth = Math.max(fboWidthDepth, 1);
@@ -398,15 +398,11 @@ public class MainRenderer implements IAppLogic {
         int fboWidthDepth = maxDepthScreenSize;
         int fboHeightDepth = maxDepthScreenSize;
         if (xLength > yLength) {
-            fboWidthColor = maxScreenSize;
             fboHeightColor = (int) (maxScreenSize * yLength / xLength);
-            fboWidthDepth = maxDepthScreenSize;
             fboHeightDepth = (int) (maxDepthScreenSize * yLength / xLength);
         } else {
             fboWidthColor = (int) (maxScreenSize * xLength / yLength);
-            fboHeightColor = maxScreenSize;
             fboWidthDepth = (int) (maxDepthScreenSize * xLength / yLength);
-            fboHeightDepth = maxDepthScreenSize;
         }
 
         Fbo colorFbo = fboManager.getOrCreateFbo("colorRender", fboWidthColor, fboHeightColor);
@@ -474,6 +470,10 @@ public class MainRenderer implements IAppLogic {
             Path path = Paths.get(scenePath);
             try {
                 gaiaSet = GaiaSet.readFile(path);
+                if(gaiaSet == null) {
+                    log.error("Error reading the file: " + scenePath);
+                    continue;
+                }
                 gaiaScene = new GaiaScene(gaiaSet);
                 GaiaNode gaiaNode = gaiaScene.getNodes().get(0);
                 gaiaNode.setTransformMatrix(sceneTMatLC);

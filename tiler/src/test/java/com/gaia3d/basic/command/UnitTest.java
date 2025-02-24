@@ -917,8 +917,8 @@ class UnitTest {
     @Test
     void testCollada_SangGiDe() {
             // _1building _2buildings _3buildings _4buildings _5buildings _6buildings _someBuildings
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\BB00-sangji-university\\";
-        String outputPath = "D:\\data\\mago-server\\output\\BB00-sangji-university\\";
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\BB00-sangji-university_someBuildings\\";
+        String outputPath = "D:\\data\\mago-server\\output\\BB00-sangji-university_someBuildings\\";
 
         String[] args = new String[]{
                 "-i", inputPath,

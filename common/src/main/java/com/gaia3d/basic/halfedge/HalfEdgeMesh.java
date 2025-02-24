@@ -160,9 +160,9 @@ public class HalfEdgeMesh implements Serializable {
         return clonedMesh;
     }
 
-    public void scissorTextures(List<GaiaMaterial> materials) {
+    public void scissorTextures(List<GaiaMaterial> materials, boolean invertTexCoordY) {
         for (HalfEdgePrimitive primitive : primitives) {
-            primitive.scissorTextures(materials);
+            primitive.scissorTextures(materials, invertTexCoordY);
         }
     }
 
@@ -285,6 +285,12 @@ public class HalfEdgeMesh implements Serializable {
     public void getIntersectedFacesByPlane(PlaneType planeType, Vector3d planePosition, List<HalfEdgeFace> resultFaces, double error) {
         for (HalfEdgePrimitive primitive : primitives) {
             primitive.getIntersectedFacesByPlane(planeType, planePosition, resultFaces, error);
+        }
+    }
+
+    public void invertTexCoordY() {
+        for (HalfEdgePrimitive primitive : primitives) {
+            primitive.invertTexCoordY();
         }
     }
 }
