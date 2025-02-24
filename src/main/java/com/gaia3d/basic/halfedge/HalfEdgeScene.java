@@ -427,8 +427,14 @@ public class HalfEdgeScene implements Serializable {
         return deletedFacesCount;
     }
 
+    public void invertTexCoordY() {
+        for (HalfEdgeNode node : nodes) {
+            node.invertTexCoordY();
+        }
+    }
 
-    public void scissorTextures() {
+
+    public void scissorTextures(boolean invertTexCoordY) {
         boolean hasTextures = false;
         for (GaiaMaterial material : materials) {
             if (material.hasTextures()) {
@@ -442,7 +448,7 @@ public class HalfEdgeScene implements Serializable {
         }
 
         for (HalfEdgeNode node : nodes) {
-            node.scissorTextures(materials);
+            node.scissorTextures(materials, invertTexCoordY);
         }
     }
 

@@ -176,7 +176,7 @@ public class HalfEdgePrimitive implements Serializable {
         }
     }
 
-    public void scissorTextures(List<GaiaMaterial> materials) {
+    public void scissorTextures(List<GaiaMaterial> materials, boolean invertTexCoordY) {
         int matId = this.materialIndex;
         if (matId < 0 || matId >= materials.size()) {
             return;
@@ -188,7 +188,7 @@ public class HalfEdgePrimitive implements Serializable {
         }
 
         for (HalfEdgeSurface surface : surfaces) {
-            surface.scissorTextures(material);
+            surface.scissorTextures(material, invertTexCoordY);
         }
 
     }
@@ -385,6 +385,12 @@ public class HalfEdgePrimitive implements Serializable {
     public void getIntersectedFacesByPlane(PlaneType planeType, Vector3d planePosition, List<HalfEdgeFace> resultFaces, double error) {
         for (HalfEdgeSurface surface : surfaces) {
             surface.getIntersectedFacesByPlane(planeType, planePosition, resultFaces, error);
+        }
+    }
+
+    public void invertTexCoordY() {
+        for (HalfEdgeSurface surface : surfaces) {
+            surface.invertTexCoordY();
         }
     }
 }
