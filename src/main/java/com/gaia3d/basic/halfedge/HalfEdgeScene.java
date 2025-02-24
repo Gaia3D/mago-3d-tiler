@@ -565,31 +565,44 @@ public class HalfEdgeScene implements Serializable {
         double bboxMaxSize = Math.max(bboxLengthX, bboxLengthY);
         double expandDistance = bboxMaxSize * 0.005;
         // provisionally, only expand the perimeter vertices.***
+        double dotLimit = 0.35;
         if (westVertices.size() > 1) {
             for (HalfEdgeVertex vertex : westVertices) {
-                Vector3d position = vertex.getPosition();
-                position.x -= expandDistance;
+                Vector3d normal = vertex.calculateNormal();
+                if(Math.abs(normal.dot(-1, 0, 0)) < dotLimit) {
+                    Vector3d position = vertex.getPosition();
+                    position.x -= expandDistance;
+                }
             }
         }
 
         if (eastVertices.size() > 1) {
             for (HalfEdgeVertex vertex : eastVertices) {
-                Vector3d position = vertex.getPosition();
-                position.x += expandDistance;
+                Vector3d normal = vertex.calculateNormal();
+                if(Math.abs(normal.dot(1, 0, 0)) < dotLimit) {
+                    Vector3d position = vertex.getPosition();
+                    position.x += expandDistance;
+                }
             }
         }
 
         if (southVertices.size() > 1) {
             for (HalfEdgeVertex vertex : southVertices) {
-                Vector3d position = vertex.getPosition();
-                position.y -= expandDistance;
+                Vector3d normal = vertex.calculateNormal();
+                if(Math.abs(normal.dot(0, -1, 0)) < dotLimit) {
+                    Vector3d position = vertex.getPosition();
+                    position.y -= expandDistance;
+                }
             }
         }
 
         if (northVertices.size() > 1) {
             for (HalfEdgeVertex vertex : northVertices) {
-                Vector3d position = vertex.getPosition();
-                position.y += expandDistance;
+                Vector3d normal = vertex.calculateNormal();
+                if(Math.abs(normal.dot(0, 1, 0)) < dotLimit) {
+                    Vector3d position = vertex.getPosition();
+                    position.y += expandDistance;
+                }
             }
         }
     }
