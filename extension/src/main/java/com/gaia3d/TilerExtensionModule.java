@@ -47,20 +47,6 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
-    public void decimate(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters) {
-        if (renderer == null) renderer = new MainRenderer();
-        renderer.decimate(scenes, resultHalfEdgeScenes, decimateParameters);
-        deleteObjects();
-    }
-
-    @Override
-    public void decimateByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters) {
-        if (renderer == null) renderer = new MainRenderer();
-        renderer.decimateByObliqueCamera(scenes, resultHalfEdgeScenes, decimateParameters);
-        deleteObjects();
-    }
-
-    @Override
     public void decimateAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters,
                                               HalfEdgeOctree octree, List<GaiaAAPlane> cuttingPlanes, double screenPixelsForMeter) {
         if (renderer == null) renderer = new MainRenderer();
@@ -73,13 +59,6 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
                                                         HalfEdgeOctree octree, List<GaiaAAPlane> cuttingPlanes, double depthTexPixelsForMeter, double screenPixelsForMeter) {
         if (renderer == null) renderer = new MainRenderer();
         renderer.decimateNetSurfaceAndCutByObliqueCamera(scenes, resultHalfEdgeScenes, decimateParameters, octree, cuttingPlanes, depthTexPixelsForMeter, screenPixelsForMeter);
-        deleteObjects();
-    }
-
-    @Override
-    public void makeNetSurfacesWithBoxTexturesObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, double depthTexPixelsForMeter, double screenPixelsForMeter) {
-        if (renderer == null) renderer = new MainRenderer();
-        renderer.makeNetSurfacesWithBoxTexturesObliqueCamera(scenes, resultHalfEdgeScenes, decimateParameters, depthTexPixelsForMeter, screenPixelsForMeter);
         deleteObjects();
     }
 

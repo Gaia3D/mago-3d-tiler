@@ -99,6 +99,18 @@ public class HalfEdgeVertex implements Serializable {
         this.batchId = batchId;
     }
 
+    public Vector3d calculateNormal() {
+        List<HalfEdgeFace> faces = this.getFaces(null);
+        Vector3d normal = new Vector3d();
+        for (HalfEdgeFace face : faces) {
+            Vector3d faceNormal = face.calculatePlaneNormal();
+            normal.add(faceNormal);
+        }
+
+        normal.normalize();
+        return normal;
+    }
+
     public GaiaVertex toGaiaVertex() {
         GaiaVertex vertex = new GaiaVertex();
         vertex.setPosition(new Vector3d(position));
