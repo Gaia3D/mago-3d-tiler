@@ -22,8 +22,10 @@ class RealisticReleaseTest {
                 "-log", getLogPath(path).getAbsolutePath(),
                 "-pr",
                 "-c", "5187",
+                "-rotateX", "90",
+                "-leaveTemp",
                 //"-glb",
-                //"-debug",
+                "-debug",
         };
         execute(args);
     }
@@ -39,6 +41,7 @@ class RealisticReleaseTest {
                 "-pr",
                 "-c", "5187",
                 "-leaveTemp",
+                "-rotateX", "90",
                 //"-debug",
         };
         execute(args);
@@ -53,6 +56,8 @@ class RealisticReleaseTest {
                 "-log", getLogPath(path).getAbsolutePath(),
                 "-pr",
                 "-c", "5187",
+                "-rotateX", "90",
+                "-leaveTemp",
                 //"-debug",
         };
         execute(args);
@@ -68,6 +73,7 @@ class RealisticReleaseTest {
                 "-log", getLogPath(path).getAbsolutePath(),
                 "-pr",
                 "-c", "5187",
+                "-rotateX", "90",
                 //"-debug",
         };
         execute(args);
@@ -82,6 +88,7 @@ class RealisticReleaseTest {
                 "-log", getLogPath(path).getAbsolutePath(),
                 "-pr",
                 "-c", "5187",
+                "-rotateX", "90",
                 //"-debug",
         };
         execute(args);
@@ -96,6 +103,22 @@ class RealisticReleaseTest {
                 "-log", getLogPath(path).getAbsolutePath(),
                 "-pr",
                 "-c", "5187",
+                "-rotateX", "90",
+                //"-debug",
+        };
+        execute(args);
+    }
+
+    @Test
+    void realistic051() {
+        String path = "R05-sangcheon-part-obj";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-log", getLogPath(path).getAbsolutePath(),
+                "-pr",
+                "-c", "5187",
+                "-rotateX", "90",
                 //"-debug",
         };
         execute(args);
@@ -111,7 +134,7 @@ class RealisticReleaseTest {
                 "-log", getLogPath(path).getAbsolutePath(),
                 "-pr",
                 "-c", "32648",
-                "-rotateX", "-90",
+                //"-rotateX", "90",
                 //"-debug",
         };
         execute(args);
