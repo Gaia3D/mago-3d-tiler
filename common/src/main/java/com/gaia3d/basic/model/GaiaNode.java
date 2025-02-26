@@ -94,7 +94,7 @@ public class GaiaNode extends NodeStructure implements Serializable {
             if (colorList.length > 0) {
                 int colorIndex = i * 4;
                 byte[] color = new byte[4];
-                /*if (colorIndex + 3 >= colorList.length) {
+                if (colorIndex + 3 >= colorList.length) {
                     log.warn("Color list is not enough.");
                     color[0] = -127;
                     color[1] = -127;
@@ -105,12 +105,7 @@ public class GaiaNode extends NodeStructure implements Serializable {
                     color[1] = colorList[colorIndex + 1];
                     color[2] = colorList[colorIndex + 2];
                     color[3] = colorList[colorIndex + 3];
-                }*/
-
-                color[0] = colorList[colorIndex];
-                color[1] = colorList[colorIndex + 1];
-                color[2] = colorList[colorIndex + 2];
-                color[3] = colorList[colorIndex + 3];
+                }
                 vertex.setColor(color);
             }
             if (texCoordList.length > 0) {
