@@ -273,12 +273,6 @@ public class HalfEdgeScene implements Serializable {
         }
     }
 
-    public void splitFacesByBestPlanesToProject() {
-        for (HalfEdgeNode node : nodes) {
-            node.splitFacesByBestPlanesToProject();
-        }
-    }
-
     public void translateToOrigin() {
         GaiaBoundingBox bbox = getBoundingBox();
         Vector3d center = bbox.getCenter();
@@ -427,14 +421,8 @@ public class HalfEdgeScene implements Serializable {
         return deletedFacesCount;
     }
 
-    public void invertTexCoordY() {
-        for (HalfEdgeNode node : nodes) {
-            node.invertTexCoordY();
-        }
-    }
 
-
-    public void scissorTextures(boolean invertTexCoordY) {
+    public void scissorTextures() {
         boolean hasTextures = false;
         for (GaiaMaterial material : materials) {
             if (material.hasTextures()) {
@@ -448,7 +436,7 @@ public class HalfEdgeScene implements Serializable {
         }
 
         for (HalfEdgeNode node : nodes) {
-            node.scissorTextures(materials, invertTexCoordY);
+            node.scissorTextures(materials);
         }
     }
 

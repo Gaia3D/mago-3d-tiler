@@ -290,12 +290,12 @@ public class HalfEdgeNode implements Serializable {
         }
     }
 
-    public void scissorTextures(List<GaiaMaterial> materials, boolean invertTexCoordY) {
+    public void scissorTextures(List<GaiaMaterial> materials) {
         for (HalfEdgeMesh mesh : meshes) {
-            mesh.scissorTextures(materials, invertTexCoordY);
+            mesh.scissorTextures(materials);
         }
         for (HalfEdgeNode child : children) {
-            child.scissorTextures(materials, invertTexCoordY);
+            child.scissorTextures(materials);
         }
     }
 
@@ -379,15 +379,6 @@ public class HalfEdgeNode implements Serializable {
         }
         for (HalfEdgeNode child : children) {
             child.splitFacesByBestObliqueCameraDirectionToProject();
-        }
-    }
-
-    public void splitFacesByBestPlanesToProject() {
-        for (HalfEdgeMesh mesh : meshes) {
-            mesh.splitFacesByBestPlanesToProject();
-        }
-        for (HalfEdgeNode child : children) {
-            child.splitFacesByBestPlanesToProject();
         }
     }
 
@@ -478,15 +469,6 @@ public class HalfEdgeNode implements Serializable {
         }
         for (HalfEdgeNode child : children) {
             child.getIntersectedFacesByPlane(planeType, planePosition, resultFaces, error);
-        }
-    }
-
-    public void invertTexCoordY() {
-        for (HalfEdgeMesh mesh : meshes) {
-            mesh.invertTexCoordY();
-        }
-        for (HalfEdgeNode child : children) {
-            child.invertTexCoordY();
         }
     }
 }

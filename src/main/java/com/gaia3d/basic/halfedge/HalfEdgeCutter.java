@@ -6,7 +6,10 @@ import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
 import com.gaia3d.basic.geometry.octree.HalfEdgeOctree;
 import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaMaterial;
+import com.gaia3d.basic.model.GaiaSurface;
+import com.gaia3d.basic.model.GaiaVertex;
 import lombok.extern.slf4j.Slf4j;
+import org.joml.Vector2d;
 import org.joml.Vector3d;
 
 import java.nio.file.Path;
@@ -126,10 +129,14 @@ public class HalfEdgeCutter {
         }
 
         for (int j = 0; j < octreesCount; j++) {
-            int classifyId = j;
-
             // create a new HalfEdgeScene.***
-            HalfEdgeScene cuttedScene = halfEdgeScene.cloneByClassifyId(classifyId);
+            HalfEdgeScene cuttedScene = halfEdgeScene.cloneByClassifyId(j);
+
+            if(cuttedScene == null) {
+                log.info("cuttedScene is null");
+                continue;
+            }
+
             if(scissorTextures) {
                 cuttedScene.scissorTexturesByMotherScene(halfEdgeScene.getMaterials());
             }
@@ -138,10 +145,7 @@ public class HalfEdgeCutter {
                 cuttedScene.makeSkirt();
             }
 
-            if(cuttedScene == null) {
-                log.info("cuttedScene is null");
-                continue;
-            }
+
             resultScenes.add(cuttedScene);
         }
         return resultScenes;
@@ -263,29 +267,55 @@ public class HalfEdgeCutter {
         Map<HalfEdge, HalfEdge> edgeToNewEdgeMap = new HashMap<>();
         Map<HalfEdgeFace, HalfEdgeFace> faceToNewFaceMap = new HashMap<>();
 
-        List<HalfEdge> faceEdges = new ArrayList<>();
+        List<HalfEdgeVertex> facesVertices = HalfEdgeUtils.getVerticesOfFaces(faces, null);
 
+        // copy vertices.***
+        for (HalfEdgeVertex vertex : facesVertices) {
+            HalfEdgeVertex copyVertex = new HalfEdgeVertex();
+            copyVertex.copyFrom(vertex);
+            vertexToNewVertexMap.put(vertex, copyVertex);
+        }
+
+        // copy faces.***
         for (HalfEdgeFace face : faces) {
-            faceEdges.clear();
-            faceEdges = face.getHalfEdgesLoop(faceEdges);
-            for (HalfEdge edge : faceEdges) {
-                // copy vertex.***
-                HalfEdgeVertex startVertex = edge.getStartVertex();
-                if (!vertexToNewVertexMap.containsKey(startVertex)) {
-                    HalfEdgeVertex copyStartVertex = new HalfEdgeVertex();
-                    copyStartVertex.copyFrom(startVertex);
-                    vertexToNewVertexMap.put(startVertex, copyStartVertex);
-                }
-
-                // copy edge.***
-                HalfEdge copyEdge = new HalfEdge();
-                edgeToNewEdgeMap.put(edge, copyEdge);
+            if(face.getStatus() == ObjectStatus.DELETED) {
+                continue;
             }
-
-            // copy face.***
             HalfEdgeFace copyFace = new HalfEdgeFace();
             copyFace.copyFrom(face);
             faceToNewFaceMap.put(face, copyFace);
+        }
+
+        // copy edges.***
+        Map<HalfEdge, HalfEdge> mapOriginalToCloneHalfEdge = new HashMap<>();
+        List<HalfEdge> halfEdgesOfFaces = HalfEdgeUtils.getHalfEdgesOfFaces(faces, null);
+        for (HalfEdge edge : halfEdgesOfFaces) {
+            HalfEdge copyEdge = new HalfEdge();
+
+            // set startVertex.***
+            HalfEdgeVertex startVertex = edge.getStartVertex();
+            HalfEdgeVertex copyStartVertex = vertexToNewVertexMap.get(startVertex);
+            copyEdge.setStartVertex(copyStartVertex);
+            copyStartVertex.setOutingHalfEdge(copyEdge);
+
+            edgeToNewEdgeMap.put(edge, copyEdge);
+            mapOriginalToCloneHalfEdge.put(edge, copyEdge);
+        }
+
+        // set next & face to the copy edges.***
+        for (HalfEdge edge : halfEdgesOfFaces) {
+            HalfEdge copyEdge = edgeToNewEdgeMap.get(edge);
+
+            // set next.***
+            HalfEdge nextEdge = edge.getNext();
+            HalfEdge copyNextEdge = edgeToNewEdgeMap.get(nextEdge);
+            copyEdge.setNext(copyNextEdge);
+
+            // set face.***
+            HalfEdgeFace face = edge.getFace();
+            HalfEdgeFace copyFace = faceToNewFaceMap.get(face);
+            copyEdge.setFace(copyFace);
+            copyFace.setHalfEdge(copyEdge);
         }
 
         // original halfEdges.***
@@ -293,22 +323,9 @@ public class HalfEdgeCutter {
         for (HalfEdge edge : edges) {
             HalfEdge copyEdge = edgeToNewEdgeMap.get(edge);
 
-            // startVertex.***
-            HalfEdgeVertex startVertex = edge.getStartVertex();
-            HalfEdgeVertex copyStartVertex = vertexToNewVertexMap.get(startVertex);
-            copyEdge.setStartVertex(copyStartVertex);
-            copyStartVertex.setOutingHalfEdge(copyEdge);
-
-            // next.***
-            HalfEdge nextEdge = edge.getNext();
-            HalfEdge copyNextEdge = edgeToNewEdgeMap.get(nextEdge);
-            copyEdge.setNext(copyNextEdge);
-
             // copy face.***
             HalfEdgeFace face = edge.getFace();
             HalfEdgeFace copyFace = faceToNewFaceMap.get(face);
-            copyEdge.setFace(copyFace);
-            copyFace.setHalfEdge(copyEdge);
 
             int classifyId = face.getClassifyId();
 
@@ -319,7 +336,10 @@ public class HalfEdgeCutter {
                 int twinClassifyId = twinFace.getClassifyId();
                 if (classifyId == twinClassifyId) {
                     HalfEdge copyTwin = edgeToNewEdgeMap.get(twin);
-                    copyEdge.setTwin(copyTwin);
+                    if(!copyEdge.setTwin(copyTwin))
+                    {
+                        log.error("Error setting twin");
+                    }
                 }
             }
         }
@@ -332,37 +352,224 @@ public class HalfEdgeCutter {
         newSurface.setFaces(newFaces);
         newSurface.setHalfEdges(newEdges);
 
+        newSurface.setTwins();
+
         return newSurface;
     }
 
-    public static HalfEdgeSurface createHalfEdgeSurfaceByFacesCopy(List<HalfEdgeFace> faces, boolean checkClassifyId, boolean checkBestPlaneToProject) {
-        HalfEdgeSurface newSurface = new HalfEdgeSurface();
+    public static HalfEdgeSurface createHalfEdgeSurfaceByFacesCopy_Atomize(List<HalfEdgeFace> faces, boolean checkClassifyId, boolean checkBestCameraDirectionType) {
+        List<HalfEdgeFace> newFaces = new ArrayList<>();
+        List<HalfEdgeVertex> newVertices = new ArrayList<>();
+        List<HalfEdge> newEdges = new ArrayList<>();
 
+        // copy faces.***
+        for (HalfEdgeFace face : faces) {
+            if(face.getStatus() == ObjectStatus.DELETED) {
+                continue;
+            }
+            HalfEdgeFace copyFace = new HalfEdgeFace();
+            copyFace.copyFrom(face);
+            List<HalfEdgeVertex> faceVertices = face.getVertices(null);
+            List<HalfEdge> faceEdges = face.getHalfEdgesLoop(null);
+            HalfEdgeVertex hVertex0 = faceVertices.get(0);
+            HalfEdgeVertex hVertex1 = faceVertices.get(1);
+            HalfEdgeVertex hVertex2 = faceVertices.get(2);
+
+            HalfEdgeVertex copyVertex0 = new HalfEdgeVertex();
+            copyVertex0.copyFrom(hVertex0);
+            HalfEdgeVertex copyVertex1 = new HalfEdgeVertex();
+            copyVertex1.copyFrom(hVertex1);
+            HalfEdgeVertex copyVertex2 = new HalfEdgeVertex();
+            copyVertex2.copyFrom(hVertex2);
+
+            HalfEdge copyEdge0 = new HalfEdge();
+            copyEdge0.setStartVertex(copyVertex0);
+            copyVertex0.setOutingHalfEdge(copyEdge0);
+            copyEdge0.setFace(copyFace);
+
+            HalfEdge copyEdge1 = new HalfEdge();
+            copyEdge1.setStartVertex(copyVertex1);
+            copyVertex1.setOutingHalfEdge(copyEdge1);
+            copyEdge1.setFace(copyFace);
+
+            HalfEdge copyEdge2 = new HalfEdge();
+            copyEdge2.setStartVertex(copyVertex2);
+            copyVertex2.setOutingHalfEdge(copyEdge2);
+            copyEdge2.setFace(copyFace);
+
+            copyEdge0.setNext(copyEdge1);
+            copyEdge1.setNext(copyEdge2);
+            copyEdge2.setNext(copyEdge0);
+
+            copyFace.setHalfEdge(copyEdge0);
+
+            newFaces.add(copyFace);
+            newVertices.add(copyVertex0);
+            newVertices.add(copyVertex1);
+            newVertices.add(copyVertex2);
+
+            newEdges.add(copyEdge0);
+            newEdges.add(copyEdge1);
+            newEdges.add(copyEdge2);
+        }
+
+
+
+        HalfEdgeSurface newSurface = new HalfEdgeSurface();
+        newSurface.setVertices(newVertices);
+        newSurface.setFaces(newFaces);
+        newSurface.setHalfEdges(newEdges);
+
+        //newSurface.setTwins();
+
+//        // test.***
+//        List<GaiaVertex> vertices = new ArrayList<>();
+//        Map<HalfEdgeVertex, GaiaVertex> vertexToGaiaVertexMap = new HashMap<>();
+//        Map<GaiaVertex, Integer> mapGaiaVertexToIndex = new HashMap<>();
+//        for(HalfEdgeVertex vertex : newVertices) {
+//            GaiaVertex gaiaVertex = new GaiaVertex();
+//            gaiaVertex.setPosition(new Vector3d(vertex.getPosition()));
+//            gaiaVertex.setTexcoords(new Vector2d(vertex.getTexcoords()));
+//            vertices.add(gaiaVertex);
+//            vertexToGaiaVertexMap.put(vertex, gaiaVertex);
+//            mapGaiaVertexToIndex.put(gaiaVertex, vertices.size() - 1);
+//        }
+//
+//        GaiaSurface gaiaSurface = HalfEdgeUtils.gaiaSurfaceFromHalfEdgeSurface(newSurface, vertexToGaiaVertexMap, mapGaiaVertexToIndex);
+//        HalfEdgeSurface newSurface2 = HalfEdgeUtils.halfEdgeSurfaceFromGaiaSurface(gaiaSurface, vertices);
+
+
+        return newSurface;
+    }
+
+    public static HalfEdgeSurface createHalfEdgeSurfaceByFacesCopy(List<HalfEdgeFace> faces, boolean checkClassifyId, boolean checkBestCameraDirectionType) {
+        Map<HalfEdgeVertex, HalfEdgeVertex> vertexToNewVertexMap = new HashMap<>();
+
+        List<HalfEdgeVertex> facesVertices = HalfEdgeUtils.getVerticesOfFaces(faces, null);
+
+        // copy vertices.***
+        for (HalfEdgeVertex vertex : facesVertices) {
+            HalfEdgeVertex copyVertex = new HalfEdgeVertex();
+            copyVertex.copyFrom(vertex);
+            vertexToNewVertexMap.put(vertex, copyVertex);
+        }
+
+        List<HalfEdge> newHalfEdges = new ArrayList<>();
+        List<HalfEdgeFace> newFaces = new ArrayList<>();
+
+        // copy faces.***
+        for (HalfEdgeFace face : faces) {
+            if(face.getStatus() == ObjectStatus.DELETED) {
+                continue;
+            }
+            HalfEdgeFace copyFace = new HalfEdgeFace();
+            copyFace.copyFrom(face);
+
+            List<HalfEdgeVertex> faceVertices = face.getVertices(null);
+
+            HalfEdgeVertex hVertex0 = faceVertices.get(0);
+            HalfEdgeVertex hVertex1 = faceVertices.get(1);
+            HalfEdgeVertex hVertex2 = faceVertices.get(2);
+
+            HalfEdgeVertex copyVertex0 = vertexToNewVertexMap.get(hVertex0);
+            HalfEdgeVertex copyVertex1 = vertexToNewVertexMap.get(hVertex1);
+            HalfEdgeVertex copyVertex2 = vertexToNewVertexMap.get(hVertex2);
+
+            HalfEdge copyEdge0 = new HalfEdge();
+            copyEdge0.setStartVertex(copyVertex0);
+            copyVertex0.setOutingHalfEdge(copyEdge0);
+            copyEdge0.setFace(copyFace);
+
+            HalfEdge copyEdge1 = new HalfEdge();
+            copyEdge1.setStartVertex(copyVertex1);
+            copyVertex1.setOutingHalfEdge(copyEdge1);
+            copyEdge1.setFace(copyFace);
+
+            HalfEdge copyEdge2 = new HalfEdge();
+            copyEdge2.setStartVertex(copyVertex2);
+            copyVertex2.setOutingHalfEdge(copyEdge2);
+            copyEdge2.setFace(copyFace);
+
+            copyEdge0.setNext(copyEdge1);
+            copyEdge1.setNext(copyEdge2);
+            copyEdge2.setNext(copyEdge0);
+
+            copyFace.setHalfEdge(copyEdge0);
+
+            newHalfEdges.add(copyEdge0);
+            newHalfEdges.add(copyEdge1);
+            newHalfEdges.add(copyEdge2);
+
+            newFaces.add(copyFace);
+        }
+
+        List<HalfEdgeVertex> newVertices = new ArrayList<>(vertexToNewVertexMap.values());
+
+        HalfEdgeSurface newSurface = new HalfEdgeSurface();
+        newSurface.setVertices(newVertices);
+        newSurface.setFaces(newFaces);
+        newSurface.setHalfEdges(newHalfEdges);
+
+        newSurface.setTwins();
+
+        return newSurface;
+    }
+
+    public static HalfEdgeSurface createHalfEdgeSurfaceByFacesCopy_original(List<HalfEdgeFace> faces, boolean checkClassifyId, boolean checkBestCameraDirectionType) {
         Map<HalfEdgeVertex, HalfEdgeVertex> vertexToNewVertexMap = new HashMap<>();
         Map<HalfEdge, HalfEdge> edgeToNewEdgeMap = new HashMap<>();
         Map<HalfEdgeFace, HalfEdgeFace> faceToNewFaceMap = new HashMap<>();
 
-        List<HalfEdge> faceEdges = new ArrayList<>();
-        for (HalfEdgeFace face : faces) {
-            faceEdges.clear();
-            faceEdges = face.getHalfEdgesLoop(faceEdges);
-            for (HalfEdge edge : faceEdges) {
-                // copy vertex.***
-                HalfEdgeVertex startVertex = edge.getStartVertex();
-                if (!vertexToNewVertexMap.containsKey(startVertex)) {
-                    HalfEdgeVertex copyStartVertex = new HalfEdgeVertex();
-                    copyStartVertex.copyFrom(startVertex);
-                    vertexToNewVertexMap.put(startVertex, copyStartVertex);
-                }
-                // copy edge.***
-                HalfEdge copyEdge = new HalfEdge();
-                edgeToNewEdgeMap.put(edge, copyEdge);
-            }
+        List<HalfEdgeVertex> facesVertices = HalfEdgeUtils.getVerticesOfFaces(faces, null);
 
-            // copy face.***
+        // copy vertices.***
+        for (HalfEdgeVertex vertex : facesVertices) {
+            HalfEdgeVertex copyVertex = new HalfEdgeVertex();
+            copyVertex.copyFrom(vertex);
+            vertexToNewVertexMap.put(vertex, copyVertex);
+        }
+
+        // copy faces.***
+        for (HalfEdgeFace face : faces) {
+            if(face.getStatus() == ObjectStatus.DELETED) {
+                continue;
+            }
             HalfEdgeFace copyFace = new HalfEdgeFace();
             copyFace.copyFrom(face);
             faceToNewFaceMap.put(face, copyFace);
+        }
+
+        // copy edges.***
+        List<HalfEdge> halfEdgesOfFaces = HalfEdgeUtils.getHalfEdgesOfFaces(faces, null);
+        for (HalfEdge edge : halfEdgesOfFaces) {
+            HalfEdge copyEdge = new HalfEdge();
+
+            // set startVertex.***
+            HalfEdgeVertex startVertex = edge.getStartVertex();
+            HalfEdgeVertex copyStartVertex = vertexToNewVertexMap.get(startVertex);
+            copyEdge.setStartVertex(copyStartVertex);
+            copyStartVertex.setOutingHalfEdge(copyEdge);
+
+            edgeToNewEdgeMap.put(edge, copyEdge);
+        }
+
+        // set next & face to the copy edges.***
+        for (HalfEdge edge : halfEdgesOfFaces) {
+            HalfEdge copyEdge = edgeToNewEdgeMap.get(edge);
+
+            // set next.***
+            HalfEdge nextEdge = edge.getNext();
+            HalfEdge copyNextEdge = edgeToNewEdgeMap.get(nextEdge);
+            copyEdge.setNext(copyNextEdge);
+
+            // set face.***
+            HalfEdgeFace face = edge.getFace();
+            if(face.getStatus() == ObjectStatus.DELETED) {
+                int hola = 0;
+            }
+            HalfEdgeFace copyFace = faceToNewFaceMap.get(face);
+            copyEdge.setFace(copyFace);
+            copyFace.setHalfEdge(copyEdge);
         }
 
         // original halfEdges.***
@@ -370,25 +577,12 @@ public class HalfEdgeCutter {
         for (HalfEdge edge : edges) {
             HalfEdge copyEdge = edgeToNewEdgeMap.get(edge);
 
-            // startVertex.***
-            HalfEdgeVertex startVertex = edge.getStartVertex();
-            HalfEdgeVertex copyStartVertex = vertexToNewVertexMap.get(startVertex);
-            copyEdge.setStartVertex(copyStartVertex);
-            copyStartVertex.setOutingHalfEdge(copyEdge);
-
-            // next.***
-            HalfEdge nextEdge = edge.getNext();
-            HalfEdge copyNextEdge = edgeToNewEdgeMap.get(nextEdge);
-            copyEdge.setNext(copyNextEdge);
-
             // copy face.***
             HalfEdgeFace face = edge.getFace();
             HalfEdgeFace copyFace = faceToNewFaceMap.get(face);
-            copyEdge.setFace(copyFace);
-            copyFace.setHalfEdge(copyEdge);
 
             int classifyId = face.getClassifyId();
-            PlaneType bestPlaneType = face.getBestPlaneToProject();
+            CameraDirectionType cameraDirection = face.getCameraDirectionType();
 
             // copy twin (check the classifiedId of the face).***
             boolean classifyIdOk = false;
@@ -397,7 +591,7 @@ public class HalfEdgeCutter {
             if (twin != null) {
                 HalfEdgeFace twinFace = twin.getFace();
                 int twinClassifyId = twinFace.getClassifyId();
-                PlaneType twinBestPlaneType = twinFace.getBestPlaneToProject();
+                CameraDirectionType twinCameraDirection = twinFace.getCameraDirectionType();
                 if (checkClassifyId) {
                     if (classifyId == twinClassifyId) {
                         classifyIdOk = true;
@@ -406,8 +600,8 @@ public class HalfEdgeCutter {
                     classifyIdOk = true;
                 }
 
-                if (checkBestPlaneToProject) {
-                    if (bestPlaneType == twinBestPlaneType) {
+                if (checkBestCameraDirectionType) {
+                    if (cameraDirection == twinCameraDirection) {
                         bestPlaneTypeOk = true;
                     }
                 } else {
@@ -416,7 +610,10 @@ public class HalfEdgeCutter {
 
                 if (bestPlaneTypeOk && classifyIdOk) {
                     HalfEdge copyTwin = edgeToNewEdgeMap.get(twin);
-                    copyEdge.setTwin(copyTwin);
+                    if(!copyEdge.setTwin(copyTwin))
+                    {
+                        log.error("Error setting twin");
+                    }
                 }
             }
         }
@@ -425,10 +622,15 @@ public class HalfEdgeCutter {
         List<HalfEdgeVertex> newVertices = new ArrayList<>(vertexToNewVertexMap.values());
         List<HalfEdge> newEdges = new ArrayList<>(edgeToNewEdgeMap.values());
 
+        HalfEdgeSurface newSurface = new HalfEdgeSurface();
         newSurface.setVertices(newVertices);
         newSurface.setFaces(newFaces);
         newSurface.setHalfEdges(newEdges);
 
+        newSurface.setTwins();
+
         return newSurface;
     }
+
+
 }
