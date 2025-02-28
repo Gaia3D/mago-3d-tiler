@@ -288,6 +288,18 @@ public class ImageUtils {
         return floatMatrix;
     }
 
+    public static BufferedImage invertImageY(BufferedImage image) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        BufferedImage newImage = new BufferedImage(width, height, image.getType());
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                newImage.setRGB(i, height - j - 1, image.getRGB(i, j));
+            }
+        }
+        return newImage;
+    }
+
     public static BufferedImage clampBackGroundColor(BufferedImage image, Color backGroundColor, int borderSize, int iterations) {
         //log.debug("Clamp Background Color");
         int width = image.getWidth();

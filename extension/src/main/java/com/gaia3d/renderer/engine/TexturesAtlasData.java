@@ -21,6 +21,7 @@ public class TexturesAtlasData {
     private GaiaRectangle originalBoundary;
     private GaiaRectangle currentBoundary;
     private GaiaRectangle batchedBoundary;
+    private GaiaRectangle texCoordBoundary;
     private GaiaBoundingBox FaceGroupBBox;
 
     public void setTextureImage(BufferedImage textureImage) {

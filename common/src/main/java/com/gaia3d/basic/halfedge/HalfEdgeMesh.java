@@ -160,9 +160,9 @@ public class HalfEdgeMesh implements Serializable {
         return clonedMesh;
     }
 
-    public void scissorTextures(List<GaiaMaterial> materials, boolean invertTexCoordY) {
+    public void scissorTextures(List<GaiaMaterial> materials) {
         for (HalfEdgePrimitive primitive : primitives) {
-            primitive.scissorTextures(materials, invertTexCoordY);
+            primitive.scissorTextures(materials);
         }
     }
 
@@ -219,12 +219,6 @@ public class HalfEdgeMesh implements Serializable {
     public void splitFacesByBestObliqueCameraDirectionToProject() {
         for (HalfEdgePrimitive primitive : primitives) {
             primitive.splitFacesByBestObliqueCameraDirectionToProject();
-        }
-    }
-
-    public void splitFacesByBestPlanesToProject() {
-        for (HalfEdgePrimitive primitive : primitives) {
-            primitive.splitFacesByBestPlanesToProject();
         }
     }
 
@@ -285,12 +279,6 @@ public class HalfEdgeMesh implements Serializable {
     public void getIntersectedFacesByPlane(PlaneType planeType, Vector3d planePosition, List<HalfEdgeFace> resultFaces, double error) {
         for (HalfEdgePrimitive primitive : primitives) {
             primitive.getIntersectedFacesByPlane(planeType, planePosition, resultFaces, error);
-        }
-    }
-
-    public void invertTexCoordY() {
-        for (HalfEdgePrimitive primitive : primitives) {
-            primitive.invertTexCoordY();
         }
     }
 }
