@@ -65,7 +65,8 @@ public class GaiaNode extends NodeStructure implements Serializable {
             }
         }
 
-        for (int i = 0; i < positionList.length / 3; i++) {
+        int vertexCount = positionList.length / 3;
+        for (int i = 0; i < vertexCount; i++) {
             int vertexIndex = i * 3;
             GaiaVertex vertex = new GaiaVertex();
             if (positionList.length > 0) {
@@ -75,24 +76,50 @@ public class GaiaNode extends NodeStructure implements Serializable {
                 vertex.setPosition(new Vector3d(positionX, positionY, positionZ));
             }
             if (normalList.length > 0) {
-                float normalX = normalList[vertexIndex];
-                float normalY = normalList[vertexIndex + 1];
-                float normalZ = normalList[vertexIndex + 2];
+                float normalX;
+                float normalY;
+                float normalZ;
+                if (vertexIndex + 2 >= normalList.length) {
+                    log.warn("Normal list is not enough.");
+                    normalX = 0.0f;
+                    normalY = 0.0f;
+                    normalZ = 1.0f;
+                } else {
+                    normalX = normalList[vertexIndex];
+                    normalY = normalList[vertexIndex + 1];
+                    normalZ = normalList[vertexIndex + 2];
+                }
                 vertex.setNormal(new Vector3d(normalX, normalY, normalZ));
             }
             if (colorList.length > 0) {
                 int colorIndex = i * 4;
                 byte[] color = new byte[4];
-                color[0] = colorList[colorIndex];
-                color[1] = colorList[colorIndex + 1];
-                color[2] = colorList[colorIndex + 2];
-                color[3] = colorList[colorIndex + 3];
+                if (colorIndex + 3 >= colorList.length) {
+                    log.warn("Color list is not enough.");
+                    color[0] = -127;
+                    color[1] = -127;
+                    color[2] = -127;
+                    color[3] = -127;
+                } else {
+                    color[0] = colorList[colorIndex];
+                    color[1] = colorList[colorIndex + 1];
+                    color[2] = colorList[colorIndex + 2];
+                    color[3] = colorList[colorIndex + 3];
+                }
                 vertex.setColor(color);
             }
             if (texCoordList.length > 0) {
                 int texcoordIndex = i * 2;
-                float texcoordX = texCoordList[texcoordIndex];
-                float texcoordY = texCoordList[texcoordIndex + 1];
+                float texcoordX;
+                float texcoordY;
+                if (texcoordIndex + 1 >= texCoordList.length) {
+                    log.warn("Texcoord list is not enough.");
+                    texcoordX = 0.0f;
+                    texcoordY = 0.0f;
+                } else {
+                    texcoordX = texCoordList[texcoordIndex];
+                    texcoordY = texCoordList[texcoordIndex + 1];
+                }
                 vertex.setTexcoords(new Vector2d(texcoordX, texcoordY));
             }
             if (batchIdList.length > 0) {
