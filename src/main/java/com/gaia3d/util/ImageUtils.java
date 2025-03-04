@@ -289,6 +289,7 @@ public class ImageUtils {
     }
 
     public static BufferedImage clampBackGroundColor(BufferedImage image, Color backGroundColor, int borderSize, int iterations) {
+        //log.debug("Clamp Background Color");
         int width = image.getWidth();
         int height = image.getHeight();
         int noBackGroundColor = 0;
@@ -313,7 +314,6 @@ public class ImageUtils {
 
         while(it < iterations) {
             changed = false;
-            log.debug("Clamp Iteration : {}", it);
             for (int i = 0; i < width; i++) {
                 for (int j = 0; j < height; j++) {
                     Color pixel = new Color(oldImage.getRGB(i, j), true);
@@ -354,13 +354,14 @@ public class ImageUtils {
     }
 
     public static BufferedImage changeBackgroundColor(BufferedImage image, Color oldColor, Color newColor) {
+        log.debug("Change Background Color");
         int width = image.getWidth();
         int height = image.getHeight();
         BufferedImage newImage = new BufferedImage(width, height, image.getType());
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
                 Color pixel = new Color(image.getRGB(i, j), true);
-                if (pixel.equals(oldColor)) {
+                if (pixel.getRGB() == oldColor.getRGB()) {
                     newImage.setRGB(i, j, newColor.getRGB());
                 } else {
                     newImage.setRGB(i, j, image.getRGB(i, j));

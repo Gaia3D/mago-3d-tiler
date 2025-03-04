@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector4d;
 
 import java.io.Serializable;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -127,4 +128,14 @@ public class GaiaMaterial extends MaterialStructure implements Serializable {
         return false;
     }
 
+    public void saveTextures(Path imagesTempDir) {
+        for (Map.Entry<TextureType, List<GaiaTexture>> entry : textures.entrySet()) {
+            List<GaiaTexture> gaiaTextures = entry.getValue();
+            for (GaiaTexture gaiaTexture : gaiaTextures) {
+                if (gaiaTexture != null) {
+                    gaiaTexture.saveImage(String.valueOf(imagesTempDir));
+                }
+            }
+        }
+    }
 }
