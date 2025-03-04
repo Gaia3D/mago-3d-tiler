@@ -27,7 +27,7 @@ public interface AttributeReader {
                 count = 1;
             }
         }
-        Random random = new Random(GlobalOptions.RANDOM_SEED);
+        Random random = new Random(/*GlobalOptions.RANDOM_SEED*/);
 
         List<Point> randomPoints = new ArrayList<>();
         for (int i = 0; i < count; i++) {
