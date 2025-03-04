@@ -16,10 +16,10 @@ public class GillotinePacker {
     private GaiaRectangle currentBoundary;
     private double candidateArea = 0.0;
 
-    public GillotinePacker(int width, int height) {
-        this.width = width;
-        this.height = height;
-        freeRectangles.add(new GaiaRectangle(0, 0, width, height));
+    public GillotinePacker() {
+        this.width = 0;
+        this.height = 0;
+        //freeRectangles.add(new GaiaRectangle(0, 0, 0, 0));
         currentBoundary = new GaiaRectangle(0, 0, 0, 0);
     }
 

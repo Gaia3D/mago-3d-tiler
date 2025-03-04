@@ -57,7 +57,7 @@ public class TilingPipeline implements Pipeline {
             /* Post-process */
             executePostProcesses();
             /* Delete temp files */
-            //deleteTemp();
+            deleteTemp();
         } catch (InterruptedException e) {
             log.error("Error : ", e);
             throw new RuntimeException(e);
