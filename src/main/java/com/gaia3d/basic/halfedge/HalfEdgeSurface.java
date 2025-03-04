@@ -2776,7 +2776,7 @@ public class HalfEdgeSurface implements Serializable {
 
             int currBoundaryWidth = currentBoundary.getWidthInt();
             int currBoundaryHeight = currentBoundary.getHeightInt();
-            double texCoordClampError = 0.01;
+            double texCoordClampError = 0.0025;
 
             for (int k = 0; k < verticesCount; k++) {
                 HalfEdgeVertex vertex = vertexList.get(k);
@@ -3193,7 +3193,7 @@ public class HalfEdgeSurface implements Serializable {
 
             int currBoundaryWidth = currentBoundary.getWidthInt();
             int currBoundaryHeight = currentBoundary.getHeightInt();
-            double texCoordClampError = 0.01;
+            double texCoordClampError = 0.0025;
 
             for (int k = 0; k < verticesCount; k++) {
                 HalfEdgeVertex vertex = vertexList.get(k);
