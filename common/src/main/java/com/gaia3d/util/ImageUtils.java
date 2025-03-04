@@ -328,7 +328,7 @@ public class ImageUtils {
             changed = false;
             for (int i = 0; i < width; i++) {
                 for (int j = 0; j < height; j++) {
-                    Color pixel = new Color(oldImage.getRGB(i, j), true);
+                    Color pixel = new Color(oldImage.getRGB(i, j), false);
                     // now check if pixel is background color
                     if (pixel.equals(backGroundColor)) {
                         // take a pixelMatrix of 5x5 around the pixel
@@ -336,7 +336,7 @@ public class ImageUtils {
                             for (int y = j - borderSize; y <= j + borderSize; y++) {
                                 if (x >= 0 && x < width && y >= 0 && y < height) {
                                     noBackGroundColor = oldImage.getRGB(x, y);
-                                    if (!new Color(noBackGroundColor, true).equals(backGroundColor)) {
+                                    if (!new Color(noBackGroundColor, false).equals(backGroundColor)) {
                                         newImage.setRGB(i, j, noBackGroundColor);
                                         changed = true;
                                         break;

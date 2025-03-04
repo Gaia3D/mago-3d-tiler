@@ -404,7 +404,7 @@ public class GaiaTextureCoordinator {
         /* Only Photorealistic Mode */
         if (isPhotorealistic) {
             /* debug */
-            if (globalOptions.isDebugLod()) {
+            if (globalOptions.isDebug()) {
                 writeAtlasImageForTest(existPngTextures, lod, "-before");
             }
 
@@ -450,33 +450,33 @@ public class GaiaTextureCoordinator {
                 }
             }
 
-            boolean sizeChanged = (atlasImage.getWidth() != imageWidth) || (atlasImage.getHeight() != imageHeight);
-            if (sizeChanged) {
-                log.info("=== Batching textures is done ===");
-                log.info(" - atlasImage name : {}", (ATLAS_IMAGE + "_L" + lod.getLevel()));
-                log.info(" - splitImages count : {}", splittedImages.size());
-                log.info(" - originalWidth : {}", this.atlasImage.getWidth());
-                log.info(" - originalHeight : {}", this.atlasImage.getHeight());
-                log.info(" - resizeWidth : {}", imageWidth);
-                log.info(" - resizeHeight : {}", imageHeight);
-                log.info(" - ratio : {}", ratio);
-                log.info(" - scaleFactor : {}", scaleFactor);
-                log.info(" - lodLevel : {}", lodLevel);
-                log.info("==================================");
-                ImageResizer imageResizer = new ImageResizer();
-                this.atlasImage = imageResizer.resizeImageGraphic2D(this.atlasImage, imageWidth, imageHeight, true);
-            }
-
             // clamp the backGroundColor.***
             BufferedImage clamped = ImageUtils.clampBackGroundColor(this.atlasImage, CLAMP_COLOR, 1, 20);
             clamped = ImageUtils.changeBackgroundColor(clamped, CLAMP_COLOR, BACKGROUND_COLOR);
             Graphics2D graphics2D = this.atlasImage.createGraphics();
             graphics2D.drawImage(clamped, 0, 0, null);
             graphics2D.dispose();
+
+            boolean sizeChanged = (atlasImage.getWidth() != imageWidth) || (atlasImage.getHeight() != imageHeight);
+            if (sizeChanged) {
+                log.debug("=== Batching textures is done ===");
+                log.debug(" - atlasImage name : {}", (ATLAS_IMAGE + "_L" + lod.getLevel()));
+                log.debug(" - splitImages count : {}", splittedImages.size());
+                log.debug(" - originalWidth : {}", this.atlasImage.getWidth());
+                log.debug(" - originalHeight : {}", this.atlasImage.getHeight());
+                log.debug(" - resizeWidth : {}", imageWidth);
+                log.debug(" - resizeHeight : {}", imageHeight);
+                log.debug(" - ratio : {}", ratio);
+                log.debug(" - scaleFactor : {}", scaleFactor);
+                log.debug(" - lodLevel : {}", lodLevel);
+                log.debug("==================================");
+                ImageResizer imageResizer = new ImageResizer();
+                this.atlasImage = imageResizer.resizeImageGraphic2D(this.atlasImage, imageWidth, imageHeight, true);
+            }
         }
 
         /* debug */
-        if (globalOptions.isDebugLod()) {
+        if (globalOptions.isDebug()) {
             writeAtlasImageForTest(existPngTextures, lod, "-after");
         }
 

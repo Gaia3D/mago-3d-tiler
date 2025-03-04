@@ -83,7 +83,7 @@ public class GltfCreator {
             var query = new Query(typeName, Filter.INCLUDE);
             int totalCount = source.getCount(query);
             log.info("Total count: " + totalCount);
-            
+
             SimpleFeatureCollection features = source.getFeatures();
 
             FeatureIterator<SimpleFeature> iterator = features.features();

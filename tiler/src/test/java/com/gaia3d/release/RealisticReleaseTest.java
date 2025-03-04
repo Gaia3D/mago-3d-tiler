@@ -25,7 +25,7 @@ class RealisticReleaseTest {
                 "-rotateX", "90",
                 "-leaveTemp",
                 //"-glb",
-                "-debug",
+                //"-debug",
         };
         execute(args);
     }

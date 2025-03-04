@@ -43,8 +43,8 @@ public class GlobalOptions {
     public static final float POINTSCLOUD_HORIZONTAL_GRID = 500.0f; // in meters
     public static final float POINTSCLOUD_VERTICAL_GRID = 500.0f; // in meters
 
-    public static final CoordinateReferenceSystem DEFAULT_CRS = new CRSFactory().createFromName("EPSG:3857");
     public static final String DEFAULT_CRS_CODE = "3857"; // 4326 -> 3857
+    public static final CoordinateReferenceSystem DEFAULT_CRS = new CRSFactory().createFromName("EPSG:" + DEFAULT_CRS_CODE);
     public static final String DEFAULT_NAME_COLUMN = "name";
     public static final String DEFAULT_HEIGHT_COLUMN = "height";
     public static final String DEFAULT_ALTITUDE_COLUMN = "altitude";
@@ -53,7 +53,6 @@ public class GlobalOptions {
     public static final double DEFAULT_ABSOLUTE_ALTITUDE = 0.0d;
     public static final double DEFAULT_MINIMUM_HEIGHT = 1.0d;
     public static final double DEFAULT_SKIRT_HEIGHT = 4.0d;
-    public static final boolean DEFAULT_DEBUG_LOD = true;
 
     public static final boolean DEFAULT_USE_QUANTIZATION = false;
 
@@ -112,7 +111,7 @@ public class GlobalOptions {
 
     // Debug Mode
     private boolean debug = false;
-    private boolean debugLod;
+    private boolean debugLod = false;
     private boolean isLeaveTemp = false;
 
     private boolean gltf = false;
@@ -279,21 +278,12 @@ public class GlobalOptions {
         instance.setVoxelLod(command.hasOption(ProcessOptions.VOXEL_LOD.getArgName()));
         instance.setPhotorealistic(command.hasOption(ProcessOptions.PHOTOREALISTIC.getArgName()));
         instance.setLeaveTemp(command.hasOption(ProcessOptions.LEAVE_TEMP.getArgName()));
-        instance.setUseQuantization(command.hasOption(ProcessOptions.MESH_QUANTIZATION.getArgName()) ? true : DEFAULT_USE_QUANTIZATION);
-
-        TilerExtensionModule extensionModule = new TilerExtensionModule();
-        extensionModule.executePhotorealistic(null, null);
-        if (!extensionModule.isSupported() && instance.isPhotorealistic()) {
-            log.error("*** Extension Module is not supported ***");
-            throw new IllegalArgumentException("Extension Module is not supported.");
-        }
+        instance.setUseQuantization(command.hasOption(ProcessOptions.MESH_QUANTIZATION.getArgName()) || DEFAULT_USE_QUANTIZATION);
 
         /* Point Cloud Options */
         instance.setMaximumPointPerTile(command.hasOption(ProcessOptions.MAX_POINTS.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_POINTS.getArgName())) : DEFAULT_POINT_PER_TILE);
         instance.setPointRatio(command.hasOption(ProcessOptions.POINT_RATIO.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.POINT_RATIO.getArgName())) : DEFAULT_POINT_RATIO);
         instance.setForce4ByteRGB(command.hasOption(ProcessOptions.POINT_FORCE_4BYTE_RGB.getArgName()));
-        //instance.setPointScale(command.hasOption(ProcessOptions.POINT_SCALE.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.POINT_SCALE.getArgName())) : DEFAULT_POINT_SCALE);
-        //instance.setPointSkip(command.hasOption(ProcessOptions.POINT_SKIP.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.POINT_SKIP.getArgName())) : DEFAULT_POINT_SKIP);
 
         /* 2D Data Column Options */
         instance.setNameColumn(command.hasOption(ProcessOptions.NAME_COLUMN.getArgName()) ? command.getOptionValue(ProcessOptions.NAME_COLUMN.getArgName()) : DEFAULT_NAME_COLUMN);
@@ -306,7 +296,6 @@ public class GlobalOptions {
         instance.setSkirtHeight(command.hasOption(ProcessOptions.SKIRT_HEIGHT.getArgName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.SKIRT_HEIGHT.getArgName())) : DEFAULT_SKIRT_HEIGHT);
 
         instance.setDebug(command.hasOption(ProcessOptions.DEBUG.getArgName()));
-        instance.setDebugLod(DEFAULT_DEBUG_LOD);
 
         boolean isSwapUpAxis = false;
         boolean isFlipUpAxis = false;
@@ -358,6 +347,15 @@ public class GlobalOptions {
         instance.setAutoUpAxis(command.hasOption(ProcessOptions.AUTO_UP_AXIS.getArgName()));
 
         instance.printDebugOptions();
+
+        TilerExtensionModule extensionModule = new TilerExtensionModule();
+        extensionModule.executePhotorealistic(null, null);
+        if (!extensionModule.isSupported() && instance.isPhotorealistic()) {
+            log.error("*** Extension Module is not supported ***");
+            throw new IllegalArgumentException("Extension Module is not supported.");
+        } else {
+            instance.setUseQuantization(true);
+        }
     }
 
     private static void initVersionInfo() {
@@ -378,9 +376,62 @@ public class GlobalOptions {
     }
 
     public void printDebugOptions() {
-
-    }
-
-    public void setQuantization(boolean b) {
+        if (!debug) {
+            return;
+        }
+        log.debug("========================================");
+        log.debug("Input Path: {}", inputPath);
+        log.debug("Output Path: {}", outputPath);
+        log.debug("Input Format: {}", inputFormat);
+        log.debug("Output Format: {}", outputFormat);
+        log.debug("Terrain File Path: {}", terrainPath);
+        log.debug("Instance File Path: {}", instancePath);
+        log.debug("Log Path: {}", logPath);
+        log.debug("Recursive Path Search: {}", recursive);
+        log.debug("Leave Temp Files: {}", isLeaveTemp);
+        log.debug("========================================");
+        log.debug("Coordinate Reference System: {}", crs);
+        log.debug("Proj4 Code: {}", proj);
+        log.debug("Minimum LOD: {}", minLod);
+        log.debug("Maximum LOD: {}", maxLod);
+        log.debug("Minimum GeometricError: {}", minGeometricError);
+        log.debug("Maximum GeometricError: {}", maxGeometricError);
+        log.debug("Maximum number of points per a tile: {}", maximumPointPerTile);
+        log.debug("Source Precision: {}", isSourcePrecision);
+        log.debug("PointCloud Ratio: {}", pointRatio);
+        log.debug("Force 4Byte RGB: {}", force4ByteRGB);
+        log.debug("Debug Mode: {}", debug);
+        log.debug("Debug LOD: {}", debugLod);
+        log.debug("Debug GLB: {}", glb);
+        log.debug("classicTransformMatrix: {}", classicTransformMatrix);
+        log.debug("Multi-Thread Count: {}", multiThreadCount);
+        log.debug("========================================");
+        log.debug("MEsh Quantization: {}", useQuantization);
+        log.debug("Rotate X-Axis: {}", rotateX);
+        log.debug("Swap Up-Axis: {}", swapUpAxis);
+        log.debug("Flip Up-Axis: {}", flipUpAxis);
+        log.debug("RefineAdd: {}", refineAdd);
+        log.debug("Flip Coordinate: {}", flipCoordinate);
+        log.debug("Zero Origin: {}", zeroOrigin);
+        log.debug("Auto Up-Axis: {}", autoUpAxis);
+        log.debug("Ignore Textures: {}", ignoreTextures);
+        log.debug("Max Triangles: {}", maxTriangles);
+        log.debug("Max Instance Size: {}", maxInstance);
+        log.debug("Max Node Depth: {}", maxNodeDepth);
+        log.debug("LargeMesh: {}", largeMesh);
+        log.debug("Voxel LOD: {}", voxelLod);
+        log.debug("Photorealistic: {}", photorealistic);
+        log.debug("Point Cloud Horizontal Grid: {}", POINTSCLOUD_HORIZONTAL_GRID);
+        log.debug("Point Cloud Vertical Grid: {}", POINTSCLOUD_VERTICAL_GRID);
+        log.debug("========================================");
+        log.debug("Name Column: {}", nameColumn);
+        log.debug("Height Column: {}", heightColumn);
+        log.debug("Altitude Column: {}", altitudeColumn);
+        log.debug("Heading Column: {}", headingColumn);
+        log.debug("Diameter Column: {}", diameterColumn);
+        log.debug("Absolute Altitude: {}", absoluteAltitude);
+        log.debug("Minimum Height: {}", minimumHeight);
+        log.debug("Skirt Height: {}", skirtHeight);
+        log.debug("========================================");
     }
 }

@@ -591,7 +591,7 @@ public class Engine {
             }
 
 
-            if(ratioHW > 0.06) {
+            if(ratioHW > 0.05) {
                 // YPosZNeg texture.***
                 cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_YPOS_ZNEG;
                 BufferedImage imageYpoZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
@@ -715,7 +715,7 @@ public class Engine {
 
         List<HalfEdgeVertex> verticesOfFaces = new ArrayList<>();
         Map<HalfEdgeVertex, HalfEdgeVertex> visitedVerticesMap = new HashMap<>();
-        double texCoordError = 0.01;
+        double texCoordError = 0.0025;
         for (Map.Entry<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> entry : mapFaceGroupByClassifyIdAndObliqueCamDirType.entrySet()) {
             int classifyId = entry.getKey();
             Map<CameraDirectionType, List<HalfEdgeFace>> mapCameraDirectionTypeFacesList = entry.getValue();
@@ -933,7 +933,7 @@ public class Engine {
             // now, calculate the vertex list from the map.***
             List<HalfEdgeVertex> vertexList = new ArrayList<>(groupVertexMapMemSave.values());
             int verticesCount = vertexList.size();
-            double texCoordErrore = 0.01;
+            double texCoordErrore = 0.0025;
             for (int k = 0; k < verticesCount; k++) {
                 HalfEdgeVertex vertex = vertexList.get(k);
 
