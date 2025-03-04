@@ -331,12 +331,32 @@ public class AssimpConverter implements Converter {
             texture.setType(TextureType.AMBIENT);
             texture.setPath(ambientTexPath);
             texture.setParentPath(path);
-            File file = new File(parentPath, ambientTexPath);
-            if (!(file.exists() && file.isFile())) {
-                log.error("Ambient Texture is not found: {}", file.getAbsolutePath());
+
+            // embedded texture check
+            if (ambientTexPath.startsWith("*")) {
+                String embeddedTexturePath = embeddedTextures.get(Integer.parseInt(ambientTexPath.substring(1)));
+                log.debug("Original Texture Path: " + ambientTexPath);
+                log.debug("Embedded Texture Path: " + embeddedTexturePath);
+                ambientTexPath = "embedded_textures" + File.separator + embeddedTexturePath;
             } else {
+                File filePath = new File(ambientTexPath);
+                String fileName = filePath.getName();
+                String embeddedTexturePath = "embedded_textures" + File.separator + fileName;
+                File inputFile = new File(parentPath, embeddedTexturePath);
+                if (inputFile.exists() && inputFile.isFile()) {
+                    log.debug("Original Texture Path: " + ambientTexPath);
+                    log.debug("Corrected Texture Path: " + embeddedTexturePath);
+                    ambientTexPath = embeddedTexturePath;
+                }
+            }
+
+            File file = ImageUtils.getChildFile(parentPath, ambientTexPath);
+            if (file != null && file.exists() && file.isFile()) {
+                texture.setPath(ambientTexPath);
                 textures.add(texture);
                 material.getTextures().put(texture.getType(), textures);
+            } else {
+                log.error("AmbientTexture Texture is not found: {}", ambientTexPath);
             }
         } else {
             textures = new ArrayList<>();
@@ -349,12 +369,32 @@ public class AssimpConverter implements Converter {
             texture.setPath(specularTexPath);
             texture.setType(TextureType.SPECULAR);
             texture.setParentPath(path);
-            File file = new File(parentPath, specularTexPath);
-            if (!(file.exists() && file.isFile())) {
-                log.error("Specular Texture is not found: {}", file.getAbsolutePath());
+
+            // embedded texture check
+            if (specularTexPath.startsWith("*")) {
+                String embeddedTexturePath = embeddedTextures.get(Integer.parseInt(specularTexPath.substring(1)));
+                log.debug("Original Texture Path: " + specularTexPath);
+                log.debug("Embedded Texture Path: " + embeddedTexturePath);
+                specularTexPath = "embedded_textures" + File.separator + embeddedTexturePath;
             } else {
+                File filePath = new File(specularTexPath);
+                String fileName = filePath.getName();
+                String embeddedTexturePath = "embedded_textures" + File.separator + fileName;
+                File inputFile = new File(parentPath, embeddedTexturePath);
+                if (inputFile.exists() && inputFile.isFile()) {
+                    log.debug("Original Texture Path: " + specularTexPath);
+                    log.debug("Corrected Texture Path: " + embeddedTexturePath);
+                    specularTexPath = embeddedTexturePath;
+                }
+            }
+
+            File file = ImageUtils.getChildFile(parentPath, specularTexPath);
+            if (file != null && file.exists() && file.isFile()) {
+                texture.setPath(specularTexPath);
                 textures.add(texture);
                 material.getTextures().put(texture.getType(), textures);
+            } else {
+                log.error("SpecularTexture Texture is not found: {}", specularTexPath);
             }
         } else {
             textures = new ArrayList<>();
@@ -367,12 +407,32 @@ public class AssimpConverter implements Converter {
             texture.setPath(shininessTexPath);
             texture.setType(TextureType.SHININESS);
             texture.setParentPath(path);
-            File file = new File(parentPath, specularTexPath);
-            if (!(file.exists() && file.isFile())) {
-                log.error("Shininess Texture is not found: {}", file.getAbsolutePath());
+
+            // embedded texture check
+            if (shininessTexPath.startsWith("*")) {
+                String embeddedTexturePath = embeddedTextures.get(Integer.parseInt(shininessTexPath.substring(1)));
+                log.debug("Original Texture Path: " + shininessTexPath);
+                log.debug("Embedded Texture Path: " + embeddedTexturePath);
+                shininessTexPath = "embedded_textures" + File.separator + embeddedTexturePath;
             } else {
+                File filePath = new File(shininessTexPath);
+                String fileName = filePath.getName();
+                String embeddedTexturePath = "embedded_textures" + File.separator + fileName;
+                File inputFile = new File(parentPath, embeddedTexturePath);
+                if (inputFile.exists() && inputFile.isFile()) {
+                    log.debug("Original Texture Path: " + shininessTexPath);
+                    log.debug("Corrected Texture Path: " + embeddedTexturePath);
+                    shininessTexPath = embeddedTexturePath;
+                }
+            }
+
+            File file = ImageUtils.getChildFile(parentPath, shininessTexPath);
+            if (file != null && file.exists() && file.isFile()) {
+                texture.setPath(shininessTexPath);
                 textures.add(texture);
                 material.getTextures().put(texture.getType(), textures);
+            } else {
+                log.error("Shininess Texture is not found: {}", shininessTexPath);
             }
         } else {
             textures = new ArrayList<>();

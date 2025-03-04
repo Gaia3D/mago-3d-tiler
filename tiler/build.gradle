@@ -43,9 +43,11 @@ dependencies {
     implementation "org.jdom:jdom2:2.0.6"
 
     // jgltf (java gltf library)
-    implementation "de.javagl:jgltf-obj:2.0.3"
-    implementation "de.javagl:jgltf-model:2.0.3"
-    implementation "de.javagl:jgltf-validator:2.0.3"
+    implementation "de.javagl:jgltf-obj:2.0.4"
+    implementation "de.javagl:jgltf-model:2.0.4"
+    implementation "de.javagl:jgltf-validator:2.0.4"
+    implementation 'de.javagl:jgltf-impl-v1:2.0.4'
+    implementation 'de.javagl:jgltf-impl-v2:2.0.4'
 
     // CityGML4J
     implementation 'org.citygml4j:citygml4j-xml:3.0.0'

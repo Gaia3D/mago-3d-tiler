@@ -45,6 +45,8 @@ public enum ProcessOptions {
     POINT_PRECISION("sourcePrecision", "sp", "sourcePrecision", false, "Create pointscloud tile with original precision. (Slow)"),
     POINT_FORCE_4BYTE_RGB("force4ByteRGB", "f4", "force4ByteRGB", false, "Force 4Byte RGB for pointscloud tile."),
 
+    // Mesh Options
+    MESH_QUANTIZATION("quantize", "q", "quantize", false, "Quantize mesh to reduce glb size via \"KHR_mesh_quantization Extension\""),
     ROTATE_X_AXIS("rotateXAxis", "rx", "rotateXAxis", true, "Rotate the X-Axis in degrees (Unit: degrees)(Default: 0.0)"),
 
     SWAP_UP_AXIS("swapUpAxis", "su", "swapUpAxis", false, "Rotate the matrix -90 degrees about the X-axis. (Default: false)"),

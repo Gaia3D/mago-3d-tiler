@@ -53,7 +53,9 @@ public class GlobalOptions {
     public static final double DEFAULT_ABSOLUTE_ALTITUDE = 0.0d;
     public static final double DEFAULT_MINIMUM_HEIGHT = 1.0d;
     public static final double DEFAULT_SKIRT_HEIGHT = 4.0d;
-    public static final boolean DEFAULT_DEBUG_LOD = false;
+    public static final boolean DEFAULT_DEBUG_LOD = true;
+
+    public static final boolean DEFAULT_USE_QUANTIZATION = false;
 
     public static final int REALISTIC_LOD0_MAX_TEXTURE_SIZE = 1024;
     public static final int REALISTIC_MAX_TEXTURE_SIZE = 1024;
@@ -95,6 +97,8 @@ public class GlobalOptions {
     private int pointRatio = 0; // Percentage of points from original data
     private boolean force4ByteRGB = false; // Force 4Byte RGB for pointscloud tile
 
+    private boolean useQuantization; // Use quantization via KHR_mesh_quantization
+
     // Level of Detail
     private int minLod;
     private int maxLod;
@@ -108,7 +112,7 @@ public class GlobalOptions {
 
     // Debug Mode
     private boolean debug = false;
-    private boolean debugLod = false;
+    private boolean debugLod;
     private boolean isLeaveTemp = false;
 
     private boolean gltf = false;
@@ -275,6 +279,7 @@ public class GlobalOptions {
         instance.setVoxelLod(command.hasOption(ProcessOptions.VOXEL_LOD.getArgName()));
         instance.setPhotorealistic(command.hasOption(ProcessOptions.PHOTOREALISTIC.getArgName()));
         instance.setLeaveTemp(command.hasOption(ProcessOptions.LEAVE_TEMP.getArgName()));
+        instance.setUseQuantization(command.hasOption(ProcessOptions.MESH_QUANTIZATION.getArgName()) ? true : DEFAULT_USE_QUANTIZATION);
 
         TilerExtensionModule extensionModule = new TilerExtensionModule();
         extensionModule.executePhotorealistic(null, null);
@@ -373,61 +378,9 @@ public class GlobalOptions {
     }
 
     public void printDebugOptions() {
-        if (!debug) {
-            return;
-        }
-        log.debug("========================================");
-        log.debug("Input Path: {}", inputPath);
-        log.debug("Output Path: {}", outputPath);
-        log.debug("Input Format: {}", inputFormat);
-        log.debug("Output Format: {}", outputFormat);
-        log.debug("Terrain File Path: {}", terrainPath);
-        log.debug("Instance File Path: {}", instancePath);
-        log.debug("Log Path: {}", logPath);
-        log.debug("Recursive Path Search: {}", recursive);
-        log.debug("Leave Temp Files: {}", isLeaveTemp);
-        log.debug("========================================");
-        log.debug("Coordinate Reference System: {}", crs);
-        log.debug("Proj4 Code: {}", proj);
-        log.debug("Minimum LOD: {}", minLod);
-        log.debug("Maximum LOD: {}", maxLod);
-        log.debug("Minimum GeometricError: {}", minGeometricError);
-        log.debug("Maximum GeometricError: {}", maxGeometricError);
-        log.debug("Maximum number of points per a tile: {}", maximumPointPerTile);
-        log.debug("Source Precision: {}", isSourcePrecision);
-        log.debug("PointCloud Ratio: {}", pointRatio);
-        log.debug("Force 4Byte RGB: {}", force4ByteRGB);
-        log.debug("Debug Mode: {}", debug);
-        log.debug("Debug LOD: {}", debugLod);
-        log.debug("Debug GLB: {}", glb);
-        log.debug("classicTransformMatrix: {}", classicTransformMatrix);
-        log.debug("Multi-Thread Count: {}", multiThreadCount);
-        log.debug("========================================");
-        log.debug("Rotate X-Axis: {}", rotateX);
-        log.debug("Swap Up-Axis: {}", swapUpAxis);
-        log.debug("Flip Up-Axis: {}", flipUpAxis);
-        log.debug("RefineAdd: {}", refineAdd);
-        log.debug("Flip Coordinate: {}", flipCoordinate);
-        log.debug("Zero Origin: {}", zeroOrigin);
-        log.debug("Auto Up-Axis: {}", autoUpAxis);
-        log.debug("Ignore Textures: {}", ignoreTextures);
-        log.debug("Max Triangles: {}", maxTriangles);
-        log.debug("Max Instance Size: {}", maxInstance);
-        log.debug("Max Node Depth: {}", maxNodeDepth);
-        log.debug("LargeMesh: {}", largeMesh);
-        log.debug("Voxel LOD: {}", voxelLod);
-        log.debug("Photorealistic: {}", photorealistic);
-        log.debug("Point Cloud Horizontal Grid: {}", POINTSCLOUD_HORIZONTAL_GRID);
-        log.debug("Point Cloud Vertical Grid: {}", POINTSCLOUD_VERTICAL_GRID);
-        log.debug("========================================");
-        log.debug("Name Column: {}", nameColumn);
-        log.debug("Height Column: {}", heightColumn);
-        log.debug("Altitude Column: {}", altitudeColumn);
-        log.debug("Heading Column: {}", headingColumn);
-        log.debug("Diameter Column: {}", diameterColumn);
-        log.debug("Absolute Altitude: {}", absoluteAltitude);
-        log.debug("Minimum Height: {}", minimumHeight);
-        log.debug("Skirt Height: {}", skirtHeight);
-        log.debug("========================================");
+
+    }
+
+    public void setQuantization(boolean b) {
     }
 }
