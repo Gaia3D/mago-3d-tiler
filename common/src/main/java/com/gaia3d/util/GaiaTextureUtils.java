@@ -169,23 +169,18 @@ public class GaiaTextureUtils {
         return averageColor;
     }
 
-    public static void clampTextureCoordinate(Vector2d texCoord, double error)
-    {
-        if(texCoord.x < error)
-        {
+    public static void clampTextureCoordinate(Vector2d texCoord, double error) {
+        if(texCoord.x < error) {
             texCoord.x = error;
         }
-        else if(texCoord.x > 1.0 - error)
-        {
+        else if(texCoord.x > 1.0 - error) {
             texCoord.x = 1.0 - error;
         }
 
-        if(texCoord.y < error)
-        {
+        if(texCoord.y < error) {
             texCoord.y = error;
         }
-        else if(texCoord.y > 1.0 - error)
-        {
+        else if(texCoord.y > 1.0 - error) {
             texCoord.y = 1.0 - error;
         }
     }

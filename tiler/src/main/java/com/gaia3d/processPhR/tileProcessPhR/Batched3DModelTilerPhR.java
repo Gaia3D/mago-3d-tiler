@@ -120,7 +120,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         // After process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes.***
         distributeContentsToNodesOctTree(root, cuttedTileInfos, currDepth, nodeTileInfoMap);
         makeContentsForNodes(nodeTileInfoMap, lod);
-
         /* End lod 0 process */
 
         int netSurfaceStartLod = 3;
@@ -231,7 +230,14 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
     private void cuttingAndScissorProcessST(List<TileInfo> tileInfos, int lod, Node rootNode, List<TileInfo> resultTileInfos, int maxDepth) {
         // Single-threading
+        List<TileInfo> finalTileInfosCopy = new ArrayList<>();
+
+        // Usamos un ConcurrentHashMap para almacenar los resultados por índice seguro
+        Map<Integer, List<TileInfo>> tileInfoListMap = new ConcurrentHashMap<>();
+
         log.info("Cutting and Scissor process is started. Total tileInfos : {}", tileInfos.size());
+
+
 
         int counter = 0;
         for (TileInfo tileInfo : tileInfos) {
@@ -268,6 +274,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         ExecutorService executorService = Executors.newFixedThreadPool(globalOptions.getMultiThreadCount());
         List<Runnable> tasks = new ArrayList<>();
         List<TileInfo> finalTileInfosCopy = new ArrayList<>();
+        List<List<TileInfo>> tileInfoListList = new ArrayList<>();
 
         // make an asynchronous arrayList.***
         Map<Integer, List<TileInfo>> tileInfoListMap = new ConcurrentHashMap<>();
@@ -355,6 +362,110 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         }
     }
 
+    // automatic calculate geometric error
+    private void setGeometryErrorToNodeAutomatic(Node node, int maxDepth) {
+        int lod = maxDepth - node.getDepth();
+        double factor = 1.0;
+        double geometricError = (lod * factor + 0.01);
+        node.setGeometricError(geometricError);
+        List<Node> children = node.getChildren();
+        if (children != null) {
+            int childrenCount = children.size();
+            for (Node child : children) {
+                setGeometryErrorToNodeAutomatic(child, maxDepth);
+            }
+        }
+    }
+
+    private void makeNetSurfacesWithBoxTextures(List<TileInfo> tileInfos, int lod, DecimateParameters decimateParameters, double pixelsForMeter) {
+        log.info("making netSurfaces scenes for lod : " + lod);
+        TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
+        List<GaiaScene> gaiaSceneList = new ArrayList<>();
+        List<HalfEdgeScene> resultDecimatedScenes = new ArrayList<>();
+
+        int tileInfosCount = tileInfos.size();
+        for (int i = 0; i < tileInfosCount; i++) {
+            log.info("making netSurfaces scene : " + i + " of " + tileInfosCount);
+            TileInfo tileInfo = tileInfos.get(i);
+            Path tempPath = tileInfo.getTempPath();
+            Path tempFolder = tempPath.getParent();
+
+            // load the file.***
+            GaiaSet gaiaSet;
+            try {
+                gaiaSet = GaiaSet.readFile(tempPath);
+                if (gaiaSet == null) {
+                    log.error("Error : gaiaSet is null. pth : " + tempPath);
+                    continue;
+                }
+            } catch (IOException e) {
+                log.error("Error : ", e);
+                throw new RuntimeException(e);
+            }
+            GaiaScene scene = new GaiaScene(gaiaSet);
+            scene.setOriginalPath(tileInfo.getTempPath());
+            //scene.setOriginalPath(tileInfo.getScenePath());
+            scene.makeTriangleFaces();
+
+            gaiaSceneList.clear();
+            resultDecimatedScenes.clear();
+            gaiaSceneList.add(scene);
+
+            if (!GaiaSceneUtils.checkSceneMaterials(scene)) {
+                log.error("Error : scene has objects that uses materials that are not in the scene.");
+                continue;
+            }
+
+            double screenPixelsForMeter = 20.0;
+            tilerExtensionModule.makeNetSurfacesWithBoxTexturesObliqueCamera(gaiaSceneList, resultDecimatedScenes, decimateParameters, pixelsForMeter, screenPixelsForMeter);
+
+            if(resultDecimatedScenes.isEmpty()) {
+                // sometimes the resultDecimatedScenes is empty because when rendering the scene, the scene is almost out of the camera.***
+                log.error("Error : resultDecimatedScenes is empty.");
+                gaiaSet.clear(); // delete gaiaSet.***
+                scene.clear(); // delete scene.***
+                continue;
+            }
+
+            HalfEdgeScene halfEdgeSceneLod = resultDecimatedScenes.get(0);
+
+            // Save the textures in a temp folder.***
+            List<GaiaMaterial> materials = halfEdgeSceneLod.getMaterials();
+            for (GaiaMaterial material : materials) {
+                List<GaiaTexture> textures = material.getTextures().get(TextureType.DIFFUSE);
+                for (GaiaTexture texture : textures) {
+                    // change the texture name.***
+                    String texturePath = texture.getPath();
+                    String rawTexturePath = texturePath.substring(0, texturePath.lastIndexOf("."));
+                    String extension = texturePath.substring(texturePath.lastIndexOf("."));
+                    String newTexturePath = rawTexturePath + "_" + lod + "." + extension;
+                    texture.setPath(newTexturePath);
+                    texture.setParentPath(tempFolder.toString());
+                    texture.saveImage(texture.getFullPath());
+                }
+            }
+
+            GaiaScene sceneLod1 = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneLod);
+
+            GaiaSet tempSetLod1 = GaiaSet.fromGaiaScene(sceneLod1);
+            halfEdgeSceneLod.deleteObjects();
+
+            LevelOfDetail levelOfDetail = LevelOfDetail.getByLevel(lod);
+            float scale = levelOfDetail.getTextureScale();
+
+            String aux = "lod" + lod;
+            Path tempFolderLod = tempFolder.resolve(aux);
+            Path currTempPathLod = tempSetLod1.writeFile(tempFolderLod, tileInfo.getSerial(), tempSetLod1.getAttribute()/*, scale*/);
+            tileInfo.setTempPath(currTempPathLod);
+            gaiaSet.clear(); // delete gaiaSet.***
+            scene.clear(); // delete scene.***
+            tempSetLod1.clear(); // delete tempSetLod1.***
+            sceneLod1.clear(); // delete sceneLod1.***
+        }
+    }
+
+
+
     public void decimateNetSurfacesAndCutScenes(List<TileInfo> tileInfos, int lod, Node rootNode, int maxDepth, DecimateParameters decimateParameters,
                                                 double pixelsForMeter, double screenPixelsForMeter)
     {
@@ -429,12 +540,18 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
 
             int resultDecimatedScenesCount = resultDecimatedScenes.size();
-            for (HalfEdgeScene halfEdgeSceneLod : resultDecimatedScenes) {
+            for(int j = 0; j < resultDecimatedScenesCount; j++) {
+                HalfEdgeScene halfEdgeSceneLod = resultDecimatedScenes.get(j);
+//                GaiaBoundingBox halfEdgeSceneBBox = halfEdgeSceneLod.getBoundingBox();
+//                if(!gaiaSceneBBox.isBoxInside(halfEdgeSceneBBox)) {
+//                    log.error("Error : gaiaSceneBBox does not intersect with halfEdgeSceneBBox.");
+//                }
+
                 GaiaBoundingBox boundingBoxCutLC = new GaiaBoundingBox();
                 GaiaScene gaiaSceneCut = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneLod);
                 GaiaBoundingBox cartographicBoundingBox = this.calculateCartographicBoundingBox(gaiaSceneCut, transformMatrix, boundingBoxCutLC);
 
-                if (motherCartographicBoundingBox.getMaxZ() < cartographicBoundingBox.getMaxZ()) {
+                if(motherCartographicBoundingBox.getMaxZ() < cartographicBoundingBox.getMaxZ()) {
                     log.error("Error : motherCartographicBoundingBox does not intersect with cartographicBoundingBox.");
                 }
 
@@ -456,7 +573,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 Path tempPathLod = gaiaSetCut.writeFileForPR(gaiaSetCutFolderPath, copyTexturesToNewPath);
 
                 // save material atlas textures.***
-                Path imagesPath = gaiaSetCutFolderPath.resolve("images");
+                Path parentPath = gaiaSetCutFolderPath;
+                Path imagesPath = parentPath.resolve("images");
                 // make directories if not exists.***
                 File imagesFolder = imagesPath.toFile();
                 if (!imagesFolder.exists() && imagesFolder.mkdirs()) {
@@ -468,7 +586,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                     for (GaiaTexture texture : textures) {
                         // check if exist bufferedImage of the texture.***
 
-                        if (texture.getBufferedImage() == null) {
+                        if(texture.getBufferedImage() == null) {
                             int hola = 0;
                         }
 
@@ -569,7 +687,9 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
 
             int resultDecimatedScenesCount = resultDecimatedScenes.size();
-            for (HalfEdgeScene halfEdgeSceneLod : resultDecimatedScenes) {
+            for(int j = 0; j < resultDecimatedScenesCount; j++) {
+                HalfEdgeScene halfEdgeSceneLod = resultDecimatedScenes.get(j);
+
                 int halfEdgeFacesCount = halfEdgeSceneLod.getFacesCount();
 
                 GaiaBoundingBox boundingBoxCutLC = new GaiaBoundingBox();
@@ -577,7 +697,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
                 int gaiaSceneFacesCount = gaiaSceneCut.getFacesCount();
 
-                if (halfEdgeFacesCount != gaiaSceneFacesCount) {
+                if(halfEdgeFacesCount != gaiaSceneFacesCount) {
                     log.error("Error : halfEdgeFacesCount is different from gaiaSceneFacesCount.");
                 }
 
@@ -596,7 +716,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 Path tempPathLod = gaiaSetCut.writeFileForPR(gaiaSetCutFolderPath, copyTexturesToNewPath);
 
                 // save material atlas textures.***
-                Path imagesPath = gaiaSetCutFolderPath.resolve("images");
+                Path parentPath = gaiaSetCutFolderPath;
+                Path imagesPath = parentPath.resolve("images");
                 // make directories if not exists.***
                 File imagesFolder = imagesPath.toFile();
                 if (!imagesFolder.exists() && imagesFolder.mkdirs()) {
@@ -608,7 +729,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                     for (GaiaTexture texture : textures) {
                         // check if exist bufferedImage of the texture.***
 
-                        if (texture.getBufferedImage() == null) {
+                        if(texture.getBufferedImage() == null) {
                             int hola = 0;
                         }
 
@@ -639,6 +760,14 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
         tileInfos.clear();
         tileInfos.addAll(newTileInfos);
+    }
+
+    private double getNodeLatitudesLengthInMeters(Node node) {
+        // make globalBoundingBox as square.***
+        double[] region = node.getBoundingVolume().getRegion();
+        double minLatRad = region[1];
+        double maxLatRad = region[3];
+        return GlobeUtils.distanceBetweenLatitudesRad(minLatRad, maxLatRad);
     }
 
     private void createNetSurfaceNodes(Node rootNode, List<TileInfo> tileInfos, int nodeDepth, int maxDepth) {
@@ -934,6 +1063,9 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             Vector3d tileInfoCenterGeoCoordRad = new Vector3d(centerLonRad, centerLatRad, centerAlt);
 
             Node childNode = rootNode.getIntersectedNodeAsOctree(tileInfoCenterGeoCoordRad, nodeDepth);
+            double minLatRad = childNode.getBoundingVolume().getRegion()[1];
+            double maxLatRad = childNode.getBoundingVolume().getRegion()[3];
+            double distanceBetweenLat = GlobeUtils.distanceBetweenLatitudesRad(minLatRad, maxLatRad);
             if (childNode == null) {
                 log.error("Error : childNode is null.");
                 continue;
@@ -967,21 +1099,61 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         return resultTileInfosCopy;
     }
 
+    private void makeSkirt(List<TileInfo> tileInfos) {
+        for (TileInfo tileInfo : tileInfos) {
+            Path path = tileInfo.getTempPath();
+
+            // load the file.***
+            try {
+                GaiaSet gaiaSet = GaiaSet.readFile(path);
+                if (gaiaSet == null) {
+                    log.error("Error : gaiaSet is null. pth : " + path);
+                    continue;
+                }
+                GaiaScene scene = new GaiaScene(gaiaSet);
+
+                HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
+                halfEdgeScene.makeSkirt();
+
+                // once scene is scissored, must change the materials of the gaiaSet and overwrite the file.***
+                GaiaScene skirtScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
+                GaiaSet gaiaSet2 = GaiaSet.fromGaiaScene(skirtScene);
+
+                // overwrite the file.***
+                gaiaSet2.writeFileInThePath(path);
+
+                scene.clear();
+                gaiaSet.clear();
+                halfEdgeScene.deleteObjects();
+                gaiaSet2.clear();
+                skirtScene.clear();
+            } catch (IOException e) {
+                log.error("Error : ", e);
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     private HalfEdgeOctree getCuttingPlanesAndHalfEdgeOctree(TileInfo tileInfo, int lod, BoundingVolume rootNodeBoundingVolume, int depthIdx,
                                                              List<GaiaAAPlane> resultPlanes, Matrix4d resultTransformMatrix) throws FileNotFoundException {
         //****************************************************
         // Note : tileInfos must contain only one tileInfo.***
         //****************************************************
         // calculate the divisions of the rectangle cake.***
+        // int maxDepth = rootNode.findMaxDepth();
+        int depthCount = depthIdx + 1;
         int currDepth = depthIdx - lod;
 
         // the maxDepth corresponds to lod0.***
-        double minLonDeg = Math.toDegrees(rootNodeBoundingVolume.getRegion()[0]);
-        double minLatDeg = Math.toDegrees(rootNodeBoundingVolume.getRegion()[1]);
-        double maxLonDeg = Math.toDegrees(rootNodeBoundingVolume.getRegion()[2]);
-        double maxLatDeg = Math.toDegrees(rootNodeBoundingVolume.getRegion()[3]);
-        double minAlt = rootNodeBoundingVolume.getRegion()[4];
-        double maxAlt = rootNodeBoundingVolume.getRegion()[5];
+        //List<Node> nodes = new ArrayList<>();
+        //rootNode.getNodesByDepth(currDepth, nodes);
+        BoundingVolume boundingVolume = rootNodeBoundingVolume;
+        double minLonDeg = Math.toDegrees(boundingVolume.getRegion()[0]);
+        double minLatDeg = Math.toDegrees(boundingVolume.getRegion()[1]);
+        double maxLonDeg = Math.toDegrees(boundingVolume.getRegion()[2]);
+        double maxLatDeg = Math.toDegrees(boundingVolume.getRegion()[3]);
+        double minAlt = boundingVolume.getRegion()[4];
+        double maxAlt = boundingVolume.getRegion()[5];
 
         double divisionsCount = Math.pow(2, (currDepth));
 
@@ -1007,7 +1179,6 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         GaiaBoundingBox setBBox = tileInfo.getBoundingBox();
         if (setBBox == null) {
             log.error("Error : setBBox is null.");
-            return null;
         }
         KmlInfo kmlInfo = tileInfo.getKmlInfo();
         Vector3d geoCoordPosition = kmlInfo.getPosition();
@@ -1108,6 +1279,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
         return resultOctree;
     }
+
+
 
     private GaiaBoundingBox calculateCartographicBoundingBox(GaiaScene gaiaScene, Matrix4d transformMatrix, GaiaBoundingBox resultBoundingBoxLC)
     {
@@ -1234,7 +1407,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
         double error = 1e-4;
         int planesCount = planes.size();
-        for (GaiaAAPlane plane : planes) {
+        for (int i = 0; i < planesCount; i++) {
+            GaiaAAPlane plane = planes.get(i);
             halfEdgeScene.cutByPlane(plane.getPlaneType(), plane.getPoint(), error);
         }
 
@@ -1258,6 +1432,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         resultOctree.extractOctreesWithFaces(octreesWithContents);
 
         // now, separate the surface by the octrees.***
+        //List<HalfEdgeScene> resultScenes = new ArrayList<>();
         List<TileInfo> cutTileInfos = new ArrayList<>();
 
         // set the classifyId for each face.***
@@ -1271,15 +1446,10 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         }
 
         for (int j = 0; j < octreesCount; j++) {
+            int classifyId = j;
 
             // create a new HalfEdgeScene.***
-            HalfEdgeScene cuttedScene = halfEdgeScene.cloneByClassifyId(j);
-
-            if(cuttedScene == null) {
-                log.info("cuttedScene is null");
-                continue;
-            }
-
+            HalfEdgeScene cuttedScene = halfEdgeScene.cloneByClassifyId(classifyId);
             cuttedScene.deleteNoUsedMaterials();
             if(scissorTextures) {
                 cuttedScene.scissorTexturesByMotherScene(halfEdgeScene.getMaterials());
@@ -1289,8 +1459,17 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 cuttedScene.makeSkirt();
             }
 
+            if(cuttedScene == null) {
+                log.info("cuttedScene is null");
+                continue;
+            }
+
+
+            //***************************************************************************************************************************
             GaiaScene gaiaSceneCut = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(cuttedScene);
+
             GaiaBoundingBox boundingBoxCutLC = new GaiaBoundingBox();
+
             GaiaBoundingBox cartographicBoundingBox = this.calculateCartographicBoundingBox(gaiaSceneCut, transformMatrix, boundingBoxCutLC);
 
             // create an originalPath for the cut scene.***
@@ -1308,6 +1487,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             // save the materials.***
 
             // save material atlas textures.***/////////////////////////////////////////////////////
+            //Path parentPath = path.getParent();
             Path imagesPath = gaiaSetCutFolderPath.resolve("images");
             // make directories if not exists.***
             File imagesFolder = imagesPath.toFile();
@@ -1356,6 +1536,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
             // make a kmlInfo for the cut scene.***
             // In reality, we must recalculate the position of the cut scene. Provisionally, we use the same position.***
+            // In reality, we must recalculate the position of the cut scene. Provisionally, we use the same position.***
             KmlInfo kmlInfoCut = KmlInfo.builder().position(geoCoordPosition).build();
             tileInfoCut.setKmlInfo(kmlInfoCut);
             cutTileInfos.add(tileInfoCut);
@@ -1387,6 +1568,95 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         }
     }
 
+    private void createNode(Node parentNode, List<TileInfo> tileInfos, int nodeDepth) throws IOException {
+        BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
+        BoundingVolume squareBoundingVolume = parentBoundingVolume.createSqureBoundingVolume();
+
+        boolean refineAdd = globalOptions.isRefineAdd();
+        long triangleLimit = globalOptions.getMaxTriangles();
+        long totalTriangleCount = tileInfos.stream().mapToLong(TileInfo::getTriangleCount).sum();
+        log.debug("[TriangleCount] Total : {}", totalTriangleCount);
+        log.debug("[Tile][ContentNode][OBJECT] : {}", tileInfos.size());
+
+        if (nodeDepth > globalOptions.getMaxNodeDepth()) {
+            log.warn("[Tile] Node depth limit exceeded : {}", nodeDepth);
+            Node childNode = createContentNode(parentNode, tileInfos, 0);
+            if (childNode != null) {
+                parentNode.getChildren().add(childNode);
+            }
+            return;
+        }
+
+        if (tileInfos.size() <= 1) {
+            Node childNode = createContentNode(parentNode, tileInfos, 0);
+            if (childNode != null) {
+                parentNode.getChildren().add(childNode);
+                createNode(childNode, tileInfos, nodeDepth + 1);
+            }
+        } else if (totalTriangleCount > triangleLimit) {
+            List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
+            for (int index = 0; index < childrenScenes.size(); index++) {
+                List<TileInfo> childTileInfos = childrenScenes.get(index);
+                Node childNode = createLogicalNode(parentNode, childTileInfos, index);
+                if (childNode != null) {
+                    parentNode.getChildren().add(childNode);
+                    createNode(childNode, childTileInfos, nodeDepth + 1);
+                }
+            }
+        } else if (totalTriangleCount > 1) {
+            List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
+            for (int index = 0; index < childrenScenes.size(); index++) {
+                List<TileInfo> childTileInfos = childrenScenes.get(index);
+
+                Node childNode = createContentNode(parentNode, childTileInfos, index);
+                if (childNode != null) {
+                    parentNode.getChildren().add(childNode);
+                    Content content = childNode.getContent();
+                    if (content != null && refineAdd) {
+                        ContentInfo contentInfo = content.getContentInfo();
+                        createNode(childNode, contentInfo.getRemainTileInfos(), nodeDepth + 1);
+                    } else {
+                        createNode(childNode, childTileInfos, nodeDepth + 1);
+                    }
+                }
+            }
+        } else if (tileInfos.size() <= 4 || !tileInfos.isEmpty()) {
+            Node childNode = createContentNode(parentNode, tileInfos, 0);
+            if (childNode != null) {
+                parentNode.getChildren().add(childNode);
+                createNode(childNode, tileInfos, nodeDepth + 1);
+            }
+        }
+    }
+
+    private Node createLogicalNode(Node parentNode, List<TileInfo> tileInfos, int index) {
+        if (tileInfos.isEmpty()) {
+            return null;
+        }
+        String nodeCode = parentNode.getNodeCode();
+        nodeCode = nodeCode + index;
+        log.info("[Tile][LogicalNode][" + nodeCode + "][OBJECT{}]", tileInfos.size());
+
+        double geometricError = calcGeometricError(tileInfos);
+        GaiaBoundingBox boundingBox = calcBoundingBox(tileInfos);
+        Matrix4d transformMatrix = getTransformMatrix(boundingBox);
+        if (globalOptions.isClassicTransformMatrix()) {
+            rotateX90(transformMatrix);
+        }
+        BoundingVolume boundingVolume = new BoundingVolume(boundingBox);
+        geometricError = DecimalUtils.cut(geometricError);
+
+        Node childNode = new Node();
+        childNode.setParent(parentNode);
+        childNode.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
+        childNode.setBoundingVolume(boundingVolume);
+        childNode.setNodeCode(nodeCode);
+        childNode.setGeometricError(geometricError);
+        childNode.setRefine(Node.RefineType.REPLACE);
+        childNode.setChildren(new ArrayList<>());
+        return childNode;
+    }
+
     private void makeContentsForNodes(Map<Node, List<TileInfo>> nodeTileInfoMap, int lod) {
         for (Map.Entry<Node, List<TileInfo>> entry : nodeTileInfoMap.entrySet()) {
             Node childNode = entry.getKey();
@@ -1408,7 +1678,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             if (globalOptions.isClassicTransformMatrix()) {
                 rotateX90(transformMatrix);
             }
-
+            BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
             LevelOfDetail lodLevel = LevelOfDetail.getByLevel(lod);
             int lodError = lodLevel.getGeometricError();
 
@@ -1421,7 +1691,9 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
 
             childNode.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
+            //childNode.setBoundingVolume(boundingVolume);
             childNode.setGeometricError(lodError + 0.001);
+
 
             if (!tileInfos.isEmpty()) {
                 childNode.setRefine(Node.RefineType.REPLACE);
@@ -1447,6 +1719,93 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             }
         }
     }
+
+    private Node createContentNode(Node parentNode, List<TileInfo> tileInfos, int index) {
+        if (tileInfos.isEmpty()) {
+            return null;
+        }
+        int minLevel = globalOptions.getMinLod();
+        int maxLevel = globalOptions.getMaxLod();
+        boolean refineAdd = globalOptions.isRefineAdd();
+
+        GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
+        Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
+        if (globalOptions.isClassicTransformMatrix()) {
+            rotateX90(transformMatrix);
+        }
+        BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
+
+        String nodeCode = parentNode.getNodeCode();
+        LevelOfDetail minLod = LevelOfDetail.getByLevel(minLevel);
+        LevelOfDetail maxLod = LevelOfDetail.getByLevel(maxLevel);
+        boolean hasContent = nodeCode.contains("C");
+        if (!hasContent) {
+            nodeCode = nodeCode + "C";
+        }
+        LevelOfDetail lod = getLodByNodeCode(minLod, maxLod, nodeCode);
+        if (lod == LevelOfDetail.NONE) {
+            return null;
+        }
+        nodeCode = nodeCode + index;
+        log.info("[Tile][ContentNode][" + nodeCode + "][LOD{}][OBJECT{}]", lod.getLevel(), tileInfos.size());
+
+        int lodError = refineAdd ? lod.getGeometricErrorBlock() : lod.getGeometricError();
+        List<TileInfo> resultInfos;
+        List<TileInfo> remainInfos; // small buildings, to add after as ADD.***
+        resultInfos = tileInfos.stream().filter(tileInfo -> {
+            double geometricError = tileInfo.getBoundingBox().getLongestDistance();
+            return geometricError >= lodError;
+        }).collect(Collectors.toList());
+        remainInfos = tileInfos.stream().filter(tileInfo -> {
+            double geometricError = tileInfo.getBoundingBox().getLongestDistance();
+            return geometricError < lodError;
+        }).collect(Collectors.toList());
+
+        Node childNode = new Node();
+        childNode.setParent(parentNode);
+        childNode.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
+        childNode.setBoundingVolume(boundingVolume);
+        childNode.setNodeCode(nodeCode);
+        childNode.setGeometricError(lodError + 0.01);
+        childNode.setChildren(new ArrayList<>());
+
+        childNode.setRefine(Node.RefineType.REPLACE);
+        if (!resultInfos.isEmpty()) {
+            ContentInfo contentInfo = new ContentInfo();
+            contentInfo.setName(nodeCode);
+            contentInfo.setLod(lod);
+            contentInfo.setBoundingBox(childBoundingBox);
+            contentInfo.setNodeCode(nodeCode);
+            contentInfo.setTileInfos(resultInfos);
+            contentInfo.setRemainTileInfos(remainInfos);
+            contentInfo.setTransformMatrix(transformMatrix);
+
+            Content content = new Content();
+            content.setUri("data/" + nodeCode + ".b3dm");
+            content.setContentInfo(contentInfo);
+            childNode.setContent(content);
+        } else {
+            log.debug("[Tile][ContentNode][{}] No Contents", nodeCode);
+        }
+        return childNode;
+    }
+
+    private LevelOfDetail getLodByNodeCode(LevelOfDetail minLod, LevelOfDetail maxLod, String nodeCode) {
+        int minLevel = minLod.getLevel();
+        int maxLevel = maxLod.getLevel();
+        String[] splitCode = nodeCode.split("C");
+        if (splitCode.length > 1) {
+            String contentLevel = nodeCode.split("C")[1];
+            int level = maxLevel - contentLevel.length();
+            if (level < minLevel) {
+                level = -1;
+            }
+            return LevelOfDetail.getByLevel(level);
+        } else {
+            return maxLod;
+        }
+    }
+
 
     // for multi-threading
     private void executeThread(ExecutorService executorService, List<Runnable> tasks) throws InterruptedException {

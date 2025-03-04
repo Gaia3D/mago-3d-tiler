@@ -1,10 +1,13 @@
 package com.gaia3d.basic.halfedge;
 
+import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.model.*;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -262,4 +265,162 @@ public class TestUtils {
         }
         return true;
     }
+
+    public static int checkTexCoordsOfHalfEdgeScene(HalfEdgeScene scene)
+    {
+        int badFacesCount = 0;
+        List<HalfEdgeSurface> surfaces = scene.extractSurfaces(null);
+        for (HalfEdgeSurface halfEdgeSurface : surfaces) {
+            int localBadFacesCount = checkTexCoordsOfHalfEdgeSurface(halfEdgeSurface);
+            badFacesCount += localBadFacesCount;
+        }
+
+        return badFacesCount;
+    }
+
+    public static int checkTexCoordsOfHalfEdgeSurface(HalfEdgeSurface halfEdgeSurface)
+    {
+        int badFacesCount = 0;
+        for (HalfEdgeFace face : halfEdgeSurface.getFaces()) {
+            if(!checkTexCoordsOfHalfEdgeFace(face))
+            {
+                badFacesCount++;
+            }
+        }
+        return badFacesCount;
+    }
+
+    public static int checkTexCoordsOfHalfEdgeFaces(List<HalfEdgeFace> faces)
+    {
+        int badFacesCount = 0;
+        for (HalfEdgeFace face : faces) {
+            if(!checkTexCoordsOfHalfEdgeFace(face))
+            {
+                badFacesCount++;
+            }
+        }
+        return badFacesCount;
+    }
+
+    public static boolean checkTexCoordsOfHalfEdgeFace(HalfEdgeFace face)
+    {
+        List<HalfEdgeVertex> faceVertices = face.getVertices(null);
+        Vector3d pos0 = faceVertices.get(0).getPosition();
+        Vector3d pos1 = faceVertices.get(1).getPosition();
+        Vector3d pos2 = faceVertices.get(2).getPosition();
+
+        Vector2d texCoord0 = faceVertices.get(0).getTexcoords();
+        Vector2d texCoord1 = faceVertices.get(1).getTexcoords();
+        Vector2d texCoord2 = faceVertices.get(2).getTexcoords();
+
+        GaiaRectangle texBRect = face.getTexCoordBoundingRectangle(null, false);
+
+        double width = texBRect.getWidth();
+        double height = texBRect.getHeight();
+
+        if(width > 0.5)
+        {
+            int hola = 0;
+        }
+
+        if(height > 0.5)
+        {
+            int hola = 0;
+        }
+
+        if(texCoord0.equals(texCoord1))
+        {
+            return false;
+        }
+
+        if(texCoord0.equals(texCoord2))
+        {
+            return false;
+        }
+
+        if(texCoord1.equals(texCoord2))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static boolean checkClassifyIdAndCamDirOfHalfEdgeFace(HalfEdgeFace face)
+    {
+        List<HalfEdgeFace> adjacentFaces = face.getAdjacentFaces(null);
+        for(HalfEdgeFace adjacentFace : adjacentFaces)
+        {
+            if(face.getClassifyId() != adjacentFace.getClassifyId())
+            {
+                return false;
+            }
+
+            if(face.getCameraDirectionType() != adjacentFace.getCameraDirectionType())
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static boolean checkWeldedGroups(HalfEdgeScene scene) {
+        List<HalfEdgeSurface> surfaces = scene.extractSurfaces(null);
+        for (HalfEdgeSurface halfEdgeSurface : surfaces) {
+            List<List<HalfEdgeFace>> resultWeldedFacesGroups = new ArrayList<>();
+            halfEdgeSurface.getWeldedFacesGroups(resultWeldedFacesGroups);
+            int hola = 0;
+        }
+        return true;
+    }
+
+    public static boolean checkWeldedFacesGroups(List<List<HalfEdgeFace>> resultWeldedFacesGroups){
+        int groupsCount = resultWeldedFacesGroups.size();
+        for(int i = 0; i < groupsCount; i++){
+            List<HalfEdgeFace> group = resultWeldedFacesGroups.get(i);
+            int facesCount = group.size();
+            int classifyId = group.get(0).getClassifyId();
+            CameraDirectionType cameraDirectionType = group.get(0).getCameraDirectionType();
+            for(int j = 0; j < facesCount; j++){
+                HalfEdgeFace face = group.get(j);
+                if(face == null){
+                    int hola = 0;
+                }
+
+                if(face.getClassifyId() != classifyId){
+                    return false;
+                }
+
+                if(face.getCameraDirectionType() != cameraDirectionType){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public static boolean checkIfExistCoincidentTexCoords(List<HalfEdgeVertex> vertexList, List<HalfEdgeVertex> resultEqualVertices, Map<HalfEdgeVertex, HalfEdgeVertex> visitedVertices){
+        int vertexCount = vertexList.size();
+        for(int i = 0; i < vertexCount; i++){
+            HalfEdgeVertex vertex = vertexList.get(i);
+            if(visitedVertices.containsKey(vertex)){
+                continue;
+            }
+
+            Vector2d texCoord = vertex.getTexcoords();
+            for(int j = i + 1; j < vertexCount; j++){
+                HalfEdgeVertex otherVertex = vertexList.get(j);
+                Vector2d otherTexCoord = otherVertex.getTexcoords();
+                if(texCoord.equals(otherTexCoord)){
+                    resultEqualVertices.add(vertex);
+                    resultEqualVertices.add(otherVertex);
+                    visitedVertices.put(vertex, vertex);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 }

@@ -867,6 +867,38 @@ class UnitTest {
     }
 
     @Test
+    void test_RealisticMesh_LeeDongHun_Data_BANSONG() {
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\BANSONG\\";
+        String outputPath = "D:\\data\\mago-server\\output\\leeDongHun_Data_OBJ_BANSONG\\";
+
+        String[] args = new String[]{
+                "-i", inputPath,
+                "-it", "obj",
+                "-o", outputPath,
+                "-crs", "5187",
+                "-pr",
+                "-rx", "90",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void test_RealisticMesh_LeeDongHun_Data_BANSONG_someBuildings() {
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\BANSONG_someBuildings\\";
+        String outputPath = "D:\\data\\mago-server\\output\\leeDongHun_Data_OBJ_BANSONG_someBuildings\\";
+
+        String[] args = new String[]{
+                "-i", inputPath,
+                "-it", "obj",
+                "-o", outputPath,
+                "-crs", "5187",
+                "-pr",
+                "-rx", "90",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
     void test_RealisticMesh_LeeDongHun_Data_SANGCHEON() {
         String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\SANGCHEON\\";
         String outputPath = "D:\\data\\mago-server\\output\\leeDongHun_Data_OBJ_SANGCHEON\\";
@@ -898,27 +930,13 @@ class UnitTest {
         Mago3DTilerMain.main(args);
     }
 
-    @Test
-    void test_RealisticMesh_LeeDongHun_Data_BANSONG_someBuildings() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\BANSONG_someBuildings\\";
-        String outputPath = "D:\\data\\mago-server\\output\\leeDongHun_Data_OBJ_BANSONG_someBuildings\\";
 
-        String[] args = new String[]{
-                "-i", inputPath,
-                "-it", "obj",
-                "-o", outputPath,
-                "-crs", "5187",
-                "-pr",
-                "-rx", "90",
-        };
-        Mago3DTilerMain.main(args);
-    }
 
     @Test
     void testCollada_SangGiDe() {
             // _1building _2buildings _3buildings _4buildings _5buildings _6buildings _someBuildings
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\BB00-sangji-university_someBuildings\\";
-        String outputPath = "D:\\data\\mago-server\\output\\BB00-sangji-university_someBuildings\\";
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\BB00-sangji-university\\";
+        String outputPath = "D:\\data\\mago-server\\output\\BB00-sangji-university\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
