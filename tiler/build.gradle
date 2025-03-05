@@ -10,6 +10,8 @@ dependencies {
     implementation "org.lwjgl:lwjgl-assimp"
     implementation "org.lwjgl:lwjgl-stb"
     implementation "org.lwjgl:lwjgl-opengl"
+    implementation "org.lwjgl:lwjgl-ktx"
+
 
     // joml (java opengl math library)
     implementation "org.joml:joml:1.10.5"
@@ -63,6 +65,7 @@ dependencies {
     runtimeOnly "org.lwjgl:lwjgl-openal::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-stb::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-ktx::$lwjglNatives"
 }
 test {
     useJUnitPlatform {
@@ -150,7 +153,7 @@ jib {
     extraDirectories {
         paths {
             path {
-                from = file("build/libs")
+                from = file("dist")
                 into = "/app"
             }
         }
