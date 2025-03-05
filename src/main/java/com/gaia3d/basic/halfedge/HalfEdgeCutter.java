@@ -151,7 +151,6 @@ public class HalfEdgeCutter {
         return resultScenes;
     }
 
-
     public static HalfEdgeScene cutHalfEdgeSceneGridXYZ(HalfEdgeScene halfEdgeScene, double gridSpacing, HalfEdgeOctree resultOctree) {
         GaiaBoundingBox bbox = halfEdgeScene.getBoundingBox();
 

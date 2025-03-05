@@ -52,7 +52,9 @@ public class GillotinePacker {
                         bestRect = freeRect;
                     }
                     GaiaRectangle candidateTotalBoundary = new GaiaRectangle(currentBoundary);
-                    GaiaRectangle placedRect = new GaiaRectangle(freeRect.getMinX(), freeRect.getMinY(), freeRect.getMinX() + rectWidth, freeRect.getMinY() + rectHeight);
+                    double freeMinX = freeRect.getMinX();
+                    double freeMinY = freeRect.getMinY();
+                    GaiaRectangle placedRect = new GaiaRectangle(freeMinX, freeMinY, freeMinX + rectWidth, freeMinY + rectHeight);
                     candidateTotalBoundary.addBoundingRectangle(placedRect);
                     double currTotalArea = candidateTotalBoundary.getArea();
                     //double areaFit = freeRect.getArea() - rect.getOriginBoundary().getArea();
