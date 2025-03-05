@@ -894,6 +894,7 @@ class UnitTest {
                 "-crs", "5187",
                 "-pr",
                 "-rx", "90",
+                "-leaveTemp"
         };
         Mago3DTilerMain.main(args);
     }

@@ -204,43 +204,22 @@ public class MainRenderer implements IAppLogic {
         int i=0;
         for(HalfEdgeScene cutHalfEdgeScene : resultCutHalfEdgeScenes) {
             log.info("makeBoxTexturesByObliqueCamera. cutScene : " + (i+1) + " / " + cutScenesCount);
-//            // test.***
-//            GaiaScene cutScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(cutHalfEdgeScene); // test.***
-//            cutScene.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId); // test.***
-//            cutScene.deleteDegeneratedFaces(); // test.***
-//            cutHalfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(cutScene); // test.***
-//            // end test.---
-
             GaiaBoundingBox bbox = cutHalfEdgeScene.getBoundingBox();
             double bboxMaxSize = bbox.getMaxSize();
             // now, cut the halfEdgeScene and make cube-textures by rendering.***
             double gridSpacing = bboxMaxSize / 3.0;
             if(lod == 1)
             {
-                gridSpacing = bboxMaxSize / 2.0;
+                gridSpacing = bboxMaxSize / 5.0;
             }
             HalfEdgeOctree resultOctree = new HalfEdgeOctree(null);
             HalfEdgeScene cuttedScene = HalfEdgeCutter.cutHalfEdgeSceneGridXYZ(cutHalfEdgeScene, gridSpacing, resultOctree); // original.***
-            //HalfEdgeScene cuttedScene = cutHalfEdgeScene; // test delete.***
-//            // test.***
-//            int badFacesCountA = TestUtils.checkTexCoordsOfHalfEdgeScene(cuttedScene);
-//            // end test.___
 
             // now make box textures for the cuttedScene.***
             engine.makeBoxTexturesByObliqueCamera(cuttedScene, screenPixelsForMeter);
 
-//            // test.***
-//            int badFacesCount = TestUtils.checkTexCoordsOfHalfEdgeScene(cuttedScene);
-//            // end test.___
-
             cuttedScene.scissorTextures(); // no works. error. TODO: must fix this.***
             cuttedScene.makeSkirt();
-
-            // test.***
-            //int badFacesCount2 = TestUtils.checkTexCoordsOfHalfEdgeScene(cuttedScene);
-            // end test.___
-
-
             resultHalfEdgeScenes.add(cuttedScene);
 
             i++;

@@ -1344,7 +1344,6 @@ public class Engine {
             zOffSet = 0.4f;
         }
 
-        near -= zOffSet; // make a little more near.***
         far += zOffSet; // make a little more far.***
 
         Projection projection = gaiaScenesContainer.getProjection();
@@ -1372,7 +1371,12 @@ public class Engine {
         ShaderManager shaderManager = getShaderManager();
 
         // color render.***
-        ShaderProgram sceneShaderProgram = shaderManager.getShaderProgram("scene");
+        ShaderProgram sceneShaderProgram = shaderManager.getShaderProgram("sceneDelimited");
+        sceneShaderProgram.bind();
+        // set uniform map.***
+        UniformsMap uniformsMap = sceneShaderProgram.getUniformsMap();
+        uniformsMap.setUniform3fv("bboxMin", new Vector3f((float)bbox.getMinX(), (float)bbox.getMinY(), (float)bbox.getMinZ()));
+        uniformsMap.setUniform3fv("bboxMax", new Vector3f((float)bbox.getMaxX(), (float)bbox.getMaxY(), (float)bbox.getMaxZ()));
         Vector4f clearColor = new Vector4f(0.5f, 0.5f, 0.5f, 1.0f);
         renderIntoFbo(colorFbo, sceneShaderProgram, gaiaScenesContainer, clearColor, true);
         colorFbo.bind();
@@ -1410,7 +1414,11 @@ public class Engine {
         gaiaScenesContainer.getRenderableGaiaScenes().clear();
         gaiaScenesContainer.getRenderableGaiaScenes().add(renderableScene);
 
-        ShaderProgram colorCodeShaderProgram = shaderManager.getShaderProgram("trianglesColorCode");
+        ShaderProgram colorCodeShaderProgram = shaderManager.getShaderProgram("trianglesDelimitedColorCode");
+        colorCodeShaderProgram.bind();
+        uniformsMap = sceneShaderProgram.getUniformsMap();
+        uniformsMap.setUniform3fv("bboxMin", new Vector3f((float)bbox.getMinX(), (float)bbox.getMinY(), (float)bbox.getMinZ()));
+        uniformsMap.setUniform3fv("bboxMax", new Vector3f((float)bbox.getMaxX(), (float)bbox.getMaxY(), (float)bbox.getMaxZ()));
         clearColor.set(1.0f, 1.0f, 1.0f, 1.0f);
         renderIntoFbo(colorCodeFbo, colorCodeShaderProgram, gaiaScenesContainer, clearColor, false);
         //colorCodeFbo.bind();
@@ -1496,8 +1504,7 @@ public class Engine {
 
         log.info("shaderFolder: {}", shaderFolder.getAbsolutePath());
 
-        String vertexShaderText = readResource("shaders/sceneV330.vert");
-        String fragmentShaderText = readResource("shaders/sceneV330.frag");
+
 
 
 //        log.info("vertexShaderText: {}", vertexShaderText);
@@ -1505,6 +1512,8 @@ public class Engine {
 
 
         // create a scene shader program.*************************************************************************************************
+        String vertexShaderText = readResource("shaders/sceneV330.vert");
+        String fragmentShaderText = readResource("shaders/sceneV330.frag");
         java.util.List<ShaderProgram.ShaderModuleData> shaderModuleDataList = new ArrayList<>();
         shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(vertexShaderText, GL20.GL_VERTEX_SHADER));
         shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(fragmentShaderText, GL20.GL_FRAGMENT_SHADER));
@@ -1583,6 +1592,43 @@ public class Engine {
         uniformNames.add("uObjectMatrix");
         trianglesColorCodeShaderProgram.createUniforms(uniformNames);
         trianglesColorCodeShaderProgram.validate();
+
+        // create a delimitedScene shader program.*************************************************************************************************
+        vertexShaderText = readResource("shaders/sceneDelimitedV330.vert");
+        fragmentShaderText = readResource("shaders/sceneDelimitedV330.frag");
+        shaderModuleDataList = new ArrayList<>();
+        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(vertexShaderText, GL20.GL_VERTEX_SHADER));
+        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(fragmentShaderText, GL20.GL_FRAGMENT_SHADER));
+        ShaderProgram sceneDelimitedShaderProgram = shaderManager.createShaderProgram("sceneDelimited", shaderModuleDataList);
+
+        uniformNames = new ArrayList<>();
+        uniformNames.add("uProjectionMatrix");
+        uniformNames.add("uModelViewMatrix");
+        uniformNames.add("uObjectMatrix");
+        uniformNames.add("texture0");
+        uniformNames.add("uColorMode");
+        uniformNames.add("uOneColor");
+        uniformNames.add("bboxMin");// render only the part of the scene that is inside the bounding box
+        uniformNames.add("bboxMax");// render only the part of the scene that is inside the bounding box
+        sceneDelimitedShaderProgram.createUniforms(uniformNames);
+        sceneDelimitedShaderProgram.validate();
+
+        // create a triangles delimited colorCode shader program.*************************************************************************************************
+        vertexShaderText = readResource("shaders/trianglesDelimitedColorCodeV330.vert");
+        fragmentShaderText = readResource("shaders/trianglesDelimitedColorCodeV330.frag");
+        shaderModuleDataList = new ArrayList<>();
+        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(vertexShaderText, GL20.GL_VERTEX_SHADER));
+        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(fragmentShaderText, GL20.GL_FRAGMENT_SHADER));
+        ShaderProgram trianglesDelimitedColorCodeShaderProgram = shaderManager.createShaderProgram("trianglesDelimitedColorCode", shaderModuleDataList);
+
+        uniformNames = new ArrayList<>();
+        uniformNames.add("uProjectionMatrix");
+        uniformNames.add("uModelViewMatrix");
+        uniformNames.add("uObjectMatrix");
+        uniformNames.add("bboxMin");// render only the part of the scene that is inside the bounding box
+        uniformNames.add("bboxMax");// render only the part of the scene that is inside the bounding box
+        trianglesDelimitedColorCodeShaderProgram.createUniforms(uniformNames);
+        trianglesDelimitedColorCodeShaderProgram.validate();
     }
 
     private void takeColorCodedPhoto(RenderableGaiaScene renderableGaiaScene, Fbo fbo, ShaderProgram shaderProgram) {
