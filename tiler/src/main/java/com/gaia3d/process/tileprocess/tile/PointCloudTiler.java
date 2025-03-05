@@ -253,7 +253,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         tileInfos.add(selfTileInfo);
 
         ContentInfo contentInfo = new ContentInfo();
-        contentInfo.setName("points-cloud");
+        contentInfo.setName("points-cloud" + childNode.getNodeCode());
         contentInfo.setLod(LevelOfDetail.LOD0);
         contentInfo.setBoundingBox(childBoundingBox);
         contentInfo.setNodeCode(childNode.getNodeCode());

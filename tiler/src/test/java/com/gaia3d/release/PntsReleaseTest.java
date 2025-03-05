@@ -70,6 +70,18 @@ class PntsReleaseTest {
         execute(args);
     }
 
+    @Test
+    void pointcloud05() {
+        String path = "P05-west-honam-las";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-c", "32652",
+                "-debug",
+        };
+        execute(args);
+    }
+
     private void execute(String[] args) {
         Mago3DTilerMain.main(args);
     }
