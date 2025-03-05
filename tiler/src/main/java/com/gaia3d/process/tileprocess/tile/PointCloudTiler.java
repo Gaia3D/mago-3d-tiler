@@ -222,7 +222,6 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
 
         double calcValue = (1000 / rootGeometricError) * attenuation;
         double maximumGeometricError = 36.0;
-        //double geometricErrorCalc = calcGeometricError(childBoundingBox);
         double geometricErrorCalc = calcGeometricErrorFromWgs84(transformedBoundingBox);
         double calculatedGeometricError = geometricErrorCalc / calcValue;
         if (calculatedGeometricError > maximumGeometricError) {
@@ -231,8 +230,8 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
             calculatedGeometricError = Math.floor(calculatedGeometricError);
         }
 
-        if (calculatedGeometricError < 1.0) {
-            calculatedGeometricError = 1.0;
+        if (calculatedGeometricError < 0.1) {
+            calculatedGeometricError = 0.1;
         }
 
         Node childNode = new Node();
@@ -253,7 +252,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         tileInfos.add(selfTileInfo);
 
         ContentInfo contentInfo = new ContentInfo();
-        contentInfo.setName("points-cloud");
+        contentInfo.setName("points-cloud" + childNode.getNodeCode());
         contentInfo.setLod(LevelOfDetail.LOD0);
         contentInfo.setBoundingBox(childBoundingBox);
         contentInfo.setNodeCode(childNode.getNodeCode());

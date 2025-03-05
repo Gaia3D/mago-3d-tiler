@@ -56,10 +56,16 @@ public class GaiaPointCloudTemp {
             this.quantizedVolumeScale[0] = inputStream.readDouble();
             this.quantizedVolumeScale[1] = inputStream.readDouble();
             this.quantizedVolumeScale[2] = inputStream.readDouble();
+
             // quantized volume offset (double xyz) 24 bytes
             this.quantizedVolumeOffset[0] = inputStream.readDouble();
             this.quantizedVolumeOffset[1] = inputStream.readDouble();
             this.quantizedVolumeOffset[2] = inputStream.readDouble();
+
+            log.debug("===========Read header to temp file: {}", this.tempFile.getAbsolutePath());
+            log.debug("Quantized Volume Scale: {}, {}, {}", quantizedVolumeScale[0], quantizedVolumeScale[1], quantizedVolumeScale[2]);
+            log.debug("Quantized Volume Offset: {}, {}, {}", quantizedVolumeOffset[0], quantizedVolumeOffset[1], quantizedVolumeOffset[2]);
+
             return true;
         } catch (IOException e) {
             log.error("Failed to read header from input stream", e);
@@ -80,6 +86,11 @@ public class GaiaPointCloudTemp {
             outputStream.writeShort(VERSION);
             // block size 2 bytes
             outputStream.writeShort(BLOCK_SIZE);
+
+            log.debug("===========Write header to temp file: {}", this.tempFile.getAbsolutePath());
+            log.debug("Quantized Volume Scale: {}, {}, {}", quantizedVolumeScale[0], quantizedVolumeScale[1], quantizedVolumeScale[2]);
+            log.debug("Quantized Volume Offset: {}, {}, {}", quantizedVolumeOffset[0], quantizedVolumeOffset[1], quantizedVolumeOffset[2]);
+
             // quantized volume scale (double xyz) 24 bytes
             outputStream.writeDouble(quantizedVolumeScale[0]);
             outputStream.writeDouble(quantizedVolumeScale[1]);
@@ -131,6 +142,12 @@ public class GaiaPointCloudTemp {
                 float x = (float) ((position.x - quantizedVolumeOffset[0]) / quantizedVolumeScale[0]);
                 float y = (float) ((position.y - quantizedVolumeOffset[1]) / quantizedVolumeScale[1]);
                 float z = (float) ((position.z - quantizedVolumeOffset[2]) / quantizedVolumeScale[2]);
+
+                if (Float.isNaN(x) || Float.isNaN(y) || Float.isNaN(z)) {
+                    log.error("Invalid position: x={}, y={}, z={}", x, y, z);
+                } else if (Float.isInfinite(x) || Float.isInfinite(y) || Float.isInfinite(z)) {
+                    log.error("Invalid position: x={}, y={}, z={}", x, y, z);
+                }
 
                 // XYZ
                 byte[] xBytes = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putFloat(x).array();

@@ -53,11 +53,8 @@ public class PointCloudModel implements TileModel {
         AtomicInteger vertexCount = new AtomicInteger();
         tileInfos.forEach((tileInfo) -> {
             GaiaPointCloud pointCloud = tileInfo.getPointCloud();
-            //pointCloud.maximizeTemp();
-            //List<GaiaVertex> gaiaVertex = pointCloud.getVertices();
             vertexCount.addAndGet(pointCloud.getVertexCount());
             boundingBox.addBoundingBox(pointCloud.getGaiaBoundingBox());
-            //pointCloud.minimizeTemp();
         });
 
         Vector3d originalMinPosition = boundingBox.getMinPosition();
@@ -78,11 +75,6 @@ public class PointCloudModel implements TileModel {
         int[] quantizedPositions = new int[vertexLength * 3];
         byte[] colors = new byte[vertexLength * 3];
         float[] batchIds = new float[vertexLength];
-
-        if (vertexLength == 1) {
-            log.error("Vertex length is 1");
-            return contentInfo;
-        }
 
         Vector3d center = wgs84BoundingBox.getCenter();
         Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
@@ -261,6 +253,15 @@ public class PointCloudModel implements TileModel {
 
     private Vector3d calcQuantizedVolumeScale(GaiaBoundingBox boundingBox) {
         Vector3d volume = boundingBox.getVolume();
+        if (volume.x == 0) {
+            volume.x = 1;
+        }
+        if (volume.y == 0) {
+            volume.y = 1;
+        }
+        if (volume.z == 0) {
+            volume.z = 1;
+        }
         return volume;
     }
 }

@@ -7,6 +7,8 @@ import com.gaia3d.command.mago.GlobalOptions;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
+import org.locationtech.proj4j.CoordinateReferenceSystem;
+import org.locationtech.proj4j.proj.LongLatProjection;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -83,8 +85,18 @@ public class PointCloudTempGenerator {
 
     private GaiaPointCloudHeader readAllHeaders(List<File> fileList) {
         log.info("[Pre] Reading headers of all files");
-        float horizontalGridSize = GlobalOptions.POINTSCLOUD_HORIZONTAL_GRID;
-        float verticalGridSize = GlobalOptions.POINTSCLOUD_VERTICAL_GRID;
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        CoordinateReferenceSystem crs = globalOptions.getCrs();
+
+        float horizontalGridSize;
+        float verticalGridSize;
+        if (crs.getProjection() instanceof LongLatProjection) {
+            horizontalGridSize = GlobalOptions.POINTSCLOUD_HORIZONTAL_ARC;
+            verticalGridSize = GlobalOptions.POINTSCLOUD_VERTICAL_ARC;
+        } else {
+            horizontalGridSize = GlobalOptions.POINTSCLOUD_HORIZONTAL_GRID;
+            verticalGridSize = GlobalOptions.POINTSCLOUD_VERTICAL_GRID;
+        }
 
         List<GaiaPointCloudHeader> headers = new ArrayList<>();
         for (File file : fileList) {
@@ -94,7 +106,17 @@ public class PointCloudTempGenerator {
         GaiaBoundingBox srsBoundingBox = combinedHeader.getSrsBoundingBox();
         Vector3d volume = srsBoundingBox.getVolume();
         int gridXCount = (int) Math.ceil(volume.x / horizontalGridSize);
-        int gridYCount = (int) Math.ceil(volume.y / horizontalGridSize);
+        int gridYCount = (int) Math.ceil(volume.y / verticalGridSize);
+
+        int limit = 67108864; // (8192 * 8192)
+        int gridVolume = gridXCount * gridYCount;
+        if ((combinedHeader.getSize() / gridVolume) > limit) {
+            log.warn("[WARN] The point density is {} points per grid.", combinedHeader.getSize() / gridVolume);
+            horizontalGridSize = horizontalGridSize / 2;
+            verticalGridSize = verticalGridSize / 2;
+            gridXCount = (int) Math.ceil(volume.x / horizontalGridSize);
+            gridYCount = (int) Math.ceil(volume.y / verticalGridSize);
+        }
 
         GaiaPointCloudTemp[][] tempGrid = new GaiaPointCloudTemp[gridXCount][gridYCount];
         combinedHeader.setTempGrid(tempGrid);
@@ -103,8 +125,8 @@ public class PointCloudTempGenerator {
         log.debug("[Pre] Grid size: {}x{}", gridXCount, gridYCount);
         log.debug("[Pre] Volume: {}", volume);
         log.debug("[Pre] Get Points Size: {}", combinedHeader.getSize());
-        combinedHeader.getSize();
-
+        log.debug("[Pre] Grid Width: {}", horizontalGridSize);
+        log.debug("[Pre] Grid Height: {}", verticalGridSize);
         return combinedHeader;
     }
 
