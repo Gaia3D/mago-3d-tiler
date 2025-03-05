@@ -230,8 +230,8 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
             calculatedGeometricError = Math.floor(calculatedGeometricError);
         }
 
-        if (calculatedGeometricError < 0.1) {
-            calculatedGeometricError = 0.1;
+        if (calculatedGeometricError < 1.0) {
+            calculatedGeometricError = 1.0;
         }
 
         Node childNode = new Node();
