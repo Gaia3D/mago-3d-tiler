@@ -166,9 +166,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
 
     public BufferedImage getBufferedImage() {
         if (this.bufferedImage == null) {
-            if(this.parentPath != null && this.path != null) {
-                File fullPath = new File(this.parentPath, this.path);
-                log.info("[Load Image IO] : {}", fullPath.getAbsolutePath());
+            if (this.parentPath != null && this.path != null) {
                 loadImage();
             }
         }
