@@ -238,6 +238,15 @@ public class GaiaBoundingBox implements Serializable {
         }
     }
 
+    public void expand(double value) {
+        minX -= value;
+        minY -= value;
+        minZ -= value;
+        maxX += value;
+        maxY += value;
+        maxZ += value;
+    }
+
     public boolean isBoxInside(GaiaBoundingBox box) {
         return box.getMinX() >= minX && box.getMinY() >= minY && box.getMinZ() >= minZ && box.getMaxX() <= maxX && box.getMaxY() <= maxY && box.getMaxZ() <= maxZ;
     }
