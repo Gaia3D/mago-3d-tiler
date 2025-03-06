@@ -30,7 +30,6 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
 
     @Override
     public GaiaScene executePhotorealistic(GaiaScene gaiaScene, Map<String, Object> options) {
-        log.debug("----------------------------------------");
         log.debug("Cannot execute photorealistic extension module.");
         log.debug("This module is not implemented.");
         log.debug("----------------------------------------");
