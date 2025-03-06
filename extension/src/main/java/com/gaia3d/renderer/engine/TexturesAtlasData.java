@@ -30,4 +30,16 @@ public class TexturesAtlasData {
         double h = textureImage.getHeight();
         this.originalBoundary = new GaiaRectangle(0, 0, w, h);
     }
+
+    public void deleteObjects() {
+        if(textureImage != null) {
+            textureImage.flush();
+        }
+        textureImage = null;
+        originalBoundary = null;
+        currentBoundary = null;
+        batchedBoundary = null;
+        texCoordBoundary = null;
+        FaceGroupBBox = null;
+    }
 }

@@ -591,7 +591,7 @@ public class Engine {
             }
 
 
-            if(ratioHW > 0.05) {
+            if(ratioHW > 0.06) {
                 // YPosZNeg texture.***
                 cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_YPOS_ZNEG;
                 BufferedImage imageYpoZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
@@ -648,6 +648,9 @@ public class Engine {
                     texturesAtlasDataList.add(texturesAtlasDataXPosZNeg);
                 }
             }
+
+            // delete the renderableScene-colorCoded.***
+            renderableGaiaSceneColorCoded.deleteGLBuffers();
 
             // There are no visible faces, so 1rst set the CAMERA_DIRECTION_ZNEG to all the halfEdgeFaces as default.***
             for (HalfEdgeFace halfEdgeFace : facesList) {
@@ -789,6 +792,12 @@ public class Engine {
         String fileName = rawProjectName + "_AtlasB";
         String extension = ".png";
         GaiaTexture atlasTexture = makeAtlasTexture(texturesAtlasDataList);
+
+        // delete texturesAtlasDataList.***
+        for(TexturesAtlasData texturesAtlasData : texturesAtlasDataList) {
+            texturesAtlasData.deleteObjects();
+        }
+
         if (atlasTexture == null) {
             log.info("makeAtlasTexture() : atlasTexture is null.");
             return;
@@ -1345,6 +1354,7 @@ public class Engine {
         }
 
         far += zOffSet; // make a little more far.***
+        near -= zOffSet; // make a little more near.***
 
         Projection projection = gaiaScenesContainer.getProjection();
         projection.setProjectionOrthographic(minX, maxX, minY, maxY, near, far);
@@ -1479,6 +1489,9 @@ public class Engine {
                 faceVisibilityData.incrementPixelFaceVisibility(colorCode);
             }
         }
+
+        // delete pixels.***
+        pixels.clear();
 
         return image;
     }

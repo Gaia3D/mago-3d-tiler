@@ -218,15 +218,22 @@ public class MainRenderer implements IAppLogic {
             // now make box textures for the cuttedScene.***
             engine.makeBoxTexturesByObliqueCamera(cuttedScene, screenPixelsForMeter);
 
-            cuttedScene.scissorTextures(); // no works. error. TODO: must fix this.***
+            cuttedScene.scissorTextures();
             cuttedScene.makeSkirt();
             resultHalfEdgeScenes.add(cuttedScene);
 
             i++;
         }
 
-        engine.deleteObjects();
+        // delete halfEdgeScenes
+        for(HalfEdgeScene halfEdgeSceneToDelete : halfEdgeScenes) {
+            halfEdgeSceneToDelete.deleteObjects();
+        }
+        halfEdgeScenes.clear();
+
         engine.getGaiaScenesContainer().deleteObjects();
+        engine.deleteObjects();
+
     }
 
     public void decimateNetSurfaceAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters,
