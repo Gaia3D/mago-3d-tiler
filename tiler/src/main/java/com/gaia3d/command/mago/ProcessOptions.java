@@ -1,4 +1,4 @@
-package com.gaia3d.process;
+package com.gaia3d.command.mago;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,6 +29,9 @@ public enum ProcessOptions {
     X_OFFSET("xOffset", "xo", "xOffset", true, "X Offset value for coordinate transformation"),
     Y_OFFSET("yOffset", "yo", "yOffset", true, "Y Offset value for coordinate transformation"),
     Z_OFFSET("zOffset", "zo", "zOffset", true, "Z Offset value for coordinate transformation"),
+
+    LONGITUDE("longitude", "lon", "longitude", true, "Longitude value for coordinate transformation. (The lon lat option must be used together)."),
+    LATITUDE("latitude", "lat", "latitude", true, "Latitude value for coordinate transformation. (The lon lat option must be used together)."),
 
     // Execution Options
     MULTI_THREAD_COUNT("multiThreadCount", "mc", "multiThreadCount", true, "set Multi-Thread count"),

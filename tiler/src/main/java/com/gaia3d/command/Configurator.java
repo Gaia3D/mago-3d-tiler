@@ -1,6 +1,6 @@
 package com.gaia3d.command;
 
-import com.gaia3d.process.ProcessOptions;
+import com.gaia3d.command.mago.ProcessOptions;
 import org.apache.commons.cli.Options;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
