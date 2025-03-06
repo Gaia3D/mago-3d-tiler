@@ -32,8 +32,7 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     @Override
     public GaiaScene executePhotorealistic(GaiaScene gaiaScene, Map<String, Object> options) {
         // TODO: Implement this method
-        log.info("----------------------------------------");
-        log.info("Extension has been applied.");
+        log.info("+ Extension has been applied.");
         log.info("----------------------------------------");
         return null;
     }

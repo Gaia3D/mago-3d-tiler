@@ -2,7 +2,6 @@ package com.gaia3d.command.mago;
 
 import com.gaia3d.TilerExtensionModule;
 import com.gaia3d.basic.types.FormatType;
-import com.gaia3d.process.ProcessOptions;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -257,9 +256,21 @@ public class GlobalOptions {
                 source = DEFAULT_CRS;
             }
             instance.setCrs(source);
+        } else if (command.hasOption(ProcessOptions.LONGITUDE.getArgName()) || command.hasOption(ProcessOptions.LATITUDE.getArgName())) {
+            if (!command.hasOption(ProcessOptions.LONGITUDE.getArgName()) || !command.hasOption(ProcessOptions.LATITUDE.getArgName())) {
+                log.error("Please enter the value of the longitude and latitude arguments.");
+                log.error("The lon lat option must be used together.");
+                throw new IllegalArgumentException("Please enter the value of the longitude and latitude arguments.");
+            }
+            double longitude = Double.parseDouble(command.getOptionValue(ProcessOptions.LONGITUDE.getArgName()));
+            double latitude = Double.parseDouble(command.getOptionValue(ProcessOptions.LATITUDE.getArgName()));
+            String proj = "+proj=tmerc +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=" + longitude + " +lat_0=" + latitude;
+            instance.setProj(proj);
+            CoordinateReferenceSystem source = factory.createFromParameters("CUSTOM_CRS_PROJ", proj);
+            instance.setCrs(source);
+            log.info("Custom CRS: {}", proj);
         } else {
             CoordinateReferenceSystem source = DEFAULT_CRS;
-
             // GeoJSON Default CRS
             if (instance.getInputFormat().equals(FormatType.GEOJSON)) {
                 source = factory.createFromName("EPSG:4326");

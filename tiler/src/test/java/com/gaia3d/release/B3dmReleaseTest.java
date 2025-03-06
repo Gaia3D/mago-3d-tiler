@@ -25,6 +25,22 @@ class B3dmReleaseTest {
     }
 
     @Test
+    void batched00D() {
+        String path = "B00-up-axis-glb";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath() + "-degree",
+                //"-c", "5186",
+                "-lon", "127.0",
+                "-lat", "37.0",
+                "-xOffset", "0",
+                "-yOffset", "0",
+                "-zOffset", "5",
+        };
+        execute(args);
+    }
+
+    @Test
     void batched01() {
         String path = "B01-wangsuk2-3ds";
         String[] args = new String[] {

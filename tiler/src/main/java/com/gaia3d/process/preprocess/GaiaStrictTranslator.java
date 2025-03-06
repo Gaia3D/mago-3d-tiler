@@ -222,7 +222,7 @@ public class GaiaStrictTranslator implements PreProcess {
             if (source != null) {
                 ProjCoordinate centerSource = new ProjCoordinate(center.x, center.y, boundingBox.getMinZ());
                 ProjCoordinate centerWgs84 = GlobeUtils.transform(source, centerSource);
-                position = new Vector3d(centerWgs84.x, centerWgs84.y, 0.0d);
+                position = new Vector3d(centerWgs84.x, centerWgs84.y, offset.z);
             } else {
                 position = new Vector3d(center.x, center.y, 0.0d);
             }

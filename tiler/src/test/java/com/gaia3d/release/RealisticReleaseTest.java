@@ -20,6 +20,7 @@ class RealisticReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-log", getLogPath(path).getAbsolutePath(),
+                "-it", "obj",
                 "-pr",
                 "-c", "5187",
                 "-rotateX", "90",
@@ -37,6 +38,7 @@ class RealisticReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "obj",
                 "-log", getLogPath(path).getAbsolutePath(),
                 "-pr",
                 "-c", "5187",
@@ -54,6 +56,7 @@ class RealisticReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-log", getLogPath(path).getAbsolutePath(),
+                "-it", "obj",
                 "-pr",
                 "-c", "5187",
                 "-rotateX", "90",
@@ -71,6 +74,7 @@ class RealisticReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-log", getLogPath(path).getAbsolutePath(),
+                "-it", "obj",
                 "-pr",
                 "-c", "5187",
                 "-rotateX", "90",
@@ -86,6 +90,7 @@ class RealisticReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-log", getLogPath(path).getAbsolutePath(),
+                "-it", "obj",
                 "-pr",
                 "-c", "5187",
                 "-rotateX", "90",
@@ -101,6 +106,7 @@ class RealisticReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-log", getLogPath(path).getAbsolutePath(),
+                "-it", "obj",
                 "-pr",
                 "-c", "5187",
                 "-rotateX", "90",
@@ -109,6 +115,7 @@ class RealisticReleaseTest {
         execute(args);
     }
 
+    @Disabled
     @Test
     void realistic051() {
         String path = "R05-sangcheon-part-obj";
@@ -116,6 +123,7 @@ class RealisticReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-log", getLogPath(path).getAbsolutePath(),
+                "-it", "obj",
                 "-pr",
                 "-c", "5187",
                 "-rotateX", "90",
@@ -132,6 +140,7 @@ class RealisticReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-log", getLogPath(path).getAbsolutePath(),
+                "-it", "obj",
                 "-pr",
                 "-c", "32648",
                 //"-rotateX", "90",

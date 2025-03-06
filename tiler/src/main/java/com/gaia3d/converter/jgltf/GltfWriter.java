@@ -30,7 +30,10 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
@@ -59,9 +62,11 @@ public class GltfWriter {
             log.error("Failed to write glTF file.");
         }
     }
+
     public void writeGltf(GaiaScene gaiaScene, String outputPath) {
         writeGltf(gaiaScene, new File(outputPath));
     }
+
     public void writeGlb(GaiaScene gaiaScene, File outputPath) {
         try {
             GltfModel gltfModel = convert(gaiaScene);
@@ -72,6 +77,7 @@ public class GltfWriter {
             log.error("Failed to write glb file.");
         }
     }
+
     public void writeGlb(GaiaScene gaiaScene, OutputStream outputStream) {
         try {
             GltfModel gltfModel = convert(gaiaScene);
@@ -84,6 +90,7 @@ public class GltfWriter {
             log.error("Failed to write glb file.");
         }
     }
+
     public void writeGlb(GaiaScene gaiaScene, String outputPath) {
         writeGlb(gaiaScene, new File(outputPath));
     }
@@ -170,10 +177,7 @@ public class GltfWriter {
                 identityMatrix.identity();
                 originalTransformMatrix = identityMatrix;
             } else {
-                originalTransformMatrix = new Matrix4d(otm[0], otm[1], otm[2], otm[3],
-                        otm[4], otm[5], otm[6], otm[7],
-                        otm[8], otm[9], otm[10], otm[11],
-                        otm[12], otm[13], otm[14], otm[15]);
+                originalTransformMatrix = new Matrix4d(otm[0], otm[1], otm[2], otm[3], otm[4], otm[5], otm[6], otm[7], otm[8], otm[9], otm[10], otm[11], otm[12], otm[13], otm[14], otm[15]);
             }
 
             Matrix4d quantizationMatrix = Quantizer.computeQuantizationMatrix(originalTransformMatrix, positions);
@@ -213,7 +217,7 @@ public class GltfWriter {
         int batchIdBufferViewId = nodeBuffer.getBatchIdBufferViewId();
 
         if (indicesBuffer != null) {
-            for (int indicesValue: indices) {
+            for (int indicesValue : indices) {
                 if (isOverShortVertices) {
                     indicesBuffer.putInt(indicesValue);
                 } else {
@@ -224,32 +228,32 @@ public class GltfWriter {
         }
         if (positionsBuffer != null) {
             if (globalOptions.isUseQuantization()) {
-                for (short position: unsignedShortsPositions) {
+                for (short position : unsignedShortsPositions) {
                     positionsBuffer.putShort(position);
                 }
             } else {
-                for (Float position: positions) {
+                for (Float position : positions) {
                     positionsBuffer.putFloat(position);
                 }
             }
         }
         if (normalsBuffer != null) {
-            for (Float normal: normals) {
+            for (Float normal : normals) {
                 normalsBuffer.putFloat(normal);
             }
         }
         if (colorsBuffer != null) {
-            for (Byte color: colors) {
+            for (Byte color : colors) {
                 colorsBuffer.put(color);
             }
         }
         if (texcoordsBuffer != null) {
-            for (Float textureCoordinate: texcoords) {
+            for (Float textureCoordinate : texcoords) {
                 texcoordsBuffer.putFloat(textureCoordinate);
             }
         }
         if (batchIdBuffer != null) {
-            for (Float batchId: batchIds) {
+            for (Float batchId : batchIds) {
                 batchIdBuffer.putFloat(batchId);
             }
         }
@@ -398,7 +402,7 @@ public class GltfWriter {
 
         nodes.add(rootNode);
         gltf.setNodes(nodes);
-        scene.addNodes(gltf.getNodes().size() -1);
+        scene.addNodes(gltf.getNodes().size() - 1);
         scenes.add(scene);
         gltf.setScenes(scenes);
         gltf.setScene(gltf.getScenes().size() - 1);
@@ -483,10 +487,8 @@ public class GltfWriter {
         bufferView.setBuffer(buffer);
         bufferView.setByteOffset(offset);
         bufferView.setByteLength(length);
-        if (target > -1)
-            bufferView.setTarget(target);
-        if (stride > -1)
-            bufferView.setByteStride(stride);
+        if (target > -1) bufferView.setTarget(target);
+        if (stride > -1) bufferView.setByteStride(stride);
         gltf.addBufferViews(bufferView);
         return gltf.getBufferViews().size() - 1;
     }
@@ -513,11 +515,7 @@ public class GltfWriter {
         Material material = new Material();
         material.setName(gaiaMaterial.getName());
         FormatType formatType = globalOptions.getInputFormat();
-        if (formatType != null && formatType.equals(FormatType.CITYGML)) {
-            material.setDoubleSided(true);
-        } else {
-            material.setDoubleSided(false);
-        }
+        material.setDoubleSided(formatType != null && formatType.equals(FormatType.CITYGML));
 
         // Set the alpha mode.***
         boolean isOpaque = gaiaMaterial.isOpaqueMaterial();
@@ -561,7 +559,7 @@ public class GltfWriter {
         image.setUri(uri);
         image.setMimeType(mimeType);
         gltf.addImages(image);
-        return gltf.getImages().size() -1;
+        return gltf.getImages().size() - 1;
     }
 
     private int createTexture(GlTF gltf, GaiaTexture gaiaTexture) {
