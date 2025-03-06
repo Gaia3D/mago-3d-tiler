@@ -1,5 +1,6 @@
 package com.gaia3d.basic.geometry.octree;
 
+import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.halfedge.HalfEdgeFace;
 import com.gaia3d.basic.halfedge.HalfEdgeSurface;
 import com.gaia3d.basic.halfedge.HalfEdgeVertex;
@@ -298,6 +299,100 @@ public class HalfEdgeOctree {
         if (this.getCoordinate().getDepth() < targetDepth) {
             for (HalfEdgeOctree child : children) {
                 child.distributeFacesToTargetDepth(targetDepth);
+            }
+        }
+    }
+
+    public boolean intersectsPoint(Vector3d point) {
+        if (point.x < minX || point.x > maxX) {
+            return false;
+        }
+        if (point.y < minY || point.y > maxY) {
+            return false;
+        }
+        if (point.z < minZ || point.z > maxZ) {
+            return false;
+        }
+        return true;
+    }
+
+    public boolean intersectsBoundingBox(GaiaBoundingBox box) {
+        if (box.getMaxX() < minX || box.getMinX() > maxX) {
+            return false;
+        }
+        if (box.getMaxY() < minY || box.getMinY() > maxY) {
+            return false;
+        }
+        if (box.getMaxZ() < minZ || box.getMinZ() > maxZ) {
+            return false;
+        }
+        return true;
+    }
+
+    public void distributeFacesToTargetDepth(int targetDepth, boolean canBeRepeated) {
+        if (this.faces.isEmpty()) return;
+
+        if (this.getCoordinate().getDepth() >= targetDepth) return;
+
+        if (this.children == null) {
+            this.createChildren();
+        }
+
+        double midX = (minX + maxX) / 2.0;
+        double midY = (minY + maxY) / 2.0;
+        double midZ = (minZ + maxZ) / 2.0;
+
+        if (canBeRepeated) {
+            for (HalfEdgeFace face : this.faces) {
+                GaiaBoundingBox faceBBox = face.getBoundingBox();
+                for (HalfEdgeOctree child : children) {
+                    if(child.intersectsBoundingBox(faceBBox)) {
+                        child.faces.add(face);
+                    }
+                }
+            }
+        }
+        else {
+            for (HalfEdgeFace face : this.faces) {
+                Vector3d center = face.getBarycenter(null);
+                if (center.x < midX) {
+                    if (center.y < midY) {
+                        if (center.z < midZ) {
+                            children[0].faces.add(face);
+                        } else {
+                            children[4].faces.add(face);
+                        }
+                    } else {
+                        if (center.z < midZ) {
+                            children[3].faces.add(face);
+                        } else {
+                            children[7].faces.add(face);
+                        }
+                    }
+                } else {
+                    if (center.y < midY) {
+                        if (center.z < midZ) {
+                            children[1].faces.add(face);
+                        } else {
+                            children[5].faces.add(face);
+                        }
+                    } else {
+                        if (center.z < midZ) {
+                            children[2].faces.add(face);
+                        } else {
+                            children[6].faces.add(face);
+                        }
+                    }
+                }
+            }
+        }
+
+        // clear the faces list.***
+        this.faces.clear();
+
+        if (this.getCoordinate().getDepth() < targetDepth) {
+            for (HalfEdgeOctree child : children) {
+                child.distributeFacesToTargetDepth(targetDepth, canBeRepeated);
             }
         }
     }

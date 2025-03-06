@@ -1298,6 +1298,12 @@ public class Engine {
         // Calculate bbox relative to camera direction.***
         GaiaBoundingBox bbox = gaiaScene.getBoundingBox();
         Vector3d bboxCenter = bbox.getCenter();
+
+        // expanded box for shader (delimiting box with a little buffer).***
+        GaiaBoundingBox expandedBBox = bbox.clone();
+        double expandedMaxSize = expandedBBox.getMaxSize();
+        expandedBBox.expand(expandedMaxSize * 0.02);
+
         // set camera position.***
         Vector3d camDir = CameraDirectionType.getCameraDirection(cameraDirectionType);
         Camera camera = gaiaScenesContainer.getCamera();
@@ -1385,8 +1391,8 @@ public class Engine {
         sceneShaderProgram.bind();
         // set uniform map.***
         UniformsMap uniformsMap = sceneShaderProgram.getUniformsMap();
-        uniformsMap.setUniform3fv("bboxMin", new Vector3f((float)bbox.getMinX(), (float)bbox.getMinY(), (float)bbox.getMinZ()));
-        uniformsMap.setUniform3fv("bboxMax", new Vector3f((float)bbox.getMaxX(), (float)bbox.getMaxY(), (float)bbox.getMaxZ()));
+        uniformsMap.setUniform3fv("bboxMin", new Vector3f((float)expandedBBox.getMinX(), (float)expandedBBox.getMinY(), (float)expandedBBox.getMinZ()));
+        uniformsMap.setUniform3fv("bboxMax", new Vector3f((float)expandedBBox.getMaxX(), (float)expandedBBox.getMaxY(), (float)expandedBBox.getMaxZ()));
         Vector4f clearColor = new Vector4f(0.5f, 0.5f, 0.5f, 1.0f);
         renderIntoFbo(colorFbo, sceneShaderProgram, gaiaScenesContainer, clearColor, true);
         colorFbo.bind();
@@ -1427,8 +1433,8 @@ public class Engine {
         ShaderProgram colorCodeShaderProgram = shaderManager.getShaderProgram("trianglesDelimitedColorCode");
         colorCodeShaderProgram.bind();
         uniformsMap = sceneShaderProgram.getUniformsMap();
-        uniformsMap.setUniform3fv("bboxMin", new Vector3f((float)bbox.getMinX(), (float)bbox.getMinY(), (float)bbox.getMinZ()));
-        uniformsMap.setUniform3fv("bboxMax", new Vector3f((float)bbox.getMaxX(), (float)bbox.getMaxY(), (float)bbox.getMaxZ()));
+        uniformsMap.setUniform3fv("bboxMin", new Vector3f((float)expandedBBox.getMinX(), (float)expandedBBox.getMinY(), (float)expandedBBox.getMinZ()));
+        uniformsMap.setUniform3fv("bboxMax", new Vector3f((float)expandedBBox.getMaxX(), (float)expandedBBox.getMaxY(), (float)expandedBBox.getMaxZ()));
         clearColor.set(1.0f, 1.0f, 1.0f, 1.0f);
         renderIntoFbo(colorCodeFbo, colorCodeShaderProgram, gaiaScenesContainer, clearColor, false);
         //colorCodeFbo.bind();

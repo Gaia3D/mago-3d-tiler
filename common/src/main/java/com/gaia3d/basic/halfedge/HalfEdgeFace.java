@@ -1,5 +1,6 @@
 package com.gaia3d.basic.halfedge;
 
+import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.util.GeometryUtils;
 import lombok.Getter;
@@ -386,5 +387,20 @@ public class HalfEdgeFace implements Serializable {
         }
 
         return false;
+    }
+
+    public GaiaBoundingBox getBoundingBox() {
+        List<HalfEdgeVertex> vertices = this.getVertices(null);
+        if (vertices == null) {
+            return null;
+        }
+
+        GaiaBoundingBox resultBBox = new GaiaBoundingBox();
+
+        for (HalfEdgeVertex vertex : vertices) {
+            resultBBox.addPoint(vertex.getPosition());
+        }
+
+        return resultBBox;
     }
 }
