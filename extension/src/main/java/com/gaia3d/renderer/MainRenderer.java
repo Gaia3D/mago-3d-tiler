@@ -135,7 +135,7 @@ public class MainRenderer implements IAppLogic {
     }
 
     public void decimateAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters,
-                                              HalfEdgeOctree octree, List<GaiaAAPlane> cuttingPlanes, double screenPixelsForMeter) {
+                                              HalfEdgeOctree octree, List<GaiaAAPlane> cuttingPlanes, double screenPixelsForMeter, boolean makeSkirt) {
         //*******************************************************
         // Note : There are only one scene in the scenes list.***
         //*******************************************************
@@ -195,8 +195,7 @@ public class MainRenderer implements IAppLogic {
         halfEdgeScene.doTrianglesReductionOneIteration(decimateParameters);
 
         boolean scissorTextures = false;
-        boolean makeSkirt = false;
-        List<HalfEdgeScene> resultCutHalfEdgeScenes = HalfEdgeCutter.cutHalfEdgeSceneByGaiaAAPlanes(halfEdgeScene, cuttingPlanes, octree, scissorTextures, makeSkirt);
+        List<HalfEdgeScene> resultCutHalfEdgeScenes = HalfEdgeCutter.cutHalfEdgeSceneByGaiaAAPlanes(halfEdgeScene, cuttingPlanes, octree, scissorTextures, false);
 
 
         int lod = decimateParameters.getLod();
@@ -219,7 +218,9 @@ public class MainRenderer implements IAppLogic {
             engine.makeBoxTexturesByObliqueCamera(cuttedScene, screenPixelsForMeter);
 
             cuttedScene.scissorTextures();
-            cuttedScene.makeSkirt();
+            if(makeSkirt){
+                cuttedScene.makeSkirt();
+            }
             resultHalfEdgeScenes.add(cuttedScene);
 
             i++;
@@ -237,7 +238,7 @@ public class MainRenderer implements IAppLogic {
     }
 
     public void decimateNetSurfaceAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters,
-                                              HalfEdgeOctree octree, List<GaiaAAPlane> cuttingPlanes, double depthTexPixelsForMeter, double screenPixelsForMeter) {
+                                              HalfEdgeOctree octree, List<GaiaAAPlane> cuttingPlanes, double depthTexPixelsForMeter, double screenPixelsForMeter, boolean makeSkirt) {
         //*******************************************************
         // Note : There are only one scene in the scenes list.***
         //*******************************************************
@@ -300,8 +301,7 @@ public class MainRenderer implements IAppLogic {
         //GaiaBoundingBox motherBbox = halfEdgeScene.getBoundingBox();
         halfEdgeScene.doTrianglesReductionOneIteration(decimateParameters);
         boolean scissorTextures = false;
-        boolean makeSkirt = false;
-        List<HalfEdgeScene> resultCutHalfEdgeScenes = HalfEdgeCutter.cutHalfEdgeSceneByGaiaAAPlanes(halfEdgeScene, cuttingPlanes, octree, scissorTextures, makeSkirt);
+        List<HalfEdgeScene> resultCutHalfEdgeScenes = HalfEdgeCutter.cutHalfEdgeSceneByGaiaAAPlanes(halfEdgeScene, cuttingPlanes, octree, scissorTextures, false);
 
         int cutScenesCount = resultCutHalfEdgeScenes.size();
         int i=0;
@@ -317,7 +317,9 @@ public class MainRenderer implements IAppLogic {
             // now make box textures for the cuttedScene.***
             engine.makeBoxTexturesByObliqueCamera(cuttedScene, screenPixelsForMeter);
             cuttedScene.scissorTextures();
-            cuttedScene.makeSkirt();
+            if(makeSkirt){
+                cuttedScene.makeSkirt();
+            }
 
             resultHalfEdgeScenes.add(cuttedScene);
 

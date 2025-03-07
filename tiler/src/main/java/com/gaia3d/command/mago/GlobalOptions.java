@@ -67,6 +67,8 @@ public class GlobalOptions {
     public static final int INSTANCE_POLYGON_CONTAINS_POINT_COUNTS = -1;
     public static final int RANDOM_SEED = 2620;
 
+    public static final boolean MAKE_SKIRT = true;
+
     private String version; // version flag
     private String javaVersionInfo; // java version flag
     private String programInfo; // program info flag
@@ -447,4 +449,5 @@ public class GlobalOptions {
         log.debug("Skirt Height: {}", skirtHeight);
         log.debug("========================================");
     }
+
 }

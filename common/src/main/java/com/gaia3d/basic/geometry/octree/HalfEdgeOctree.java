@@ -320,10 +320,10 @@ public class HalfEdgeOctree {
         if (box.getMaxX() < minX || box.getMinX() > maxX) {
             return false;
         }
-        if (box.getMaxY() < minY || box.getMinY() > maxY) {
+        else if (box.getMaxY() < minY || box.getMinY() > maxY) {
             return false;
         }
-        if (box.getMaxZ() < minZ || box.getMinZ() > maxZ) {
+        else if (box.getMaxZ() < minZ || box.getMinZ() > maxZ) {
             return false;
         }
         return true;
@@ -342,45 +342,79 @@ public class HalfEdgeOctree {
         double midY = (minY + maxY) / 2.0;
         double midZ = (minZ + maxZ) / 2.0;
 
-        if (canBeRepeated) {
-            for (HalfEdgeFace face : this.faces) {
-                GaiaBoundingBox faceBBox = face.getBoundingBox();
-                for (HalfEdgeOctree child : children) {
-                    if(child.intersectsBoundingBox(faceBBox)) {
-                        child.faces.add(face);
+        for (HalfEdgeFace face : this.faces) {
+            Vector3d center = face.getBarycenter(null);
+            int index = 0;
+            if (center.x < midX) {
+                if (center.y < midY) {
+                    if (center.z < midZ) {
+                        children[0].faces.add(face);
+                        index = 0;
+                    } else {
+                        children[4].faces.add(face);
+                        index = 4;
+                    }
+                } else {
+                    if (center.z < midZ) {
+                        children[3].faces.add(face);
+                        index = 3;
+                    } else {
+                        children[7].faces.add(face);
+                        index = 7;
+                    }
+                }
+            } else {
+                if (center.y < midY) {
+                    if (center.z < midZ) {
+                        children[1].faces.add(face);
+                        index = 1;
+                    } else {
+                        children[5].faces.add(face);
+                        index = 5;
+                    }
+                } else {
+                    if (center.z < midZ) {
+                        children[2].faces.add(face);
+                        index = 2;
+                    } else {
+                        children[6].faces.add(face);
+                        index = 6;
                     }
                 }
             }
-        }
-        else {
-            for (HalfEdgeFace face : this.faces) {
-                Vector3d center = face.getBarycenter(null);
-                if (center.x < midX) {
-                    if (center.y < midY) {
-                        if (center.z < midZ) {
-                            children[0].faces.add(face);
-                        } else {
-                            children[4].faces.add(face);
+
+            if (canBeRepeated) {
+                double octreeSize = this.getMaxSize();
+                double error = octreeSize * 0.005;
+
+                boolean isAlmostAxisAlignedFace = false;
+                GaiaBoundingBox faceBBox = face.getBoundingBox();
+                Vector3d normal = face.getPlaneNormal();
+                double normalX = Math.abs(normal.x);
+                double normalY = Math.abs(normal.y);
+                double normalZ = Math.abs(normal.z);
+
+                if(normalX > normalY && normalX > normalZ && normalX > 0.85) {
+                    double lengthY = faceBBox.getLengthY();
+                    double lengthZ = faceBBox.getLengthZ();
+                    faceBBox.expandXYZ(error, -lengthY * 0.1, -lengthZ * 0.1);
+                    isAlmostAxisAlignedFace = true;
+                }
+                else if(normalY > normalX && normalY > normalZ && normalY > 0.85) {
+                    double lengthX = faceBBox.getLengthX();
+                    double lengthZ = faceBBox.getLengthZ();
+                    faceBBox.expandXYZ(-lengthX * 0.1, error, -lengthZ * 0.1);
+                    isAlmostAxisAlignedFace = true;
+                }
+
+                if(isAlmostAxisAlignedFace) {
+                    for (int idx = 0; idx < 8; idx++) {
+                        if (idx == index) {
+                            continue;
                         }
-                    } else {
-                        if (center.z < midZ) {
-                            children[3].faces.add(face);
-                        } else {
-                            children[7].faces.add(face);
-                        }
-                    }
-                } else {
-                    if (center.y < midY) {
-                        if (center.z < midZ) {
-                            children[1].faces.add(face);
-                        } else {
-                            children[5].faces.add(face);
-                        }
-                    } else {
-                        if (center.z < midZ) {
-                            children[2].faces.add(face);
-                        } else {
-                            children[6].faces.add(face);
+                        HalfEdgeOctree child = children[idx];
+                        if (child.intersectsBoundingBox(faceBBox)) {
+                            child.faces.add(face);
                         }
                     }
                 }

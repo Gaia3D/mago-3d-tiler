@@ -518,7 +518,9 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             GaiaBoundingBox motherBBoxLC = new GaiaBoundingBox();
             GaiaBoundingBox motherCartographicBoundingBox = this.calculateCartographicBoundingBox(scene, transformMatrix, motherBBoxLC);
 
-            tilerExtensionModule.decimateNetSurfaceAndCutByObliqueCamera(gaiaSceneList, resultDecimatedScenes, decimateParameters, halfEdgeOctree, cuttingPlanes, pixelsForMeter, screenPixelsForMeter);
+            boolean makeSkirt = GlobalOptions.MAKE_SKIRT;
+            tilerExtensionModule.decimateNetSurfaceAndCutByObliqueCamera(gaiaSceneList, resultDecimatedScenes, decimateParameters, halfEdgeOctree,
+                    cuttingPlanes, pixelsForMeter, screenPixelsForMeter, makeSkirt);
 
             if (resultDecimatedScenes.isEmpty()) {
                 log.error("Error : resultDecimatedScenes is empty." + tempPath);
@@ -665,7 +667,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 throw new RuntimeException(e);
             }
 
-            tilerExtensionModule.decimateAndCutByObliqueCamera(gaiaSceneList, resultDecimatedScenes, decimateParameters, halfEdgeOctree, cuttingPlanes, screenPixelsForMeter);
+            boolean makeSkirt = GlobalOptions.MAKE_SKIRT;
+            tilerExtensionModule.decimateAndCutByObliqueCamera(gaiaSceneList, resultDecimatedScenes, decimateParameters, halfEdgeOctree, cuttingPlanes, screenPixelsForMeter, makeSkirt);
 
             if (resultDecimatedScenes.isEmpty()) {
                 log.error("Error : resultDecimatedScenes is empty." + tempPath);
@@ -1370,7 +1373,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
         double testOctreSize = resultOctree.getMaxSize();
         boolean scissorTextures = true;
-        boolean makeSkirt = true;
+        boolean makeSkirt = GlobalOptions.MAKE_SKIRT;
 
 
         // create tileInfos for the cut scenes.***

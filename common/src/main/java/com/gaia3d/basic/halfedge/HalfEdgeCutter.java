@@ -111,7 +111,8 @@ public class HalfEdgeCutter {
             }
         }
 
-        resultOctree.distributeFacesToTargetDepth(resultOctree.getMaxDepth());
+        boolean facesMustBeRepeated = true;
+        resultOctree.distributeFacesToTargetDepth(resultOctree.getMaxDepth(), facesMustBeRepeated);
         List<HalfEdgeOctree> octreesWithContents = new ArrayList<>();
         resultOctree.extractOctreesWithFaces(octreesWithContents);
 
@@ -120,15 +121,20 @@ public class HalfEdgeCutter {
 
         // set the classifyId for each face.***
         int octreesCount = octreesWithContents.size();
+//        for (int j = 0; j < octreesCount; j++) {
+//            HalfEdgeOctree octree = octreesWithContents.get(j);
+//            List<HalfEdgeFace> faces = octree.getFaces();
+//            for (HalfEdgeFace face : faces) {
+//                face.setClassifyId(j);
+//            }
+//        }
+
         for (int j = 0; j < octreesCount; j++) {
             HalfEdgeOctree octree = octreesWithContents.get(j);
             List<HalfEdgeFace> faces = octree.getFaces();
             for (HalfEdgeFace face : faces) {
                 face.setClassifyId(j);
             }
-        }
-
-        for (int j = 0; j < octreesCount; j++) {
             // create a new HalfEdgeScene.***
             HalfEdgeScene cuttedScene = halfEdgeScene.cloneByClassifyId(j);
 
@@ -193,7 +199,6 @@ public class HalfEdgeCutter {
             }
         }
 
-        //boolean canBeRepeated = true; // faces can be repeated.***
         resultOctree.distributeFacesToTargetDepth(resultOctree.getMaxDepth());
         List<HalfEdgeOctree> octreesWithContents = new ArrayList<>();
         resultOctree.extractOctreesWithFaces(octreesWithContents);
