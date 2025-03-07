@@ -78,7 +78,7 @@ class I3dmReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-c", "5179",
                 "-ot", "i3dm",
-                "-instance", getInputPath(path).getAbsolutePath() + "/lowpoly-tree-needleleaf.glb",
+                "-instance", getInputPath(path).getAbsolutePath() + "/needle-tree.glb",
                 "-terrain", INPUT_PATH + "/korea-compressed.tif",
                 //"-debug"
         };
@@ -93,7 +93,55 @@ class I3dmReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-c", "5179",
                 "-ot", "i3dm",
-                "-instance", getInputPath(path).getAbsolutePath() + "/tree.dae",
+                "-instance", getInputPath(path).getAbsolutePath() + "/lowpoly-tree-broad-leaved-big.glb",
+                "-terrain", INPUT_PATH + "/korea-compressed.tif",
+                //"-debug"
+        };
+        execute(args);
+    }
+
+    @Test
+    void instanced06A() {
+        String path = "I04-forest-shp";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath() + "-A",
+                "-c", "5179",
+                "-it", "gpkg",
+                "-ot", "i3dm",
+                "-instance", getInputPath(path).getAbsolutePath() + "/broad-tree.glb",
+                "-terrain", INPUT_PATH + "/korea-compressed.tif",
+                //"-debug"
+        };
+        execute(args);
+    }
+
+    @Test
+    void instanced06B() {
+        String path = "I04-forest-shp";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath() + "-B",
+                "-c", "5179",
+                "-it", "gpkg",
+                "-ot", "i3dm",
+                "-instance", getInputPath(path).getAbsolutePath() + "/needle-tree.glb",
+                "-terrain", INPUT_PATH + "/korea-compressed.tif",
+                //"-debug"
+        };
+        execute(args);
+    }
+
+    @Test
+    void instanced06C() {
+        String path = "I04-forest-shp";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath() + "-C",
+                "-c", "5179",
+                "-it", "gpkg",
+                "-ot", "i3dm",
+                "-instance", getInputPath(path).getAbsolutePath() + "/mixed-tree.glb",
                 "-terrain", INPUT_PATH + "/korea-compressed.tif",
                 //"-debug"
         };

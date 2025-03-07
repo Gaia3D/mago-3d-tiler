@@ -32,6 +32,8 @@ import java.util.stream.Collectors;
 public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
 
     private static final GlobalOptions globalOptions = GlobalOptions.getInstance();
+    private final double maximumGeometricError = 64.0;
+
     private double instanceGeometricError = 1.0;
 
     @Override
@@ -39,8 +41,8 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         if (!tileInfos.isEmpty()) {
             instanceGeometricError = calcGeometricError(List.of(tileInfos.get(0)));
         }
-        if (instanceGeometricError < 32.0) {
-            instanceGeometricError = 32.0;
+        if (instanceGeometricError < maximumGeometricError) {
+            instanceGeometricError = maximumGeometricError;
         }
 
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
@@ -215,10 +217,12 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
             lodError = lod.getGeometricError() * 2;
         }
 
-        int divideSize = tileInfos.size() / 3;
-        if (divideSize < 64) {
-            divideSize = 64;
+        int divideSize = tileInfos.size() / 4;
+        if (divideSize < 256) {
+            divideSize = 256;
         }
+        //int divideSize = globalOptions.getMaxInstance();
+
 
         // divide by globalOptions.getMaxInstance()
         List<TileInfo> resultInfos = tileInfos.stream()
