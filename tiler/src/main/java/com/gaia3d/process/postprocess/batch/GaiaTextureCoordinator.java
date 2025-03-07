@@ -419,12 +419,12 @@ public class GaiaTextureCoordinator {
             int minimumSize = GlobalOptions.REALISTIC_MIN_TEXTURE_SIZE;
 
             double scaleFactor = lod.getRealisticScale();
-            if (lodLevel > 0) {
+            /*if (lodLevel > 0) {
                 imageHeight = (int) (imageHeight * scaleFactor);
                 imageWidth = (int) (imageWidth * scaleFactor);
                 imageHeight = ImageUtils.getNearestPowerOfTwo(imageHeight);
                 imageWidth = ImageUtils.getNearestPowerOfTwo(imageWidth);
-            }
+            }*/
 
             if (lodLevel == 0) {
                 if (imageWidth > lod0size) {
