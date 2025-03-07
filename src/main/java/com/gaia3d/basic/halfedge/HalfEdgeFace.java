@@ -119,6 +119,13 @@ public class HalfEdgeFace implements Serializable {
         return this.normal;
     }
 
+    public Vector3d getPlaneNormal() {
+        if(this.normal == null) {
+            this.normal = this.calculatePlaneNormal();
+        }
+        return this.normal;
+    }
+
     public List<HalfEdge> getHalfEdgesLoop(List<HalfEdge> resultHalfEdgesLoop) {
         if (this.halfEdge == null) {
             return resultHalfEdgesLoop;
