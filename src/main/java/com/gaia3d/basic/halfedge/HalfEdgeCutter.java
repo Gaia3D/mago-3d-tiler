@@ -111,8 +111,7 @@ public class HalfEdgeCutter {
             }
         }
 
-        boolean facesMustBeRepeated = true;
-        resultOctree.distributeFacesToTargetDepth(resultOctree.getMaxDepth(), facesMustBeRepeated);
+        resultOctree.distributeFacesToTargetDepth(resultOctree.getMaxDepth());
         List<HalfEdgeOctree> octreesWithContents = new ArrayList<>();
         resultOctree.extractOctreesWithFaces(octreesWithContents);
 
