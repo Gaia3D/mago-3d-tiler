@@ -122,7 +122,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         makeContentsForNodes(nodeTileInfoMap, lod);
         /* End lod 0 process */
 
-        int netSurfaceStartLod = 3;
+        //int netSurfaceStartLod = 3;
 
         DecimateParameters decimateParameters = new DecimateParameters();
         for (int d = 1; d < projectMaxDepthIdx; d++) {
@@ -160,14 +160,14 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
             makeContentsForNodes(nodeTileInfoMap, lod);
 
-            if (d >= 2) {
+            if (d >= 3) {
                 break;
             }
 
         }
 
         // net surfaces with boxTextures.***
-        for (int d = netSurfaceStartLod; d < projectMaxDepthIdx; d++) {
+        for (int d = 4; d < projectMaxDepthIdx; d++) {
             lod = d;
             currDepth = projectMaxDepthIdx - lod;
             double boxSizeForCurrDepth = desiredDistanceBetweenLat / Math.pow(2, (currDepth + 1));
@@ -200,7 +200,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
             makeContentsForNodes(nodeTileInfoMap, lod);
 
-            if (d >= 4) {
+            if (d >= 5) {
                 break;
             }
         }
