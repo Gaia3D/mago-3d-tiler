@@ -155,7 +155,7 @@ public abstract class AbstractGeometryConverter {
         } else if (heightUpper != null) {
             heightObject = heightUpper;
         } else {
-            return result;
+            return minimumHeight;
         }
 
         if (heightObject instanceof Short) {

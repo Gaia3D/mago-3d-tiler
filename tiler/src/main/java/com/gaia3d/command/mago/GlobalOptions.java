@@ -52,7 +52,7 @@ public class GlobalOptions {
     public static final String DEFAULT_HEADING_COLUMN = "heading";
     public static final String DEFAULT_DIAMETER_COLUMN = "diameter";
     public static final double DEFAULT_ABSOLUTE_ALTITUDE = 0.0d;
-    public static final double DEFAULT_MINIMUM_HEIGHT = 1.0d;
+    public static final double DEFAULT_MINIMUM_HEIGHT = 0.0d;
     public static final double DEFAULT_SKIRT_HEIGHT = 4.0d;
 
     public static final boolean DEFAULT_USE_QUANTIZATION = false;
