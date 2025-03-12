@@ -77,10 +77,6 @@ public class Engine {
     private int boxRenderingMaxSize = 600;
     private int testsCount = 0;
 
-    // TODO : change this path to a relative path. **********************************************************************
-    private String tempFolderPath = "D:\\Result_mago3dTiler\\temp";
-    // end TODO.--------------------------------------------------------------------------------------------------------
-
     public Engine(String windowTitle, Window.WindowOptions opts, IAppLogic appLogic) {
         window = new Window(windowTitle, opts, () -> {
             resize();
@@ -784,11 +780,11 @@ public class Engine {
         String rawProjectName = originalProjectName.substring(0, originalProjectName.lastIndexOf("."));
 
         // make tempFolder if no exists.***
-        String tempFolderPath = this.getTempFolderPath();
-        File tempFolder = new File(tempFolderPath);
-        if (!tempFolder.exists()) {
-            tempFolder.mkdirs();
-        }
+//        String tempFolderPath = this.getTempFolderPath();
+//        File tempFolder = new File(tempFolderPath);
+//        if (!tempFolder.exists()) {
+//            tempFolder.mkdirs();
+//        }
         String fileName = rawProjectName + "_AtlasB";
         String extension = ".png";
         GaiaTexture atlasTexture = makeAtlasTexture(texturesAtlasDataList);
