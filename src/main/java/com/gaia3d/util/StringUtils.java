@@ -2,7 +2,6 @@ package com.gaia3d.util;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
@@ -41,11 +40,6 @@ public class StringUtils {
                 resultSplittedStrings.add(word);
             }
         }
-    }
-
-    public static String getFileNameFromPath(String path) {
-        File file = new File(path);
-        return file.getName();
     }
 
     public static String getRawFileName(String fileName) {

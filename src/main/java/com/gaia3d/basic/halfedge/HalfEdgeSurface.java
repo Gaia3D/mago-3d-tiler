@@ -177,6 +177,7 @@ public class HalfEdgeSurface implements Serializable {
         }
     }
 
+
     public void calculatePlaneNormals() {
         int facesCount = faces.size();
         for (int i = 0; i < facesCount; i++) {
@@ -984,6 +985,8 @@ public class HalfEdgeSurface implements Serializable {
         }
     }
 
+
+
     public boolean collapseFrontierHalfEdge(HalfEdge halfEdge, int iteration, Map<HalfEdgeVertex, List<HalfEdge>> vertexAllOutingEdgesMap, Map<HalfEdge, Vector3d> mapHalfEdgeToInitialDirection, Map<HalfEdgeVertex, List<HalfEdgeVertex>> mapVertexToSamePosVertices, double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength, double maxAspectRatio, double smallHedgeSize, boolean testDebug) {
 
         HalfEdgeVertex startVertex = halfEdge.getStartVertex();
@@ -1163,6 +1166,7 @@ public class HalfEdgeSurface implements Serializable {
 
         HalfEdgeVertex startVertex = halfEdge.getStartVertex();
         HalfEdgeVertex endVertex = halfEdge.getEndVertex();
+
 
         // check if collapse***********************************************************************************************
         if (halfEdge.getLength() > hedgeMinLength) {
@@ -2369,7 +2373,6 @@ public class HalfEdgeSurface implements Serializable {
             if (face.getStatus() == ObjectStatus.DELETED) {
                 continue;
             }
-
             if (face.getClassifyId() == classifyId) {
                 faces.add(face);
             }
@@ -2906,6 +2909,29 @@ public class HalfEdgeSurface implements Serializable {
             textureAtlas.setWidth(newWidth);
             textureAtlas.setHeight(newHeight);
         }
+
+        // write the textureAtlas into a file
+        String imageParentPath = texture.getParentPath();
+        String texturePath = texture.getPath();
+        File textureFile = new File(texturePath);
+        String textureRawName = textureFile.getName();
+        int lastDotIndex = textureRawName.lastIndexOf(".");
+        String[] textureRawNameParts = textureRawName.split("\\.");
+        String textureImageExtension = textureRawNameParts[textureRawNameParts.length - 1];
+
+        // TODO : test
+        textureImageExtension = "png";
+
+        String textureAtlasName = textureRawNameParts[0] + "_atlas_image" + "." + textureImageExtension;
+
+        String textureAtlasPath = imageParentPath + File.separator + textureAtlasName;
+        //textureAtlas.setBufferedImage(ImageUtils.clampBackGroundColor(textureAtlas.getBufferedImage(), new Color(255, 0, 255), 1, 200));
+        //textureAtlas.saveImage(textureAtlasPath);
+
+        // change the diffuseTexture path
+        texture.clear(); // free memory the original texture
+        textureAtlas.setPath(textureAtlasName);
+        diffuseTextures.set(0, textureAtlas); // set the textureAtlas
     }
 
     public void scissorTextures(GaiaMaterial material) {
@@ -3724,13 +3750,11 @@ public class HalfEdgeSurface implements Serializable {
     }
 
     private int getMaxWidth(List<GaiaTextureScissorData> compareImages) {
-        int result = compareImages.stream().mapToInt(textureScissorData -> (int) textureScissorData.getBatchedBoundary().getMaxX()).max().orElse(0);
-        return result;
+        return compareImages.stream().mapToInt(textureScissorData -> (int) textureScissorData.getBatchedBoundary().getMaxX()).max().orElse(0);
     }
 
     private int getMaxHeight(List<GaiaTextureScissorData> compareImages) {
-        int result = compareImages.stream().mapToInt(textureScissorData -> (int) textureScissorData.getBatchedBoundary().getMaxY()).max().orElse(0);
-        return result;
+        return compareImages.stream().mapToInt(textureScissorData -> (int) textureScissorData.getBatchedBoundary().getMaxY()).max().orElse(0);
     }
 
     public boolean getWeldedFacesWithFace(HalfEdgeFace face, List<HalfEdgeFace> resultWeldedFaces, Map<HalfEdgeFace, HalfEdgeFace> mapVisitedFaces) {
@@ -4016,7 +4040,7 @@ public class HalfEdgeSurface implements Serializable {
         for (int i = 0; i < facesCount; i++) {
             GaiaFace gaiaFace = gaiaFaces.get(i);
             if (gaiaFace == null) {
-                log.error("[ERROR] gaiaFace == null");
+                log.error("gaiaFace == null");
                 continue;
             }
             List<GaiaFace> gaiaTriangleFaces = new HalfEdgeUtils().getGaiaTriangleFacesFromGaiaFace(gaiaFace);

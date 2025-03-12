@@ -216,6 +216,9 @@ public class HalfEdgeNode implements Serializable {
                 clonedNode.children.add(clonedChild);
             }
         }
+//        if (boundingBox != null && clonedNode != null) {
+//            clonedNode.boundingBox = boundingBox.clone();
+//        }
         return clonedNode;
     }
 
@@ -397,6 +400,7 @@ public class HalfEdgeNode implements Serializable {
             child.getWestEastSouthNorthVertices(bbox, westVertices, eastVertices, southVertices, northVertices, error);
         }
     }
+
 
     public double calculateArea() {
         double area = 0;

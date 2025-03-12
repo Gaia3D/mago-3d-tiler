@@ -415,6 +415,7 @@ public class HalfEdgeScene implements Serializable {
         return deletedFacesCount;
     }
 
+
     public void scissorTextures() {
         boolean hasTextures = false;
         for (GaiaMaterial material : materials) {

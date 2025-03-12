@@ -28,7 +28,6 @@ public class HalfEdgeCollapseData {
 
         int halfEdgesLoopASize = halfEdgesLoopA.size();
         int halfEdgesLoopBSize = halfEdgesLoopB.size();
-
         // check exteriorA with interiorB
         for (HalfEdge halfEdgeAExt : halfEdgesAExterior) {
             if (halfEdgeAExt == null) {
