@@ -121,7 +121,7 @@ public class GaiaScene extends SceneStructure implements Serializable {
     }
 
     public List<GaiaFace> extractGaiaFaces(List<GaiaFace> resultFaces) {
-        if(resultFaces == null) {
+        if (resultFaces == null) {
             resultFaces = new ArrayList<>();
         }
         for (GaiaNode node : this.nodes) {
@@ -157,7 +157,7 @@ public class GaiaScene extends SceneStructure implements Serializable {
     }
 
     public List<GaiaPrimitive> extractPrimitives(List<GaiaPrimitive> resultPrimitives) {
-        if(resultPrimitives == null) {
+        if (resultPrimitives == null) {
             resultPrimitives = new ArrayList<>();
         }
         for (GaiaNode node : this.nodes) {

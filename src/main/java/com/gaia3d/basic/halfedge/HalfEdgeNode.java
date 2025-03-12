@@ -125,7 +125,7 @@ public class HalfEdgeNode implements Serializable {
     }
 
     public GaiaBoundingBox calculateBoundingBox(GaiaBoundingBox resultBBox) {
-//        if(resultBBox == null) {
+//        if (resultBBox == null) {
 //            resultBBox = new GaiaBoundingBox();
 //        }
 //        for (HalfEdgeMesh mesh : meshes) {

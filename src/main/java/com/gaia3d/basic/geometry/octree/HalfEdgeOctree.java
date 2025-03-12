@@ -394,20 +394,20 @@ public class HalfEdgeOctree {
 //                double normalY = Math.abs(normal.y);
 //                double normalZ = Math.abs(normal.z);
 //
-//                if(normalX > normalY && normalX > normalZ && normalX > 0.85) {
+//                if (normalX > normalY && normalX > normalZ && normalX > 0.85) {
 //                    double lengthY = faceBBox.getLengthY();
 //                    double lengthZ = faceBBox.getLengthZ();
 //                    faceBBox.expandXYZ(error, -lengthY * 0.1, -lengthZ * 0.1);
 //                    isAlmostAxisAlignedFace = true;
 //                }
-//                else if(normalY > normalX && normalY > normalZ && normalY > 0.85) {
+//                else if (normalY > normalX && normalY > normalZ && normalY > 0.85) {
 //                    double lengthX = faceBBox.getLengthX();
 //                    double lengthZ = faceBBox.getLengthZ();
 //                    faceBBox.expandXYZ(-lengthX * 0.1, error, -lengthZ * 0.1);
 //                    isAlmostAxisAlignedFace = true;
 //                }
 //
-//                if(isAlmostAxisAlignedFace) {
+//                if (isAlmostAxisAlignedFace) {
 //                    for (int idx = 0; idx < 8; idx++) {
 //                        if (idx == index) {
 //                            continue;

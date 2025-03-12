@@ -108,70 +108,70 @@ public class TestUtils {
         List<HalfEdgeVertex> vertices = halfEdgeSurface.getVertices();
         int verticesCount = vertices.size();
         Map<HalfEdgeVertex, HalfEdgeVertex> verticesMap = new HashMap<>();
-        if(verticesCount == 0)
+        if (verticesCount == 0)
         {
             int hola = 0;
         }
-        for(HalfEdgeFace face : halfEdgeSurface.getFaces()) {
+        for (HalfEdgeFace face : halfEdgeSurface.getFaces()) {
             List<HalfEdge> faceHalfEdges = face.getHalfEdgesLoop(null);
-            for(HalfEdge halfEdge : faceHalfEdges) {
-                if(halfEdge == null) {
+            for (HalfEdge halfEdge : faceHalfEdges) {
+                if (halfEdge == null) {
                     int hola = 0;
                 }
                 HalfEdgeVertex startVertex = halfEdge.getStartVertex();
-                if(startVertex == null) {
+                if (startVertex == null) {
                     int hola = 0;
                 }
                 HalfEdgeVertex endVertex = halfEdge.getEndVertex();
-                if(endVertex == null) {
+                if (endVertex == null) {
                     int hola = 0;
                 }
-                if(startVertex == endVertex) {
+                if (startVertex == endVertex) {
                     int hola = 0;
                 }
 
                 double length = halfEdge.getLength();
-                if(length > 18.0) {
+                if (length > 18.0) {
                     int hola = 0;
                 }
             }
             List<HalfEdgeVertex> faceVertices = face.getVertices(null);
-            for(HalfEdgeVertex vertex : faceVertices) {
-                if(vertex == null) {
+            for (HalfEdgeVertex vertex : faceVertices) {
+                if (vertex == null) {
                     int hola = 0;
                 }
                 verticesMap.put(vertex, vertex);
-                if(!vertices.contains(vertex)) {
+                if (!vertices.contains(vertex)) {
                     int hola = 0;
                 }
 
                 Vector3d vertexPosition = vertex.getPosition();
-                if(vertexPosition == null) {
+                if (vertexPosition == null) {
                     int hola = 0;
                 }
 
-                if(vertexPosition.x == 0 && vertexPosition.y == 0 && vertexPosition.z == 0) {
+                if (vertexPosition.x == 0 && vertexPosition.y == 0 && vertexPosition.z == 0) {
                     int hola = 0;
                 }
 
                 Vector2d vertexTexCoord = vertex.getTexcoords();
-                if(vertexTexCoord == null) {
+                if (vertexTexCoord == null) {
                     int hola = 0;
                 }
 
                 Vector3d vertexNormal = vertex.getNormal();
-                if(vertexNormal == null) {
+                if (vertexNormal == null) {
                     int hola = 0;
                 }
 
                 byte[] vertexColor = vertex.getColor();
-                if(vertexColor == null) {
+                if (vertexColor == null) {
                     int hola = 0;
                 }
             }
         }
 
-        if(vertices.size() != verticesMap.size()) {
+        if (vertices.size() != verticesMap.size()) {
             int hola = 0;
         }
         return true;
@@ -241,8 +241,8 @@ public class TestUtils {
         if (vertices.size() != verticesMap.size()) {
             int hola = 0;
             GaiaVertex lastVertex = vertices.get(vertices.size() - 1);
-            for(GaiaVertex vertex : vertices) {
-                if(vertex == null) {
+            for (GaiaVertex vertex : vertices) {
+                if (vertex == null) {
                     int hola2 = 0;
                 }
             }
@@ -282,7 +282,7 @@ public class TestUtils {
     {
         int badFacesCount = 0;
         for (HalfEdgeFace face : halfEdgeSurface.getFaces()) {
-            if(!checkTexCoordsOfHalfEdgeFace(face))
+            if (!checkTexCoordsOfHalfEdgeFace(face))
             {
                 badFacesCount++;
             }
@@ -294,7 +294,7 @@ public class TestUtils {
     {
         int badFacesCount = 0;
         for (HalfEdgeFace face : faces) {
-            if(!checkTexCoordsOfHalfEdgeFace(face))
+            if (!checkTexCoordsOfHalfEdgeFace(face))
             {
                 badFacesCount++;
             }
@@ -318,27 +318,27 @@ public class TestUtils {
         double width = texBRect.getWidth();
         double height = texBRect.getHeight();
 
-        if(width > 0.5)
+        if (width > 0.5)
         {
             int hola = 0;
         }
 
-        if(height > 0.5)
+        if (height > 0.5)
         {
             int hola = 0;
         }
 
-        if(texCoord0.equals(texCoord1))
+        if (texCoord0.equals(texCoord1))
         {
             return false;
         }
 
-        if(texCoord0.equals(texCoord2))
+        if (texCoord0.equals(texCoord2))
         {
             return false;
         }
 
-        if(texCoord1.equals(texCoord2))
+        if (texCoord1.equals(texCoord2))
         {
             return false;
         }
@@ -349,14 +349,14 @@ public class TestUtils {
     public static boolean checkClassifyIdAndCamDirOfHalfEdgeFace(HalfEdgeFace face)
     {
         List<HalfEdgeFace> adjacentFaces = face.getAdjacentFaces(null);
-        for(HalfEdgeFace adjacentFace : adjacentFaces)
+        for (HalfEdgeFace adjacentFace : adjacentFaces)
         {
-            if(face.getClassifyId() != adjacentFace.getClassifyId())
+            if (face.getClassifyId() != adjacentFace.getClassifyId())
             {
                 return false;
             }
 
-            if(face.getCameraDirectionType() != adjacentFace.getCameraDirectionType())
+            if (face.getCameraDirectionType() != adjacentFace.getCameraDirectionType())
             {
                 return false;
             }
@@ -375,24 +375,24 @@ public class TestUtils {
         return true;
     }
 
-    public static boolean checkWeldedFacesGroups(List<List<HalfEdgeFace>> resultWeldedFacesGroups){
+    public static boolean checkWeldedFacesGroups(List<List<HalfEdgeFace>> resultWeldedFacesGroups) {
         int groupsCount = resultWeldedFacesGroups.size();
-        for(int i = 0; i < groupsCount; i++){
+        for (int i = 0; i < groupsCount; i++) {
             List<HalfEdgeFace> group = resultWeldedFacesGroups.get(i);
             int facesCount = group.size();
             int classifyId = group.get(0).getClassifyId();
             CameraDirectionType cameraDirectionType = group.get(0).getCameraDirectionType();
-            for(int j = 0; j < facesCount; j++){
+            for (int j = 0; j < facesCount; j++) {
                 HalfEdgeFace face = group.get(j);
-                if(face == null){
+                if (face == null) {
                     int hola = 0;
                 }
 
-                if(face.getClassifyId() != classifyId){
+                if (face.getClassifyId() != classifyId) {
                     return false;
                 }
 
-                if(face.getCameraDirectionType() != cameraDirectionType){
+                if (face.getCameraDirectionType() != cameraDirectionType) {
                     return false;
                 }
             }
@@ -400,19 +400,19 @@ public class TestUtils {
         return true;
     }
 
-    public static boolean checkIfExistCoincidentTexCoords(List<HalfEdgeVertex> vertexList, List<HalfEdgeVertex> resultEqualVertices, Map<HalfEdgeVertex, HalfEdgeVertex> visitedVertices){
+    public static boolean checkIfExistCoincidentTexCoords(List<HalfEdgeVertex> vertexList, List<HalfEdgeVertex> resultEqualVertices, Map<HalfEdgeVertex, HalfEdgeVertex> visitedVertices) {
         int vertexCount = vertexList.size();
-        for(int i = 0; i < vertexCount; i++){
+        for (int i = 0; i < vertexCount; i++) {
             HalfEdgeVertex vertex = vertexList.get(i);
-            if(visitedVertices.containsKey(vertex)){
+            if (visitedVertices.containsKey(vertex)) {
                 continue;
             }
 
             Vector2d texCoord = vertex.getTexcoords();
-            for(int j = i + 1; j < vertexCount; j++){
+            for (int j = i + 1; j < vertexCount; j++) {
                 HalfEdgeVertex otherVertex = vertexList.get(j);
                 Vector2d otherTexCoord = otherVertex.getTexcoords();
-                if(texCoord.equals(otherTexCoord)){
+                if (texCoord.equals(otherTexCoord)) {
                     resultEqualVertices.add(vertex);
                     resultEqualVertices.add(otherVertex);
                     visitedVertices.put(vertex, vertex);

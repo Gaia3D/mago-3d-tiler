@@ -65,7 +65,7 @@ public class HalfEdgeMesh implements Serializable {
         }
         for (HalfEdgePrimitive primitive : primitives) {
             GaiaBoundingBox primitiveBBox = primitive.calculateBoundingBox(null);
-            if(primitiveBBox != null) {
+            if (primitiveBBox != null) {
                 resultBBox.addBoundingBox(primitiveBBox);
             }
         }
@@ -143,7 +143,7 @@ public class HalfEdgeMesh implements Serializable {
         for (HalfEdgePrimitive primitive : primitives) {
             HalfEdgePrimitive clonedPrimitive = primitive.cloneByClassifyId(classifyId);
             if (clonedPrimitive != null) {
-                if(clonedMesh == null) {
+                if (clonedMesh == null) {
                     clonedMesh = new HalfEdgeMesh();
                 }
                 clonedMesh.primitives.add(clonedPrimitive);

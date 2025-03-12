@@ -84,7 +84,7 @@ public class HalfEdgeCutter {
 //            List<HalfEdgeFace> faces = new ArrayList<>();
 //            double error2 = 1e-5;
 //            halfEdgeScene.getIntersectedFacesByPlane(plane.getPlaneType(), plane.getPoint(), faces, error2);
-//            if(faces.size() > 0) {
+//            if (faces.size() > 0) {
 //                log.info("plane intersected faces count = " + faces.size());
 //                List<HalfEdgeVertex> faceVertices = faces.get(0).getVertices(null);
 //                Vector3d pos0 = faceVertices.get(0).getPosition();
@@ -104,7 +104,7 @@ public class HalfEdgeCutter {
         for (HalfEdgeSurface surface : surfaces) {
             List<HalfEdgeFace> faces = surface.getFaces();
             for (HalfEdgeFace face : faces) {
-                if(face.getStatus() == ObjectStatus.DELETED) {
+                if (face.getStatus() == ObjectStatus.DELETED) {
                     continue;
                 }
                 resultOctree.getFaces().add(face);
@@ -137,16 +137,16 @@ public class HalfEdgeCutter {
             // create a new HalfEdgeScene
             HalfEdgeScene cuttedScene = halfEdgeScene.cloneByClassifyId(j);
 
-            if(cuttedScene == null) {
+            if (cuttedScene == null) {
                 log.info("cuttedScene is null");
                 continue;
             }
 
-            if(scissorTextures) {
+            if (scissorTextures) {
                 cuttedScene.scissorTexturesByMotherScene(halfEdgeScene.getMaterials());
             }
 
-            if(makeSkirt) {
+            if (makeSkirt) {
                 cuttedScene.makeSkirt();
             }
 
@@ -191,7 +191,7 @@ public class HalfEdgeCutter {
         for (HalfEdgeSurface surface : surfaces) {
             List<HalfEdgeFace> faces = surface.getFaces();
             for (HalfEdgeFace face : faces) {
-                if(face.getStatus() == ObjectStatus.DELETED) {
+                if (face.getStatus() == ObjectStatus.DELETED) {
                     continue;
                 }
                 resultOctree.getFaces().add(face);
@@ -282,7 +282,7 @@ public class HalfEdgeCutter {
 
         // copy faces
         for (HalfEdgeFace face : faces) {
-            if(face.getStatus() == ObjectStatus.DELETED) {
+            if (face.getStatus() == ObjectStatus.DELETED) {
                 continue;
             }
             HalfEdgeFace copyFace = new HalfEdgeFace();
@@ -340,7 +340,7 @@ public class HalfEdgeCutter {
                 int twinClassifyId = twinFace.getClassifyId();
                 if (classifyId == twinClassifyId) {
                     HalfEdge copyTwin = edgeToNewEdgeMap.get(twin);
-                    if(!copyEdge.setTwin(copyTwin))
+                    if (!copyEdge.setTwin(copyTwin))
                     {
                         log.error("Error setting twin");
                     }
@@ -378,7 +378,7 @@ public class HalfEdgeCutter {
 
         // copy faces
         for (HalfEdgeFace face : faces) {
-            if(face.getStatus() == ObjectStatus.DELETED) {
+            if (face.getStatus() == ObjectStatus.DELETED) {
                 continue;
             }
             HalfEdgeFace copyFace = new HalfEdgeFace();

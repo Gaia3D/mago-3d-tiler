@@ -181,7 +181,7 @@ public class HalfEdgeUtils {
         List<HalfEdgeFace> halfEdgeFaces = halfEdgeSurface.getFaces();
         for (HalfEdgeFace halfEdgeFace : halfEdgeFaces) {
             GaiaFace gaiaFace = gaiaFaceFromHalfEdgeFace(halfEdgeFace, mapHalfEdgeVertexToGaiaVertex, mapGaiaVertexToIndex);
-            if(gaiaFace == null) {
+            if (gaiaFace == null) {
                 continue;
             }
             gaiaSurface.getFaces().add(gaiaFace);
@@ -597,12 +597,12 @@ public class HalfEdgeUtils {
             resultVertices = new ArrayList<>();
         }
         for (HalfEdgeFace face : faces) {
-            if(face.getStatus() == ObjectStatus.DELETED) {
+            if (face.getStatus() == ObjectStatus.DELETED) {
                 continue;
             }
             List<HalfEdgeVertex> faceVertices = face.getVertices(null);
             for (HalfEdgeVertex vertex : faceVertices) {
-                if(MapVertices.containsKey(vertex)) {
+                if (MapVertices.containsKey(vertex)) {
                     continue;
                 }
                 resultVertices.add(vertex);
@@ -624,7 +624,7 @@ public class HalfEdgeUtils {
             faceHalfEdges.clear();
             faceHalfEdges = face.getHalfEdgesLoop(faceHalfEdges);
             for (HalfEdge halfEdge : faceHalfEdges) {
-                if(MapHalfEdges.containsKey(halfEdge)) {
+                if (MapHalfEdges.containsKey(halfEdge)) {
                     continue;
                 }
                 resultHalfEdges.add(halfEdge);
@@ -830,16 +830,16 @@ public class HalfEdgeUtils {
 
 //        List<HalfEdgeNode> halfEdgeNodes = halfEdgeScene.getNodes();
 //        int nodesCount = halfEdgeNodes.size();
-//        for(int j=0; j<nodesCount; j++)
+//        for (int j=0; j<nodesCount; j++)
 //        {
 //            HalfEdgeNode rootNode = halfEdgeNodes.get(j);
 //            Map<Integer,HalfEdgeNode> mapClassifyIdToNode = getMapHalfEdgeNodeByFaceClassifyId(rootNode, null);
-//            for(Integer key : mapClassifyIdToNode.keySet())
+//            for (Integer key : mapClassifyIdToNode.keySet())
 //            {
 //                int faceClassifyId = key;
 //                HalfEdgeNode halfEdgeNode = mapClassifyIdToNode.get(faceClassifyId);
 //                HalfEdgeScene halfEdgeSceneCopy = mapClassifyIdToHalfEdgeScene.get(faceClassifyId);
-//                if(halfEdgeSceneCopy == null)
+//                if (halfEdgeSceneCopy == null)
 //                {
 //                    halfEdgeSceneCopy = new HalfEdgeScene();
 //
@@ -857,14 +857,14 @@ public class HalfEdgeUtils {
 //
 //        }
 //
-//        for(Integer key : mapClassifyIdToHalfEdgeScene.keySet())
+//        for (Integer key : mapClassifyIdToHalfEdgeScene.keySet())
 //        {
 //            HalfEdgeScene halfEdgeSceneCopy = mapClassifyIdToHalfEdgeScene.get(key);
 //
 //            // copy materials
 //            List<GaiaMaterial> gaiaMaterials = halfEdgeScene.getMaterials();
 //            int materialsCount = gaiaMaterials.size();
-//            for(int i=0; i<materialsCount; i++)
+//            for (int i=0; i<materialsCount; i++)
 //            {
 //                GaiaMaterial gaiaMaterial = gaiaMaterials.get(i);
 //                GaiaMaterial newGaiaMaterial = gaiaMaterial.clone();
