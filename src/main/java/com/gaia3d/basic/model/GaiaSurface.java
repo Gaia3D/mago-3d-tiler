@@ -69,7 +69,7 @@ public class GaiaSurface extends SurfaceStructure implements Serializable {
         boolean newFaceAdded = false;
         Map<Integer, Integer> mapIndices = new HashMap<>();
 
-        // make a map of indices.***
+        // make a map of indices
         for (GaiaFace face : masterFaces) {
             int[] indices = face.getIndices();
             for (int index : indices) {
@@ -86,7 +86,7 @@ public class GaiaSurface extends SurfaceStructure implements Serializable {
             for (GaiaFace currFace : faces) {
                 if (!mapVisitedFaces.containsKey(currFace)) {
                     int[] currFaceIndices = currFace.getIndices();
-                    // if some indices of the currFace exists in the mapIndices, then add the face to the resultFaces.***
+                    // if some indices of the currFace exists in the mapIndices, then add the face to the resultFaces
                     for (int index : currFaceIndices) {
                         if (mapIndices.containsKey(index)) {
                             resultFaces.add(currFace);
@@ -94,7 +94,7 @@ public class GaiaSurface extends SurfaceStructure implements Serializable {
                             newFaceAdded = true;
                             newFaceAddedOneLoop = true;
 
-                            // add the indices of the face to the mapIndices.***
+                            // add the indices of the face to the mapIndices
                             for (int index2 : currFaceIndices) {
                                 mapIndices.put(index2, index2);
                             }

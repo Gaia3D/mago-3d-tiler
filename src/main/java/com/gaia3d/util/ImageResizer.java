@@ -20,9 +20,7 @@ public class ImageResizer {
     public BufferedImage resizeImageGraphic2D(BufferedImage originalImage, int width, int height, boolean interpolation) {
         if (width == originalImage.getWidth() && height == originalImage.getHeight()) {
             return originalImage;
-        }/* else {
-            log.info("ImageResizer.resizeImageGraphic2D() : originalImage: {}x{} -> resized: {}x{}", originalImage.getWidth(), originalImage.getHeight(), width, height);
-        }*/
+        }
 
         // check if the width and height are within the bounds.
         if (width < MIN_TEXTURE_SIZE) {

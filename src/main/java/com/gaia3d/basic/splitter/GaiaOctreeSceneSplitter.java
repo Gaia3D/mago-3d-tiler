@@ -41,7 +41,7 @@ public class GaiaOctreeSceneSplitter {
     private GaiaOctreeSceneSplitter[] children;
 
     private List<GaiaFace> faces;
-    private List<GaiaVertex> vertices; // must multiply the transformMatrix.***
+    private List<GaiaVertex> vertices; // must multiply the transformMatrix
     private Matrix4d transformMatrix;
     private Map<GaiaFace, Vector3d> mapFaceTransformedCenterPos;
 

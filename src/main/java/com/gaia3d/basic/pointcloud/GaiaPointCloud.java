@@ -40,7 +40,7 @@ public class GaiaPointCloud implements Serializable {
 
     public void minimize(File minimizedFile) {
         if (this.isMinimized) {
-            log.warn("The point cloud is already minimized.");
+            log.warn("[WARN] The point cloud is already minimized.");
             return;
         }
 
@@ -88,7 +88,7 @@ public class GaiaPointCloud implements Serializable {
 
     public void maximizeTemp() {
         if (!isMinimized) {
-            log.warn("The point cloud is already maximized.");
+            log.warn("[WARN] The point cloud is already maximized.");
             return;
         }
 
@@ -106,7 +106,7 @@ public class GaiaPointCloud implements Serializable {
 
     public void maximizeTempOld() {
         if (!isMinimized) {
-            log.warn("The point cloud is already maximized.");
+            log.warn("[WARN] The point cloud is already maximized.");
             return;
         }
         try (ObjectInputStream objectInputStream = new ObjectInputStream(new BufferedInputStream(new FileInputStream(minimizedFile)))) {

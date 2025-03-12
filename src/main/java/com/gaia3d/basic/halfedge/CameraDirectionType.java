@@ -96,8 +96,8 @@ public enum CameraDirectionType {
         double dotXPos = normal.dot(camDirXPos);
         double dotXNeg = normal.dot(camDirXNeg);
 
-        // choose the most opposite direction.***
-        // the most opposite direction is the most negative dot product.***
+        // choose the most opposite direction
+        // the most opposite direction is the most negative dot product
         if(dotYPos < dotYNeg) {
             if(dotYPos < dotXPos) {
                 if(dotYPos < dotXNeg) {

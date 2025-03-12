@@ -26,7 +26,7 @@ public class GaiaFace extends FaceStructure implements Serializable {
 
     public void calculateFaceNormal(List<GaiaVertex> vertices) {
         if (indices.length < 3) {
-            log.error("[Error][calculateFaceNormal] : not enough indices. (indices.length < 3)");
+            log.error("[ERROR] calculateFaceNormal not enough indices. (indices.length < 3)");
             return;
         }
         for (int i = 0; i < indices.length; i += 3) {

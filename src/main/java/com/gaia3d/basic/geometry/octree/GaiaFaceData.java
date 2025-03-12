@@ -20,7 +20,7 @@ public class GaiaFaceData {
     private GaiaFace face = null;
     private GaiaBoundingBox boundingBox = null;
     private Vector3d centerPoint = null;
-    private Vector4d averageColor = null; // Average color of the face.***
+    private Vector4d averageColor = null; // Average color of the face
 
     public GaiaBoundingBox getBoundingBox() {
         if (boundingBox == null) {

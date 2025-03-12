@@ -74,7 +74,7 @@ public class GaiaSet implements Serializable {
             }
             return gaiaSet;
         } catch (Exception e) {
-            log.error("GaiaSet Read Error : ", e);
+            log.error("[ERROR] GaiaSet Read Error : ", e);
         }
         return null;
     }
@@ -97,7 +97,7 @@ public class GaiaSet implements Serializable {
 //            }
             return gaiaSet;
         } catch (Exception e) {
-            log.error("GaiaSet Read Error : ", e);
+            log.error("[ERROR] GaiaSet Read Error : ", e);
         }
         return null;
     }
@@ -109,7 +109,7 @@ public class GaiaSet implements Serializable {
         }
         return boundingBox;
     }
-    
+
     public Path writeFileForPR(Path path, boolean copyTexturesToNewPath) {
         String tempFileName = this.attribute.getIdentifier().toString() + "." + FormatType.TEMP.getExtension();
         Path tempDir = path.resolve(this.projectName);
@@ -127,7 +127,7 @@ public class GaiaSet implements Serializable {
             }
 
         } catch (Exception e) {
-            log.error("GaiaSet Write Error : ", e);
+            log.error("[ERROR] GaiaSet Write Error : ", e);
             tempFile.delete();
         }
         return tempFile.toPath();
@@ -146,7 +146,7 @@ public class GaiaSet implements Serializable {
                 copyTextures(material, folder);
             }
         } catch (Exception e) {
-            log.error("GaiaSet Write Error : ", e);
+            log.error("[ERROR] GaiaSet Write Error : ", e);
             file.delete();
         }
         return file.toPath();
@@ -170,7 +170,7 @@ public class GaiaSet implements Serializable {
                 copyTextures(material, tempDir);
             }
         } catch (Exception e) {
-            log.error("GaiaSet Write Error : ", e);
+            log.error("[ERROR] GaiaSet Write Error : ", e);
             tempFile.delete();
         }
         return tempFile.toPath();
@@ -194,7 +194,7 @@ public class GaiaSet implements Serializable {
                 copyTextures(material, tempDir, scale);
             }
         } catch (Exception e) {
-            log.error("GaiaSet Write Error : ", e);
+            log.error("[ERROR] GaiaSet Write Error : ", e);
             tempFile.delete();
         }
         return tempFile.toPath();
@@ -226,7 +226,7 @@ public class GaiaSet implements Serializable {
             }
             texture.setPath(imageFile.getName());
             if (!imageFile.exists()) {
-                log.error("Texture Input Image Path is not exists. {}", diffusePath);
+                log.error("[ERROR] Texture Input Image Path is not exists. {}", diffusePath);
             } else {
                 FileUtils.copyFile(imageFile, outputImageFile);
             }
@@ -266,7 +266,7 @@ public class GaiaSet implements Serializable {
             }
             texture.setPath(imageFile.getName());
             if (!imageFile.exists()) {
-                log.error("Texture Input Image Path is not exists. {}", diffusePath);
+                log.error("[ERROR] Texture Input Image Path is not exists. {}", diffusePath);
             } else {
                 //FileUtils.copyFile(imageFile, outputImageFile);
                 ImageResizer imageResizer = new ImageResizer();
@@ -305,7 +305,7 @@ public class GaiaSet implements Serializable {
             GaiaBuffer positionBuffer = bufferData.getBuffers().get(AttributeType.POSITION);
 
             if (positionBuffer == null) {
-                log.error("Position buffer is null");
+                log.error("[ERROR] Position buffer is null");
                 return;
             }
 

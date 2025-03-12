@@ -94,7 +94,7 @@ public class TestUtils {
 
     public static boolean checkHalfEdgeScene(HalfEdgeScene scene)
     {
-        // 1rst, check vertices.***
+        // 1rst, check vertices
         List<HalfEdgeSurface> surfaces = scene.extractSurfaces(null);
         for (HalfEdgeSurface halfEdgeSurface : surfaces) {
             TestUtils.checkHalfEdgeSurface(halfEdgeSurface);
@@ -179,7 +179,7 @@ public class TestUtils {
 
     public static boolean checkGaiaScene(GaiaScene scene)
     {
-        // 1rst, check vertices.***
+        // 1rst, check vertices
         List<GaiaPrimitive> primitives = scene.extractPrimitives(null);
         for (GaiaPrimitive primitive : primitives) {
             TestUtils.checkGaiaPrimitive(primitive);

@@ -20,7 +20,7 @@ public class Line2D {
 
     public boolean isParallel(Line2D line) {
         //double error = 1.0e-10;
-        double error = 1.0e-7; // works better with this value.***
+        double error = 1.0e-7; // works better with this value
         return Math.abs(this.direction.x * line.direction.y - this.direction.y * line.direction.x) < error;
     }
 
