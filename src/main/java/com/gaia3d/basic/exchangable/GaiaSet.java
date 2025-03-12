@@ -235,10 +235,6 @@ public class GaiaSet implements Serializable {
 
     /**
      * Copy textures to the output directory with scaling.
-     * @param material
-     * @param copyDirectory
-     * @param scale
-     * @throws IOException
      */
     private void copyTextures(GaiaMaterial material, Path copyDirectory, float scale) throws IOException {
         Map<TextureType, List<GaiaTexture>> materialTextures = material.getTextures();

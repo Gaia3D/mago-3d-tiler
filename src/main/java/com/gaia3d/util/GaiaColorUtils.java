@@ -1,7 +1,5 @@
 package com.gaia3d.util;
 
-import org.joml.Vector4d;
-
 public class GaiaColorUtils {
     public static byte[] decodeColor4(int colorCode) {
         byte r = (byte) ((colorCode >> 24) & 0xFF);

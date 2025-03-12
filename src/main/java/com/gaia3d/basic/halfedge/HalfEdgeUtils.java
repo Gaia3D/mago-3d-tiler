@@ -42,7 +42,6 @@ public class HalfEdgeUtils {
     }
 
 
-
     public static GaiaScene gaiaSceneFromHalfEdgeFaces(List<HalfEdgeFace> halfEdgeFaces, Map<GaiaFace, HalfEdgeFace> mapGaiaFaceToHalfEdgeFace) {
         GaiaScene gaiaScene = new GaiaScene();
         GaiaNode gaiaRootNode = new GaiaNode();
@@ -173,8 +172,7 @@ public class HalfEdgeUtils {
         return gaiaPrimitive;
     }
 
-    public static GaiaSurface gaiaSurfaceFromHalfEdgeSurface(HalfEdgeSurface halfEdgeSurface, Map<HalfEdgeVertex, GaiaVertex> mapHalfEdgeVertexToGaiaVertex,
-                                                             Map<GaiaVertex, Integer> mapGaiaVertexToIndex) {
+    public static GaiaSurface gaiaSurfaceFromHalfEdgeSurface(HalfEdgeSurface halfEdgeSurface, Map<HalfEdgeVertex, GaiaVertex> mapHalfEdgeVertexToGaiaVertex, Map<GaiaVertex, Integer> mapGaiaVertexToIndex) {
         GaiaSurface gaiaSurface = new GaiaSurface();
 
         // faces
@@ -190,8 +188,7 @@ public class HalfEdgeUtils {
         return gaiaSurface;
     }
 
-    public static GaiaFace gaiaFaceFromHalfEdgeFace(HalfEdgeFace halfEdgeFace, Map<HalfEdgeVertex, GaiaVertex> mapHalfEdgeVertexToGaiaVertex,
-                                                    Map<GaiaVertex, Integer> mapGaiaVertexToIndex) {
+    public static GaiaFace gaiaFaceFromHalfEdgeFace(HalfEdgeFace halfEdgeFace, Map<HalfEdgeVertex, GaiaVertex> mapHalfEdgeVertexToGaiaVertex, Map<GaiaVertex, Integer> mapGaiaVertexToIndex) {
         if (halfEdgeFace == null) {
             return null;
         }
@@ -1274,7 +1271,7 @@ public class HalfEdgeUtils {
     }
 
     public static Map<CameraDirectionType, List<HalfEdgeFace>> makeMapCameraDirectionTypeFacesList(List<HalfEdgeFace> facesList) {
-        Map<CameraDirectionType, List<HalfEdgeFace>>  mapCameraDirectionFacesList = new HashMap<>();
+        Map<CameraDirectionType, List<HalfEdgeFace>> mapCameraDirectionFacesList = new HashMap<>();
         List<HalfEdgeFace> faces;
 
         int facesCount = facesList.size();

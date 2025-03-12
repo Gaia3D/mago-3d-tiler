@@ -27,7 +27,7 @@ public class GaiaFaceData {
             if (primitiveParent != null) {
                 boundingBox = face.getBoundingBox(primitiveParent.getVertices(), new GaiaBoundingBox());
             } else {
-                log.error("[Error][getBoundingBox] : primitiveParent is null.");
+                log.error("[ERROR][getBoundingBox] : primitiveParent is null.");
             }
         }
         return boundingBox;

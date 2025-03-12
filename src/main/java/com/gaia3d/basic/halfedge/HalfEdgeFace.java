@@ -64,8 +64,7 @@ public class HalfEdgeFace implements Serializable {
         return HalfEdgeUtils.calculateAspectRatioAsTriangle(a, b, c);
     }
 
-    public double calculateArea()
-    {
+    public double calculateArea() {
         List<HalfEdge> halfEdgesLoop = this.getHalfEdgesLoop(null);
         if (halfEdgesLoop == null || halfEdgesLoop.size() < 3) {
             return 0.0;
@@ -246,7 +245,7 @@ public class HalfEdgeFace implements Serializable {
             }
             outputStream.writeInt(halfEdgeId);
         } catch (Exception e) {
-            log.error("Error Log : ", e);
+            log.error("[ERROR] : ", e);
         }
     }
 
@@ -262,7 +261,7 @@ public class HalfEdgeFace implements Serializable {
             status = (ObjectStatus) inputStream.readObject();
             halfEdgeId = inputStream.readInt();
         } catch (Exception e) {
-            log.error("Error Log : ", e);
+            log.error("[ERROR] : ", e);
         }
     }
 

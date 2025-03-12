@@ -44,12 +44,12 @@ public class GaiaPointCloudTemp {
             /* header total size = 2 + 2 + 24 + 24 = 52 bytes */
             // version 2 bytes
             if (this.VERSION != inputStream.readShort()) {
-                log.error("Invalid Pointscloud temp version");
+                log.error("[ERROR] Invalid Pointscloud temp version");
                 return false;
             }
             // block size 2 bytes
             if (this.BLOCK_SIZE != inputStream.readShort()) {
-                log.error("Invalid block size");
+                log.error("[ERROR] Invalid block size");
                 return false;
             }
             // quantized volume scale (double xyz) 24 bytes
@@ -68,7 +68,7 @@ public class GaiaPointCloudTemp {
 
             return true;
         } catch (IOException e) {
-            log.error("Failed to read header from input stream", e);
+            log.error("[ERROR] Failed to read header from input stream", e);
             return false;
         }
     }
@@ -126,7 +126,7 @@ public class GaiaPointCloudTemp {
                 vertices.add(vertex);
             }
         } catch (IOException e) {
-            log.error("Failed to read temp from input stream", e);
+            log.error("[ERROR] Failed to read temp from input stream", e);
         }
         return vertices;
     }
@@ -144,9 +144,9 @@ public class GaiaPointCloudTemp {
                 float z = (float) ((position.z - quantizedVolumeOffset[2]) / quantizedVolumeScale[2]);
 
                 if (Float.isNaN(x) || Float.isNaN(y) || Float.isNaN(z)) {
-                    log.error("Invalid position: x={}, y={}, z={}", x, y, z);
+                    log.error("[ERROR] Invalid position: x={}, y={}, z={}", x, y, z);
                 } else if (Float.isInfinite(x) || Float.isInfinite(y) || Float.isInfinite(z)) {
-                    log.error("Invalid position: x={}, y={}, z={}", x, y, z);
+                    log.error("[ERROR] Invalid position: x={}, y={}, z={}", x, y, z);
                 }
 
                 // XYZ
@@ -164,7 +164,7 @@ public class GaiaPointCloudTemp {
             }
             outputStream.write(bytes);
         } catch (Exception e) {
-            log.error("Failed to write positions to output stream", e);
+            log.error("[ERROR] Failed to write positions to output stream", e);
         }
     }
 
@@ -183,7 +183,7 @@ public class GaiaPointCloudTemp {
             // padding
             outputStream.writeByte(0);
         } catch (IOException e) {
-            log.error("Failed to write bytes to output stream", e);
+             log.error("[ERROR] Failed to write bytes to output stream", e);
         }
     }
 
@@ -256,7 +256,7 @@ public class GaiaPointCloudTemp {
             FileUtils.deleteQuietly(this.tempFile);
             this.tempFile = shuffledFile;
         } catch (IOException e) {
-            log.error("Failed to shuffle temp file", e);
+             log.error("[ERROR] Failed to shuffle temp file", e);
             throw new RuntimeException(e);
         }
     }

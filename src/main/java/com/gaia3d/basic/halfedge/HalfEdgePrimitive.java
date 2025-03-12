@@ -3,7 +3,6 @@ package com.gaia3d.basic.halfedge;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.model.GaiaMaterial;
-import com.gaia3d.basic.model.GaiaScene;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -343,15 +342,15 @@ public class HalfEdgePrimitive implements Serializable {
         double maxY = texCoordBoundingRectangle.getMaxY();
 
         if (minX < 0 || minY < 0) {
-            int hola = 0;
+
         }
 
         if (minX > 1 || minY > 1) {
-            int hola = 0;
+
         }
 
 
-        int hola = 0;
+
     }
 
     public void updateVerticesList() {
