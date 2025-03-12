@@ -32,7 +32,7 @@ public class TexturesAtlasData {
     }
 
     public void deleteObjects() {
-        if(textureImage != null) {
+        if (textureImage != null) {
             textureImage.flush();
         }
         textureImage = null;

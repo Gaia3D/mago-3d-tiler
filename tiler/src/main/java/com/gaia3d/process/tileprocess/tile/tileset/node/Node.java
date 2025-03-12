@@ -90,13 +90,13 @@ public class Node {
 
     public void setRefinementTypeAutomatic()
     {
-        if(this.children == null || this.children.isEmpty()) {
+        if (this.children == null || this.children.isEmpty()) {
             return;
         }
         for (Node childNode : children) {
             childNode.setRefinementTypeAutomatic();
         }
-        if(this.content != null && this.content.getContentInfo() != null && !this.content.getContentInfo().getTileInfos().isEmpty()) {
+        if (this.content != null && this.content.getContentInfo() != null && !this.content.getContentInfo().getTileInfos().isEmpty()) {
             this.refine = RefineType.REPLACE;
         } else {
             this.refine = RefineType.ADD;
@@ -104,12 +104,12 @@ public class Node {
     }
 
     public void extractNodes(int depth, List<Node> resultNodes) {
-        if(this.depth == depth) {
+        if (this.depth == depth) {
             resultNodes.add(this);
             return;
         }
 
-        if(this.children == null) {
+        if (this.children == null) {
             return;
         }
 
@@ -130,7 +130,7 @@ public class Node {
                 contentInfoList.add(contentInfo);
             }
         }
-        if(children != null) {
+        if (children != null) {
             for (Node node : children) {
                 node.findAllContentInfo(contentInfoList);
             }
@@ -141,7 +141,7 @@ public class Node {
     public int findMaxDepth()
     {
         int maxDepth = this.depth;
-        if(this.children == null) {
+        if (this.children == null) {
             return maxDepth;
         }
         for (Node node : children) {
@@ -155,11 +155,11 @@ public class Node {
 
     public void getNodesByDepth(int depth, List<Node> resultNodes)
     {
-        if(this.depth == depth) {
+        if (this.depth == depth) {
             resultNodes.add(this);
             return;
         }
-        if(this.children == null) {
+        if (this.children == null) {
             return;
         }
         for (Node node : children) {
@@ -169,14 +169,14 @@ public class Node {
 
     public boolean hasContentsInTree()
     {
-        if(this.content != null) {
+        if (this.content != null) {
             return true;
         }
-        if(this.children == null || this.children.isEmpty()) {
+        if (this.children == null || this.children.isEmpty()) {
             return false;
         }
         for (Node node : children) {
-            if(node.hasContentsInTree()) {
+            if (node.hasContentsInTree()) {
                 return true;
             }
         }
@@ -377,29 +377,29 @@ public class Node {
         //        |            |            |        |            |            |
         //        +------------+------------+        +------------+------------+
 
-        if(cartographicRad.x < midLonRad) {
-            if(cartographicRad.y < midLatRad) {
-                if(cartographicRad.z < midAltitude) {
+        if (cartographicRad.x < midLonRad) {
+            if (cartographicRad.y < midLatRad) {
+                if (cartographicRad.z < midAltitude) {
                     return children.get(0).getIntersectedNodeAsOctree(cartographicRad, depth);
                 } else {
                     return children.get(4).getIntersectedNodeAsOctree(cartographicRad, depth);
                 }
             } else {
-                if(cartographicRad.z < midAltitude) {
+                if (cartographicRad.z < midAltitude) {
                     return children.get(3).getIntersectedNodeAsOctree(cartographicRad, depth);
                 } else {
                     return children.get(7).getIntersectedNodeAsOctree(cartographicRad, depth);
                 }
             }
         } else {
-            if(cartographicRad.y < midLatRad) {
-                if(cartographicRad.z < midAltitude) {
+            if (cartographicRad.y < midLatRad) {
+                if (cartographicRad.z < midAltitude) {
                     return children.get(1).getIntersectedNodeAsOctree(cartographicRad, depth);
                 } else {
                     return children.get(5).getIntersectedNodeAsOctree(cartographicRad, depth);
                 }
             } else {
-                if(cartographicRad.z < midAltitude) {
+                if (cartographicRad.z < midAltitude) {
                     return children.get(2).getIntersectedNodeAsOctree(cartographicRad, depth);
                 } else {
                     return children.get(6).getIntersectedNodeAsOctree(cartographicRad, depth);
@@ -410,7 +410,7 @@ public class Node {
 
     public GaiaBoundingBox calculateCartographicBoundingBox()
     {
-        if(this.boundingVolume == null) {
+        if (this.boundingVolume == null) {
             return null;
         }
 
@@ -429,7 +429,7 @@ public class Node {
 
     public GaiaBoundingBox calculateLocalBoundingBox()
     {
-        if(this.boundingVolume == null) {
+        if (this.boundingVolume == null) {
             return null;
         }
 

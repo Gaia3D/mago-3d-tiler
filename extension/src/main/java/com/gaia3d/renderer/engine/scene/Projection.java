@@ -16,7 +16,6 @@ public class Projection {
     private int width;
     private int height;
 
-
     // orthographic
     private float left;
     private float right;

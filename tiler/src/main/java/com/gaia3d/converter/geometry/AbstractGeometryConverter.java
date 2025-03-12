@@ -364,7 +364,7 @@ public abstract class AbstractGeometryConverter {
 
         vertexList.clear();
         int resultPointsCount = resultPolygonPoints.size();
-        for(int i=0; i<resultPointsCount; i++)
+        for (int i=0; i<resultPointsCount; i++)
         {
             Vector3d point = resultPolygonPoints.get(i);
             GaiaVertex vertex = new GaiaVertex();
@@ -444,7 +444,7 @@ public abstract class AbstractGeometryConverter {
 
         vertexList.clear();
         int resultPointsCount = resultPolygonPoints.size();
-        for(int i=0; i<resultPointsCount; i++)
+        for (int i=0; i<resultPointsCount; i++)
         {
             Vector3d point = resultPolygonPoints.get(i);
             GaiaVertex vertex = new GaiaVertex();

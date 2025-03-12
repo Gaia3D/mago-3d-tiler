@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FaceVisibilityData {
-    private CameraDirectionType cameraDirectionType;
-    private Map<Integer, Integer> faceIdToPixelCountMap;
+    private final CameraDirectionType cameraDirectionType;
+    private final Map<Integer, Integer> faceIdToPixelCountMap;
 
     public FaceVisibilityData(CameraDirectionType cameraDirectionType) {
         this.cameraDirectionType = cameraDirectionType;

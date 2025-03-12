@@ -6,19 +6,10 @@ import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.util.GlobeUtils;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.geotools.data.DataStore;
-import org.geotools.data.Query;
 import org.geotools.data.Transaction;
-import org.geotools.data.shapefile.ShapefileDataStore;
-import org.geotools.data.shapefile.files.ShpFiles;
-import org.geotools.data.shapefile.shp.ShapefileReader;
-import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureReader;
-import org.geotools.data.simple.SimpleFeatureSource;
-import org.geotools.feature.FeatureIterator;
 import org.geotools.geopkg.FeatureEntry;
 import org.geotools.geopkg.GeoPackage;
-import org.geotools.util.factory.Hints;
 import org.joml.Vector3d;
 import org.locationtech.jts.geom.*;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
@@ -28,7 +19,6 @@ import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.filter.Filter;
 
-import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -122,17 +112,7 @@ public class GeoPackageInstanceConverter implements AttributeReader {
                             position = new Vector3d(x, y, altitude);
                         }
 
-                        KmlInfo kmlInfo = KmlInfo.builder()
-                                .name("I3dmFromGeoPackage")
-                                .position(position)
-                                .heading(heading)
-                                .tilt(0.0d)
-                                .roll(0.0d)
-                                .scaleX(1.0d)
-                                .scaleY(1.0d)
-                                .scaleZ(1.0d)
-                                .properties(attributes)
-                                .build();
+                        KmlInfo kmlInfo = KmlInfo.builder().name("I3dmFromGeoPackage").position(position).heading(heading).tilt(0.0d).roll(0.0d).scaleX(1.0d).scaleY(1.0d).scaleZ(1.0d).properties(attributes).build();
                         result.add(kmlInfo);
                     }
                 }

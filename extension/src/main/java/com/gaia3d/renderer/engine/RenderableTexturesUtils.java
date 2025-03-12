@@ -17,19 +17,13 @@ import static org.lwjgl.opengl.GL11.*;
 @Slf4j
 public class RenderableTexturesUtils {
     public static int createGlTextureFromByteArray(byte[] byteArray, int width, int height, int glFormat, int minFilter, int magFilter, int wrapS, int wrapT) {
-
         ByteBuffer buffer = ByteBuffer.allocateDirect(byteArray.length);
         buffer.put(byteArray);
-        buffer.flip(); // buffer.flip() = buffer.position(0); // returns the buffer to the start of the data.
-
-
-        //GL20.glEnable(GL20.GL_TEXTURE_2D);
-
+        buffer.flip();
         int textureId = GL20.glGenTextures();
 
         GL20.glActiveTexture(GL20.GL_TEXTURE0);
         GL20.glBindTexture(GL20.GL_TEXTURE_2D, textureId);
-        //GL20.glPixelStorei(GL20.GL_UNPACK_ALIGNMENT, 1);
 
         GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_MIN_FILTER, minFilter); // GL_LINEAR
         GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_MAG_FILTER, magFilter);
@@ -37,7 +31,6 @@ public class RenderableTexturesUtils {
         GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_WRAP_T, wrapT);
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, glFormat, GL_UNSIGNED_BYTE, buffer);
-
         return textureId;
     }
 

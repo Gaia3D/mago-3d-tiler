@@ -35,7 +35,7 @@ public class GaiaRelocator implements PostProcess {
             Vector3d translation = new Vector3d(x, y, z);
 
             GaiaSet set = tileInfo.getSet();
-            if(set == null) {
+            if (set == null) {
                 log.error("GaiaSet is null");
                 continue;
             }

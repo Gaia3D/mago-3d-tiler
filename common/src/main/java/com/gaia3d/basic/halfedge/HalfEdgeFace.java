@@ -82,7 +82,7 @@ public class HalfEdgeFace implements Serializable {
         Vector3d normal = this.calculatePlaneNormal();
 //        Vector3d zAxis = new Vector3d(0, 0, 1);
 //        double dotProd = normal.dot(zAxis);
-//        if(dotProd > 0.5){
+//        if (dotProd > 0.5) {
 //            this.bestPlaneToProject = PlaneType.XY;
 //            return this.bestPlaneToProject;
 //        }
@@ -120,7 +120,7 @@ public class HalfEdgeFace implements Serializable {
     }
 
     public Vector3d getPlaneNormal() {
-        if(this.normal == null) {
+        if (this.normal == null) {
             this.normal = this.calculatePlaneNormal();
         }
         return this.normal;
@@ -319,7 +319,7 @@ public class HalfEdgeFace implements Serializable {
             return false;
         }
 
-//        if(mapVisitedFaces.get(this) != null)
+//        if (mapVisitedFaces.get(this) != null)
 //        {
 //            return false;
 //        }

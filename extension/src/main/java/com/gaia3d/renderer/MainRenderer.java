@@ -198,13 +198,13 @@ public class MainRenderer implements IAppLogic {
         int lod = decimateParameters.getLod();
         int cutScenesCount = resultCutHalfEdgeScenes.size();
         int i=0;
-        for(HalfEdgeScene cutHalfEdgeScene : resultCutHalfEdgeScenes) {
+        for (HalfEdgeScene cutHalfEdgeScene : resultCutHalfEdgeScenes) {
             log.info("makeBoxTexturesByObliqueCamera. cutScene : " + (i+1) + " / " + cutScenesCount);
             GaiaBoundingBox bbox = cutHalfEdgeScene.getBoundingBox();
             double bboxMaxSize = bbox.getMaxSize();
             // now, cut the halfEdgeScene and make cube-textures by rendering
             double gridSpacing = bboxMaxSize / 3.0;
-            if(lod == 1)
+            if (lod == 1)
             {
                 gridSpacing = bboxMaxSize / 5.0;
             }
@@ -215,7 +215,7 @@ public class MainRenderer implements IAppLogic {
             engine.makeBoxTexturesByObliqueCamera(cuttedScene, screenPixelsForMeter);
 
             cuttedScene.scissorTextures();
-            if(makeSkirt){
+            if (makeSkirt) {
                 cuttedScene.makeSkirt();
             }
             resultHalfEdgeScenes.add(cuttedScene);
@@ -224,7 +224,7 @@ public class MainRenderer implements IAppLogic {
         }
 
         // delete halfEdgeScenes
-        for(HalfEdgeScene halfEdgeSceneToDelete : halfEdgeScenes) {
+        for (HalfEdgeScene halfEdgeSceneToDelete : halfEdgeScenes) {
             halfEdgeSceneToDelete.deleteObjects();
         }
         halfEdgeScenes.clear();
@@ -302,7 +302,7 @@ public class MainRenderer implements IAppLogic {
 
         int cutScenesCount = resultCutHalfEdgeScenes.size();
         int i=0;
-        for(HalfEdgeScene cutHalfEdgeScene : resultCutHalfEdgeScenes) {
+        for (HalfEdgeScene cutHalfEdgeScene : resultCutHalfEdgeScenes) {
             log.info("makeBoxTexturesByObliqueCamera. cutScene : " + (i+1) + " / " + cutScenesCount);
             GaiaBoundingBox bbox = cutHalfEdgeScene.getBoundingBox();
             double bboxMaxSize = bbox.getMaxSize();
@@ -314,7 +314,7 @@ public class MainRenderer implements IAppLogic {
             // now make box textures for the cuttedScene
             engine.makeBoxTexturesByObliqueCamera(cuttedScene, screenPixelsForMeter);
             cuttedScene.scissorTextures();
-            if(makeSkirt){
+            if (makeSkirt) {
                 cuttedScene.makeSkirt();
             }
 
@@ -426,7 +426,7 @@ public class MainRenderer implements IAppLogic {
         }
 
 //        // delete renderableGaiaScenes
-//        for(RenderableGaiaScene renderableSceneToDelete : renderableGaiaScenes) {
+//        for (RenderableGaiaScene renderableSceneToDelete : renderableGaiaScenes) {
 //            renderableSceneToDelete.deleteGLBuffers();
 //        }
 
@@ -476,7 +476,7 @@ public class MainRenderer implements IAppLogic {
 //            String depthRenderedImagePath = tempFolderPath + "\\depthRenderedImage_" + i + ".png";
 //            // create the folder
 //            File tempFolder = new File(tempFolderPath);
-//            if(!tempFolder.exists())
+//            if (!tempFolder.exists())
 //            {
 //                tempFolder.mkdirs();
 //            }

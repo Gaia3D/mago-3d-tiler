@@ -76,8 +76,6 @@ public class GlobalOptions {
     private String javaVersionInfo; // java version flag
     private String programInfo; // program info flag
 
-    private long startTime = 0;
-    private long endTime = 0;
     private long fileCount = 0;
     private long tileCount = 0;
     private long tilesetSize = 0;
@@ -388,8 +386,6 @@ public class GlobalOptions {
         title = title == null ? "mago-3d-tiler" : title;
         vendor = vendor == null ? "Gaia3D, Inc." : vendor;
         String programInfo = title + "(" + version + ") by " + vendor;
-
-        instance.setStartTime(System.currentTimeMillis());
         instance.setProgramInfo(programInfo);
         instance.setJavaVersionInfo(javaVersionInfo);
     }

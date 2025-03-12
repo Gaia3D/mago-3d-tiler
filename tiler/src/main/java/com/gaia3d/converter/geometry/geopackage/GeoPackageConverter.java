@@ -15,22 +15,12 @@ import com.gaia3d.converter.geometry.InnerRingRemover;
 import com.gaia3d.converter.geometry.pipe.GaiaPipeLineString;
 import com.gaia3d.converter.geometry.pipe.PipeType;
 import com.gaia3d.util.GlobeUtils;
-import it.geosolutions.imageio.maskband.DatasetLayout;
 import lombok.extern.slf4j.Slf4j;
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.coverage.grid.io.AbstractGridFormat;
-import org.geotools.data.Query;
 import org.geotools.data.Transaction;
-import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureReader;
-import org.geotools.data.store.ContentFeatureSource;
-import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.jts.Geometries;
-import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geopkg.FeatureEntry;
 import org.geotools.geopkg.GeoPackage;
-import org.geotools.geopkg.mosaic.GeoPackageReader;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.locationtech.jts.geom.*;
@@ -38,12 +28,9 @@ import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.FeatureType;
-import org.opengis.feature.type.GeometryType;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.filter.Filter;
-import org.opengis.parameter.GeneralParameterValue;
 
-import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -90,14 +77,11 @@ public class GeoPackageConverter extends AbstractGeometryConverter implements Co
         double skirtHeight = globalOptions.getSkirtHeight();
 
         GeoPackage geoPackage = null;
-        DataSource dataSource = null;
         try {
             geoPackage = new GeoPackage(input);
-            dataSource = geoPackage.getDataSource();
             List<FeatureEntry> features = geoPackage.features();
 
             for (FeatureEntry featureEntry : features) {
-
                 Geometries geometryType = featureEntry.getGeometryType();
                 log.info("FeatureTableName: {}", featureEntry.getTableName());
                 log.info("GeometryType: {}", geometryType.getName());
@@ -246,13 +230,7 @@ public class GeoPackageConverter extends AbstractGeometryConverter implements Co
                                 altitude = temp;
                             }
 
-                            GaiaExtrusionBuilding building = GaiaExtrusionBuilding.builder().id(feature.getID())
-                                    .name(name)
-                                    .boundingBox(boundingBox)
-                                    .floorHeight(altitude)
-                                    .roofHeight(height + skirtHeight)
-                                    .positions(positions)
-                                    .originalFilePath(input.getPath()).properties(attributes).build();
+                            GaiaExtrusionBuilding building = GaiaExtrusionBuilding.builder().id(feature.getID()).name(name).boundingBox(boundingBox).floorHeight(altitude).roofHeight(height + skirtHeight).positions(positions).originalFilePath(input.getPath()).properties(attributes).build();
                             buildings.add(building);
                         } else {
                             log.warn("[WARN] Invalid Geometry : {}, {}", feature.getID(), name);
@@ -262,10 +240,11 @@ public class GeoPackageConverter extends AbstractGeometryConverter implements Co
             }
             convertPipeLineStrings(pipeLineStrings, sceneTemps, input, output);
             convertExtrusionBuildings(buildings, sceneTemps, input, output);
+
+
             geoPackage.close();
         } catch (IOException e) {
-            if (geoPackage != null)
-                geoPackage.close();
+            if (geoPackage != null) geoPackage.close();
             throw new RuntimeException(e);
         }
         return sceneTemps;
@@ -273,10 +252,7 @@ public class GeoPackageConverter extends AbstractGeometryConverter implements Co
 
     @Override
     protected List<GaiaScene> convert(File file) {
-        GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder()
-                .tempFile(file)
-                .isMinimized(true)
-                .build();
+        GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder().tempFile(file).isMinimized(true).build();
         sceneTemp.maximize();
         List<GaiaScene> scenes = sceneTemp.getTempScene();
         return scenes;
@@ -352,9 +328,7 @@ public class GeoPackageConverter extends AbstractGeometryConverter implements Co
                     gaiaScene.setOriginalPath(tempFile.toPath());
                 });
                 log.info("[{}] write temp : {}", tempName, scenes.size());
-                GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder()
-                        .tempScene(scenes)
-                        .tempFile(tempFile).build();
+                GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder().tempScene(scenes).tempFile(tempFile).build();
                 sceneTemp.minimize(tempFile);
                 sceneTemps.add(sceneTemp);
                 scenes.clear();
@@ -368,9 +342,7 @@ public class GeoPackageConverter extends AbstractGeometryConverter implements Co
                 gaiaScene.setOriginalPath(tempFile.toPath());
             });
             log.info("[{}] write temp : {}", tempName, scenes.size());
-            GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder()
-                    .tempScene(scenes)
-                    .tempFile(tempFile).build();
+            GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder().tempScene(scenes).tempFile(tempFile).build();
             sceneTemp.minimize(tempFile);
             sceneTemps.add(sceneTemp);
         }
@@ -489,9 +461,7 @@ public class GeoPackageConverter extends AbstractGeometryConverter implements Co
             if (scenes.size() >= sceneCount) {
                 String tempName = UUID.randomUUID() + input.getName();
                 File tempFile = new File(output, tempName);
-                GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder()
-                        .tempScene(scenes)
-                        .tempFile(tempFile).build();
+                GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder().tempScene(scenes).tempFile(tempFile).build();
                 sceneTemp.minimize(tempFile);
                 sceneTemps.add(sceneTemp);
                 scenes.clear();
@@ -500,9 +470,7 @@ public class GeoPackageConverter extends AbstractGeometryConverter implements Co
         if (!scenes.isEmpty()) {
             String tempName = UUID.randomUUID() + input.getName();
             File tempFile = new File(output, tempName);
-            GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder()
-                    .tempScene(scenes)
-                    .tempFile(tempFile).build();
+            GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder().tempScene(scenes).tempFile(tempFile).build();
             sceneTemp.minimize(tempFile);
             sceneTemps.add(sceneTemp);
         }

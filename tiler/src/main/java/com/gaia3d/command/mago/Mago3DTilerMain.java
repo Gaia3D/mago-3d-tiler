@@ -107,13 +107,7 @@ public class Mago3DTilerMain {
     private static void printEnd() {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         Reporter reporter = globalOptions.getReporter();
-        long startTime = globalOptions.getStartTime();
-        long endTime = System.currentTimeMillis();
-        log.info("----------------------------------------");
-        log.info("[Process Summary]");
-        log.info("End Process Time : {}", DecimalUtils.millisecondToDisplayTime(endTime - startTime));
-        log.info("Total tile contents count : {}", globalOptions.getTileCount());
-        log.info("Total 'tileset.json' File Size : {}", DecimalUtils.byteCountToDisplaySize(globalOptions.getTilesetSize()));
+        long duration = reporter.getDuration();
         log.info("----------------------------------------");
         log.info("[Report Summary]");
         log.info("Info : {}", reporter.getInfoCount());
@@ -121,6 +115,10 @@ public class Mago3DTilerMain {
         log.info("Error : {}", reporter.getErrorCount());
         log.info("Fatal : {}", reporter.getFatalCount());
         log.info("Total Report Count : {}", reporter.getReportList().size());
+        log.info("[Process Summary]");
+        log.info("End Process Time : {}", DecimalUtils.millisecondToDisplayTime(duration));
+        log.info("Total tile contents count : {}", globalOptions.getTileCount());
+        log.info("Total 'tileset.json' File Size : {}", DecimalUtils.byteCountToDisplaySize(globalOptions.getTilesetSize()));
         log.info("----------------------------------------");
     }
 }

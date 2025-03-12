@@ -23,7 +23,6 @@ import com.gaia3d.renderer.renderable.SelectionColorManager;
 import com.gaia3d.util.GaiaColorUtils;
 import com.gaia3d.util.GaiaSceneUtils;
 import com.gaia3d.util.GaiaTextureUtils;
-import com.gaia3d.util.ImageUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +33,6 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -44,8 +42,8 @@ import java.lang.Math;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
@@ -55,10 +53,10 @@ import static org.lwjgl.opengl.GL11.*;
 @Setter
 @Slf4j
 public class Engine {
-    GaiaScenesContainer gaiaScenesContainer;
-    SelectionColorManager selectionColorManager;
-    List<HalfEdgeScene> halfEdgeScenes = new ArrayList<>();
-    List<GaiaScene> gaiaScenes = new ArrayList<>();
+    private GaiaScenesContainer gaiaScenesContainer;
+    private SelectionColorManager selectionColorManager;
+    private List<HalfEdgeScene> halfEdgeScenes = new ArrayList<>();
+    private List<GaiaScene> gaiaScenes = new ArrayList<>();
     private Window window;
     private ShaderManager shaderManager;
     private RenderEngine renderer;
@@ -73,7 +71,6 @@ public class Engine {
     private boolean leftButtonClicked = false;
     private boolean midButtonClicked = false;
     private boolean renderAxis = false;
-
     private int boxRenderingMaxSize = 600;
     private int testsCount = 0;
 
@@ -560,7 +557,7 @@ public class Engine {
             double sceneMaxSize = sceneBbox.getMaxSize();
             double sceneHeight = sceneBbox.getSizeZ();
             double ratioHW = sceneHeight / sceneMaxSize;
-            if(ratioHW < 0.06) {
+            if (ratioHW < 0.06) {
                 log.info("ratioHW < 0.06");
             }
 
@@ -574,8 +571,7 @@ public class Engine {
 
             // ZNeg texture
             cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_ZNEG;
-            BufferedImage imageZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
-                    mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager);
+            BufferedImage imageZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager);
             imageZNeg = eliminateBackGroundColor(imageZNeg);
 
             if (imageZNeg != null) {
@@ -587,11 +583,10 @@ public class Engine {
             }
 
 
-            if(ratioHW > 0.06) {
+            if (ratioHW > 0.06) {
                 // YPosZNeg texture
                 cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_YPOS_ZNEG;
-                BufferedImage imageYpoZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
-                        mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager);
+                BufferedImage imageYpoZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager);
                 imageYpoZNeg = eliminateBackGroundColor(imageYpoZNeg);
 
                 if (imageYpoZNeg != null) {
@@ -604,8 +599,7 @@ public class Engine {
 
                 // XNegZNeg texture
                 cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_XNEG_ZNEG;
-                BufferedImage imageXNegZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
-                        mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager);
+                BufferedImage imageXNegZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager);
                 imageXNegZNeg = eliminateBackGroundColor(imageXNegZNeg);
 
                 if (imageXNegZNeg != null) {
@@ -618,8 +612,7 @@ public class Engine {
 
                 // YNegZNeg texture
                 cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_YNEG_ZNEG;
-                BufferedImage imageYNegZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
-                        mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager);
+                BufferedImage imageYNegZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager);
                 imageYNegZNeg = eliminateBackGroundColor(imageYNegZNeg);
 
                 if (imageYNegZNeg != null) {
@@ -632,8 +625,7 @@ public class Engine {
 
                 // XPosZNeg texture
                 cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_XPOS_ZNEG;
-                BufferedImage imageXPosZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
-                        mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager);
+                BufferedImage imageXPosZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize, mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager);
                 imageXPosZNeg = eliminateBackGroundColor(imageXPosZNeg);
 
                 if (imageXPosZNeg != null) {
@@ -662,7 +654,7 @@ public class Engine {
                     for (GaiaFace face : faces) {
                         int faceId = face.getId();
                         CameraDirectionType bestCamDirType = faceVisibilityDataManager.getBestCameraDirectionTypeOfFace(faceId);
-                        if(bestCamDirType == null) {
+                        if (bestCamDirType == null) {
                             bestCamDirType = CameraDirectionType.CAMERA_DIRECTION_ZNEG;
                         }
 
@@ -706,7 +698,7 @@ public class Engine {
             List<HalfEdgeVertex> vertexOfSurface = new ArrayList<>();
             HalfEdgeUtils.getVerticesOfFaces(halfEdgeSurface.getFaces(), vertexOfSurface);
             for (HalfEdgeVertex vertex : vertexOfSurface) {
-                if(vertex.getTexcoords() == null) {
+                if (vertex.getTexcoords() == null) {
                     vertex.setTexcoords(new Vector2d(0.0, 0.0));
                 }
             }
@@ -733,7 +725,7 @@ public class Engine {
                     continue;
                 }
 
-                for(HalfEdgeFace halfEdgeFace : facesList) {
+                for (HalfEdgeFace halfEdgeFace : facesList) {
                     verticesOfFaces.clear();
                     verticesOfFaces = halfEdgeFace.getVertices(verticesOfFaces);
                     for (HalfEdgeVertex vertex : verticesOfFaces) {
@@ -790,7 +782,7 @@ public class Engine {
         GaiaTexture atlasTexture = makeAtlasTexture(texturesAtlasDataList);
 
         // delete texturesAtlasDataList
-        for(TexturesAtlasData texturesAtlasData : texturesAtlasDataList) {
+        for (TexturesAtlasData texturesAtlasData : texturesAtlasDataList) {
             texturesAtlasData.deleteObjects();
         }
 
@@ -877,8 +869,7 @@ public class Engine {
         return textureAtlas;
     }
 
-    private void recalculateTexCoordsAfterTextureAtlasingObliqueCamera(HalfEdgeScene halfEdgeScene, List<TexturesAtlasData> texAtlasDatasList,
-                                                                       Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapClassificationCamDirTypeFacesList) {
+    private void recalculateTexCoordsAfterTextureAtlasingObliqueCamera(HalfEdgeScene halfEdgeScene, List<TexturesAtlasData> texAtlasDatasList, Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapClassificationCamDirTypeFacesList) {
         int maxWidth = getMaxWidth(texAtlasDatasList);
         int maxHeight = getMaxHeight(texAtlasDatasList);
 
@@ -953,7 +944,7 @@ public class Engine {
                 double xAtlas = (batchedBoundary.getMinX() + xRel * batchedBoundary.getWidth()) / maxWidth;
                 double yAtlas = (batchedBoundary.getMinY() + yRel * batchedBoundary.getHeight()) / maxHeight;
 
-                if(xAtlas < 0.0 || xAtlas > 1.0 || yAtlas < 0.0 || yAtlas > 1.0) {
+                if (xAtlas < 0.0 || xAtlas > 1.0 || yAtlas < 0.0 || yAtlas > 1.0) {
                     log.info("recalculateTexCoordsAfterTextureAtlasingObliqueCamera() : xAtlas or yAtlas is out of range.");
                 }
 
@@ -1052,8 +1043,7 @@ public class Engine {
         }
     }
 
-    private Vector2d getBestPositionMosaicInAtlas(List<TexturesAtlasData> currProcessTextureAtlasDates, TexturesAtlasData texAtlasDataToPutInMosaic,
-                                                  Vector2d resultVec, GaiaRectangle beforeMosaicRectangle, List<GaiaRectangle> list_rectangles, TreeMap<Double, List<GaiaRectangle>> map_maxXrectangles) {
+    private Vector2d getBestPositionMosaicInAtlas(List<TexturesAtlasData> currProcessTextureAtlasDates, TexturesAtlasData texAtlasDataToPutInMosaic, Vector2d resultVec, GaiaRectangle beforeMosaicRectangle, List<GaiaRectangle> list_rectangles, TreeMap<Double, List<GaiaRectangle>> map_maxXrectangles) {
         if (resultVec == null) {
             resultVec = new Vector2d();
         }
@@ -1278,10 +1268,7 @@ public class Engine {
         return null;
     }
 
-    private BufferedImage makeColorCodeTextureByCameraDirection(GaiaScene gaiaScene, RenderableGaiaScene renderableScene, CameraDirectionType cameraDirectionType,
-                                                                int maxScreenSize, Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox,
-                                                                Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix,
-                                                                double screenPixelsForMeter, FaceVisibilityDataManager faceVisibilityDataManager) {
+    private BufferedImage makeColorCodeTextureByCameraDirection(GaiaScene gaiaScene, RenderableGaiaScene renderableScene, CameraDirectionType cameraDirectionType, int maxScreenSize, Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox, Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix, double screenPixelsForMeter, FaceVisibilityDataManager faceVisibilityDataManager) {
         // Calculate bbox relative to camera direction
         GaiaBoundingBox bbox = gaiaScene.getBoundingBox();
         Vector3d bboxCenter = bbox.getCenter();
@@ -1342,7 +1329,7 @@ public class Engine {
 
         float maxSize = Math.max(xLength, yLength);
         float zOffSet = maxSize * 0.001f;
-        if(zOffSet < 0.4) {
+        if (zOffSet < 0.4) {
             zOffSet = 0.4f;
         }
 
@@ -1360,8 +1347,8 @@ public class Engine {
         int fboWidth = maxScreenSize;
         int fboHeight = maxScreenSize;
 
-        fboWidth = (int)(xLength * screenPixelsForMeter);
-        fboHeight = (int)(yLength * screenPixelsForMeter);
+        fboWidth = (int) (xLength * screenPixelsForMeter);
+        fboHeight = (int) (yLength * screenPixelsForMeter);
 
         fboWidth = Math.max(fboWidth, 1);
         fboHeight = Math.max(fboHeight, 1);
@@ -1378,8 +1365,8 @@ public class Engine {
         sceneShaderProgram.bind();
         // set uniform map
         UniformsMap uniformsMap = sceneShaderProgram.getUniformsMap();
-        uniformsMap.setUniform3fv("bboxMin", new Vector3f((float)expandedBBox.getMinX(), (float)expandedBBox.getMinY(), (float)expandedBBox.getMinZ()));
-        uniformsMap.setUniform3fv("bboxMax", new Vector3f((float)expandedBBox.getMaxX(), (float)expandedBBox.getMaxY(), (float)expandedBBox.getMaxZ()));
+        uniformsMap.setUniform3fv("bboxMin", new Vector3f((float) expandedBBox.getMinX(), (float) expandedBBox.getMinY(), (float) expandedBBox.getMinZ()));
+        uniformsMap.setUniform3fv("bboxMax", new Vector3f((float) expandedBBox.getMaxX(), (float) expandedBBox.getMaxY(), (float) expandedBBox.getMaxZ()));
         Vector4f clearColor = new Vector4f(0.5f, 0.5f, 0.5f, 1.0f);
         renderIntoFbo(colorFbo, sceneShaderProgram, gaiaScenesContainer, clearColor, true);
         colorFbo.bind();
@@ -1387,18 +1374,18 @@ public class Engine {
 
 //        // as a test, paint the image in a color. Red
 //        Color color = new Color(255, 0, 0);
-//        if(cameraDirectionType == CameraDirectionType.CAMERA_DIRECTION_ZNEG) {
+//        if (cameraDirectionType == CameraDirectionType.CAMERA_DIRECTION_ZNEG) {
 //            color = new Color(0, 255, 255);
-//        } else if(cameraDirectionType == CameraDirectionType.CAMERA_DIRECTION_XPOS_ZNEG) {
+//        } else if (cameraDirectionType == CameraDirectionType.CAMERA_DIRECTION_XPOS_ZNEG) {
 //            color = new Color(255, 0, 0);
 //        }
-//        else if(cameraDirectionType == CameraDirectionType.CAMERA_DIRECTION_XNEG_ZNEG) {
+//        else if (cameraDirectionType == CameraDirectionType.CAMERA_DIRECTION_XNEG_ZNEG) {
 //            color = new Color(100, 0, 0);
 //        }
-//        else if(cameraDirectionType == CameraDirectionType.CAMERA_DIRECTION_YPOS_ZNEG) {
+//        else if (cameraDirectionType == CameraDirectionType.CAMERA_DIRECTION_YPOS_ZNEG) {
 //            color = new Color(0, 255, 0);
 //        }
-//        else if(cameraDirectionType == CameraDirectionType.CAMERA_DIRECTION_YNEG_ZNEG) {
+//        else if (cameraDirectionType == CameraDirectionType.CAMERA_DIRECTION_YNEG_ZNEG) {
 //            color = new Color(0, 100, 0);
 //        }
 //
@@ -1420,8 +1407,8 @@ public class Engine {
         ShaderProgram colorCodeShaderProgram = shaderManager.getShaderProgram("trianglesDelimitedColorCode");
         colorCodeShaderProgram.bind();
         uniformsMap = sceneShaderProgram.getUniformsMap();
-        uniformsMap.setUniform3fv("bboxMin", new Vector3f((float)expandedBBox.getMinX(), (float)expandedBBox.getMinY(), (float)expandedBBox.getMinZ()));
-        uniformsMap.setUniform3fv("bboxMax", new Vector3f((float)expandedBBox.getMaxX(), (float)expandedBBox.getMaxY(), (float)expandedBBox.getMaxZ()));
+        uniformsMap.setUniform3fv("bboxMin", new Vector3f((float) expandedBBox.getMinX(), (float) expandedBBox.getMinY(), (float) expandedBBox.getMinZ()));
+        uniformsMap.setUniform3fv("bboxMax", new Vector3f((float) expandedBBox.getMaxX(), (float) expandedBBox.getMaxY(), (float) expandedBBox.getMaxZ()));
         clearColor.set(1.0f, 1.0f, 1.0f, 1.0f);
         renderIntoFbo(colorCodeFbo, colorCodeShaderProgram, gaiaScenesContainer, clearColor, false);
         //colorCodeFbo.bind();
@@ -1509,8 +1496,6 @@ public class Engine {
         File shaderFolder = new File(url.getPath());
 
         log.info("shaderFolder: {}", shaderFolder.getAbsolutePath());
-
-
 
 
 //        log.info("vertexShaderText: {}", vertexShaderText);

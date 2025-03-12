@@ -41,7 +41,7 @@ public class GaiaBatcher {
             }
 
             int materialId = dataSet.getMaterialId();
-            if(materialId < 0 || materialId >= batchedMaterials.size()) {
+            if (materialId < 0 || materialId >= batchedMaterials.size()) {
                 log.error("[ERROR] MaterialId is out of range");
                 continue;
             }
@@ -164,7 +164,7 @@ public class GaiaBatcher {
                 .collect(Collectors.toList());
 
         sets = sets.stream().filter((set -> {
-            if(set == null) {
+            if (set == null) {
                 log.error("[ERROR] Set is null");
                 return false;
             }

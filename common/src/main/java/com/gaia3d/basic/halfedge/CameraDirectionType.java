@@ -3,28 +3,12 @@ package com.gaia3d.basic.halfedge;
 import org.joml.Vector3d;
 
 public enum CameraDirectionType {
-    CAMERA_DIRECTION_UNKNOWN,
-    CAMERA_DIRECTION_XPOS,
-    CAMERA_DIRECTION_XNEG,
-    CAMERA_DIRECTION_ZPOS,
-    CAMERA_DIRECTION_ZNEG,
-    CAMERA_DIRECTION_YPOS,
-    CAMERA_DIRECTION_YNEG,
-    CAMERA_DIRECTION_XPOS_ZNEG,
-    CAMERA_DIRECTION_XNEG_ZNEG,
-    CAMERA_DIRECTION_XNEG_ZPOS,
-    CAMERA_DIRECTION_XPOS_ZPOS,
-    CAMERA_DIRECTION_YPOS_ZNEG,
-    CAMERA_DIRECTION_YPOS_ZPOS,
-    CAMERA_DIRECTION_YNEG_ZNEG,
-    CAMERA_DIRECTION_YNEG_ZPOS;
+    CAMERA_DIRECTION_UNKNOWN, CAMERA_DIRECTION_XPOS, CAMERA_DIRECTION_XNEG, CAMERA_DIRECTION_ZPOS, CAMERA_DIRECTION_ZNEG, CAMERA_DIRECTION_YPOS, CAMERA_DIRECTION_YNEG, CAMERA_DIRECTION_XPOS_ZNEG, CAMERA_DIRECTION_XNEG_ZNEG, CAMERA_DIRECTION_XNEG_ZPOS, CAMERA_DIRECTION_XPOS_ZPOS, CAMERA_DIRECTION_YPOS_ZNEG, CAMERA_DIRECTION_YPOS_ZPOS, CAMERA_DIRECTION_YNEG_ZNEG, CAMERA_DIRECTION_YNEG_ZPOS;
 
-    public static Vector3d getCameraDirection(CameraDirectionType cameraDirectionType)
-    {
+    public static Vector3d getCameraDirection(CameraDirectionType cameraDirectionType) {
         Vector3d result = new Vector3d();
         double z = 1.0;
-        switch(cameraDirectionType)
-        {
+        switch (cameraDirectionType) {
             case CAMERA_DIRECTION_XPOS:
                 result.set(1, 0, 0);
                 break;
@@ -98,29 +82,29 @@ public enum CameraDirectionType {
 
         // choose the most opposite direction
         // the most opposite direction is the most negative dot product
-        if(dotYPos < dotYNeg) {
-            if(dotYPos < dotXPos) {
-                if(dotYPos < dotXNeg) {
+        if (dotYPos < dotYNeg) {
+            if (dotYPos < dotXPos) {
+                if (dotYPos < dotXNeg) {
                     result = CameraDirectionType.CAMERA_DIRECTION_YPOS_ZNEG;
                 } else {
                     result = CameraDirectionType.CAMERA_DIRECTION_XNEG_ZNEG;
                 }
             } else {
-                if(dotXPos < dotXNeg) {
+                if (dotXPos < dotXNeg) {
                     result = CameraDirectionType.CAMERA_DIRECTION_XPOS_ZNEG;
                 } else {
                     result = CameraDirectionType.CAMERA_DIRECTION_XNEG_ZNEG;
                 }
             }
         } else {
-            if(dotYNeg < dotXPos) {
-                if(dotYNeg < dotXNeg) {
+            if (dotYNeg < dotXPos) {
+                if (dotYNeg < dotXNeg) {
                     result = CameraDirectionType.CAMERA_DIRECTION_XNEG_ZNEG;
                 } else {
                     result = CameraDirectionType.CAMERA_DIRECTION_XNEG_ZNEG;
                 }
             } else {
-                if(dotXPos < dotXNeg) {
+                if (dotXPos < dotXNeg) {
                     result = CameraDirectionType.CAMERA_DIRECTION_XPOS_ZNEG;
                 } else {
                     result = CameraDirectionType.CAMERA_DIRECTION_YPOS_ZNEG;

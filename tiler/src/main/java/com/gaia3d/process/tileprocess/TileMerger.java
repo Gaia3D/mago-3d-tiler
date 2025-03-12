@@ -161,9 +161,6 @@ public class TileMerger {
         root.setGeometricError(geometricError);
         root.setBoundingVolume(globalBoundingVolume);
 
-
-        // merge tilesets
-
         return mergedTileset;
     }
 

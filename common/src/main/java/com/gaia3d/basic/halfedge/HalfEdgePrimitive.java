@@ -318,7 +318,7 @@ public class HalfEdgePrimitive implements Serializable {
     }
 
     public GaiaRectangle getTexCoordinateBoundingRectangle(GaiaRectangle resultRectangle) {
-        if(resultRectangle == null) {
+        if (resultRectangle == null) {
             resultRectangle = new GaiaRectangle();
         }
         for (HalfEdgeSurface surface : surfaces) {
@@ -342,11 +342,11 @@ public class HalfEdgePrimitive implements Serializable {
         double maxX = texCoordBoundingRectangle.getMaxX();
         double maxY = texCoordBoundingRectangle.getMaxY();
 
-        if(minX < 0 || minY < 0) {
+        if (minX < 0 || minY < 0) {
             int hola = 0;
         }
 
-        if(minX > 1 || minY > 1) {
+        if (minX > 1 || minY > 1) {
             int hola = 0;
         }
 

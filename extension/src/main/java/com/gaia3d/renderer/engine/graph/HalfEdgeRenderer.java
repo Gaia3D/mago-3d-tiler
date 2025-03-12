@@ -227,14 +227,14 @@ public class HalfEdgeRenderer {
                 }
             }
 
-//            if(positionType == PositionType.INTERIOR)
+//            if (positionType == PositionType.INTERIOR)
 //            {
 //                colors[i * 4] = (byte) (0.9 * 255.0);
 //                colors[i * 4 + 1] = (byte) (0.3 * 255.0);
 //                colors[i * 4 + 2] = (byte) (0.6 * 255.0);
 //                colors[i * 4 + 3] = (byte) 255;
 //            }
-//            else if(positionType == PositionType.BOUNDARY_EDGE)
+//            else if (positionType == PositionType.BOUNDARY_EDGE)
 //            {
 //                colors[i * 4] = (byte) (0.3 * 255.0);
 //                colors[i * 4 + 1] = (byte) (0.6 * 255.0);

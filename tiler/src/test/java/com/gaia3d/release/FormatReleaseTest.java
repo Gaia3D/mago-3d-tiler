@@ -110,7 +110,7 @@ class FormatReleaseTest {
                     "-o", getOutputPath(path).getAbsolutePath(),
             };
             execute(args);
-        } catch (RuntimeException e){
+        } catch (RuntimeException e) {
             log.error("Failed to run process, Please check the arguments.", e);
             assert true;
         }

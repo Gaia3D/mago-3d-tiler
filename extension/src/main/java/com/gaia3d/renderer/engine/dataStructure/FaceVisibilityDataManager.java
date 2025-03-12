@@ -5,7 +5,7 @@ import com.gaia3d.basic.halfedge.CameraDirectionType;
 import java.util.Map;
 
 public class FaceVisibilityDataManager {
-    private Map<CameraDirectionType, FaceVisibilityData> faceVisibilityDataMap;
+    private final Map<CameraDirectionType, FaceVisibilityData> faceVisibilityDataMap;
 
     public FaceVisibilityDataManager() {
         faceVisibilityDataMap = new java.util.HashMap<>();
@@ -19,8 +19,7 @@ public class FaceVisibilityDataManager {
         return faceVisibilityDataMap.get(cameraDirectionType);
     }
 
-    public CameraDirectionType getBestCameraDirectionTypeOfFace(int faceId)
-    {
+    public CameraDirectionType getBestCameraDirectionTypeOfFace(int faceId) {
         CameraDirectionType bestCameraDirectionType = null;
         int maxPixelCount = 0;
         for (Map.Entry<CameraDirectionType, FaceVisibilityData> entry : faceVisibilityDataMap.entrySet()) {

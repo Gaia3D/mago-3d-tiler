@@ -250,7 +250,7 @@ public class RenderEngine {
                             int wrapS = GL_REPEAT; // GL_CLAMP_TO_EDGE
                             int wrapT = GL_REPEAT;
                             BufferedImage bufferedImage = diffuseTexture.getBufferedImage();
-                            if(bufferedImage == null) {
+                            if (bufferedImage == null) {
                                 log.error("[ERROR] bufferedImage is null.");
                                 continue;
                             }

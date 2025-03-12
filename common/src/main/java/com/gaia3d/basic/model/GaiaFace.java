@@ -131,7 +131,7 @@ public class GaiaFace extends FaceStructure implements Serializable {
             }
         }
 
-        if(indices.length < 3) {
+        if (indices.length < 3) {
             return true;
         }
 

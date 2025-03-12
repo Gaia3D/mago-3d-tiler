@@ -38,7 +38,7 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
     private Integer materialIndex = -1;
 
     public GaiaBoundingBox getBoundingBox(Matrix4d transform) {
-        if(this.vertices == null || this.vertices.isEmpty()) {
+        if (this.vertices == null || this.vertices.isEmpty()) {
             return null;
         }
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
@@ -355,11 +355,11 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
     }
 
     public List<GaiaFace> extractGaiaFaces(List<GaiaFace> resultFaces) {
-        if(resultFaces == null) {
+        if (resultFaces == null) {
             resultFaces = new ArrayList<>();
         }
 
-        for(GaiaSurface surface : this.surfaces) {
+        for (GaiaSurface surface : this.surfaces) {
             resultFaces.addAll(surface.getFaces());
         }
         return resultFaces;

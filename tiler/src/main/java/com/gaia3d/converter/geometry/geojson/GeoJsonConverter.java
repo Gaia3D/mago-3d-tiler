@@ -76,7 +76,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
         double minimumHeightValue = globalOptions.getMinimumHeight();
         double skirtHeight = globalOptions.getSkirtHeight();
 
-        try (BufferedInputStream bufferedInputStream = new BufferedInputStream(Files.newInputStream(input.toPath()))){
+        try (BufferedInputStream bufferedInputStream = new BufferedInputStream(Files.newInputStream(input.toPath()))) {
             FeatureJSON geojson = new FeatureJSON();
             log.info("Reading GeoJSON file : {}", input.getAbsolutePath());
             SimpleFeatureCollection featureCollection = (SimpleFeatureCollection) geojson.readFeatureCollection(bufferedInputStream);

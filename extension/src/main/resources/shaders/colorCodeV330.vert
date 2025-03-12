@@ -25,7 +25,7 @@ vec4 getOrthoPosition() {
 void main(void) {
   vec4 orthoPosition = getOrthoPosition();
   vColor = decodeColor4(uColorCode);
-  if(uColorCode == -1)
+  if (uColorCode == -1)
   {
     vColor = vec4(1.0, 1.0, 1.0, 1.0);
   }

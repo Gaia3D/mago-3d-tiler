@@ -153,7 +153,7 @@ public class HalfEdgeScene implements Serializable {
         GaiaBoundingBox bbox = getBoundingBox();
         Vector3d center = bbox.getCenter();
         double error = 1e-8;
-//        if(error < 1)
+//        if (error < 1)
 //        {
 //            return;
 //        }
@@ -534,7 +534,7 @@ public class HalfEdgeScene implements Serializable {
 
     public void makeSkirt() {
         GaiaBoundingBox bbox = getBoundingBox();
-        if(bbox == null) {
+        if (bbox == null) {
             log.info("Making skirt : Error: bbox is null");
             return;
         }
@@ -557,7 +557,7 @@ public class HalfEdgeScene implements Serializable {
         if (westVertices.size() > 1) {
             for (HalfEdgeVertex vertex : westVertices) {
                 Vector3d normal = vertex.calculateNormal();
-                if(Math.abs(normal.dot(-1, 0, 0)) < dotLimit) {
+                if (Math.abs(normal.dot(-1, 0, 0)) < dotLimit) {
                     Vector3d position = vertex.getPosition();
                     position.x -= expandDistance;
                 }
@@ -567,7 +567,7 @@ public class HalfEdgeScene implements Serializable {
         if (eastVertices.size() > 1) {
             for (HalfEdgeVertex vertex : eastVertices) {
                 Vector3d normal = vertex.calculateNormal();
-                if(Math.abs(normal.dot(1, 0, 0)) < dotLimit) {
+                if (Math.abs(normal.dot(1, 0, 0)) < dotLimit) {
                     Vector3d position = vertex.getPosition();
                     position.x += expandDistance;
                 }
@@ -577,7 +577,7 @@ public class HalfEdgeScene implements Serializable {
         if (southVertices.size() > 1) {
             for (HalfEdgeVertex vertex : southVertices) {
                 Vector3d normal = vertex.calculateNormal();
-                if(Math.abs(normal.dot(0, -1, 0)) < dotLimit) {
+                if (Math.abs(normal.dot(0, -1, 0)) < dotLimit) {
                     Vector3d position = vertex.getPosition();
                     position.y -= expandDistance;
                 }
@@ -587,7 +587,7 @@ public class HalfEdgeScene implements Serializable {
         if (northVertices.size() > 1) {
             for (HalfEdgeVertex vertex : northVertices) {
                 Vector3d normal = vertex.calculateNormal();
-                if(Math.abs(normal.dot(0, 1, 0)) < dotLimit) {
+                if (Math.abs(normal.dot(0, 1, 0)) < dotLimit) {
                     Vector3d position = vertex.getPosition();
                     position.y += expandDistance;
                 }

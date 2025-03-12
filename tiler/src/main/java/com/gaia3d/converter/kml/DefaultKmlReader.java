@@ -79,7 +79,7 @@ public class DefaultKmlReader implements AttributeReader {
         int length = children.getLength();
         for (int i = 0; i < length; i++) {
             Node node = children.item(i);
-            if (node.getNodeType() == Node.ELEMENT_NODE){
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
                 Element child = (Element)node;
                 getElements(elements, child);
                 elements.add(child);

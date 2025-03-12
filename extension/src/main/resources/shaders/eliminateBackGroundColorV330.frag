@@ -25,7 +25,7 @@ void main(void) {
 
     vec4 color4 = texture2D(texture0, screenPos);
 
-    if(isBackgroundColor(color4)) {
+    if (isBackgroundColor(color4)) {
         // is background color, so change for nearest color
         float pixelSize_x = 1.0f/uScreenWidth;
         float pixelSize_y = 1.0f/uScreenHeight;
@@ -33,18 +33,18 @@ void main(void) {
 //        fragColor = vec4(0.0f, 0.25f, 0.9f, 1.0f);
 //        return;
 
-        for(int i=-10; i<=10; i++)
+        for (int i=-10; i<=10; i++)
         {
-            for(int j=-10; j<=10; j++)
+            for (int j=-10; j<=10; j++)
             {
                 vec2 texCoord = vec2(screenPos.x + pixelSize_x * float(i), screenPos.y + pixelSize_y * float(j));
 
                 // check texture bounds
-                if(texCoord.x < 0.0f || texCoord.x > 1.0f || texCoord.y < 0.0f || texCoord.y > 1.0f) {
+                if (texCoord.x < 0.0f || texCoord.x > 1.0f || texCoord.y < 0.0f || texCoord.y > 1.0f) {
                     continue;
                 }
                 vec4 color = texture2D(texture0, texCoord);
-                if(!isBackgroundColor(color)) {
+                if (!isBackgroundColor(color)) {
                     //fragColor = vec4(1.0f, 0.25f, 0.9f, 1.0f);
                     fragColor = color;
                     return;
