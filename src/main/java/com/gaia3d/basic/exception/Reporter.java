@@ -11,10 +11,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * This class is used to report exceptions for multi thread processing.
@@ -26,7 +23,7 @@ public class Reporter {
     private final String REPORT_FILE_NAME = "report";
     private final String REPORT_FILE_EXTENSION = ".txt";
     private final String REPORT_FILE_ENCODING = "UTF-8";
-    private Queue<Report> reportList = new ConcurrentLinkedQueue<>();
+    private List<Report> reportList = new ArrayList<>();
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private long duration;
@@ -48,7 +45,7 @@ public class Reporter {
         this.startTime = LocalDateTime.now();
     }
 
-    public void addReport(Report report) {
+    synchronized public void addReport(Report report) {
         reportList.add(report);
     }
 
