@@ -1,6 +1,7 @@
 package com.gaia3d.command.mago;
 
 import com.gaia3d.TilerExtensionModule;
+import com.gaia3d.basic.exception.Reporter;
 import com.gaia3d.basic.types.FormatType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -68,6 +69,8 @@ public class GlobalOptions {
     public static final int RANDOM_SEED = 2620;
 
     public static final boolean MAKE_SKIRT = true;
+
+    private Reporter reporter;
 
     private String version; // version flag
     private String javaVersionInfo; // java version flag
@@ -155,6 +158,7 @@ public class GlobalOptions {
     public static GlobalOptions getInstance() {
         if (instance.javaVersionInfo == null) {
             initVersionInfo();
+            instance.reporter = new Reporter("", instance.version);
         }
         return instance;
     }
@@ -260,8 +264,8 @@ public class GlobalOptions {
             instance.setCrs(source);
         } else if (command.hasOption(ProcessOptions.LONGITUDE.getArgName()) || command.hasOption(ProcessOptions.LATITUDE.getArgName())) {
             if (!command.hasOption(ProcessOptions.LONGITUDE.getArgName()) || !command.hasOption(ProcessOptions.LATITUDE.getArgName())) {
-                log.error("Please enter the value of the longitude and latitude arguments.");
-                log.error("The lon lat option must be used together.");
+                log.error("[ERROR] Please enter the value of the longitude and latitude arguments.");
+                log.error("[ERROR] The lon lat option must be used together.");
                 throw new IllegalArgumentException("Please enter the value of the longitude and latitude arguments.");
             }
             double longitude = Double.parseDouble(command.getOptionValue(ProcessOptions.LONGITUDE.getArgName()));
@@ -317,13 +321,13 @@ public class GlobalOptions {
         boolean isRefineAdd = false;
 
         if (command.hasOption(ProcessOptions.FLIP_UP_AXIS.getArgName())) {
-            log.warn("FLIP_UP_AXIS is Deprecated option: {}", ProcessOptions.FLIP_UP_AXIS.getArgName());
-            log.warn("Please use ROTATE_X_AXIS option instead of FLIP_UP_AXIS option.");
+            log.warn("[WARN] FLIP_UP_AXIS is Deprecated option: {}", ProcessOptions.FLIP_UP_AXIS.getArgName());
+            log.warn("[WARN] Please use ROTATE_X_AXIS option instead of FLIP_UP_AXIS option.");
             isFlipUpAxis = true;
         }
         if (command.hasOption(ProcessOptions.SWAP_UP_AXIS.getArgName())) {
-            log.warn("SWAP_UP_AXIS is Deprecated option: {}", ProcessOptions.SWAP_UP_AXIS.getArgName());
-            log.warn("Please use ROTATE_X_AXIS option instead of SWAP_UP_AXIS option.");
+            log.warn("[WARN] SWAP_UP_AXIS is Deprecated option: {}", ProcessOptions.SWAP_UP_AXIS.getArgName());
+            log.warn("[WARN] Please use ROTATE_X_AXIS option instead of SWAP_UP_AXIS option.");
             isSwapUpAxis = true;
         }
         if (command.hasOption(ProcessOptions.REFINE_ADD.getArgName())) {
@@ -366,7 +370,7 @@ public class GlobalOptions {
         TilerExtensionModule extensionModule = new TilerExtensionModule();
         extensionModule.executePhotorealistic(null, null);
         if (!extensionModule.isSupported() && instance.isPhotorealistic()) {
-            log.error("*** Extension Module is not supported ***");
+            log.error("[ERROR] *** Extension Module is not supported ***");
             throw new IllegalArgumentException("Extension Module is not supported.");
         } else {
             instance.setUseQuantization(true);
@@ -381,7 +385,7 @@ public class GlobalOptions {
         String title = Mago3DTilerMain.class.getPackage().getImplementationTitle();
         String vendor = Mago3DTilerMain.class.getPackage().getImplementationVendor();
         version = version == null ? "dev" : version;
-        title = title == null ? "3d-tiler" : title;
+        title = title == null ? "mago-3d-tiler" : title;
         vendor = vendor == null ? "Gaia3D, Inc." : vendor;
         String programInfo = title + "(" + version + ") by " + vendor;
 

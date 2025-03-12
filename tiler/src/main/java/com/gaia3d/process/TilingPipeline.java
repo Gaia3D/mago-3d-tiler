@@ -59,7 +59,8 @@ public class TilingPipeline implements Pipeline {
             /* Delete temp files */
             deleteTemp();
         } catch (InterruptedException e) {
-            log.error("Error : ", e);
+            log.error("[ERROR][Pipeline] : ", e);
+            globalOptions.getReporter().addReport(e);
             throw new RuntimeException(e);
         }
     }
@@ -82,24 +83,29 @@ public class TilingPipeline implements Pipeline {
             File file = fileList.get(count);
             int finalCount = count;
             Runnable callableTask = () -> {
-                List<TileInfo> loadedTileInfos = fileLoader.loadTileInfo(file);
-                log.info("[Pre][{}/{}] Loading file : {}", finalCount + 1, fileCount, file.getName());
-                if (loadedTileInfos == null) {
-                    log.warn("[Pre][{}/{}] Failed to load file : {}.", finalCount + 1, fileCount, file.getName());
-                    return;
-                }
-                int infoLength = loadedTileInfos.size();
-                nodeCount.addAndGet(infoLength);
-                for (int index = 0; index < infoLength; index++) {
-                    TileInfo tileInfo = loadedTileInfos.get(index);
-                    if (tileInfo != null) {
-                        log.info("[Pre][{}/{}][{}/{}] Loading tiles from file.", finalCount + 1, fileCount, index + 1, infoLength);
-                        tileInfo.setSerial(index + 1);
-                        for (PreProcess preProcessors : preProcesses) {
-                            preProcessors.run(tileInfo);
-                        }
-                        tileInfos.add(tileInfo);
+                try {
+                    List<TileInfo> loadedTileInfos = fileLoader.loadTileInfo(file);
+                    log.info("[Pre][{}/{}] Loading file : {}", finalCount + 1, fileCount, file.getName());
+                    if (loadedTileInfos == null) {
+                        log.warn("[WARN][Pre][{}/{}] Failed to load file : {}.", finalCount + 1, fileCount, file.getName());
+                        return;
                     }
+                    int infoLength = loadedTileInfos.size();
+                    nodeCount.addAndGet(infoLength);
+                    for (int index = 0; index < infoLength; index++) {
+                        TileInfo tileInfo = loadedTileInfos.get(index);
+                        if (tileInfo != null) {
+                            log.info("[Pre][{}/{}][{}/{}] Loading tiles from file.", finalCount + 1, fileCount, index + 1, infoLength);
+                            tileInfo.setSerial(index + 1);
+                            for (PreProcess preProcessors : preProcesses) {
+                                preProcessors.run(tileInfo);
+                            }
+                            tileInfos.add(tileInfo);
+                        }
+                    }
+                } catch (RuntimeException e) {
+                    log.error("[ERROR][PreProcess] : ", e);
+                    globalOptions.getReporter().addReport(e);
                 }
             };
             tasks.add(callableTask);
@@ -131,25 +137,30 @@ public class TilingPipeline implements Pipeline {
 
         for (ContentInfo contentInfo : contentInfos) {
             Runnable callableTask = () -> {
-                log.info("[Post][{}/{}] post-process in progress. : {}", count.getAndIncrement(), contentCount, contentInfo.getName());
-                List<TileInfo> tileInfos = contentInfo.getTileInfos();
-                List<TileInfo> tileInfosClone = tileInfos.stream()
-                        .map((childTileInfo) -> TileInfo.builder()
-                            .scene(childTileInfo.getScene())
-                            .kmlInfo(childTileInfo.getKmlInfo())
-                            .scenePath(childTileInfo.getScenePath())
-                            .tempPath(childTileInfo.getTempPath())
-                            .transformMatrix(childTileInfo.getTransformMatrix())
-                            .boundingBox(childTileInfo.getBoundingBox())
-                            .pointCloud(childTileInfo.getPointCloud())
-                            .build())
-                        .collect(Collectors.toList());
-                contentInfo.setTileInfos(tileInfosClone);
-                for (PostProcess postProcessor : postProcesses) {
-                    postProcessor.run(contentInfo);
+                try {
+                    log.info("[Post][{}/{}] post-process in progress. : {}", count.getAndIncrement(), contentCount, contentInfo.getName());
+                    List<TileInfo> tileInfos = contentInfo.getTileInfos();
+                    List<TileInfo> tileInfosClone = tileInfos.stream()
+                            .map((childTileInfo) -> TileInfo.builder()
+                                    .scene(childTileInfo.getScene())
+                                    .kmlInfo(childTileInfo.getKmlInfo())
+                                    .scenePath(childTileInfo.getScenePath())
+                                    .tempPath(childTileInfo.getTempPath())
+                                    .transformMatrix(childTileInfo.getTransformMatrix())
+                                    .boundingBox(childTileInfo.getBoundingBox())
+                                    .pointCloud(childTileInfo.getPointCloud())
+                                    .build())
+                            .collect(Collectors.toList());
+                    contentInfo.setTileInfos(tileInfosClone);
+                    for (PostProcess postProcessor : postProcesses) {
+                        postProcessor.run(contentInfo);
+                    }
+                    contentInfo.deleteTexture();
+                    tileInfosClone.clear();
+                } catch (RuntimeException e) {
+                    log.error("[ERROR][PostProcess] : ", e);
+                    globalOptions.getReporter().addReport(e);
                 }
-                contentInfo.deleteTexture();
-                tileInfosClone.clear();
             };
             tasks.add(callableTask);
         }
@@ -187,7 +198,7 @@ public class TilingPipeline implements Pipeline {
                 }
             }
         } catch (Exception e) {
-            log.error("Failed to execute thread.", e);
+            log.error("[ERROR] Failed to execute thread.", e);
             throw new RuntimeException(e);
         }
         executorService.shutdown();
