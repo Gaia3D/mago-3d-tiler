@@ -243,11 +243,12 @@ class B3dmReleaseTest {
     }
 
     @Test
-    void batched82() {
-        String path = "B82-glb-problems-good-kml";
+    void batched81() {
+        String path = "B81-glb-problems-kml";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
+                //"-rotateX", "90",
                 "--crs", "3011",
                 "--xOffset", "151400",
                 "--yOffset", "6577000",
@@ -257,12 +258,11 @@ class B3dmReleaseTest {
     }
 
     @Test
-    void batched81() {
-        String path = "B81-glb-problems-kml";
+    void batched82() {
+        String path = "B82-glb-problems-good-kml";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                //"-rotateX", "90",
                 "--crs", "3011",
                 "--xOffset", "151400",
                 "--yOffset", "6577000",
