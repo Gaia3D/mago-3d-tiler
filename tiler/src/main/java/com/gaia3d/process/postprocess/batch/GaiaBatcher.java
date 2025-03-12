@@ -42,7 +42,7 @@ public class GaiaBatcher {
 
             int materialId = dataSet.getMaterialId();
             if(materialId < 0 || materialId >= batchedMaterials.size()) {
-                log.error("MaterialId is out of range");
+                log.error("[ERROR] MaterialId is out of range");
                 continue;
             }
             GaiaMaterial material = batchedMaterials.get(dataSet.getMaterialId());
@@ -54,18 +54,18 @@ public class GaiaBatcher {
                 }
                 if (dataSet == dataSet2) continue;
                 if (material2 == material) {
-                    visitedMap.put(dataSet2, true); // set visited.***
+                    visitedMap.put(dataSet2, true); // set visited
                     continue;
                 }
                 if (areEqualMaterials(material2, material, lod.getTextureScale())) {
                     dataSet2.setMaterialId(material.getId());
-                    visitedMap.put(dataSet2, true); // set visited.***
+                    visitedMap.put(dataSet2, true); // set visited
                 }
             }
         }
     }
 
-    /** compare two materials.***
+    /** compare two materials
      * @param materialA
      * @param materialB
      * @param scaleFactor
@@ -112,7 +112,7 @@ public class GaiaBatcher {
                 GaiaTexture textureB = listTexturesB.get(i);
                 hasTexture = true;
 
-                // check if the fullPath of the textures are equal.***
+                // check if the fullPath of the textures are equal
                 String fullPathA = textureA.getFullPath();
                 String fullPathB = textureB.getFullPath();
                 if (fullPathA.equals(fullPathB)) {
@@ -165,7 +165,7 @@ public class GaiaBatcher {
 
         sets = sets.stream().filter((set -> {
             if(set == null) {
-                log.error("Set is null");
+                log.error("[ERROR] Set is null");
                 return false;
             }
             List<GaiaBufferDataSet> dataSets = set.getBufferDataList();
@@ -174,15 +174,15 @@ public class GaiaBatcher {
                 GaiaBuffer positionBuffer = bufferMap.get(AttributeType.POSITION);
                 boolean hasPositionBuffer = positionBuffer != null;
                 if (!hasPositionBuffer) {
-                    log.error("Position buffer is null");
-                    log.error("NodeCode: {}", nodeCode);
-                    log.error("Set: {}", set.getProjectName());
+                    log.error("[ERROR] Position buffer is null");
+                    log.error("[ERROR] NodeCode: {}", nodeCode);
+                    log.error("[ERROR] Set: {}", set.getProjectName());
                 }
                 return hasPositionBuffer;
             }).collect(Collectors.toList());
 
             if (dataSets.isEmpty()) {
-                log.error("Position buffer is null");
+                log.error("[ERROR] Position buffer is null");
                 return false;
             }
             set.setBufferDataList(dataSets);
@@ -223,11 +223,11 @@ public class GaiaBatcher {
             }
         });
 
-        // check if exist equal materials.***
+        // check if exist equal materials
         reassignMaterialsToGaiaBufferDataSetWithSameMaterial(batchedDataSets, lod);
         List<GaiaMaterial> filteredMaterials = getMaterialsListOfBufferDataSet(batchedDataSets, new ArrayList<>());
 
-        // batch dataSets with same material.***
+        // batch dataSets with same material
         List<GaiaBufferDataSet> filteredDataSets = batchDataSetsWithTheSameMaterial(batchedDataSets, filteredMaterials);
         setMaterialsIndexInList(filteredMaterials, filteredDataSets);
         checkIsRepeatMaterial(filteredMaterials, filteredDataSets);
@@ -325,7 +325,7 @@ public class GaiaBatcher {
         batchedSet.setBufferDataList(resultBufferDatas);
         batchedSet.setMaterials(resultMaterials);
         if (resultBufferDatas.isEmpty() || resultMaterials.isEmpty()) {
-            log.error("Batched Set is empty");
+            log.error("[ERROR] Batched Set is empty");
             batchedSet = null;
         }
 
@@ -598,7 +598,7 @@ public class GaiaBatcher {
                 totalIndicesMax = totalIndicesMax + (indicesMax + 1);
                 totalIndicesCount += indicesBuffer.getInts().length;
             } else {
-                log.error("indicesBuffer is null");
+                log.error("[ERROR] indicesBuffer is null");
             }
 
             if (positionBuffer != null) {
@@ -606,7 +606,7 @@ public class GaiaBatcher {
                     positions[positionIndex++] = position;
                 }
             } else {
-                log.error("positionBuffer is null");
+                log.error("[ERROR] positionBuffer is null");
             }
 
             if (normalBuffer != null) {

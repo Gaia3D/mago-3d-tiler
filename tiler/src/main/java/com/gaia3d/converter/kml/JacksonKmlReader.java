@@ -51,7 +51,7 @@ public class JacksonKmlReader implements AttributeReader {
                 kmlInfo = KmlInfo.builder().name(name).position(new Vector3d(longitude, latitude, altitude)).altitudeMode(altitudeMode).heading(heading).tilt(tilt).roll(roll).href(href).scaleX(x).scaleY(y).scaleZ(z).build();
             }
         } catch (IOException e) {
-            log.error("Error : ", e);
+            log.error("[ERROR] :", e);
             throw new RuntimeException(e);
         }
         return kmlInfo;
@@ -102,7 +102,7 @@ public class JacksonKmlReader implements AttributeReader {
                 }
             }
         } catch (IOException e) {
-            log.error("Error : ", e);
+            log.error("[ERROR] :", e);
             throw new RuntimeException(e);
         }
         return kmlInfos;

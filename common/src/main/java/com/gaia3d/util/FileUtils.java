@@ -35,7 +35,7 @@ public class FileUtils {
         File[] listOfFiles = folder.listFiles();
 
         if (listOfFiles == null) {
-            log.warn("No files in the folder: " + folderPath);
+            log.warn("[WARN] No files in the folder: " + folderPath);
             return;
         }
         for (File file : listOfFiles) {
@@ -53,7 +53,7 @@ public class FileUtils {
         File[] listOfFiles = folder.listFiles();
 
         if (listOfFiles == null) {
-            log.warn("No files in the folder: " + folderPath);
+            log.warn("[WARN] No files in the folder: " + folderPath);
             return;
         }
         for (File file : listOfFiles) {

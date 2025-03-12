@@ -185,19 +185,19 @@ public class GeometryUtils {
 
             // Right.
             Vector3d normalRight = new Vector3d(1, 0, 0);
-            GaiaVertex vertex0 = new GaiaVertex(); // coincident with vertex5.***
+            GaiaVertex vertex0 = new GaiaVertex(); // coincident with vertex5
             vertex0.setPosition(new Vector3d(maxX, minY, minZ));
             vertex0.setNormal(normalRight);
 
-            GaiaVertex vertex1 = new GaiaVertex(); // coincident with vertex9.***
+            GaiaVertex vertex1 = new GaiaVertex(); // coincident with vertex9
             vertex1.setPosition(new Vector3d(maxX, maxY, minZ));
             vertex1.setNormal(normalRight);
 
-            GaiaVertex vertex2 = new GaiaVertex(); // coincident with vertex10.***
+            GaiaVertex vertex2 = new GaiaVertex(); // coincident with vertex10
             vertex2.setPosition(new Vector3d(maxX, maxY, maxZ));
             vertex2.setNormal(normalRight);
 
-            GaiaVertex vertex3 = new GaiaVertex(); // coincident with vertex6.***
+            GaiaVertex vertex3 = new GaiaVertex(); // coincident with vertex6
             vertex3.setPosition(new Vector3d(maxX, minY, maxZ));
             vertex3.setNormal(normalRight);
 
@@ -206,16 +206,16 @@ public class GeometryUtils {
             rightPrimitive.getVertices().add(vertex2);
             rightPrimitive.getVertices().add(vertex3);
 
-            // RightSurface.************************************************************************************
+            // RightSurface
             GaiaSurface rightSurface = new GaiaSurface();
-            // 0, 1, 2, 3. The normal is (1, 0, 0).***
+            // 0, 1, 2, 3. The normal is (1, 0, 0)
 
-            // Face0 (0, 1, 2).***
+            // Face0 (0, 1, 2)
             GaiaFace face8 = new GaiaFace();
             face8.setIndices(new int[]{0, 1, 2});
             rightSurface.getFaces().add(face8);
 
-            // Face1 (0, 2, 3).***
+            // Face1 (0, 2, 3)
             GaiaFace face9 = new GaiaFace();
             face9.setIndices(new int[]{0, 2, 3});
             rightSurface.getFaces().add(face9);
@@ -227,13 +227,12 @@ public class GeometryUtils {
         if (front) {
             GaiaPrimitive frontPrimitive = new GaiaPrimitive();
 
-            // Front.************************************************************
             Vector3d normalFront = new Vector3d(0, -1, 0);
-            GaiaVertex vertex0 = new GaiaVertex(); // coincident with vertex0.***
+            GaiaVertex vertex0 = new GaiaVertex(); // coincident with vertex0
             vertex0.setPosition(new Vector3d(minX, minY, minZ));
             vertex0.setNormal(normalFront);
 
-            GaiaVertex vertex1 = new GaiaVertex(); // coincident with vertex1.***
+            GaiaVertex vertex1 = new GaiaVertex(); // coincident with vertex1
             vertex1.setPosition(new Vector3d(maxX, minY, minZ));
             vertex1.setNormal(normalFront);
 
@@ -250,16 +249,16 @@ public class GeometryUtils {
             frontPrimitive.getVertices().add(vertex2);
             frontPrimitive.getVertices().add(vertex3);
 
-            // FrontSurface.************************************************************************************
+            // FrontSurface
             GaiaSurface frontSurface = new GaiaSurface();
-            // 0, 1, 2, 3. The normal is (0, -1, 0).***
+            // 0, 1, 2, 3. The normal is (0, -1, 0)
 
-            // Face0 (0, 1, 2).***
+            // Face0 (0, 1, 2)
             GaiaFace face4 = new GaiaFace();
             face4.setIndices(new int[]{0, 1, 2});
             frontSurface.getFaces().add(face4);
 
-            // Face1 (0, 2, 3).***
+            // Face1 (0, 2, 3)
             GaiaFace face5 = new GaiaFace();
             face5.setIndices(new int[]{0, 2, 3});
             frontSurface.getFaces().add(face5);
@@ -271,13 +270,13 @@ public class GeometryUtils {
         if (rear) {
             GaiaPrimitive rearPrimitive = new GaiaPrimitive();
 
-            // Rear.************************************************************
+            // Rear
             Vector3d normalRear = new Vector3d(0, 1, 0);
-            GaiaVertex vertex0 = new GaiaVertex(); // coincident with vertex3.***
+            GaiaVertex vertex0 = new GaiaVertex(); // coincident with vertex3
             vertex0.setPosition(new Vector3d(minX, maxY, minZ));
             vertex0.setNormal(normalRear);
 
-            GaiaVertex vertex1 = new GaiaVertex(); // coincident with vertex2.***
+            GaiaVertex vertex1 = new GaiaVertex(); // coincident with vertex2
             vertex1.setPosition(new Vector3d(maxX, maxY, minZ));
             vertex1.setNormal(normalRear);
 
@@ -294,16 +293,16 @@ public class GeometryUtils {
             rearPrimitive.getVertices().add(vertex2);
             rearPrimitive.getVertices().add(vertex3);
 
-            // RearSurface.************************************************************************************
+            // RearSurface
             GaiaSurface backSurface = new GaiaSurface();
-            // 0, 3, 2, 1. The normal is (0, 1, 0).***
+            // 0, 3, 2, 1. The normal is (0, 1, 0)
 
-            // Face0 (0, 3, 2).***
+            // Face0 (0, 3, 2)
             GaiaFace face6 = new GaiaFace();
             face6.setIndices(new int[]{0, 3, 2});
             backSurface.getFaces().add(face6);
 
-            // Face1 (0, 2, 1).***
+            // Face1 (0, 2, 1)
             GaiaFace face7 = new GaiaFace();
             face7.setIndices(new int[]{0, 2, 1});
             backSurface.getFaces().add(face7);
@@ -314,7 +313,7 @@ public class GeometryUtils {
 
         if (bottom) {
             GaiaPrimitive bottomPrimitive = new GaiaPrimitive();
-            // Bottom.************************************************************
+            // Bottom
             GaiaVertex vertex0 = new GaiaVertex();
             Vector3d normalBottom = new Vector3d(0, 0, -1);
             vertex0.setPosition(new Vector3d(minX, minY, minZ));
@@ -337,15 +336,15 @@ public class GeometryUtils {
             bottomPrimitive.getVertices().add(vertex2);
             bottomPrimitive.getVertices().add(vertex3);
 
-            // BottomSurface.************************************************************************************
+            // BottomSurface
             GaiaSurface bottomSurface = new GaiaSurface();
-            // 0, 3, 2, 1. The normal is (0, 0, -1).***
-            // Face0 (0, 2, 1).***
+            // 0, 3, 2, 1. The normal is (0, 0, -1)
+            // Face0 (0, 2, 1)
             GaiaFace face0 = new GaiaFace();
             face0.setIndices(new int[]{0, 2, 1});
             bottomSurface.getFaces().add(face0);
 
-            // Face1 (0, 3, 2).***
+            // Face1 (0, 3, 2)
             GaiaFace face1 = new GaiaFace();
             face1.setIndices(new int[]{0, 3, 2});
             bottomSurface.getFaces().add(face1);
@@ -356,21 +355,21 @@ public class GeometryUtils {
 
         if (top) {
             GaiaPrimitive topPrimitive = new GaiaPrimitive();
-            // Top.************************************************************
+            // Top
             Vector3d normalTop = new Vector3d(0, 0, 1);
-            GaiaVertex vertex0 = new GaiaVertex(); // coincident with vertex7.***
+            GaiaVertex vertex0 = new GaiaVertex(); // coincident with vertex7
             vertex0.setPosition(new Vector3d(minX, minY, maxZ));
             vertex0.setNormal(normalTop);
 
-            GaiaVertex vertex1 = new GaiaVertex(); // coincident with vertex6.***
+            GaiaVertex vertex1 = new GaiaVertex(); // coincident with vertex6
             vertex1.setPosition(new Vector3d(maxX, minY, maxZ));
             vertex1.setNormal(normalTop);
 
-            GaiaVertex vertex2 = new GaiaVertex(); // coincident with vertex10.***
+            GaiaVertex vertex2 = new GaiaVertex(); // coincident with vertex10
             vertex2.setPosition(new Vector3d(maxX, maxY, maxZ));
             vertex2.setNormal(normalTop);
 
-            GaiaVertex vertex3 = new GaiaVertex(); // coincident with vertex11.***
+            GaiaVertex vertex3 = new GaiaVertex(); // coincident with vertex11
             vertex3.setPosition(new Vector3d(minX, maxY, maxZ));
             vertex3.setNormal(normalTop);
 
@@ -379,16 +378,16 @@ public class GeometryUtils {
             topPrimitive.getVertices().add(vertex2);
             topPrimitive.getVertices().add(vertex3);
 
-            // TopSurface.************************************************************************************
+            // TopSurface
             GaiaSurface topSurface = new GaiaSurface();
-            // 0, 1, 2, 3. The normal is (0, 0, 1).***
+            // 0, 1, 2, 3. The normal is (0, 0, 1)
             //Vector3d normal = new Vector3d(0, 0, 1);
-            // Face0 (0, 1, 2).***
+            // Face0 (0, 1, 2)
             GaiaFace face2 = new GaiaFace();
             face2.setIndices(new int[]{0, 1, 2});
             topSurface.getFaces().add(face2);
 
-            // Face1 (0, 2, 3).***
+            // Face1 (0, 2, 3)
             GaiaFace face3 = new GaiaFace();
             face3.setIndices(new int[]{0, 2, 3});
             topSurface.getFaces().add(face3);
@@ -404,7 +403,7 @@ public class GeometryUtils {
         //GaiaPrimitive resultPrimitive = getPrimitiveFromBoundingBox(bbox, true, true, true, true, true, true);
         GaiaPrimitive resultPrimitive = new GaiaPrimitive();
 
-        // make 6 GaiaSurface. Each surface has 2 gaiaFaces.***
+        // make 6 GaiaSurface. Each surface has 2 gaiaFaces
         double minX = bbox.getMinX();
         double minY = bbox.getMinY();
         double minZ = bbox.getMinZ();
@@ -412,7 +411,7 @@ public class GeometryUtils {
         double maxY = bbox.getMaxY();
         double maxZ = bbox.getMaxZ();
 
-        // 24 vertices.***
+        // 24 vertices
 
         //                          23--------22
         //                          /        /     <- top
@@ -438,7 +437,7 @@ public class GeometryUtils {
 
 
         GaiaVertex vertex0 = new GaiaVertex();
-        // Bottom.************************************************************
+        // Bottom*********************************************************
         Vector3d normalBottom = new Vector3d(0, 0, -1);
         vertex0.setPosition(new Vector3d(minX, minY, minZ));
         vertex0.setNormal(normalBottom);
@@ -455,13 +454,13 @@ public class GeometryUtils {
         vertex3.setPosition(new Vector3d(minX, maxY, minZ));
         vertex3.setNormal(normalBottom);
 
-        // Front.************************************************************
+        // Front*********************************************************
         Vector3d normalFront = new Vector3d(0, -1, 0);
-        GaiaVertex vertex4 = new GaiaVertex(); // coincident with vertex0.***
+        GaiaVertex vertex4 = new GaiaVertex(); // coincident with vertex0
         vertex4.setPosition(new Vector3d(minX, minY, minZ));
         vertex4.setNormal(normalFront);
 
-        GaiaVertex vertex5 = new GaiaVertex(); // coincident with vertex1.***
+        GaiaVertex vertex5 = new GaiaVertex(); // coincident with vertex1
         vertex5.setPosition(new Vector3d(maxX, minY, minZ));
         vertex5.setNormal(normalFront);
 
@@ -473,13 +472,13 @@ public class GeometryUtils {
         vertex7.setPosition(new Vector3d(minX, minY, maxZ));
         vertex7.setNormal(normalFront);
 
-        // Rear.************************************************************
+        // Rear*********************************************************
         Vector3d normalRear = new Vector3d(0, 1, 0);
-        GaiaVertex vertex8 = new GaiaVertex(); // coincident with vertex3.***
+        GaiaVertex vertex8 = new GaiaVertex(); // coincident with vertex3
         vertex8.setPosition(new Vector3d(minX, maxY, minZ));
         vertex8.setNormal(normalRear);
 
-        GaiaVertex vertex9 = new GaiaVertex(); // coincident with vertex2.***
+        GaiaVertex vertex9 = new GaiaVertex(); // coincident with vertex2
         vertex9.setPosition(new Vector3d(maxX, maxY, minZ));
         vertex9.setNormal(normalRear);
 
@@ -491,57 +490,57 @@ public class GeometryUtils {
         vertex11.setPosition(new Vector3d(minX, maxY, maxZ));
         vertex11.setNormal(normalRear);
 
-        // Left.************************************************************
+        // Left*********************************************************
         Vector3d normalLeft = new Vector3d(-1, 0, 0);
-        GaiaVertex vertex12 = new GaiaVertex(); // coincident with vertex0.***
+        GaiaVertex vertex12 = new GaiaVertex(); // coincident with vertex0
         vertex12.setPosition(new Vector3d(minX, minY, minZ));
         vertex12.setNormal(normalLeft);
 
-        GaiaVertex vertex13 = new GaiaVertex(); // coincident with vertex3.***
+        GaiaVertex vertex13 = new GaiaVertex(); // coincident with vertex3
         vertex13.setPosition(new Vector3d(minX, maxY, minZ));
         vertex13.setNormal(normalLeft);
 
-        GaiaVertex vertex14 = new GaiaVertex(); // coincident with vertex11.***
+        GaiaVertex vertex14 = new GaiaVertex(); // coincident with vertex11
         vertex14.setPosition(new Vector3d(minX, maxY, maxZ));
         vertex14.setNormal(normalLeft);
 
-        GaiaVertex vertex15 = new GaiaVertex(); // coincident with vertex7.***
+        GaiaVertex vertex15 = new GaiaVertex(); // coincident with vertex7
         vertex15.setPosition(new Vector3d(minX, minY, maxZ));
         vertex15.setNormal(normalLeft);
 
-        // Right.************************************************************
+        // Right*********************************************************
         Vector3d normalRight = new Vector3d(1, 0, 0);
-        GaiaVertex vertex16 = new GaiaVertex(); // coincident with vertex5.***
+        GaiaVertex vertex16 = new GaiaVertex(); // coincident with vertex5
         vertex16.setPosition(new Vector3d(maxX, minY, minZ));
         vertex16.setNormal(normalRight);
 
-        GaiaVertex vertex17 = new GaiaVertex(); // coincident with vertex9.***
+        GaiaVertex vertex17 = new GaiaVertex(); // coincident with vertex9
         vertex17.setPosition(new Vector3d(maxX, maxY, minZ));
         vertex17.setNormal(normalRight);
 
-        GaiaVertex vertex18 = new GaiaVertex(); // coincident with vertex10.***
+        GaiaVertex vertex18 = new GaiaVertex(); // coincident with vertex10
         vertex18.setPosition(new Vector3d(maxX, maxY, maxZ));
         vertex18.setNormal(normalRight);
 
-        GaiaVertex vertex19 = new GaiaVertex(); // coincident with vertex6.***
+        GaiaVertex vertex19 = new GaiaVertex(); // coincident with vertex6
         vertex19.setPosition(new Vector3d(maxX, minY, maxZ));
         vertex19.setNormal(normalRight);
 
-        // Top.************************************************************
+        // Top*********************************************************
         Vector3d normalTop = new Vector3d(0, 0, 1);
-        GaiaVertex vertex20 = new GaiaVertex(); // coincident with vertex7.***
+        GaiaVertex vertex20 = new GaiaVertex(); // coincident with vertex7
         vertex20.setPosition(new Vector3d(minX, minY, maxZ));
         vertex20.setNormal(normalTop);
 
-        GaiaVertex vertex21 = new GaiaVertex(); // coincident with vertex6.***
+        GaiaVertex vertex21 = new GaiaVertex(); // coincident with vertex6
         vertex21.setPosition(new Vector3d(maxX, minY, maxZ));
         vertex21.setNormal(normalTop);
 
-        GaiaVertex vertex22 = new GaiaVertex(); // coincident with vertex10.***
+        GaiaVertex vertex22 = new GaiaVertex(); // coincident with vertex10
         vertex22.setPosition(new Vector3d(maxX, maxY, maxZ));
         vertex22.setNormal(normalTop);
 
-        GaiaVertex vertex23 = new GaiaVertex(); // coincident with vertex11.***
+        GaiaVertex vertex23 = new GaiaVertex(); // coincident with vertex11
         vertex23.setPosition(new Vector3d(minX, maxY, maxZ));
         vertex23.setNormal(normalTop);
 
@@ -572,95 +571,95 @@ public class GeometryUtils {
         resultPrimitive.getVertices().add(vertex23);
 
 
-        // BottomSurface.************************************************************************************
+        // BottomSurface*********************************************************************************
         GaiaSurface bottomSurface = new GaiaSurface();
-        // 0, 3, 2, 1. The normal is (0, 0, -1).***
-        // Face0 (0, 2, 1).***
+        // 0, 3, 2, 1. The normal is (0, 0, -1)
+        // Face0 (0, 2, 1)
         GaiaFace face0 = new GaiaFace();
         face0.setIndices(new int[]{0, 2, 1});
         bottomSurface.getFaces().add(face0);
 
-        // Face1 (0, 3, 2).***
+        // Face1 (0, 3, 2)
         GaiaFace face1 = new GaiaFace();
         face1.setIndices(new int[]{0, 3, 2});
         bottomSurface.getFaces().add(face1);
 
         resultPrimitive.getSurfaces().add(bottomSurface);
 
-        // TopSurface.************************************************************************************
+        // TopSurface*********************************************************************************
         GaiaSurface topSurface = new GaiaSurface();
-        // 20, 21, 22, 23. The normal is (0, 0, 1).***
+        // 20, 21, 22, 23. The normal is (0, 0, 1)
         //Vector3d normal = new Vector3d(0, 0, 1);
-        // Face0 (20, 21, 22).***
+        // Face0 (20, 21, 22)
         GaiaFace face2 = new GaiaFace();
         face2.setIndices(new int[]{20, 21, 22});
         topSurface.getFaces().add(face2);
 
-        // Face1 (20, 22, 23).***
+        // Face1 (20, 22, 23)
         GaiaFace face3 = new GaiaFace();
         face3.setIndices(new int[]{20, 22, 23});
         topSurface.getFaces().add(face3);
 
         resultPrimitive.getSurfaces().add(topSurface);
 
-        // FrontSurface.************************************************************************************
+        // FrontSurface*********************************************************************************
         GaiaSurface frontSurface = new GaiaSurface();
-        // 4, 5, 6, 7. The normal is (0, -1, 0).***
+        // 4, 5, 6, 7. The normal is (0, -1, 0)
 
-        // Face0 (4, 5, 6).***
+        // Face0 (4, 5, 6)
         GaiaFace face4 = new GaiaFace();
         face4.setIndices(new int[]{4, 5, 6});
         frontSurface.getFaces().add(face4);
 
-        // Face1 (4, 6, 7).***
+        // Face1 (4, 6, 7)
         GaiaFace face5 = new GaiaFace();
         face5.setIndices(new int[]{4, 6, 7});
         frontSurface.getFaces().add(face5);
 
         resultPrimitive.getSurfaces().add(frontSurface);
 
-        // RearSurface.************************************************************************************
+        // RearSurface*********************************************************************************
         GaiaSurface backSurface = new GaiaSurface();
-        // 8, 11, 10, 9. The normal is (0, 1, 0).***
+        // 8, 11, 10, 9. The normal is (0, 1, 0)
 
-        // Face0 (8, 11, 10).***
+        // Face0 (8, 11, 10)
         GaiaFace face6 = new GaiaFace();
         face6.setIndices(new int[]{8, 11, 10});
         backSurface.getFaces().add(face6);
 
-        // Face1 (8, 10, 9).***
+        // Face1 (8, 10, 9)
         GaiaFace face7 = new GaiaFace();
         face7.setIndices(new int[]{8, 10, 9});
         backSurface.getFaces().add(face7);
 
         resultPrimitive.getSurfaces().add(backSurface);
 
-        // RightSurface.************************************************************************************
+        // RightSurface*********************************************************************************
         GaiaSurface rightSurface = new GaiaSurface();
-        // 16, 17, 18, 19. The normal is (1, 0, 0).***
+        // 16, 17, 18, 19. The normal is (1, 0, 0)
 
-        // Face0 (16, 17, 18).***
+        // Face0 (16, 17, 18)
         GaiaFace face8 = new GaiaFace();
         face8.setIndices(new int[]{16, 17, 18});
         rightSurface.getFaces().add(face8);
 
-        // Face1 (16, 18, 19).***
+        // Face1 (16, 18, 19)
         GaiaFace face9 = new GaiaFace();
         face9.setIndices(new int[]{16, 18, 19});
         rightSurface.getFaces().add(face9);
 
         resultPrimitive.getSurfaces().add(rightSurface);
 
-        // LeftSurface.************************************************************************************
+        // LeftSurface*********************************************************************************
         GaiaSurface leftSurface = new GaiaSurface();
-        // 12, 15, 14, 13. The normal is (-1, 0, 0).***
+        // 12, 15, 14, 13. The normal is (-1, 0, 0)
 
-        // Face0 (12, 15, 14).***
+        // Face0 (12, 15, 14)
         GaiaFace face10 = new GaiaFace();
         face10.setIndices(new int[]{12, 15, 14});
         leftSurface.getFaces().add(face10);
 
-        // Face1 (12, 14, 13).***
+        // Face1 (12, 14, 13)
         GaiaFace face11 = new GaiaFace();
         face11.setIndices(new int[]{12, 14, 13});
         leftSurface.getFaces().add(face11);
@@ -673,7 +672,7 @@ public class GeometryUtils {
     public static GaiaNode getGaiaNodeWithPrimitivesAsBox(GaiaNode node) {
         GaiaNode resultNode = new GaiaNode();
 
-        // Check if exists meshes in the node.***
+        // Check if exists meshes in the node
         int meshesCount = node.getMeshes().size();
         for (int j = 0; j < meshesCount; j++) {
             GaiaMesh mesh = node.getMeshes().get(j);
@@ -743,7 +742,7 @@ public class GeometryUtils {
     }
 
     public static List<Vector3d> getCleanPoints3dArray(List<Vector3d> pointsArray, List<Vector3d> cleanPointsArray, double error) {
-        // Here checks uroborus, and check if there are adjacent points in the same position.***
+        // Here checks uroborus, and check if there are adjacent points in the same position
         if (cleanPointsArray == null) {
             cleanPointsArray = new ArrayList<>();
         } else {
@@ -765,12 +764,12 @@ public class GeometryUtils {
             if (!currPoint.equals(firstPoint) && !currPoint.equals(lastPoint)) {
 
                 if (GeometryUtils.areAproxEqualsPoints3d(currPoint, firstPoint, error)) {
-                    // the polygon is uroborus.***
+                    // the polygon is uroborus
                     continue;
                 }
 
                 if (GeometryUtils.areAproxEqualsPoints3d(currPoint, lastPoint, error)) {
-                    // the point is the same as the last point.***
+                    // the point is the same as the last point
                     continue;
                 }
 
@@ -780,7 +779,7 @@ public class GeometryUtils {
 
         }
 
-        // now, erase colineal points.***
+        // now, erase colineal points
         double dotProdError = 1.0 - 1e-10;
         pointsCount = cleanPointsArray.size();
         for (int i = 0; i < pointsCount; i++) {
@@ -799,7 +798,7 @@ public class GeometryUtils {
 
             double dotProd = v1.dot(v2);
             if (Math.abs(dotProd) >= dotProdError) {
-                // the points are colineal.***
+                // the points are colineal
                 cleanPointsArray.remove(i);
                 i--;
                 pointsCount--;
@@ -834,7 +833,7 @@ public class GeometryUtils {
 
             GaiaPrimitive primitive = getPrimitiveFromBoundingBox(bbox, !hasNeighbor[0], !hasNeighbor[1], !hasNeighbor[2], !hasNeighbor[3], !hasNeighbor[4], !hasNeighbor[5]);
 
-            // Test.****************************************************************************************************
+            // Test*************************************************************************************************
             //Vector4d randomColor = new Vector4d(Math.random(), Math.random(), Math.random(), 1.0);
             Vector4d averageColor = GeometryUtils.getAverageColor(octree.getFaceDataList());
 
@@ -869,7 +868,7 @@ public class GeometryUtils {
     public static boolean isValidVector(Vector3d vector) {
         boolean valid = true;
         if (!Double.isNaN(vector.get(0)) && !Double.isNaN(vector.get(1)) && !Double.isNaN(vector.get(2))) {
-            // check if vector is zero.***
+            // check if vector is zero
             valid = vector.x != 0.0 || vector.y != 0.0 || vector.z != 0.0;
         } else {
             valid = false;
@@ -893,7 +892,7 @@ public class GeometryUtils {
     }
 
     public static void calculateNormal3D(List<Vector3d> polygon, Vector3d resultNormal) {
-        // calculate the normal of the polygon.***
+        // calculate the normal of the polygon
         int pointsCount = polygon.size();
         if (pointsCount < 3) {
             return;
@@ -909,17 +908,17 @@ public class GeometryUtils {
             Vector3d v1 = new Vector3d();
             Vector3d v2 = new Vector3d();
             currPoint.sub(prevPoint, v1);
-            // check if v1 valid.***
+            // check if v1 valid
             if (!isValidVector(v1)) {
-                // v1 is invalid.***
+                // v1 is invalid
                 continue;
             }
             v1.normalize();
 
             nextPoint.sub(currPoint, v2);
-            // check if v2 valid.***
+            // check if v2 valid
             if (!isValidVector(v2)) {
-                // v2 is invalid.***
+                // v2 is invalid
                 continue;
             }
             v2.normalize();
@@ -929,14 +928,14 @@ public class GeometryUtils {
 
 
             if (!isValidVector(cross)) {
-                // cross is invalid.***
+                // cross is invalid
                 continue;
             }
 
             cross.normalize();
 
             double dotProd = v1.dot(v2);
-            double angRad = Math.acos(dotProd); // because v1 and v2 are normalized.***
+            double angRad = Math.acos(dotProd); // because v1 and v2 are normalized
 
             resultNormal.add(cross.x * angRad, cross.y * angRad, cross.z * angRad);
         }
@@ -953,21 +952,21 @@ public class GeometryUtils {
         float absZ = Math.abs((float) normal.z);
 
         if (absX > absY && absX > absZ) {
-            // the best plane is the YZ plane.***
+            // the best plane is the YZ plane
             if (normal.x > 0) {
                 return PlaneType.YZ;
             } else {
                 return PlaneType.YZNEG;
             }
         } else if (absY > absX && absY > absZ) {
-            // the best plane is the XZ plane.***
+            // the best plane is the XZ plane
             if (normal.y > 0) {
                 return PlaneType.XZ;
             } else {
                 return PlaneType.XZNEG;
             }
         } else {
-            // the best plane is the XY plane.***
+            // the best plane is the XY plane
             if (normal.z > 0) {
                 return PlaneType.XY;
             } else {

@@ -155,7 +155,7 @@ public class LasConverter {
 
             GaiaPointCloudTemp tempFile = pointCloudHeader.findTemp(position);
             if (tempFile == null) {
-                log.error("Failed to find temp file.");
+                log.error("[ERROR] Failed to find temp file.");
             } else {
                 tempFile.writePosition(position, rgb);
             }
@@ -253,7 +253,7 @@ public class LasConverter {
             String zStr = String.format(format, z);
             String key = xStr + "-" + yStr + "-" + zStr;
             if (hashMap.containsKey(key)) {
-                //log.error("Duplicated key : {}", key);
+
             } else {
                 hashMap.put(key, vertex);
             }

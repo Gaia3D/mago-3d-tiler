@@ -142,7 +142,7 @@ public class GeoPackageInstanceConverter implements AttributeReader {
             if (geoPackage != null) {
                 geoPackage.close();
             }
-            log.error("Error : ", e);
+            log.error("[ERROR] :", e);
             throw new RuntimeException(e);
         }
         return result;

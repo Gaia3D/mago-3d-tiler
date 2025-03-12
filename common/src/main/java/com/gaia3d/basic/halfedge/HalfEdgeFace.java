@@ -28,16 +28,16 @@ public class HalfEdgeFace implements Serializable {
     private int id = -1;
     private int halfEdgeId = -1;
 
-    // auxiliary variables.***
-    private int classifyId = -1; // use to classify the face for some purpose.***
-    private PlaneType bestPlaneToProject; // use to classify the face for some purpose.***
-    private CameraDirectionType cameraDirectionType; // use to classify the face for some purpose.***
+    // auxiliary variables
+    private int classifyId = -1; // use to classify the face for some purpose
+    private PlaneType bestPlaneToProject; // use to classify the face for some purpose
+    private CameraDirectionType cameraDirectionType; // use to classify the face for some purpose
 
     public void copyFrom(HalfEdgeFace face) {
         if (face == null) {
             return;
         }
-        // do not copy pointers.***
+        // do not copy pointers
         if (face.normal != null) {
             this.normal = new Vector3d(face.normal);
         }
@@ -165,7 +165,7 @@ public class HalfEdgeFace implements Serializable {
             resultBaricenter = new Vector3d();
         }
 
-        // init.***
+        // init
         resultBaricenter.set(0, 0, 0);
 
         int verticesSize = vertices.size();
@@ -188,7 +188,7 @@ public class HalfEdgeFace implements Serializable {
     }
 
     public boolean isDegenerated() {
-        // if area is 0, then is degenerated.***
+        // if area is 0, then is degenerated
         List<HalfEdge> halfEdgesLoop = this.getHalfEdgesLoop(null);
         if (halfEdgesLoop == null) {
             return true;
@@ -204,9 +204,7 @@ public class HalfEdgeFace implements Serializable {
     }
 
     public boolean isApplauseFace(HalfEdgeFace face) {
-        //*****************************************************************
         // Note : 2 faces are applause faces if they have same vertices.
-        //*****************************************************************
         if (face == null) {
             return false;
         }
@@ -306,7 +304,7 @@ public class HalfEdgeFace implements Serializable {
 
         for (HalfEdgeFace adjacentFace : adjacentFaces) {
             if (adjacentFace != null) {
-                // check if is visited.***
+                // check if is visited
                 if (mapVisitedFaces.get(adjacentFace) == null) {
                     resultWeldedFaces.add(adjacentFace);
                 }
@@ -336,7 +334,7 @@ public class HalfEdgeFace implements Serializable {
 
         for (HalfEdgeFace adjacentFace : adjacentFaces) {
             if (adjacentFace != null) {
-                // check if is visited.***
+                // check if is visited
                 if (mapVisitedFaces.get(adjacentFace) == null) {
                     adjacentFace.getWeldedFacesRecursive(resultWeldedFaces, mapVisitedFaces);
                 }

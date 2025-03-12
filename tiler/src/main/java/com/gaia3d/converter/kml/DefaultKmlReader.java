@@ -55,7 +55,7 @@ public class DefaultKmlReader implements AttributeReader {
             builder = null;
             factory = null;
         } catch (IOException e) {
-            log.error("Error : ", e);
+            log.error("[ERROR] :", e);
             throw new RuntimeException(e);
         } catch (SAXException | ParserConfigurationException e) {
             log.error("SAXException: {}", e.getMessage());

@@ -54,7 +54,7 @@ public class GaiaTranslator implements PreProcess {
             try {
                 coverage.evaluate(worldPosition, altitude);
             } catch (Exception e) {
-                log.warn("[warn] Failed to load terrain height. Out of range");
+                log.warn("[WARN] Failed to load terrain height. Out of range");
                 log.debug("- Detail : ", e);
             }
             center.z = altitude[0];

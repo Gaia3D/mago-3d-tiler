@@ -28,7 +28,7 @@ public class HalfEdge implements Serializable {
     private int nextId = -1;
     private int startVertexId = -1;
     private int faceId = -1;
-    private int classifyId = -1; // auxiliary variable.***
+    private int classifyId = -1; // auxiliary variable
 
     public void setStartVertex(HalfEdgeVertex startVertex) {
         this.startVertex = startVertex;
@@ -221,9 +221,7 @@ public class HalfEdge implements Serializable {
     }
 
     public boolean getIntersectionByPlane(PlaneType planeType, Vector3d planePosition, HalfEdgeVertex resultIntesectionVertex, double error) {
-        //**************************************************************
-        // Note : for OBLIQUE planes, override this method.
-        //**************************************************************
+        // for OBLIQUE planes, override this method.
         boolean intersection = false;
 
         if (planeType == PlaneType.XY) {
@@ -274,7 +272,7 @@ public class HalfEdge implements Serializable {
         resultIntersectionPoint.set(startVertexPosition.x + t * (endVertexPosition.x - startVertexPosition.x), startVertexPosition.y + t * (endVertexPosition.y - startVertexPosition.y), planePosition.z);
 
         // check if the intersection point is in the range of the halfEdge
-        // check z.***
+        // check z
         double z = resultIntersectionPoint.z;
         double minZ = Math.min(startVertex.getPosition().z, getEndVertex().getPosition().z);
         double maxZ = Math.max(startVertex.getPosition().z, getEndVertex().getPosition().z);
@@ -358,7 +356,7 @@ public class HalfEdge implements Serializable {
         // t represents
 
         // check if the intersection point is in the range of the halfEdge
-        // check x.***
+        // check x
         double x = resultIntersectionPoint.x;
         double minX = Math.min(startVertex.getPosition().x, getEndVertex().getPosition().x);
         double maxX = Math.max(startVertex.getPosition().x, getEndVertex().getPosition().x);
@@ -440,7 +438,7 @@ public class HalfEdge implements Serializable {
         resultIntersectionPoint.set(startVertexPosition.x + t * (endVertexPosition.x - startVertexPosition.x), planePosition.y, startVertexPosition.z + t * (endVertexPosition.z - startVertexPosition.z));
 
         // check if the intersection point is in the range of the halfEdge
-        // check y.***
+        // check y
         double y = resultIntersectionPoint.y;
         double minY = Math.min(startVertex.getPosition().y, getEndVertex().getPosition().y);
         double maxY = Math.max(startVertex.getPosition().y, getEndVertex().getPosition().y);

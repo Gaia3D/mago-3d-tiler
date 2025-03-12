@@ -33,7 +33,7 @@ public class LargeMeshConverter implements Converter {
         List<GaiaScene> resultGaiaScenes = new ArrayList<>();
         GaiaSceneSplitter.splitScenes(scenes, resultGaiaScenes);
 
-        return resultGaiaScenes; // new.***
+        return resultGaiaScenes; // new
     }
 
     @Override

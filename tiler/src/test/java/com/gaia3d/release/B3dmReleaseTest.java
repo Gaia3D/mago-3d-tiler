@@ -251,7 +251,7 @@ class B3dmReleaseTest {
                 "--crs", "3011",
                 "--xOffset", "151400",
                 "--yOffset", "6577000",
-                "-debug"
+                //"-debug"
         };
         execute(args);
     }
@@ -266,7 +266,7 @@ class B3dmReleaseTest {
                 "--crs", "3011",
                 "--xOffset", "151400",
                 "--yOffset", "6577000",
-                "-debug"
+                //"-debug"
         };
         execute(args);
     }

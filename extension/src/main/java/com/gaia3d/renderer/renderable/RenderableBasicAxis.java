@@ -29,7 +29,7 @@ public class RenderableBasicAxis {
         int glType = GL20.GL_FLOAT;
         int glTarget = GL20.GL_ARRAY_BUFFER;
 
-        // xyz axis.***
+        // xyz axis
         RenderableBuffer axisBuffer = new RenderableBuffer(attribType, elemsCount, glDimension, glType, glTarget);
         float[] axisPositions = new float[]{0.0f, 0.0f, 0.0f, axisLength, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, axisLength, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, axisLength};
         int[] vboId = new int[1];
@@ -41,10 +41,10 @@ public class RenderableBasicAxis {
 
         setAttribTypeRenderableBuffer(attribType, axisBuffer);
 
-        // colors.***
+        // colors
         attribType = AttributeType.COLOR;
         elemsCount = 6;
-        glDimension = 4; // r,g,b,a.***
+        glDimension = 4; // r,g,b,a
         glType = GL20.GL_FLOAT;
         glTarget = GL20.GL_ARRAY_BUFFER;
 

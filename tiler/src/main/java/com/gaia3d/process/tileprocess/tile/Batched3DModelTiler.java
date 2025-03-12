@@ -51,7 +51,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         try {
             createNode(root, tileInfos, 0);
         } catch (IOException e) {
-            log.error("Error : ", e);
+            log.error("[ERROR] :", e);
             throw new RuntimeException(e);
         }
 
@@ -77,7 +77,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
             writer.write(result);
             globalOptions.setTilesetSize(result.length());
         } catch (IOException e) {
-            log.error("Error : ", e);
+            log.error("[ERROR] :", e);
             throw new TileProcessingException(e.getMessage());
         }
     }
@@ -93,7 +93,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         log.debug("[Tile][ContentNode][OBJECT] : {}", tileInfos.size());
 
         if (nodeDepth > globalOptions.getMaxNodeDepth()) {
-            log.warn("[Tile] Node depth limit exceeded : {}", nodeDepth);
+            log.warn("[WARN][Tile] Node depth limit exceeded : {}", nodeDepth);
             Node childNode = createContentNode(parentNode, tileInfos, 0);
             if (childNode != null) {
                 parentNode.getChildren().add(childNode);

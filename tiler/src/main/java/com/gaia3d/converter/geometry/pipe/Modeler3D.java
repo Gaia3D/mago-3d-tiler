@@ -19,7 +19,7 @@ public class Modeler3D {
     public TopologicalNetwork getPipeNetworkFromPipeElbows(List<PipeElbow> pipeElbows) {
         TopologicalNetwork network = new TopologicalNetwork();
 
-        // test value.***
+        // test value
         float pipeRadius = 0.5f;
         // for rectangular pipe.
         float[] pipeRectangularSize = new float[2];
@@ -52,7 +52,7 @@ public class Modeler3D {
     public GaiaNode makeGeometry(TopologicalNetwork network) {
         GaiaNode resultGaiaNode = new GaiaNode();
 
-        // 1rst, calculate elbows.***
+        // 1rst, calculate elbows
         for (int i = 0; i < network.getNodes().size(); i++) {
             TopologicalNode node = network.getNodes().get(i);
             if (node instanceof PipeElbow elbow) {
@@ -123,7 +123,7 @@ public class Modeler3D {
             GaiaVertex vertexANext = vertexListA.get((i + 1) % vertexCount);
             GaiaVertex vertexBNext = vertexListB.get((i + 1) % vertexCount);
 
-            // create 2 gaiaFaces.***
+            // create 2 gaiaFaces
             // face1 : vertexA, vertexANext, vertexBNext.
             // face2 : vertexA, vertexBNext, vertexB.
             GaiaFace face1 = new GaiaFace();
@@ -149,7 +149,7 @@ public class Modeler3D {
     public GaiaPrimitive getPrimitiveFromMultipleProfiles(List<List<Vector3d>> profiles, boolean bottomCap, boolean topCap, boolean isClosed, boolean isSmooth) {
         GaiaPrimitive primitive = new GaiaPrimitive();
 
-        // 1rst, create all transversal vertices.***
+        // 1rst, create all transversal vertices
         List<List<GaiaVertex>> transversalVerticesList = new ArrayList<>();
         int profilesCount = profiles.size();
         for (List<Vector3d> vector3ds : profiles) {
@@ -470,7 +470,7 @@ public class Modeler3D {
             // return rotated in xAxis 180 degrees.
             matrix.set(new double[]{1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 1.0});
         } else {
-            // Direct calculation.*******************************************************
+            // Direct calculation****************************************************
 //            // calculate the rotation angle.
 //            double rotationAngle = Math.acos(zDir.z);
 //

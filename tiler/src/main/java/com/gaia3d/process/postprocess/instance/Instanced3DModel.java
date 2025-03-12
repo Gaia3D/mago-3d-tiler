@@ -239,7 +239,7 @@ public class Instanced3DModel implements TileModel {
             featureTableJson = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(featureTable));
             batchTableJson = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(batchTableMap));
         } catch (JsonProcessingException e) {
-            log.error(e.getMessage());
+            log.error("[ERROR] :", e);
             throw new RuntimeException(e);
         }
         featureTableJSONByteLength = featureTableJson.length();
@@ -279,7 +279,7 @@ public class Instanced3DModel implements TileModel {
             //stream.write(new byte[0]);
             stream.writePureText(gltfUrl);// padding
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error("[ERROR] :", e);
         }
         return contentInfo;
     }
@@ -331,7 +331,7 @@ public class Instanced3DModel implements TileModel {
                 gltfWriter.writeGlb(resultGaiaScene, file);
             }
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error("[ERROR] :", e);
             throw new RuntimeException(e);
         }
     }

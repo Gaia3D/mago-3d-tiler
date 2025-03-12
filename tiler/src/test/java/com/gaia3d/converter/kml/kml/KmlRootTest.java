@@ -31,7 +31,7 @@ class KmlRootTest {
              KmlRoot root = xmlMapper.readValue(new File(path), KmlRoot.class);
              log.info("{}", xmlMapper.writeValueAsString(root));
         } catch (IOException e) {
-            log.error("Error : ", e);
+            log.error("[ERROR] :", e);
             throw new RuntimeException(e);
         }
     }

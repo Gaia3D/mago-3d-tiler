@@ -237,7 +237,7 @@ public class PointCloudModel implements TileModel {
             featureTableJson = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(featureTable));
             batchTableJson = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(batchTable));
         } catch (JsonProcessingException e) {
-            log.error(e.getMessage());
+            log.error("[ERROR] :", e);
             throw new RuntimeException(e);
         }
 

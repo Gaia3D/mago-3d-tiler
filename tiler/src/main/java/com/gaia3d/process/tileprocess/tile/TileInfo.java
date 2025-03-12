@@ -37,9 +37,9 @@ public class TileInfo {
     private GaiaBoundingBox boundingBox;
     private Path scenePath;
     private Path outputPath;
-    private Path tempPath; // tempPath lod 0.***
+    private Path tempPath; // tempPath lod 0
 
-    private List<Path> tempPathLod; // tempPath lod 0, 1, 2, 3, 4, 5, etc.***
+    private List<Path> tempPathLod; // tempPath lod 0, 1, 2, 3, 4, 5, etc
     private GaiaBoundingBox cartographicBBox;
 
     @Builder.Default
@@ -114,7 +114,7 @@ public class TileInfo {
                 FileUtils.deleteDirectory(file);
                 return;
             }
-            log.warn("Can not delete temp files: {}", file);
+            log.warn("[WARN] Can not delete temp files: {}", file);
         }
     }
 

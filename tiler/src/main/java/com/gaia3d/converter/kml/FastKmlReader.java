@@ -26,7 +26,7 @@ public class FastKmlReader implements AttributeReader {
             kmlInfo = KmlInfo.builder().name(findValue(xml, "name")).position(position).altitudeMode(findValue(xml, "altitudeMode")).heading(parseDouble(findValue(xml, "heading"))).tilt(parseDouble(findValue(xml, "tilt"))).roll(parseDouble(findValue(xml, "roll"))).href(findValue(xml, "href")).scaleX(parseDouble(findValue(xml, "x"))).scaleY(parseDouble(findValue(xml, "y"))).scaleZ(parseDouble(findValue(xml, "z"))).build();
             xml = null;
         } catch (IOException e) {
-            log.error(e.getMessage());
+            log.error("[ERROR] :", e);
             throw new RuntimeException(e);
         }
         return kmlInfo;

@@ -190,7 +190,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                     for (GaiaBuildingSurface buildingSurface : surfaces) {
                         GaiaMaterial material = getMaterialByClassification(scene.getMaterials(), buildingSurface.getClassification());
 
-                        // Check if buildingSurface has holes.***
+                        // Check if buildingSurface has holes
                         List<List<Vector3d>> interiorPolygons = buildingSurface.getInteriorPositions();
                         boolean hasHoles = interiorPolygons != null && !interiorPolygons.isEmpty();
 
@@ -226,10 +226,10 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                             mesh.getPrimitives().add(primitive);
                             rootNode.getChildren().add(node);
                         } else {
-                            // Has holes.***
+                            // Has holes
                             List<Vector3d> ExteriorPolygon = buildingSurface.getExteriorPositions();
 
-                            // convert points to local coordinates.***
+                            // convert points to local coordinates
                             List<Vector3d> ExteriorPolygonLocal = new ArrayList<>();
                             for (Vector3d position : ExteriorPolygon) {
                                 Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
@@ -237,7 +237,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                                 ExteriorPolygonLocal.add(localPosition);
                             }
 
-                            // interior points.***
+                            // interior points
                             List<List<Vector3d>> interiorPolygonsLocal = new ArrayList<>();
                             for (List<Vector3d> interiorPolygon : interiorPolygons) {
                                 List<Vector3d> interiorPolygonLocal = new ArrayList<>();
@@ -652,7 +652,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
         }
 
         if (TEST_solidCount > 1) {
-            log.warn("Multiple solids found for city object: {}", cityObject.getId());
+            log.warn("[WARN] Multiple solids found for city object: {}", cityObject.getId());
         }
 
         if (buildingRoomProperties != null && !buildingRoomProperties.isEmpty()) {

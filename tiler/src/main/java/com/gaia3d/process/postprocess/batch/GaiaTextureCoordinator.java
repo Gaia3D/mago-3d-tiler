@@ -50,7 +50,7 @@ public class GaiaTextureCoordinator {
         // TYPE_4BYTE_ABGR = 6
         if (width > 0 || height > 0) {
             this.atlasImage = new BufferedImage(width, height, imageType);
-            // now fill the image with white fuchsia.***
+            // now fill the image with white fuchsia
             Graphics2D graphics = this.atlasImage.createGraphics();
 
             if (globalOptions.isPhotorealistic()) {
@@ -66,7 +66,7 @@ public class GaiaTextureCoordinator {
     }
 
     private boolean intersectsRectangleAtlasingProcess(List<GaiaRectangle> listRectangles, GaiaRectangle rectangle) {
-        // this function returns true if the rectangle intersects with any existent rectangle of the listRectangles.***
+        // this function returns true if the rectangle intersects with any existent rectangle of the listRectangles
         boolean intersects = false;
         double error = 10E-5;
         for (GaiaRectangle existentRectangle : listRectangles) {
@@ -91,7 +91,7 @@ public class GaiaTextureCoordinator {
 
         //GaiaRectangle rect_toPutInMosaic = splitDataToPutInMosaic.getOriginBoundary();
 
-        // make existent rectangles list using listProcessSplitDataList.***
+        // make existent rectangles list using listProcessSplitDataList
         List<GaiaRectangle> listRectangles = new ArrayList<>();
         GaiaRectangle beforeMosaicRectangle = new GaiaRectangle(0.0, 0.0, 0.0, 0.0);
         int existentSplitDatasCount = listProcessSplitDataList.size();
@@ -106,26 +106,26 @@ public class GaiaTextureCoordinator {
             listRectangles.add(batchedBoundary);
         }
 
-        // Now, try to find the best positions to put our rectangle.***
+        // Now, try to find the best positions to put our rectangle
         for (int i = 0; i < existentSplitDatasCount; i++) {
             GaiaBatchImage existentSplitData = listProcessSplitDataList.get(i);
             GaiaRectangle currRect = existentSplitData.batchedBoundary;
 
-            // for each existent rectangles, there are 2 possibles positions: leftUp & rightDown.***
-            // in this 2 possibles positions we put our leftDownCorner of rectangle of "splitDataToPutInMosaic".***
+            // for each existent rectangles, there are 2 possibles positions: leftUp & rightDown
+            // in this 2 possibles positions we put our leftDownCorner of rectangle of "splitDataToPutInMosaic"
 
-            // If in some of two positions our rectangle intersects with any other rectangle, then discard.***
+            // If in some of two positions our rectangle intersects with any other rectangle, then discard
             // If no intersects with others rectangles, then calculate the mosaic-perimeter.
-            // We choose the minor perimeter of the mosaic.***
+            // We choose the minor perimeter of the mosaic
 
             double width = splitDataToPutInMosaic.getOriginBoundary().getWidth();
             double height = splitDataToPutInMosaic.getOriginBoundary().getHeight();
 
-            // 1- leftUp corner.***
+            // 1- leftUp corner
             currPosX = currRect.getMinX();
             currPosY = currRect.getMaxY();
 
-            // setup our rectangle.***
+            // setup our rectangle
             if (splitDataToPutInMosaic.batchedBoundary == null) {
                 splitDataToPutInMosaic.batchedBoundary = new GaiaRectangle(0.0, 0.0, 0.0, 0.0);
             }
@@ -134,13 +134,13 @@ public class GaiaTextureCoordinator {
             splitDataToPutInMosaic.batchedBoundary.setMaxX(currPosX + width);
             splitDataToPutInMosaic.batchedBoundary.setMaxY(currPosY + height);
 
-            // put our rectangle into mosaic & check that no intersects with another rectangles.***
+            // put our rectangle into mosaic & check that no intersects with another rectangles
             if (!this.intersectsRectangleAtlasingProcess(listRectangles, splitDataToPutInMosaic.batchedBoundary)) {
                 GaiaRectangle afterMosaicRectangle = new GaiaRectangle(0.0, 0.0, 0.0, 0.0);
                 afterMosaicRectangle.copyFrom(beforeMosaicRectangle);
                 afterMosaicRectangle.addBoundingRectangle(splitDataToPutInMosaic.batchedBoundary);
 
-                // calculate the perimeter of the mosaic.***
+                // calculate the perimeter of the mosaic
                 if (candidateMosaicPerimeter < 0.0) {
                     candidateMosaicPerimeter = afterMosaicRectangle.getPerimeter();
                     candidatePosX = currPosX;
@@ -155,23 +155,23 @@ public class GaiaTextureCoordinator {
                 }
             }
 
-            // 2- rightDown corner.***
+            // 2- rightDown corner
             currPosX = currRect.getMaxX();
             currPosY = currRect.getMinY();
 
-            // setup our rectangle.***
+            // setup our rectangle
             splitDataToPutInMosaic.batchedBoundary.setMinX(currPosX);
             splitDataToPutInMosaic.batchedBoundary.setMinY(currPosY);
             splitDataToPutInMosaic.batchedBoundary.setMaxX(currPosX + width);
             splitDataToPutInMosaic.batchedBoundary.setMaxY(currPosY + height);
 
-            // put our rectangle into mosaic & check that no intersects with another rectangles.***
+            // put our rectangle into mosaic & check that no intersects with another rectangles
             if (!this.intersectsRectangleAtlasingProcess(listRectangles, splitDataToPutInMosaic.batchedBoundary)) {
                 GaiaRectangle afterMosaicRectangle = new GaiaRectangle(0.0, 0.0, 0.0, 0.0);
                 afterMosaicRectangle.copyFrom(beforeMosaicRectangle);
                 afterMosaicRectangle.addBoundingRectangle(splitDataToPutInMosaic.batchedBoundary);
 
-                // calculate the perimeter of the mosaic.***
+                // calculate the perimeter of the mosaic
                 if (candidateMosaicPerimeter < 0.0) {
                     candidateMosaicPerimeter = afterMosaicRectangle.getPerimeter();
                     candidatePosX = currPosX;
@@ -207,21 +207,12 @@ public class GaiaTextureCoordinator {
     }
 
     public BufferedImage batchTextures(LevelOfDetail lod) {
-        // We have MaterialList & BufferDataSetList.********
+        // We have MaterialList & BufferDataSetList.
         // 1- List<GaiaMaterial> this.materials;
         // 2- List<GaiaBufferDataSet> this.bufferDataSets;
-
-        // The atlasImage is the final image.********
-        // BufferedImage this.atlasImage;
-        //--------------------------------------------------------
-
-        /*if (LevelOfDetail.LOD3.equals(lod)) {
-            log.info("=== BREAK ===");
-        }*/
-
         boolean isPhotorealistic = globalOptions.isPhotorealistic();
 
-        // 1rst, make a list of GaiaBatchImage (splittedImage).********
+        // 1rst, make a list of GaiaBatchImage (splittedImage).
         List<GaiaBatchImage> splittedImages = new ArrayList<>();
         boolean existPngTextures = false;
         for (GaiaMaterial material : materials) {
@@ -256,16 +247,11 @@ public class GaiaTextureCoordinator {
             splittedImages.add(splittedImage);
         }
 
-        /*if (splittedImages.size() < 2) {
-            log.error("There are no textures to batch.");
-            return null;
-        }*/
-
         // 사이즈 큰->작은 정렬
         splittedImages = splittedImages.stream().sorted(Comparator.comparing(splittedImage -> splittedImage.getOriginBoundary().getArea())).collect(Collectors.toList());
         Collections.reverse(splittedImages);
 
-        // do the atlasing process.***
+        // do the atlasing process
         List<GaiaBatchImage> listProcessSplitDatas = new ArrayList<>();
         for (int i = 0; i < splittedImages.size(); i++) {
             GaiaBatchImage splittedImage = splittedImages.get(i);
@@ -274,7 +260,7 @@ public class GaiaTextureCoordinator {
             if (i == 0) {
                 splittedImage.setBatchedBoundary(originBoundary);
             } else {
-                // 1rst, find the best position for image into atlas.***
+                // 1rst, find the best position for image into atlas
                 Vector2d bestPosition = this.getBestPositionMosaicInAtlas(listProcessSplitDatas, splittedImage);
                 splittedImage.batchedBoundary.setMinX(bestPosition.x);
                 splittedImage.batchedBoundary.setMinY(bestPosition.y);
@@ -290,7 +276,7 @@ public class GaiaTextureCoordinator {
         // existPngTextures
         initBatchImage(maxWidth, maxHeight, imageType);
         if (this.atlasImage == null) {
-            log.error("atlasImage is null");
+            log.error("[ERROR] AtlasImage is null");
             return null;
         }
 
@@ -305,8 +291,8 @@ public class GaiaTextureCoordinator {
             if (!textures.isEmpty()) {
                 GaiaTexture texture = textures.get(0);
                 BufferedImage source = texture.getBufferedImage();
-                graphics.drawImage(source, (int) splitRectangle.getMinX(), (int) splitRectangle.getMinY(), null); // original code.***
-                //graphics.drawImage(randomColoredImage, (int) splittedRectangle.getMinX(), (int) splittedRectangle.getMinY(), null); // test code.***
+                graphics.drawImage(source, (int) splitRectangle.getMinX(), (int) splitRectangle.getMinY(), null); // original code
+                //graphics.drawImage(randomColoredImage, (int) splittedRectangle.getMinX(), (int) splittedRectangle.getMinY(), null); // test code
             }
         }
 
@@ -372,7 +358,7 @@ public class GaiaTextureCoordinator {
                         u = fractPartX;
                         v = fractPartY;
 
-                        // clamp the u, v values.***
+                        // clamp the u, v values
                         if (u < pixelXSize) {
                             u = pixelXSize;
                         } else if (u > 1.0 - pixelXSize) {
@@ -390,7 +376,7 @@ public class GaiaTextureCoordinator {
                             u = 1.0 + u;
                         }
 
-                        // "width" is the width of the splitRectangle.***
+                        // "width" is the width of the splitRectangle
                         u2 = (splitRectangle.getMinX() + u * width) / maxWidth;
                         v2 = (splitRectangle.getMinY() + v * height) / maxHeight;
 
@@ -450,7 +436,7 @@ public class GaiaTextureCoordinator {
                 }
             }
 
-            // clamp the backGroundColor.***
+            // clamp the backGroundColor
             BufferedImage clamped = ImageUtils.clampBackGroundColor(this.atlasImage, CLAMP_COLOR, 1, 20);
             clamped = ImageUtils.changeBackgroundColor(clamped, CLAMP_COLOR, BACKGROUND_COLOR);
             Graphics2D graphics2D = this.atlasImage.createGraphics();
@@ -498,7 +484,7 @@ public class GaiaTextureCoordinator {
         File file = new File(outputPathString, "temp" + File.separator + "altras");
         if (!file.exists()) {
             if (!file.mkdirs()) {
-                log.error("Failed to create directory");
+                log.error("[ERROR] Failed to create directory");
             }
         }
 
@@ -506,7 +492,7 @@ public class GaiaTextureCoordinator {
         Path output = file.toPath().resolve(imageName + "." + imageExtension);
         if (!outputPath.toFile().exists()) {
             if (!outputPath.toFile().mkdir()) {
-                log.error("Failed to create directory");
+                log.error("[ERROR] Failed to create directory");
             }
         }
         if (this.atlasImage != null) {
@@ -515,7 +501,7 @@ public class GaiaTextureCoordinator {
                 log.info("[Write Image IO] : {}", outputImage.getAbsolutePath());
                 ImageIO.write(this.atlasImage, imageExtension, outputImage);
             } catch (IOException e) {
-                log.error(e.getMessage());
+                log.error("[ERROR] :", e);
             }
         }
     }

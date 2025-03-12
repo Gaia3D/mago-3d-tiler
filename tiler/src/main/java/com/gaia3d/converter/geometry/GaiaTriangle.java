@@ -32,7 +32,7 @@ public class GaiaTriangle {
 
     private void calcNormal() {
         if (positions[0].equals(positions[1]) || positions[1].equals(positions[2]) || positions[2].equals(positions[0])) {
-            //log.warn("Degenerate triangle detected");
+            //log.warn("[WARN] Degenerate triangle detected");
             this.normal = new Vector3d(0, 0, 1);
             return;
         }

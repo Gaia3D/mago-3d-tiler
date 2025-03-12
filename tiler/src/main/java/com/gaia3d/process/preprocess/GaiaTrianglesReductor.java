@@ -53,7 +53,7 @@ public class GaiaTrianglesReductor {
     }
 
     public GaiaSurface reduceSurface(GaiaSurface surface, List<GaiaVertex> vertices) {
-        // 1rst, create a halfEdgeSurface.***
+        // 1rst, create a halfEdgeSurface
         HalfEdgeSurface halfEdgeSurface = this.getHalfEdgeSurface(surface, vertices);
 
         GaiaSurface resultReducedSurface = new GaiaSurface();
@@ -106,16 +106,16 @@ public class GaiaTrianglesReductor {
                 halfEdgelast.setNext(halfEdge);
             }
 
-            // Finally set the halfEdgeLast.***
+            // Finally set the halfEdgeLast
             halfEdgelast = halfEdge;
 
             halfEdgeSurface.getHalfEdges().add(halfEdge);
             halfEdgeSurface.getVertices().add(halfEdgeVertex);
         }
 
-        halfEdgelast.setNext(halfEdge1rst); // close the loop.***
+        halfEdgelast.setNext(halfEdge1rst); // close the loop
 
-        // Add the face to the surface.***
+        // Add the face to the surface
         halfEdgeSurface.getFaces().add(halfEdgeFace);
 
         return halfEdgeFace;

@@ -47,7 +47,7 @@ public class AssimpConverter implements Converter {
 
     public List<GaiaScene> load(File file) throws RuntimeException {
         if (!file.isFile() && !file.exists()) {
-            log.error("File does not exist: {}", file.getAbsolutePath());
+            log.error("[ERROR] File does not exist: {}", file.getAbsolutePath());
             throw new RuntimeException("File does not exist: " + file.getAbsolutePath());
         }
 
@@ -195,7 +195,7 @@ public class AssimpConverter implements Converter {
                 buffer.get(bytes);
                 stream.write(bytes);
             } catch (IOException e) {
-                log.error(e.getMessage());
+                log.error("[ERROR] : {}", e);
             }
             embeddedTextures.add(filename);
         }
@@ -211,9 +211,6 @@ public class AssimpConverter implements Converter {
         for (int i = 0; i < properties; i++) {
             long address = aiMaterial.mProperties().get(i);
 
-            /*AIString aiString = AIString.create();
-            Assimp.aiGetMaterialString(aiMaterial, Assimp.AI_MATKEY_NAME, 0, 0, aiString);
-            log.info("Material Name: {}", aiString.dataString());*/
             AIMaterialProperty aiMaterialProperty = AIMaterialProperty.create(address);
 
             ByteBuffer buffer = aiMaterialProperty.mData();
@@ -226,7 +223,6 @@ public class AssimpConverter implements Converter {
                 float opacityValue = byteBuffer.getFloat();
                 if (opacityValue < 1.0f) {
                     opacity = opacityValue;
-                    //log.info("Opacity: {}", opacityValue);
                 }
             }
         }
@@ -258,14 +254,6 @@ public class AssimpConverter implements Converter {
             specVector4d = new Vector4d(specColor.r(), specColor.g(), specColor.b(), specColor.a());
             material.setSpecularColor(specVector4d);
         }
-
-        /*Vector4d transparentVector4d;
-        AIColor4D transparentColor = AIColor4D.create();
-        int transparentResult = Assimp.aiGetMaterialColor(aiMaterial, Assimp.AI_MATKEY_COLOR_TRANSPARENT, Assimp.aiTextureType_NONE, 0, transparentColor);
-        if (transparentResult == 0) {
-            transparentVector4d = new Vector4d(transparentColor.r(), transparentColor.g(), transparentColor.b(), transparentColor.a());
-            log.info("Transparent Color: {}", transparentVector4d);
-        }*/
 
         AIString diffPath = AIString.calloc();
         Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_DIFFUSE, 0, diffPath, (IntBuffer) null, null, null, null, null, null);
@@ -316,7 +304,7 @@ public class AssimpConverter implements Converter {
                 textures.add(texture);
                 material.getTextures().put(texture.getType(), textures);
             } else {
-                log.error("Diffuse Texture is not found: {}", diffTexPath);
+                log.error("[ERROR] Diffuse Texture is not found: {}", diffTexPath);
             }
         } else {
             material.setName("NoTexture");
@@ -356,7 +344,7 @@ public class AssimpConverter implements Converter {
                 textures.add(texture);
                 material.getTextures().put(texture.getType(), textures);
             } else {
-                log.error("AmbientTexture Texture is not found: {}", ambientTexPath);
+                log.error("[ERROR] AmbientTexture Texture is not found: {}", ambientTexPath);
             }
         } else {
             textures = new ArrayList<>();
@@ -394,7 +382,7 @@ public class AssimpConverter implements Converter {
                 textures.add(texture);
                 material.getTextures().put(texture.getType(), textures);
             } else {
-                log.error("SpecularTexture Texture is not found: {}", specularTexPath);
+                log.error("[ERROR] SpecularTexture Texture is not found: {}", specularTexPath);
             }
         } else {
             textures = new ArrayList<>();
@@ -432,7 +420,7 @@ public class AssimpConverter implements Converter {
                 textures.add(texture);
                 material.getTextures().put(texture.getType(), textures);
             } else {
-                log.error("Shininess Texture is not found: {}", shininessTexPath);
+                log.error("[ERROR] Shininess Texture is not found: {}", shininessTexPath);
             }
         } else {
             textures = new ArrayList<>();

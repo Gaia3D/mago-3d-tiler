@@ -53,7 +53,7 @@ public class GaiaOctreeVertices {
             children[i].minBoxSize = this.minBoxSize;
         }
 
-        // now set children sizes.***
+        // now set children sizes
         double midX = (minX + maxX) / 2.0;
         double midY = (minY + maxY) / 2.0;
         double midZ = (minZ + maxZ) / 2.0;
@@ -68,7 +68,7 @@ public class GaiaOctreeVertices {
         children[6].setSize(midX, midY, midZ, maxX, maxY, maxZ);
         children[7].setSize(minX, midY, midZ, midX, maxY, maxZ);
 
-        // now set children coords.***
+        // now set children coords
         int L = this.coordinate.getDepth();
         int X = this.coordinate.getX();
         int Y = this.coordinate.getY();
@@ -348,7 +348,7 @@ public class GaiaOctreeVertices {
             }
         }
 
-        // clear the vertices list.***
+        // clear the vertices list
         vertices.clear();
     }
 

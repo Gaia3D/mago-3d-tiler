@@ -151,7 +151,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                     Coordinate[] coordinates = lineString.getCoordinates();
                     List<Vector3d> positions = new ArrayList<>();
                     if (coordinates.length < 2) {
-                        log.warn("Invalid LineString : {}", feature.getID());
+                        log.warn("[WARN] Invalid LineString : {}", feature.getID());
                         continue;
                     }
                     for (Coordinate coordinate : coordinates) {
@@ -165,7 +165,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                             y = point.getY();
                         }
                         z = point.getCoordinate().getZ();
-                        Vector3d position = new Vector3d(x, y, z); // usually crs 3857.***
+                        Vector3d position = new Vector3d(x, y, z); // usually crs 3857
                         positions.add(position);
                     }
                     double diameter = getDiameter(feature, diameterColumnName);
@@ -177,7 +177,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
 
                 for (Polygon polygon : polygons) {
                     if (!polygon.isValid()) {
-                        log.warn("{} Is Invalid Polygon.", feature.getID());
+                        log.warn("[WARN] {} Is Invalid Polygon.", feature.getID());
                         continue;
                     }
                     LineString lineString = polygon.getExteriorRing();
@@ -246,7 +246,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                                 .originalFilePath(input.getPath()).properties(attributes).build();
                         buildings.add(building);
                     } else {
-                        log.warn("Invalid Geometry : {}, {}", feature.getID(), name);
+                        log.warn("[WARN] Invalid Geometry : {}, {}", feature.getID(), name);
                     }
                 }
             }
@@ -410,7 +410,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         for (GaiaPipeLineString pipeLineString : pipeLineStrings) {
             int pointsCount = pipeLineString.getPositions().size();
             if (pointsCount < 2) {
-                log.warn("Invalid PipeLineString : {}", pipeLineString.getId());
+                log.warn("[WARN] Invalid PipeLineString : {}", pipeLineString.getId());
                 continue;
             }
 
@@ -438,7 +438,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 localPositions.add(new Vector3dOnlyHashEquals(localPosition));
             }
 
-            // set the positions in the pipeLineString.***
+            // set the positions in the pipeLineString
             pipeLineString.setPositions(localPositions);
 
             //pipeLineString.TEST_Check();
@@ -446,22 +446,22 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 pipeLineString.deleteDuplicatedPoints();
             }
 
-            // once deleted duplicatedPoints, check pointsCount again.***
+            // once deleted duplicatedPoints, check pointsCount again
             pointsCount = pipeLineString.getPositions().size();
             if (pointsCount < 2) {
-                log.warn("Invalid PipeLineString POINTS COUNT LESS THAN 2: {}", pipeLineString.getId());
+                log.warn("[WARN] Invalid PipeLineString POINTS COUNT LESS THAN 2: {}", pipeLineString.getId());
                 continue;
             }
 
             GaiaNode node = createPrimitiveFromPipeLineString(pipeLineString);
             if (node == null) {
-                log.warn("Invalid PipeLineString NULL NODE: {}", pipeLineString.getId());
+                log.warn("[WARN] Invalid PipeLineString NULL NODE: {}", pipeLineString.getId());
                 continue;
             }
             node.setName(pipeLineString.getName());
             node.setTransformMatrix(new Matrix4d().identity());
 
-            // for all primitives set the material index.***
+            // for all primitives set the material index
             for (GaiaMesh mesh : node.getMeshes()) {
                 for (GaiaPrimitive primitive : mesh.getPrimitives()) {
                     primitive.setMaterialIndex(0);

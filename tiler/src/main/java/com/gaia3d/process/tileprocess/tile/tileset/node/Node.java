@@ -220,7 +220,7 @@ public class Node {
         double minAltitude = region[4];
         double maxAltitude = region[5];
 
-        // must descend as octree.***
+        // must descend as octree
         double midLonDeg = (minLonDeg + maxLonDeg) / 2.0;
         double midLatDeg = (minLatDeg + maxLatDeg) / 2.0;
         double midAltitude = (minAltitude + maxAltitude) / 2.0;
@@ -246,7 +246,7 @@ public class Node {
         //        |            |            |        |            |            |
         //        +------------+------------+        +------------+------------+
 
-        // 0. left - down - bottom.***
+        // 0. left - down - bottom
         Node child0 = new Node();
         children.add(child0);
         child0.setParent(this);
@@ -256,7 +256,7 @@ public class Node {
         child0.setBoundingVolume(new BoundingVolume(child0BoundingBox));
         child0.setNodeCode(parentNodeCode + "0");
 
-        // 1. right - down - bottom.***
+        // 1. right - down - bottom
         Node child1 = new Node();
         children.add(child1);
         child1.setParent(this);
@@ -266,7 +266,7 @@ public class Node {
         child1.setBoundingVolume(new BoundingVolume(child1BoundingBox));
         child1.setNodeCode(parentNodeCode + "1");
 
-        // 2. right - up - bottom.***
+        // 2. right - up - bottom
         Node child2 = new Node();
         children.add(child2);
         child2.setParent(this);
@@ -276,7 +276,7 @@ public class Node {
         child2.setBoundingVolume(new BoundingVolume(child2BoundingBox));
         child2.setNodeCode(parentNodeCode + "2");
 
-        // 3. left - up - bottom.***
+        // 3. left - up - bottom
         Node child3 = new Node();
         children.add(child3);
         child3.setParent(this);
@@ -286,7 +286,7 @@ public class Node {
         child3.setBoundingVolume(new BoundingVolume(child3BoundingBox));
         child3.setNodeCode(parentNodeCode + "3");
 
-        // 4. left - down - top.***
+        // 4. left - down - top
         Node child4 = new Node();
         children.add(child4);
         child4.setParent(this);
@@ -296,7 +296,7 @@ public class Node {
         child4.setBoundingVolume(new BoundingVolume(child4BoundingBox));
         child4.setNodeCode(parentNodeCode + "4");
 
-        // 5. right - down - top.***
+        // 5. right - down - top
         Node child5 = new Node();
         children.add(child5);
         child5.setParent(this);
@@ -306,7 +306,7 @@ public class Node {
         child5.setBoundingVolume(new BoundingVolume(child5BoundingBox));
         child5.setNodeCode(parentNodeCode + "5");
 
-        // 6. right - up - top.***
+        // 6. right - up - top
         Node child6 = new Node();
         children.add(child6);
         child6.setParent(this);
@@ -316,7 +316,7 @@ public class Node {
         child6.setBoundingVolume(new BoundingVolume(child6BoundingBox));
         child6.setNodeCode(parentNodeCode + "6");
 
-        // 7. left - up - top.***
+        // 7. left - up - top
         Node child7 = new Node();
         children.add(child7);
         child7.setParent(this);
@@ -449,12 +449,12 @@ public class Node {
         Vector3d rightUpTop = new Vector3d(maxLonDeg, maxLatDeg, maxAlt);
         Vector3d rightDownBottom = new Vector3d(maxLonDeg, minLatDeg, minAlt);
 
-        // transform the geoCoords to worldCoords.***
+        // transform the geoCoords to worldCoords
         Vector3d leftDownBottomWC = GlobeUtils.geographicToCartesianWgs84(leftDownBottom);
         Vector3d rightUpTopWC = GlobeUtils.geographicToCartesianWgs84(rightUpTop);
         Vector3d rightDownBottomWC = GlobeUtils.geographicToCartesianWgs84(rightDownBottom);
 
-        // transform the worldCoords to localCoords.***
+        // transform the worldCoords to localCoords
         Matrix4d transformMatrixInv = new Matrix4d(tMatrix).invert();
         Vector3d leftDownBottomLC = new Vector3d(leftDownBottomWC).mulPosition(transformMatrixInv);
         Vector3d rightUpTopLC = new Vector3d(rightUpTopWC).mulPosition(transformMatrixInv);

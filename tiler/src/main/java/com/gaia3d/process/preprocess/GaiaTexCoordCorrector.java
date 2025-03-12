@@ -123,11 +123,11 @@ public class GaiaTexCoordCorrector implements PreProcess {
             double boxHeight = texCoordRectangle.getHeight();
 
             if (boxWidth > 1.0 || boxHeight > 1.0) {
-                // in this case do nothing, bcos this is a repeat texture mode.***
+                // in this case do nothing, bcos this is a repeat texture mode
                 break;
             }
 
-            // check if texCoords must be translated.***
+            // check if texCoords must be translated
             double texCoordOriginX = texCoordRectangle.getMinX();
             double texCoordOriginY = texCoordRectangle.getMinY();
             double offsetX = 0.0;
@@ -139,7 +139,7 @@ public class GaiaTexCoordCorrector implements PreProcess {
                 mustTranslate = true;
 
                 if (offsetX + boxWidth > 1.0 + error) {
-                    // cannot translate.***
+                    // cannot translate
                     break;
                 }
             }
@@ -149,7 +149,7 @@ public class GaiaTexCoordCorrector implements PreProcess {
                 mustTranslate = true;
 
                 if (offsetY + boxHeight > 1.0 + error) {
-                    // cannot translate.***
+                    // cannot translate
                     break;
                 }
             }
@@ -163,7 +163,7 @@ public class GaiaTexCoordCorrector implements PreProcess {
                     }
                 }
 
-                // loop mapIndices.***
+                // loop mapIndices
                 for (Integer index : mapIndices.keySet()) {
                     GaiaVertex vertex = vertices.get(index);
                     Vector2d texCoord = vertex.getTexcoords();

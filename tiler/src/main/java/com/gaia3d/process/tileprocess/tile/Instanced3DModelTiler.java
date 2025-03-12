@@ -59,7 +59,7 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         try {
             createNode(root, tileInfos);
         } catch (IOException e) {
-            log.error("Error : ", e);
+            log.error("[ERROR] :", e);
             throw new RuntimeException(e);
         }
 
@@ -86,7 +86,7 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
             writer.write(result);
             globalOptions.setTilesetSize(result.length());
         } catch (IOException e) {
-            log.error("Error : ", e);
+            log.error("[ERROR] :", e);
             throw new TileProcessingException(e.getMessage());
         }
     }
@@ -264,7 +264,7 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
             content.setContentInfo(contentInfo);
             childNode.setContent(content);
         } else {
-            log.warn("[Tile][ContentNode][{}] No content", nodeCode);
+            log.warn("[WARN][Tile][ContentNode][{}] No content", nodeCode);
         }
         return childNode;
     }

@@ -56,7 +56,7 @@ public class HalfEdgeOctree {
             children[i].idx = i;
         }
 
-        // now set children sizes.***
+        // now set children sizes
         double midX = (minX + maxX) / 2.0;
         double midY = (minY + maxY) / 2.0;
         double midZ = (minZ + maxZ) / 2.0;
@@ -71,7 +71,7 @@ public class HalfEdgeOctree {
         children[6].setSize(midX, midY, midZ, maxX, maxY, maxZ);
         children[7].setSize(minX, midY, midZ, midX, maxY, maxZ);
 
-        // now set children coords.***
+        // now set children coords
         int L = this.coordinate.getDepth();
         int X = this.coordinate.getX();
         int Y = this.coordinate.getY();
@@ -293,7 +293,7 @@ public class HalfEdgeOctree {
             }
         }
 
-        // clear the faces list.***
+        // clear the faces list
         this.faces.clear();
 
         if (this.getCoordinate().getDepth() < targetDepth) {
@@ -421,7 +421,7 @@ public class HalfEdgeOctree {
 //            }
 //        }
 //
-//        // clear the faces list.***
+//        // clear the faces list
 //        this.faces.clear();
 //
 //        if (this.getCoordinate().getDepth() < targetDepth) {
@@ -473,7 +473,7 @@ public class HalfEdgeOctree {
             }
         }
 
-        // clear the vertices list.***
+        // clear the vertices list
         vertices.clear();
     }
 

@@ -112,7 +112,7 @@ public class ImageUtils {
             if (flip) byteBuffer.flip();
             return byteBuffer;
         } catch (IOException e) {
-            log.error("Error:", e);
+            log.error("[ERROR] :", e);
         }
         return null;
     }
@@ -248,7 +248,7 @@ public class ImageUtils {
                 System.err.println("No ImageReader found for the given format.");
             }
         } catch (IOException e) {
-            log.error("Error:", e);
+            log.error("[ERROR] :", e);
         }
 
         return result;
@@ -389,7 +389,7 @@ public class ImageUtils {
             File file = new File(path);
             ImageIO.write(image, format, new File(path));
         } catch (IOException e) {
-            log.error("Error:", e);
+            log.error("[ERROR] :", e);
         }
     }
 }

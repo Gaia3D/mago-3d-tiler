@@ -41,7 +41,7 @@ public class RenderableGaiaScene {
             renderableNode.deleteGLBuffers();
         }
 
-        // delete textures.***
+        // delete textures
         for (GaiaMaterial material : materials) {
             Map<TextureType, List<GaiaTexture>> textures = material.getTextures();
             for (List<GaiaTexture> gaiaTextures : textures.values()) {

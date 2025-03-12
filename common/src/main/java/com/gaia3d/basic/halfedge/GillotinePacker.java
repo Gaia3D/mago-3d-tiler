@@ -86,7 +86,7 @@ public class GillotinePacker {
         }
 
         if (bestRect == null) {
-            // in this case, create a new free rect.***
+            // in this case, create a new free rect
             GaiaRectangle newFreeRect = createNewFreeRectangle(rect.getOriginBoundary());
             freeRectangles.add(newFreeRect);
             bestRect = newFreeRect;
@@ -95,14 +95,14 @@ public class GillotinePacker {
 
 
 
-        // set position to rect.***
+        // set position to rect
         rect.setBatchedBoundary(new GaiaRectangle(bestRect.getMinX(), bestRect.getMinY(), bestRect.getMinX() + rectWidth, bestRect.getMinY() + rectHeight));
         placedRectangles.add(rect);
 
         currentBoundary.addBoundingRectangle(rect.getBatchedBoundary());
         candidateArea = currentBoundary.getArea();
 
-        // split the free rect.***
+        // split the free rect
         splitFreeRects(bestRect, rect.getBatchedBoundary());
 
         return true;
@@ -110,7 +110,7 @@ public class GillotinePacker {
 
     private GaiaRectangle createNewFreeRectangle(GaiaRectangle rectangleToPut)
     {
-        // 1rst, calculate the current boundary.***
+        // 1rst, calculate the current boundary
         GaiaRectangle currBoundaryPlacedRect = new GaiaRectangle(0, 0, 0, 0);
         for(GaiaTextureScissorData rect : placedRectangles)
         {
@@ -141,7 +141,7 @@ public class GillotinePacker {
         int bottomHeight = (int) (freeRect.getHeight() - placedRect.getHeight());
 
         if(rigthWidth < bottomHeight){
-            // split the free rect horizontally.***
+            // split the free rect horizontally
             double x = freeRect.getMinX() + placedRect.getWidth();
             double y = freeRect.getMinY();
             GaiaRectangle freeRect1 = new GaiaRectangle(x, y, x + rigthWidth, y + placedRect.getHeight());
@@ -151,7 +151,7 @@ public class GillotinePacker {
             freeRectangles.add(freeRect1);
             freeRectangles.add(freeRect2);
         } else {
-            // split the free rect vertically.***
+            // split the free rect vertically
             double x = freeRect.getMinX();
             double y = freeRect.getMinY() + placedRect.getHeight();
             GaiaRectangle freeRect1 = new GaiaRectangle(x, y, x + placedRect.getWidth(), y + bottomHeight);

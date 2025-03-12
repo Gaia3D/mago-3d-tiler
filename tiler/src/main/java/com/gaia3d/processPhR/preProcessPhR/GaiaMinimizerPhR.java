@@ -20,7 +20,7 @@ public class GaiaMinimizerPhR implements PreProcess {
 
         if (scene != null) {
             scene.deleteNormals();
-            // 1rst, must weld vertices.***
+            // 1rst, must weld vertices
             boolean checkTexCoord = true;
             boolean checkNormal = false;
             boolean checkColor = false;
@@ -30,7 +30,7 @@ public class GaiaMinimizerPhR implements PreProcess {
             scene.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
             scene.deleteDegeneratedFaces();
 
-            // test render.****************************************************************
+            // test render*************************************************************
             /*TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
             List<GaiaScene> gaiaSceneList = new ArrayList<>();
             gaiaSceneList.add(scene);

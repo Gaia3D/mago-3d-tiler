@@ -678,7 +678,7 @@ class UnitTest {
 
     @Test
     void test_CityGML_RailWayWithTextures() {
-            // No tested yet.***
+            // No tested yet
         String inputPath = "D:\\data\\CityGML\\";
         String outputPath = "D:\\Result_mago3dTiler\\";
         String path = "RailWayWithTextures";

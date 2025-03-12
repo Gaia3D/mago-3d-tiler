@@ -124,7 +124,7 @@ public class GeojsonPointReader implements AttributeReader {
             }
             iterator.close();
         } catch (IOException e) {
-            log.error("Error : ", e);
+            log.error("[ERROR] :", e);
             throw new RuntimeException(e);
         }
         return result;

@@ -15,18 +15,18 @@ import java.util.stream.Collectors;
 public class GaiaExtruder {
     public List<GaiaExtrusionSurface> extrude(List<Vector3d> positions, double roofHeight, double floorHeight) {
 
-        // check uroborus and aligned points.******************************************
+        // check uroborus and aligned points
         List<Vector3d> cleanPositions = new ArrayList<>();
         double error = 1e-10;
         GeometryUtils.getCleanPoints3dArray(positions, cleanPositions, error);
         // End of check uroborus and aligned points.-----------------------------------
 
-        // Check positions sense : CW or CCW.******************************************
+        // Check positions sense : CW or CCW
         Vector3d normal = new Vector3d();
         GeometryUtils.calculateNormal3D(cleanPositions, normal);
 
         if (normal.z < 0.0) {
-            // reverse cleanPositions.***
+            // reverse cleanPositions
             Collections.reverse(cleanPositions);
         }
 

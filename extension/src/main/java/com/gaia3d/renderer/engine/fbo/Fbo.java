@@ -103,7 +103,7 @@ public class Fbo {
             }
         }
 
-        // Set the pixels of the image in one command.***
+        // Set the pixels of the image in one command
         image.setRGB(0, 0, fboWidth, fboHeight, pixels, 0, fboWidth);
 
         return image;
@@ -120,12 +120,12 @@ public class Fbo {
     }
 
     public void resize(int newWidth, int newHeight) {
-        // 1rst, check if the existent Fbo has the same size.***
+        // 1rst, check if the existent Fbo has the same size
         if (newWidth == fboWidth && newHeight == fboHeight) {
             return;
         }
 
-        // update the size of the FBO.***
+        // update the size of the FBO
         this.fboWidth = newWidth;
         this.fboHeight = newHeight;
 

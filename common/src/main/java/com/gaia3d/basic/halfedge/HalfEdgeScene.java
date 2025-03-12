@@ -69,7 +69,7 @@ public class HalfEdgeScene implements Serializable {
 
             return halfEdgeScene;
         } catch (Exception e) {
-            log.error("GaiaSet Read Error : ", e);
+            log.error("[ERROR] GaiaSet Read Error : ", e);
         }
 
         return null;
@@ -149,7 +149,7 @@ public class HalfEdgeScene implements Serializable {
     }
 
     public void TEST_cutScene() {
-        // Test.***
+        // Test
         GaiaBoundingBox bbox = getBoundingBox();
         Vector3d center = bbox.getCenter();
         double error = 1e-8;
@@ -161,22 +161,16 @@ public class HalfEdgeScene implements Serializable {
         cutByPlane(planeType, center, error);
         classifyFacesIdByPlane(planeType, center);
 
-        // check if there are no used vertices.***
+        // check if there are no used vertices
         List<HalfEdgeSurface> resultHalfEdgeSurfaces = new ArrayList<>();
         extractSurfaces(resultHalfEdgeSurfaces);
         List<HalfEdgeVertex> noUsedVertices = new ArrayList<>();
         for (HalfEdgeSurface surface : resultHalfEdgeSurfaces) {
             noUsedVertices.clear();
             if (surface.existNoUsedVertices(noUsedVertices)) {
-                log.error("Error: existNoUsedVertices.***");
+                log.error("[ERROR] existNoUsedVertices.");
             }
         }
-
-        // now, remove faces with classifyId = 1.***
-//        for (HalfEdgeNode node : nodes) {
-//            node.TEST_removeFacesWithClassifyId(1);
-//        }
-
     }
 
     public List<HalfEdgeSurface> extractSurfaces(List<HalfEdgeSurface> resultHalfEdgeSurfaces) {
@@ -207,7 +201,7 @@ public class HalfEdgeScene implements Serializable {
     }
 
     public boolean cutByPlane(PlaneType planeType, Vector3d planePosition, double error) {
-        // 1rst check if the plane intersects the bbox.***
+        // 1rst check if the plane intersects the bbox
         GaiaBoundingBox bbox = getBoundingBox();
 
         if (bbox == null) {
@@ -316,7 +310,7 @@ public class HalfEdgeScene implements Serializable {
             texture.setPath(imageFile.getName());
 
             if (!imageFile.exists()) {
-                log.error("Texture Input Image Path is not exists. {}", diffusePath);
+                log.error("[ERROR] Texture Input Image Path is not exists. {}", diffusePath);
             } else {
                 FileUtils.copyFile(imageFile, outputImageFile);
             }
@@ -369,7 +363,7 @@ public class HalfEdgeScene implements Serializable {
             fileOutputStream.close();
 
         } catch (Exception e) {
-            log.error("GaiaSet Write Error : ", e);
+            log.error("[ERROR] GaiaSet Write Error : ", e);
             file.delete();
         }
     }
@@ -490,8 +484,8 @@ public class HalfEdgeScene implements Serializable {
 
     public List<GaiaMaterial> getUsingMaterialsWithTextures(List<GaiaMaterial> resultMaterials) {
         //********************************************************************************
-        // Usually, there are materials that are not using.***
-        // This function returns the materials that are using and has textures.***
+        // Usually, there are materials that are not using
+        // This function returns the materials that are using and has textures
         //********************************************************************************
         if (resultMaterials == null) {
             resultMaterials = new ArrayList<>();
@@ -541,7 +535,7 @@ public class HalfEdgeScene implements Serializable {
     public void makeSkirt() {
         GaiaBoundingBox bbox = getBoundingBox();
         if(bbox == null) {
-            log.info("Making skirt : Error: bbox is null.***");
+            log.info("Making skirt : Error: bbox is null");
             return;
         }
 
@@ -558,7 +552,7 @@ public class HalfEdgeScene implements Serializable {
         double bboxLengthY = bbox.getLengthY();
         double bboxMaxSize = Math.max(bboxLengthX, bboxLengthY);
         double expandDistance = bboxMaxSize * 0.005;
-        // provisionally, only expand the perimeter vertices.***
+        // provisionally, only expand the perimeter vertices
         double dotLimit = 0.35;
         if (westVertices.size() > 1) {
             for (HalfEdgeVertex vertex : westVertices) {

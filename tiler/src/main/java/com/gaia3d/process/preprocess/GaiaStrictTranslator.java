@@ -51,8 +51,8 @@ public class GaiaStrictTranslator implements PreProcess {
             try {
                 coverage.evaluate((DirectPosition) memSave_posWorld, memSave_alt);
             } catch (Exception e) {
-                log.error("Error : ", e);
-                log.warn("Failed to evaluate terrain height", e);
+                log.error("[ERROR] :", e);
+                log.warn("[WARN] Failed to evaluate terrain height", e);
             }
             centerGeoCoord.z = memSave_alt[0];
         });
@@ -114,18 +114,18 @@ public class GaiaStrictTranslator implements PreProcess {
         for (GaiaNode rootNode : rootNodes) {
             this.transformNodeVertexPositionsToLocalCoords(rootNode, globalTMatrixInv, null, resultBBoxLocalCoords);
         }
-        // now set all node's transform matrix as identity, bcos in "transformNodeVertexPositionsToLocalCoords" function we used the nodes tMatrix.***
+        // now set all node's transform matrix as identity, bcos in "transformNodeVertexPositionsToLocalCoords" function we used the nodes tMatrix
         for (GaiaNode rootNode : rootNodes) {
             this.setNodesTransformMatrixAsIdentity(rootNode);
         }
     }
 
     private void transformNodeVertexPositionsToLocalCoords(GaiaNode node, Matrix4d globalTMatrixInv, Matrix4d parentMatrix, GaiaBoundingBox resultBBoxLC) {
-        // check for meshes.***
+        // check for meshes
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         CoordinateReferenceSystem crs = globalOptions.getCrs();
 
-        // check node's parent matrix.***
+        // check node's parent matrix
         Matrix4d transformMatrix = new Matrix4d(node.getTransformMatrix());
         if (parentMatrix != null) {
             parentMatrix.mul(transformMatrix, transformMatrix);
@@ -147,20 +147,20 @@ public class GaiaStrictTranslator implements PreProcess {
                             for (GaiaVertex vertex : vertices) {
                                 Vector3d pos = new Vector3d(vertex.getPosition());
                                 pos.add(offset);
-                                transformMatrix.transformPosition(pos); // CRS coords.***
+                                transformMatrix.transformPosition(pos); // CRS coords
 
-                                // calculate the geoCoords of the "pos".***
+                                // calculate the geoCoords of the "pos"
                                 ProjCoordinate vertexSource = new ProjCoordinate(pos.x, pos.y, pos.z);
                                 ProjCoordinate vertexWgs84 = GlobeUtils.transform(crs, vertexSource);
 
-                                // calculate the posWC of the "vertexWgs84".***
+                                // calculate the posWC of the "vertexWgs84"
                                 double[] posWC = GlobeUtils.geographicToCartesianWgs84(vertexWgs84.x, vertexWgs84.y, vertexSource.z);
                                 Vector3d posWCVector = new Vector3d(posWC[0], posWC[1], posWC[2]);
                                 Vector3d posLC = globalTMatrixInv.transformPosition(posWCVector);
 
                                 resultBBoxLC.addPoint(posLC);
 
-                                // finally set the position of the vertex.***
+                                // finally set the position of the vertex
                                 vertex.setPosition(posLC);
                             }
                         }
@@ -169,7 +169,7 @@ public class GaiaStrictTranslator implements PreProcess {
             }
         }
 
-        // check for children.***
+        // check for children
         if (node.getChildren() != null) {
             for (int i = 0; i < node.getChildren().size(); i++) {
                 GaiaNode childNode = node.getChildren().get(i);
@@ -179,11 +179,11 @@ public class GaiaStrictTranslator implements PreProcess {
     }
 
     private void setNodesTransformMatrixAsIdentity(GaiaNode node) {
-        // check node's parent matrix.***
+        // check node's parent matrix
         Matrix4d transformMatrix = node.getTransformMatrix();
         transformMatrix.identity();
 
-        // check for children.***
+        // check for children
         if (node.getChildren() != null) {
             for (int i = 0; i < node.getChildren().size(); i++) {
                 GaiaNode childNode = node.getChildren().get(i);

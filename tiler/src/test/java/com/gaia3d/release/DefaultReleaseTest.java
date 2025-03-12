@@ -60,7 +60,7 @@ class DefaultReleaseTest {
         try {
             Mago3DTilerMain.main(args);
         } catch (Exception e) {
-            log.error("Error : ", e);
+            log.error("[ERROR] :", e);
             log.debug(e.getMessage());
         }
     }

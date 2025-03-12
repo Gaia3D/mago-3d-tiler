@@ -26,8 +26,8 @@ public class RenderablePrimitive extends RenderableObject {
         guid = "no_guid";
         mapAttribTypeRenderableBuffer = new HashMap<>();
         material = null;
-        status = -1; // 0 = interior, 1 = exterior, -1 = unknown.***
-        colorCode = -1; // 36-bit RGBA color.***
+        status = -1; // 0 = interior, 1 = exterior, -1 = unknown
+        colorCode = -1; // 36-bit RGBA color
     }
 
     public void setAttribTypeRenderableBuffer(AttributeType attribType, RenderableBuffer renderableBuffer) {

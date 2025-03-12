@@ -29,7 +29,7 @@ public class Tileset {
         if (root != null) {
             contentInfos = root.findAllContentInfo(contentInfos);
         } else {
-            log.warn("root is null");
+            log.warn("[WARN] root is null");
         }
         return contentInfos;
     }

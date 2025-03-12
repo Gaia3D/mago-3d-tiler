@@ -167,7 +167,7 @@ public class ShapePointReader implements AttributeReader {
             dataStore.dispose();
             reader.close();
         } catch (IOException e) {
-            log.error("Error : ", e);
+            log.error("[ERROR] :", e);
             throw new RuntimeException(e);
         }
         shpFiles.dispose();

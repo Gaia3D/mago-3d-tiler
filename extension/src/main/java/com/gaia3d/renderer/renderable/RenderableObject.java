@@ -1,8 +1,8 @@
 package com.gaia3d.renderer.renderable;
 
 public class RenderableObject {
-    protected int status; // 0 = interior, 1 = exterior, -1 = unknown.***
-    protected int colorCode; // 36-bit RGBA color.***
+    protected int status; // 0 = interior, 1 = exterior, -1 = unknown
+    protected int colorCode; // 36-bit RGBA color
 
     public int getStatus() {
         return status;

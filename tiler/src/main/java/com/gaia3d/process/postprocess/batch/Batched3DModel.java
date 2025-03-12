@@ -78,7 +78,7 @@ public class Batched3DModel implements TileModel {
 
 
         if (batchedSet == null) {
-            log.error("BatchedSet is null, return null.");
+            log.error("[ERROR] BatchedSet is null, return null.");
             return contentInfo;
         }
         GaiaScene scene = new GaiaScene(batchedSet);
@@ -173,7 +173,7 @@ public class Batched3DModel implements TileModel {
             batchTableJson = batchTableText;
             batchTableJSONByteLength = batchTableText.length();
         } catch (JsonProcessingException e) {
-            log.error(e.getMessage());
+            log.error("[ERROR] :", e);
             throw new RuntimeException(e);
         }
 
@@ -198,7 +198,7 @@ public class Batched3DModel implements TileModel {
             stream.write(glbBytes);
             glbBytes = null;
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error("[ERROR] :", e);
         }
         return contentInfo;
     }
@@ -237,14 +237,14 @@ public class Batched3DModel implements TileModel {
             log.info("{}", batchTableBinary);
             log.info("{}", result);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error("[ERROR] :", e);
         }
 
         try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(output)))) {
             assert glbBytes != null;
             stream.write(glbBytes);
         } catch (IOException e) {
-            log.error("Error : ", e);
+            log.error("[ERROR] :", e);
             throw new RuntimeException(e);
         }
     }
@@ -268,7 +268,7 @@ public class Batched3DModel implements TileModel {
                 byteBuffer.flip();
             return byteBuffer;
         } catch (IOException e) {
-            log.error("FileUtils.readBytes: " + e.getMessage());
+            log.error("[ERROR] FileUtils.readBytes: " + e.getMessage());
         }
         return null;
     }

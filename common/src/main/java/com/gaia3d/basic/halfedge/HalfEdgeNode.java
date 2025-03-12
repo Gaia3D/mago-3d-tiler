@@ -259,7 +259,7 @@ public class HalfEdgeNode implements Serializable {
             }
 
         } catch (Exception e) {
-            log.error("Error Log : ", e);
+            log.error("[ERROR] Error Log : ", e);
         }
     }
 
@@ -286,7 +286,7 @@ public class HalfEdgeNode implements Serializable {
             }
 
         } catch (Exception e) {
-            log.error("Error Log : ", e);
+            log.error("[ERROR] Error Log : ", e);
         }
     }
 

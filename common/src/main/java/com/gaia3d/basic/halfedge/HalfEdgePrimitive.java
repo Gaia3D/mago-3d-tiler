@@ -23,7 +23,7 @@ public class HalfEdgePrimitive implements Serializable {
     private Integer accessorIndices = -1;
     private Integer materialIndex = -1;
     private List<HalfEdgeSurface> surfaces = new ArrayList<>();
-    private List<HalfEdgeVertex> vertices = new ArrayList<>(); // vertices of all surfaces.***
+    private List<HalfEdgeVertex> vertices = new ArrayList<>(); // vertices of all surfaces
     private GaiaBoundingBox boundingBox = null;
 
     public void doTrianglesReduction(DecimateParameters decimateParameters) {
@@ -31,7 +31,7 @@ public class HalfEdgePrimitive implements Serializable {
             surface.doTrianglesReduction(decimateParameters);
         }
 
-        // Remake vertices.***
+        // Remake vertices
         vertices.clear();
         for (HalfEdgeSurface surface : surfaces) {
             this.vertices.addAll(surface.getVertices());
@@ -129,7 +129,7 @@ public class HalfEdgePrimitive implements Serializable {
         private Integer accessorIndices = -1;
         private Integer materialIndex = -1;
         private List<HalfEdgeSurface> surfaces = new ArrayList<>();
-        private List<HalfEdgeVertex> vertices = new ArrayList<>(); // vertices of all surfaces.***
+        private List<HalfEdgeVertex> vertices = new ArrayList<>(); // vertices of all surfaces
         private GaiaBoundingBox boundingBox = null;
          */
 
@@ -144,7 +144,7 @@ public class HalfEdgePrimitive implements Serializable {
                 surface.writeFile(outputStream);
             }
         } catch (Exception e) {
-            log.error("Error Log : ", e);
+            log.error("[ERROR] Error Log : ", e);
         }
     }
 
@@ -162,7 +162,7 @@ public class HalfEdgePrimitive implements Serializable {
                 surfaces.add(surface);
             }
         } catch (Exception e) {
-            log.error("Error Log : ", e);
+            log.error("[ERROR] Error Log : ", e);
         }
     }
 

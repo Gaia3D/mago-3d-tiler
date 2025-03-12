@@ -23,14 +23,14 @@ public class PipeElbow extends TopologicalNode {
     private float[] pipeRectangularSize = new float[2]; // for rectangular pipe.
     private double sweepAngRad = 0.0;
     private Vector3d elbowAxis = new Vector3d(0.0, 0.0, 1.0);
-    private Vector3d elbowCenterPosition = new Vector3d(); // this is NOT the position of the TopologicalNode's position.***
-    private PipeElbowType elbowType = PipeElbowType.STRAIGHT; // 0 = unknown, 1 = straight, 2 = toroidal, 3 = spherical.***
+    private Vector3d elbowCenterPosition = new Vector3d(); // this is NOT the position of the TopologicalNode's position
+    private PipeElbowType elbowType = PipeElbowType.STRAIGHT; // 0 = unknown, 1 = straight, 2 = toroidal, 3 = spherical
 
-    // linkPositions.***
+    // linkPositions
     private Map<TopologicalEdge, Vector3d> mapEdgeLinkPositions;
     private Map<TopologicalEdge, Vector3d> mapEdgeLinkNormals;
-    private int pipeRadiusInterpolationCount = 10; // 360 degrees / 10 = 36 degrees.***
-    private int elbowRadiusInterpolationCount = 10; // 360 degrees / 10 = 36 degrees.***
+    private int pipeRadiusInterpolationCount = 10; // 360 degrees / 10 = 36 degrees
+    private int elbowRadiusInterpolationCount = 10; // 360 degrees / 10 = 36 degrees
     private boolean dirty = true;
     private boolean bottomCap = false;
     private boolean topCap = false;
@@ -77,7 +77,7 @@ public class PipeElbow extends TopologicalNode {
         // calculate the elbowCenter position.
         elbowCenterPosition = new Vector3d(posCenter);
 
-        // now, calculate linkPositionsa.***
+        // now, calculate linkPositionsa
         Vector3d linkPosA = new Vector3d(posCenter);
 
         mapEdgeLinkPositions.put(edge1, linkPosA);
@@ -154,7 +154,7 @@ public class PipeElbow extends TopologicalNode {
             // if the sweep angle is less than 0.1 deg, then this elbow has no mesh.
             elbowCenterPosition = new Vector3d(posCenter);
 
-            // now, calculate linkPositionsa.***
+            // now, calculate linkPositionsa
             Vector3d linkPosA = new Vector3d(posCenter);
 
             mapEdgeLinkPositions.put(edge1, linkPosA);
@@ -177,7 +177,7 @@ public class PipeElbow extends TopologicalNode {
         elbowCenterPosition.mul(dist);
         elbowCenterPosition.add(posCenter);
 
-        // now, calculate linkPositionsa.***
+        // now, calculate linkPositionsa
         double distCtoLink = Math.cos(semiAngRad) * dist;
         Vector3d linkPosA = new Vector3d(dirCA);
         linkPosA.mul(distCtoLink);
@@ -229,7 +229,7 @@ public class PipeElbow extends TopologicalNode {
             Modeler3D modeler3D = new Modeler3D();
             pipeRadiusInterpolationCount = modeler3D.getCircleInterpolationByRadius(pipeRadius);
 
-            // circle profile.***
+            // circle profile
             for (int i = 0; i < pipeRadiusInterpolationCount; i++) {
                 double angle = 2.0 * Math.PI * i / pipeRadiusInterpolationCount;
                 double x = pipeRadius * Math.cos(angle);
@@ -241,7 +241,7 @@ public class PipeElbow extends TopologicalNode {
                 resultPoints.add(circlePoint);
             }
         } else if (profileType == PipeType.RECTANGULAR) {
-            // rectangular profile.***
+            // rectangular profile
             double halfWidth = pipeRectangularSize[0] / 2.0;
             double halfHeight = pipeRectangularSize[1] / 2.0;
 
@@ -290,7 +290,7 @@ public class PipeElbow extends TopologicalNode {
 
         Vector3d thisNodePos = new Vector3d(this.getPosition());
 
-        // calculate the 1rst transversal circle.***********************************************
+        // calculate the 1rst transversal circle********************************************
         List<Vector3d> transversalCircle1 = new ArrayList<>();
         Matrix4d tMat = modeler3D.getMatrix4FromZDir(dir1);
         Matrix4d translationMat = new Matrix4d();
@@ -362,7 +362,7 @@ public class PipeElbow extends TopologicalNode {
 
         if (!pipe1.isPhysicallyBuildable() || !pipe2.isPhysicallyBuildable()) {
             // if the 2 pipes are not physically buildable, then this elbow has no mesh.
-            // make a straight elbow.***
+            // make a straight elbow
             // if the sweep angle is less than 0.1 deg, then this elbow has no mesh.
             TopologicalEdge edge1 = this.getEdge(0);
             TopologicalEdge edge2 = this.getEdge(1);
@@ -385,7 +385,7 @@ public class PipeElbow extends TopologicalNode {
 
             elbowCenterPosition = new Vector3d(posCenter);
 
-            // now, calculate linkPositionsa.***
+            // now, calculate linkPositionsa
             Vector3d linkPosA = new Vector3d(posCenter);
 
             mapEdgeLinkPositions.put(this.getEdge(0), linkPosA);
@@ -453,7 +453,7 @@ public class PipeElbow extends TopologicalNode {
         double increSweepAngRad = this.sweepAngRad / this.elbowRadiusInterpolationCount;
         elbowAxisRotMat.rotate(-increSweepAngRad, elbowAxis);
 
-        // calculate the 1rst transversal circle.***********************************************
+        // calculate the 1rst transversal circle********************************************
         List<Vector3d> transversalCircle1 = new ArrayList<Vector3d>();
         Matrix4d tMat = modeler3D.getMatrix4FromZDir(dir1);
         Matrix4d translationMat = new Matrix4d();

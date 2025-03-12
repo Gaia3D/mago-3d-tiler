@@ -39,7 +39,7 @@ public class GaiaInstanceTranslator implements PreProcess {
                     altitude.set(memSave_alt[0]);
                 });
             } catch (PointOutsideCoverageException e) {
-                log.warn("Fail to get altitude from DEM coverage. : {}", e.getMessage());
+                log.warn("[WARN] Fail to get altitude from DEM coverage. : {}", e.getMessage());
             }
         }
         position.set(position.x, position.y, altitude.get());

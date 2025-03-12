@@ -80,7 +80,7 @@ public class GaiaNode extends NodeStructure implements Serializable {
                 float normalY;
                 float normalZ;
                 if (vertexIndex + 2 >= normalList.length) {
-                    log.warn("Normal list is not enough.");
+                    log.warn("[WARN] Normal list is not enough.");
                     normalX = 0.0f;
                     normalY = 0.0f;
                     normalZ = 1.0f;
@@ -95,7 +95,7 @@ public class GaiaNode extends NodeStructure implements Serializable {
                 int colorIndex = i * 4;
                 byte[] color = new byte[4];
                 if (colorIndex + 3 >= colorList.length) {
-                    log.warn("Color list is not enough.");
+                    log.warn("[WARN] Color list is not enough.");
                     color[0] = -127;
                     color[1] = -127;
                     color[2] = -127;
@@ -113,7 +113,7 @@ public class GaiaNode extends NodeStructure implements Serializable {
                 float texcoordX;
                 float texcoordY;
                 if (texcoordIndex + 1 >= texCoordList.length) {
-                    log.warn("Texcoord list is not enough.");
+                    log.warn("[WARN] Texcoord list is not enough.");
                     texcoordX = 0.0f;
                     texcoordY = 0.0f;
                 } else {

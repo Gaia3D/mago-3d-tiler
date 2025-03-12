@@ -43,7 +43,6 @@ import java.util.List;
  * GltfWriter is a class that writes the glTF file.
  * It contains the method to write the glTF file from the GaiaScene object.
  * The glTF file is written in the glTF 2.0 format.
- * author znkim
  * @since 1.0.0
  * @see GaiaScene , GltfBinary
  */
@@ -58,8 +57,8 @@ public class GltfWriter {
             GltfModelWriter writer = new GltfModelWriter();
             writer.writeEmbedded(gltfModel, outputPath);
         } catch (IOException e) {
-            log.error(e.getMessage());
-            log.error("Failed to write glTF file.");
+            log.error("[ERROR] :", e);
+            log.error("[ERROR] Failed to write glTF file.");
         }
     }
 
@@ -73,8 +72,8 @@ public class GltfWriter {
             GltfModelWriter writer = new GltfModelWriter();
             writer.writeBinary(gltfModel, outputPath);
         } catch (IOException e) {
-            log.error(e.getMessage());
-            log.error("Failed to write glb file.");
+            log.error("[ERROR] :", e);
+            log.error("[ERROR] Failed to write glb file.");
         }
     }
 
@@ -86,8 +85,8 @@ public class GltfWriter {
             outputStream.flush();
             outputStream.close();
         } catch (IOException e) {
-            log.error(e.getMessage());
-            log.error("Failed to write glb file.");
+            log.error("[ERROR] :", e);
+            log.error("[ERROR] Failed to write glb file.");
         }
     }
 
@@ -196,7 +195,7 @@ public class GltfWriter {
         int vertexCount = gaiaMesh.getPositionsCount() / 3;
         boolean isOverShortVertices = vertexCount >= 65535;
         if (isOverShortVertices) {
-            log.warn("[Warning] The number of vertices count than 65535 ({})", vertexCount);
+            log.warn("[WARN] The number of vertices count than 65535 ({})", vertexCount);
         }
 
         GltfNodeBuffer nodeBuffer = initNodeBuffer(gaiaMesh, isOverShortVertices);
@@ -517,7 +516,7 @@ public class GltfWriter {
         FormatType formatType = globalOptions.getInputFormat();
         material.setDoubleSided(formatType != null && formatType.equals(FormatType.CITYGML));
 
-        // Set the alpha mode.***
+        // Set the alpha mode
         boolean isOpaque = gaiaMaterial.isOpaqueMaterial();
         if (!isOpaque) {
             boolean isBlend = gaiaMaterial.isBlend();
@@ -654,8 +653,8 @@ public class GltfWriter {
                 bufferedImage.flush();
             }
         } catch (IOException e) {
-            log.error(e.getMessage());
-            log.error("Error writing image");
+            log.error("[ERROR] :", e);
+            log.error("[ERROR] Error writing image");
         }
         return imageString;
     }
@@ -700,18 +699,18 @@ public class GltfWriter {
             ios.close();
             return imageString;
         } catch (IOException e) {
-            log.error(e.getMessage());
-            log.error("Error writing jpeg image");
+            log.error("[ERROR] :", e);
+            log.error("[ERROR] Error writing jpeg image");
             try {
                 baos.close();
             } catch (IOException ex) {
-                log.error(ex.getMessage());
+                log.error("[ERROR] :", ex);
             }
             if (ios != null) {
                 try {
                     ios.close();
                 } catch (IOException ex) {
-                    log.error(ex.getMessage());
+                    log.error("[ERROR] :", ex);
                 }
             }
         }

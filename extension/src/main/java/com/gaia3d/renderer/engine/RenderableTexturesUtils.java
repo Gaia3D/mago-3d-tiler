@@ -45,7 +45,7 @@ public class RenderableTexturesUtils {
         int width = bufferedImage.getWidth();
         int height = bufferedImage.getHeight();
 
-        // resize image to nearest power of two.***
+        // resize image to nearest power of two
         if (resizeToPowerOf2) {
             log.info("Resizing image to nearest power of two...");
             log.info("Original image size: {}x{}", width, height);
@@ -61,7 +61,7 @@ public class RenderableTexturesUtils {
             log.info("Resized image size: {}x{}", resizeWidth, resizeHeight);
         }
         int format = bufferedImage.getType();
-        // end resize image to nearest power of two.***
+        // end resize image to nearest power of two
 
         // BufferedImage format :
         // TYPE_INT_RGB,
@@ -92,10 +92,10 @@ public class RenderableTexturesUtils {
 
         byte[] rgbaByteArray = null;
 
-        // check if the data is DataBufferInt or DataBufferByte.***
+        // check if the data is DataBufferInt or DataBufferByte
         DataBuffer dataBuffer = bufferedImage.getRaster().getDataBuffer();
         if (dataBuffer instanceof DataBufferInt) {
-            // DataBufferInt.***
+            // DataBufferInt
             int[] intArray = ((DataBufferInt) dataBuffer).getData();
             int intArrayLength = intArray.length;
             if (format == TYPE_INT_RGB) {
@@ -108,7 +108,7 @@ public class RenderableTexturesUtils {
                     rgbaByteArray[i * 3 + 2] = (byte) (value & 0xFF);        // Blue
                 }
             } else if (format == TYPE_INT_ARGB) {
-                // DataBufferInt.***
+                // DataBufferInt
                 rgbaByteArray = new byte[intArray.length * 4];
 
                 for (int i = 0; i < intArray.length; i++) {
@@ -120,13 +120,13 @@ public class RenderableTexturesUtils {
                 }
             }
         } else {
-            // DataBufferByte.***
+            // DataBufferByte
             rgbaByteArray = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
         }
 
 
         if (format == TYPE_INT_ARGB) {
-            // change byte order.***
+            // change byte order
             byte temp;
             for (int i = 0; i < rgbaByteArray.length; i += 4) {
                 temp = rgbaByteArray[i];
@@ -136,7 +136,7 @@ public class RenderableTexturesUtils {
                 rgbaByteArray[i + 3] = temp;
             }
         } else if (format == TYPE_4BYTE_ABGR) {
-            // change byte order.***
+            // change byte order
             byte temp;
             for (int i = 0; i < rgbaByteArray.length; i += 4) {
                 temp = rgbaByteArray[i];
@@ -147,7 +147,7 @@ public class RenderableTexturesUtils {
                 rgbaByteArray[i + 2] = temp;
             }
         } else if (format == TYPE_3BYTE_BGR) {
-            // change byte order.***
+            // change byte order
             byte temp;
             for (int i = 0; i < rgbaByteArray.length; i += 3) {
                 temp = rgbaByteArray[i];

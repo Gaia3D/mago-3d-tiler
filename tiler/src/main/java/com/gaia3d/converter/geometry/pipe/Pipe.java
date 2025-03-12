@@ -19,7 +19,7 @@ public class Pipe extends TopologicalEdge {
     // set pipeRadius.
     private float pipeRadius = 0.0f;
     private float[] pipeRectangularSize = new float[2]; // for rectangular pipe.
-    private int interpolationCount = 10; // 360 degrees / 10 = 36 degrees.***
+    private int interpolationCount = 10; // 360 degrees / 10 = 36 degrees
     private boolean dirty = true;
     private boolean bottomCap = false;
     private boolean topCap = false;
@@ -82,7 +82,7 @@ public class Pipe extends TopologicalEdge {
             Modeler3D modeler3D = new Modeler3D();
             interpolationCount = modeler3D.getCircleInterpolationByRadius(pipeRadius);
 
-            // circle profile.***
+            // circle profile
             for (int i = 0; i < interpolationCount; i++) {
 
                 double angle = 2.0 * Math.PI * i / interpolationCount;
@@ -95,7 +95,7 @@ public class Pipe extends TopologicalEdge {
                 resultPoints.add(circlePoint);
             }
         } else if (profileType == PipeType.RECTANGULAR) {
-            // rectangular profile.***
+            // rectangular profile
             double halfWidth = pipeRectangularSize[0] / 2.0;
             double halfHeight = pipeRectangularSize[1] / 2.0;
 

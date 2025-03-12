@@ -75,7 +75,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
             ImageIO.setUseCache(false);
             ImageIO.write(bufferedImage, imageExtension, file);
         } catch (IOException e) {
-            log.error("Error : ", e);
+            log.error("[ERROR] :", e);
         }
     }
 
@@ -105,7 +105,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
             fileName = fileName.replace(".JPEG", ".png");
             imageFile = new File(imageFile.getParent(), fileName);
             if (!imageFile.exists()) {
-                log.error("Image file not found : {}", imageFile.getAbsolutePath());
+                log.error("[ERROR] Image file not found : {}", imageFile.getAbsolutePath());
                 return null;
             }
         }
@@ -114,7 +114,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         try (BufferedInputStream stream = new BufferedInputStream(new FileInputStream(imageFile))) {
             image = ImageIO.read(stream);
         } catch (IOException e) {
-            log.error("Error : ", e);
+            log.error("[ERROR] :", e);
         }
         return image;
     }

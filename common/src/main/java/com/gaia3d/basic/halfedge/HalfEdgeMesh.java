@@ -103,7 +103,7 @@ public class HalfEdgeMesh implements Serializable {
                 primitive.writeFile(outputStream);
             }
         } catch (Exception e) {
-            log.error("Error Log : ", e);
+            log.error("[ERROR] Error Log : ", e);
         }
     }
 
@@ -116,7 +116,7 @@ public class HalfEdgeMesh implements Serializable {
                 primitives.add(primitive);
             }
         } catch (Exception e) {
-            log.error("Error Log : ", e);
+            log.error("[ERROR] Error Log : ", e);
         }
     }
 

@@ -56,7 +56,7 @@ public class PointCloudBinaryWriter {
             stream.writePureText(batchTableJson);
             stream.write(batchTableBytes);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error("[ERROR] :", e);
         }
     }
 }

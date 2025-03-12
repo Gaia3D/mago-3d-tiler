@@ -36,7 +36,7 @@ public class BatchedProcessModelPhR implements ProcessFlowModel {
     private final GlobalOptions globalOptions = GlobalOptions.getInstance();
 
     public void run() throws IOException {
-        // Photorealistic Mesh.***
+        // Photorealistic Mesh
         FormatType inputFormat = globalOptions.getInputFormat();
 
         Converter converter = getConverter(inputFormat);
@@ -49,7 +49,7 @@ public class BatchedProcessModelPhR implements ProcessFlowModel {
             geoTiffs = fileLoader.loadGridCoverages(geoTiffs);
         }
 
-        // preProcess (GaiaTexCoordCorrector, GaiaScaler, GaiaRotator, GaiaTranslatorExact, GaiaMinimizer).***
+        // preProcess (GaiaTexCoordCorrector, GaiaScaler, GaiaRotator, GaiaTranslatorExact, GaiaMinimizer)
         List<PreProcess> preProcessors = new ArrayList<>();
         preProcessors.add(new GaiaTileInfoInitiator());
         preProcessors.add(new GaiaTexCoordCorrector());
@@ -61,16 +61,16 @@ public class BatchedProcessModelPhR implements ProcessFlowModel {
         GaiaMinimizerPhR gaiaMinimizer = new GaiaMinimizerPhR();
         preProcessors.add(gaiaMinimizer);
 
-        // tileProcess (Batched3DModelTilerPhR).***
+        // tileProcess (Batched3DModelTilerPhR)
         TilingProcess tilingProcess = new Batched3DModelTilerPhR();
 
-        // postProcess (GaiaMaximizer, GaiaRelocator, Batched3DModel).***
+        // postProcess (GaiaMaximizer, GaiaRelocator, Batched3DModel)
         List<PostProcess> postProcessors = new ArrayList<>();
         postProcessors.add(new GaiaMaximizer());
         postProcessors.add(new GaiaRelocator());
         postProcessors.add(new Batched3DModel());
 
-        // Test.***
+        // Test
         //globalOptions.setDebugLod(true);// Test. delete this.!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         // end Test.---
 

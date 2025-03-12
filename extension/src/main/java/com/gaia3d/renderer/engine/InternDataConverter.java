@@ -110,7 +110,7 @@ public class InternDataConverter {
         for (Map.Entry<AttributeType, GaiaBuffer> entry : buffers.entrySet()) {
             AttributeType attributeType = entry.getKey();
             GaiaBuffer buffer = entry.getValue();
-            buffer.setAttributeType(attributeType); // set the attribute type to the buffer.***
+            buffer.setAttributeType(attributeType); // set the attribute type to the buffer
             RenderableBuffer renderableBuffer = getRenderableBuffer(buffer);
             renderablePrimitive.setAttribTypeRenderableBuffer(attributeType, renderableBuffer);
             int matId = bufferDataSet.getMaterialId();

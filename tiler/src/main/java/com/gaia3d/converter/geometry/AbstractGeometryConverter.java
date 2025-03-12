@@ -372,7 +372,7 @@ public abstract class AbstractGeometryConverter {
             vertex.setNormal(normal);
             vertexList.add(vertex);
         }
-        primitive.setVertices(vertexList); // total vertex list.***
+        primitive.setVertices(vertexList); // total vertex list
         primitive.getSurfaces().add(surface);
 
         int idx1Local = -1;
@@ -418,7 +418,7 @@ public abstract class AbstractGeometryConverter {
 //            vertexList.add(vertex);
 //        }
 //
-//        // Now, the interior polygons.***
+//        // Now, the interior polygons
 //        for (List<Vector3d> interiorPolygon : interiorPolygons) {
 //            Vector3d normal2 = new Vector3d();
 //            tessellator.calculateNormal3D(interiorPolygon, normal2);
@@ -452,7 +452,7 @@ public abstract class AbstractGeometryConverter {
             vertex.setNormal(normal);
             vertexList.add(vertex);
         }
-        primitive.setVertices(vertexList); // total vertex list.***
+        primitive.setVertices(vertexList); // total vertex list
         primitive.getSurfaces().add(surface);
 
         int idx1Local = -1;
@@ -499,7 +499,7 @@ public abstract class AbstractGeometryConverter {
         int polygonCount = polygons.size();
         for (List<Vector3d> polygon : polygons) {
 
-            // check uroborus.***
+            // check uroborus
             List<Vector3d> cleanPolygon = new ArrayList<>();
             cleanPolygon = GeometryUtils.getCleanPoints3dArray(polygon, cleanPolygon, error);
             polygonsClean.add(cleanPolygon);
@@ -521,7 +521,7 @@ public abstract class AbstractGeometryConverter {
             pointsMap.put(vertex.getPosition(), m);
         }
 
-        primitive.setVertices(vertexList); // total vertex list.***
+        primitive.setVertices(vertexList); // total vertex list
 
         List<Integer> resultTrianglesIndices = new ArrayList<>();
 
@@ -536,8 +536,8 @@ public abstract class AbstractGeometryConverter {
             List<Vector3d> polygon = polygonsClean.get(m);
             resultTrianglesIndices.clear();
 
-            // Note : in "tessellator.tessellate3D(polygon, resultTrianglesIndices);" is possible to loss some points (deleting collinear points).***
-            // So, in the end of this method, delete no used vertices.***
+            // Note : in "tessellator.tessellate3D(polygon, resultTrianglesIndices);" is possible to loss some points (deleting collinear points)
+            // So, in the end of this method, delete no used vertices
             tessellator.tessellate3D(polygon, resultTrianglesIndices);
 
             int indicesCount = resultTrianglesIndices.size();
@@ -565,7 +565,7 @@ public abstract class AbstractGeometryConverter {
             }
         }
 
-        // now, delete no used vertices (bcos possible loss of some points).***
+        // now, delete no used vertices (bcos possible loss of some points)
         primitive.deleteNoUsedVertices();
 
         return primitive;
@@ -599,7 +599,7 @@ public abstract class AbstractGeometryConverter {
             pointsMap.put(vertex.getPosition(), m);
         }
 
-        primitive.setVertices(vertexList); // total vertex list.***
+        primitive.setVertices(vertexList); // total vertex list
 
         List<Integer> resultTrianglesIndices = new ArrayList<>();
 
@@ -656,7 +656,7 @@ public abstract class AbstractGeometryConverter {
             float pipeRadius = (float) (pipeLineString.getDiameter() / 2000.0f); // convert to meters from millimeters.
 
             // 1rst create elbows.
-            float elbowRadius = pipeRadius * 1.5f; // test value.***
+            float elbowRadius = pipeRadius * 1.5f; // test value
             List<PipeElbow> pipeElbows = new ArrayList<>();
 
             for (int i = 0; i < pointsCount; i++) {
@@ -677,7 +677,7 @@ public abstract class AbstractGeometryConverter {
             float pipeHeight = pipeRectangularSize[1];
 
             // 1rst create elbows.
-            float elbowRadius = Math.max(pipeWidth, pipeHeight) * 1.5f; // test value.***
+            float elbowRadius = Math.max(pipeWidth, pipeHeight) * 1.5f; // test value
             List<PipeElbow> pipeElbows = new ArrayList<>();
 
             for (int i = 0; i < pointsCount; i++) {

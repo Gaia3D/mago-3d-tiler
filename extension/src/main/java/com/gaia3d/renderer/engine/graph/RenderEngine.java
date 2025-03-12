@@ -192,7 +192,7 @@ public class RenderEngine {
     private boolean checkGlError() {
         int glError = GL20.glGetError();
         if (glError != GL20.GL_NO_ERROR) {
-            log.info("glError: " + glError);
+            log.error("[ERROR] glError: " + glError);
             return true;
         }
         return false;
@@ -251,7 +251,7 @@ public class RenderEngine {
                             int wrapT = GL_REPEAT;
                             BufferedImage bufferedImage = diffuseTexture.getBufferedImage();
                             if(bufferedImage == null) {
-                                log.error("bufferedImage is null.");
+                                log.error("[ERROR] bufferedImage is null.");
                                 continue;
                             }
                             int textureId = RenderableTexturesUtils.createGlTextureFromBufferedImage(bufferedImage, minFilter, magFilter, wrapS, wrapT, true);
