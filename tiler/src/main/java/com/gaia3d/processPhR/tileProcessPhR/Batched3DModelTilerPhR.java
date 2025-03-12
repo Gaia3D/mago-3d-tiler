@@ -56,6 +56,9 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         // In photoRealistic, 1rst make an empty octTree.              *
         // then use rectangleCakeCutter to fill the octTree.           *
         //**************************************************************
+        if(tileInfos.size() == 0) {
+            throw new TileProcessingException("Error : tileInfos is empty.");
+        }
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
 
         // make globalBoundingBox as square
