@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@SuppressWarnings("ALL")
 @Slf4j
 public class Batched3DModel implements TileModel {
     private static final String MAGIC = "b3dm";

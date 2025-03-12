@@ -111,7 +111,7 @@ class FormatReleaseTest {
             };
             execute(args);
         } catch (RuntimeException e) {
-            log.error("Failed to run process, Please check the arguments.", e);
+            log.error("[ERROR] Failed to run process, Please check the arguments.", e);
             assert true;
         }
     }

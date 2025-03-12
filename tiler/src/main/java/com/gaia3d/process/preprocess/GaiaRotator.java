@@ -4,7 +4,6 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

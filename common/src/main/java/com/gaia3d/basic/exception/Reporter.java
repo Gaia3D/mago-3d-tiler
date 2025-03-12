@@ -131,7 +131,7 @@ public class Reporter {
             log.info("[Report][I/O] writing the report file: {}", reportFile.getAbsolutePath());
             FileUtils.writeStringToFile(reportFile, stringBuilder.toString(), REPORT_FILE_ENCODING);
         } catch (Exception e) {
-            log.error("[Report][I/O] failed to write the report file: {}", reportFile.getAbsolutePath());
+            log.error("[ERROR][Report][I/O] failed to write the report file: {}", reportFile.getAbsolutePath());
         }
     }
 

@@ -22,7 +22,7 @@ import java.util.Map;
 @Slf4j
 public class TileMerger {
 
-    private static GlobalOptions globalOptions = GlobalOptions.getInstance();
+    private static final GlobalOptions globalOptions = GlobalOptions.getInstance();
 
     public void merge() {
         log.info("Starting tileset merging.");
@@ -59,7 +59,7 @@ public class TileMerger {
             objectMapper.writeValue(tilesetPath, tileset);
             log.info("Tileset.json is written to {}", tilesetPath);
         } catch (IOException e) {
-            log.error("Failed to write tileset.json.", e);
+            log.error("[ERROR] Failed to write tileset.json.", e);
             throw new RuntimeException(e);
         }
     }

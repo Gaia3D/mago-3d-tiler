@@ -8,7 +8,6 @@ import com.gaia3d.basic.geometry.octree.GaiaOctreeVertices;
 import com.gaia3d.basic.model.structure.PrimitiveStructure;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.GLConstants;
-import com.gaia3d.util.GaiaColorUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,7 +17,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.joml.*;
 
 import java.io.Serializable;
-import java.lang.Math;
 import java.util.*;
 import java.util.Random;
 
@@ -311,7 +309,7 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
             int[] indices = surface.getIndices();
             for (int index : indices) {
                 if (index >= verticesCount) {
-                    log.error("Invalid index : {}", index);
+                    log.error("[ERROR] Invalid index : {}", index);
                     result = false;
                 }
             }

@@ -106,7 +106,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                     for (SolidProperty solidProperty : solidProperties) {
                         AbstractSolid solid = solidProperty.getObject();
                         if (solid == null) {
-                            log.error("No solid found for city object: {}", cityObject.getId());
+                            log.error("[ERROR] No solid found for city object: {}", cityObject.getId());
                         } else {
                             buildingSurfacesList.add(convertSolidSurfaceProperty(cityObject, solid));
                         }
@@ -275,7 +275,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             }
             reader.close();
         } catch (CityGMLContextException | CityGMLReadException e) {
-            log.error("Failed to read citygml file: {}", file.getName());
+             log.error("[ERROR] Failed to read citygml file: {}", file.getName());
             throw new RuntimeException(e);
         }
 
@@ -309,7 +309,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
 
             Polygon surface = (Polygon) surfaceProperty.getObject();
             if (surface == null) {
-                log.error("No surface found for city object: {}", cityObject.getId());
+                log.error("[ERROR] No surface found for city object: {}", cityObject.getId());
                 continue;
             }
 
@@ -359,7 +359,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
 
         List<Solid> solids = new ArrayList<>();
         if (abstractSolid == null) {
-            log.error("No solid found for city object: {}", cityObject.getId());
+            log.error("[ERROR] No solid found for city object: {}", cityObject.getId());
             return buildingSurfaces;
         } else if (abstractSolid instanceof CompositeSolid object) {
             object.getSolidMembers().forEach(solidProperty -> {
@@ -402,21 +402,21 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
 
         MultiSurface multiSurface = multiSurfaceProperty.getObject();
         if (multiSurface == null) {
-            log.error("No multi surface found for city object: {}", cityObject.getId());
+            log.error("[ERROR] No multi surface found for city object: {}", cityObject.getId());
             return buildingSurfaces;
         }
 
         SurfaceArrayProperty surfaceArrayProperty = multiSurface.getSurfaceMembers();
         List<SurfaceProperty> surfaceProperties = multiSurface.getSurfaceMember();
         if (surfaceProperties == null && surfaceArrayProperty == null) {
-            log.error("No surface properties found for city object: {}", cityObject.getId());
+            log.error("[ERROR] No surface properties found for city object: {}", cityObject.getId());
             return buildingSurfaces;
         }
 
         if (surfaceProperties == null && surfaceArrayProperty != null) {
             List<AbstractSurface> surfaces = surfaceArrayProperty.getObjects();
             if (surfaces == null) {
-                log.error("No surfaces found for city object: {}", cityObject.getId());
+                log.error("[ERROR] No surfaces found for city object: {}", cityObject.getId());
                 return buildingSurfaces;
             }
             List<SurfaceProperty> newSurfaceProperties = new ArrayList<>();
@@ -510,7 +510,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             List<LinearRing> interiorRings = new ArrayList<>();
             LinearRing exteriorLinearRing = null;
             if (abstractSurface == null) {
-                log.error("No surface found for city object: {}", cityObject.getId());
+                log.error("[ERROR] No surface found for city object: {}", cityObject.getId());
                 continue;
             } else if (abstractSurface instanceof Polygon polygon) {
                 exteriorLinearRing = (LinearRing) polygon.getExterior().getObject();

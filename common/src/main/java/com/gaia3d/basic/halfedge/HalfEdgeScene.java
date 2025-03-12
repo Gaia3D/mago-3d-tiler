@@ -3,7 +3,6 @@ package com.gaia3d.basic.halfedge;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaMaterial;
-import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.model.GaiaTexture;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.util.ImageUtils;
@@ -483,10 +482,8 @@ public class HalfEdgeScene implements Serializable {
     }
 
     public List<GaiaMaterial> getUsingMaterialsWithTextures(List<GaiaMaterial> resultMaterials) {
-        //********************************************************************************
         // Usually, there are materials that are not using
         // This function returns the materials that are using and has textures
-        //********************************************************************************
         if (resultMaterials == null) {
             resultMaterials = new ArrayList<>();
         }
@@ -595,8 +592,7 @@ public class HalfEdgeScene implements Serializable {
         }
     }
 
-    public void translateTexCoordsToPositiveQuadrant()
-    {
+    public void translateTexCoordsToPositiveQuadrant() {
         for (HalfEdgeNode node : nodes) {
             node.translateTexCoordsToPositiveQuadrant();
         }

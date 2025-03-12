@@ -1,15 +1,11 @@
 package com.gaia3d.basic.halfedge;
 
-import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
 import com.gaia3d.basic.geometry.octree.HalfEdgeOctree;
 import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaMaterial;
-import com.gaia3d.basic.model.GaiaSurface;
-import com.gaia3d.basic.model.GaiaVertex;
 import lombok.extern.slf4j.Slf4j;
-import org.joml.Vector2d;
 import org.joml.Vector3d;
 
 import java.nio.file.Path;
@@ -20,8 +16,7 @@ import java.util.Map;
 
 @Slf4j
 public class HalfEdgeCutter {
-    public static void getPlanesGridXYZForBox(GaiaBoundingBox bbox, double gridSpacing, List<GaiaAAPlane> resultPlanesYZ, List<GaiaAAPlane> resultPlanesXZ,
-                                              List<GaiaAAPlane> resultPlanesXY, HalfEdgeOctree resultOctree) {
+    public static void getPlanesGridXYZForBox(GaiaBoundingBox bbox, double gridSpacing, List<GaiaAAPlane> resultPlanesYZ, List<GaiaAAPlane> resultPlanesXZ, List<GaiaAAPlane> resultPlanesXY, HalfEdgeOctree resultOctree) {
         // Note : the grid is regularly spaced in the 3 axis
         double maxSize = bbox.getMaxSize();
         int desiredDepth = (int) Math.ceil(HalfEdgeUtils.log2(maxSize / gridSpacing));
@@ -72,9 +67,7 @@ public class HalfEdgeCutter {
         }
     }
 
-    public static List<HalfEdgeScene> cutHalfEdgeSceneByGaiaAAPlanes(HalfEdgeScene halfEdgeScene, List<GaiaAAPlane> planes, HalfEdgeOctree resultOctree,
-                                                                     boolean scissorTextures, boolean makeSkirt)
-    {
+    public static List<HalfEdgeScene> cutHalfEdgeSceneByGaiaAAPlanes(HalfEdgeScene halfEdgeScene, List<GaiaAAPlane> planes, HalfEdgeOctree resultOctree, boolean scissorTextures, boolean makeSkirt) {
         double error = 1e-5; //
         int planesCount = planes.size();
         for (int i = 0; i < planesCount; i++) {
@@ -91,7 +84,7 @@ public class HalfEdgeCutter {
 //                Vector3d pos1 = faceVertices.get(1).getPosition();
 //                Vector3d pos2 = faceVertices.get(2).getPosition();
 //
-//                int hola = 0;
+//
 //            }
         }
 
@@ -340,9 +333,8 @@ public class HalfEdgeCutter {
                 int twinClassifyId = twinFace.getClassifyId();
                 if (classifyId == twinClassifyId) {
                     HalfEdge copyTwin = edgeToNewEdgeMap.get(twin);
-                    if (!copyEdge.setTwin(copyTwin))
-                    {
-                        log.error("Error setting twin");
+                    if (!copyEdge.setTwin(copyTwin)) {
+                        log.error("[ERROR] setting twin");
                     }
                 }
             }

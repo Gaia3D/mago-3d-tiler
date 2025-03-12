@@ -1,13 +1,9 @@
 package com.gaia3d.util;
 
-import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.octree.GaiaOctreeVertices;
-import com.gaia3d.basic.halfedge.HalfEdgeScene;
-import com.gaia3d.basic.halfedge.HalfEdgeUtils;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.model.structure.GaiaFaceExplicit;
 import lombok.extern.slf4j.Slf4j;
-import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
 import java.util.ArrayList;

@@ -13,6 +13,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("ALL")
 @Slf4j
 class AssimpConverterTest {
 
@@ -64,7 +65,7 @@ class AssimpConverterTest {
 
         log.debug("gaiaScenes : {}", gaiaSet);
         log.debug("gaiaScenes : {}", readA);
-        log.debug(gaiaSet.equals(readA) + "");
+        log.debug("{}", gaiaSet.equals(readA));
     }
 
     private void writeObject(GaiaSet gaiaSet, File outputFile) {

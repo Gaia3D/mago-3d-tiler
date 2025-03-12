@@ -192,8 +192,8 @@ public class GaiaTextureCoordinator {
         return resultVec;
     }
 
-    private float modf(float value, Double intPart) {
-        intPart = Math.floor(value);
+    private float modf(float value) {
+        double intPart = Math.floor(value);
         return (float) (value - intPart);
     }
 
@@ -346,13 +346,13 @@ public class GaiaTextureCoordinator {
                         if (Math.abs(originX) - 1.0 < error) {
                             fractPartX = originX;
                         } else {
-                            fractPartX = this.modf(originX, intPartX);
+                            fractPartX = this.modf(originX);
                         }
 
                         if (Math.abs(originY) - 1.0 < error) {
                             fractPartY = originY;
                         } else {
-                            fractPartY = this.modf(originY, intPartY);
+                            fractPartY = this.modf(originY);
                         }
 
                         u = fractPartX;

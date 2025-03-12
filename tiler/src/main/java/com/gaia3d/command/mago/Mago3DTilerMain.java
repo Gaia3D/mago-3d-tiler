@@ -13,6 +13,7 @@ import java.io.IOException;
 /**
  * Main class for mago 3DTiler.
  */
+@SuppressWarnings("ALL")
 @Slf4j
 public class Mago3DTilerMain {
     public static void main(String[] args) {

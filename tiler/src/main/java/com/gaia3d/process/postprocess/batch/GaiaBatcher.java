@@ -65,10 +65,8 @@ public class GaiaBatcher {
         }
     }
 
-    /** compare two materials
-     * @param materialA
-     * @param materialB
-     * @param scaleFactor
+    /**
+     * compare two materials
      */
     private boolean areEqualMaterials(GaiaMaterial materialA, GaiaMaterial materialB, float scaleFactor) {
         // This function determines if two materials are equal.

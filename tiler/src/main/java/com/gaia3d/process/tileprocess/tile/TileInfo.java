@@ -80,7 +80,7 @@ public class TileInfo {
         try {
             this.set = GaiaSet.readFile(this.tempPath);
         } catch (IOException e) {
-            log.error("Failed to read the temp file: {}", this.tempPath);
+            log.error("[ERROR] Failed to read the temp file: {}", this.tempPath);
         }
     }
 

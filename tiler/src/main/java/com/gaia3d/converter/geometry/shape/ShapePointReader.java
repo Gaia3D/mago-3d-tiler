@@ -1,7 +1,6 @@
 package com.gaia3d.converter.geometry.shape;
 
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.geometry.GaiaExtrusionBuilding;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.util.GlobeUtils;
@@ -15,7 +14,6 @@ import org.geotools.data.shapefile.shp.ShapefileReader;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.FeatureIterator;
-import org.geotools.process.vector.SimplifyProcess;
 import org.geotools.util.factory.Hints;
 import org.joml.Vector3d;
 import org.locationtech.jts.geom.*;
@@ -25,7 +23,6 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.filter.Filter;
-import org.w3.xlink.Simple;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,7 +40,7 @@ public class ShapePointReader implements AttributeReader {
     //read kml file
     @Override
     public KmlInfo read(File file) {
-        log.error("ShapePointReader read method is not implemented yet.");
+        log.error("[ERROR] ShapePointReader read method is not implemented yet.");
         return null;
     }
 
@@ -113,7 +110,7 @@ public class ShapePointReader implements AttributeReader {
                 } else if (geom instanceof Point point) {
                     points.add(point);
                 } else {
-                    log.error("Geometry type is not supported.");
+                    log.error("[ERROR] Geometry type is not supported.");
                     continue;
                 }
 

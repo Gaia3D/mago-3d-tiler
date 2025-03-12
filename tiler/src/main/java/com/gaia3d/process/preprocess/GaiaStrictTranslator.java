@@ -13,7 +13,6 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.joml.Matrix4d;
-import org.joml.Matrix4f;
 import org.joml.Vector3d;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;

@@ -8,10 +8,8 @@ import com.gaia3d.converter.geometry.ExtrusionTempGenerator;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.processing.Operations;
 import org.geotools.gce.geotiff.GeoTiffReader;
@@ -68,7 +66,6 @@ public class BatchedFileLoader implements FileLoader {
     }
 
 
-
     @Override
     public List<File> loadFiles() {
         return loadFileDefault();
@@ -93,7 +90,7 @@ public class BatchedFileLoader implements FileLoader {
                         List<GaiaScene> scenes = loadScene(file);
                         for (GaiaScene scene : scenes) {
                             if (scene == null) {
-                                log.error("Failed to load scene: {}", file.getAbsolutePath());
+                                log.error("[ERROR] :Failed to load scene: {}", file.getAbsolutePath());
                                 return null;
                             } else {
                                 TileInfo tileInfo = TileInfo.builder().kmlInfo(kmlInfo).scene(scene).outputPath(outputPath).build();
@@ -111,7 +108,7 @@ public class BatchedFileLoader implements FileLoader {
             List<GaiaScene> scenes = loadScene(file);
             for (GaiaScene scene : scenes) {
                 if (scene == null) {
-                    log.error("Failed to load scene: {}", file.getAbsolutePath());
+                    log.error("[ERROR] :Failed to load scene: {}", file.getAbsolutePath());
                     return null;
                 } else {
                     TileInfo tileInfo = TileInfo.builder().scene(scene).outputPath(outputPath).build();

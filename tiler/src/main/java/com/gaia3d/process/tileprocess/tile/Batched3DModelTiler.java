@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("ALL")
 @Slf4j
 @NoArgsConstructor
 public class Batched3DModelTiler extends DefaultTiler implements Tiler {

@@ -126,7 +126,7 @@ public class LasConverter {
         } else if (percentage > 100) {
             percentage = 100;
         }
-        int volumeFactor = (int) Math.ceil(100 / percentage);
+        int volumeFactor = (int) Math.ceil(100.0 / percentage);
         int count = 0;
         for (LASPoint point : pointIterable) {
             if (count++ % volumeFactor != 0) {

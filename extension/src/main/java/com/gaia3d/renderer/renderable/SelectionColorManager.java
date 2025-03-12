@@ -8,7 +8,7 @@ import java.util.Map;
 @NoArgsConstructor
 public class SelectionColorManager {
     // 36-bit RGBA color
-    public Map<Integer, RenderableObject> mapColorRenderable = new HashMap<>();
+    public final Map<Integer, RenderableObject> mapColorRenderable = new HashMap<>();
     private int currColor = 0;
 
     public int getAvailableColor() {

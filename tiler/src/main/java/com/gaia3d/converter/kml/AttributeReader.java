@@ -1,7 +1,6 @@
 package com.gaia3d.converter.kml;
 
 import com.gaia3d.command.mago.GlobalOptions;
-import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.*;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedGeometryFactory;

@@ -32,9 +32,7 @@ public class InnerRingRemover {
             return new InnerRing(innerRingVector);
         }).collect(Collectors.toList());
 
-        innerRingObjects = innerRingObjects.stream().sorted((a, b) -> {
-            return Double.compare(a.getMinValue(), b.getMinValue());
-        }).collect(Collectors.toList());
+        innerRingObjects = innerRingObjects.stream().sorted((a, b) -> Double.compare(a.getMinValue(), b.getMinValue())).collect(Collectors.toList());
 
         for (InnerRing innerRingObject : innerRingObjects) {
             outerRingVector = removeRing(outerRingVector, innerRingObject);

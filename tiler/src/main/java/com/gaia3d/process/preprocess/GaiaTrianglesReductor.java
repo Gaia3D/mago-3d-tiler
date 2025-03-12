@@ -76,7 +76,7 @@ public class GaiaTrianglesReductor {
     public HalfEdgeFace getHalfEdgeFace(GaiaFace face, List<GaiaVertex> vertices, HalfEdgeSurface halfEdgeSurface)
     {
         HalfEdgeFace halfEdgeFace = new HalfEdgeFace();
-        int indices[] = face.getIndices();
+        int[] indices = face.getIndices();
         int indicesCount = indices.length;
         if (indicesCount < 3) {
             return null;

@@ -6,6 +6,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("ALL")
 @Slf4j
 public class FileUtils {
 

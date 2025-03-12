@@ -303,7 +303,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         long freeMem = Runtime.getRuntime().freeMemory() / 1024 / 1024;
         long usedMem = totalMem - freeMem;
         // 퍼센트
-        double pct = usedMem * 100 / maxMem;
+        double pct = usedMem * 100.0 / maxMem;
         log.info("[Tile] Java Heap Size: {} / MaxMem: {}MB / TotalMem: {}MB / FreeMem: {}MB / UsedMem: {}MB / Pct: {}%", javaHeapSize, maxMem, totalMem, freeMem, usedMem, pct);
     }
 }

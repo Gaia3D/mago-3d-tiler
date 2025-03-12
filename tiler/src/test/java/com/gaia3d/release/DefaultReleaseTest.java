@@ -12,14 +12,14 @@ import java.io.File;
 class DefaultReleaseTest {
     @Test
     void help() {
-        String args[] = {
+        String[] args = {
                 "-help",
         };
         Mago3DTilerMain.main(args);
     }
     @Test
     void version() {
-        String args[] = {
+        String[] args = {
                 "-version",
                 "-help",
         };
@@ -28,7 +28,7 @@ class DefaultReleaseTest {
     }
     @Test
     void debug() {
-        String args[] = {
+        String[] args = {
                 "-version",
                 "-help",
         };
@@ -38,7 +38,7 @@ class DefaultReleaseTest {
     void noInput() {
         ClassLoader classLoader = getClass().getClassLoader();
         File file = new File(classLoader.getResource("sample-empty").getFile());
-        String args[] = {
+        String[] args = {
                 "-outputPath", file.getAbsolutePath(),
         };
 
@@ -52,7 +52,7 @@ class DefaultReleaseTest {
     void noOutput() {
         ClassLoader classLoader = getClass().getClassLoader();
         File file = new File(classLoader.getResource("sample-empty").getFile());
-        String args[] = {
+        String[] args = {
                 "-input", file.getAbsolutePath(),
                 "-inputType", "kml",
         };
@@ -69,7 +69,7 @@ class DefaultReleaseTest {
         ClassLoader classLoader = getClass().getClassLoader();
         File input = new File(classLoader.getResource("./sample-empty").getFile());
         File output = new File(classLoader.getResource("./sample-empty").getFile());
-        String args[] = {
+        String[] args = {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
         };
@@ -85,7 +85,7 @@ class DefaultReleaseTest {
         ClassLoader classLoader = getClass().getClassLoader();
         File input = new File(classLoader.getResource("./sample-kml").getFile());
         File output = new File(classLoader.getResource("./sample-output").getFile());
-        String args[] = {
+        String[] args = {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
         };
@@ -96,7 +96,7 @@ class DefaultReleaseTest {
         ClassLoader classLoader = getClass().getClassLoader();
         File input = new File(classLoader.getResource("./sample-kml").getFile());
         File output = new File(classLoader.getResource("./sample-output").getFile());
-        String args[] = {
+        String[] args = {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
                 //"-multiThread",
@@ -109,7 +109,7 @@ class DefaultReleaseTest {
         ClassLoader classLoader = getClass().getClassLoader();
         File input = new File(classLoader.getResource("./sample-kml-error-case").getFile());
         File output = new File(classLoader.getResource("./sample-output").getFile());
-        String args[] = {
+        String[] args = {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
                 //"-multiThread",
@@ -127,7 +127,7 @@ class DefaultReleaseTest {
         ClassLoader classLoader = getClass().getClassLoader();
         File input = new File(classLoader.getResource("./sample-xyz").getFile());
         File output = new File(classLoader.getResource("./sample-output").getFile());
-        String args[] = {
+        String[] args = {
                 "-input", input.getAbsolutePath(),
                 "-output", output.getAbsolutePath(),
                 //"-multiThread",

@@ -4,8 +4,6 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.geometry.octree.GaiaFaceData;
 import com.gaia3d.basic.geometry.octree.GaiaOctree;
-import com.gaia3d.basic.halfedge.CameraDirectionType;
-import com.gaia3d.basic.halfedge.HalfEdgeFace;
 import com.gaia3d.basic.halfedge.PlaneType;
 import com.gaia3d.basic.model.*;
 import org.joml.Vector2d;
@@ -437,7 +435,7 @@ public class GeometryUtils {
 
 
         GaiaVertex vertex0 = new GaiaVertex();
-        // Bottom*********************************************************
+        // Bottom
         Vector3d normalBottom = new Vector3d(0, 0, -1);
         vertex0.setPosition(new Vector3d(minX, minY, minZ));
         vertex0.setNormal(normalBottom);
@@ -454,7 +452,7 @@ public class GeometryUtils {
         vertex3.setPosition(new Vector3d(minX, maxY, minZ));
         vertex3.setNormal(normalBottom);
 
-        // Front*********************************************************
+        // Front
         Vector3d normalFront = new Vector3d(0, -1, 0);
         GaiaVertex vertex4 = new GaiaVertex(); // coincident with vertex0
         vertex4.setPosition(new Vector3d(minX, minY, minZ));
@@ -472,7 +470,7 @@ public class GeometryUtils {
         vertex7.setPosition(new Vector3d(minX, minY, maxZ));
         vertex7.setNormal(normalFront);
 
-        // Rear*********************************************************
+        // Rear
         Vector3d normalRear = new Vector3d(0, 1, 0);
         GaiaVertex vertex8 = new GaiaVertex(); // coincident with vertex3
         vertex8.setPosition(new Vector3d(minX, maxY, minZ));
@@ -490,7 +488,7 @@ public class GeometryUtils {
         vertex11.setPosition(new Vector3d(minX, maxY, maxZ));
         vertex11.setNormal(normalRear);
 
-        // Left*********************************************************
+        // Left
         Vector3d normalLeft = new Vector3d(-1, 0, 0);
         GaiaVertex vertex12 = new GaiaVertex(); // coincident with vertex0
         vertex12.setPosition(new Vector3d(minX, minY, minZ));
@@ -508,7 +506,7 @@ public class GeometryUtils {
         vertex15.setPosition(new Vector3d(minX, minY, maxZ));
         vertex15.setNormal(normalLeft);
 
-        // Right*********************************************************
+        // Right
         Vector3d normalRight = new Vector3d(1, 0, 0);
         GaiaVertex vertex16 = new GaiaVertex(); // coincident with vertex5
         vertex16.setPosition(new Vector3d(maxX, minY, minZ));
@@ -526,7 +524,7 @@ public class GeometryUtils {
         vertex19.setPosition(new Vector3d(maxX, minY, maxZ));
         vertex19.setNormal(normalRight);
 
-        // Top*********************************************************
+        // Top
         Vector3d normalTop = new Vector3d(0, 0, 1);
         GaiaVertex vertex20 = new GaiaVertex(); // coincident with vertex7
         vertex20.setPosition(new Vector3d(minX, minY, maxZ));
@@ -571,7 +569,7 @@ public class GeometryUtils {
         resultPrimitive.getVertices().add(vertex23);
 
 
-        // BottomSurface*********************************************************************************
+        // BottomSurface
         GaiaSurface bottomSurface = new GaiaSurface();
         // 0, 3, 2, 1. The normal is (0, 0, -1)
         // Face0 (0, 2, 1)
@@ -586,7 +584,7 @@ public class GeometryUtils {
 
         resultPrimitive.getSurfaces().add(bottomSurface);
 
-        // TopSurface*********************************************************************************
+        // TopSurface
         GaiaSurface topSurface = new GaiaSurface();
         // 20, 21, 22, 23. The normal is (0, 0, 1)
         //Vector3d normal = new Vector3d(0, 0, 1);
@@ -602,7 +600,7 @@ public class GeometryUtils {
 
         resultPrimitive.getSurfaces().add(topSurface);
 
-        // FrontSurface*********************************************************************************
+        // FrontSurface
         GaiaSurface frontSurface = new GaiaSurface();
         // 4, 5, 6, 7. The normal is (0, -1, 0)
 
@@ -618,7 +616,7 @@ public class GeometryUtils {
 
         resultPrimitive.getSurfaces().add(frontSurface);
 
-        // RearSurface*********************************************************************************
+        // RearSurface
         GaiaSurface backSurface = new GaiaSurface();
         // 8, 11, 10, 9. The normal is (0, 1, 0)
 
@@ -634,7 +632,7 @@ public class GeometryUtils {
 
         resultPrimitive.getSurfaces().add(backSurface);
 
-        // RightSurface*********************************************************************************
+        // RightSurface
         GaiaSurface rightSurface = new GaiaSurface();
         // 16, 17, 18, 19. The normal is (1, 0, 0)
 
@@ -650,7 +648,7 @@ public class GeometryUtils {
 
         resultPrimitive.getSurfaces().add(rightSurface);
 
-        // LeftSurface*********************************************************************************
+        // LeftSurface
         GaiaSurface leftSurface = new GaiaSurface();
         // 12, 15, 14, 13. The normal is (-1, 0, 0)
 
@@ -833,7 +831,6 @@ public class GeometryUtils {
 
             GaiaPrimitive primitive = getPrimitiveFromBoundingBox(bbox, !hasNeighbor[0], !hasNeighbor[1], !hasNeighbor[2], !hasNeighbor[3], !hasNeighbor[4], !hasNeighbor[5]);
 
-            // Test*************************************************************************************************
             //Vector4d randomColor = new Vector4d(Math.random(), Math.random(), Math.random(), 1.0);
             Vector4d averageColor = GeometryUtils.getAverageColor(octree.getFaceDataList());
 

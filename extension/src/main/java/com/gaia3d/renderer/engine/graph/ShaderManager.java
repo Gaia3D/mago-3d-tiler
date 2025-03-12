@@ -8,7 +8,7 @@ import java.util.Map;
 
 @NoArgsConstructor
 public class ShaderManager {
-    Map<String, ShaderProgram> mapNameShaderProgram = new HashMap<>();
+    final Map<String, ShaderProgram> mapNameShaderProgram = new HashMap<>();
 
     public ShaderProgram createShaderProgram(String shaderProgramName, List<ShaderProgram.ShaderModuleData> shaderModuleDataList) {
         ShaderProgram shaderProgram = new ShaderProgram(shaderModuleDataList);

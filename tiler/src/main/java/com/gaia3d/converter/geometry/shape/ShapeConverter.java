@@ -259,7 +259,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             convertExtrusionBuildings(buildings, sceneTemps, input, output);
         } catch (IOException e) {
             shpFiles.dispose();
-            log.error("Error while reading shapefile", e);
+            log.error("[ERROR] while reading shapefile", e);
             throw new RuntimeException(e);
         }
         return sceneTemps;

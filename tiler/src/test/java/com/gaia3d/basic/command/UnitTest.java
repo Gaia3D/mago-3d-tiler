@@ -1,7 +1,5 @@
 package com.gaia3d.basic.command;
 
-import com.gaia3d.TilerExtensionModule;
-import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.Configurator;
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import com.gaia3d.util.GlobeUtils;
@@ -19,9 +17,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
+@SuppressWarnings("ALL")
 @Deprecated
 @Slf4j
 class UnitTest {
@@ -759,9 +756,7 @@ class UnitTest {
 
     @Test
     void test_geoJson_seoul() {
-        // **********************************************************************************************************************************************************************************
         // crs 5174 = +proj=tmerc +lat_0=38 +lon_0=127.0028902777778 +k=1 +x_0=200000 +y_0=500000 +ellps=bessel +units=m +no_defs +towgs84=-115.80,474.99,674.11,1.16,-2.31,-1.63,6.43
-        // **********************************************************************************************************************************************************************************
         String inputPath = "D:\\data\\issues_data\\";
         String outputPath = "D:\\Result_mago3dTiler\\";
         String path = "allSeoulGeoJson";

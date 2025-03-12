@@ -20,6 +20,7 @@ import java.util.Iterator;
 /**
  * Utility class for image operations.
  */
+@SuppressWarnings("ALL")
 @Slf4j
 public class ImageUtils {
 

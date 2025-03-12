@@ -14,7 +14,6 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.beans.Transient;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;

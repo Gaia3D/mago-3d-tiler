@@ -45,6 +45,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("ALL")
 @Slf4j
 @NoArgsConstructor
 public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
@@ -52,11 +53,9 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
     @Override
     public Tileset run(List<TileInfo> tileInfos) throws FileNotFoundException {
-        //**************************************************************
         // In photoRealistic, 1rst make an empty octTree.              *
         // then use rectangleCakeCutter to fill the octTree.           *
-        //**************************************************************
-        if (tileInfos.size() == 0) {
+        if (tileInfos.isEmpty()) {
             throw new TileProcessingException("Error : tileInfos is empty.");
         }
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
@@ -415,7 +414,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             gaiaSceneList.add(scene);
 
             if (!GaiaSceneUtils.checkSceneMaterials(scene)) {
-                log.error("Error : scene has objects that uses materials that are not in the scene.");
+                log.error("[ERROR] scene has objects that uses materials that are not in the scene.");
                 continue;
             }
 
@@ -424,7 +423,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
             if (resultDecimatedScenes.isEmpty()) {
                 // sometimes the resultDecimatedScenes is empty because when rendering the scene, the scene is almost out of the camera
-                log.error("Error : resultDecimatedScenes is empty.");
+                log.error("[ERROR] resultDecimatedScenes is empty.");
                 gaiaSet.clear(); // delete gaiaSet
                 scene.clear(); // delete scene
                 continue;
@@ -491,7 +490,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             try {
                 gaiaSet = GaiaSet.readFile(tempPath);
                 if (gaiaSet == null) {
-                    log.error("Error : gaiaSet is null. pth : " + tempPath);
+                    log.error("[ERROR] gaiaSet is null. path : " + tempPath);
                     continue;
                 }
             } catch (IOException e) {
@@ -526,7 +525,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                     cuttingPlanes, pixelsForMeter, screenPixelsForMeter, makeSkirt);
 
             if (resultDecimatedScenes.isEmpty()) {
-                log.error("Error : resultDecimatedScenes is empty." + tempPath);
+                log.error("[ERROR] resultDecimatedScenes is empty." + tempPath);
                 continue;
             }
 
@@ -547,17 +546,12 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             int resultDecimatedScenesCount = resultDecimatedScenes.size();
             for (int j = 0; j < resultDecimatedScenesCount; j++) {
                 HalfEdgeScene halfEdgeSceneLod = resultDecimatedScenes.get(j);
-//                GaiaBoundingBox halfEdgeSceneBBox = halfEdgeSceneLod.getBoundingBox();
-//                if (!gaiaSceneBBox.isBoxInside(halfEdgeSceneBBox)) {
-//                    log.error("Error : gaiaSceneBBox does not intersect with halfEdgeSceneBBox.");
-//                }
-
                 GaiaBoundingBox boundingBoxCutLC = new GaiaBoundingBox();
                 GaiaScene gaiaSceneCut = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneLod);
                 GaiaBoundingBox cartographicBoundingBox = this.calculateCartographicBoundingBox(gaiaSceneCut, transformMatrix, boundingBoxCutLC);
 
                 if (motherCartographicBoundingBox.getMaxZ() < cartographicBoundingBox.getMaxZ()) {
-                    log.error("Error : motherCartographicBoundingBox does not intersect with cartographicBoundingBox.");
+                    log.error("[ERROR] motherCartographicBoundingBox does not intersect with cartographicBoundingBox.");
                 }
 
                 GaiaSet gaiaSetCut = GaiaSet.fromGaiaScene(gaiaSceneCut);
@@ -592,7 +586,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                         // check if exist bufferedImage of the texture
 
                         if (texture.getBufferedImage() == null) {
-                            int hola = 0;
+
                         }
 
                         texture.setParentPath(imagesPath.toString());
@@ -644,7 +638,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             try {
                 gaiaSet = GaiaSet.readFile(tempPath);
                 if (gaiaSet == null) {
-                    log.error("Error : gaiaSet is null. pth : " + tempPath);
+                    log.error("[ERROR] gaiaSet is null. pth : " + tempPath);
                     continue;
                 }
             } catch (IOException e) {
@@ -674,7 +668,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             tilerExtensionModule.decimateAndCutByObliqueCamera(gaiaSceneList, resultDecimatedScenes, decimateParameters, halfEdgeOctree, cuttingPlanes, screenPixelsForMeter, makeSkirt);
 
             if (resultDecimatedScenes.isEmpty()) {
-                log.error("Error : resultDecimatedScenes is empty." + tempPath);
+                log.error("[ERROR] resultDecimatedScenes is empty." + tempPath);
                 continue;
             }
 
@@ -704,7 +698,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 int gaiaSceneFacesCount = gaiaSceneCut.getFacesCount();
 
                 if (halfEdgeFacesCount != gaiaSceneFacesCount) {
-                    log.error("Error : halfEdgeFacesCount is different from gaiaSceneFacesCount.");
+                    log.error("[ERROR] halfEdgeFacesCount is different from gaiaSceneFacesCount.");
                 }
 
                 GaiaBoundingBox cartographicBoundingBox = this.calculateCartographicBoundingBox(gaiaSceneCut, transformMatrix, boundingBoxCutLC);
@@ -736,7 +730,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                         // check if exist bufferedImage of the texture
 
                         if (texture.getBufferedImage() == null) {
-                            int hola = 0;
+
                         }
 
                         texture.setParentPath(imagesPath.toString());
@@ -819,7 +813,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 continue;
             }
 
-            // render the sceneInfos and obtain the color and depth images*********************************************************
+            // render the sceneInfos and obtain the color and depth images
             List<BufferedImage> resultImages = new ArrayList<>();
             int bufferedImageType = BufferedImage.TYPE_INT_RGB;
 
@@ -845,7 +839,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             BufferedImage bufferedImageColor = resultImages.get(0);
             BufferedImage bufferedImageDepth = resultImages.get(1);
 
-            // now, make a halfEdgeScene from the bufferedImages******************************************************************
+            // now, make a halfEdgeScene from the bufferedImages
             String outputPathString = globalOptions.getOutputPath();
             String netTempPathString = outputPathString + File.separator + "temp" + File.separator +  "netTemp";
             Path netTempPath = Paths.get(netTempPathString);
@@ -878,7 +872,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 log.info("[Write Image] : {}", file.getAbsoluteFile());
                 ImageIO.write(bufferedImageColor, "png", file);
             } catch (Exception e) {
-                log.error("error: ", e);
+                log.error("[ERROR] : ", e);
             }
 
             float[][] depthValues = bufferedImageToFloatMatrix(bufferedImageDepth);
@@ -1058,7 +1052,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         for (TileInfo tileInfo : tileInfos) {
             GaiaBoundingBox cartographicBBox = tileInfo.getCartographicBBox();
             if (cartographicBBox == null) {
-                log.error("Error : cartographicBBox is null.");
+                log.error("[ERROR] cartographicBBox is null.");
                 continue;
             }
 
@@ -1073,7 +1067,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             double maxLatRad = childNode.getBoundingVolume().getRegion()[3];
             double distanceBetweenLat = GlobeUtils.distanceBetweenLatitudesRad(minLatRad, maxLatRad);
             if (childNode == null) {
-                log.error("Error : childNode is null.");
+                log.error("[ERROR] childNode is null.");
                 continue;
             }
 
@@ -1113,7 +1107,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             try {
                 GaiaSet gaiaSet = GaiaSet.readFile(path);
                 if (gaiaSet == null) {
-                    log.error("Error : gaiaSet is null. pth : " + path);
+                    log.error("[ERROR] gaiaSet is null. pth : " + path);
                     continue;
                 }
                 GaiaScene scene = new GaiaScene(gaiaSet);
@@ -1142,9 +1136,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
     private HalfEdgeOctree getCuttingPlanesAndHalfEdgeOctree(TileInfo tileInfo, int lod, BoundingVolume rootNodeBoundingVolume, int depthIdx,
                                                              List<GaiaAAPlane> resultPlanes, Matrix4d resultTransformMatrix) throws FileNotFoundException {
-        //****************************************************
         // Note : tileInfos must contain only one tileInfo
-        //****************************************************
         // calculate the divisions of the rectangle cake
         // int maxDepth = rootNode.findMaxDepth();
         int depthCount = depthIdx + 1;
@@ -1184,7 +1176,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
         GaiaBoundingBox setBBox = tileInfo.getBoundingBox();
         if (setBBox == null) {
-            log.error("Error : setBBox is null.");
+            log.error("[ERROR] setBBox is null.");
         }
         KmlInfo kmlInfo = tileInfo.getKmlInfo();
         Vector3d geoCoordPosition = kmlInfo.getPosition();
@@ -1331,9 +1323,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
     private void cutRectangleCakeOneShoot(List<TileInfo> tileInfos, int lod, BoundingVolume rootNodeBoundingVolume, int depthIdx,
                                           List<TileInfo> resultTileInfos) throws FileNotFoundException {
-        //****************************************************
         // Note : tileInfos must contain only one tileInfo
-        //****************************************************
 
         // now, cut the scene by the divisions
         boolean someSceneCut = false;
@@ -1344,7 +1334,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
 
         GaiaBoundingBox setBBox = tileInfo.getBoundingBox();
         if (setBBox == null) {
-            log.error("Error : setBBox is null.");
+            log.error("[ERROR] setBBox is null.");
         }
         KmlInfo kmlInfo = tileInfo.getKmlInfo();
         Vector3d geoCoordPosition = kmlInfo.getPosition();
@@ -1470,12 +1460,8 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 continue;
             }
 
-
-            //***************************************************************************************************************************
             GaiaScene gaiaSceneCut = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(cuttedScene);
-
             GaiaBoundingBox boundingBoxCutLC = new GaiaBoundingBox();
-
             GaiaBoundingBox cartographicBoundingBox = this.calculateCartographicBoundingBox(gaiaSceneCut, transformMatrix, boundingBoxCutLC);
 
             // create an originalPath for the cut scene
@@ -1667,7 +1653,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         for (Map.Entry<Node, List<TileInfo>> entry : nodeTileInfoMap.entrySet()) {
             Node childNode = entry.getKey();
             if (childNode == null) {
-                log.error("makeContentsForNodes() Error : childNode is null.");
+                log.error("[ERROR] makeContentsForNodes() Error : childNode is null.");
                 continue;
             }
 
@@ -1675,7 +1661,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
             for (TileInfo tileInfo : tileInfos) {
                 GaiaScene scene = tileInfo.getScene();
                 if (scene == null) {
-                    log.error("makeContentsForNodes() Error : scene is null.");
+                    log.error("[ERROR] makeContentsForNodes() Error : scene is null.");
                 }
             }
 
@@ -1716,7 +1702,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 content.setUri("data/" + nodeCode + ".b3dm");
                 content.setContentInfo(contentInfo);
                 if (childNode.getContent() != null) {
-                    log.error("Error : childNode.getContent() is not null.");
+                    log.error("[ERROR] childNode.getContent() is not null.");
                 }
                 childNode.setContent(content);
             }
@@ -1823,7 +1809,7 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
                 }*/
             }
         } catch (Exception e) {
-            log.error("Failed to execute thread.", e);
+            log.error("[ERROR] Failed to execute thread.", e);
             throw new RuntimeException(e);
         }
         executorService.shutdown();

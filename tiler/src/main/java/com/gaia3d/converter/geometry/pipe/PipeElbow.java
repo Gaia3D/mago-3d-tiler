@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("ALL")
 @Getter
 @Setter
 public class PipeElbow extends TopologicalNode {

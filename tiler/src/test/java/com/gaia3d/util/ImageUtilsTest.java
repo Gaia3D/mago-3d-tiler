@@ -33,6 +33,6 @@ class ImageUtilsTest {
         assertEquals(4096, size);
 
         size = ImageUtils.getNearestPowerOfTwoHigher(3159);
-        assertEquals(2048, size);
+        assertEquals(4096, size);
     }
 }

@@ -19,7 +19,7 @@ public class GaiaCleaner implements PostProcess {
         try {
             FileUtils.deleteDirectory(tempPath.toFile());
         } catch (IOException e) {
-            log.error("Failed to delete temp directory: {}", tempPath);
+             log.error("[ERROR] Failed to delete temp directory: {}", tempPath);
             throw new RuntimeException(e);
         }
         return contentInfo;

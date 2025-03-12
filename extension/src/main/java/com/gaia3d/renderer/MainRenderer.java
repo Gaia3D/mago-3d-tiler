@@ -9,8 +9,6 @@ import com.gaia3d.basic.halfedge.*;
 import com.gaia3d.basic.model.GaiaMaterial;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
-import com.gaia3d.basic.model.GaiaTexture;
-import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.renderer.engine.Engine;
 import com.gaia3d.renderer.engine.IAppLogic;
 import com.gaia3d.renderer.engine.InternDataConverter;
@@ -29,17 +27,16 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
-import org.lwjgl.opengl.GL20;
 
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static org.lwjgl.opengl.GL11.*;
 
+@SuppressWarnings("ALL")
 @Slf4j
 @Getter
 @Setter
@@ -236,9 +233,7 @@ public class MainRenderer implements IAppLogic {
 
     public void decimateNetSurfaceAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters,
                                               HalfEdgeOctree octree, List<GaiaAAPlane> cuttingPlanes, double depthTexPixelsForMeter, double screenPixelsForMeter, boolean makeSkirt) {
-        //*******************************************************
         // Note : There are only one scene in the scenes list
-        //*******************************************************
         // Must init gl
         try {
             engine.init();
@@ -471,7 +466,7 @@ public class MainRenderer implements IAppLogic {
 
             BufferedImage depthRenderedImage = depthRenderedImages.get(0);
 
-//            // save depthRenderedImage as png************************************************************************
+//            // save depthRenderedImage as png
 //            String tempFolderPath = "D:\\Result_mago3dTiler\\temp";
 //            String depthRenderedImagePath = tempFolderPath + "\\depthRenderedImage_" + i + ".png";
 //            // create the folder
@@ -980,7 +975,7 @@ public class MainRenderer implements IAppLogic {
             renderableScene.deleteGLBuffers();
         }
 
-        // now make a halfEdgeScene from the depthImage*********************************************************************
+        // now make a halfEdgeScene from the depthImage
         float[][] depthValues = com.gaia3d.util.ImageUtils.bufferedImageToFloatMatrix(depthImage);
         int numCols = depthImage.getWidth();
         int numRows = depthImage.getHeight();

@@ -1,5 +1,7 @@
 package com.gaia3d.renderer.engine;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
@@ -12,7 +14,10 @@ import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
+@SuppressWarnings("ALL")
 @Slf4j
+@Getter
+@Setter
 public class Window {
     private final long windowHandle;
     private final Callable<Void> resizeFunc;
@@ -73,7 +78,7 @@ public class Window {
     private boolean checkGlError() {
         int glError = GL20.glGetError();
         if (glError != GL20.GL_NO_ERROR) {
-            log.error("glError: {}", glError);
+            log.error("[ERROR] glError: {}", glError);
             return true;
         }
         return false;
@@ -97,22 +102,6 @@ public class Window {
         if (callback != null) {
             callback.free();
         }
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public int getWidth() {
-        return width;
-    }
-
-    public MouseInput getMouseInput() {
-        return mouseInput;
-    }
-
-    public long getWindowHandle() {
-        return windowHandle;
     }
 
     public boolean isKeyPressed(int keyCode) {

@@ -7,7 +7,6 @@ import com.gaia3d.basic.geometry.octree.HalfEdgeOctree;
 import com.gaia3d.basic.halfedge.DecimateParameters;
 import com.gaia3d.basic.halfedge.HalfEdgeScene;
 import com.gaia3d.basic.model.GaiaScene;
-import com.gaia3d.basic.model.GaiaTexture;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 

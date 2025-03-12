@@ -548,15 +548,13 @@ public class HalfEdge implements Serializable {
             } else if (Math.abs(endVertexPosition.z - planePosition.z) < error) {
                 return false;
             }
-        }
-        else if (planeType == PlaneType.YZ) {
+        } else if (planeType == PlaneType.YZ) {
             if (Math.abs(startVertexPosition.x - planePosition.x) < error) {
                 return false;
             } else if (Math.abs(endVertexPosition.x - planePosition.x) < error) {
                 return false;
             }
-        }
-        else if (planeType == PlaneType.XZ) {
+        } else if (planeType == PlaneType.XZ) {
             if (Math.abs(startVertexPosition.y - planePosition.y) < error) {
                 return false;
             } else if (Math.abs(endVertexPosition.y - planePosition.y) < error) {
@@ -566,21 +564,13 @@ public class HalfEdge implements Serializable {
 
         if (planeType == PlaneType.XY) {
             // check if startZ and endZ are on the same side of the plane
-            if ((startVertexPosition.z - planePosition.z) * (endVertexPosition.z - planePosition.z) > 0) {
-                return false;
-            }
-        }
-        else if (planeType == PlaneType.YZ) {
+            return !((startVertexPosition.z - planePosition.z) * (endVertexPosition.z - planePosition.z) > 0);
+        } else if (planeType == PlaneType.YZ) {
             // check if startX and endX are on the same side of the plane
-            if ((startVertexPosition.x - planePosition.x) * (endVertexPosition.x - planePosition.x) > 0) {
-                return false;
-            }
-        }
-        else if (planeType == PlaneType.XZ) {
+            return !((startVertexPosition.x - planePosition.x) * (endVertexPosition.x - planePosition.x) > 0);
+        } else if (planeType == PlaneType.XZ) {
             // check if startY and endY are on the same side of the plane
-            if ((startVertexPosition.y - planePosition.y) * (endVertexPosition.y - planePosition.y) > 0) {
-                return false;
-            }
+            return !((startVertexPosition.y - planePosition.y) * (endVertexPosition.y - planePosition.y) > 0);
         }
 
         return true;

@@ -49,6 +49,7 @@ import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 
+@SuppressWarnings("ALL")
 @Getter
 @Setter
 @Slf4j
@@ -134,9 +135,7 @@ public class Engine {
     }
 
     public void getRenderSceneImage(ShaderProgram sceneShaderProgram) {
-        //***********************************************************
         // Note : before to call this function, must bind the fbo
-        //***********************************************************
         sceneShaderProgram.bind();
 
         Camera camera = gaiaScenesContainer.getCamera();
@@ -730,7 +729,7 @@ public class Engine {
                     verticesOfFaces = halfEdgeFace.getVertices(verticesOfFaces);
                     for (HalfEdgeVertex vertex : verticesOfFaces) {
                         if (visitedVerticesMap.containsKey(vertex)) {
-                            int hola = 0;
+
                         }
                         visitedVerticesMap.put(vertex, vertex);
 
@@ -851,7 +850,6 @@ public class Engine {
 
             BufferedImage subImage = textureAtlasData.getTextureImage();
 
-//            // test random color for each splitImage************************************************************************************************
 //            Color randomColor = new Color((float) Math.random(), (float) Math.random(), (float) Math.random(), 0.8f);
 //            BufferedImage randomColoredImage = new BufferedImage(subImage.getWidth(), subImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
 //            Graphics2D randomGraphics = randomColoredImage.createGraphics();
@@ -1005,7 +1003,7 @@ public class Engine {
             }
         }
 
-        // now, make the atlas texture************************************************************************************
+        // now, make the atlas texture
         GaiaRectangle beforeMosaicRectangle = new GaiaRectangle(0.0, 0.0, 0.0, 0.0);
         List<GaiaRectangle> rectangleList = new ArrayList<>();
 
@@ -1035,7 +1033,7 @@ public class Engine {
             rectangleList.add(batchedBoundary);
             currProcessTextureAtlasDates.add(texAtlasDataAux);
 
-            // map*********************************************************************************************************************
+            // map
             double maxX = batchedBoundary.getMaxX();
 
             List<GaiaRectangle> list_rectanglesMaxX = maxXrectanglesMap.computeIfAbsent(maxX, k -> new ArrayList<>());
@@ -1501,8 +1499,7 @@ public class Engine {
 //        log.info("vertexShaderText: {}", vertexShaderText);
 //        log.info("fragmentShaderText: {}", fragmentShaderText);
 
-
-        // create a scene shader program**********************************************************************************************
+        // create a scene shader program
         String vertexShaderText = readResource("shaders/sceneV330.vert");
         String fragmentShaderText = readResource("shaders/sceneV330.frag");
         java.util.List<ShaderProgram.ShaderModuleData> shaderModuleDataList = new ArrayList<>();
@@ -1521,8 +1518,7 @@ public class Engine {
         sceneShaderProgram.createUniforms(uniformNames);
         sceneShaderProgram.validate();
 
-
-        // create depthShader*************************************************************************************************
+        // create depthShader
         vertexShaderText = readResource("shaders/depthV330.vert");
         fragmentShaderText = readResource("shaders/depthV330.frag");
 
@@ -1538,7 +1534,7 @@ public class Engine {
         sceneShaderProgram.createUniforms(uniformNames);
         sceneShaderProgram.validate();
 
-        // create a screen shader program***************************************************************************************
+        // create a screen shader program
         vertexShaderText = readResource("shaders/screenV330.vert");
         fragmentShaderText = readResource("shaders/screenV330.frag");
 
@@ -1552,7 +1548,7 @@ public class Engine {
         screenShaderProgram.createUniforms(uniformNames);
         screenShaderProgram.validate();
 
-        // create eliminateBackGroundColor shader***************************************************************************************
+        // create eliminateBackGroundColor shader
         vertexShaderText = readResource("shaders/eliminateBackGroundColorV330.vert");
         fragmentShaderText = readResource("shaders/eliminateBackGroundColorV330.frag");
 
@@ -1569,7 +1565,7 @@ public class Engine {
         eliminateBackGroundColorShaderProgram.createUniforms(uniformNames);
         eliminateBackGroundColorShaderProgram.validate();
 
-        // create a triangles colorCode shader program**********************************************************************************************
+        // create a triangles colorCode shader program
         vertexShaderText = readResource("shaders/trianglesColorCodeV330.vert");
         fragmentShaderText = readResource("shaders/trianglesColorCodeV330.frag");
         shaderModuleDataList = new ArrayList<>();
@@ -1584,7 +1580,7 @@ public class Engine {
         trianglesColorCodeShaderProgram.createUniforms(uniformNames);
         trianglesColorCodeShaderProgram.validate();
 
-        // create a delimitedScene shader program**********************************************************************************************
+        // create a delimitedScene shader program
         vertexShaderText = readResource("shaders/sceneDelimitedV330.vert");
         fragmentShaderText = readResource("shaders/sceneDelimitedV330.frag");
         shaderModuleDataList = new ArrayList<>();
@@ -1604,7 +1600,7 @@ public class Engine {
         sceneDelimitedShaderProgram.createUniforms(uniformNames);
         sceneDelimitedShaderProgram.validate();
 
-        // create a triangles delimited colorCode shader program**********************************************************************************************
+        // create a triangles delimited colorCode shader program
         vertexShaderText = readResource("shaders/trianglesDelimitedColorCodeV330.vert");
         fragmentShaderText = readResource("shaders/trianglesDelimitedColorCodeV330.frag");
         shaderModuleDataList = new ArrayList<>();
@@ -1816,7 +1812,7 @@ public class Engine {
             }
 
             // check if the gaiaMesh has no primitives
-            if (gaiaPrimitives.size() == 0) {
+            if (gaiaPrimitives.isEmpty()) {
                 gaiaMeshes.remove(i);
                 i--;
                 meshesCount--;
@@ -1925,7 +1921,7 @@ public class Engine {
         // render scene objects
         ShaderProgram sceneShaderProgram = shaderManager.getShaderProgram("scene");
 
-        sceneShaderProgram.bind(); // bind the shader program**************************************************************************
+        sceneShaderProgram.bind(); // bind the shader program
 
         // set modelViewMatrix and projectionMatrix
         UniformsMap uniformsMap = sceneShaderProgram.getUniformsMap();
@@ -1957,7 +1953,7 @@ public class Engine {
         if (!this.halfEdgeScenes.isEmpty()) {
             halfEdgeRenderer.renderHalfEdgeScenes(halfEdgeScenes, sceneShaderProgram);
         }
-        sceneShaderProgram.unbind(); // unbind the shader program************************************************************************
+        sceneShaderProgram.unbind(); // unbind the shader program
 
         colorRenderFbo.unbind();
 

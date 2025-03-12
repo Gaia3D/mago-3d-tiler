@@ -45,8 +45,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings({"ALL", "TryWithIdenticalCatches"})
 @Slf4j
-public class GltfCreator {
+public class GltfCreatorTest {
 
     @Test
     public void createGrid() {
@@ -68,6 +69,7 @@ public class GltfCreator {
         }
     }
 
+    @SuppressWarnings("TryWithIdenticalCatches")
     @Test
     public void convertVectorToRaster() {
         File file = new File("D:/workspaces/seoul-parts-real.shp");

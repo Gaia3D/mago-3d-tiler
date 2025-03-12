@@ -37,7 +37,7 @@ public class GaiaExtrusionBuilding implements Serializable {
                 oos.writeObject(positions);
                 positions = null;
             } catch (IOException e) {
-                log.error("Failed to minimize GaiaExtrusionBuilding", e);
+                 log.error("[ERROR] Failed to minimize GaiaExtrusionBuilding", e);
             }
             isMinimized = true;
             this.minimizedFile = minimizedFile;
@@ -49,7 +49,7 @@ public class GaiaExtrusionBuilding implements Serializable {
             try(ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(minimizedFile)))) {
                 positions = (List<Vector3d>) ois.readObject();
             } catch (IOException | ClassNotFoundException e) {
-                log.error("Failed to maximize GaiaExtrusionBuilding", e);
+                 log.error("[ERROR] Failed to maximize GaiaExtrusionBuilding", e);
             }
 
             isMinimized = false;

@@ -3,7 +3,6 @@ package com.gaia3d.process.preprocess;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.FormatType;
-import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.GeometryUtils;
 import org.apache.commons.io.FilenameUtils;

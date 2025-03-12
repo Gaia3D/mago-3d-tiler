@@ -335,7 +335,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                 sceneTemps.add(sceneTemp);
             }
         } catch (IOException e) {
-            log.error("Failed to read GeoJSON file : {}", input.getAbsolutePath(), e);
+             log.error("[ERROR] Failed to read GeoJSON file : {}", input.getAbsolutePath(), e);
             throw new RuntimeException(e);
         }
         return sceneTemps;

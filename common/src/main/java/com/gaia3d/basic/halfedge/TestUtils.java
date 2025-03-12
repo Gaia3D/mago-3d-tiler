@@ -1,11 +1,9 @@
 package com.gaia3d.basic.halfedge;
 
-import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.model.*;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
-import org.joml.Vector4d;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -92,8 +90,7 @@ public class TestUtils {
         }
     }
 
-    public static boolean checkHalfEdgeScene(HalfEdgeScene scene)
-    {
+    public static boolean checkHalfEdgeScene(HalfEdgeScene scene) {
         // 1rst, check vertices
         List<HalfEdgeSurface> surfaces = scene.extractSurfaces(null);
         for (HalfEdgeSurface halfEdgeSurface : surfaces) {
@@ -103,82 +100,79 @@ public class TestUtils {
         return true;
     }
 
-    public static boolean checkHalfEdgeSurface(HalfEdgeSurface halfEdgeSurface)
-    {
+    public static boolean checkHalfEdgeSurface(HalfEdgeSurface halfEdgeSurface) {
         List<HalfEdgeVertex> vertices = halfEdgeSurface.getVertices();
         int verticesCount = vertices.size();
         Map<HalfEdgeVertex, HalfEdgeVertex> verticesMap = new HashMap<>();
-        if (verticesCount == 0)
-        {
-            int hola = 0;
+        if (verticesCount == 0) {
+
         }
         for (HalfEdgeFace face : halfEdgeSurface.getFaces()) {
             List<HalfEdge> faceHalfEdges = face.getHalfEdgesLoop(null);
             for (HalfEdge halfEdge : faceHalfEdges) {
                 if (halfEdge == null) {
-                    int hola = 0;
+
                 }
                 HalfEdgeVertex startVertex = halfEdge.getStartVertex();
                 if (startVertex == null) {
-                    int hola = 0;
+
                 }
                 HalfEdgeVertex endVertex = halfEdge.getEndVertex();
                 if (endVertex == null) {
-                    int hola = 0;
+
                 }
                 if (startVertex == endVertex) {
-                    int hola = 0;
+
                 }
 
                 double length = halfEdge.getLength();
                 if (length > 18.0) {
-                    int hola = 0;
+
                 }
             }
             List<HalfEdgeVertex> faceVertices = face.getVertices(null);
             for (HalfEdgeVertex vertex : faceVertices) {
                 if (vertex == null) {
-                    int hola = 0;
+
                 }
                 verticesMap.put(vertex, vertex);
                 if (!vertices.contains(vertex)) {
-                    int hola = 0;
+
                 }
 
                 Vector3d vertexPosition = vertex.getPosition();
                 if (vertexPosition == null) {
-                    int hola = 0;
+
                 }
 
                 if (vertexPosition.x == 0 && vertexPosition.y == 0 && vertexPosition.z == 0) {
-                    int hola = 0;
+
                 }
 
                 Vector2d vertexTexCoord = vertex.getTexcoords();
                 if (vertexTexCoord == null) {
-                    int hola = 0;
+
                 }
 
                 Vector3d vertexNormal = vertex.getNormal();
                 if (vertexNormal == null) {
-                    int hola = 0;
+
                 }
 
                 byte[] vertexColor = vertex.getColor();
                 if (vertexColor == null) {
-                    int hola = 0;
+
                 }
             }
         }
 
         if (vertices.size() != verticesMap.size()) {
-            int hola = 0;
+
         }
         return true;
     }
 
-    public static boolean checkGaiaScene(GaiaScene scene)
-    {
+    public static boolean checkGaiaScene(GaiaScene scene) {
         // 1rst, check vertices
         List<GaiaPrimitive> primitives = scene.extractPrimitives(null);
         for (GaiaPrimitive primitive : primitives) {
@@ -193,7 +187,7 @@ public class TestUtils {
         int verticesCount = vertices.size();
         Map<GaiaVertex, GaiaVertex> verticesMap = new HashMap<>();
         if (verticesCount == 0) {
-            int hola = 0;
+
         }
         for (GaiaSurface surface : primitive.getSurfaces()) {
             int[] surfaceIndices = surface.getIndices();
@@ -204,46 +198,46 @@ public class TestUtils {
                 for (int i = 0; i < faceIndicesCount; i++) {
                     GaiaVertex vertex = vertices.get(faceIndices[i]);
                     if (vertex == null) {
-                        int hola = 0;
+
                     }
                     verticesMap.put(vertex, vertex);
                     if (!vertices.contains(vertex)) {
-                        int hola = 0;
+
                     }
 
                     Vector3d vertexPosition = vertex.getPosition();
                     if (vertexPosition == null) {
-                        int hola = 0;
+
                     }
 
                     if (vertexPosition.x == 0 && vertexPosition.y == 0 && vertexPosition.z == 0) {
-                        int hola = 0;
+
                     }
 
                     Vector2d vertexTexCoord = vertex.getTexcoords();
                     if (vertexTexCoord == null) {
-                        int hola = 0;
+
                     }
 
                     Vector3d vertexNormal = vertex.getNormal();
                     if (vertexNormal == null) {
-                        int hola = 0;
+
                     }
 
                     byte[] vertexColor = vertex.getColor();
                     if (vertexColor == null) {
-                        int hola = 0;
+
                     }
                 }
             }
         }
 
         if (vertices.size() != verticesMap.size()) {
-            int hola = 0;
+
             GaiaVertex lastVertex = vertices.get(vertices.size() - 1);
             for (GaiaVertex vertex : vertices) {
                 if (vertex == null) {
-                    int hola2 = 0;
+
                 }
             }
         }
@@ -261,13 +255,12 @@ public class TestUtils {
             }
         }
         if (halfEdgeVertices.size() != verticesMap.size()) {
-            int hola = 0;
+
         }
         return true;
     }
 
-    public static int checkTexCoordsOfHalfEdgeScene(HalfEdgeScene scene)
-    {
+    public static int checkTexCoordsOfHalfEdgeScene(HalfEdgeScene scene) {
         int badFacesCount = 0;
         List<HalfEdgeSurface> surfaces = scene.extractSurfaces(null);
         for (HalfEdgeSurface halfEdgeSurface : surfaces) {
@@ -278,32 +271,27 @@ public class TestUtils {
         return badFacesCount;
     }
 
-    public static int checkTexCoordsOfHalfEdgeSurface(HalfEdgeSurface halfEdgeSurface)
-    {
+    public static int checkTexCoordsOfHalfEdgeSurface(HalfEdgeSurface halfEdgeSurface) {
         int badFacesCount = 0;
         for (HalfEdgeFace face : halfEdgeSurface.getFaces()) {
-            if (!checkTexCoordsOfHalfEdgeFace(face))
-            {
+            if (!checkTexCoordsOfHalfEdgeFace(face)) {
                 badFacesCount++;
             }
         }
         return badFacesCount;
     }
 
-    public static int checkTexCoordsOfHalfEdgeFaces(List<HalfEdgeFace> faces)
-    {
+    public static int checkTexCoordsOfHalfEdgeFaces(List<HalfEdgeFace> faces) {
         int badFacesCount = 0;
         for (HalfEdgeFace face : faces) {
-            if (!checkTexCoordsOfHalfEdgeFace(face))
-            {
+            if (!checkTexCoordsOfHalfEdgeFace(face)) {
                 badFacesCount++;
             }
         }
         return badFacesCount;
     }
 
-    public static boolean checkTexCoordsOfHalfEdgeFace(HalfEdgeFace face)
-    {
+    public static boolean checkTexCoordsOfHalfEdgeFace(HalfEdgeFace face) {
         List<HalfEdgeVertex> faceVertices = face.getVertices(null);
         Vector3d pos0 = faceVertices.get(0).getPosition();
         Vector3d pos1 = faceVertices.get(1).getPosition();
@@ -318,46 +306,33 @@ public class TestUtils {
         double width = texBRect.getWidth();
         double height = texBRect.getHeight();
 
-        if (width > 0.5)
-        {
-            int hola = 0;
+        if (width > 0.5) {
+
         }
 
-        if (height > 0.5)
-        {
-            int hola = 0;
+        if (height > 0.5) {
+
         }
 
-        if (texCoord0.equals(texCoord1))
-        {
+        if (texCoord0.equals(texCoord1)) {
             return false;
         }
 
-        if (texCoord0.equals(texCoord2))
-        {
+        if (texCoord0.equals(texCoord2)) {
             return false;
         }
 
-        if (texCoord1.equals(texCoord2))
-        {
-            return false;
-        }
-
-        return true;
+        return !texCoord1.equals(texCoord2);
     }
 
-    public static boolean checkClassifyIdAndCamDirOfHalfEdgeFace(HalfEdgeFace face)
-    {
+    public static boolean checkClassifyIdAndCamDirOfHalfEdgeFace(HalfEdgeFace face) {
         List<HalfEdgeFace> adjacentFaces = face.getAdjacentFaces(null);
-        for (HalfEdgeFace adjacentFace : adjacentFaces)
-        {
-            if (face.getClassifyId() != adjacentFace.getClassifyId())
-            {
+        for (HalfEdgeFace adjacentFace : adjacentFaces) {
+            if (face.getClassifyId() != adjacentFace.getClassifyId()) {
                 return false;
             }
 
-            if (face.getCameraDirectionType() != adjacentFace.getCameraDirectionType())
-            {
+            if (face.getCameraDirectionType() != adjacentFace.getCameraDirectionType()) {
                 return false;
             }
         }
@@ -370,7 +345,7 @@ public class TestUtils {
         for (HalfEdgeSurface halfEdgeSurface : surfaces) {
             List<List<HalfEdgeFace>> resultWeldedFacesGroups = new ArrayList<>();
             halfEdgeSurface.getWeldedFacesGroups(resultWeldedFacesGroups);
-            int hola = 0;
+
         }
         return true;
     }
@@ -385,7 +360,7 @@ public class TestUtils {
             for (int j = 0; j < facesCount; j++) {
                 HalfEdgeFace face = group.get(j);
                 if (face == null) {
-                    int hola = 0;
+
                 }
 
                 if (face.getClassifyId() != classifyId) {

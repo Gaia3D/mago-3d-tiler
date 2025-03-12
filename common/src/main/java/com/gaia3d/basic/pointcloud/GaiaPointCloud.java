@@ -76,7 +76,7 @@ public class GaiaPointCloud implements Serializable {
             pointCloudTemp.getOutputStream().flush();
             pointCloudTemp.getOutputStream().close();
         } catch (IOException e) {
-            log.error("[Error][minimize] : Failed to minimize the point cloud.", e);
+            log.error("[ERROR][minimize] : Failed to minimize the point cloud.", e);
             throw new RuntimeException(e);
         }
 
@@ -99,7 +99,7 @@ public class GaiaPointCloud implements Serializable {
         try {
             pointCloudTemp.getInputStream().close();
         } catch (IOException e) {
-            log.error("[Error][maximize] : Failed to maximize the point cloud.", e);
+            log.error("[ERROR][maximize] : Failed to maximize the point cloud.", e);
         }
         this.vertices = vertices;
     }
@@ -128,7 +128,7 @@ public class GaiaPointCloud implements Serializable {
                 vertex.setQuantizedPosition(null);
             });
         } catch (Exception e) {
-            log.error("[Error][maximize] : Failed to maximize the point cloud.", e);
+            log.error("[ERROR][maximize] : Failed to maximize the point cloud.", e);
         }
     }
 

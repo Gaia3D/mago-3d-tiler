@@ -65,7 +65,7 @@ public class Quantizer {
 
     public static short convertSignedShortFromUnsignedShort(int value) {
         if (value > 65536) {
-            log.error("Value must be less than or equal to 65535 -> {}", value);
+            log.error("[ERROR] :Value must be less than or equal to 65535 -> {}", value);
             throw new IllegalArgumentException("Value must be less than or equal to 65535");
         }
 
