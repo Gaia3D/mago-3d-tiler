@@ -951,6 +951,23 @@ class UnitTest {
     }
 
     @Test
+    void test_voidFolder() {
+        // _1building _2buildings _3buildings _4buildings _5buildings _6buildings _someBuildings
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\voidFolder\\";
+        String outputPath = "D:\\data\\mago-server\\output\\voidFolder\\";
+
+        String[] args = new String[]{
+                "-i", inputPath,
+                "-it", "dae",
+                "-o", outputPath,
+                "-proj", "+proj=tmerc +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=127.9296192 +lat_0=37.3702212",
+                "-pr",
+                "-rx", "90",
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
     void test_changeBackGroundColor() {
             Configurator.initConsoleLogger();
         String inputPath = "D:\\data\\mago-server\\output\\pinkTest.png";
