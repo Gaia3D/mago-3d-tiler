@@ -281,6 +281,4 @@ public class HalfEdgeMesh implements Serializable {
             primitive.getIntersectedFacesByPlane(planeType, planePosition, resultFaces, error);
         }
     }
-
-
 }

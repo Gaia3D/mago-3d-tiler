@@ -32,11 +32,11 @@ public class HalfEdgeFace implements Serializable {
     private int classifyId = -1; // use to classify the face for some purpose
     private PlaneType bestPlaneToProject; // use to classify the face for some purpose
     private CameraDirectionType cameraDirectionType; // use to classify the face for some purpose
+
     public void copyFrom(HalfEdgeFace face) {
         if (face == null) {
             return;
         }
-
         // do not copy pointers
         if (face.normal != null) {
             this.normal = new Vector3d(face.normal);

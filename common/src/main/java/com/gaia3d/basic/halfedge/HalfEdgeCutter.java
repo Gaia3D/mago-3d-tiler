@@ -1,11 +1,15 @@
 package com.gaia3d.basic.halfedge;
 
+import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
 import com.gaia3d.basic.geometry.octree.HalfEdgeOctree;
 import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaMaterial;
+import com.gaia3d.basic.model.GaiaSurface;
+import com.gaia3d.basic.model.GaiaVertex;
 import lombok.extern.slf4j.Slf4j;
+import org.joml.Vector2d;
 import org.joml.Vector3d;
 
 import java.nio.file.Path;
@@ -116,6 +120,13 @@ public class HalfEdgeCutter {
 
         // set the classifyId for each face
         int octreesCount = octreesWithContents.size();
+//        for (int j = 0; j < octreesCount; j++) {
+//            HalfEdgeOctree octree = octreesWithContents.get(j);
+//            List<HalfEdgeFace> faces = octree.getFaces();
+//            for (HalfEdgeFace face : faces) {
+//                face.setClassifyId(j);
+//            }
+//        }
 
         for (int j = 0; j < octreesCount; j++) {
             HalfEdgeOctree octree = octreesWithContents.get(j);
@@ -138,6 +149,8 @@ public class HalfEdgeCutter {
             if (makeSkirt) {
                 cuttedScene.makeSkirt();
             }
+
+
             resultScenes.add(cuttedScene);
         }
         return resultScenes;
