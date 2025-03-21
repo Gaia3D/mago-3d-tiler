@@ -5,6 +5,7 @@ import com.gaia3d.basic.geometry.tessellator.GaiaExtruder;
 import com.gaia3d.basic.geometry.tessellator.GaiaExtrusionSurface;
 import com.gaia3d.basic.geometry.tessellator.Vector3dOnlyHashEquals;
 import com.gaia3d.basic.model.*;
+import com.gaia3d.command.mago.AttributeFilter;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.EasySceneCreator;
@@ -65,6 +66,7 @@ public class GeoPackageConverter extends AbstractGeometryConverter implements Co
         List<GaiaSceneTempGroup> sceneTemps = new ArrayList<>();
         InnerRingRemover innerRingRemover = new InnerRingRemover();
 
+        List<AttributeFilter> attributeFilters = globalOptions.getAttributeFilters();
         boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalOptions.DEFAULT_CRS);
         boolean flipCoordinate = globalOptions.isFlipCoordinate();
         String nameColumnName = globalOptions.getNameColumn();
@@ -102,6 +104,40 @@ public class GeoPackageConverter extends AbstractGeometryConverter implements Co
                     if (geom == null) {
                         log.debug("Is Null Geometry : {}", feature.getID());
                         continue;
+                    }
+
+                    if (!attributeFilters.isEmpty()) {
+                        boolean filterFlag = false;
+                        for (AttributeFilter attributeFilter : attributeFilters) {
+                            String columnName = attributeFilter.getAttributeName();
+                            String filterValue = attributeFilter.getAttributeValue();
+                            String attributeValue = castStringFromObject(feature.getAttribute(columnName), "null");
+                            if (filterValue.equals(attributeValue)) {
+                                log.info("Filtering by attribute : {}/{}", columnName, filterValue);
+                                filterFlag = true;
+                                break;
+                            }
+                        }
+                        if (!filterFlag) {
+                            continue;
+                        }
+                    }
+
+                    if (!attributeFilters.isEmpty()) {
+                        boolean filterFlag = false;
+                        for (AttributeFilter attributeFilter : attributeFilters) {
+                            String columnName = attributeFilter.getAttributeName();
+                            String filterValue = attributeFilter.getAttributeValue();
+                            String attributeValue = castStringFromObject(feature.getAttribute(columnName), "null");
+                            if (filterValue.equals(attributeValue)) {
+                                log.info("Filtering by attribute : {}/{}", columnName, filterValue);
+                                filterFlag = true;
+                                break;
+                            }
+                        }
+                        if (!filterFlag) {
+                            continue;
+                        }
                     }
 
                     List<Polygon> polygons = new ArrayList<>();

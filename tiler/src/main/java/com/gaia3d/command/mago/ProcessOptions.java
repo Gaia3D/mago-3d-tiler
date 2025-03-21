@@ -65,6 +65,7 @@ public enum ProcessOptions {
     ALTITUDE_COLUMN("altitudeColumn", "ac", "altitudeColumn", true, "Altitude Column setting for extrusion model ((Default Column: altitude)"),
     HEADING_COLUMN("headingColumn", "hd", "headingColumn", true, "Heading column setting for I3DM converting (Default Column: heading)"),
     DIAMETER_COLUMN("diameterColumn", "dc", "diameterColumn", true, "Diameter column setting for extrusion model, Specify a length unit for Diameter in millimeters(mm) (Default Column: diameter)"),
+    ATTRIBUTE_FILTER("attributeFilter", "af", "attributeFilter", true, "Attribute filter setting for extrusion model ex) \"classification=window,door;type=building\""),
 
     MINIMUM_HEIGHT("minimumHeight", "mh", "minimumHeight", true, "Minimum height value for extrusion model (Default: 0.0)"),
     ABSOLUTE_ALTITUDE("absoluteAltitude", "aa", "absoluteAltitude", true, "Absolute altitude value for extrusion model"),

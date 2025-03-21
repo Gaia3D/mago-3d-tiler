@@ -17,7 +17,7 @@ class PntsReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                //"-c", "32652",
+                "-c", "32652",
         };
         execute(args);
     }
@@ -40,7 +40,7 @@ class PntsReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-c", "5187",
-                "-pointRatio", "25",
+                "-pointRatio", "100",
                 "-debug",
         };
         execute(args);

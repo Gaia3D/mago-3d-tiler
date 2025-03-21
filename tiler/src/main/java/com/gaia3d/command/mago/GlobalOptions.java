@@ -15,6 +15,10 @@ import org.locationtech.proj4j.CoordinateReferenceSystem;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Global options for Gaia3D Tiler.
@@ -152,6 +156,8 @@ public class GlobalOptions {
     private double absoluteAltitude;
     private double minimumHeight;
     private double skirtHeight;
+
+    private List<AttributeFilter> attributeFilters = new ArrayList<>();
 
     public static GlobalOptions getInstance() {
         if (instance.javaVersionInfo == null) {
@@ -311,6 +317,21 @@ public class GlobalOptions {
         instance.setAbsoluteAltitude(command.hasOption(ProcessOptions.ABSOLUTE_ALTITUDE.getArgName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.ABSOLUTE_ALTITUDE.getArgName())) : DEFAULT_ABSOLUTE_ALTITUDE);
         instance.setMinimumHeight(command.hasOption(ProcessOptions.MINIMUM_HEIGHT.getArgName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.MINIMUM_HEIGHT.getArgName())) : DEFAULT_MINIMUM_HEIGHT);
         instance.setSkirtHeight(command.hasOption(ProcessOptions.SKIRT_HEIGHT.getArgName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.SKIRT_HEIGHT.getArgName())) : DEFAULT_SKIRT_HEIGHT);
+
+        // Attribute Filter ex) "classification=window,door;type=building"
+        if (command.hasOption(ProcessOptions.ATTRIBUTE_FILTER.getArgName())) {
+            List<AttributeFilter> attributeFilters = instance.getAttributeFilters();
+            String[] filters = command.getOptionValue(ProcessOptions.ATTRIBUTE_FILTER.getArgName()).split(";");
+            for (String filter : filters) {
+                String[] keyValue = filter.split("=");
+                if (keyValue.length == 2) {
+                    for (String value : keyValue[1].split(",")) {
+                        attributeFilters.add(new AttributeFilter(keyValue[0], value));
+                        log.info("Attribute Filter: {}={}", keyValue[0], value);
+                    }
+                }
+            }
+        }
 
         instance.setDebug(command.hasOption(ProcessOptions.DEBUG.getArgName()));
 

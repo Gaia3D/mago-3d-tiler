@@ -271,6 +271,18 @@ class B3dmReleaseTest {
         execute(args);
     }
 
+    @Test
+    void batched90() {
+        String path = "B90-compo";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                //"-it", "",
+                "-debug"
+        };
+        execute(args);
+    }
+
     private void execute(String[] args) {
         Mago3DTilerMain.main(args);
     }

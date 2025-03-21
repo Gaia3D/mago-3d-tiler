@@ -110,7 +110,9 @@ class I3dmReleaseTest {
                 "-it", "gpkg",
                 "-ot", "i3dm",
                 "-instance", getInputPath(path).getAbsolutePath() + "/broad-tree.glb",
-                "-terrain", INPUT_PATH + "/korea-compressed.tif",
+                //"-terrain", INPUT_PATH + "/korea-compressed.tif",
+                "-terrain", "G:/workspace/dem05.tif",
+                "-attributeFilter", "FRTP_NM=활엽수림",
                 //"-debug"
         };
         execute(args);
@@ -126,7 +128,8 @@ class I3dmReleaseTest {
                 "-it", "gpkg",
                 "-ot", "i3dm",
                 "-instance", getInputPath(path).getAbsolutePath() + "/needle-tree.glb",
-                "-terrain", INPUT_PATH + "/korea-compressed.tif",
+                "-terrain", "G:/workspace/dem05.tif",
+                "-attributeFilter", "FRTP_NM=침엽수림",
                 //"-debug"
         };
         execute(args);
@@ -142,7 +145,40 @@ class I3dmReleaseTest {
                 "-it", "gpkg",
                 "-ot", "i3dm",
                 "-instance", getInputPath(path).getAbsolutePath() + "/mixed-tree.glb",
-                "-terrain", INPUT_PATH + "/korea-compressed.tif",
+                "-terrain", "G:/workspace/dem05.tif",
+                "-attributeFilter", "FRTP_NM=혼효림",
+                //"-debug"
+        };
+        execute(args);
+    }
+
+    @Test
+    void instanced06D() {
+        String path = "I04-forest-shp";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath() + "-textured",
+                "-c", "5179",
+                "-it", "gpkg",
+                "-ot", "i3dm",
+                "-instance", getInputPath(path).getAbsolutePath() + "/texture-tree.glb",
+                "-terrain", "G:/workspace/dem05.tif",
+                //"-debug"
+        };
+        execute(args);
+    }
+
+    @Test
+    void instanced06E() {
+        String path = "I04-forest-shp";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath() + "-many-tri",
+                "-c", "5179",
+                "-it", "gpkg",
+                "-ot", "i3dm",
+                "-instance", getInputPath(path).getAbsolutePath() + "/many-tri-tree.glb",
+                "-terrain", "G:/workspace/dem05.tif",
                 //"-debug"
         };
         execute(args);

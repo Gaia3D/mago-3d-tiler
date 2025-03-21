@@ -14,6 +14,21 @@ public interface AttributeReader {
     KmlInfo read(File file);
     List<KmlInfo> readAll(File file);
 
+    default int calcTreeCount(Geometry polygon, double treeProportion, double treeDiameter) {
+        if (treeProportion <= 0) {
+            return 0;
+        }
+        double area = polygon.getArea();
+        double forestArea = area * treeProportion;
+        double treeDensity = treeDiameter * treeDiameter;
+
+        double count = forestArea / treeDensity;
+
+        int castCount = (int) count;
+        System.out.println("count: " + castCount);
+        return castCount;
+    }
+
     default List<Point> getRandomContainsPoints(Geometry polygon, GeometryFactory geometryFactory, int count) {
         PreparedGeometry preparedGeometry = PreparedGeometryFactory.prepare(polygon);
         Envelope envelope = polygon.getEnvelopeInternal();

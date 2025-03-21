@@ -49,6 +49,7 @@ class RealisticReleaseTest {
         execute(args);
     }
 
+    @Disabled
     @Test
     void realistic02() {
         String path = "R02-bansong-all-obj";

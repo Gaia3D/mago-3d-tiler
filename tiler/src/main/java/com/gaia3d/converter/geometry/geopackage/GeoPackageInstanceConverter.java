@@ -43,6 +43,7 @@ public class GeoPackageInstanceConverter implements AttributeReader {
     public List<KmlInfo> readAll(File file) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
 
+        List<AttributeFilter> attributeFilters = globalOptions.getAttributeFilters();
         List<KmlInfo> result = new ArrayList<>();
         boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalOptions.DEFAULT_CRS);
         String altitudeColumnName = globalOptions.getAltitudeColumn();
@@ -61,6 +62,22 @@ public class GeoPackageInstanceConverter implements AttributeReader {
                     SimpleFeature feature = simpleFeatureReader.next();
                     Geometry geom = (Geometry) feature.getDefaultGeometry();
 
+                    if (!attributeFilters.isEmpty()) {
+                        boolean filterFlag = false;
+                        for (AttributeFilter attributeFilter : attributeFilters) {
+                            String columnName = attributeFilter.getAttributeName();
+                            String filterValue = attributeFilter.getAttributeValue();
+                            String attributeValue = castStringFromObject(feature.getAttribute(columnName), "null");
+                            if (filterValue.equals(attributeValue)) {
+                                log.info("Filtering by attribute : {}/{}", columnName, filterValue);
+                                filterFlag = true;
+                                break;
+                            }
+                        }
+                        if (!filterFlag) {
+                            continue;
+                        }
+                    }
                     List<Point> points = new ArrayList<>();
                     if (geom instanceof MultiPolygon multiPolygon) {
                         for (int i = 0; i < multiPolygon.getNumGeometries(); i++) {
