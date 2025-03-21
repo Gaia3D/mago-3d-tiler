@@ -3,6 +3,7 @@ package com.gaia3d.converter;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.Configurator;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.jgltf.GltfWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -53,9 +54,11 @@ public class GltfCreatorTest {
     public void createGrid() {
         Configurator.initConsoleLogger();
 
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+
         int[] gridSizes = new int[] {8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192};
         for (int gridSize : gridSizes) {
-            File file = new File("D:/workspace/", gridSize + "x" + gridSize + ".glb");
+            File file = new File("E:/workspace/", gridSize + "x" + gridSize + ".glb");
             log.info("Creating gltf file: {}", file.getAbsolutePath());
             EasySceneCreator easySceneCreator = new EasySceneCreator();
             GaiaScene gaiaScene = easySceneCreator.createScene(file);
