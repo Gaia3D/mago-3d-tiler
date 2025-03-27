@@ -97,6 +97,7 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         BoundingVolume squareBoundingVolume = parentBoundingVolume.createSqureBoundingVolume();
 
         long instanceLimit = globalOptions.getMaxInstance();
+        //long instanceLimit = globalOptions.getMaxInstance();
         long instanceCount = tileInfos.size();
         boolean isRefineAdd = globalOptions.isRefineAdd();
 
@@ -219,8 +220,10 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         }
 
         int divideSize = tileInfos.size() / 4;
-        if (divideSize < 256) {
-            divideSize = 256;
+        if (divideSize > GlobalOptions.DEFAULT_MAX_I3DM_FEATURE_COUNT) {
+            divideSize = GlobalOptions.DEFAULT_MAX_I3DM_FEATURE_COUNT;
+        } else if (divideSize < GlobalOptions.DEFAULT_MIN_I3DM_FEATURE_COUNT) {
+            divideSize = GlobalOptions.DEFAULT_MIN_I3DM_FEATURE_COUNT;
         }
         //int divideSize = globalOptions.getMaxInstance();
 
