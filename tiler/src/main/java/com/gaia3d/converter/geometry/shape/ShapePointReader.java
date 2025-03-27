@@ -27,6 +27,8 @@ import org.opengis.filter.Filter;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -70,7 +72,11 @@ public class ShapePointReader implements AttributeReader {
         try {
             shpFiles = new ShpFiles(file);
             reader = new ShapefileReader(shpFiles, true, true, new GeometryFactory());
-            DataStore dataStore = new ShapefileDataStore(file.toURI().toURL());
+            ShapefileDataStore dataStore = new ShapefileDataStore(file.toURI().toURL());
+
+            ShapeEncodingFix shapeEncodingFix = new ShapeEncodingFix();
+            dataStore.setCharset(shapeEncodingFix.detectCharset(file));
+
             String typeName = dataStore.getTypeNames()[0];
             SimpleFeatureSource source = dataStore.getFeatureSource(typeName);
             var query = new Query(typeName, Filter.INCLUDE);
@@ -99,7 +105,6 @@ public class ShapePointReader implements AttributeReader {
                         String filterValue = attributeFilter.getAttributeValue();
                         String attributeValue = castStringFromObject(feature.getAttribute(columnName), "null");
                         if (filterValue.equals(attributeValue)) {
-                            log.info("Filtering by attribute : {}/{}", columnName, filterValue);
                             filterFlag = true;
                             break;
                         }

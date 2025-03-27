@@ -105,11 +105,11 @@ class I3dmReleaseTest {
         String path = "I04-forest-shp";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath() + "-A",
+                "-o", getOutputPath("ESD/" + path).getAbsolutePath() + "-A",
                 "-c", "5179",
                 "-it", "gpkg",
                 "-ot", "i3dm",
-                "-instance", getInputPath(path).getAbsolutePath() + "/broad-tree.glb",
+                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/broad-bluegrass.glb",
                 //"-terrain", INPUT_PATH + "/korea-compressed.tif",
                 "-terrain", "G:/workspace/dem05.tif",
                 "-attributeFilter", "FRTP_NM=활엽수림",
@@ -123,11 +123,11 @@ class I3dmReleaseTest {
         String path = "I04-forest-shp";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath() + "-B",
+                "-o", getOutputPath("ESD/" + path).getAbsolutePath() + "-B",
                 "-c", "5179",
                 "-it", "gpkg",
                 "-ot", "i3dm",
-                "-instance", getInputPath(path).getAbsolutePath() + "/needle-tree.glb",
+                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/needle.glb",
                 "-terrain", "G:/workspace/dem05.tif",
                 "-attributeFilter", "FRTP_NM=침엽수림",
                 //"-debug"
@@ -140,11 +140,11 @@ class I3dmReleaseTest {
         String path = "I04-forest-shp";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath() + "-C",
+                "-o", getOutputPath("ESD/" + path).getAbsolutePath() + "-C",
                 "-c", "5179",
                 "-it", "gpkg",
                 "-ot", "i3dm",
-                "-instance", getInputPath(path).getAbsolutePath() + "/mixed-tree.glb",
+                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/mixed.glb",
                 "-terrain", "G:/workspace/dem05.tif",
                 "-attributeFilter", "FRTP_NM=혼효림",
                 //"-debug"
@@ -157,6 +157,36 @@ class I3dmReleaseTest {
         String path = "I04-forest-shp";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath("ESD/" + path).getAbsolutePath() + "-D",
+                "-c", "5179",
+                "-it", "gpkg",
+                "-ot", "i3dm",
+                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/bamboo.glb",
+                "-terrain", "G:/workspace/dem05.tif",
+                "-attributeFilter", "FRTP_NM=죽림",
+                //"-debug"
+        };
+        execute(args);
+    }
+
+    @Test
+    void instanced06Merger() {
+        String path = "ESD";
+        String[] args = new String[] {
+                "-i", getOutputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-c", "5179",
+                "-merge",
+                "-ot", "i3dm",
+        };
+        execute(args);
+    }
+
+    /*@Test
+    void instanced06E() {
+        String path = "I04-forest-shp";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath() + "-textured",
                 "-c", "5179",
                 "-it", "gpkg",
@@ -166,18 +196,66 @@ class I3dmReleaseTest {
                 //"-debug"
         };
         execute(args);
+    }*/
+
+    @Test
+    void instanced07Chim() {
+        String path = "I07-tree-entities-shp-chim";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-c", "5187",
+                "-it", "shp",
+                "-ot", "i3dm",
+                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/needle.glb",
+                "-terrain", "G:/workspace/dem05.tif",
+                //"-debug"
+        };
+        execute(args);
     }
 
     @Test
-    void instanced06E() {
-        String path = "I04-forest-shp";
+    void instanced07jat() {
+        String path = "I07-tree-entities-shp-jat";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath() + "-many-tri",
-                "-c", "5179",
-                "-it", "gpkg",
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-c", "5187",
+                "-it", "shp",
                 "-ot", "i3dm",
-                "-instance", getInputPath(path).getAbsolutePath() + "/many-tri-tree.glb",
+                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/mixed.glb",
+                "-terrain", "G:/workspace/dem05.tif",
+                //"-debug"
+        };
+        execute(args);
+    }
+
+    @Test
+    void instanced07Hwal() {
+        String path = "I07-tree-entities-shp-hwal";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-c", "5187",
+                "-it", "shp",
+                "-ot", "i3dm",
+                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/broad.glb",
+                "-terrain", "G:/workspace/dem05.tif",
+                //"-debug"
+        };
+        execute(args);
+    }
+
+    @Test
+    void instanced07Nak() {
+        String path = "I07-tree-entities-shp-nak";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-c", "5187",
+                "-it", "shp",
+                "-ot", "i3dm",
+                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/larch.glb",
                 "-terrain", "G:/workspace/dem05.tif",
                 //"-debug"
         };
