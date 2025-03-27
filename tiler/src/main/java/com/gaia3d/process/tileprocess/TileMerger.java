@@ -109,6 +109,10 @@ public class TileMerger {
             Tileset tileset = tilesetMap.get(tilesetFile);
             Node tilesetRoot = tileset.getRoot();
             double tilesetGeometricError = tileset.getGeometricError();
+            if (tileset.getGeometricError() == 0.0) {
+                tilesetGeometricError = tilesetRoot.getGeometricError();
+            }
+
             geometricError = Math.max(geometricError, tilesetGeometricError);
 
             Node newChildNode = new Node();
