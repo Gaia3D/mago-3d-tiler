@@ -23,6 +23,20 @@ class PntsReleaseTest {
     }
 
     @Test
+    void pointcloud00Offset() {
+        String path = "P00-hwangyonggak-las";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath() + "-offset",
+                "-zOffset", "100.0",
+                "-xOffset", "100.0",
+                "-yOffset", "100.0",
+                "-c", "32652",
+        };
+        execute(args);
+    }
+
+    @Test
     void pointcloud01() {
         String path = "P01-sejong-bridge-las";
         String[] args = new String[] {

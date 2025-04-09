@@ -239,7 +239,7 @@ class I3dmReleaseTest {
                 "-c", "5187",
                 "-it", "shp",
                 "-ot", "i3dm",
-                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/broad.glb",
+                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/hwal-sample-low.glb",
                 "-terrain", "G:/workspace/dem05.tif",
                 //"-debug"
         };
