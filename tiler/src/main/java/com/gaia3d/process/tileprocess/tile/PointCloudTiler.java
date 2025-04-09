@@ -55,10 +55,6 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         ProjCoordinate transformedMaxCoordinate = transformer.transform(new ProjCoordinate(originalMaxPosition.x, originalMaxPosition.y, originalMaxPosition.z), new ProjCoordinate());
         Vector3d maxPosition = new Vector3d(transformedMaxCoordinate.x, transformedMaxCoordinate.y, originalMaxPosition.z);
 
-        Vector3d translate = globalOptions.getTranslateOffset();
-        minPosition = minPosition.add(translate);
-        maxPosition = maxPosition.add(translate);
-
         GaiaBoundingBox transformedBoundingBox = new GaiaBoundingBox();
         transformedBoundingBox.addPoint(minPosition);
         transformedBoundingBox.addPoint(maxPosition);

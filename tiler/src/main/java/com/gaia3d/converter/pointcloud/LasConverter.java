@@ -38,6 +38,8 @@ public class LasConverter {
         LASReader reader = new LASReader(file);
         LASHeader header = reader.getHeader();
 
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+
         double getMinX = header.getMinX();
         double getMinY = header.getMinY();
         double getMinZ = header.getMinZ();
@@ -46,6 +48,24 @@ public class LasConverter {
         double getMaxZ = header.getMaxZ();
         Vector3d min = new Vector3d(getMinX, getMinY, getMinZ);
         Vector3d max = new Vector3d(getMaxX, getMaxY, getMaxZ);
+
+        // Apply translation offset
+        Vector3d transform = globalOptions.getTranslateOffset();
+        if (transform != null) {
+            min = new Vector3d(min.x + transform.x, min.y + transform.y, min.z + transform.z);
+            max = new Vector3d(max.x + transform.x, max.y + transform.y, max.z + transform.z);
+        }
+
+        if (min.x > max.x || min.y > max.y || min.z > max.z) {
+            log.error("[ERROR] Min point is greater than Max point.");
+            return null;
+        } else if (min.x == max.x && min.y == max.y && min.z == max.z) {
+            log.error("[ERROR] Min point is equal to Max point.");
+            return null;
+        } else if (min.x == 0 && min.y == 0 && min.z == 0 && max.x == 0 && max.y == 0 && max.z == 0) {
+            log.error("[ERROR] Min point and Max point are all zero.");
+            return null;
+        }
 
         GaiaBoundingBox srsBoundingBox = new GaiaBoundingBox();
         srsBoundingBox.addPoint(min);
@@ -73,6 +93,14 @@ public class LasConverter {
         double yOffset = header.getYOffset();
         double zScaleFactor = header.getZScaleFactor();
         double zOffset = header.getZOffset();
+
+        // Apply translation offset
+        Vector3d transform = globalOptions.getTranslateOffset();
+        if (transform != null) {
+            xOffset = xOffset + transform.x;
+            yOffset = yOffset + transform.y;
+            zOffset = zOffset + transform.z;
+        }
 
         CloseablePointIterable pointIterable = reader.getCloseablePoints();
         long pointRecords = header.getNumberOfPointRecords();
