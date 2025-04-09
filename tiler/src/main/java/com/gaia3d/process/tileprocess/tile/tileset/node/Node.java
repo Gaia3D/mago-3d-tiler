@@ -22,6 +22,11 @@ import java.util.List;
 @Setter
 @RequiredArgsConstructor
 public class Node {
+
+    public enum RefineType {
+        ADD, REPLACE,
+    }
+
     @JsonIgnore
     private String nodeCode;
     @JsonIgnore
@@ -70,6 +75,50 @@ public class Node {
         }
     }
 
+    public BoundingVolume recalculateBoundingRegion() {
+        double[] newRegion = new double[6];
+        double minX = Double.MAX_VALUE;
+        double minY = Double.MAX_VALUE;
+        double maxX = -Double.MAX_VALUE;
+        double maxY = -Double.MAX_VALUE;
+        double minZ = Double.MAX_VALUE;
+        double maxZ = -Double.MAX_VALUE;
+
+        BoundingVolume newBoundingVolume = new BoundingVolume(BoundingVolume.BoundingVolumeType.REGION);
+        newBoundingVolume.setRegion(newRegion);
+
+        List<Node> children = this.getChildren();
+        for (Node childNode : children) {
+            BoundingVolume childBoundingVolume = childNode.getBoundingVolume();
+            if (childBoundingVolume != null) {
+                double[] childRegion = childBoundingVolume.getRegion();
+                if (childRegion != null) {
+                    minX = Math.min(minX, childRegion[0]);
+                    minY = Math.min(minY, childRegion[1]);
+                    maxX = Math.max(maxX, childRegion[2]);
+                    maxY = Math.max(maxY, childRegion[3]);
+                    minZ = Math.min(minZ, childRegion[4]);
+                    maxZ = Math.max(maxZ, childRegion[5]);
+                }
+            }
+        }
+        newRegion[0] = minX;
+        newRegion[1] = minY;
+        newRegion[2] = maxX;
+        newRegion[3] = maxY;
+        newRegion[4] = minZ;
+        newRegion[5] = maxZ;
+
+        for (int i = 0; i < newRegion.length; i++) {
+            newRegion[i] = DecimalUtils.cut(newRegion[i]);
+        }
+
+        // set the new bounding volume
+        this.boundingVolume = newBoundingVolume;
+        return newBoundingVolume;
+    }
+
+
     public void deleteNoContentNodes() {
         if (children == null) {
             return;
@@ -86,8 +135,7 @@ public class Node {
         }
     }
 
-    public void setRefinementTypeAutomatic()
-    {
+    public void setRefinementTypeAutomatic() {
         if (this.children == null || this.children.isEmpty()) {
             return;
         }
@@ -116,11 +164,6 @@ public class Node {
         }
     }
 
-    public enum RefineType {
-        ADD,
-        REPLACE,
-    }
-
     public List<ContentInfo> findAllContentInfo(List<ContentInfo> contentInfoList) {
         if (content != null) {
             ContentInfo contentInfo = content.getContentInfo();
@@ -136,8 +179,7 @@ public class Node {
         return contentInfoList;
     }
 
-    public int findMaxDepth()
-    {
+    public int findMaxDepth() {
         int maxDepth = this.depth;
         if (this.children == null) {
             return maxDepth;
@@ -151,8 +193,7 @@ public class Node {
         return maxDepth;
     }
 
-    public void getNodesByDepth(int depth, List<Node> resultNodes)
-    {
+    public void getNodesByDepth(int depth, List<Node> resultNodes) {
         if (this.depth == depth) {
             resultNodes.add(this);
             return;
@@ -165,8 +206,7 @@ public class Node {
         }
     }
 
-    public boolean hasContentsInTree()
-    {
+    public boolean hasContentsInTree() {
         if (this.content != null) {
             return true;
         }
@@ -196,8 +236,7 @@ public class Node {
             double[] region = childBoundingVolume.getRegion();// minx, miny, maxx, maxy, minz, maxz
 
             // check if intersects centerLonRad and centerLatRad
-            if (cartographicRad.x >= region[0] && cartographicRad.x <= region[2] &&
-                    cartographicRad.y >= region[1] && cartographicRad.y <= region[3]) {
+            if (cartographicRad.x >= region[0] && cartographicRad.x <= region[2] && cartographicRad.y >= region[1] && cartographicRad.y <= region[3]) {
                 return childNode.getIntersectedNode(cartographicRad, depth);
             }
         }
@@ -340,9 +379,7 @@ public class Node {
             double[] region = childBoundingVolume.getRegion();// minx, miny, maxx, maxy, minz, maxz
 
             // check if intersects centerLonRad and centerLatRad
-            if (cartographicRad.x >= region[0] && cartographicRad.x <= region[2] &&
-                    cartographicRad.y >= region[1] && cartographicRad.y <= region[3] &&
-                    cartographicRad.z >= region[4] && cartographicRad.z <= region[5]) {
+            if (cartographicRad.x >= region[0] && cartographicRad.x <= region[2] && cartographicRad.y >= region[1] && cartographicRad.y <= region[3] && cartographicRad.z >= region[4] && cartographicRad.z <= region[5]) {
                 return childNode.getIntersectedNode(cartographicRad, depth);
             }
         }
@@ -406,8 +443,7 @@ public class Node {
         }
     }
 
-    public GaiaBoundingBox calculateCartographicBoundingBox()
-    {
+    public GaiaBoundingBox calculateCartographicBoundingBox() {
         if (this.boundingVolume == null) {
             return null;
         }
@@ -425,8 +461,7 @@ public class Node {
         return bbox;
     }
 
-    public GaiaBoundingBox calculateLocalBoundingBox()
-    {
+    public GaiaBoundingBox calculateLocalBoundingBox() {
         if (this.boundingVolume == null) {
             return null;
         }
@@ -469,5 +504,4 @@ public class Node {
 
         return bboxLC;
     }
-
 }
