@@ -175,6 +175,7 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
             Vector3d normal = vertex.getNormal();
             if (normal != null) {
                 rotationMatrix4.transformPosition(normal);
+                normal.normalize();
                 normalList[normalIndex++] = (float) normal.x;
                 normalList[normalIndex++] = (float) normal.y;
                 normalList[normalIndex++] = (float) normal.z;
