@@ -207,7 +207,7 @@ class I3dmReleaseTest {
                 "-c", "5187",
                 "-it", "shp",
                 "-ot", "i3dm",
-                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/needle.glb",
+                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/chim-sample.glb",
                 "-terrain", "G:/workspace/dem05.tif",
                 //"-debug"
         };
@@ -223,7 +223,7 @@ class I3dmReleaseTest {
                 "-c", "5187",
                 "-it", "shp",
                 "-ot", "i3dm",
-                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/mixed.glb",
+                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/jat-sample.glb",
                 "-terrain", "G:/workspace/dem05.tif",
                 //"-debug"
         };
@@ -239,7 +239,7 @@ class I3dmReleaseTest {
                 "-c", "5187",
                 "-it", "shp",
                 "-ot", "i3dm",
-                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/hwal-sample-low.glb",
+                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/hwal-sample.glb",
                 "-terrain", "G:/workspace/dem05.tif",
                 //"-debug"
         };
@@ -255,8 +255,26 @@ class I3dmReleaseTest {
                 "-c", "5187",
                 "-it", "shp",
                 "-ot", "i3dm",
-                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/larch.glb",
+                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/nak-sample.glb",
                 "-terrain", "G:/workspace/dem05.tif",
+                //"-debug"
+        };
+        execute(args);
+    }
+
+    @Test
+    void instanced07Buts() {
+        String path = "I07-tree-entities-shp-nak";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath()+"-cherry-blossom",
+                "-c", "5187",
+                "-it", "shp",
+                "-ot", "i3dm",
+                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/cherry-blossom.glb",
+                "-terrain", "G:/workspace/dem05.tif",
+                //"-refineAdd",
+                "-voxelLod"
                 //"-debug"
         };
         execute(args);
