@@ -442,8 +442,7 @@ public class Node {
             }
         }
     }
-
-<<<<<<< HEAD
+    
     public boolean intersectsCartographicBoundingBox(GaiaBoundingBox cartographicBBoxDegrees) {
         double[] region = this.getBoundingVolume().getRegion();// minx, miny, maxx, maxy, minz, maxz
         double minLon = region[0];
