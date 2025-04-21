@@ -830,8 +830,8 @@ class UnitTest {
 
     @Test
     void test_RealisticMesh_Thailand_Data_N_buildings() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\RealisticMesh_Thailand_multiTiles\\OBJ25sqkm\\Data_16buildings\\";
-        String outputPath = "D:\\data\\mago-server\\output\\ResultData_16buildings\\";
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\RealisticMesh_Thailand_multiTiles\\OBJ25sqkm\\Data\\";
+        String outputPath = "D:\\data\\mago-server\\output\\thailand_692buildings\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
@@ -848,7 +848,7 @@ class UnitTest {
     @Test
     void test_RealisticMesh_LeeDongHun_Data_N_buildings() {
         String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\BANSONG\\";
-        String outputPath = "D:\\data\\mago-server\\output\\leeDongHun_Data_OBJ_BANSONG\\";
+        String outputPath = "D:\\data\\mago-server\\output\\BANSONG_N_buildings\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
@@ -864,7 +864,7 @@ class UnitTest {
     @Test
     void test_RealisticMesh_LeeDongHun_Data_BANSONG() {
         String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\BANSONG\\";
-        String outputPath = "D:\\data\\mago-server\\output\\leeDongHun_Data_OBJ_BANSONG\\";
+        String outputPath = "D:\\data\\mago-server\\output\\BANSONG\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
@@ -880,7 +880,7 @@ class UnitTest {
     @Test
     void test_RealisticMesh_LeeDongHun_Data_BANSONG_someBuildings() {
         String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\BANSONG_someBuildings\\";
-        String outputPath = "D:\\data\\mago-server\\output\\leeDongHun_Data_OBJ_BANSONG_someBuildings\\";
+        String outputPath = "D:\\data\\mago-server\\output\\BANSONG_someBuildings\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
@@ -897,7 +897,7 @@ class UnitTest {
     @Test
     void test_RealisticMesh_LeeDongHun_Data_SANGCHEON() {
         String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\SANGCHEON\\";
-        String outputPath = "D:\\data\\mago-server\\output\\leeDongHun_Data_OBJ_SANGCHEON\\";
+        String outputPath = "D:\\data\\mago-server\\output\\SANGCHEON\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
@@ -911,22 +911,18 @@ class UnitTest {
     }
 
     @Test
-    void test_RealisticMesh_LeeDongHun_Data_SANGCHEON_someBuildings() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\SANGCHEON_someBuildings\\";
-        String outputPath = "D:\\data\\mago-server\\output\\leeDongHun_Data_OBJ_SANGCHEON_someBuildings\\";
+    void test_IFC_roundBridge() {
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\Autodesk IFC\\세종금강대교\\";
+        String outputPath = "D:\\data\\mago-server\\output\\세종금강대교_11buildings\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
-                "-it", "obj",
+                "-it", "ifc",
                 "-o", outputPath,
-                "-crs", "5187",
-                "-pr",
-                "-rx", "90",
+                "-crs", "5186"
         };
         Mago3DTilerMain.main(args);
     }
-
-
 
     @Test
     void testCollada_SangGiDe() {

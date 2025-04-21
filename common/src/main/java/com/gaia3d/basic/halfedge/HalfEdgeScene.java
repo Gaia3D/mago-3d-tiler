@@ -74,12 +74,6 @@ public class HalfEdgeScene implements Serializable {
         return null;
     }
 
-    public void doTrianglesReduction(DecimateParameters decimateParameters) {
-        for (HalfEdgeNode node : nodes) {
-            node.doTrianglesReduction(decimateParameters);
-        }
-    }
-
     public List<GaiaMaterial> getCopyMaterials() {
         List<GaiaMaterial> copyMaterials = new ArrayList<>();
         for (GaiaMaterial material : materials) {
@@ -390,7 +384,6 @@ public class HalfEdgeScene implements Serializable {
                 if (clonedScene == null) {
                     clonedScene = new HalfEdgeScene();
                     clonedScene.originalPath = originalPath;
-                    clonedScene.gaiaBoundingBox = gaiaBoundingBox;
                     clonedScene.attribute = attribute;
                 }
                 clonedScene.nodes.add(clonedNode);
@@ -511,9 +504,9 @@ public class HalfEdgeScene implements Serializable {
         }
     }
 
-    public void doTrianglesReductionOneIteration(DecimateParameters decimateParameters) {
+    public void decimate(DecimateParameters decimateParameters) {
         for (HalfEdgeNode node : nodes) {
-            node.doTrianglesReductionOneIteration(decimateParameters);
+            node.decimate(decimateParameters);
         }
     }
 
@@ -529,14 +522,14 @@ public class HalfEdgeScene implements Serializable {
         }
     }
 
-    public void makeSkirt() {
+    public void makeHorizontalSkirt() {
         GaiaBoundingBox bbox = getBoundingBox();
         if (bbox == null) {
             log.info("Making skirt : Error: bbox is null");
             return;
         }
 
-        double error = 1e-3; // 0.001
+        double error = 0.01; // 0.001
         List<HalfEdgeVertex> westVertices = new ArrayList<>();
         List<HalfEdgeVertex> eastVertices = new ArrayList<>();
         List<HalfEdgeVertex> southVertices = new ArrayList<>();
@@ -549,11 +542,19 @@ public class HalfEdgeScene implements Serializable {
         double bboxLengthY = bbox.getLengthY();
         double bboxMaxSize = Math.max(bboxLengthX, bboxLengthY);
         double expandDistance = bboxMaxSize * 0.005;
-        // provisionally, only expand the perimeter vertices
+
+        Vector3d axisZ = new Vector3d(0, 0, 1);
+
+        // only expand the perimeter vertices
         double dotLimit = 0.35;
         if (westVertices.size() > 1) {
             for (HalfEdgeVertex vertex : westVertices) {
                 Vector3d normal = vertex.calculateNormal();
+
+//                Vector3d position = vertex.getPosition();
+//                position.x -= expandDistance * normal.z;
+//                position.z += expandDistance * normal.x;
+
                 if (Math.abs(normal.dot(-1, 0, 0)) < dotLimit) {
                     Vector3d position = vertex.getPosition();
                     position.x -= expandDistance;

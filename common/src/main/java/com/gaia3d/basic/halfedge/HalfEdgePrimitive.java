@@ -25,18 +25,6 @@ public class HalfEdgePrimitive implements Serializable {
     private List<HalfEdgeVertex> vertices = new ArrayList<>(); // vertices of all surfaces
     private GaiaBoundingBox boundingBox = null;
 
-    public void doTrianglesReduction(DecimateParameters decimateParameters) {
-        for (HalfEdgeSurface surface : surfaces) {
-            surface.doTrianglesReduction(decimateParameters);
-        }
-
-        // Remake vertices
-        vertices.clear();
-        for (HalfEdgeSurface surface : surfaces) {
-            this.vertices.addAll(surface.getVertices());
-        }
-    }
-
     public List<HalfEdgeVertex> getVertices() {
         return calculateVertices();
     }
@@ -280,9 +268,9 @@ public class HalfEdgePrimitive implements Serializable {
         }
     }
 
-    public void doTrianglesReductionOneIteration(DecimateParameters decimateParameters) {
+    public void decimate(DecimateParameters decimateParameters) {
         for (HalfEdgeSurface surface : surfaces) {
-            surface.doTrianglesReductionOneIteration(decimateParameters);
+            surface.decimate(decimateParameters);
         }
     }
 
@@ -292,7 +280,10 @@ public class HalfEdgePrimitive implements Serializable {
         }
     }
 
-    public void getWestEastSouthNorthVertices(GaiaBoundingBox bbox, List<HalfEdgeVertex> westVertices, List<HalfEdgeVertex> eastVertices, List<HalfEdgeVertex> southVertices, List<HalfEdgeVertex> northVertices, double error) {
+    public void getWestEastSouthNorthVertices(GaiaBoundingBox bbox, List<HalfEdgeVertex> westVertices,
+                                              List<HalfEdgeVertex> eastVertices,
+                                              List<HalfEdgeVertex> southVertices,
+                                              List<HalfEdgeVertex> northVertices, double error) {
         for (HalfEdgeSurface surface : surfaces) {
             surface.getWestEastSouthNorthVertices(bbox, westVertices, eastVertices, southVertices, northVertices, error);
         }

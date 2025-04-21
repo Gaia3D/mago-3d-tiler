@@ -406,6 +406,57 @@ public class Node {
         }
     }
 
+    public boolean intersectsCartographicBoundingBox(GaiaBoundingBox cartographicBBoxDegrees) {
+        double[] region = this.getBoundingVolume().getRegion();// minx, miny, maxx, maxy, minz, maxz
+        double minLon = region[0];
+        double minLat = region[1];
+        double maxLon = region[2];
+        double maxLat = region[3];
+        double minAltitude = region[4];
+        double maxAltitude = region[5];
+        if (Math.toRadians(cartographicBBoxDegrees.getMinX()) > maxLon || Math.toRadians(cartographicBBoxDegrees.getMaxX()) < minLon) {
+            return false;
+        }
+        if (Math.toRadians(cartographicBBoxDegrees.getMinY()) > maxLat || Math.toRadians(cartographicBBoxDegrees.getMaxY()) < minLat) {
+            return false;
+        }
+        if (cartographicBBoxDegrees.getMinZ() > maxAltitude || cartographicBBoxDegrees.getMaxZ() < minAltitude) {
+            return false;
+        }
+        return true;
+    }
+
+    public void getIntersectedNodesAsOctree(GaiaBoundingBox cartographicBBox, int depth, List<Node> resultIntersectedNodes) {
+        // 1rst, check if the bounding box intersects with this node
+        if(!intersectsCartographicBoundingBox(cartographicBBox)) {
+            return;
+        }
+
+        if (this.depth == depth) {
+            resultIntersectedNodes.add(this);
+            return;
+        }
+
+        if (children == null || children.isEmpty()) {
+            this.createOctTreeChildren();
+        }
+
+        //              bottom                                top
+        //        +------------+------------+        +------------+------------+
+        //        |            |            |        |            |            |
+        //        |     3      |     2      |        |     7      |     6      |
+        //        |            |            |        |            |            |
+        //        +------------+------------+        +------------+------------+
+        //        |            |            |        |            |            |
+        //        |     0      |     1      |        |     4      |     5      |
+        //        |            |            |        |            |            |
+        //        +------------+------------+        +------------+------------+
+
+        for(Node childNode : children) {
+            childNode.getIntersectedNodesAsOctree(cartographicBBox, depth, resultIntersectedNodes);
+        }
+    }
+
     public GaiaBoundingBox calculateCartographicBoundingBox()
     {
         if (this.boundingVolume == null) {

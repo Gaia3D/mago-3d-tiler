@@ -140,7 +140,7 @@ public class HalfEdgeCutter {
             }
 
             if (makeSkirt) {
-                cuttedScene.makeSkirt();
+                cuttedScene.makeHorizontalSkirt();
             }
 
 

@@ -414,7 +414,7 @@ public class Engine {
             HalfEdgeScene halfEdgeScene = halfEdgeScenesToDecimate.get(i);
             GaiaBoundingBox bbox = halfEdgeScene.getBoundingBox();
             double bboxMaxSize = bbox.getMaxSize();
-            halfEdgeScene.doTrianglesReductionOneIteration(decimateParameters);
+            halfEdgeScene.decimate(decimateParameters);
 
             // now, cut the halfEdgeScene and make cube-textures by rendering
             double gridSpacing = bboxMaxSize / 3.0;
@@ -729,7 +729,7 @@ public class Engine {
                     verticesOfFaces = halfEdgeFace.getVertices(verticesOfFaces);
                     for (HalfEdgeVertex vertex : verticesOfFaces) {
                         if (visitedVerticesMap.containsKey(vertex)) {
-
+                            continue;
                         }
                         visitedVerticesMap.put(vertex, vertex);
 
@@ -755,8 +755,6 @@ public class Engine {
                         GaiaTextureUtils.clampTextureCoordinate(texCoord, texCoordError);
                         vertex.setTexcoords(texCoord);
                     }
-
-                    //TestUtils.checkTexCoordsOfHalfEdgeFace(halfEdgeFace);
                 }
             }
         }

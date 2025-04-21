@@ -39,7 +39,7 @@ public class TileInfo {
     private Path outputPath;
     private Path tempPath; // tempPath lod 0
 
-    private List<Path> tempPathLod; // tempPath lod 0, 1, 2, 3, 4, 5, etc
+    private List<Path> tempPathLod; // tempPath lod 0, 1, 2, 3, 4, 5, etc (deprecated)
     private GaiaBoundingBox cartographicBBox;
 
     @Builder.Default
