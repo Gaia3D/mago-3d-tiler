@@ -113,7 +113,6 @@ public class GeoPackageConverter extends AbstractGeometryConverter implements Co
                             String filterValue = attributeFilter.getAttributeValue();
                             String attributeValue = castStringFromObject(feature.getAttribute(columnName), "null");
                             if (filterValue.equals(attributeValue)) {
-                                log.info("Filtering by attribute : {}/{}", columnName, filterValue);
                                 filterFlag = true;
                                 break;
                             }
@@ -130,7 +129,6 @@ public class GeoPackageConverter extends AbstractGeometryConverter implements Co
                             String filterValue = attributeFilter.getAttributeValue();
                             String attributeValue = castStringFromObject(feature.getAttribute(columnName), "null");
                             if (filterValue.equals(attributeValue)) {
-                                log.info("Filtering by attribute : {}/{}", columnName, filterValue);
                                 filterFlag = true;
                                 break;
                             }

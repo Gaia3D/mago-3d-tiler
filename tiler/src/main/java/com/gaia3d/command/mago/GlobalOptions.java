@@ -41,6 +41,8 @@ public class GlobalOptions {
     public static final int DEFAULT_MAX_TRIANGLES = 65536 * 8;
     public static final int DEFAULT_MAX_NODE_DEPTH = 32;
     public static final int DEFAULT_MAX_INSTANCE = 1024 * 64;
+    public static final int DEFAULT_MAX_I3DM_FEATURE_COUNT = 2048;
+    public static final int DEFAULT_MIN_I3DM_FEATURE_COUNT = 128;
 
     public static final int DEFAULT_POINT_PER_TILE = 300000;
     public static final int DEFAULT_POINT_RATIO = 50;

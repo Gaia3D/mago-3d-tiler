@@ -12,7 +12,6 @@ dependencies {
     implementation "org.lwjgl:lwjgl-opengl"
     implementation "org.lwjgl:lwjgl-ktx"
 
-
     // joml (java opengl math library)
     implementation "org.joml:joml:1.10.5"
 

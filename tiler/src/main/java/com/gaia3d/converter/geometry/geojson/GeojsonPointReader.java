@@ -76,7 +76,6 @@ public class GeojsonPointReader implements AttributeReader {
                         String filterValue = attributeFilter.getAttributeValue();
                         String attributeValue = castStringFromObject(feature.getAttribute(columnName), "null");
                         if (filterValue.equals(attributeValue)) {
-                            log.info("Filtering by attribute : {}/{}", columnName, filterValue);
                             filterFlag = true;
                             break;
                         }

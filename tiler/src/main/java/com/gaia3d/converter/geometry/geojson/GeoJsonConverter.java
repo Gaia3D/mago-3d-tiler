@@ -110,7 +110,6 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                         String filterValue = attributeFilter.getAttributeValue();
                         String attributeValue = castStringFromObject(feature.getAttribute(columnName), "null");
                         if (filterValue.equals(attributeValue)) {
-                            log.info("Filtering by attribute : {}/{}", columnName, filterValue);
                             filterFlag = true;
                             break;
                         }

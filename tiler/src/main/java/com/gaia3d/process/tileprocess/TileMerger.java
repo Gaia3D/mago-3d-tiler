@@ -92,23 +92,27 @@ public class TileMerger {
         Tileset mergedTileset = new Tileset();
 
         // region calculate bounding box
-        double[] globalBoundingBox = new double[6];
-        globalBoundingBox[0] = Double.MAX_VALUE;
-        globalBoundingBox[1] = Double.MAX_VALUE;
-        globalBoundingBox[2] = -Double.MAX_VALUE;
-        globalBoundingBox[3] = -Double.MAX_VALUE;
-        globalBoundingBox[4] = Double.MAX_VALUE;
-        globalBoundingBox[5] = -Double.MAX_VALUE;
+        double[] globalBoundingRegion = new double[6];
+        globalBoundingRegion[0] = Double.MAX_VALUE;
+        globalBoundingRegion[1] = Double.MAX_VALUE;
+        globalBoundingRegion[2] = -Double.MAX_VALUE;
+        globalBoundingRegion[3] = -Double.MAX_VALUE;
+        globalBoundingRegion[4] = Double.MAX_VALUE;
+        globalBoundingRegion[5] = -Double.MAX_VALUE;
 
-        List<Node> children = new ArrayList<>();
         Node root = new Node();
         root.setRefine(Node.RefineType.ADD);
 
+        List<Node> children = new ArrayList<>();
         List<File> tilesetFiles = new ArrayList<>(tilesetMap.keySet());
         for (File tilesetFile : tilesetFiles) {
             Tileset tileset = tilesetMap.get(tilesetFile);
             Node tilesetRoot = tileset.getRoot();
             double tilesetGeometricError = tileset.getGeometricError();
+            if (tileset.getGeometricError() == 0.0) {
+                tilesetGeometricError = tilesetRoot.getGeometricError();
+            }
+
             geometricError = Math.max(geometricError, tilesetGeometricError);
 
             Node newChildNode = new Node();
@@ -129,13 +133,12 @@ public class TileMerger {
             } else if (boundingVolume.getRegion() != null) {
                 // calculate bounding region
                 double[] boundingBox = boundingVolume.getRegion();
-
-                globalBoundingBox[0] = Math.min(globalBoundingBox[0], boundingBox[0]); // minX
-                globalBoundingBox[1] = Math.min(globalBoundingBox[1], boundingBox[1]); // minY
-                globalBoundingBox[2] = Math.max(globalBoundingBox[2], boundingBox[2]); // maxX
-                globalBoundingBox[3] = Math.max(globalBoundingBox[3], boundingBox[3]); // maxY
-                globalBoundingBox[4] = Math.min(globalBoundingBox[4], boundingBox[4]); // minZ
-                globalBoundingBox[5] = Math.max(globalBoundingBox[5], boundingBox[5]); // maxZ
+                globalBoundingRegion[0] = Math.min(globalBoundingRegion[0], boundingBox[0]); // minX
+                globalBoundingRegion[1] = Math.min(globalBoundingRegion[1], boundingBox[1]); // minY
+                globalBoundingRegion[2] = Math.max(globalBoundingRegion[2], boundingBox[2]); // maxX
+                globalBoundingRegion[3] = Math.max(globalBoundingRegion[3], boundingBox[3]); // maxY
+                globalBoundingRegion[4] = Math.min(globalBoundingRegion[4], boundingBox[4]); // minZ
+                globalBoundingRegion[5] = Math.max(globalBoundingRegion[5], boundingBox[5]); // maxZ
             }
 
             String uri = getRelativePath(inputPath, tilesetFile);
@@ -145,8 +148,12 @@ public class TileMerger {
             newChildNode.setContent(content);
 
             children.add(newChildNode);
-            root.setChildren(children);
+            //root.setChildren(children);
         }
+
+
+        List<Node> dividedChildren = divideQuadTree(children, null, geometricError, globalBoundingRegion, 0);
+        root.setChildren(dividedChildren);
 
         geometricError = Math.min(geometricError, globalOptions.getMaxGeometricError());
 
@@ -157,13 +164,118 @@ public class TileMerger {
         mergedTileset.setRoot(root);
 
         BoundingVolume globalBoundingVolume = new BoundingVolume(BoundingVolume.BoundingVolumeType.REGION);
-        globalBoundingVolume.setRegion(globalBoundingBox);
+        globalBoundingVolume.setRegion(globalBoundingRegion);
         root.setGeometricError(geometricError);
         root.setBoundingVolume(globalBoundingVolume);
 
         return mergedTileset;
     }
 
+    private List<Node> divideQuadTree(List<Node> inputChildren, List<Node> outputChildren, double geometricError, double[] globalBoundingRegion, double depth) {
+        if (outputChildren == null) {
+            outputChildren = new ArrayList<>();
+        }
+
+        double minX = globalBoundingRegion[0]; // minX
+        double minY = globalBoundingRegion[1]; // minY
+        double maxX = globalBoundingRegion[2]; // maxX
+        double maxY = globalBoundingRegion[3]; // maxY
+        double minZ = globalBoundingRegion[4]; // minZ
+        double maxZ = globalBoundingRegion[5]; // maxZ
+
+        double centerX = (minX + maxX) / 2;
+        double centerY = (minY + maxY) / 2;
+        //double centerZ = (minZ + maxZ) / 2;
+
+        Node nodeA = new Node();
+        nodeA.setRefine(Node.RefineType.ADD);
+        nodeA.setGeometricError(geometricError);
+        BoundingVolume boundingVolumeA = new BoundingVolume(BoundingVolume.BoundingVolumeType.REGION);
+        boundingVolumeA.setRegion(new double[]{minX, minY, centerX, centerY, minZ, maxZ});
+        nodeA.setBoundingVolume(boundingVolumeA);
+        nodeA.setChildren(new ArrayList<>());
+
+        Node nodeB = new Node();
+        nodeB.setRefine(Node.RefineType.ADD);
+        nodeB.setGeometricError(geometricError);
+        BoundingVolume boundingVolumeB = new BoundingVolume(BoundingVolume.BoundingVolumeType.REGION);
+        boundingVolumeB.setRegion(new double[]{centerX, minY, maxX, centerY, minZ, maxZ});
+        nodeB.setBoundingVolume(boundingVolumeB);
+        nodeB.setChildren(new ArrayList<>());
+
+        Node nodeC = new Node();
+        nodeC.setRefine(Node.RefineType.ADD);
+        nodeC.setGeometricError(geometricError);
+        BoundingVolume boundingVolumeC = new BoundingVolume(BoundingVolume.BoundingVolumeType.REGION);
+        boundingVolumeC.setRegion(new double[]{minX, centerY, centerX, maxY, minZ, maxZ});
+        nodeC.setBoundingVolume(boundingVolumeC);
+        nodeC.setChildren(new ArrayList<>());
+
+        Node nodeD = new Node();
+        nodeD.setRefine(Node.RefineType.ADD);
+        nodeD.setGeometricError(geometricError);
+        BoundingVolume boundingVolumeD = new BoundingVolume(BoundingVolume.BoundingVolumeType.REGION);
+        boundingVolumeD.setRegion(new double[]{centerX, centerY, maxX, maxY, minZ, maxZ});
+        nodeD.setBoundingVolume(boundingVolumeD);
+        nodeD.setChildren(new ArrayList<>());
+
+        for (Node child : inputChildren) {
+            BoundingVolume childBoundingVolume = child.getBoundingVolume();
+            double[] childRegion = childBoundingVolume.getRegion();
+            double childMinX = childRegion[0];
+            double childMinY = childRegion[1];
+            double childMaxX = childRegion[2];
+            double childMaxY = childRegion[3];
+
+            double childCenterX = (childMinX + childMaxX) / 2;
+            double childCenterY = (childMinY + childMaxY) / 2;
+
+            if (childCenterX >= minX && childCenterX <= centerX && childCenterY >= minY && childCenterY <= centerY) {
+                nodeA.getChildren().add(child);
+            } else if (childCenterX >= centerX && childCenterX <= maxX && childCenterY >= minY && childCenterY <= centerY) {
+                nodeB.getChildren().add(child);
+            } else if (childCenterX >= minX && childCenterX <= centerX && childCenterY >= centerY && childCenterY <= maxY) {
+                nodeC.getChildren().add(child);
+            } else if (childCenterX >= centerX && childCenterX <= maxX && childCenterY >= centerY && childCenterY <= maxY) {
+                nodeD.getChildren().add(child);
+            }
+        }
+
+        if (!nodeA.getChildren().isEmpty()) {
+            if (nodeA.getChildren().size() > 1 && depth < 20) {
+                List<Node> newTree = divideQuadTree(nodeA.getChildren(), null, geometricError, nodeA.getBoundingVolume().getRegion(), depth + 1);
+                nodeA.setChildren(newTree);
+            }
+            nodeA.recalculateBoundingRegion();
+            outputChildren.add(nodeA);
+        }
+        if (!nodeB.getChildren().isEmpty()) {
+            if (nodeB.getChildren().size() > 1 && depth < 20) {
+                List<Node> newTree = divideQuadTree(nodeB.getChildren(), null, geometricError, nodeB.getBoundingVolume().getRegion(), depth + 1);
+                nodeB.setChildren(newTree);
+            }
+            nodeB.recalculateBoundingRegion();
+            outputChildren.add(nodeB);
+        }
+        if (!nodeC.getChildren().isEmpty()) {
+            if (nodeC.getChildren().size() > 1 && depth < 20) {
+                List<Node> newTree = divideQuadTree(nodeC.getChildren(), null, geometricError, nodeC.getBoundingVolume().getRegion(), depth + 1);
+                nodeC.setChildren(newTree);
+            }
+            nodeC.recalculateBoundingRegion();
+            outputChildren.add(nodeC);
+        }
+        if (!nodeD.getChildren().isEmpty()) {
+            if (nodeD.getChildren().size() > 1 && depth < 20) {
+                List<Node> newTree = divideQuadTree(nodeD.getChildren(), null, geometricError, nodeD.getBoundingVolume().getRegion(), depth + 1);
+                nodeD.setChildren(newTree);
+            }
+            nodeD.recalculateBoundingRegion();
+            outputChildren.add(nodeD);
+        }
+
+        return outputChildren;
+    }
 
     private List<File> findAllTilesetJsons(File inputPath) {
         List<File> files = (List<File>) FileUtils.listFiles(inputPath, new String[]{"json"}, true);

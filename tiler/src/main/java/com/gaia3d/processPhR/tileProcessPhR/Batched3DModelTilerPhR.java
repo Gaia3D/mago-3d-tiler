@@ -1555,7 +1555,23 @@ public class Batched3DModelTilerPhR extends DefaultTiler implements Tiler {
         return cutTileInfos;
     }
 
+    @Override
     public void writeTileset(Tileset tileset) {
+        Node rootNode = tileset.getRoot();
+        if (rootNode == null) {
+            log.error("[ERROR] Tileset root node is null");
+            throw new TileProcessingException("Tileset root node is null");
+        } else if (rootNode.getBoundingVolume() == null) {
+            log.error("[ERROR] Tileset root node bounding volume is null");
+            throw new TileProcessingException("Tileset root node bounding volume is null");
+        } else if (rootNode.getGeometricError() == 0 && tileset.getGeometricError() == 0) {
+            log.error("[ERROR] Tileset root node geometric error is 0");
+            throw new TileProcessingException("Tileset root node geometric error is 0");
+        } else if (rootNode.getChildren() == null || rootNode.getChildren().isEmpty()) {
+            log.error("[ERROR] Tileset root node children is null or empty");
+            throw new TileProcessingException("Tileset root node children is null or empty");
+        }
+
         Path outputPath = new File(globalOptions.getOutputPath()).toPath();
         File tilesetFile = outputPath.resolve("tileset.json").toFile();
         ObjectMapper objectMapper = new ObjectMapper();

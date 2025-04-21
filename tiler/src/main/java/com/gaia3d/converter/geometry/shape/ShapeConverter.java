@@ -85,9 +85,12 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         try {
             shpFiles = new ShpFiles(input);
             reader = new ShapefileReader(shpFiles, true, true, new GeometryFactory());
-            DataStore dataStore = new ShapefileDataStore(input.toURI().toURL());
+            ShapefileDataStore dataStore = new ShapefileDataStore(input.toURI().toURL());
+            ShapeEncodingFix shapeEncodingFix = new ShapeEncodingFix();
+            dataStore.setCharset(shapeEncodingFix.detectCharset(input));
+
             String typeName = dataStore.getTypeNames()[0];
-            ContentFeatureSource source = (ContentFeatureSource) dataStore.getFeatureSource(typeName);
+            ContentFeatureSource source = dataStore.getFeatureSource(typeName);
             var query = new Query(typeName, Filter.INCLUDE);
 
             int totalCount = source.getCount(query);
@@ -120,7 +123,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                         String filterValue = attributeFilter.getAttributeValue();
                         String attributeValue = castStringFromObject(feature.getAttribute(columnName), "null");
                         if (filterValue.equals(attributeValue)) {
-                            log.info("Filtering by attribute : {}/{}", columnName, filterValue);
                             filterFlag = true;
                             break;
                         }
