@@ -21,12 +21,6 @@ public class HalfEdgeMesh implements Serializable {
     private List<HalfEdgePrimitive> primitives = new ArrayList<>();
     private GaiaBoundingBox boundingBox = null;
 
-    public void doTrianglesReduction(DecimateParameters decimateParameters) {
-        for (HalfEdgePrimitive primitive : primitives) {
-            primitive.doTrianglesReduction(decimateParameters);
-        }
-    }
-
     public void deleteObjects() {
         for (HalfEdgePrimitive primitive : primitives) {
             primitive.deleteObjects();
@@ -209,9 +203,9 @@ public class HalfEdgeMesh implements Serializable {
         }
     }
 
-    public void doTrianglesReductionOneIteration(DecimateParameters decimateParameters) {
+    public void decimate(DecimateParameters decimateParameters) {
         for (HalfEdgePrimitive primitive : primitives) {
-            primitive.doTrianglesReductionOneIteration(decimateParameters);
+            primitive.decimate(decimateParameters);
         }
     }
 
@@ -225,7 +219,10 @@ public class HalfEdgeMesh implements Serializable {
         resultPrimitives.addAll(primitives);
     }
 
-    public void getWestEastSouthNorthVertices(GaiaBoundingBox bbox, List<HalfEdgeVertex> westVertices, List<HalfEdgeVertex> eastVertices, List<HalfEdgeVertex> southVertices, List<HalfEdgeVertex> northVertices, double error) {
+    public void getWestEastSouthNorthVertices(GaiaBoundingBox bbox, List<HalfEdgeVertex> westVertices,
+                                              List<HalfEdgeVertex> eastVertices,
+                                              List<HalfEdgeVertex> southVertices,
+                                              List<HalfEdgeVertex> northVertices, double error) {
         for (HalfEdgePrimitive primitive : primitives) {
             primitive.getWestEastSouthNorthVertices(bbox, westVertices, eastVertices, southVertices, northVertices, error);
         }

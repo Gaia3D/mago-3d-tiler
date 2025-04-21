@@ -226,6 +226,176 @@ public class HalfEdgeUtils {
         return gaiaFace;
     }
 
+    private static HalfEdgeSurface getHalfEdgeSurfaceRegularNetWithSkirt(int numCols, int numRows, float[][] depthValues, GaiaBoundingBox bbox) {
+        HalfEdgeSurface halfEdgeSurface = new HalfEdgeSurface();
+        double minX = bbox.getMinX();
+        double minY = bbox.getMinY();
+        double maxX = bbox.getMaxX();
+        double maxY = bbox.getMaxY();
+        double minZ = bbox.getMinZ();
+        double maxZ = bbox.getMaxZ();
+
+        double skirtZ = minZ - 5.0;
+
+        double xStep = (maxX - minX) / (numCols - 1);
+        double yStep = (maxY - minY) / (numRows - 1);
+
+        // calculate real columnsCount and real rowsCount when exist skirt.
+        int withSkirtCols = numCols + 2;
+        int withSkirtRows = numRows + 2;
+
+        // create vertices adding a skirt when needed
+        int realC;
+        int realR;
+        boolean isSkirt = false;
+        double x, y, z;
+        for (int r = 0; r < withSkirtRows; r++) {
+            for (int c = 0; c < withSkirtCols; c++) {
+                isSkirt = false;
+
+                // check if skirt
+                if( c == 0 || c == withSkirtCols - 1 || r == 0 || r == withSkirtRows - 1) {
+                    isSkirt = true;
+                }
+
+                realC = c - 1;
+                realR = r - 1;
+                if(realC < 0) realC = 0;
+                if(realR < 0) realR = 0;
+
+                if (c == withSkirtCols - 1) {
+                    realC = numCols - 1;
+                }
+
+                if (r == withSkirtRows - 1) {
+                    realR = numRows - 1;
+                }
+
+                x = minX + realC * xStep;
+                y = minY + realR * yStep;
+                int rInv = numRows - 1 - realR; // here uses the original row index "numRows - 1 - r" to get the depth value
+                double depthValue = depthValues[realC][rInv];
+                double depthValueInv = 1.0 - depthValue;
+                z = minZ + (maxZ - minZ) * depthValueInv;
+
+                // calculate texCoords
+                double s = (double) realC / (double) (numCols - 1);
+                double t = (double) realR / (double) (numRows - 1);
+
+                HalfEdgeVertex halfEdgeVertex = new HalfEdgeVertex();
+
+                if (isSkirt) {
+                    halfEdgeVertex.setPosition(new Vector3d(x, y, skirtZ));
+                }
+                else {
+                    // the real net vertex.***
+                    halfEdgeVertex.setPosition(new Vector3d(x, y, z));
+                }
+
+                halfEdgeVertex.setTexcoords(new Vector2d(s, 1.0 - t));
+                if (depthValue >= 1.0) {
+                    // this is noData
+                    halfEdgeVertex.setStatus(ObjectStatus.DELETED);
+                }
+                halfEdgeSurface.getVertices().add(halfEdgeVertex);
+            }
+        }
+
+        // check if some vertices are created
+        if (halfEdgeSurface.getVertices().isEmpty()) {
+            return null;
+        }
+
+        // create halfEdges & halfEdgeFaces
+        for (int r = 0; r < withSkirtRows - 1; r++) {
+            for (int c = 0; c < withSkirtCols - 1; c++) {
+                HalfEdgeFace faceA = new HalfEdgeFace();
+                HalfEdgeFace faceB = new HalfEdgeFace();
+                int cNext = c + 1;
+                int rNext = r + 1;
+                int index1 = r * withSkirtCols + c;
+                int index2 = r * withSkirtCols + c + 1;
+                int index3 = (r + 1) * withSkirtCols + c + 1;
+                int index4 = (r + 1) * withSkirtCols + c;
+
+                if(c == 0 || c == withSkirtCols - 1 || r == 0 || r == withSkirtRows - 1 ||
+                        cNext == withSkirtCols - 1 || rNext == withSkirtRows - 1) {
+                    // this is skirt face.***
+                    faceA.setFaceType(FaceType.SKIRT);
+                    faceB.setFaceType(FaceType.SKIRT);
+                }
+                else {
+                    faceA.setFaceType(FaceType.NORMAL);
+                    faceB.setFaceType(FaceType.NORMAL);
+                }
+
+                HalfEdgeVertex vertex1 = halfEdgeSurface.getVertices().get(index1);
+                HalfEdgeVertex vertex2 = halfEdgeSurface.getVertices().get(index2);
+                HalfEdgeVertex vertex3 = halfEdgeSurface.getVertices().get(index3);
+                HalfEdgeVertex vertex4 = halfEdgeSurface.getVertices().get(index4);
+
+                if (vertex1.getStatus() != ObjectStatus.DELETED && vertex2.getStatus() != ObjectStatus.DELETED && vertex3.getStatus() != ObjectStatus.DELETED) {
+                    // face A
+                    HalfEdge halfEdgeA1 = new HalfEdge();
+                    HalfEdge halfEdgeA2 = new HalfEdge();
+                    HalfEdge halfEdgeA3 = new HalfEdge();
+                    halfEdgeA1.setStartVertex(vertex1);
+                    halfEdgeA2.setStartVertex(vertex2);
+                    halfEdgeA3.setStartVertex(vertex3);
+                    halfEdgeA1.setNext(halfEdgeA2);
+                    halfEdgeA2.setNext(halfEdgeA3);
+                    halfEdgeA3.setNext(halfEdgeA1);
+                    halfEdgeA1.setFace(faceA);
+                    halfEdgeA2.setFace(faceA);
+                    halfEdgeA3.setFace(faceA);
+                    vertex1.setOutingHalfEdge(halfEdgeA1);
+                    vertex2.setOutingHalfEdge(halfEdgeA2);
+                    vertex3.setOutingHalfEdge(halfEdgeA3);
+                    faceA.setHalfEdge(halfEdgeA1);
+                    halfEdgeSurface.getHalfEdges().add(halfEdgeA1);
+                    halfEdgeSurface.getHalfEdges().add(halfEdgeA2);
+                    halfEdgeSurface.getHalfEdges().add(halfEdgeA3);
+                    halfEdgeSurface.getFaces().add(faceA);
+                }
+
+                if (vertex1.getStatus() != ObjectStatus.DELETED && vertex3.getStatus() != ObjectStatus.DELETED && vertex4.getStatus() != ObjectStatus.DELETED) {
+
+                    // face B
+                    HalfEdge halfEdgeB1 = new HalfEdge();
+                    HalfEdge halfEdgeB2 = new HalfEdge();
+                    HalfEdge halfEdgeB3 = new HalfEdge();
+                    halfEdgeB1.setStartVertex(vertex1);
+                    halfEdgeB2.setStartVertex(vertex3);
+                    halfEdgeB3.setStartVertex(vertex4);
+                    halfEdgeB1.setNext(halfEdgeB2);
+                    halfEdgeB2.setNext(halfEdgeB3);
+                    halfEdgeB3.setNext(halfEdgeB1);
+                    halfEdgeB1.setFace(faceB);
+                    halfEdgeB2.setFace(faceB);
+                    halfEdgeB3.setFace(faceB);
+                    vertex1.setOutingHalfEdge(halfEdgeB1);
+                    vertex3.setOutingHalfEdge(halfEdgeB2);
+                    vertex4.setOutingHalfEdge(halfEdgeB3);
+                    faceB.setHalfEdge(halfEdgeB1);
+                    halfEdgeSurface.getHalfEdges().add(halfEdgeB1);
+                    halfEdgeSurface.getHalfEdges().add(halfEdgeB2);
+                    halfEdgeSurface.getHalfEdges().add(halfEdgeB3);
+                    halfEdgeSurface.getFaces().add(faceB);
+                }
+            }
+        }
+
+        halfEdgeSurface.setTwins();
+        halfEdgeSurface.removeDeletedObjects();
+
+        // check if exist geometry
+        if (halfEdgeSurface.getVertices().isEmpty() || halfEdgeSurface.getHalfEdges().isEmpty() || halfEdgeSurface.getFaces().isEmpty()) {
+            return null;
+        }
+
+        return halfEdgeSurface;
+    }
+
     private static HalfEdgeSurface getHalfEdgeSurfaceRegularNet(int numCols, int numRows, float[][] depthValues, GaiaBoundingBox bbox) {
         HalfEdgeSurface halfEdgeSurface = new HalfEdgeSurface();
         double minX = bbox.getMinX();
@@ -347,7 +517,7 @@ public class HalfEdgeUtils {
         return halfEdgeSurface;
     }
 
-    public static HalfEdgeScene getHalfEdgeSceneRectangularNet(int numCols, int numRows, float[][] depthValues, GaiaBoundingBox bbox) {
+    public static HalfEdgeScene getHalfEdgeSceneRectangularNet(int numCols, int numRows, float[][] depthValues, GaiaBoundingBox bbox, boolean makeVerticalSkirt) {
         // Create halfEdgeScene
         HalfEdgeScene halfEdgeScene = new HalfEdgeScene();
         GaiaAttribute gaiaAttribute = new GaiaAttribute();
@@ -372,9 +542,19 @@ public class HalfEdgeUtils {
         halfEdgeMesh.getPrimitives().add(halfEdgePrimitive);
 
         // Create surface
-        HalfEdgeSurface halfEdgeSurface = getHalfEdgeSurfaceRegularNet(numCols, numRows, depthValues, bbox);
-        if (halfEdgeSurface == null) {
-            return null;
+        HalfEdgeSurface halfEdgeSurface;
+        if(makeVerticalSkirt)
+        {
+            halfEdgeSurface = getHalfEdgeSurfaceRegularNetWithSkirt(numCols, numRows, depthValues, bbox);
+            if (halfEdgeSurface == null) {
+                return null;
+            }
+        }
+        else {
+            halfEdgeSurface = getHalfEdgeSurfaceRegularNet(numCols, numRows, depthValues, bbox);
+            if (halfEdgeSurface == null) {
+                return null;
+            }
         }
 
         halfEdgePrimitive.getSurfaces().add(halfEdgeSurface);

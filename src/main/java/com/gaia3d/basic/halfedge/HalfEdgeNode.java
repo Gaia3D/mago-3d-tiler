@@ -25,15 +25,6 @@ public class HalfEdgeNode implements Serializable {
     private List<HalfEdgeNode> children = new ArrayList<>();
     private GaiaBoundingBox boundingBox = null;
 
-    public void doTrianglesReduction(DecimateParameters decimateParameters) {
-        for (HalfEdgeMesh mesh : meshes) {
-            mesh.doTrianglesReduction(decimateParameters);
-        }
-        for (HalfEdgeNode child : children) {
-            child.doTrianglesReduction(decimateParameters);
-        }
-    }
-
     public void deleteObjects() {
         for (HalfEdgeMesh mesh : meshes) {
             mesh.deleteObjects();
@@ -363,12 +354,12 @@ public class HalfEdgeNode implements Serializable {
         }
     }
 
-    public void doTrianglesReductionOneIteration(DecimateParameters decimateParameters) {
+    public void decimate(DecimateParameters decimateParameters) {
         for (HalfEdgeMesh mesh : meshes) {
-            mesh.doTrianglesReductionOneIteration(decimateParameters);
+            mesh.decimate(decimateParameters);
         }
         for (HalfEdgeNode child : children) {
-            child.doTrianglesReductionOneIteration(decimateParameters);
+            child.decimate(decimateParameters);
         }
     }
 
@@ -390,7 +381,10 @@ public class HalfEdgeNode implements Serializable {
         }
     }
 
-    public void getWestEastSouthNorthVertices(GaiaBoundingBox bbox, List<HalfEdgeVertex> westVertices, List<HalfEdgeVertex> eastVertices, List<HalfEdgeVertex> southVertices, List<HalfEdgeVertex> northVertices, double error) {
+    public void getWestEastSouthNorthVertices(GaiaBoundingBox bbox, List<HalfEdgeVertex> westVertices,
+                                              List<HalfEdgeVertex> eastVertices,
+                                              List<HalfEdgeVertex> southVertices,
+                                              List<HalfEdgeVertex> northVertices, double error) {
         for (HalfEdgeMesh mesh : meshes) {
             mesh.getWestEastSouthNorthVertices(bbox, westVertices, eastVertices, southVertices, northVertices, error);
         }
