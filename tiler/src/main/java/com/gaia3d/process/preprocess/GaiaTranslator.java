@@ -42,8 +42,6 @@ public class GaiaTranslator implements PreProcess {
         Vector3d translation = getTranslation(gaiaScene);
         if (inputType.equals(FormatType.KML)) {
             translation = new Vector3d(0.0d, 0.0d, 0.0d);
-        } else {
-
         }
 
         // set position terrain height
