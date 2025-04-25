@@ -122,15 +122,15 @@ public class MainRenderer implements IAppLogic {
 
         int lod = decimateParameters.getLod();
         int cutScenesCount = resultCutHalfEdgeScenes.size();
-        int i=0;
+        int i = 0;
         for (HalfEdgeScene cutHalfEdgeScene : resultCutHalfEdgeScenes) {
-            log.info("makeBoxTexturesByObliqueCamera. cutScene : " + (i+1) + " / " + cutScenesCount);
+            log.info("makeBoxTexturesByObliqueCamera. cutScene : " + (i + 1) + " / " + cutScenesCount);
             GaiaBoundingBox bbox = cutHalfEdgeScene.getBoundingBox();
             double bboxMaxSize = bbox.getMaxSize();
             // now, cut the halfEdgeScene and make cube-textures by rendering
             double gridSpacing = bboxMaxSize / 3.0;
-            if (lod == 1)
-            {
+            if (lod == 1) {
+                // hola
                 gridSpacing = bboxMaxSize / 5.0;
             }
             HalfEdgeOctree resultOctree = new HalfEdgeOctree(null);
@@ -161,7 +161,7 @@ public class MainRenderer implements IAppLogic {
     }
 
     public void decimateNetSurfaceAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters,
-                                              HalfEdgeOctree octree, List<GaiaAAPlane> cuttingPlanes, double depthTexPixelsForMeter, double screenPixelsForMeter, boolean makeHorizontalSkirt) {
+                                                        HalfEdgeOctree octree, List<GaiaAAPlane> cuttingPlanes, double depthTexPixelsForMeter, double screenPixelsForMeter, boolean makeHorizontalSkirt) {
         // Note : There are only one scene in the scenes list
         // Must init gl
         try {
@@ -220,15 +220,14 @@ public class MainRenderer implements IAppLogic {
 
         // take the halfEdgeScene and decimate and cut it
         HalfEdgeScene halfEdgeScene = halfEdgeScenes.get(0); // only one scene
-        //GaiaBoundingBox motherBbox = halfEdgeScene.getBoundingBox();
         halfEdgeScene.decimate(decimateParameters);
         boolean scissorTextures = false;
         List<HalfEdgeScene> resultCutHalfEdgeScenes = HalfEdgeCutter.cutHalfEdgeSceneByGaiaAAPlanes(halfEdgeScene, cuttingPlanes, octree, scissorTextures, false);
 
         int cutScenesCount = resultCutHalfEdgeScenes.size();
-        int i=0;
+        int i = 0;
         for (HalfEdgeScene cutHalfEdgeScene : resultCutHalfEdgeScenes) {
-            log.info("makeBoxTexturesByObliqueCamera. cutScene : " + (i+1) + " / " + cutScenesCount);
+            log.info("makeBoxTexturesByObliqueCamera. cutScene : " + (i + 1) + " / " + cutScenesCount);
             GaiaBoundingBox bbox = cutHalfEdgeScene.getBoundingBox();
             double bboxMaxSize = bbox.getMaxSize();
             // now, cut the halfEdgeScene and make cube-textures by rendering
@@ -462,8 +461,6 @@ public class MainRenderer implements IAppLogic {
             gaiaScenesContainer.deleteObjects();
             halfEdgeScene.deleteObjects();
         }
-
-
     }
 
     public void getColorAndDepthRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<BufferedImage> resultImages, GaiaBoundingBox nodeBBox,

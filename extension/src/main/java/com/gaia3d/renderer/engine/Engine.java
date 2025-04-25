@@ -33,6 +33,7 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -93,10 +94,18 @@ public class Engine {
     }
 
     public void deleteObjects() {
-        fboManager.deleteAllFbos();
-        shaderManager.deleteAllShaderPrograms();
-        screenQuad.cleanup();
-        window.cleanup();
+        if(fboManager != null) {
+            fboManager.deleteAllFbos();
+        }
+        if(screenQuad != null) {
+            screenQuad.cleanup();
+        }
+        if(shaderManager != null) {
+            shaderManager.deleteAllShaderPrograms();
+        }
+        if(window != null) {
+            window.cleanup();
+        }
     }
 
 
@@ -406,31 +415,6 @@ public class Engine {
         return renderableSceneColorCoded;
     }
 
-    public void decimateByObliqueCamera(List<HalfEdgeScene> halfEdgeScenesToDecimate, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters) {
-        log.info("Engine.decimate() : halfEdgeScenesToDecimate count : " + halfEdgeScenesToDecimate.size());
-        // do an iteration of decimation
-        int halfEdgeScenesCount = halfEdgeScenesToDecimate.size();
-        for (int i = 0; i < halfEdgeScenesCount; i++) {
-            HalfEdgeScene halfEdgeScene = halfEdgeScenesToDecimate.get(i);
-            GaiaBoundingBox bbox = halfEdgeScene.getBoundingBox();
-            double bboxMaxSize = bbox.getMaxSize();
-            halfEdgeScene.decimate(decimateParameters);
-
-            // now, cut the halfEdgeScene and make cube-textures by rendering
-            double gridSpacing = bboxMaxSize / 3.0;
-            HalfEdgeOctree resultOctree = new HalfEdgeOctree(null);
-            log.info("Engine.decimate() : cutHalfEdgeSceneGridXYZ.");
-            HalfEdgeScene cuttedScene = HalfEdgeCutter.cutHalfEdgeSceneGridXYZ(halfEdgeScene, gridSpacing, resultOctree);
-
-            // now make box textures for the cuttedScene
-            log.info("Engine.decimate() : makeBoxTexturesByObliqueCamera.");
-            double screenPixelsForMeter = 128.0 / bboxMaxSize;
-            makeBoxTexturesByObliqueCamera(cuttedScene, screenPixelsForMeter);
-
-            resultHalfEdgeScenes.add(cuttedScene);
-        }
-    }
-
     public BufferedImage eliminateBackGroundColor(BufferedImage originalImage) {
         if (originalImage == null) return null;
 
@@ -533,8 +517,6 @@ public class Engine {
         Map<Integer, Map<CameraDirectionType, GaiaBoundingBox>> mapClassificationCamDirTypeBBox = new HashMap<>();
         Map<Integer, Map<CameraDirectionType, Matrix4d>> mapClassificationCamDirTypeModelViewMatrix = new HashMap<>();
 
-
-        //Map<Integer, Map<PlaneType, List<HalfEdgeFace>>> mapClassificationPlaneTypeFacesList = new HashMap<>(); // old old old old old old
         Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapClassificationCamDirTypeFacesList = new HashMap<>();
         CameraDirectionType cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_UNKNOWN;
         int classifiedFacesCount = facesClassificationMap.size();
@@ -865,7 +847,8 @@ public class Engine {
         return textureAtlas;
     }
 
-    private void recalculateTexCoordsAfterTextureAtlasingObliqueCamera(HalfEdgeScene halfEdgeScene, List<TexturesAtlasData> texAtlasDatasList, Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapClassificationCamDirTypeFacesList) {
+    private void recalculateTexCoordsAfterTextureAtlasingObliqueCamera(HalfEdgeScene halfEdgeScene, List<TexturesAtlasData> texAtlasDatasList,
+                                                                       Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapClassificationCamDirTypeFacesList) {
         int maxWidth = getMaxWidth(texAtlasDatasList);
         int maxHeight = getMaxHeight(texAtlasDatasList);
 
@@ -1039,7 +1022,8 @@ public class Engine {
         }
     }
 
-    private Vector2d getBestPositionMosaicInAtlas(List<TexturesAtlasData> currProcessTextureAtlasDates, TexturesAtlasData texAtlasDataToPutInMosaic, Vector2d resultVec, GaiaRectangle beforeMosaicRectangle, List<GaiaRectangle> list_rectangles, TreeMap<Double, List<GaiaRectangle>> map_maxXrectangles) {
+    private Vector2d getBestPositionMosaicInAtlas(List<TexturesAtlasData> currProcessTextureAtlasDates, TexturesAtlasData texAtlasDataToPutInMosaic,
+                                                  Vector2d resultVec, GaiaRectangle beforeMosaicRectangle, List<GaiaRectangle> list_rectangles, TreeMap<Double, List<GaiaRectangle>> map_maxXrectangles) {
         if (resultVec == null) {
             resultVec = new Vector2d();
         }
@@ -1221,50 +1205,8 @@ public class Engine {
         }
     }
 
-    private BufferedImage getRenderedImageBoxTextures(Fbo fbo, ShaderProgram shaderProgram) {
-        // render the renderableScene
-        try {
-            fbo.bind();
-
-            int[] width = new int[1];
-            int[] height = new int[1];
-            width[0] = fbo.getFboWidth();
-            height[0] = fbo.getFboHeight();
-
-            glViewport(0, 0, width[0], height[0]);
-            glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glEnable(GL_DEPTH_TEST);
-
-            // enable cull face
-            glEnable(GL_CULL_FACE);
-
-            // set blend func
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-            // shader program
-            ShaderManager shaderManager = getShaderManager();
-            ShaderProgram sceneShaderProgram = shaderManager.getShaderProgram("scene");
-
-            // render the scene
-            getRenderSceneImage(sceneShaderProgram);
-
-            // make the bufferImage
-            int bufferedImageType = BufferedImage.TYPE_INT_RGB;
-            BufferedImage image = fbo.getBufferedImage(bufferedImageType);
-
-            fbo.unbind();
-
-            return image;
-        } catch (Exception e) {
-            log.error("[ERROR] Error initializing the engine : ", e);
-        }
-
-        return null;
-    }
-
-    private BufferedImage makeColorCodeTextureByCameraDirection(GaiaScene gaiaScene, RenderableGaiaScene renderableScene, CameraDirectionType cameraDirectionType, int maxScreenSize, Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox, Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix, double screenPixelsForMeter, FaceVisibilityDataManager faceVisibilityDataManager) {
+    private BufferedImage makeColorCodeTextureByCameraDirection(GaiaScene gaiaScene, RenderableGaiaScene renderableScene, CameraDirectionType cameraDirectionType,
+                                                                int maxScreenSize, Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox, Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix, double screenPixelsForMeter, FaceVisibilityDataManager faceVisibilityDataManager) {
         // Calculate bbox relative to camera direction
         GaiaBoundingBox bbox = gaiaScene.getBoundingBox();
         Vector3d bboxCenter = bbox.getCenter();
@@ -1283,16 +1225,17 @@ public class Engine {
         camera.setUp(up);
         gaiaScenesContainer.setCamera(camera);
 
+        Matrix4d modelViewMatrix = camera.getModelViewMatrix();
+
+        List<Vector3d> transformedVertices = new ArrayList<>();
+
+        //******************************************************************************************************************
+        // If the scene was spend the node's transform, you can use the following code to get the transformed vertices
         List<GaiaPrimitive> gaiaPrimitives = gaiaScene.extractPrimitives(null);
         List<GaiaVertex> gaiaVertices = new ArrayList<>();
         for (GaiaPrimitive gaiaPrimitive : gaiaPrimitives) {
             gaiaVertices.addAll(gaiaPrimitive.getVertices());
         }
-
-        // transform the vertices relative to camera
-        //Map<Vector3d, GaiaVertex> mapTransformedPosToVertex = new HashMap<>();
-        Matrix4d modelViewMatrix = camera.getModelViewMatrix();
-        List<Vector3d> transformedVertices = new ArrayList<>();
         for (GaiaVertex vertex : gaiaVertices) {
             Vector4d transformedPos4d = new Vector4d();
             Vector3d vertexPos3d = vertex.getPosition();
@@ -1300,8 +1243,22 @@ public class Engine {
             modelViewMatrix.transform(vertexPos4d, transformedPos4d);
             Vector3d transformedPos3d = new Vector3d(transformedPos4d.x, transformedPos4d.y, transformedPos4d.z);
             transformedVertices.add(transformedPos3d);
-            //mapTransformedPosToVertex.put(transformedPos3d, vertex);
         }
+        // End of transform the vertices relative to camera.-------------------------------------------------------------
+
+        //*******************************************************************************************************************
+        // If the scene was not spend the node's transform, you can use the following code to get the transformed vertices
+//        List<GaiaVertex> finalVertices = new ArrayList<>();
+//        gaiaScene.getFinalVerticesCopy(finalVertices);
+//        for (GaiaVertex vertex : finalVertices) {
+//            Vector4d transformedPos4d = new Vector4d();
+//            Vector3d vertexPos3d = vertex.getPosition();
+//            Vector4d vertexPos4d = new Vector4d(vertexPos3d.x, vertexPos3d.y, vertexPos3d.z, 1.0);
+//            modelViewMatrix.transform(vertexPos4d, transformedPos4d);
+//            Vector3d transformedPos3d = new Vector3d(transformedPos4d.x, transformedPos4d.y, transformedPos4d.z);
+//            transformedVertices.add(transformedPos3d);
+//        }
+        // End of transform the vertices relative to camera.-------------------------------------------------------------
 
         GaiaBoundingBox bboxTransformed = new GaiaBoundingBox();
         bboxTransformed.setFromPoints(transformedVertices);
@@ -1416,9 +1373,9 @@ public class Engine {
         gaiaScenesContainer.getRenderableGaiaScenes().clear();
         gaiaScenesContainer.getRenderableGaiaScenes().add(renderableSceneCurrent);
 
-//        // test save images
+        // test save images
 //        try {
-//            String randomId = UUID.randomUUID();
+//            String randomId = String.valueOf(UUID.randomUUID());
 //            String path = "D:\\Result_mago3dTiler";
 //            String fileName = "albedo_" + randomId;
 //            String extension = ".png";
@@ -1428,10 +1385,10 @@ public class Engine {
 //        } catch (IOException e) {
 //            log.debug("Error writing image: {}", e);
 //        }
-//
-//        // test save images
+
+        // test save images
 //        try {
-//            String randomId = UUID.randomUUID();
+//            String randomId = String.valueOf(UUID.randomUUID());
 //            String path = "D:\\Result_mago3dTiler";
 //            String fileName = "colorCoded_" + randomId;
 //            String extension = ".png";

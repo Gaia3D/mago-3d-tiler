@@ -941,7 +941,6 @@ public class GeometryUtils {
     }
 
 
-
     public static PlaneType getBestPlaneToProject(Vector3d normal) {
 
         float absX = Math.abs((float) normal.x);

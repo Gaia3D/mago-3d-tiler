@@ -476,8 +476,8 @@ public class HalfEdgeSurface implements Serializable {
                         break;
                     }
 
-                    if(outingEdge.getFace() != null) {
-                        if(outingEdge.getFace().getFaceType() == FaceType.SKIRT) {
+                    if (outingEdge.getFace() != null) {
+                        if (outingEdge.getFace().getFaceType() == FaceType.SKIRT) {
                             positionType = PositionType.BOUNDARY_EDGE;
                             break;
                         }
@@ -1180,7 +1180,7 @@ public class HalfEdgeSurface implements Serializable {
 
             FaceType faceAType = faceA.getFaceType();
             double angDeg = Math.toDegrees(HalfEdgeUtils.calculateAngleBetweenNormals(normalA, normalB));
-            if(faceAType == FaceType.SKIRT) {
+            if (faceAType == FaceType.SKIRT) {
                 // if the face is a skirt, then the angle must be less than 90 degrees
                 if (angDeg * angFactor > maxDiffAngDeg * 0.3) {
                     return false;
@@ -1241,7 +1241,7 @@ public class HalfEdgeSurface implements Serializable {
         int vertexCount = vertices.size();
         for (int i = 0; i < vertexCount; i++) {
             HalfEdgeVertex vertex = vertices.get(i);
-            if(vertex.getStatus() == ObjectStatus.DELETED) {
+            if (vertex.getStatus() == ObjectStatus.DELETED) {
                 continue;
             }
             Vector3d position = vertex.getPosition();

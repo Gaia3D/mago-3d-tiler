@@ -22,7 +22,7 @@ public class Mago3DTiler {
             log.info("Starting process flow: {}", processFlow.getModelName());
             processFlow.run();
         } catch (IOException e) {
-             log.error("[ERROR] Failed to run process.", e);
+            log.error("[ERROR] Failed to run process.", e);
             throw new RuntimeException("Failed to run process.", e);
         }
     }
@@ -48,7 +48,11 @@ public class Mago3DTiler {
             if (isPhotorealistic) {
                 processFlow = new BatchedProcessModelPhR();
             } else {
-                processFlow = new BatchedProcessModel();
+                processFlow = new BatchedProcessModel(); // original.***
+
+                // test for voxelization and marching cubing.***
+                //processFlow = new BatchedProcessModelML();
+                // end test.------------------------------------
             }
         } else if (FormatType.PNTS == outputFormat) {
             processFlow = new PointCloudProcessModel();

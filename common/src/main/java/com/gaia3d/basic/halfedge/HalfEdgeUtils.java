@@ -254,14 +254,14 @@ public class HalfEdgeUtils {
                 isSkirt = false;
 
                 // check if skirt
-                if( c == 0 || c == withSkirtCols - 1 || r == 0 || r == withSkirtRows - 1) {
+                if (c == 0 || c == withSkirtCols - 1 || r == 0 || r == withSkirtRows - 1) {
                     isSkirt = true;
                 }
 
                 realC = c - 1;
                 realR = r - 1;
-                if(realC < 0) realC = 0;
-                if(realR < 0) realR = 0;
+                if (realC < 0) realC = 0;
+                if (realR < 0) realR = 0;
 
                 if (c == withSkirtCols - 1) {
                     realC = numCols - 1;
@@ -286,8 +286,7 @@ public class HalfEdgeUtils {
 
                 if (isSkirt) {
                     halfEdgeVertex.setPosition(new Vector3d(x, y, skirtZ));
-                }
-                else {
+                } else {
                     // the real net vertex.***
                     halfEdgeVertex.setPosition(new Vector3d(x, y, z));
                 }
@@ -318,13 +317,12 @@ public class HalfEdgeUtils {
                 int index3 = (r + 1) * withSkirtCols + c + 1;
                 int index4 = (r + 1) * withSkirtCols + c;
 
-                if(c == 0 || c == withSkirtCols - 1 || r == 0 || r == withSkirtRows - 1 ||
+                if (c == 0 || c == withSkirtCols - 1 || r == 0 || r == withSkirtRows - 1 ||
                         cNext == withSkirtCols - 1 || rNext == withSkirtRows - 1) {
                     // this is skirt face.***
                     faceA.setFaceType(FaceType.SKIRT);
                     faceB.setFaceType(FaceType.SKIRT);
-                }
-                else {
+                } else {
                     faceA.setFaceType(FaceType.NORMAL);
                     faceB.setFaceType(FaceType.NORMAL);
                 }
@@ -543,14 +541,12 @@ public class HalfEdgeUtils {
 
         // Create surface
         HalfEdgeSurface halfEdgeSurface;
-        if(makeVerticalSkirt)
-        {
+        if (makeVerticalSkirt) {
             halfEdgeSurface = getHalfEdgeSurfaceRegularNetWithSkirt(numCols, numRows, depthValues, bbox);
             if (halfEdgeSurface == null) {
                 return null;
             }
-        }
-        else {
+        } else {
             halfEdgeSurface = getHalfEdgeSurfaceRegularNet(numCols, numRows, depthValues, bbox);
             if (halfEdgeSurface == null) {
                 return null;

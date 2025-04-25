@@ -48,8 +48,7 @@ public class GaiaSceneUtils {
         if (resultMapVertexToFace == null)
             resultMapVertexToFace = new HashMap<>();
 
-        for (GaiaFaceExplicit face : faces)
-        {
+        for (GaiaFaceExplicit face : faces) {
             GaiaVertex vertex1 = face.getVertex1();
             GaiaVertex vertex2 = face.getVertex2();
             GaiaVertex vertex3 = face.getVertex3();
@@ -64,13 +63,11 @@ public class GaiaSceneUtils {
         return resultMapVertexToFace;
     }
 
-    public static List<GaiaFaceExplicit> getGaiaFacesExplicit(GaiaSurface surface, List<GaiaVertex> vertices, List<GaiaFaceExplicit> resultGaiaFaceExplicits)
-    {
+    public static List<GaiaFaceExplicit> getGaiaFacesExplicit(GaiaSurface surface, List<GaiaVertex> vertices, List<GaiaFaceExplicit> resultGaiaFaceExplicits) {
         if (resultGaiaFaceExplicits == null)
             resultGaiaFaceExplicits = new ArrayList<>();
         List<GaiaFace> faces = surface.getFaces();
-        for (GaiaFace face : faces)
-        {
+        for (GaiaFace face : faces) {
             GaiaFaceExplicit gaiaFaceExplicit = new GaiaFaceExplicit();
             int[] indices = face.getIndices();
             GaiaVertex vertex1 = vertices.get(indices[0]);
@@ -103,8 +100,7 @@ public class GaiaSceneUtils {
         return vector.z > 0.95;
     }
 
-    public static void deformSceneByVerticesConvexity(GaiaScene scene, double dist, double minHeight, double maxHeight)
-    {
+    public static void deformSceneByVerticesConvexity(GaiaScene scene, double dist, double minHeight, double maxHeight) {
         List<GaiaVertex> totalVertices = new ArrayList<>();
         List<GaiaFaceExplicit> totalFacesExplicit = new ArrayList<>();
         List<GaiaFaceExplicit> currFacesExplicit = new ArrayList<>();
@@ -245,12 +241,10 @@ public class GaiaSceneUtils {
         }
     }
 
-    public static boolean modifyVerticalNormalsOneIteration(List<GaiaFaceExplicit> faces)
-    {
+    public static boolean modifyVerticalNormalsOneIteration(List<GaiaFaceExplicit> faces) {
         boolean modified = false;
         int facesCount = faces.size();
-        for (int i=0; i<facesCount; i++)
-        {
+        for (int i = 0; i < facesCount; i++) {
             GaiaFaceExplicit face = faces.get(i);
             Vector3d planeNormal = face.getPlaneNormal();
             if (isVerticalVector(planeNormal)) {

@@ -341,7 +341,6 @@ public class HalfEdgePrimitive implements Serializable {
         }
 
 
-
     }
 
     public void updateVerticesList() {
