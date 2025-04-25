@@ -101,8 +101,7 @@ public class GaiaScene extends SceneStructure implements Serializable {
         return triangleCount;
     }
 
-    public void makeTriangleFaces()
-    {
+    public void makeTriangleFaces() {
         for (GaiaNode node : this.nodes) {
             node.makeTriangleFaces();
         }
@@ -156,6 +155,13 @@ public class GaiaScene extends SceneStructure implements Serializable {
         children.add(node);
     }
 
+    public void getFinalVerticesCopy(List<GaiaVertex> finalVertices) {
+        // final vertices are the vertices multiplied by the transform matrix of the nodes.***
+        for (GaiaNode node : this.nodes) {
+            node.getFinalVerticesCopy(null, finalVertices);
+        }
+    }
+
     public List<GaiaPrimitive> extractPrimitives(List<GaiaPrimitive> resultPrimitives) {
         if (resultPrimitives == null) {
             resultPrimitives = new ArrayList<>();
@@ -172,8 +178,7 @@ public class GaiaScene extends SceneStructure implements Serializable {
         }
     }
 
-    public void deleteNormals()
-    {
+    public void deleteNormals() {
         for (GaiaNode node : this.nodes) {
             node.deleteNormals();
         }

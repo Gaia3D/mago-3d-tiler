@@ -19,6 +19,7 @@ public enum AttributeType implements Serializable {
 
     final String gaia;
     final String accessor;
+
     AttributeType(String gaia, String accessor) {
         this.gaia = gaia;
         this.accessor = accessor;

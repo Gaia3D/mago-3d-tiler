@@ -17,6 +17,7 @@ public class ImageCacheQueue {
     private final int MAX_IMAGE_COUNT = 20;
     private final LinkedHashMap<String, BufferedImage> textures = new LinkedHashMap<>();
     private static ImageCacheQueue instance = null;
+
     public static ImageCacheQueue getInstance() {
         if (instance == null) {
             instance = new ImageCacheQueue();

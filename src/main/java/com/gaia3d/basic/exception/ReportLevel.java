@@ -1,6 +1,7 @@
 package com.gaia3d.basic.exception;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

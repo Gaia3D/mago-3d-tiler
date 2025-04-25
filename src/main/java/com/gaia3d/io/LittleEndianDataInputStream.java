@@ -139,7 +139,7 @@ public class LittleEndianDataInputStream extends FilterInputStream implements Da
                 ((long) (b[3] & 255) << 32) +
                 ((long) (b[4] & 255) << 24) +
                 ((b[5] & 255) << 16) +
-                ((b[6] & 255) <<  8) +
+                ((b[6] & 255) << 8) +
                 ((b[7] & 255)));
     }
 

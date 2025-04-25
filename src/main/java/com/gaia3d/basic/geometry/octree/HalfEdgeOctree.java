@@ -319,11 +319,9 @@ public class HalfEdgeOctree {
     public boolean intersectsBoundingBox(GaiaBoundingBox box) {
         if (box.getMaxX() < minX || box.getMinX() > maxX) {
             return false;
-        }
-        else if (box.getMaxY() < minY || box.getMinY() > maxY) {
+        } else if (box.getMaxY() < minY || box.getMinY() > maxY) {
             return false;
-        }
-        else if (box.getMaxZ() < minZ || box.getMinZ() > maxZ) {
+        } else if (box.getMaxZ() < minZ || box.getMinZ() > maxZ) {
             return false;
         }
         return true;
@@ -517,8 +515,7 @@ public class HalfEdgeOctree {
         return maxZ - minZ;
     }
 
-    public double getMaxSize()
-    {
+    public double getMaxSize() {
         double x = maxX - minX;
         double y = maxY - minY;
         double z = maxZ - minZ;

@@ -211,7 +211,7 @@ public class GlobeUtils {
             MathTransform transform = CRS.findMathTransform(source, wgs84, false);
             return JTS.transform(coordinate, coordinate, transform);
         } catch (FactoryException | TransformException e) {
-             log.error("[ERROR] Failed to transform coordinate", e);
+            log.error("[ERROR] Failed to transform coordinate", e);
             throw new RuntimeException(e);
         }
     }
@@ -225,7 +225,7 @@ public class GlobeUtils {
 
     public static org.opengis.referencing.crs.CoordinateReferenceSystem convertWkt(String wkt) {
         try {
-             return CRS.parseWKT(wkt);
+            return CRS.parseWKT(wkt);
         } catch (FactoryException e) {
             log.debug("Failed to parse WKT");
             return null;
@@ -255,7 +255,7 @@ public class GlobeUtils {
         try {
             epsg = CRS.lookupIdentifier(crs, true);
         } catch (FactoryException e) {
-             log.error("[ERROR] Failed to lookup EPSG code", e);
+            log.error("[ERROR] Failed to lookup EPSG code", e);
         }
 
         if (epsg == null) {
@@ -268,7 +268,7 @@ public class GlobeUtils {
             String epsgCode = "EPSG:" + epsg;
             CoordinateReferenceSystem crsWgs84 = factory.createFromName(epsgCode);
             if (crsWgs84 == null) {
-                 log.error("[ERROR] Failed to create CRS from EPSG code: {}", epsgCode);
+                log.error("[ERROR] Failed to create CRS from EPSG code: {}", epsgCode);
                 return null;
             }
             return crsWgs84;

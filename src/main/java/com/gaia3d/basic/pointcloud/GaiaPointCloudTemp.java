@@ -183,7 +183,7 @@ public class GaiaPointCloudTemp {
             // padding
             outputStream.writeByte(0);
         } catch (IOException e) {
-             log.error("[ERROR] Failed to write bytes to output stream", e);
+            log.error("[ERROR] Failed to write bytes to output stream", e);
         }
     }
 
@@ -256,7 +256,7 @@ public class GaiaPointCloudTemp {
             FileUtils.deleteQuietly(this.tempFile);
             this.tempFile = shuffledFile;
         } catch (IOException e) {
-             log.error("[ERROR] Failed to shuffle temp file", e);
+            log.error("[ERROR] Failed to shuffle temp file", e);
             throw new RuntimeException(e);
         }
     }
