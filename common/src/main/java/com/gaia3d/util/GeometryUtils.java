@@ -716,7 +716,7 @@ public class GeometryUtils {
         resultColor.set(0.0, 0.0, 0.0, 0.0);
         int averageColorCount = 0;
         for (GaiaFaceData faceData : faceDataList) {
-            Vector4d color = faceData.getAverageColor();
+            Vector4d color = faceData.getPrimaryColor();
             if (color == null) {
                 continue;
             }

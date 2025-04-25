@@ -92,7 +92,7 @@ public class GaiaOctreeUtils {
                                             faceData.setSceneParent(sceneParent);
                                             faceData.setPrimitiveParent(primitive);
                                             faceData.setFace(face0);
-                                            faceData.setAverageColor(averageColor);
+                                            faceData.setPrimaryColor(averageColor);
                                             resultFaceDataList.add(faceData);
                                         }
                                     }
