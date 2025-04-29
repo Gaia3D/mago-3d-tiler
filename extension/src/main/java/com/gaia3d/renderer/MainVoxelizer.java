@@ -112,8 +112,11 @@ public class MainVoxelizer implements IAppLogic {
         VoxelGrid3D voxelGrid3D = new VoxelGrid3D(gridsCountX, gridsCountY, gridsCountZ, bboxAllScenes.clone());
 
         // Voxelizing XY plane.***
+        log.info("starting voxelizing XY...");
         this.voxelizeXY(gridsCountX, gridsCountY, gridsCountZ, bboxAllScenes, voxelGrid3D);
+        log.info("starting voxelizing XZ...");
         this.voxelizeXZ(gridsCountX, gridsCountY, gridsCountZ, bboxAllScenes, voxelGrid3D);
+        log.info("starting voxelizing YZ...");
         this.voxelizeYZ(gridsCountX, gridsCountY, gridsCountZ, bboxAllScenes, voxelGrid3D);
 
         // make gaiaPrimitive by marchingCubes.***
@@ -121,6 +124,7 @@ public class MainVoxelizer implements IAppLogic {
 
         voxelGrid3D.expand(1); // expand the voxel grid to avoid the artifacts.***
         GaiaScene gaiaScene = MarchingCube.makeGaiaScene(voxelGrid3D, 0.01f);
+        log.info("MarchingCube process finished.");
         GaiaAttribute gaiaAttribute = new GaiaAttribute();
         gaiaScene.setAttribute(gaiaAttribute);
         gaiaScene.setOriginalPath(originalScene.getOriginalPath());
@@ -329,22 +333,22 @@ public class MainVoxelizer implements IAppLogic {
             voxelGrid3D.setVoxelsByAlphaXZ(i, bufferArray);
 
             // test : save the image of fbo.*************************************************************
-            int colorBufferedImageType = BufferedImage.TYPE_INT_ARGB;
-            colorFbo.bind();
-            BufferedImage colorImageTest = colorFbo.getBufferedImage(colorBufferedImageType);
-            colorFbo.unbind();
-
-            // test save images
-            try {
-                String path = "D:\\Result_mago3dTiler";
-                String fileName = "sliceXZ_" + i;
-                String extension = ".png";
-                String imagePath = path + "\\" + fileName + extension;
-                File imageFile = new File(imagePath);
-                ImageIO.write(colorImageTest, "png", imageFile);
-            } catch (IOException e) {
-                log.debug("Error writing image: {}", e);
-            }
+//            int colorBufferedImageType = BufferedImage.TYPE_INT_ARGB;
+//            colorFbo.bind();
+//            BufferedImage colorImageTest = colorFbo.getBufferedImage(colorBufferedImageType);
+//            colorFbo.unbind();
+//
+//            // test save images
+//            try {
+//                String path = "D:\\Result_mago3dTiler";
+//                String fileName = "sliceXZ_" + i;
+//                String extension = ".png";
+//                String imagePath = path + "\\" + fileName + extension;
+//                File imageFile = new File(imagePath);
+//                ImageIO.write(colorImageTest, "png", imageFile);
+//            } catch (IOException e) {
+//                log.debug("Error writing image: {}", e);
+//            }
         }
 
     }

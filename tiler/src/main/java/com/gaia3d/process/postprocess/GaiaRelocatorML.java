@@ -1,19 +1,25 @@
-package com.gaia3d.process.preprocess;
+package com.gaia3d.process.postprocess;
 
 import com.gaia3d.TilerExtensionModule;
 import com.gaia3d.basic.exchangable.GaiaSet;
-import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
 import com.gaia3d.basic.geometry.voxel.VoxelGrid3D;
 import com.gaia3d.basic.geometry.voxel.VoxelizeParameters;
-import com.gaia3d.basic.model.*;
-import com.gaia3d.basic.pointcloud.GaiaPointCloud;
+import com.gaia3d.basic.halfedge.DecimateParameters;
+import com.gaia3d.basic.halfedge.HalfEdgeScene;
+import com.gaia3d.basic.model.GaiaMaterial;
+import com.gaia3d.basic.model.GaiaScene;
+import com.gaia3d.basic.model.GaiaTexture;
 import com.gaia3d.basic.types.TextureType;
-import com.gaia3d.process.tileprocess.tile.TileInfo;
-import com.gaia3d.util.GaiaTextureUtils;
-import com.gaia3d.util.ImageUtils;
+import com.gaia3d.util.GlobeUtils;
+import com.gaia3d.converter.kml.KmlInfo;
+import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
+import org.joml.Vector3d;
+import com.gaia3d.process.tileprocess.tile.ContentInfo;
+import com.gaia3d.process.tileprocess.tile.TileInfo;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -26,29 +32,51 @@ import java.util.Map;
 
 @Slf4j
 @AllArgsConstructor
-public class GaiaMinimizerML implements PreProcess {
-
+public class GaiaRelocatorML implements PostProcess {
     @Override
-    public TileInfo run(TileInfo tileInfo) {
-        GaiaScene scene = tileInfo.getScene();
-        minimizeGaiaScene(tileInfo, scene);
+    public ContentInfo run(ContentInfo contentInfo) {
+        GaiaBoundingBox allBoundingBox = contentInfo.getBoundingBox();
+        Vector3d centerCartographic = allBoundingBox.getCenter();
+        Vector3d centerCartesian = GlobeUtils.geographicToCartesianWgs84(centerCartographic);
+        Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerCartesian);
+        Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
+        for (TileInfo tileInfo : contentInfo.getTileInfos()) {
+            KmlInfo kmlInfo = tileInfo.getKmlInfo();
+            Vector3d kmlCenter = kmlInfo.getPosition();
+            kmlCenter = GlobeUtils.geographicToCartesianWgs84(kmlCenter);
 
-        //GaiaPointCloud pointCloud = tileInfo.getPointCloud();
-        //minimizeGaiaPointCloud(tileInfo, pointCloud);
-        return tileInfo;
-    }
+            Matrix4d resultTransformMatrix = transformMatrixInv.translate(kmlCenter, new Matrix4d());
 
-    private void minimizeGaiaScene(TileInfo tileInfo, GaiaScene scene) {
-        if (scene != null) {
-            Matrix4d tileInfoTransformMatrix = tileInfo.getTransformMatrix();
-            scene.spendTranformMatrix();
+            double x = resultTransformMatrix.get(3, 0);
+            double y = resultTransformMatrix.get(3, 1);
+            double z = resultTransformMatrix.get(3, 2);
+
+            Vector3d translation = new Vector3d(x, y, z);
+
+            GaiaSet set = tileInfo.getSet();
+            if (set == null) {
+                log.error("GaiaSet is null");
+                continue;
+            }
+            set.translate(translation);
+
+            // test marching cube.********************************************************************************************
+            GaiaScene scene = new GaiaScene(set);
+            scene.setOriginalPath(tileInfo.getScenePath());
+            scene.deleteNormals(); // necessary to render only the albedo texture.
             GaiaScene mcScene = marchingCubeVoxelization(tileInfo, scene);
+            mcScene.weldVertices(1e-10, true, false, false, false);
+
+            // now decimate the scene.***
+            mcScene.calculateVertexNormals();
 
             // 1rst save the mcScene in a temp folder.***
             Path originalPath = scene.getOriginalPath();
             String originalFileName = originalPath.getFileName().toString();
             String rawOriginalFileName = originalFileName.substring(0, originalFileName.lastIndexOf('.'));
-            Path outputFolderPath = tileInfo.getOutputPath();
+            Path tempFilePath = tileInfo.getTempPath();
+            Path tempFolderPath = tempFilePath.getParent();
+            Path outputFolderPath = tempFolderPath;
             Path tempMLPath = outputFolderPath.resolve("tempML");
             Path sceneMLPath = tempMLPath.resolve(rawOriginalFileName);
             Path sceneMLImagesPath = sceneMLPath.resolve("images");
@@ -90,14 +118,29 @@ public class GaiaMinimizerML implements PreProcess {
                 }
             }
 
-            GaiaSet tempSet = GaiaSet.fromGaiaScene(mcScene);
-            Path tempPath = tempSet.writeFile(tileInfo.getTempPath(), tileInfo.getSerial(), tempSet.getAttribute());
-            tileInfo.setTempPath(tempPath);
-            tempSet.clear();
-            tempSet = null;
-            scene.clear();
-            scene = null;
+
+            GaiaSet mcSet = GaiaSet.fromGaiaScene(mcScene);
+            tileInfo.setSet(mcSet);
         }
+        return contentInfo;
+    }
+
+    private void decimateScene(GaiaScene scene) {
+        List<GaiaScene> gaiaScenes = new ArrayList<>();
+        gaiaScenes.add(scene);
+        List<HalfEdgeScene> resultDecimatedHalfEdgeScenes = new ArrayList<>();
+        DecimateParameters decimateParameters = new DecimateParameters();
+        boolean makeSkirt = false;
+
+        GaiaBoundingBox boundingBox = scene.getBoundingBox();
+        double maxSize = boundingBox.getMaxSize();
+        double texturePixelSize = 1.0;
+        texturePixelSize = maxSize / 256.0;
+        double texturePixelsForMeter = 1.0 / texturePixelSize;
+
+        TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
+        List<GaiaAAPlane> cuttingPlanes = new ArrayList<>();
+        //tilerExtensionModule.decimateAndCutByObliqueCamera(gaiaScenes, resultDecimatedHalfEdgeScenes, decimateParameters, halfEdgeOctree, cuttingPlanes, texturePixelsForMeter, makeSkirt);
     }
 
     private GaiaScene marchingCubeVoxelization(TileInfo tileInfo, GaiaScene scene) {
@@ -114,38 +157,17 @@ public class GaiaMinimizerML implements PreProcess {
         TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
         VoxelizeParameters voxelizeParameters = new VoxelizeParameters();
 
-        double voxelSizeMeter = 2.0;
+        double voxelSizeMeter = 1.0;
+        double texturePixelSize = 1.0;
         double texturePixelsForMeter = 4.0;
 
-        // DC_Library scale 0.01 settings.***
-        voxelSizeMeter = 0.5;
-        texturePixelsForMeter = 30.0;
-
-        // tree settings.***
-        voxelSizeMeter = 0.2;
-        texturePixelsForMeter = 80.0;
-
-        // 세종금강대교
-        voxelSizeMeter = 400.0;
-        texturePixelsForMeter = 0.01;
-
-        // 관리동
-        voxelSizeMeter = 100.0;
-        texturePixelsForMeter = 0.01;
-
-        // 공중화장실
-        voxelSizeMeter = maxSize / 1000.0;
-        texturePixelsForMeter = 0.01;
-//
-//        voxelSizeMeter = 0.1; // tree.***
-
-        // thailand settings.***
-//        voxelSizeMeter = 5.0;
-//        texturePixelsForMeter = 10.0;
+        voxelSizeMeter = maxSize / 17.0;
+        texturePixelSize = maxSize / 256.0;
+        texturePixelsForMeter = 1.0 / texturePixelSize;
 
         voxelizeParameters.setVoxelsForMeter(1.0 / voxelSizeMeter);
-
         voxelizeParameters.setTexturePixelsForMeter(texturePixelsForMeter);
+        
         List<VoxelGrid3D> resultVoxelGrids = new ArrayList<>();
         List<GaiaScene> resultGaiaScenes = new ArrayList<>();
         tilerExtensionModule.voxelize(gaiaScenes, resultVoxelGrids, resultGaiaScenes, voxelizeParameters);
@@ -153,20 +175,5 @@ public class GaiaMinimizerML implements PreProcess {
 
         GaiaScene result = resultGaiaScenes.get(0);
         return result;
-    }
-
-    private void minimizeGaiaPointCloud(TileInfo tileInfo, GaiaPointCloud pointCloud) {
-        if (pointCloud != null) {
-            //Path tempPath = tempSet.writeFile(tileInfo.getTempPath(), tileInfo.getSerial(), tempSet.getAttribute());
-            tileInfo.setTempPath(tileInfo.getOutputPath().resolve("temp"));
-
-            GaiaAttribute attribute = pointCloud.getGaiaAttribute();
-            String id = attribute.getIdentifier().toString();
-
-            File tempFile = new File(tileInfo.getTempPath().toString(), id);
-            pointCloud.minimize(tempFile);
-
-            log.info("Minimized point cloud: {}", tempFile.getAbsolutePath());
-        }
     }
 }

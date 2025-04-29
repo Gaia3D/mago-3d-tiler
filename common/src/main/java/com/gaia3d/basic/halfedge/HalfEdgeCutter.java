@@ -67,7 +67,8 @@ public class HalfEdgeCutter {
         }
     }
 
-    public static List<HalfEdgeScene> cutHalfEdgeSceneByGaiaAAPlanes(HalfEdgeScene halfEdgeScene, List<GaiaAAPlane> planes, HalfEdgeOctree resultOctree, boolean scissorTextures, boolean makeSkirt) {
+    public static List<HalfEdgeScene> cutHalfEdgeSceneByGaiaAAPlanes(HalfEdgeScene halfEdgeScene, List<GaiaAAPlane> planes,
+                                                                     HalfEdgeOctree resultOctree, boolean scissorTextures, boolean makeSkirt) {
         double error = 1e-5; //
         int planesCount = planes.size();
         for (int i = 0; i < planesCount; i++) {

@@ -388,6 +388,7 @@ public class GaiaNode extends NodeStructure implements Serializable {
 
         // Clear the transform matrix.
         transformMatrix.identity();
+        preMultipliedTransformMatrix.identity();
     }
 
     public void makeTriangularFaces() {
@@ -408,5 +409,23 @@ public class GaiaNode extends NodeStructure implements Serializable {
             count += child.getFacesCount();
         }
         return count;
+    }
+
+    public void calculateNormal() {
+        for (GaiaMesh mesh : meshes) {
+            mesh.calculateNormal();
+        }
+        for (GaiaNode child : children) {
+            child.calculateNormal();
+        }
+    }
+
+    public void calculateVertexNormals() {
+        for (GaiaMesh mesh : meshes) {
+            mesh.calculateVertexNormals();
+        }
+        for (GaiaNode child : children) {
+            child.calculateVertexNormals();
+        }
     }
 }

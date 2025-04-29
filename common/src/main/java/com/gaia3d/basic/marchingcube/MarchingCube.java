@@ -2,10 +2,12 @@ package com.gaia3d.basic.marchingcube;
 
 import com.gaia3d.basic.geometry.voxel.VoxelGrid3D;
 import com.gaia3d.basic.model.*;
+import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 
 import java.util.List;
 
+@Slf4j
 public class MarchingCube {
     private static int[] EDGE_TABLE = {
             0x0, 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
@@ -331,6 +333,8 @@ public class MarchingCube {
         List<GaiaVertex> gaiaVertices = gaiaPrimitive.getVertices();
         GaiaSurface gaiaSurface = new GaiaSurface();
         gaiaPrimitive.getSurfaces().add(gaiaSurface);
+
+        log.info("start marching cube : {} {} {}", gridsCountX, gridsCountY, gridsCountZ);
 
         for (int x = 0; x < gridsCountX - 1; x++) {
             for (int y = 0; y < gridsCountY - 1; y++) {

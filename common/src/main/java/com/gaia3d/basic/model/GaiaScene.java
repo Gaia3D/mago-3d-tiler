@@ -209,4 +209,16 @@ public class GaiaScene extends SceneStructure implements Serializable {
         }
         return facesCount;
     }
+
+    public void calculateNormal() {
+        for (GaiaNode node : this.nodes) {
+            node.calculateNormal();
+        }
+    }
+
+    public void calculateVertexNormals() {
+        for (GaiaNode node : this.nodes) {
+            node.calculateVertexNormals();
+        }
+    }
 }

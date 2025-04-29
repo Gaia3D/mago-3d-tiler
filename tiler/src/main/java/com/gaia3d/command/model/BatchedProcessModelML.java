@@ -17,6 +17,7 @@ import com.gaia3d.converter.loader.BatchedFileLoader;
 import com.gaia3d.process.TilingPipeline;
 import com.gaia3d.process.postprocess.GaiaMaximizer;
 import com.gaia3d.process.postprocess.GaiaRelocator;
+import com.gaia3d.process.postprocess.GaiaRelocatorML;
 import com.gaia3d.process.postprocess.PostProcess;
 import com.gaia3d.process.postprocess.batch.Batched3DModel;
 import com.gaia3d.process.preprocess.*;
@@ -65,7 +66,7 @@ public class BatchedProcessModelML implements ProcessFlowModel {
         } else {
             preProcessors.add(new GaiaTranslator(geoTiffs));
         }
-        preProcessors.add(new GaiaMinimizerML()); // ML.***
+        preProcessors.add(new GaiaMinimizer());
 
         /* Main-process */
         TilingProcess tilingProcess = new Batched3DModelTiler();
@@ -73,7 +74,7 @@ public class BatchedProcessModelML implements ProcessFlowModel {
         /* Post-process */
         List<PostProcess> postProcessors = new ArrayList<>();
         postProcessors.add(new GaiaMaximizer());
-        postProcessors.add(new GaiaRelocator());
+        postProcessors.add(new GaiaRelocatorML()); // ML.***
         postProcessors.add(new Batched3DModel());
 
         Pipeline processPipeline = new TilingPipeline(preProcessors, tilingProcess, postProcessors);

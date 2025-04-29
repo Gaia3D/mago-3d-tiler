@@ -912,8 +912,13 @@ class UnitTest {
 
     @Test
     void test_IFC_roundBridge() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\Autodesk IFC\\세종금강대교\\";
-        String outputPath = "D:\\data\\mago-server\\output\\세종금강대교_11buildings\\";
+        // 세종금강대교_noTerrain
+        // 세종금강대교_1building_가교
+        // 세종금강대교_1building_가설벤트
+        // 세종금강대교_1building_공중화장실
+        // 세종금강대교_1building_관리동
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\Autodesk IFC\\세종금강대교_noTerrain\\";
+        String outputPath = "D:\\data\\mago-server\\output\\세종금강대교_noTerrain\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
@@ -979,7 +984,7 @@ class UnitTest {
     void test_TreeML() {
         // hwal-0, jat-0, nak-0, tree-0
         String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\trees\\hwal-0\\";
-        String outputPath = "D:\\data\\mago-server\\output\\hwal-0_0p2m\\";
+        String outputPath = "D:\\data\\mago-server\\output\\hwal-0_17\\";
 
         String[] args = new String[]{
                 "-i", inputPath,

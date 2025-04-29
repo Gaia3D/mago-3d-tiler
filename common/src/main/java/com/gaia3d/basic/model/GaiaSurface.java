@@ -4,6 +4,7 @@ import com.gaia3d.basic.model.structure.SurfaceStructure;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.joml.Vector3d;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -23,6 +24,19 @@ public class GaiaSurface extends SurfaceStructure implements Serializable {
     public void calculateNormal(List<GaiaVertex> vertices) {
         for (GaiaFace face : faces) {
             face.calculateFaceNormal(vertices);
+        }
+    }
+
+    public void calculateVertexNormals(List<GaiaVertex> vertices) {
+        for (GaiaFace face : faces) {
+            face.calculateFaceNormal(vertices);
+            Vector3d normal = face.getFaceNormal();
+            if (normal != null) {
+                for (int index : face.getIndices()) {
+                    GaiaVertex vertex = vertices.get(index);
+                    vertex.setNormal(new Vector3d(normal));
+                }
+            }
         }
     }
 

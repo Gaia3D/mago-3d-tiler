@@ -94,16 +94,16 @@ public class Engine {
     }
 
     public void deleteObjects() {
-        if(fboManager != null) {
+        if (fboManager != null) {
             fboManager.deleteAllFbos();
         }
-        if(screenQuad != null) {
+        if (screenQuad != null) {
             screenQuad.cleanup();
         }
-        if(shaderManager != null) {
+        if (shaderManager != null) {
             shaderManager.deleteAllShaderPrograms();
         }
-        if(window != null) {
+        if (window != null) {
             window.cleanup();
         }
     }
@@ -1374,17 +1374,17 @@ public class Engine {
         gaiaScenesContainer.getRenderableGaiaScenes().add(renderableSceneCurrent);
 
         // test save images
-//        try {
-//            String randomId = String.valueOf(UUID.randomUUID());
-//            String path = "D:\\Result_mago3dTiler";
-//            String fileName = "albedo_" + randomId;
-//            String extension = ".png";
-//            String imagePath = path + "\\" + fileName + extension;
-//            File imageFile = new File(imagePath);
-//            ImageIO.write(image, "png", imageFile);
-//        } catch (IOException e) {
-//            log.debug("Error writing image: {}", e);
-//        }
+        try {
+            String randomId = String.valueOf(UUID.randomUUID());
+            String path = "D:\\Result_mago3dTiler";
+            String fileName = "albedo_" + randomId;
+            String extension = ".png";
+            String imagePath = path + "\\" + fileName + extension;
+            File imageFile = new File(imagePath);
+            ImageIO.write(image, "png", imageFile);
+        } catch (IOException e) {
+            log.debug("Error writing image: {}", e);
+        }
 
         // test save images
 //        try {
