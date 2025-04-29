@@ -4,6 +4,7 @@ import com.gaia3d.util.GeometryUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
+import org.locationtech.jts.math.Vector3D;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,8 +38,12 @@ public class GaiaExtruder {
         GaiaExtrusionSurface roof = new GaiaExtrusionSurface(roofPositions);
         List<GaiaExtrusionSurface> wallPositions = createWallPositions(roofPositions, floorPositions);
 
+        Collections.reverse(floorPositions);
+        GaiaExtrusionSurface floor = new GaiaExtrusionSurface(floorPositions);
+
         result.add(roof);
         result.addAll(wallPositions);
+        result.add(floor);
         return result;
     }
 
