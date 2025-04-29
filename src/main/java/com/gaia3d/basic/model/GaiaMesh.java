@@ -320,4 +320,16 @@ public class GaiaMesh extends MeshStructure implements Serializable {
         }
         return facesCount;
     }
+
+    public void calculateNormal() {
+        for (GaiaPrimitive primitive : primitives) {
+            primitive.calculateNormal();
+        }
+    }
+
+    public void calculateVertexNormals() {
+        for (GaiaPrimitive primitive : primitives) {
+            primitive.calculateVertexNormals();
+        }
+    }
 }

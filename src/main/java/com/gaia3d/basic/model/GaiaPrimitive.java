@@ -78,6 +78,12 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         }
     }
 
+    public void calculateVertexNormals() {
+        for (GaiaSurface surface : surfaces) {
+            surface.calculateVertexNormals(this.vertices);
+        }
+    }
+
     public int[] getIndices() {
         int[] resultIndices = new int[0];
         for (GaiaSurface surface : surfaces) {
