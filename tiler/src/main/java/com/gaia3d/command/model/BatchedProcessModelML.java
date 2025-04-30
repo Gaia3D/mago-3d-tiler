@@ -74,7 +74,7 @@ public class BatchedProcessModelML implements ProcessFlowModel {
         /* Post-process */
         List<PostProcess> postProcessors = new ArrayList<>();
         postProcessors.add(new GaiaMaximizer());
-        postProcessors.add(new GaiaRelocatorML()); // ML.***
+        postProcessors.add(new GaiaRelocator());
         postProcessors.add(new Batched3DModel());
 
         Pipeline processPipeline = new TilingPipeline(preProcessors, tilingProcess, postProcessors);
