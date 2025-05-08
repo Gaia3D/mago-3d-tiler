@@ -30,14 +30,34 @@ public class GaiaSurface extends SurfaceStructure implements Serializable {
     public void calculateVertexNormals(List<GaiaVertex> vertices) {
         for (GaiaFace face : faces) {
             face.calculateFaceNormal(vertices);
-            Vector3d normal = face.getFaceNormal();
-            if (normal != null) {
-                for (int index : face.getIndices()) {
-                    GaiaVertex vertex = vertices.get(index);
-                    vertex.setNormal(new Vector3d(normal));
+        }
+
+        Map<GaiaVertex, List<GaiaFace>> mapVertexFaces = getMapVertexFaces(vertices);
+        for (Map.Entry<GaiaVertex, List<GaiaFace>> entry : mapVertexFaces.entrySet()) {
+            GaiaVertex vertex = entry.getKey();
+            List<GaiaFace> vertexFaces = entry.getValue();
+            Vector3d normal = new Vector3d();
+            for (GaiaFace face : vertexFaces) {
+                normal.add(face.getFaceNormal());
+            }
+            normal.normalize();
+            vertex.setNormal(normal);
+        }
+    }
+
+    public Map<GaiaVertex, List<GaiaFace>> getMapVertexFaces(List<GaiaVertex> vertices) {
+        Map<GaiaVertex, List<GaiaFace>> mapVertexFaces = new HashMap<>();
+        for (GaiaFace face : faces) {
+            int[] indices = face.getIndices();
+            for (int index : indices) {
+                GaiaVertex vertex = vertices.get(index);
+                if (!mapVertexFaces.containsKey(vertex)) {
+                    mapVertexFaces.put(vertex, new ArrayList<>());
                 }
+                mapVertexFaces.get(vertex).add(face);
             }
         }
+        return mapVertexFaces;
     }
 
     public int[] getIndices() {
