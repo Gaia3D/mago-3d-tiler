@@ -48,10 +48,10 @@ public class Mago3DTiler {
             if (isPhotorealistic) {
                 processFlow = new BatchedProcessModelPhR();
             } else {
-                //processFlow = new BatchedProcessModel(); // original.***
+                processFlow = new BatchedProcessModel(); // original.***
 
                 // test for voxelization and marching cubing.***
-                processFlow = new BatchedProcessModelML();
+                //processFlow = new BatchedProcessModelML();
                 // end test.------------------------------------
             }
         } else if (FormatType.PNTS == outputFormat) {
