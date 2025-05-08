@@ -19,7 +19,7 @@ public class Mago3DTiler {
         FormatType outputFormat = globalOptions.getOutputFormat();
         try {
             ProcessFlowModel processFlow = getProcessModel(inputFormat, outputFormat);
-            log.info("Starting process flow: {}", processFlow.getModelName());
+            log.info("[Init] Starting process flow: {}", processFlow.getModelName());
             processFlow.run();
         } catch (IOException e) {
             log.error("Failed to run process.", e);
@@ -44,9 +44,9 @@ public class Mago3DTiler {
         if (FormatType.I3DM == outputFormat) {
             processFlow = new InstancedProcessModel();
         } else if (FormatType.B3DM == outputFormat) {
-            boolean isPhotorealistic = GlobalOptions.getInstance().isPhotorealistic();
-            if (isPhotorealistic) {
-                processFlow = new BatchedProcessModelPhR();
+            boolean isPhotogrammetry= GlobalOptions.getInstance().isPhotogrammetry();
+            if (isPhotogrammetry) {
+                processFlow = new PhotogrammetryModel();
             } else {
                 processFlow = new BatchedProcessModel();
             }

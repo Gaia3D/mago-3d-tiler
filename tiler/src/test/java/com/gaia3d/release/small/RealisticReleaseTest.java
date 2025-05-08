@@ -1,4 +1,4 @@
-package com.gaia3d.release;
+package com.gaia3d.release.small;
 
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +21,7 @@ class RealisticReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-log", getLogPath(path).getAbsolutePath(),
                 "-it", "obj",
-                "-pr",
+                "-pg",
                 "-c", "5187",
                 "-rotateX", "90",
                 "-leaveTemp",
@@ -40,7 +40,7 @@ class RealisticReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "obj",
                 "-log", getLogPath(path).getAbsolutePath(),
-                "-pr",
+                "-pg",
                 "-c", "5187",
                 "-leaveTemp",
                 "-rotateX", "90",
@@ -57,7 +57,7 @@ class RealisticReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-log", getLogPath(path).getAbsolutePath(),
                 "-it", "obj",
-                "-pr",
+                "-pg",
                 "-c", "5187",
                 "-rotateX", "90",
                 "-leaveTemp",
@@ -75,7 +75,7 @@ class RealisticReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-log", getLogPath(path).getAbsolutePath(),
                 "-it", "obj",
-                "-pr",
+                "-pg",
                 "-c", "5187",
                 "-rotateX", "90",
                 //"-debug",
@@ -91,7 +91,7 @@ class RealisticReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-log", getLogPath(path).getAbsolutePath(),
                 "-it", "obj",
-                "-pr",
+                "-pg",
                 "-c", "5187",
                 "-rotateX", "90",
                 //"-debug",
@@ -107,7 +107,7 @@ class RealisticReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-log", getLogPath(path).getAbsolutePath(),
                 "-it", "obj",
-                "-pr",
+                "-pg",
                 "-c", "5187",
                 "-rotateX", "90",
                 //"-debug",
@@ -124,7 +124,7 @@ class RealisticReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-log", getLogPath(path).getAbsolutePath(),
                 "-it", "obj",
-                "-pr",
+                "-pg",
                 "-c", "5187",
                 "-rotateX", "90",
                 //"-debug",
@@ -141,7 +141,7 @@ class RealisticReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-log", getLogPath(path).getAbsolutePath(),
                 "-it", "obj",
-                "-pr",
+                "-pg",
                 "-c", "32648",
                 //"-rotateX", "90",
                 //"-debug",
@@ -157,7 +157,7 @@ class RealisticReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
-                "-pr",
+                "-pg",
         };
         execute(args);
     }

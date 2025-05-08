@@ -18,6 +18,13 @@ class DefaultReleaseTest {
         Mago3DTilerMain.main(args);
     }
     @Test
+    void quiet() {
+        String args[] = {
+                "-quiet",
+        };
+        Mago3DTilerMain.main(args);
+    }
+    @Test
     void version() {
         String args[] = {
                 "-version",

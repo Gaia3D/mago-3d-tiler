@@ -16,7 +16,7 @@ import java.util.Map;
 public interface ExtensionModuleFrame {
     String getName();
     boolean isSupported();
-    GaiaScene executePhotorealistic(GaiaScene gaiaScene, Map<String, Object> options);
+    void executePhotogrammetry(GaiaScene gaiaScene, Map<String, Object> options);
     void getColorAndDepthRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<BufferedImage> resultImages, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize, int maxDepthScreenSize);
 
     void makeNetSurfacesWithBoxTexturesObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, double depthTexPixelsForMeter, double screenPixelsForMeter);

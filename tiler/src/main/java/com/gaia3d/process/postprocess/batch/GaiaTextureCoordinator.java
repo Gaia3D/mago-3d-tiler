@@ -53,7 +53,7 @@ public class GaiaTextureCoordinator {
             // now fill the image with white fuchsia
             Graphics2D graphics = this.atlasImage.createGraphics();
 
-            if (globalOptions.isPhotorealistic()) {
+            if (globalOptions.isPhotogrammetry()) {
                 graphics.setColor(CLAMP_COLOR);
                 graphics.fillRect(0, 0, width, height);
             } else {
@@ -210,7 +210,7 @@ public class GaiaTextureCoordinator {
         // We have MaterialList & BufferDataSetList.
         // 1- List<GaiaMaterial> this.materials;
         // 2- List<GaiaBufferDataSet> this.bufferDataSets;
-        boolean isPhotorealistic = globalOptions.isPhotorealistic();
+        boolean isPhotorealistic = globalOptions.isPhotogrammetry();
 
         // 1rst, make a list of GaiaBatchImage (splittedImage).
         List<GaiaBatchImage> splittedImages = new ArrayList<>();
@@ -387,7 +387,7 @@ public class GaiaTextureCoordinator {
             }
         }
 
-        /* Only Photorealistic Mode */
+        /* Only Photogrammetry Mode */
         if (isPhotorealistic) {
             /* debug */
             if (globalOptions.isDebug()) {

@@ -143,7 +143,7 @@ public class GlobalOptions {
     // [Experimental] 3D Data Options
     private boolean largeMesh = false; // [Experimental] large mesh splitting mode flag
     private boolean voxelLod = false; // [Experimental] voxel level of detail flag
-    private boolean photorealistic = false; // [Experimental] photorealistic mode flag
+    private boolean isPhotogrammetry = false; // [Experimental] isPhotogrammetry mode flag
 
     /* 2D Data Column Options */
     private String nameColumn;
@@ -163,10 +163,21 @@ public class GlobalOptions {
         return instance;
     }
 
-    public static void init(CommandLine command) throws IOException {
+    public static void init(CommandLine command) throws IOException, RuntimeException {
+
+        if (command == null) {
+            throw new IllegalArgumentException("Command line argument is null.");
+        }
+        if (command.getOptions() == null || command.getOptions().length == 0) {
+            throw new IllegalArgumentException("Command line argument is empty.");
+        }
+        String inputPath = command.getOptionValue(ProcessOptions.INPUT.getArgName());
+        String outputPath = command.getOptionValue(ProcessOptions.OUTPUT.getArgName());
+        if (inputPath == null || outputPath == null) {
+            throw new IllegalArgumentException("Please enter the value of the input and output arguments.");
+        }
         File input = new File(command.getOptionValue(ProcessOptions.INPUT.getArgName()));
         File output = new File(command.getOptionValue(ProcessOptions.OUTPUT.getArgName()));
-
         if (command.hasOption(ProcessOptions.INPUT.getArgName())) {
             instance.setInputPath(command.getOptionValue(ProcessOptions.INPUT.getArgName()));
             OptionsCorrector.checkExistInputPath(input);
@@ -295,7 +306,7 @@ public class GlobalOptions {
         instance.setMaxNodeDepth(DEFAULT_MAX_NODE_DEPTH);
         instance.setLargeMesh(command.hasOption(ProcessOptions.LARGE_MESH.getArgName()));
         instance.setVoxelLod(command.hasOption(ProcessOptions.VOXEL_LOD.getArgName()));
-        instance.setPhotorealistic(command.hasOption(ProcessOptions.PHOTOREALISTIC.getArgName()));
+        instance.setPhotogrammetry(command.hasOption(ProcessOptions.PHOTOGRAMMETRY.getArgName()));
         instance.setLeaveTemp(command.hasOption(ProcessOptions.LEAVE_TEMP.getArgName()));
         instance.setUseQuantization(command.hasOption(ProcessOptions.MESH_QUANTIZATION.getArgName()) || DEFAULT_USE_QUANTIZATION);
 
@@ -368,8 +379,8 @@ public class GlobalOptions {
         instance.printDebugOptions();
 
         TilerExtensionModule extensionModule = new TilerExtensionModule();
-        extensionModule.executePhotorealistic(null, null);
-        if (!extensionModule.isSupported() && instance.isPhotorealistic()) {
+        extensionModule.executePhotogrammetry(null, null);
+        if (!extensionModule.isSupported() && instance.isPhotogrammetry()) {
             log.error("[ERROR] *** Extension Module is not supported ***");
             throw new IllegalArgumentException("Extension Module is not supported.");
         } else {
@@ -439,7 +450,7 @@ public class GlobalOptions {
         log.debug("Max Node Depth: {}", maxNodeDepth);
         log.debug("LargeMesh: {}", largeMesh);
         log.debug("Voxel LOD: {}", voxelLod);
-        log.debug("Photorealistic: {}", photorealistic);
+        log.debug("Photogrammetry: {}", isPhotogrammetry);
         log.debug("Point Cloud Horizontal Grid: {}", POINTSCLOUD_HORIZONTAL_GRID);
         log.debug("Point Cloud Vertical Grid: {}", POINTSCLOUD_VERTICAL_GRID);
         log.debug("========================================");

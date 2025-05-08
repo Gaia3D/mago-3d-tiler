@@ -1,4 +1,4 @@
-package com.gaia3d.release;
+package com.gaia3d.release.small;
 
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import lombok.extern.slf4j.Slf4j;
@@ -7,113 +7,79 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 
 @Slf4j
-class FormatReleaseTest {
+class PntsReleaseTest {
     private static final String INPUT_PATH = "D:/data/mago-3d-tiler/release-sample";
     private static final String OUTPUT_PATH = "E:/data/mago-server/output";
 
     @Test
-    void format00() {
-        String path = "A00-Thonker-glb";
+    void pointcloud00() {
+        String path = "P00-hwangyonggak-las";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
+                //"-c", "32652",
         };
         execute(args);
     }
 
     @Test
-    void format01() {
-        String path = "A01-Thonker-gltf";
+    void pointcloud01() {
+        String path = "P01-sejong-bridge-las";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
+                //"-c", "5186"
         };
         execute(args);
     }
 
     @Test
-    void format02() {
-        String path = "A02-Thonker-obj";
+    void pointcloud02() {
+        String path = "P02-busan-jingu-las";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
+                "-c", "5187",
+                "-pointRatio", "25",
+                "-debug",
         };
         execute(args);
     }
 
     @Test
-    void format03() {
-        String path = "A03-Thonker-3mf";
+    void pointcloud03() {
+        String path = "P03-thai-khonkaen-las";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
+                "-c", "32648",
+                "-pointRatio", "25",
         };
         execute(args);
     }
 
     @Test
-    void format04() {
-        String path = "A04-Thonker-ply";
+    void pointcloud04() {
+        String path = "P04-github-posikifi-las";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
+                //"-c", "5186",
+                //"-pointRatio", "25",
         };
         execute(args);
     }
 
     @Test
-    void format05() {
-        String path = "A05-Thonker-fbx";
+    void pointcloud05() {
+        String path = "P05-west-honam-las";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
+                "-c", "32652",
+                "-debug",
         };
         execute(args);
-    }
-
-    @Test
-    void format06() {
-        String path = "A06-Thonker-dae";
-        String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
-        };
-        execute(args);
-    }
-
-    @Test
-    void format07() {
-        String path = "A07-Thonker-x3d";
-        String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
-        };
-        execute(args);
-    }
-
-    @Test
-    void format08() {
-        String path = "A08-Thonker-stl";
-        String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
-        };
-        execute(args);
-    }
-
-    @Test
-    void format09() {
-        try {
-            String path = "A09-Thonker-blend";
-            String[] args = new String[] {
-                    "-i", getInputPath(path).getAbsolutePath(),
-                    "-o", getOutputPath(path).getAbsolutePath(),
-            };
-            execute(args);
-        } catch (RuntimeException e){
-            log.error("Failed to run process, Please check the arguments.", e);
-            assert true;
-        }
     }
 
     private void execute(String[] args) {

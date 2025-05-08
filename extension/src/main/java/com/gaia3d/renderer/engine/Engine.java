@@ -848,7 +848,7 @@ public class Engine {
         }
 
         GaiaTexture textureAtlas = new GaiaTexture();
-        log.info("[Tile][PhotoRealistic][makeAtlasTexture] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
+        log.info("[Tile][Photogrammetry][makeAtlasTexture] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
         textureAtlas.createImage(maxWidth, maxHeight, imageType);
 
         // draw the images into textureAtlas

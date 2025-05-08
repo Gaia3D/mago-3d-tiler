@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 public enum ProcessOptions {
     // Default Options
-    HELP("help", "h", "help", false, "Print Gelp"),
+    HELP("help", "h", "help", false, "Print Help"),
     VERSION("version", "v", "version", false, "Print Version Info"),
     QUIET("quiet", "q", "quiet", false, "Quiet mode/Silent mode"),
     LEAVE_TEMP("leaveTemp", "lt", "leaveTemp", false, "Leave temporary files"),
@@ -16,8 +16,8 @@ public enum ProcessOptions {
     // Path Options
     INPUT("input", "i", "input", true, "Input directory path"),
     OUTPUT("output", "o", "output", true, "Output directory file path"),
-    INPUT_TYPE("inputType", "it", "inputType", true, "Input files type (kml, 3ds, fbx, obj, gltf, glb, las, laz, citygml, indoorgml, shp, geojson)(Default: kml)"),
-    OUTPUT_TYPE("outputType", "ot", "outputType", true, "Output 3DTiles Type (b3dm, i3dm, pnts)(Default : b3dm)"),
+    INPUT_TYPE("inputType", "it", "inputType", true, "Input files type [kml, 3ds, fbx, obj, gltf/glb, las/laz, citygml, indoorgml, shp, geojson, gpkg]"),
+    OUTPUT_TYPE("outputType", "ot", "outputType", true, "Output 3DTiles Type [b3dm, i3dm, pnts]"),
     LOG("log", "l", "log", true, "Output log file path."),
     TERRAIN("terrain", "te", "terrain", true, "GeoTiff Terrain file path, 3D Object applied as clampToGround (Supports geotiff format)"),
     INSTANCE_FILE("instance", "if", "instance", true, "Instance file path for I3DM (Default: {OUTPUT}/instance.dae)"),
@@ -39,43 +39,43 @@ public enum ProcessOptions {
     // 3DTiles Options
     REFINE_ADD("refineAdd", "ra", "refineAdd", false, "Set 3D Tiles Refine 'ADD' mode"),
     MAX_COUNT("maxCount", "mx", "maxCount", true, "Maximum number of triangles per node."),
-    MIN_LOD("minLod", "nl", "minLod", true, "min level of detail (Default: 0)"),
-    MAX_LOD("maxLod", "xl", "maxLod", true, "Max Level of detail (Default: 3)"),
-    MIN_GEOMETRIC_ERROR("minGeometricError", "ng", "minGeometricError", true, "Minimum geometric error (Default: 16.0)"),
-    MAX_GEOMETRIC_ERROR("maxGeometricError", "mg", "maxGeometricError", true, "Maximum geometric error (Default: Integer max value)"),
-    MAX_POINTS("maxPoints", "mp", "maxPoints", true, "Maximum number of points per a tile (Default: 100000)"),
-    POINT_RATIO("pointRatio", "pcr", "pointRatio", true, "Percentage of points from original data (Default: 50)"),
-    POINT_PRECISION("sourcePrecision", "sp", "sourcePrecision", false, "Create pointscloud tile with original precision. (Slow)"),
+    MIN_LOD("minLod", "nl", "minLod", true, "min level of detail"),
+    MAX_LOD("maxLod", "xl", "maxLod", true, "Max Level of detail"),
+    MIN_GEOMETRIC_ERROR("minGeometricError", "ng", "minGeometricError", true, "Minimum geometric error"),
+    MAX_GEOMETRIC_ERROR("maxGeometricError", "mg", "maxGeometricError", true, "Maximum geometric error"),
+    MAX_POINTS("maxPoints", "mp", "maxPoints", true, "Maximum number of points per a tile"),
+    POINT_RATIO("pointRatio", "pcr", "pointRatio", true, "Percentage of points from original data"),
+    POINT_PRECISION("sourcePrecision", "sp", "sourcePrecision", false, "Create pointscloud tile with original precision. "),
     POINT_FORCE_4BYTE_RGB("force4ByteRGB", "f4", "force4ByteRGB", false, "Force 4Byte RGB for pointscloud tile."),
 
     // Mesh Options
     MESH_QUANTIZATION("quantize", "qt", "quantize", false, "Quantize mesh to reduce glb size via \"KHR_mesh_quantization\" Extension"),
-    ROTATE_X_AXIS("rotateXAxis", "rx", "rotateXAxis", true, "Rotate the X-Axis in degrees (Unit: degrees)(Default: 0.0)"),
+    ROTATE_X_AXIS("rotateXAxis", "rx", "rotateXAxis", true, "Rotate the X-Axis in degrees"),
 
-    SWAP_UP_AXIS("swapUpAxis", "su", "swapUpAxis", false, "Rotate the matrix -90 degrees about the X-axis. (Default: false)"),
-    FLIP_UP_AXIS("flipUpAxis", "ru", "flipUpAxis", false, "Rotate the matrix 180 degrees about the X-axis. (Default: false)"),
+    SWAP_UP_AXIS("swapUpAxis", "su", "swapUpAxis", false, "Rotate the matrix -90 degrees about the X-axis."),
+    FLIP_UP_AXIS("flipUpAxis", "ru", "flipUpAxis", false, "Rotate the matrix 180 degrees about the X-axis."),
 
     IGNORE_TEXTURES("ignoreTextures", "igtx", "ignoreTextures", false,"Ignore diffuse textures. "),
     AUTO_UP_AXIS("autoUpAxis", "aa", "autoUpAxis", false, "Automatically Assign 3D Matrix Axes. If your 3D data up-axis is incorrect, try this option."),
 
     // Extrusion Options
-    FLIP_COORDINATE("flipCoordinate", "fc", "flipCoordinate", false, "Flip x, y coordinate for 2D Original Data. (Default: false)"),
-    NAME_COLUMN("nameColumn", "nc", "nameColumn", true, "Name column setting for extrusion model (Default Column: name)"),
-    HEIGHT_COLUMN("heightColumn", "hc", "heightColumn", true, "Height column setting for extrusion model ((Default Column: height)"),
-    ALTITUDE_COLUMN("altitudeColumn", "ac", "altitudeColumn", true, "Altitude Column setting for extrusion model ((Default Column: altitude)"),
-    HEADING_COLUMN("headingColumn", "hd", "headingColumn", true, "Heading column setting for I3DM converting (Default Column: heading)"),
+    FLIP_COORDINATE("flipCoordinate", "fc", "flipCoordinate", false, "Flip x, y coordinate for 2D Original Data."),
+    NAME_COLUMN("nameColumn", "nc", "nameColumn", true, "Name column setting for extrusion model"),
+    HEIGHT_COLUMN("heightColumn", "hc", "heightColumn", true, "Height column setting for extrusion model"),
+    ALTITUDE_COLUMN("altitudeColumn", "ac", "altitudeColumn", true, "Altitude Column setting for extrusion model"),
+    HEADING_COLUMN("headingColumn", "hd", "headingColumn", true, "Heading column setting for I3DM converting"),
     DIAMETER_COLUMN("diameterColumn", "dc", "diameterColumn", true, "Diameter column setting for extrusion model, Specify a length unit for Diameter in millimeters(mm) (Default Column: diameter)"),
 
-    MINIMUM_HEIGHT("minimumHeight", "mh", "minimumHeight", true, "Minimum height value for extrusion model (Default: 0.0)"),
+    MINIMUM_HEIGHT("minimumHeight", "mh", "minimumHeight", true, "Minimum height value for extrusion model"),
     ABSOLUTE_ALTITUDE("absoluteAltitude", "aa", "absoluteAltitude", true, "Absolute altitude value for extrusion model"),
-    SKIRT_HEIGHT("skirtHeight", "sh", "skirtHeight", true, "Building Skirt height setting for extrusion model (Default: 4.0)"),
+    SKIRT_HEIGHT("skirtHeight", "sh", "skirtHeight", true, "Building Skirt height setting for extrusion model"),
 
     DEBUG("debug", "d", "debug", false,"More detailed log output and stops on Multi-Thread bugs."),
     DEBUG_GLB("glb", "glb", "glb", false, "Create glb file with B3DM."),
 
-    LARGE_MESH("largeMesh", "lm", "largeMesh", false, "[Experimental] Large Mesh Splitting Mode (Default: false)"),
-    VOXEL_LOD("voxelLod", "vl", "voxelLod", false, "[Experimental] Voxel Level Of Detail setting for i3dm (Default: false)"),
-    PHOTOREALISTIC("photorealistic", "pr", "photorealistic", false, "[Experimental] Photorealistic mode for b3dm (Default: false)"),
+    LARGE_MESH("largeMesh", "lm", "largeMesh", false, "[Experimental] Large Mesh Splitting Mode)"),
+    VOXEL_LOD("voxelLod", "vl", "voxelLod", false, "[Experimental] Voxel Level Of Detail setting for i3dm"),
+    PHOTOGRAMMETRY("photogrammetry", "pg", "photogrammetry", false, "[Experimental][GPU] generate b3dm for photogrammetry model"),
     ZERO_ORIGIN("zeroOrigin", "zo", "zeroOrigin", false, "[Experimental] fix 3d root transformed matrix origin to zero point.");
 
     private final String longName;

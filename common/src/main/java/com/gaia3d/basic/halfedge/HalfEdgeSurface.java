@@ -1467,7 +1467,7 @@ public class HalfEdgeSurface implements Serializable {
             }
 
         }
-        log.info("[Tile][PhotoRealistic][cut][cutByPlaneXY] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount);
+        log.info("[Tile][Photogrammetry][cut][cutByPlaneXY] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount);
     }
 
     private void cutByPlaneXZ(Vector3d planePosition, double error) {
@@ -1487,7 +1487,7 @@ public class HalfEdgeSurface implements Serializable {
                 hedgesCutCount++;
             }
         }
-        log.info("[Tile][PhotoRealistic][cut][cutByPlaneXZ] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount);
+        log.info("[Tile][Photogrammetry][cut][cutByPlaneXZ] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount);
     }
 
     private void cutByPlaneYZ(Vector3d planePosition, double error) {
@@ -1507,7 +1507,7 @@ public class HalfEdgeSurface implements Serializable {
                 hedgesCutCount++;
             }
         }
-        log.info("[Tile][PhotoRealistic][cut][cutByPlaneYZ] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount);
+        log.info("[Tile][Photogrammetry][cut][cutByPlaneYZ] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount);
     }
 
     public boolean checkHalfEdgesFaces() {
@@ -2822,7 +2822,7 @@ public class HalfEdgeSurface implements Serializable {
         int imageType = existPngTextures ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
 
         GaiaTexture textureAtlas = new GaiaTexture();
-        log.info("[Tile][PhotoRealistic][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
+        log.info("[Tile][Photogrammetry][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
         textureAtlas.createImage(maxWidth, maxHeight, imageType);
         // fill the textureAtlas with fuchia color
 //        Color fuchiaColor = new Color(255, 255, 0);
@@ -3217,7 +3217,7 @@ public class HalfEdgeSurface implements Serializable {
         int imageType = existPngTextures ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
 
         GaiaTexture textureAtlas = new GaiaTexture();
-        log.info("[Tile][PhotoRealistic][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
+        log.info("[Tile][Photogrammetry][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
         textureAtlas.createImage(maxWidth, maxHeight, imageType);
         // fill the textureAtlas with fuchia color
 //        Color fuchiaColor = new Color(255, 255, 0);
@@ -3580,7 +3580,7 @@ public class HalfEdgeSurface implements Serializable {
         int imageType = existPngTextures ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
 
         GaiaTexture textureAtlas = new GaiaTexture();
-        log.info("[Tile][PhotoRealistic][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
+        log.info("[Tile][Photogrammetry][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
         textureAtlas.createImage(maxWidth, maxHeight, imageType);
         // fill the textureAtlas with fuchia color
         //Color fuchiaColor = new Color(255, 255, 0);
@@ -3737,14 +3737,14 @@ public class HalfEdgeSurface implements Serializable {
         // here calculates the batchedBoundaries of each textureScissorData
         //*********************************************************************
         int textureScissorDatasCount = textureScissorDates.size();
-        log.info("[Tile][PhotoRealistic][Atlas] doTextureAtlasProcess() : textureScissorDatasCount = " + textureScissorDatasCount);
+        log.info("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : textureScissorDatasCount = " + textureScissorDatasCount);
 
         GillotinePacker gillotinePacker = new GillotinePacker();
 
         for (int i = 0; i < textureScissorDatasCount; i++) {
             GaiaTextureScissorData textureScissorData = textureScissorDates.get(i);
             if(!gillotinePacker.insert(textureScissorData)) {
-                log.info("[Tile][PhotoRealistic][Atlas] doTextureAtlasProcess() : gillotinePacker.insert() failed.");
+                log.info("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : gillotinePacker.insert() failed.");
             }
         }
     }

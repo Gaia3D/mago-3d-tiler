@@ -15,6 +15,8 @@ import java.io.IOException;
  */
 @Slf4j
 public class Mago3DTilerMain {
+    private static final String PROGRAM_NAME = "mago-3d-tiler";
+
     public static void main(String[] args) {
         try {
             Options options = Configurator.createOptions();
@@ -70,7 +72,10 @@ public class Mago3DTilerMain {
             throw new RuntimeException("Failed to parse command line options, Please check the arguments.", e);
         } catch (IOException e) {
             log.error("[ERROR] Failed to run process, Please check the arguments.", e);
-            throw new RuntimeException("Failed to run process, Please check the arguments.", e);
+            throw new RuntimeException("Failed to run main process, Please check the arguments.", e);
+        } catch (Exception e) {
+            log.error("[ERROR] Failed to run main process.", e);
+            throw new RuntimeException("Failed to run main process.", e);
         }
         printEnd();
         Configurator.destroyLogger();
@@ -82,12 +87,9 @@ public class Mago3DTilerMain {
     private static void printStart() {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         String programInfo = globalOptions.getProgramInfo();
-        log.info("\n" +
-                "┳┳┓┏┓┏┓┏┓  ┏┓┳┓  ┏┳┓┳┓ ┏┓┳┓\n" +
-                "┃┃┃┣┫┃┓┃┃   ┫┃┃   ┃ ┃┃ ┣ ┣┫\n" +
-                "┛ ┗┛┗┗┛┗┛  ┗┛┻┛   ┻ ┻┗┛┗┛┛┗\n" +
-                programInfo + "\n" +
-                "----------------------------------------");
+        drawLine();
+        log.info(PROGRAM_NAME);
+        drawLine();
     }
 
     /**
@@ -98,7 +100,7 @@ public class Mago3DTilerMain {
         String programInfo = globalOptions.getProgramInfo();
         String javaVersionInfo = globalOptions.getJavaVersionInfo();
         log.info(programInfo + "\n" + javaVersionInfo);
-        log.info("----------------------------------------");
+        drawLine();
     }
 
     /**
@@ -109,18 +111,22 @@ public class Mago3DTilerMain {
         Reporter reporter = globalOptions.getReporter();
         long startTime = globalOptions.getStartTime();
         long endTime = System.currentTimeMillis();
-        log.info("----------------------------------------");
+        drawLine();
         log.info("[Process Summary]");
         log.info("End Process Time : {}", DecimalUtils.millisecondToDisplayTime(endTime - startTime));
         log.info("Total tile contents count : {}", globalOptions.getTileCount());
         log.info("Total 'tileset.json' File Size : {}", DecimalUtils.byteCountToDisplaySize(globalOptions.getTilesetSize()));
-        log.info("----------------------------------------");
+        drawLine();
         log.info("[Report Summary]");
         log.info("Info : {}", reporter.getInfoCount());
         log.info("Warning : {}", reporter.getWarningCount());
         log.info("Error : {}", reporter.getErrorCount());
         log.info("Fatal : {}", reporter.getFatalCount());
         log.info("Total Report Count : {}", reporter.getReportList().size());
+        drawLine();
+    }
+
+    public static void drawLine() {
         log.info("----------------------------------------");
     }
 }

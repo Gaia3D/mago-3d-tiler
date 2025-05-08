@@ -1,4 +1,4 @@
-package com.gaia3d.release;
+package com.gaia3d.release.small;
 
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import lombok.extern.slf4j.Slf4j;
