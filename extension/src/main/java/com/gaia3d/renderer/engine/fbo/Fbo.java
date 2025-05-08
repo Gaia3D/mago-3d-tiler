@@ -69,6 +69,13 @@ public class Fbo {
         return pixels;
     }
 
+    public byte[] getBytesArray(int format) {
+        ByteBuffer pixels = readPixels(format);
+        byte[] bufferArray = new byte[pixels.remaining()];
+        pixels.get(bufferArray);
+        return bufferArray;
+    }
+
     public BufferedImage getBufferedImage(int bufferedImageType) {
         int format = GL30.GL_RGBA;
 

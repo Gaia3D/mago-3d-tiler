@@ -86,10 +86,8 @@ public class GaiaVertex extends VertexStructure implements Serializable {
         }
 
         // 5th, check batchId.
-        if(checkBatchId) {
-            if(batchId != vertex2.batchId) {
-                return false;
-            }
+        if (checkBatchId) {
+            return batchId == vertex2.batchId;
         }
         return true;
     }

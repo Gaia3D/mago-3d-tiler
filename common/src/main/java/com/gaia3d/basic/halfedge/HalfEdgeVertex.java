@@ -338,7 +338,7 @@ public class HalfEdgeVertex implements Serializable {
             }
             outputStream.writeInt(outingHalfEdgeId);
         } catch (Exception e) {
-            log.error("Error Log : ", e);
+            log.error("[ERROR] : ", e);
         }
     }
 
@@ -379,7 +379,7 @@ public class HalfEdgeVertex implements Serializable {
             // outingHalfEdgeId
             outingHalfEdgeId = inputStream.readInt();
         } catch (Exception e) {
-            log.error("Error Log : ", e);
+            log.error("[ERROR] : ", e);
         }
     }
 

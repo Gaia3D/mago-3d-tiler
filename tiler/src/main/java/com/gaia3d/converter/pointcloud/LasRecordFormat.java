@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public enum LasRecordFormat {
-    /**
+    /*
      * Referenced by LAS 1.4 specification
      */
 

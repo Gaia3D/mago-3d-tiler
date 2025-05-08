@@ -17,7 +17,7 @@ public class GaiaTextureScissorData {
     private List<HalfEdgeFace> faces;
 
     public GaiaRectangle getOriginBoundary() {
-        if(originBoundary == null) {
+        if (originBoundary == null) {
             double w = currentBoundary.getMaxX() - currentBoundary.getMinX();
             double h = currentBoundary.getMaxY() - currentBoundary.getMinY();
             originBoundary = new GaiaRectangle(0, 0, w, h);
@@ -56,10 +56,6 @@ public class GaiaTextureScissorData {
         mergedBoundary.addBoundingRectangle(other.currentBoundary);
         double mergedArea = mergedBoundary.getArea();
 
-        if (mergedArea > thisArea + otherArea) {
-            return false;
-        }
-
-        return true;
+        return !(mergedArea > thisArea + otherArea);
     }
 }

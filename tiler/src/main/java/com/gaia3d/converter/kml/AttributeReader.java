@@ -1,7 +1,6 @@
 package com.gaia3d.converter.kml;
 
 import com.gaia3d.command.mago.GlobalOptions;
-import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.*;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
@@ -14,6 +13,21 @@ import java.util.Random;
 public interface AttributeReader {
     KmlInfo read(File file);
     List<KmlInfo> readAll(File file);
+
+    default int calcTreeCount(Geometry polygon, double treeProportion, double treeDiameter) {
+        if (treeProportion <= 0) {
+            return 0;
+        }
+        double area = polygon.getArea();
+        double forestArea = area * treeProportion;
+        double treeDensity = treeDiameter * treeDiameter;
+
+        double count = forestArea / treeDensity;
+
+        int castCount = (int) count;
+        System.out.println("count: " + castCount);
+        return castCount;
+    }
 
     default List<Point> getRandomContainsPoints(Geometry polygon, GeometryFactory geometryFactory, int count) {
         PreparedGeometry preparedGeometry = PreparedGeometryFactory.prepare(polygon);

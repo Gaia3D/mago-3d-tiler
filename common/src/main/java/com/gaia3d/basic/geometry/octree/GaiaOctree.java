@@ -113,7 +113,7 @@ public class GaiaOctree {
     }
 
     public void distributeContentsByCenterPoint() {
-        if (faceDataList.size() == 0) {
+        if (faceDataList.isEmpty()) {
             return;
         }
 
@@ -179,7 +179,7 @@ public class GaiaOctree {
     }
 
     public void distributeContentsByBoundingBox(boolean distributionUnique) {
-        if (faceDataList.size() == 0) {
+        if (faceDataList.isEmpty()) {
             return;
         }
 
@@ -310,7 +310,7 @@ public class GaiaOctree {
     }
 
     public boolean hasContents(boolean includeChildren) {
-        if (faceDataList.size() > 0) {
+        if (!faceDataList.isEmpty()) {
             return true;
         }
 
@@ -338,7 +338,7 @@ public class GaiaOctree {
     }
 
     public GaiaOctree getOctreeByFullPath(List<GaiaOctreeCoordinate> fullPath) {
-        if (fullPath == null || fullPath.size() == 0) {
+        if (fullPath == null || fullPath.isEmpty()) {
             return null;
         }
 

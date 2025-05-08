@@ -30,6 +30,7 @@ public class HalfEdgeFace implements Serializable {
 
     // auxiliary variables
     private int classifyId = -1; // use to classify the face for some purpose
+    private FaceType faceType = FaceType.NORMAL; // use to classify the face for some purpose
     private PlaneType bestPlaneToProject; // use to classify the face for some purpose
     private CameraDirectionType cameraDirectionType; // use to classify the face for some purpose
 
@@ -64,8 +65,7 @@ public class HalfEdgeFace implements Serializable {
         return HalfEdgeUtils.calculateAspectRatioAsTriangle(a, b, c);
     }
 
-    public double calculateArea()
-    {
+    public double calculateArea() {
         List<HalfEdge> halfEdgesLoop = this.getHalfEdgesLoop(null);
         if (halfEdgesLoop == null || halfEdgesLoop.size() < 3) {
             return 0.0;
@@ -82,7 +82,7 @@ public class HalfEdgeFace implements Serializable {
         Vector3d normal = this.calculatePlaneNormal();
 //        Vector3d zAxis = new Vector3d(0, 0, 1);
 //        double dotProd = normal.dot(zAxis);
-//        if(dotProd > 0.5){
+//        if (dotProd > 0.5) {
 //            this.bestPlaneToProject = PlaneType.XY;
 //            return this.bestPlaneToProject;
 //        }
@@ -120,7 +120,7 @@ public class HalfEdgeFace implements Serializable {
     }
 
     public Vector3d getPlaneNormal() {
-        if(this.normal == null) {
+        if (this.normal == null) {
             this.normal = this.calculatePlaneNormal();
         }
         return this.normal;
@@ -246,7 +246,7 @@ public class HalfEdgeFace implements Serializable {
             }
             outputStream.writeInt(halfEdgeId);
         } catch (Exception e) {
-            log.error("Error Log : ", e);
+            log.error("[ERROR] : ", e);
         }
     }
 
@@ -262,7 +262,7 @@ public class HalfEdgeFace implements Serializable {
             status = (ObjectStatus) inputStream.readObject();
             halfEdgeId = inputStream.readInt();
         } catch (Exception e) {
-            log.error("Error Log : ", e);
+            log.error("[ERROR] : ", e);
         }
     }
 
@@ -319,7 +319,7 @@ public class HalfEdgeFace implements Serializable {
             return false;
         }
 
-//        if(mapVisitedFaces.get(this) != null)
+//        if (mapVisitedFaces.get(this) != null)
 //        {
 //            return false;
 //        }

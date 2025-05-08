@@ -92,7 +92,6 @@ public class Modeler3D {
     }
 
     public GaiaSurface getLateralSurface(List<GaiaVertex> vertexListA, List<GaiaVertex> vertexListB, boolean isClosed, Map<GaiaVertex, Integer> mapVertexIndex, GaiaSurface lateralSurface, boolean isSmooth) {
-        //**************************************************************************************
         // Note : the vertexListA and the vertexListB must have the same vertex count.
         //--------------------------------------------------------------------------------------
 
@@ -470,7 +469,7 @@ public class Modeler3D {
             // return rotated in xAxis 180 degrees.
             matrix.set(new double[]{1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 1.0});
         } else {
-            // Direct calculation****************************************************
+            // Direct calculation
 //            // calculate the rotation angle.
 //            double rotationAngle = Math.acos(zDir.z);
 //

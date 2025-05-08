@@ -83,7 +83,7 @@ public class HalfEdgeRenderer {
             Map<TextureType, List<GaiaTexture>> mapTextures = material.getTextures();
             if (mapTextures.containsKey(TextureType.DIFFUSE)) {
                 List<GaiaTexture> diffuseTextures = mapTextures.get(TextureType.DIFFUSE);
-                if (diffuseTextures.size() > 0) {
+                if (!diffuseTextures.isEmpty()) {
                     GaiaTexture diffuseTexture = diffuseTextures.get(0);
                     if (diffuseTexture.getTextureId() < 0) {
                         int minFilter = GL_LINEAR; // GL_LINEAR, GL_NEAREST
@@ -227,14 +227,14 @@ public class HalfEdgeRenderer {
                 }
             }
 
-//            if(positionType == PositionType.INTERIOR)
+//            if (positionType == PositionType.INTERIOR)
 //            {
 //                colors[i * 4] = (byte) (0.9 * 255.0);
 //                colors[i * 4 + 1] = (byte) (0.3 * 255.0);
 //                colors[i * 4 + 2] = (byte) (0.6 * 255.0);
 //                colors[i * 4 + 3] = (byte) 255;
 //            }
-//            else if(positionType == PositionType.BOUNDARY_EDGE)
+//            else if (positionType == PositionType.BOUNDARY_EDGE)
 //            {
 //                colors[i * 4] = (byte) (0.3 * 255.0);
 //                colors[i * 4 + 1] = (byte) (0.6 * 255.0);
@@ -289,7 +289,7 @@ public class HalfEdgeRenderer {
 
         mapAttribTypeRenderableBuffer.put(attributeType, positionBuffer);
 
-        // make texcoord buffer**************************************************************************************************
+        // make texcoord buffer
         attributeType = AttributeType.TEXCOORD;
         elementsCount = verticesCount;
         glDimension = 2;
@@ -306,7 +306,7 @@ public class HalfEdgeRenderer {
 
         mapAttribTypeRenderableBuffer.put(attributeType, texCoordBuffer);
 
-        // make indice buffer**************************************************************************************************
+        // make indice buffer
         int[] indices = halfEdgeSurface.getIndices();
         int indicesCount = indices.length;
         HalfEdgeRenderableBuffer indiceBuffer = new HalfEdgeRenderableBuffer(AttributeType.INDICE, indicesCount, (byte) 1, GL20.GL_UNSIGNED_INT, GL20.GL_ELEMENT_ARRAY_BUFFER);
@@ -320,7 +320,7 @@ public class HalfEdgeRenderer {
 
         mapAttribTypeRenderableBuffer.put(AttributeType.INDICE, indiceBuffer);
 
-        // make color buffer**************************************************************************************************
+        // make color buffer
         attributeType = AttributeType.COLOR;
         elementsCount = verticesCount;
         glDimension = 4;

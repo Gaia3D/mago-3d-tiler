@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@SuppressWarnings("ALL")
 @Slf4j
 public class Batched3DModel implements TileModel {
     private static final String MAGIC = "b3dm";
@@ -110,7 +111,7 @@ public class Batched3DModel implements TileModel {
         File outputFile = new File(globalOptions.getOutputPath());
         Path outputRoot = outputFile.toPath().resolve("data");
         if (!outputRoot.toFile().exists() && outputRoot.toFile().mkdir()) {
-            log.info("[Create][data] Created output data directory:", outputRoot);
+            log.debug("[Create][data] Created output data directory,", outputRoot);
         }
 
         byte[] glbBytes;

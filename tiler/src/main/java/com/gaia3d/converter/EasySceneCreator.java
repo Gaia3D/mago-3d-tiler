@@ -84,8 +84,13 @@ public class EasySceneCreator {
         GaiaNode node = new GaiaNode();
         Matrix4d transformMatrix = new Matrix4d();
         transformMatrix.identity();
+
+        //transformMatrix.translate(-(width / 2.0), 0, (height / 2.0));
+
         node.setTransformMatrix(transformMatrix);
         node.setName("grid-node");
+
+
 
         GaiaMesh mesh = new GaiaMesh();
 
@@ -107,13 +112,18 @@ public class EasySceneCreator {
     private List<GaiaVertex> createGridVertices(int width, int height) {
         List<GaiaVertex> vertices = new ArrayList<>();
         int indexId = 0;
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
+
+        int halfWidth = width / 2;
+        int halfHeight = height / 2;
+        for (int i = -halfHeight; i < halfHeight; i++) {
+            for (int j = -halfWidth; j < halfWidth; j++) {
                 GaiaVertex vertex = new GaiaVertex();
                 Vector3d position = new Vector3d(i, 0, -j);
                 Vector3d normal = new Vector3d(0.0, -1.0, 0.0);
 
-                Vector2d texcoords = new Vector2d((double) i / width, (double) j / height);
+                int x = i + halfHeight;
+                int y = j + halfWidth;
+                Vector2d texcoords = new Vector2d((double) x / width, (double) y / height);
                 vertex.setTexcoords(texcoords);
                 vertex.setPosition(position);
                 vertex.setNormal(normal);
@@ -151,7 +161,6 @@ public class EasySceneCreator {
                 surface.getFaces().add(face);
             }
             surfaces.add(surface);
-            log.info("surface: {}", i);
         }
         return surfaces;
     }

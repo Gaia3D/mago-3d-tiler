@@ -14,7 +14,6 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.beans.Transient;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
@@ -47,7 +46,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
     private int textureId = -1;
 
     public void loadImage() {
-        if(path == null || parentPath == null) {
+        if (path == null || parentPath == null) {
             return;
         }
 
@@ -141,7 +140,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
 
     public void loadImage(float scaleFactor) {
         loadImage();
-        if(this.bufferedImage!= null) {
+        if (this.bufferedImage != null) {
             int resizeWidth = (int) (this.bufferedImage.getWidth() * scaleFactor);
             int resizeHeight = (int) (this.bufferedImage.getHeight() * scaleFactor);
             resizeWidth = ImageUtils.getNearestPowerOfTwo(resizeWidth);
@@ -154,10 +153,10 @@ public class GaiaTexture extends TextureStructure implements Serializable {
     }
 
     public void resizeImage(int width, int height) {
-        if(this.bufferedImage == null) {
+        if (this.bufferedImage == null) {
             loadImage();
         }
-        if(this.bufferedImage == null) {
+        if (this.bufferedImage == null) {
             return;
         }
         ImageResizer imageResizer = new ImageResizer();

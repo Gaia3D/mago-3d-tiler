@@ -24,7 +24,7 @@ public class UniformsMap {
         if (location == null) {
             throw new RuntimeException("Could not find uniform [" + uniformName + "]");
         }
-        return location.intValue();
+        return location;
     }
 
     public void createUniform(String uniformName) {

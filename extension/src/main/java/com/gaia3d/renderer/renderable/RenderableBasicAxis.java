@@ -9,8 +9,8 @@ import java.util.Map;
 
 @Getter
 public class RenderableBasicAxis {
-    private float axisLength;
-    private Map<AttributeType, RenderableBuffer> mapAttribTypeRenderableBuffer;
+    private final float axisLength;
+    private final Map<AttributeType, RenderableBuffer> mapAttribTypeRenderableBuffer;
 
     public RenderableBasicAxis() {
         axisLength = 100.0f;

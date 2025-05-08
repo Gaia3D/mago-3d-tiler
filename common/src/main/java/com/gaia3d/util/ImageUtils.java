@@ -20,6 +20,7 @@ import java.util.Iterator;
 /**
  * Utility class for image operations.
  */
+@SuppressWarnings("ALL")
 @Slf4j
 public class ImageUtils {
 
@@ -324,7 +325,7 @@ public class ImageUtils {
         graphics.drawImage(image, 0, 0, null);
         graphics.dispose();
 
-        while(it < iterations) {
+        while (it < iterations) {
             changed = false;
             for (int i = 0; i < width; i++) {
                 for (int j = 0; j < height; j++) {
@@ -384,7 +385,7 @@ public class ImageUtils {
         return newImage;
     }
 
-    public void saveBufferedImage(BufferedImage image, String format, String path) {
+    public static void saveBufferedImage(BufferedImage image, String format, String path) {
         try {
             File file = new File(path);
             ImageIO.write(image, format, new File(path));

@@ -1,5 +1,6 @@
 package com.gaia3d.converter.geometry.geojson;
 
+import com.gaia3d.command.mago.AttributeFilter;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.KmlInfo;
@@ -43,6 +44,7 @@ public class GeojsonPointReader implements AttributeReader {
     public List<KmlInfo> readAll(File file) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
 
+        List<AttributeFilter> attributeFilters = globalOptions.getAttributeFilters();
         boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalOptions.DEFAULT_CRS);
         List<KmlInfo> result = new ArrayList<>();
         String altitudeColumnName = globalOptions.getAltitudeColumn();
@@ -66,6 +68,22 @@ public class GeojsonPointReader implements AttributeReader {
             while (iterator.hasNext()) {
                 SimpleFeature feature = iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
+
+                if (!attributeFilters.isEmpty()) {
+                    boolean filterFlag = false;
+                    for (AttributeFilter attributeFilter : attributeFilters) {
+                        String columnName = attributeFilter.getAttributeName();
+                        String filterValue = attributeFilter.getAttributeValue();
+                        String attributeValue = castStringFromObject(feature.getAttribute(columnName), "null");
+                        if (filterValue.equals(attributeValue)) {
+                            filterFlag = true;
+                            break;
+                        }
+                    }
+                    if (!filterFlag) {
+                        continue;
+                    }
+                }
 
                 List<Point> points = new ArrayList<>();
                 if (geom instanceof MultiPolygon multiPolygon) {

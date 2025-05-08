@@ -2,10 +2,12 @@ package com.gaia3d.release.small;
 
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
+@Tag("release")
 @Slf4j
 class PntsReleaseTest {
     private static final String INPUT_PATH = "D:/data/mago-3d-tiler/release-sample";
@@ -17,7 +19,21 @@ class PntsReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                //"-c", "32652",
+                "-c", "32652",
+        };
+        execute(args);
+    }
+
+    @Test
+    void pointcloud00Offset() {
+        String path = "P00-hwangyonggak-las";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath() + "-offset",
+                "-zOffset", "100.0",
+                "-xOffset", "100.0",
+                "-yOffset", "100.0",
+                "-c", "32652",
         };
         execute(args);
     }
@@ -40,7 +56,7 @@ class PntsReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-c", "5187",
-                "-pointRatio", "25",
+                "-pointRatio", "100",
                 "-debug",
         };
         execute(args);

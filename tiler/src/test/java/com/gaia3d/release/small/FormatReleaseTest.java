@@ -2,10 +2,12 @@ package com.gaia3d.release.small;
 
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
+@Tag("release")
 @Slf4j
 class FormatReleaseTest {
     private static final String INPUT_PATH = "D:/data/mago-3d-tiler/release-sample";
@@ -110,8 +112,8 @@ class FormatReleaseTest {
                     "-o", getOutputPath(path).getAbsolutePath(),
             };
             execute(args);
-        } catch (RuntimeException e){
-            log.error("Failed to run process, Please check the arguments.", e);
+        } catch (RuntimeException e) {
+            log.error("[ERROR] Failed to run process, Please check the arguments.", e);
             assert true;
         }
     }

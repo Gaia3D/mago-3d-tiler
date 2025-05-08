@@ -7,7 +7,6 @@ public interface IAppLogic {
 
     void init(Window window, GaiaScenesContainer gaiaScenesContainer);
 
-    //void input(Window window, Scene scene, long diffTimeMillis);
     void input(Window window, GaiaScenesContainer gaiaScenesContainer, long diffTimeMillis);
 
     void update(Window window, GaiaScenesContainer gaiaScenesContainer, long diffTimeMillis);

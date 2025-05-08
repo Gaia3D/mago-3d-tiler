@@ -2,8 +2,7 @@ import org.gradle.internal.os.OperatingSystem
 
 subprojects {
     group "com.gaia3d"
-    // release, beta, alpha
-    version "1.11.0-beta"
+    version "1.11.3-beta"
     apply plugin: 'java'
 
     project.ext.lwjglVersion = "3.3.3"
@@ -18,6 +17,7 @@ subprojects {
             project.ext.lwjglNatives = "natives-macos"
             break
     }
+    //project.ext.lwjglNatives = "natives-linux"
 
     repositories {
         maven { url "https://repo.osgeo.org/repository/release/" }
@@ -74,7 +74,21 @@ project(':non-mago-extension') {
 project(':mago-tiler') {
     dependencies {
         implementation project(':mago-common')
-        implementation project(':non-mago-extension')
-        //implementation project(':mago-extension')
+        implementation project(':mago-extension')
+        //implementation project(':non-mago-extension')
     }
+}
+
+tasks.register('javadoc', Javadoc) {
+    group = 'Documentation'
+    description = 'Generates Javadoc for mago-tiler module.'
+
+    def includedProjects = [project(':mago-tiler'), project(':mago-common'), project(':mago-extension')]
+
+    source = files(includedProjects.collect { it.sourceSets.main.allJava })
+    classpath = files(includedProjects.collect { it.sourceSets.main.compileClasspath })
+    destinationDir = file("/docs/")
+    options.encoding = 'UTF-8'
+    options.memberLevel = JavadocMemberLevel.PUBLIC
+    options.addStringOption('Xdoclint:none', '-quiet') // 경고 무시
 }

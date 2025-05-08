@@ -192,8 +192,8 @@ public class GaiaTextureCoordinator {
         return resultVec;
     }
 
-    private float modf(float value, Double intPart) {
-        intPart = Math.floor(value);
+    private float modf(float value) {
+        double intPart = Math.floor(value);
         return (float) (value - intPart);
     }
 
@@ -247,8 +247,7 @@ public class GaiaTextureCoordinator {
             splittedImages.add(splittedImage);
         }
 
-        // 사이즈 큰->작은 정렬
-        splittedImages = splittedImages.stream().sorted(Comparator.comparing(splittedImage -> splittedImage.getOriginBoundary().getArea())).collect(Collectors.toList());
+        splittedImages = splittedImages.stream().sorted(Comparator.comparing(splitImage -> splitImage.getOriginBoundary().getArea())).collect(Collectors.toList());
         Collections.reverse(splittedImages);
 
         // do the atlasing process
@@ -346,13 +345,13 @@ public class GaiaTextureCoordinator {
                         if (Math.abs(originX) - 1.0 < error) {
                             fractPartX = originX;
                         } else {
-                            fractPartX = this.modf(originX, intPartX);
+                            fractPartX = this.modf(originX);
                         }
 
                         if (Math.abs(originY) - 1.0 < error) {
                             fractPartY = originY;
                         } else {
-                            fractPartY = this.modf(originY, intPartY);
+                            fractPartY = this.modf(originY);
                         }
 
                         u = fractPartX;

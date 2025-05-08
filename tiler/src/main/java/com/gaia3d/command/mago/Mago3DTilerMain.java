@@ -13,6 +13,7 @@ import java.io.IOException;
 /**
  * Main class for mago 3DTiler.
  */
+@SuppressWarnings("ALL")
 @Slf4j
 public class Mago3DTilerMain {
     private static final String PROGRAM_NAME = "mago-3d-tiler";
@@ -109,11 +110,11 @@ public class Mago3DTilerMain {
     private static void printEnd() {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         Reporter reporter = globalOptions.getReporter();
-        long startTime = globalOptions.getStartTime();
-        long endTime = System.currentTimeMillis();
+        long duration = reporter.getDuration();
+        reporter.getDuration();
         drawLine();
         log.info("[Process Summary]");
-        log.info("End Process Time : {}", DecimalUtils.millisecondToDisplayTime(endTime - startTime));
+        log.info("End Process Time : {}", DecimalUtils.millisecondToDisplayTime(duration));
         log.info("Total tile contents count : {}", globalOptions.getTileCount());
         log.info("Total 'tileset.json' File Size : {}", DecimalUtils.byteCountToDisplaySize(globalOptions.getTilesetSize()));
         drawLine();

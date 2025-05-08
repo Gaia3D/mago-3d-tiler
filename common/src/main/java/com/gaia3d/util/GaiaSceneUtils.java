@@ -1,13 +1,9 @@
 package com.gaia3d.util;
 
-import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.octree.GaiaOctreeVertices;
-import com.gaia3d.basic.halfedge.HalfEdgeScene;
-import com.gaia3d.basic.halfedge.HalfEdgeUtils;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.model.structure.GaiaFaceExplicit;
 import lombok.extern.slf4j.Slf4j;
-import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
 import java.util.ArrayList;
@@ -49,11 +45,10 @@ public class GaiaSceneUtils {
     }
 
     public static Map<GaiaVertex, List<GaiaFaceExplicit>> getMapVertexToFaceExplicits(List<GaiaFaceExplicit> faces, Map<GaiaVertex, List<GaiaFaceExplicit>> resultMapVertexToFace) {
-        if(resultMapVertexToFace == null)
+        if (resultMapVertexToFace == null)
             resultMapVertexToFace = new HashMap<>();
 
-        for(GaiaFaceExplicit face : faces)
-        {
+        for (GaiaFaceExplicit face : faces) {
             GaiaVertex vertex1 = face.getVertex1();
             GaiaVertex vertex2 = face.getVertex2();
             GaiaVertex vertex3 = face.getVertex3();
@@ -68,13 +63,11 @@ public class GaiaSceneUtils {
         return resultMapVertexToFace;
     }
 
-    public static List<GaiaFaceExplicit> getGaiaFacesExplicit(GaiaSurface surface, List<GaiaVertex> vertices, List<GaiaFaceExplicit> resultGaiaFaceExplicits)
-    {
-        if(resultGaiaFaceExplicits == null)
+    public static List<GaiaFaceExplicit> getGaiaFacesExplicit(GaiaSurface surface, List<GaiaVertex> vertices, List<GaiaFaceExplicit> resultGaiaFaceExplicits) {
+        if (resultGaiaFaceExplicits == null)
             resultGaiaFaceExplicits = new ArrayList<>();
         List<GaiaFace> faces = surface.getFaces();
-        for(GaiaFace face : faces)
-        {
+        for (GaiaFace face : faces) {
             GaiaFaceExplicit gaiaFaceExplicit = new GaiaFaceExplicit();
             int[] indices = face.getIndices();
             GaiaVertex vertex1 = vertices.get(indices[0]);
@@ -107,8 +100,7 @@ public class GaiaSceneUtils {
         return vector.z > 0.95;
     }
 
-    public static void deformSceneByVerticesConvexity(GaiaScene scene, double dist, double minHeight, double maxHeight)
-    {
+    public static void deformSceneByVerticesConvexity(GaiaScene scene, double dist, double minHeight, double maxHeight) {
         List<GaiaVertex> totalVertices = new ArrayList<>();
         List<GaiaFaceExplicit> totalFacesExplicit = new ArrayList<>();
         List<GaiaFaceExplicit> currFacesExplicit = new ArrayList<>();
@@ -166,7 +158,7 @@ public class GaiaSceneUtils {
         int vertexCount = totalVertices.size();
         for (int i = 0; i < vertexCount; i++) {
             GaiaVertex vertex = totalVertices.get(i);
-            if(mapVisitedVertices.containsKey(vertex)) {
+            if (mapVisitedVertices.containsKey(vertex)) {
                 continue;
             }
 
@@ -211,7 +203,7 @@ public class GaiaSceneUtils {
             // finally set the normals.
             for (int j = 0; j < currListVerticesCount; j++) {
                 GaiaVertex vertex2 = currListVertices.get(j);
-                if(mapVisitedVertices.containsKey(vertex2)) {
+                if (mapVisitedVertices.containsKey(vertex2)) {
                     continue;
                 }
                 mapVisitedVertices.put(vertex2, vertex2);
@@ -227,7 +219,7 @@ public class GaiaSceneUtils {
 //            iteration++;
 //        }
 
-        if(iteration > 95) {
+        if (iteration > 95) {
             log.info("The iteration is 100.");
         }
 
@@ -249,15 +241,13 @@ public class GaiaSceneUtils {
         }
     }
 
-    public static boolean modifyVerticalNormalsOneIteration(List<GaiaFaceExplicit> faces)
-    {
+    public static boolean modifyVerticalNormalsOneIteration(List<GaiaFaceExplicit> faces) {
         boolean modified = false;
         int facesCount = faces.size();
-        for(int i=0; i<facesCount; i++)
-        {
+        for (int i = 0; i < facesCount; i++) {
             GaiaFaceExplicit face = faces.get(i);
             Vector3d planeNormal = face.getPlaneNormal();
-            if(isVerticalVector(planeNormal)) {
+            if (isVerticalVector(planeNormal)) {
                 // check if the normals are vertical.
                 GaiaVertex vertex1 = face.getVertex1();
                 GaiaVertex vertex2 = face.getVertex2();
@@ -270,17 +260,17 @@ public class GaiaSceneUtils {
 
                 Vector3d mostHorizontalVector = null;
                 GaiaVertex mostHorizontalVertex = null;
-                if(mostHorizontalIdx == 1) {
+                if (mostHorizontalIdx == 1) {
                     mostHorizontalVector = normal1;
                     mostHorizontalVertex = vertex1;
-                } else if(mostHorizontalIdx == 2) {
+                } else if (mostHorizontalIdx == 2) {
                     mostHorizontalVector = normal2;
                     mostHorizontalVertex = vertex2;
                 } else {
                     mostHorizontalVector = normal3;
                     mostHorizontalVertex = vertex3;
                 }
-                if(!isVerticalVector(mostHorizontalVector)) {
+                if (!isVerticalVector(mostHorizontalVector)) {
                     // modify the vertical normal.
                     if (isVerticalVector(normal1)) {
                         // add to normal1 a fractional part of the normal of the vertex.

@@ -17,7 +17,7 @@ void main(void) {
     } else if (uColorMode == 2) {
         finalColor = texture2D(texture0, vTexCoord);
 
-        if(finalColor.r == 0.0 && finalColor.g == 0.0 && finalColor.b == 0.0)
+        if (finalColor.r == 0.0 && finalColor.g == 0.0 && finalColor.b == 0.0)
         {
             //finalColor.r = vTexCoord.x - floor(vTexCoord.x);
             //finalColor.g = vTexCoord.y - floor(vTexCoord.y);

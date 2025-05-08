@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -130,16 +131,15 @@ public class Reporter {
             log.info("[Report][I/O] writing the report file: {}", reportFile.getAbsolutePath());
             FileUtils.writeStringToFile(reportFile, stringBuilder.toString(), REPORT_FILE_ENCODING);
         } catch (Exception e) {
-            log.error("[Report][I/O] failed to write the report file: {}", reportFile.getAbsolutePath());
+            log.error("[ERROR][Report][I/O] failed to write the report file: {}", reportFile.getAbsolutePath());
         }
     }
 
     private void setEndTime() {
         this.endTime = LocalDateTime.now();
 
-        long nanoDuration = Math.abs(endTime.getNano() - startTime.getNano());
-        /* Convert nano seconds to milliseconds */
-        this.duration = nanoDuration / 1000000;
+        Duration duration = Duration.between(startTime, endTime);
+        this.duration = (duration.getSeconds() * 1000) + (duration.getNano() / 1000000);
     }
 
     private void addLine(StringBuilder stringBuilder) {

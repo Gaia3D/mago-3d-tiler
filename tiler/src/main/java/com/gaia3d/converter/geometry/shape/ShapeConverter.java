@@ -5,6 +5,7 @@ import com.gaia3d.basic.geometry.tessellator.GaiaExtruder;
 import com.gaia3d.basic.geometry.tessellator.GaiaExtrusionSurface;
 import com.gaia3d.basic.geometry.tessellator.Vector3dOnlyHashEquals;
 import com.gaia3d.basic.model.*;
+import com.gaia3d.command.mago.AttributeFilter;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.EasySceneCreator;
@@ -67,6 +68,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         List<GaiaSceneTempGroup> sceneTemps = new ArrayList<>();
         InnerRingRemover innerRingRemover = new InnerRingRemover();
 
+        List<AttributeFilter> attributeFilters = globalOptions.getAttributeFilters();
         boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalOptions.DEFAULT_CRS);
         boolean flipCoordinate = globalOptions.isFlipCoordinate();
         String nameColumnName = globalOptions.getNameColumn();
@@ -83,9 +85,12 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         try {
             shpFiles = new ShpFiles(input);
             reader = new ShapefileReader(shpFiles, true, true, new GeometryFactory());
-            DataStore dataStore = new ShapefileDataStore(input.toURI().toURL());
+            ShapefileDataStore dataStore = new ShapefileDataStore(input.toURI().toURL());
+            ShapeEncodingFix shapeEncodingFix = new ShapeEncodingFix();
+            dataStore.setCharset(shapeEncodingFix.detectCharset(input));
+
             String typeName = dataStore.getTypeNames()[0];
-            ContentFeatureSource source = (ContentFeatureSource) dataStore.getFeatureSource(typeName);
+            ContentFeatureSource source = dataStore.getFeatureSource(typeName);
             var query = new Query(typeName, Filter.INCLUDE);
 
             int totalCount = source.getCount(query);
@@ -109,6 +114,22 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 if (geom == null) {
                     log.debug("Is Null Geometry : {}", feature.getID());
                     continue;
+                }
+
+                if (!attributeFilters.isEmpty()) {
+                    boolean filterFlag = false;
+                    for (AttributeFilter attributeFilter : attributeFilters) {
+                        String columnName = attributeFilter.getAttributeName();
+                        String filterValue = attributeFilter.getAttributeValue();
+                        String attributeValue = castStringFromObject(feature.getAttribute(columnName), "null");
+                        if (filterValue.equals(attributeValue)) {
+                            filterFlag = true;
+                            break;
+                        }
+                    }
+                    if (!filterFlag) {
+                        continue;
+                    }
                 }
 
                 List<Polygon> polygons = new ArrayList<>();
@@ -259,7 +280,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             convertExtrusionBuildings(buildings, sceneTemps, input, output);
         } catch (IOException e) {
             shpFiles.dispose();
-            log.error("Error while reading shapefile", e);
+            log.error("[ERROR] while reading shapefile", e);
             throw new RuntimeException(e);
         }
         return sceneTemps;

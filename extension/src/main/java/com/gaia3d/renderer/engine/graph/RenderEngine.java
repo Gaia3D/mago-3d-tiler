@@ -23,6 +23,7 @@ import java.util.Map;
 
 import static org.lwjgl.opengl.GL11.*;
 
+@SuppressWarnings("ALL")
 @Getter
 @Setter
 @Slf4j
@@ -242,7 +243,7 @@ public class RenderEngine {
                 Map<TextureType, List<GaiaTexture>> mapTextures = material.getTextures();
                 if (mapTextures.containsKey(TextureType.DIFFUSE)) {
                     List<GaiaTexture> diffuseTextures = mapTextures.get(TextureType.DIFFUSE);
-                    if (diffuseTextures.size() > 0) {
+                    if (!diffuseTextures.isEmpty()) {
                         GaiaTexture diffuseTexture = diffuseTextures.get(0);
                         if (diffuseTexture.getTextureId() < 0) {
                             int minFilter = GL_LINEAR; // GL_LINEAR, GL_NEAREST
@@ -250,7 +251,7 @@ public class RenderEngine {
                             int wrapS = GL_REPEAT; // GL_CLAMP_TO_EDGE
                             int wrapT = GL_REPEAT;
                             BufferedImage bufferedImage = diffuseTexture.getBufferedImage();
-                            if(bufferedImage == null) {
+                            if (bufferedImage == null) {
                                 log.error("[ERROR] bufferedImage is null.");
                                 continue;
                             }

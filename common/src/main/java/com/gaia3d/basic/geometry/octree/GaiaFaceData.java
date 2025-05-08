@@ -20,14 +20,14 @@ public class GaiaFaceData {
     private GaiaFace face = null;
     private GaiaBoundingBox boundingBox = null;
     private Vector3d centerPoint = null;
-    private Vector4d averageColor = null; // Average color of the face
+    private Vector4d primaryColor = null;
 
     public GaiaBoundingBox getBoundingBox() {
         if (boundingBox == null) {
             if (primitiveParent != null) {
                 boundingBox = face.getBoundingBox(primitiveParent.getVertices(), new GaiaBoundingBox());
             } else {
-                log.error("[Error][getBoundingBox] : primitiveParent is null.");
+                log.error("[ERROR][getBoundingBox] : primitiveParent is null.");
             }
         }
         return boundingBox;

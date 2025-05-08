@@ -15,6 +15,10 @@ import org.locationtech.proj4j.CoordinateReferenceSystem;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Global options for Gaia3D Tiler.
@@ -37,6 +41,8 @@ public class GlobalOptions {
     public static final int DEFAULT_MAX_TRIANGLES = 65536 * 8;
     public static final int DEFAULT_MAX_NODE_DEPTH = 32;
     public static final int DEFAULT_MAX_INSTANCE = 1024 * 64;
+    public static final int DEFAULT_MAX_I3DM_FEATURE_COUNT = 1024;
+    public static final int DEFAULT_MIN_I3DM_FEATURE_COUNT = 128;
 
     public static final int DEFAULT_POINT_PER_TILE = 300000;
     public static final int DEFAULT_POINT_RATIO = 50;
@@ -76,8 +82,6 @@ public class GlobalOptions {
     private String javaVersionInfo; // java version flag
     private String programInfo; // program info flag
 
-    private long startTime = 0;
-    private long endTime = 0;
     private long fileCount = 0;
     private long tileCount = 0;
     private long tilesetSize = 0;
@@ -154,6 +158,8 @@ public class GlobalOptions {
     private double absoluteAltitude;
     private double minimumHeight;
     private double skirtHeight;
+
+    private List<AttributeFilter> attributeFilters = new ArrayList<>();
 
     public static GlobalOptions getInstance() {
         if (instance.javaVersionInfo == null) {
@@ -325,6 +331,21 @@ public class GlobalOptions {
         instance.setMinimumHeight(command.hasOption(ProcessOptions.MINIMUM_HEIGHT.getArgName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.MINIMUM_HEIGHT.getArgName())) : DEFAULT_MINIMUM_HEIGHT);
         instance.setSkirtHeight(command.hasOption(ProcessOptions.SKIRT_HEIGHT.getArgName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.SKIRT_HEIGHT.getArgName())) : DEFAULT_SKIRT_HEIGHT);
 
+        // Attribute Filter ex) "classification=window,door;type=building"
+        if (command.hasOption(ProcessOptions.ATTRIBUTE_FILTER.getArgName())) {
+            List<AttributeFilter> attributeFilters = instance.getAttributeFilters();
+            String[] filters = command.getOptionValue(ProcessOptions.ATTRIBUTE_FILTER.getArgName()).split(";");
+            for (String filter : filters) {
+                String[] keyValue = filter.split("=");
+                if (keyValue.length == 2) {
+                    for (String value : keyValue[1].split(",")) {
+                        attributeFilters.add(new AttributeFilter(keyValue[0], value));
+                        log.info("Attribute Filter: {}={}", keyValue[0], value);
+                    }
+                }
+            }
+        }
+
         instance.setDebug(command.hasOption(ProcessOptions.DEBUG.getArgName()));
 
         boolean isSwapUpAxis = false;
@@ -354,9 +375,8 @@ public class GlobalOptions {
             if (instance.getOutputFormat().equals(FormatType.B3DM)) {
                 rotateXAxis = -90;
             }
-            isRefineAdd = true;
+            //isRefineAdd = true;
         }
-
 
         instance.setSwapUpAxis(isSwapUpAxis);
         instance.setFlipUpAxis(isFlipUpAxis);
@@ -384,7 +404,7 @@ public class GlobalOptions {
             log.error("[ERROR] *** Extension Module is not supported ***");
             throw new IllegalArgumentException("Extension Module is not supported.");
         } else {
-            instance.setUseQuantization(true);
+            instance.setUseQuantization(false);
         }
     }
 
@@ -399,8 +419,6 @@ public class GlobalOptions {
         title = title == null ? "mago-3d-tiler" : title;
         vendor = vendor == null ? "Gaia3D, Inc." : vendor;
         String programInfo = title + "(" + version + ") by " + vendor;
-
-        instance.setStartTime(System.currentTimeMillis());
         instance.setProgramInfo(programInfo);
         instance.setJavaVersionInfo(javaVersionInfo);
     }

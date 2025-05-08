@@ -283,8 +283,8 @@ public class AssimpConverter implements Converter {
             // embedded texture check
             if (diffTexPath.startsWith("*")) {
                 String embeddedTexturePath = embeddedTextures.get(Integer.parseInt(diffTexPath.substring(1)));
-                log.debug("Original Texture Path: " + diffTexPath);
-                log.debug("Embedded Texture Path: " + embeddedTexturePath);
+                log.debug("Original Texture Path: {}", diffTexPath);
+                log.debug("Embedded Texture Path: {}", embeddedTexturePath);
                 diffTexPath = "embedded_textures" + File.separator + embeddedTexturePath;
             } else {
                 File filePath = new File(diffTexPath);
@@ -292,8 +292,8 @@ public class AssimpConverter implements Converter {
                 String embeddedTexturePath = "embedded_textures" + File.separator + fileName;
                 File inputFile = new File(parentPath, embeddedTexturePath);
                 if (inputFile.exists() && inputFile.isFile()) {
-                    log.debug("Original Texture Path: " + diffTexPath);
-                    log.debug("Corrected Texture Path: " + embeddedTexturePath);
+                    log.debug("Original Texture Path: {}", diffTexPath);
+                    log.debug("Corrected Texture Path: {}", embeddedTexturePath);
                     diffTexPath = embeddedTexturePath;
                 }
             }
@@ -323,8 +323,8 @@ public class AssimpConverter implements Converter {
             // embedded texture check
             if (ambientTexPath.startsWith("*")) {
                 String embeddedTexturePath = embeddedTextures.get(Integer.parseInt(ambientTexPath.substring(1)));
-                log.debug("Original Texture Path: " + ambientTexPath);
-                log.debug("Embedded Texture Path: " + embeddedTexturePath);
+                log.debug("Original Texture Path: {}", ambientTexPath);
+                log.debug("Embedded Texture Path: {}", embeddedTexturePath);
                 ambientTexPath = "embedded_textures" + File.separator + embeddedTexturePath;
             } else {
                 File filePath = new File(ambientTexPath);
@@ -332,8 +332,8 @@ public class AssimpConverter implements Converter {
                 String embeddedTexturePath = "embedded_textures" + File.separator + fileName;
                 File inputFile = new File(parentPath, embeddedTexturePath);
                 if (inputFile.exists() && inputFile.isFile()) {
-                    log.debug("Original Texture Path: " + ambientTexPath);
-                    log.debug("Corrected Texture Path: " + embeddedTexturePath);
+                    log.debug("Original Texture Path: {}", ambientTexPath);
+                    log.debug("Corrected Texture Path: {}", embeddedTexturePath);
                     ambientTexPath = embeddedTexturePath;
                 }
             }
@@ -361,8 +361,8 @@ public class AssimpConverter implements Converter {
             // embedded texture check
             if (specularTexPath.startsWith("*")) {
                 String embeddedTexturePath = embeddedTextures.get(Integer.parseInt(specularTexPath.substring(1)));
-                log.debug("Original Texture Path: " + specularTexPath);
-                log.debug("Embedded Texture Path: " + embeddedTexturePath);
+                log.debug("Original Texture Path: {}", specularTexPath);
+                log.debug("Embedded Texture Path: {}", embeddedTexturePath);
                 specularTexPath = "embedded_textures" + File.separator + embeddedTexturePath;
             } else {
                 File filePath = new File(specularTexPath);
@@ -370,8 +370,8 @@ public class AssimpConverter implements Converter {
                 String embeddedTexturePath = "embedded_textures" + File.separator + fileName;
                 File inputFile = new File(parentPath, embeddedTexturePath);
                 if (inputFile.exists() && inputFile.isFile()) {
-                    log.debug("Original Texture Path: " + specularTexPath);
-                    log.debug("Corrected Texture Path: " + embeddedTexturePath);
+                    log.debug("Original Texture Path: {}", specularTexPath);
+                    log.debug("Corrected Texture Path: {}", embeddedTexturePath);
                     specularTexPath = embeddedTexturePath;
                 }
             }
@@ -399,8 +399,8 @@ public class AssimpConverter implements Converter {
             // embedded texture check
             if (shininessTexPath.startsWith("*")) {
                 String embeddedTexturePath = embeddedTextures.get(Integer.parseInt(shininessTexPath.substring(1)));
-                log.debug("Original Texture Path: " + shininessTexPath);
-                log.debug("Embedded Texture Path: " + embeddedTexturePath);
+                log.debug("Original Texture Path: {}", shininessTexPath);
+                log.debug("Embedded Texture Path: {}", embeddedTexturePath);
                 shininessTexPath = "embedded_textures" + File.separator + embeddedTexturePath;
             } else {
                 File filePath = new File(shininessTexPath);
@@ -408,8 +408,8 @@ public class AssimpConverter implements Converter {
                 String embeddedTexturePath = "embedded_textures" + File.separator + fileName;
                 File inputFile = new File(parentPath, embeddedTexturePath);
                 if (inputFile.exists() && inputFile.isFile()) {
-                    log.debug("Original Texture Path: " + shininessTexPath);
-                    log.debug("Corrected Texture Path: " + embeddedTexturePath);
+                    log.debug("Original Texture Path: {}", shininessTexPath);
+                    log.debug("Corrected Texture Path: {}", embeddedTexturePath);
                     shininessTexPath = embeddedTexturePath;
                 }
             }

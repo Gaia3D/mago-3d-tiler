@@ -101,8 +101,7 @@ public class GaiaScene extends SceneStructure implements Serializable {
         return triangleCount;
     }
 
-    public void makeTriangleFaces()
-    {
+    public void makeTriangleFaces() {
         for (GaiaNode node : this.nodes) {
             node.makeTriangleFaces();
         }
@@ -121,7 +120,7 @@ public class GaiaScene extends SceneStructure implements Serializable {
     }
 
     public List<GaiaFace> extractGaiaFaces(List<GaiaFace> resultFaces) {
-        if(resultFaces == null) {
+        if (resultFaces == null) {
             resultFaces = new ArrayList<>();
         }
         for (GaiaNode node : this.nodes) {
@@ -156,8 +155,15 @@ public class GaiaScene extends SceneStructure implements Serializable {
         children.add(node);
     }
 
+    public void getFinalVerticesCopy(List<GaiaVertex> finalVertices) {
+        // final vertices are the vertices multiplied by the transform matrix of the nodes.***
+        for (GaiaNode node : this.nodes) {
+            node.getFinalVerticesCopy(null, finalVertices);
+        }
+    }
+
     public List<GaiaPrimitive> extractPrimitives(List<GaiaPrimitive> resultPrimitives) {
-        if(resultPrimitives == null) {
+        if (resultPrimitives == null) {
             resultPrimitives = new ArrayList<>();
         }
         for (GaiaNode node : this.nodes) {
@@ -172,8 +178,7 @@ public class GaiaScene extends SceneStructure implements Serializable {
         }
     }
 
-    public void deleteNormals()
-    {
+    public void deleteNormals() {
         for (GaiaNode node : this.nodes) {
             node.deleteNormals();
         }
@@ -203,5 +208,17 @@ public class GaiaScene extends SceneStructure implements Serializable {
             facesCount += node.getFacesCount();
         }
         return facesCount;
+    }
+
+    public void calculateNormal() {
+        for (GaiaNode node : this.nodes) {
+            node.calculateNormal();
+        }
+    }
+
+    public void calculateVertexNormals() {
+        for (GaiaNode node : this.nodes) {
+            node.calculateVertexNormals();
+        }
     }
 }

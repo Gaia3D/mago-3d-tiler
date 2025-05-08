@@ -3,10 +3,12 @@ package com.gaia3d.release.small;
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
+@Tag("release")
 @Slf4j
 class B3dmReleaseTest {
     private static final String INPUT_PATH = "D:/data/mago-3d-tiler/release-sample";
@@ -243,6 +245,21 @@ class B3dmReleaseTest {
     }
 
     @Test
+    void batched81() {
+        String path = "B81-glb-problems-kml";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                //"-rotateX", "90",
+                "--crs", "3011",
+                "--xOffset", "151400",
+                "--yOffset", "6577000",
+                //"-debug"
+        };
+        execute(args);
+    }
+
+    @Test
     void batched82() {
         String path = "B82-glb-problems-good-kml";
         String[] args = new String[] {
@@ -257,16 +274,13 @@ class B3dmReleaseTest {
     }
 
     @Test
-    void batched81() {
-        String path = "B81-glb-problems-kml";
+    void batched90() {
+        String path = "B90-compo";
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                //"-rotateX", "90",
-                "--crs", "3011",
-                "--xOffset", "151400",
-                "--yOffset", "6577000",
-                //"-debug"
+                //"-it", "",
+                "-debug"
         };
         execute(args);
     }

@@ -3,8 +3,6 @@ package com.gaia3d.process.tileprocess.tile.tileset.node;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.geometry.octree.GaiaOctree;
-import com.gaia3d.basic.geometry.octree.HalfEdgeOctree;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.util.DecimalUtils;
 import com.gaia3d.util.GlobeUtils;
@@ -24,6 +22,11 @@ import java.util.List;
 @Setter
 @RequiredArgsConstructor
 public class Node {
+
+    public enum RefineType {
+        ADD, REPLACE,
+    }
+
     @JsonIgnore
     private String nodeCode;
     @JsonIgnore
@@ -61,7 +64,7 @@ public class Node {
                 this.transformMatrixAux = transformMatrixAux;
             } else {
                 this.transformMatrix = transformMatrixAux;
-                log.error("Error :: Wrong TransformMatrix");
+                log.error("[ERROR] Wrong TransformMatrix");
             }
 
             this.transform = transformMatrix.get(new float[16]);
@@ -71,6 +74,50 @@ public class Node {
             }
         }
     }
+
+    public BoundingVolume recalculateBoundingRegion() {
+        double[] newRegion = new double[6];
+        double minX = Double.MAX_VALUE;
+        double minY = Double.MAX_VALUE;
+        double maxX = -Double.MAX_VALUE;
+        double maxY = -Double.MAX_VALUE;
+        double minZ = Double.MAX_VALUE;
+        double maxZ = -Double.MAX_VALUE;
+
+        BoundingVolume newBoundingVolume = new BoundingVolume(BoundingVolume.BoundingVolumeType.REGION);
+        newBoundingVolume.setRegion(newRegion);
+
+        List<Node> children = this.getChildren();
+        for (Node childNode : children) {
+            BoundingVolume childBoundingVolume = childNode.getBoundingVolume();
+            if (childBoundingVolume != null) {
+                double[] childRegion = childBoundingVolume.getRegion();
+                if (childRegion != null) {
+                    minX = Math.min(minX, childRegion[0]);
+                    minY = Math.min(minY, childRegion[1]);
+                    maxX = Math.max(maxX, childRegion[2]);
+                    maxY = Math.max(maxY, childRegion[3]);
+                    minZ = Math.min(minZ, childRegion[4]);
+                    maxZ = Math.max(maxZ, childRegion[5]);
+                }
+            }
+        }
+        newRegion[0] = minX;
+        newRegion[1] = minY;
+        newRegion[2] = maxX;
+        newRegion[3] = maxY;
+        newRegion[4] = minZ;
+        newRegion[5] = maxZ;
+
+        for (int i = 0; i < newRegion.length; i++) {
+            newRegion[i] = DecimalUtils.cut(newRegion[i]);
+        }
+
+        // set the new bounding volume
+        this.boundingVolume = newBoundingVolume;
+        return newBoundingVolume;
+    }
+
 
     public void deleteNoContentNodes() {
         if (children == null) {
@@ -88,15 +135,14 @@ public class Node {
         }
     }
 
-    public void setRefinementTypeAutomatic()
-    {
-        if(this.children == null || this.children.isEmpty()) {
+    public void setRefinementTypeAutomatic() {
+        if (this.children == null || this.children.isEmpty()) {
             return;
         }
         for (Node childNode : children) {
             childNode.setRefinementTypeAutomatic();
         }
-        if(this.content != null && this.content.getContentInfo() != null && !this.content.getContentInfo().getTileInfos().isEmpty()) {
+        if (this.content != null && this.content.getContentInfo() != null && !this.content.getContentInfo().getTileInfos().isEmpty()) {
             this.refine = RefineType.REPLACE;
         } else {
             this.refine = RefineType.ADD;
@@ -104,23 +150,18 @@ public class Node {
     }
 
     public void extractNodes(int depth, List<Node> resultNodes) {
-        if(this.depth == depth) {
+        if (this.depth == depth) {
             resultNodes.add(this);
             return;
         }
 
-        if(this.children == null) {
+        if (this.children == null) {
             return;
         }
 
         for (Node childNode : children) {
             childNode.extractNodes(depth, resultNodes);
         }
-    }
-
-    public enum RefineType {
-        ADD,
-        REPLACE,
     }
 
     public List<ContentInfo> findAllContentInfo(List<ContentInfo> contentInfoList) {
@@ -130,7 +171,7 @@ public class Node {
                 contentInfoList.add(contentInfo);
             }
         }
-        if(children != null) {
+        if (children != null) {
             for (Node node : children) {
                 node.findAllContentInfo(contentInfoList);
             }
@@ -138,10 +179,9 @@ public class Node {
         return contentInfoList;
     }
 
-    public int findMaxDepth()
-    {
+    public int findMaxDepth() {
         int maxDepth = this.depth;
-        if(this.children == null) {
+        if (this.children == null) {
             return maxDepth;
         }
         for (Node node : children) {
@@ -153,13 +193,12 @@ public class Node {
         return maxDepth;
     }
 
-    public void getNodesByDepth(int depth, List<Node> resultNodes)
-    {
-        if(this.depth == depth) {
+    public void getNodesByDepth(int depth, List<Node> resultNodes) {
+        if (this.depth == depth) {
             resultNodes.add(this);
             return;
         }
-        if(this.children == null) {
+        if (this.children == null) {
             return;
         }
         for (Node node : children) {
@@ -167,16 +206,15 @@ public class Node {
         }
     }
 
-    public boolean hasContentsInTree()
-    {
-        if(this.content != null) {
+    public boolean hasContentsInTree() {
+        if (this.content != null) {
             return true;
         }
-        if(this.children == null || this.children.isEmpty()) {
+        if (this.children == null || this.children.isEmpty()) {
             return false;
         }
         for (Node node : children) {
-            if(node.hasContentsInTree()) {
+            if (node.hasContentsInTree()) {
                 return true;
             }
         }
@@ -198,8 +236,7 @@ public class Node {
             double[] region = childBoundingVolume.getRegion();// minx, miny, maxx, maxy, minz, maxz
 
             // check if intersects centerLonRad and centerLatRad
-            if (cartographicRad.x >= region[0] && cartographicRad.x <= region[2] &&
-                    cartographicRad.y >= region[1] && cartographicRad.y <= region[3]) {
+            if (cartographicRad.x >= region[0] && cartographicRad.x <= region[2] && cartographicRad.y >= region[1] && cartographicRad.y <= region[3]) {
                 return childNode.getIntersectedNode(cartographicRad, depth);
             }
         }
@@ -342,9 +379,7 @@ public class Node {
             double[] region = childBoundingVolume.getRegion();// minx, miny, maxx, maxy, minz, maxz
 
             // check if intersects centerLonRad and centerLatRad
-            if (cartographicRad.x >= region[0] && cartographicRad.x <= region[2] &&
-                    cartographicRad.y >= region[1] && cartographicRad.y <= region[3] &&
-                    cartographicRad.z >= region[4] && cartographicRad.z <= region[5]) {
+            if (cartographicRad.x >= region[0] && cartographicRad.x <= region[2] && cartographicRad.y >= region[1] && cartographicRad.y <= region[3] && cartographicRad.z >= region[4] && cartographicRad.z <= region[5]) {
                 return childNode.getIntersectedNode(cartographicRad, depth);
             }
         }
@@ -377,29 +412,29 @@ public class Node {
         //        |            |            |        |            |            |
         //        +------------+------------+        +------------+------------+
 
-        if(cartographicRad.x < midLonRad) {
-            if(cartographicRad.y < midLatRad) {
-                if(cartographicRad.z < midAltitude) {
+        if (cartographicRad.x < midLonRad) {
+            if (cartographicRad.y < midLatRad) {
+                if (cartographicRad.z < midAltitude) {
                     return children.get(0).getIntersectedNodeAsOctree(cartographicRad, depth);
                 } else {
                     return children.get(4).getIntersectedNodeAsOctree(cartographicRad, depth);
                 }
             } else {
-                if(cartographicRad.z < midAltitude) {
+                if (cartographicRad.z < midAltitude) {
                     return children.get(3).getIntersectedNodeAsOctree(cartographicRad, depth);
                 } else {
                     return children.get(7).getIntersectedNodeAsOctree(cartographicRad, depth);
                 }
             }
         } else {
-            if(cartographicRad.y < midLatRad) {
-                if(cartographicRad.z < midAltitude) {
+            if (cartographicRad.y < midLatRad) {
+                if (cartographicRad.z < midAltitude) {
                     return children.get(1).getIntersectedNodeAsOctree(cartographicRad, depth);
                 } else {
                     return children.get(5).getIntersectedNodeAsOctree(cartographicRad, depth);
                 }
             } else {
-                if(cartographicRad.z < midAltitude) {
+                if (cartographicRad.z < midAltitude) {
                     return children.get(2).getIntersectedNodeAsOctree(cartographicRad, depth);
                 } else {
                     return children.get(6).getIntersectedNodeAsOctree(cartographicRad, depth);
@@ -408,9 +443,59 @@ public class Node {
         }
     }
 
-    public GaiaBoundingBox calculateCartographicBoundingBox()
-    {
-        if(this.boundingVolume == null) {
+    public boolean intersectsCartographicBoundingBox(GaiaBoundingBox cartographicBBoxDegrees) {
+        double[] region = this.getBoundingVolume().getRegion();// minx, miny, maxx, maxy, minz, maxz
+        double minLon = region[0];
+        double minLat = region[1];
+        double maxLon = region[2];
+        double maxLat = region[3];
+        double minAltitude = region[4];
+        double maxAltitude = region[5];
+        if (Math.toRadians(cartographicBBoxDegrees.getMinX()) > maxLon || Math.toRadians(cartographicBBoxDegrees.getMaxX()) < minLon) {
+            return false;
+        }
+        if (Math.toRadians(cartographicBBoxDegrees.getMinY()) > maxLat || Math.toRadians(cartographicBBoxDegrees.getMaxY()) < minLat) {
+            return false;
+        }
+        if (cartographicBBoxDegrees.getMinZ() > maxAltitude || cartographicBBoxDegrees.getMaxZ() < minAltitude) {
+            return false;
+        }
+        return true;
+    }
+
+    public void getIntersectedNodesAsOctree(GaiaBoundingBox cartographicBBox, int depth, List<Node> resultIntersectedNodes) {
+        // 1rst, check if the bounding box intersects with this node
+        if(!intersectsCartographicBoundingBox(cartographicBBox)) {
+            return;
+        }
+
+        if (this.depth == depth) {
+            resultIntersectedNodes.add(this);
+            return;
+        }
+
+        if (children == null || children.isEmpty()) {
+            this.createOctTreeChildren();
+        }
+
+        //              bottom                                top
+        //        +------------+------------+        +------------+------------+
+        //        |            |            |        |            |            |
+        //        |     3      |     2      |        |     7      |     6      |
+        //        |            |            |        |            |            |
+        //        +------------+------------+        +------------+------------+
+        //        |            |            |        |            |            |
+        //        |     0      |     1      |        |     4      |     5      |
+        //        |            |            |        |            |            |
+        //        +------------+------------+        +------------+------------+
+
+        for(Node childNode : children) {
+            childNode.getIntersectedNodesAsOctree(cartographicBBox, depth, resultIntersectedNodes);
+        }
+    }
+
+    public GaiaBoundingBox calculateCartographicBoundingBox() {
+        if (this.boundingVolume == null) {
             return null;
         }
 
@@ -427,9 +512,8 @@ public class Node {
         return bbox;
     }
 
-    public GaiaBoundingBox calculateLocalBoundingBox()
-    {
-        if(this.boundingVolume == null) {
+    public GaiaBoundingBox calculateLocalBoundingBox() {
+        if (this.boundingVolume == null) {
             return null;
         }
 
@@ -471,5 +555,4 @@ public class Node {
 
         return bboxLC;
     }
-
 }

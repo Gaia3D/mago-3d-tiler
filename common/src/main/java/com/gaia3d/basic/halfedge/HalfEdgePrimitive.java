@@ -3,7 +3,6 @@ package com.gaia3d.basic.halfedge;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.model.GaiaMaterial;
-import com.gaia3d.basic.model.GaiaScene;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -25,18 +24,6 @@ public class HalfEdgePrimitive implements Serializable {
     private List<HalfEdgeSurface> surfaces = new ArrayList<>();
     private List<HalfEdgeVertex> vertices = new ArrayList<>(); // vertices of all surfaces
     private GaiaBoundingBox boundingBox = null;
-
-    public void doTrianglesReduction(DecimateParameters decimateParameters) {
-        for (HalfEdgeSurface surface : surfaces) {
-            surface.doTrianglesReduction(decimateParameters);
-        }
-
-        // Remake vertices
-        vertices.clear();
-        for (HalfEdgeSurface surface : surfaces) {
-            this.vertices.addAll(surface.getVertices());
-        }
-    }
 
     public List<HalfEdgeVertex> getVertices() {
         return calculateVertices();
@@ -281,9 +268,9 @@ public class HalfEdgePrimitive implements Serializable {
         }
     }
 
-    public void doTrianglesReductionOneIteration(DecimateParameters decimateParameters) {
+    public void decimate(DecimateParameters decimateParameters) {
         for (HalfEdgeSurface surface : surfaces) {
-            surface.doTrianglesReductionOneIteration(decimateParameters);
+            surface.decimate(decimateParameters);
         }
     }
 
@@ -293,7 +280,10 @@ public class HalfEdgePrimitive implements Serializable {
         }
     }
 
-    public void getWestEastSouthNorthVertices(GaiaBoundingBox bbox, List<HalfEdgeVertex> westVertices, List<HalfEdgeVertex> eastVertices, List<HalfEdgeVertex> southVertices, List<HalfEdgeVertex> northVertices, double error) {
+    public void getWestEastSouthNorthVertices(GaiaBoundingBox bbox, List<HalfEdgeVertex> westVertices,
+                                              List<HalfEdgeVertex> eastVertices,
+                                              List<HalfEdgeVertex> southVertices,
+                                              List<HalfEdgeVertex> northVertices, double error) {
         for (HalfEdgeSurface surface : surfaces) {
             surface.getWestEastSouthNorthVertices(bbox, westVertices, eastVertices, southVertices, northVertices, error);
         }
@@ -318,7 +308,7 @@ public class HalfEdgePrimitive implements Serializable {
     }
 
     public GaiaRectangle getTexCoordinateBoundingRectangle(GaiaRectangle resultRectangle) {
-        if(resultRectangle == null) {
+        if (resultRectangle == null) {
             resultRectangle = new GaiaRectangle();
         }
         for (HalfEdgeSurface surface : surfaces) {
@@ -342,16 +332,13 @@ public class HalfEdgePrimitive implements Serializable {
         double maxX = texCoordBoundingRectangle.getMaxX();
         double maxY = texCoordBoundingRectangle.getMaxY();
 
-        if(minX < 0 || minY < 0) {
-            int hola = 0;
+        if (minX < 0 || minY < 0) {
+
         }
 
-        if(minX > 1 || minY > 1) {
-            int hola = 0;
+        if (minX > 1 || minY > 1) {
+
         }
-
-
-        int hola = 0;
     }
 
     public void updateVerticesList() {

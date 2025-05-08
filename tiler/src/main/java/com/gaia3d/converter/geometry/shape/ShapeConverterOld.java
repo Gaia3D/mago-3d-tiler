@@ -248,7 +248,7 @@ public class ShapeConverterOld extends AbstractGeometryConverter implements Conv
             convertPipeLineStrings(pipeLineStrings, scenes, file);
             convertExtrusionBuildings(buildings, scenes, file);
         } catch (IOException e) {
-            log.error("Error while reading shapefile", e);
+            log.error("[ERROR] while reading shapefile", e);
             throw new RuntimeException(e);
         }
         shpFiles.dispose();

@@ -1,12 +1,10 @@
 package com.gaia3d.process.postprocess.pointcloud;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.pointcloud.GaiaPointCloud;
 import com.gaia3d.basic.model.GaiaVertex;
 import com.gaia3d.command.mago.GlobalOptions;
@@ -45,7 +43,7 @@ public class PointCloudModel implements TileModel {
         Path outputRoot = outputFile.toPath().resolve("data");
         File outputRootFile = outputRoot.toFile();
         if (!outputRootFile.mkdir() && !outputRootFile.exists()) {
-            log.error("Failed to create output directory : {}", outputRoot);
+            log.error("[ERROR] Failed to create output directory : {}", outputRoot);
         }
         List<TileInfo> tileInfos = contentInfo.getTileInfos();
 
@@ -100,7 +98,7 @@ public class PointCloudModel implements TileModel {
             gaiaVertex.forEach((vertex) -> {
                 int index = mainIndex.getAndIncrement();
                 if (index > vertexLength) {
-                    log.error("Index out of bound");
+                    log.error("[ERROR] Index out of bound");
                     return;
                 }
 
@@ -156,46 +154,46 @@ public class PointCloudModel implements TileModel {
             // Clamp to 16-bit unsigned integer range
             if (quantizedPositions[i] < 0) {
                 quantizedPositions[i] = 0;
-                log.error("Quantized position x is less than 0");
+                log.error("[ERROR] Quantized position x is less than 0");
             } else if (quantizedPositions[i] > 65535) {
                 quantizedPositions[i] = 65535;
-                log.error("Quantized position x is greater than 65535");
+                log.error("[ERROR] Quantized position x is greater than 65535");
             }
 
             if (quantizedPositions[i + 1] < 0) {
                 quantizedPositions[i + 1] = 0;
-                log.error("Quantized position y is less than 0");
+                log.error("[ERROR] Quantized position y is less than 0");
             } else if (quantizedPositions[i + 1] > 65535) {
                 quantizedPositions[i + 1] = 65535;
-                log.error("Quantized position y is greater than 65535");
+                log.error("[ERROR] Quantized position y is greater than 65535");
             }
 
             if (quantizedPositions[i + 2] < 0) {
                 quantizedPositions[i + 2] = 0;
-                log.error("Quantized position z is less than 0");
+                log.error("[ERROR] Quantized position z is less than 0");
             } else if (quantizedPositions[i + 2] > 65535) {
                 quantizedPositions[i + 2] = 65535;
-                log.error("Quantized position z is greater than 65535");
+                log.error("[ERROR] Quantized position z is greater than 65535");
             }
         }
 
         // check quantizationScale, quantizationOffset is NaN or Infinity
         if (Double.isNaN(quantizationScale.x) || Double.isNaN(quantizationScale.y) || Double.isNaN(quantizationScale.z)) {
-            log.error("Quantization scale is NaN");
-            log.error("Quantization scale : {}", quantizationScale);
-            log.error("Quantized volume : {}", quantizedVolume);
+            log.error("[ERROR] Quantization scale is NaN");
+            log.error("[ERROR] Quantization scale : {}", quantizationScale);
+            log.error("[ERROR] Quantized volume : {}", quantizedVolume);
         } else if (Double.isInfinite(quantizationScale.x) || Double.isInfinite(quantizationScale.y) || Double.isInfinite(quantizationScale.z)) {
-            log.error("Quantization scale is Infinite");
-            log.error("Quantization scale : {}", quantizationScale);
-            log.error("Quantized volume : {}", quantizedVolume);
+            log.error("[ERROR] Quantization scale is Infinite");
+            log.error("[ERROR] Quantization scale : {}", quantizationScale);
+            log.error("[ERROR] Quantized volume : {}", quantizedVolume);
         } else if (Double.isNaN(quantizationOffset.x) || Double.isNaN(quantizationOffset.y) || Double.isNaN(quantizationOffset.z)) {
-            log.error("Quantization offset is NaN");
-            log.error("Quantization offset : {}", quantizationOffset);
-            log.error("Quantized volume : {}", quantizedVolume);
+            log.error("[ERROR] Quantization offset is NaN");
+            log.error("[ERROR] Quantization offset : {}", quantizationOffset);
+            log.error("[ERROR] Quantized volume : {}", quantizedVolume);
         } else if (Double.isInfinite(quantizationOffset.x) || Double.isInfinite(quantizationOffset.y) || Double.isInfinite(quantizationOffset.z)) {
-            log.error("Quantization offset is Infinite");
-            log.error("Quantization offset : {}", quantizationOffset);
-            log.error("Quantized volume : {}", quantizedVolume);
+            log.error("[ERROR] Quantization offset is Infinite");
+            log.error("[ERROR] Quantization offset : {}", quantizationOffset);
+            log.error("[ERROR] Quantized volume : {}", quantizedVolume);
         }
 
         PointCloudBinary pointCloudBinary = new PointCloudBinary();

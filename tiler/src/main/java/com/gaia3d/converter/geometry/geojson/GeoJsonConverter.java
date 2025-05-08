@@ -5,6 +5,7 @@ import com.gaia3d.basic.geometry.tessellator.GaiaExtruder;
 import com.gaia3d.basic.geometry.tessellator.GaiaExtrusionSurface;
 import com.gaia3d.basic.geometry.tessellator.Vector3dOnlyHashEquals;
 import com.gaia3d.basic.model.*;
+import com.gaia3d.command.mago.AttributeFilter;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.EasySceneCreator;
@@ -65,6 +66,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
         GaiaExtruder gaiaExtruder = new GaiaExtruder();
         InnerRingRemover innerRingRemover = new InnerRingRemover();
 
+        List<AttributeFilter> attributeFilters = globalOptions.getAttributeFilters();
         boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalOptions.DEFAULT_CRS);
         boolean flipCoordinate = globalOptions.isFlipCoordinate();
         String nameColumnName = globalOptions.getNameColumn();
@@ -76,7 +78,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
         double minimumHeightValue = globalOptions.getMinimumHeight();
         double skirtHeight = globalOptions.getSkirtHeight();
 
-        try (BufferedInputStream bufferedInputStream = new BufferedInputStream(Files.newInputStream(input.toPath()))){
+        try (BufferedInputStream bufferedInputStream = new BufferedInputStream(Files.newInputStream(input.toPath()))) {
             FeatureJSON geojson = new FeatureJSON();
             log.info("Reading GeoJSON file : {}", input.getAbsolutePath());
             SimpleFeatureCollection featureCollection = (SimpleFeatureCollection) geojson.readFeatureCollection(bufferedInputStream);
@@ -99,6 +101,22 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                 if (geom == null) {
                     log.debug("Is Null Geometry : {}", feature.getID());
                     continue;
+                }
+
+                if (!attributeFilters.isEmpty()) {
+                    boolean filterFlag = false;
+                    for (AttributeFilter attributeFilter : attributeFilters) {
+                        String columnName = attributeFilter.getAttributeName();
+                        String filterValue = attributeFilter.getAttributeValue();
+                        String attributeValue = castStringFromObject(feature.getAttribute(columnName), "null");
+                        if (filterValue.equals(attributeValue)) {
+                            filterFlag = true;
+                            break;
+                        }
+                    }
+                    if (!filterFlag) {
+                        continue;
+                    }
                 }
 
                 List<Polygon> polygons = new ArrayList<>();
@@ -335,7 +353,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                 sceneTemps.add(sceneTemp);
             }
         } catch (IOException e) {
-            log.error("Failed to read GeoJSON file : {}", input.getAbsolutePath(), e);
+             log.error("[ERROR] Failed to read GeoJSON file : {}", input.getAbsolutePath(), e);
             throw new RuntimeException(e);
         }
         return sceneTemps;

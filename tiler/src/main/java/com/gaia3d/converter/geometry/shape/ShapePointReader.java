@@ -1,7 +1,7 @@
 package com.gaia3d.converter.geometry.shape;
 
+import com.gaia3d.command.mago.AttributeFilter;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.geometry.GaiaExtrusionBuilding;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.util.GlobeUtils;
@@ -15,7 +15,6 @@ import org.geotools.data.shapefile.shp.ShapefileReader;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.FeatureIterator;
-import org.geotools.process.vector.SimplifyProcess;
 import org.geotools.util.factory.Hints;
 import org.joml.Vector3d;
 import org.locationtech.jts.geom.*;
@@ -25,10 +24,11 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.filter.Filter;
-import org.w3.xlink.Simple;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -43,7 +43,7 @@ public class ShapePointReader implements AttributeReader {
     //read kml file
     @Override
     public KmlInfo read(File file) {
-        log.error("ShapePointReader read method is not implemented yet.");
+        log.error("[ERROR] ShapePointReader read method is not implemented yet.");
         return null;
     }
 
@@ -55,6 +55,7 @@ public class ShapePointReader implements AttributeReader {
         ShpFiles shpFiles = null;
         ShapefileReader reader = null;
 
+        List<AttributeFilter> attributeFilters = globalOptions.getAttributeFilters();
         boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalOptions.DEFAULT_CRS);
         boolean flipCoordinate = globalOptions.isFlipCoordinate();
         String nameColumnName = globalOptions.getNameColumn();
@@ -71,7 +72,11 @@ public class ShapePointReader implements AttributeReader {
         try {
             shpFiles = new ShpFiles(file);
             reader = new ShapefileReader(shpFiles, true, true, new GeometryFactory());
-            DataStore dataStore = new ShapefileDataStore(file.toURI().toURL());
+            ShapefileDataStore dataStore = new ShapefileDataStore(file.toURI().toURL());
+
+            ShapeEncodingFix shapeEncodingFix = new ShapeEncodingFix();
+            dataStore.setCharset(shapeEncodingFix.detectCharset(file));
+
             String typeName = dataStore.getTypeNames()[0];
             SimpleFeatureSource source = dataStore.getFeatureSource(typeName);
             var query = new Query(typeName, Filter.INCLUDE);
@@ -93,6 +98,22 @@ public class ShapePointReader implements AttributeReader {
                 SimpleFeature feature = iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
 
+                if (!attributeFilters.isEmpty()) {
+                    boolean filterFlag = false;
+                    for (AttributeFilter attributeFilter : attributeFilters) {
+                        String columnName = attributeFilter.getAttributeName();
+                        String filterValue = attributeFilter.getAttributeValue();
+                        String attributeValue = castStringFromObject(feature.getAttribute(columnName), "null");
+                        if (filterValue.equals(attributeValue)) {
+                            filterFlag = true;
+                            break;
+                        }
+                    }
+                    if (!filterFlag) {
+                        continue;
+                    }
+                }
+
                 log.info("[pre][{}/{}] Loading file : {}", count++, featuresCount, file.getName());
                 List<Point> points = new ArrayList<>();
                 if (geom instanceof MultiPolygon multiPolygon) {
@@ -113,7 +134,7 @@ public class ShapePointReader implements AttributeReader {
                 } else if (geom instanceof Point point) {
                     points.add(point);
                 } else {
-                    log.error("Geometry type is not supported.");
+                    log.error("[ERROR] Geometry type is not supported.");
                     continue;
                 }
 

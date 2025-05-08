@@ -4,6 +4,7 @@ import com.gaia3d.basic.model.structure.SurfaceStructure;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.joml.Vector3d;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -24,6 +25,39 @@ public class GaiaSurface extends SurfaceStructure implements Serializable {
         for (GaiaFace face : faces) {
             face.calculateFaceNormal(vertices);
         }
+    }
+
+    public void calculateVertexNormals(List<GaiaVertex> vertices) {
+        for (GaiaFace face : faces) {
+            face.calculateFaceNormal(vertices);
+        }
+
+        Map<GaiaVertex, List<GaiaFace>> mapVertexFaces = getMapVertexFaces(vertices);
+        for (Map.Entry<GaiaVertex, List<GaiaFace>> entry : mapVertexFaces.entrySet()) {
+            GaiaVertex vertex = entry.getKey();
+            List<GaiaFace> vertexFaces = entry.getValue();
+            Vector3d normal = new Vector3d();
+            for (GaiaFace face : vertexFaces) {
+                normal.add(face.getFaceNormal());
+            }
+            normal.normalize();
+            vertex.setNormal(normal);
+        }
+    }
+
+    public Map<GaiaVertex, List<GaiaFace>> getMapVertexFaces(List<GaiaVertex> vertices) {
+        Map<GaiaVertex, List<GaiaFace>> mapVertexFaces = new HashMap<>();
+        for (GaiaFace face : faces) {
+            int[] indices = face.getIndices();
+            for (int index : indices) {
+                GaiaVertex vertex = vertices.get(index);
+                if (!mapVertexFaces.containsKey(vertex)) {
+                    mapVertexFaces.put(vertex, new ArrayList<>());
+                }
+                mapVertexFaces.get(vertex).add(face);
+            }
+        }
+        return mapVertexFaces;
     }
 
     public int[] getIndices() {

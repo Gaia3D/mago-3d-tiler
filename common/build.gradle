@@ -8,24 +8,18 @@ repositories {
 }
 
 dependencies {
-    /*implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
-    implementation "org.lwjgl:lwjgl"
-    implementation "org.lwjgl:lwjgl-opengl"
-    implementation "org.lwjgl:lwjgl-glfw"*/
-
     implementation "org.locationtech.proj4j:proj4j:1.2.3"
     implementation "org.locationtech.proj4j:proj4j-epsg:1.2.3"
-
     implementation 'org.geotools:gt-geojson:26.5'
     implementation 'org.geotools:gt-geojsondatastore:26.5'
-
-    /*runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
-    runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
-    runtimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"*/
 }
 
 javadoc {
     enabled = false
+    options.addStringOption("locale", "ko_KR")
+    options.addStringOption("encoding", "UTF-8")
+    options.addStringOption("charset", "UTF-8")
+    options.addStringOption("docencoding", "UTF-8")
 }
 
 test {

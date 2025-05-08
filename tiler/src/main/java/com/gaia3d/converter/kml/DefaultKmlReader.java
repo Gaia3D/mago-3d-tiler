@@ -6,7 +6,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -39,18 +38,7 @@ public class DefaultKmlReader implements AttributeReader {
             List<Element> elements = getAllElements(root);
             Vector3d position = new Vector3d(Double.parseDouble(findContent(elements, "longitude")), Double.parseDouble(findContent(elements, "latitude")), Double.parseDouble(findContent(elements, "altitude")));
 
-            kmlInfo = KmlInfo.builder()
-                    .name(findContent(elements, "name"))
-                    .position(position)
-                    .altitudeMode(findContent(elements, "altitudeMode"))
-                    .heading(Double.parseDouble(findContent(elements, "heading")))
-                    .tilt(Double.parseDouble(findContent(elements, "tilt")))
-                    .roll(Double.parseDouble(findContent(elements, "roll")))
-                    .href(findContent(elements, "href"))
-                    .scaleX(Double.parseDouble(findContent(elements, "x")))
-                    .scaleY(Double.parseDouble(findContent(elements, "y")))
-                    .scaleZ(Double.parseDouble(findContent(elements, "z")))
-                    .build();
+            kmlInfo = KmlInfo.builder().name(findContent(elements, "name")).position(position).altitudeMode(findContent(elements, "altitudeMode")).heading(Double.parseDouble(findContent(elements, "heading"))).tilt(Double.parseDouble(findContent(elements, "tilt"))).roll(Double.parseDouble(findContent(elements, "roll"))).href(findContent(elements, "href")).scaleX(Double.parseDouble(findContent(elements, "x"))).scaleY(Double.parseDouble(findContent(elements, "y"))).scaleZ(Double.parseDouble(findContent(elements, "z"))).build();
             document = null;
             builder = null;
             factory = null;
@@ -58,7 +46,7 @@ public class DefaultKmlReader implements AttributeReader {
             log.error("[ERROR] :", e);
             throw new RuntimeException(e);
         } catch (SAXException | ParserConfigurationException e) {
-            log.error("SAXException: {}", e.getMessage());
+            log.error("[ERROR] SAXException: {}", e.getMessage());
         }
         return kmlInfo;
     }
@@ -79,8 +67,8 @@ public class DefaultKmlReader implements AttributeReader {
         int length = children.getLength();
         for (int i = 0; i < length; i++) {
             Node node = children.item(i);
-            if (node.getNodeType() == Node.ELEMENT_NODE){
-                Element child = (Element)node;
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                Element child = (Element) node;
                 getElements(elements, child);
                 elements.add(child);
             }
@@ -88,9 +76,7 @@ public class DefaultKmlReader implements AttributeReader {
     }
 
     private String findContent(List<Element> elements, String name) {
-        Element result = elements.stream().filter((element) -> {
-            return element.getNodeName().equals(name);
-        }).findFirst().orElseThrow();
+        Element result = elements.stream().filter((element) -> element.getNodeName().equals(name)).findFirst().orElseThrow();
         return result.getTextContent();
     }
 }

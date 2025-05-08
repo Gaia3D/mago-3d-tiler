@@ -12,6 +12,7 @@ import org.joml.Vector3d;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("ALL")
 @Setter
 @Getter
 public class Pipe extends TopologicalEdge {
@@ -118,7 +119,7 @@ public class Pipe extends TopologicalEdge {
 
         // calculate the circle positions on the startLinkPos and the endLinkPos.
         // make the circle points in local coordinates.
-        List<Vector3d> circlePoints = new ArrayList<Vector3d>();
+        List<Vector3d> circlePoints = new ArrayList<>();
         this.getPipeProfilePoints(circlePoints);
 
         // calculate the transformation matrix.

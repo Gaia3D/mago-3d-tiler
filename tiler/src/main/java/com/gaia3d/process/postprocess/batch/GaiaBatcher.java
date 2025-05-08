@@ -41,7 +41,7 @@ public class GaiaBatcher {
             }
 
             int materialId = dataSet.getMaterialId();
-            if(materialId < 0 || materialId >= batchedMaterials.size()) {
+            if (materialId < 0 || materialId >= batchedMaterials.size()) {
                 log.error("[ERROR] MaterialId is out of range");
                 continue;
             }
@@ -65,10 +65,8 @@ public class GaiaBatcher {
         }
     }
 
-    /** compare two materials
-     * @param materialA
-     * @param materialB
-     * @param scaleFactor
+    /**
+     * compare two materials
      */
     private boolean areEqualMaterials(GaiaMaterial materialA, GaiaMaterial materialB, float scaleFactor) {
         // This function determines if two materials are equal.
@@ -164,7 +162,7 @@ public class GaiaBatcher {
                 .collect(Collectors.toList());
 
         sets = sets.stream().filter((set -> {
-            if(set == null) {
+            if (set == null) {
                 log.error("[ERROR] Set is null");
                 return false;
             }
@@ -369,7 +367,6 @@ public class GaiaBatcher {
         }
     }
 
-    // Material Id 재정렬
     private void rearrangeRepeatMaterial(List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials, int offset) {
         dataSets.forEach((batchedBufferData) -> {
             for (int i = 0; i < materials.size(); i++) {
@@ -454,7 +451,6 @@ public class GaiaBatcher {
         }
     }
 
-    // 스트레치 텍스쳐들 배칭
     private List<GaiaBufferDataSet> batchClampMaterial(List<List<GaiaBufferDataSet>> splitedDataSets) {
         return splitedDataSets.stream().map((splitedIndicesLimit) -> {
             GaiaBufferDataSet batchedBufferData = batchVertices(splitedIndicesLimit);
@@ -463,7 +459,6 @@ public class GaiaBatcher {
         }).collect(Collectors.toList());
     }
 
-    // 각 Material의 Texture들을 하나의 이미지로 변경
     private BufferedImage atlasTextures(LevelOfDetail lod, String codeName, List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials) {
         GaiaTextureCoordinator textureCoordinator = new GaiaTextureCoordinator(codeName, materials, dataSets);
         return textureCoordinator.batchTextures(lod);

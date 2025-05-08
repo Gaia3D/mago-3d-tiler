@@ -1,5 +1,6 @@
 package com.gaia3d.process.preprocess;
 
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.AllArgsConstructor;
@@ -21,9 +22,17 @@ public class GaiaInstanceTranslator implements PreProcess {
 
     @Override
     public TileInfo run(TileInfo tileInfo) {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        Vector3d offset = globalOptions.getTranslateOffset();
+
         KmlInfo kmlInfo = tileInfo.getKmlInfo();
         Vector3d position = kmlInfo.getPosition();
         Vector3d center = new Vector3d(position);
+        if (offset != null) {
+            center.add(offset);
+        } else {
+            offset = new Vector3d(0.0d, 0.0d, 0.0d);
+        }
 
         AtomicReference<Double> altitude = new AtomicReference<>((double) 0);
         String altitudeMode = kmlInfo.getAltitudeMode();
@@ -42,7 +51,7 @@ public class GaiaInstanceTranslator implements PreProcess {
                 log.warn("[WARN] Fail to get altitude from DEM coverage. : {}", e.getMessage());
             }
         }
-        position.set(position.x, position.y, altitude.get());
+        position.set(position.x, position.y, altitude.get() + center.z);
         return tileInfo;
     }
 }

@@ -149,7 +149,7 @@ public class Instanced3DModel implements TileModel {
         File outputFile = new File(globalOptions.getOutputPath());
         Path outputRoot = outputFile.toPath().resolve("data");
         if (!outputRoot.toFile().exists() && outputRoot.toFile().mkdir()) {
-            log.info("[Create][data] Created output data directory:", outputRoot);
+            log.debug("[Create][data] Created output data directory,", outputRoot);
         }
 
         byte[] positionBytes = instanced3DModelBinary.getPositionBytes();

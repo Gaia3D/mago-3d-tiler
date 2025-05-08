@@ -25,7 +25,7 @@ public class GaiaTrianglesReductor {
 
     public GaiaNode reduceNode(GaiaNode node) {
         GaiaNode resultReducedNode = new GaiaNode();
-        for(GaiaMesh mesh : node.getMeshes()) {
+        for (GaiaMesh mesh : node.getMeshes()) {
             GaiaMesh resultReducedMesh = this.reduceMesh(mesh);
             resultReducedNode.getMeshes().add(resultReducedMesh);
         }
@@ -35,7 +35,7 @@ public class GaiaTrianglesReductor {
 
     public GaiaMesh reduceMesh(GaiaMesh mesh) {
         GaiaMesh resultReducedMesh = new GaiaMesh();
-        for(GaiaPrimitive primitive : mesh.getPrimitives()) {
+        for (GaiaPrimitive primitive : mesh.getPrimitives()) {
             GaiaPrimitive resultReducedPrimitive = this.reducePrimitive(primitive);
             resultReducedMesh.getPrimitives().add(resultReducedPrimitive);
         }
@@ -45,7 +45,7 @@ public class GaiaTrianglesReductor {
 
     public GaiaPrimitive reducePrimitive(GaiaPrimitive primitive) {
         GaiaPrimitive resultReducedPrimitive = new GaiaPrimitive();
-        for(GaiaSurface surface : primitive.getSurfaces()) {
+        for (GaiaSurface surface : primitive.getSurfaces()) {
             GaiaSurface resultReducedSurface = this.reduceSurface(surface, primitive.getVertices());
             resultReducedPrimitive.getSurfaces().add(resultReducedSurface);
         }
@@ -64,7 +64,7 @@ public class GaiaTrianglesReductor {
     {
         HalfEdgeSurface halfEdgeSurface = new HalfEdgeSurface();
 
-        for(GaiaFace face : surface.getFaces()) {
+        for (GaiaFace face : surface.getFaces()) {
             HalfEdgeFace halfEdgeFace = this.getHalfEdgeFace(face, vertices, halfEdgeSurface);
         }
 
@@ -76,15 +76,15 @@ public class GaiaTrianglesReductor {
     public HalfEdgeFace getHalfEdgeFace(GaiaFace face, List<GaiaVertex> vertices, HalfEdgeSurface halfEdgeSurface)
     {
         HalfEdgeFace halfEdgeFace = new HalfEdgeFace();
-        int indices[] = face.getIndices();
+        int[] indices = face.getIndices();
         int indicesCount = indices.length;
-        if(indicesCount < 3) {
+        if (indicesCount < 3) {
             return null;
         }
 
         HalfEdge halfEdge1rst = null;
         HalfEdge halfEdgelast = null;
-        for(int i=0; i<indicesCount; i++)
+        for (int i=0; i<indicesCount; i++)
         {
             int vertexIndex = indices[i];
             GaiaVertex vertex = vertices.get(vertexIndex);
@@ -96,12 +96,12 @@ public class GaiaTrianglesReductor {
             halfEdge.setFace(halfEdgeFace);
             halfEdgeFace.setHalfEdge(halfEdge);
 
-            if(i == 0)
+            if (i == 0)
             {
                 halfEdge1rst = halfEdge;
             }
 
-            if(halfEdgelast != null)
+            if (halfEdgelast != null)
             {
                 halfEdgelast.setNext(halfEdge);
             }

@@ -32,6 +32,7 @@ public enum TextureType implements Serializable {
     UNKNOWN((byte) 18);
 
     private final byte value;
+
     TextureType(byte value) {
         this.value = value;
     }

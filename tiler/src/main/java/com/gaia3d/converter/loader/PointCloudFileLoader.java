@@ -1,15 +1,12 @@
 package com.gaia3d.converter.loader;
 
 import com.gaia3d.basic.pointcloud.GaiaPointCloud;
-import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.pointcloud.LasConverter;
 import com.gaia3d.converter.pointcloud.PointCloudTempGenerator;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.geotools.coverage.grid.GridCoverage2D;
 
 import java.io.File;
@@ -51,7 +48,7 @@ public class PointCloudFileLoader implements FileLoader {
         List<GaiaPointCloud> pointClouds = loadPointCloud(file);
         for (GaiaPointCloud pointCloud : pointClouds) {
             if (pointCloud == null) {
-                log.error("Failed to load scene: {}", file.getAbsolutePath());
+                log.error("[ERROR] :Failed to load scene: {}", file.getAbsolutePath());
                 return null;
             } else {
                 TileInfo tileInfo = TileInfo.builder()

@@ -153,7 +153,7 @@ public class PointCloudTempGenerator {
         try {
             executeThread(executorService, tasks);
         } catch (InterruptedException e) {
-            log.error("Failed to generate temp files on thread.", e);
+            log.error("[ERROR] :Failed to generate temp files on thread.", e);
             throw new RuntimeException(e);
         }
     }
@@ -224,7 +224,7 @@ public class PointCloudTempGenerator {
         try {
             executeThread(executorService, tasks);
         } catch (InterruptedException e) {
-            log.error("Failed to shuffle temp files on thread.", e);
+            log.error("[ERROR] :Failed to shuffle temp files on thread.", e);
             throw new RuntimeException(e);
         }
         return shuffledTempFiles;
@@ -240,7 +240,7 @@ public class PointCloudTempGenerator {
                         outputStream.flush();
                         outputStream.close();
                     } catch (Exception e) {
-                        log.error("Failed to close input stream", e);
+                        log.error("[ERROR] :Failed to close input stream", e);
                     }
                 }
             }
@@ -252,7 +252,7 @@ public class PointCloudTempGenerator {
         tempFiles.forEach((tempFile) -> {
             if (tempFile.length() <= 52) {
                 if (!tempFile.delete()) {
-                    log.error("Failed to delete empty temp file: {}", tempFile);
+                    log.error("[ERROR] Failed to delete empty temp file: {}", tempFile);
                 }
             } else {
                 newTempFiles.add(tempFile);
@@ -271,7 +271,7 @@ public class PointCloudTempGenerator {
                 }
             }
         } catch (Exception e) {
-            log.error("Failed to execute thread.", e);
+            log.error("[ERROR] :Failed to execute thread.", e);
             throw new RuntimeException(e);
         }
         executorService.shutdown();

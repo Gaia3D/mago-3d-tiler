@@ -1,8 +1,13 @@
 package com.gaia3d.process.tileprocess.tile;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.json.JsonWriteFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.KmlInfo;
+import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
 import com.gaia3d.process.tileprocess.tile.tileset.asset.*;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 import com.gaia3d.util.GlobeUtils;
@@ -10,12 +15,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 public abstract class DefaultTiler {
-
 
     protected double calcGeometricError(List<TileInfo> tileInfos) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
@@ -77,5 +86,41 @@ public abstract class DefaultTiler {
         root.setRefine(Node.RefineType.REPLACE);
         root.setChildren(new ArrayList<>());
         return root;
+    }
+
+    protected File writeTileset(Tileset tileset, String output) {
+        Node rootNode = tileset.getRoot();
+        if (rootNode == null) {
+            log.error("[ERROR] Tileset root node is null");
+            throw new TileProcessingException("Tileset root node is null");
+        } else if (rootNode.getBoundingVolume() == null) {
+            log.error("[ERROR] Tileset root node bounding volume is null");
+            throw new TileProcessingException("Tileset root node bounding volume is null");
+        } else if (rootNode.getGeometricError() == 0 && tileset.getGeometricError() == 0) {
+            log.error("[ERROR] Tileset root node geometric error is 0");
+            throw new TileProcessingException("Tileset root node geometric error is 0");
+        } else if (rootNode.getChildren() == null || rootNode.getChildren().isEmpty()) {
+            log.error("[ERROR] Tileset root node children is null or empty");
+            throw new TileProcessingException("Tileset root node children is null or empty");
+        }
+
+        Path outputPath = new File(output).toPath();
+        File tilesetFile = outputPath.resolve("tileset.json").toFile();
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(tilesetFile))) {
+            String result = objectMapper.writeValueAsString(tileset);
+            log.info("[Tile][Tileset] write 'tileset.json' file.");
+            writer.write(result);
+            //globalOptions.setTilesetSize(result.length());
+        } catch (IOException e) {
+            log.error("[ERROR] :", e);
+            throw new TileProcessingException(e.getMessage());
+        }
+
+        return tilesetFile;
     }
 }

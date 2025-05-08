@@ -22,9 +22,7 @@ public class RenderableMesh {
     }
 
     public void extractRenderablePrimitives(List<RenderablePrimitive> resultRenderablePrimitives) {
-        for (RenderablePrimitive renderablePrimitive : renderablePrimitives) {
-            resultRenderablePrimitives.add(renderablePrimitive);
-        }
+        resultRenderablePrimitives.addAll(renderablePrimitives);
     }
 
 

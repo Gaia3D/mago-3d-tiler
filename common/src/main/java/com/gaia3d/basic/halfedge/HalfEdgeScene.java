@@ -3,7 +3,6 @@ package com.gaia3d.basic.halfedge;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaMaterial;
-import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.model.GaiaTexture;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.util.ImageUtils;
@@ -73,12 +72,6 @@ public class HalfEdgeScene implements Serializable {
         }
 
         return null;
-    }
-
-    public void doTrianglesReduction(DecimateParameters decimateParameters) {
-        for (HalfEdgeNode node : nodes) {
-            node.doTrianglesReduction(decimateParameters);
-        }
     }
 
     public List<GaiaMaterial> getCopyMaterials() {
@@ -153,7 +146,7 @@ public class HalfEdgeScene implements Serializable {
         GaiaBoundingBox bbox = getBoundingBox();
         Vector3d center = bbox.getCenter();
         double error = 1e-8;
-//        if(error < 1)
+//        if (error < 1)
 //        {
 //            return;
 //        }
@@ -391,7 +384,6 @@ public class HalfEdgeScene implements Serializable {
                 if (clonedScene == null) {
                     clonedScene = new HalfEdgeScene();
                     clonedScene.originalPath = originalPath;
-                    clonedScene.gaiaBoundingBox = gaiaBoundingBox;
                     clonedScene.attribute = attribute;
                 }
                 clonedScene.nodes.add(clonedNode);
@@ -483,10 +475,8 @@ public class HalfEdgeScene implements Serializable {
     }
 
     public List<GaiaMaterial> getUsingMaterialsWithTextures(List<GaiaMaterial> resultMaterials) {
-        //********************************************************************************
         // Usually, there are materials that are not using
         // This function returns the materials that are using and has textures
-        //********************************************************************************
         if (resultMaterials == null) {
             resultMaterials = new ArrayList<>();
         }
@@ -514,9 +504,9 @@ public class HalfEdgeScene implements Serializable {
         }
     }
 
-    public void doTrianglesReductionOneIteration(DecimateParameters decimateParameters) {
+    public void decimate(DecimateParameters decimateParameters) {
         for (HalfEdgeNode node : nodes) {
-            node.doTrianglesReductionOneIteration(decimateParameters);
+            node.decimate(decimateParameters);
         }
     }
 
@@ -532,14 +522,14 @@ public class HalfEdgeScene implements Serializable {
         }
     }
 
-    public void makeSkirt() {
+    public void makeHorizontalSkirt() {
         GaiaBoundingBox bbox = getBoundingBox();
-        if(bbox == null) {
+        if (bbox == null) {
             log.info("Making skirt : Error: bbox is null");
             return;
         }
 
-        double error = 1e-3; // 0.001
+        double error = 0.01; // 0.001
         List<HalfEdgeVertex> westVertices = new ArrayList<>();
         List<HalfEdgeVertex> eastVertices = new ArrayList<>();
         List<HalfEdgeVertex> southVertices = new ArrayList<>();
@@ -552,12 +542,20 @@ public class HalfEdgeScene implements Serializable {
         double bboxLengthY = bbox.getLengthY();
         double bboxMaxSize = Math.max(bboxLengthX, bboxLengthY);
         double expandDistance = bboxMaxSize * 0.005;
-        // provisionally, only expand the perimeter vertices
+
+        Vector3d axisZ = new Vector3d(0, 0, 1);
+
+        // only expand the perimeter vertices
         double dotLimit = 0.35;
         if (westVertices.size() > 1) {
             for (HalfEdgeVertex vertex : westVertices) {
                 Vector3d normal = vertex.calculateNormal();
-                if(Math.abs(normal.dot(-1, 0, 0)) < dotLimit) {
+
+//                Vector3d position = vertex.getPosition();
+//                position.x -= expandDistance * normal.z;
+//                position.z += expandDistance * normal.x;
+
+                if (Math.abs(normal.dot(-1, 0, 0)) < dotLimit) {
                     Vector3d position = vertex.getPosition();
                     position.x -= expandDistance;
                 }
@@ -567,7 +565,7 @@ public class HalfEdgeScene implements Serializable {
         if (eastVertices.size() > 1) {
             for (HalfEdgeVertex vertex : eastVertices) {
                 Vector3d normal = vertex.calculateNormal();
-                if(Math.abs(normal.dot(1, 0, 0)) < dotLimit) {
+                if (Math.abs(normal.dot(1, 0, 0)) < dotLimit) {
                     Vector3d position = vertex.getPosition();
                     position.x += expandDistance;
                 }
@@ -577,7 +575,7 @@ public class HalfEdgeScene implements Serializable {
         if (southVertices.size() > 1) {
             for (HalfEdgeVertex vertex : southVertices) {
                 Vector3d normal = vertex.calculateNormal();
-                if(Math.abs(normal.dot(0, -1, 0)) < dotLimit) {
+                if (Math.abs(normal.dot(0, -1, 0)) < dotLimit) {
                     Vector3d position = vertex.getPosition();
                     position.y -= expandDistance;
                 }
@@ -587,7 +585,7 @@ public class HalfEdgeScene implements Serializable {
         if (northVertices.size() > 1) {
             for (HalfEdgeVertex vertex : northVertices) {
                 Vector3d normal = vertex.calculateNormal();
-                if(Math.abs(normal.dot(0, 1, 0)) < dotLimit) {
+                if (Math.abs(normal.dot(0, 1, 0)) < dotLimit) {
                     Vector3d position = vertex.getPosition();
                     position.y += expandDistance;
                 }
@@ -595,8 +593,7 @@ public class HalfEdgeScene implements Serializable {
         }
     }
 
-    public void translateTexCoordsToPositiveQuadrant()
-    {
+    public void translateTexCoordsToPositiveQuadrant() {
         for (HalfEdgeNode node : nodes) {
             node.translateTexCoordsToPositiveQuadrant();
         }

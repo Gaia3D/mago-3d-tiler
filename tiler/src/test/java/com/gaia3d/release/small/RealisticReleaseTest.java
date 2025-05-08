@@ -3,10 +3,12 @@ package com.gaia3d.release.small;
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
+@Tag("release")
 @Slf4j
 class RealisticReleaseTest {
     private static final String INPUT_PATH = "D:/data/mago-3d-tiler/release-sample";
@@ -49,6 +51,7 @@ class RealisticReleaseTest {
         execute(args);
     }
 
+    //@Disabled
     @Test
     void realistic02() {
         String path = "R02-bansong-all-obj";
@@ -83,6 +86,7 @@ class RealisticReleaseTest {
         execute(args);
     }
 
+    @Disabled
     @Test
     void realistic04() {
         String path = "R04-gilcheon-all-obj";
@@ -99,6 +103,7 @@ class RealisticReleaseTest {
         execute(args);
     }
 
+    @Disabled
     @Test
     void realistic05() {
         String path = "R05-sangcheon-all-obj";

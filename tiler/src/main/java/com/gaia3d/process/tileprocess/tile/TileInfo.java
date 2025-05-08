@@ -39,7 +39,7 @@ public class TileInfo {
     private Path outputPath;
     private Path tempPath; // tempPath lod 0
 
-    private List<Path> tempPathLod; // tempPath lod 0, 1, 2, 3, 4, 5, etc
+    private List<Path> tempPathLod; // tempPath lod 0, 1, 2, 3, 4, 5, etc (deprecated)
     private GaiaBoundingBox cartographicBBox;
 
     @Builder.Default
@@ -80,7 +80,7 @@ public class TileInfo {
         try {
             this.set = GaiaSet.readFile(this.tempPath);
         } catch (IOException e) {
-            log.error("Failed to read the temp file: {}", this.tempPath);
+            log.error("[ERROR] Failed to read the temp file: {}", this.tempPath);
         }
     }
 

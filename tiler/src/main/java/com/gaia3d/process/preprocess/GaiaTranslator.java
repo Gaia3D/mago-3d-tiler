@@ -42,8 +42,6 @@ public class GaiaTranslator implements PreProcess {
         Vector3d translation = getTranslation(gaiaScene);
         if (inputType.equals(FormatType.KML)) {
             translation = new Vector3d(0.0d, 0.0d, 0.0d);
-        } else {
-
         }
 
         // set position terrain height
@@ -54,8 +52,7 @@ public class GaiaTranslator implements PreProcess {
             try {
                 coverage.evaluate(worldPosition, altitude);
             } catch (Exception e) {
-                log.warn("[WARN] Failed to load terrain height. Out of range");
-                log.debug("- Detail : ", e);
+                log.debug("[DEBUG] Failed to load terrain height. Out of range");
             }
             center.z = altitude[0];
         });

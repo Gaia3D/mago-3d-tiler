@@ -98,6 +98,21 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
     }
 
     public void writeTileset(Tileset tileset) {
+        Node rootNode = tileset.getRoot();
+        if (rootNode == null) {
+            log.error("[ERROR] Tileset root node is null");
+            throw new TileProcessingException("Tileset root node is null");
+        } else if (rootNode.getBoundingVolume() == null) {
+            log.error("[ERROR] Tileset root node bounding volume is null");
+            throw new TileProcessingException("Tileset root node bounding volume is null");
+        } else if (rootNode.getGeometricError() == 0 && tileset.getGeometricError() == 0) {
+            log.error("[ERROR] Tileset root node geometric error is 0");
+            throw new TileProcessingException("Tileset root node geometric error is 0");
+        } else if (rootNode.getChildren() == null || rootNode.getChildren().isEmpty()) {
+            log.error("[ERROR] Tileset root node children is null or empty");
+            throw new TileProcessingException("Tileset root node children is null or empty");
+        }
+
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         File outputPath = new File(globalOptions.getOutputPath());
         File tilesetFile = new File(outputPath, "tileset.json");
@@ -303,7 +318,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         long freeMem = Runtime.getRuntime().freeMemory() / 1024 / 1024;
         long usedMem = totalMem - freeMem;
         // 퍼센트
-        double pct = usedMem * 100 / maxMem;
+        double pct = usedMem * 100.0 / maxMem;
         log.info("[Tile] Java Heap Size: {} / MaxMem: {}MB / TotalMem: {}MB / FreeMem: {}MB / UsedMem: {}MB / Pct: {}%", javaHeapSize, maxMem, totalMem, freeMem, usedMem, pct);
     }
 }

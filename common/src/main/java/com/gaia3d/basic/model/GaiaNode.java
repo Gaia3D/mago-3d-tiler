@@ -319,6 +319,30 @@ public class GaiaNode extends NodeStructure implements Serializable {
         }
     }
 
+    public void getFinalVerticesCopy(Matrix4d parentTMat, List<GaiaVertex> finalVertices) {
+        Matrix4d thisTMatrix = new Matrix4d(this.transformMatrix);
+        if (parentTMat != null) {
+            parentTMat.mul(thisTMatrix, thisTMatrix);
+        }
+        for (GaiaMesh mesh : this.getMeshes()) {
+            for (GaiaPrimitive primitive : mesh.getPrimitives()) {
+                List<GaiaVertex> vertices = primitive.getVertices();
+                for (GaiaVertex vertex : vertices) {
+                    GaiaVertex finalVertex = vertex.clone();
+                    Vector3d position = vertex.getPosition();
+                    Vector3d transformedPosition = new Vector3d();
+                    thisTMatrix.transformPosition(position, transformedPosition);
+                    finalVertex.setPosition(transformedPosition);
+                    finalVertices.add(finalVertex);
+                }
+            }
+        }
+
+        for (GaiaNode child : this.getChildren()) {
+            child.getFinalVerticesCopy(thisTMatrix, finalVertices);
+        }
+    }
+
     public void extractPrimitives(List<GaiaPrimitive> resultPrimitives) {
         for (GaiaMesh mesh : this.getMeshes()) {
             mesh.extractPrimitives(resultPrimitives);
@@ -364,6 +388,7 @@ public class GaiaNode extends NodeStructure implements Serializable {
 
         // Clear the transform matrix.
         transformMatrix.identity();
+        preMultipliedTransformMatrix.identity();
     }
 
     public void makeTriangularFaces() {
@@ -384,5 +409,23 @@ public class GaiaNode extends NodeStructure implements Serializable {
             count += child.getFacesCount();
         }
         return count;
+    }
+
+    public void calculateNormal() {
+        for (GaiaMesh mesh : meshes) {
+            mesh.calculateNormal();
+        }
+        for (GaiaNode child : children) {
+            child.calculateNormal();
+        }
+    }
+
+    public void calculateVertexNormals() {
+        for (GaiaMesh mesh : meshes) {
+            mesh.calculateVertexNormals();
+        }
+        for (GaiaNode child : children) {
+            child.calculateVertexNormals();
+        }
     }
 }

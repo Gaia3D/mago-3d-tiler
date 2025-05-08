@@ -8,19 +8,19 @@ import com.gaia3d.basic.geometry.octree.GaiaOctreeVertices;
 import com.gaia3d.basic.model.structure.PrimitiveStructure;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.GLConstants;
-import com.gaia3d.util.GaiaColorUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
-import org.joml.*;
+import org.joml.Matrix3d;
+import org.joml.Matrix4d;
+import org.joml.Vector2d;
+import org.joml.Vector3d;
 
 import java.io.Serializable;
-import java.lang.Math;
 import java.util.*;
-import java.util.Random;
 
 /**
  * A class that represents a primitive of a Gaia object.
@@ -38,7 +38,7 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
     private Integer materialIndex = -1;
 
     public GaiaBoundingBox getBoundingBox(Matrix4d transform) {
-        if(this.vertices == null || this.vertices.isEmpty()) {
+        if (this.vertices == null || this.vertices.isEmpty()) {
             return null;
         }
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
@@ -75,6 +75,12 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
     public void calculateNormal() {
         for (GaiaSurface surface : surfaces) {
             surface.calculateNormal(this.vertices);
+        }
+    }
+
+    public void calculateVertexNormals() {
+        for (GaiaSurface surface : surfaces) {
+            surface.calculateVertexNormals(this.vertices);
         }
     }
 
@@ -177,9 +183,17 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
             Vector3d normal = vertex.getNormal();
             if (normal != null) {
                 rotationMatrix4.transformPosition(normal);
-                normalList[normalIndex++] = (float) normal.x;
-                normalList[normalIndex++] = (float) normal.y;
-                normalList[normalIndex++] = (float) normal.z;
+
+                Vector3d normalized = normal.normalize(new Vector3d());
+                if (Double.isNaN(normalized.x()) || Double.isNaN(normalized.y()) || Double.isNaN(normalized.z())) {
+                    log.error("[ERROR] Normal is NaN");
+                    log.error(" - Normal : {}", normal);
+                    log.error(" - Normalized : {}", normalized);
+                    normalized = new Vector3d(0, 0, 1);
+                }
+                normalList[normalIndex++] = (float) normalized.x;
+                normalList[normalIndex++] = (float) normalized.y;
+                normalList[normalIndex++] = (float) normalized.z;
             }
             byte[] color = vertex.getColor();
             if (color != null) {
@@ -311,7 +325,7 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
             int[] indices = surface.getIndices();
             for (int index : indices) {
                 if (index >= verticesCount) {
-                    log.error("Invalid index : {}", index);
+                    log.error("[ERROR] Invalid index : {}", index);
                     result = false;
                 }
             }
@@ -355,11 +369,11 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
     }
 
     public List<GaiaFace> extractGaiaFaces(List<GaiaFace> resultFaces) {
-        if(resultFaces == null) {
+        if (resultFaces == null) {
             resultFaces = new ArrayList<>();
         }
 
-        for(GaiaSurface surface : this.surfaces) {
+        for (GaiaSurface surface : this.surfaces) {
             resultFaces.addAll(surface.getFaces());
         }
         return resultFaces;

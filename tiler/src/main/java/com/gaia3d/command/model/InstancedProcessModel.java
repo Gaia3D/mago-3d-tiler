@@ -4,7 +4,6 @@ import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.assimp.AssimpConverter;
-import com.gaia3d.converter.geometry.geojson.GeoJsonConverter;
 import com.gaia3d.converter.geometry.geojson.GeojsonPointReader;
 import com.gaia3d.converter.geometry.geopackage.GeoPackageInstanceConverter;
 import com.gaia3d.converter.kml.AttributeReader;
