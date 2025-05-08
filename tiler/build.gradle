@@ -154,6 +154,10 @@ jib {
     to {
         image = "gaia3d/mago-3d-tiler"
         tags = ["latest", project.version] as List<String>
+        auth {
+            username = findProperty("jib.to.auth.username") ?: System.getenv("JIB_TO_AUTH_USERNAME")
+            password = findProperty("jib.to.auth.password") ?: System.getenv("JIB_TO_AUTH_PASSWORD")
+        }
     }
     container {
         appRoot = "/mago-3d-tiler"
@@ -188,7 +192,7 @@ compileJava {
 tasks.named('jib') {
     dependsOn(shadowJar)
     onlyIf {
-        def jarFile = file("/dist/mago-3d-tiler-${project.version}.jar")
+        def jarFile = layout.buildDirectory.file("../dist/mago-3d-tiler-${project.version}.jar").get().asFile
         if (!jarFile.exists()) {
             logger.lifecycle("⚠️ JAR file not found: ${jarFile.absolutePath}")
             logger.lifecycle(" > Please build the project first.")
