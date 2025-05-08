@@ -247,8 +247,7 @@ public class GaiaTextureCoordinator {
             splittedImages.add(splittedImage);
         }
 
-        // 사이즈 큰->작은 정렬
-        splittedImages = splittedImages.stream().sorted(Comparator.comparing(splittedImage -> splittedImage.getOriginBoundary().getArea())).collect(Collectors.toList());
+        splittedImages = splittedImages.stream().sorted(Comparator.comparing(splitImage -> splitImage.getOriginBoundary().getArea())).collect(Collectors.toList());
         Collections.reverse(splittedImages);
 
         // do the atlasing process

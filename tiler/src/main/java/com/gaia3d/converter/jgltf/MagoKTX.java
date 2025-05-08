@@ -99,6 +99,6 @@ public class MagoKTX {
 
     // load PNG image
     private ByteBuffer loadPngImage(byte[] pngData) {
-        return ByteBuffer.wrap(pngData);  // 임시 구현
+        return ByteBuffer.wrap(pngData);
     }
 }

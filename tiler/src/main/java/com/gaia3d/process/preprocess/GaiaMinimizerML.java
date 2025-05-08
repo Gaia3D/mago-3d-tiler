@@ -125,15 +125,12 @@ public class GaiaMinimizerML implements PreProcess {
         voxelSizeMeter = 0.2;
         texturePixelsForMeter = 80.0;
 
-        // 세종금강대교
         voxelSizeMeter = 400.0;
         texturePixelsForMeter = 0.01;
 
-        // 관리동
         voxelSizeMeter = 100.0;
         texturePixelsForMeter = 0.01;
 
-        // 공중화장실
         voxelSizeMeter = maxSize / 1000.0;
         texturePixelsForMeter = 0.01;
 //

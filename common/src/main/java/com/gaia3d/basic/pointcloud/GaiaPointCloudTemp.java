@@ -270,26 +270,15 @@ public class GaiaPointCloudTemp {
         return indexes;
     }
 
-    // 두 블록을 교환하는 메서드
     private void swapBlocks(FileChannel channel, long index1, long index2, int headerSize, int blockSize) throws IOException {
         ByteBuffer buffer1 = ByteBuffer.allocate(blockSize);
         ByteBuffer buffer2 = ByteBuffer.allocate(blockSize);
-
-        // 첫 번째 블록 읽기
         channel.position(headerSize + (index1 * blockSize));
         channel.read(buffer1);
-        //buffer1.flip();
-
-        // 두 번째 블록 읽기
         channel.position(headerSize + (index2 * blockSize));
         channel.read(buffer2);
-        //buffer2.flip();
-
-        // 첫 번째 블록을 두 번째 위치에 쓰기
         channel.position(headerSize + (index2 * blockSize));
         channel.write(buffer1);
-
-        // 두 번째 블록을 첫 번째 위치에 s쓰기
         channel.position(headerSize + (index1 * blockSize));
         channel.write(buffer2);
     }

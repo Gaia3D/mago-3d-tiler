@@ -367,7 +367,6 @@ public class GaiaBatcher {
         }
     }
 
-    // Material Id 재정렬
     private void rearrangeRepeatMaterial(List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials, int offset) {
         dataSets.forEach((batchedBufferData) -> {
             for (int i = 0; i < materials.size(); i++) {
@@ -452,7 +451,6 @@ public class GaiaBatcher {
         }
     }
 
-    // 스트레치 텍스쳐들 배칭
     private List<GaiaBufferDataSet> batchClampMaterial(List<List<GaiaBufferDataSet>> splitedDataSets) {
         return splitedDataSets.stream().map((splitedIndicesLimit) -> {
             GaiaBufferDataSet batchedBufferData = batchVertices(splitedIndicesLimit);
@@ -461,7 +459,6 @@ public class GaiaBatcher {
         }).collect(Collectors.toList());
     }
 
-    // 각 Material의 Texture들을 하나의 이미지로 변경
     private BufferedImage atlasTextures(LevelOfDetail lod, String codeName, List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> materials) {
         GaiaTextureCoordinator textureCoordinator = new GaiaTextureCoordinator(codeName, materials, dataSets);
         return textureCoordinator.batchTextures(lod);
