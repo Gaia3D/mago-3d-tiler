@@ -102,7 +102,7 @@ or
 java -jar mago-3d-tiler-x.x.x-natives-windows.jar -i C:\data\kml-input-dir -o C:\data\kml-output-dir
 ```
 
-## Using Docker Versions
+## Using Docker Image
 Alternatively, you can easily use mago-3d-tiler with docker.
 
 #### Installation command: 
@@ -114,12 +114,17 @@ docker pull gaia3d/mago-3d-tiler
 docker run --rm -v "/workspace:/workspace" gaia3d/mago-3d-tiler -inputType 3ds -input /workspace/3ds-samples -output /workspace/sample-3d-tiles -crs 5186
 ```
 
+## Documentation
+For detailed documentation, including installation and usage instructions, please refer to the official documentation:
+- JavaDocs : [gaia3d.github.io/mago-3d-tiler](https://gaia3d.github.io/mago-3d-tiler)
+- Manual : [github.com/Gaia3D/mago-3d-tiler](https://github.com/Gaia3D/mago-3d-tiler/blob/8000c169758cb4cf8fa033daa8f365a7ebd06e19/MANUAL.md)
+
 ## Supported Java versions:
 Supports long-term support (LTS) versions of the JDK, including ***JDK17*** and ***JDK21***.
 
 ## Experience the mago 3DTiler:
 ![image](https://github.com/Gaia3D/mago-3d-tiler/assets/87691347/c778f7e1-771c-4df6-8d4c-b46412c80c19)   
-<https://seoul.gaia3d.com:10903>
+Demo page : [Link](https://seoul.gaia3d.com:10903)
 
 ## Explore and Experience:
 - **Community and Code**: Join our vibrant community on GitHub and contribute to the future of 3D data conversion.​
@@ -136,3 +141,6 @@ In this case, please contact us at sales@gaia3d.com
 - **geotools** (Geospatial data tools library): <https://github.com/geotools/geotools>
 - **proj4j** (Converting coordinate reference systems): <https://github.com/locationtech/proj4j>
 - **citygml4j** (The Open Source Java API for CityGML): <https://github.com/citygml4j/citygml4j>
+
+## License
+- **MPL2.0**: The Mozilla Public License 2.0 (MPL2.0) governs the use of this software.

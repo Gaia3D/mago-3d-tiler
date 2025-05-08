@@ -172,30 +172,6 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         return this.bufferedImage;
     }
 
-    public BufferedImage getBufferedImageWithCache() {
-        if (this.bufferedImage == null) {
-            String keyPath = this.path;
-            ImageCacheQueue imageCacheQueue = ImageCacheQueue.getInstance();
-            boolean hasKey = imageCacheQueue.hasBufferedImage(keyPath);
-            if (keyPath.contains("_atlas_")) {
-                loadImage();
-                return this.bufferedImage;
-            }
-
-            if (hasKey) {
-                BufferedImage tempImage = imageCacheQueue.getBufferedImage(keyPath);
-                log.info("ImageCacheQueue hit: {}", keyPath);
-                this.bufferedImage = tempImage;
-            } else {
-                log.info("ImageCacheQueue put: {}", keyPath);
-                loadImage();
-                imageCacheQueue.putBufferedImage(keyPath, this.bufferedImage);
-            }
-            log.info("bufferedImage : {} -> ({} x {})", this.path, this.bufferedImage.getHeight(), this.bufferedImage.getWidth());
-        }
-        return this.bufferedImage;
-    }
-
     // getBufferedImage
     public BufferedImage getBufferedImage(float scaleFactor) {
         if (this.bufferedImage == null) {

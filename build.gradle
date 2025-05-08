@@ -1,23 +1,8 @@
-import org.gradle.internal.os.OperatingSystem
-
 subprojects {
     group "com.gaia3d"
-    version "1.11.3-beta"
+    version "1.11.4-beta"
     apply plugin: 'java'
-
     project.ext.lwjglVersion = "3.3.3"
-    switch (OperatingSystem.current()) {
-        case OperatingSystem.WINDOWS:
-            project.ext.lwjglNatives = "natives-windows"
-            break
-        case OperatingSystem.LINUX:
-            project.ext.lwjglNatives = "natives-linux"
-            break
-        case OperatingSystem.MAC_OS:
-            project.ext.lwjglNatives = "natives-macos"
-            break
-    }
-    //project.ext.lwjglNatives = "natives-linux"
 
     repositories {
         maven { url "https://repo.osgeo.org/repository/release/" }
@@ -79,11 +64,23 @@ project(':mago-tiler') {
     }
 }
 
+tasks.register('release') {
+    dependsOn(':mago-tiler:clean')
+    dependsOn(':mago-tiler:test')
+    dependsOn(':mago-tiler:shadowJar')
+    dependsOn(':mago-tiler:javadoc')
+    dependsOn(':mago-tiler:jib')
+}
+
 tasks.register('javadoc', Javadoc) {
     group = 'Documentation'
     description = 'Generates Javadoc for mago-tiler module.'
 
-    def includedProjects = [project(':mago-tiler'), project(':mago-common'), project(':mago-extension')]
+    def includedProjects = [
+            project(':mago-tiler'),
+            project(':mago-common'),
+            project(':mago-extension')
+    ]
 
     source = files(includedProjects.collect { it.sourceSets.main.allJava })
     classpath = files(includedProjects.collect { it.sourceSets.main.compileClasspath })

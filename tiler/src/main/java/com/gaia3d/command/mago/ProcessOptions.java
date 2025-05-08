@@ -8,7 +8,6 @@ import lombok.Getter;
 public enum ProcessOptions {
     // Default Options
     HELP("help", "h", "help", false, "Print Help"),
-    VERSION("version", "v", "version", false, "Print Version Info"),
     QUIET("quiet", "q", "quiet", false, "Quiet mode/Silent mode"),
     LEAVE_TEMP("leaveTemp", "lt", "leaveTemp", false, "Leave temporary files"),
     MERGE("merge", "m", "merge", false, "Merge tileset.json files"),

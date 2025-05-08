@@ -108,7 +108,14 @@ public class Configurator {
             File backup = new File(path + "_" + file.lastModified());
             Files.move(file.toPath(), backup.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
-        return FileAppender.newBuilder().setName("FileLogger").withFileName(path).withAppend(true).withImmediateFlush(true).withBufferedIo(true).withBufferSize(8192).setLayout(layout).build();
+        return FileAppender.newBuilder().setName("FileLogger")
+                .withFileName(path)
+                .withAppend(true)
+                /*.withImmediateFlush(true)
+                .withBufferedIo(true)
+                .withBufferSize(8192)*/
+                .setLayout(layout)
+                .build();
     }
 
     private static ConsoleAppender createConsoleAppender(PatternLayout layout) {

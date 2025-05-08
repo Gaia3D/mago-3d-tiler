@@ -8,7 +8,7 @@ import org.locationtech.jts.geom.Geometry;
 @NoArgsConstructor
 public class ForestModelHelper {
     public static boolean isForest = false;
-    
+
     /**
      * Calculate the number of trees in a polygon based on the area and tree density.
      * @param polygon

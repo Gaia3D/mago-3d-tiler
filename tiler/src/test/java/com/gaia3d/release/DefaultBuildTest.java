@@ -9,45 +9,30 @@ import java.io.File;
 
 @Tag("default")
 @Slf4j
-class DefaultReleaseTest {
+class DefaultBuildTest {
     @Test
     void help() {
-        String[] args = {
-                "-help",
-        };
+        String[] args = {"-help",};
         Mago3DTilerMain.main(args);
     }
+
     @Test
     void quiet() {
-        String args[] = {
-                "-quiet",
-        };
+        String[] args = {"-quiet", "-help",};
         Mago3DTilerMain.main(args);
     }
-    @Test
-    void version() {
-        String[] args = {
-                "-version",
-                "-help",
-        };
-        log.info("version test.");
-        Mago3DTilerMain.main(args);
-    }
+
     @Test
     void debug() {
-        String[] args = {
-                "-version",
-                "-help",
-        };
+        String[] args = {"-debug", "-help",};
         Mago3DTilerMain.main(args);
     }
+
     @Test
     void noInput() {
         ClassLoader classLoader = getClass().getClassLoader();
         File file = new File(classLoader.getResource("sample-empty").getFile());
-        String[] args = {
-                "-outputPath", file.getAbsolutePath(),
-        };
+        String[] args = {"-outputPath", file.getAbsolutePath(),};
 
         try {
             Mago3DTilerMain.main(args);
@@ -55,14 +40,12 @@ class DefaultReleaseTest {
             log.debug(e.getMessage());
         }
     }
+
     @Test
     void noOutput() {
         ClassLoader classLoader = getClass().getClassLoader();
         File file = new File(classLoader.getResource("sample-empty").getFile());
-        String[] args = {
-                "-input", file.getAbsolutePath(),
-                "-inputType", "kml",
-        };
+        String[] args = {"-input", file.getAbsolutePath(), "-inputType", "kml",};
 
         try {
             Mago3DTilerMain.main(args);
@@ -71,15 +54,13 @@ class DefaultReleaseTest {
             log.debug(e.getMessage());
         }
     }
+
     @Test
     void emptyConvert() {
         ClassLoader classLoader = getClass().getClassLoader();
         File input = new File(classLoader.getResource("./sample-empty").getFile());
         File output = new File(classLoader.getResource("./sample-empty").getFile());
-        String[] args = {
-                "-input", input.getAbsolutePath(),
-                "-output", output.getAbsolutePath(),
-        };
+        String[] args = {"-input", input.getAbsolutePath(), "-output", output.getAbsolutePath(),};
         try {
             Mago3DTilerMain.main(args);
         } catch (Exception e) {
@@ -87,15 +68,13 @@ class DefaultReleaseTest {
             log.debug(e.getMessage());
         }
     }
+
     @Test
     void defaultConvert() {
         ClassLoader classLoader = getClass().getClassLoader();
         File input = new File(classLoader.getResource("./sample-kml").getFile());
         File output = new File(classLoader.getResource("./sample-output").getFile());
-        String[] args = {
-                "-input", input.getAbsolutePath(),
-                "-output", output.getAbsolutePath(),
-        };
+        String[] args = {"-input", input.getAbsolutePath(), "-output", output.getAbsolutePath(),};
         try {
             Mago3DTilerMain.main(args);
         } catch (Exception e) {
@@ -103,14 +82,13 @@ class DefaultReleaseTest {
             log.debug(e.getMessage());
         }
     }
+
     @Test
     void multiThreadConvert() {
         ClassLoader classLoader = getClass().getClassLoader();
         File input = new File(classLoader.getResource("./sample-kml").getFile());
         File output = new File(classLoader.getResource("./sample-output").getFile());
-        String[] args = {
-                "-input", input.getAbsolutePath(),
-                "-output", output.getAbsolutePath(),
+        String[] args = {"-input", input.getAbsolutePath(), "-output", output.getAbsolutePath(),
                 //"-multiThread",
         };
         try {
@@ -126,11 +104,7 @@ class DefaultReleaseTest {
         ClassLoader classLoader = getClass().getClassLoader();
         File input = new File(classLoader.getResource("./sample-kml-error-case").getFile());
         File output = new File(classLoader.getResource("./sample-output").getFile());
-        String[] args = {
-                "-input", input.getAbsolutePath(),
-                "-output", output.getAbsolutePath(),
-                //"-multiThread",
-        };
+        String[] args = {"-input", input.getAbsolutePath(), "-output", output.getAbsolutePath(),};
         try {
             Mago3DTilerMain.main(args);
         } catch (Exception e) {
@@ -144,11 +118,7 @@ class DefaultReleaseTest {
         ClassLoader classLoader = getClass().getClassLoader();
         File input = new File(classLoader.getResource("./sample-xyz").getFile());
         File output = new File(classLoader.getResource("./sample-output").getFile());
-        String[] args = {
-                "-input", input.getAbsolutePath(),
-                "-output", output.getAbsolutePath(),
-                //"-multiThread",
-        };
+        String[] args = {"-input", input.getAbsolutePath(), "-output", output.getAbsolutePath(),};
         try {
             Mago3DTilerMain.main(args);
         } catch (Exception e) {

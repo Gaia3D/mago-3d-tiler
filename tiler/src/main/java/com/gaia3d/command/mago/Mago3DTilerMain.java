@@ -27,7 +27,6 @@ public class Mago3DTilerMain {
             boolean isQuiet = command.hasOption(ProcessOptions.QUIET.getArgName());
             boolean hasLogPath = command.hasOption(ProcessOptions.LOG.getArgName());
             boolean isDebug = command.hasOption(ProcessOptions.DEBUG.getArgName());
-            boolean isVersion = command.hasOption(ProcessOptions.VERSION.getArgName());
             boolean isMerge = command.hasOption(ProcessOptions.MERGE.getArgName());
 
             // Logging configuration
@@ -48,9 +47,6 @@ public class Mago3DTilerMain {
             }
 
             printStart();
-            if (isVersion) {
-                printVersion();
-            }
             if (isHelp) {
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.setWidth(200);
@@ -89,7 +85,7 @@ public class Mago3DTilerMain {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         String programInfo = globalOptions.getProgramInfo();
         drawLine();
-        log.info(PROGRAM_NAME);
+        log.info(programInfo);
         drawLine();
     }
 

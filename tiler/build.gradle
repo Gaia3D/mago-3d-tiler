@@ -58,17 +58,34 @@ dependencies {
     // Indoor4J
     implementation files("libs/Indoor4J.jar")
 
-    runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
-    runtimeOnly "org.lwjgl:lwjgl-assimp::$lwjglNatives"
-    runtimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"
-    runtimeOnly "org.lwjgl:lwjgl-openal::$lwjglNatives"
-    runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
-    runtimeOnly "org.lwjgl:lwjgl-stb::$lwjglNatives"
-    runtimeOnly "org.lwjgl:lwjgl-ktx::$lwjglNatives"
+    // native libraries for LWJGL
+    runtimeOnly "org.lwjgl:lwjgl::natives-linux"
+    runtimeOnly "org.lwjgl:lwjgl-opengl::natives-linux"
+    runtimeOnly "org.lwjgl:lwjgl-glfw::natives-linux"
+    runtimeOnly "org.lwjgl:lwjgl-assimp::natives-linux"
+    runtimeOnly "org.lwjgl:lwjgl-openal::natives-linux"
+    runtimeOnly "org.lwjgl:lwjgl-stb::natives-linux"
+    runtimeOnly "org.lwjgl:lwjgl-ktx::natives-linux"
+
+    runtimeOnly "org.lwjgl:lwjgl::natives-windows"
+    runtimeOnly "org.lwjgl:lwjgl-opengl::natives-windows"
+    runtimeOnly "org.lwjgl:lwjgl-glfw::natives-windows"
+    runtimeOnly "org.lwjgl:lwjgl-assimp::natives-windows"
+    runtimeOnly "org.lwjgl:lwjgl-openal::natives-windows"
+    runtimeOnly "org.lwjgl:lwjgl-stb::natives-windows"
+    runtimeOnly "org.lwjgl:lwjgl-ktx::natives-windows"
+
+    runtimeOnly "org.lwjgl:lwjgl::natives-macos"
+    runtimeOnly "org.lwjgl:lwjgl-opengl::natives-macos"
+    runtimeOnly "org.lwjgl:lwjgl-glfw::natives-macos"
+    runtimeOnly "org.lwjgl:lwjgl-assimp::natives-macos"
+    runtimeOnly "org.lwjgl:lwjgl-openal::natives-macos"
+    runtimeOnly "org.lwjgl:lwjgl-stb::natives-macos"
+    runtimeOnly "org.lwjgl:lwjgl-ktx::natives-macos"
 }
 test {
     useJUnitPlatform {
-        includeTags 'release'
+        includeTags 'default'
     }
 }
 
@@ -115,7 +132,7 @@ shadowJar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from sourceSets.main.runtimeClasspath
     configurations = [project.configurations.runtimeClasspath]
-    archiveFileName = "mago-3d-tiler-${project.version}-${project.ext.lwjglNatives}.jar"
+    archiveFileName = "mago-3d-tiler-${project.version}.jar"
     destinationDirectory.set(file("${projectDir}/dist"))
 }
 
@@ -147,7 +164,7 @@ jib {
                 "-XX:MaxGCPauseMillis=100",
                 "-XX:+UseStringDeduplication",
         ]
-        entrypoint = ["java", "-jar", "/app/mago-3d-tiler-${project.version}-${project.ext.lwjglNatives}.jar"]
+        entrypoint = ["java", "-jar", "/app/mago-3d-tiler-${project.version}.jar"]
     }
     extraDirectories {
         paths {
@@ -159,6 +176,23 @@ jib {
     }
 }
 
+clean {
+    delete file("${projectDir}/dist")
+}
+
 compileJava {
     options.encoding = 'UTF-8'
+}
+
+tasks.named('jib') {
+    dependsOn(shadowJar)
+    onlyIf {
+        def jarFile = file("/dist/mago-3d-tiler-${project.version}.jar")
+        if (!jarFile.exists()) {
+            logger.lifecycle("⚠️ JAR file not found: ${jarFile.absolutePath}")
+            logger.lifecycle(" > Please build the project first.")
+            throw new GradleException("JAR file not found: ${jarFile.absolutePath}")
+        }
+        return true
+    }
 }
