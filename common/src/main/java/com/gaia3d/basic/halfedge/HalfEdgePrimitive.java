@@ -339,8 +339,6 @@ public class HalfEdgePrimitive implements Serializable {
         if (minX > 1 || minY > 1) {
 
         }
-
-
     }
 
     public void updateVerticesList() {
