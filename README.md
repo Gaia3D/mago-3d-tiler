@@ -117,7 +117,7 @@ docker run --rm -v "/workspace:/workspace" gaia3d/mago-3d-tiler -inputType 3ds -
 ## Documentation
 For detailed documentation, including installation and usage instructions, please refer to the official documentation:
 - JavaDocs : [gaia3d.github.io/mago-3d-tiler](https://gaia3d.github.io/mago-3d-tiler)
-- Manual : [github.com/Gaia3D/mago-3d-tiler](https://github.com/Gaia3D/mago-3d-tiler/blob/8000c169758cb4cf8fa033daa8f365a7ebd06e19/MANUAL.md)
+- Manual : [github.com/Gaia3D/mago-3d-tiler](https://github.com/Gaia3D/mago-3d-tiler/blob/main/MANUAL.md)
 
 ## Supported Java versions:
 Supports long-term support (LTS) versions of the JDK, including ***JDK17*** and ***JDK21***.
