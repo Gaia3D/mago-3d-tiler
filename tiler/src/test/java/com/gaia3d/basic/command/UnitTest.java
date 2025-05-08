@@ -1026,4 +1026,19 @@ class UnitTest {
         };
         Mago3DTilerMain.main(args);
     }
+
+    @Test
+    void test_airPollutionGlb() {
+        // hwal-0, jat-0, nak-0, tree-0
+        String inputPath = "D:\\data\\simulation-data\\AIRPOLLUTION\\newAirPollution_20241008\\B_NO2\\glbs\\";
+        String outputPath = "D:\\data\\mago-server\\output\\airPollution_20082310\\";
+
+        String[] args = new String[]{
+                "-i", inputPath,
+                "-it", "kml",
+                "-o", outputPath,
+                "-rx", "-90"
+        };
+        Mago3DTilerMain.main(args);
+    }
 }
