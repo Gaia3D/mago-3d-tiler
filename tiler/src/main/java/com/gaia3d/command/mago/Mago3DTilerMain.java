@@ -90,17 +90,6 @@ public class Mago3DTilerMain {
     }
 
     /**
-     * Prints the program information and the java version information.
-     */
-    private static void printVersion() {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
-        String programInfo = globalOptions.getProgramInfo();
-        String javaVersionInfo = globalOptions.getJavaVersionInfo();
-        log.info(programInfo + "\n" + javaVersionInfo);
-        drawLine();
-    }
-
-    /**
      * Prints the total file count, total tile count, and the process time.
      */
     private static void printEnd() {

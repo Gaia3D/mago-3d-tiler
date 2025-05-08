@@ -433,28 +433,26 @@ public class GlobalOptions {
         log.info("Instance File Path: {}", instancePath);
         log.info("Log Path: {}", logPath);
         log.info("Recursive Path Search: {}", recursive);
-        log.info("Leave Temp Files: {}", isLeaveTemp);
+        log.info("Coordinate Reference System: {}", crs);
+        log.info("Proj4 Code: {}", proj);
+        log.info("Debug Mode: {}", debug);
         Mago3DTilerMain.drawLine();
         if (!debug) {
             return;
         }
-        log.info("Coordinate Reference System: {}", crs);
-        log.info("Proj4 Code: {}", proj);
+        log.info("Leave Temp Files: {}", isLeaveTemp);
         log.info("Minimum LOD: {}", minLod);
         log.info("Maximum LOD: {}", maxLod);
         log.info("Minimum GeometricError: {}", minGeometricError);
         log.info("Maximum GeometricError: {}", maxGeometricError);
         log.info("Maximum number of points per a tile: {}", maximumPointPerTile);
         log.info("Source Precision: {}", isSourcePrecision);
-        log.info("PointCloud Ratio: {}", pointRatio);
-        log.info("Force 4Byte RGB: {}", force4ByteRGB);
-        log.info("Debug Mode: {}", debug);
         log.info("Debug LOD: {}", debugLod);
         log.info("Debug GLB: {}", glb);
-        log.info("classicTransformMatrix: {}", classicTransformMatrix);
+        log.info("isClassicTransformMatrix: {}", classicTransformMatrix);
         log.info("Multi-Thread Count: {}", multiThreadCount);
-        log.info("========================================");
-        log.info("MEsh Quantization: {}", useQuantization);
+        Mago3DTilerMain.drawLine();
+        log.info("Mesh Quantization: {}", useQuantization);
         log.info("Rotate X-Axis: {}", rotateX);
         log.info("Swap Up-Axis: {}", swapUpAxis);
         log.info("Flip Up-Axis: {}", flipUpAxis);
@@ -468,9 +466,11 @@ public class GlobalOptions {
         log.info("Max Node Depth: {}", maxNodeDepth);
         log.info("LargeMesh: {}", largeMesh);
         log.info("Voxel LOD: {}", voxelLod);
-        log.info("Photogrammetry: {}", isPhotogrammetry);
+        log.info("isPhotogrammetry: {}", isPhotogrammetry);
+        log.info("PointCloud Ratio: {}", pointRatio);
         log.info("Point Cloud Horizontal Grid: {}", POINTSCLOUD_HORIZONTAL_GRID);
         log.info("Point Cloud Vertical Grid: {}", POINTSCLOUD_VERTICAL_GRID);
+        log.info("Force 4Byte RGB: {}", force4ByteRGB);
         Mago3DTilerMain.drawLine();
         log.info("Name Column: {}", nameColumn);
         log.info("Height Column: {}", heightColumn);
