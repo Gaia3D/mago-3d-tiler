@@ -111,6 +111,7 @@ class I3dmReleaseTest {
                 "-c", "5179",
                 "-it", "gpkg",
                 "-ot", "i3dm",
+                "-refineAdd",
                 "-instance", getInputPath("sample-tree").getAbsolutePath() + "/broad-bluegrass.glb",
                 //"-terrain", INPUT_PATH + "/korea-compressed.tif",
                 "-terrain", "G:/workspace/dem05.tif",
@@ -275,9 +276,36 @@ class I3dmReleaseTest {
                 "-ot", "i3dm",
                 "-instance", getInputPath("sample-tree").getAbsolutePath() + "/cherry-blossom.glb",
                 "-terrain", "G:/workspace/dem05.tif",
-                //"-refineAdd",
-                "-voxelLod"
-                //"-debug"
+        };
+        execute(args);
+    }
+
+    @Test
+    void instanced08() {
+        String path = "I08-transmission-geojson";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-c", "5179",
+                "-it", "geojson",
+                "-ot", "i3dm",
+                "-refineAdd",
+                "-instance", getInputPath(path).getAbsolutePath() + "/lite.glb",
+                "-terrain", "G:/workspace/dem05.tif",
+        };
+        execute(args);
+    }
+
+    @Test
+    void instanced09() {
+        String path = "I09-transmission-line-geojson";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-c", "5179",
+                "-it", "geojson",
+                "-terrain", "G:/workspace/dem05.tif",
+                "-debug"
         };
         execute(args);
     }
