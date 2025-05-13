@@ -174,6 +174,10 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                             y = point.getY();
                         }
                         z = point.getCoordinate().getZ();
+                        if (Double.isNaN(z) || Double.isInfinite(z)) {
+                            z = 0.0d;
+                        }
+
                         Vector3d position = new Vector3d(x, y, z); // usually crs 3857
                         positions.add(position);
                     }
