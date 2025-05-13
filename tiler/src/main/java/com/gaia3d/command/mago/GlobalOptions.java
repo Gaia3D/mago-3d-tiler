@@ -205,6 +205,11 @@ public class GlobalOptions {
             isRecursive = OptionsCorrector.isRecursive(input);
         }
         instance.setRecursive(isRecursive);
+        instance.setLogPath(command.hasOption(ProcessOptions.LOG.getArgName()) ? command.getOptionValue(ProcessOptions.LOG.getArgName()) : null);
+
+        if (command.hasOption(ProcessOptions.MERGE.getArgName())) {
+            return;
+        }
 
         FormatType inputFormat;
         String inputType = command.hasOption(ProcessOptions.INPUT_TYPE.getArgName()) ? command.getOptionValue(ProcessOptions.INPUT_TYPE.getArgName()) : null;
@@ -228,8 +233,6 @@ public class GlobalOptions {
         } else {
             instance.setOutputFormat(outputFormat);
         }
-
-        instance.setLogPath(command.hasOption(ProcessOptions.LOG.getArgName()) ? command.getOptionValue(ProcessOptions.LOG.getArgName()) : null);
 
         if (command.hasOption(ProcessOptions.TERRAIN.getArgName())) {
             instance.setTerrainPath(command.getOptionValue(ProcessOptions.TERRAIN.getArgName()));
