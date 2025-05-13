@@ -1,0 +1,32 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*-release'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build with Gradle
+        run: ./gradlew release
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: /tiler/dist/*.jar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JIB_TO_AUTH_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          JIB_TO_AUTH_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}

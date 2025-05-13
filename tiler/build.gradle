@@ -37,8 +37,11 @@ dependencies {
     implementation "org.geotools:gt-process-raster:26.5"
     implementation "org.geotools:gt-process-feature:26.5"
     implementation "org.geotools:gt-geopkg:26.5"
+
+    // add shaded dependencies
     implementation "javax.media:jai_core:1.1.3"
     implementation "javax.media:jai_imageio:1.1"
+    implementation "javax.media:jai_codec:1.1.3"
 
     // JDOM
     implementation "org.jdom:jdom2:2.0.6"
@@ -154,10 +157,10 @@ jib {
     to {
         image = "gaia3d/mago-3d-tiler"
         tags = ["latest", project.version] as List<String>
-        auth {
-            username = project.hasProperty("jib.to.auth.username") ? project.property("jib.to.auth.username") : System.getenv("JIB_TO_AUTH_USERNAME")
-            password = project.hasProperty("jib.to.auth.password") ? project.property("jib.to.auth.password") : System.getenv("JIB_TO_AUTH_PASSWORD")
-        }
+        /*auth {
+            username = findProperty("jib.to.auth.username") ?: System.getenv("JIB_TO_AUTH_USERNAME")
+            password = findProperty("jib.to.auth.password") ?: System.getenv("JIB_TO_AUTH_PASSWORD")
+        }*/
     }
     container {
         appRoot = "/mago-3d-tiler"
