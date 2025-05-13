@@ -65,11 +65,9 @@ project(':mago-tiler') {
 }
 
 tasks.register('release') {
-    dependsOn(':mago-tiler:clean')
-    dependsOn(':mago-tiler:test')
-    dependsOn(':mago-tiler:shadowJar')
-    dependsOn(':mago-tiler:javadoc')
-    dependsOn(':mago-tiler:jib')
+    dependsOn(':mago-terrainer:test')
+    dependsOn(':mago-terrainer:javadoc')
+    dependsOn(':mago-terrainer:jib')
 }
 
 tasks.register('javadoc', Javadoc) {
