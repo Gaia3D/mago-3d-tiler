@@ -285,6 +285,32 @@ class B3dmReleaseTest {
         execute(args);
     }
 
+    @Test
+    void batched91() {
+        String path = "B91-buildings";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "geojson",
+                "-heightColumn", "rel_height",
+                "-c", "3857",
+        };
+        execute(args);
+    }
+
+    @Test
+    void batched92() {
+        String path = "B92-buildings";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "geojson",
+                "-heightColumn", "rel_height",
+                "-c", "4326",
+        };
+        execute(args);
+    }
+
     private void execute(String[] args) {
         Mago3DTilerMain.main(args);
     }

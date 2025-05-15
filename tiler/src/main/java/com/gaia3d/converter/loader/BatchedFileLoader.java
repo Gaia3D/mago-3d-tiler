@@ -77,6 +77,7 @@ public class BatchedFileLoader implements FileLoader {
         } else {
             throw new RuntimeException("GeoTiff path is neither a file nor a directory.");
         }
+        return coverages;
     }
 
 
