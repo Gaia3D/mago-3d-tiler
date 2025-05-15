@@ -42,8 +42,8 @@ public class GaiaExtruder {
         GaiaExtrusionSurface floor = new GaiaExtrusionSurface(floorPositions);
 
         result.add(roof);
-        result.addAll(wallPositions);
         result.add(floor);
+        result.addAll(wallPositions);
         return result;
     }
 
