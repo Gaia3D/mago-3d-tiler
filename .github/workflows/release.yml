@@ -2,9 +2,10 @@ name: Release Please
 
 on:
   push:
+    tags:
+      - 'v*.*.*'
     branches:
       - main
-
 jobs:
   release:
     runs-on: ubuntu-latest
