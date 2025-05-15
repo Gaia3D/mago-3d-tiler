@@ -8,8 +8,19 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
-
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build with Gradle
+        run: ./gradlew release
+
       - uses: google-github-actions/release-please-action@v4
         with:
           release-type: simple
