@@ -2,9 +2,7 @@ package com.gaia3d.process.postprocess.instance;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.gaia3d.process.postprocess.pointcloud.BatchId;
-import com.gaia3d.process.postprocess.pointcloud.Color;
-import com.gaia3d.process.postprocess.pointcloud.Position;
+import com.gaia3d.process.postprocess.pointcloud.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;

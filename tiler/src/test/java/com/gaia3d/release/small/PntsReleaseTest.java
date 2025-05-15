@@ -33,7 +33,7 @@ class PntsReleaseTest {
                 "-zOffset", "100.0",
                 "-xOffset", "100.0",
                 "-yOffset", "100.0",
-                "-c", "32652",
+                //"-c", "32652",
         };
         execute(args);
     }
@@ -55,7 +55,7 @@ class PntsReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                "-c", "5187",
+                //"-c", "5187",
                 "-pointRatio", "100",
                 "-debug",
         };
@@ -94,6 +94,16 @@ class PntsReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-c", "32652",
                 "-debug",
+        };
+        execute(args);
+    }
+
+    @Test
+    void pointcloud06() {
+        String path = "P06-classification-las";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
         };
         execute(args);
     }
