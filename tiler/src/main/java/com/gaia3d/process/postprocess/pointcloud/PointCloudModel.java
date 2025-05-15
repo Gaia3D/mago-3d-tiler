@@ -1,12 +1,11 @@
 package com.gaia3d.process.postprocess.pointcloud;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.pointcloud.GaiaPointCloud;
 import com.gaia3d.basic.model.GaiaVertex;
+import com.gaia3d.basic.pointcloud.GaiaPointCloud;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.postprocess.TileModel;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTable;
@@ -72,7 +71,8 @@ public class PointCloudModel implements TileModel {
         float[] positions = new float[vertexLength * 3];
         int[] quantizedPositions = new int[vertexLength * 3];
         byte[] colors = new byte[vertexLength * 3];
-        float[] batchIds = new float[vertexLength];
+        char[] intensity = new char[vertexLength];
+        short[] classification = new short[vertexLength];
 
         Vector3d center = wgs84BoundingBox.getCenter();
         Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
@@ -89,8 +89,7 @@ public class PointCloudModel implements TileModel {
         GaiaBoundingBox quantizedVolume = new GaiaBoundingBox();
         AtomicInteger mainIndex = new AtomicInteger();
         AtomicInteger positionIndex = new AtomicInteger();
-        AtomicInteger colorIndex= new AtomicInteger();
-        AtomicInteger batchIdIndex= new AtomicInteger();
+        AtomicInteger colorIndex = new AtomicInteger();
         tileInfos.forEach((tileInfo) -> {
             GaiaPointCloud pointCloud = tileInfo.getPointCloud();
             pointCloud.maximize();
@@ -113,8 +112,6 @@ public class PointCloudModel implements TileModel {
 
                 Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(wgs84Position);
                 Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv, new Vector3d());
-                float batchId = vertex.getBatchId();
-
                 localPosition.mulPosition(rotationMatrix4d, localPosition);
 
                 float x = (float) localPosition.x;
@@ -131,7 +128,8 @@ public class PointCloudModel implements TileModel {
                 colors[colorIndex.getAndIncrement()] = color[1];
                 colors[colorIndex.getAndIncrement()] = color[2];
 
-                batchIds[batchIdIndex.getAndIncrement()] = batchId;
+                intensity[index] = vertex.getIntensity();
+                classification[index] = vertex.getClassification();
             });
             pointCloud.minimizeTemp();
         });
@@ -139,7 +137,7 @@ public class PointCloudModel implements TileModel {
         // quantization
         Vector3d quantizationScale = calcQuantizedVolumeScale(quantizedVolume);
         Vector3d quantizationOffset = calcQuantizedVolumeOffset(quantizedVolume);
-        for (int i = 0; i < positions.length; i+=3) {
+        for (int i = 0; i < positions.length; i += 3) {
             double x = positions[i];
             double y = positions[i + 1];
             double z = positions[i + 2];
@@ -199,14 +197,22 @@ public class PointCloudModel implements TileModel {
         PointCloudBinary pointCloudBinary = new PointCloudBinary();
         pointCloudBinary.setPositions(quantizedPositions);
         pointCloudBinary.setColors(colors);
+        pointCloudBinary.setIntensities(intensity);
+        pointCloudBinary.setClassifications(classification);
 
         byte[] positionBytes = pointCloudBinary.getPositionBytes();
         byte[] colorBytes = pointCloudBinary.getColorBytes();
-        byte[] featureTableBytes = new byte[positionBytes.length + colorBytes.length /*+ batchIdBytes.length*/];
+        byte[] intensityBytes = pointCloudBinary.getIntensityBytes();
+        byte[] classificationBytes = pointCloudBinary.getClassificationBytes();
+
+        byte[] featureTableBytes = new byte[positionBytes.length + colorBytes.length];
         System.arraycopy(positionBytes, 0, featureTableBytes, 0, positionBytes.length);
         System.arraycopy(colorBytes, 0, featureTableBytes, positionBytes.length, colorBytes.length);
 
-        byte[] batchTableBytes = new byte[0];
+        byte[] batchTableBytes = new byte[intensityBytes.length + classificationBytes.length];
+        System.arraycopy(intensityBytes, 0, batchTableBytes, 0, intensityBytes.length);
+        System.arraycopy(classificationBytes, 0, batchTableBytes, intensityBytes.length, classificationBytes.length);
+
         GaiaFeatureTable featureTable = new GaiaFeatureTable();
         featureTable.setPointsLength(vertexLength);
         featureTable.setQuantizedVolumeOffset(new float[]{(float) quantizationOffset.x, (float) quantizationOffset.y, (float) quantizationOffset.z});
@@ -221,16 +227,14 @@ public class PointCloudModel implements TileModel {
             rtcCenter[2] = transformMatrix.m32();
             featureTable.setRctCenter(rtcCenter);
         }
-        //featureTable.setBatchLength(1);
-        //BatchId batchIdObject = new BatchId(0, "FLOAT");
-        //featureTable.setBatchId(batchIdObject);
+
         GaiaBatchTable batchTable = new GaiaBatchTable();
-        //List<String> batchTableIds = batchTable.getBatchId();
-        //batchTableIds.add("0");
+        batchTable.setIntensity(new Intensity(0, "UNSIGNED_SHORT", "SCALAR"));
+        batchTable.setClassification(new Classification(intensityBytes.length, "UNSIGNED_SHORT", "SCALAR"));
 
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+
         try {
             featureTableJson = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(featureTable));
             batchTableJson = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(batchTable));
