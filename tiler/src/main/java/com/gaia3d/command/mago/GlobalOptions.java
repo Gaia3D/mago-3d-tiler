@@ -377,8 +377,8 @@ public class GlobalOptions {
             isFlipUpAxis = false;
             if (instance.getOutputFormat().equals(FormatType.B3DM)) {
                 rotateXAxis = -90;
+                isRefineAdd = true;
             }
-            //isRefineAdd = true;
         }
 
         instance.setSwapUpAxis(isSwapUpAxis);
