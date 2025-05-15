@@ -11,8 +11,11 @@ import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+
+import java.util.List;
 
 /**
  * Utility class for converting between geographic and cartesian coordinates.
@@ -252,14 +255,28 @@ public class GlobeUtils {
 
     public static CoordinateReferenceSystem convertProj4jCrsFromGeotoolsCrs(org.opengis.referencing.crs.CoordinateReferenceSystem crs) {
         String epsg = null;
-        try {
-            epsg = CRS.lookupIdentifier(crs, true);
-        } catch (FactoryException e) {
-            log.error("[ERROR] Failed to lookup EPSG code", e);
+        List<ReferenceIdentifier> identifiers =  crs.getIdentifiers().stream().toList();
+        if (!identifiers.isEmpty()) {
+            ReferenceIdentifier identifier = identifiers.get(0);
+            if (identifier.getCodeSpace().equalsIgnoreCase("EPSG")) {
+                epsg = identifier.getCode();
+            }
+        }
+
+        if (epsg == null) {
+            try {
+                epsg = CRS.lookupIdentifier(crs, true);
+            } catch (FactoryException e) {
+                log.error("[ERROR] Failed to lookup EPSG code", e);
+            }
         }
 
         if (epsg == null) {
             epsg = extractEpsgCodeFromWTK(crs.toWKT());
+        }
+
+        if (epsg != null && epsg.contains("EPSG")) {
+            epsg = epsg.replace("EPSG:", "");
         }
 
         if (epsg == null) {
