@@ -3,7 +3,7 @@ name: Release Please
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - 'v*-release'
     branches:
       - main
 jobs:
