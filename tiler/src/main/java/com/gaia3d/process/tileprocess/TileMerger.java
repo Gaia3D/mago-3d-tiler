@@ -123,7 +123,7 @@ public class TileMerger {
             Tileset tileset = tilesetMap.get(tilesetFile);
             Node tilesetRoot = tileset.getRoot();
             double tilesetGeometricError = tileset.getGeometricError();
-            if (tileset.getGeometricError() == 0.0) {
+            if (tilesetGeometricError == 0.0) {
                 tilesetGeometricError = tilesetRoot.getGeometricError();
             }
 

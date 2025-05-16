@@ -28,29 +28,23 @@ import java.util.Map;
 @NoArgsConstructor
 @Slf4j
 public class GlobalOptions {
-    /* singleton */
-    private static final GlobalOptions instance = new GlobalOptions();
-
     public static final String DEFAULT_INPUT_FORMAT = "kml";
     public static final String DEFAULT_INSTANCE_FILE = "instance.dae";
     public static final int DEFAULT_MIN_LOD = 0;
     public static final int DEFAULT_MAX_LOD = 3;
     public static final int DEFAULT_MIN_GEOMETRIC_ERROR = 16;
     public static final int DEFAULT_MAX_GEOMETRIC_ERROR = 1024;
-
     public static final int DEFAULT_MAX_TRIANGLES = 65536 * 8;
     public static final int DEFAULT_MAX_NODE_DEPTH = 32;
     public static final int DEFAULT_MAX_INSTANCE = 1024 * 64;
     public static final int DEFAULT_MAX_I3DM_FEATURE_COUNT = 1024;
     public static final int DEFAULT_MIN_I3DM_FEATURE_COUNT = 128;
-
     public static final int DEFAULT_POINT_PER_TILE = 300000;
     public static final int DEFAULT_POINT_RATIO = 100;
     public static final float POINTSCLOUD_HORIZONTAL_GRID = 500.0f; // in meters
     public static final float POINTSCLOUD_VERTICAL_GRID = 500.0f; // in meters
     public static final float POINTSCLOUD_HORIZONTAL_ARC = (1.0f / 60.0f / 60.0f) * 20.0f;
     public static final float POINTSCLOUD_VERTICAL_ARC = (1.0f / 60.0f / 60.0f) * 20.0f;
-
     public static final String DEFAULT_CRS_CODE = "3857"; // 4326 -> 3857
     public static final CoordinateReferenceSystem DEFAULT_CRS = new CRSFactory().createFromName("EPSG:" + DEFAULT_CRS_CODE);
     public static final String DEFAULT_NAME_COLUMN = "name";
@@ -61,21 +55,18 @@ public class GlobalOptions {
     public static final double DEFAULT_ABSOLUTE_ALTITUDE = 0.0d;
     public static final double DEFAULT_MINIMUM_HEIGHT = 0.0d;
     public static final double DEFAULT_SKIRT_HEIGHT = 4.0d;
-
     public static final boolean DEFAULT_USE_QUANTIZATION = false;
-
     public static final int REALISTIC_LOD0_MAX_TEXTURE_SIZE = 1024;
     public static final int REALISTIC_MAX_TEXTURE_SIZE = 1024;
     public static final int REALISTIC_MIN_TEXTURE_SIZE = 32;
     public static final int REALISTIC_SCREEN_DEPTH_TEXTURE_SIZE = 256;
     public static final int REALISTIC_SCREEN_COLOR_TEXTURE_SIZE = 1024;
     public static final double REALISTIC_LEAF_TILE_SIZE = 25.0; // meters
-
     public static final int INSTANCE_POLYGON_CONTAINS_POINT_COUNTS = -1;
     public static final int RANDOM_SEED = 2620;
-
     public static final boolean MAKE_SKIRT = true;
-
+    /* singleton */
+    private static final GlobalOptions instance = new GlobalOptions();
     private Reporter reporter;
 
     private String version; // version flag
@@ -207,31 +198,29 @@ public class GlobalOptions {
         instance.setRecursive(isRecursive);
         instance.setLogPath(command.hasOption(ProcessOptions.LOG.getArgName()) ? command.getOptionValue(ProcessOptions.LOG.getArgName()) : null);
 
-        if (command.hasOption(ProcessOptions.MERGE.getArgName())) {
-            return;
-        }
+        if (!command.hasOption(ProcessOptions.MERGE.getArgName())) {
+            FormatType inputFormat;
+            String inputType = command.hasOption(ProcessOptions.INPUT_TYPE.getArgName()) ? command.getOptionValue(ProcessOptions.INPUT_TYPE.getArgName()) : null;
+            if (inputType == null || StringUtils.isEmpty(inputType)) {
+                inputFormat = OptionsCorrector.findInputFormatType(new File(instance.getInputPath()), isRecursive);
+            } else {
+                inputFormat = FormatType.fromExtension(inputType);
+            }
+            inputFormat = inputFormat == null ? FormatType.fromExtension(DEFAULT_INPUT_FORMAT) : inputFormat;
+            instance.setInputFormat(inputFormat);
 
-        FormatType inputFormat;
-        String inputType = command.hasOption(ProcessOptions.INPUT_TYPE.getArgName()) ? command.getOptionValue(ProcessOptions.INPUT_TYPE.getArgName()) : null;
-        if (inputType == null || StringUtils.isEmpty(inputType)) {
-            inputFormat = OptionsCorrector.findInputFormatType(new File(instance.getInputPath()), isRecursive);
-        } else {
-            inputFormat = FormatType.fromExtension(inputType);
-        }
-        inputFormat = inputFormat == null ? FormatType.fromExtension(DEFAULT_INPUT_FORMAT) : inputFormat;
-        instance.setInputFormat(inputFormat);
-
-        FormatType outputFormat;
-        String outputType = command.hasOption(ProcessOptions.OUTPUT_TYPE.getArgName()) ? command.getOptionValue(ProcessOptions.OUTPUT_TYPE.getArgName()) : null;
-        if (outputType == null) {
-            outputFormat = OptionsCorrector.findOutputFormatType(instance.getInputFormat());
-        } else {
-            outputFormat = FormatType.fromExtension(outputType);
-        }
-        if (outputFormat == null) {
-            throw new IllegalArgumentException("Invalid output format: " + outputType);
-        } else {
-            instance.setOutputFormat(outputFormat);
+            FormatType outputFormat;
+            String outputType = command.hasOption(ProcessOptions.OUTPUT_TYPE.getArgName()) ? command.getOptionValue(ProcessOptions.OUTPUT_TYPE.getArgName()) : null;
+            if (outputType == null) {
+                outputFormat = OptionsCorrector.findOutputFormatType(instance.getInputFormat());
+            } else {
+                outputFormat = FormatType.fromExtension(outputType);
+            }
+            if (outputFormat == null) {
+                throw new IllegalArgumentException("Invalid output format: " + outputType);
+            } else {
+                instance.setOutputFormat(outputFormat);
+            }
         }
 
         if (command.hasOption(ProcessOptions.TERRAIN.getArgName())) {
