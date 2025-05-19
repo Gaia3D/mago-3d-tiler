@@ -24,7 +24,8 @@ jobs:
           JIB_TO_AUTH_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           JIB_TO_AUTH_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
-      - uses: google-github-actions/release-please-action@v4
+      - name: Run release-please
+        uses: google-github-actions/release-please-action@v4
         with:
           release-type: simple
         env:
