@@ -1,5 +1,5 @@
 {
-  "template": "{{#categories}}{{title}}\n{{#pullRequests}}{{{body}}}\n{{/pullRequests}}\n{{/categories}}",
+  "template": "#{{CHANGELOG}}\n\n<details>\n<summary>Uncategorized</summary>\n\n#{{UNCATEGORIZED}}\n</details>",
   "categories": [
     {
       "title": "### ✨ Features",
@@ -14,7 +14,7 @@
       "labels": ["chore", "refactor"]
     }
   ],
-  "pr_template": "- {{title}} (#{{number}})",
-  "empty_template": "No changes",
+  "pr_template": "- #{{TITLE}}\n   - PR: ##{{NUMBER}}",
+  "empty_template": "- no changes",
   "fallback_template": "- {{title}} (#{{number}})"
 }
