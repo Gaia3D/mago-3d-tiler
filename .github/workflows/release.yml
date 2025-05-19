@@ -3,7 +3,10 @@ on:
   push:
     branches:
       - main
-permissions: write-all
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -20,16 +23,15 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }}
           JIB_TO_AUTH_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           JIB_TO_AUTH_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Run release-please
         uses: googleapis/release-please-action@v4
         with:
+          token: ${{ secrets.PAT_TOKEN }}
           release-type: java
           include-component-in-tag: 'false'
           config-file: .github/.release-please-config.json
           manifest-file: .github/.release-please-manifest.json
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
