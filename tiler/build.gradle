@@ -206,7 +206,7 @@ tasks.named('jib') {
 }
 
 // release test
-tasks.named('test') {
+tasks.named('pre-release-test') {
     useJUnitPlatform {
         includeTags 'release'
     }
