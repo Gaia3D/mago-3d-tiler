@@ -3,7 +3,21 @@
     ".": {
       "release-type": "java",
       "include-v-in-tag": true,
-      "extra-files": ["build.gradle"]
+      "extra-files": ["build.gradle"],
+      "changelog-sections": [
+        {
+          "type": "feat",
+          "section": "Features",
+          "hidden": false,
+          "regex": "^feat\\s*:\\s*"
+        },
+        {
+          "type": "fix",
+          "section": "Bug Fixes",
+          "hidden": false,
+          "regex": "^fix\\s*:\\s*"
+        }
+      ]
     }
   }
 }
