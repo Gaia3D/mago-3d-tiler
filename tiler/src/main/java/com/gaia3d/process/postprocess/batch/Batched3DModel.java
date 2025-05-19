@@ -9,7 +9,7 @@ import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.jgltf.GltfWriter;
-import com.gaia3d.process.postprocess.TileModel;
+import com.gaia3d.process.postprocess.TilingModel;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings("ALL")
 @Slf4j
-public class Batched3DModel implements TileModel {
+public class Batched3DModel implements TilingModel {
     private static final String MAGIC = "b3dm";
     private static final int VERSION = 1;
     private final GltfWriter gltfWriter;

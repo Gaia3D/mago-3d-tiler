@@ -33,7 +33,6 @@ class PntsReleaseTest {
                 "-zOffset", "100.0",
                 "-xOffset", "100.0",
                 "-yOffset", "100.0",
-                //"-c", "32652",
         };
         execute(args);
     }
@@ -44,7 +43,6 @@ class PntsReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                //"-c", "5186"
         };
         execute(args);
     }
@@ -55,8 +53,6 @@ class PntsReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                //"-c", "5187",
-                "-pointRatio", "100",
                 "-debug",
         };
         execute(args);
@@ -69,7 +65,6 @@ class PntsReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-c", "32648",
-                "-pointRatio", "25",
         };
         execute(args);
     }
@@ -80,8 +75,6 @@ class PntsReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                //"-c", "5186",
-                //"-pointRatio", "25",
         };
         execute(args);
     }

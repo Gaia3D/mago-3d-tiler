@@ -43,14 +43,17 @@ import java.util.List;
  * GltfWriter is a class that writes the glTF file.
  * It contains the method to write the glTF file from the GaiaScene object.
  * The glTF file is written in the glTF 2.0 format.
- * @since 1.0.0
- * @see GaiaScene , GltfBinary
  */
 @Slf4j
 @NoArgsConstructor
 public class GltfWriter {
     private final GlobalOptions globalOptions = GlobalOptions.getInstance();
 
+    /**
+     * Write the glTF file from the GaiaScene object.
+     * @param gaiaScene  The GaiaScene object to be written.
+     * @param outputPath The output path of the glTF file.
+     */
     public void writeGltf(GaiaScene gaiaScene, File outputPath) {
         try {
             GltfModel gltfModel = convert(gaiaScene);
@@ -62,10 +65,20 @@ public class GltfWriter {
         }
     }
 
+    /**
+     * Write the glTF file from the GaiaScene object.
+     * @param gaiaScene  The GaiaScene object to be written.
+     * @param outputPath The output path of the glTF file.
+     */
     public void writeGltf(GaiaScene gaiaScene, String outputPath) {
         writeGltf(gaiaScene, new File(outputPath));
     }
 
+    /**
+     * Write the glTF file from the GaiaScene object.
+     * @param gaiaScene  The GaiaScene object to be written.
+     * @param outputPath The output path of the glTF file.
+     */
     public void writeGlb(GaiaScene gaiaScene, File outputPath) {
         try {
             GltfModel gltfModel = convert(gaiaScene);
@@ -77,6 +90,11 @@ public class GltfWriter {
         }
     }
 
+    /**
+     * Write the glTF file from the GaiaScene object.
+     * @param gaiaScene  The GaiaScene object to be written.
+     * @param outputStream The output stream of the glTF file.
+     */
     public void writeGlb(GaiaScene gaiaScene, OutputStream outputStream) {
         try {
             GltfModel gltfModel = convert(gaiaScene);
@@ -90,6 +108,11 @@ public class GltfWriter {
         }
     }
 
+    /**
+     * Write the glTF file from the GaiaScene object.
+     * @param gaiaScene  The GaiaScene object to be written.
+     * @param outputPath The output path of the glTF file.
+     */
     public void writeGlb(GaiaScene gaiaScene, String outputPath) {
         writeGlb(gaiaScene, new File(outputPath));
     }
@@ -101,7 +124,7 @@ public class GltfWriter {
         gltf.addSamplers(genSampler());
 
         Node rootNode = initNode();
-        Scene scene = initScene(gltf, rootNode);
+        initScene(gltf, rootNode);
 
         gaiaScene.getMaterials().forEach(gaiaMaterial -> createMaterial(gltf, gaiaMaterial));
         convertNode(gltf, binary, null, gaiaScene.getNodes());
@@ -137,8 +160,7 @@ public class GltfWriter {
     }
 
     private Byte convertNormal(Float normalValue) {
-        byte normalByte = (byte) (normalValue * 127);
-        return normalByte;
+        return (byte) (normalValue * 127);
     }
 
     private byte[] convertNormals(float[] normalValues) {
@@ -179,15 +201,14 @@ public class GltfWriter {
                 originalTransformMatrix = new Matrix4d(otm[0], otm[1], otm[2], otm[3], otm[4], otm[5], otm[6], otm[7], otm[8], otm[9], otm[10], otm[11], otm[12], otm[13], otm[14], otm[15]);
             }
 
-            Matrix4d quantizationMatrix = Quantizer.computeQuantizationMatrix(originalTransformMatrix, positions);
-            unsignedShortsPositions = Quantizer.quantizeUnsignedShorts(positions, originalTransformMatrix, quantizationMatrix);
+            Matrix4d quantizationMatrix = Quantization.computeQuantizationMatrix(originalTransformMatrix, positions);
+            unsignedShortsPositions = Quantization.quantizeUnsignedShorts(positions, originalTransformMatrix, quantizationMatrix);
             gltf.addExtensionsRequired("KHR_mesh_quantization");
             gltf.addExtensionsUsed("KHR_mesh_quantization");
             node.setMatrix(quantizationMatrix.get(new float[16]));
         }
 
         float[] normals = gaiaMesh.getNormals();
-        //byte[] normalBytes = convertNormals(normals);
         byte[] colors = gaiaMesh.getColors();
         float[] texcoords = gaiaMesh.getTexcoords();
         float[] batchIds = gaiaMesh.getBatchIds();
@@ -226,7 +247,7 @@ public class GltfWriter {
             }
         }
         if (positionsBuffer != null) {
-            if (globalOptions.isUseQuantization()) {
+            if (globalOptions.isUseQuantization() && unsignedShortsPositions != null) {
                 for (short position : unsignedShortsPositions) {
                     positionsBuffer.putShort(position);
                 }
@@ -394,7 +415,7 @@ public class GltfWriter {
         return rootNode;
     }
 
-    private Scene initScene(GlTF gltf, Node rootNode) {
+    private void initScene(GlTF gltf, Node rootNode) {
         List<Scene> scenes = new ArrayList<>();
         Scene scene = new Scene();
         List<Node> nodes = new ArrayList<>();
@@ -405,7 +426,6 @@ public class GltfWriter {
         scenes.add(scene);
         gltf.setScenes(scenes);
         gltf.setScene(gltf.getScenes().size() - 1);
-        return scene;
     }
 
     private Buffer initBuffer(GlTF gltf) {

@@ -8,9 +8,9 @@ import com.gaia3d.basic.model.*;
 import com.gaia3d.command.mago.AttributeFilter;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
-import com.gaia3d.converter.EasySceneCreator;
+import com.gaia3d.converter.DefaultSceneFactory;
 import com.gaia3d.converter.geometry.AbstractGeometryConverter;
-import com.gaia3d.converter.geometry.GaiaExtrusionBuilding;
+import com.gaia3d.converter.geometry.GaiaExtrusionModel;
 import com.gaia3d.converter.geometry.GaiaSceneTempGroup;
 import com.gaia3d.converter.geometry.InnerRingRemover;
 import com.gaia3d.converter.geometry.pipe.GaiaPipeLineString;
@@ -69,7 +69,6 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
         List<AttributeFilter> attributeFilters = globalOptions.getAttributeFilters();
         boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalOptions.DEFAULT_CRS);
         boolean flipCoordinate = globalOptions.isFlipCoordinate();
-        String nameColumnName = globalOptions.getNameColumn();
         String heightColumnName = globalOptions.getHeightColumn();
         String altitudeColumnName = globalOptions.getAltitudeColumn();
         String diameterColumnName = globalOptions.getDiameterColumn();
@@ -92,7 +91,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                 globalOptions.setCrs(crs);
             }
 
-            List<GaiaExtrusionBuilding> buildings = new ArrayList<>();
+            List<GaiaExtrusionModel> buildings = new ArrayList<>();
             List<GaiaPipeLineString> pipeLineStrings = new ArrayList<>();
             while (iterator.hasNext()) {
                 SimpleFeatureImpl feature = (SimpleFeatureImpl) iterator.next();
@@ -234,7 +233,6 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                         boundingBox.addPoint(position);
                     }
 
-                    String name = getAttributeValueOfDefault(feature, nameColumnName, "Extrusion-Building");
                     if (positions.size() >= 3) {
                         double height = getHeight(feature, heightColumnName, minimumHeightValue);
                         double altitude = absoluteAltitudeValue;
@@ -249,9 +247,8 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                             altitude = temp;
                         }
 
-                        GaiaExtrusionBuilding building = GaiaExtrusionBuilding.builder()
+                        GaiaExtrusionModel building = GaiaExtrusionModel.builder()
                                 .id(feature.getID())
-                                .name(name)
                                 .boundingBox(boundingBox)
                                 .floorHeight(altitude)
                                 .roofHeight(height + skirtHeight)
@@ -260,24 +257,22 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                                 .build();
                         buildings.add(building);
                     } else {
-                        log.warn("[WARN] Invalid Geometry : {}, {}", feature.getID(), name);
+                        log.warn("[WARN] Invalid Geometry : {}", feature.getID());
                     }
                 }
             }
             iterator.close();
-            EasySceneCreator easySceneCreator = new EasySceneCreator();
+            DefaultSceneFactory defaultSceneFactory = new DefaultSceneFactory();
 
             int sceneCount = 10000;
             List<GaiaScene> scenes = new ArrayList<>();
-            for (GaiaExtrusionBuilding building : buildings) {
-                GaiaScene scene = easySceneCreator.createScene(input);
+            for (GaiaExtrusionModel building : buildings) {
+                GaiaScene scene = defaultSceneFactory.createScene(input);
                 GaiaNode rootNode = scene.getNodes().get(0);
 
                 GaiaAttribute gaiaAttribute = scene.getAttribute();
                 gaiaAttribute.setAttributes(building.getProperties());
-                Map<String, String> attributes = gaiaAttribute.getAttributes();
                 gaiaAttribute.setNodeName(rootNode.getName());
-                attributes.put("name", building.getName());
 
                 Vector3d center = building.getBoundingBox().getCenter();
                 center.z = center.z - skirtHeight;
@@ -412,7 +407,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
         int sceneCount = 1000;
         List<GaiaScene> scenes = new ArrayList<>();
 
-        EasySceneCreator easySceneCreator = new EasySceneCreator();
+        DefaultSceneFactory defaultSceneFactory = new DefaultSceneFactory();
         for (GaiaPipeLineString pipeLineString : pipeLineStrings) {
             int pointsCount = pipeLineString.getPositions().size();
             if (pointsCount < 2) {
@@ -420,7 +415,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                 continue;
             }
 
-            GaiaScene scene = easySceneCreator.createScene(input);
+            GaiaScene scene = defaultSceneFactory.createScene(input);
             GaiaNode rootNode = scene.getNodes().get(0);
             rootNode.setName("PipeLineStrings");
 

@@ -5,15 +5,32 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
+/**
+ * Quantization class for computing quantization matrices and converting values.
+ * This class provides methods to compute a quantization matrix based on input values,
+ * convert signed shorts from unsigned shorts, and quantize unsigned shorts.
+ * It also includes methods for padding lengths.
+ */
 @Slf4j
 @NoArgsConstructor
-public class Quantizer {
+public class Quantization {
 
+    /**
+     * Computes a quantization matrix based on the provided values.
+     * @param values An array of float values to compute the quantization matrix from.
+     * @return A quantization matrix that maps the input values to a normalized range.
+     */
     public static Matrix4d computeQuantizationMatrix(float[] values) {
         Matrix4d identityMatrix = new Matrix4d();
         return computeQuantizationMatrix(identityMatrix, values);
     }
 
+    /**
+     * Computes a quantization matrix based on the provided values and an original transformation matrix.
+     * @param originalMatrix The original transformation matrix.
+     * @param values An array of float values to compute the quantization matrix from.
+     * @return A quantization matrix that maps the input values to a normalized range.
+     */
     public static Matrix4d computeQuantizationMatrix(Matrix4d originalMatrix, float[] values) {
         double minX = Float.MAX_VALUE;
         double maxX = -Float.MAX_VALUE;
@@ -46,9 +63,6 @@ public class Quantizer {
         double rangeZ = (maxZ - minZ);
         double maxRange = Math.max(rangeX, Math.max(rangeY, rangeZ));
 
-//        log.info("minX: {}, maxX: {}, minY: {}, maxY: {}, minZ: {}, maxZ: {}", minX, maxX, minY, maxY, minZ, maxZ);
-//        log.info("rangeX: {}, rangeY: {}, rangeZ: {}, maxRange: {}", rangeX, rangeY, rangeZ, maxRange);
-
         double offsetX = minX;
         double offsetY = minY;
         double offsetZ = minZ;
@@ -59,10 +73,20 @@ public class Quantizer {
                 offsetX, offsetY, offsetZ, 1);
     }
 
+    /**
+     * Calculates the padded length for a given length.
+     * @param length The length to be padded.
+     * @return The padded length, which is a multiple of 4.
+     */
     public static int paddedLength(int length) {
         return length / 3 * 4;
     }
 
+    /**
+     * Converts an unsigned short value to a signed short value.
+     * @param value The unsigned short value to be converted.
+     * @return The signed short value.
+     */
     public static short convertSignedShortFromUnsignedShort(int value) {
         if (value > 65536) {
             log.error("[ERROR] :Value must be less than or equal to 65535 -> {}", value);
@@ -76,6 +100,13 @@ public class Quantizer {
         }
     }
 
+    /**
+     * Quantize an array of float values into unsigned shorts.
+     * @param values The array of float values to be quantized.
+     * @param originalMatrix The original transformation matrix.
+     * @param quantizationMatrix The quantization matrix used for quantization.
+     * @return An array of quantized unsigned short values.
+     */
     public static short[] quantizeUnsignedShorts(float[] values, Matrix4d originalMatrix, Matrix4d quantizationMatrix) {
         int unsignedShortMax = 65535;
         short paddingValue = 0;
@@ -111,17 +142,11 @@ public class Quantizer {
             int iy = (int) (qy * unsignedShortMax);
             int iz = (int) (qz * unsignedShortMax);
 
-            /*log.info("=====================================");
-            log.info("fx: {}, fy: {}, fz: {}", x, y, z);
-            log.info("qx: {}, qy: {}, qz: {}", qx, qy, qz);
-            log.info("ix: {}, iy: {}, iz: {}", ix, iy, iz);*/
-
             quantizedValues[quantizedIndex++] = convertSignedShortFromUnsignedShort(ix);
             quantizedValues[quantizedIndex++] = convertSignedShortFromUnsignedShort(iy);
             quantizedValues[quantizedIndex++] = convertSignedShortFromUnsignedShort(iz);
             quantizedValues[quantizedIndex++] = paddingValue;
         }
-
         return quantizedValues;
     }
 }

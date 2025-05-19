@@ -1,6 +1,6 @@
 package com.gaia3d.release.big;
 
-import com.gaia3d.command.Configurator;
+import com.gaia3d.command.Configuration;
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -41,7 +41,7 @@ class KoreaBuildTest {
 
     @Test
     void openDataKoreaSplitBuild() {
-        Configurator.initConsoleLogger();
+        Configuration.initConsoleLogger();
 
         int totalCount = 192;
         for (int i = 2; i < totalCount; i++) {
@@ -109,7 +109,7 @@ class KoreaBuildTest {
 
     @Test
     void openDataForest() {
-        Configurator.initConsoleLogger();
+        Configuration.initConsoleLogger();
 
         int realCount = 0;
         int totalCount = 15000;

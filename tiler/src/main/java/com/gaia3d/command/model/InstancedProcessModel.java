@@ -4,11 +4,11 @@ import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.assimp.AssimpConverter;
-import com.gaia3d.converter.geometry.geojson.GeojsonPointReader;
+import com.gaia3d.converter.geometry.geojson.GeojsonInstanceConverter;
 import com.gaia3d.converter.geometry.geopackage.GeoPackageInstanceConverter;
+import com.gaia3d.converter.geometry.shape.ShapeInstanceConverter;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.JacksonKmlReader;
-import com.gaia3d.converter.geometry.shape.ShapePointReader;
 import com.gaia3d.converter.loader.FileLoader;
 import com.gaia3d.converter.loader.InstancedFileLoader;
 import com.gaia3d.process.TilingPipeline;
@@ -48,10 +48,10 @@ public class InstancedProcessModel implements ProcessFlowModel {
 
         /* Pre-process */
         List<PreProcess> preProcessors = new ArrayList<>();
-        preProcessors.add(new GaiaTileInfoInitiator());
-        preProcessors.add(new GaiaRotator());
-        preProcessors.add(new GaiaTexCoordCorrector());
-        preProcessors.add(new GaiaInstanceTranslator(geoTiffs));
+        preProcessors.add(new GaiaTileInfoInitialization());
+        preProcessors.add(new GaiaRotation());
+        preProcessors.add(new GaiaTexCoordCorrection());
+        preProcessors.add(new InstanceTranslation(geoTiffs));
 
         /* Main-process */
         TilingProcess tilingProcess = new Instanced3DModelTiler();
@@ -67,9 +67,9 @@ public class InstancedProcessModel implements ProcessFlowModel {
     private AttributeReader getAttributeReader(FormatType formatType) {
         AttributeReader reader = null;
         if (formatType == FormatType.SHP) {
-            reader = new ShapePointReader();
+            reader = new ShapeInstanceConverter();
         } else if (formatType == FormatType.GEOJSON) {
-            reader = new GeojsonPointReader();
+            reader = new GeojsonInstanceConverter();
         } else if (formatType == FormatType.GEO_PACKAGE) {
             reader = new GeoPackageInstanceConverter();
         } else {

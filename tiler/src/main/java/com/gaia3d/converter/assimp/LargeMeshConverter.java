@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
+@Deprecated
 public class LargeMeshConverter implements Converter {
     private final Converter converter;
     private final int THRES_HOLD = 65535;

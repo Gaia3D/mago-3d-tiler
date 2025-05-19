@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class ExtrusionTempGenerator {
     private final Converter converter;
+
     public List<File> generate(File tempPath, List<File> fileList) {
         GlobalOptions options = GlobalOptions.getInstance();
         FormatType formatType = options.getInputFormat();

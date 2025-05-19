@@ -1,6 +1,6 @@
 package com.gaia3d.converter.jgltf;
 
-import com.gaia3d.command.Configurator;
+import com.gaia3d.command.Configuration;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
@@ -9,7 +9,7 @@ class MagoKTXTest {
 
     @Test
     void loadPNGImageFromBufferedImage() {
-        Configurator.initConsoleLogger();
+        Configuration.initConsoleLogger();
 
         String input = "D:\\workspace\\input\\pizza.jpg";
         String output = "D:\\workspace\\input\\pizza.ktx";

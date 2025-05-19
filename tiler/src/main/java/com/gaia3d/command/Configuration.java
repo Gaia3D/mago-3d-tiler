@@ -8,7 +8,6 @@ import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.ConsoleAppender;
 import org.apache.logging.log4j.core.appender.FileAppender;
-import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 
@@ -21,7 +20,7 @@ import java.nio.file.StandardCopyOption;
 /**
  * Class for setting up logs.
  */
-public class Configurator {
+public class Configuration {
     public static final Level LEVEL = Level.ALL;
     private static final String DEFAULT_PATTERN = "%message%n";
 
@@ -31,7 +30,7 @@ public class Configurator {
 
     public static void initConsoleLogger(String pattern) {
         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-        Configuration config = ctx.getConfiguration();
+        org.apache.logging.log4j.core.config.Configuration config = ctx.getConfiguration();
         LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
 
         removeAllAppender(loggerConfig);
@@ -50,7 +49,7 @@ public class Configurator {
 
     public static void initFileLogger(String pattern, String path) throws IOException {
         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-        Configuration config = ctx.getConfiguration();
+        org.apache.logging.log4j.core.config.Configuration config = ctx.getConfiguration();
         LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
 
         if (pattern == null) {
@@ -67,7 +66,7 @@ public class Configurator {
 
     public static void destroyLogger() {
         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-        Configuration config = ctx.getConfiguration();
+        org.apache.logging.log4j.core.config.Configuration config = ctx.getConfiguration();
         LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
 
         Appender appender = loggerConfig.getAppenders().get("FileLogger");
@@ -89,7 +88,7 @@ public class Configurator {
 
     public static void setLevel(Level level) {
         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-        Configuration config = ctx.getConfiguration();
+        org.apache.logging.log4j.core.config.Configuration config = ctx.getConfiguration();
         LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
         loggerConfig.setLevel(level);
         ctx.updateLoggers();

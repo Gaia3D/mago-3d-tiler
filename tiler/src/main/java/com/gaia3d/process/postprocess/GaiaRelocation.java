@@ -13,7 +13,7 @@ import com.gaia3d.process.tileprocess.tile.TileInfo;
 
 @Slf4j
 @AllArgsConstructor
-public class GaiaRelocator implements PostProcess {
+public class GaiaRelocation implements PostProcess {
     @Override
     public ContentInfo run(ContentInfo contentInfo) {
         GaiaBoundingBox allBoundingBox = contentInfo.getBoundingBox();

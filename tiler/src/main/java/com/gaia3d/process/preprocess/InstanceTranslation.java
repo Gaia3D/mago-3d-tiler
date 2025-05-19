@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 @AllArgsConstructor
-public class GaiaInstanceTranslator implements PreProcess {
+public class InstanceTranslation implements PreProcess {
     private final List<GridCoverage2D> coverages;
 
     @Override

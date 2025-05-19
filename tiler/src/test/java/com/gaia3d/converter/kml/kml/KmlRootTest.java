@@ -2,7 +2,7 @@ package com.gaia3d.converter.kml.kml;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.gaia3d.basic.pointcloud.UniqueRandomNumbers;
-import com.gaia3d.command.Configurator;
+import com.gaia3d.command.Configuration;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +27,7 @@ class KmlRootTest {
 
     @Test
     void hashSet() {
-        Configurator.initConsoleLogger();
+        Configuration.initConsoleLogger();
 
         log.info("start");
         List<Integer> temp = UniqueRandomNumbers.generateUniqueRandomCache(1000000);

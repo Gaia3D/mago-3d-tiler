@@ -7,7 +7,9 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaVertex;
 import com.gaia3d.basic.pointcloud.GaiaPointCloud;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.process.postprocess.TileModel;
+import com.gaia3d.process.postprocess.ComponentType;
+import com.gaia3d.process.postprocess.DataType;
+import com.gaia3d.process.postprocess.TilingModel;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTable;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
@@ -31,7 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @RequiredArgsConstructor
-public class PointCloudModel implements TileModel {
+public class PointCloudModel implements TilingModel {
     @Override
     public ContentInfo run(ContentInfo contentInfo) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
@@ -217,8 +219,8 @@ public class PointCloudModel implements TileModel {
         featureTable.setPointsLength(vertexLength);
         featureTable.setQuantizedVolumeOffset(new float[]{(float) quantizationOffset.x, (float) quantizationOffset.y, (float) quantizationOffset.z});
         featureTable.setQuantizedVolumeScale(new float[]{(float) quantizationScale.x, (float) quantizationScale.y, (float) quantizationScale.z});
-        featureTable.setPositionQuantized(new Position(0));
-        featureTable.setColor(new Color(positionBytes.length));
+        featureTable.setPositionQuantized(new ByteAddress(0, ComponentType.UNSIGNED_SHORT, DataType.VEC3));
+        featureTable.setColor(new ByteAddress(positionBytes.length, ComponentType.UNSIGNED_BYTE, DataType.VEC3));
 
         if (!globalOptions.isClassicTransformMatrix()) {
             double[] rtcCenter = new double[3];
@@ -229,8 +231,8 @@ public class PointCloudModel implements TileModel {
         }
 
         GaiaBatchTable batchTable = new GaiaBatchTable();
-        batchTable.setIntensity(new Intensity(0, "UNSIGNED_SHORT", "SCALAR"));
-        batchTable.setClassification(new Classification(intensityBytes.length, "UNSIGNED_SHORT", "SCALAR"));
+        batchTable.setIntensity(new ByteAddress(0, ComponentType.UNSIGNED_SHORT, DataType.SCALAR));
+        batchTable.setClassification(new ByteAddress(intensityBytes.length, ComponentType.UNSIGNED_SHORT, DataType.SCALAR));
 
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);

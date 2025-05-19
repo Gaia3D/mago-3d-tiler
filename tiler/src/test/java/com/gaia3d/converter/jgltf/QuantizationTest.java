@@ -1,6 +1,6 @@
 package com.gaia3d.converter.jgltf;
 
-import com.gaia3d.command.Configurator;
+import com.gaia3d.command.Configuration;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.junit.jupiter.api.Test;
@@ -8,11 +8,11 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
-class QuantizerTest {
+class QuantizationTest {
 
     @Test
     void computeQuantizationMatrix() {
-        Configurator.initConsoleLogger();
+        Configuration.initConsoleLogger();
 
         // cube sample
         float[] positions = new float[] {
@@ -39,63 +39,63 @@ class QuantizerTest {
         Matrix4d expectedMatrix = new Matrix4d();
         expectedMatrix.set(expectedMatrixArray);
 
-        Matrix4d quantizationMatrix = Quantizer.computeQuantizationMatrix(positions);
+        Matrix4d quantizationMatrix = Quantization.computeQuantizationMatrix(positions);
         assertEquals(expectedMatrix, quantizationMatrix);
     }
 
     @Test
     void paddedLength() {
-        Configurator.initConsoleLogger();
+        Configuration.initConsoleLogger();
 
         int xyzArrayLength = 3;
         int vertexCount = 5;
 
         int positionLength = vertexCount * xyzArrayLength;
-        int paddedPositionLength = Quantizer.paddedLength(positionLength);
+        int paddedPositionLength = Quantization.paddedLength(positionLength);
         assertEquals(20, paddedPositionLength);
 
         vertexCount = 1;
         positionLength = vertexCount * xyzArrayLength;
-        paddedPositionLength = Quantizer.paddedLength(positionLength);
+        paddedPositionLength = Quantization.paddedLength(positionLength);
         assertEquals(4, paddedPositionLength);
 
         vertexCount = 0;
         positionLength = vertexCount * xyzArrayLength;
-        paddedPositionLength = Quantizer.paddedLength(positionLength);
+        paddedPositionLength = Quantization.paddedLength(positionLength);
         assertEquals(0, paddedPositionLength);
 
         vertexCount = 100000;
         positionLength = vertexCount * xyzArrayLength;
-        paddedPositionLength = Quantizer.paddedLength(positionLength);
+        paddedPositionLength = Quantization.paddedLength(positionLength);
         assertEquals(400000, paddedPositionLength);
     }
 
     @Test
     void convertSignedShortFromUnsignedShort() {
-        Configurator.initConsoleLogger();
+        Configuration.initConsoleLogger();
 
-        short signedShort = Quantizer.convertSignedShortFromUnsignedShort(65535);
+        short signedShort = Quantization.convertSignedShortFromUnsignedShort(65535);
         assertEquals(-1, signedShort);
 
-        signedShort = Quantizer.convertSignedShortFromUnsignedShort(32767);
+        signedShort = Quantization.convertSignedShortFromUnsignedShort(32767);
         assertEquals(32767, signedShort);
 
-        signedShort = Quantizer.convertSignedShortFromUnsignedShort(32768);
+        signedShort = Quantization.convertSignedShortFromUnsignedShort(32768);
         assertEquals(-32768, signedShort);
 
-        signedShort = Quantizer.convertSignedShortFromUnsignedShort(0);
+        signedShort = Quantization.convertSignedShortFromUnsignedShort(0);
         assertEquals(0, signedShort);
 
-        signedShort = Quantizer.convertSignedShortFromUnsignedShort(1);
+        signedShort = Quantization.convertSignedShortFromUnsignedShort(1);
         assertEquals(1, signedShort);
 
-        signedShort = Quantizer.convertSignedShortFromUnsignedShort(65534);
+        signedShort = Quantization.convertSignedShortFromUnsignedShort(65534);
         assertEquals(-2, signedShort);
     }
 
     @Test
     void quantizeUnsignedShorts() {
-        Configurator.initConsoleLogger();
+        Configuration.initConsoleLogger();
 
         // cube sample
         float[] positions = new float[] {
@@ -112,8 +112,8 @@ class QuantizerTest {
         Matrix4d originalMatrix = new Matrix4d();
         originalMatrix.identity();
 
-        Matrix4d quantizationMatrix = Quantizer.computeQuantizationMatrix(positions);
-        short[] quantizedPositions = Quantizer.quantizeUnsignedShorts(positions, originalMatrix, quantizationMatrix);
+        Matrix4d quantizationMatrix = Quantization.computeQuantizationMatrix(positions);
+        short[] quantizedPositions = Quantization.quantizeUnsignedShorts(positions, originalMatrix, quantizationMatrix);
         assertEquals(32, quantizedPositions.length);
 
         // expected quantized positions

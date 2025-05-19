@@ -33,9 +33,9 @@ class I3dmReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "shp",
                 "-ot", "i3dm",
+                "-refineAdd",
                 "-instance", getInputPath(path).getAbsolutePath() + "/tree.dae",
                 "-terrain", getInputPath(path).getAbsolutePath() + "/seoul-aster.tif",
-                "-debug",
                 "-c", "5186"
         };
         execute(args);
@@ -48,6 +48,7 @@ class I3dmReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "geojson",
+                "-refineAdd",
                 "-instance", getInputPath(path).getAbsolutePath() + "/tree.dae",
                 "-terrain", getInputPath(path).getAbsolutePath() + "/seoul-aster.tif",
                 "-ot", "i3dm",

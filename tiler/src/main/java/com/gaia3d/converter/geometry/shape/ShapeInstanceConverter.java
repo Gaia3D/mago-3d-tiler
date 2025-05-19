@@ -1,4 +1,4 @@
-package com.gaia3d.converter.geometry.geojson;
+package com.gaia3d.converter.geometry.shape;
 
 import com.gaia3d.command.mago.AttributeFilter;
 import com.gaia3d.command.mago.GlobalOptions;
@@ -7,9 +7,14 @@ import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.util.GlobeUtils;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.geotools.data.Query;
+import org.geotools.data.shapefile.ShapefileDataStore;
+import org.geotools.data.shapefile.files.ShpFiles;
+import org.geotools.data.shapefile.shp.ShapefileReader;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.FeatureIterator;
-import org.geotools.geojson.feature.FeatureJSON;
+import org.geotools.util.factory.Hints;
 import org.joml.Vector3d;
 import org.locationtech.jts.geom.*;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
@@ -17,11 +22,10 @@ import org.locationtech.proj4j.ProjCoordinate;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
+import org.opengis.filter.Filter;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -31,12 +35,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Slf4j
 @NoArgsConstructor
-public class GeojsonPointReader implements AttributeReader {
+public class ShapeInstanceConverter implements AttributeReader {
 
     //read kml file
     @Override
     public KmlInfo read(File file) {
-        log.error("GeojsonPointReader read method is not implemented yet.");
+        log.error("[ERROR] ShapePointReader read method is not implemented yet.");
         return null;
     }
 
@@ -44,27 +48,48 @@ public class GeojsonPointReader implements AttributeReader {
     public List<KmlInfo> readAll(File file) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
 
+        List<KmlInfo> result = new ArrayList<>();
+        ShpFiles shpFiles = null;
+        ShapefileReader reader = null;
+
         List<AttributeFilter> attributeFilters = globalOptions.getAttributeFilters();
         boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalOptions.DEFAULT_CRS);
-        List<KmlInfo> result = new ArrayList<>();
+        boolean flipCoordinate = globalOptions.isFlipCoordinate();
+        String heightColumnName = globalOptions.getHeightColumn();
         String altitudeColumnName = globalOptions.getAltitudeColumn();
         String headingColumnName = globalOptions.getHeadingColumn();
+
+        double absoluteAltitudeValue = globalOptions.getAbsoluteAltitude();
+        double minimumHeightValue = globalOptions.getMinimumHeight();
+        double skirtHeight = globalOptions.getSkirtHeight();
+
         int instancePolygonContainsPointCounts = GlobalOptions.INSTANCE_POLYGON_CONTAINS_POINT_COUNTS;
 
-        try (BufferedInputStream bufferedInputStream = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
-            FeatureJSON geojson = new FeatureJSON();
-            log.info("Reading GeoJSON file : {}", file.getAbsolutePath());
-            SimpleFeatureCollection featureCollection = (SimpleFeatureCollection) geojson.readFeatureCollection(bufferedInputStream);
-            FeatureIterator<SimpleFeature> iterator = featureCollection.features();
-            log.info("Reading GeoJSON file : {} done", file.getAbsolutePath());
+        try {
+            shpFiles = new ShpFiles(file);
+            reader = new ShapefileReader(shpFiles, true, true, new GeometryFactory());
+            ShapefileDataStore dataStore = new ShapefileDataStore(file.toURI().toURL());
 
-            var coordinateReferenceSystem = featureCollection.getSchema().getCoordinateReferenceSystem();
+            ShapeEncodingFix shapeEncodingFix = new ShapeEncodingFix();
+            dataStore.setCharset(shapeEncodingFix.detectCharset(file));
+
+            String typeName = dataStore.getTypeNames()[0];
+            SimpleFeatureSource source = dataStore.getFeatureSource(typeName);
+            var query = new Query(typeName, Filter.INCLUDE);
+            query.getHints().add(new Hints(Hints.FEATURE_2D, true));
+
+            SimpleFeatureCollection features = source.getFeatures(query);
+            FeatureIterator<SimpleFeature> iterator = features.features();
+
+            var coordinateReferenceSystem = features.getSchema().getCoordinateReferenceSystem();
             if (isDefaultCrs && coordinateReferenceSystem != null) {
                 CoordinateReferenceSystem crs = GlobeUtils.convertProj4jCrsFromGeotoolsCrs(coordinateReferenceSystem);
                 log.info(" - Coordinate Reference System : {}", crs.getName());
                 globalOptions.setCrs(crs);
             }
 
+            int count = 1;
+            int featuresCount = source.getCount(query);
             while (iterator.hasNext()) {
                 SimpleFeature feature = iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
@@ -85,9 +110,11 @@ public class GeojsonPointReader implements AttributeReader {
                     }
                 }
 
+                log.info("[pre][{}/{}] Loading file : {}", count++, featuresCount, file.getName());
                 List<Point> points = new ArrayList<>();
                 if (geom instanceof MultiPolygon multiPolygon) {
-                    for (int i = 0; i < multiPolygon.getNumGeometries(); i++) {
+                    int numGeometries = multiPolygon.getNumGeometries();
+                    for (int i = 0; i < numGeometries; i++) {
                         Polygon polygon = (Polygon) multiPolygon.getGeometryN(i);
                         points.addAll(getRandomContainsPoints(polygon, geom.getFactory(), instancePolygonContainsPointCounts));
                     }
@@ -103,7 +130,7 @@ public class GeojsonPointReader implements AttributeReader {
                 } else if (geom instanceof Point point) {
                     points.add(point);
                 } else {
-                    log.error("Geometry type is not supported.");
+                    log.error("[ERROR] Geometry type is not supported.");
                     continue;
                 }
 
@@ -136,15 +163,31 @@ public class GeojsonPointReader implements AttributeReader {
                         position = new Vector3d(x, y, altitude);
                     }
 
-                    KmlInfo kmlInfo = KmlInfo.builder().name("I3dmFromGeojson").position(position).heading(heading).tilt(0.0d).roll(0.0d).scaleX(1.0d).scaleY(1.0d).scaleZ(1.0d).properties(attributes).build();
+                    KmlInfo kmlInfo = KmlInfo.builder()
+                            .name("I3dmFromShape")
+                            .position(position)
+                            .heading(heading)
+                            .tilt(0.0d)
+                            .roll(0.0d)
+                            .scaleX(1.0d)
+                            .scaleY(1.0d)
+                            .scaleZ(1.0d)
+                            .properties(attributes)
+                            .build();
                     result.add(kmlInfo);
                 }
             }
+
             iterator.close();
+            reader.close();
+            shpFiles.dispose();
+            dataStore.dispose();
+            reader.close();
         } catch (IOException e) {
             log.error("[ERROR] :", e);
             throw new RuntimeException(e);
         }
+        shpFiles.dispose();
         return result;
     }
 

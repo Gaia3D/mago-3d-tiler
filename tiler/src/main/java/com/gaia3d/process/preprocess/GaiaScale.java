@@ -10,7 +10,7 @@ import com.gaia3d.process.tileprocess.tile.TileInfo;
 
 @Slf4j
 @AllArgsConstructor
-public class GaiaScaler implements PreProcess {
+public class GaiaScale implements PreProcess {
 
     @Override
     public TileInfo run(TileInfo tileInfo) {

@@ -23,7 +23,7 @@ import java.util.List;
 
 @Slf4j
 @AllArgsConstructor
-public class GaiaTranslator implements PreProcess {
+public class GaiaTranslation implements PreProcess {
     private final List<GridCoverage2D> coverages;
 
     @Override

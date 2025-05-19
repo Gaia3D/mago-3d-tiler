@@ -1,6 +1,6 @@
 package com.gaia3d.release.big;
 
-import com.gaia3d.command.Configurator;
+import com.gaia3d.command.Configuration;
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -102,7 +102,7 @@ class I3dmBuildTest {
 
     @Test
     void instanced06Merger() throws IOException {
-        Configurator.initConsoleLogger();
+        Configuration.initConsoleLogger();
 
         String path = "개체목 수정";
 

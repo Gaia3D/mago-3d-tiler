@@ -9,7 +9,7 @@ import java.nio.file.Path;
 
 
 @Slf4j
-public class PhotogrammetryMinimizer implements PreProcess {
+public class PhotogrammetryMinimization implements PreProcess {
     @Override
     public TileInfo run(TileInfo tileInfo) {
         GaiaScene scene = tileInfo.getScene();

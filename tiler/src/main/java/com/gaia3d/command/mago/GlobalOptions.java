@@ -47,7 +47,6 @@ public class GlobalOptions {
     public static final float POINTSCLOUD_VERTICAL_ARC = (1.0f / 60.0f / 60.0f) * 20.0f;
     public static final String DEFAULT_CRS_CODE = "3857"; // 4326 -> 3857
     public static final CoordinateReferenceSystem DEFAULT_CRS = new CRSFactory().createFromName("EPSG:" + DEFAULT_CRS_CODE);
-    public static final String DEFAULT_NAME_COLUMN = "name";
     public static final String DEFAULT_HEIGHT_COLUMN = "height";
     public static final String DEFAULT_ALTITUDE_COLUMN = "altitude";
     public static final String DEFAULT_HEADING_COLUMN = "heading";
@@ -132,7 +131,6 @@ public class GlobalOptions {
 
     private boolean refineAdd = false; // 3dTiles refine option ADD fix flag
     private boolean flipCoordinate = false; // flip coordinate flag for 2D Data
-    private boolean zeroOrigin = false; // data origin to zero point flag
     private boolean ignoreTextures = false; // ignore textures flag
 
     // [Experimental] 3D Data Options
@@ -141,7 +139,6 @@ public class GlobalOptions {
     private boolean isPhotogrammetry = false; // [Experimental] isPhotogrammetry mode flag
 
     /* 2D Data Column Options */
-    private String nameColumn;
     private String heightColumn;
     private String altitudeColumn;
     private String headingColumn;
@@ -168,39 +165,39 @@ public class GlobalOptions {
         if (command.getOptions() == null || command.getOptions().length == 0) {
             throw new IllegalArgumentException("Command line argument is empty.");
         }
-        String inputPath = command.getOptionValue(ProcessOptions.INPUT.getArgName());
-        String outputPath = command.getOptionValue(ProcessOptions.OUTPUT.getArgName());
+        String inputPath = command.getOptionValue(ProcessOptions.INPUT.getLongName());
+        String outputPath = command.getOptionValue(ProcessOptions.OUTPUT.getLongName());
         if (inputPath == null || outputPath == null) {
             throw new IllegalArgumentException("Please enter the value of the input and output arguments.");
         }
-        File input = new File(command.getOptionValue(ProcessOptions.INPUT.getArgName()));
-        File output = new File(command.getOptionValue(ProcessOptions.OUTPUT.getArgName()));
-        if (command.hasOption(ProcessOptions.INPUT.getArgName())) {
-            instance.setInputPath(command.getOptionValue(ProcessOptions.INPUT.getArgName()));
+        File input = new File(command.getOptionValue(ProcessOptions.INPUT.getLongName()));
+        File output = new File(command.getOptionValue(ProcessOptions.OUTPUT.getLongName()));
+        if (command.hasOption(ProcessOptions.INPUT.getLongName())) {
+            instance.setInputPath(command.getOptionValue(ProcessOptions.INPUT.getLongName()));
             OptionsCorrector.checkExistInputPath(input);
         } else {
             throw new IllegalArgumentException("Please enter the value of the input argument.");
         }
 
-        if (command.hasOption(ProcessOptions.OUTPUT.getArgName())) {
-            instance.setOutputPath(command.getOptionValue(ProcessOptions.OUTPUT.getArgName()));
+        if (command.hasOption(ProcessOptions.OUTPUT.getLongName())) {
+            instance.setOutputPath(command.getOptionValue(ProcessOptions.OUTPUT.getLongName()));
             OptionsCorrector.checkExistOutput(output);
         } else {
             throw new IllegalArgumentException("Please enter the value of the output argument.");
         }
 
         boolean isRecursive;
-        if (command.hasOption(ProcessOptions.RECURSIVE.getArgName())) {
+        if (command.hasOption(ProcessOptions.RECURSIVE.getLongName())) {
             isRecursive = true;
         } else {
             isRecursive = OptionsCorrector.isRecursive(input);
         }
         instance.setRecursive(isRecursive);
-        instance.setLogPath(command.hasOption(ProcessOptions.LOG.getArgName()) ? command.getOptionValue(ProcessOptions.LOG.getArgName()) : null);
+        instance.setLogPath(command.hasOption(ProcessOptions.LOG.getLongName()) ? command.getOptionValue(ProcessOptions.LOG.getLongName()) : null);
 
-        if (!command.hasOption(ProcessOptions.MERGE.getArgName())) {
+        if (!command.hasOption(ProcessOptions.MERGE.getLongName())) {
             FormatType inputFormat;
-            String inputType = command.hasOption(ProcessOptions.INPUT_TYPE.getArgName()) ? command.getOptionValue(ProcessOptions.INPUT_TYPE.getArgName()) : null;
+            String inputType = command.hasOption(ProcessOptions.INPUT_TYPE.getLongName()) ? command.getOptionValue(ProcessOptions.INPUT_TYPE.getLongName()) : null;
             if (inputType == null || StringUtils.isEmpty(inputType)) {
                 inputFormat = OptionsCorrector.findInputFormatType(new File(instance.getInputPath()), isRecursive);
             } else {
@@ -210,7 +207,7 @@ public class GlobalOptions {
             instance.setInputFormat(inputFormat);
 
             FormatType outputFormat;
-            String outputType = command.hasOption(ProcessOptions.OUTPUT_TYPE.getArgName()) ? command.getOptionValue(ProcessOptions.OUTPUT_TYPE.getArgName()) : null;
+            String outputType = command.hasOption(ProcessOptions.OUTPUT_TYPE.getLongName()) ? command.getOptionValue(ProcessOptions.OUTPUT_TYPE.getLongName()) : null;
             if (outputType == null) {
                 outputFormat = OptionsCorrector.findOutputFormatType(instance.getInputFormat());
             } else {
@@ -223,21 +220,21 @@ public class GlobalOptions {
             }
         }
 
-        if (command.hasOption(ProcessOptions.TERRAIN.getArgName())) {
-            instance.setTerrainPath(command.getOptionValue(ProcessOptions.TERRAIN.getArgName()));
+        if (command.hasOption(ProcessOptions.TERRAIN.getLongName())) {
+            instance.setTerrainPath(command.getOptionValue(ProcessOptions.TERRAIN.getLongName()));
             OptionsCorrector.checkExistInputPath(new File(instance.getTerrainPath()));
         }
 
-        if (command.hasOption(ProcessOptions.INSTANCE_FILE.getArgName())) {
-            instance.setInstancePath(command.getOptionValue(ProcessOptions.INSTANCE_FILE.getArgName()));
+        if (command.hasOption(ProcessOptions.INSTANCE_FILE.getLongName())) {
+            instance.setInstancePath(command.getOptionValue(ProcessOptions.INSTANCE_FILE.getLongName()));
             OptionsCorrector.checkExistInputPath(new File(instance.getInstancePath()));
         } else {
             String instancePath = instance.getInputPath() + File.separator + DEFAULT_INSTANCE_FILE;
             instance.setInstancePath(instancePath);
         }
 
-        if (command.hasOption(ProcessOptions.PROJ4.getArgName())) {
-            instance.setProj(command.hasOption(ProcessOptions.PROJ4.getArgName()) ? command.getOptionValue(ProcessOptions.PROJ4.getArgName()) : null);
+        if (command.hasOption(ProcessOptions.PROJ4.getLongName())) {
+            instance.setProj(command.hasOption(ProcessOptions.PROJ4.getLongName()) ? command.getOptionValue(ProcessOptions.PROJ4.getLongName()) : null);
             CoordinateReferenceSystem crs = null;
             if (instance.getProj() != null && !instance.getProj().isEmpty()) {
                 crs = new CRSFactory().createFromParameters("CUSTOM_CRS_PROJ", instance.getProj());
@@ -246,21 +243,21 @@ public class GlobalOptions {
         }
 
         Vector3d translation = new Vector3d(0, 0, 0);
-        if (command.hasOption(ProcessOptions.X_OFFSET.getArgName())) {
-            translation.x = Double.parseDouble(command.getOptionValue(ProcessOptions.X_OFFSET.getArgName()));
+        if (command.hasOption(ProcessOptions.X_OFFSET.getLongName())) {
+            translation.x = Double.parseDouble(command.getOptionValue(ProcessOptions.X_OFFSET.getLongName()));
         }
-        if (command.hasOption(ProcessOptions.Y_OFFSET.getArgName())) {
-            translation.y = Double.parseDouble(command.getOptionValue(ProcessOptions.Y_OFFSET.getArgName()));
+        if (command.hasOption(ProcessOptions.Y_OFFSET.getLongName())) {
+            translation.y = Double.parseDouble(command.getOptionValue(ProcessOptions.Y_OFFSET.getLongName()));
         }
-        if (command.hasOption(ProcessOptions.Z_OFFSET.getArgName())) {
-            translation.z = Double.parseDouble(command.getOptionValue(ProcessOptions.Z_OFFSET.getArgName()));
+        if (command.hasOption(ProcessOptions.Z_OFFSET.getLongName())) {
+            translation.z = Double.parseDouble(command.getOptionValue(ProcessOptions.Z_OFFSET.getLongName()));
         }
         instance.setTranslateOffset(translation);
 
         CRSFactory factory = new CRSFactory();
-        if (command.hasOption(ProcessOptions.CRS.getArgName()) || command.hasOption(ProcessOptions.PROJ4.getArgName())) {
-            String crsString = command.getOptionValue(ProcessOptions.CRS.getArgName());
-            String proj = command.getOptionValue(ProcessOptions.PROJ4.getArgName());
+        if (command.hasOption(ProcessOptions.CRS.getLongName()) || command.hasOption(ProcessOptions.PROJ4.getLongName())) {
+            String crsString = command.getOptionValue(ProcessOptions.CRS.getLongName());
+            String proj = command.getOptionValue(ProcessOptions.PROJ4.getLongName());
             CoordinateReferenceSystem source = null;
 
             if (proj != null && !proj.isEmpty()) {
@@ -271,14 +268,14 @@ public class GlobalOptions {
                 source = DEFAULT_CRS;
             }
             instance.setCrs(source);
-        } else if (command.hasOption(ProcessOptions.LONGITUDE.getArgName()) || command.hasOption(ProcessOptions.LATITUDE.getArgName())) {
-            if (!command.hasOption(ProcessOptions.LONGITUDE.getArgName()) || !command.hasOption(ProcessOptions.LATITUDE.getArgName())) {
+        } else if (command.hasOption(ProcessOptions.LONGITUDE.getLongName()) || command.hasOption(ProcessOptions.LATITUDE.getLongName())) {
+            if (!command.hasOption(ProcessOptions.LONGITUDE.getLongName()) || !command.hasOption(ProcessOptions.LATITUDE.getLongName())) {
                 log.error("[ERROR] Please enter the value of the longitude and latitude arguments.");
                 log.error("[ERROR] The lon lat option must be used together.");
                 throw new IllegalArgumentException("Please enter the value of the longitude and latitude arguments.");
             }
-            double longitude = Double.parseDouble(command.getOptionValue(ProcessOptions.LONGITUDE.getArgName()));
-            double latitude = Double.parseDouble(command.getOptionValue(ProcessOptions.LATITUDE.getArgName()));
+            double longitude = Double.parseDouble(command.getOptionValue(ProcessOptions.LONGITUDE.getLongName()));
+            double latitude = Double.parseDouble(command.getOptionValue(ProcessOptions.LATITUDE.getLongName()));
             String proj = "+proj=tmerc +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=" + longitude + " +lat_0=" + latitude;
             instance.setProj(proj);
             CoordinateReferenceSystem source = factory.createFromParameters("CUSTOM_CRS_PROJ", proj);
@@ -294,39 +291,38 @@ public class GlobalOptions {
         }
 
         /* 3D Data Options */
-        instance.setMinLod(command.hasOption(ProcessOptions.MIN_LOD.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MIN_LOD.getArgName())) : DEFAULT_MIN_LOD);
-        instance.setMaxLod(command.hasOption(ProcessOptions.MAX_LOD.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_LOD.getArgName())) : DEFAULT_MAX_LOD);
-        instance.setMinGeometricError(command.hasOption(ProcessOptions.MIN_GEOMETRIC_ERROR.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MIN_GEOMETRIC_ERROR.getArgName())) : DEFAULT_MIN_GEOMETRIC_ERROR);
-        instance.setMaxGeometricError(command.hasOption(ProcessOptions.MAX_GEOMETRIC_ERROR.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_GEOMETRIC_ERROR.getArgName())) : DEFAULT_MAX_GEOMETRIC_ERROR);
-        instance.setIgnoreTextures(command.hasOption(ProcessOptions.IGNORE_TEXTURES.getArgName()));
+        instance.setMinLod(command.hasOption(ProcessOptions.MIN_LOD.getLongName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MIN_LOD.getLongName())) : DEFAULT_MIN_LOD);
+        instance.setMaxLod(command.hasOption(ProcessOptions.MAX_LOD.getLongName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_LOD.getLongName())) : DEFAULT_MAX_LOD);
+        instance.setMinGeometricError(command.hasOption(ProcessOptions.MIN_GEOMETRIC_ERROR.getLongName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MIN_GEOMETRIC_ERROR.getLongName())) : DEFAULT_MIN_GEOMETRIC_ERROR);
+        instance.setMaxGeometricError(command.hasOption(ProcessOptions.MAX_GEOMETRIC_ERROR.getLongName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_GEOMETRIC_ERROR.getLongName())) : DEFAULT_MAX_GEOMETRIC_ERROR);
+        instance.setIgnoreTextures(command.hasOption(ProcessOptions.IGNORE_TEXTURES.getLongName()));
         instance.setMaxTriangles(DEFAULT_MAX_TRIANGLES);
         instance.setMaxInstance(DEFAULT_MAX_INSTANCE);
         instance.setMaxNodeDepth(DEFAULT_MAX_NODE_DEPTH);
-        instance.setLargeMesh(command.hasOption(ProcessOptions.LARGE_MESH.getArgName()));
-        instance.setVoxelLod(command.hasOption(ProcessOptions.VOXEL_LOD.getArgName()));
-        instance.setPhotogrammetry(command.hasOption(ProcessOptions.PHOTOGRAMMETRY.getArgName()));
-        instance.setLeaveTemp(command.hasOption(ProcessOptions.LEAVE_TEMP.getArgName()));
-        instance.setUseQuantization(command.hasOption(ProcessOptions.MESH_QUANTIZATION.getArgName()) || DEFAULT_USE_QUANTIZATION);
+        instance.setLargeMesh(command.hasOption(ProcessOptions.LARGE_MESH.getLongName()));
+        instance.setVoxelLod(command.hasOption(ProcessOptions.VOXEL_LOD.getLongName()));
+        instance.setPhotogrammetry(command.hasOption(ProcessOptions.PHOTOGRAMMETRY.getLongName()));
+        instance.setLeaveTemp(command.hasOption(ProcessOptions.LEAVE_TEMP.getLongName()));
+        instance.setUseQuantization(command.hasOption(ProcessOptions.MESH_QUANTIZATION.getLongName()) || DEFAULT_USE_QUANTIZATION);
 
         /* Point Cloud Options */
-        instance.setMaximumPointPerTile(command.hasOption(ProcessOptions.MAX_POINTS.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_POINTS.getArgName())) : DEFAULT_POINT_PER_TILE);
-        instance.setPointRatio(command.hasOption(ProcessOptions.POINT_RATIO.getArgName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.POINT_RATIO.getArgName())) : DEFAULT_POINT_RATIO);
-        instance.setForce4ByteRGB(command.hasOption(ProcessOptions.POINT_FORCE_4BYTE_RGB.getArgName()));
+        instance.setMaximumPointPerTile(command.hasOption(ProcessOptions.MAX_POINTS.getLongName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_POINTS.getLongName())) : DEFAULT_POINT_PER_TILE);
+        instance.setPointRatio(command.hasOption(ProcessOptions.POINT_RATIO.getLongName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.POINT_RATIO.getLongName())) : DEFAULT_POINT_RATIO);
+        instance.setForce4ByteRGB(command.hasOption(ProcessOptions.POINT_FORCE_4BYTE_RGB.getLongName()));
 
         /* 2D Data Column Options */
-        instance.setNameColumn(command.hasOption(ProcessOptions.NAME_COLUMN.getArgName()) ? command.getOptionValue(ProcessOptions.NAME_COLUMN.getArgName()) : DEFAULT_NAME_COLUMN);
-        instance.setHeightColumn(command.hasOption(ProcessOptions.HEIGHT_COLUMN.getArgName()) ? command.getOptionValue(ProcessOptions.HEIGHT_COLUMN.getArgName()) : DEFAULT_HEIGHT_COLUMN);
-        instance.setAltitudeColumn(command.hasOption(ProcessOptions.ALTITUDE_COLUMN.getArgName()) ? command.getOptionValue(ProcessOptions.ALTITUDE_COLUMN.getArgName()) : DEFAULT_ALTITUDE_COLUMN);
-        instance.setHeadingColumn(command.hasOption(ProcessOptions.HEADING_COLUMN.getArgName()) ? command.getOptionValue(ProcessOptions.HEADING_COLUMN.getArgName()) : DEFAULT_HEADING_COLUMN);
-        instance.setDiameterColumn(command.hasOption(ProcessOptions.DIAMETER_COLUMN.getArgName()) ? command.getOptionValue(ProcessOptions.DIAMETER_COLUMN.getArgName()) : DEFAULT_DIAMETER_COLUMN);
-        instance.setAbsoluteAltitude(command.hasOption(ProcessOptions.ABSOLUTE_ALTITUDE.getArgName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.ABSOLUTE_ALTITUDE.getArgName())) : DEFAULT_ABSOLUTE_ALTITUDE);
-        instance.setMinimumHeight(command.hasOption(ProcessOptions.MINIMUM_HEIGHT.getArgName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.MINIMUM_HEIGHT.getArgName())) : DEFAULT_MINIMUM_HEIGHT);
-        instance.setSkirtHeight(command.hasOption(ProcessOptions.SKIRT_HEIGHT.getArgName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.SKIRT_HEIGHT.getArgName())) : DEFAULT_SKIRT_HEIGHT);
+        instance.setHeightColumn(command.hasOption(ProcessOptions.HEIGHT_COLUMN.getLongName()) ? command.getOptionValue(ProcessOptions.HEIGHT_COLUMN.getLongName()) : DEFAULT_HEIGHT_COLUMN);
+        instance.setAltitudeColumn(command.hasOption(ProcessOptions.ALTITUDE_COLUMN.getLongName()) ? command.getOptionValue(ProcessOptions.ALTITUDE_COLUMN.getLongName()) : DEFAULT_ALTITUDE_COLUMN);
+        instance.setHeadingColumn(command.hasOption(ProcessOptions.HEADING_COLUMN.getLongName()) ? command.getOptionValue(ProcessOptions.HEADING_COLUMN.getLongName()) : DEFAULT_HEADING_COLUMN);
+        instance.setDiameterColumn(command.hasOption(ProcessOptions.DIAMETER_COLUMN.getLongName()) ? command.getOptionValue(ProcessOptions.DIAMETER_COLUMN.getLongName()) : DEFAULT_DIAMETER_COLUMN);
+        instance.setAbsoluteAltitude(command.hasOption(ProcessOptions.ABSOLUTE_ALTITUDE.getLongName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.ABSOLUTE_ALTITUDE.getLongName())) : DEFAULT_ABSOLUTE_ALTITUDE);
+        instance.setMinimumHeight(command.hasOption(ProcessOptions.MINIMUM_HEIGHT.getLongName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.MINIMUM_HEIGHT.getLongName())) : DEFAULT_MINIMUM_HEIGHT);
+        instance.setSkirtHeight(command.hasOption(ProcessOptions.SKIRT_HEIGHT.getLongName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.SKIRT_HEIGHT.getLongName())) : DEFAULT_SKIRT_HEIGHT);
 
         // Attribute Filter ex) "classification=window,door;type=building"
-        if (command.hasOption(ProcessOptions.ATTRIBUTE_FILTER.getArgName())) {
+        if (command.hasOption(ProcessOptions.ATTRIBUTE_FILTER.getLongName())) {
             List<AttributeFilter> attributeFilters = instance.getAttributeFilters();
-            String[] filters = command.getOptionValue(ProcessOptions.ATTRIBUTE_FILTER.getArgName()).split(";");
+            String[] filters = command.getOptionValue(ProcessOptions.ATTRIBUTE_FILTER.getLongName()).split(";");
             for (String filter : filters) {
                 String[] keyValue = filter.split("=");
                 if (keyValue.length == 2) {
@@ -338,27 +334,27 @@ public class GlobalOptions {
             }
         }
 
-        instance.setDebug(command.hasOption(ProcessOptions.DEBUG.getArgName()));
+        instance.setDebug(command.hasOption(ProcessOptions.DEBUG.getLongName()));
 
         boolean isSwapUpAxis = false;
         boolean isFlipUpAxis = false;
         boolean isRefineAdd = false;
 
-        if (command.hasOption(ProcessOptions.FLIP_UP_AXIS.getArgName())) {
-            log.warn("[WARN] FLIP_UP_AXIS is Deprecated option: {}", ProcessOptions.FLIP_UP_AXIS.getArgName());
+        if (command.hasOption(ProcessOptions.FLIP_UP_AXIS.getLongName())) {
+            log.warn("[WARN] FLIP_UP_AXIS is Deprecated option: {}", ProcessOptions.FLIP_UP_AXIS.getLongName());
             log.warn("[WARN] Please use ROTATE_X_AXIS option instead of FLIP_UP_AXIS option.");
             isFlipUpAxis = true;
         }
-        if (command.hasOption(ProcessOptions.SWAP_UP_AXIS.getArgName())) {
-            log.warn("[WARN] SWAP_UP_AXIS is Deprecated option: {}", ProcessOptions.SWAP_UP_AXIS.getArgName());
+        if (command.hasOption(ProcessOptions.SWAP_UP_AXIS.getLongName())) {
+            log.warn("[WARN] SWAP_UP_AXIS is Deprecated option: {}", ProcessOptions.SWAP_UP_AXIS.getLongName());
             log.warn("[WARN] Please use ROTATE_X_AXIS option instead of SWAP_UP_AXIS option.");
             isSwapUpAxis = true;
         }
-        if (command.hasOption(ProcessOptions.REFINE_ADD.getArgName())) {
+        if (command.hasOption(ProcessOptions.REFINE_ADD.getLongName())) {
             isRefineAdd = true;
         }
 
-        double rotateXAxis = command.hasOption(ProcessOptions.ROTATE_X_AXIS.getArgName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.ROTATE_X_AXIS.getArgName())) : 0;
+        double rotateXAxis = command.hasOption(ProcessOptions.ROTATE_X_AXIS.getLongName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.ROTATE_X_AXIS.getLongName())) : 0;
 
         // force setting
         if (instance.getInputFormat().equals(FormatType.GEOJSON) || instance.getInputFormat().equals(FormatType.SHP) || instance.getInputFormat().equals(FormatType.CITYGML) || instance.getInputFormat().equals(FormatType.INDOORGML) || instance.getInputFormat().equals(FormatType.GEO_PACKAGE)) {
@@ -374,20 +370,18 @@ public class GlobalOptions {
         instance.setFlipUpAxis(isFlipUpAxis);
         instance.setRotateX(rotateXAxis);
         instance.setRefineAdd(isRefineAdd);
-        instance.setGlb(command.hasOption(ProcessOptions.DEBUG_GLB.getArgName()));
-        instance.setFlipCoordinate(command.hasOption(ProcessOptions.FLIP_COORDINATE.getArgName()));
+        instance.setGlb(command.hasOption(ProcessOptions.DEBUG_GLB.getLongName()));
+        instance.setFlipCoordinate(command.hasOption(ProcessOptions.FLIP_COORDINATE.getLongName()));
 
-        if (command.hasOption(ProcessOptions.MULTI_THREAD_COUNT.getArgName())) {
-            instance.setMultiThreadCount(Byte.parseByte(command.getOptionValue(ProcessOptions.MULTI_THREAD_COUNT.getArgName())));
+        if (command.hasOption(ProcessOptions.MULTI_THREAD_COUNT.getLongName())) {
+            instance.setMultiThreadCount(Byte.parseByte(command.getOptionValue(ProcessOptions.MULTI_THREAD_COUNT.getLongName())));
         } else {
             int processorCount = Runtime.getRuntime().availableProcessors();
             int threadCount = processorCount > 1 ? processorCount / 2 : 1;
             instance.setMultiThreadCount((byte) threadCount);
         }
 
-        instance.setZeroOrigin(command.hasOption(ProcessOptions.ZERO_ORIGIN.getArgName()));
-        instance.setAutoUpAxis(command.hasOption(ProcessOptions.AUTO_UP_AXIS.getArgName()));
-
+        instance.setAutoUpAxis(command.hasOption(ProcessOptions.AUTO_UP_AXIS.getLongName()));
         instance.printDebugOptions();
 
         TilerExtensionModule extensionModule = new TilerExtensionModule();
@@ -450,7 +444,6 @@ public class GlobalOptions {
         log.info("Flip Up-Axis: {}", flipUpAxis);
         log.info("RefineAdd: {}", refineAdd);
         log.info("Flip Coordinate: {}", flipCoordinate);
-        log.info("Zero Origin: {}", zeroOrigin);
         log.info("Auto Up-Axis: {}", autoUpAxis);
         log.info("Ignore Textures: {}", ignoreTextures);
         log.info("Max Triangles: {}", maxTriangles);
@@ -464,7 +457,6 @@ public class GlobalOptions {
         log.info("Point Cloud Vertical Grid: {}", POINTSCLOUD_VERTICAL_GRID);
         log.info("Force 4Byte RGB: {}", force4ByteRGB);
         Mago3DTilerMain.drawLine();
-        log.info("Name Column: {}", nameColumn);
         log.info("Height Column: {}", heightColumn);
         log.info("Altitude Column: {}", altitudeColumn);
         log.info("Heading Column: {}", headingColumn);
