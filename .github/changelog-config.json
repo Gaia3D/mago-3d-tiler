@@ -1,3 +1,20 @@
 {
-  "template": "### 🚀 Features\n{{#pullRequests}}{{#labels}}{{#equals name \"feat\"}}- {{title}} (#{{number}})\n{{/equals}}{{/labels}}{{/pullRequests}}"
+  "template": "{{#categories}}{{title}}\n{{#pullRequests}}{{{body}}}\n{{/pullRequests}}\n{{/categories}}",
+  "categories": [
+    {
+      "title": "### ✨ Features",
+      "labels": ["feat", "feature"]
+    },
+    {
+      "title": "### 🐛 Fixes",
+      "labels": ["fix", "bug"]
+    },
+    {
+      "title": "### 🧰 Maintenance",
+      "labels": ["chore", "refactor"]
+    }
+  ],
+  "pr_template": "- {{title}} (#{{number}})",
+  "empty_template": "No changes",
+  "fallback_template": "- {{title}} (#{{number}})"
 }
