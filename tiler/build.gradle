@@ -204,10 +204,3 @@ tasks.named('jib') {
         return true
     }
 }
-
-// release test
-tasks.named('pre-release-test') {
-    useJUnitPlatform {
-        includeTags 'release'
-    }
-}
