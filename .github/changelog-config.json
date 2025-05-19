@@ -1,0 +1,3 @@
+{
+  "template": "### 🚀 Features\n{{#pullRequests}}{{#labels}}{{#equals name \"feat\"}}- {{title}} (#{{number}})\n{{/equals}}{{/labels}}{{/pullRequests}}"
+}
