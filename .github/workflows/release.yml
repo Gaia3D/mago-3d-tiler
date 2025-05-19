@@ -20,12 +20,12 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
           JIB_TO_AUTH_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           JIB_TO_AUTH_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Run release-please
-        uses: google-github-actions/release-please-action@v4
+        uses: googleapis/release-please-action@v4
         with:
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
