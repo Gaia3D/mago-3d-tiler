@@ -23,12 +23,14 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew release
         env:
-          token: ${{ secrets.PAT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
           JIB_TO_AUTH_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           JIB_TO_AUTH_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Run release-please
         uses: googleapis/release-please-action@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           token: ${{ secrets.PAT_TOKEN }}
           release-type: java
