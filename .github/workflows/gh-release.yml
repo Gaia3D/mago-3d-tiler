@@ -1,6 +1,9 @@
 name: gh-release
 
-on: push
+on:
+  push:
+    tags:
+      - 'v*.*.*'
 
 jobs:
   build:
@@ -21,7 +24,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag'
         with:
-          name: "mago-3d-tiler ${{ github.ref }}"
+          name: "mago-3d-tiler ${{ github.ref_name }}"
           body: ${{ steps.changelog.outputs.changelog }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
