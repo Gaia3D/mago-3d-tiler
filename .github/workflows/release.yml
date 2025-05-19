@@ -1,9 +1,9 @@
-name: Release Please
+name: Version Release & Docker Image Distribution
 
 on:
   push:
-    tags:
-      - 'v*-release'
+    branches:
+      - main
 jobs:
   release:
     runs-on: ubuntu-latest
