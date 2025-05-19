@@ -22,11 +22,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JIB_TO_AUTH_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           JIB_TO_AUTH_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          
+
       - name: Run release-please
         uses: google-github-actions/release-please-action@v4
         with:
-          config-file: .release-please.yml
+          config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
