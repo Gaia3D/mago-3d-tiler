@@ -1,0 +1,9 @@
+{
+  "packages": {
+    ".": {
+      "release-type": "java",
+      "include-v-in-tag": true,
+      "extra-files": ["build.gradle"]
+    }
+  }
+}
