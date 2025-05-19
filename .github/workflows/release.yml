@@ -1,5 +1,4 @@
 name: Version Release & Docker Image Distribution
-
 on:
   push:
     branches:
@@ -27,6 +26,8 @@ jobs:
       - name: Run release-please
         uses: google-github-actions/release-please-action@v4
         with:
+          config-file: .release-please.yml
+            release-type: java
           release-type: simple
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

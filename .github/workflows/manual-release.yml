@@ -1,5 +1,4 @@
-name: Version Release & Docker Image Distribution
-
+name: manual-release
 on:
   workflow_dispatch:
     inputs:
