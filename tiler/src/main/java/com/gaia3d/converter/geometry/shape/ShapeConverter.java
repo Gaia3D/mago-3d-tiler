@@ -8,9 +8,9 @@ import com.gaia3d.basic.model.*;
 import com.gaia3d.command.mago.AttributeFilter;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
-import com.gaia3d.converter.EasySceneCreator;
+import com.gaia3d.converter.DefaultSceneFactory;
 import com.gaia3d.converter.geometry.AbstractGeometryConverter;
-import com.gaia3d.converter.geometry.GaiaExtrusionBuilding;
+import com.gaia3d.converter.geometry.GaiaExtrusionModel;
 import com.gaia3d.converter.geometry.GaiaSceneTempGroup;
 import com.gaia3d.converter.geometry.InnerRingRemover;
 import com.gaia3d.converter.geometry.pipe.GaiaPipeLineString;
@@ -18,7 +18,6 @@ import com.gaia3d.converter.geometry.pipe.PipeType;
 import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.geotools.data.DataStore;
 import org.geotools.data.Query;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.files.ShpFiles;
@@ -71,7 +70,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         List<AttributeFilter> attributeFilters = globalOptions.getAttributeFilters();
         boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalOptions.DEFAULT_CRS);
         boolean flipCoordinate = globalOptions.isFlipCoordinate();
-        String nameColumnName = globalOptions.getNameColumn();
         String heightColumnName = globalOptions.getHeightColumn();
         String altitudeColumnName = globalOptions.getAltitudeColumn();
         String diameterColumnName = globalOptions.getDiameterColumn();
@@ -98,7 +96,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
 
             SimpleFeatureCollection features = source.getFeatures(query);
             FeatureIterator<SimpleFeature> iterator = features.features();
-            List<GaiaExtrusionBuilding> buildings = new ArrayList<>();
+            List<GaiaExtrusionModel> buildings = new ArrayList<>();
             List<GaiaPipeLineString> pipeLineStrings = new ArrayList<>();
 
             var coordinateReferenceSystem = features.getSchema().getCoordinateReferenceSystem();
@@ -247,7 +245,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                         boundingBox.addPoint(position);
                     }
 
-                    String name = getAttributeValueOfDefault(feature, nameColumnName, "Extrusion-Building");
                     if (positions.size() >= 3) {
                         double height = getHeight(feature, heightColumnName, minimumHeightValue);
                         double altitude = absoluteAltitudeValue;
@@ -262,16 +259,10 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                             altitude = temp;
                         }
 
-                        GaiaExtrusionBuilding building = GaiaExtrusionBuilding.builder().id(feature.getID())
-                                .name(name)
-                                .boundingBox(boundingBox)
-                                .floorHeight(altitude)
-                                .roofHeight(height + skirtHeight)
-                                .positions(positions)
-                                .originalFilePath(input.getPath()).properties(attributes).build();
+                        GaiaExtrusionModel building = GaiaExtrusionModel.builder().id(feature.getID()).boundingBox(boundingBox).floorHeight(altitude).roofHeight(height + skirtHeight).positions(positions).originalFilePath(input.getPath()).properties(attributes).build();
                         buildings.add(building);
                     } else {
-                        log.warn("[WARN] Invalid Geometry : {}, {}", feature.getID(), name);
+                        log.warn("[WARN] Invalid Geometry : {}", feature.getID());
                     }
                 }
             }
@@ -283,7 +274,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             convertPipeLineStrings(pipeLineStrings, sceneTemps, input, output);
             convertExtrusionBuildings(buildings, sceneTemps, input, output);
         } catch (IOException e) {
-            shpFiles.dispose();
+            if (shpFiles != null) shpFiles.dispose();
             log.error("[ERROR] while reading shapefile", e);
             throw new RuntimeException(e);
         }
@@ -291,34 +282,26 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
     }
 
     protected List<GaiaScene> convert(File file) {
-        GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder()
-                .tempFile(file)
-                .isMinimized(true)
-                .build();
+        GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder().tempFile(file).isMinimized(true).build();
         sceneTemp.maximize();
-        List<GaiaScene> scenes = sceneTemp.getTempScene();
-        return scenes;
+        return sceneTemp.getTempScene();
     }
 
-    private void convertExtrusionBuildings(List<GaiaExtrusionBuilding> buildings, List<GaiaSceneTempGroup> sceneTemps, File input, File output) {
+    private void convertExtrusionBuildings(List<GaiaExtrusionModel> buildings, List<GaiaSceneTempGroup> sceneTemps, File input, File output) {
         double skirtHeight = globalOptions.getSkirtHeight();
         GaiaExtruder gaiaExtruder = new GaiaExtruder();
 
         int sceneCount = 10000;
         List<GaiaScene> scenes = new ArrayList<>();
 
-        EasySceneCreator easySceneCreator = new EasySceneCreator();
-        for (GaiaExtrusionBuilding building : buildings) {
-            GaiaScene scene = easySceneCreator.createScene(input);
+        DefaultSceneFactory defaultSceneFactory = new DefaultSceneFactory();
+        for (GaiaExtrusionModel building : buildings) {
+            GaiaScene scene = defaultSceneFactory.createScene(input);
 
             GaiaNode rootNode = scene.getNodes().get(0);
-            rootNode.setName(building.getName());
-
             GaiaAttribute gaiaAttribute = scene.getAttribute();
             gaiaAttribute.setAttributes(building.getProperties());
-            Map<String, String> attributes = gaiaAttribute.getAttributes();
             gaiaAttribute.setNodeName(rootNode.getName());
-            attributes.put("name", building.getName());
 
             Vector3d center = building.getBoundingBox().getCenter();
             center.z = center.z - skirtHeight;
@@ -370,9 +353,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                     gaiaScene.setOriginalPath(tempFile.toPath());
                 });
                 log.info("[{}] write temp : {}", tempName, scenes.size());
-                GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder()
-                        .tempScene(scenes)
-                        .tempFile(tempFile).build();
+                GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder().tempScene(scenes).tempFile(tempFile).build();
                 sceneTemp.minimize(tempFile);
                 sceneTemps.add(sceneTemp);
                 scenes.clear();
@@ -386,9 +367,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 gaiaScene.setOriginalPath(tempFile.toPath());
             });
             log.info("[{}] write temp : {}", tempName, scenes.size());
-            GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder()
-                    .tempScene(scenes)
-                    .tempFile(tempFile).build();
+            GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder().tempScene(scenes).tempFile(tempFile).build();
             sceneTemp.minimize(tempFile);
             sceneTemps.add(sceneTemp);
         }
@@ -431,7 +410,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         int sceneCount = 1000;
         List<GaiaScene> scenes = new ArrayList<>();
 
-        EasySceneCreator easySceneCreator = new EasySceneCreator();
+        DefaultSceneFactory defaultSceneFactory = new DefaultSceneFactory();
         for (GaiaPipeLineString pipeLineString : pipeLineStrings) {
             int pointsCount = pipeLineString.getPositions().size();
             if (pointsCount < 2) {
@@ -439,7 +418,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                 continue;
             }
 
-            GaiaScene scene = easySceneCreator.createScene(input);
+            GaiaScene scene = defaultSceneFactory.createScene(input);
             GaiaNode rootNode = scene.getNodes().get(0);
             rootNode.setName("PipeLineStrings");
 
@@ -509,9 +488,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             if (scenes.size() >= sceneCount) {
                 String tempName = UUID.randomUUID() + input.getName();
                 File tempFile = new File(output, tempName);
-                GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder()
-                        .tempScene(scenes)
-                        .tempFile(tempFile).build();
+                GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder().tempScene(scenes).tempFile(tempFile).build();
                 sceneTemp.minimize(tempFile);
                 sceneTemps.add(sceneTemp);
                 scenes.clear();
@@ -520,9 +497,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         if (!scenes.isEmpty()) {
             String tempName = UUID.randomUUID() + input.getName();
             File tempFile = new File(output, tempName);
-            GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder()
-                    .tempScene(scenes)
-                    .tempFile(tempFile).build();
+            GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder().tempScene(scenes).tempFile(tempFile).build();
             sceneTemp.minimize(tempFile);
             sceneTemps.add(sceneTemp);
         }

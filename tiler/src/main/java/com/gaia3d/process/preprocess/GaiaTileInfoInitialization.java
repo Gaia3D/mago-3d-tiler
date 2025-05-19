@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @AllArgsConstructor
-public class GaiaTileInfoInitiator implements PreProcess {
+public class GaiaTileInfoInitialization implements PreProcess {
     @Override
     public TileInfo run(TileInfo tileInfo) {
         GaiaScene scene = tileInfo.getScene();

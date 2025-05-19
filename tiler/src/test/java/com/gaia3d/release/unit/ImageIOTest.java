@@ -1,6 +1,6 @@
 package com.gaia3d.release.unit;
 
-import com.gaia3d.command.Configurator;
+import com.gaia3d.command.Configuration;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +21,7 @@ public class ImageIOTest {
 
     @Test
     void testJpgQuality() {
-        Configurator.initConsoleLogger();
+        Configuration.initConsoleLogger();
         File input = new File("D:/workspace/input/texture-test.jpg");
         for (int i = 0; i < 100; i++) {
             log.info("Quality: {}", 0.01f * i);

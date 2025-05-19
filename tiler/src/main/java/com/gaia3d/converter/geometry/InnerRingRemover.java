@@ -2,7 +2,6 @@ package com.gaia3d.converter.geometry;
 
 import com.gaia3d.basic.geometry.tessellator.Point2DTess;
 import com.gaia3d.basic.geometry.tessellator.Segment2DTess;
-import com.gaia3d.converter.PolygonFilter;
 import com.gaia3d.util.VectorUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector2d;
@@ -32,7 +31,7 @@ public class InnerRingRemover {
             return new InnerRing(innerRingVector);
         }).collect(Collectors.toList());
 
-        innerRingObjects = innerRingObjects.stream().sorted((a, b) -> Double.compare(a.getMinValue(), b.getMinValue())).collect(Collectors.toList());
+        innerRingObjects = innerRingObjects.stream().sorted((a, b) -> Double.compare(a.getMinValue(), b.getMinValue())).toList();
 
         for (InnerRing innerRingObject : innerRingObjects) {
             outerRingVector = removeRing(outerRingVector, innerRingObject);
@@ -40,7 +39,7 @@ public class InnerRingRemover {
 
         List<Coordinate> result = outerRingVector.stream()
                 .map(v -> new Coordinate(v.x, v.y))
-                .collect(Collectors.toList());
+                .toList();
         outerRing = result.toArray(new Coordinate[0]);
 
         return outerRing;
@@ -54,18 +53,17 @@ public class InnerRingRemover {
             double distanceA = a.distance(inneringLeftDown);
             double distanceB = b.distance(inneringLeftDown);
             return Double.compare(distanceA, distanceB);
-        }).collect(Collectors.toList());
-
+        }).toList();
 
         Point2DTess leftDownPoint = new Point2DTess(inneringLeftDown,null, null);
         double error = 1E-10;
 
 
         Vector2d nearestOuterRing = null;
-        for (int i = 0; i < nearestOuterRings.size(); i++) {
-            nearestOuterRing = nearestOuterRings.get(i);
+        for (Vector2d outerRing : nearestOuterRings) {
+            nearestOuterRing = outerRing;
 
-            Point2DTess nearestOuterPoint = new Point2DTess(nearestOuterRing,null, null);
+            Point2DTess nearestOuterPoint = new Point2DTess(nearestOuterRing, null, null);
             Segment2DTess cuttingSegment = new Segment2DTess(leftDownPoint, nearestOuterPoint);
 
             Point2DTess vectorA, vectorB;
@@ -78,10 +76,10 @@ public class InnerRingRemover {
                 Vector2d innerRingVectorA = innerRingVector.get(j);
                 Vector2d innerRingVectorB = innerRingVector.get(j + 1);
 
-                vectorA = new Point2DTess(innerRingVectorA,null, null);
-                vectorB = new Point2DTess(innerRingVectorB,null, null);
+                vectorA = new Point2DTess(innerRingVectorA, null, null);
+                vectorB = new Point2DTess(innerRingVectorB, null, null);
                 innerRingSegement = new Segment2DTess(vectorA, vectorB);
-                intersectionPoint = new Point2DTess(null,null, null);
+                intersectionPoint = new Point2DTess(null, null, null);
                 if (cuttingSegment.intersectionWithSegment(innerRingSegement, intersectionPoint, error) == 1) {
                     isIntersect = true;
                 }
@@ -89,10 +87,10 @@ public class InnerRingRemover {
 
             Vector2d innerRingVectorA = innerRingVector.get(innerRingVector.size() - 1);
             Vector2d innerRingVectorB = innerRingVector.get(0);
-            vectorA = new Point2DTess(innerRingVectorA,null, null);
-            vectorB = new Point2DTess(innerRingVectorB,null, null);
+            vectorA = new Point2DTess(innerRingVectorA, null, null);
+            vectorB = new Point2DTess(innerRingVectorB, null, null);
             innerRingSegement = new Segment2DTess(vectorA, vectorB);
-            intersectionPoint = new Point2DTess(null,null, null);
+            intersectionPoint = new Point2DTess(null, null, null);
             if (cuttingSegment.intersectionWithSegment(innerRingSegement, intersectionPoint, error) == 1) {
                 isIntersect = true;
             }
@@ -101,7 +99,7 @@ public class InnerRingRemover {
                 Vector2d outerRingVectorA = outerRingVector.get(j);
                 Vector2d outerRingVectorB = outerRingVector.get(j + 1);
 
-                vectorA = new Point2DTess(outerRingVectorA,null, null);
+                vectorA = new Point2DTess(outerRingVectorA, null, null);
                 vectorB = new Point2DTess(outerRingVectorB, null, null);
                 innerRingSegement = new Segment2DTess(vectorA, vectorB);
                 intersectionPoint = new Point2DTess(null, null, null);

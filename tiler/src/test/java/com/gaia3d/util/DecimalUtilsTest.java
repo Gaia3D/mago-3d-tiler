@@ -1,6 +1,6 @@
 package com.gaia3d.util;
 
-import com.gaia3d.command.Configurator;
+import com.gaia3d.command.Configuration;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +15,7 @@ class DecimalUtilsTest {
 
     @Test
     void testGermanyDecimalSeparator() {
-        Configurator.initConsoleLogger();
+        Configuration.initConsoleLogger();
 
         double original = 1234.12345678;
         DecimalFormat decimalFormat = new DecimalFormat("0.000");

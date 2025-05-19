@@ -8,9 +8,9 @@ import com.gaia3d.basic.model.GaiaPrimitive;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
-import com.gaia3d.converter.EasySceneCreator;
+import com.gaia3d.converter.DefaultSceneFactory;
 import com.gaia3d.converter.geometry.AbstractGeometryConverter;
-import com.gaia3d.converter.geometry.GaiaBuildingSurface;
+import com.gaia3d.converter.geometry.GaiaSurfaceModel;
 import com.gaia3d.converter.geometry.GaiaSceneTempGroup;
 import com.gaia3d.util.GlobeUtils;
 import edu.stem.indoor.IndoorFeatures;
@@ -54,13 +54,13 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
     protected List<GaiaScene> convert(File file) {
         List<GaiaScene> scenes = new ArrayList<>();
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-        EasySceneCreator easySceneCreator = new EasySceneCreator();
+        DefaultSceneFactory defaultSceneFactory = new DefaultSceneFactory();
 
         try {
             JAXBContext context = JAXBContext.newInstance(IndoorFeatures.class);
             IndoorFeatures indoorFeatures = (IndoorFeatures) context.createUnmarshaller().unmarshal(new FileReader(file));
 
-            List<List<GaiaBuildingSurface>> buildingSurfacesList = new ArrayList<>();
+            List<List<GaiaSurfaceModel>> buildingSurfacesList = new ArrayList<>();
 
             PrimalSpaceFeatures primalSpaceFeatures = indoorFeatures.getPrimalSpaceFeatures();
             PrimalSpaceFeatures primalSpaceFeaturesChild = primalSpaceFeatures.getPrimalSpaceFeatures();
@@ -74,7 +74,7 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                 Shell shell = exterior.getShell();
                 List<SurfaceMember> surfaceMembers = shell.getSurfaceMembers();
 
-                List<GaiaBuildingSurface> gaiaBuildingSurfaces = new ArrayList<>();
+                List<GaiaSurfaceModel> gaiaBuildingSurfaces = new ArrayList<>();
 
                 for (SurfaceMember surfaceMember : surfaceMembers) {
                     GaiaBoundingBox boundingBox = new GaiaBoundingBox();
@@ -105,7 +105,7 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                         log.info("Polygon is not closed. Adding the first point to the end of the list.");
                     }
 
-                    GaiaBuildingSurface buildingSurface = GaiaBuildingSurface.builder()
+                    GaiaSurfaceModel buildingSurface = GaiaSurfaceModel.builder()
                             .id(cellSpace.getId())
                             .name(cellSpace.getName())
                             .boundingBox(boundingBox)
@@ -119,12 +119,12 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                 }
             }
 
-            GaiaScene scene = easySceneCreator.createScene(file);
+            GaiaScene scene = defaultSceneFactory.createScene(file);
             GaiaNode rootNode = scene.getNodes().get(0);
 
             GaiaBoundingBox globalBoundingBox = new GaiaBoundingBox();
-            for (List<GaiaBuildingSurface> surfaces : buildingSurfacesList) {
-                for (GaiaBuildingSurface buildingSurface : surfaces) {
+            for (List<GaiaSurfaceModel> surfaces : buildingSurfacesList) {
+                for (GaiaSurfaceModel buildingSurface : surfaces) {
                     GaiaBoundingBox localBoundingBox = buildingSurface.getBoundingBox();
                     globalBoundingBox.addBoundingBox(localBoundingBox);
                 }
@@ -134,9 +134,9 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
             Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
             Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
 
-            for (List<GaiaBuildingSurface> surfaces : buildingSurfacesList) {
+            for (List<GaiaSurfaceModel> surfaces : buildingSurfacesList) {
                 List<List<Vector3d>> polygons = new ArrayList<>();
-                for (GaiaBuildingSurface buildingSurface : surfaces) {
+                for (GaiaSurfaceModel buildingSurface : surfaces) {
                     List<Vector3d> polygon = new ArrayList<>();
                     for (Vector3d position : buildingSurface.getExteriorPositions()) {
                         Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);

@@ -1,7 +1,7 @@
 package com.gaia3d.command.mago;
 
 import com.gaia3d.basic.exception.Reporter;
-import com.gaia3d.command.Configurator;
+import com.gaia3d.command.Configuration;
 import com.gaia3d.util.DecimalUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
@@ -20,30 +20,30 @@ public class Mago3DTilerMain {
 
     public static void main(String[] args) {
         try {
-            Options options = Configurator.createOptions();
+            Options options = Configuration.createOptions();
             CommandLineParser parser = new DefaultParser();
-            CommandLine command = parser.parse(Configurator.createOptions(), args);
-            boolean isHelp = command.hasOption(ProcessOptions.HELP.getArgName());
-            boolean isQuiet = command.hasOption(ProcessOptions.QUIET.getArgName());
-            boolean hasLogPath = command.hasOption(ProcessOptions.LOG.getArgName());
-            boolean isDebug = command.hasOption(ProcessOptions.DEBUG.getArgName());
-            boolean isMerge = command.hasOption(ProcessOptions.MERGE.getArgName());
+            CommandLine command = parser.parse(Configuration.createOptions(), args);
+            boolean isHelp = command.hasOption(ProcessOptions.HELP.getLongName());
+            boolean isQuiet = command.hasOption(ProcessOptions.QUIET.getLongName());
+            boolean hasLogPath = command.hasOption(ProcessOptions.LOG.getLongName());
+            boolean isDebug = command.hasOption(ProcessOptions.DEBUG.getLongName());
+            boolean isMerge = command.hasOption(ProcessOptions.MERGE.getLongName());
 
             // Logging configuration
             if (isQuiet) {
-                Configurator.setLevel(Level.OFF);
+                Configuration.setLevel(Level.OFF);
             } else if (isDebug) {
-                Configurator.initConsoleLogger("[%p][%d{HH:mm:ss}][%C{2}(%M:%L)]::%message%n");
+                Configuration.initConsoleLogger("[%p][%d{HH:mm:ss}][%C{2}(%M:%L)]::%message%n");
                 if (hasLogPath) {
-                    Configurator.initFileLogger("[%p][%d{HH:mm:ss}][%C{2}(%M:%L)]::%message%n", command.getOptionValue(ProcessOptions.LOG.getArgName()));
+                    Configuration.initFileLogger("[%p][%d{HH:mm:ss}][%C{2}(%M:%L)]::%message%n", command.getOptionValue(ProcessOptions.LOG.getLongName()));
                 }
-                Configurator.setLevel(Level.DEBUG);
+                Configuration.setLevel(Level.DEBUG);
             } else {
-                Configurator.initConsoleLogger();
+                Configuration.initConsoleLogger();
                 if (hasLogPath) {
-                    Configurator.initFileLogger(null, command.getOptionValue(ProcessOptions.LOG.getArgName()));
+                    Configuration.initFileLogger(null, command.getOptionValue(ProcessOptions.LOG.getLongName()));
                 }
-                Configurator.setLevel(Level.INFO);
+                Configuration.setLevel(Level.INFO);
             }
 
             printStart();
@@ -75,7 +75,7 @@ public class Mago3DTilerMain {
             throw new RuntimeException("Failed to run main process.", e);
         }
         printEnd();
-        Configurator.destroyLogger();
+        Configuration.destroyLogger();
     }
 
     /**

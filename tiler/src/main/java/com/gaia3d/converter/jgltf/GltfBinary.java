@@ -23,6 +23,10 @@ public class GltfBinary {
     private ByteBuffer body = null;
     private List<GltfNodeBuffer> nodeBuffers = new ArrayList<>();
 
+    /**
+     * Fills the body variable with the binary data of the glTF file.
+     * It iterates through the nodeBuffers list and puts the binary data of each node into the body variable.
+     */
     public void fill() {
         body = ByteBuffer.allocate(nodeBuffers.stream().mapToInt(GltfNodeBuffer::getTotalByteBufferLength).sum());
         ByteBuffer bodyBuffer = body;

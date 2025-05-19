@@ -4,7 +4,6 @@ import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.assimp.AssimpConverter;
-import com.gaia3d.converter.assimp.LargeMeshConverter;
 import com.gaia3d.converter.geometry.ExtrusionTempGenerator;
 import com.gaia3d.converter.geometry.citygml.CityGmlConverter;
 import com.gaia3d.converter.geometry.geojson.GeoJsonConverter;
@@ -16,8 +15,7 @@ import com.gaia3d.converter.kml.FastKmlReader;
 import com.gaia3d.converter.loader.BatchedFileLoader;
 import com.gaia3d.process.TilingPipeline;
 import com.gaia3d.process.postprocess.GaiaMaximizer;
-import com.gaia3d.process.postprocess.GaiaRelocator;
-import com.gaia3d.process.postprocess.GaiaRelocatorML;
+import com.gaia3d.process.postprocess.GaiaRelocation;
 import com.gaia3d.process.postprocess.PostProcess;
 import com.gaia3d.process.postprocess.batch.Batched3DModel;
 import com.gaia3d.process.preprocess.*;
@@ -56,17 +54,17 @@ public class BatchedProcessModelML implements ProcessFlowModel {
 
         /* Pre-process */
         List<PreProcess> preProcessors = new ArrayList<>();
-        preProcessors.add(new GaiaTileInfoInitiator());
-        preProcessors.add(new GaiaTexCoordCorrector());
-        preProcessors.add(new GaiaScaler());
-        preProcessors.add(new GaiaRotator());
+        preProcessors.add(new GaiaTileInfoInitialization());
+        preProcessors.add(new GaiaTexCoordCorrection());
+        preProcessors.add(new GaiaScale());
+        preProcessors.add(new GaiaRotation());
 
         if (globalOptions.isLargeMesh()) {
-            preProcessors.add(new GaiaStrictTranslator(geoTiffs));
+            preProcessors.add(new GaiaStrictTranslation(geoTiffs));
         } else {
-            preProcessors.add(new GaiaTranslator(geoTiffs));
+            preProcessors.add(new GaiaTranslation(geoTiffs));
         }
-        preProcessors.add(new GaiaMinimizer());
+        preProcessors.add(new GaiaMinimization());
 
         /* Main-process */
         TilingProcess tilingProcess = new Batched3DModelTiler();
@@ -74,7 +72,7 @@ public class BatchedProcessModelML implements ProcessFlowModel {
         /* Post-process */
         List<PostProcess> postProcessors = new ArrayList<>();
         postProcessors.add(new GaiaMaximizer());
-        postProcessors.add(new GaiaRelocator());
+        postProcessors.add(new GaiaRelocation());
         postProcessors.add(new Batched3DModel());
 
         Pipeline processPipeline = new TilingPipeline(preProcessors, tilingProcess, postProcessors);
@@ -95,11 +93,7 @@ public class BatchedProcessModelML implements ProcessFlowModel {
         } else if (formatType == FormatType.GEO_PACKAGE) {
             converter = new GeoPackageConverter();
         } else {
-            if (globalOptions.isLargeMesh()) {
-                converter = new LargeMeshConverter(new AssimpConverter());
-            } else {
-                converter = new AssimpConverter();
-            }
+            converter = new AssimpConverter();
         }
         return converter;
     }

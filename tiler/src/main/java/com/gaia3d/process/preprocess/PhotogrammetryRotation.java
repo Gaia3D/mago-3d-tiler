@@ -11,7 +11,7 @@ import org.joml.Matrix4d;
 
 @Slf4j
 @NoArgsConstructor
-public class GaiaRotator implements PreProcess {
+public class PhotogrammetryRotation implements PreProcess {
     private GaiaScene recentScene = null;
 
     @Override
@@ -19,16 +19,6 @@ public class GaiaRotator implements PreProcess {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
 
         double rotateX = globalOptions.getRotateX();
-        boolean isSwapUpAxis = globalOptions.isSwapUpAxis();
-        boolean isFlipUpAxis = globalOptions.isFlipUpAxis();
-
-        if (isSwapUpAxis) {
-            rotateX -= 90;
-        }
-        if (isFlipUpAxis) {
-            rotateX += 180;
-        }
-        rotateX += 90;
 
         GaiaScene gaiaScene = tileInfo.getScene();
         // Skip if the scene is already processed
@@ -37,17 +27,9 @@ public class GaiaRotator implements PreProcess {
         }
         recentScene = gaiaScene;
 
-        //log.info("rotateX: {}, isSwapUpAxis: {}, isFlipUpAxis: {}", rotateX, isSwapUpAxis, isFlipUpAxis);
-        // 90 degree rotation
-        //double rotateX = isSwapUpAxis ? 90 : 0;
-        // Reverse the rotation direction
-        //rotateX = isFlipUpAxis ? rotateX + 180 : rotateX;
-
         GaiaNode rootNode = gaiaScene.getNodes().get(0);
         Matrix4d transform = rootNode.getTransformMatrix();
-
-        //log.info("before transform");
-        //log.info(transform.toString());
+        //Matrix4d transformModified = new Matrix4d(transform);
 
         rotateX(transform, rotateX);
 
@@ -65,8 +47,6 @@ public class GaiaRotator implements PreProcess {
         GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox();
         tileInfo.setBoundingBox(boundingBox.clone());
 
-        //log.info("after transform");
-        //log.info(transform.toString());
         return tileInfo;
     }
 

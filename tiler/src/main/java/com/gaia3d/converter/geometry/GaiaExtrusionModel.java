@@ -5,22 +5,25 @@ import com.gaia3d.basic.types.Classification;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 
+import java.io.*;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Getter
 @Setter
 @Builder
-public class GaiaBuildingSurface {
+public class GaiaExtrusionModel implements Serializable {
     private String id;
-    private String name;
     private Classification classification;
-
-    private List<Vector3d> exteriorPositions;
-    private List<List<Vector3d>> interiorPositions;
-
+    private double roofHeight;
+    private double floorHeight;
     private GaiaBoundingBox boundingBox;
+    private String originalFilePath;
+
+    private List<Vector3d> positions;
     private Map<String, String> properties;
 }

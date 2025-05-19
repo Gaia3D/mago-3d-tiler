@@ -11,16 +11,16 @@ import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.jgltf.GltfWriter;
 import com.gaia3d.converter.kml.KmlInfo;
-import com.gaia3d.process.postprocess.TileModel;
+import com.gaia3d.io.LittleEndianDataOutputStream;
+import com.gaia3d.process.postprocess.TilingModel;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTableMap;
 import com.gaia3d.process.postprocess.batch.GaiaBatcher;
-import com.gaia3d.process.postprocess.pointcloud.Position;
+import com.gaia3d.process.postprocess.pointcloud.ByteAddress;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.GeometryUtils;
 import com.gaia3d.util.GlobeUtils;
 import com.gaia3d.util.StringUtils;
-import com.gaia3d.io.LittleEndianDataOutputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix3d;
 import org.joml.Matrix4d;
@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
-public class Instanced3DModel implements TileModel {
+public class Instanced3DModel implements TilingModel {
     private static final String MAGIC = "i3dm";
     private static final int VERSION = 1;
     private final GltfWriter gltfWriter;
@@ -67,7 +67,6 @@ public class Instanced3DModel implements TileModel {
         Vector3d center = contentInfo.getBoundingBox().getCenter();
         Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
         Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
-        //Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
 
         AtomicInteger positionIndex = new AtomicInteger();
         AtomicInteger normalUpIndex = new AtomicInteger();
@@ -78,7 +77,6 @@ public class Instanced3DModel implements TileModel {
             //y-up
             //Vector3d normalUp = new Vector3d(0, 1, 0);
             //Vector3d normalRight = new Vector3d(1, 0, 0);
-
             Vector3d normalUp = new Vector3d(0, 0, -1);
             Vector3d normalRight = new Vector3d(1, 0, 0);
 
@@ -88,16 +86,8 @@ public class Instanced3DModel implements TileModel {
             Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
             Vector3d localPosition = positionWorldCoordinate.sub(centerWorldCoordinate, new Vector3d());
 
-            //Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv, new Vector3d());
-            // local position(Z-UP), gltf position(Y-UP)
             Vector3d localPositionYUp = new Vector3d(localPosition.x, localPosition.y, localPosition.z);
-
             Matrix3d worldRotationMatrix3d = transformMatrix.get3x3(new Matrix3d());
-            //Matrix3d xRotationMatrix3d = new Matrix3d();
-            //xRotationMatrix3d.identity();
-            //xRotationMatrix3d.rotateX(Math.toRadians(-90));
-            //xRotationMatrix3d.mul(worldRotationMatrix3d, worldRotationMatrix3d);
-            //Matrix4d worldRotationMatrix4d = new Matrix4d(worldRotationMatrix3d);
 
             // rotate
             double headingValue = Math.toRadians(kmlInfo.getHeading());
@@ -110,8 +100,6 @@ public class Instanced3DModel implements TileModel {
 
             //normalUp = new Vector3d(worldRotationMatrix3d.m00(), worldRotationMatrix3d.m10(), worldRotationMatrix3d.m20());
             //normalRight = new Vector3d(worldRotationMatrix3d.m01(), worldRotationMatrix3d.m11(), worldRotationMatrix3d.m21());
-
-
             //normalUp = rotationMatrix.transform(normalUp);
             //normalRight = rotationMatrix.transform(normalRight);
 
@@ -121,10 +109,6 @@ public class Instanced3DModel implements TileModel {
             positions[positionIndex.getAndIncrement()] = (float) localPositionYUp.x;
             positions[positionIndex.getAndIncrement()] = (float) localPositionYUp.y;
             positions[positionIndex.getAndIncrement()] = (float) localPositionYUp.z;
-
-            /*positions[positionIndex.getAndIncrement()] = (float) 0;
-            positions[positionIndex.getAndIncrement()] = (float) 0;
-            positions[positionIndex.getAndIncrement()] = (float) 0;*/
 
             normalUps[normalUpIndex.getAndIncrement()] = (float) normalUp.x;
             normalUps[normalUpIndex.getAndIncrement()] = (float) normalUp.y;
@@ -149,7 +133,7 @@ public class Instanced3DModel implements TileModel {
         File outputFile = new File(globalOptions.getOutputPath());
         Path outputRoot = outputFile.toPath().resolve("data");
         if (!outputRoot.toFile().exists() && outputRoot.toFile().mkdir()) {
-            log.debug("[Create][data] Created output data directory,", outputRoot);
+            log.debug("[Create][data] Created output data directory, {}", outputRoot);
         }
 
         byte[] positionBytes = instanced3DModelBinary.getPositionBytes();
@@ -163,43 +147,27 @@ public class Instanced3DModel implements TileModel {
         System.arraycopy(normalRightBytes, 0, featureTableBytes, positionBytes.length + normalUpBytes.length, normalRightBytes.length);
         System.arraycopy(scaleBytes, 0, featureTableBytes, positionBytes.length + normalUpBytes.length + normalRightBytes.length, scaleBytes.length);
 
-
-        GaiaScene scene = tileInfos.get(0).getScene();
         GaiaFeatureTable featureTable = new GaiaFeatureTable();
         if (!globalOptions.isClassicTransformMatrix()) {
-            /* relative to center */
-            Matrix4d worldTransformMatrix = transformMatrix;
-            /*Matrix3d rotationMatrix3d = worldTransformMatrix.get3x3(new Matrix3d());
-            Matrix3d xRotationMatrix3d = new Matrix3d();
-            xRotationMatrix3d.identity();
-            xRotationMatrix3d.rotateX(Math.toRadians(-90));
-            xRotationMatrix3d.mul(rotationMatrix3d, rotationMatrix3d);
-            Matrix4d rotationMatrix4d = new Matrix4d(rotationMatrix3d);*/
-
-            //GaiaNode rootNode = scene.getNodes().get(0); // z-up
-            //Matrix4d sceneTransformMatrix = rootNode.getTransformMatrix();
-            //rotationMatrix4d.mul(sceneTransformMatrix, sceneTransformMatrix);
-
             double[] rtcCenter = new double[3];
-            rtcCenter[0] = worldTransformMatrix.m30();
-            rtcCenter[1] = worldTransformMatrix.m31();
-            rtcCenter[2] = worldTransformMatrix.m32();
+            rtcCenter[0] = transformMatrix.m30();
+            rtcCenter[1] = transformMatrix.m31();
+            rtcCenter[2] = transformMatrix.m32();
             featureTable.setRctCenter(rtcCenter);
         }
 
         featureTable.setInstancesLength(instanceLength);
         featureTable.setEastNorthUp(false);
-        featureTable.setPosition(new Position(0));
-        featureTable.setNormalUp(new Normal(positionBytes.length));
-        featureTable.setNormalRight(new Normal(positionBytes.length + normalUpBytes.length));
-        featureTable.setScale(new Scale(positionBytes.length + normalUpBytes.length + normalRightBytes.length));
+        featureTable.setPosition(new ByteAddress(0));
+        featureTable.setNormalUp(new ByteAddress(positionBytes.length));
+        featureTable.setNormalRight(new ByteAddress(positionBytes.length + normalUpBytes.length));
+        featureTable.setScale(new ByteAddress(positionBytes.length + normalUpBytes.length + normalRightBytes.length));
 
         GaiaBatchTableMap<String, List<String>> batchTableMap = new GaiaBatchTableMap<>();
         AtomicInteger finalBatchIdIndex = new AtomicInteger();
         tileInfos.forEach((tileInfo) -> {
             GaiaAttribute attribute = tileInfo.getScene().getAttribute();
             Map<String, String> attributes = tileInfo.getKmlInfo().getProperties();
-            //GaiaSet set = tileInfo.getSet();
 
             String UUID = attribute.getIdentifier().toString();
             String FileName = attribute.getFileName();
@@ -230,7 +198,6 @@ public class Instanced3DModel implements TileModel {
                 });
             }
         });
-
 
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
@@ -304,7 +271,7 @@ public class Instanced3DModel implements TileModel {
                 GaiaScene resultGaiaScene = new GaiaScene(gaiaSet);
 
                 GaiaBoundingBox boundingBox = resultGaiaScene.getBoundingBox();
-                float minSize = (float)boundingBox.getMinSize();
+                float minSize = (float) boundingBox.getMinSize();
 
                 if (isVoxelLod) {
                     int lod = contentInfo.getLod().getLevel();

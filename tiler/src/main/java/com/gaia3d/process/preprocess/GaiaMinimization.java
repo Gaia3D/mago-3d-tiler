@@ -13,7 +13,7 @@ import java.nio.file.Path;
 
 @Slf4j
 @AllArgsConstructor
-public class GaiaMinimizer implements PreProcess {
+public class GaiaMinimization implements PreProcess {
 
     @Override
     public TileInfo run(TileInfo tileInfo) {

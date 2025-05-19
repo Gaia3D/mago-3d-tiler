@@ -4,16 +4,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+@Deprecated
 @Getter
 @AllArgsConstructor
 public class Classification {
-
     @JsonProperty("byteOffset")
     int byteOffset;
-
     @JsonProperty("componentType")
     String componentType;
-
     @JsonProperty("type")
     String type;
 }

@@ -7,6 +7,7 @@ import org.joml.Vector2d;
 
 @Getter
 @Setter
+@Deprecated
 public class GaiaTriangle2D {
     private final Vector2d[] positions;
     private final Vector2d normal = new Vector2d();

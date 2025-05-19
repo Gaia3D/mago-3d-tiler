@@ -2,7 +2,7 @@ package com.gaia3d.converter;
 
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
-import com.gaia3d.command.Configurator;
+import com.gaia3d.command.Configuration;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.jgltf.GltfWriter;
 import lombok.extern.slf4j.Slf4j;
@@ -52,7 +52,7 @@ public class GltfCreatorTest {
 
     @Test
     public void createGrid() {
-        Configurator.initConsoleLogger();
+        Configuration.initConsoleLogger();
 
         GlobalOptions globalOptions = GlobalOptions.getInstance();
 
@@ -60,11 +60,11 @@ public class GltfCreatorTest {
         for (int gridSize : gridSizes) {
             File file = new File("E:/workspace/", gridSize + "x" + gridSize + ".glb");
             log.info("Creating gltf file: {}", file.getAbsolutePath());
-            EasySceneCreator easySceneCreator = new EasySceneCreator();
-            GaiaScene gaiaScene = easySceneCreator.createScene(file);
+            DefaultSceneFactory defaultSceneFactory = new DefaultSceneFactory();
+            GaiaScene gaiaScene = defaultSceneFactory.createScene(file);
             GaiaNode rootNode = gaiaScene.getNodes().get(0);
 
-            GaiaNode gridNode = easySceneCreator.createGridNode(gridSize, gridSize);
+            GaiaNode gridNode = defaultSceneFactory.createGridNode(gridSize, gridSize);
             rootNode.getChildren().add(gridNode);
 
             GltfWriter gltfWriter = new GltfWriter();

@@ -22,7 +22,7 @@ import java.util.List;
 
 @Slf4j
 @AllArgsConstructor
-public class GaiaStrictTranslator implements PreProcess {
+public class GaiaStrictTranslation implements PreProcess {
     private final List<GridCoverage2D> coverages;
 
     @Override

@@ -11,10 +11,8 @@ public class ForestModelHelper {
 
     /**
      * Calculate the number of trees in a polygon based on the area and tree density.
-     * @param polygon
      * @param treeProportion density of trees in the polygon (0.0 to 1.0)
      * @param treeDiameter diameter of the trees (in square meters)
-     * @return
      */
     public static int calcTreeCount(Geometry polygon, double treeProportion, double treeDiameter) {
         if (treeProportion <= 0) {

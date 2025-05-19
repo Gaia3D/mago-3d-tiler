@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @Slf4j
 @NoArgsConstructor
-public class EasySceneCreator {
+public class DefaultSceneFactory {
     private static final String ROOT_NODE_NAME = "root";
     private static final String DEFAULT_MATERIAL_NAME = "default-material";
 

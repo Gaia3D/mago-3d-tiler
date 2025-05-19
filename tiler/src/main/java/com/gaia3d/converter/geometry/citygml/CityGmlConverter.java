@@ -6,7 +6,7 @@ import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.Classification;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
-import com.gaia3d.converter.EasySceneCreator;
+import com.gaia3d.converter.DefaultSceneFactory;
 import com.gaia3d.converter.geometry.*;
 import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
@@ -97,7 +97,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             while (reader.hasNext()) {
                 CityModel cityModel = (CityModel) reader.next();
                 //List<GaiaExtrusionBuilding> buildingList = new ArrayList<>();
-                List<List<GaiaBuildingSurface>> buildingSurfacesList = new ArrayList<>();
+                List<List<GaiaSurfaceModel>> buildingSurfacesList = new ArrayList<>();
                 List<AbstractCityObjectProperty> cityObjectMembers = cityModel.getCityObjectMembers();
                 for (AbstractCityObjectProperty cityObjectProperty : cityObjectMembers) {
                     AbstractCityObject cityObject = cityObjectProperty.getObject();
@@ -125,7 +125,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                     }*/
                 }
 
-                EasySceneCreator easySceneCreator = new EasySceneCreator();
+                DefaultSceneFactory defaultSceneFactory = new DefaultSceneFactory();
                 /*for (GaiaExtrusionBuilding gaiaBuilding : buildingList) {
                     GaiaScene scene = easySceneCreator.createScene(file);
                     GaiaMaterial material = getMaterialByClassification(scene.getMaterials(), gaiaBuilding.getClassification());
@@ -165,19 +165,19 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                     scenes.add(scene);
                 }*/
 
-                for (List<GaiaBuildingSurface> surfaces : buildingSurfacesList) {
+                for (List<GaiaSurfaceModel> surfaces : buildingSurfacesList) {
                     if (surfaces.isEmpty()) {
                         continue;
                     }
 
-                    GaiaScene scene = easySceneCreator.createScene(file);
+                    GaiaScene scene = defaultSceneFactory.createScene(file);
                     GaiaNode rootNode = scene.getNodes().get(0);
 
                     GaiaAttribute attribute = scene.getAttribute();
                     //attribute.setAttributes(surfaces.getProperties());
 
                     GaiaBoundingBox globalBoundingBox = new GaiaBoundingBox();
-                    for (GaiaBuildingSurface buildingSurface : surfaces) {
+                    for (GaiaSurfaceModel buildingSurface : surfaces) {
                         GaiaBoundingBox localBoundingBox = buildingSurface.getBoundingBox();
                         globalBoundingBox.addBoundingBox(localBoundingBox);
                     }
@@ -187,7 +187,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                     Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
                     Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
 
-                    for (GaiaBuildingSurface buildingSurface : surfaces) {
+                    for (GaiaSurfaceModel buildingSurface : surfaces) {
                         GaiaMaterial material = getMaterialByClassification(scene.getMaterials(), buildingSurface.getClassification());
 
                         // Check if buildingSurface has holes
@@ -350,8 +350,8 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
         return buildingList;
     }*/
 
-    private List<GaiaBuildingSurface> convertSolidSurfaceProperty(AbstractCityObject cityObject, AbstractSolid abstractSolid) {
-        List<GaiaBuildingSurface> buildingSurfaces = new ArrayList<>();
+    private List<GaiaSurfaceModel> convertSolidSurfaceProperty(AbstractCityObject cityObject, AbstractSolid abstractSolid) {
+        List<GaiaSurfaceModel> buildingSurfaces = new ArrayList<>();
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         boolean flipCoordinate = globalOptions.isFlipCoordinate();
         double skirtHeight = globalOptions.getSkirtHeight();
@@ -383,22 +383,22 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             }
             Classification classification = getClassification(cityObject);
             List<SurfaceProperty> surfaceProperties = shell.getSurfaceMembers();
-            List<GaiaBuildingSurface> compositeSurfaces = convertSurfaceProperty(cityObject, classification, surfaceProperties);
+            List<GaiaSurfaceModel> compositeSurfaces = convertSurfaceProperty(cityObject, classification, surfaceProperties);
             buildingSurfaces.addAll(compositeSurfaces);
         }
         return buildingSurfaces;
     }
 
-    private List<GaiaBuildingSurface> convertTriangleArrayProperty(AbstractCityObject cityObject, TriangleArrayProperty triangleArrayProperty) {
-        List<GaiaBuildingSurface> buildingSurfaces = new ArrayList<>();
+    private List<GaiaSurfaceModel> convertTriangleArrayProperty(AbstractCityObject cityObject, TriangleArrayProperty triangleArrayProperty) {
+        List<GaiaSurfaceModel> buildingSurfaces = new ArrayList<>();
 
 
         // TODO: triangleArrayProperty
         return buildingSurfaces;
     }
 
-    private List<GaiaBuildingSurface> convertMultiSurfaceProperty(AbstractCityObject cityObject, MultiSurfaceProperty multiSurfaceProperty) {
-        List<GaiaBuildingSurface> buildingSurfaces = new ArrayList<>();
+    private List<GaiaSurfaceModel> convertMultiSurfaceProperty(AbstractCityObject cityObject, MultiSurfaceProperty multiSurfaceProperty) {
+        List<GaiaSurfaceModel> buildingSurfaces = new ArrayList<>();
 
         MultiSurface multiSurface = multiSurfaceProperty.getObject();
         if (multiSurface == null) {
@@ -496,13 +496,13 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
         return polygon;
     }
 
-    private List<GaiaBuildingSurface> convertSurfaceProperty(AbstractCityObject cityObject, Classification classification, List<SurfaceProperty> surfaceProperties) {
-        List<GaiaBuildingSurface> buildingSurfaces = new ArrayList<>();
+    private List<GaiaSurfaceModel> convertSurfaceProperty(AbstractCityObject cityObject, Classification classification, List<SurfaceProperty> surfaceProperties) {
+        List<GaiaSurfaceModel> buildingSurfaces = new ArrayList<>();
         int surfaceCount = surfaceProperties.size();
         for (SurfaceProperty surfaceProperty : surfaceProperties) {
             AbstractSurface abstractSurface = surfaceProperty.getObject();
             if (abstractSurface instanceof CompositeSurface compositeSurface) {
-                List<GaiaBuildingSurface> compositeSurfaces = convertSurfaceProperty(cityObject, classification, compositeSurface.getSurfaceMembers());
+                List<GaiaSurfaceModel> compositeSurfaces = convertSurfaceProperty(cityObject, classification, compositeSurface.getSurfaceMembers());
                 buildingSurfaces.addAll(compositeSurfaces);
                 continue;
             }
@@ -541,7 +541,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             }
             Map<String, String> properties = new HashMap<>();
             properties.put("name", cityObject.getId());
-            GaiaBuildingSurface gaiaBuildingSurface = GaiaBuildingSurface.builder().id(cityObject.getId()).name(cityObject.getId()).exteriorPositions(vec3Polygon).interiorPositions(vec3InteriorPolygons).boundingBox(boundingBox).classification(classification).properties(properties).build();
+            GaiaSurfaceModel gaiaBuildingSurface = GaiaSurfaceModel.builder().id(cityObject.getId()).name(cityObject.getId()).exteriorPositions(vec3Polygon).interiorPositions(vec3InteriorPolygons).boundingBox(boundingBox).classification(classification).properties(properties).build();
             buildingSurfaces.add(gaiaBuildingSurface);
         }
         return buildingSurfaces;

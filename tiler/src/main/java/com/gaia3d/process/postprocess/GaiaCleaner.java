@@ -8,6 +8,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.IOException;
 import java.nio.file.Path;
 
+@Deprecated
 @Slf4j
 @AllArgsConstructor
 public class GaiaCleaner implements PostProcess {

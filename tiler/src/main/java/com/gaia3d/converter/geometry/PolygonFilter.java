@@ -1,4 +1,4 @@
-package com.gaia3d.converter;
+package com.gaia3d.converter.geometry;
 
 import com.gaia3d.util.VectorUtils;
 import lombok.extern.slf4j.Slf4j;
