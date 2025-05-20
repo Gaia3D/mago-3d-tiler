@@ -34,21 +34,27 @@ public class InstanceTranslation implements PreProcess {
             offset = new Vector3d(0.0d, 0.0d, 0.0d);
         }
 
-        AtomicReference<Double> altitude = new AtomicReference<>((double) 0);
+        AtomicReference<Double> altitude = new AtomicReference<>(0.0d);
         String altitudeMode = kmlInfo.getAltitudeMode();
         if (altitudeMode != null && altitudeMode.equals("absolute")) {
             altitude.set(position.z);
         } else {
-            try {
+            // set position terrain height
+            if (!coverages.isEmpty()) {
+                altitude.set(0.0d);
                 coverages.forEach((coverage) -> {
-                    DirectPosition2D memSave_posWorld = new DirectPosition2D(DefaultGeographicCRS.WGS84, center.x, center.y);
-                    double[] memSave_alt = new double[1];
-                    memSave_alt[0] = 0;
-                    coverage.evaluate((DirectPosition) memSave_posWorld, memSave_alt);
-                    altitude.set(memSave_alt[0]);
+                    DirectPosition worldPosition = new DirectPosition2D(DefaultGeographicCRS.WGS84, center.x, center.y);
+                    double[] altitudeArray = new double[1];
+                    altitudeArray[0] = 0.0d;
+                    try {
+                        coverage.evaluate(worldPosition, altitudeArray);
+                    } catch (Exception e) {
+                        log.debug("[DEBUG] Failed to load terrain height. Out of range");
+                    }
+                    if (altitudeArray[0] != 0.0d && !Double.isNaN(altitudeArray[0])) {
+                        altitude.set(altitudeArray[0]);
+                    }
                 });
-            } catch (PointOutsideCoverageException e) {
-                log.warn("[WARN] Fail to get altitude from DEM coverage. : {}", e.getMessage());
             }
         }
         position.set(position.x, position.y, altitude.get() + center.z);
