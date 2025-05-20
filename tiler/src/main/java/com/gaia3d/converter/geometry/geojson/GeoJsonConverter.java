@@ -72,6 +72,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
         String heightColumnName = globalOptions.getHeightColumn();
         String altitudeColumnName = globalOptions.getAltitudeColumn();
         String diameterColumnName = globalOptions.getDiameterColumn();
+        String scaleColumnName = globalOptions.getScaleColumn();
 
         double absoluteAltitudeValue = globalOptions.getAbsoluteAltitude();
         double minimumHeightValue = globalOptions.getMinimumHeight();
@@ -365,8 +366,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                 .isMinimized(true)
                 .build();
         sceneTemp.maximize();
-        List<GaiaScene> scenes = sceneTemp.getTempScene();
-        return scenes;
+        return sceneTemp.getTempScene();
     }
 
 

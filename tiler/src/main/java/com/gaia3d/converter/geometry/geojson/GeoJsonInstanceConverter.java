@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Slf4j
 @NoArgsConstructor
-public class GeojsonInstanceConverter implements AttributeReader {
+public class GeoJsonInstanceConverter implements AttributeReader {
 
     //read kml file
     @Override
@@ -49,7 +49,8 @@ public class GeojsonInstanceConverter implements AttributeReader {
         List<KmlInfo> result = new ArrayList<>();
         String altitudeColumnName = globalOptions.getAltitudeColumn();
         String headingColumnName = globalOptions.getHeadingColumn();
-        int instancePolygonContainsPointCounts = GlobalOptions.INSTANCE_POLYGON_CONTAINS_POINT_COUNTS;
+        String scaleColumnName = globalOptions.getScaleColumn();
+        String densityColumnName = globalOptions.getDensityColumn();
 
         try (BufferedInputStream bufferedInputStream = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
             FeatureJSON geojson = new FeatureJSON();
@@ -68,6 +69,11 @@ public class GeojsonInstanceConverter implements AttributeReader {
             while (iterator.hasNext()) {
                 SimpleFeature feature = iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
+
+                double heading = getNumberAttribute(feature, headingColumnName, GlobalOptions.DEFAULT_HEIGHT);
+                double altitude = getNumberAttribute(feature, altitudeColumnName, GlobalOptions.DEFAULT_ALTITUDE);
+                double scale = getNumberAttribute(feature, scaleColumnName, GlobalOptions.DEFAULT_SCALE) * 0.3048;
+                double density = getNumberAttribute(feature, densityColumnName, GlobalOptions.DEFAULT_DENSITY);
 
                 if (!attributeFilters.isEmpty()) {
                     boolean filterFlag = false;
@@ -89,10 +95,10 @@ public class GeojsonInstanceConverter implements AttributeReader {
                 if (geom instanceof MultiPolygon multiPolygon) {
                     for (int i = 0; i < multiPolygon.getNumGeometries(); i++) {
                         Polygon polygon = (Polygon) multiPolygon.getGeometryN(i);
-                        points.addAll(getRandomContainsPoints(polygon, geom.getFactory(), instancePolygonContainsPointCounts));
+                        points.addAll(getRandomPointsWithDensity(polygon, density, scale));
                     }
                 } else if (geom instanceof Polygon polygon) {
-                    points.addAll(getRandomContainsPoints(polygon, geom.getFactory(), instancePolygonContainsPointCounts));
+                    points.addAll(getRandomPointsWithDensity(polygon, density, scale));
                 } else if (geom instanceof MultiPoint) {
                     GeometryFactory factory = geom.getFactory();
                     Coordinate[] coordinates = geom.getCoordinates();
@@ -123,8 +129,6 @@ public class GeojsonInstanceConverter implements AttributeReader {
 
                     double x = point.getX();
                     double y = point.getY();
-                    double heading = getNumberAttribute(feature, headingColumnName, 0.0d);
-                    double altitude = getNumberAttribute(feature, altitudeColumnName, 0.0d);
 
                     Vector3d position;
                     CoordinateReferenceSystem crs = globalOptions.getCrs();
@@ -136,7 +140,17 @@ public class GeojsonInstanceConverter implements AttributeReader {
                         position = new Vector3d(x, y, altitude);
                     }
 
-                    KmlInfo kmlInfo = KmlInfo.builder().name("I3dmFromGeojson").position(position).heading(heading).tilt(0.0d).roll(0.0d).scaleX(1.0d).scaleY(1.0d).scaleZ(1.0d).properties(attributes).build();
+                    KmlInfo kmlInfo = KmlInfo.builder()
+                            .name("I3dmFromGeojson")
+                            .position(position)
+                            .heading(heading)
+                            .tilt(0.0d)
+                            .roll(0.0d)
+                            .scaleX(scale)
+                            .scaleY(scale)
+                            .scaleZ(scale)
+                            .properties(attributes)
+                            .build();
                     result.add(kmlInfo);
                 }
             }

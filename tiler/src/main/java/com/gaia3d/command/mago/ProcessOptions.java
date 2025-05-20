@@ -62,8 +62,10 @@ public enum ProcessOptions {
     NAME_COLUMN("nameColumn", "nc", true, "Name column setting for extrusion model"),
     HEIGHT_COLUMN("heightColumn", "hc", true, "Height column setting for extrusion model"),
     ALTITUDE_COLUMN("altitudeColumn", "ac", true, "Altitude Column setting for extrusion model"),
+    DIAMETER_COLUMN("diameterColumn", "dc", true, "Diameter column setting for pipe extrusion model, Specify a length unit for Diameter in millimeters(mm) (Default Column: diameter)"),
     HEADING_COLUMN("headingColumn", "hd", true, "Heading column setting for I3DM converting"),
-    DIAMETER_COLUMN("diameterColumn", "dc", true, "Diameter column setting for extrusion model, Specify a length unit for Diameter in millimeters(mm) (Default Column: diameter)"),
+    SCALE_COLUMN("scaleColumn", "scl", true, "Scale column setting for I3DM converting"),
+    DENSITY_COLUMN("densityColumn", "den", true, "Density column setting for I3DM polygon converting"),
     ATTRIBUTE_FILTER("attributeFilter", "af", true, "Attribute filter setting for extrusion model ex) \"classification=window,door;type=building\""),
 
     MINIMUM_HEIGHT("minimumHeight", "mh", true, "Minimum height value for extrusion model"),

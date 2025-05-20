@@ -23,10 +23,7 @@ public class ForestModelHelper {
         double treeDensity = treeDiameter * treeDiameter;
 
         double count = forestArea / treeDensity;
-
-        int castCount = (int) count;
-        System.out.println("count: " + castCount);
-        return castCount;
+        return (int) count;
     }
 
     public static double convertTreeHeightForEntity(String heightString) {

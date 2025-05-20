@@ -311,6 +311,21 @@ class I3dmReleaseTest {
         execute(args);
     }
 
+    @Test
+    void instance10() {
+        String path = "I10-forest-purdue";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-ot", "i3dm",
+                "--refineAdd",
+                "--scaleColumn", "rel_height",
+                "--instance", "D:\\data\\mago-3d-tiler\\release-sample\\sample-tree\\broad-tree-1m.glb",
+                //"-terrain", getInputPath(path).getAbsolutePath() + "/seoul-aster.tif",
+        };
+        execute(args);
+    }
+
     private void execute(String[] args) {
         Mago3DTilerMain.main(args);
     }

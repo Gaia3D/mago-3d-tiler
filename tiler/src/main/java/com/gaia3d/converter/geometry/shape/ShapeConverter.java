@@ -73,6 +73,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         String heightColumnName = globalOptions.getHeightColumn();
         String altitudeColumnName = globalOptions.getAltitudeColumn();
         String diameterColumnName = globalOptions.getDiameterColumn();
+        String scaleColumnName = globalOptions.getScaleColumn();
 
         double absoluteAltitudeValue = globalOptions.getAbsoluteAltitude();
         double minimumHeightValue = globalOptions.getMinimumHeight();
