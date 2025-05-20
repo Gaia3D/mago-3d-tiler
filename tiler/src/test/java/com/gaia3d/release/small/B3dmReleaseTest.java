@@ -91,7 +91,8 @@ class B3dmReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                "-terrain", getInputPath(path).getAbsolutePath() + "/seoul.tif",
+                //"-terrain", getInputPath(path).getAbsolutePath() + "/seoul.tif",
+                "-terrain", "G:\\(archive)\\(archive) 3차원 데이터 모음\\GeoTIFF\\korea_5m\\5m\\37608(서울)",
                 "-c", "5186"
         };
         execute(args);

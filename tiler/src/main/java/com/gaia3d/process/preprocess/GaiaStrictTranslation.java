@@ -43,18 +43,22 @@ public class GaiaStrictTranslation implements PreProcess {
         this.transformSceneVertexPositionsToLocalCoords(gaiaScene, centerGeoCoord, bboxLC);
 
         // set position terrain height
-        coverages.forEach((coverage) -> {
-            DirectPosition2D memSave_posWorld = new DirectPosition2D(DefaultGeographicCRS.WGS84, centerGeoCoord.x, centerGeoCoord.y);
-            double[] memSave_alt = new double[1];
-            memSave_alt[0] = 0;
-            try {
-                coverage.evaluate((DirectPosition) memSave_posWorld, memSave_alt);
-            } catch (Exception e) {
-                log.error("[ERROR] :", e);
-                log.warn("[WARN] Failed to evaluate terrain height", e);
-            }
-            centerGeoCoord.z = memSave_alt[0];
-        });
+        if (!coverages.isEmpty()) {
+            centerGeoCoord.z = 0.0d;
+            coverages.forEach((coverage) -> {
+                DirectPosition worldPosition = new DirectPosition2D(DefaultGeographicCRS.WGS84, centerGeoCoord.x, centerGeoCoord.y);
+                double[] altitudeArray = new double[1];
+                altitudeArray[0] = 0.0d;
+                try {
+                    coverage.evaluate(worldPosition, altitudeArray);
+                } catch (Exception e) {
+                    log.debug("[DEBUG] Failed to load terrain height. Out of range");
+                }
+                if (altitudeArray[0] != 0.0d && !Double.isNaN(altitudeArray[0])) {
+                    centerGeoCoord.z = altitudeArray[0];
+                }
+            });
+        }
 
         // calculate cartographic bounding box
         double[] centerCartesianWC = GlobeUtils.geographicToCartesianWgs84(centerGeoCoord.x, centerGeoCoord.y, centerGeoCoord.z);
