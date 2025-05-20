@@ -1,0 +1,20 @@
+{
+  "template": "#{{CHANGELOG}}\n\n<details>\n<summary>Uncategorized</summary>\n\n#{{UNCATEGORIZED}}\n</details>",
+  "categories": [
+    {
+      "title": "### ✨ Features",
+      "labels": ["feat", "feature"]
+    },
+    {
+      "title": "### 🐛 Fixes",
+      "labels": ["fix", "bug"]
+    },
+    {
+      "title": "### 🧰 Maintenance",
+      "labels": ["chore", "refactor"]
+    }
+  ],
+  "pr_template": "- #{{TITLE}}\n   - PR: ##{{NUMBER}}",
+  "empty_template": "- no changes",
+  "fallback_template": "- {{title}} (#{{number}})"
+}
