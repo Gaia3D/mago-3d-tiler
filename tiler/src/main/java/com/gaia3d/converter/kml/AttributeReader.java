@@ -14,11 +14,25 @@ public interface AttributeReader {
     KmlInfo read(File file);
     List<KmlInfo> readAll(File file);
 
+    default List<Point> getRandomPointsWithDensity(Geometry polygon, double proportion, double diameter) {
+        if (proportion <= 0) {
+            return new ArrayList<>();
+        }
+        double area = polygon.getArea();
+        double forestArea = area * proportion;
+        double treeDensity = diameter * diameter;
+
+        double count = forestArea / treeDensity;
+
+        int castCount = (int) count;
+        return getRandomContainsPoints(polygon, polygon.getFactory(), castCount);
+    }
+
     default List<Point> getRandomContainsPoints(Geometry polygon, GeometryFactory geometryFactory, int count) {
         PreparedGeometry preparedGeometry = PreparedGeometryFactory.prepare(polygon);
         Envelope envelope = polygon.getEnvelopeInternal();
 
-        if (count <= -1) {
+        if (count < 0) {
             double area = polygon.getArea();
             area *= 0.025;
             count = (int) area;

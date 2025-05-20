@@ -48,23 +48,16 @@ public class ShapeInstanceConverter implements AttributeReader {
     public List<KmlInfo> readAll(File file) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
 
-        List<KmlInfo> result = new ArrayList<>();
-        ShpFiles shpFiles = null;
-        ShapefileReader reader = null;
-
         List<AttributeFilter> attributeFilters = globalOptions.getAttributeFilters();
         boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalOptions.DEFAULT_CRS);
-        boolean flipCoordinate = globalOptions.isFlipCoordinate();
-        String heightColumnName = globalOptions.getHeightColumn();
         String altitudeColumnName = globalOptions.getAltitudeColumn();
         String headingColumnName = globalOptions.getHeadingColumn();
+        String scaleColumnName = globalOptions.getScaleColumn();
+        String densityColumnName = globalOptions.getDensityColumn();
 
-        double absoluteAltitudeValue = globalOptions.getAbsoluteAltitude();
-        double minimumHeightValue = globalOptions.getMinimumHeight();
-        double skirtHeight = globalOptions.getSkirtHeight();
-
-        int instancePolygonContainsPointCounts = GlobalOptions.INSTANCE_POLYGON_CONTAINS_POINT_COUNTS;
-
+        List<KmlInfo> result = new ArrayList<>();
+        ShpFiles shpFiles;
+        ShapefileReader reader;
         try {
             shpFiles = new ShpFiles(file);
             reader = new ShapefileReader(shpFiles, true, true, new GeometryFactory());
@@ -94,6 +87,11 @@ public class ShapeInstanceConverter implements AttributeReader {
                 SimpleFeature feature = iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
 
+                double heading = getNumberAttribute(feature, headingColumnName, GlobalOptions.DEFAULT_HEIGHT);
+                double altitude = getNumberAttribute(feature, altitudeColumnName, GlobalOptions.DEFAULT_ALTITUDE);
+                double scale = getNumberAttribute(feature, scaleColumnName, GlobalOptions.DEFAULT_SCALE);
+                double density = getNumberAttribute(feature, densityColumnName, GlobalOptions.DEFAULT_DENSITY);
+
                 if (!attributeFilters.isEmpty()) {
                     boolean filterFlag = false;
                     for (AttributeFilter attributeFilter : attributeFilters) {
@@ -116,10 +114,10 @@ public class ShapeInstanceConverter implements AttributeReader {
                     int numGeometries = multiPolygon.getNumGeometries();
                     for (int i = 0; i < numGeometries; i++) {
                         Polygon polygon = (Polygon) multiPolygon.getGeometryN(i);
-                        points.addAll(getRandomContainsPoints(polygon, geom.getFactory(), instancePolygonContainsPointCounts));
+                        points.addAll(getRandomPointsWithDensity(polygon, density, scale));
                     }
                 } else if (geom instanceof Polygon polygon) {
-                    points.addAll(getRandomContainsPoints(polygon, geom.getFactory(), instancePolygonContainsPointCounts));
+                    points.addAll(getRandomPointsWithDensity(polygon, density, scale));
                 } else if (geom instanceof MultiPoint) {
                     GeometryFactory factory = geom.getFactory();
                     Coordinate[] coordinates = geom.getCoordinates();
@@ -150,13 +148,11 @@ public class ShapeInstanceConverter implements AttributeReader {
 
                     double x = point.getX();
                     double y = point.getY();
-                    double heading = getNumberAttribute(feature, headingColumnName, 0.0d);
-                    double altitude = getNumberAttribute(feature, altitudeColumnName, 0.0d);
 
                     Vector3d position;
                     CoordinateReferenceSystem crs = globalOptions.getCrs();
                     if (crs != null) {
-                        ProjCoordinate projCoordinate = new ProjCoordinate(x, y, 0.0d);
+                        ProjCoordinate projCoordinate = new ProjCoordinate(x, y, GlobalOptions.DEFAULT_ALTITUDE);
                         ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
                         position = new Vector3d(centerWgs84.x, centerWgs84.y, altitude);
                     } else {
@@ -169,9 +165,9 @@ public class ShapeInstanceConverter implements AttributeReader {
                             .heading(heading)
                             .tilt(0.0d)
                             .roll(0.0d)
-                            .scaleX(1.0d)
-                            .scaleY(1.0d)
-                            .scaleZ(1.0d)
+                            .scaleX(scale)
+                            .scaleY(scale)
+                            .scaleZ(scale)
                             .properties(attributes)
                             .build();
                     result.add(kmlInfo);

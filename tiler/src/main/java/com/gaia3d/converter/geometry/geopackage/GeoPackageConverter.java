@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.geotools.data.Transaction;
 import org.geotools.data.simple.SimpleFeatureReader;
 import org.geotools.geometry.jts.Geometries;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geopkg.FeatureEntry;
 import org.geotools.geopkg.GeoPackage;
 import org.joml.Matrix4d;
@@ -72,6 +73,7 @@ public class GeoPackageConverter extends AbstractGeometryConverter implements Co
         String heightColumnName = globalOptions.getHeightColumn();
         String altitudeColumnName = globalOptions.getAltitudeColumn();
         String diameterColumnName = globalOptions.getDiameterColumn();
+        String scaleColumnName = globalOptions.getScaleColumn();
 
         double absoluteAltitudeValue = globalOptions.getAbsoluteAltitude();
         double minimumHeightValue = globalOptions.getMinimumHeight();
@@ -94,6 +96,14 @@ public class GeoPackageConverter extends AbstractGeometryConverter implements Co
             List<GaiaExtrusionModel> buildings = new ArrayList<>();
             List<GaiaPipeLineString> pipeLineStrings = new ArrayList<>();
             for (FeatureEntry featureEntry : features) {
+
+                var coordinateReferenceSystem = featureEntry.getBounds().getCoordinateReferenceSystem();
+                if (isDefaultCrs && coordinateReferenceSystem != null) {
+                    CoordinateReferenceSystem crs = GlobeUtils.convertProj4jCrsFromGeotoolsCrs(coordinateReferenceSystem);
+                    log.info(" - Coordinate Reference System : {}", crs.getName());
+                    globalOptions.setCrs(crs);
+                }
+
                 Filter filter = Filter.INCLUDE;
                 Transaction transaction = Transaction.AUTO_COMMIT;
                 SimpleFeatureReader simpleFeatureReader = geoPackage.reader(featureEntry, filter, transaction);
@@ -289,8 +299,7 @@ public class GeoPackageConverter extends AbstractGeometryConverter implements Co
     protected List<GaiaScene> convert(File file) {
         GaiaSceneTempGroup sceneTemp = GaiaSceneTempGroup.builder().tempFile(file).isMinimized(true).build();
         sceneTemp.maximize();
-        List<GaiaScene> scenes = sceneTemp.getTempScene();
-        return scenes;
+        return sceneTemp.getTempScene();
     }
 
     private void convertExtrusionBuildings(List<GaiaExtrusionModel> buildings, List<GaiaSceneTempGroup> sceneTemps, File input, File output) {

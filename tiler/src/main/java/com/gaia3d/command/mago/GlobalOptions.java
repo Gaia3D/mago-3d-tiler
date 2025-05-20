@@ -51,9 +51,17 @@ public class GlobalOptions {
     public static final String DEFAULT_ALTITUDE_COLUMN = "altitude";
     public static final String DEFAULT_HEADING_COLUMN = "heading";
     public static final String DEFAULT_DIAMETER_COLUMN = "diameter";
+    public static final String DEFAULT_SCALE_COLUMN = "scale";
+    public static final String DEFAULT_DENSITY_COLUMN = "density";
+
     public static final double DEFAULT_ABSOLUTE_ALTITUDE = 0.0d;
     public static final double DEFAULT_MINIMUM_HEIGHT = 0.0d;
     public static final double DEFAULT_SKIRT_HEIGHT = 4.0d;
+    public static final double DEFAULT_HEIGHT = 0.0d;
+    public static final double DEFAULT_ALTITUDE = 0.0d;
+    public static final double DEFAULT_SCALE = 1.0d;
+    public static final double DEFAULT_DENSITY = 0.5d;
+
     public static final boolean DEFAULT_USE_QUANTIZATION = false;
     public static final int REALISTIC_LOD0_MAX_TEXTURE_SIZE = 1024;
     public static final int REALISTIC_MAX_TEXTURE_SIZE = 1024;
@@ -143,6 +151,9 @@ public class GlobalOptions {
     private String altitudeColumn;
     private String headingColumn;
     private String diameterColumn;
+    private String scaleColumn;
+    private String densityColumn;
+
     private double absoluteAltitude;
     private double minimumHeight;
     private double skirtHeight;
@@ -315,6 +326,9 @@ public class GlobalOptions {
         instance.setAltitudeColumn(command.hasOption(ProcessOptions.ALTITUDE_COLUMN.getLongName()) ? command.getOptionValue(ProcessOptions.ALTITUDE_COLUMN.getLongName()) : DEFAULT_ALTITUDE_COLUMN);
         instance.setHeadingColumn(command.hasOption(ProcessOptions.HEADING_COLUMN.getLongName()) ? command.getOptionValue(ProcessOptions.HEADING_COLUMN.getLongName()) : DEFAULT_HEADING_COLUMN);
         instance.setDiameterColumn(command.hasOption(ProcessOptions.DIAMETER_COLUMN.getLongName()) ? command.getOptionValue(ProcessOptions.DIAMETER_COLUMN.getLongName()) : DEFAULT_DIAMETER_COLUMN);
+        instance.setScaleColumn(command.hasOption(ProcessOptions.SCALE_COLUMN.getLongName()) ? command.getOptionValue(ProcessOptions.SCALE_COLUMN.getLongName()) : DEFAULT_SCALE_COLUMN);
+        instance.setDensityColumn(command.hasOption(ProcessOptions.DENSITY_COLUMN.getLongName()) ? command.getOptionValue(ProcessOptions.DENSITY_COLUMN.getLongName()) : DEFAULT_DENSITY_COLUMN);
+
         instance.setAbsoluteAltitude(command.hasOption(ProcessOptions.ABSOLUTE_ALTITUDE.getLongName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.ABSOLUTE_ALTITUDE.getLongName())) : DEFAULT_ABSOLUTE_ALTITUDE);
         instance.setMinimumHeight(command.hasOption(ProcessOptions.MINIMUM_HEIGHT.getLongName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.MINIMUM_HEIGHT.getLongName())) : DEFAULT_MINIMUM_HEIGHT);
         instance.setSkirtHeight(command.hasOption(ProcessOptions.SKIRT_HEIGHT.getLongName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.SKIRT_HEIGHT.getLongName())) : DEFAULT_SKIRT_HEIGHT);
