@@ -72,7 +72,7 @@ public class GeoJsonInstanceConverter implements AttributeReader {
 
                 double heading = getNumberAttribute(feature, headingColumnName, GlobalOptions.DEFAULT_HEIGHT);
                 double altitude = getNumberAttribute(feature, altitudeColumnName, GlobalOptions.DEFAULT_ALTITUDE);
-                double scale = getNumberAttribute(feature, scaleColumnName, GlobalOptions.DEFAULT_SCALE) * 0.3048;
+                double scale = getNumberAttribute(feature, scaleColumnName, GlobalOptions.DEFAULT_SCALE);
                 double density = getNumberAttribute(feature, densityColumnName, GlobalOptions.DEFAULT_DENSITY);
 
                 if (!attributeFilters.isEmpty()) {
