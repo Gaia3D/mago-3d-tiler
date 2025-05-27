@@ -17,6 +17,8 @@ import org.locationtech.proj4j.ProjCoordinate;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.operation.TransformException;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -95,10 +97,22 @@ public class GeoJsonInstanceConverter implements AttributeReader {
                 if (geom instanceof MultiPolygon multiPolygon) {
                     for (int i = 0; i < multiPolygon.getNumGeometries(); i++) {
                         Polygon polygon = (Polygon) multiPolygon.getGeometryN(i);
-                        points.addAll(getRandomPointsWithDensity(polygon, density, scale));
+                        try {
+                            int calculatePointCount = calculatePointCount(polygon, coordinateReferenceSystem, density, scale);
+                            points.addAll(getRandomPointsWithDensity(polygon, calculatePointCount));
+                        } catch (FactoryException | TransformException e) {
+                            log.error("Error transforming geometry: {}", e.getMessage());
+                            throw new RuntimeException(e);
+                        }
                     }
                 } else if (geom instanceof Polygon polygon) {
-                    points.addAll(getRandomPointsWithDensity(polygon, density, scale));
+                    try {
+                        int calculatePointCount = calculatePointCount(polygon, coordinateReferenceSystem, density, scale);
+                        points.addAll(getRandomPointsWithDensity(polygon, calculatePointCount));
+                    } catch (FactoryException | TransformException e) {
+                        log.error("Error transforming geometry: {}", e.getMessage());
+                        throw new RuntimeException(e);
+                    }
                 } else if (geom instanceof MultiPoint) {
                     GeometryFactory factory = geom.getFactory();
                     Coordinate[] coordinates = geom.getCoordinates();

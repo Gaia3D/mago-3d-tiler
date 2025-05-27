@@ -60,7 +60,7 @@ public class GlobalOptions {
     public static final double DEFAULT_HEIGHT = 0.0d;
     public static final double DEFAULT_ALTITUDE = 0.0d;
     public static final double DEFAULT_SCALE = 1.0d;
-    public static final double DEFAULT_DENSITY = 0.5d;
+    public static final double DEFAULT_DENSITY = 1.0d;
 
     public static final boolean DEFAULT_USE_QUANTIZATION = false;
     public static final int REALISTIC_LOD0_MAX_TEXTURE_SIZE = 1024;
