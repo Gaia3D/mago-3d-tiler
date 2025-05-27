@@ -1,9 +1,15 @@
 package com.gaia3d.converter.kml;
 
 import com.gaia3d.command.mago.GlobalOptions;
+import org.geotools.geometry.jts.JTS;
+import org.geotools.referencing.CRS;
 import org.locationtech.jts.geom.*;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -14,11 +20,35 @@ public interface AttributeReader {
     KmlInfo read(File file);
     List<KmlInfo> readAll(File file);
 
+    default Geometry transformGeometry(Geometry polygon, CoordinateReferenceSystem sourceCRS) throws FactoryException, TransformException {
+        // 3857 is the default CRS for GeoJSON, which is WGS 84
+        CoordinateReferenceSystem targetCRS = CRS.decode("EPSG:3857", true);
+        MathTransform transform = CRS.findMathTransform(sourceCRS, targetCRS);
+        return JTS.transform(polygon, transform);
+    }
+
+    default int calculatePointCount(Geometry polygon, CoordinateReferenceSystem sourceCRS, double proportion, double diameter) throws FactoryException, TransformException {
+        Geometry transformedPolygon = transformGeometry(polygon, sourceCRS);
+        double area = transformedPolygon.getArea();
+        // convert proportion to a fraction of the area
+        double forestArea = area * proportion;
+        double treeDensity = diameter * diameter;
+
+        double count = forestArea / treeDensity;
+        return (int) count;
+    }
+
+    default List<Point> getRandomPointsWithDensity(Geometry polygon, int count) {
+        return getRandomContainsPoints(polygon, polygon.getFactory(), count);
+    }
+
     default List<Point> getRandomPointsWithDensity(Geometry polygon, double proportion, double diameter) {
         if (proportion <= 0) {
             return new ArrayList<>();
         }
         double area = polygon.getArea();
+        // convert proportion to a fraction of the area
+
         double forestArea = area * proportion;
         double treeDensity = diameter * diameter;
 
