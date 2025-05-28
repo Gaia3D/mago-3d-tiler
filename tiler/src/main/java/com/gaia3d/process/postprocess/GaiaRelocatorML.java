@@ -161,13 +161,20 @@ public class GaiaRelocatorML implements PostProcess {
         double texturePixelSize = 1.0;
         double texturePixelsForMeter = 4.0;
 
+        // dcLibrary scale 0.01 settings.***
         voxelSizeMeter = maxSize / 17.0;
+        texturePixelSize = maxSize / 256.0;
+        texturePixelsForMeter = 1.0 / texturePixelSize;
+
+        // ifc round bridge settings.***
+        //voxelSizeMeter = maxSize / 200.0;
+        voxelSizeMeter = 4.0;
         texturePixelSize = maxSize / 256.0;
         texturePixelsForMeter = 1.0 / texturePixelSize;
 
         voxelizeParameters.setVoxelsForMeter(1.0 / voxelSizeMeter);
         voxelizeParameters.setTexturePixelsForMeter(texturePixelsForMeter);
-        
+
         List<VoxelGrid3D> resultVoxelGrids = new ArrayList<>();
         List<GaiaScene> resultGaiaScenes = new ArrayList<>();
         tilerExtensionModule.voxelize(gaiaScenes, resultVoxelGrids, resultGaiaScenes, voxelizeParameters);

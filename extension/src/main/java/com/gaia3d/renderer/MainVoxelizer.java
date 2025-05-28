@@ -123,7 +123,9 @@ public class MainVoxelizer implements IAppLogic {
         GaiaScene originalScene = scenes.get(0); // take the first scene as original scene
 
         voxelGrid3D.expand(1); // expand the voxel grid to avoid the artifacts.***
-        GaiaScene gaiaScene = MarchingCube.makeGaiaScene(voxelGrid3D, 0.01f);
+        float isoValue = 0.01f; // original.***
+        isoValue = 0.8f; // for DC_Library scale 0.01 settings.***
+        GaiaScene gaiaScene = MarchingCube.makeGaiaScene(voxelGrid3D, isoValue);
         log.info("MarchingCube process finished.");
         GaiaAttribute gaiaAttribute = new GaiaAttribute();
         gaiaScene.setAttribute(gaiaAttribute);
