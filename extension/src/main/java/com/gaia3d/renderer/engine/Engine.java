@@ -170,8 +170,6 @@ public class Engine {
         }
 
         long windowHandle = window.getWindowHandle();
-
-        // 마우스 위치 콜백
         glfwSetCursorPosCallback(windowHandle, (window, xpos, ypos) -> {
             if (this.midButtonClicked) {
                 Vector3d pivot = new Vector3d(0.0d, 0.0d, -1.0d);
@@ -193,8 +191,6 @@ public class Engine {
             this.leftButtonYpos = ypos;
         });
 
-
-        // 마우스 버튼 이벤트
         glfwSetMouseButtonCallback(windowHandle, (window, key, action, mode) -> {
             if (key == GLFW_MOUSE_BUTTON_3 && action == GLFW_PRESS) {
                 this.midButtonClicked = true;
@@ -215,7 +211,6 @@ public class Engine {
             camera.moveFront((float) yoffset * 10.0f);
         });
 
-        // 키보드 콜백 이벤트를 설정합니다. 키를 눌렀을 때, 누르고 있을 때, 떼었을 때에 따라 바꿔줍니다.
         glfwSetKeyCallback(windowHandle, (window, key, scancode, action, mods) -> {
             if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
                 glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
@@ -815,7 +810,7 @@ public class Engine {
         }
 
         GaiaTexture textureAtlas = new GaiaTexture();
-        log.info("[Tile][PhotoRealistic][makeAtlasTexture] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
+        log.info("[Tile][Photogrammetry][makeAtlasTexture] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
         textureAtlas.createImage(maxWidth, maxHeight, imageType);
 
         // draw the images into textureAtlas

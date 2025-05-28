@@ -1,5 +1,6 @@
 package com.gaia3d.converter.jgltf;
 
+import jdk.jfr.Experimental;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.imageio.ImageIO;
@@ -99,6 +100,6 @@ public class MagoKTX {
 
     // load PNG image
     private ByteBuffer loadPngImage(byte[] pngData) {
-        return ByteBuffer.wrap(pngData);  // 임시 구현
+        return ByteBuffer.wrap(pngData);
     }
 }

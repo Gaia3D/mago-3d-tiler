@@ -34,32 +34,27 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
-    public GaiaScene executePhotorealistic(GaiaScene gaiaScene, Map<String, Object> options) {
-        // TODO: Implement this method
+    public void executePhotogrammetry(GaiaScene gaiaScene, Map<String, Object> options) {
         log.info("+ Extension has been applied.");
         log.info("----------------------------------------");
-        return null;
     }
 
     @Override
     public void getColorAndDepthRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<BufferedImage> resultImages, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, int maxScreenSize, int maxDepthScreenSize) {
         if (renderer == null) renderer = new MainRenderer();
-
         renderer.getColorAndDepthRender(sceneInfos, bufferedImageType, resultImages, nodeBBox, nodeTMatrix, maxScreenSize, maxDepthScreenSize);
         deleteObjects();
     }
 
     @Override
-    public void decimateAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters,
-                                              HalfEdgeOctree octree, List<GaiaAAPlane> cuttingPlanes, double screenPixelsForMeter, boolean makeHorizontalSkirt) {
+    public void decimateAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, HalfEdgeOctree octree, List<GaiaAAPlane> cuttingPlanes, double screenPixelsForMeter, boolean makeHorizontalSkirt) {
         if (renderer == null) renderer = new MainRenderer();
         renderer.decimateAndCutByObliqueCamera(scenes, resultHalfEdgeScenes, decimateParameters, octree, cuttingPlanes, screenPixelsForMeter, makeHorizontalSkirt);
         deleteObjects();
     }
 
     @Override
-    public void decimateNetSurfaceAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters,
-                                                        HalfEdgeOctree octree, List<GaiaAAPlane> cuttingPlanes, double depthTexPixelsForMeter, double screenPixelsForMeter, boolean makeHorizontalSkirt) {
+    public void decimateNetSurfaceAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, HalfEdgeOctree octree, List<GaiaAAPlane> cuttingPlanes, double depthTexPixelsForMeter, double screenPixelsForMeter, boolean makeHorizontalSkirt) {
         if (renderer == null) renderer = new MainRenderer();
         renderer.decimateNetSurfaceAndCutByObliqueCamera(scenes, resultHalfEdgeScenes, decimateParameters, octree, cuttingPlanes, depthTexPixelsForMeter, screenPixelsForMeter, makeHorizontalSkirt);
         deleteObjects();
@@ -74,7 +69,7 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
 
     @Override
     public void voxelize(List<GaiaScene> scenes, List<VoxelGrid3D> resultVoxelGrids, List<GaiaScene> resultGaiaScenes, VoxelizeParameters voxelizeParameters) {
-        if(voxelizer == null) voxelizer = new MainVoxelizer();
+        if (voxelizer == null) voxelizer = new MainVoxelizer();
         voxelizer.voxelize(scenes, resultVoxelGrids, resultGaiaScenes, voxelizeParameters);
         deleteObjects();
     }

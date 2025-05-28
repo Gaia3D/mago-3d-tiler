@@ -10,7 +10,9 @@ import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.Interpolator2D;
 import org.geotools.coverage.processing.Operations;
 import org.geotools.gce.geotiff.GeoTiffReader;
 
@@ -57,10 +59,23 @@ public class BatchedFileLoader implements FileLoader {
         File geoTiffPath = new File(globalOptions.getTerrainPath());
         if (geoTiffPath.isFile()) {
             log.info("GeoTiff path is file. Loading only the GeoTiff file.");
+            log.info(" - Loading GeoTiff file: {}", geoTiffPath.getAbsolutePath());
             GridCoverage2D coverage = loadGeoTiff(geoTiffPath);
-            coverages.add(coverage);
+            Interpolation interpolation = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
+            GridCoverage2D interpolatedCoverage = Interpolator2D.create(coverage, interpolation);
+            coverages.add(interpolatedCoverage);
         } else if (geoTiffPath.isDirectory()) {
             log.info("GeoTiff path is directory. Loading all GeoTiff files in the directory.");
+            File[] files = FileUtils.listFiles(geoTiffPath, new String[]{"tif", "tiff"}, true).toArray(new File[0]);
+            for (File file : files) {
+                log.info(" - Loading GeoTiff file: {}", file.getAbsolutePath());
+                GridCoverage2D coverage = loadGeoTiff(file);
+                Interpolation interpolation = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
+                GridCoverage2D interpolatedCoverage = Interpolator2D.create(coverage, interpolation);
+                coverages.add(interpolatedCoverage);
+            }
+        } else {
+            throw new RuntimeException("GeoTiff path is neither a file nor a directory.");
         }
         return coverages;
     }
@@ -118,13 +133,4 @@ public class BatchedFileLoader implements FileLoader {
         }
         return tileInfos;
     }
-
-    /*private String[] getExtensions(FormatType formatType) {
-        String[] extensions = new String[4];
-        extensions[0] = formatType.getExtension().toLowerCase();
-        extensions[1] = formatType.getExtension().toUpperCase();
-        extensions[2] = formatType.getSubExtension().toLowerCase();
-        extensions[3] = formatType.getSubExtension().toUpperCase();
-        return extensions;
-    }*/
 }

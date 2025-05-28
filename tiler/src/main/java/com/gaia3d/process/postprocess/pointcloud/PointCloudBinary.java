@@ -11,8 +11,11 @@ public class PointCloudBinary {
     //private double[] positions;
     private int[] positions;
     private byte[] colors;
-    private float[] batchIds;
+    private int[] batchIds;
     private short[] normals;
+
+    private char[] intensities;
+    private short[] classifications;
 
     // int -> unsigned short
     public byte[] getPositionBytes() {
@@ -41,6 +44,17 @@ public class PointCloudBinary {
     }*/
 
     public byte[] getBatchIdBytes() {
+        byte[] batchIdBytes = new byte[batchIds.length * 2];
+        // Convert short array to byte array(Little Endian)
+        for (int i = 0; i < batchIds.length; i++) {
+            int shortBits = batchIds[i];
+            batchIdBytes[i * 2] = (byte) (shortBits & 0xff);
+            batchIdBytes[i * 2 + 1] = (byte) ((shortBits >> 8) & 0xff);
+        }
+        return batchIdBytes;
+    }
+
+    /*public byte[] getBatchIdBytes() {
         byte[] batchIdsBytes = new byte[batchIds.length * 4];
         // Convert float array to byte array(Little Endian)
         for (int i = 0; i < batchIds.length; i++) {
@@ -51,10 +65,43 @@ public class PointCloudBinary {
             batchIdsBytes[i * 4 + 3] = (byte) ((intBits >> 24) & 0xff);
         }
         return batchIdsBytes;
-    }
+    }*/
 
     public byte[] getColorBytes() {
         return colors;
+    }
+
+    public byte[] getNormalBytes() {
+        byte[] normalsBytes = new byte[normals.length * 2];
+        // Convert short array to byte array(Little Endian)
+        for (int i = 0; i < normals.length; i++) {
+            short shortBits = normals[i];
+            normalsBytes[i * 2] = (byte) (shortBits & 0xff);
+            normalsBytes[i * 2 + 1] = (byte) ((shortBits >> 8) & 0xff);
+        }
+        return normalsBytes;
+    }
+
+    public byte[] getIntensityBytes() {
+        byte[] intensitiesBytes = new byte[intensities.length * 2];
+        // Convert short array to byte array(Little Endian)
+        for (int i = 0; i < intensities.length; i++) {
+            char shortBits = intensities[i];
+            intensitiesBytes[i * 2 + 1] = (byte) (shortBits & 0xff);
+            intensitiesBytes[i * 2] = (byte) ((shortBits >> 8) & 0xff);
+        }
+        return intensitiesBytes;
+    }
+
+    public byte[] getClassificationBytes() {
+        byte[] classificationsBytes = new byte[classifications.length * 2];
+        // Convert short array to byte array(Little Endian)
+        for (int i = 0; i < classifications.length; i++) {
+            short shortBits = classifications[i];
+            classificationsBytes[i * 2 + 1] = (byte) (shortBits & 0xff);
+            classificationsBytes[i * 2] = (byte) ((shortBits >> 8) & 0xff);
+        }
+        return classificationsBytes;
     }
 
     private short toUnsignedShort(int value) {

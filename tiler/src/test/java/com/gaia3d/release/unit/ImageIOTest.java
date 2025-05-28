@@ -1,7 +1,6 @@
 package com.gaia3d.release.unit;
 
-import com.gaia3d.basic.model.ImageCacheQueue;
-import com.gaia3d.command.Configurator;
+import com.gaia3d.command.Configuration;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
@@ -22,29 +21,12 @@ public class ImageIOTest {
 
     @Test
     void testJpgQuality() {
-        Configurator.initConsoleLogger();
+        Configuration.initConsoleLogger();
         File input = new File("D:/workspace/input/texture-test.jpg");
         for (int i = 0; i < 100; i++) {
             log.info("Quality: {}", 0.01f * i);
             File output = new File("D:/workspace/output/compressed_texture-test" + i + ".jpg");
             writeImage(input, output, 0.01f * i);
-        }
-    }
-
-    @Test
-    void testDeepCopy() {
-        Configurator.initConsoleLogger();
-        File input = new File("D:/workspace/input/pizza.jpg");
-        try {
-            BufferedImage image = ImageIO.read(input);
-
-            ImageCacheQueue imageCacheQueue = ImageCacheQueue.getInstance();
-            BufferedImage copy = imageCacheQueue.deepCopy(image);
-
-            log.info("Image: {}", image);
-            log.info("Copy: {}", copy);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 

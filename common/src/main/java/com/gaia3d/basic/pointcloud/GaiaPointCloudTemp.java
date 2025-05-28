@@ -26,7 +26,7 @@ public class GaiaPointCloudTemp {
     private final int RANDOM_SEED = 42;
     /* Header Total Size 52 byte */
     private final short HEADER_SIZE = 52; // 2 (Version) + 2 (Block Size) + 24 (Quantized Volume Scale) + 24 (Quantized Volume Offset)
-    private final short BLOCK_SIZE = 16; // 12 (FLOAT XYZ) + 3 (RGB) + 1 (Padding)
+    private short blockSize = 20; // 12 (FLOAT XYZ) + 3 (RGB) + 1 (Padding) + 4 (intensity + classification)
     private final double[] quantizedVolumeScale = new double[3];
     private final double[] quantizedVolumeOffset = new double[3];
 
@@ -48,7 +48,7 @@ public class GaiaPointCloudTemp {
                 return false;
             }
             // block size 2 bytes
-            if (this.BLOCK_SIZE != inputStream.readShort()) {
+            if (this.blockSize != inputStream.readShort()) {
                 log.error("[ERROR] Invalid block size");
                 return false;
             }
@@ -85,7 +85,7 @@ public class GaiaPointCloudTemp {
             // version 2 bytes
             outputStream.writeShort(VERSION);
             // block size 2 bytes
-            outputStream.writeShort(BLOCK_SIZE);
+            outputStream.writeShort(blockSize);
 
             log.debug("===========Write header to temp file: {}", this.tempFile.getAbsolutePath());
             log.debug("Quantized Volume Scale: {}, {}, {}", quantizedVolumeScale[0], quantizedVolumeScale[1], quantizedVolumeScale[2]);
@@ -112,16 +112,22 @@ public class GaiaPointCloudTemp {
                 float floatX = inputStream.readFloat();
                 float floatY = inputStream.readFloat();
                 float floatZ = inputStream.readFloat();
-                byte[] bytes = new byte[3];
-                inputStream.read(bytes);
+                byte[] colorBytes = new byte[3];
+                inputStream.read(colorBytes);
                 inputStream.readByte(); // padding
+                byte[] intensityBytes = new byte[2];
+                inputStream.read(intensityBytes);
+                byte[] classificationBytes = new byte[2];
+                inputStream.read(classificationBytes);
 
                 double x = floatX * quantizedVolumeScale[0] + quantizedVolumeOffset[0];
                 double y = floatY * quantizedVolumeScale[1] + quantizedVolumeOffset[1];
                 double z = floatZ * quantizedVolumeScale[2] + quantizedVolumeOffset[2];
 
                 GaiaVertex vertex = new GaiaVertex();
-                vertex.setColor(bytes);
+                vertex.setColor(colorBytes);
+                vertex.setIntensity(ByteBuffer.wrap(intensityBytes).getChar());
+                vertex.setClassification(ByteBuffer.wrap(classificationBytes).getShort());
                 vertex.setPosition(new Vector3d(x, y, z));
                 vertices.add(vertex);
             }
@@ -133,7 +139,7 @@ public class GaiaPointCloudTemp {
 
     public void writePositionsFast(List<GaiaVertex> vertices) {
         try {
-            int size = vertices.size() * BLOCK_SIZE;
+            int size = vertices.size() * blockSize;
             byte[] bytes = new byte[size];
             int index = 0;
             for (GaiaVertex vertex : vertices) {
@@ -156,11 +162,19 @@ public class GaiaPointCloudTemp {
                 System.arraycopy(xBytes, 0, bytes, index, 4);
                 System.arraycopy(yBytes, 0, bytes, index + 4, 4);
                 System.arraycopy(zBytes, 0, bytes, index + 8, 4);
-                // RGB
-                System.arraycopy(color, 0, bytes, index + 12, 3);
+                // RGB + padding
+                System.arraycopy(color, 0, bytes, index + 12, color.length);
+                bytes[index + 12 + color.length] = 0; // padding
+                // intensity + classification
+                char intensity = vertex.getIntensity();
+                byte[] intensityBytes = ByteBuffer.allocate(2).order(ByteOrder.BIG_ENDIAN).putChar(intensity).array();
+                System.arraycopy(intensityBytes, 0, bytes, index + 16, 2);
+                short classification = vertex.getClassification();
+                byte[] classificationBytes = ByteBuffer.allocate(2).order(ByteOrder.BIG_ENDIAN).putShort(classification).array();
+                System.arraycopy(classificationBytes, 0, bytes, index + 18, 2);
                 // padding
-                bytes[index + 15] = 0;
-                index += BLOCK_SIZE;
+                //bytes[index + 15] = 0;
+                index += blockSize;
             }
             outputStream.write(bytes);
         } catch (Exception e) {
@@ -178,10 +192,10 @@ public class GaiaPointCloudTemp {
             outputStream.writeFloat(x);
             outputStream.writeFloat(y);
             outputStream.writeFloat(z);
-            // RGB
+            // RGB + padding or other data
             outputStream.write(bytes);
             // padding
-            outputStream.writeByte(0);
+            //outputStream.writeByte(0);
         } catch (IOException e) {
             log.error("[ERROR] Failed to write bytes to output stream", e);
         }
@@ -197,7 +211,7 @@ public class GaiaPointCloudTemp {
             RandomAccessFile randomAccessFile = new RandomAccessFile(this.tempFile, "rw");
             DataOutputStream dataOutputStream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(shuffledFile, false), BUFFER_SIZE));
             int headerSize = 52;
-            int blockCount = (int) ((randomAccessFile.length() - headerSize) / BLOCK_SIZE);
+            int blockCount = (int) ((randomAccessFile.length() - headerSize) / blockSize);
             int loop = blockCount;
 
             // Read header
@@ -270,26 +284,15 @@ public class GaiaPointCloudTemp {
         return indexes;
     }
 
-    // 두 블록을 교환하는 메서드
     private void swapBlocks(FileChannel channel, long index1, long index2, int headerSize, int blockSize) throws IOException {
         ByteBuffer buffer1 = ByteBuffer.allocate(blockSize);
         ByteBuffer buffer2 = ByteBuffer.allocate(blockSize);
-
-        // 첫 번째 블록 읽기
         channel.position(headerSize + (index1 * blockSize));
         channel.read(buffer1);
-        //buffer1.flip();
-
-        // 두 번째 블록 읽기
         channel.position(headerSize + (index2 * blockSize));
         channel.read(buffer2);
-        //buffer2.flip();
-
-        // 첫 번째 블록을 두 번째 위치에 쓰기
         channel.position(headerSize + (index2 * blockSize));
         channel.write(buffer1);
-
-        // 두 번째 블록을 첫 번째 위치에 s쓰기
         channel.position(headerSize + (index1 * blockSize));
         channel.write(buffer2);
     }

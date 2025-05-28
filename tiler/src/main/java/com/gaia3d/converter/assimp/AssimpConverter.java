@@ -79,10 +79,8 @@ public class AssimpConverter implements Converter {
 
     private Matrix4d convertMatrix4dFromAIMatrix4x4(AIMatrix4x4 aiMatrix4x4, GaiaNode parentNode, FormatType isYUpFormat) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-        boolean isZeroOrigin = globalOptions.isZeroOrigin();
         boolean autoUpAxis = globalOptions.isAutoUpAxis();
         Matrix4d matrix4 = new Matrix4d();
-
         boolean isRootNode = parentNode == null;
 
         // getTransformMatrix
@@ -119,17 +117,10 @@ public class AssimpConverter implements Converter {
                 matrix4.m23(0.0d);
             }
         }
-        if (isRootNode && isZeroOrigin) {
-            matrix4.m30(0.0d);
-            matrix4.m31(0.0d);
-            matrix4.m32(0.0d);
-            matrix4.m33(0.0d);
-        } else {
-            matrix4.m30(aiMatrix4x4.a4());
-            matrix4.m31(aiMatrix4x4.b4());
-            matrix4.m32(aiMatrix4x4.c4());
-            matrix4.m33(aiMatrix4x4.d4());
-        }
+        matrix4.m30(aiMatrix4x4.a4());
+        matrix4.m31(aiMatrix4x4.b4());
+        matrix4.m32(aiMatrix4x4.c4());
+        matrix4.m33(aiMatrix4x4.d4());
         return matrix4;
     }
 

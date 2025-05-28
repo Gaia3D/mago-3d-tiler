@@ -1,7 +1,7 @@
 package com.gaia3d.command.mago;
 
 import com.gaia3d.basic.exception.Reporter;
-import com.gaia3d.command.Configurator;
+import com.gaia3d.command.Configuration;
 import com.gaia3d.util.DecimalUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
@@ -16,39 +16,37 @@ import java.io.IOException;
 @SuppressWarnings("ALL")
 @Slf4j
 public class Mago3DTilerMain {
+    private static final String PROGRAM_NAME = "mago-3d-tiler";
+
     public static void main(String[] args) {
         try {
-            Options options = Configurator.createOptions();
+            Options options = Configuration.createOptions();
             CommandLineParser parser = new DefaultParser();
-            CommandLine command = parser.parse(Configurator.createOptions(), args);
-            boolean isHelp = command.hasOption(ProcessOptions.HELP.getArgName());
-            boolean isQuiet = command.hasOption(ProcessOptions.QUIET.getArgName());
-            boolean hasLogPath = command.hasOption(ProcessOptions.LOG.getArgName());
-            boolean isDebug = command.hasOption(ProcessOptions.DEBUG.getArgName());
-            boolean isVersion = command.hasOption(ProcessOptions.VERSION.getArgName());
-            boolean isMerge = command.hasOption(ProcessOptions.MERGE.getArgName());
+            CommandLine command = parser.parse(Configuration.createOptions(), args);
+            boolean isHelp = command.hasOption(ProcessOptions.HELP.getLongName());
+            boolean isQuiet = command.hasOption(ProcessOptions.QUIET.getLongName());
+            boolean hasLogPath = command.hasOption(ProcessOptions.LOG.getLongName());
+            boolean isDebug = command.hasOption(ProcessOptions.DEBUG.getLongName());
+            boolean isMerge = command.hasOption(ProcessOptions.MERGE.getLongName());
 
             // Logging configuration
             if (isQuiet) {
-                Configurator.setLevel(Level.OFF);
+                Configuration.setLevel(Level.OFF);
             } else if (isDebug) {
-                Configurator.initConsoleLogger("[%p][%d{HH:mm:ss}][%C{2}(%M:%L)]::%message%n");
+                Configuration.initConsoleLogger("[%p][%d{HH:mm:ss}][%C{2}(%M:%L)]::%message%n");
                 if (hasLogPath) {
-                    Configurator.initFileLogger("[%p][%d{HH:mm:ss}][%C{2}(%M:%L)]::%message%n", command.getOptionValue(ProcessOptions.LOG.getArgName()));
+                    Configuration.initFileLogger("[%p][%d{HH:mm:ss}][%C{2}(%M:%L)]::%message%n", command.getOptionValue(ProcessOptions.LOG.getLongName()));
                 }
-                Configurator.setLevel(Level.DEBUG);
+                Configuration.setLevel(Level.DEBUG);
             } else {
-                Configurator.initConsoleLogger();
+                Configuration.initConsoleLogger();
                 if (hasLogPath) {
-                    Configurator.initFileLogger(null, command.getOptionValue(ProcessOptions.LOG.getArgName()));
+                    Configuration.initFileLogger(null, command.getOptionValue(ProcessOptions.LOG.getLongName()));
                 }
-                Configurator.setLevel(Level.INFO);
+                Configuration.setLevel(Level.INFO);
             }
 
             printStart();
-            if (isVersion) {
-                printVersion();
-            }
             if (isHelp) {
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.setWidth(200);
@@ -71,10 +69,13 @@ public class Mago3DTilerMain {
             throw new RuntimeException("Failed to parse command line options, Please check the arguments.", e);
         } catch (IOException e) {
             log.error("[ERROR] Failed to run process, Please check the arguments.", e);
-            throw new RuntimeException("Failed to run process, Please check the arguments.", e);
+            throw new RuntimeException("Failed to run main process, Please check the arguments.", e);
+        } catch (Exception e) {
+            log.error("[ERROR] Failed to run main process.", e);
+            throw new RuntimeException("Failed to run main process.", e);
         }
         printEnd();
-        Configurator.destroyLogger();
+        Configuration.destroyLogger();
     }
 
     /**
@@ -83,23 +84,9 @@ public class Mago3DTilerMain {
     private static void printStart() {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         String programInfo = globalOptions.getProgramInfo();
-        log.info("\n" +
-                "┳┳┓┏┓┏┓┏┓  ┏┓┳┓  ┏┳┓┳┓ ┏┓┳┓\n" +
-                "┃┃┃┣┫┃┓┃┃   ┫┃┃   ┃ ┃┃ ┣ ┣┫\n" +
-                "┛ ┗┛┗┗┛┗┛  ┗┛┻┛   ┻ ┻┗┛┗┛┛┗\n" +
-                programInfo + "\n" +
-                "----------------------------------------");
-    }
-
-    /**
-     * Prints the program information and the java version information.
-     */
-    private static void printVersion() {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
-        String programInfo = globalOptions.getProgramInfo();
-        String javaVersionInfo = globalOptions.getJavaVersionInfo();
-        log.info(programInfo + "\n" + javaVersionInfo);
-        log.info("----------------------------------------");
+        drawLine();
+        log.info(programInfo);
+        drawLine();
     }
 
     /**
@@ -109,17 +96,23 @@ public class Mago3DTilerMain {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         Reporter reporter = globalOptions.getReporter();
         long duration = reporter.getDuration();
-        log.info("----------------------------------------");
+        reporter.getDuration();
+        drawLine();
+        log.info("[Process Summary]");
+        log.info("End Process Time : {}", DecimalUtils.millisecondToDisplayTime(duration));
+        log.info("Total tile contents count : {}", globalOptions.getTileCount());
+        log.info("Total 'tileset.json' File Size : {}", DecimalUtils.byteCountToDisplaySize(globalOptions.getTilesetSize()));
+        drawLine();
         log.info("[Report Summary]");
         log.info("Info : {}", reporter.getInfoCount());
         log.info("Warning : {}", reporter.getWarningCount());
         log.info("Error : {}", reporter.getErrorCount());
         log.info("Fatal : {}", reporter.getFatalCount());
         log.info("Total Report Count : {}", reporter.getReportList().size());
-        log.info("[Process Summary]");
-        log.info("End Process Time : {}", DecimalUtils.millisecondToDisplayTime(duration));
-        log.info("Total tile contents count : {}", globalOptions.getTileCount());
-        log.info("Total 'tileset.json' File Size : {}", DecimalUtils.byteCountToDisplaySize(globalOptions.getTilesetSize()));
+        drawLine();
+    }
+
+    public static void drawLine() {
         log.info("----------------------------------------");
     }
 }

@@ -2,20 +2,24 @@ package com.gaia3d.converter.pointcloud;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.octree.GaiaOctreeVertices;
-import com.gaia3d.basic.pointcloud.GaiaPointCloud;
 import com.gaia3d.basic.model.GaiaVertex;
+import com.gaia3d.basic.pointcloud.GaiaPointCloud;
 import com.gaia3d.basic.pointcloud.GaiaPointCloudHeader;
 import com.gaia3d.basic.pointcloud.GaiaPointCloudTemp;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.util.GlobeUtils;
-import com.github.mreutegg.laszip4j.*;
+import com.github.mreutegg.laszip4j.CloseablePointIterable;
+import com.github.mreutegg.laszip4j.LASHeader;
+import com.github.mreutegg.laszip4j.LASPoint;
+import com.github.mreutegg.laszip4j.LASReader;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 import org.locationtech.proj4j.CRSFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -74,12 +78,7 @@ public class LasConverter {
         long pointRecords = header.getNumberOfPointRecords();
         long legacyPointRecords = header.getLegacyNumberOfPointRecords();
         long totalPointRecords = pointRecords + legacyPointRecords;
-        return GaiaPointCloudHeader.builder()
-                .index(-1)
-                .uuid(UUID.randomUUID())
-                .size(totalPointRecords)
-                .srsBoundingBox(srsBoundingBox)
-                .build();
+        return GaiaPointCloudHeader.builder().index(-1).uuid(UUID.randomUUID()).size(totalPointRecords).srsBoundingBox(srsBoundingBox).build();
     }
 
     public void loadToTemp(GaiaPointCloudHeader pointCloudHeader, File file) {
@@ -106,7 +105,6 @@ public class LasConverter {
         long pointRecords = header.getNumberOfPointRecords();
         long legacyPointRecords = header.getLegacyNumberOfPointRecords();
         long totalPointsSize = pointRecords + legacyPointRecords;
-
         byte recordFormatValue = header.getPointDataRecordFormat();
         boolean hasRgbColor;
         LasRecordFormat recordFormat = LasRecordFormat.fromFormatNumber(recordFormatValue);
@@ -163,8 +161,10 @@ public class LasConverter {
             double x = point.getX() * xScaleFactor + xOffset;
             double y = point.getY() * yScaleFactor + yOffset;
             double z = point.getZ() * zScaleFactor + zOffset;
-            byte[] rgb;
 
+            Vector3d position = new Vector3d(x, y, z);
+
+            byte[] rgb;
             if (hasRgbColor) {
                 if (globalOptions.isForce4ByteRGB()) {
                     rgb = getColorByByteRGB(point); // only for test
@@ -172,61 +172,35 @@ public class LasConverter {
                     rgb = getColorByRGB(point);
                 }
             } else {
-                //rgb = getColorIntensity(point);
-                rgb = getHeight(z);
+                rgb = new byte[3];
+                rgb[0] = (byte) 128;
+                rgb[1] = (byte) 128;
+                rgb[2] = (byte) 128;
             }
-            Vector3d position = new Vector3d(x, y, z);
 
-            GaiaVertex vertex = new GaiaVertex();
-            vertex.setPosition(position);
-            vertex.setColor(rgb);
+            int byteLength = 0;
+            byte[] intensity = convertToByteIntensity(point.getIntensity());
+            byte[] classification = convertToByteClassification(point.getClassification());
+            byteLength += 4; // 4 bytes for rgb
+            byteLength += intensity.length;
+            byteLength += classification.length;
+
+            byte[] totalByte = new byte[byteLength];
+            // concatenate byte arrays
+            int index = 0;
+            System.arraycopy(rgb, 0, totalByte, index, rgb.length);
+            index += rgb.length;
+            System.arraycopy(intensity, 0, totalByte, index, intensity.length);
+            index += intensity.length;
+            System.arraycopy(classification, 0, totalByte, index, classification.length);
 
             GaiaPointCloudTemp tempFile = pointCloudHeader.findTemp(position);
             if (tempFile == null) {
                 log.error("[ERROR] Failed to find temp file.");
             } else {
-                tempFile.writePosition(position, rgb);
+                tempFile.writePosition(position, totalByte);
             }
         }
-    }
-
-    // Detail Volume
-    private int calcOctreeVolume(int sampleSize, CloseablePointIterable pointIterable, Vector3d scale, Vector3d offset) {
-        List<GaiaVertex> vertices = new ArrayList<>();
-        int count = 0;
-        for (LASPoint point : pointIterable) {
-            if (count++ % sampleSize != 0) {
-                continue;
-            } else {
-                double x = point.getX();
-                double y = point.getY();
-                double z = point.getZ();
-
-                x = x * scale.x + offset.x;
-                y = y * scale.y + offset.y;
-                z = z * scale.z + offset.z;
-                Vector3d position = new Vector3d(x, y, z);
-                GaiaVertex vertex = new GaiaVertex();
-                vertex.setPosition(position);
-                vertices.add(vertex);
-            }
-        }
-
-        double length = 1.0;
-        GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null);
-        octreeVertices.setVertices(vertices);
-        octreeVertices.calculateSize();
-        octreeVertices.setMaxDepth(25);
-
-        /*octreeVertices.setMaxX(length);
-        octreeVertices.setMaxY(length);
-        octreeVertices.setMaxZ(length);*/
-        octreeVertices.makeTreeByMinBoxSize(length); // 1m
-
-        List<GaiaOctreeVertices> result = new ArrayList<>();
-        octreeVertices.extractOctreesWithContents(result);
-
-        return result.size();
     }
 
     private List<GaiaPointCloud> convert(File file) {
@@ -252,7 +226,6 @@ public class LasConverter {
             throw new RuntimeException(e);
         }
 
-
         GaiaPointCloudTemp readTemp = new GaiaPointCloudTemp(file);
         pointCloud.setMinimized(true);
         pointCloud.setVertices(null);
@@ -260,34 +233,6 @@ public class LasConverter {
         pointCloud.setPointCloudTemp(readTemp);
         pointClouds.add(pointCloud);
         return pointClouds;
-    }
-
-    /**
-     * Reduce points by using HashMap
-     * @param vertices List<GaiaVertex>
-     * @return List<GaiaVertex>
-     */
-    private List<GaiaVertex> reducePointsA(List<GaiaVertex> vertices) {
-        String format = "%.5f";
-        Map<String, GaiaVertex> hashMap = new HashMap<>();
-        vertices.forEach((vertex) -> {
-            Vector3d position = vertex.getPosition();
-            double x = position.x;
-            double y = position.y;
-            double z = position.z;
-
-            String xStr = String.format(format, x);
-            String yStr = String.format(format, y);
-            String zStr = String.format(format, z);
-            String key = xStr + "-" + yStr + "-" + zStr;
-            if (hashMap.containsKey(key)) {
-
-            } else {
-                hashMap.put(key, vertex);
-            }
-        });
-        List<GaiaVertex> newVertices = new ArrayList<>(hashMap.values());
-        return newVertices;
     }
 
     /**
@@ -321,47 +266,17 @@ public class LasConverter {
         return rgb;
     }
 
-    /**
-     * Get color by intensity (Gray scale)
-     * @param point LASPoint
-     * @return byte[3]
-     */
-    private byte[] getColorIntensity(LASPoint point) {
-        char intensity = point.getIntensity();
-        double intensityDouble = (double) intensity / 65535;
-
-        byte color = (byte) (intensityDouble * 255);
-        byte[] rgb = new byte[3];
-        rgb[0] = color;
-        rgb[1] = color;
-        rgb[2] = color;
+    private byte[] convertToByteIntensity(char intensity) {
+        byte[] rgb = new byte[2];
+        rgb[0] = (byte) ((intensity >> 8) & 0xFF); // High byte
+        rgb[1] = (byte) (intensity & 0xFF); // Low byte
         return rgb;
     }
 
-    /**
-     *
-     * @param point LASPoint
-     * @return byte[3]
-     */
-    private byte[] getClassification(LASPoint point) {
-        short classification = point.getClassification();
-        double classificatgionDouble = (double) classification / 65535;
-
-        byte color = (byte) (classificatgionDouble * 255);
-        byte[] rgb = new byte[3];
-        rgb[0] = color;
-        rgb[1] = color;
-        rgb[2] = color;
+    private byte[] convertToByteClassification(short classification) {
+        byte[] rgb = new byte[2];
+        rgb[0] = (byte) ((classification >> 8) & 0xFF); // High byte
+        rgb[1] = (byte) (classification & 0xFF); // Low byte
         return rgb;
     }
-
-    private byte[] getHeight(double z) {
-        byte color = (byte) (z / 65535 * 255);
-        byte[] rgb = new byte[3];
-        rgb[0] = color;
-        rgb[1] = color;
-        rgb[2] = color;
-        return rgb;
-    }
-
 }

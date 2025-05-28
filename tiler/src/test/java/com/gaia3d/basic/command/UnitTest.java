@@ -1,6 +1,6 @@
 package com.gaia3d.basic.command;
 
-import com.gaia3d.command.Configurator;
+import com.gaia3d.command.Configuration;
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import com.gaia3d.util.GlobeUtils;
 import com.gaia3d.util.ImageUtils;
@@ -819,7 +819,7 @@ class UnitTest {
                 "-o", outputPath + path,
                 "-crs", "2096",
                 "-glb",
-                "-pr", // photo realistic mesh
+                "-pg", // photo realistic mesh
                 "-minLod", "0",
                 "-maxLod", "0",
                 "-debug"
@@ -840,7 +840,7 @@ class UnitTest {
                 "-crs", "32648",
                 "-xOffset", "268943",
                 "-yOffset", "1818915",
-                "-pr"
+                "-pg"
         };
         Mago3DTilerMain.main(args);
     }
@@ -855,7 +855,7 @@ class UnitTest {
                 "-it", "obj",
                 "-o", outputPath,
                 "-crs", "5187",
-                "-pr",
+                "-pg",
                 "-rx", "90",
         };
         Mago3DTilerMain.main(args);
@@ -871,7 +871,7 @@ class UnitTest {
                 "-it", "obj",
                 "-o", outputPath,
                 "-crs", "5187",
-                "-pr",
+                "-pg",
                 "-rx", "90",
         };
         Mago3DTilerMain.main(args);
@@ -887,7 +887,7 @@ class UnitTest {
                 "-it", "obj",
                 "-o", outputPath,
                 "-crs", "5187",
-                "-pr",
+                "-pg",
                 "-rx", "90",
                 "-leaveTemp"
         };
@@ -905,7 +905,7 @@ class UnitTest {
                 "-o", outputPath,
                 "-crs", "5187",
                 "-rx", "90",
-                "-pr"
+                "-pg"
         };
         Mago3DTilerMain.main(args);
     }
@@ -924,6 +924,8 @@ class UnitTest {
                 "-i", inputPath,
                 "-it", "ifc",
                 "-o", outputPath,
+                "-pg",
+                "-rx", "90",
                 "-crs", "5186"
         };
         Mago3DTilerMain.main(args);
@@ -940,7 +942,7 @@ class UnitTest {
                 "-it", "dae",
                 "-o", outputPath,
                 "-proj", "+proj=tmerc +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=127.9296192 +lat_0=37.3702212",
-                "-pr",
+                "-pg",
                 "-rx", "90",
         };
         Mago3DTilerMain.main(args);
@@ -965,7 +967,7 @@ class UnitTest {
 
     @Test
     void test_changeBackGroundColor() {
-        Configurator.initConsoleLogger();
+        Configuration.initConsoleLogger();
         String inputPath = "D:\\data\\mago-server\\output\\pinkTest.png";
         String outputPath = "D:\\data\\mago-server\\output\\pinkTest_result.jpg";
 

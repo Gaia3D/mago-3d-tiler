@@ -35,6 +35,7 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
     private static final GlobalOptions globalOptions = GlobalOptions.getInstance();
     private final double maximumGeometricError = 64.0;
     private double instanceGeometricError = 1.0;
+    private final double maximumDistance = 1000.0; // 1km
 
     @Override
     public Tileset run(List<TileInfo> tileInfos) {
@@ -111,11 +112,16 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         BoundingVolume squareBoundingVolume = parentBoundingVolume.createSqureBoundingVolume();
 
         long instanceLimit = globalOptions.getMaxInstance();
-        //long instanceLimit = globalOptions.getMaxInstance();
         long instanceCount = tileInfos.size();
         boolean isRefineAdd = globalOptions.isRefineAdd();
 
-        if (instanceCount > instanceLimit) {
+        GaiaBoundingBox gaiaBoundingBox = parentNode.getBoundingBox();
+        if (gaiaBoundingBox == null) {
+            gaiaBoundingBox = calcBoundingBox(tileInfos);
+        }
+        double distance = gaiaBoundingBox.getLongestDistance();
+
+        if (instanceCount > instanceLimit || distance > maximumDistance) {
             List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
@@ -131,7 +137,6 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
                 // shuffle
                 Collections.shuffle(childTileInfos);
-
                 Node childNode = createContentNode(parentNode, childTileInfos, index);
                 if (childNode != null) {
                     parentNode.getChildren().add(childNode);
@@ -250,8 +255,6 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
             divideSize = GlobalOptions.DEFAULT_MIN_I3DM_FEATURE_COUNT;
         }
         //int divideSize = globalOptions.getMaxInstance();
-
-
         // divide by globalOptions.getMaxInstance()
 
         List<TileInfo> resultInfos;

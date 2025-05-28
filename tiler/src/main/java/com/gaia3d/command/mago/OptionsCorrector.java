@@ -64,7 +64,7 @@ public class OptionsCorrector {
                 if (file.isFile()) {
                     String extension = getExtension(file);
                     if (FormatType.KML.getExtension().equalsIgnoreCase(extension) || FormatType.KML.getSubExtension().equalsIgnoreCase(extension)) {
-                        log.info("Auto Selected Format type: {}", FormatType.KML);
+                        log.info("[Init] Auto Selected Format type: {}", FormatType.KML);
                         return FormatType.KML;
                     }
                 }
@@ -74,7 +74,7 @@ public class OptionsCorrector {
                     String extension = getExtension(file);
                     FormatType formatType = FormatType.fromExtension(extension);
                     if (Objects.nonNull(formatType)) {
-                        log.info("Auto Selected Format type: {}", formatType);
+                        log.info("[Init] Auto Selected Format type: {}", formatType);
                         return formatType;
                     }
                 }
@@ -83,7 +83,7 @@ public class OptionsCorrector {
             String extension = getExtension(path);
             FormatType formatType = FormatType.fromExtension(extension);
             if (Objects.nonNull(formatType)) {
-                log.info("Auto Selected Format type: {}", formatType);
+                log.info("[Init] Auto Selected Format type: {}", formatType);
                 return formatType;
             } else {
                 throw new IllegalArgumentException("Unsupported format: " + extension);

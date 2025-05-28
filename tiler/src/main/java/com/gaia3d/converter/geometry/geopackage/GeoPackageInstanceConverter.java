@@ -19,6 +19,8 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.filter.Filter;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.operation.TransformException;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,19 +51,33 @@ public class GeoPackageInstanceConverter implements AttributeReader {
         boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalOptions.DEFAULT_CRS);
         String altitudeColumnName = globalOptions.getAltitudeColumn();
         String headingColumnName = globalOptions.getHeadingColumn();
-        int instancePolygonContainsPointCounts = GlobalOptions.INSTANCE_POLYGON_CONTAINS_POINT_COUNTS;
+        String scaleColumnName = globalOptions.getScaleColumn();
+        String densityColumnName = globalOptions.getDensityColumn();
 
         GeoPackage geoPackage = null;
         try {
             geoPackage = new GeoPackage(file);
             List<FeatureEntry> features = geoPackage.features();
             for (FeatureEntry featureEntry : features) {
+
+                var coordinateReferenceSystem = featureEntry.getBounds().getCoordinateReferenceSystem();
+                if (isDefaultCrs && coordinateReferenceSystem != null) {
+                    CoordinateReferenceSystem crs = GlobeUtils.convertProj4jCrsFromGeotoolsCrs(coordinateReferenceSystem);
+                    log.info(" - Coordinate Reference System : {}", crs.getName());
+                    globalOptions.setCrs(crs);
+                }
+
                 Filter filter = Filter.INCLUDE;
                 Transaction transaction = Transaction.AUTO_COMMIT;
                 SimpleFeatureReader simpleFeatureReader = geoPackage.reader(featureEntry, filter, transaction);
                 while (simpleFeatureReader.hasNext()) {
                     SimpleFeature feature = simpleFeatureReader.next();
                     Geometry geom = (Geometry) feature.getDefaultGeometry();
+
+                    double heading = getNumberAttribute(feature, headingColumnName, GlobalOptions.DEFAULT_HEIGHT);
+                    double altitude = getNumberAttribute(feature, altitudeColumnName, GlobalOptions.DEFAULT_ALTITUDE);
+                    double scale = getNumberAttribute(feature, scaleColumnName, GlobalOptions.DEFAULT_SCALE);
+                    double density = getNumberAttribute(feature, densityColumnName, GlobalOptions.DEFAULT_DENSITY);
 
                     if (!attributeFilters.isEmpty()) {
                         boolean filterFlag = false;
@@ -82,10 +98,22 @@ public class GeoPackageInstanceConverter implements AttributeReader {
                     if (geom instanceof MultiPolygon multiPolygon) {
                         for (int i = 0; i < multiPolygon.getNumGeometries(); i++) {
                             Polygon polygon = (Polygon) multiPolygon.getGeometryN(i);
-                            points.addAll(getRandomContainsPoints(polygon, geom.getFactory(), instancePolygonContainsPointCounts));
+                            try {
+                                int calculatePointCount = calculatePointCount(polygon, coordinateReferenceSystem, density, scale);
+                                points.addAll(getRandomPointsWithDensity(polygon, calculatePointCount));
+                            } catch (FactoryException | TransformException e) {
+                                log.error("Error transforming geometry: {}", e.getMessage());
+                                throw new RuntimeException(e);
+                            }
                         }
                     } else if (geom instanceof Polygon polygon) {
-                        points.addAll(getRandomContainsPoints(polygon, geom.getFactory(), instancePolygonContainsPointCounts));
+                        try {
+                            int calculatePointCount = calculatePointCount(polygon, coordinateReferenceSystem, density, scale);
+                            points.addAll(getRandomPointsWithDensity(polygon, calculatePointCount));
+                        } catch (FactoryException | TransformException e) {
+                            log.error("Error transforming geometry: {}", e.getMessage());
+                            throw new RuntimeException(e);
+                        }
                     } else if (geom instanceof MultiPoint) {
                         GeometryFactory factory = geom.getFactory();
                         Coordinate[] coordinates = geom.getCoordinates();
@@ -116,8 +144,6 @@ public class GeoPackageInstanceConverter implements AttributeReader {
 
                         double x = point.getX();
                         double y = point.getY();
-                        double heading = getNumberAttribute(feature, headingColumnName, 0.0d);
-                        double altitude = getNumberAttribute(feature, altitudeColumnName, 0.0d);
 
                         Vector3d position;
                         CoordinateReferenceSystem crs = globalOptions.getCrs();
@@ -129,7 +155,17 @@ public class GeoPackageInstanceConverter implements AttributeReader {
                             position = new Vector3d(x, y, altitude);
                         }
 
-                        KmlInfo kmlInfo = KmlInfo.builder().name("I3dmFromGeoPackage").position(position).heading(heading).tilt(0.0d).roll(0.0d).scaleX(1.0d).scaleY(1.0d).scaleZ(1.0d).properties(attributes).build();
+                        KmlInfo kmlInfo = KmlInfo.builder()
+                                .name("I3dmFromGeoPackage")
+                                .position(position)
+                                .heading(heading)
+                                .tilt(0.0d)
+                                .roll(0.0d)
+                                .scaleX(scale)
+                                .scaleY(scale)
+                                .scaleZ(scale)
+                                .properties(attributes)
+                                .build();
                         result.add(kmlInfo);
                     }
                 }

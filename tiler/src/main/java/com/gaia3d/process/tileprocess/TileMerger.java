@@ -23,9 +23,11 @@ import java.util.Map;
 public class TileMerger {
 
     private static final GlobalOptions globalOptions = GlobalOptions.getInstance();
+    private final int MINIMUM_DEPTH = 2;
+    private final int MAXIMUM_DEPTH = 16;
 
     public void merge() {
-        log.info("Starting tileset merging.");
+        log.info("[Merge] Starting tileset merging.");
 
         String tilesetName = "tileset.json";
         File inputPath = new File(globalOptions.getInputPath());
@@ -33,19 +35,31 @@ public class TileMerger {
         File tilesetPath = new File(outputPath, tilesetName);
 
         // find all tileset.json files
-        List<File> tilesetJsons = findAllTilesetJsons(inputPath);
+        log.info("[Merge] searching for tileset.json files in {}.", inputPath);
+        List<File> tilesetJsons;
+        if (globalOptions.isRecursive()) {
+            tilesetJsons = findAllTilesetJsons(inputPath);
+        } else {
+            tilesetJsons = findAllTilesetJsons(inputPath, MINIMUM_DEPTH);
+        }
+        log.info("[Merge] found {} tileset.json files.", tilesetJsons.size());
+        if (tilesetJsons.isEmpty()) {
+            log.warn("[Merge] No tileset.json files found.");
+            return;
+        }
 
-        log.info("Found {} tileset.json files.", tilesetJsons.size());
-
+        log.info("[Merge] parsing tileset.json files.");
         // parse all tileset.json files
         Map<File, Tileset> tilesets = parseTilesetJsons(tilesetJsons);
 
+        log.info("[Merge] merging tileset.json files.");
         // calculate bounding box and geospatial information and merge tilesets
         Tileset tileset = mergeTilesets(tilesets);
 
+        log.info("[Merge] writing merged tileset.json -> {}", tilesetPath.getAbsolutePath());
         // write merged tileset.json
         writeTilesetJson(tilesetPath, tileset);
-        log.info("End tileset combining.");
+        log.info("[Merge] End tileset combining.");
     }
 
     private void writeTilesetJson(File tilesetPath, Tileset tileset) {
@@ -57,7 +71,7 @@ public class TileMerger {
 
         try {
             objectMapper.writeValue(tilesetPath, tileset);
-            log.info("Tileset.json is written to {}", tilesetPath);
+            log.info("[Merge] Tileset.json is written to {}", tilesetPath);
         } catch (IOException e) {
             log.error("[ERROR] Failed to write tileset.json.", e);
             throw new RuntimeException(e);
@@ -109,7 +123,7 @@ public class TileMerger {
             Tileset tileset = tilesetMap.get(tilesetFile);
             Node tilesetRoot = tileset.getRoot();
             double tilesetGeometricError = tileset.getGeometricError();
-            if (tileset.getGeometricError() == 0.0) {
+            if (tilesetGeometricError == 0.0) {
                 tilesetGeometricError = tilesetRoot.getGeometricError();
             }
 
@@ -172,6 +186,8 @@ public class TileMerger {
     }
 
     private List<Node> divideQuadTree(List<Node> inputChildren, List<Node> outputChildren, double geometricError, double[] globalBoundingRegion, double depth) {
+        int maxDepth = MAXIMUM_DEPTH;
+
         if (outputChildren == null) {
             outputChildren = new ArrayList<>();
         }
@@ -242,7 +258,7 @@ public class TileMerger {
         }
 
         if (!nodeA.getChildren().isEmpty()) {
-            if (nodeA.getChildren().size() > 1 && depth < 20) {
+            if (nodeA.getChildren().size() > 1 && depth < maxDepth) {
                 List<Node> newTree = divideQuadTree(nodeA.getChildren(), null, geometricError, nodeA.getBoundingVolume().getRegion(), depth + 1);
                 nodeA.setChildren(newTree);
             }
@@ -250,7 +266,7 @@ public class TileMerger {
             outputChildren.add(nodeA);
         }
         if (!nodeB.getChildren().isEmpty()) {
-            if (nodeB.getChildren().size() > 1 && depth < 20) {
+            if (nodeB.getChildren().size() > 1 && depth < maxDepth) {
                 List<Node> newTree = divideQuadTree(nodeB.getChildren(), null, geometricError, nodeB.getBoundingVolume().getRegion(), depth + 1);
                 nodeB.setChildren(newTree);
             }
@@ -258,7 +274,7 @@ public class TileMerger {
             outputChildren.add(nodeB);
         }
         if (!nodeC.getChildren().isEmpty()) {
-            if (nodeC.getChildren().size() > 1 && depth < 20) {
+            if (nodeC.getChildren().size() > 1 && depth < maxDepth) {
                 List<Node> newTree = divideQuadTree(nodeC.getChildren(), null, geometricError, nodeC.getBoundingVolume().getRegion(), depth + 1);
                 nodeC.setChildren(newTree);
             }
@@ -266,7 +282,7 @@ public class TileMerger {
             outputChildren.add(nodeC);
         }
         if (!nodeD.getChildren().isEmpty()) {
-            if (nodeD.getChildren().size() > 1 && depth < 20) {
+            if (nodeD.getChildren().size() > 1 && depth < maxDepth) {
                 List<Node> newTree = divideQuadTree(nodeD.getChildren(), null, geometricError, nodeD.getBoundingVolume().getRegion(), depth + 1);
                 nodeD.setChildren(newTree);
             }
@@ -278,8 +294,33 @@ public class TileMerger {
     }
 
     private List<File> findAllTilesetJsons(File inputPath) {
+        int maxDepth = 2;
+        if (globalOptions.isRecursive()) {
+            maxDepth = MAXIMUM_DEPTH;
+        }
+
+
+
+
         List<File> files = (List<File>) FileUtils.listFiles(inputPath, new String[]{"json"}, true);
         files.removeIf(file -> !file.getName().equals("tileset.json"));
+        return files;
+    }
+
+    private List<File> findAllTilesetJsons(File inputPath, int maxDepth) {
+        List<File> files = new ArrayList<>();
+        if (inputPath.isDirectory()) {
+            File[] subFiles = inputPath.listFiles();
+            if (subFiles != null) {
+                for (File subFile : subFiles) {
+                    if (subFile.isDirectory() && maxDepth > 0) {
+                        files.addAll(findAllTilesetJsons(subFile, maxDepth - 1));
+                    } else if (subFile.getName().equals("tileset.json")) {
+                        files.add(subFile);
+                    }
+                }
+            }
+        }
         return files;
     }
 

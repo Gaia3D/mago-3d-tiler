@@ -1,6 +1,6 @@
 package com.gaia3d.converter.geometry.geopackage;
 
-import com.gaia3d.command.Configurator;
+import com.gaia3d.command.Configuration;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.*;
@@ -12,7 +12,7 @@ class GeoPackageConverterTest {
 
     @Test
     void getRandomContainsPoints() {
-        Configurator.initConsoleLogger();
+        Configuration.initConsoleLogger();
 
         Envelope envelope = new Envelope(126.977491, 127.0, 37.659025, 37.7);
         double area = envelope.getArea();

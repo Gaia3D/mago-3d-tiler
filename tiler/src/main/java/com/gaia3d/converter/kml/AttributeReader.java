@@ -1,9 +1,15 @@
 package com.gaia3d.converter.kml;
 
 import com.gaia3d.command.mago.GlobalOptions;
+import org.geotools.geometry.jts.JTS;
+import org.geotools.referencing.CRS;
 import org.locationtech.jts.geom.*;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -14,26 +20,49 @@ public interface AttributeReader {
     KmlInfo read(File file);
     List<KmlInfo> readAll(File file);
 
-    default int calcTreeCount(Geometry polygon, double treeProportion, double treeDiameter) {
-        if (treeProportion <= 0) {
-            return 0;
+    default Geometry transformGeometry(Geometry polygon, CoordinateReferenceSystem sourceCRS) throws FactoryException, TransformException {
+        // 3857 is the default CRS for GeoJSON, which is WGS 84
+        CoordinateReferenceSystem targetCRS = CRS.decode("EPSG:3857", true);
+        MathTransform transform = CRS.findMathTransform(sourceCRS, targetCRS);
+        return JTS.transform(polygon, transform);
+    }
+
+    default int calculatePointCount(Geometry polygon, CoordinateReferenceSystem sourceCRS, double proportion, double diameter) throws FactoryException, TransformException {
+        Geometry transformedPolygon = transformGeometry(polygon, sourceCRS);
+        double area = transformedPolygon.getArea();
+        // convert proportion to a fraction of the area
+        double forestArea = area * proportion;
+        double treeDensity = diameter * diameter;
+
+        double count = forestArea / treeDensity;
+        return (int) count;
+    }
+
+    default List<Point> getRandomPointsWithDensity(Geometry polygon, int count) {
+        return getRandomContainsPoints(polygon, polygon.getFactory(), count);
+    }
+
+    default List<Point> getRandomPointsWithDensity(Geometry polygon, double proportion, double diameter) {
+        if (proportion <= 0) {
+            return new ArrayList<>();
         }
         double area = polygon.getArea();
-        double forestArea = area * treeProportion;
-        double treeDensity = treeDiameter * treeDiameter;
+        // convert proportion to a fraction of the area
+
+        double forestArea = area * proportion;
+        double treeDensity = diameter * diameter;
 
         double count = forestArea / treeDensity;
 
         int castCount = (int) count;
-        System.out.println("count: " + castCount);
-        return castCount;
+        return getRandomContainsPoints(polygon, polygon.getFactory(), castCount);
     }
 
     default List<Point> getRandomContainsPoints(Geometry polygon, GeometryFactory geometryFactory, int count) {
         PreparedGeometry preparedGeometry = PreparedGeometryFactory.prepare(polygon);
         Envelope envelope = polygon.getEnvelopeInternal();
 
-        if (count <= -1) {
+        if (count < 0) {
             double area = polygon.getArea();
             area *= 0.025;
             count = (int) area;
@@ -41,12 +70,11 @@ public interface AttributeReader {
                 count = 1;
             }
         }
-        Random random = new Random(/*GlobalOptions.RANDOM_SEED*/);
+        Random random = new Random(GlobalOptions.RANDOM_SEED);
 
         List<Point> randomPoints = new ArrayList<>();
         for (int i = 0; i < count; i++) {
             Point randomPoint;
-
             do {
                 double x = envelope.getMinX() + (envelope.getWidth() * random.nextDouble());
                 double y = envelope.getMinY() + (envelope.getHeight() * random.nextDouble());
