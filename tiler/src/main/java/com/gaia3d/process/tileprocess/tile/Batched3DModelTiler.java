@@ -36,7 +36,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
     @Override
     public Tileset run(List<TileInfo> tileInfos) {
         double geometricError = calcGeometricError(tileInfos);
-        geometricError = DecimalUtils.cut(geometricError);
+        geometricError = DecimalUtils.cutFast(geometricError);
 
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
         Matrix4d transformMatrix = getTransformMatrix(globalBoundingBox);
@@ -175,7 +175,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
             rotateX90(transformMatrix);
         }
         BoundingVolume boundingVolume = new BoundingVolume(boundingBox);
-        geometricError = DecimalUtils.cut(geometricError);
+        geometricError = DecimalUtils.cutFast(geometricError);
 
         Node childNode = new Node();
         childNode.setParent(parentNode);

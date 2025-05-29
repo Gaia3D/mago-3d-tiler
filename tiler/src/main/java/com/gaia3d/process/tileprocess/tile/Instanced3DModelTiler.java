@@ -186,7 +186,7 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         }
 
         BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
-        geometricError = DecimalUtils.cut(geometricError);
+        geometricError = DecimalUtils.cutFast(geometricError);
 
         Node childNode = new Node();
         childNode.setParent(parentNode);

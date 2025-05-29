@@ -55,7 +55,7 @@ public class BoundingVolume implements Serializable {
         rootRegion[4] = boundingBox.getMinZ();
         rootRegion[5] = boundingBox.getMaxZ();
         for (int i = 0; i < rootRegion.length; i++) {
-            rootRegion[i] = DecimalUtils.cut(rootRegion[i]);
+            rootRegion[i] = DecimalUtils.cutFast(rootRegion[i]);
         }
         this.setType(BoundingVolumeType.REGION);
         this.setRegion(rootRegion);

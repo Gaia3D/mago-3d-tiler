@@ -110,7 +110,7 @@ public class Node {
         newRegion[5] = maxZ;
 
         for (int i = 0; i < newRegion.length; i++) {
-            newRegion[i] = DecimalUtils.cut(newRegion[i]);
+            newRegion[i] = DecimalUtils.cutFast(newRegion[i]);
         }
 
         // set the new bounding volume
