@@ -1,17 +1,27 @@
 package com.gaia3d.release.small;
 
+import com.gaia3d.command.Configuration;
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 @Tag("release")
 @Slf4j
 class I3dmReleaseTest {
     private static final String INPUT_PATH = "D:/data/mago-3d-tiler/release-sample";
     private static final String OUTPUT_PATH = "E:/data/mago-server/output";
+
+    static {
+        Configuration.initConsoleLogger();
+    }
 
     @Test
     void instanced00() {
@@ -310,7 +320,6 @@ class I3dmReleaseTest {
         };
         execute(args);
     }
-
     @Test
     void instance10() {
         String path = "I10-forest-purdue";
@@ -324,6 +333,144 @@ class I3dmReleaseTest {
                 //"-terrain", getInputPath(path).getAbsolutePath() + "/seoul-aster.tif",
         };
         execute(args);
+    }
+
+    @Test
+    void instance10A() {
+        String path = "I10-forest-purdue-original-geojson";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-ot", "i3dm",
+                "--refineAdd",
+                "--scaleColumn", "rel_height",
+                "--instance", "D:\\data\\mago-3d-tiler\\release-sample\\sample-tree\\broad-tree-1m.glb",
+                //"-terrain", getInputPath(path).getAbsolutePath() + "/seoul-aster.tif",
+        };
+        execute(args);
+    }
+
+    @Test
+    void instance10B() {
+        String path = "I10-forest-purdue-original-gpkg";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-ot", "i3dm",
+                "--refineAdd",
+                "--scaleColumn", "rel_height",
+                "--instance", "D:\\data\\mago-3d-tiler\\release-sample\\sample-tree\\broad-tree-1m.glb",
+                //"-terrain", getInputPath(path).getAbsolutePath() + "/seoul-aster.tif",
+        };
+        execute(args);
+    }
+
+    @Test
+    void instance10C() {
+        String path = "I10-forest-purdue-original-gpkg2";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "gpkg",
+                "-ot", "i3dm",
+                "--refineAdd",
+                "--scaleColumn", "rel_height_m",
+                "--instance", "D:\\data\\mago-3d-tiler\\release-sample\\sample-tree\\broad-tree-1m.glb",
+                //"-terrain", getInputPath(path).getAbsolutePath() + "/seoul-aster.tif",
+        };
+        execute(args);
+    }
+
+    @Test
+    void instance10D() {
+        String path = "I10-forest-purdue-original-gpkg3";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-it", "gpkg",
+                "-ot", "i3dm",
+                "--refineAdd",
+                "--scaleColumn", "rel_height_m",
+                "--instance", "D:\\data\\mago-3d-tiler\\release-sample\\sample-tree\\broad-tree-1m.glb",
+                //"-terrain", getInputPath(path).getAbsolutePath() + "/seoul-aster.tif",
+        };
+        execute(args);
+    }
+
+    @Test
+    void instance10E() {
+        String path = "I10-forest-purdue-original-gpkg4";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-crs", "4326",
+                "-it", "gpkg",
+                "-ot", "i3dm",
+                "--refineAdd",
+                "--scaleColumn", "rel_height_m",
+                "--instance", "D:\\data\\mago-3d-tiler\\release-sample\\sample-tree\\broad-tree-1m.glb",
+                "-terrain", getInputPath(path).getAbsolutePath() + "/hamilton_dem_navd88_meters_4326.tif",
+        };
+        execute(args);
+    }
+
+
+    @Test
+    void runWithSimple() throws IOException {
+        ClassLoader classLoader = getClass().getClassLoader();
+
+        String dockerImage = "gaia3d/mago-3d-tiler:latest";
+        List<String> argList = new ArrayList<>();
+        argList.add("docker");
+        argList.add("run");
+        argList.add("--rm");
+        argList.add("-v");
+        argList.add(INPUT_PATH + ":/input");
+        argList.add("-v");
+        argList.add(OUTPUT_PATH + ":/output");
+        argList.add(dockerImage);
+        argList.add("--input");
+        argList.add("/input/I10-forest-purdue-original-gpkg4");
+        argList.add("--output");
+        argList.add("/output/I10-forest-purdue-original-gpkg4");
+        argList.add("-it");
+        argList.add("gpkg");
+        argList.add("-ot");
+        argList.add("i3dm");
+        argList.add("--refineAdd");
+        argList.add("--scaleColumn");
+        argList.add("rel_height_m");
+        argList.add("--instance");
+        argList.add("/input/I10-forest-purdue-original-gpkg4/broad-tree-1m.glb");
+        argList.add("-terrain");
+        argList.add("/input/I10-forest-purdue-original-gpkg4/hamilton_dem_navd88_meters_4326.tif");
+
+        runCommand(argList);
+    }
+
+    private void runCommand(List<String> argList) throws IOException {
+        String[] args = argList.toArray(new String[0]);
+
+        ProcessBuilder processBuilder = new ProcessBuilder(args);
+        processBuilder.redirectErrorStream(true);
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String arg : args) {
+            stringBuilder.append(arg).append(" ");
+        }
+        String command = stringBuilder.toString();
+        Process process = processBuilder.start();
+        BufferedReader inputReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+
+        log.info("Executing command: {}", command);
+        log.info("***Starting command execution***");
+        for (String str; (str = inputReader.readLine()) != null; ) {
+            log.info(str);
+        }
+        for (String str; (str = errorReader.readLine()) != null; ) {
+            log.error(str);
+        }
+        log.info("***Command executed successfully***");
     }
 
     private void execute(String[] args) {

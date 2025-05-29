@@ -307,7 +307,8 @@ class B3dmReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "geojson",
                 "-heightColumn", "rel_height",
-                "-c", "4326",
+                "-terrain", getInputPath("I10-forest-purdue-original-gpkg4").getAbsolutePath() + "/hamilton_dem_navd88_meters_4326.tif",
+                "-crs", "4326",
         };
         execute(args);
     }

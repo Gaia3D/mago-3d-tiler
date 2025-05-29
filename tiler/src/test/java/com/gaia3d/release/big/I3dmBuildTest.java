@@ -65,6 +65,23 @@ class I3dmBuildTest {
     }
 
     @Test
+    void instanced07HwalCog() {
+        String path = "Hwal";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath() + "-cog",
+                "-c", "5187",
+                "-it", "shp",
+                "-ot", "i3dm",
+                "-refineAdd",
+                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/hwal-sample-low.glb",
+                "-terrain", "G:/workspace/dem05-cog.tif",
+                //"-debug"
+        };
+        execute(args);
+    }
+
+    @Test
     void instanced07Nak() {
         String path = "Nak";
         String[] args = new String[] {
