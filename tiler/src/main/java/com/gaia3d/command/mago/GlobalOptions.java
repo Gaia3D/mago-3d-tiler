@@ -229,6 +229,16 @@ public class GlobalOptions {
             } else {
                 instance.setOutputFormat(outputFormat);
             }
+        } else {
+            // Merge mode
+            instance.setInputFormat(FormatType.TILESET);
+            instance.setOutputFormat(FormatType.TILESET);
+            if (command.hasOption(ProcessOptions.INPUT_TYPE.getLongName())) {
+                log.warn("[WARN] Input type option is ignored in merge mode.");
+            }
+            if (command.hasOption(ProcessOptions.OUTPUT_TYPE.getLongName())) {
+                log.warn("[WARN] Output type option is ignored in merge mode.");
+            }
         }
 
         if (command.hasOption(ProcessOptions.TERRAIN.getLongName())) {
