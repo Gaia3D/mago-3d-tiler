@@ -123,9 +123,9 @@ class I3dmReleaseTest {
                 "-it", "gpkg",
                 "-ot", "i3dm",
                 "-refineAdd",
-                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/broad-bluegrass.glb",
+                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/broad-tree-1m.glb",
                 //"-terrain", INPUT_PATH + "/korea-compressed.tif",
-                "-terrain", "G:/workspace/dem05.tif",
+                "-terrain", "G:/workspace/dem05-cog.tif",
                 "-attributeFilter", "FRTP_NM=활엽수림",
                 //"-debug"
         };
@@ -141,8 +141,9 @@ class I3dmReleaseTest {
                 "-c", "5179",
                 "-it", "gpkg",
                 "-ot", "i3dm",
-                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/needle.glb",
-                "-terrain", "G:/workspace/dem05.tif",
+                "-refineAdd",
+                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/needle-tree-1m.glb",
+                "-terrain", "G:/workspace/dem05-cog.tif",
                 "-attributeFilter", "FRTP_NM=침엽수림",
                 //"-debug"
         };
@@ -158,8 +159,9 @@ class I3dmReleaseTest {
                 "-c", "5179",
                 "-it", "gpkg",
                 "-ot", "i3dm",
-                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/mixed.glb",
-                "-terrain", "G:/workspace/dem05.tif",
+                "-refineAdd",
+                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/mix-tree-1m.glb",
+                "-terrain", "G:/workspace/dem05-cog.tif",
                 "-attributeFilter", "FRTP_NM=혼효림",
                 //"-debug"
         };
@@ -175,8 +177,9 @@ class I3dmReleaseTest {
                 "-c", "5179",
                 "-it", "gpkg",
                 "-ot", "i3dm",
-                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/bamboo.glb",
-                "-terrain", "G:/workspace/dem05.tif",
+                "-refineAdd",
+                "-instance", getInputPath("sample-tree").getAbsolutePath() + "/bamboo-tree-1m.glb",
+                "-terrain", "G:/workspace/dem05-cog.tif",
                 "-attributeFilter", "FRTP_NM=죽림",
                 //"-debug"
         };
@@ -189,28 +192,12 @@ class I3dmReleaseTest {
         String[] args = new String[] {
                 "-i", getOutputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                "-c", "5179",
+                //"-c", "5179",
                 "-merge",
-                "-ot", "i3dm",
+                //"-ot", "i3dm",
         };
         execute(args);
     }
-
-    /*@Test
-    void instanced06E() {
-        String path = "I04-forest-shp";
-        String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath() + "-textured",
-                "-c", "5179",
-                "-it", "gpkg",
-                "-ot", "i3dm",
-                "-instance", getInputPath(path).getAbsolutePath() + "/texture-tree.glb",
-                "-terrain", "G:/workspace/dem05.tif",
-                //"-debug"
-        };
-        execute(args);
-    }*/
 
     @Test
     void instanced07Chim() {

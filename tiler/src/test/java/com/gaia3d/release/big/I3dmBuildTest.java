@@ -3,11 +3,14 @@ package com.gaia3d.release.big;
 import com.gaia3d.command.Configuration;
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+
 import java.io.IOException;
 
+@Tag("build")
 @Slf4j
 class I3dmBuildTest {
     private static final String INPUT_PATH = "D:/data/mago-3d-tiler/build-sample";
