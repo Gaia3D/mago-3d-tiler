@@ -1,4 +1,4 @@
-package com.gaia3d.release.small;
+package com.gaia3d.release.big;
 
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import lombok.extern.slf4j.Slf4j;
@@ -8,9 +8,9 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
-@Tag("release")
+@Tag("build")
 @Slf4j
-class B3dmReleaseTest {
+class B3dmBuildTest {
     private static final String INPUT_PATH = "D:/data/mago-3d-tiler/release-sample";
     private static final String OUTPUT_PATH = "E:/data/mago-server/output";
 

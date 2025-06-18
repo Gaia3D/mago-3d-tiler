@@ -1,3 +1,4 @@
+
 package com.gaia3d.process.postprocess;
 
 import com.gaia3d.TilerExtensionModule;
@@ -161,7 +162,14 @@ public class GaiaRelocationML implements PostProcess {
         double texturePixelSize = 1.0;
         double texturePixelsForMeter = 4.0;
 
+        // dcLibrary scale 0.01 settings.***
         voxelSizeMeter = maxSize / 17.0;
+        texturePixelSize = maxSize / 256.0;
+        texturePixelsForMeter = 1.0 / texturePixelSize;
+
+        // ifc round bridge settings.***
+        //voxelSizeMeter = maxSize / 200.0;
+        voxelSizeMeter = 4.0;
         texturePixelSize = maxSize / 256.0;
         texturePixelsForMeter = 1.0 / texturePixelSize;
 

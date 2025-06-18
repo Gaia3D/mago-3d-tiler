@@ -45,6 +45,7 @@ public enum FormatType {
     B3DM("b3dm", "gltf", true),
     I3DM("i3dm", "gltf", true),
     PNTS("pnts", "gltf", true),
+    TILESET("tileset", "json", true),
     TEMP("tmp", "tmp", false);
 
     private final String extension;

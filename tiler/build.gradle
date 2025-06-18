@@ -157,9 +157,11 @@ jib {
     to {
         image = "gaia3d/mago-3d-tiler"
         tags = ["latest", project.version] as List<String>
-        auth {
-            username = findProperty("jib.to.auth.username") ?: System.getenv("JIB_TO_AUTH_USERNAME")
-            password = findProperty("jib.to.auth.password") ?: System.getenv("JIB_TO_AUTH_PASSWORD")
+        if (findProperty("jib.to.auth.username") || System.getenv("JIB_TO_AUTH_USERNAME")) {
+            auth {
+                username = findProperty("jib.to.auth.username") ?: System.getenv("JIB_TO_AUTH_USERNAME")
+                password = findProperty("jib.to.auth.password") ?: System.getenv("JIB_TO_AUTH_PASSWORD")
+            }
         }
     }
     container {

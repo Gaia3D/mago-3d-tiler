@@ -1645,7 +1645,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             rotateX90(transformMatrix);
         }
         BoundingVolume boundingVolume = new BoundingVolume(boundingBox);
-        geometricError = DecimalUtils.cut(geometricError);
+        geometricError = DecimalUtils.cutFast(geometricError);
 
         Node childNode = new Node();
         childNode.setParent(parentNode);
