@@ -1,12 +1,15 @@
 rootProject.name = 'mago-3d-tiler'
 include ':mago-tiler'
-project(':mago-tiler').projectDir = new File(settingsDir, './tiler')
+project(':mago-tiler').projectDir = new File(settingsDir, './mago-tiler')
 
 include ':mago-common'
-project(':mago-common').projectDir = new File(settingsDir, './common')
+project(':mago-common').projectDir = new File(settingsDir, './mago-common')
 
-include ':mago-extension'
-project(':mago-extension').projectDir = new File(settingsDir, './extension')
+include ':mago-io'
+project(':mago-io').projectDir = new File(settingsDir, './mago-io')
 
-include ':non-mago-extension'
-project(':non-mago-extension').projectDir = new File(settingsDir, './non-extension')
+include ':mago-tiler-extension'
+project(':mago-tiler-extension').projectDir = new File(settingsDir, './mago-tiler-extension')
+
+include ':mago-tiler-non-extension'
+project(':mago-tiler-non-extension').projectDir = new File(settingsDir, './mago-tiler-non-extension')

@@ -42,25 +42,26 @@ project(':mago-common') {
     // Common module
 }
 
-project(':mago-extension') {
-    // Extension module build configuration
-    dependencies {
-        implementation project(':mago-common')
-    }
-}
-
-project(':non-mago-extension') {
-    // Extension module build configuration
-    dependencies {
-        implementation project(':mago-common')
-    }
-}
-
 project(':mago-tiler') {
     dependencies {
         implementation project(':mago-common')
-        implementation project(':mago-extension')
-        //implementation project(':non-mago-extension')
+        implementation project(':mago-io')
+        implementation project(':mago-tiler-extension')
+        //implementation project(':mago-tiler-non-extension')
+    }
+}
+
+project(':mago-tiler-extension') {
+    // Extension module build configuration
+    dependencies {
+        implementation project(':mago-common')
+    }
+}
+
+project(':mago-tiler-non-extension') {
+    // Extension module build configuration
+    dependencies {
+        implementation project(':mago-common')
     }
 }
 
@@ -77,7 +78,8 @@ tasks.register('javadoc', Javadoc) {
     def includedProjects = [
             project(':mago-tiler'),
             project(':mago-common'),
-            project(':mago-extension')
+            project(':mago-io'),
+            //project(':mago-tiler-extension')
     ]
 
     source = files(includedProjects.collect { it.sourceSets.main.allJava })
