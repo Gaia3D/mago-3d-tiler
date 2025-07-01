@@ -1,89 +1,29 @@
-subprojects {
-    group "com.gaia3d"
-    version "1.12.1-release"
-    apply plugin: 'java'
-    project.ext.lwjglVersion = "3.3.3"
+plugins {
+    id 'java'
+}
 
-    repositories {
-        maven { url "https://repo.osgeo.org/repository/release/" }
-        mavenCentral()
+repositories {
+    maven { url "https://repo.osgeo.org/repository/release/" }
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.locationtech.proj4j:proj4j:1.2.3"
+    implementation "org.locationtech.proj4j:proj4j-epsg:1.2.3"
+    implementation 'org.geotools:gt-geojson:26.5'
+    implementation 'org.geotools:gt-geojsondatastore:26.5'
+}
+
+javadoc {
+    enabled = false
+    options.addStringOption("locale", "ko_KR")
+    options.addStringOption("encoding", "UTF-8")
+    options.addStringOption("charset", "UTF-8")
+    options.addStringOption("docencoding", "UTF-8")
+}
+
+test {
+    useJUnitPlatform {
+        includeTags 'release'
     }
-
-    dependencies {
-        /* Lombok */
-        compileOnly "org.projectlombok:lombok:1.18.30"
-        annotationProcessor "org.projectlombok:lombok:1.18.30"
-
-        /* Logging */
-        implementation 'org.slf4j:slf4j-api:1.7.25'
-        implementation 'org.apache.logging.log4j:log4j-core:2.20.0'
-        implementation 'org.apache.logging.log4j:log4j-api:2.20.0'
-        implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.20.0'
-
-        /* Math library */
-        implementation "org.joml:joml:1.10.5"
-
-        /* Apache commons */
-        implementation 'commons-logging:commons-logging:1.2'
-        implementation 'commons-io:commons-io:2.11.0'
-        implementation 'commons-cli:commons-cli:1.5.0'
-        implementation 'commons-collections:commons-collections:3.2.2'
-        implementation 'org.apache.commons:commons-text:1.10.0'
-
-        /* Development libraries */
-        testCompileOnly "org.projectlombok:lombok:1.18.30"
-        testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
-        testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.0"
-        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.0"
-    }
-}
-
-project(':mago-common') {
-    // Common module
-}
-
-project(':mago-extension') {
-    // Extension module build configuration
-    dependencies {
-        implementation project(':mago-common')
-    }
-}
-
-project(':non-mago-extension') {
-    // Extension module build configuration
-    dependencies {
-        implementation project(':mago-common')
-    }
-}
-
-project(':mago-tiler') {
-    dependencies {
-        implementation project(':mago-common')
-        implementation project(':mago-extension')
-        //implementation project(':non-mago-extension')
-    }
-}
-
-tasks.register('release') {
-    dependsOn(':mago-tiler:test')
-    dependsOn(':mago-tiler:javadoc')
-    dependsOn(':mago-tiler:jib')
-}
-
-tasks.register('javadoc', Javadoc) {
-    group = 'Documentation'
-    description = 'Generates Javadoc for mago-tiler module.'
-
-    def includedProjects = [
-            project(':mago-tiler'),
-            project(':mago-common'),
-            project(':mago-extension')
-    ]
-
-    source = files(includedProjects.collect { it.sourceSets.main.allJava })
-    classpath = files(includedProjects.collect { it.sourceSets.main.compileClasspath })
-    destinationDir = file("/docs/")
-    options.encoding = 'UTF-8'
-    options.memberLevel = JavadocMemberLevel.PUBLIC
-    options.addStringOption('Xdoclint:none', '-quiet') // 경고 무시
 }
