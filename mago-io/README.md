@@ -3,20 +3,20 @@ How to use git subtree
 
 ### [remote]
 ```
-git remote add io https://github.com/Gaia3D/mago-io.git
+git remote add mago-io https://github.com/Gaia3D/mago-io.git
 ```
 
 ### [add subtree]
 ```
-git subtree add --prefix=io https://github.com/Gaia3D/mago-io.git main
+git subtree add --prefix=mago-io https://github.com/Gaia3D/mago-io.git main
 ```
 
 ### [pull]
 ```
-git subtree pull --prefix=io https://github.com/Gaia3D/mago-io.git main
+git subtree pull --prefix=mago-io https://github.com/Gaia3D/mago-io.git main
 ```
 
 ### [push]
 ```
-git subtree push --prefix=io https://github.com/Gaia3D/mago-io.git main
+git subtree push --prefix=mago-io https://github.com/Gaia3D/mago-io.git main
 ```
