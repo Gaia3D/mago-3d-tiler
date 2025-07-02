@@ -15,7 +15,9 @@ public enum AttributeType implements Serializable {
     NORMAL("NORMAL3", "NORMAL"),
     TEXCOORD("TEXCOORD2", "TEXCOORD_0"),
     COLOR("COLOR4", "COLOR_0"),
-    BATCHID("OBJECTID", "_BATCHID");
+    BATCHID("OBJECTID", "_BATCHID"),
+    FEATURE_ID_0("_FEATURE_ID_0", "_FEATURE_ID_0"),
+    FEATURE_ID_1("_FEATURE_ID_1", "_FEATURE_ID_1");
 
     final String gaia;
     final String accessor;
