@@ -8,14 +8,14 @@ import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.jgltf.GltfWriter;
+import com.gaia3d.converter.jgltf.GltfWriterV2;
+import com.gaia3d.io.LittleEndianDataInputStream;
+import com.gaia3d.io.LittleEndianDataOutputStream;
 import com.gaia3d.process.postprocess.ContentModel;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.StringUtils;
-import com.gaia3d.io.LittleEndianDataInputStream;
-import com.gaia3d.io.LittleEndianDataOutputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix3d;
 import org.joml.Matrix4d;
@@ -32,13 +32,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings("ALL")
 @Slf4j
-public class Batched3DModel implements ContentModel {
-    private static final String MAGIC = "b3dm";
+public class Batched3DModelV2 implements ContentModel {
+    private static final String MAGIC = "glb";
     private static final int VERSION = 1;
-    private final GltfWriter gltfWriter;
+    private final GltfWriterV2 gltfWriter;
 
-    public Batched3DModel() {
-        this.gltfWriter = new GltfWriter();
+    public Batched3DModelV2() {
+        this.gltfWriter = new GltfWriterV2();
     }
 
     @Override
@@ -77,7 +77,6 @@ public class Batched3DModel implements ContentModel {
             nodeNameList.add(nodeName);
         });
 
-
         if (batchedSet == null) {
             log.error("[ERROR] BatchedSet is null, return null.");
             return contentInfo;
@@ -113,19 +112,6 @@ public class Batched3DModel implements ContentModel {
         if (!outputRoot.toFile().exists() && outputRoot.toFile().mkdir()) {
             log.debug("[Create][data] Created output data directory,", outputRoot);
         }
-
-        byte[] glbBytes;
-        if (globalOptions.isGlb()) {
-            String glbFileName = nodeCode + ".glb";
-            File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
-            this.gltfWriter.writeGlb(scene, glbOutputFile);
-            glbBytes = readGlb(glbOutputFile);
-        } else {
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            this.gltfWriter.writeGlb(scene, byteArrayOutputStream);
-            glbBytes = byteArrayOutputStream.toByteArray();
-        }
-        scene = null;
 
         /* BatchTable */
         GaiaBatchTableMap<String, List<String>> batchTableMap = new GaiaBatchTableMap<>();
@@ -163,7 +149,18 @@ public class Batched3DModel implements ContentModel {
             });
         });
 
-        ObjectMapper objectMapper = new ObjectMapper();
+        byte[] glbBytes;
+        //ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        //this.gltfWriter.writeGlb(scene, byteArrayOutputStream, featureTable, batchTableMap);
+
+        String glbFileName = nodeCode + ".glb";
+        File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
+        this.gltfWriter.writeGlb(scene, glbOutputFile, featureTable, batchTableMap);
+
+        //glbBytes = byteArrayOutputStream.toByteArray();
+        //scene = null;
+
+        /*ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
         try {
             String featureTableText = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(featureTable));
@@ -183,24 +180,24 @@ public class Batched3DModel implements ContentModel {
         File b3dmOutputFile = outputRoot.resolve(nodeCode + "." + MAGIC).toFile();
         try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(b3dmOutputFile)))) {
             // 28-byte header (first 20 bytes)
-            stream.writePureText(MAGIC);
-            stream.writeInt(VERSION);
-            stream.writeInt(byteLength);
-            stream.writeInt(featureTableJSONByteLength);
-            int featureTableBinaryByteLength = 0;
-            stream.writeInt(featureTableBinaryByteLength);
-            // 28-byte header (next 8 bytes)
-            stream.writeInt(batchTableJSONByteLength);
-            int batchTableBinaryByteLength = 0;
-            stream.writeInt(batchTableBinaryByteLength);
-            stream.writePureText(featureTableJson);
-            stream.writePureText(batchTableJson);
+//            stream.writePureText(MAGIC);
+//            stream.writeInt(VERSION);
+//            stream.writeInt(byteLength);
+//            stream.writeInt(featureTableJSONByteLength);
+//            int featureTableBinaryByteLength = 0;
+//            stream.writeInt(featureTableBinaryByteLength);
+//            // 28-byte header (next 8 bytes)
+//            stream.writeInt(batchTableJSONByteLength);
+//            int batchTableBinaryByteLength = 0;
+//            stream.writeInt(batchTableBinaryByteLength);
+//            stream.writePureText(featureTableJson);
+//            stream.writePureText(batchTableJson);
             // body
             stream.write(glbBytes);
             glbBytes = null;
         } catch (Exception e) {
             log.error("[ERROR] :", e);
-        }
+        }*/
         return contentInfo;
     }
 

@@ -9,7 +9,7 @@ import com.gaia3d.basic.pointcloud.GaiaPointCloud;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.postprocess.ComponentType;
 import com.gaia3d.process.postprocess.DataType;
-import com.gaia3d.process.postprocess.TilingModel;
+import com.gaia3d.process.postprocess.ContentModel;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTable;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @RequiredArgsConstructor
-public class PointCloudModel implements TilingModel {
+public class PointCloudModel implements ContentModel {
     @Override
     public ContentInfo run(ContentInfo contentInfo) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();

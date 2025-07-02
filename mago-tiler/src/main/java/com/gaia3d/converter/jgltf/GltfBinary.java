@@ -2,11 +2,13 @@ package com.gaia3d.converter.jgltf;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * GltfBinary is a class that contains the binary data of the glTF file.
@@ -15,6 +17,7 @@ import java.util.List;
  */
 @Getter
 @Setter
+@Slf4j
 public class GltfBinary {
     private int materialId = -1;
     private int textureId = -1;
@@ -22,16 +25,36 @@ public class GltfBinary {
 
     private ByteBuffer body = null;
     private List<GltfNodeBuffer> nodeBuffers = new ArrayList<>();
+    private List<ImageBuffer> imageBuffers = new ArrayList<>();
+    private List<ByteBuffer> propertyBuffers = new ArrayList<>();
+
+    public int calcTotalByteBufferLength() {
+        return nodeBuffers.stream().mapToInt(GltfNodeBuffer::getTotalByteBufferLength).sum();
+    }
+
+    public int calcTotalImageByteBufferLength() {
+        return imageBuffers.stream().mapToInt(ImageBuffer::getByteBufferLength).sum();
+    }
+
+    public int calcTotalPropertyByteBufferLength() {
+        return propertyBuffers.stream().mapToInt(ByteBuffer::capacity).sum();
+    }
 
     /**
      * Fills the body variable with the binary data of the glTF file.
      * It iterates through the nodeBuffers list and puts the binary data of each node into the body variable.
      */
     public void fill() {
-        body = ByteBuffer.allocate(nodeBuffers.stream().mapToInt(GltfNodeBuffer::getTotalByteBufferLength).sum());
+        int imageBuffersTotalLength = imageBuffers.stream().mapToInt(ImageBuffer::getByteBufferLength).sum();
+        int nodeBuffersTotalLength = nodeBuffers.stream().mapToInt(GltfNodeBuffer::getTotalByteBufferLength).sum();
+        int propertyBuffersTotalLength = propertyBuffers.stream().mapToInt(ByteBuffer::capacity).sum();
+        int totalByteBufferLength = imageBuffersTotalLength + nodeBuffersTotalLength + propertyBuffersTotalLength;
+
+        body = ByteBuffer.allocate(totalByteBufferLength);
         ByteBuffer bodyBuffer = body;
         bodyBuffer.order(ByteOrder.LITTLE_ENDIAN);
         bodyBuffer.clear();
+
         nodeBuffers.forEach((nodeBuffer) -> {
             if (nodeBuffer.getIndicesBuffer() != null) {
                 nodeBuffer.getIndicesBuffer().rewind();
@@ -63,6 +86,20 @@ public class GltfBinary {
                 nodeBuffer.getBatchIdBuffer().limit(nodeBuffer.getBatchIdBuffer().capacity());
                 bodyBuffer.put(nodeBuffer.getBatchIdBuffer());
             }
+        });
+
+        imageBuffers.forEach((imageBuffer) -> {
+            if (imageBuffer.getByteBuffer() != null) {
+                imageBuffer.getByteBuffer().rewind();
+                imageBuffer.getByteBuffer().limit(imageBuffer.getByteBuffer().capacity());
+                bodyBuffer.put(imageBuffer.getByteBuffer());
+            }
+        });
+
+        propertyBuffers.forEach((propertyBuffer) -> {
+            propertyBuffer.rewind();
+            propertyBuffer.limit(propertyBuffer.capacity());
+            bodyBuffer.put(propertyBuffer);
         });
         bodyBuffer.rewind();
     }

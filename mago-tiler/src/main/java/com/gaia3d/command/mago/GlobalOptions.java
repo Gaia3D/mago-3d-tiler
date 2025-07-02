@@ -72,10 +72,14 @@ public class GlobalOptions {
     public static final int INSTANCE_POLYGON_CONTAINS_POINT_COUNTS = -1;
     public static final int RANDOM_SEED = 2620;
     public static final boolean MAKE_SKIRT = true;
+
+    public static final String DEFAULT_TILES_VERSION = "1.0";
+
     /* singleton */
     private static final GlobalOptions instance = new GlobalOptions();
     private Reporter reporter;
 
+    private String tilesVersion;
     private String version; // version flag
     private String javaVersionInfo; // java version flag
     private String programInfo; // program info flag
@@ -195,6 +199,20 @@ public class GlobalOptions {
             OptionsCorrector.checkExistOutput(output);
         } else {
             throw new IllegalArgumentException("Please enter the value of the output argument.");
+        }
+
+        if (command.hasOption(ProcessOptions.TILES_VERSION.getLongName())) {
+            String tilesVersion = command.getOptionValue(ProcessOptions.TILES_VERSION.getLongName());
+            if (tilesVersion.equals("1.0")) {
+                log.info("[INFO] Using 3D Tiles version 1.0");
+            } else if (tilesVersion.equals("1.1")) {
+                log.info("[INFO] Using 3D Tiles version 1.1");
+            } else {
+                throw new IllegalArgumentException("Invalid tiles version: " + tilesVersion + ". Supported versions are 1.0, 1.1, and 1.2.");
+            }
+            instance.setTilesVersion(command.getOptionValue(ProcessOptions.TILES_VERSION.getLongName()));
+        } else {
+            instance.setTilesVersion(DEFAULT_TILES_VERSION);
         }
 
         boolean isRecursive;
@@ -439,6 +457,7 @@ public class GlobalOptions {
         log.info("Output Path: {}", outputPath);
         log.info("Input Format: {}", inputFormat);
         log.info("Output Format: {}", outputFormat);
+        log.info("3D Tiles Version: {}", tilesVersion);
         log.info("Terrain File Path: {}", terrainPath);
         log.info("Instance File Path: {}", instancePath);
         log.info("Log Path: {}", logPath);

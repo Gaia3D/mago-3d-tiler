@@ -7,5 +7,6 @@ import lombok.Setter;
 @Setter
 public class Asset {
     private String version = "1.0";
+    private String tilesetVersion = "1.0";
     private Extras extras;
 }

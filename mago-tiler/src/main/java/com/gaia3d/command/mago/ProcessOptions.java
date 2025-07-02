@@ -11,6 +11,7 @@ public enum ProcessOptions {
     QUIET("quiet", "q", false, "Quiet mode/Silent mode"),
     LEAVE_TEMP("leaveTemp", "lt", false, "Leave temporary files"),
     MERGE("merge", "m", false, "Merge tileset.json files"),
+    TILES_VERSION("tilesVersion", "tv", true, "3DTiles Version [Default: 1.0]"),
 
     // Path Options
     INPUT("input", "i", true, "Input directory path"),

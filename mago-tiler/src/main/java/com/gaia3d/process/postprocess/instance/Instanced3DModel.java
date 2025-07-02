@@ -12,7 +12,7 @@ import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.jgltf.GltfWriter;
 import com.gaia3d.converter.kml.KmlInfo;
 import com.gaia3d.io.LittleEndianDataOutputStream;
-import com.gaia3d.process.postprocess.TilingModel;
+import com.gaia3d.process.postprocess.ContentModel;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTableMap;
 import com.gaia3d.process.postprocess.batch.GaiaBatcher;
 import com.gaia3d.process.postprocess.pointcloud.ByteAddress;
@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
-public class Instanced3DModel implements TilingModel {
+public class Instanced3DModel implements ContentModel {
     private static final String MAGIC = "i3dm";
     private static final int VERSION = 1;
     private final GltfWriter gltfWriter;

@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * GltfBinary is a class that contains the binary data of the glTF file.
@@ -19,6 +21,7 @@ public class GltfNodeBuffer {
     private int colorsBufferViewId = -1;
     private int texcoordsBufferViewId = -1;
     private int batchIdBufferViewId = -1;
+    private int imageBufferViewId = -1;
 
     private int indicesAccessorId = -1;
     private int positionsAccessorId = -1;
@@ -36,4 +39,13 @@ public class GltfNodeBuffer {
     private ByteBuffer texcoordsBuffer = null;
     private ByteBuffer batchIdBuffer = null;
     private ByteBuffer textureBuffer = null;
+    private List<ByteBuffer> propertyBuffers = new ArrayList<>();
+
+    public int getMaxBufferViewId() {
+        return Math.max(Math.max(Math.max(Math.max(Math.max(indicesBufferViewId, positionsBufferViewId), normalsBufferViewId), colorsBufferViewId), texcoordsBufferViewId), batchIdBufferViewId);
+    }
+
+    public int getMaxAccessorId() {
+        return Math.max(Math.max(Math.max(Math.max(Math.max(indicesAccessorId, positionsAccessorId), normalsAccessorId), colorsAccessorId), texcoordsAccessorId), batchIdAccessorId);
+    }
 }
