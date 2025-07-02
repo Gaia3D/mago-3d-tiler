@@ -590,7 +590,7 @@ public class GltfWriter {
 
         byte[] imageBytes = writeImageBuffer(gaiaTexture.getBufferedImage(), mimeType);
 
-        int bufferOffset = binary.calcTotalByteBufferLength();
+        int bufferOffset = binary.calcTotalByteBufferLength() + binary.calcTotalImageByteBufferLength();
         int bufferViewId = createBufferView(gltf, 0, bufferOffset, imageBytes.length, -1, -1);
 
         List<ImageBuffer> imageBuffers = binary.getImageBuffers();

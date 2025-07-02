@@ -81,6 +81,7 @@ class B3dmReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
+                "-tilesVersion", "1.1",
         };
         execute(args);
     }
@@ -280,7 +281,7 @@ class B3dmReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                //"-it", "",
+                "-tilesVersion", "1.1",
                 "-debug"
         };
         execute(args);
@@ -294,6 +295,7 @@ class B3dmReleaseTest {
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-it", "geojson",
                 "-heightColumn", "rel_height",
+                "-tilesVersion", "1.1",
                 "-c", "3857",
         };
         execute(args);
