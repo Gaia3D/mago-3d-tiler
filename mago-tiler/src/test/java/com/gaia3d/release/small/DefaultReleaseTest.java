@@ -20,7 +20,6 @@ class DefaultReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                "-tilesVersion", "1.1",
                 "-debug",
         };
         execute(args);
@@ -33,7 +32,6 @@ class DefaultReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
-                "-tilesVersion", "1.1",
                 "-debug",
         };
         execute(args);

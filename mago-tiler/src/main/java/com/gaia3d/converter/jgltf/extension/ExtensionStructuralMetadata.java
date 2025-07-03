@@ -1,4 +1,4 @@
-package com.gaia3d.converter.jgltf;
+package com.gaia3d.converter.jgltf.extension;
 
 import com.gaia3d.process.postprocess.DataType;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTableMap;

@@ -227,7 +227,7 @@ public class PointCloudModel implements ContentModel {
             rtcCenter[0] = transformMatrix.m30();
             rtcCenter[1] = transformMatrix.m31();
             rtcCenter[2] = transformMatrix.m32();
-            featureTable.setRctCenter(rtcCenter);
+            featureTable.setRtcCenter(rtcCenter);
         }
 
         GaiaBatchTable batchTable = new GaiaBatchTable();

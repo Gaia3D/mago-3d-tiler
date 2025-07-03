@@ -105,7 +105,7 @@ public class Batched3DModel implements ContentModel {
             rtcCenter[0] = worldTransformMatrix.m30();
             rtcCenter[1] = worldTransformMatrix.m31();
             rtcCenter[2] = worldTransformMatrix.m32();
-            featureTable.setRctCenter(rtcCenter);
+            featureTable.setRtcCenter(rtcCenter);
         }
 
         File outputFile = new File(globalOptions.getOutputPath());

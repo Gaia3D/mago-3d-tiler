@@ -1,16 +1,11 @@
 package com.gaia3d.process.postprocess.batch;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.json.JsonWriteFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.jgltf.GltfWriterV2;
-import com.gaia3d.io.LittleEndianDataInputStream;
-import com.gaia3d.io.LittleEndianDataOutputStream;
+import com.gaia3d.converter.jgltf.BatchedModelGltfWriter;
 import com.gaia3d.process.postprocess.ContentModel;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
@@ -19,26 +14,24 @@ import com.gaia3d.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix3d;
 import org.joml.Matrix4d;
-import org.lwjgl.BufferUtils;
 
-import java.io.*;
-import java.nio.ByteBuffer;
-import java.nio.file.Files;
+import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@SuppressWarnings("ALL")
+/**
+ * 3D Tiles 1.1 Batched Model
+ */
 @Slf4j
 public class Batched3DModelV2 implements ContentModel {
     private static final String MAGIC = "glb";
-    private static final int VERSION = 1;
-    private final GltfWriterV2 gltfWriter;
+    private final BatchedModelGltfWriter gltfWriter;
 
     public Batched3DModelV2() {
-        this.gltfWriter = new GltfWriterV2();
+        this.gltfWriter = new BatchedModelGltfWriter();
     }
 
     @Override
@@ -47,35 +40,10 @@ public class Batched3DModelV2 implements ContentModel {
 
         GaiaBatcher gaiaBatcher = new GaiaBatcher();
         GaiaSet batchedSet = gaiaBatcher.runBatching(contentInfo.getTileInfos(), contentInfo.getNodeCode(), contentInfo.getLod());
-
-        int featureTableJSONByteLength;
-        int batchTableJSONByteLength;
-        String featureTableJson;
-        String batchTableJson;
         String nodeCode = contentInfo.getNodeCode();
 
         List<TileInfo> tileInfos = contentInfo.getTileInfos();
         int batchLength = tileInfos.size();
-
-        List<String> uuidList = new ArrayList<>();
-        List<String> nameList = new ArrayList<>();
-        List<String> fileNameList = new ArrayList<>();
-        List<String> nodeNameList = new ArrayList<>();
-
-        tileInfos.forEach((tileInfo) -> {
-            GaiaAttribute attribute = tileInfo.getScene().getAttribute();
-            Map<String, String> attributes = attribute.getAttributes();
-
-            String uuid = attributes.getOrDefault("geometry", "DefaultName");
-            String name = attributes.getOrDefault("name", "DefaultName");
-            String fileName = attribute.getFileName();
-            String nodeName = attribute.getNodeName();
-
-            uuidList.add(uuid);
-            nameList.add(name);
-            fileNameList.add(fileName);
-            nodeNameList.add(nodeName);
-        });
 
         if (batchedSet == null) {
             log.error("[ERROR] BatchedSet is null, return null.");
@@ -83,7 +51,7 @@ public class Batched3DModelV2 implements ContentModel {
         }
         GaiaScene scene = new GaiaScene(batchedSet);
 
-        /* FeatureTable */
+        /* create FeatureTable */
         GaiaFeatureTable featureTable = new GaiaFeatureTable();
         featureTable.setBatchLength(batchLength);
         if (!globalOptions.isClassicTransformMatrix()) {
@@ -96,7 +64,8 @@ public class Batched3DModelV2 implements ContentModel {
             xRotationMatrix3d.mul(rotationMatrix3d, rotationMatrix3d);
             Matrix4d rotationMatrix4d = new Matrix4d(rotationMatrix3d);
 
-            GaiaNode rootNode = scene.getNodes().get(0); // z-up
+            GaiaNode rootNode = scene.getNodes()
+                    .get(0); // z-up
             Matrix4d sceneTransformMatrix = rootNode.getTransformMatrix();
             rotationMatrix4d.mul(sceneTransformMatrix, sceneTransformMatrix);
 
@@ -104,24 +73,27 @@ public class Batched3DModelV2 implements ContentModel {
             rtcCenter[0] = worldTransformMatrix.m30();
             rtcCenter[1] = worldTransformMatrix.m31();
             rtcCenter[2] = worldTransformMatrix.m32();
-            featureTable.setRctCenter(rtcCenter);
+            featureTable.setRtcCenter(rtcCenter);
         }
 
         File outputFile = new File(globalOptions.getOutputPath());
-        Path outputRoot = outputFile.toPath().resolve("data");
-        if (!outputRoot.toFile().exists() && outputRoot.toFile().mkdir()) {
+        Path outputRoot = outputFile.toPath()
+                .resolve("data");
+        if (!outputRoot.toFile()
+                .exists() && outputRoot.toFile()
+                .mkdir()) {
             log.debug("[Create][data] Created output data directory,", outputRoot);
         }
 
-        /* BatchTable */
+        /* create BatchTable */
         GaiaBatchTableMap<String, List<String>> batchTableMap = new GaiaBatchTableMap<>();
         AtomicInteger batchIdIndex = new AtomicInteger(0);
         tileInfos.forEach((tileInfo) -> {
-            GaiaAttribute attribute = tileInfo.getScene().getAttribute();
+            GaiaAttribute attribute = tileInfo.getScene()
+                    .getAttribute();
             Map<String, String> attributes = attribute.getAttributes();
-            GaiaSet set = tileInfo.getSet();
-
-            String UUID = attribute.getIdentifier().toString();
+            String UUID = attribute.getIdentifier()
+                    .toString();
             String FileName = attribute.getFileName();
             String NodeName = attribute.getNodeName();
 
@@ -130,7 +102,6 @@ public class Batched3DModelV2 implements ContentModel {
             NodeName = StringUtils.convertUTF8(NodeName);
 
             batchTableMap.computeIfAbsent("UUID", k -> new ArrayList<>());
-
             batchTableMap.get("UUID").add(UUID);
 
             batchTableMap.computeIfAbsent("FileName", k -> new ArrayList<>());
@@ -145,129 +116,14 @@ public class Batched3DModelV2 implements ContentModel {
             attributes.forEach((key, value) -> {
                 String utf8Value = StringUtils.convertUTF8(value);
                 batchTableMap.computeIfAbsent(key, k -> new ArrayList<>());
-                batchTableMap.get(key).add(utf8Value);
+                batchTableMap.get(key)
+                        .add(utf8Value);
             });
         });
 
-        byte[] glbBytes;
-        //ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        //this.gltfWriter.writeGlb(scene, byteArrayOutputStream, featureTable, batchTableMap);
-
-        String glbFileName = nodeCode + ".glb";
+        String glbFileName = nodeCode + "." + MAGIC;
         File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
         this.gltfWriter.writeGlb(scene, glbOutputFile, featureTable, batchTableMap);
-
-        //glbBytes = byteArrayOutputStream.toByteArray();
-        //scene = null;
-
-        /*ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
-        try {
-            String featureTableText = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(featureTable));
-            featureTableJson = featureTableText;
-            featureTableJSONByteLength = featureTableText.length();
-
-            String batchTableText = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(batchTableMap));
-            batchTableJson = batchTableText;
-            batchTableJSONByteLength = batchTableText.length();
-        } catch (JsonProcessingException e) {
-            log.error("[ERROR] :", e);
-            throw new RuntimeException(e);
-        }
-
-        int byteLength = 28 + featureTableJSONByteLength + batchTableJSONByteLength + glbBytes.length;
-
-        File b3dmOutputFile = outputRoot.resolve(nodeCode + "." + MAGIC).toFile();
-        try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(b3dmOutputFile)))) {
-            // 28-byte header (first 20 bytes)
-//            stream.writePureText(MAGIC);
-//            stream.writeInt(VERSION);
-//            stream.writeInt(byteLength);
-//            stream.writeInt(featureTableJSONByteLength);
-//            int featureTableBinaryByteLength = 0;
-//            stream.writeInt(featureTableBinaryByteLength);
-//            // 28-byte header (next 8 bytes)
-//            stream.writeInt(batchTableJSONByteLength);
-//            int batchTableBinaryByteLength = 0;
-//            stream.writeInt(batchTableBinaryByteLength);
-//            stream.writePureText(featureTableJson);
-//            stream.writePureText(batchTableJson);
-            // body
-            stream.write(glbBytes);
-            glbBytes = null;
-        } catch (Exception e) {
-            log.error("[ERROR] :", e);
-        }*/
         return contentInfo;
-    }
-
-    private byte[] readGlb(File glbOutputFile) {
-        ByteBuffer byteBuffer = readFile(glbOutputFile, true);
-        byte[] bytes = new byte[byteBuffer.remaining()];
-        byteBuffer.get(bytes);
-        return bytes;
-    }
-
-    public void extract(File b3dm, File output) {
-        byte[] glbBytes = null;
-        try (LittleEndianDataInputStream stream = new LittleEndianDataInputStream(new BufferedInputStream(new FileInputStream(b3dm)))) {
-            // 28-byte header (first 20 bytes)
-            String magic = stream.readIntAndUTF(4);
-            int version = stream.readInt();
-            int byteLength = stream.readInt();
-            int featureTableJSONByteLength = stream.readInt();
-            int featureTableBinaryByteLength = stream.readInt();
-            // 28-byte header (next 8 bytes)
-            int batchTableJSONByteLength = stream.readInt();
-            int batchTableBinaryByteLength = stream.readInt();
-            String featureTableJson = stream.readIntAndUTF(featureTableJSONByteLength);
-            String batchTableJson = stream.readIntAndUTF(batchTableJSONByteLength);
-            String featureTableBinary = stream.readIntAndUTF(featureTableBinaryByteLength);
-            String batchTableBinary = stream.readIntAndUTF(batchTableBinaryByteLength);
-            // body
-            int glbSize = byteLength - 28 - featureTableJSONByteLength - batchTableJSONByteLength - featureTableBinaryByteLength - batchTableBinaryByteLength;
-            glbBytes = new byte[glbSize];
-            int result = stream.read(glbBytes);
-            log.info("{}, {}", magic, version);
-            log.info("{}", featureTableJson);
-            log.info("{}", batchTableJson);
-            log.info("{}", featureTableBinary);
-            log.info("{}", batchTableBinary);
-            log.info("{}", result);
-        } catch (Exception e) {
-            log.error("[ERROR] :", e);
-        }
-
-        try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(output)))) {
-            assert glbBytes != null;
-            stream.write(glbBytes);
-        } catch (IOException e) {
-            log.error("[ERROR] :", e);
-            throw new RuntimeException(e);
-        }
-    }
-
-    public ByteBuffer readFile(File file, boolean flip) {
-        Path path = file.toPath();
-        try (var is = new BufferedInputStream(Files.newInputStream(path))) {
-            int size = (int) Files.size(path);
-            ByteBuffer byteBuffer = BufferUtils.createByteBuffer(size);
-
-            int bufferSize = 8192;
-            bufferSize = Math.min(size, bufferSize);
-            byte[] buffer = new byte[bufferSize];
-            while (buffer.length > 0 && is.read(buffer) != -1) {
-                byteBuffer.put(buffer);
-                if (is.available() < bufferSize) {
-                    buffer = new byte[is.available()];
-                }
-            }
-            if (flip)
-                byteBuffer.flip();
-            return byteBuffer;
-        } catch (IOException e) {
-            log.error("[ERROR] FileUtils.readBytes: " + e.getMessage());
-        }
-        return null;
     }
 }

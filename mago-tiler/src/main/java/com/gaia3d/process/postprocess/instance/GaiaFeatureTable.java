@@ -1,7 +1,9 @@
 package com.gaia3d.process.postprocess.instance;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gaia3d.process.postprocess.batch.GaiaBatchTableMap;
 import com.gaia3d.process.postprocess.pointcloud.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +18,7 @@ public class GaiaFeatureTable {
     private int batchLength;
 
     @JsonProperty("RTC_CENTER")
-    private double[] rctCenter = new double[3];
+    private double[] rtcCenter = new double[3];
 
     /* Instanced3DModel */
     @JsonProperty("INSTANCES_LENGTH")
@@ -47,4 +49,7 @@ public class GaiaFeatureTable {
     private ByteAddress color;
     @JsonProperty("BATCH_ID")
     private ByteAddress batchId;
+
+    @JsonIgnore
+    private Instanced3DModelBinary instancedBuffer;
 }

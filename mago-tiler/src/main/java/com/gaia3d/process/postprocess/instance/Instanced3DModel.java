@@ -153,7 +153,7 @@ public class Instanced3DModel implements ContentModel {
             rtcCenter[0] = transformMatrix.m30();
             rtcCenter[1] = transformMatrix.m31();
             rtcCenter[2] = transformMatrix.m32();
-            featureTable.setRctCenter(rtcCenter);
+            featureTable.setRtcCenter(rtcCenter);
         }
 
         featureTable.setInstancesLength(instanceLength);
@@ -224,8 +224,8 @@ public class Instanced3DModel implements ContentModel {
             createInstance(gltfOutputFile, contentInfo, tileInfos.get(0));
         }
 
-        File b3dmOutputFile = outputRoot.resolve(nodeCode + "." + MAGIC).toFile();
-        try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(b3dmOutputFile)))) {
+        File i3dmOutputFile = outputRoot.resolve(nodeCode + "." + MAGIC).toFile();
+        try (LittleEndianDataOutputStream stream = new LittleEndianDataOutputStream(new BufferedOutputStream(new FileOutputStream(i3dmOutputFile)))) {
             // 32-byte header (first 20 bytes)
             stream.writePureText(MAGIC);
             stream.writeInt(VERSION);

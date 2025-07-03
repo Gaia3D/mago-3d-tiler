@@ -1,4 +1,4 @@
-package com.gaia3d.converter.jgltf;
+package com.gaia3d.converter.jgltf.extension;
 
 import lombok.Getter;
 import lombok.Setter;

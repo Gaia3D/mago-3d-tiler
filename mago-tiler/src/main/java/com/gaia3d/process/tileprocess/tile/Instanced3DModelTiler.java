@@ -312,7 +312,11 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
             contentInfo.setTileInfos(resultInfos);
             contentInfo.setRemainTileInfos(remainInfos);
             Content content = new Content();
-            content.setUri("data/" + nodeCode + ".i3dm");
+            if (globalOptions.getTilesVersion().equals("1.0")) {
+                content.setUri("data/" + nodeCode + ".i3dm");
+            } else {
+                content.setUri("data/" + nodeCode + ".glb");
+            }
             content.setContentInfo(contentInfo);
             childNode.setContent(content);
         } else {

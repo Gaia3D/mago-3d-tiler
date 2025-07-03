@@ -6,7 +6,7 @@ import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.util.GeometryUtils;
+import com.gaia3d.converter.jgltf.extension.ExtensionConstant;
 import com.gaia3d.util.ImageResizer;
 import com.gaia3d.util.ImageUtils;
 import de.javagl.jgltf.impl.v2.*;
@@ -35,7 +35,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.List;
 
@@ -127,8 +126,8 @@ public class GltfWriter {
         initScene(gltf, rootNode);
 
         if (globalOptions.isUseQuantization()) {
-            gltf.addExtensionsUsed("KHR_mesh_quantization");
-            gltf.addExtensionsRequired("KHR_mesh_quantization");
+            gltf.addExtensionsUsed(ExtensionConstant.MESH_QUANTIZATION.getExtensionName());
+            gltf.addExtensionsRequired(ExtensionConstant.MESH_QUANTIZATION.getExtensionName());
         }
 
         gaiaScene.getMaterials().forEach(gaiaMaterial -> createMaterial(gltf, binary, gaiaMaterial));

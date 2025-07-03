@@ -48,11 +48,7 @@ public class Mago3DTiler {
             if (isPhotogrammetry) {
                 processFlow = new PhotogrammetryModel();
             } else {
-                processFlow = new BatchedProcessModel(); // original.***
-
-                // test for voxelization and marching cubing.***
-                //processFlow = new BatchedProcessModelML();
-                // end test.------------------------------------
+                processFlow = new BatchedProcessModel();
             }
         } else if (FormatType.PNTS == outputFormat) {
             processFlow = new PointCloudProcessModel();

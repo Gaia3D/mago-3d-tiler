@@ -1,4 +1,4 @@
-package com.gaia3d.converter.jgltf;
+package com.gaia3d.converter.jgltf.extension;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;

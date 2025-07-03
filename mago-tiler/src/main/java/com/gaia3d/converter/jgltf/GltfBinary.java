@@ -27,6 +27,7 @@ public class GltfBinary {
     private List<GltfNodeBuffer> nodeBuffers = new ArrayList<>();
     private List<ImageBuffer> imageBuffers = new ArrayList<>();
     private List<ByteBuffer> propertyBuffers = new ArrayList<>();
+    private List<ByteBuffer> instancingBuffers = new ArrayList<>();
 
     public int calcTotalByteBufferLength() {
         return nodeBuffers.stream().mapToInt(GltfNodeBuffer::getTotalByteBufferLength).sum();
@@ -40,6 +41,10 @@ public class GltfBinary {
         return propertyBuffers.stream().mapToInt(ByteBuffer::capacity).sum();
     }
 
+    public int calcTotalInstancingByteBufferLength() {
+        return instancingBuffers.stream().mapToInt(ByteBuffer::capacity).sum();
+    }
+
     /**
      * Fills the body variable with the binary data of the glTF file.
      * It iterates through the nodeBuffers list and puts the binary data of each node into the body variable.
@@ -48,7 +53,9 @@ public class GltfBinary {
         int imageBuffersTotalLength = imageBuffers.stream().mapToInt(ImageBuffer::getByteBufferLength).sum();
         int nodeBuffersTotalLength = nodeBuffers.stream().mapToInt(GltfNodeBuffer::getTotalByteBufferLength).sum();
         int propertyBuffersTotalLength = propertyBuffers.stream().mapToInt(ByteBuffer::capacity).sum();
-        int totalByteBufferLength = imageBuffersTotalLength + nodeBuffersTotalLength + propertyBuffersTotalLength;
+        int instancingBuffersTotalLength = instancingBuffers.stream().mapToInt(ByteBuffer::capacity).sum();
+
+        int totalByteBufferLength = imageBuffersTotalLength + nodeBuffersTotalLength + propertyBuffersTotalLength + instancingBuffersTotalLength;
 
         body = ByteBuffer.allocate(totalByteBufferLength);
         ByteBuffer bodyBuffer = body;
@@ -100,6 +107,12 @@ public class GltfBinary {
             propertyBuffer.rewind();
             propertyBuffer.limit(propertyBuffer.capacity());
             bodyBuffer.put(propertyBuffer);
+        });
+
+        instancingBuffers.forEach((instancingBuffer) -> {
+            instancingBuffer.rewind();
+            instancingBuffer.limit(instancingBuffer.capacity());
+            bodyBuffer.put(instancingBuffer);
         });
         bodyBuffer.rewind();
     }

@@ -14,6 +14,7 @@ import com.gaia3d.converter.loader.InstancedFileLoader;
 import com.gaia3d.process.TilingPipeline;
 import com.gaia3d.process.postprocess.PostProcess;
 import com.gaia3d.process.postprocess.instance.Instanced3DModel;
+import com.gaia3d.process.postprocess.instance.Instanced3DModelV2;
 import com.gaia3d.process.preprocess.*;
 import com.gaia3d.process.tileprocess.Pipeline;
 import com.gaia3d.process.tileprocess.TilingProcess;
@@ -49,7 +50,7 @@ public class InstancedProcessModel implements ProcessFlowModel {
         /* Pre-process */
         List<PreProcess> preProcessors = new ArrayList<>();
         preProcessors.add(new GaiaTileInfoInitialization());
-        preProcessors.add(new GaiaRotation());
+        //preProcessors.add(new GaiaRotation());
         preProcessors.add(new GaiaTexCoordCorrection());
         preProcessors.add(new InstanceTranslation(geoTiffs));
 
@@ -58,7 +59,11 @@ public class InstancedProcessModel implements ProcessFlowModel {
 
         /* Post-process */
         List<PostProcess> postProcessors = new ArrayList<>();
-        postProcessors.add(new Instanced3DModel());
+        if (globalOptions.getTilesVersion().equals("1.0")) {
+            postProcessors.add(new Instanced3DModel());
+        } else {
+            postProcessors.add(new Instanced3DModelV2());
+        }
 
         Pipeline processPipeline = new TilingPipeline(preProcessors, tilingProcess, postProcessors);
         processPipeline.process(fileLoader);
