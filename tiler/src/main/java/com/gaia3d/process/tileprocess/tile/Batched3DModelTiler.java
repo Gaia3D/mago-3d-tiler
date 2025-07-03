@@ -45,7 +45,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         }
 
         Node root = createRoot();
-        root.setBoundingVolume(new BoundingVolume(globalBoundingBox, true));
+        root.setBoundingVolume(new BoundingVolume(globalBoundingBox, globalOptions.isCartesian()));
         root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
         root.setGeometricError(geometricError);
 
@@ -174,7 +174,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);
         }
-        BoundingVolume boundingVolume = new BoundingVolume(boundingBox, true);
+        BoundingVolume boundingVolume = new BoundingVolume(boundingBox, globalOptions.isCartesian());
         geometricError = DecimalUtils.cutFast(geometricError);
 
         Node childNode = new Node();
@@ -201,7 +201,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);
         }
-        BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox, true);
+        BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox, globalOptions.isCartesian());
 
         String nodeCode = parentNode.getNodeCode();
         LevelOfDetail minLod = LevelOfDetail.getByLevel(minLevel);
@@ -234,6 +234,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         childNode.setParent(parentNode);
         childNode.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
         childNode.setBoundingVolume(boundingVolume);
+        childNode.setCartesian(globalOptions.isCartesian());
         childNode.setNodeCode(nodeCode);
         childNode.setGeometricError(lodError + 0.1);
         childNode.setChildren(new ArrayList<>());

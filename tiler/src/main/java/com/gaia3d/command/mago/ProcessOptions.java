@@ -25,6 +25,7 @@ public enum ProcessOptions {
     // Coordinate Options
     CRS("crs", "c", true,"Coordinate Reference Systems, EPSG Code(4326, 3857, 32652, 5186...)"),
     PROJ4("proj", "p",  true, "Proj4 parameters (ex: +proj=tmerc +la...)"),
+    CARTESIAN("cartesian", "ca", false, "[Experimental] Output in a cartesion CRS (no projection)"),
     X_OFFSET("xOffset", "xo", true, "X Offset value for coordinate transformation"),
     Y_OFFSET("yOffset", "yo", true, "Y Offset value for coordinate transformation"),
     Z_OFFSET("zOffset", "zo", true, "Z Offset value for coordinate transformation"),

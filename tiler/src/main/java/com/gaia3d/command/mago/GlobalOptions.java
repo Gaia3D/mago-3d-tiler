@@ -97,6 +97,7 @@ public class GlobalOptions {
     // projection options
     private CoordinateReferenceSystem crs; // default crs
     private String proj; // proj4 string
+    private boolean cartesian = false;
     private Vector3d translateOffset; // origin offset
 
     private boolean isSourcePrecision = false;
@@ -254,6 +255,7 @@ public class GlobalOptions {
             instance.setInstancePath(instancePath);
         }
 
+        instance.setCartesian(command.hasOption(ProcessOptions.CARTESIAN.getLongName()));
         if (command.hasOption(ProcessOptions.PROJ4.getLongName())) {
             instance.setProj(command.hasOption(ProcessOptions.PROJ4.getLongName()) ? command.getOptionValue(ProcessOptions.PROJ4.getLongName()) : null);
             CoordinateReferenceSystem crs = null;

@@ -58,10 +58,14 @@ public abstract class DefaultTiler {
     }
 
     protected Matrix4d getTransformMatrix(GaiaBoundingBox cartographicBoundingBox) {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
         Vector3d center = cartographicBoundingBox.getCenter();
-        // double[] cartesian = GlobeUtils.geographicToCartesianWgs84(center.x, center.y, center.z);
-        // return GlobeUtils.transformMatrixAtCartesianPointWgs84(cartesian[0], cartesian[1], cartesian[2]);
-        return GlobeUtils.transformMatrixAtCartesianPointWgs84(center.x, center.y, center.z);
+        if (globalOptions.isCartesian()) {
+            return GlobeUtils.transformMatrixAtCartesianPointWgs84(center.x, center.y, center.z);
+        } else {            
+            double[] cartesian = GlobeUtils.geographicToCartesianWgs84(center.x, center.y, center.z);
+            return GlobeUtils.transformMatrixAtCartesianPointWgs84(cartesian[0], cartesian[1], cartesian[2]);
+        }
     }
 
     protected Asset createAsset() {
@@ -81,9 +85,11 @@ public abstract class DefaultTiler {
     }
 
     protected Node createRoot() {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
         Node root = new Node();
         root.setParent(root);
         root.setNodeCode("R");
+        root.setCartesian(globalOptions.isCartesian());
         root.setRefine(Node.RefineType.REPLACE);
         root.setChildren(new ArrayList<>());
         return root;

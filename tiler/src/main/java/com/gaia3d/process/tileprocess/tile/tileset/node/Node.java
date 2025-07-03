@@ -38,6 +38,8 @@ public class Node {
     @JsonIgnore
     private GaiaBoundingBox boundingBox;
     @JsonIgnore
+    private boolean cartesian;
+    @JsonIgnore
     private int depth;
 
     private BoundingVolume boundingVolume;
@@ -290,7 +292,7 @@ public class Node {
         child0.setDepth(this.getDepth() + 1);
         child0.setGeometricError(childGeometricError);
         GaiaBoundingBox child0BoundingBox = new GaiaBoundingBox(minLonDeg, minLatDeg, minAltitude, midLonDeg, midLatDeg, midAltitude, false);
-        child0.setBoundingVolume(new BoundingVolume(child0BoundingBox, true));
+        child0.setBoundingVolume(new BoundingVolume(child0BoundingBox, cartesian));
         child0.setNodeCode(parentNodeCode + "0");
 
         // 1. right - down - bottom
@@ -300,7 +302,7 @@ public class Node {
         child1.setDepth(this.getDepth() + 1);
         child1.setGeometricError(childGeometricError);
         GaiaBoundingBox child1BoundingBox = new GaiaBoundingBox(midLonDeg, minLatDeg, minAltitude, maxLonDeg, midLatDeg, midAltitude, false);
-        child1.setBoundingVolume(new BoundingVolume(child1BoundingBox, true));
+        child1.setBoundingVolume(new BoundingVolume(child1BoundingBox, cartesian));
         child1.setNodeCode(parentNodeCode + "1");
 
         // 2. right - up - bottom
@@ -310,7 +312,7 @@ public class Node {
         child2.setDepth(this.getDepth() + 1);
         child2.setGeometricError(childGeometricError);
         GaiaBoundingBox child2BoundingBox = new GaiaBoundingBox(midLonDeg, midLatDeg, minAltitude, maxLonDeg, maxLatDeg, midAltitude, false);
-        child2.setBoundingVolume(new BoundingVolume(child2BoundingBox, true));
+        child2.setBoundingVolume(new BoundingVolume(child2BoundingBox, cartesian));
         child2.setNodeCode(parentNodeCode + "2");
 
         // 3. left - up - bottom
@@ -320,7 +322,7 @@ public class Node {
         child3.setDepth(this.getDepth() + 1);
         child3.setGeometricError(childGeometricError);
         GaiaBoundingBox child3BoundingBox = new GaiaBoundingBox(minLonDeg, midLatDeg, minAltitude, midLonDeg, maxLatDeg, midAltitude, false);
-        child3.setBoundingVolume(new BoundingVolume(child3BoundingBox, true));
+        child3.setBoundingVolume(new BoundingVolume(child3BoundingBox, cartesian));
         child3.setNodeCode(parentNodeCode + "3");
 
         // 4. left - down - top
@@ -330,7 +332,7 @@ public class Node {
         child4.setDepth(this.getDepth() + 1);
         child4.setGeometricError(childGeometricError);
         GaiaBoundingBox child4BoundingBox = new GaiaBoundingBox(minLonDeg, minLatDeg, midAltitude, midLonDeg, midLatDeg, maxAltitude, false);
-        child4.setBoundingVolume(new BoundingVolume(child4BoundingBox, true));
+        child4.setBoundingVolume(new BoundingVolume(child4BoundingBox, cartesian));
         child4.setNodeCode(parentNodeCode + "4");
 
         // 5. right - down - top
@@ -340,7 +342,7 @@ public class Node {
         child5.setDepth(this.getDepth() + 1);
         child5.setGeometricError(childGeometricError);
         GaiaBoundingBox child5BoundingBox = new GaiaBoundingBox(midLonDeg, minLatDeg, midAltitude, maxLonDeg, midLatDeg, maxAltitude, false);
-        child5.setBoundingVolume(new BoundingVolume(child5BoundingBox, true));
+        child5.setBoundingVolume(new BoundingVolume(child5BoundingBox, cartesian));
         child5.setNodeCode(parentNodeCode + "5");
 
         // 6. right - up - top
@@ -350,7 +352,7 @@ public class Node {
         child6.setDepth(this.getDepth() + 1);
         child6.setGeometricError(childGeometricError);
         GaiaBoundingBox child6BoundingBox = new GaiaBoundingBox(midLonDeg, midLatDeg, midAltitude, maxLonDeg, maxLatDeg, maxAltitude, false);
-        child6.setBoundingVolume(new BoundingVolume(child6BoundingBox, true));
+        child6.setBoundingVolume(new BoundingVolume(child6BoundingBox, cartesian));
         child6.setNodeCode(parentNodeCode + "6");
 
         // 7. left - up - top
@@ -360,7 +362,7 @@ public class Node {
         child7.setDepth(this.getDepth() + 1);
         child7.setGeometricError(childGeometricError);
         GaiaBoundingBox child7BoundingBox = new GaiaBoundingBox(minLonDeg, midLatDeg, midAltitude, midLonDeg, maxLatDeg, maxAltitude, false);
-        child7.setBoundingVolume(new BoundingVolume(child7BoundingBox, true));
+        child7.setBoundingVolume(new BoundingVolume(child7BoundingBox, cartesian));
         child7.setNodeCode(parentNodeCode + "7");
     }
 

@@ -48,8 +48,8 @@ public class BoundingVolume implements Serializable {
         this(boundingBox, false);
     }
 
-    public BoundingVolume(GaiaBoundingBox boundingBox, boolean asbox) {
-        if (asbox) {
+    public BoundingVolume(GaiaBoundingBox boundingBox, boolean cartesian) {
+        if (cartesian) {
             // The first three elements define the x, y, and z values for the center of the box.
             // The next three elements (with indices 3, 4, and 5) define the x-axis direction and half-length.
             // The next three elements (indices 6, 7, and 8) define the y-axis direction and half-length.

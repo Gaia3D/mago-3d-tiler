@@ -222,7 +222,7 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
             rotateX90(transformMatrix);
         }
 
-        BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox, true);
+        BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
 
         String nodeCode = parentNode.getNodeCode();
         LevelOfDetail minLod = LevelOfDetail.getByLevel(minLevel);
