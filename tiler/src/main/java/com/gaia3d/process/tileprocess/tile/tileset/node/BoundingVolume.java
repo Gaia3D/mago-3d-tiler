@@ -45,20 +45,57 @@ public class BoundingVolume implements Serializable {
 
     //public BoundingVolume(GaiaBoundingBox boundingBox, CoordinateReferenceSystem source) {
     public BoundingVolume(GaiaBoundingBox boundingBox) {
-        ProjCoordinate minPoint = new ProjCoordinate(boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ());
-        ProjCoordinate maxPoint = new ProjCoordinate(boundingBox.getMaxX(), boundingBox.getMaxY(), boundingBox.getMaxZ());
-        double[] rootRegion = new double[6];
-        rootRegion[0] = Math.toRadians(minPoint.x);
-        rootRegion[1] = Math.toRadians(minPoint.y);
-        rootRegion[2] = Math.toRadians(maxPoint.x);
-        rootRegion[3] = Math.toRadians(maxPoint.y);
-        rootRegion[4] = boundingBox.getMinZ();
-        rootRegion[5] = boundingBox.getMaxZ();
-        for (int i = 0; i < rootRegion.length; i++) {
-            rootRegion[i] = DecimalUtils.cutFast(rootRegion[i]);
+        this(boundingBox, false);
+    }
+
+    public BoundingVolume(GaiaBoundingBox boundingBox, boolean asbox) {
+        if (asbox) {
+            // The first three elements define the x, y, and z values for the center of the box.
+            // The next three elements (with indices 3, 4, and 5) define the x-axis direction and half-length.
+            // The next three elements (indices 6, 7, and 8) define the y-axis direction and half-length.
+            // The last three elements (indices 9, 10, and 11) define the z-axis direction and half-length.
+            double minX = boundingBox.getMinX();
+            double minY = boundingBox.getMinY();
+            double minZ = boundingBox.getMinZ();
+            double maxX = boundingBox.getMaxX();
+            double maxY = boundingBox.getMaxY();
+            double maxZ = boundingBox.getMaxZ();
+            double xHalfLength = (maxX - minX) / 2;
+            double yHalfLength = (maxY - minY) / 2;
+            double zHalfLength = (maxZ - minZ) / 2;
+            this.setType(BoundingVolumeType.BOX);
+            this.setBox(
+                new double[] {
+                    minX + xHalfLength,
+                    minY + yHalfLength,
+                    minZ + zHalfLength,
+                    xHalfLength,
+                    0,
+                    0,
+                    0,
+                    yHalfLength,
+                    0,
+                    0,
+                    0,
+                    zHalfLength,
+                }
+            );
+        } else {
+            ProjCoordinate minPoint = new ProjCoordinate(boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ());
+            ProjCoordinate maxPoint = new ProjCoordinate(boundingBox.getMaxX(), boundingBox.getMaxY(), boundingBox.getMaxZ());
+            double[] rootRegion = new double[6];
+            rootRegion[0] = Math.toRadians(minPoint.x);
+            rootRegion[1] = Math.toRadians(minPoint.y);
+            rootRegion[2] = Math.toRadians(maxPoint.x);
+            rootRegion[3] = Math.toRadians(maxPoint.y);
+            rootRegion[4] = boundingBox.getMinZ();
+            rootRegion[5] = boundingBox.getMaxZ();
+            for (int i = 0; i < rootRegion.length; i++) {
+                rootRegion[i] = DecimalUtils.cutFast(rootRegion[i]);
+            }
+            this.setType(BoundingVolumeType.REGION);
+            this.setRegion(rootRegion);
         }
-        this.setType(BoundingVolumeType.REGION);
-        this.setRegion(rootRegion);
     }
 
     public BoundingVolume(BoundingVolume boundingVolume) {
@@ -131,23 +168,57 @@ public class BoundingVolume implements Serializable {
      * maximum x or y value is increased to make square bounding volume.
      * @return square bounding volume
      */
-    public BoundingVolume createSqureBoundingVolume() {
-        double minX = region[0];
-        double minY = region[1];
-        double maxX = region[2];
-        double maxY = region[3];
-        double xLength = maxX - minX;
-        double yLength = maxY - minY;
-        double offset = Math.abs(xLength - yLength);
-        if (xLength > yLength) {
-            maxY = maxY + offset;
-        } else {
-            maxX = maxX + offset;
-        }
-        BoundingVolume boundingVolume = new BoundingVolume(BoundingVolumeType.REGION);
-        boundingVolume.setRegion(new double[]{minX, minY, maxX, maxY, region[4], region[5]});
-        return boundingVolume;
-    }
+     public BoundingVolume createSqureBoundingVolume() {
+         if (region != null) {
+             double minX = region[0];
+             double minY = region[1];
+             double maxX = region[2];
+             double maxY = region[3];
+             double xLength = maxX - minX;
+             double yLength = maxY - minY;
+             double offset = Math.abs(xLength - yLength);
+             if (xLength > yLength) {
+                 maxY = maxY + offset;
+             } else {
+                 maxX = maxX + offset;
+             }
+             BoundingVolume boundingVolume = new BoundingVolume(
+                 BoundingVolumeType.REGION
+             );
+             boundingVolume.setRegion(
+                 new double[] { minX, minY, maxX, maxY, region[4], region[5] }
+             );
+             return boundingVolume;
+         } else if (box != null) {
+             double max = Math.max(box[3], box[7]);
+             BoundingVolume boundingVolume = new BoundingVolume(
+                 BoundingVolumeType.BOX
+             );
+             boundingVolume.setBox(
+                 new double[] {
+                     box[0],
+                     box[1],
+                     box[2],
+                     max,
+                     0,
+                     0,
+                     0,
+                     max,
+                     0,
+                     0,
+                     0,
+                     box[11]
+                 }
+             );
+             return boundingVolume;
+         } else {
+             BoundingVolume boundingVolume = new BoundingVolume(
+                 BoundingVolumeType.REGION
+             );
+             boundingVolume.setRegion(new double[] { 0, 0, 0, 0, 0, 0 });
+             return boundingVolume;
+         }
+     }
 }
 
 
