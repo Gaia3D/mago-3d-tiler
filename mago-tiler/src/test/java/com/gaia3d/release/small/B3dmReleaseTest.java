@@ -117,6 +117,7 @@ class B3dmReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
+                "-debug",
                 "-c", "5186"
         };
         execute(args);

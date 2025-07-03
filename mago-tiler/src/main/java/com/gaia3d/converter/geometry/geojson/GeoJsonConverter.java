@@ -80,10 +80,10 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
 
         try (BufferedInputStream bufferedInputStream = new BufferedInputStream(Files.newInputStream(input.toPath()))) {
             FeatureJSON geojson = new FeatureJSON();
-            log.info("Reading GeoJSON file : {}", input.getAbsolutePath());
+            log.info("[Load] Reading GeoJSON file : {}", input.getAbsolutePath());
             SimpleFeatureCollection featureCollection = (SimpleFeatureCollection) geojson.readFeatureCollection(bufferedInputStream);
             FeatureIterator<SimpleFeature> iterator = featureCollection.features();
-            log.info("Reading GeoJSON file : {} done", input.getAbsolutePath());
+            log.info("[Load] Reading GeoJSON file : {} done", input.getAbsolutePath());
 
             var coordinateReferenceSystem = featureCollection.getSchema().getCoordinateReferenceSystem();
             if (isDefaultCrs && coordinateReferenceSystem != null) {

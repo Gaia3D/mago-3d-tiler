@@ -75,7 +75,6 @@ public class BatchedProcessModel implements ProcessFlowModel {
         postProcessors.add(new GaiaMaximizer());
         postProcessors.add(new GaiaRelocation());
 
-
         if (globalOptions.getTilesVersion().equals("1.0")) {
             postProcessors.add(new Batched3DModel());
         } else {

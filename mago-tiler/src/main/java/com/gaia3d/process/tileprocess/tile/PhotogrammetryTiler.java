@@ -962,7 +962,11 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             contentInfo.setTransformMatrix(nodeTMatrix);
 
             Content content = new Content();
-            content.setUri("data/" + nodeCode + ".b3dm");
+            if (globalOptions.getTilesVersion().equals("1.0")) {
+                content.setUri("data/" + nodeCode + ".b3dm");
+            } else {
+                content.setUri("data/" + nodeCode + ".glb");
+            }
             content.setContentInfo(contentInfo);
             if (node.getContent() != null) {
                 log.info("Error : node.getContent() is not null. NetSurfaces lod 5 or more******************************");
@@ -1707,7 +1711,11 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 contentInfo.setTransformMatrix(transformMatrix);
 
                 Content content = new Content();
-                content.setUri("data/" + nodeCode + ".b3dm");
+                if (globalOptions.getTilesVersion().equals("1.0")) {
+                    content.setUri("data/" + nodeCode + ".b3dm");
+                } else {
+                    content.setUri("data/" + nodeCode + ".glb");
+                }
                 content.setContentInfo(contentInfo);
                 if (childNode.getContent() != null) {
                     log.error("[ERROR] childNode.getContent() is not null.");
@@ -1780,7 +1788,11 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             contentInfo.setTransformMatrix(transformMatrix);
 
             Content content = new Content();
-            content.setUri("data/" + nodeCode + ".b3dm");
+            if (globalOptions.getTilesVersion().equals("1.0")) {
+                content.setUri("data/" + nodeCode + ".b3dm");
+            } else {
+                content.setUri("data/" + nodeCode + ".glb");
+            }
             content.setContentInfo(contentInfo);
             childNode.setContent(content);
         } else {

@@ -56,10 +56,10 @@ public class GeoJsonInstanceConverter implements AttributeReader {
 
         try (BufferedInputStream bufferedInputStream = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
             FeatureJSON geojson = new FeatureJSON();
-            log.info("Reading GeoJSON file : {}", file.getAbsolutePath());
+            log.info("[Load] Reading GeoJSON file : {}", file.getAbsolutePath());
             SimpleFeatureCollection featureCollection = (SimpleFeatureCollection) geojson.readFeatureCollection(bufferedInputStream);
             FeatureIterator<SimpleFeature> iterator = featureCollection.features();
-            log.info("Reading GeoJSON file : {} done", file.getAbsolutePath());
+            log.info("[Load] Reading GeoJSON file : {} done", file.getAbsolutePath());
 
             var coordinateReferenceSystem = featureCollection.getSchema().getCoordinateReferenceSystem();
             if (isDefaultCrs && coordinateReferenceSystem != null) {

@@ -19,6 +19,7 @@ import com.gaia3d.process.postprocess.GaiaRelocation;
 import com.gaia3d.process.postprocess.GaiaRelocationML;
 import com.gaia3d.process.postprocess.PostProcess;
 import com.gaia3d.process.postprocess.batch.Batched3DModel;
+import com.gaia3d.process.postprocess.batch.Batched3DModelV2;
 import com.gaia3d.process.preprocess.*;
 import com.gaia3d.process.tileprocess.Pipeline;
 import com.gaia3d.process.tileprocess.TilingProcess;
@@ -74,7 +75,12 @@ public class BatchedProcessModelML implements ProcessFlowModel {
         List<PostProcess> postProcessors = new ArrayList<>();
         postProcessors.add(new GaiaMaximizer());
         postProcessors.add(new GaiaRelocationML());
-        postProcessors.add(new Batched3DModel());
+
+        if (globalOptions.getTilesVersion().equals("1.0")) {
+            postProcessors.add(new Batched3DModel());
+        } else {
+            postProcessors.add(new Batched3DModelV2());
+        }
 
         Pipeline processPipeline = new TilingPipeline(preProcessors, tilingProcess, postProcessors);
         processPipeline.process(fileLoader);

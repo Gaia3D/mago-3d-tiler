@@ -135,7 +135,7 @@ public class GltfWriterV2 extends GltfWriter {
     }
 
     private void applyPropertiesBinary(GlTF gltf, GltfBinary binary, ExtensionStructuralMetadata extensionStructuralMetadata) {
-        log.info("[INFO] Apply properties binary to glTF");
+        log.info("[Info] Apply properties binary to glTF");
 
         int totalByteBufferLength = binary.calcTotalByteBufferLength() + binary.calcTotalImageByteBufferLength();
         AtomicInteger bufferOffset = new AtomicInteger(totalByteBufferLength);
@@ -162,7 +162,7 @@ public class GltfWriterV2 extends GltfWriter {
                 buffers.add(stringBuffer);
                 buffers.add(offsetBuffer);
 
-                log.info("[INFO] Property: {}, Values: {}", name, values.size());
+                log.info("[Info] Property: {}, Values: {}", name, values.size());
                 //int bufferViewId = createBufferView(gltf, 0, bufferOffset.get(), property.getPrimaryValues().size() * 4, -1, GL20.GL_ARRAY_BUFFER);
             });
         });
@@ -174,6 +174,9 @@ public class GltfWriterV2 extends GltfWriter {
         byte[][] encodedFeatures = new byte[strings.size()][];
         for (int i = 0; i < strings.size(); i++) {
             String feature = strings.get(i);
+            if (feature == null || feature.isEmpty()) {
+                feature = " ";
+            }
             encodedFeatures[i] = feature.getBytes(StandardCharsets.UTF_8);
             totalStringLength += encodedFeatures[i].length;
         }
