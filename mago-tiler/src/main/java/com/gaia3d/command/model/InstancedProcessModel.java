@@ -37,7 +37,6 @@ public class InstancedProcessModel implements ProcessFlowModel {
     public void run() throws IOException {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         FormatType inputFormat = globalOptions.getInputFormat();
-
         Converter converter = getConverter(inputFormat);
         AttributeReader kmlReader = getAttributeReader(inputFormat);
         FileLoader fileLoader = new InstancedFileLoader(converter, kmlReader);

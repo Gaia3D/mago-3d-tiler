@@ -60,7 +60,10 @@ public class Instanced3DModelV2 implements ContentModel {
 
         Vector3d center = contentInfo.getBoundingBox().getCenter();
         Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
-        Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
+
+        Vector3d centerWorldCoordinateYUp = new Vector3d(centerWorldCoordinate.x, centerWorldCoordinate.z, -centerWorldCoordinate.y);
+
+        Matrix4d transformMatrix = GlobeUtils. (centerWorldCoordinateYUp);
         Matrix4d inverseTransformMatrix = transformMatrix.invert(new Matrix4d());
 
         AtomicInteger positionIndex = new AtomicInteger();
@@ -71,10 +74,10 @@ public class Instanced3DModelV2 implements ContentModel {
         AtomicInteger batchIdIndex = new AtomicInteger();
         for (TileInfo tileInfo : tileInfos) {
             //y-up
-            //Vector3d normalUp = new Vector3d(0, 1, 0);
             //Vector3d normalRight = new Vector3d(1, 0, 0);
-            Vector3d normalUp = new Vector3d(0, 0, -1);
+            //Vector3d normalUp = new Vector3d(0, 1, 0);
             Vector3d normalRight = new Vector3d(1, 0, 0);
+            Vector3d normalUp = new Vector3d(0, 0, -1);
 
             // GPS Coordinates
             KmlInfo kmlInfo = tileInfo.getKmlInfo();
@@ -85,6 +88,8 @@ public class Instanced3DModelV2 implements ContentModel {
             Vector3d localPositionYUp = new Vector3d(localPosition.x, localPosition.y, localPosition.z);
             Matrix3d worldRotationMatrix3d = transformMatrix.get3x3(new Matrix3d());
             Matrix3d inverseWorldRotationMatrix3d = inverseTransformMatrix.get3x3(new Matrix3d());
+            //worldRotationMatrix3d.rotateX(Math.toRadians(-90));
+
 
             // rotate
             double headingValue = Math.toRadians(kmlInfo.getHeading());
@@ -132,13 +137,13 @@ public class Instanced3DModelV2 implements ContentModel {
 
             Matrix3d xRotationMatrix3d = new Matrix3d();
             xRotationMatrix3d.identity();
-            xRotationMatrix3d.rotateX(Math.toRadians(-90));
-            inverseWorldRotationMatrix3d.mul(xRotationMatrix3d, xRotationMatrix3d);
+            xRotationMatrix3d.rotateX(Math.toRadians(90));
+            worldRotationMatrix3d.mul(xRotationMatrix3d, xRotationMatrix3d);
 
             Quaterniond quaternion = xRotationMatrix3d.getNormalizedRotation(new Quaterniond());
             rotations[rotationIndex.getAndIncrement()] = (float) quaternion.x;
-            rotations[rotationIndex.getAndIncrement()] = (float) quaternion.z;
             rotations[rotationIndex.getAndIncrement()] = (float) quaternion.y;
+            rotations[rotationIndex.getAndIncrement()] = (float) quaternion.z;
             rotations[rotationIndex.getAndIncrement()] = (float) quaternion.w;
 
             /*Quaterniond quaternion = instanceTransformMatrix.getNormalizedRotation(new Quaterniond());

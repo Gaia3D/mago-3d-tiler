@@ -87,7 +87,7 @@ public class InstancedModelGltfWriter extends GltfWriter {
         initScene(gltf, rootNode);
 
         double[] rtcCenterOrigin = featureTable.getRtcCenter();
-        rootNode.setTranslation(new float[]{(float) rtcCenterOrigin[0], (float) rtcCenterOrigin[1], (float) rtcCenterOrigin[2]});
+        rootNode.setTranslation(new float[]{(float) rtcCenterOrigin[0], (float) rtcCenterOrigin[2], (float) -rtcCenterOrigin[1]});
 
         if (globalOptions.isUseQuantization()) {
             gltf.addExtensionsUsed(ExtensionConstant.MESH_QUANTIZATION.getExtensionName());
