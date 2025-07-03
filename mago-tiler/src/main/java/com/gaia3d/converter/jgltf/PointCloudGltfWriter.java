@@ -6,7 +6,10 @@ import com.gaia3d.basic.model.GaiaPrimitive;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.types.AccessorType;
 import com.gaia3d.basic.types.AttributeType;
-import com.gaia3d.converter.jgltf.extension.*;
+import com.gaia3d.converter.jgltf.extension.ExtensionConstant;
+import com.gaia3d.converter.jgltf.extension.ExtensionInstanceFeatures;
+import com.gaia3d.converter.jgltf.extension.ExtensionMeshGpuInstancing;
+import com.gaia3d.converter.jgltf.extension.ExtensionStructuralMetadata;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTableMap;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.postprocess.instance.Instanced3DModelBinary;
@@ -41,7 +44,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Slf4j
 @NoArgsConstructor
-public class InstancedModelGltfWriter extends GltfWriter {
+public class PointCloudGltfWriter extends GltfWriter {
 
     /**
      * Write the glTF file from the GaiaScene object.
@@ -213,7 +216,7 @@ public class InstancedModelGltfWriter extends GltfWriter {
         featureIdBufferView.setName("featureId");
 
         int translationAccessorId = createAccessor(gltf, translationBufferViewId, 0, featureCount, GltfConstants.GL_FLOAT, AccessorType.VEC3, false);
-        int rotationAccessorId = createAccessor(gltf, rotationBufferViewId, 0, featureCount, GltfConstants.GL_FLOAT, AccessorType.VEC4, false);
+        int rotationAccessorId = createAccessor(gltf, rotationBufferViewId, 0, featureCount, GltfConstants.GL_FLOAT, AccessorType.VEC4, true);
         int scaleAccessorId = createAccessor(gltf, scaleBufferViewId, 0, featureCount, GltfConstants.GL_FLOAT, AccessorType.VEC3, false);
         int featureIdAccessorId = createAccessor(gltf, featureIdBufferViewId, 0, featureCount, GltfConstants.GL_FLOAT, AccessorType.SCALAR, false);
 

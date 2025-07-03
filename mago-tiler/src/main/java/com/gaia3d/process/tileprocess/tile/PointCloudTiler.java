@@ -269,7 +269,11 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         contentInfo.setTileInfos(tileInfos);
 
         Content content = new Content();
-        content.setUri("data/" + childNode.getNodeCode() + ".pnts");
+        if (globalOptions.getTilesVersion().equals("1.0")) {
+            content.setUri("data/" + childNode.getNodeCode() + ".pnts");
+        } else {
+            content.setUri("data/" + childNode.getNodeCode() + ".glb");
+        }
         content.setContentInfo(contentInfo);
         childNode.setContent(content);
 
