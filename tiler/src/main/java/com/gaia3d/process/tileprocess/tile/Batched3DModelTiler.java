@@ -47,6 +47,11 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         Node root = createRoot();
         root.setBoundingVolume(new BoundingVolume(globalBoundingBox, globalOptions.isCartesian()));
         root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
+        if (globalOptions.isCartesian()) {
+            Matrix4d rootTransformMatrix = new Matrix4d();
+            rootTransformMatrix.setTranslation(globalOptions.getTranslateOffset());
+            root.setTransform(rootTransformMatrix.get(new float[16]));
+        }
         root.setGeometricError(geometricError);
 
         try {
