@@ -310,6 +310,10 @@ public class GlobalOptions {
             if (instance.getInputFormat().equals(FormatType.GEOJSON)) {
                 source = factory.createFromName("EPSG:4326");
             }
+            // No coordinate tranformation for cartesian output
+            if (instance.cartesian) {
+                source = factory.createFromName("EPSG:4326");
+            }
             instance.setCrs(source);
         }
 
