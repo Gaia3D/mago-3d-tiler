@@ -1571,7 +1571,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 
     private void createNode(Node parentNode, List<TileInfo> tileInfos, int nodeDepth) throws IOException {
         BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
-        BoundingVolume squareBoundingVolume = parentBoundingVolume.createSqureBoundingVolume();
+        BoundingVolume squareBoundingVolume = parentBoundingVolume.createSquareBoundingVolume();
 
         boolean refineAdd = globalOptions.isRefineAdd();
         long triangleLimit = globalOptions.getMaxTriangles();

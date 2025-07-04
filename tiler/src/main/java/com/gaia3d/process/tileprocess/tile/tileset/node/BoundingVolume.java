@@ -54,32 +54,25 @@ public class BoundingVolume implements Serializable {
             // The next three elements (with indices 3, 4, and 5) define the x-axis direction and half-length.
             // The next three elements (indices 6, 7, and 8) define the y-axis direction and half-length.
             // The last three elements (indices 9, 10, and 11) define the z-axis direction and half-length.
-            double minX = boundingBox.getMinX();
-            double minY = boundingBox.getMinY();
-            double minZ = boundingBox.getMinZ();
-            double maxX = boundingBox.getMaxX();
-            double maxY = boundingBox.getMaxY();
-            double maxZ = boundingBox.getMaxZ();
-            double xHalfLength = (maxX - minX) / 2;
-            double yHalfLength = (maxY - minY) / 2;
-            double zHalfLength = (maxZ - minZ) / 2;
+            Vector3d minpos = boundingBox.getMinPosition();
+            Vector3d center = boundingBox.getCenter();
             this.setType(BoundingVolumeType.BOX);
             this.setBox(
-                new double[] {
-                    minX + xHalfLength,
-                    minY + yHalfLength,
-                    minZ + zHalfLength,
-                    xHalfLength,
-                    0,
-                    0,
-                    0,
-                    yHalfLength,
-                    0,
-                    0,
-                    0,
-                    zHalfLength,
-                }
-            );
+                    new double[] {
+                        center.x,
+                        center.y,
+                        center.z,
+                        center.x - minpos.x,
+                        0, // Do we also need an y component?
+                        0,
+                        0,
+                        center.y - minpos.y,
+                        0,
+                        0,
+                        0,
+                        center.z - minpos.z,
+                    }
+                );
         } else {
             ProjCoordinate minPoint = new ProjCoordinate(boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ());
             ProjCoordinate maxPoint = new ProjCoordinate(boundingBox.getMaxX(), boundingBox.getMaxY(), boundingBox.getMaxZ());
@@ -160,7 +153,13 @@ public class BoundingVolume implements Serializable {
     }
 
     public Vector3d calcCenter() {
-        return new Vector3d((region[0] + region[2]) / 2, (region[1] + region[3]) / 2, (region[4] + region[5]) / 2);
+        if (region != null) {
+            return new Vector3d((region[0] + region[2]) / 2, (region[1] + region[3]) / 2, (region[4] + region[5]) / 2);
+        } else if (box != null) {
+            return new Vector3d(box[0], box[1], box[2]);
+        } else  {
+            return new Vector3d();
+        }
     }
 
     /**
@@ -168,7 +167,7 @@ public class BoundingVolume implements Serializable {
      * maximum x or y value is increased to make square bounding volume.
      * @return square bounding volume
      */
-     public BoundingVolume createSqureBoundingVolume() {
+     public BoundingVolume createSquareBoundingVolume() {
          if (region != null) {
              double minX = region[0];
              double minY = region[1];
@@ -190,7 +189,11 @@ public class BoundingVolume implements Serializable {
              );
              return boundingVolume;
          } else if (box != null) {
-             double max = Math.max(box[3], box[7]);
+             Vector3d xaxis = new Vector3d(box[3], box[4], 0);
+             Vector3d yaxis = new Vector3d(box[6], box[7], 0);
+             double maxlen = Math.max(xaxis.length(), yaxis.length());
+             xaxis = xaxis.mul(maxlen/xaxis.length());
+             yaxis = yaxis.mul(maxlen/yaxis.length());
              BoundingVolume boundingVolume = new BoundingVolume(
                  BoundingVolumeType.BOX
              );
@@ -199,24 +202,20 @@ public class BoundingVolume implements Serializable {
                      box[0],
                      box[1],
                      box[2],
-                     max,
-                     0,
-                     0,
-                     0,
-                     max,
-                     0,
-                     0,
-                     0,
+                     xaxis.x,
+                     xaxis.y,
+                     box[5],
+                     yaxis.x,
+                     yaxis.y,
+                     box[8],
+                     box[9],
+                     box[10],
                      box[11]
                  }
              );
              return boundingVolume;
          } else {
-             BoundingVolume boundingVolume = new BoundingVolume(
-                 BoundingVolumeType.REGION
-             );
-             boundingVolume.setRegion(new double[] { 0, 0, 0, 0, 0, 0 });
-             return boundingVolume;
+             return new BoundingVolume(BoundingVolumeType.REGION);
          }
      }
 }
