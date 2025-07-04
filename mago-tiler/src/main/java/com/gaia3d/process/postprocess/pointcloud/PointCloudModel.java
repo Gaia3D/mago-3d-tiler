@@ -196,16 +196,16 @@ public class PointCloudModel implements ContentModel {
             log.error("[ERROR] Quantized volume : {}", quantizedVolume);
         }
 
-        PointCloudBinary pointCloudBinary = new PointCloudBinary();
-        pointCloudBinary.setPositions(quantizedPositions);
-        pointCloudBinary.setColors(colors);
-        pointCloudBinary.setIntensities(intensity);
-        pointCloudBinary.setClassifications(classification);
+        PointCloudBuffer pointCloudBuffer = new PointCloudBuffer();
+        pointCloudBuffer.setQuantizedPositions(quantizedPositions);
+        pointCloudBuffer.setColors(colors);
+        pointCloudBuffer.setIntensities(intensity);
+        pointCloudBuffer.setClassifications(classification);
 
-        byte[] positionBytes = pointCloudBinary.getPositionBytes();
-        byte[] colorBytes = pointCloudBinary.getColorBytes();
-        byte[] intensityBytes = pointCloudBinary.getIntensityBytes();
-        byte[] classificationBytes = pointCloudBinary.getClassificationBytes();
+        byte[] positionBytes = pointCloudBuffer.getQuantizedPositionBytes();
+        byte[] colorBytes = pointCloudBuffer.getColorBytes();
+        byte[] intensityBytes = pointCloudBuffer.getIntensityBytes();
+        byte[] classificationBytes = pointCloudBuffer.getClassificationBytes();
 
         byte[] featureTableBytes = new byte[positionBytes.length + colorBytes.length];
         System.arraycopy(positionBytes, 0, featureTableBytes, 0, positionBytes.length);

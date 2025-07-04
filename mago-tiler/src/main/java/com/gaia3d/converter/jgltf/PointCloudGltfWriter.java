@@ -1,18 +1,18 @@
 package com.gaia3d.converter.jgltf;
 
 import com.gaia3d.basic.model.GaiaMesh;
-import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaPrimitive;
-import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.types.AccessorType;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.converter.jgltf.extension.ExtensionConstant;
 import com.gaia3d.converter.jgltf.extension.ExtensionInstanceFeatures;
 import com.gaia3d.converter.jgltf.extension.ExtensionMeshGpuInstancing;
 import com.gaia3d.converter.jgltf.extension.ExtensionStructuralMetadata;
+import com.gaia3d.process.postprocess.batch.GaiaBatchTable;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTableMap;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.postprocess.instance.Instanced3DModelBinary;
+import com.gaia3d.process.postprocess.pointcloud.PointCloudBuffer;
 import de.javagl.jgltf.impl.v2.*;
 import de.javagl.jgltf.model.GltfConstants;
 import de.javagl.jgltf.model.GltfModel;
@@ -27,7 +27,6 @@ import org.lwjgl.opengl.GL20;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
@@ -46,14 +45,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 @NoArgsConstructor
 public class PointCloudGltfWriter extends GltfWriter {
 
-    /**
-     * Write the glTF file from the GaiaScene object.
-     * @param gaiaScene The GaiaScene object to be written.
-     * @param outputPath The output path of the glTF file.
-     */
-    public void writeGlb(GaiaScene gaiaScene, File outputPath, GaiaFeatureTable featureTable, GaiaBatchTableMap<String, List<String>> batchTableMap) {
+    public void writeGlb(PointCloudBuffer pointCloudBuffer, GaiaFeatureTable featureTable, GaiaBatchTable batchTable, File outputPath) {
         try {
-            GltfModel gltfModel = convert(gaiaScene, featureTable, batchTableMap);
+            GltfModel gltfModel = convert(pointCloudBuffer, featureTable, batchTable, outputPath);
             GltfModelWriter writer = new GltfModelWriter();
             writer.writeBinary(gltfModel, outputPath);
         } catch (IOException e) {
@@ -62,25 +56,7 @@ public class PointCloudGltfWriter extends GltfWriter {
         }
     }
 
-    /**
-     * Write the glTF file from the GaiaScene object.
-     * @param gaiaScene The GaiaScene object to be written.
-     * @param outputStream The output stream of the glTF file.
-     */
-    public void writeGlb(GaiaScene gaiaScene, OutputStream outputStream, GaiaFeatureTable featureTable, GaiaBatchTableMap<String, List<String>> batchTableMap) {
-        try {
-            GltfModel gltfModel = convert(gaiaScene, featureTable, batchTableMap);
-            GltfModelWriter writer = new GltfModelWriter();
-            writer.writeBinary(gltfModel, outputStream);
-            outputStream.flush();
-            outputStream.close();
-        } catch (IOException e) {
-            log.error("[ERROR] :", e);
-            log.error("[ERROR] Failed to write glb file.");
-        }
-    }
-
-    protected GltfModel convert(GaiaScene gaiaScene, GaiaFeatureTable featureTable, GaiaBatchTableMap<String, List<String>> batchTableMap) {
+    protected GltfModel convert(PointCloudBuffer pointCloudBuffer, GaiaFeatureTable featureTable, GaiaBatchTable batchTable, File outputPath) {
         GltfBinary binary = new GltfBinary();
         GlTF gltf = new GlTF();
         gltf.setAsset(genAsset());
@@ -92,28 +68,26 @@ public class PointCloudGltfWriter extends GltfWriter {
         double[] rtcCenterOrigin = featureTable.getRtcCenter();
         rootNode.setTranslation(new float[]{(float) rtcCenterOrigin[0], (float) rtcCenterOrigin[2], (float) -rtcCenterOrigin[1]});
 
-        if (globalOptions.isUseQuantization()) {
-            gltf.addExtensionsUsed(ExtensionConstant.MESH_QUANTIZATION.getExtensionName());
-            gltf.addExtensionsRequired(ExtensionConstant.MESH_QUANTIZATION.getExtensionName());
-        }
+        gltf.addExtensionsUsed(ExtensionConstant.MESH_QUANTIZATION.getExtensionName());
+        gltf.addExtensionsRequired(ExtensionConstant.MESH_QUANTIZATION.getExtensionName());
 
         // Batch table (3D Tiles 1.1)
-        gltf.addExtensionsUsed(ExtensionConstant.INSTANCE_FEATURES.getExtensionName());
-        gltf.addExtensionsUsed(ExtensionConstant.STRUCTURAL_METADATA.getExtensionName());
+        //gltf.addExtensionsUsed(ExtensionConstant.MESH_FEATURES.getExtensionName());
+        //gltf.addExtensionsUsed(ExtensionConstant.STRUCTURAL_METADATA.getExtensionName());
 
         // Instance table (GPU Instancing)(Required for 3D Tiles 1.1)
-        gltf.addExtensionsUsed(ExtensionConstant.MESH_GPU_INSTANCING.getExtensionName());
+        //gltf.addExtensionsUsed(ExtensionConstant.MESH_GPU_INSTANCING.getExtensionName());
         //gltf.addExtensionsRequired(ExtensionConstant.MESH_GPU_INSTANCING.getExtensionName());
 
-        ExtensionStructuralMetadata extensionStructuralMetadata = ExtensionStructuralMetadata.fromBatchTable(batchTableMap);
-        Map<String, Object> extensions = new HashMap<>();
-        extensions.put(ExtensionConstant.STRUCTURAL_METADATA.getExtensionName(), extensionStructuralMetadata);
-        gltf.setExtensions(extensions);
+        //ExtensionStructuralMetadata extensionStructuralMetadata = ExtensionStructuralMetadata.fromBatchTable(batchTableMap);
+        //Map<String, Object> extensions = new HashMap<>();
+        //extensions.put(ExtensionConstant.STRUCTURAL_METADATA.getExtensionName(), extensionStructuralMetadata);
+        //gltf.setExtensions(extensions);
 
-        convertNode(gltf, binary, rootNode, gaiaScene.getNodes(), featureTable, batchTableMap);
-        gaiaScene.getMaterials().forEach(gaiaMaterial -> createMaterial(gltf, binary, gaiaMaterial));
-        applyPropertiesBinary(gltf, binary, extensionStructuralMetadata);
-        applyInstanceFeaturesBinary(gltf, binary, featureTable);
+        convertNode(gltf, binary, rootNode, pointCloudBuffer, featureTable, batchTable);
+        //gaiaScene.getMaterials().forEach(gaiaMaterial -> createMaterial(gltf, binary, gaiaMaterial));
+        //applyPropertiesBinary(gltf, binary, extensionStructuralMetadata);
+        //applyInstanceFeaturesBinary(gltf, binary, featureTable);
 
         binary.fill();
         if (binary.getBody() != null) {
@@ -301,31 +275,21 @@ public class PointCloudGltfWriter extends GltfWriter {
     }
 
 
-    protected void convertNode(GlTF gltf, GltfBinary binary, Node parentNode, List<GaiaNode> gaiaNodes, GaiaFeatureTable featureTable, GaiaBatchTableMap<String, List<String>> batchTableMap) {
+    protected void convertNode(GlTF gltf, GltfBinary binary, Node parentNode, PointCloudBuffer pointCloudBuffer, GaiaFeatureTable featureTable, GaiaBatchTable batchTable) {
         List<GltfNodeBuffer> nodeBuffers = binary.getNodeBuffers();
-        gaiaNodes.forEach((gaiaNode) -> {
-            Node node = createNode(gltf, parentNode, gaiaNode, binary, featureTable);
 
-            int nodeId = gltf.getNodes()
-                    .size() - 1;
-            if (parentNode != null) {
-                parentNode.addChildren(nodeId);
-            }
+        Node node = createNode(gltf, parentNode, binary, pointCloudBuffer, featureTable);
+        GltfNodeBuffer nodeBuffer = convertGeometryInfo(gltf, pointCloudBuffer, node, featureTable, batchTable);
 
-            List<GaiaNode> children = gaiaNode.getChildren();
-            if (!children.isEmpty()) {
-                convertNode(gltf, binary, node, children, featureTable, batchTableMap);
-            }
+        int nodeId = gltf.getNodes().size() - 1;
+        if (parentNode != null) {
+            parentNode.addChildren(nodeId);
+        }
 
-            List<GaiaMesh> gaiaMeshes = gaiaNode.getMeshes();
-            gaiaMeshes.forEach((gaiaMesh) -> {
-                GltfNodeBuffer nodeBuffer = convertGeometryInfo(gltf, gaiaMesh, node, batchTableMap);
-                nodeBuffers.add(nodeBuffer);
-            });
-        });
+        nodeBuffers.add(nodeBuffer);
     }
 
-    protected Node createNode(GlTF gltf, Node parentNode, GaiaNode gaiaNode, GltfBinary binary, GaiaFeatureTable featureTable) {
+    protected Node createNode(GlTF gltf, Node parentNode, GltfBinary binary, PointCloudBuffer pointCloudBuffer, GaiaFeatureTable featureTable) {
         Node node;
         if (parentNode == null) {
             node = gltf.getNodes().get(0);
@@ -334,70 +298,65 @@ public class PointCloudGltfWriter extends GltfWriter {
             gltf.addNodes(node);
         }
 
-        Matrix4d rotationMatrix = gaiaNode.getTransformMatrix();
+        /*Matrix4d rotationMatrix = gaiaNode.getTransformMatrix();
         Quaterniond rotationQuaternion = rotationMatrix.getNormalizedRotation(new Quaterniond());
         node.setRotation(new float[]{
                 (float) rotationQuaternion.x,
                 (float) rotationQuaternion.y,
                 (float) rotationQuaternion.z,
                 (float) rotationQuaternion.w
-        });
+        });*/
 
-        node.setName(gaiaNode.getName());
+        node.setName("PointCloudNode");
         return node;
     }
 
-    protected GltfNodeBuffer convertGeometryInfo(GlTF gltf, GaiaMesh gaiaMesh, Node node, GaiaBatchTableMap<String, List<String>> batchTableMap) {
-        int[] indices = gaiaMesh.getIndices();
-        float[] positions = gaiaMesh.getPositions();
+    protected GltfNodeBuffer convertGeometryInfo(GlTF gltf, PointCloudBuffer pointCloudBuffer, Node node, GaiaFeatureTable featureTable, GaiaBatchTable batchTable) {
+
+        //int[] indices = gaiaMesh.getIndices();
+        float[] positions = pointCloudBuffer.getPositions();
 
         short[] unsignedShortsPositions = null;
-        if (globalOptions.isUseQuantization()) {
-            float[] otm = node.getMatrix();
-            Matrix4d originalTransformMatrix;
-            if (otm == null) {
-                otm = new float[16];
-                Matrix4d identityMatrix = new Matrix4d();
-                identityMatrix.identity();
-                originalTransformMatrix = identityMatrix;
-            } else {
-                originalTransformMatrix = new Matrix4d(otm[0], otm[1], otm[2], otm[3], otm[4], otm[5], otm[6], otm[7], otm[8], otm[9], otm[10], otm[11], otm[12], otm[13], otm[14], otm[15]);
-            }
-
-            Matrix4d quantizationMatrix = Quantization.computeQuantizationMatrix(originalTransformMatrix, positions);
-            unsignedShortsPositions = Quantization.quantizeUnsignedShorts(positions, originalTransformMatrix, quantizationMatrix);
-            node.setMatrix(quantizationMatrix.get(new float[16]));
+        float[] otm = node.getMatrix();
+        Matrix4d originalTransformMatrix;
+        if (otm == null) {
+            otm = new float[16];
+            Matrix4d identityMatrix = new Matrix4d();
+            identityMatrix.identity();
+            originalTransformMatrix = identityMatrix;
+        } else {
+            originalTransformMatrix = new Matrix4d(otm[0], otm[1], otm[2], otm[3], otm[4], otm[5], otm[6], otm[7], otm[8], otm[9], otm[10], otm[11], otm[12], otm[13], otm[14], otm[15]);
         }
 
-        float[] normals = gaiaMesh.getNormals();
-        byte[] colors = gaiaMesh.getColors();
-        float[] texcoords = gaiaMesh.getTexcoords();
-        float[] batchIds = gaiaMesh.getBatchIds();
+        Matrix4d quantizationMatrix = Quantization.computeQuantizationMatrix(originalTransformMatrix, positions);
+        unsignedShortsPositions = Quantization.quantizeUnsignedShorts(positions, originalTransformMatrix, quantizationMatrix);
+        node.setMatrix(quantizationMatrix.get(new float[16]));
 
-        int vertexCount = gaiaMesh.getPositionsCount() / 3;
-        boolean isOverShortVertices = vertexCount >= 65535;
-        if (isOverShortVertices) {
-            log.warn("[WARN] The number of vertices count than 65535 ({})", vertexCount);
-        }
+        short[] normals = pointCloudBuffer.getNormals();
+        byte[] colors = pointCloudBuffer.getColorBytes(); // 4bytes
+        //float[] texcoords = gaiaMesh.getTexcoords();
+        float[] batchIds = pointCloudBuffer.getBatchIds();
 
-        GltfNodeBuffer nodeBuffer = initNodeBuffer(gaiaMesh, isOverShortVertices);
+        //int vertexCount = featureTable.getPointsLength();
+
+        GltfNodeBuffer nodeBuffer = initNodeBuffer(pointCloudBuffer);
         createBuffer(gltf, nodeBuffer);
 
-        ByteBuffer indicesBuffer = nodeBuffer.getIndicesBuffer();
+        //ByteBuffer indicesBuffer = nodeBuffer.getIndicesBuffer();
         ByteBuffer positionsBuffer = nodeBuffer.getPositionsBuffer();
-        ByteBuffer normalsBuffer = nodeBuffer.getNormalsBuffer();
+        //ByteBuffer normalsBuffer = nodeBuffer.getNormalsBuffer();
         ByteBuffer colorsBuffer = nodeBuffer.getColorsBuffer();
-        ByteBuffer texcoordsBuffer = nodeBuffer.getTexcoordsBuffer();
+        //ByteBuffer texcoordsBuffer = nodeBuffer.getTexcoordsBuffer();
         ByteBuffer batchIdBuffer = nodeBuffer.getBatchIdBuffer();
 
-        int indicesBufferViewId = nodeBuffer.getIndicesBufferViewId();
+        //int indicesBufferViewId = nodeBuffer.getIndicesBufferViewId();
         int positionsBufferViewId = nodeBuffer.getPositionsBufferViewId();
-        int normalsBufferViewId = nodeBuffer.getNormalsBufferViewId();
+        //int normalsBufferViewId = nodeBuffer.getNormalsBufferViewId();
         int colorsBufferViewId = nodeBuffer.getColorsBufferViewId();
-        int texcoordsBufferViewId = nodeBuffer.getTexcoordsBufferViewId();
+        //int texcoordsBufferViewId = nodeBuffer.getTexcoordsBufferViewId();
         int batchIdBufferViewId = nodeBuffer.getBatchIdBufferViewId();
 
-        if (indicesBuffer != null) {
+        /*if (indicesBuffer != null) {
             for (int indicesValue : indices) {
                 if (isOverShortVertices) {
                     indicesBuffer.putInt(indicesValue);
@@ -406,78 +365,51 @@ public class PointCloudGltfWriter extends GltfWriter {
                     indicesBuffer.putShort(indicesValueShort);
                 }
             }
-        }
+        }*/
         if (positionsBuffer != null) {
-            if (globalOptions.isUseQuantization() && unsignedShortsPositions != null) {
-                for (short position : unsignedShortsPositions) {
-                    positionsBuffer.putShort(position);
-                }
-            } else {
-                for (Float position : positions) {
-                    positionsBuffer.putFloat(position);
-                }
+            for (short position : unsignedShortsPositions) {
+                positionsBuffer.putShort(position);
             }
         }
-        if (normalsBuffer != null) {
-            for (Float normal : normals) {
-                normalsBuffer.putFloat(normal);
+        /*if (normalsBuffer != null) {
+            for (Short normal : normals) {
+                normalsBuffer.putShort(normal);
             }
-        }
+        }*/
         if (colorsBuffer != null) {
             for (Byte color : colors) {
                 colorsBuffer.put(color);
             }
         }
-        if (texcoordsBuffer != null) {
+        /*if (texcoordsBuffer != null) {
             for (Float textureCoordinate : texcoords) {
                 texcoordsBuffer.putFloat(textureCoordinate);
             }
-        }
+        }*/
         if (batchIdBuffer != null) {
             for (Float batchId : batchIds) {
                 batchIdBuffer.putFloat(batchId);
             }
         }
 
-        if (indicesBufferViewId > -1 && indices.length > 0) {
-            if (isOverShortVertices) {
-                int indicesAccessorId = createAccessor(gltf, indicesBufferViewId, 0, indices.length, GltfConstants.GL_UNSIGNED_INT, AccessorType.SCALAR, false);
-                nodeBuffer.setIndicesAccessorId(indicesAccessorId);
-            } else {
-                int indicesAccessorId = createAccessor(gltf, indicesBufferViewId, 0, indices.length, GltfConstants.GL_UNSIGNED_SHORT, AccessorType.SCALAR, false);
-                nodeBuffer.setIndicesAccessorId(indicesAccessorId);
-            }
-        }
         if (positionsBufferViewId > -1 && positions.length > 0) {
-            if (globalOptions.isUseQuantization()) {
-                int verticesAccessorId = createAccessor(gltf, positionsBufferViewId, 0, positions.length / 3, GltfConstants.GL_UNSIGNED_SHORT, AccessorType.VEC3, true);
-                nodeBuffer.setPositionsAccessorId(verticesAccessorId);
-            } else {
-                int verticesAccessorId = createAccessor(gltf, positionsBufferViewId, 0, positions.length / 3, GltfConstants.GL_FLOAT, AccessorType.VEC3, false);
-                nodeBuffer.setPositionsAccessorId(verticesAccessorId);
-            }
+            int verticesAccessorId = createAccessor(gltf, positionsBufferViewId, 0, positions.length / 3, GltfConstants.GL_UNSIGNED_SHORT, AccessorType.VEC3, true);
+            nodeBuffer.setPositionsAccessorId(verticesAccessorId);
         }
-        if (normalsBufferViewId > -1 && normals.length > 0) {
+        /*if (normalsBufferViewId > -1 && normals.length > 0) {
             int normalsAccessorId = createAccessor(gltf, normalsBufferViewId, 0, normals.length / 3, GltfConstants.GL_FLOAT, AccessorType.VEC3, false);
             nodeBuffer.setNormalsAccessorId(normalsAccessorId);
-        }
+        }*/
         if (colorsBufferViewId > -1 && colors.length > 0) {
             int colorsAccessorId = createAccessor(gltf, colorsBufferViewId, 0, colors.length / 4, GltfConstants.GL_UNSIGNED_BYTE, AccessorType.VEC4, true);
             nodeBuffer.setColorsAccessorId(colorsAccessorId);
-        }
-        if (texcoordsBufferViewId > -1 && texcoords.length > 0) {
-            int texcoordsAccessorId = createAccessor(gltf, texcoordsBufferViewId, 0, texcoords.length / 2, GltfConstants.GL_FLOAT, AccessorType.VEC2, false);
-            nodeBuffer.setTexcoordsAccessorId(texcoordsAccessorId);
         }
         if (batchIdBufferViewId > -1 && batchIds.length > 0) {
             int batchIdAccessorId = createAccessor(gltf, batchIdBufferViewId, 0, batchIds.length, GltfConstants.GL_FLOAT, AccessorType.SCALAR, false);
             nodeBuffer.setBatchIdAccessorId(batchIdAccessorId);
         }
 
-        List<Material> materials = gltf.getMaterials();
-        GaiaPrimitive gaiaPrimitive = gaiaMesh.getPrimitives()
-                .get(0);
-        MeshPrimitive primitive = createPrimitive(nodeBuffer, gaiaPrimitive, materials, batchTableMap);
+        MeshPrimitive primitive = createPrimitive(nodeBuffer);
         int meshId = createMesh(gltf, primitive);
         node.setMesh(meshId);
         return nodeBuffer;
@@ -497,7 +429,7 @@ public class PointCloudGltfWriter extends GltfWriter {
         int bufferLength = buffer.getByteLength() == null ? 0 : buffer.getByteLength();
         int bufferId = 0;
         int bufferOffset = 0;
-        if (nodeBuffer.getIndicesBuffer() != null) {
+        /*if (nodeBuffer.getIndicesBuffer() != null) {
             ByteBuffer indicesBuffer = nodeBuffer.getIndicesBuffer();
             int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, indicesBuffer.capacity(), -1, GL20.GL_ELEMENT_ARRAY_BUFFER);
             nodeBuffer.setIndicesBufferViewId(bufferViewId);
@@ -505,27 +437,17 @@ public class PointCloudGltfWriter extends GltfWriter {
                     .get(bufferViewId);
             bufferView.setName("indices");
             bufferOffset += indicesBuffer.capacity();
-        }
+        }*/
         if (nodeBuffer.getPositionsBuffer() != null) {
-            if (globalOptions.isUseQuantization()) {
-                ByteBuffer positionsBuffer = nodeBuffer.getPositionsBuffer();
-                int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, positionsBuffer.capacity(), 8, GL20.GL_ARRAY_BUFFER);
-                nodeBuffer.setPositionsBufferViewId(bufferViewId);
-                BufferView bufferView = gltf.getBufferViews()
-                        .get(bufferViewId);
-                bufferView.setName("positions");
-                bufferOffset += positionsBuffer.capacity();
-            } else {
-                ByteBuffer positionsBuffer = nodeBuffer.getPositionsBuffer();
-                int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, positionsBuffer.capacity(), 12, GL20.GL_ARRAY_BUFFER);
-                nodeBuffer.setPositionsBufferViewId(bufferViewId);
-                BufferView bufferView = gltf.getBufferViews()
-                        .get(bufferViewId);
-                bufferView.setName("positions");
-                bufferOffset += positionsBuffer.capacity();
-            }
+            ByteBuffer positionsBuffer = nodeBuffer.getPositionsBuffer();
+            int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, positionsBuffer.capacity(), 8, GL20.GL_ARRAY_BUFFER);
+            nodeBuffer.setPositionsBufferViewId(bufferViewId);
+            BufferView bufferView = gltf.getBufferViews()
+                    .get(bufferViewId);
+            bufferView.setName("positions");
+            bufferOffset += positionsBuffer.capacity();
         }
-        if (nodeBuffer.getNormalsBuffer() != null) {
+        /*if (nodeBuffer.getNormalsBuffer() != null) {
             ByteBuffer normalsBuffer = nodeBuffer.getNormalsBuffer();
             int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, normalsBuffer.capacity(), 12, GL20.GL_ARRAY_BUFFER);
             nodeBuffer.setNormalsBufferViewId(bufferViewId);
@@ -533,7 +455,7 @@ public class PointCloudGltfWriter extends GltfWriter {
                     .get(bufferViewId);
             bufferView.setName("normals");
             bufferOffset += normalsBuffer.capacity();
-        }
+        }*/
         if (nodeBuffer.getColorsBuffer() != null) {
             ByteBuffer colorsBuffer = nodeBuffer.getColorsBuffer();
             int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, colorsBuffer.capacity(), 4, GL20.GL_ARRAY_BUFFER);
@@ -543,7 +465,7 @@ public class PointCloudGltfWriter extends GltfWriter {
             bufferView.setName("colors");
             bufferOffset += colorsBuffer.capacity();
         }
-        if (nodeBuffer.getTexcoordsBuffer() != null) {
+        /*if (nodeBuffer.getTexcoordsBuffer() != null) {
             ByteBuffer texcoordsBuffer = nodeBuffer.getTexcoordsBuffer();
             int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, texcoordsBuffer.capacity(), 8, GL20.GL_ARRAY_BUFFER);
             nodeBuffer.setTexcoordsBufferViewId(bufferViewId);
@@ -551,7 +473,7 @@ public class PointCloudGltfWriter extends GltfWriter {
                     .get(bufferViewId);
             bufferView.setName("texcoords");
             bufferOffset += texcoordsBuffer.capacity();
-        }
+        }*/
         if (nodeBuffer.getBatchIdBuffer() != null) {
             ByteBuffer batchIdBuffer = nodeBuffer.getBatchIdBuffer();
             int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, batchIdBuffer.capacity(), 4, GL20.GL_ARRAY_BUFFER);
@@ -564,101 +486,91 @@ public class PointCloudGltfWriter extends GltfWriter {
         buffer.setByteLength(bufferLength + bufferOffset);
     }
 
-    @Override
-    protected GltfNodeBuffer initNodeBuffer(GaiaMesh gaiaMesh, boolean isIntegerIndices) {
+    protected GltfNodeBuffer initNodeBuffer(PointCloudBuffer pointCloudBuffer) {
         GltfNodeBuffer nodeBuffer = new GltfNodeBuffer();
         int SHORT_SIZE = 2;
         int INT_SIZE = 4;
         int FLOAT_SIZE = 4;
 
-        int indicesCapacity = gaiaMesh.getIndicesCount() * (isIntegerIndices ? INT_SIZE : SHORT_SIZE);
-        int positionsCapacity = gaiaMesh.getPositionsCount() * FLOAT_SIZE;
-        if (globalOptions.isUseQuantization()) {
-            int paddedPositionsCount = gaiaMesh.getPositionsCount() / 3 * 4;
-            positionsCapacity = paddedPositionsCount * SHORT_SIZE;
-        }
-        int normalsCapacity = gaiaMesh.getPositionsCount() * FLOAT_SIZE;
-        int colorsCapacity = gaiaMesh.getColorsCount();
-        int texcoordCapacity = gaiaMesh.getTexcoordsCount() * FLOAT_SIZE;
-        int batchIdCapacity = gaiaMesh.getBatchIdsCount() * FLOAT_SIZE;
+        int vertexCount = pointCloudBuffer.getPositions().length / 3;
 
-        indicesCapacity = padMultiple4(indicesCapacity);
+        int paddedPositionsCount = pointCloudBuffer.getPositions().length / 3 * 4;
+        int positionsCapacity = paddedPositionsCount * SHORT_SIZE;
+        //int normalsCapacity = gaiaMesh.getPositionsCount() * FLOAT_SIZE;
+        int colorsCapacity = pointCloudBuffer.getColors().length;
+        //int batchIdCapacity = pointCloudBuffer.getBatchIds().length * FLOAT_SIZE;
+
+        //indicesCapacity = padMultiple4(indicesCapacity);
         positionsCapacity = padMultiple4(positionsCapacity);
-        normalsCapacity = padMultiple4(normalsCapacity);
+        //normalsCapacity = padMultiple4(normalsCapacity);
         colorsCapacity = padMultiple4(colorsCapacity);
-        texcoordCapacity = padMultiple4(texcoordCapacity);
-        batchIdCapacity = padMultiple4(batchIdCapacity);
+        //texcoordCapacity = padMultiple4(texcoordCapacity);
+        //batchIdCapacity = padMultiple4(batchIdCapacity);
 
         int bodyLength = 0;
-        bodyLength += indicesCapacity;
+        //bodyLength += indicesCapacity;
         bodyLength += positionsCapacity;
-        bodyLength += normalsCapacity;
+        //bodyLength += normalsCapacity;
         bodyLength += colorsCapacity;
-        bodyLength += texcoordCapacity;
-        bodyLength += batchIdCapacity;
+        //bodyLength += texcoordCapacity;
+        //bodyLength += batchIdCapacity;
 
         nodeBuffer.setTotalByteBufferLength(bodyLength);
-        if (indicesCapacity > 0) {
+        /*if (indicesCapacity > 0) {
             ByteBuffer indicesBuffer = ByteBuffer.allocate(indicesCapacity);
             indicesBuffer.order(ByteOrder.LITTLE_ENDIAN);
             nodeBuffer.setIndicesBuffer(indicesBuffer);
-        }
+        }*/
         if (positionsCapacity > 0) {
             ByteBuffer positionsBuffer = ByteBuffer.allocate(positionsCapacity);
             positionsBuffer.order(ByteOrder.LITTLE_ENDIAN);
             nodeBuffer.setPositionsBuffer(positionsBuffer);
         }
-        if (normalsCapacity > 0) {
+        /*if (normalsCapacity > 0) {
             ByteBuffer normalsBuffer = ByteBuffer.allocate(normalsCapacity);
             normalsBuffer.order(ByteOrder.LITTLE_ENDIAN);
             nodeBuffer.setNormalsBuffer(normalsBuffer);
-        }
+        }*/
         if (colorsCapacity > 0) {
             ByteBuffer colorsBuffer = ByteBuffer.allocate(colorsCapacity);
             colorsBuffer.order(ByteOrder.LITTLE_ENDIAN);
             nodeBuffer.setColorsBuffer(colorsBuffer);
         }
-        if (texcoordCapacity > 0) {
+        /*if (texcoordCapacity > 0) {
             ByteBuffer texcoordsBuffer = ByteBuffer.allocate(texcoordCapacity);
             texcoordsBuffer.order(ByteOrder.LITTLE_ENDIAN);
             nodeBuffer.setTexcoordsBuffer(texcoordsBuffer);
-        }
-        if (batchIdCapacity > 0) {
+        }*/
+        /*if (batchIdCapacity > 0) {
             ByteBuffer batchIdBuffer = ByteBuffer.allocate(batchIdCapacity);
             batchIdBuffer.order(ByteOrder.LITTLE_ENDIAN);
             nodeBuffer.setBatchIdBuffer(batchIdBuffer);
-        }
+        }*/
         return nodeBuffer;
     }
 
-    protected MeshPrimitive createPrimitive(GltfNodeBuffer nodeBuffer, GaiaPrimitive gaiaPrimitive, List<Material> materials, GaiaBatchTableMap<String, List<String>> batchTableMap) {
+    protected MeshPrimitive createPrimitive(GltfNodeBuffer nodeBuffer) {
         MeshPrimitive primitive = new MeshPrimitive();
-        primitive.setMode(GltfConstants.GL_TRIANGLES);
-        primitive.setMaterial(gaiaPrimitive.getMaterialIndex());
-        primitive.setAttributes(new HashMap<>());
-        primitive.setIndices(nodeBuffer.getIndicesAccessorId());
-
+        /* Points mode for point cloud */
+        primitive.setMode(GltfConstants.GL_POINTS);
+        Map<String, Integer> attributes = new HashMap<>();
+        primitive.setAttributes(attributes);
+        //primitive.setIndices(nodeBuffer.getIndicesAccessorId());
         if (nodeBuffer.getPositionsAccessorId() > -1) {
-            primitive.getAttributes()
-                    .put(AttributeType.POSITION.getAccessor(), nodeBuffer.getPositionsAccessorId());
+            attributes.put(AttributeType.POSITION.getAccessor(), nodeBuffer.getPositionsAccessorId());
         }
         if (nodeBuffer.getNormalsAccessorId() > -1) {
-            primitive.getAttributes()
-                    .put(AttributeType.NORMAL.getAccessor(), nodeBuffer.getNormalsAccessorId());
+            attributes.put(AttributeType.NORMAL.getAccessor(), nodeBuffer.getNormalsAccessorId());
         }
         if (nodeBuffer.getColorsAccessorId() > -1) {
-            primitive.getAttributes()
-                    .put(AttributeType.COLOR.getAccessor(), nodeBuffer.getColorsAccessorId());
+            attributes.put(AttributeType.COLOR.getAccessor(), nodeBuffer.getColorsAccessorId());
         }
         if (nodeBuffer.getTexcoordsAccessorId() > -1) {
-            primitive.getAttributes()
-                    .put(AttributeType.TEXCOORD.getAccessor(), nodeBuffer.getTexcoordsAccessorId());
+            attributes.put(AttributeType.TEXCOORD.getAccessor(), nodeBuffer.getTexcoordsAccessorId());
         }
         if (nodeBuffer.getBatchIdAccessorId() > -1) {
-            primitive.getAttributes()
-                    .put(AttributeType.FEATURE_ID_0.getAccessor(), nodeBuffer.getBatchIdAccessorId());
+            attributes.put(AttributeType.FEATURE_ID_0.getAccessor(), nodeBuffer.getBatchIdAccessorId());
         }
-
         return primitive;
     }
 }

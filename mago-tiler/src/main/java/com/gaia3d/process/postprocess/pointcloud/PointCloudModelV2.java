@@ -1,21 +1,16 @@
 package com.gaia3d.process.postprocess.pointcloud;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.json.JsonWriteFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaVertex;
 import com.gaia3d.basic.pointcloud.GaiaPointCloud;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.process.postprocess.ComponentType;
+import com.gaia3d.converter.jgltf.PointCloudGltfWriter;
 import com.gaia3d.process.postprocess.ContentModel;
-import com.gaia3d.process.postprocess.DataType;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTable;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.GlobeUtils;
-import com.gaia3d.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix3d;
@@ -34,11 +29,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 @RequiredArgsConstructor
 public class PointCloudModelV2 implements ContentModel {
+    private static final String MAGIC = "glb";
+    private final PointCloudGltfWriter gltfWriter;
+
+    public PointCloudModelV2() {
+        this.gltfWriter = new PointCloudGltfWriter();
+    }
+
     @Override
     public ContentInfo run(ContentInfo contentInfo) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-        String featureTableJson;
-        String batchTableJson;
 
         File outputFile = new File(globalOptions.getOutputPath());
         Path outputRoot = outputFile.toPath().resolve("data");
@@ -70,9 +70,10 @@ public class PointCloudModelV2 implements ContentModel {
         wgs84BoundingBox.addPoint(maxPosition);
 
         int vertexLength = vertexCount.get();
+        float[] batchIds = new float[vertexLength];
         float[] positions = new float[vertexLength * 3];
         int[] quantizedPositions = new int[vertexLength * 3];
-        byte[] colors = new byte[vertexLength * 3];
+        byte[] colors = new byte[vertexLength * 4];
         char[] intensity = new char[vertexLength];
         short[] classification = new short[vertexLength];
 
@@ -88,10 +89,11 @@ public class PointCloudModelV2 implements ContentModel {
         xRotationMatrix3d.mul(rotationMatrix3d, rotationMatrix3d);
         Matrix4d rotationMatrix4d = new Matrix4d(rotationMatrix3d);
 
-        GaiaBoundingBox quantizedVolume = new GaiaBoundingBox();
+        //GaiaBoundingBox quantizedVolume = new GaiaBoundingBox();
         AtomicInteger mainIndex = new AtomicInteger();
         AtomicInteger positionIndex = new AtomicInteger();
         AtomicInteger colorIndex = new AtomicInteger();
+
         tileInfos.forEach((tileInfo) -> {
             GaiaPointCloud pointCloud = tileInfo.getPointCloud();
             pointCloud.maximize();
@@ -102,6 +104,8 @@ public class PointCloudModelV2 implements ContentModel {
                     log.error("[ERROR] Index out of bound");
                     return;
                 }
+
+                batchIds[index] = index;
 
                 Vector3d position = vertex.getPosition();
                 Vector3d wgs84Position = new Vector3d();
@@ -117,9 +121,11 @@ public class PointCloudModelV2 implements ContentModel {
                 localPosition.mulPosition(rotationMatrix4d, localPosition);
 
                 float x = (float) localPosition.x;
-                float y = (float) -localPosition.z;
-                float z = (float) localPosition.y;
-                quantizedVolume.addPoint(new Vector3d(x, y, z));
+                float y = (float) localPosition.y;
+                float z = (float) localPosition.z;
+                //float y = (float) -localPosition.z;
+                //float z = (float) localPosition.y;
+                //quantizedVolume.addPoint(new Vector3d(x, y, z));
 
                 positions[positionIndex.getAndIncrement()] = x;
                 positions[positionIndex.getAndIncrement()] = y;
@@ -129,7 +135,8 @@ public class PointCloudModelV2 implements ContentModel {
                 colors[colorIndex.getAndIncrement()] = color[0];
                 colors[colorIndex.getAndIncrement()] = color[1];
                 colors[colorIndex.getAndIncrement()] = color[2];
-
+                colors[colorIndex.getAndIncrement()] = -128;
+                
                 intensity[index] = vertex.getIntensity();
                 classification[index] = vertex.getClassification();
             });
@@ -137,7 +144,7 @@ public class PointCloudModelV2 implements ContentModel {
         });
 
         // quantization
-        Vector3d quantizationScale = calcQuantizedVolumeScale(quantizedVolume);
+        /*Vector3d quantizationScale = calcQuantizedVolumeScale(quantizedVolume);
         Vector3d quantizationOffset = calcQuantizedVolumeOffset(quantizedVolume);
         for (int i = 0; i < positions.length; i += 3) {
             double x = positions[i];
@@ -175,10 +182,10 @@ public class PointCloudModelV2 implements ContentModel {
                 quantizedPositions[i + 2] = 65535;
                 log.error("[ERROR] Quantized position z is greater than 65535");
             }
-        }
+        }*/
 
         // check quantizationScale, quantizationOffset is NaN or Infinity
-        if (Double.isNaN(quantizationScale.x) || Double.isNaN(quantizationScale.y) || Double.isNaN(quantizationScale.z)) {
+        /*if (Double.isNaN(quantizationScale.x) || Double.isNaN(quantizationScale.y) || Double.isNaN(quantizationScale.z)) {
             log.error("[ERROR] Quantization scale is NaN");
             log.error("[ERROR] Quantization scale : {}", quantizationScale);
             log.error("[ERROR] Quantized volume : {}", quantizedVolume);
@@ -194,15 +201,16 @@ public class PointCloudModelV2 implements ContentModel {
             log.error("[ERROR] Quantization offset is Infinite");
             log.error("[ERROR] Quantization offset : {}", quantizationOffset);
             log.error("[ERROR] Quantized volume : {}", quantizedVolume);
-        }
+        }*/
 
-        PointCloudBinary pointCloudBinary = new PointCloudBinary();
-        pointCloudBinary.setPositions(quantizedPositions);
-        pointCloudBinary.setColors(colors);
-        pointCloudBinary.setIntensities(intensity);
-        pointCloudBinary.setClassifications(classification);
+        PointCloudBuffer pointCloudBuffer = new PointCloudBuffer();
+        pointCloudBuffer.setPositions(positions);
+        pointCloudBuffer.setColors(colors);
+        pointCloudBuffer.setIntensities(intensity);
+        pointCloudBuffer.setClassifications(classification);
+        pointCloudBuffer.setBatchIds(batchIds);
 
-        byte[] positionBytes = pointCloudBinary.getPositionBytes();
+        /*byte[] positionBytes = pointCloudBinary.getQuantizedPositionBytes();
         byte[] colorBytes = pointCloudBinary.getColorBytes();
         byte[] intensityBytes = pointCloudBinary.getIntensityBytes();
         byte[] classificationBytes = pointCloudBinary.getClassificationBytes();
@@ -213,14 +221,14 @@ public class PointCloudModelV2 implements ContentModel {
 
         byte[] batchTableBytes = new byte[intensityBytes.length + classificationBytes.length];
         System.arraycopy(intensityBytes, 0, batchTableBytes, 0, intensityBytes.length);
-        System.arraycopy(classificationBytes, 0, batchTableBytes, intensityBytes.length, classificationBytes.length);
+        System.arraycopy(classificationBytes, 0, batchTableBytes, intensityBytes.length, classificationBytes.length);*/
 
         GaiaFeatureTable featureTable = new GaiaFeatureTable();
         featureTable.setPointsLength(vertexLength);
-        featureTable.setQuantizedVolumeOffset(new float[]{(float) quantizationOffset.x, (float) quantizationOffset.y, (float) quantizationOffset.z});
-        featureTable.setQuantizedVolumeScale(new float[]{(float) quantizationScale.x, (float) quantizationScale.y, (float) quantizationScale.z});
-        featureTable.setPositionQuantized(new ByteAddress(0, ComponentType.UNSIGNED_SHORT, DataType.VEC3));
-        featureTable.setColor(new ByteAddress(positionBytes.length, ComponentType.UNSIGNED_BYTE, DataType.VEC3));
+        //featureTable.setQuantizedVolumeOffset(new float[]{(float) quantizationOffset.x, (float) quantizationOffset.y, (float) quantizationOffset.z});
+        //featureTable.setQuantizedVolumeScale(new float[]{(float) quantizationScale.x, (float) quantizationScale.y, (float) quantizationScale.z});
+        //featureTable.setPositionQuantized(new ByteAddress(0, ComponentType.UNSIGNED_SHORT, DataType.VEC3));
+        //featureTable.setColor(new ByteAddress(positionBytes.length, ComponentType.UNSIGNED_BYTE, DataType.VEC3));
 
         if (!globalOptions.isClassicTransformMatrix()) {
             double[] rtcCenter = new double[3];
@@ -231,10 +239,16 @@ public class PointCloudModelV2 implements ContentModel {
         }
 
         GaiaBatchTable batchTable = new GaiaBatchTable();
-        batchTable.setIntensity(new ByteAddress(0, ComponentType.UNSIGNED_SHORT, DataType.SCALAR));
-        batchTable.setClassification(new ByteAddress(intensityBytes.length, ComponentType.UNSIGNED_SHORT, DataType.SCALAR));
+        //batchTable.setIntensity(new ByteAddress(0, ComponentType.UNSIGNED_SHORT, DataType.SCALAR));
+        //atchTable.setClassification(new ByteAddress(intensityBytes.length, ComponentType.UNSIGNED_SHORT, DataType.SCALAR));
 
-        ObjectMapper objectMapper = new ObjectMapper();
+        String nodeCode = contentInfo.getNodeCode();
+        String glbFileName = nodeCode + "." + MAGIC;
+        File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
+        this.gltfWriter.writeGlb(pointCloudBuffer, featureTable, batchTable, glbOutputFile);
+
+
+        /*ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
 
         try {
@@ -244,9 +258,10 @@ public class PointCloudModelV2 implements ContentModel {
             log.error("[ERROR] :", e);
             throw new RuntimeException(e);
         }
-
         PointCloudBinaryWriter writer = new PointCloudBinaryWriter(featureTableJson, batchTableJson, featureTableBytes, batchTableBytes);
-        writer.write(outputRoot, contentInfo.getNodeCode());
+        writer.write(outputRoot, contentInfo.getNodeCode());*/
+
+
         return contentInfo;
     }
 
