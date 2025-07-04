@@ -61,7 +61,7 @@ public abstract class DefaultTiler {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         Vector3d center = cartographicBoundingBox.getCenter();
         if (globalOptions.isCartesian()) {
-            return GlobeUtils.transformMatrixAtCartesianPointWgs84(center.x, center.y, center.z);
+            return GlobeUtils.transformMatrixAtCartesianPoint(center.x, center.y, center.z);
         } else {            
             double[] cartesian = GlobeUtils.geographicToCartesianWgs84(center.x, center.y, center.z);
             return GlobeUtils.transformMatrixAtCartesianPointWgs84(cartesian[0], cartesian[1], cartesian[2]);
