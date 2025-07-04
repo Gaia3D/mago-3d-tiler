@@ -118,34 +118,34 @@ public class BoundingVolume implements Serializable {
         result.add(new ArrayList<>());
         result.add(new ArrayList<>());
 
-        if (BoundingVolumeType.REGION == type) {
-            double minX = region[0];
-            double minY = region[1];
-            double maxX = region[2];
-            double maxY = region[3];
-            double midX = (minX + maxX) / 2;
-            double midY = (minY + maxY) / 2;
-            for (TileInfo tileInfo : tileInfos) {
-                //GaiaScene scene = tileInfo.getScene();
-                GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();
+        Vector3d mid = calcCenter();
+        double midX = mid.x;
+        double midY = mid.y;
+        for (TileInfo tileInfo : tileInfos) {
+            //GaiaScene scene = tileInfo.getScene();
+            GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();
 
-                KmlInfo kmlInfo = tileInfo.getKmlInfo();
+            KmlInfo kmlInfo = tileInfo.getKmlInfo();
+            if (BoundingVolumeType.REGION == type) {
                 localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(kmlInfo.getPosition());
-                BoundingVolume localBoundingVolume = new BoundingVolume(localBoundingBox);
-                Vector3d center = localBoundingVolume.calcCenter();
+            } else if (BoundingVolumeType.BOX == type) {
+                localBoundingBox = localBoundingBox.convertLocalToBoundingBox(kmlInfo.getPosition());;
+            }
+            boolean cartesian = (BoundingVolumeType.BOX == type);
+            BoundingVolume localBoundingVolume = new BoundingVolume(localBoundingBox, cartesian);
+            Vector3d center = localBoundingVolume.calcCenter();
 
-                if (midX < center.x()) {
-                    if (midY < center.y()) {
-                        result.get(2).add(tileInfo);
-                    } else {
-                        result.get(1).add(tileInfo);
-                    }
+            if (midX < center.x()) {
+                if (midY < center.y()) {
+                    result.get(2).add(tileInfo);
                 } else {
-                    if (midY < center.y()) {
-                        result.get(3).add(tileInfo);
-                    } else {
-                        result.get(0).add(tileInfo);
-                    }
+                    result.get(1).add(tileInfo);
+                }
+            } else {
+                if (midY < center.y()) {
+                    result.get(3).add(tileInfo);
+                } else {
+                    result.get(0).add(tileInfo);
                 }
             }
         }

@@ -38,13 +38,18 @@ public abstract class DefaultTiler {
     }
 
     protected GaiaBoundingBox calcBoundingBox(List<TileInfo> tileInfos) {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         tileInfos.forEach(tileInfo -> {
             KmlInfo kmlInfo = tileInfo.getKmlInfo();
             Vector3d position = kmlInfo.getPosition();
             GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();
             // rotate
-            localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(position);
+            if (globalOptions.isCartesian()) {
+                localBoundingBox = localBoundingBox.convertLocalToBoundingBox(position);
+            } else {
+                localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(position);
+            }
             boundingBox.addBoundingBox(localBoundingBox);
         });
         return boundingBox;

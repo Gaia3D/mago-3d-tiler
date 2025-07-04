@@ -160,6 +160,23 @@ public class GaiaBoundingBox implements Serializable {
         return result;
     }
 
+    public GaiaBoundingBox convertLocalToBoundingBox(Vector3d center) {
+        Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPoint(center);
+
+        Vector3d minLocalCoordinate = new Vector3d(minX, minY, minZ);
+        Matrix4d minTransformMatrix = transformMatrix.translate(minLocalCoordinate, new Matrix4d());
+        Vector3d minWorldCoordinate = new Vector3d(minTransformMatrix.m30(), minTransformMatrix.m31(), minTransformMatrix.m32());
+
+        Vector3d maxLocalCoordinate = new Vector3d(maxX, maxY, maxZ);
+        Matrix4d maxTransformMatrix = transformMatrix.translate(maxLocalCoordinate, new Matrix4d());
+        Vector3d maxWorldCoordinate = new Vector3d(maxTransformMatrix.m30(), maxTransformMatrix.m31(), maxTransformMatrix.m32());
+
+        GaiaBoundingBox result = new GaiaBoundingBox();
+        result.addPoint(minWorldCoordinate);
+        result.addPoint(maxWorldCoordinate);
+        return result;
+    }
+
     public double getLongestDistance() {
         Vector3d volume = getVolume();
         return Math.sqrt(volume.x * volume.x + volume.y * volume.y + volume.z * volume.z);
