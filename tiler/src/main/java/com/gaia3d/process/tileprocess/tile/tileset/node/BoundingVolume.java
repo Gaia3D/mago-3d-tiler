@@ -63,7 +63,7 @@ public class BoundingVolume implements Serializable {
                         center.y,
                         center.z,
                         center.x - minpos.x,
-                        0, // Do we also need an y component?
+                        0,
                         0,
                         0,
                         center.y - minpos.y,
@@ -110,13 +110,14 @@ public class BoundingVolume implements Serializable {
         if (region != null) {
             return region;
         } else if (box != null) {
+            // TODO: support also non axis aligned boxes
             double[] minmax = {
                 box[0] - box[3],
-                box[1] - box[4],
-                box[2] - box[5],
+                box[1] - box[7],
+                box[2] - box[11],
                 box[0] + box[3],
-                box[1] + box[4],
-                box[2] + box[5],
+                box[1] + box[7],
+                box[2] + box[11],
             };
             return minmax;
         } else {
@@ -177,7 +178,7 @@ public class BoundingVolume implements Serializable {
         } else if (box != null) {
             return new Vector3d(box[0], box[1], box[2]);
         } else  {
-            return new Vector3d();
+            return null;
         }
     }
 
@@ -234,7 +235,7 @@ public class BoundingVolume implements Serializable {
              );
              return boundingVolume;
          } else {
-             return new BoundingVolume(BoundingVolumeType.REGION);
+             return null;
          }
      }
 }
