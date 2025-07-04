@@ -90,7 +90,7 @@ public class GaiaTranslation implements PreProcess {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         Vector3d position;
         Vector3d offset = globalOptions.getTranslateOffset();
-        if (offset == null) {
+        if (offset == null || globalOptions.isCartesian()) { // For cartesian output, apply offset on root node only
             offset = new Vector3d();
         }
         if (formatType == FormatType.CITYGML || formatType == FormatType.INDOORGML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON || formatType == FormatType.GEO_PACKAGE) {

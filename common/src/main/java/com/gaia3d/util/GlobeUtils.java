@@ -88,6 +88,19 @@ public class GlobeUtils {
 
     public static Matrix4d transformMatrixAtCartesianPointWgs84(double x, double y, double z) {
         Vector3d zAxis = normalAtCartesianPointWgs84(x, y, z);
+        return transformMatrixAtCartesianPoint(x, y, z, zAxis);
+    }
+
+    public static Matrix4d transformMatrixAtCartesianPoint(Vector3d position) {
+        return transformMatrixAtCartesianPointWgs84(position.x, position.y, position.z);
+    }
+
+    public static Matrix4d transformMatrixAtCartesianPoint(double x, double y, double z) {
+        Vector3d zAxis = normalAtCartesianPoint(x, y, z);
+        return transformMatrixAtCartesianPoint(x, y, z, zAxis);
+    }
+
+    static Matrix4d transformMatrixAtCartesianPoint(double x, double y, double z, Vector3d zAxis) {
         Vector3d xAxis = new Vector3d(-y, +x, 0.0);
         xAxis.normalize();
         Vector3d yAxis = zAxis.cross(xAxis, new Vector3d());
@@ -125,6 +138,16 @@ public class GlobeUtils {
 
     public static Vector3d normalAtCartesianPointWgs84(double x, double y, double z) {
         Vector3d zAxis = new Vector3d(x / EQUATORIAL_RADIUS_SQUARED, y / EQUATORIAL_RADIUS_SQUARED, z / POLAR_RADIUS_SQUARED);
+        zAxis.normalize();
+        return zAxis;
+    }
+
+    public static Vector3d normalAtCartesianPoint(Vector3d cartesian) {
+        return normalAtCartesianPoint(cartesian.x, cartesian.y, cartesian.z);
+    }
+
+    public static Vector3d normalAtCartesianPoint(double x, double y, double z) {
+        Vector3d zAxis = new Vector3d(x, y, z);
         zAxis.normalize();
         return zAxis;
     }

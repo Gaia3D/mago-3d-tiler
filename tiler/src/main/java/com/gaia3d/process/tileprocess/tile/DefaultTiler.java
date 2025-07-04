@@ -38,13 +38,22 @@ public abstract class DefaultTiler {
     }
 
     protected GaiaBoundingBox calcBoundingBox(List<TileInfo> tileInfos) {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        return calcBoundingBox(tileInfos, globalOptions.isCartesian());
+    }
+
+    protected GaiaBoundingBox calcBoundingBox(List<TileInfo> tileInfos, boolean cartesian) {
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         tileInfos.forEach(tileInfo -> {
             KmlInfo kmlInfo = tileInfo.getKmlInfo();
             Vector3d position = kmlInfo.getPosition();
             GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();
             // rotate
-            localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(position);
+            if (cartesian) {
+                localBoundingBox = localBoundingBox.convertLocalToBoundingBox(position);
+            } else {
+                localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(position);
+            }
             boundingBox.addBoundingBox(localBoundingBox);
         });
         return boundingBox;
@@ -58,9 +67,14 @@ public abstract class DefaultTiler {
     }
 
     protected Matrix4d getTransformMatrix(GaiaBoundingBox cartographicBoundingBox) {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
         Vector3d center = cartographicBoundingBox.getCenter();
-        double[] cartesian = GlobeUtils.geographicToCartesianWgs84(center.x, center.y, center.z);
-        return GlobeUtils.transformMatrixAtCartesianPointWgs84(cartesian[0], cartesian[1], cartesian[2]);
+        if (globalOptions.isCartesian()) {
+            return GlobeUtils.transformMatrixAtCartesianPoint(center.x, center.y, center.z);
+        } else {            
+            double[] cartesian = GlobeUtils.geographicToCartesianWgs84(center.x, center.y, center.z);
+            return GlobeUtils.transformMatrixAtCartesianPointWgs84(cartesian[0], cartesian[1], cartesian[2]);
+        }
     }
 
     protected Asset createAsset() {
@@ -80,9 +94,11 @@ public abstract class DefaultTiler {
     }
 
     protected Node createRoot() {
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
         Node root = new Node();
         root.setParent(root);
         root.setNodeCode("R");
+        root.setCartesian(globalOptions.isCartesian());
         root.setRefine(Node.RefineType.REPLACE);
         root.setChildren(new ArrayList<>());
         return root;

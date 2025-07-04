@@ -45,8 +45,13 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         }
 
         Node root = createRoot();
-        root.setBoundingVolume(new BoundingVolume(globalBoundingBox));
+        root.setBoundingVolume(new BoundingVolume(globalBoundingBox, globalOptions.isCartesian()));
         root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
+        if (globalOptions.isCartesian()) {
+            Matrix4d rootTransformMatrix = new Matrix4d();
+            rootTransformMatrix.setTranslation(globalOptions.getTranslateOffset());
+            root.setTransform(rootTransformMatrix.get(new float[16]));
+        }
         root.setGeometricError(geometricError);
 
         try {
@@ -101,7 +106,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
 
     private void createNode(Node parentNode, List<TileInfo> tileInfos, int nodeDepth) throws IOException {
         BoundingVolume parentBoundingVolume = parentNode.getBoundingVolume();
-        BoundingVolume squareBoundingVolume = parentBoundingVolume.createSqureBoundingVolume();
+        BoundingVolume squareBoundingVolume = parentBoundingVolume.createSquareBoundingVolume();
 
         boolean refineAdd = globalOptions.isRefineAdd();
         long triangleLimit = globalOptions.getMaxTriangles();
@@ -169,12 +174,12 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         log.info("[Tile][LogicalNode][" + nodeCode + "][OBJECT{}]", tileInfos.size());
 
         double geometricError = calcGeometricError(tileInfos);
-        GaiaBoundingBox boundingBox = calcBoundingBox(tileInfos);
+        GaiaBoundingBox boundingBox = calcBoundingBox(tileInfos, false); // see createContentNode
         Matrix4d transformMatrix = getTransformMatrix(boundingBox);
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);
         }
-        BoundingVolume boundingVolume = new BoundingVolume(boundingBox);
+        BoundingVolume boundingVolume = new BoundingVolume(boundingBox, globalOptions.isCartesian());
         geometricError = DecimalUtils.cutFast(geometricError);
 
         Node childNode = new Node();
@@ -196,12 +201,12 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         int maxLevel = globalOptions.getMaxLod();
         boolean refineAdd = globalOptions.isRefineAdd();
 
-        GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
+        GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos, false); // why always geographic?
         Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);
         }
-        BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
+        BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox, globalOptions.isCartesian());
 
         String nodeCode = parentNode.getNodeCode();
         LevelOfDetail minLod = LevelOfDetail.getByLevel(minLevel);
@@ -234,6 +239,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         childNode.setParent(parentNode);
         childNode.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
         childNode.setBoundingVolume(boundingVolume);
+        childNode.setCartesian(globalOptions.isCartesian());
         childNode.setNodeCode(nodeCode);
         childNode.setGeometricError(lodError + 0.1);
         childNode.setChildren(new ArrayList<>());

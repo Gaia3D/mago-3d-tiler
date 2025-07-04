@@ -45,20 +45,50 @@ public class BoundingVolume implements Serializable {
 
     //public BoundingVolume(GaiaBoundingBox boundingBox, CoordinateReferenceSystem source) {
     public BoundingVolume(GaiaBoundingBox boundingBox) {
-        ProjCoordinate minPoint = new ProjCoordinate(boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ());
-        ProjCoordinate maxPoint = new ProjCoordinate(boundingBox.getMaxX(), boundingBox.getMaxY(), boundingBox.getMaxZ());
-        double[] rootRegion = new double[6];
-        rootRegion[0] = Math.toRadians(minPoint.x);
-        rootRegion[1] = Math.toRadians(minPoint.y);
-        rootRegion[2] = Math.toRadians(maxPoint.x);
-        rootRegion[3] = Math.toRadians(maxPoint.y);
-        rootRegion[4] = boundingBox.getMinZ();
-        rootRegion[5] = boundingBox.getMaxZ();
-        for (int i = 0; i < rootRegion.length; i++) {
-            rootRegion[i] = DecimalUtils.cutFast(rootRegion[i]);
+        this(boundingBox, false);
+    }
+
+    public BoundingVolume(GaiaBoundingBox boundingBox, boolean cartesian) {
+        if (cartesian) {
+            // The first three elements define the x, y, and z values for the center of the box.
+            // The next three elements (with indices 3, 4, and 5) define the x-axis direction and half-length.
+            // The next three elements (indices 6, 7, and 8) define the y-axis direction and half-length.
+            // The last three elements (indices 9, 10, and 11) define the z-axis direction and half-length.
+            Vector3d minpos = boundingBox.getMinPosition();
+            Vector3d center = boundingBox.getCenter();
+            this.setType(BoundingVolumeType.BOX);
+            this.setBox(
+                    new double[] {
+                        center.x,
+                        center.y,
+                        center.z,
+                        center.x - minpos.x,
+                        0,
+                        0,
+                        0,
+                        center.y - minpos.y,
+                        0,
+                        0,
+                        0,
+                        center.z - minpos.z,
+                    }
+                );
+        } else {
+            ProjCoordinate minPoint = new ProjCoordinate(boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ());
+            ProjCoordinate maxPoint = new ProjCoordinate(boundingBox.getMaxX(), boundingBox.getMaxY(), boundingBox.getMaxZ());
+            double[] rootRegion = new double[6];
+            rootRegion[0] = Math.toRadians(minPoint.x);
+            rootRegion[1] = Math.toRadians(minPoint.y);
+            rootRegion[2] = Math.toRadians(maxPoint.x);
+            rootRegion[3] = Math.toRadians(maxPoint.y);
+            rootRegion[4] = boundingBox.getMinZ();
+            rootRegion[5] = boundingBox.getMaxZ();
+            for (int i = 0; i < rootRegion.length; i++) {
+                rootRegion[i] = DecimalUtils.cutFast(rootRegion[i]);
+            }
+            this.setType(BoundingVolumeType.REGION);
+            this.setRegion(rootRegion);
         }
-        this.setType(BoundingVolumeType.REGION);
-        this.setRegion(rootRegion);
     }
 
     public BoundingVolume(BoundingVolume boundingVolume) {
@@ -75,6 +105,26 @@ public class BoundingVolume implements Serializable {
         }
     }
 
+    // minx, miny, maxx, maxy, minz, maxz
+    public double[] minMax() {
+        if (region != null) {
+            return region;
+        } else if (box != null) {
+            // TODO: support also non axis aligned boxes
+            double[] minmax = {
+                box[0] - box[3],
+                box[1] - box[7],
+                box[2] - box[11],
+                box[0] + box[3],
+                box[1] + box[7],
+                box[2] + box[11],
+            };
+            return minmax;
+        } else {
+            return null;
+        }
+    }
+    
     public enum BoundingVolumeType {
         BOX,
         SPHERE,
@@ -88,34 +138,34 @@ public class BoundingVolume implements Serializable {
         result.add(new ArrayList<>());
         result.add(new ArrayList<>());
 
-        if (BoundingVolumeType.REGION == type) {
-            double minX = region[0];
-            double minY = region[1];
-            double maxX = region[2];
-            double maxY = region[3];
-            double midX = (minX + maxX) / 2;
-            double midY = (minY + maxY) / 2;
-            for (TileInfo tileInfo : tileInfos) {
-                //GaiaScene scene = tileInfo.getScene();
-                GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();
+        Vector3d mid = calcCenter();
+        double midX = mid.x;
+        double midY = mid.y;
+        for (TileInfo tileInfo : tileInfos) {
+            //GaiaScene scene = tileInfo.getScene();
+            GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();
 
-                KmlInfo kmlInfo = tileInfo.getKmlInfo();
+            KmlInfo kmlInfo = tileInfo.getKmlInfo();
+            if (BoundingVolumeType.REGION == type) {
                 localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(kmlInfo.getPosition());
-                BoundingVolume localBoundingVolume = new BoundingVolume(localBoundingBox);
-                Vector3d center = localBoundingVolume.calcCenter();
+            } else if (BoundingVolumeType.BOX == type) {
+                localBoundingBox = localBoundingBox.convertLocalToBoundingBox(kmlInfo.getPosition());;
+            }
+            boolean cartesian = (BoundingVolumeType.BOX == type);
+            BoundingVolume localBoundingVolume = new BoundingVolume(localBoundingBox, cartesian);
+            Vector3d center = localBoundingVolume.calcCenter();
 
-                if (midX < center.x()) {
-                    if (midY < center.y()) {
-                        result.get(2).add(tileInfo);
-                    } else {
-                        result.get(1).add(tileInfo);
-                    }
+            if (midX < center.x()) {
+                if (midY < center.y()) {
+                    result.get(2).add(tileInfo);
                 } else {
-                    if (midY < center.y()) {
-                        result.get(3).add(tileInfo);
-                    } else {
-                        result.get(0).add(tileInfo);
-                    }
+                    result.get(1).add(tileInfo);
+                }
+            } else {
+                if (midY < center.y()) {
+                    result.get(3).add(tileInfo);
+                } else {
+                    result.get(0).add(tileInfo);
                 }
             }
         }
@@ -123,7 +173,13 @@ public class BoundingVolume implements Serializable {
     }
 
     public Vector3d calcCenter() {
-        return new Vector3d((region[0] + region[2]) / 2, (region[1] + region[3]) / 2, (region[4] + region[5]) / 2);
+        if (region != null) {
+            return new Vector3d((region[0] + region[2]) / 2, (region[1] + region[3]) / 2, (region[4] + region[5]) / 2);
+        } else if (box != null) {
+            return new Vector3d(box[0], box[1], box[2]);
+        } else  {
+            return null;
+        }
     }
 
     /**
@@ -131,23 +187,57 @@ public class BoundingVolume implements Serializable {
      * maximum x or y value is increased to make square bounding volume.
      * @return square bounding volume
      */
-    public BoundingVolume createSqureBoundingVolume() {
-        double minX = region[0];
-        double minY = region[1];
-        double maxX = region[2];
-        double maxY = region[3];
-        double xLength = maxX - minX;
-        double yLength = maxY - minY;
-        double offset = Math.abs(xLength - yLength);
-        if (xLength > yLength) {
-            maxY = maxY + offset;
-        } else {
-            maxX = maxX + offset;
-        }
-        BoundingVolume boundingVolume = new BoundingVolume(BoundingVolumeType.REGION);
-        boundingVolume.setRegion(new double[]{minX, minY, maxX, maxY, region[4], region[5]});
-        return boundingVolume;
-    }
+     public BoundingVolume createSquareBoundingVolume() {
+         if (region != null) {
+             double minX = region[0];
+             double minY = region[1];
+             double maxX = region[2];
+             double maxY = region[3];
+             double xLength = maxX - minX;
+             double yLength = maxY - minY;
+             double offset = Math.abs(xLength - yLength);
+             if (xLength > yLength) {
+                 maxY = maxY + offset;
+             } else {
+                 maxX = maxX + offset;
+             }
+             BoundingVolume boundingVolume = new BoundingVolume(
+                 BoundingVolumeType.REGION
+             );
+             boundingVolume.setRegion(
+                 new double[] { minX, minY, maxX, maxY, region[4], region[5] }
+             );
+             return boundingVolume;
+         } else if (box != null) {
+             Vector3d xaxis = new Vector3d(box[3], box[4], 0);
+             Vector3d yaxis = new Vector3d(box[6], box[7], 0);
+             double maxlen = Math.max(xaxis.length(), yaxis.length());
+             xaxis = xaxis.mul(maxlen/xaxis.length());
+             yaxis = yaxis.mul(maxlen/yaxis.length());
+             BoundingVolume boundingVolume = new BoundingVolume(
+                 BoundingVolumeType.BOX
+             );
+             boundingVolume.setBox(
+                 new double[] {
+                     box[0],
+                     box[1],
+                     box[2],
+                     xaxis.x,
+                     xaxis.y,
+                     box[5],
+                     yaxis.x,
+                     yaxis.y,
+                     box[8],
+                     box[9],
+                     box[10],
+                     box[11]
+                 }
+             );
+             return boundingVolume;
+         } else {
+             return null;
+         }
+     }
 }
 
 
