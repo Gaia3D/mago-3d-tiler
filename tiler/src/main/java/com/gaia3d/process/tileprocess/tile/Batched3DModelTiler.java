@@ -174,7 +174,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         log.info("[Tile][LogicalNode][" + nodeCode + "][OBJECT{}]", tileInfos.size());
 
         double geometricError = calcGeometricError(tileInfos);
-        GaiaBoundingBox boundingBox = calcBoundingBox(tileInfos);
+        GaiaBoundingBox boundingBox = calcBoundingBox(tileInfos, false); // see createContentNode
         Matrix4d transformMatrix = getTransformMatrix(boundingBox);
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);
@@ -201,7 +201,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         int maxLevel = globalOptions.getMaxLod();
         boolean refineAdd = globalOptions.isRefineAdd();
 
-        GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
+        GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos, false); // why always geographic?
         Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);

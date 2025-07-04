@@ -39,13 +39,17 @@ public abstract class DefaultTiler {
 
     protected GaiaBoundingBox calcBoundingBox(List<TileInfo> tileInfos) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
+        return calcBoundingBox(tileInfos, globalOptions.isCartesian());
+    }
+
+    protected GaiaBoundingBox calcBoundingBox(List<TileInfo> tileInfos, boolean cartesian) {
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         tileInfos.forEach(tileInfo -> {
             KmlInfo kmlInfo = tileInfo.getKmlInfo();
             Vector3d position = kmlInfo.getPosition();
             GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();
             // rotate
-            if (globalOptions.isCartesian()) {
+            if (cartesian) {
                 localBoundingBox = localBoundingBox.convertLocalToBoundingBox(position);
             } else {
                 localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(position);
