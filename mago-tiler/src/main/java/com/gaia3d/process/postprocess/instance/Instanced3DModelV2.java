@@ -63,7 +63,7 @@ public class Instanced3DModelV2 implements ContentModel {
 
         Vector3d centerWorldCoordinateYUp = new Vector3d(centerWorldCoordinate.x, centerWorldCoordinate.z, -centerWorldCoordinate.y);
 
-        Matrix4d transformMatrix = GlobeUtils. (centerWorldCoordinateYUp);
+        Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinateYUp);
         Matrix4d inverseTransformMatrix = transformMatrix.invert(new Matrix4d());
 
         AtomicInteger positionIndex = new AtomicInteger();

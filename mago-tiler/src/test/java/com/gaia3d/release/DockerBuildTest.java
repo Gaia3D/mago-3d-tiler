@@ -12,7 +12,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-@Tag("default")
+//@Tag("default")
 @Slf4j
 class DockerBuildTest {
 
