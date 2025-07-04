@@ -105,6 +105,25 @@ public class BoundingVolume implements Serializable {
         }
     }
 
+    // minx, miny, maxx, maxy, minz, maxz
+    public double[] minMax() {
+        if (region != null) {
+            return region;
+        } else if (box != null) {
+            double[] minmax = {
+                box[0] - box[3],
+                box[1] - box[4],
+                box[2] - box[5],
+                box[0] + box[3],
+                box[1] + box[4],
+                box[2] + box[5],
+            };
+            return minmax;
+        } else {
+            return null;
+        }
+    }
+    
     public enum BoundingVolumeType {
         BOX,
         SPHERE,

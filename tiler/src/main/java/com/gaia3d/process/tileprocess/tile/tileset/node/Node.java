@@ -378,7 +378,7 @@ public class Node {
         for (Node childNode : children) {
             BoundingVolume childBoundingVolume = childNode.getBoundingVolume();
 
-            double[] region = childBoundingVolume.getRegion();// minx, miny, maxx, maxy, minz, maxz
+            double[] region = childBoundingVolume.minMax();// minx, miny, maxx, maxy, minz, maxz
 
             // check if intersects centerLonRad and centerLatRad
             if (cartographicRad.x >= region[0] && cartographicRad.x <= region[2] && cartographicRad.y >= region[1] && cartographicRad.y <= region[3] && cartographicRad.z >= region[4] && cartographicRad.z <= region[5]) {
@@ -398,10 +398,10 @@ public class Node {
             this.createOctTreeChildren();
         }
 
-        double[] region = this.getBoundingVolume().getRegion();
-        double midLonRad = (region[0] + region[2]) / 2.0;
-        double midLatRad = (region[1] + region[3]) / 2.0;
-        double midAltitude = (region[4] + region[5]) / 2.0;
+        Vector3d center = this.getBoundingVolume().calcCenter();
+        double midLonRad = center.x; // TODO not in radiant for box volumes
+        double midLatRad = center.y;
+        double midAltitude = center.z;
 
         //              bottom                                top
         //        +------------+------------+        +------------+------------+
