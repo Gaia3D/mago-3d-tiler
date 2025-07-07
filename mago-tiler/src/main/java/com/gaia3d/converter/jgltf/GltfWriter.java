@@ -559,7 +559,7 @@ public class GltfWriter {
                 material.setAlphaCutoff(0.5f);
             }
         } else {
-            material.setAlphaMode("OPAQUE"); // "OPAQUE", "MASK", "BLEND"
+            material.setAlphaMode("OPAQUE");
         }
 
         MaterialPbrMetallicRoughness pbrMetallicRoughness = new MaterialPbrMetallicRoughness();
@@ -585,32 +585,30 @@ public class GltfWriter {
     protected int createImage(GlTF gltf, GltfBinary binary, GaiaTexture gaiaTexture) {
         String extension = FilenameUtils.getExtension(gaiaTexture.getPath());
         String mimeType = ImageUtils.getMimeTypeByExtension(extension);
-        //String uri = writeImage(gaiaTexture.getBufferedImage(), mimeType);
-
-        byte[] imageBytes = writeImageBuffer(gaiaTexture.getBufferedImage(), mimeType);
-
-        int bufferOffset = binary.calcTotalByteBufferLength() + binary.calcTotalImageByteBufferLength();
-        int bufferViewId = createBufferView(gltf, 0, bufferOffset, imageBytes.length, -1, -1);
-
-        List<ImageBuffer> imageBuffers = binary.getImageBuffers();
-        ImageBuffer imageBuffer = new ImageBuffer();
-
-        int totalStringLength = imageBytes.length;
-        /*byte[] uriBytes = uri.getBytes(StandardCharsets.UTF_8);
-        totalStringLength += uriBytes.length;*/
-
-        ByteBuffer byteBuffer = ByteBuffer.allocate(totalStringLength)/*.order(ByteOrder.LITTLE_ENDIAN)*/;
-        byteBuffer.put(imageBytes);
-        //byteBuffer.flip();
-        imageBuffer.setByteBuffer(byteBuffer);
-        imageBuffer.setByteBufferLength(totalStringLength);
-        imageBuffers.add(imageBuffer);
 
         Image image = new Image();
-        //image.setUri(uri);
         image.setMimeType(mimeType);
-        image.setBufferView(bufferViewId);
+        if (globalOptions.getTilesVersion().equals("1.0")) {
+            String uri = convertBufferedImageToURI(gaiaTexture.getBufferedImage(), mimeType);
+            image.setUri(uri);
+        } else {
+            byte[] imageBytes = convertBufferedImageToBytes(gaiaTexture.getBufferedImage(), mimeType);
 
+            int bufferOffset = binary.calcTotalByteBufferLength() + binary.calcTotalImageByteBufferLength();
+            int bufferViewId = createBufferView(gltf, 0, bufferOffset, imageBytes.length, -1, -1);
+
+            List<ImageBuffer> imageBuffers = binary.getImageBuffers();
+            ImageBuffer imageBuffer = new ImageBuffer();
+
+            int totalStringLength = imageBytes.length;
+            ByteBuffer byteBuffer = ByteBuffer.allocate(totalStringLength);
+            byteBuffer.put(imageBytes);
+            imageBuffer.setByteBuffer(byteBuffer);
+            imageBuffer.setByteBufferLength(totalStringLength);
+            imageBuffers.add(imageBuffer);
+
+            image.setBufferView(bufferViewId);
+        }
         gltf.addImages(image);
         return gltf.getImages().size() - 1;
     }
@@ -680,7 +678,7 @@ public class GltfWriter {
         return gltf.getMeshes().size() - 1;
     }
 
-    private byte[] writeImageBuffer(BufferedImage bufferedImage, String mimeType) {
+    private byte[] convertBufferedImageToBytes(BufferedImage bufferedImage, String mimeType) {
         ImageResizer imageResizer = new ImageResizer();
         String formatName = ImageUtils.getFormatNameByMimeType(mimeType);
         byte[] imageBytes = null;
@@ -712,7 +710,7 @@ public class GltfWriter {
         return imageBytes;
     }
 
-    private String writeImage(BufferedImage bufferedImage, String mimeType) {
+    private String convertBufferedImageToURI(BufferedImage bufferedImage, String mimeType) {
         ImageResizer imageResizer = new ImageResizer();
         String formatName = ImageUtils.getFormatNameByMimeType(mimeType);
         String imageString = null;
@@ -752,21 +750,12 @@ public class GltfWriter {
             ios = ImageIO.createImageOutputStream(baos);
 
             // Image compression
-            Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpg"); // 1
+            Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpg");
             ImageWriter writer = writers.next();
             writer.setOutput(ios);
-            ImageWriteParam param = writer.getDefaultWriteParam(); // 2
-            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT); // 3
-            param.setCompressionQuality(quality);  // 4
-
-            // when data 4 channel convert to 3 channel image
-            /*if (bufferedImage.getType() == BufferedImage.TYPE_4BYTE_ABGR) {
-                BufferedImage convertedImage = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
-                Graphics2D graphics = convertedImage.createGraphics();
-                graphics.drawImage(bufferedImage, 0, 0, null);
-                graphics.dispose();
-                bufferedImage = convertedImage;
-            }*/
+            ImageWriteParam param = writer.getDefaultWriteParam();
+            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            param.setCompressionQuality(quality);
 
             BufferedImage convertedImage = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
             Graphics2D graphics = convertedImage.createGraphics();
@@ -778,7 +767,6 @@ public class GltfWriter {
             byte[] bytes = baos.toByteArray();
             String imageString = "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(bytes);
             bufferedImage.flush();
-            bytes = null;
 
             baos.close();
             ios.close();

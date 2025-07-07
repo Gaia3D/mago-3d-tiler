@@ -157,6 +157,28 @@ class DefaultReleaseTest {
         execute(args);
     }
 
+    @Test
+    void pointcloud06V1() {
+        String path = "P06-classification-las";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath() + "-V1",
+                "-tilesVersion", "1.0",
+        };
+        execute(args);
+    }
+
+    @Test
+    void pointcloud06V2() {
+        String path = "P06-classification-las";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath() + "-V2",
+                "-tilesVersion", "1.1",
+        };
+        execute(args);
+    }
+
     private void execute(String[] args) {
         Mago3DTilerMain.main(args);
     }
