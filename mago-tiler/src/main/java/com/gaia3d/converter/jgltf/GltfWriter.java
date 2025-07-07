@@ -320,6 +320,9 @@ public class GltfWriter {
         MeshPrimitive primitive = createPrimitive(nodeBuffer, gaiaPrimitive, materials);
         int meshId = createMesh(gltf, primitive);
         node.setMesh(meshId);
+
+
+
         return nodeBuffer;
     }
 

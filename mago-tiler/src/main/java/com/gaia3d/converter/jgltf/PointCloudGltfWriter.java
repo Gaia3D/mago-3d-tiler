@@ -1,16 +1,9 @@
 package com.gaia3d.converter.jgltf;
 
-import com.gaia3d.basic.model.GaiaMaterial;
-import com.gaia3d.basic.model.GaiaMesh;
-import com.gaia3d.basic.model.GaiaPrimitive;
-import com.gaia3d.basic.model.GaiaTexture;
 import com.gaia3d.basic.types.AccessorType;
 import com.gaia3d.basic.types.AttributeType;
-import com.gaia3d.basic.types.FormatType;
-import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.converter.jgltf.extension.*;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTable;
-import com.gaia3d.process.postprocess.batch.GaiaBatchTableMap;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.postprocess.instance.Instanced3DModelBinary;
 import com.gaia3d.process.postprocess.pointcloud.PointCloudBuffer;
@@ -23,7 +16,6 @@ import de.javagl.jgltf.model.io.v2.GltfAssetV2;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
-import org.joml.Quaterniond;
 import org.lwjgl.opengl.GL20;
 
 import java.io.File;
@@ -31,6 +23,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +65,16 @@ public class PointCloudGltfWriter extends GltfWriter {
         gltf.addExtensionsUsed(ExtensionConstant.MESH_QUANTIZATION.getExtensionName());
         gltf.addExtensionsRequired(ExtensionConstant.MESH_QUANTIZATION.getExtensionName());
 
+        gltf.addExtensionsUsed(ExtensionConstant.STRUCTURAL_METADATA.getExtensionName());
+
+        ExtensionStructuralMetadata extensionStructuralMetadata = ExtensionStructuralMetadata.fromPointCloudBuffer(pointCloudBuffer);
+        Map<String, Object> extensions = new HashMap<>();
+        extensions.put(ExtensionConstant.STRUCTURAL_METADATA.getExtensionName(), extensionStructuralMetadata);
+        gltf.setExtensions(extensions);
+
         convertNode(gltf, binary, rootNode, pointCloudBuffer, featureTable, batchTable);
+
+        applyInstanceFeaturesBinary(gltf, binary, pointCloudBuffer);
 
         binary.fill();
         if (binary.getBody() != null) {
@@ -82,189 +84,78 @@ public class PointCloudGltfWriter extends GltfWriter {
         return null;
     }
 
-    private void applyPropertiesBinary(GlTF gltf, GltfBinary binary, ExtensionStructuralMetadata extensionStructuralMetadata) {
-        log.info("[Info] Apply properties binary to glTF");
+    private void applyInstanceFeaturesBinary(GlTF gltf, GltfBinary binary, PointCloudBuffer pointCloudBuffer) {
+        List<GltfNodeBuffer> nodeBuffers = binary.getNodeBuffers();
+        nodeBuffers.forEach(nodeBuffer -> {
+            List<ByteBuffer> instancingBuffers = binary.getInstancingBuffers();
+            byte[] classificationBytes = pointCloudBuffer.getClassificationPadBytes();
+            byte[] intensityBytes = pointCloudBuffer.getIntensityPadBytes();
 
-        int totalByteBufferLength = binary.calcTotalByteBufferLength() + binary.calcTotalImageByteBufferLength();
-        AtomicInteger bufferOffset = new AtomicInteger(totalByteBufferLength);
+            int binaryTotalByteBufferLength = binary.calcTotalByteBufferLength();
+            int classificationByteBufferLength = classificationBytes.length;
+            int intensityByteBufferLength = intensityBytes.length;
 
-        List<ByteBuffer> buffers = binary.getPropertyBuffers();
+            classificationByteBufferLength = padMultiple4(classificationByteBufferLength);
+            intensityByteBufferLength = padMultiple4(intensityByteBufferLength);
 
-        extensionStructuralMetadata.getPropertyTables().forEach(propertyTable -> {
-            propertyTable.getProperties().forEach((name, property) -> {
-                List<String> values = property.getPrimaryValues();
-                ByteBuffer[] stringBuffers = createStringBuffers(values);
+            ByteBuffer classificationByteBuffer = ByteBuffer.allocate(classificationByteBufferLength)
+                    .order(ByteOrder.LITTLE_ENDIAN);
+            ByteBuffer intensityByteBuffer = ByteBuffer.allocate(intensityByteBufferLength)
+                    .order(ByteOrder.LITTLE_ENDIAN);
+            classificationByteBuffer.put(classificationBytes);
+            intensityByteBuffer.put(intensityBytes);
+            classificationByteBuffer.flip();
+            intensityByteBuffer.flip();
 
-                ByteBuffer stringBuffer = stringBuffers[0];
-                ByteBuffer offsetBuffer = stringBuffers[1];
+            instancingBuffers.add(classificationByteBuffer);
+            instancingBuffers.add(intensityByteBuffer);
 
-                int stringBufferViewId = createBufferView(gltf, 0, bufferOffset.get(), stringBuffer.capacity(), -1, GL20.GL_ARRAY_BUFFER);
-                property.setValues(stringBufferViewId);
+            int classificationBufferViewId = createBufferView(gltf, 0, binaryTotalByteBufferLength, classificationByteBufferLength, 4, GL20.GL_ARRAY_BUFFER);
+            int intensityBufferViewId = createBufferView(gltf, 0, binaryTotalByteBufferLength + classificationByteBufferLength, intensityByteBufferLength, 4, GL20.GL_ARRAY_BUFFER);
 
-                BufferView stringBufferView = gltf.getBufferViews().get(stringBufferViewId);
-                stringBufferView.setName(name + "_values");
+            BufferView classificationBufferView = gltf.getBufferViews().get(classificationBufferViewId);
+            classificationBufferView.setName("classifications");
+            BufferView intensityBufferView = gltf.getBufferViews().get(intensityBufferViewId);
+            intensityBufferView.setName("intensities");
 
-                int offsetBufferViewId = createBufferView(gltf, 0, bufferOffset.get() + stringBuffer.capacity(), offsetBuffer.capacity(), -1, GL20.GL_ARRAY_BUFFER);
-                property.setStringOffsets(offsetBufferViewId);
+            int classificationAccessorId = createAccessor(gltf, classificationBufferViewId, 0, classificationByteBufferLength / 4, GltfConstants.GL_UNSIGNED_SHORT, AccessorType.SCALAR, false);
+            int intensityAccessorId = createAccessor(gltf, intensityBufferViewId, 0, intensityByteBufferLength / 4, GltfConstants.GL_UNSIGNED_SHORT, AccessorType.SCALAR, false);
 
-                BufferView offsetBufferView = gltf.getBufferViews().get(offsetBufferViewId);
-                offsetBufferView.setName(name + "_offsets");
+            MeshPrimitive primitive = gltf.getMeshes().get(0).getPrimitives().get(0);
+            Map<String, Integer> attributes = primitive.getAttributes();
 
-                bufferOffset.addAndGet(stringBuffer.capacity() + offsetBuffer.capacity());
-
-                buffers.add(stringBuffer);
-                buffers.add(offsetBuffer);
-                log.info("[Info] Property: {}, Values: {}", name, values.size());
-            });
-        });
-    }
-
-    private void applyInstanceFeaturesBinary(GlTF gltf, GltfBinary binary, GaiaFeatureTable featureTable) {
-        log.info("[Info] Apply instance features binary to glTF");
-
-        int totalByteBufferLength = binary.calcTotalByteBufferLength() + binary.calcTotalImageByteBufferLength() + binary.calcTotalPropertyByteBufferLength();
-        //AtomicInteger bufferOffset = new AtomicInteger(totalByteBufferLength);
-
-        List<ByteBuffer> instancingBuffers = binary.getInstancingBuffers();
-
-        int featureCount = featureTable.getInstancesLength();
-
-        Instanced3DModelBinary instancedBuffer = featureTable.getInstancedBuffer();
-        byte[] translationBuffer = instancedBuffer.getPositionBytes();
-        byte[] rotationBuffer = instancedBuffer.getRotationBytes();
-        byte[] scaleBuffer = instancedBuffer.getScaleBytes();
-        byte[] featureIdBuffer = instancedBuffer.getFeatureIdBytes();
-
-        ByteBuffer translationByteBuffer = ByteBuffer.allocate(translationBuffer.length).order(ByteOrder.LITTLE_ENDIAN);
-        ByteBuffer rotationByteBuffer = ByteBuffer.allocate(rotationBuffer.length).order(ByteOrder.LITTLE_ENDIAN);
-        ByteBuffer scaleByteBuffer = ByteBuffer.allocate(scaleBuffer.length).order(ByteOrder.LITTLE_ENDIAN);
-        ByteBuffer featureIdByteBuffer = ByteBuffer.allocate(featureIdBuffer.length).order(ByteOrder.LITTLE_ENDIAN);
-
-        translationByteBuffer.put(translationBuffer);
-        rotationByteBuffer.put(rotationBuffer);
-        scaleByteBuffer.put(scaleBuffer);
-        featureIdByteBuffer.put(featureIdBuffer);
-
-        translationByteBuffer.flip();
-        rotationByteBuffer.flip();
-        scaleByteBuffer.flip();
-        featureIdByteBuffer.flip();
-
-        instancingBuffers.add(translationByteBuffer);
-        instancingBuffers.add(rotationByteBuffer);
-        instancingBuffers.add(scaleByteBuffer);
-        instancingBuffers.add(featureIdByteBuffer);
-
-        int translationByteBufferLength = translationByteBuffer.capacity();
-        int rotationByteBufferLength = rotationByteBuffer.capacity();
-        int scaleByteBufferLength = scaleByteBuffer.capacity();
-        int featureIdByteBufferLength = featureIdByteBuffer.capacity();
-
-        int translationBufferViewId = createBufferView(gltf, 0, totalByteBufferLength, translationByteBufferLength, 12, GL20.GL_ARRAY_BUFFER);
-        int rotationBufferViewId = createBufferView(gltf, 0, totalByteBufferLength + translationByteBufferLength, rotationByteBufferLength, 16, GL20.GL_ARRAY_BUFFER);
-        int scaleBufferViewId = createBufferView(gltf, 0, totalByteBufferLength + translationByteBufferLength + rotationByteBufferLength, scaleByteBufferLength, 12, GL20.GL_ARRAY_BUFFER);
-        int featureIdBufferViewId = createBufferView(gltf, 0, totalByteBufferLength + translationByteBufferLength + rotationByteBufferLength + scaleByteBufferLength, featureIdByteBufferLength, -1, GL20.GL_ARRAY_BUFFER);
-
-        BufferView translationBufferView = gltf.getBufferViews().get(translationBufferViewId);
-        translationBufferView.setName("translation");
-        BufferView rotationBufferView = gltf.getBufferViews().get(rotationBufferViewId);
-        rotationBufferView.setName("rotation");
-        BufferView scaleBufferView = gltf.getBufferViews().get(scaleBufferViewId);
-        scaleBufferView.setName("scale");
-        BufferView featureIdBufferView = gltf.getBufferViews().get(featureIdBufferViewId);
-        featureIdBufferView.setName("featureId");
-
-        int translationAccessorId = createAccessor(gltf, translationBufferViewId, 0, featureCount, GltfConstants.GL_FLOAT, AccessorType.VEC3, false);
-        int rotationAccessorId = createAccessor(gltf, rotationBufferViewId, 0, featureCount, GltfConstants.GL_FLOAT, AccessorType.VEC4, true);
-        int scaleAccessorId = createAccessor(gltf, scaleBufferViewId, 0, featureCount, GltfConstants.GL_FLOAT, AccessorType.VEC3, false);
-        int featureIdAccessorId = createAccessor(gltf, featureIdBufferViewId, 0, featureCount, GltfConstants.GL_FLOAT, AccessorType.SCALAR, false);
-
-        List<Node> nodes = gltf.getNodes();
-        nodes.forEach(node -> {
-            if (node.getMesh() != null && node.getMesh() >= 0) {
-                log.info("[Info] Apply instance features to node: {}", node.getName());
-
-                //featureTable.getInstancedBuffer();
-
-                Map<String, Object> extensions = new HashMap<>();
-                ExtensionInstanceFeatures extensionInstanceFeatures = ExtensionInstanceFeatures.fromBatchTable(featureTable);
-                extensions.put(ExtensionConstant.INSTANCE_FEATURES.getExtensionName(), extensionInstanceFeatures);
-
-                ExtensionMeshGpuInstancing extensionMeshGpuInstancing = new ExtensionMeshGpuInstancing();
-                Map<String, Integer> attributes = extensionMeshGpuInstancing.getAttributes();
-                attributes.put("TRANSLATION", translationAccessorId);
-                attributes.put("ROTATION", rotationAccessorId);
-                attributes.put("SCALE", scaleAccessorId);
-                attributes.put(AttributeType.FEATURE_ID_0.getAccessor(), featureIdAccessorId);
-                extensions.put(ExtensionConstant.MESH_GPU_INSTANCING.getExtensionName(), extensionMeshGpuInstancing);
-
-                node.setExtensions(extensions);
+            Map<AttributeType, Integer> accessorMap = nodeBuffer.getAccessorMap();
+            AttributeType classificationType = AttributeType.CLASSIFICATION;
+            accessorMap.put(classificationType, classificationAccessorId);
+            if (accessorMap.containsKey(classificationType)) {
+                attributes.put(classificationType.getAccessor(), accessorMap.get(classificationType));
             }
+
+            AttributeType intensityType = AttributeType.INTENSITY;
+            accessorMap.put(intensityType, intensityAccessorId);
+            if (accessorMap.containsKey(intensityType)) {
+                attributes.put(intensityType.getAccessor(), accessorMap.get(intensityType));
+            }
+
+            ExtensionStructuralMetadataMapper extensionStructuralMetadata = new ExtensionStructuralMetadataMapper();
+            List<Integer> propertyAttributes = new ArrayList<>();
+            propertyAttributes.add(0); // First property is always the position
+            extensionStructuralMetadata.setPropertyAttributes(propertyAttributes);
+
+            Map<String, Object> extensions = new HashMap<>();
+            extensions.put(ExtensionConstant.STRUCTURAL_METADATA.getExtensionName(), extensionStructuralMetadata);
+            primitive.setExtensions(extensions);
         });
 
 
-        /*ExtensionInstanceFeatures extensionInstanceFeatures = ExtensionInstanceFeatures.fromBatchTable(featureTable);
-        extensionInstanceFeatures.getFeatureIds().forEach(featureId -> {
-            ByteBuffer[] stringBuffers = createStringBuffers(featureId.getValues());
-
-            ByteBuffer stringBuffer = stringBuffers[0];
-            ByteBuffer offsetBuffer = stringBuffers[1];
-
-            int stringBufferViewId = createBufferView(gltf, 0, bufferOffset.get(), stringBuffer.capacity(), -1, GL20.GL_ARRAY_BUFFER);
-            featureId.setValues(stringBufferViewId);
-
-            int offsetBufferViewId = createBufferView(gltf, 0, bufferOffset.get() + stringBuffer.capacity(), offsetBuffer.capacity(), -1, GL20.GL_ARRAY_BUFFER);
-            featureId.setStringOffsets(offsetBufferViewId);
-
-            bufferOffset.addAndGet(stringBuffer.capacity() + offsetBuffer.capacity());
-
-            buffers.add(stringBuffer);
-            buffers.add(offsetBuffer);
-            log.info("[Info] Feature ID: {}, Values: {}", featureId.getName(), featureId.getValues().size());
-        });*/
-    }
-
-    private ByteBuffer[] createStringBuffers(List<String> strings) {
-        int totalStringLength = 0;
-        byte[][] encodedFeatures = new byte[strings.size()][];
-        for (int i = 0; i < strings.size(); i++) {
-            String feature = strings.get(i);
-            if (feature == null || feature.isEmpty()) {
-                feature = " ";
-            }
-            encodedFeatures[i] = feature.getBytes(StandardCharsets.UTF_8);
-            totalStringLength += encodedFeatures[i].length;
-        }
-
-        totalStringLength = padMultiple4(totalStringLength);
-        int encodedFeaturesCount = (encodedFeatures.length + 1) * 4; // Each offset is an int (4 bytes)
-
-        ByteBuffer stringBuffer = ByteBuffer.allocate(totalStringLength)
-                .order(ByteOrder.LITTLE_ENDIAN);
-        ByteBuffer offsetBuffer = ByteBuffer.allocate(encodedFeaturesCount)
-                .order(ByteOrder.LITTLE_ENDIAN);
-
-        int currentOffset = 0;
-        offsetBuffer.putInt(currentOffset); // offset[0] = 0
-        for (byte[] encoded : encodedFeatures) {
-            stringBuffer.put(encoded);
-            currentOffset += encoded.length;
-            offsetBuffer.putInt(currentOffset); // offset[i+1]
-        }
-
-        // position을 다시 0으로 되돌려서 읽기 준비
-        stringBuffer.flip();
-        offsetBuffer.flip();
-
-        return new ByteBuffer[]{stringBuffer, offsetBuffer};
     }
 
 
     protected void convertNode(GlTF gltf, GltfBinary binary, Node parentNode, PointCloudBuffer pointCloudBuffer, GaiaFeatureTable featureTable, GaiaBatchTable batchTable) {
         List<GltfNodeBuffer> nodeBuffers = binary.getNodeBuffers();
 
-        Node node = createNode(gltf, parentNode, binary, pointCloudBuffer, featureTable);
-        GltfNodeBuffer nodeBuffer = convertGeometryInfo(gltf, pointCloudBuffer, node, featureTable, batchTable);
+        Node node = createNode(gltf, parentNode);
+        GltfNodeBuffer nodeBuffer = convertGeometryInfo(gltf, binary, pointCloudBuffer, node, featureTable, batchTable);
 
         int nodeId = gltf.getNodes().size() - 1;
         if (parentNode != null) {
@@ -274,7 +165,7 @@ public class PointCloudGltfWriter extends GltfWriter {
         nodeBuffers.add(nodeBuffer);
     }
 
-    protected Node createNode(GlTF gltf, Node parentNode, GltfBinary binary, PointCloudBuffer pointCloudBuffer, GaiaFeatureTable featureTable) {
+    protected Node createNode(GlTF gltf, Node parentNode) {
         Node node;
         if (parentNode == null) {
             node = gltf.getNodes().get(0);
@@ -283,22 +174,11 @@ public class PointCloudGltfWriter extends GltfWriter {
             gltf.addNodes(node);
         }
 
-        /*Matrix4d rotationMatrix = gaiaNode.getTransformMatrix();
-        Quaterniond rotationQuaternion = rotationMatrix.getNormalizedRotation(new Quaterniond());
-        node.setRotation(new float[]{
-                (float) rotationQuaternion.x,
-                (float) rotationQuaternion.y,
-                (float) rotationQuaternion.z,
-                (float) rotationQuaternion.w
-        });*/
-
         node.setName("PointCloudNode");
         return node;
     }
 
-    protected GltfNodeBuffer convertGeometryInfo(GlTF gltf, PointCloudBuffer pointCloudBuffer, Node node, GaiaFeatureTable featureTable, GaiaBatchTable batchTable) {
-
-        //int[] indices = gaiaMesh.getIndices();
+    protected GltfNodeBuffer convertGeometryInfo(GlTF gltf, GltfBinary binary, PointCloudBuffer pointCloudBuffer, Node node, GaiaFeatureTable featureTable, GaiaBatchTable batchTable) {
         float[] positions = pointCloudBuffer.getPositions();
 
         short[] unsignedShortsPositions = null;
@@ -318,59 +198,39 @@ public class PointCloudGltfWriter extends GltfWriter {
         node.setMatrix(quantizationMatrix.get(new float[16]));
 
         short[] normals = pointCloudBuffer.getNormals();
-        byte[] colors = pointCloudBuffer.getColorBytes(); // 4bytes
-        //float[] texcoords = gaiaMesh.getTexcoords();
+        byte[] colors = pointCloudBuffer.getColorBytes();
         float[] batchIds = pointCloudBuffer.getBatchIds();
-
-        //int vertexCount = featureTable.getPointsLength();
+        //short[] classifications = pointCloudBuffer.getClassifications();
+        //char[] intensities = pointCloudBuffer.getIntensities();
 
         GltfNodeBuffer nodeBuffer = initNodeBuffer(pointCloudBuffer);
         createBuffer(gltf, nodeBuffer);
 
-        //ByteBuffer indicesBuffer = nodeBuffer.getIndicesBuffer();
         ByteBuffer positionsBuffer = nodeBuffer.getPositionsBuffer();
-        //ByteBuffer normalsBuffer = nodeBuffer.getNormalsBuffer();
+        ByteBuffer normalsBuffer = nodeBuffer.getNormalsBuffer();
         ByteBuffer colorsBuffer = nodeBuffer.getColorsBuffer();
-        //ByteBuffer texcoordsBuffer = nodeBuffer.getTexcoordsBuffer();
         ByteBuffer batchIdBuffer = nodeBuffer.getBatchIdBuffer();
 
-        //int indicesBufferViewId = nodeBuffer.getIndicesBufferViewId();
         int positionsBufferViewId = nodeBuffer.getPositionsBufferViewId();
-        //int normalsBufferViewId = nodeBuffer.getNormalsBufferViewId();
+        int normalsBufferViewId = nodeBuffer.getNormalsBufferViewId();
         int colorsBufferViewId = nodeBuffer.getColorsBufferViewId();
-        //int texcoordsBufferViewId = nodeBuffer.getTexcoordsBufferViewId();
         int batchIdBufferViewId = nodeBuffer.getBatchIdBufferViewId();
 
-        /*if (indicesBuffer != null) {
-            for (int indicesValue : indices) {
-                if (isOverShortVertices) {
-                    indicesBuffer.putInt(indicesValue);
-                } else {
-                    short indicesValueShort = (short) indicesValue;
-                    indicesBuffer.putShort(indicesValueShort);
-                }
-            }
-        }*/
         if (positionsBuffer != null) {
             for (short position : unsignedShortsPositions) {
                 positionsBuffer.putShort(position);
             }
         }
-        /*if (normalsBuffer != null) {
+        if (normalsBuffer != null) {
             for (Short normal : normals) {
                 normalsBuffer.putShort(normal);
             }
-        }*/
+        }
         if (colorsBuffer != null) {
             for (Byte color : colors) {
                 colorsBuffer.put(color);
             }
         }
-        /*if (texcoordsBuffer != null) {
-            for (Float textureCoordinate : texcoords) {
-                texcoordsBuffer.putFloat(textureCoordinate);
-            }
-        }*/
         if (batchIdBuffer != null) {
             for (Float batchId : batchIds) {
                 batchIdBuffer.putFloat(batchId);
@@ -381,10 +241,10 @@ public class PointCloudGltfWriter extends GltfWriter {
             int verticesAccessorId = createAccessor(gltf, positionsBufferViewId, 0, positions.length / 3, GltfConstants.GL_UNSIGNED_SHORT, AccessorType.VEC3, true);
             nodeBuffer.setPositionsAccessorId(verticesAccessorId);
         }
-        /*if (normalsBufferViewId > -1 && normals.length > 0) {
+        if (normalsBufferViewId > -1 && normals.length > 0) {
             int normalsAccessorId = createAccessor(gltf, normalsBufferViewId, 0, normals.length / 3, GltfConstants.GL_FLOAT, AccessorType.VEC3, false);
             nodeBuffer.setNormalsAccessorId(normalsAccessorId);
-        }*/
+        }
         if (colorsBufferViewId > -1 && colors.length > 0) {
             int colorsAccessorId = createAccessor(gltf, colorsBufferViewId, 0, colors.length / 4, GltfConstants.GL_UNSIGNED_BYTE, AccessorType.VEC4, true);
             nodeBuffer.setColorsAccessorId(colorsAccessorId);

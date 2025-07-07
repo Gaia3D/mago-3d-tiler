@@ -98,7 +98,7 @@ public class BatchedModelGltfWriter extends GltfWriter {
         gltf.addExtensionsUsed(ExtensionConstant.MESH_FEATURES.getExtensionName());
         gltf.addExtensionsUsed(ExtensionConstant.STRUCTURAL_METADATA.getExtensionName());
 
-        ExtensionStructuralMetadata extensionStructuralMetadata = ExtensionStructuralMetadata.fromBatchTable(batchTableMap);
+        ExtensionStructuralMetadata extensionStructuralMetadata = ExtensionStructuralMetadata.fromBatchTableMap(batchTableMap);
         Map<String, Object> extensions = new HashMap<>();
         extensions.put(ExtensionConstant.STRUCTURAL_METADATA.getExtensionName(), extensionStructuralMetadata);
         gltf.setExtensions(extensions);

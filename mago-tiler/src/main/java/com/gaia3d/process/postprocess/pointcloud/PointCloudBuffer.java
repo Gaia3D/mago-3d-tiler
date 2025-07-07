@@ -121,6 +121,19 @@ public class PointCloudBuffer {
         return intensitiesBytes;
     }
 
+    public byte[] getIntensityPadBytes() {
+        // Assuming intensities are padded to 2 bytes
+        byte[] intensitiesBytes = new byte[intensities.length * 4];
+        for (int i = 0; i < intensities.length; i++) {
+            char shortBits = intensities[i];
+            intensitiesBytes[i * 4] = (byte) (shortBits & 0xff);
+            intensitiesBytes[i * 4 + 1] = (byte) ((shortBits >> 8) & 0xff);
+            intensitiesBytes[i * 4 + 2] = 0; // Padding byte
+            intensitiesBytes[i * 4 + 3] = 0; // Padding byte
+        }
+        return intensitiesBytes;
+    }
+
     public byte[] getClassificationBytes() {
         byte[] classificationsBytes = new byte[classifications.length * 2];
         // Convert short array to byte array(Little Endian)
@@ -131,6 +144,20 @@ public class PointCloudBuffer {
         }
         return classificationsBytes;
     }
+
+    public byte[] getClassificationPadBytes() {
+        // Assuming classifications are padded to 2 bytes
+        byte[] classificationsBytes = new byte[classifications.length * 4];
+        for (int i = 0; i < classifications.length; i++) {
+            short shortBits = classifications[i];
+            classificationsBytes[i * 4] = (byte) (shortBits & 0xff);
+            classificationsBytes[i * 4 + 1] = (byte) ((shortBits >> 8) & 0xff);
+            classificationsBytes[i * 4 + 2] = 0; // Padding byte
+            classificationsBytes[i * 4 + 3] = 0; // Padding byte
+        }
+        return classificationsBytes;
+    }
+
 
     private short toUnsignedShort(int value) {
         if (value < 0 || value > 65535) {

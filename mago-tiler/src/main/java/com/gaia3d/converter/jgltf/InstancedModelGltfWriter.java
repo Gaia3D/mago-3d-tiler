@@ -102,7 +102,7 @@ public class InstancedModelGltfWriter extends GltfWriter {
         gltf.addExtensionsUsed(ExtensionConstant.MESH_GPU_INSTANCING.getExtensionName());
         //gltf.addExtensionsRequired(ExtensionConstant.MESH_GPU_INSTANCING.getExtensionName());
 
-        ExtensionStructuralMetadata extensionStructuralMetadata = ExtensionStructuralMetadata.fromBatchTable(batchTableMap);
+        ExtensionStructuralMetadata extensionStructuralMetadata = ExtensionStructuralMetadata.fromBatchTableMap(batchTableMap);
         Map<String, Object> extensions = new HashMap<>();
         extensions.put(ExtensionConstant.STRUCTURAL_METADATA.getExtensionName(), extensionStructuralMetadata);
         gltf.setExtensions(extensions);

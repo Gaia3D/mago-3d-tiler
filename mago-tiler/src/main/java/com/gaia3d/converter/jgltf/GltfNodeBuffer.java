@@ -1,11 +1,14 @@
 package com.gaia3d.converter.jgltf;
 
+import com.gaia3d.basic.types.AttributeType;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * GltfBinary is a class that contains the binary data of the glTF file.
@@ -39,7 +42,8 @@ public class GltfNodeBuffer {
     private ByteBuffer texcoordsBuffer = null;
     private ByteBuffer batchIdBuffer = null;
     private ByteBuffer textureBuffer = null;
-    private List<ByteBuffer> propertyBuffers = new ArrayList<>();
+
+    private Map<AttributeType, Integer> accessorMap = new HashMap<>();
 
     public int getMaxBufferViewId() {
         return Math.max(Math.max(Math.max(Math.max(Math.max(indicesBufferViewId, positionsBufferViewId), normalsBufferViewId), colorsBufferViewId), texcoordsBufferViewId), batchIdBufferViewId);
