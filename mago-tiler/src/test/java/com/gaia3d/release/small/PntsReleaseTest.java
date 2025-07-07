@@ -20,6 +20,19 @@ class PntsReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-c", "32652",
+                "-tilesVersion", "1.0",
+        };
+        execute(args);
+    }
+
+    @Test
+    void pointcloud00V2() {
+        String path = "P00-hwangyonggak-las";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath() + "-V2",
+                "-c", "32652",
+                "-tilesVersion", "1.1",
         };
         execute(args);
     }

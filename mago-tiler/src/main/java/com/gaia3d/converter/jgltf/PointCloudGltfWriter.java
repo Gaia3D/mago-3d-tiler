@@ -1,13 +1,14 @@
 package com.gaia3d.converter.jgltf;
 
+import com.gaia3d.basic.model.GaiaMaterial;
 import com.gaia3d.basic.model.GaiaMesh;
 import com.gaia3d.basic.model.GaiaPrimitive;
+import com.gaia3d.basic.model.GaiaTexture;
 import com.gaia3d.basic.types.AccessorType;
 import com.gaia3d.basic.types.AttributeType;
-import com.gaia3d.converter.jgltf.extension.ExtensionConstant;
-import com.gaia3d.converter.jgltf.extension.ExtensionInstanceFeatures;
-import com.gaia3d.converter.jgltf.extension.ExtensionMeshGpuInstancing;
-import com.gaia3d.converter.jgltf.extension.ExtensionStructuralMetadata;
+import com.gaia3d.basic.types.FormatType;
+import com.gaia3d.basic.types.TextureType;
+import com.gaia3d.converter.jgltf.extension.*;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTable;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTableMap;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
@@ -36,10 +37,10 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * GltfWriter is a class that writes the glTF file.
- * It contains the method to write the glTF file from the GaiaScene object.
- * The glTF file is written in the glTF 2.0 format.
- * for 3D Tiles 1.1 Instance Model.
+ * PointCloudGltfWriter is responsible for writing point cloud data to a GLB file format.
+ * It converts point cloud buffers, feature tables, and batch tables into a GltfModel,
+ * then writes that model to a binary GLB file.
+ * This class extends GltfWriter and provides specific implementations for point cloud data.
  */
 @Slf4j
 @NoArgsConstructor
@@ -71,23 +72,7 @@ public class PointCloudGltfWriter extends GltfWriter {
         gltf.addExtensionsUsed(ExtensionConstant.MESH_QUANTIZATION.getExtensionName());
         gltf.addExtensionsRequired(ExtensionConstant.MESH_QUANTIZATION.getExtensionName());
 
-        // Batch table (3D Tiles 1.1)
-        //gltf.addExtensionsUsed(ExtensionConstant.MESH_FEATURES.getExtensionName());
-        //gltf.addExtensionsUsed(ExtensionConstant.STRUCTURAL_METADATA.getExtensionName());
-
-        // Instance table (GPU Instancing)(Required for 3D Tiles 1.1)
-        //gltf.addExtensionsUsed(ExtensionConstant.MESH_GPU_INSTANCING.getExtensionName());
-        //gltf.addExtensionsRequired(ExtensionConstant.MESH_GPU_INSTANCING.getExtensionName());
-
-        //ExtensionStructuralMetadata extensionStructuralMetadata = ExtensionStructuralMetadata.fromBatchTable(batchTableMap);
-        //Map<String, Object> extensions = new HashMap<>();
-        //extensions.put(ExtensionConstant.STRUCTURAL_METADATA.getExtensionName(), extensionStructuralMetadata);
-        //gltf.setExtensions(extensions);
-
         convertNode(gltf, binary, rootNode, pointCloudBuffer, featureTable, batchTable);
-        //gaiaScene.getMaterials().forEach(gaiaMaterial -> createMaterial(gltf, binary, gaiaMaterial));
-        //applyPropertiesBinary(gltf, binary, extensionStructuralMetadata);
-        //applyInstanceFeaturesBinary(gltf, binary, featureTable);
 
         binary.fill();
         if (binary.getBody() != null) {
@@ -409,7 +394,7 @@ public class PointCloudGltfWriter extends GltfWriter {
             nodeBuffer.setBatchIdAccessorId(batchIdAccessorId);
         }
 
-        MeshPrimitive primitive = createPrimitive(nodeBuffer);
+        MeshPrimitive primitive = createPrimitive(gltf, nodeBuffer);
         int meshId = createMesh(gltf, primitive);
         node.setMesh(meshId);
         return nodeBuffer;
@@ -549,13 +534,13 @@ public class PointCloudGltfWriter extends GltfWriter {
         return nodeBuffer;
     }
 
-    protected MeshPrimitive createPrimitive(GltfNodeBuffer nodeBuffer) {
+    protected MeshPrimitive createPrimitive(GlTF gltf, GltfNodeBuffer nodeBuffer) {
         MeshPrimitive primitive = new MeshPrimitive();
         /* Points mode for point cloud */
         primitive.setMode(GltfConstants.GL_POINTS);
         Map<String, Integer> attributes = new HashMap<>();
+
         primitive.setAttributes(attributes);
-        //primitive.setIndices(nodeBuffer.getIndicesAccessorId());
         if (nodeBuffer.getPositionsAccessorId() > -1) {
             attributes.put(AttributeType.POSITION.getAccessor(), nodeBuffer.getPositionsAccessorId());
         }

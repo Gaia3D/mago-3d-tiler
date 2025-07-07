@@ -19,7 +19,9 @@ public enum ExtensionConstant {
     // EXT_meshopt_compression
     MESHOPT_COMPRESSION("EXT_meshopt_compression"),
     // KHR_mesh_quantization
-    MESH_QUANTIZATION("KHR_mesh_quantization");
+    MESH_QUANTIZATION("KHR_mesh_quantization"),
+    // KHR_materials_unlit
+    MATERIAL_UNLIT("KHR_materials_unlit");
 
     private final String extensionName;
 }

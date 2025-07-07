@@ -132,11 +132,14 @@ public class PointCloudModelV2 implements ContentModel {
                 positions[positionIndex.getAndIncrement()] = z;
 
                 byte[] color = vertex.getColor();
+                color[0] = (byte) srgbToLinearByte(signedByteToUnsignedByte(color[0]));
+                color[1] = (byte) srgbToLinearByte(signedByteToUnsignedByte(color[1]));
+                color[2] = (byte) srgbToLinearByte(signedByteToUnsignedByte(color[2]));
                 colors[colorIndex.getAndIncrement()] = color[0];
                 colors[colorIndex.getAndIncrement()] = color[1];
                 colors[colorIndex.getAndIncrement()] = color[2];
-                colors[colorIndex.getAndIncrement()] = -128;
-                
+                colors[colorIndex.getAndIncrement()] = -1;
+
                 intensity[index] = vertex.getIntensity();
                 classification[index] = vertex.getClassification();
             });
@@ -265,22 +268,18 @@ public class PointCloudModelV2 implements ContentModel {
         return contentInfo;
     }
 
-    private Vector3d calcQuantizedVolumeOffset(GaiaBoundingBox boundingBox) {
-        Vector3d min = boundingBox.getMinPosition();
-        return min;
+    int srgbToLinearByte(int sRGB) {
+        float c = sRGB / 255.0f; // 정규화
+        float linear;
+        if (c <= 0.04045f) linear = c / 12.92f;
+        else linear = (float) Math.pow((c + 0.055f) / 1.055f, 2.4);
+        int linearByte = Math.round(linear * 255.0f);
+        // 0~255 범위를 벗어나지 않도록 클램프
+        return Math.max(0, Math.min(255, linearByte));
     }
 
-    private Vector3d calcQuantizedVolumeScale(GaiaBoundingBox boundingBox) {
-        Vector3d volume = boundingBox.getVolume();
-        if (volume.x == 0) {
-            volume.x = 1;
-        }
-        if (volume.y == 0) {
-            volume.y = 1;
-        }
-        if (volume.z == 0) {
-            volume.z = 1;
-        }
-        return volume;
+    int signedByteToUnsignedByte(int signedByte) {
+        // Java의 byte는 -128 ~ 127 범위이므로, 이를 0 ~ 255 범위로 변환
+        return signedByte < 0 ? signedByte + 256 : signedByte;
     }
 }
