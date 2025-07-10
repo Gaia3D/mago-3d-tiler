@@ -5,7 +5,7 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.pointcloud.GaiaPointCloud;
-import com.gaia3d.converter.kml.KmlInfo;
+import com.gaia3d.converter.kml.TileTransformInfo;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,18 +23,18 @@ import java.util.List;
 @Builder
 @Slf4j
 public class TileInfo {
-
     @Builder.Default
     private int serial = -1;
+    private String name;
 
     private GaiaScene scene;
     private GaiaSet set;
     private GaiaPointCloud pointCloud;
-    private String name;
-    private KmlInfo kmlInfo;
 
+    private TileTransformInfo tileTransformInfo;
     private Matrix4d transformMatrix;
     private GaiaBoundingBox boundingBox;
+
     private Path scenePath;
     private Path outputPath;
     private Path tempPath; // tempPath lod 0
@@ -88,7 +88,7 @@ public class TileInfo {
         this.scene = null;
         this.set = null;
         pointCloud = null;
-        kmlInfo = null;
+        tileTransformInfo = null;
         transformMatrix = null;
         boundingBox = null;
         scenePath = null;
@@ -125,7 +125,7 @@ public class TileInfo {
                 .set(this.set)
                 .pointCloud(this.pointCloud)
                 .name(this.name)
-                .kmlInfo(this.kmlInfo)
+                .tileTransformInfo(this.tileTransformInfo)
                 .transformMatrix(this.transformMatrix)
                 .boundingBox(this.boundingBox)
                 .scenePath(this.scenePath)
@@ -140,5 +140,17 @@ public class TileInfo {
 
     public void setGaiaSet(GaiaSet o) {
         this.set = o;
+    }
+
+    public void updateSceneInfo() {
+        GaiaScene scene = this.scene;
+        if (scene != null) {
+            GaiaBoundingBox boundingBox = scene.updateBoundingBox();
+            GaiaNode rootNode = scene.getNodes().get(0);
+            this.transformMatrix = rootNode.getTransformMatrix();
+            this.boundingBox = this.scene.getGaiaBoundingBox();
+        } else {
+            log.warn("[WARN] Scene is null, cannot update scene info.");
+        }
     }
 }

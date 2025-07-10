@@ -125,8 +125,6 @@ public class InstancedModelGltfWriter extends GltfWriter {
     }
 
     private void applyPropertiesBinary(GlTF gltf, GltfBinary binary, ExtensionStructuralMetadata extensionStructuralMetadata) {
-        log.info("[Info] Apply properties binary to glTF");
-
         int totalByteBufferLength = binary.calcTotalByteBufferLength() + binary.calcTotalImageByteBufferLength();
         AtomicInteger bufferOffset = new AtomicInteger(totalByteBufferLength);
 
@@ -160,7 +158,6 @@ public class InstancedModelGltfWriter extends GltfWriter {
 
                                 buffers.add(stringBuffer);
                                 buffers.add(offsetBuffer);
-                                log.info("[Info] Property: {}, Values: {}", name, values.size());
                             });
                 });
     }
@@ -335,7 +332,7 @@ public class InstancedModelGltfWriter extends GltfWriter {
 
     protected GltfNodeBuffer convertGeometryInfo(GlTF gltf, GaiaMesh gaiaMesh, Node node, GaiaBatchTableMap<String, List<String>> batchTableMap) {
         int[] indices = gaiaMesh.getIndices();
-        float[] positions = gaiaMesh.getPositions();
+        float[] positions = gaiaMesh.getFloatPositions();
 
         short[] unsignedShortsPositions = null;
         if (globalOptions.isUseQuantization()) {
@@ -464,73 +461,6 @@ public class InstancedModelGltfWriter extends GltfWriter {
         MeshPrimitive primitive = createPrimitive(nodeBuffer, gaiaPrimitive);
         int meshId = createMesh(gltf, primitive);
         node.setMesh(meshId);
-        return nodeBuffer;
-    }
-
-    @Override
-    protected GltfNodeBuffer initNodeBuffer(GaiaMesh gaiaMesh, boolean isIntegerIndices) {
-        GltfNodeBuffer nodeBuffer = new GltfNodeBuffer();
-        int SHORT_SIZE = 2;
-        int INT_SIZE = 4;
-        int FLOAT_SIZE = 4;
-
-        int indicesCapacity = gaiaMesh.getIndicesCount() * (isIntegerIndices ? INT_SIZE : SHORT_SIZE);
-        int positionsCapacity = gaiaMesh.getPositionsCount() * FLOAT_SIZE;
-        if (globalOptions.isUseQuantization()) {
-            int paddedPositionsCount = gaiaMesh.getPositionsCount() / 3 * 4;
-            positionsCapacity = paddedPositionsCount * SHORT_SIZE;
-        }
-        int normalsCapacity = gaiaMesh.getPositionsCount() * FLOAT_SIZE;
-        int colorsCapacity = gaiaMesh.getColorsCount();
-        int texcoordCapacity = gaiaMesh.getTexcoordsCount() * FLOAT_SIZE;
-        int batchIdCapacity = gaiaMesh.getBatchIdsCount() * FLOAT_SIZE;
-
-        indicesCapacity = padMultiple4(indicesCapacity);
-        positionsCapacity = padMultiple4(positionsCapacity);
-        normalsCapacity = padMultiple4(normalsCapacity);
-        colorsCapacity = padMultiple4(colorsCapacity);
-        texcoordCapacity = padMultiple4(texcoordCapacity);
-        batchIdCapacity = padMultiple4(batchIdCapacity);
-
-        int bodyLength = 0;
-        bodyLength += indicesCapacity;
-        bodyLength += positionsCapacity;
-        bodyLength += normalsCapacity;
-        bodyLength += colorsCapacity;
-        bodyLength += texcoordCapacity;
-        bodyLength += batchIdCapacity;
-
-        nodeBuffer.setTotalByteBufferLength(bodyLength);
-        if (indicesCapacity > 0) {
-            ByteBuffer indicesBuffer = ByteBuffer.allocate(indicesCapacity);
-            indicesBuffer.order(ByteOrder.LITTLE_ENDIAN);
-            nodeBuffer.setIndicesBuffer(indicesBuffer);
-        }
-        if (positionsCapacity > 0) {
-            ByteBuffer positionsBuffer = ByteBuffer.allocate(positionsCapacity);
-            positionsBuffer.order(ByteOrder.LITTLE_ENDIAN);
-            nodeBuffer.setPositionsBuffer(positionsBuffer);
-        }
-        if (normalsCapacity > 0) {
-            ByteBuffer normalsBuffer = ByteBuffer.allocate(normalsCapacity);
-            normalsBuffer.order(ByteOrder.LITTLE_ENDIAN);
-            nodeBuffer.setNormalsBuffer(normalsBuffer);
-        }
-        if (colorsCapacity > 0) {
-            ByteBuffer colorsBuffer = ByteBuffer.allocate(colorsCapacity);
-            colorsBuffer.order(ByteOrder.LITTLE_ENDIAN);
-            nodeBuffer.setColorsBuffer(colorsBuffer);
-        }
-        if (texcoordCapacity > 0) {
-            ByteBuffer texcoordsBuffer = ByteBuffer.allocate(texcoordCapacity);
-            texcoordsBuffer.order(ByteOrder.LITTLE_ENDIAN);
-            nodeBuffer.setTexcoordsBuffer(texcoordsBuffer);
-        }
-        if (batchIdCapacity > 0) {
-            ByteBuffer batchIdBuffer = ByteBuffer.allocate(batchIdCapacity);
-            batchIdBuffer.order(ByteOrder.LITTLE_ENDIAN);
-            nodeBuffer.setBatchIdBuffer(batchIdBuffer);
-        }
         return nodeBuffer;
     }
 

@@ -4,7 +4,6 @@ import com.gaia3d.basic.exchangable.GaiaBufferDataSet;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
-import com.gaia3d.basic.geometry.octree.HalfEdgeOctree;
 import com.gaia3d.basic.halfedge.*;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.TextureType;
@@ -245,7 +244,7 @@ public class Engine {
 
                 // do pyramidDeformation
                 GaiaScene gaiaScene = gaiaScenes.get(0);
-                GaiaBoundingBox bbox = gaiaScene.getBoundingBox(); // before to set the transformMatrix
+                GaiaBoundingBox bbox = gaiaScene.updateBoundingBox(); // before to set the transformMatrix
                 double minH = bbox.getMinZ();
                 double maxH = bbox.getMaxZ() * 1.1;
                 double dist = 6.0;
@@ -277,7 +276,7 @@ public class Engine {
 
                 // do pyramidDeformation
                 GaiaScene gaiaScene = gaiaScenes.get(0);
-                GaiaBoundingBox bbox = gaiaScene.getBoundingBox(); // before to set the transformMatrix
+                GaiaBoundingBox bbox = gaiaScene.updateBoundingBox(); // before to set the transformMatrix
                 double bboxMaxSize = bbox.getMaxSize();
 
                 List<HalfEdgeScene> resultHalfEdgeScenes = new ArrayList<>();
@@ -529,7 +528,7 @@ public class Engine {
             GaiaScene gaiaSceneFromFaces = HalfEdgeUtils.gaiaSceneFromHalfEdgeFaces(facesList, mapGaiaFaceToHalfEdgeFace);
             RenderableGaiaScene renderableGaiaSceneColorCoded = getColorCodedRenderableScene(gaiaSceneFromFaces);
 
-            GaiaBoundingBox sceneBbox = gaiaSceneFromFaces.getBoundingBox();
+            GaiaBoundingBox sceneBbox = gaiaSceneFromFaces.updateBoundingBox();
             double sceneMaxSize = sceneBbox.getMaxSize();
             double sceneHeight = sceneBbox.getSizeZ();
             double ratioHW = sceneHeight / sceneMaxSize;
@@ -1203,7 +1202,7 @@ public class Engine {
     private BufferedImage makeColorCodeTextureByCameraDirection(GaiaScene gaiaScene, RenderableGaiaScene renderableScene, CameraDirectionType cameraDirectionType,
                                                                 int maxScreenSize, Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox, Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix, double screenPixelsForMeter, FaceVisibilityDataManager faceVisibilityDataManager) {
         // Calculate bbox relative to camera direction
-        GaiaBoundingBox bbox = gaiaScene.getBoundingBox();
+        GaiaBoundingBox bbox = gaiaScene.updateBoundingBox();
         Vector3d bboxCenter = bbox.getCenter();
 
         // expanded box for shader (delimiting box with a little buffer)
@@ -1629,7 +1628,7 @@ public class Engine {
     private RenderableGaiaScene processExteriorInterior(GaiaScene gaiaScene) {
         RenderableGaiaScene renderableGaiaScene = InternDataConverter.getRenderableGaiaScene(gaiaScene);
         gaiaScenesContainer.addRenderableGaiaScene(renderableGaiaScene);
-        GaiaBoundingBox bbox = gaiaScene.getBoundingBox();
+        GaiaBoundingBox bbox = gaiaScene.updateBoundingBox();
         float maxLength = (float) bbox.getLongestDistance();
         float bboxHight = (float) bbox.getMaxZ() - (float) bbox.getMinZ();
         float semiMaxLength = maxLength / 2.0f;

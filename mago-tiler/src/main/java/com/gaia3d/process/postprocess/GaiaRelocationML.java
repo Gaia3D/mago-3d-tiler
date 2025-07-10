@@ -13,7 +13,7 @@ import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.model.GaiaTexture;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.util.GlobeUtils;
-import com.gaia3d.converter.kml.KmlInfo;
+import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +33,7 @@ import java.util.Map;
 
 @Slf4j
 @AllArgsConstructor
+@Deprecated
 public class GaiaRelocationML implements PostProcess {
     @Override
     public ContentInfo run(ContentInfo contentInfo) {
@@ -42,8 +43,8 @@ public class GaiaRelocationML implements PostProcess {
         Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerCartesian);
         Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
         for (TileInfo tileInfo : contentInfo.getTileInfos()) {
-            KmlInfo kmlInfo = tileInfo.getKmlInfo();
-            Vector3d kmlCenter = kmlInfo.getPosition();
+            TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
+            Vector3d kmlCenter = tileTransformInfo.getPosition();
             kmlCenter = GlobeUtils.geographicToCartesianWgs84(kmlCenter);
 
             Matrix4d resultTransformMatrix = transformMatrixInv.translate(kmlCenter, new Matrix4d());
@@ -133,7 +134,7 @@ public class GaiaRelocationML implements PostProcess {
         DecimateParameters decimateParameters = new DecimateParameters();
         boolean makeSkirt = false;
 
-        GaiaBoundingBox boundingBox = scene.getBoundingBox();
+        GaiaBoundingBox boundingBox = scene.updateBoundingBox();
         double maxSize = boundingBox.getMaxSize();
         double texturePixelSize = 1.0;
         texturePixelSize = maxSize / 256.0;
@@ -152,7 +153,7 @@ public class GaiaRelocationML implements PostProcess {
         List<GaiaScene> gaiaScenes = new ArrayList<>();
         gaiaScenes.add(scene);
 
-        GaiaBoundingBox boundingBox = scene.getBoundingBox();
+        GaiaBoundingBox boundingBox = scene.updateBoundingBox();
         double maxSize = boundingBox.getMaxSize();
 
         TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();

@@ -4,7 +4,7 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.kml.KmlInfo;
+import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.GlobeUtils;
 import lombok.AllArgsConstructor;
@@ -97,14 +97,14 @@ public class GaiaStrictTranslation implements PreProcess {
         tileInfo.setCartographicBBox(cartographicBoundingBox);
         // End calculate cartographicBoundingBox.---
 
-        KmlInfo kmlInfo = getKmlInfo(tileInfo, centerGeoCoord);
+        TileTransformInfo tileTransformInfo = getKmlInfo(tileInfo, centerGeoCoord);
 
         rootNode.setTransformMatrix(transform);
-        GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox();
+        GaiaBoundingBox boundingBox = gaiaScene.updateBoundingBox();
         gaiaScene.setGaiaBoundingBox(boundingBox);
 
         tileInfo.setBoundingBox(boundingBox);
-        tileInfo.setKmlInfo(kmlInfo);
+        tileInfo.setTileTransformInfo(tileTransformInfo);
         return tileInfo;
     }
 
@@ -196,7 +196,7 @@ public class GaiaStrictTranslation implements PreProcess {
     }
 
     private Vector3d getTranslation(GaiaScene gaiaScene) {
-        GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox();
+        GaiaBoundingBox boundingBox = gaiaScene.updateBoundingBox();
         Vector3d center = boundingBox.getCenter();
         Vector3d translation = new Vector3d(center.x, center.y, 0.0d);
         translation.negate();
@@ -219,7 +219,7 @@ public class GaiaStrictTranslation implements PreProcess {
             position = new Vector3d(center.x, center.y, offset.z);
         } else {
             CoordinateReferenceSystem source = globalOptions.getCrs();
-            GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox();
+            GaiaBoundingBox boundingBox = gaiaScene.updateBoundingBox();
             Vector3d center = boundingBox.getCenter();
             center.add(offset);
             if (source != null) {
@@ -233,11 +233,11 @@ public class GaiaStrictTranslation implements PreProcess {
         return position;
     }
 
-    private KmlInfo getKmlInfo(TileInfo tileInfo, Vector3d position) {
-        KmlInfo kmlInfo = tileInfo.getKmlInfo();
-        if (kmlInfo == null) {
-            kmlInfo = KmlInfo.builder().position(position).build();
+    private TileTransformInfo getKmlInfo(TileInfo tileInfo, Vector3d position) {
+        TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
+        if (tileTransformInfo == null) {
+            tileTransformInfo = TileTransformInfo.builder().position(position).build();
         }
-        return kmlInfo;
+        return tileTransformInfo;
     }
 }

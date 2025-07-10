@@ -44,7 +44,7 @@ public class PhotogrammetryRotation implements PreProcess {
         /* set the transform matrix */
         rootNode.setTransformMatrix(transform);
         tileInfo.setTransformMatrix(transform);
-        GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox();
+        GaiaBoundingBox boundingBox = gaiaScene.updateBoundingBox();
         tileInfo.setBoundingBox(boundingBox.clone());
 
         return tileInfo;

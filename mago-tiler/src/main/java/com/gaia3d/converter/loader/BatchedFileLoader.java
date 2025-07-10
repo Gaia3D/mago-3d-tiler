@@ -6,7 +6,7 @@ import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.geometry.ExtrusionTempGenerator;
 import com.gaia3d.converter.kml.AttributeReader;
-import com.gaia3d.converter.kml.KmlInfo;
+import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -93,22 +93,22 @@ public class BatchedFileLoader implements FileLoader {
         FormatType formatType = globalOptions.getInputFormat();
 
         List<TileInfo> tileInfos = new ArrayList<>();
-        KmlInfo kmlInfo = null;
+        TileTransformInfo tileTransformInfo = null;
         if (FormatType.KML == formatType) {
-            List<KmlInfo> kmlInfos = kmlReader.readAll(file);
-            if (kmlInfos != null) {
-                for (KmlInfo info : kmlInfos) {
-                    kmlInfo = info;
-                    if (kmlInfo != null) {
+            List<TileTransformInfo> tileTransformInfos = kmlReader.readAll(file);
+            if (tileTransformInfos != null) {
+                for (TileTransformInfo info : tileTransformInfos) {
+                    tileTransformInfo = info;
+                    if (tileTransformInfo != null) {
                         assert file != null;
-                        file = new File(file.getParent(), kmlInfo.getHref());
+                        file = new File(file.getParent(), tileTransformInfo.getHref());
                         List<GaiaScene> scenes = loadScene(file);
                         for (GaiaScene scene : scenes) {
                             if (scene == null) {
                                 log.error("[ERROR] :Failed to load scene: {}", file.getAbsolutePath());
                                 return null;
                             } else {
-                                TileInfo tileInfo = TileInfo.builder().kmlInfo(kmlInfo).scene(scene).outputPath(outputPath).build();
+                                TileInfo tileInfo = TileInfo.builder().tileTransformInfo(tileTransformInfo).scene(scene).outputPath(outputPath).build();
                                 tileInfos.add(tileInfo);
                             }
                         }

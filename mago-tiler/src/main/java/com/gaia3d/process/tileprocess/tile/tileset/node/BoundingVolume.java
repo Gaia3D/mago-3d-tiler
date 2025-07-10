@@ -2,7 +2,7 @@ package com.gaia3d.process.tileprocess.tile.tileset.node;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.converter.kml.KmlInfo;
+import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.DecimalUtils;
 import lombok.EqualsAndHashCode;
@@ -99,8 +99,8 @@ public class BoundingVolume implements Serializable {
                 //GaiaScene scene = tileInfo.getScene();
                 GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();
 
-                KmlInfo kmlInfo = tileInfo.getKmlInfo();
-                localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(kmlInfo.getPosition());
+                TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
+                localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(tileTransformInfo.getPosition());
                 BoundingVolume localBoundingVolume = new BoundingVolume(localBoundingBox);
                 Vector3d center = localBoundingVolume.calcCenter();
 

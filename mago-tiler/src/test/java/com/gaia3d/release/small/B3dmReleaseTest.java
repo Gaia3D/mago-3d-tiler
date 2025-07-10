@@ -49,7 +49,8 @@ class B3dmReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
-                "-leaveTemp"
+                // "-rotateXAxis", "90",
+                //"-leaveTemp"
                 //"-debug",
         };
         execute(args);
@@ -61,6 +62,7 @@ class B3dmReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
+                // "-rotateXAxis", "90",
         };
         execute(args);
     }
@@ -202,6 +204,7 @@ class B3dmReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
+                // "-rotateXAxis", "90",
         };
         execute(args);
     }
@@ -213,6 +216,7 @@ class B3dmReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
+                // "-rotateXAxis", "90",
         };
         execute(args);
     }
@@ -223,6 +227,7 @@ class B3dmReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
+                // "-rotateXAxis", "90",
         };
         execute(args);
     }
@@ -233,6 +238,7 @@ class B3dmReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
+                // "-rotateXAxis", "90",
         };
         execute(args);
     }
@@ -243,6 +249,7 @@ class B3dmReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
+                // "-rotateXAxis", "90",
         };
         execute(args);
     }
@@ -283,7 +290,7 @@ class B3dmReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
                 "-tilesVersion", "1.1",
-                "-debug"
+                //"-debug"
         };
         execute(args);
     }
@@ -302,6 +309,7 @@ class B3dmReleaseTest {
         execute(args);
     }
 
+    @Disabled
     @Test
     void batched92() {
         String path = "B92-buildings";

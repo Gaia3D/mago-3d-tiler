@@ -255,8 +255,8 @@ public class GaiaPointCloudTemp {
             int fileSize = (int) randomAccessFile.length();
             for (Integer integer : indexes) {
                 for (int count = 0; count < shuffleCount; count++) {
-                    int index = (shuffleBufferSize * count) + integer;
-                    int pointer = headerSize + (index * blockSize);
+                    long index = (long) shuffleBufferSize * count + integer;
+                    long pointer = index * blockSize + headerSize;
                     if ((pointer) <= fileSize) {
                         randomAccessFile.seek(pointer);
                         randomAccessFile.read(bytes);

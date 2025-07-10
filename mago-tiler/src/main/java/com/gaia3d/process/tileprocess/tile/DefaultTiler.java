@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.kml.KmlInfo;
+import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
 import com.gaia3d.process.tileprocess.tile.tileset.asset.*;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
@@ -40,8 +40,8 @@ public abstract class DefaultTiler {
     protected GaiaBoundingBox calcBoundingBox(List<TileInfo> tileInfos) {
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         tileInfos.forEach(tileInfo -> {
-            KmlInfo kmlInfo = tileInfo.getKmlInfo();
-            Vector3d position = kmlInfo.getPosition();
+            TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
+            Vector3d position = tileTransformInfo.getPosition();
             GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();
             // rotate
             localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(position);

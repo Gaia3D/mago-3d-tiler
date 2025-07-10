@@ -2,7 +2,7 @@ package com.gaia3d.process.postprocess;
 
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.util.GlobeUtils;
-import com.gaia3d.converter.kml.KmlInfo;
+import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +13,7 @@ import com.gaia3d.process.tileprocess.tile.TileInfo;
 
 @Slf4j
 @AllArgsConstructor
-public class GaiaRelocation implements PostProcess {
+public class GaiaRelocator implements PostProcess {
     @Override
     public ContentInfo run(ContentInfo contentInfo) {
         GaiaBoundingBox allBoundingBox = contentInfo.getBoundingBox();
@@ -22,8 +22,8 @@ public class GaiaRelocation implements PostProcess {
         Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerCartesian);
         Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
         for (TileInfo tileInfo : contentInfo.getTileInfos()) {
-            KmlInfo kmlInfo = tileInfo.getKmlInfo();
-            Vector3d kmlCenter = kmlInfo.getPosition();
+            TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
+            Vector3d kmlCenter = tileTransformInfo.getPosition();
             kmlCenter = GlobeUtils.geographicToCartesianWgs84(kmlCenter);
 
             Matrix4d resultTransformMatrix = transformMatrixInv.translate(kmlCenter, new Matrix4d());

@@ -120,7 +120,6 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
             gaiaBoundingBox = calcBoundingBox(tileInfos);
         }
         double distance = gaiaBoundingBox.getLongestDistance();
-
         if (nodeDepth > globalOptions.getMaxNodeDepth()) {
             log.warn("[WARN][Tile] Node depth limit exceeded : {}", nodeDepth);
             Node childNode = createContentNode(parentNode, tileInfos, 0);

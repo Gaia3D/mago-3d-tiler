@@ -15,6 +15,30 @@ class DefaultReleaseTest {
     private static final String OUTPUT_PATH = "E:/data/mago-server/output";
 
     @Test
+    void batched53V1() {
+        String path = "B53-railway-citygml";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath() + "-V1",
+                "-tilesVersion", "1.0",
+                "-c", "5186"
+        };
+        execute(args);
+    }
+
+    @Test
+    void batched53V2() {
+        String path = "B53-railway-citygml";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath() + "-V2",
+                "-tilesVersion", "1.1",
+                "-c", "5186"
+        };
+        execute(args);
+    }
+
+    @Test
     void batched03V1() {
         String path = "B03-wangsuk2-geojson";
         String[] args = new String[] {
@@ -45,6 +69,7 @@ class DefaultReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath() + "-V1",
                 "-c", "5186",
+                "-rotateXAxis", "90",
                 "-tilesVersion", "1.0",
                 "-debug",
         };
@@ -58,6 +83,7 @@ class DefaultReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath() + "-V2",
                 "-c", "5186",
+                "-rotateXAxis", "90",
                 "-tilesVersion", "1.1",
                 "-debug",
         };
@@ -135,7 +161,6 @@ class DefaultReleaseTest {
                 "-pg",
                 "-c", "5187",
                 "-rotateX", "90",
-                "-leaveTemp",
                 "-tilesVersion", "1.0",
         };
         execute(args);
@@ -148,10 +173,10 @@ class DefaultReleaseTest {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath() + "-V2",
                 "-it", "obj",
-                "-pg",
+                "-ot", "photogrammetry",
+                //"-pg",
                 "-c", "5187",
                 "-rotateX", "90",
-                "-leaveTemp",
                 "-tilesVersion", "1.1",
         };
         execute(args);

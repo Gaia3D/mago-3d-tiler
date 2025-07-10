@@ -15,7 +15,6 @@ import com.gaia3d.converter.kml.FastKmlReader;
 import com.gaia3d.converter.loader.BatchedFileLoader;
 import com.gaia3d.process.TilingPipeline;
 import com.gaia3d.process.postprocess.GaiaMaximizer;
-import com.gaia3d.process.postprocess.GaiaRelocation;
 import com.gaia3d.process.postprocess.GaiaRelocationML;
 import com.gaia3d.process.postprocess.PostProcess;
 import com.gaia3d.process.postprocess.batch.Batched3DModel;
@@ -35,8 +34,9 @@ import java.util.List;
  * BatchedProcessModel
  */
 @Slf4j
-public class BatchedProcessModelML implements ProcessFlowModel {
-    private static final String MODEL_NAME = "BatchedProcessModel";
+@Deprecated
+public class BatchedModelMLProcessFlow implements ProcessFlow {
+    private static final String MODEL_NAME = "BatchedModelMLProcessFlow";
 
     @Override
     public void run() throws IOException {
@@ -56,15 +56,15 @@ public class BatchedProcessModelML implements ProcessFlowModel {
 
         /* Pre-process */
         List<PreProcess> preProcessors = new ArrayList<>();
-        preProcessors.add(new GaiaTileInfoInitialization());
+        preProcessors.add(new TileInfoGenerator());
         preProcessors.add(new GaiaTexCoordCorrection());
-        preProcessors.add(new GaiaScale());
-        preProcessors.add(new GaiaRotation());
+        preProcessors.add(new GaiaScaler());
+        preProcessors.add(new GaiaRotator());
 
         if (globalOptions.isLargeMesh()) {
             preProcessors.add(new GaiaStrictTranslation(geoTiffs));
         } else {
-            preProcessors.add(new GaiaTranslation(geoTiffs));
+            preProcessors.add(new GaiaTranslator(geoTiffs));
         }
         preProcessors.add(new GaiaMinimization());
 

@@ -136,49 +136,6 @@ public class TilingPipeline implements Pipeline {
         globalOptions.setTileCount(contentCount);
 
         for (ContentInfo contentInfo : contentInfos) {
-            //Runnable callableTask = () -> {
-            try {
-                log.info("[Post][{}/{}] post-process in progress. : {}", count.getAndIncrement(), contentCount, contentInfo.getName());
-                List<TileInfo> tileInfos = contentInfo.getTileInfos();
-                List<TileInfo> tileInfosClone = tileInfos.stream()
-                        .map((childTileInfo) -> TileInfo.builder()
-                                .scene(childTileInfo.getScene())
-                                .kmlInfo(childTileInfo.getKmlInfo())
-                                .scenePath(childTileInfo.getScenePath())
-                                .tempPath(childTileInfo.getTempPath())
-                                .transformMatrix(childTileInfo.getTransformMatrix())
-                                .boundingBox(childTileInfo.getBoundingBox())
-                                .pointCloud(childTileInfo.getPointCloud())
-                                .build())
-                        .collect(Collectors.toList());
-                contentInfo.setTileInfos(tileInfosClone);
-                for (PostProcess postProcessor : postProcesses) {
-                    postProcessor.run(contentInfo);
-                }
-                contentInfo.deleteTexture();
-                tileInfosClone.clear();
-            } catch (RuntimeException e) {
-                log.error("[ERROR][PostProcess] : ", e);
-                globalOptions.getReporter().addReport(e);
-            }
-            //};
-            //tasks.add(callableTask);
-        }
-        //executeThread(executorService, tasks);
-        log.info("[Post] End the post-processing.");
-    }
-
-    private void executePostProcesses_original() throws InterruptedException {
-        log.info("[Post] Start the post-processing.");
-
-        ExecutorService executorService = Executors.newFixedThreadPool(globalOptions.getMultiThreadCount());
-        List<Runnable> tasks = new ArrayList<>();
-        contentInfos = tileset.findAllContentInfo();
-        AtomicInteger count = new AtomicInteger(1);
-        int contentCount = contentInfos.size();
-        globalOptions.setTileCount(contentCount);
-
-        for (ContentInfo contentInfo : contentInfos) {
             Runnable callableTask = () -> {
                 try {
                     log.info("[Post][{}/{}] post-process in progress. : {}", count.getAndIncrement(), contentCount, contentInfo.getName());
@@ -186,7 +143,7 @@ public class TilingPipeline implements Pipeline {
                     List<TileInfo> tileInfosClone = tileInfos.stream()
                             .map((childTileInfo) -> TileInfo.builder()
                                     .scene(childTileInfo.getScene())
-                                    .kmlInfo(childTileInfo.getKmlInfo())
+                                    .tileTransformInfo(childTileInfo.getTileTransformInfo())
                                     .scenePath(childTileInfo.getScenePath())
                                     .tempPath(childTileInfo.getTempPath())
                                     .transformMatrix(childTileInfo.getTransformMatrix())
@@ -202,7 +159,8 @@ public class TilingPipeline implements Pipeline {
                     tileInfosClone.clear();
                 } catch (RuntimeException e) {
                     log.error("[ERROR][PostProcess] : ", e);
-                    globalOptions.getReporter().addReport(e);
+                    globalOptions.getReporter()
+                            .addReport(e);
                 }
             };
             tasks.add(callableTask);

@@ -6,8 +6,6 @@ import com.gaia3d.converter.pointcloud.LasConverter;
 import com.gaia3d.converter.pointcloud.PointCloudTempGenerator;
 import com.gaia3d.process.TilingPipeline;
 import com.gaia3d.process.postprocess.PostProcess;
-import com.gaia3d.process.postprocess.instance.Instanced3DModel;
-import com.gaia3d.process.postprocess.instance.Instanced3DModelV2;
 import com.gaia3d.process.postprocess.pointcloud.PointCloudModel;
 import com.gaia3d.process.postprocess.pointcloud.PointCloudModelV2;
 import com.gaia3d.process.preprocess.GaiaMinimization;
@@ -25,8 +23,8 @@ import java.util.List;
  * PointsCloudProcessModel
  */
 @Slf4j
-public class PointCloudProcessModel implements ProcessFlowModel {
-    private static final String MODEL_NAME = "PointCloudProcessModel";
+public class PointCloudProcessFlow implements ProcessFlow {
+    private static final String MODEL_NAME = "PointCloudProcessFlow";
 
     @Override
     public void run() throws IOException {

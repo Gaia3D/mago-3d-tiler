@@ -3,7 +3,7 @@ package com.gaia3d.converter.geometry.geojson;
 import com.gaia3d.command.mago.AttributeFilter;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.AttributeReader;
-import com.gaia3d.converter.kml.KmlInfo;
+import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.util.GlobeUtils;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,18 +37,18 @@ public class GeoJsonInstanceConverter implements AttributeReader {
 
     //read kml file
     @Override
-    public KmlInfo read(File file) {
+    public TileTransformInfo read(File file) {
         log.error("GeojsonPointReader read method is not implemented yet.");
         return null;
     }
 
     @Override
-    public List<KmlInfo> readAll(File file) {
+    public List<TileTransformInfo> readAll(File file) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
 
         List<AttributeFilter> attributeFilters = globalOptions.getAttributeFilters();
         boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalOptions.DEFAULT_CRS);
-        List<KmlInfo> result = new ArrayList<>();
+        List<TileTransformInfo> result = new ArrayList<>();
         String altitudeColumnName = globalOptions.getAltitudeColumn();
         String headingColumnName = globalOptions.getHeadingColumn();
         String scaleColumnName = globalOptions.getScaleColumn();
@@ -154,7 +154,7 @@ public class GeoJsonInstanceConverter implements AttributeReader {
                         position = new Vector3d(x, y, altitude);
                     }
 
-                    KmlInfo kmlInfo = KmlInfo.builder()
+                    TileTransformInfo tileTransformInfo = TileTransformInfo.builder()
                             .name("I3dmFromGeojson")
                             .position(position)
                             .heading(heading)
@@ -165,7 +165,7 @@ public class GeoJsonInstanceConverter implements AttributeReader {
                             .scaleZ(scale)
                             .properties(attributes)
                             .build();
-                    result.add(kmlInfo);
+                    result.add(tileTransformInfo);
                 }
             }
             iterator.close();

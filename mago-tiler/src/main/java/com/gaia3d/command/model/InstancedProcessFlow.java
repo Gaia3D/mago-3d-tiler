@@ -30,8 +30,8 @@ import java.util.List;
  * InstancedProcessModel
  */
 @Slf4j
-public class InstancedProcessModel implements ProcessFlowModel {
-    private static final String MODEL_NAME = "InstancedProcessModel";
+public class InstancedProcessFlow implements ProcessFlow {
+    private static final String MODEL_NAME = "InstancedProcessFlow";
 
     @Override
     public void run() throws IOException {
@@ -48,8 +48,8 @@ public class InstancedProcessModel implements ProcessFlowModel {
 
         /* Pre-process */
         List<PreProcess> preProcessors = new ArrayList<>();
-        preProcessors.add(new GaiaTileInfoInitialization());
-        //preProcessors.add(new GaiaRotation());
+        preProcessors.add(new TileInfoGenerator());
+        preProcessors.add(new GaiaRotator());
         preProcessors.add(new GaiaTexCoordCorrection());
         preProcessors.add(new InstanceTranslation(geoTiffs));
 

@@ -18,7 +18,7 @@ public class Mago3DTiler {
         FormatType inputFormat = globalOptions.getInputFormat();
         FormatType outputFormat = globalOptions.getOutputFormat();
         try {
-            ProcessFlowModel processFlow = getProcessModel(inputFormat, outputFormat);
+            ProcessFlow processFlow = getProcessModel(inputFormat, outputFormat);
             log.info("[Init] Starting process flow: {}", processFlow.getModelName());
             processFlow.run();
         } catch (IOException e) {
@@ -39,19 +39,21 @@ public class Mago3DTiler {
      * @param outputFormat FormatType
      * @return ProcessFlowModel
      */
-    private ProcessFlowModel getProcessModel(FormatType inputFormat, FormatType outputFormat) {
-        ProcessFlowModel processFlow;
+    private ProcessFlow getProcessModel(FormatType inputFormat, FormatType outputFormat) {
+        ProcessFlow processFlow;
         if (FormatType.I3DM == outputFormat) {
-            processFlow = new InstancedProcessModel();
+            processFlow = new InstancedProcessFlow();
+        } else if (FormatType.PHOTOGRAMMETRY == outputFormat) {
+            processFlow = new PhotogrammetryProcessFlow();
         } else if (FormatType.B3DM == outputFormat) {
             boolean isPhotogrammetry = GlobalOptions.getInstance().isPhotogrammetry();
             if (isPhotogrammetry) {
-                processFlow = new PhotogrammetryModel();
+                processFlow = new PhotogrammetryProcessFlow();
             } else {
-                processFlow = new BatchedProcessModel();
+                processFlow = new BatchedModelProcessFlow();
             }
         } else if (FormatType.PNTS == outputFormat) {
-            processFlow = new PointCloudProcessModel();
+            processFlow = new PointCloudProcessFlow();
         } else {
             throw new IllegalArgumentException("Unsupported output format: " + outputFormat);
         }

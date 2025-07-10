@@ -9,7 +9,10 @@ import org.apache.commons.io.FilenameUtils;
 import org.joml.Vector2d;
 
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class GaiaTexCoordCorrection implements PreProcess {
 
@@ -26,7 +29,8 @@ public class GaiaTexCoordCorrection implements PreProcess {
 
         FormatType formatType = getFormatTypeFromScene(gaiaScene);
         boolean invertTexCoordsYAxis = isInvertTexCoordsYAxis(formatType);
-        GaiaNode rootNode = gaiaScene.getNodes().get(0);
+        GaiaNode rootNode = gaiaScene.getNodes()
+                .get(0);
 
         List<GaiaMesh> allMeshes = new ArrayList<>();
         rootNode.extractMeshes(allMeshes);
@@ -34,8 +38,6 @@ public class GaiaTexCoordCorrection implements PreProcess {
         for (GaiaMesh mesh : allMeshes) {
             List<GaiaPrimitive> allPrimitives = mesh.getPrimitives();
             for (GaiaPrimitive primitive : allPrimitives) {
-                int matIdx = primitive.getMaterialIndex();
-                GaiaMaterial material = gaiaScene.getMaterials().get(matIdx);
                 translatePrimitiveTexCoordsToPositiveQuadrant(primitive);
             }
         }
@@ -83,9 +85,11 @@ public class GaiaTexCoordCorrection implements PreProcess {
         if (tBoxWidth > 1.0 || tBoxHeight > 1.0) {
             // If the bRect's width or height is bigger than 1.0, is possible that the primitive uses repeat texture mode. BUT:
             // must find welded triangles & translate the texCoords to the 1rst quadrant.
-            int surfacesCount = primitive.getSurfaces().size();
+            int surfacesCount = primitive.getSurfaces()
+                    .size();
             for (int i = 0; i < surfacesCount; i++) {
-                GaiaSurface surface = primitive.getSurfaces().get(i);
+                GaiaSurface surface = primitive.getSurfaces()
+                        .get(i);
                 translateSurfaceTexCoordsToPositiveQuadrant(surface, primitive.getVertices());
             }
         } else {

@@ -79,6 +79,8 @@ public class GlobalOptions {
     private static final GlobalOptions instance = new GlobalOptions();
     private Reporter reporter;
 
+    private boolean isAlreadyZUp = false;
+
     private String tilesVersion;
     private String version; // version flag
     private String javaVersionInfo; // java version flag
@@ -378,20 +380,15 @@ public class GlobalOptions {
         }
 
         instance.setDebug(command.hasOption(ProcessOptions.DEBUG.getLongName()));
-
-        boolean isSwapUpAxis = false;
-        boolean isFlipUpAxis = false;
         boolean isRefineAdd = false;
 
         if (command.hasOption(ProcessOptions.FLIP_UP_AXIS.getLongName())) {
             log.warn("[WARN] FLIP_UP_AXIS is Deprecated option: {}", ProcessOptions.FLIP_UP_AXIS.getLongName());
             log.warn("[WARN] Please use ROTATE_X_AXIS option instead of FLIP_UP_AXIS option.");
-            isFlipUpAxis = true;
         }
         if (command.hasOption(ProcessOptions.SWAP_UP_AXIS.getLongName())) {
             log.warn("[WARN] SWAP_UP_AXIS is Deprecated option: {}", ProcessOptions.SWAP_UP_AXIS.getLongName());
             log.warn("[WARN] Please use ROTATE_X_AXIS option instead of SWAP_UP_AXIS option.");
-            isSwapUpAxis = true;
         }
         if (command.hasOption(ProcessOptions.REFINE_ADD.getLongName())) {
             isRefineAdd = true;
@@ -400,17 +397,14 @@ public class GlobalOptions {
         double rotateXAxis = command.hasOption(ProcessOptions.ROTATE_X_AXIS.getLongName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.ROTATE_X_AXIS.getLongName())) : 0;
 
         // force setting
-        if (instance.getInputFormat().equals(FormatType.GEOJSON) || instance.getInputFormat().equals(FormatType.SHP) || instance.getInputFormat().equals(FormatType.CITYGML) || instance.getInputFormat().equals(FormatType.INDOORGML) || instance.getInputFormat().equals(FormatType.GEO_PACKAGE)) {
-            isSwapUpAxis = false;
-            isFlipUpAxis = false;
+        FormatType inputFormat = instance.getInputFormat();
+        if (inputFormat.equals(FormatType.GEOJSON) || inputFormat.equals(FormatType.SHP) || inputFormat.equals(FormatType.CITYGML) || inputFormat.equals(FormatType.INDOORGML) || inputFormat.equals(FormatType.GEO_PACKAGE)) {
+            instance.setAlreadyZUp(true);
             if (instance.getOutputFormat().equals(FormatType.B3DM)) {
-                rotateXAxis = -90;
                 isRefineAdd = true;
             }
         }
 
-        instance.setSwapUpAxis(isSwapUpAxis);
-        instance.setFlipUpAxis(isFlipUpAxis);
         instance.setRotateX(rotateXAxis);
         instance.setRefineAdd(isRefineAdd);
         instance.setGlb(command.hasOption(ProcessOptions.DEBUG_GLB.getLongName()));

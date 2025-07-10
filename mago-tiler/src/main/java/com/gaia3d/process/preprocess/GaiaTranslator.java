@@ -5,7 +5,7 @@ import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.kml.KmlInfo;
+import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.GlobeUtils;
 import lombok.AllArgsConstructor;
@@ -23,7 +23,7 @@ import java.util.List;
 
 @Slf4j
 @AllArgsConstructor
-public class GaiaTranslation implements PreProcess {
+public class GaiaTranslator implements PreProcess {
     private final List<GridCoverage2D> coverages;
 
     @Override
@@ -39,10 +39,10 @@ public class GaiaTranslation implements PreProcess {
         transform.getScale(scale);
 
         Vector3d center = getPosition(inputType, gaiaScene);
-        Vector3d translation = getTranslation(gaiaScene);
+        /*Vector3d translation = getTranslation(gaiaScene);
         if (inputType.equals(FormatType.KML)) {
             translation = new Vector3d(0.0d, 0.0d, 0.0d);
-        }
+        }*/
 
         // set position terrain height
         if (!coverages.isEmpty()) {
@@ -62,24 +62,20 @@ public class GaiaTranslation implements PreProcess {
             });
         }
 
-        KmlInfo kmlInfo = getKmlInfo(tileInfo, center);
-        Matrix4d translationMatrix = new Matrix4d().translate(translation);
-        Matrix4d resultTransformMatrix = new Matrix4d();
-        translationMatrix.mul(transform, resultTransformMatrix);
-
-        rootNode.setTransformMatrix(resultTransformMatrix);
-        tileInfo.setTransformMatrix(resultTransformMatrix);
-
-        GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox();
-        gaiaScene.setGaiaBoundingBox(boundingBox);
-
-        tileInfo.setBoundingBox(boundingBox);
-        tileInfo.setKmlInfo(kmlInfo);
+        //TileTransformInfo tileTransformInfo = getKmlInfo(tileInfo, center);
+        //Matrix4d translationMatrix = new Matrix4d().translate(translation);
+        //Matrix4d resultTransformMatrix = new Matrix4d();
+        //translationMatrix.mul(transform, resultTransformMatrix);
+        //rootNode.setTransformMatrix(resultTransformMatrix);
+        //tileInfo.setTransformMatrix(resultTransformMatrix);
+        //GaiaBoundingBox boundingBox = gaiaScene.updateBoundingBox();
+        //tileInfo.setBoundingBox(boundingBox);
+        //tileInfo.setTileTransformInfo(tileTransformInfo);
         return tileInfo;
     }
 
     private Vector3d getTranslation(GaiaScene gaiaScene) {
-        GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox();
+        GaiaBoundingBox boundingBox = gaiaScene.updateBoundingBox();
         Vector3d center = boundingBox.getCenter();
         Vector3d translation = new Vector3d(center.x, center.y, 0.0d);
         translation.negate();
@@ -101,7 +97,7 @@ public class GaiaTranslation implements PreProcess {
             position = new Vector3d(center.x, center.y, offset.z);
         } else {
             CoordinateReferenceSystem source = globalOptions.getCrs();
-            GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox();
+            GaiaBoundingBox boundingBox = gaiaScene.updateBoundingBox();
             Vector3d center = boundingBox.getCenter();
             center.add(offset);
             if (source != null) {
@@ -115,11 +111,12 @@ public class GaiaTranslation implements PreProcess {
         return position;
     }
 
-    private KmlInfo getKmlInfo(TileInfo tileInfo, Vector3d position) {
-        KmlInfo kmlInfo = tileInfo.getKmlInfo();
-        if (kmlInfo == null) {
-            kmlInfo = KmlInfo.builder().position(position).build();
+    @Deprecated
+    private TileTransformInfo getKmlInfo(TileInfo tileInfo, Vector3d position) {
+        TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
+        if (tileTransformInfo == null) {
+            tileTransformInfo = TileTransformInfo.builder().position(position).build();
         }
-        return kmlInfo;
+        return tileTransformInfo;
     }
 }

@@ -1,4 +1,4 @@
-package com.gaia3d.process.preprocess;
+package com.gaia3d.process.preprocess.sub;
 
 import com.gaia3d.basic.halfedge.HalfEdge;
 import com.gaia3d.basic.halfedge.HalfEdgeFace;

@@ -8,7 +8,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * GltfBinary is a class that contains the binary data of the glTF file.
@@ -30,19 +29,27 @@ public class GltfBinary {
     private List<ByteBuffer> instancingBuffers = new ArrayList<>();
 
     public int calcTotalByteBufferLength() {
-        return nodeBuffers.stream().mapToInt(GltfNodeBuffer::getTotalByteBufferLength).sum();
+        return nodeBuffers.stream()
+                .mapToInt(GltfNodeBuffer::getTotalByteBufferLength)
+                .sum();
     }
 
     public int calcTotalImageByteBufferLength() {
-        return imageBuffers.stream().mapToInt(ImageBuffer::getByteBufferLength).sum();
+        return imageBuffers.stream()
+                .mapToInt(ImageBuffer::getByteBufferLength)
+                .sum();
     }
 
     public int calcTotalPropertyByteBufferLength() {
-        return propertyBuffers.stream().mapToInt(ByteBuffer::capacity).sum();
+        return propertyBuffers.stream()
+                .mapToInt(ByteBuffer::capacity)
+                .sum();
     }
 
     public int calcTotalInstancingByteBufferLength() {
-        return instancingBuffers.stream().mapToInt(ByteBuffer::capacity).sum();
+        return instancingBuffers.stream()
+                .mapToInt(ByteBuffer::capacity)
+                .sum();
     }
 
     /**
@@ -50,10 +57,18 @@ public class GltfBinary {
      * It iterates through the nodeBuffers list and puts the binary data of each node into the body variable.
      */
     public void fill() {
-        int imageBuffersTotalLength = imageBuffers.stream().mapToInt(ImageBuffer::getByteBufferLength).sum();
-        int nodeBuffersTotalLength = nodeBuffers.stream().mapToInt(GltfNodeBuffer::getTotalByteBufferLength).sum();
-        int propertyBuffersTotalLength = propertyBuffers.stream().mapToInt(ByteBuffer::capacity).sum();
-        int instancingBuffersTotalLength = instancingBuffers.stream().mapToInt(ByteBuffer::capacity).sum();
+        int imageBuffersTotalLength = imageBuffers.stream()
+                .mapToInt(ImageBuffer::getByteBufferLength)
+                .sum();
+        int nodeBuffersTotalLength = nodeBuffers.stream()
+                .mapToInt(GltfNodeBuffer::getTotalByteBufferLength)
+                .sum();
+        int propertyBuffersTotalLength = propertyBuffers.stream()
+                .mapToInt(ByteBuffer::capacity)
+                .sum();
+        int instancingBuffersTotalLength = instancingBuffers.stream()
+                .mapToInt(ByteBuffer::capacity)
+                .sum();
 
         int totalByteBufferLength = imageBuffersTotalLength + nodeBuffersTotalLength + propertyBuffersTotalLength + instancingBuffersTotalLength;
 
@@ -64,41 +79,62 @@ public class GltfBinary {
 
         nodeBuffers.forEach((nodeBuffer) -> {
             if (nodeBuffer.getIndicesBuffer() != null) {
-                nodeBuffer.getIndicesBuffer().rewind();
-                nodeBuffer.getIndicesBuffer().limit(nodeBuffer.getIndicesBuffer().capacity());
+                nodeBuffer.getIndicesBuffer()
+                        .rewind();
+                nodeBuffer.getIndicesBuffer()
+                        .limit(nodeBuffer.getIndicesBuffer()
+                                .capacity());
                 bodyBuffer.put(nodeBuffer.getIndicesBuffer());
             }
             if (nodeBuffer.getPositionsBuffer() != null) {
-                nodeBuffer.getPositionsBuffer().rewind();
-                nodeBuffer.getPositionsBuffer().limit(nodeBuffer.getPositionsBuffer().capacity());
+                nodeBuffer.getPositionsBuffer()
+                        .rewind();
+                nodeBuffer.getPositionsBuffer()
+                        .limit(nodeBuffer.getPositionsBuffer()
+                                .capacity());
                 bodyBuffer.put(nodeBuffer.getPositionsBuffer());
             }
             if (nodeBuffer.getNormalsBuffer() != null) {
-                nodeBuffer.getNormalsBuffer().rewind();
-                nodeBuffer.getNormalsBuffer().limit(nodeBuffer.getNormalsBuffer().capacity());
+                nodeBuffer.getNormalsBuffer()
+                        .rewind();
+                nodeBuffer.getNormalsBuffer()
+                        .limit(nodeBuffer.getNormalsBuffer()
+                                .capacity());
                 bodyBuffer.put(nodeBuffer.getNormalsBuffer());
             }
             if (nodeBuffer.getColorsBuffer() != null) {
-                nodeBuffer.getColorsBuffer().rewind();
-                nodeBuffer.getColorsBuffer().limit(nodeBuffer.getColorsBuffer().capacity());
+                nodeBuffer.getColorsBuffer()
+                        .rewind();
+                nodeBuffer.getColorsBuffer()
+                        .limit(nodeBuffer.getColorsBuffer()
+                                .capacity());
                 bodyBuffer.put(nodeBuffer.getColorsBuffer());
             }
             if (nodeBuffer.getTexcoordsBuffer() != null) {
-                nodeBuffer.getTexcoordsBuffer().rewind();
-                nodeBuffer.getTexcoordsBuffer().limit(nodeBuffer.getTexcoordsBuffer().capacity());
+                nodeBuffer.getTexcoordsBuffer()
+                        .rewind();
+                nodeBuffer.getTexcoordsBuffer()
+                        .limit(nodeBuffer.getTexcoordsBuffer()
+                                .capacity());
                 bodyBuffer.put(nodeBuffer.getTexcoordsBuffer());
             }
             if (nodeBuffer.getBatchIdBuffer() != null) {
-                nodeBuffer.getBatchIdBuffer().rewind();
-                nodeBuffer.getBatchIdBuffer().limit(nodeBuffer.getBatchIdBuffer().capacity());
+                nodeBuffer.getBatchIdBuffer()
+                        .rewind();
+                nodeBuffer.getBatchIdBuffer()
+                        .limit(nodeBuffer.getBatchIdBuffer()
+                                .capacity());
                 bodyBuffer.put(nodeBuffer.getBatchIdBuffer());
             }
         });
 
         imageBuffers.forEach((imageBuffer) -> {
             if (imageBuffer.getByteBuffer() != null) {
-                imageBuffer.getByteBuffer().rewind();
-                imageBuffer.getByteBuffer().limit(imageBuffer.getByteBuffer().capacity());
+                imageBuffer.getByteBuffer()
+                        .rewind();
+                imageBuffer.getByteBuffer()
+                        .limit(imageBuffer.getByteBuffer()
+                                .capacity());
                 bodyBuffer.put(imageBuffer.getByteBuffer());
             }
         });

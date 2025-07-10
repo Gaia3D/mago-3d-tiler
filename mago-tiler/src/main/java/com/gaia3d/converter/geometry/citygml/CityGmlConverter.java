@@ -282,80 +282,9 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
         return scenes;
     }
 
-    /*private List<GaiaExtrusionBuilding> convertSolidProperty(AbstractCityObject cityObject, AbstractSolid abstractSolid) {
-        List<GaiaExtrusionBuilding> buildingList = new ArrayList<>();
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
-        boolean flipCoordinate = globalOptions.isFlipCoordinate();
-        double skirtHeight = globalOptions.getSkirtHeight();
-        double height = 1.0d;
-
-        Solid solid = (Solid) abstractSolid;
-        ShellProperty exterior = solid.getExterior();
-
-        if (exterior == null) {
-            return buildingList;
-        }
-        Shell shell = exterior.getObject();
-        List<SurfaceProperty> surfaceProperties = shell.getSurfaceMembers();
-
-        for (SurfaceProperty surfaceProperty : surfaceProperties) {
-            GaiaBoundingBox boundingBox = new GaiaBoundingBox();
-
-            Map<String, String> properties = new HashMap<>();
-            properties.put("name", cityObject.getId());
-            GaiaExtrusionBuilding gaiaBuilding = GaiaExtrusionBuilding.builder().id(cityObject.getId()).name(cityObject.getId()).floorHeight(0).roofHeight(height).properties(properties).build();
-
-            List<Vector3d> polygon = new Vector<>();
-
-            Polygon surface = (Polygon) surfaceProperty.getObject();
-            if (surface == null) {
-                log.error("[ERROR] No surface found for city object: {}", cityObject.getId());
-                continue;
-            }
-
-            LinearRing linearRing = (LinearRing) surface.getExterior().getObject();
-            DirectPositionList directPositions = linearRing.getControlPoints().getPosList();
-            List<Double> positions = directPositions.getValue();
-
-            double heightSum = 0d;
-            for (int i = 0; i < positions.size(); i += 3) {
-                double x, y, z = 0.0d;
-                if (flipCoordinate) {
-                    x = positions.get(i + 1);
-                    y = positions.get(i);
-                } else {
-                    x = positions.get(i);
-                    y = positions.get(i + 1);
-                }
-                heightSum += positions.get(i + 2);
-                Vector3d position = new Vector3d(x, y, z);
-                CoordinateReferenceSystem crs = globalOptions.getCrs();
-                if (crs != null) {
-                    ProjCoordinate projCoordinate = new ProjCoordinate(x, y, boundingBox.getMinZ());
-                    ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
-                    position = new Vector3d(centerWgs84.x, centerWgs84.y, z);
-                }
-                polygon.add(position);
-                boundingBox.addPoint(position);
-            }
-
-            double floorHeight = heightSum / positions.size();
-            gaiaBuilding.setPositions(polygon);
-            gaiaBuilding.setFloorHeight(floorHeight);
-            gaiaBuilding.setRoofHeight(floorHeight + height + skirtHeight);
-            gaiaBuilding.setClassification(getClassification(cityObject));
-            gaiaBuilding.setBoundingBox(boundingBox);
-            buildingList.add(gaiaBuilding);
-        }
-        return buildingList;
-    }*/
-
     private List<GaiaSurfaceModel> convertSolidSurfaceProperty(AbstractCityObject cityObject, AbstractSolid abstractSolid) {
         List<GaiaSurfaceModel> buildingSurfaces = new ArrayList<>();
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-        boolean flipCoordinate = globalOptions.isFlipCoordinate();
-        double skirtHeight = globalOptions.getSkirtHeight();
-        double height = 1.0d;
 
         List<Solid> solids = new ArrayList<>();
         if (abstractSolid == null) {
@@ -386,14 +315,6 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             List<GaiaSurfaceModel> compositeSurfaces = convertSurfaceProperty(cityObject, classification, surfaceProperties);
             buildingSurfaces.addAll(compositeSurfaces);
         }
-        return buildingSurfaces;
-    }
-
-    private List<GaiaSurfaceModel> convertTriangleArrayProperty(AbstractCityObject cityObject, TriangleArrayProperty triangleArrayProperty) {
-        List<GaiaSurfaceModel> buildingSurfaces = new ArrayList<>();
-
-
-        // TODO: triangleArrayProperty
         return buildingSurfaces;
     }
 

@@ -106,7 +106,7 @@ public class GaiaMinimizationML implements PreProcess {
         List<GaiaScene> gaiaScenes = new ArrayList<>();
         gaiaScenes.add(scene);
 
-        GaiaBoundingBox boundingBox = scene.getBoundingBox();
+        GaiaBoundingBox boundingBox = scene.updateBoundingBox();
         double maxSize = boundingBox.getMaxSize();
 
         TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();

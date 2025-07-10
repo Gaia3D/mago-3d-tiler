@@ -25,8 +25,8 @@ import java.util.List;
 public class JacksonKmlReader implements AttributeReader {
 
     @Override
-    public KmlInfo read(File file) {
-        KmlInfo kmlInfo = null;
+    public TileTransformInfo read(File file) {
+        TileTransformInfo tileTransformInfo = null;
         XmlMapper xmlMapper = new XmlMapper();
         xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         try {
@@ -48,18 +48,18 @@ public class JacksonKmlReader implements AttributeReader {
                 double x = model.getScale().getX();
                 double y = model.getScale().getY();
                 double z = model.getScale().getZ();
-                kmlInfo = KmlInfo.builder().name(name).position(new Vector3d(longitude, latitude, altitude)).altitudeMode(altitudeMode).heading(heading).tilt(tilt).roll(roll).href(href).scaleX(x).scaleY(y).scaleZ(z).build();
+                tileTransformInfo = TileTransformInfo.builder().name(name).position(new Vector3d(longitude, latitude, altitude)).altitudeMode(altitudeMode).heading(heading).tilt(tilt).roll(roll).href(href).scaleX(x).scaleY(y).scaleZ(z).build();
             }
         } catch (IOException e) {
             log.error("[ERROR] :", e);
             throw new RuntimeException(e);
         }
-        return kmlInfo;
+        return tileTransformInfo;
     }
 
 
-    public List<KmlInfo> readAll(File file) {
-        List<KmlInfo> kmlInfos = new ArrayList<>();
+    public List<TileTransformInfo> readAll(File file) {
+        List<TileTransformInfo> tileTransformInfos = new ArrayList<>();
         XmlMapper xmlMapper = new XmlMapper();
         xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         try {
@@ -85,7 +85,7 @@ public class JacksonKmlReader implements AttributeReader {
                     HashMap<String, String> properties = new HashMap<>();
                     properties.put("name", name);
                     properties.put("description", description);
-                    KmlInfo kmlInfo = KmlInfo.builder()
+                    TileTransformInfo tileTransformInfo = TileTransformInfo.builder()
                             .name(name)
                             .position(new Vector3d(longitude, latitude, altitude))
                             .altitudeMode(altitudeMode)
@@ -98,13 +98,13 @@ public class JacksonKmlReader implements AttributeReader {
                             .scaleZ(z)
                             .properties(properties)
                             .build();
-                    kmlInfos.add(kmlInfo);
+                    tileTransformInfos.add(tileTransformInfo);
                 }
             }
         } catch (IOException e) {
             log.error("[ERROR] :", e);
             throw new RuntimeException(e);
         }
-        return kmlInfos;
+        return tileTransformInfos;
     }
 }

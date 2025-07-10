@@ -77,13 +77,8 @@ public class AssimpConverter implements Converter {
         return null;
     }
 
-    private Matrix4d convertMatrix4dFromAIMatrix4x4(AIMatrix4x4 aiMatrix4x4, GaiaNode parentNode, FormatType isYUpFormat) {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
-        boolean autoUpAxis = globalOptions.isAutoUpAxis();
+    private Matrix4d convertMatrix4dFromAIMatrix4x4(AIMatrix4x4 aiMatrix4x4) {
         Matrix4d matrix4 = new Matrix4d();
-        boolean isRootNode = parentNode == null;
-
-        // getTransformMatrix
         matrix4.m00(aiMatrix4x4.a1());
         matrix4.m01(aiMatrix4x4.b1());
         matrix4.m02(aiMatrix4x4.c1());
@@ -96,27 +91,6 @@ public class AssimpConverter implements Converter {
         matrix4.m21(aiMatrix4x4.b3());
         matrix4.m22(aiMatrix4x4.c3());
         matrix4.m23(aiMatrix4x4.d3());
-        matrix4.m30(aiMatrix4x4.a4());
-        matrix4.m31(aiMatrix4x4.b4());
-        matrix4.m32(aiMatrix4x4.c4());
-        matrix4.m33(aiMatrix4x4.d4());
-
-        if (isRootNode && autoUpAxis) {
-            if (isYUpFormat.isYUpAxis()) {
-                matrix4.m00(1.0d);
-                matrix4.m01(0.0d);
-                matrix4.m02(0.0d);
-                matrix4.m03(0.0d);
-                matrix4.m10(0.0d);
-                matrix4.m11(1.0d);
-                matrix4.m12(0.0d);
-                matrix4.m13(0.0d);
-                matrix4.m20(0.0d);
-                matrix4.m21(0.0d);
-                matrix4.m22(1.0d);
-                matrix4.m23(0.0d);
-            }
-        }
         matrix4.m30(aiMatrix4x4.a4());
         matrix4.m31(aiMatrix4x4.b4());
         matrix4.m32(aiMatrix4x4.c4());
@@ -429,8 +403,8 @@ public class AssimpConverter implements Converter {
         String name = aiNode.mName().dataString();
 
         AIMatrix4x4 transformation = aiNode.mTransformation();
-        Matrix4d transform = convertMatrix4dFromAIMatrix4x4(transformation, parentNode, formatType);
 
+        Matrix4d transform = convertMatrix4dFromAIMatrix4x4(transformation);
         int numMeshes = aiNode.mNumMeshes();
         int numChildren = aiNode.mNumChildren();
 

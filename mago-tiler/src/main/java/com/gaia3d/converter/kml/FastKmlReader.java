@@ -18,24 +18,24 @@ import java.util.List;
 public class FastKmlReader implements AttributeReader {
 
     @Override
-    public KmlInfo read(File file) {
-        KmlInfo kmlInfo = null;
+    public TileTransformInfo read(File file) {
+        TileTransformInfo tileTransformInfo = null;
         try {
             String xml = Files.readString(file.toPath());
             Vector3d position = new Vector3d(Double.parseDouble(findValue(xml, "longitude")), Double.parseDouble(findValue(xml, "latitude")), Double.parseDouble(findValue(xml, "altitude")));
-            kmlInfo = KmlInfo.builder().name(findValue(xml, "name")).position(position).altitudeMode(findValue(xml, "altitudeMode")).heading(parseDouble(findValue(xml, "heading"))).tilt(parseDouble(findValue(xml, "tilt"))).roll(parseDouble(findValue(xml, "roll"))).href(findValue(xml, "href")).scaleX(parseDouble(findValue(xml, "x"))).scaleY(parseDouble(findValue(xml, "y"))).scaleZ(parseDouble(findValue(xml, "z"))).build();
+            tileTransformInfo = TileTransformInfo.builder().name(findValue(xml, "name")).position(position).altitudeMode(findValue(xml, "altitudeMode")).heading(parseDouble(findValue(xml, "heading"))).tilt(parseDouble(findValue(xml, "tilt"))).roll(parseDouble(findValue(xml, "roll"))).href(findValue(xml, "href")).scaleX(parseDouble(findValue(xml, "x"))).scaleY(parseDouble(findValue(xml, "y"))).scaleZ(parseDouble(findValue(xml, "z"))).build();
             xml = null;
         } catch (IOException e) {
             log.error("[ERROR] :", e);
             throw new RuntimeException(e);
         }
-        return kmlInfo;
+        return tileTransformInfo;
     }
 
     @Override
-    public List<KmlInfo> readAll(File file) {
-        KmlInfo kmlInfo = read(file);
-        return List.of(kmlInfo);
+    public List<TileTransformInfo> readAll(File file) {
+        TileTransformInfo tileTransformInfo = read(file);
+        return List.of(tileTransformInfo);
     }
 
     private double parseDouble(String value) {

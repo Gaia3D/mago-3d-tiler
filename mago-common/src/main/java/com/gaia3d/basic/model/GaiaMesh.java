@@ -68,7 +68,7 @@ public class GaiaMesh extends MeshStructure implements Serializable {
         return count;
     }
 
-    public float[] getPositions() {
+    public float[] getFloatPositions() {
         float[] totalVertices = new float[getPositionsCount()];
         int index = 0;
         for (GaiaPrimitive primitive : primitives) {

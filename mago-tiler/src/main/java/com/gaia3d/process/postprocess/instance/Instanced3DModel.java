@@ -10,7 +10,7 @@ import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.jgltf.GltfWriter;
-import com.gaia3d.converter.kml.KmlInfo;
+import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.io.LittleEndianDataOutputStream;
 import com.gaia3d.process.postprocess.ContentModel;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTableMap;
@@ -81,8 +81,8 @@ public class Instanced3DModel implements ContentModel {
             Vector3d normalRight = new Vector3d(1, 0, 0);
 
             // GPS Coordinates
-            KmlInfo kmlInfo = tileInfo.getKmlInfo();
-            Vector3d position = kmlInfo.getPosition();
+            TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
+            Vector3d position = tileTransformInfo.getPosition();
             Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
             Vector3d localPosition = positionWorldCoordinate.sub(centerWorldCoordinate, new Vector3d());
 
@@ -90,7 +90,7 @@ public class Instanced3DModel implements ContentModel {
             Matrix3d worldRotationMatrix3d = transformMatrix.get3x3(new Matrix3d());
 
             // rotate
-            double headingValue = Math.toRadians(kmlInfo.getHeading());
+            double headingValue = Math.toRadians(tileTransformInfo.getHeading());
             Matrix3d rotationMatrix = new Matrix3d();
             rotationMatrix.rotateZ(-headingValue);
             worldRotationMatrix3d.mul(rotationMatrix, worldRotationMatrix3d);
@@ -104,7 +104,7 @@ public class Instanced3DModel implements ContentModel {
             //normalRight = rotationMatrix.transform(normalRight);
 
             // scale
-            double scale = kmlInfo.getScaleZ();
+            double scale = tileTransformInfo.getScaleZ();
 
             positions[positionIndex.getAndIncrement()] = (float) localPositionYUp.x;
             positions[positionIndex.getAndIncrement()] = (float) localPositionYUp.y;
@@ -167,7 +167,7 @@ public class Instanced3DModel implements ContentModel {
         AtomicInteger finalBatchIdIndex = new AtomicInteger();
         tileInfos.forEach((tileInfo) -> {
             GaiaAttribute attribute = tileInfo.getScene().getAttribute();
-            Map<String, String> attributes = tileInfo.getKmlInfo().getProperties();
+            Map<String, String> attributes = tileInfo.getTileTransformInfo().getProperties();
 
             String UUID = attribute.getIdentifier().toString();
             String FileName = attribute.getFileName();
@@ -270,7 +270,7 @@ public class Instanced3DModel implements ContentModel {
                 GaiaSet gaiaSet = gaiaBatcher.runBatching(batchTileInfos, contentInfo.getNodeCode(), contentInfo.getLod());
                 GaiaScene resultGaiaScene = new GaiaScene(gaiaSet);
 
-                GaiaBoundingBox boundingBox = resultGaiaScene.getBoundingBox();
+                GaiaBoundingBox boundingBox = resultGaiaScene.updateBoundingBox();
                 float minSize = (float) boundingBox.getMinSize();
 
                 if (isVoxelLod) {

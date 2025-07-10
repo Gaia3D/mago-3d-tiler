@@ -126,7 +126,7 @@ public class GaiaOctreeUtils {
         List<GaiaFaceData> faceDataList = new ArrayList<>();
         getFaceDataListOfScene(gaiaScene, faceDataList);
 
-        GaiaBoundingBox boundingBox = gaiaScene.getBoundingBox();
+        GaiaBoundingBox boundingBox = gaiaScene.updateBoundingBox();
         GaiaOctree octree = new GaiaOctree(null);
         octree.setSize(boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ(), boundingBox.getMaxX(), boundingBox.getMaxY(), boundingBox.getMaxZ());
         octree.setAsCube();

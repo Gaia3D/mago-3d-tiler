@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.Random;
 
 public interface AttributeReader {
-    KmlInfo read(File file);
-    List<KmlInfo> readAll(File file);
+    TileTransformInfo read(File file);
+    List<TileTransformInfo> readAll(File file);
 
     default Geometry transformGeometry(Geometry polygon, CoordinateReferenceSystem sourceCRS) throws FactoryException, TransformException {
         // 3857 is the default CRS for GeoJSON, which is WGS 84

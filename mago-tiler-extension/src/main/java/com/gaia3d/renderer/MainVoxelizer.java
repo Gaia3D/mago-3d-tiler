@@ -24,11 +24,8 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -74,7 +71,7 @@ public class MainVoxelizer implements IAppLogic {
         // calculate the bbox of all scenes
         GaiaBoundingBox bboxAllScenes = new GaiaBoundingBox();
         for (GaiaScene scene : scenes) {
-            bboxAllScenes.addBoundingBox(scene.getBoundingBox());
+            bboxAllScenes.addBoundingBox(scene.updateBoundingBox());
         }
 
         GaiaScenesContainer gaiaScenesContainer = this.engine.getGaiaScenesContainer();

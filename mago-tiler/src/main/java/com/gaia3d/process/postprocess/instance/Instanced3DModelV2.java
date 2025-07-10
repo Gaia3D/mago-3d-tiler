@@ -6,11 +6,10 @@ import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.jgltf.InstancedModelGltfWriter;
-import com.gaia3d.converter.kml.KmlInfo;
+import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.process.postprocess.ContentModel;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTableMap;
 import com.gaia3d.process.postprocess.batch.GaiaBatcher;
-import com.gaia3d.process.postprocess.pointcloud.ByteAddress;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.GeometryUtils;
@@ -80,8 +79,8 @@ public class Instanced3DModelV2 implements ContentModel {
             Vector3d normalUp = new Vector3d(0, 0, -1);
 
             // GPS Coordinates
-            KmlInfo kmlInfo = tileInfo.getKmlInfo();
-            Vector3d position = kmlInfo.getPosition();
+            TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
+            Vector3d position = tileTransformInfo.getPosition();
             Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
             Vector3d localPosition = positionWorldCoordinate.sub(centerWorldCoordinate, new Vector3d());
 
@@ -92,9 +91,9 @@ public class Instanced3DModelV2 implements ContentModel {
 
 
             // rotate
-            double headingValue = Math.toRadians(kmlInfo.getHeading());
-            double pitchValue = Math.toRadians(kmlInfo.getTilt());
-            double rollValue = Math.toRadians(kmlInfo.getRoll());
+            double headingValue = Math.toRadians(tileTransformInfo.getHeading());
+            double pitchValue = Math.toRadians(tileTransformInfo.getTilt());
+            double rollValue = Math.toRadians(tileTransformInfo.getRoll());
 
             /*Matrix3d rotationMatrix = new Matrix3d();
             //rotationMatrix.rotateZ(-headingValue);
@@ -106,9 +105,9 @@ public class Instanced3DModelV2 implements ContentModel {
 //            normalRight = worldRotationMatrix3d.transform(normalRight);
 
             // scale
-            double scaleX = kmlInfo.getScaleX();
-            double scaleY = kmlInfo.getScaleY();
-            double scaleZ = kmlInfo.getScaleZ();
+            double scaleX = tileTransformInfo.getScaleX();
+            double scaleY = tileTransformInfo.getScaleY();
+            double scaleZ = tileTransformInfo.getScaleZ();
 
             positions[positionIndex.getAndIncrement()] = (float) localPositionYUp.x;
             positions[positionIndex.getAndIncrement()] = (float) localPositionYUp.z;
@@ -206,7 +205,7 @@ public class Instanced3DModelV2 implements ContentModel {
         tileInfos.forEach((tileInfo) -> {
             GaiaAttribute attribute = tileInfo.getScene()
                     .getAttribute();
-            Map<String, String> attributes = tileInfo.getKmlInfo()
+            Map<String, String> attributes = tileInfo.getTileTransformInfo()
                     .getProperties();
 
             String UUID = attribute.getIdentifier()
@@ -268,7 +267,7 @@ public class Instanced3DModelV2 implements ContentModel {
             GaiaBatcher gaiaBatcher = new GaiaBatcher();
             GaiaSet gaiaSet = gaiaBatcher.runBatching(batchTileInfos, contentInfo.getNodeCode(), contentInfo.getLod());
             GaiaScene resultGaiaScene = new GaiaScene(gaiaSet);
-            GaiaBoundingBox boundingBox = resultGaiaScene.getBoundingBox();
+            GaiaBoundingBox boundingBox = resultGaiaScene.updateBoundingBox();
             float minSize = (float) boundingBox.getMinSize();
 
             if (isVoxelLod) {

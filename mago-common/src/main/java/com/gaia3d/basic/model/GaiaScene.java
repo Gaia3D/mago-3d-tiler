@@ -50,15 +50,20 @@ public class GaiaScene extends SceneStructure implements Serializable {
         bufferDataSetsCopy.forEach((bufferDataSet) -> rootNode.getChildren().add(new GaiaNode(bufferDataSet)));
     }
 
-    public GaiaBoundingBox getBoundingBox() {
-        this.gaiaBoundingBox = new GaiaBoundingBox();
+    /**
+     * Updates the bounding box of the scene by iterating through all nodes.
+     * @return the updated GaiaBoundingBox of the scene.
+     */
+    public GaiaBoundingBox updateBoundingBox() {
+        GaiaBoundingBox newBoundingBox = new GaiaBoundingBox();
         for (GaiaNode node : this.getNodes()) {
             GaiaBoundingBox boundingBox = node.getBoundingBox(null);
             if (boundingBox != null) {
-                gaiaBoundingBox.addBoundingBox(boundingBox);
+                newBoundingBox.addBoundingBox(boundingBox);
             }
         }
-        return this.gaiaBoundingBox;
+        this.gaiaBoundingBox = newBoundingBox;
+        return newBoundingBox;
     }
 
     public void clear() {
@@ -67,10 +72,7 @@ public class GaiaScene extends SceneStructure implements Serializable {
         this.originalPath = null;
         this.gaiaBoundingBox = null;
         this.nodes.clear();
-
-        int materialsCount = this.materials.size();
-        for (int i = 0; i < materialsCount; i++) {
-            GaiaMaterial material = this.materials.get(i);
+        for (GaiaMaterial material : this.materials) {
             material.clear();
         }
         this.materials.clear();

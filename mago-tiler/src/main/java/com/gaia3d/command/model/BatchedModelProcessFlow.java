@@ -15,7 +15,7 @@ import com.gaia3d.converter.kml.FastKmlReader;
 import com.gaia3d.converter.loader.BatchedFileLoader;
 import com.gaia3d.process.TilingPipeline;
 import com.gaia3d.process.postprocess.GaiaMaximizer;
-import com.gaia3d.process.postprocess.GaiaRelocation;
+import com.gaia3d.process.postprocess.GaiaRelocator;
 import com.gaia3d.process.postprocess.PostProcess;
 import com.gaia3d.process.postprocess.batch.Batched3DModel;
 import com.gaia3d.process.postprocess.batch.Batched3DModelV2;
@@ -34,8 +34,8 @@ import java.util.List;
  * BatchedProcessModel
  */
 @Slf4j
-public class BatchedProcessModel implements ProcessFlowModel {
-    private static final String MODEL_NAME = "BatchedProcessModel";
+public class BatchedModelProcessFlow implements ProcessFlow {
+    private static final String MODEL_NAME = "BatchedModelProcessFlow";
 
     @Override
     public void run() throws IOException {
@@ -52,19 +52,19 @@ public class BatchedProcessModel implements ProcessFlowModel {
             geoTiffs = fileLoader.loadGridCoverages(geoTiffs);
         }
 
-
         /* Pre-process */
         List<PreProcess> preProcessors = new ArrayList<>();
-        preProcessors.add(new GaiaTileInfoInitialization());
-        preProcessors.add(new GaiaTexCoordCorrection());
-        preProcessors.add(new GaiaScale());
-        preProcessors.add(new GaiaRotation());
+        preProcessors.add(new TileInfoGenerator());
+        //preProcessors.add(new GaiaSceneValidator());
+        preProcessors.add(new GaiaZUpTransformer());
 
-        if (globalOptions.isLargeMesh()) {
-            preProcessors.add(new GaiaStrictTranslation(geoTiffs));
-        } else {
-            preProcessors.add(new GaiaTranslation(geoTiffs));
-        }
+        preProcessors.add(new GaiaCoordinateExtractor());
+        preProcessors.add(new GaiaTransformBaker());
+
+        preProcessors.add(new GaiaTexCoordCorrection());
+        preProcessors.add(new GaiaScaler());
+        preProcessors.add(new GaiaRotator());
+        preProcessors.add(new GaiaTranslator(geoTiffs));
         preProcessors.add(new GaiaMinimization());
 
         /* Main-process */
@@ -73,7 +73,7 @@ public class BatchedProcessModel implements ProcessFlowModel {
         /* Post-process */
         List<PostProcess> postProcessors = new ArrayList<>();
         postProcessors.add(new GaiaMaximizer());
-        postProcessors.add(new GaiaRelocation());
+        postProcessors.add(new GaiaRelocator());
 
         if (globalOptions.getTilesVersion().equals("1.0")) {
             postProcessors.add(new Batched3DModel());

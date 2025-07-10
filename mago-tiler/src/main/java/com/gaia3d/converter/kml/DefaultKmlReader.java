@@ -28,8 +28,8 @@ public class DefaultKmlReader implements AttributeReader {
 
     //read kml file
     @Override
-    public KmlInfo read(File file) {
-        KmlInfo kmlInfo = null;
+    public TileTransformInfo read(File file) {
+        TileTransformInfo tileTransformInfo = null;
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
@@ -38,7 +38,7 @@ public class DefaultKmlReader implements AttributeReader {
             List<Element> elements = getAllElements(root);
             Vector3d position = new Vector3d(Double.parseDouble(findContent(elements, "longitude")), Double.parseDouble(findContent(elements, "latitude")), Double.parseDouble(findContent(elements, "altitude")));
 
-            kmlInfo = KmlInfo.builder().name(findContent(elements, "name")).position(position).altitudeMode(findContent(elements, "altitudeMode")).heading(Double.parseDouble(findContent(elements, "heading"))).tilt(Double.parseDouble(findContent(elements, "tilt"))).roll(Double.parseDouble(findContent(elements, "roll"))).href(findContent(elements, "href")).scaleX(Double.parseDouble(findContent(elements, "x"))).scaleY(Double.parseDouble(findContent(elements, "y"))).scaleZ(Double.parseDouble(findContent(elements, "z"))).build();
+            tileTransformInfo = TileTransformInfo.builder().name(findContent(elements, "name")).position(position).altitudeMode(findContent(elements, "altitudeMode")).heading(Double.parseDouble(findContent(elements, "heading"))).tilt(Double.parseDouble(findContent(elements, "tilt"))).roll(Double.parseDouble(findContent(elements, "roll"))).href(findContent(elements, "href")).scaleX(Double.parseDouble(findContent(elements, "x"))).scaleY(Double.parseDouble(findContent(elements, "y"))).scaleZ(Double.parseDouble(findContent(elements, "z"))).build();
             document = null;
             builder = null;
             factory = null;
@@ -48,11 +48,11 @@ public class DefaultKmlReader implements AttributeReader {
         } catch (SAXException | ParserConfigurationException e) {
             log.error("[ERROR] SAXException: {}", e.getMessage());
         }
-        return kmlInfo;
+        return tileTransformInfo;
     }
 
     @Override
-    public List<KmlInfo> readAll(File file) {
+    public List<TileTransformInfo> readAll(File file) {
         return null;
     }
 

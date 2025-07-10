@@ -178,7 +178,7 @@ public class MainRenderer implements IAppLogic {
 
         for (int i = 0; i < scenesCount; i++) {
             GaiaScene gaiaScene = scenes.get(i);
-            gaiaSceneBbox = gaiaScene.getBoundingBox();
+            gaiaSceneBbox = gaiaScene.updateBoundingBox();
             double bboxMaxSize = gaiaSceneBbox.getMaxSize();
             int maxDepthScreenSize = (int) Math.ceil(depthTexPixelsForMeter * bboxMaxSize);
             if (maxDepthScreenSize < 8) {
@@ -269,7 +269,7 @@ public class MainRenderer implements IAppLogic {
         GaiaScenesContainer gaiaScenesContainer = this.engine.getGaiaScenesContainer();
 
         // calculate the projectionMatrix for the camera
-        GaiaBoundingBox bbox = gaiaScene.getBoundingBox();
+        GaiaBoundingBox bbox = gaiaScene.updateBoundingBox();
         Vector3d bboxCenter = bbox.getCenter();
         float xLength = (float) bbox.getSizeX();
         float yLength = (float) bbox.getSizeY();
@@ -376,7 +376,7 @@ public class MainRenderer implements IAppLogic {
 
         for (int i = 0; i < scenesCount; i++) {
             GaiaScene gaiaScene = scenes.get(i);
-            GaiaBoundingBox bbox = gaiaScene.getBoundingBox();
+            GaiaBoundingBox bbox = gaiaScene.updateBoundingBox();
             double bboxMaxSize = bbox.getMaxSize();
             int maxDepthScreenSize = (int) Math.ceil(pixelsForMeter * bboxMaxSize);
             if (maxDepthScreenSize < 8) {

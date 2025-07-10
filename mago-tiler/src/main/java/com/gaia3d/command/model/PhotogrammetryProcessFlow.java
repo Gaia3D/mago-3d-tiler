@@ -14,7 +14,7 @@ import com.gaia3d.converter.kml.FastKmlReader;
 import com.gaia3d.converter.loader.BatchedFileLoader;
 import com.gaia3d.process.TilingPipeline;
 import com.gaia3d.process.postprocess.GaiaMaximizer;
-import com.gaia3d.process.postprocess.GaiaRelocation;
+import com.gaia3d.process.postprocess.GaiaRelocator;
 import com.gaia3d.process.postprocess.PostProcess;
 import com.gaia3d.process.postprocess.batch.Batched3DModel;
 import com.gaia3d.process.postprocess.batch.Batched3DModelV2;
@@ -30,8 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-public class PhotogrammetryModel implements ProcessFlowModel {
-    private static final String MODEL_NAME = "PhotogrammetryModel";
+public class PhotogrammetryProcessFlow implements ProcessFlow {
+    private static final String MODEL_NAME = "PhotogrammetryProcessFlow";
     private final GlobalOptions globalOptions = GlobalOptions.getInstance();
 
     public void run() throws IOException {
@@ -50,9 +50,9 @@ public class PhotogrammetryModel implements ProcessFlowModel {
 
         // preProcess (GaiaTexCoordCorrector, GaiaScaler, GaiaRotator, GaiaTranslatorExact, GaiaMinimizer)
         List<PreProcess> preProcessors = new ArrayList<>();
-        preProcessors.add(new GaiaTileInfoInitialization());
+        preProcessors.add(new TileInfoGenerator());
         preProcessors.add(new GaiaTexCoordCorrection());
-        preProcessors.add(new GaiaScale());
+        preProcessors.add(new GaiaScaler());
 
         preProcessors.add(new PhotogrammetryRotation());
         preProcessors.add(new GaiaStrictTranslation(geoTiffs));
@@ -65,8 +65,9 @@ public class PhotogrammetryModel implements ProcessFlowModel {
         // postProcess (GaiaMaximizer, GaiaRelocator, Batched3DModel)
         List<PostProcess> postProcessors = new ArrayList<>();
         postProcessors.add(new GaiaMaximizer());
-        postProcessors.add(new GaiaRelocation());
-        if (globalOptions.getTilesVersion().equals("1.0")) {
+        postProcessors.add(new GaiaRelocator());
+        if (globalOptions.getTilesVersion()
+                .equals("1.0")) {
             postProcessors.add(new Batched3DModel());
         } else {
             postProcessors.add(new Batched3DModelV2());

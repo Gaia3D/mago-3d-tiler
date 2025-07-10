@@ -267,12 +267,12 @@ public class PointCloudGltfWriter extends GltfWriter {
     }
 
     protected Buffer initBuffer(GlTF gltf) {
+        Buffer buffer = null;
         if (gltf.getBuffers() == null) {
-            Buffer buffer = new Buffer();
+            buffer = new Buffer();
             gltf.addBuffers(buffer);
         }
-        return gltf.getBuffers()
-                .get(0);
+        return buffer;
     }
 
     protected void createBuffer(GlTF gltf, GltfNodeBuffer nodeBuffer) {

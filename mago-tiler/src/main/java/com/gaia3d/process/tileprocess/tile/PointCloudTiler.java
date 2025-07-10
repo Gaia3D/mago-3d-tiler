@@ -45,9 +45,8 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
 
         CoordinateReferenceSystem source = globalOptions.getCrs();
-        GaiaBoundingBox originalBoundingBox = globalBoundingBox;
-        Vector3d originalMinPosition = originalBoundingBox.getMinPosition();
-        Vector3d originalMaxPosition = originalBoundingBox.getMaxPosition();
+        Vector3d originalMinPosition = globalBoundingBox.getMinPosition();
+        Vector3d originalMaxPosition = globalBoundingBox.getMaxPosition();
 
         BasicCoordinateTransform transformer = new BasicCoordinateTransform(source, GlobeUtils.wgs84);
         ProjCoordinate transformedMinCoordinate = transformer.transform(new ProjCoordinate(originalMinPosition.x, originalMinPosition.y, originalMinPosition.z), new ProjCoordinate());
@@ -59,7 +58,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         transformedBoundingBox.addPoint(minPosition);
         transformedBoundingBox.addPoint(maxPosition);
 
-        Matrix4d transformMatrix = getTransformMatrix(originalBoundingBox);
+        Matrix4d transformMatrix = getTransformMatrix(globalBoundingBox);
         rotateX90(transformMatrix);
 
         double geometricError = calcGeometricErrorFromWgs84(transformedBoundingBox);
@@ -280,9 +279,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         parentNode.getChildren().add(childNode);
         log.info("[Tile][{}/{}][ContentNode][{}]", index, maximumIndex, childNode.getNodeCode());
 
-        if (vertexLength > 0) { // vertexLength > DEFUALT_MAX_COUNT
-            //GaiaBoundingBox remainBoundingBox = calcSquareBoundingBox(remainPointCloud.getGaiaBoundingBox());
-            //remainPointCloud.setGaiaBoundingBox(remainBoundingBox);
+        if (vertexLength > 0) {
             List<GaiaPointCloud> distributes = remainPointCloud.distribute();
             distributes.forEach(distribute -> {
                 if (!distribute.getVertices().isEmpty()) {

@@ -16,6 +16,7 @@ import com.gaia3d.util.DecimalUtils;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
+import org.joml.Vector3d;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -108,7 +109,6 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         long totalTriangleCount = tileInfos.stream().mapToLong(TileInfo::getTriangleCount).sum();
         log.debug("[TriangleCount] Total : {}", totalTriangleCount);
         log.debug("[Tile][ContentNode][OBJECT] : {}", tileInfos.size());
-
         if (nodeDepth > globalOptions.getMaxNodeDepth()) {
             log.warn("[WARN][Tile] Node depth limit exceeded : {}", nodeDepth);
             Node childNode = createContentNode(parentNode, tileInfos, 0);
@@ -126,6 +126,15 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
             }
         } else if (totalTriangleCount > triangleLimit) {
             List<List<TileInfo>> childrenScenes = squareBoundingVolume.distributeScene(tileInfos);
+
+            // is samp transform matrix for all children nodes
+            GaiaBoundingBox matrixBoundingBox = new GaiaBoundingBox();
+            for (TileInfo tileInfo : tileInfos) {
+                GaiaBoundingBox boundingBox = tileInfo.getBoundingBox();
+                Vector3d center = boundingBox.getCenter();
+                matrixBoundingBox.addPoint(center);
+            }
+
             for (int index = 0; index < childrenScenes.size(); index++) {
                 List<TileInfo> childTileInfos = childrenScenes.get(index);
                 Node childNode = createLogicalNode(parentNode, childTileInfos, index);

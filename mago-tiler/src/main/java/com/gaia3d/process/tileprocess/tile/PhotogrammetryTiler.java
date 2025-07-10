@@ -17,7 +17,7 @@ import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.model.GaiaTexture;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.kml.KmlInfo;
+import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.process.tileprocess.Tiler;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
 import com.gaia3d.process.tileprocess.tile.tileset.asset.Asset;
@@ -488,7 +488,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 throw new RuntimeException(e);
             }
             GaiaScene scene = new GaiaScene(gaiaSet);
-            GaiaBoundingBox gaiaSceneBBox = scene.getBoundingBox();
+            GaiaBoundingBox gaiaSceneBBox = scene.updateBoundingBox();
             scene.setOriginalPath(tileInfo.getTempPath());
             //scene.setOriginalPath(tileInfo.getScenePath());
             scene.makeTriangleFaces();
@@ -594,8 +594,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 newTileInfo.setBoundingBox(boundingBoxCutLC);
                 newTileInfo.setCartographicBBox(cartographicBoundingBox);
 
-                KmlInfo kmlInfoCut = KmlInfo.builder().position(tileInfo.getKmlInfo().getPosition()).build();
-                newTileInfo.setKmlInfo(kmlInfoCut);
+                TileTransformInfo tileTransformInfoCut = TileTransformInfo.builder().position(tileInfo.getTileTransformInfo().getPosition()).build();
+                newTileInfo.setTileTransformInfo(tileTransformInfoCut);
 
                 newTileInfo.setTempPath(tempPathLod);
                 newTileInfos.add(newTileInfo);
@@ -738,8 +738,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 newTileInfo.setBoundingBox(boundingBoxCutLC);
                 newTileInfo.setCartographicBBox(cartographicBoundingBox);
 
-                KmlInfo kmlInfoCut = KmlInfo.builder().position(tileInfo.getKmlInfo().getPosition()).build();
-                newTileInfo.setKmlInfo(kmlInfoCut);
+                TileTransformInfo tileTransformInfoCut = TileTransformInfo.builder().position(tileInfo.getTileTransformInfo().getPosition()).build();
+                newTileInfo.setTileTransformInfo(tileTransformInfoCut);
 
                 newTileInfo.setTempPath(tempPathLod);
                 newTileInfos.add(newTileInfo);
@@ -814,8 +814,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 TileInfo tileInfo = tileInfosOfNode.get(j);
                 SceneInfo sceneInfo = new SceneInfo();
                 sceneInfo.setScenePath(tileInfo.getTempPath().toString());
-                KmlInfo kmlInfo = tileInfo.getKmlInfo();
-                Vector3d geoCoordPosition = kmlInfo.getPosition();
+                TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
+                Vector3d geoCoordPosition = tileTransformInfo.getPosition();
                 Vector3d posWC = GlobeUtils.geographicToCartesianWgs84(geoCoordPosition);
                 Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(posWC);
                 sceneInfo.setTransformMatrix(transformMatrix);
@@ -945,8 +945,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             tileInfoNet.setCartographicBBox(null);
 
             // make a kmlInfo for the cut scene
-            KmlInfo kmlInfoCut = KmlInfo.builder().position(nodeCenterGeoCoordDeg).build();
-            tileInfoNet.setKmlInfo(kmlInfoCut);
+            TileTransformInfo tileTransformInfoCut = TileTransformInfo.builder().position(nodeCenterGeoCoordDeg).build();
+            tileInfoNet.setTileTransformInfo(tileTransformInfoCut);
             netTileInfos.add(tileInfoNet);
 
             ContentInfo contentInfo = new ContentInfo();
@@ -1189,8 +1189,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         if (setBBox == null) {
             log.error("[ERROR] setBBox is null.");
         }
-        KmlInfo kmlInfo = tileInfo.getKmlInfo();
-        Vector3d geoCoordPosition = kmlInfo.getPosition();
+        TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
+        Vector3d geoCoordPosition = tileTransformInfo.getPosition();
         Vector3d posWC = GlobeUtils.geographicToCartesianWgs84(geoCoordPosition);
         Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(posWC);
         resultTransformMatrix.set(transformMatrix);
@@ -1291,7 +1291,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 
     private GaiaBoundingBox calculateCartographicBoundingBox(GaiaScene gaiaScene, Matrix4d transformMatrix, GaiaBoundingBox resultBoundingBoxLC) {
 //        GaiaScene gaiaSceneCut = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
-        GaiaBoundingBox boundingBoxCutLC = gaiaScene.getBoundingBox();
+        GaiaBoundingBox boundingBoxCutLC = gaiaScene.updateBoundingBox();
         resultBoundingBoxLC.set(boundingBoxCutLC);
 
         // Calculate cartographicBoundingBox
@@ -1342,8 +1342,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         if (setBBox == null) {
             log.error("[ERROR] setBBox is null.");
         }
-        KmlInfo kmlInfo = tileInfo.getKmlInfo();
-        Vector3d geoCoordPosition = kmlInfo.getPosition();
+        TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
+        Vector3d geoCoordPosition = tileTransformInfo.getPosition();
 
         boolean checkTexCoord = true;
         boolean checkNormal = false;
@@ -1398,8 +1398,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
     }
 
     public List<TileInfo> cutHalfEdgeSceneByGaiaAAPlanesAndSaveTileInfos(HalfEdgeScene halfEdgeScene, List<GaiaAAPlane> planes, HalfEdgeOctree resultOctree, boolean scissorTextures, boolean makeSkirt, Path cutTempLodPath, Matrix4d transformMatrix, TileInfo motherTileInfo) {
-        KmlInfo kmlInfo = motherTileInfo.getKmlInfo();
-        Vector3d geoCoordPosition = kmlInfo.getPosition();
+        TileTransformInfo tileTransformInfo = motherTileInfo.getTileTransformInfo();
+        Vector3d geoCoordPosition = tileTransformInfo.getPosition();
 
         double error = 1e-4;
         int planesCount = planes.size();
@@ -1526,8 +1526,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             // make a kmlInfo for the cut scene
             // In reality, we must recalculate the position of the cut scene. Provisionally, we use the same position
             // In reality, we must recalculate the position of the cut scene. Provisionally, we use the same position
-            KmlInfo kmlInfoCut = KmlInfo.builder().position(geoCoordPosition).build();
-            tileInfoCut.setKmlInfo(kmlInfoCut);
+            TileTransformInfo tileTransformInfoCut = TileTransformInfo.builder().position(geoCoordPosition).build();
+            tileInfoCut.setTileTransformInfo(tileTransformInfoCut);
             cutTileInfos.add(tileInfoCut);
 
             cuttedScene.deleteObjects();

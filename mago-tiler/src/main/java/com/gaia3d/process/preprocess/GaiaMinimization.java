@@ -13,15 +13,15 @@ import java.nio.file.Path;
 
 @Slf4j
 @AllArgsConstructor
+/**
+ * Save only the essential information of the object as a file.
+ */
 public class GaiaMinimization implements PreProcess {
 
     @Override
     public TileInfo run(TileInfo tileInfo) {
         GaiaScene scene = tileInfo.getScene();
         minimizeGaiaScene(tileInfo, scene);
-
-        //GaiaPointCloud pointCloud = tileInfo.getPointCloud();
-        //minimizeGaiaPointCloud(tileInfo, pointCloud);
         return tileInfo;
     }
 

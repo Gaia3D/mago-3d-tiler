@@ -1,7 +1,7 @@
 package com.gaia3d.process.preprocess;
 
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.kml.KmlInfo;
+import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,7 +9,6 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.joml.Vector3d;
-import org.opengis.coverage.PointOutsideCoverageException;
 import org.opengis.geometry.DirectPosition;
 
 import java.util.List;
@@ -25,8 +24,8 @@ public class InstanceTranslation implements PreProcess {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         Vector3d offset = globalOptions.getTranslateOffset();
 
-        KmlInfo kmlInfo = tileInfo.getKmlInfo();
-        Vector3d position = kmlInfo.getPosition();
+        TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
+        Vector3d position = tileTransformInfo.getPosition();
         Vector3d center = new Vector3d(position);
         if (offset != null) {
             center.add(offset);
@@ -35,7 +34,7 @@ public class InstanceTranslation implements PreProcess {
         }
 
         AtomicReference<Double> altitude = new AtomicReference<>(0.0d);
-        String altitudeMode = kmlInfo.getAltitudeMode();
+        String altitudeMode = tileTransformInfo.getAltitudeMode();
         if (altitudeMode != null && altitudeMode.equals("absolute")) {
             altitude.set(position.z);
         } else {
