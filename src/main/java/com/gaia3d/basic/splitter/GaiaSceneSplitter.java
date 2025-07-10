@@ -18,7 +18,7 @@ public class GaiaSceneSplitter {
             GaiaBoundingBox boundingBox = new GaiaBoundingBox();
             for (int i = 0; i < sceneCount; i++) {
                 GaiaScene scene = scenes.get(i);
-                boundingBox.addBoundingBox(scene.getBoundingBox());
+                boundingBox.addBoundingBox(scene.updateBoundingBox());
             }
             return boundingBox;
         }
