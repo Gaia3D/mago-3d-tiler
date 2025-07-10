@@ -20,6 +20,7 @@ import de.javagl.jgltf.model.io.v2.GltfAssetV2;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
+import org.joml.Quaterniond;
 import org.lwjgl.opengl.GL20;
 
 import java.io.File;
@@ -87,7 +88,21 @@ public class BatchedModelGltfWriter extends GltfWriter {
         initScene(gltf, rootNode);
 
         double[] rtcCenterOrigin = featureTable.getRtcCenter();
-        rootNode.setTranslation(new float[]{(float) rtcCenterOrigin[0], (float) rtcCenterOrigin[2], (float) -rtcCenterOrigin[1]});
+        double rctCenterX = rtcCenterOrigin[0];
+        double rctCenterY = rtcCenterOrigin[1];
+        double rctCenterZ = rtcCenterOrigin[2];
+
+        float rtcCenterXBig = (float) Math.floor(rctCenterX);
+        float rtcCenterYBig = (float) Math.floor(rctCenterY);
+        float rtcCenterZBig = (float) Math.floor(rctCenterZ);
+        float[] rtcCenterBigArray = new float[]{rtcCenterXBig, rtcCenterZBig, -rtcCenterYBig,};
+
+        float rtcCenterXSmall = (float) (rctCenterX - rtcCenterXBig);
+        float rtcCenterYSmall = (float) (rctCenterY - rtcCenterYBig);
+        float rtcCenterZSmall = (float) (rctCenterZ - rtcCenterZBig);
+        float[] rtcCenterSmallArray = new float[]{rtcCenterXSmall, rtcCenterZSmall, -rtcCenterYSmall,};
+
+        rootNode.setTranslation(rtcCenterBigArray);
 
         if (globalOptions.isUseQuantization()) {
             gltf.addExtensionsUsed(ExtensionConstant.MESH_QUANTIZATION.getExtensionName());
@@ -103,7 +118,7 @@ public class BatchedModelGltfWriter extends GltfWriter {
         extensions.put(ExtensionConstant.STRUCTURAL_METADATA.getExtensionName(), extensionStructuralMetadata);
         gltf.setExtensions(extensions);
 
-        convertNode(gltf, binary, rootNode, gaiaScene.getNodes(), batchTableMap);
+        convertNode(gltf, binary, rootNode, gaiaScene.getNodes(), batchTableMap, rtcCenterSmallArray);
         gaiaScene.getMaterials()
                 .forEach(gaiaMaterial -> createMaterial(gltf, binary, gaiaMaterial));
         applyPropertiesBinary(gltf, binary, extensionStructuralMetadata);
@@ -117,40 +132,41 @@ public class BatchedModelGltfWriter extends GltfWriter {
     }
 
     private void applyPropertiesBinary(GlTF gltf, GltfBinary binary, ExtensionStructuralMetadata extensionStructuralMetadata) {
-        log.info("[Info] Apply properties binary to glTF");
-
         int totalByteBufferLength = binary.calcTotalByteBufferLength() + binary.calcTotalImageByteBufferLength();
         AtomicInteger bufferOffset = new AtomicInteger(totalByteBufferLength);
 
         List<ByteBuffer> buffers = binary.getPropertyBuffers();
 
-        extensionStructuralMetadata.getPropertyTables().forEach(propertyTable -> {
-            propertyTable.getProperties().forEach((name, property) -> {
-                List<String> values = property.getPrimaryValues();
-                ByteBuffer[] stringBuffers = createStringBuffers(values);
+        extensionStructuralMetadata.getPropertyTables()
+                .forEach(propertyTable -> {
+                    propertyTable.getProperties()
+                            .forEach((name, property) -> {
+                                List<String> values = property.getPrimaryValues();
+                                ByteBuffer[] stringBuffers = createStringBuffers(values);
 
-                ByteBuffer stringBuffer = stringBuffers[0];
-                ByteBuffer offsetBuffer = stringBuffers[1];
+                                ByteBuffer stringBuffer = stringBuffers[0];
+                                ByteBuffer offsetBuffer = stringBuffers[1];
 
-                int stringBufferViewId = createBufferView(gltf, 0, bufferOffset.get(), stringBuffer.capacity(), -1, GL20.GL_ARRAY_BUFFER);
-                property.setValues(stringBufferViewId);
+                                int stringBufferViewId = createBufferView(gltf, 0, bufferOffset.get(), stringBuffer.capacity(), -1, GL20.GL_ARRAY_BUFFER);
+                                property.setValues(stringBufferViewId);
 
-                BufferView stringBufferView = gltf.getBufferViews().get(stringBufferViewId);
-                stringBufferView.setName(name + "_values");
+                                BufferView stringBufferView = gltf.getBufferViews()
+                                        .get(stringBufferViewId);
+                                stringBufferView.setName(name + "_values");
 
-                int offsetBufferViewId = createBufferView(gltf, 0, bufferOffset.get() + stringBuffer.capacity(), offsetBuffer.capacity(), -1, GL20.GL_ARRAY_BUFFER);
-                property.setStringOffsets(offsetBufferViewId);
+                                int offsetBufferViewId = createBufferView(gltf, 0, bufferOffset.get() + stringBuffer.capacity(), offsetBuffer.capacity(), -1, GL20.GL_ARRAY_BUFFER);
+                                property.setStringOffsets(offsetBufferViewId);
 
-                BufferView offsetBufferView = gltf.getBufferViews().get(offsetBufferViewId);
-                offsetBufferView.setName(name + "_offsets");
+                                BufferView offsetBufferView = gltf.getBufferViews()
+                                        .get(offsetBufferViewId);
+                                offsetBufferView.setName(name + "_offsets");
 
-                bufferOffset.addAndGet(stringBuffer.capacity() + offsetBuffer.capacity());
+                                bufferOffset.addAndGet(stringBuffer.capacity() + offsetBuffer.capacity());
 
-                buffers.add(stringBuffer);
-                buffers.add(offsetBuffer);
-                log.info("[Info] Property: {}, Values: {}", name, values.size());
-            });
-        });
+                                buffers.add(stringBuffer);
+                                buffers.add(offsetBuffer);
+                            });
+                });
     }
 
     private ByteBuffer[] createStringBuffers(List<String> strings) {
@@ -189,20 +205,20 @@ public class BatchedModelGltfWriter extends GltfWriter {
     }
 
 
-    private void convertNode(GlTF gltf, GltfBinary binary, Node parentNode, List<GaiaNode> gaiaNodes, GaiaBatchTableMap<String, List<String>> batchTableMap) {
+    private void convertNode(GlTF gltf, GltfBinary binary, Node parentNode, List<GaiaNode> gaiaNodes, GaiaBatchTableMap<String, List<String>> batchTableMap, float[] translation) {
         List<GltfNodeBuffer> nodeBuffers = binary.getNodeBuffers();
         gaiaNodes.forEach((gaiaNode) -> {
-            Node node = createNode(gltf, parentNode, gaiaNode);
+            Node node = createNode(gltf, parentNode, gaiaNode, translation);
 
-            int nodeId = gltf.getNodes()
-                    .size() - 1;
+            List<Node> nodes = gltf.getNodes();
+            int nodeId = nodes.size() - 1;
             if (parentNode != null) {
                 parentNode.addChildren(nodeId);
             }
 
             List<GaiaNode> children = gaiaNode.getChildren();
             if (!children.isEmpty()) {
-                convertNode(gltf, binary, node, children, batchTableMap);
+                convertNode(gltf, binary, node, children, batchTableMap, new float[3]);
             }
 
             List<GaiaMesh> gaiaMeshes = gaiaNode.getMeshes();
@@ -213,9 +229,30 @@ public class BatchedModelGltfWriter extends GltfWriter {
         });
     }
 
+    protected Node createNode(GlTF gltf, Node parentNode, GaiaNode gaiaNode, float[] translation) {
+        Node node;
+        if (parentNode == null) {
+            List<Node> nodes = gltf.getNodes();
+            node = nodes.get(0);
+        } else {
+            node = new Node();
+            gltf.addNodes(node);
+        }
+
+        Matrix4d rotationMatrix = gaiaNode.getTransformMatrix();
+
+        Quaterniond rotationQuaternion = rotationMatrix.getNormalizedRotation(new Quaterniond());
+        node.setRotation(new float[]{(float) rotationQuaternion.x, (float) rotationQuaternion.y, (float) rotationQuaternion.z, (float) rotationQuaternion.w});
+
+        node.setTranslation(translation);
+
+        node.setName(gaiaNode.getName());
+        return node;
+    }
+
     private GltfNodeBuffer convertGeometryInfo(GlTF gltf, GaiaMesh gaiaMesh, Node node, GaiaBatchTableMap<String, List<String>> batchTableMap) {
         int[] indices = gaiaMesh.getIndices();
-        float[] positions = gaiaMesh.getPositions();
+        float[] positions = gaiaMesh.getFloatPositions();
 
         short[] unsignedShortsPositions = null;
         if (globalOptions.isUseQuantization()) {
@@ -361,25 +398,21 @@ public class BatchedModelGltfWriter extends GltfWriter {
         extensions.put(ExtensionConstant.MESH_FEATURES.getExtensionName(), extensionMeshFeatures);
         primitive.setExtensions(extensions);
 
+        Map<String, Integer> attributes = primitive.getAttributes();
         if (nodeBuffer.getPositionsAccessorId() > -1) {
-            primitive.getAttributes()
-                    .put(AttributeType.POSITION.getAccessor(), nodeBuffer.getPositionsAccessorId());
+            attributes.put(AttributeType.POSITION.getAccessor(), nodeBuffer.getPositionsAccessorId());
         }
         if (nodeBuffer.getNormalsAccessorId() > -1) {
-            primitive.getAttributes()
-                    .put(AttributeType.NORMAL.getAccessor(), nodeBuffer.getNormalsAccessorId());
+            attributes.put(AttributeType.NORMAL.getAccessor(), nodeBuffer.getNormalsAccessorId());
         }
         if (nodeBuffer.getColorsAccessorId() > -1) {
-            primitive.getAttributes()
-                    .put(AttributeType.COLOR.getAccessor(), nodeBuffer.getColorsAccessorId());
+            attributes.put(AttributeType.COLOR.getAccessor(), nodeBuffer.getColorsAccessorId());
         }
         if (nodeBuffer.getTexcoordsAccessorId() > -1) {
-            primitive.getAttributes()
-                    .put(AttributeType.TEXCOORD.getAccessor(), nodeBuffer.getTexcoordsAccessorId());
+            attributes.put(AttributeType.TEXCOORD.getAccessor(), nodeBuffer.getTexcoordsAccessorId());
         }
         if (nodeBuffer.getBatchIdAccessorId() > -1) {
-            primitive.getAttributes()
-                    .put(AttributeType.FEATURE_ID_0.getAccessor(), nodeBuffer.getBatchIdAccessorId());
+            attributes.put(AttributeType.FEATURE_ID_0.getAccessor(), nodeBuffer.getBatchIdAccessorId());
         }
 
         return primitive;
