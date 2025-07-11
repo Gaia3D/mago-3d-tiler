@@ -30,12 +30,11 @@ public class GaiaCoordinateExtractor implements PreProcess {
         Vector3d sourceCenter = getOrigin(scene);
         TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
 
+        sourceCenter = new Vector3d(sourceCenter); // Ensure we have a mutable copy
+
         // WGS 84 coordinate system (longitude, latitude, altitude)
         Vector3d targetCenter = extractDegree(tileTransformInfo, scene);
         tileTransformInfo.setPosition(targetCenter);
-
-        FormatType formatType = globalOptions.getInputFormat();
-        sourceCenter.z = 0.0d;
 
         Vector3d translation = new Vector3d(-sourceCenter.x, -sourceCenter.y, -sourceCenter.z);
         Matrix4d translationMatrix = new Matrix4d().translate(translation);
@@ -56,16 +55,16 @@ public class GaiaCoordinateExtractor implements PreProcess {
             GaiaNode rootNode = scene.getNodes().get(0);
             Matrix4d transformMatrix = rootNode.getTransformMatrix();
             sourceCenter = transformMatrix.getTranslation(new Vector3d());
-            //sourceCenter.z = 0.0d; // Set Z to 0 for parametric formats
+            //sourceCenter.z = 0.0d;
         } else if (formatType == FormatType.KML) {
             sourceCenter = new Vector3d(0.0d, 0.0d, 0.0d);
         } else {
             GaiaBoundingBox boundingBox = scene.updateBoundingBox();
-            double floorZ = boundingBox.getMinZ();
             sourceCenter = new Vector3d(boundingBox.getCenter());
-            //sourceCenter.z = floorZ; // Set Z to the floor level
+            //double floorZ = boundingBox.getMinZ();
+            //sourceCenter.z = floorZ; // Use the minimum Z value as the source center Z
         }
-        sourceCenter.z = 0.0d; // Ensure Z is set to 0 for all formats
+        sourceCenter.z = 0.0d; // Ensure Z is set to 0 for consistency
         return sourceCenter;
     }
 
@@ -73,29 +72,25 @@ public class GaiaCoordinateExtractor implements PreProcess {
         Vector3d degreeCenter;
         CoordinateReferenceSystem source = globalOptions.getCrs();
         FormatType formatType = globalOptions.getInputFormat();
-        boolean isParametric = formatType == FormatType.CITYGML || formatType == FormatType.INDOORGML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON || formatType == FormatType.GEO_PACKAGE;
+        boolean isParametric = globalOptions.isParametric();
         if (isParametric) {
             GaiaNode rootNode = gaiaScene.getNodes().get(0);
             Matrix4d transformMatrix = rootNode.getTransformMatrix();
             degreeCenter = transformMatrix.getTranslation(new Vector3d());
             degreeCenter.z = 0.0d; // Set Z to 0 for parametric formats
         } else if (formatType == FormatType.KML) {
-            /*GaiaBoundingBox boundingBox = gaiaScene.updateBoundingBox();
-            double floorZ = boundingBox.getMinZ();*/
-            //Vector3d boxCenter = boundingBox.getCenter();
             Vector3d position = tileTransformInfo.getPosition();
             degreeCenter = new Vector3d(position);
-            //degreeCenter.z = degreeCenter.z;
         } else {
             GaiaBoundingBox boundingBox = gaiaScene.updateBoundingBox();
             double floorZ = boundingBox.getMinZ();
             Vector3d boxCenter = boundingBox.getCenter();
             if (source != null) {
-                ProjCoordinate centerSource = new ProjCoordinate(boxCenter.x, boxCenter.y, floorZ);
+                ProjCoordinate centerSource = new ProjCoordinate(boxCenter.x, boxCenter.y, boxCenter.z);
                 ProjCoordinate centerWgs84 = GlobeUtils.transform(source, centerSource);
-                degreeCenter = new Vector3d(centerWgs84.x, centerWgs84.y, floorZ);
+                degreeCenter = new Vector3d(centerWgs84.x, centerWgs84.y, 0);
             } else {
-                degreeCenter = new Vector3d(boxCenter.x, boxCenter.y, floorZ);
+                degreeCenter = new Vector3d(boxCenter.x, boxCenter.y, 0);
             }
         }
         return degreeCenter;

@@ -25,6 +25,9 @@ public class UpAxisTransformer {
         List<GaiaNode> nodes = scene.getNodes();
         for (GaiaNode node : nodes) {
             Matrix4d transform = node.getTransformMatrix();
+            //Matrix4d rotation = new Matrix4d().identity();
+            //rotation.rotateX(radian);
+            //transform.mul(rotation);
             transform.rotateX(radian);
         }
         scene.updateBoundingBox();

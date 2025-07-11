@@ -58,15 +58,16 @@ public class GaiaZUpTransformer implements PreProcess {
                     Matrix4d originalTransform = node.getTransformMatrix();
                     Vector3d scale = originalTransform.getScale(new Vector3d());
 
-                    Matrix4d transform = new Matrix4d().identity();
-                    transform.scale(scale);
+                    Vector3d translation = originalTransform.getTranslation(new Vector3d());
+                    Vector3d rotatedTranslation = new Vector3d(translation.x, -translation.z, translation.y);
 
+                    Matrix4d transform = new Matrix4d();
+                    transform.identity();
+                    transform.translate(rotatedTranslation);
+                    transform.scale(scale);
                     node.setTransformMatrix(transform);
                 }
             }
-
-
-            //UpAxisTransformer.transformToZUp(scene);
         } catch (Exception e) {
             String message = "Failed to transform scene to Z-Up orientation: " + e.getMessage();
             log.error(message, e);
@@ -74,6 +75,8 @@ public class GaiaZUpTransformer implements PreProcess {
             reporter.addReport(message, ReportLevel.ERROR);
             throw new RuntimeException(message, e);
         }
+
+        tileInfo.updateSceneInfo();
         return tileInfo;
     }
 
@@ -97,7 +100,7 @@ public class GaiaZUpTransformer implements PreProcess {
     }
 
     private Matrix3d clampEpsilonMatrix(Matrix3d matrix) {
-        double epsilon = 1e-6;
+        double epsilon = 1e-5;
         Matrix3d clampedMatrix = new Matrix3d(matrix);
         clampedMatrix.m00(clampEpsilon(matrix.m00(), epsilon));
         clampedMatrix.m01(clampEpsilon(matrix.m01(), epsilon));
