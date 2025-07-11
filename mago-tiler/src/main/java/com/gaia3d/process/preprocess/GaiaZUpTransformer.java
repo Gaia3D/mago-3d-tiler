@@ -11,7 +11,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix3d;
 import org.joml.Matrix4d;
-import org.joml.Quaterniond;
 import org.joml.Vector3d;
 
 import java.util.List;
@@ -23,19 +22,51 @@ import java.util.List;
  */
 public class GaiaZUpTransformer implements PreProcess {
 
+    private final Matrix3d zUpAxisMatrix = new Matrix3d(
+            1.0, 0.0, 0.0,
+            0.0, 1.0, 0.0,
+            0.0, 0.0, 1.0
+    );
+
+    private final Matrix3d yUpAxisMatrix = new Matrix3d(
+            1.0, 0.0, 0.0,
+            0.0, 0.0, -1.0,
+            0.0, 1.0, 0.0
+    );
+
     @Override
     public TileInfo run(TileInfo tileInfo) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         GaiaScene scene = tileInfo.getScene();
         try {
-            if (globalOptions.isAlreadyZUp()) {
+            if (globalOptions.isParametric()) {
+                log.info("[PRE] Skipping Z-Up transformation for parametric scene.");
                 return tileInfo;
             }
 
-            if (isZUpAxis(scene)) {
+            Matrix3d rotationMatrix = createNormalMatrix3d(scene);
+            if (isZUpAxis(rotationMatrix)) {
+                log.info("[PRE] Scene is already in Z-Up orientation.");
                 return tileInfo; // Already in Z-Up orientation
+            } else if (isYUpAxis(rotationMatrix)) {
+                log.debug("[PRE] Transforming scene from Y-Up to Z-Up orientation.");
+                UpAxisTransformer.transformToZUp(scene);
+            } else {
+                log.info("[PRE] Transforming scene to Z-Up orientation.");
+                List<GaiaNode> nodes = scene.getNodes();
+                for (GaiaNode node : nodes) {
+                    Matrix4d originalTransform = node.getTransformMatrix();
+                    Vector3d scale = originalTransform.getScale(new Vector3d());
+
+                    Matrix4d transform = new Matrix4d().identity();
+                    transform.scale(scale);
+
+                    node.setTransformMatrix(transform);
+                }
             }
-            UpAxisTransformer.transformToZUp(scene);
+
+
+            //UpAxisTransformer.transformToZUp(scene);
         } catch (Exception e) {
             String message = "Failed to transform scene to Z-Up orientation: " + e.getMessage();
             log.error(message, e);
@@ -46,18 +77,62 @@ public class GaiaZUpTransformer implements PreProcess {
         return tileInfo;
     }
 
-    private boolean isZUpAxis(GaiaScene scene) {
-        boolean isUpAxisZ = true;
+
+    private Matrix3d createNormalMatrix3d(GaiaScene scene) {
         List<GaiaNode> nodes = scene.getNodes();
         GaiaNode rootNode = nodes.get(0);
         Matrix4d transformMatrix = rootNode.getTransformMatrix();
         Matrix3d rotationMatrix = new Matrix3d(transformMatrix);
         rotationMatrix.normal();
+        rotationMatrix = clampEpsilonMatrix(rotationMatrix);
+        return rotationMatrix;
+    }
 
-        Matrix3d zUpAxisMatrix = new Matrix3d();
-        zUpAxisMatrix.identity();
+    private boolean isZUpAxis(Matrix3d rotationMatrix) {
+        return zUpAxisMatrix.equals(rotationMatrix);
+    }
 
-        isUpAxisZ = zUpAxisMatrix.equals(rotationMatrix, 0.1);
-        return isUpAxisZ;
+    private boolean isYUpAxis(Matrix3d rotationMatrix) {
+        return yUpAxisMatrix.equals(rotationMatrix);
+    }
+
+    private Matrix3d clampEpsilonMatrix(Matrix3d matrix) {
+        double epsilon = 1e-6;
+        Matrix3d clampedMatrix = new Matrix3d(matrix);
+        clampedMatrix.m00(clampEpsilon(matrix.m00(), epsilon));
+        clampedMatrix.m01(clampEpsilon(matrix.m01(), epsilon));
+        clampedMatrix.m02(clampEpsilon(matrix.m02(), epsilon));
+
+        clampedMatrix.m10(clampEpsilon(matrix.m10(), epsilon));
+        clampedMatrix.m11(clampEpsilon(matrix.m11(), epsilon));
+        clampedMatrix.m12(clampEpsilon(matrix.m12(), epsilon));
+
+        clampedMatrix.m20(clampEpsilon(matrix.m20(), epsilon));
+        clampedMatrix.m21(clampEpsilon(matrix.m21(), epsilon));
+        clampedMatrix.m22(clampEpsilon(matrix.m22(), epsilon));
+
+        return clampedMatrix;
+    }
+
+    public static double clampEpsilon(double value, double epsilon) {
+        if (Math.abs(value) < epsilon) {
+            return 0.0f;
+        } else if (Math.abs(value - 1.0f) < epsilon) {
+            return 1.0f;
+        } else if (Math.abs(value + 1.0f) < epsilon) {
+            return -1.0f;
+        } else if (value > 1.0f) {
+            return 1.0f;
+        } else if (value < -1.0f) {
+            return -1.0f;
+        }
+        return value;
+    }
+
+    public void printMatrix(Matrix3d matrix) {
+        log.info("Matrix:");
+        log.info("{} {} {}", matrix.m00(), matrix.m01(), matrix.m02());
+        log.info("{} {} {}", matrix.m10(), matrix.m11(), matrix.m12());
+        log.info("{} {} {}", matrix.m20(), matrix.m21(), matrix.m22());
     }
 }

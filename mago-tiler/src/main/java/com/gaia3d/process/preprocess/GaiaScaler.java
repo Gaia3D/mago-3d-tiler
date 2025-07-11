@@ -28,7 +28,8 @@ public class GaiaScaler implements PreProcess {
         double scaleZ = tileTransformInfo.getScaleZ() <= 0 ? 1.0d : tileTransformInfo.getScaleZ();
         transform.scale(scaleX, scaleY, scaleZ);
         rootNode.setTransformMatrix(transform);
-        gaiaScene.updateBoundingBox();
+
+        tileInfo.updateSceneInfo();
         return tileInfo;
     }
 }

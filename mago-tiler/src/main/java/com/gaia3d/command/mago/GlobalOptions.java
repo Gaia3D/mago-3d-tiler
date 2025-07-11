@@ -16,9 +16,7 @@ import org.locationtech.proj4j.CoordinateReferenceSystem;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Global options for Gaia3D Tiler.
@@ -79,7 +77,7 @@ public class GlobalOptions {
     private static final GlobalOptions instance = new GlobalOptions();
     private Reporter reporter;
 
-    private boolean isAlreadyZUp = false;
+    private boolean isParametric = false;
 
     private String tilesVersion;
     private String version; // version flag
@@ -398,13 +396,16 @@ public class GlobalOptions {
 
         // force setting
         FormatType inputFormat = instance.getInputFormat();
-        if (inputFormat.equals(FormatType.GEOJSON) || inputFormat.equals(FormatType.SHP) || inputFormat.equals(FormatType.CITYGML) || inputFormat.equals(FormatType.INDOORGML) || inputFormat.equals(FormatType.GEO_PACKAGE)) {
-            instance.setAlreadyZUp(true);
-            if (instance.getOutputFormat().equals(FormatType.B3DM)) {
+        FormatType outputFormat = instance.getOutputFormat();
+
+        boolean isParametric = inputFormat.equals(FormatType.GEOJSON) || inputFormat.equals(FormatType.SHP) || inputFormat.equals(FormatType.CITYGML) || inputFormat.equals(FormatType.INDOORGML) || inputFormat.equals(FormatType.GEO_PACKAGE);
+        instance.setParametric(isParametric);
+
+        if (isParametric) {
+            if (outputFormat.equals(FormatType.B3DM)) {
                 isRefineAdd = true;
             }
         }
-
         instance.setRotateX(rotateXAxis);
         instance.setRefineAdd(isRefineAdd);
         instance.setGlb(command.hasOption(ProcessOptions.DEBUG_GLB.getLongName()));

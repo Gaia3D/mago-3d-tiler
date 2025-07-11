@@ -58,13 +58,14 @@ public class BatchedModelProcessFlow implements ProcessFlow {
         //preProcessors.add(new GaiaSceneValidator());
         preProcessors.add(new GaiaZUpTransformer());
 
-        preProcessors.add(new GaiaCoordinateExtractor());
-        preProcessors.add(new GaiaTransformBaker());
 
-        preProcessors.add(new GaiaTexCoordCorrection());
+        preProcessors.add(new GaiaCoordinateExtractor());
         preProcessors.add(new GaiaScaler());
         preProcessors.add(new GaiaRotator());
         preProcessors.add(new GaiaTranslator(geoTiffs));
+        preProcessors.add(new GaiaTransformBaker());
+
+        preProcessors.add(new GaiaTexCoordCorrection());
         preProcessors.add(new GaiaMinimization());
 
         /* Main-process */

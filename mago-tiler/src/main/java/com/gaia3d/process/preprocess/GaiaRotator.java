@@ -24,12 +24,12 @@ public class GaiaRotator implements PreProcess {
         }
         recentScene = scene;
 
-        if (rotateX == 0.0) {
-            return tileInfo;
-        } else {
+        if (rotateX != 0.0) {
             UpAxisTransformer.rotateDegreeX(scene, rotateX);
-            return tileInfo;
         }
+
+        tileInfo.updateSceneInfo();
+        return tileInfo;
     }
 
     private Matrix4d rotateXYZ(Matrix4d transformMatrix, double x, double y, double z) {

@@ -39,11 +39,6 @@ public class GaiaTranslator implements PreProcess {
         transform.getScale(scale);
 
         Vector3d center = getPosition(inputType, gaiaScene);
-        /*Vector3d translation = getTranslation(gaiaScene);
-        if (inputType.equals(FormatType.KML)) {
-            translation = new Vector3d(0.0d, 0.0d, 0.0d);
-        }*/
-
         // set position terrain height
         if (!coverages.isEmpty()) {
             center.z = 0.0d;
@@ -62,15 +57,6 @@ public class GaiaTranslator implements PreProcess {
             });
         }
 
-        //TileTransformInfo tileTransformInfo = getKmlInfo(tileInfo, center);
-        //Matrix4d translationMatrix = new Matrix4d().translate(translation);
-        //Matrix4d resultTransformMatrix = new Matrix4d();
-        //translationMatrix.mul(transform, resultTransformMatrix);
-        //rootNode.setTransformMatrix(resultTransformMatrix);
-        //tileInfo.setTransformMatrix(resultTransformMatrix);
-        //GaiaBoundingBox boundingBox = gaiaScene.updateBoundingBox();
-        //tileInfo.setBoundingBox(boundingBox);
-        //tileInfo.setTileTransformInfo(tileTransformInfo);
         return tileInfo;
     }
 
