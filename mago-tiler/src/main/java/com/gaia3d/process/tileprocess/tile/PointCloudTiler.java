@@ -9,6 +9,7 @@ import com.gaia3d.basic.pointcloud.GaiaPointCloud;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.tileprocess.Tiler;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
+import com.gaia3d.process.tileprocess.tile.tileset.TilesetV2;
 import com.gaia3d.process.tileprocess.tile.tileset.asset.*;
 import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
@@ -88,10 +89,17 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
             throw new TileProcessingException(e.getMessage());
         }
 
-        Asset asset = createAsset();
-        Tileset tileset = new Tileset();
+        Tileset tileset;
+        if (globalOptions.getTilesVersion().equals("1.0")) {
+            tileset = new Tileset();
+            AssetV1 asset = new AssetV1();
+            tileset.setAsset(asset);
+        } else {
+            tileset = new TilesetV2();
+            AssetV2 asset = new AssetV2();
+            tileset.setAsset(asset);
+        }
         tileset.setGeometricError(geometricError);
-        tileset.setAsset(asset);
         tileset.setRoot(root);
         return tileset;
     }
@@ -116,7 +124,9 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         File outputPath = new File(globalOptions.getOutputPath());
         File tilesetFile = new File(outputPath, "tileset.json");
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
+        if (!globalOptions.isDebug()) {
+            objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
+        }
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);

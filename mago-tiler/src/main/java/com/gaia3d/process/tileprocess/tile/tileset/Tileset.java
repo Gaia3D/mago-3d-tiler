@@ -3,7 +3,7 @@ package com.gaia3d.process.tileprocess.tile.tileset;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
-import com.gaia3d.process.tileprocess.tile.tileset.asset.Asset;
+import com.gaia3d.process.tileprocess.tile.tileset.asset.AssetV1;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Properties;
 import lombok.Getter;
@@ -17,7 +17,7 @@ import java.util.List;
 @Getter
 @Setter
 public class Tileset {
-    private Asset asset;
+    private AssetV1 asset;
     @JsonInclude(JsonInclude.Include.USE_DEFAULTS)
     private double geometricError = 0.0d;
     private Node root;

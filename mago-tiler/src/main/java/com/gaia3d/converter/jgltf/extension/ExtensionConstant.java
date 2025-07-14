@@ -6,6 +6,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum ExtensionConstant {
+    EX_3DTILES_CONTENT_GLTF("3DTILES_content_gltf"),
     // EXT_structural_metadata
     STRUCTURAL_METADATA("EXT_structural_metadata"),
     // EXT_feature_metadata

@@ -164,7 +164,9 @@ public class Batched3DModel implements ContentModel {
         });
 
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
+        if (!globalOptions.isDebug()) {
+            objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
+        }
         try {
             String featureTableText = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(featureTable));
             featureTableJson = featureTableText;

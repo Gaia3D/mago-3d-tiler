@@ -24,6 +24,7 @@ import java.util.Map;
 @Getter
 @Setter
 public class ExtensionStructuralMetadata {
+    private final static String EXTENSION_NAME = "mago_metadata_schema";
     private Schema schema;
     private List<PropertyTable> propertyTables;
     private List<PropertyAttribute> propertyAttributes;
@@ -33,11 +34,12 @@ public class ExtensionStructuralMetadata {
 
         List<PropertyTable> propertyTables = new ArrayList<>();
         Schema schema = new Schema();
+        schema.setId(EXTENSION_NAME); // This should be dynamically determined based on the batch table
 
         Map<String, SchemaClass> schemaClasses = new HashMap<>();
         schema.setClasses(schemaClasses);
 
-        String schemaName = "TEST_SCHEMA"; // This should be dynamically determined based on the batch table
+        String schemaName = EXTENSION_NAME; // This should be dynamically determined based on the batch table
 
         SchemaClass schemaClass = new SchemaClass();
         schemaClasses.put(schemaName, schemaClass);

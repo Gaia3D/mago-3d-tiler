@@ -15,6 +15,18 @@ class DefaultReleaseTest {
     private static final String OUTPUT_PATH = "E:/data/mago-server/output";
 
     @Test
+    void incheon() {
+        String path = "incheon";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-c", "5186"
+        };
+        execute(args);
+    }
+
+
+    @Test
     void batched53V1() {
         String path = "B53-railway-citygml";
         String[] args = new String[] {

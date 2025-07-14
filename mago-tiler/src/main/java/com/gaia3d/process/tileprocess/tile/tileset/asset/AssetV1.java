@@ -5,8 +5,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Asset {
+public class AssetV1 {
     private String version = "1.0";
-    private String tilesetVersion = "1.0";
-    private Extras extras;
 }

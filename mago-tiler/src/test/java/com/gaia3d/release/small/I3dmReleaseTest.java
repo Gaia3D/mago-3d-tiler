@@ -78,7 +78,7 @@ class I3dmReleaseTest {
                 "-ot", "i3dm",
                 "-terrain", getInputPath(path).getAbsolutePath() + "/seoul-aster.tif",
                 "-instance", getInputPath(path).getAbsolutePath() + "/tree.dae",
-                "-debug"
+                //"-debug"
         };
         execute(args);
     }
@@ -303,7 +303,7 @@ class I3dmReleaseTest {
                 "-c", "5179",
                 "-it", "geojson",
                 "-terrain", "G:/workspace/dem05.tif",
-                "-debug"
+                //"-debug"
         };
         execute(args);
     }

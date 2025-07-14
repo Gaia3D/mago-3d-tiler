@@ -63,19 +63,8 @@ public abstract class DefaultTiler {
         return GlobeUtils.transformMatrixAtCartesianPointWgs84(cartesian[0], cartesian[1], cartesian[2]);
     }
 
-    protected Asset createAsset() {
-        Asset asset = new Asset();
-        Extras extras = new Extras();
-        Cesium cesium = new Cesium();
-        Ion ion = new Ion();
-        List<Credit> credits = new ArrayList<>();
-        Credit credit = new Credit();
-        credit.setHtml("<html>Gaia3D</html>");
-        credits.add(credit);
-        cesium.setCredits(credits);
-        extras.setIon(ion);
-        extras.setCesium(cesium);
-        asset.setExtras(extras);
+    protected AssetV1 createAsset() {
+        AssetV1 asset = new AssetV1();
         return asset;
     }
 

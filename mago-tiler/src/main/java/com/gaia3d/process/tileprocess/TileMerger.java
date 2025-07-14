@@ -5,7 +5,8 @@ import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
-import com.gaia3d.process.tileprocess.tile.tileset.asset.Asset;
+import com.gaia3d.process.tileprocess.tile.tileset.asset.AssetV1;
+import com.gaia3d.process.tileprocess.tile.tileset.asset.AssetV2;
 import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
@@ -64,7 +65,9 @@ public class TileMerger {
 
     private void writeTilesetJson(File tilesetPath, Tileset tileset) {
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
+        if (!globalOptions.isDebug()) {
+            objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
+        }
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
@@ -171,9 +174,13 @@ public class TileMerger {
 
         geometricError = Math.min(geometricError, globalOptions.getMaxGeometricError());
 
-        Asset asset = new Asset();
-        asset.setVersion("1.1");
-        mergedTileset.setAsset(asset);
+        if (globalOptions.getTilesVersion().equals("1.0")) {
+            AssetV1 asset = new AssetV1();
+            mergedTileset.setAsset(asset);
+        } else {
+            AssetV2 asset = new AssetV2();
+            mergedTileset.setAsset(asset);
+        }
         mergedTileset.setGeometricError(geometricError);
         mergedTileset.setRoot(root);
 

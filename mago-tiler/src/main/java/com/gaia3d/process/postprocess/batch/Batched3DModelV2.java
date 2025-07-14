@@ -11,6 +11,8 @@ import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.StringUtils;
+import de.javagl.jgltf.model.GltfUtils;
+import de.javagl.jgltf.validator.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix3d;
 import org.joml.Matrix4d;
@@ -101,8 +103,8 @@ public class Batched3DModelV2 implements ContentModel {
             FileName = StringUtils.convertUTF8(FileName);
             NodeName = StringUtils.convertUTF8(NodeName);
 
-            batchTableMap.computeIfAbsent("UUID", k -> new ArrayList<>());
-            batchTableMap.get("UUID").add(UUID);
+            batchTableMap.computeIfAbsent("id", k -> new ArrayList<>());
+            batchTableMap.get("id").add(UUID);
 
             batchTableMap.computeIfAbsent("FileName", k -> new ArrayList<>());
             batchTableMap.get("FileName").add(FileName);

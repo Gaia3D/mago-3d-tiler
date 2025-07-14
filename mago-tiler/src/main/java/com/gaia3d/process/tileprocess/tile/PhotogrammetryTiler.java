@@ -20,7 +20,9 @@ import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.process.tileprocess.Tiler;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
-import com.gaia3d.process.tileprocess.tile.tileset.asset.Asset;
+import com.gaia3d.process.tileprocess.tile.tileset.TilesetV2;
+import com.gaia3d.process.tileprocess.tile.tileset.asset.AssetV1;
+import com.gaia3d.process.tileprocess.tile.tileset.asset.AssetV2;
 import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
@@ -227,11 +229,19 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         setGeometryErrorToNodeManual(root, projectMaxDepthIdx);
 
         root.setGeometricError(1000.0);
-        Asset asset = createAsset();
-        Tileset tileset = new Tileset();
-        tileset.setAsset(asset);
-        tileset.setRoot(root);
+
+        Tileset tileset;
+        if (globalOptions.getTilesVersion().equals("1.0")) {
+            tileset = new Tileset();
+            AssetV1 asset = new AssetV1();
+            tileset.setAsset(asset);
+        } else {
+            tileset = new TilesetV2();
+            AssetV2 asset = new AssetV2();
+            tileset.setAsset(asset);
+        }
         tileset.setGeometricError(1000.0);
+        tileset.setRoot(root);
         return tileset;
     }
 
@@ -1558,7 +1568,9 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         Path outputPath = new File(globalOptions.getOutputPath()).toPath();
         File tilesetFile = outputPath.resolve("tileset.json").toFile();
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
+        if (!globalOptions.isDebug()) {
+            objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
+        }
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         //objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         //objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
