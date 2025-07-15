@@ -57,6 +57,7 @@ public class GaiaTranslator implements PreProcess {
             });
         }
 
+        tileInfo.updateSceneInfo();
         return tileInfo;
     }
 

@@ -148,9 +148,21 @@ public class TileInfo {
             GaiaBoundingBox boundingBox = scene.updateBoundingBox();
             GaiaNode rootNode = scene.getNodes().get(0);
             this.transformMatrix = rootNode.getTransformMatrix();
-            this.boundingBox = this.scene.getGaiaBoundingBox();
+            this.boundingBox = boundingBox;
+
+            printBoundingBox();
         } else {
             log.warn("[WARN] Scene is null, cannot update scene info.");
+        }
+    }
+
+    private void printBoundingBox() {
+        if (this.boundingBox != null) {
+            log.info("BoundingBox: Min({},{},{}) Max({},{},{})",
+                    this.boundingBox.getMinX(), this.boundingBox.getMinY(), this.boundingBox.getMinZ(),
+                    this.boundingBox.getMaxX(), this.boundingBox.getMaxY(), this.boundingBox.getMaxZ());
+        } else {
+            log.warn("[WARN] BoundingBox is null.");
         }
     }
 }

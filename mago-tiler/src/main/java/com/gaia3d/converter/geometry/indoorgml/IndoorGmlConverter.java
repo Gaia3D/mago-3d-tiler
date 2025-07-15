@@ -158,8 +158,10 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                 rootNode.getChildren().add(node);
             }
             Matrix4d rootTransformMatrix = new Matrix4d().identity();
-            rootTransformMatrix.translate(center, rootTransformMatrix);
             rootNode.setTransformMatrix(rootTransformMatrix);
+
+            Vector3d degreeTranslation = scene.getTranslation();
+            degreeTranslation.set(center);
             scenes.add(scene);
         } catch (Exception e) {
             log.info("Failed to load IndoorGML file: {}", file.getAbsolutePath());

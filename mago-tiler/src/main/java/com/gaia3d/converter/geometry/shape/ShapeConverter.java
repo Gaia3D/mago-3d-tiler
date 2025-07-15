@@ -342,8 +342,11 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             rootNode.getChildren().add(node);
 
             Matrix4d rootTransformMatrix = new Matrix4d().identity();
-            rootTransformMatrix.translate(center, rootTransformMatrix);
             rootNode.setTransformMatrix(rootTransformMatrix);
+
+            Vector3d degreeTranslation = scene.getTranslation();
+            degreeTranslation.set(center);
+
 
             scenes.add(scene);
             if (scenes.size() >= sceneCount) {
@@ -474,9 +477,12 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             }
 
             rootNode.getChildren().add(node);
+
             Matrix4d rootTransformMatrix = new Matrix4d().identity();
-            rootTransformMatrix.translate(bboxCenter, rootTransformMatrix);
             rootNode.setTransformMatrix(rootTransformMatrix);
+
+            Vector3d degreeTranslation = scene.getTranslation();
+            degreeTranslation.set(bboxCenter);
 
             if (rootNode.getChildren().size() <= 0) {
                 log.debug("Invalid Scene : {}", rootNode.getName());
