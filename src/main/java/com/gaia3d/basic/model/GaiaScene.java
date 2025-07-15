@@ -9,6 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.joml.Matrix4d;
+import org.joml.Vector2d;
+import org.joml.Vector3d;
 
 import java.io.Serializable;
 import java.nio.file.Path;
@@ -28,6 +30,9 @@ public class GaiaScene extends SceneStructure implements Serializable {
     private Path originalPath;
     private GaiaBoundingBox gaiaBoundingBox;
     private GaiaAttribute attribute;
+
+    // TODO: degree translation
+    private Vector3d translation = new Vector3d(0, 0, 0);
 
     public GaiaScene(GaiaSet gaiaSet) {
         List<GaiaBufferDataSet> bufferDataSets = gaiaSet.getBufferDataList();
