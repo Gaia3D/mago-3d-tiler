@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 
+import java.util.List;
+
 @Slf4j
 @AllArgsConstructor
 public class GaiaScaler implements PreProcess {
@@ -20,14 +22,14 @@ public class GaiaScaler implements PreProcess {
         }
 
         GaiaScene gaiaScene = tileInfo.getScene();
-        GaiaNode rootNode = gaiaScene.getNodes().get(0);
-        Matrix4d transform = rootNode.getTransformMatrix();
 
-        double scaleX = tileTransformInfo.getScaleX() <= 0 ? 1.0d : tileTransformInfo.getScaleX();
-        double scaleY = tileTransformInfo.getScaleY() <= 0 ? 1.0d : tileTransformInfo.getScaleY();
-        double scaleZ = tileTransformInfo.getScaleZ() <= 0 ? 1.0d : tileTransformInfo.getScaleZ();
-        transform.scale(scaleX, scaleY, scaleZ);
-        rootNode.setTransformMatrix(transform);
+        List<GaiaNode> nodes = gaiaScene.getNodes();
+        for (GaiaNode node : nodes) {
+            Matrix4d transform = node.getTransformMatrix();
+            Matrix4d scaleMatrix = new Matrix4d().identity();
+            scaleMatrix.scale(tileTransformInfo.getScaleX(), tileTransformInfo.getScaleY(), tileTransformInfo.getScaleZ());
+            transform.mul(scaleMatrix);
+        }
 
         tileInfo.updateSceneInfo();
         return tileInfo;

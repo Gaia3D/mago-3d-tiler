@@ -22,12 +22,24 @@ import java.util.List;
  */
 public class GaiaZUpTransformer implements PreProcess {
 
+    /*
+    * Z-Up axis matrix:
+    * 1.0, 0.0, 0.0,
+    * 0.0, 1.0, 0.0,
+    * 0.0, 0.0, 1.0
+    */
     private final Matrix3d zUpAxisMatrix = new Matrix3d(
             1.0, 0.0, 0.0,
             0.0, 1.0, 0.0,
             0.0, 0.0, 1.0
     );
 
+    /*
+    * Y-Up axis matrix:
+    * 1.0, 0.0, 0.0,
+    * 0.0, 0.0, 1.0,
+    * 0.0, -1.0, 0.0
+    */
     private final Matrix3d yUpAxisMatrix = new Matrix3d(
             1.0, 0.0, 0.0,
             0.0, 0.0, -1.0,
@@ -45,14 +57,15 @@ public class GaiaZUpTransformer implements PreProcess {
             }
 
             Matrix3d rotationMatrix = createNormalMatrix3d(scene);
-            if (isZUpAxis(rotationMatrix)) {
-                log.info("[PRE] Scene is already in Z-Up orientation.");
-                return tileInfo; // Already in Z-Up orientation
-            } else if (isYUpAxis(rotationMatrix)) {
-                log.debug("[PRE] Transforming scene from Y-Up to Z-Up orientation.");
+            boolean isZUp = isZUpAxis(rotationMatrix);
+            boolean isYUp = isYUpAxis(rotationMatrix);
+            if (isZUp || isYUp) {
                 UpAxisTransformer.transformToZUp(scene);
+                return tileInfo;
             } else {
-                log.info("[PRE] Transforming scene to Z-Up orientation.");
+                log.warn("[PRE] Scene is not in Z-Up or Y-Up orientation. {}", tileInfo.getName());
+
+                // It is assumed that the scene is in Y-Up orientation.
                 List<GaiaNode> nodes = scene.getNodes();
                 for (GaiaNode node : nodes) {
                     Matrix4d originalTransform = node.getTransformMatrix();
@@ -85,8 +98,19 @@ public class GaiaZUpTransformer implements PreProcess {
         List<GaiaNode> nodes = scene.getNodes();
         GaiaNode rootNode = nodes.get(0);
         Matrix4d transformMatrix = rootNode.getTransformMatrix();
-        Matrix3d rotationMatrix = new Matrix3d(transformMatrix);
-        rotationMatrix.normal();
+
+        Vector3d rotationX = new Vector3d(transformMatrix.m00(), transformMatrix.m01(), transformMatrix.m02());
+        Vector3d rotationY = new Vector3d(transformMatrix.m10(), transformMatrix.m11(), transformMatrix.m12());
+        Vector3d rotationZ = new Vector3d(transformMatrix.m20(), transformMatrix.m21(), transformMatrix.m22());
+        rotationX.normalize();
+        rotationY.normalize();
+        rotationZ.normalize();
+
+        Matrix3d rotationMatrix = new Matrix3d(
+                rotationX.x, rotationY.x, rotationZ.x,
+                rotationX.y, rotationY.y, rotationZ.y,
+                rotationX.z, rotationY.z, rotationZ.z
+        );
         rotationMatrix = clampEpsilonMatrix(rotationMatrix);
         return rotationMatrix;
     }
@@ -100,7 +124,7 @@ public class GaiaZUpTransformer implements PreProcess {
     }
 
     private Matrix3d clampEpsilonMatrix(Matrix3d matrix) {
-        double epsilon = 1e-5;
+        double epsilon = 1e-1;
         Matrix3d clampedMatrix = new Matrix3d(matrix);
         clampedMatrix.m00(clampEpsilon(matrix.m00(), epsilon));
         clampedMatrix.m01(clampEpsilon(matrix.m01(), epsilon));

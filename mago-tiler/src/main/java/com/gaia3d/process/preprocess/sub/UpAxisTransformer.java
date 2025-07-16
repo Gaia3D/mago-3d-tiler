@@ -13,7 +13,7 @@ public class UpAxisTransformer {
      * @param radian angle in radians
      */
     public static void rotateDegreeX(GaiaScene scene, double radian) {
-        rotateRadianX(scene, Math.toRadians(radian));
+        rotateXAxis(scene, Math.toRadians(radian));
     }
 
     /**
@@ -21,25 +21,24 @@ public class UpAxisTransformer {
      * @param scene the GaiaScene
      * @param radian angle in radians
      */
-    public static void rotateRadianX(GaiaScene scene, double radian) {
+    public static void rotateXAxis(GaiaScene scene, double radian) {
         List<GaiaNode> nodes = scene.getNodes();
         for (GaiaNode node : nodes) {
             Matrix4d transform = node.getTransformMatrix();
-            //Matrix4d rotation = new Matrix4d().identity();
-            //rotation.rotateX(radian);
-            //transform.mul(rotation);
-            transform.rotateX(radian);
+            Matrix4d rotation = new Matrix4d().identity();
+            rotation.rotateX(radian);
+            transform.mul(rotation);
         }
         scene.updateBoundingBox();
     }
 
     public static void transformToZUp(GaiaScene gaiaScene) {
         // Rotate the scene around the X-axis by 90 degrees (π/2 radians)
-        rotateRadianX(gaiaScene, Math.PI / 2);
+        rotateXAxis(gaiaScene, Math.PI / 2);
     }
 
     public static void transformToYUp(GaiaScene gaiaScene) {
         // Rotate the scene around the X-axis by -90 degrees (-π/2 radians)
-        rotateRadianX(gaiaScene, -Math.PI / 2);
+        rotateXAxis(gaiaScene, -Math.PI / 2);
     }
 }
