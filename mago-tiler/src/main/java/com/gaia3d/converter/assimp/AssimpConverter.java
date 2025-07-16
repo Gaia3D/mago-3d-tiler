@@ -8,7 +8,6 @@ import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.geometry.GaiaSceneTempGroup;
 import com.gaia3d.util.ImageUtils;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.joml.Matrix4d;

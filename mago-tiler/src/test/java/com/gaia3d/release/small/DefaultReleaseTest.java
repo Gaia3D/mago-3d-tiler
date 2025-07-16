@@ -20,7 +20,7 @@ class DefaultReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                //"-rotateXAxis", "90",
+                "-rotateXAxis", "90",
                 "-refineAdd",
                 "-c", "5186"
         };
@@ -33,7 +33,7 @@ class DefaultReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                //"-rotateXAxis", "90",
+                "-rotateXAxis", "90",
                 "-refineAdd",
                 "-c", "5186"
         };

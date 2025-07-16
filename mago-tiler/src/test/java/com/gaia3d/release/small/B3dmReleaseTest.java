@@ -14,6 +14,19 @@ class B3dmReleaseTest {
     private static final String INPUT_PATH = "D:/data/mago-3d-tiler/release-sample";
     private static final String OUTPUT_PATH = "E:/data/mago-server/output";
 
+    //cartesian-sample-4978
+
+    @Test
+    void batched100() {
+        String path = "B100-cartesian-sample";
+        String[] args = new String[] {
+                "-i", getInputPath(path).getAbsolutePath(),
+                "-o", getOutputPath(path).getAbsolutePath(),
+                "-c", "4978",
+        };
+        execute(args);
+    }
+
     @Test
     void batched00() {
         String path = "B00-up-axis-glb";
