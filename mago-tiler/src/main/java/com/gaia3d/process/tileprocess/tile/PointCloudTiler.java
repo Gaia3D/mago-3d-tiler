@@ -77,7 +77,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         root.setBoundingBox(transformedBoundingBox);
         root.setRefine(Node.RefineType.ADD);
 
-        BoundingVolume boundingVolume = new BoundingVolume(transformedBoundingBox);
+        BoundingVolume boundingVolume = new BoundingVolume(transformedBoundingBox, BoundingVolume.BoundingVolumeType.REGION);
 
         // root만 큐브로
         root.setBoundingVolume(boundingVolume);
@@ -222,7 +222,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
 
         Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
         rotateX90(transformMatrix);
-        BoundingVolume boundingVolume = new BoundingVolume(transformedBoundingBox);
+        BoundingVolume boundingVolume = new BoundingVolume(transformedBoundingBox, BoundingVolume.BoundingVolumeType.REGION);
 
         int attenuation;
         if (depth < 2) {

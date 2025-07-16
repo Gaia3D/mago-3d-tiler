@@ -26,10 +26,13 @@ public class BoundingVolume implements Serializable {
     private static final float GOLDEN_RATIO = 1.61803398875f;
 
     @JsonIgnore
-    BoundingVolumeType type;
+    private BoundingVolumeType type;
 
-    double[] region; // minx, miny, maxx, maxy, minz, maxz
+    // minx, miny, maxx, maxy, minz, maxz
+    double[] region;
+    // centerX, centerY, centerZ, halfX1, halfX2, halfX3, halfY1, halfY2, halfY3, halfZ1, halfZ2, halfZ3
     double[] box;
+    // centerX, centerY, centerZ, radius
     double[] sphere;
 
     public BoundingVolume(BoundingVolumeType type) {
@@ -43,22 +46,61 @@ public class BoundingVolume implements Serializable {
         }
     }
 
-    //public BoundingVolume(GaiaBoundingBox boundingBox, CoordinateReferenceSystem source) {
-    public BoundingVolume(GaiaBoundingBox boundingBox) {
+    public BoundingVolume(GaiaBoundingBox boundingBox, BoundingVolumeType type) {
         ProjCoordinate minPoint = new ProjCoordinate(boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ());
         ProjCoordinate maxPoint = new ProjCoordinate(boundingBox.getMaxX(), boundingBox.getMaxY(), boundingBox.getMaxZ());
-        double[] rootRegion = new double[6];
-        rootRegion[0] = Math.toRadians(minPoint.x);
-        rootRegion[1] = Math.toRadians(minPoint.y);
-        rootRegion[2] = Math.toRadians(maxPoint.x);
-        rootRegion[3] = Math.toRadians(maxPoint.y);
-        rootRegion[4] = boundingBox.getMinZ();
-        rootRegion[5] = boundingBox.getMaxZ();
-        for (int i = 0; i < rootRegion.length; i++) {
-            rootRegion[i] = DecimalUtils.cutFast(rootRegion[i]);
+        Vector3d center = boundingBox.getCenter();
+        double lengthX = boundingBox.getLengthX();
+        double lengthY = boundingBox.getLengthY();
+        double lengthZ = boundingBox.getLengthZ();
+        double halfX = lengthX / 2;
+        double halfY = lengthY / 2;
+        double halfZ = lengthZ / 2;
+        this.setType(type);
+        if (BoundingVolumeType.REGION == type) {
+            region = new double[6];
+            // minX, minY (lon, lat)
+            region[0] = Math.toRadians(minPoint.x);
+            region[1] = Math.toRadians(minPoint.y);
+            // maxX, maxY (lon, lat)
+            region[2] = Math.toRadians(maxPoint.x);
+            region[3] = Math.toRadians(maxPoint.y);
+            // minZ, maxZ (altitude)
+            region[4] = boundingBox.getMinZ();
+            region[5] = boundingBox.getMaxZ();
+            for (int i = 0; i < region.length; i++) {
+                region[i] = DecimalUtils.cutFast(region[i]);
+            }
+        } else if (BoundingVolumeType.BOX == type) {
+            box = new double[12];
+            // center
+            box[0] = center.x;
+            box[1] = center.y;
+            box[2] = center.z;
+            // halfX
+            box[3] = halfX;
+            box[4] = 0;
+            box[5] = 0;
+            // halfY
+            box[6] = 0;
+            box[7] = halfY;
+            box[8] = 0;
+            // halfZ
+            box[9] = 0;
+            box[10] = 0;
+            box[11] = halfZ;
+        } else if (BoundingVolumeType.SPHERE == type) {
+            sphere = new double[4];
+            sphere[0] = center.x;
+            sphere[1] = center.y;
+            sphere[2] = center.z;
+            sphere[3] = boundingBox.getLongestDistance();
+            for (int i = 0; i < sphere.length; i++) {
+                sphere[i] = DecimalUtils.cutFast(sphere[i]);
+            }
+        } else {
+            log.error("Unsupported bounding volume type: {}", type);
         }
-        this.setType(BoundingVolumeType.REGION);
-        this.setRegion(rootRegion);
     }
 
     public BoundingVolume(BoundingVolume boundingVolume) {
@@ -101,7 +143,7 @@ public class BoundingVolume implements Serializable {
 
                 TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
                 localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(tileTransformInfo.getPosition());
-                BoundingVolume localBoundingVolume = new BoundingVolume(localBoundingBox);
+                BoundingVolume localBoundingVolume = new BoundingVolume(localBoundingBox, BoundingVolume.BoundingVolumeType.REGION);
                 Vector3d center = localBoundingVolume.calcCenter();
 
                 if (midX < center.x()) {

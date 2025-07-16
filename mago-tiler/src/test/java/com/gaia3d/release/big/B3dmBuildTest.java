@@ -1,6 +1,7 @@
 package com.gaia3d.release.big;
 
 import com.gaia3d.command.mago.Mago3DTilerMain;
+import com.gaia3d.release.small.ReleaseTestConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
@@ -18,8 +19,8 @@ class B3dmBuildTest {
     void batched00() {
         String path = "B00-up-axis-glb";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
                 //"-debug",
         };
@@ -30,8 +31,8 @@ class B3dmBuildTest {
     void batched00D() {
         String path = "B00-up-axis-glb";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath() + "-degree",
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath() + "-degree",
                 //"-c", "5186",
                 "-lon", "127.0",
                 "-lat", "37.0",
@@ -46,8 +47,8 @@ class B3dmBuildTest {
     void batched01() {
         String path = "B01-wangsuk2-3ds";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
                 "-leaveTemp"
                 //"-debug",
@@ -59,8 +60,8 @@ class B3dmBuildTest {
     void batched02() {
         String path = "B02-wangsuk2-dae";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
         };
         execute(args);
     }
@@ -69,8 +70,8 @@ class B3dmBuildTest {
     void batched03() {
         String path = "B03-wangsuk2-geojson";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
         };
         execute(args);
     }
@@ -79,8 +80,8 @@ class B3dmBuildTest {
     void batched04() {
         String path = "B04-complicated-3ds";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
         };
         execute(args);
     }
@@ -89,8 +90,8 @@ class B3dmBuildTest {
     void batched05() {
         String path = "B05-seoul-part-geojson";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 //"-terrain", getInputPath(path).getAbsolutePath() + "/seoul.tif",
                 "-terrain", "G:\\(archive)\\(archive) 3차원 데이터 모음\\GeoTIFF\\korea_5m\\5m\\37608(서울)",
                 "-c", "5186"
@@ -102,8 +103,8 @@ class B3dmBuildTest {
     void batched06() {
         String path = "B06-seoul-yeouido-shp";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-terrain", getInputPath(path).getAbsolutePath() + "/seoul.tif",
                 "-c", "5186"
         };
@@ -114,8 +115,8 @@ class B3dmBuildTest {
     void batched07() {
         String path = "B07-sejong-pipe-geojson";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186"
         };
         execute(args);
@@ -127,8 +128,8 @@ class B3dmBuildTest {
     void batched08() {
         String path = "B08-seoul-shape";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
                 "-skirtHeight", "10",
                 "-terrain", getInputPath(path).getAbsolutePath() + "/korea-compressed.tif",
@@ -140,8 +141,8 @@ class B3dmBuildTest {
     void batched09() {
         String path = "B09-seoul-yeouido-gpkg";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
                 "-terrain", getInputPath(path).getAbsolutePath() + "/seoul.tif",
         };
@@ -152,8 +153,8 @@ class B3dmBuildTest {
     void batched50() {
         String path = "B50-wangsuk2-citygml";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186"
         };
         execute(args);
@@ -163,8 +164,8 @@ class B3dmBuildTest {
     void batched51() {
         String path = "B51-japan-moran-citygml";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "4326",
                 "-flipCoordinate",
         };
@@ -175,8 +176,8 @@ class B3dmBuildTest {
     void batched52() {
         String path = "B52-house-citygml";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
         };
         execute(args);
@@ -186,8 +187,8 @@ class B3dmBuildTest {
     void batched53() {
         String path = "B53-railway-citygml";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
         };
         execute(args);
@@ -197,8 +198,8 @@ class B3dmBuildTest {
     void batched70() {
         String path = "B70-sejong-bridge-ifc";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
         };
         execute(args);
@@ -208,8 +209,8 @@ class B3dmBuildTest {
     void batched71() {
         String path = "B71-pole-base-ifc";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
         };
         execute(args);
@@ -219,8 +220,8 @@ class B3dmBuildTest {
     void batched72() {
         String path = "B72-student-room-ifc";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
         };
         execute(args);
     }
@@ -229,8 +230,8 @@ class B3dmBuildTest {
     void batched73() {
         String path = "B73-social-room-ifc";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
         };
         execute(args);
     }
@@ -239,8 +240,8 @@ class B3dmBuildTest {
     void batched80() {
         String path = "B80-kku-tile-dae-kml";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
         };
         execute(args);
     }
@@ -249,8 +250,8 @@ class B3dmBuildTest {
     void batched81() {
         String path = "B81-glb-problems-kml";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 //"-rotateX", "90",
                 "--crs", "3011",
                 "--xOffset", "151400",
@@ -264,8 +265,8 @@ class B3dmBuildTest {
     void batched82() {
         String path = "B82-glb-problems-good-kml";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 "--crs", "3011",
                 "--xOffset", "151400",
                 "--yOffset", "6577000",
@@ -278,8 +279,8 @@ class B3dmBuildTest {
     void batched90() {
         String path = "B90-compo";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 //"-it", "",
                 "-debug"
         };
@@ -290,8 +291,8 @@ class B3dmBuildTest {
     void batched91() {
         String path = "B91-buildings";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-it", "geojson",
                 "-heightColumn", "rel_height",
                 "-c", "3857",
@@ -303,8 +304,8 @@ class B3dmBuildTest {
     void batched92() {
         String path = "B92-buildings";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-it", "geojson",
                 "-heightColumn", "rel_height",
                 "-terrain", getInputPath("I10-forest-purdue-original-gpkg4").getAbsolutePath() + "/hamilton_dem_navd88_meters_4326.tif",

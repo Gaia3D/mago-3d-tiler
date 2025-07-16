@@ -49,7 +49,7 @@ public class PhotogrammetryProcessFlow implements ProcessFlow {
             geoTiffs = fileLoader.loadGridCoverages(geoTiffs);
         }
 
-        // preProcess (GaiaTexCoordCorrector, GaiaScaler, GaiaRotator, GaiaTranslatorExact, GaiaMinimizer)
+        // preProcess
         List<PreProcess> preProcessors = new ArrayList<>();
         preProcessors.add(new TileInfoGenerator());
         preProcessors.add(new GaiaTexCoordCorrection());
@@ -60,10 +60,10 @@ public class PhotogrammetryProcessFlow implements ProcessFlow {
         PhotogrammetryMinimization gaiaMinimizer = new PhotogrammetryMinimization();
         preProcessors.add(gaiaMinimizer);
 
-        // tileProcess (PhotogrammetryTiler)
+        // tileProcess
         TilingProcess tilingProcess = new PhotogrammetryTiler();
 
-        // postProcess (GaiaMaximizer, GaiaRelocator, Batched3DModel)
+        // postProcess
         List<PostProcess> postProcessors = new ArrayList<>();
         postProcessors.add(new GaiaMaximizer());
         postProcessors.add(new GaiaRelocator());
@@ -74,19 +74,8 @@ public class PhotogrammetryProcessFlow implements ProcessFlow {
             postProcessors.add(new Batched3DModelV2());
         }
 
-        // Test
-        //globalOptions.setDebugLod(true);// Test. delete this.!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        // end Test.---
-
         Pipeline processPipeline = new TilingPipeline(preProcessors, tilingProcess, postProcessors);
         processPipeline.process(fileLoader);
-    }
-
-    private boolean getYUpAxis(FormatType formatType, boolean isYUpAxis) {
-        if (formatType == FormatType.CITYGML || formatType == FormatType.INDOORGML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON) {
-            isYUpAxis = true;
-        }
-        return isYUpAxis;
     }
 
     private Converter getConverter(FormatType formatType) {

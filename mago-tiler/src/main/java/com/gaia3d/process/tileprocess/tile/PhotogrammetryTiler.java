@@ -104,7 +104,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         Node root = createRoot();
         root.setNodeCode("R");
         root.setDepth(0);
-        root.setBoundingVolume(new BoundingVolume(globalBoundingBox));
+        root.setBoundingVolume(new BoundingVolume(globalBoundingBox, BoundingVolume.BoundingVolumeType.REGION));
         root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
 
         /* Start lod 0 process */
@@ -1660,7 +1660,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);
         }
-        BoundingVolume boundingVolume = new BoundingVolume(boundingBox);
+        BoundingVolume boundingVolume = new BoundingVolume(boundingBox, BoundingVolume.BoundingVolumeType.REGION);
         geometricError = DecimalUtils.cutFast(geometricError);
 
         Node childNode = new Node();
@@ -1695,7 +1695,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             if (globalOptions.isClassicTransformMatrix()) {
                 rotateX90(transformMatrix);
             }
-            BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
+            BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox, BoundingVolume.BoundingVolumeType.REGION);
             LevelOfDetail lodLevel = LevelOfDetail.getByLevel(lod);
             int lodError = lodLevel.getGeometricError();
 
@@ -1752,7 +1752,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);
         }
-        BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox);
+        BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox, BoundingVolume.BoundingVolumeType.REGION);
 
         String nodeCode = parentNode.getNodeCode();
         LevelOfDetail minLod = LevelOfDetail.getByLevel(minLevel);

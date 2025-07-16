@@ -2,6 +2,7 @@ package com.gaia3d.release.big;
 
 import com.gaia3d.command.Configuration;
 import com.gaia3d.command.mago.Mago3DTilerMain;
+import com.gaia3d.release.small.ReleaseTestConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -20,8 +21,8 @@ class I3dmBuildTest {
     void instanced07Chim() {
         String path = "Chim";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5187",
                 "-it", "shp",
                 "-ot", "i3dm",
@@ -37,8 +38,8 @@ class I3dmBuildTest {
     void instanced07jat() {
         String path = "Jat";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5187",
                 "-it", "shp",
                 "-ot", "i3dm",
@@ -54,8 +55,8 @@ class I3dmBuildTest {
     void instanced07Hwal() {
         String path = "Hwal";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5187",
                 "-it", "shp",
                 "-ot", "i3dm",
@@ -71,8 +72,8 @@ class I3dmBuildTest {
     void instanced07HwalCog() {
         String path = "Hwal";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath() + "-cog",
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath() + "-cog",
                 "-c", "5187",
                 "-it", "shp",
                 "-ot", "i3dm",
@@ -88,8 +89,8 @@ class I3dmBuildTest {
     void instanced07Nak() {
         String path = "Nak";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5187",
                 "-it", "shp",
                 "-ot", "i3dm",
@@ -105,8 +106,8 @@ class I3dmBuildTest {
     void instanced07NakOffset() {
         String path = "Nak";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath() + "-offset",
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath() + "-offset",
                 "-c", "5187",
                 "-it", "shp",
                 "-ot", "i3dm",
@@ -148,7 +149,7 @@ class I3dmBuildTest {
 
         String[] args = new String[] {
                 "-i", getOutputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5179",
                 "-merge",
                 "-ot", "i3dm",

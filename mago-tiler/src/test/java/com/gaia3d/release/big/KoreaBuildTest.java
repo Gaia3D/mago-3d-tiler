@@ -2,6 +2,7 @@ package com.gaia3d.release.big;
 
 import com.gaia3d.command.Configuration;
 import com.gaia3d.command.mago.Mago3DTilerMain;
+import com.gaia3d.release.small.ReleaseTestConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
@@ -16,9 +17,9 @@ class KoreaBuildTest {
     void danang() {
         String path = "danang-buildings";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
-                "-log", getLogPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-log", ReleaseTestConfig.getLogPath(path).getAbsolutePath(),
                 "-mh", "3.3",
                 "-terrain", getInputPath(path).getAbsolutePath() + File.separator + "danang_dem.tif",
                 "-c", "4326",
@@ -30,9 +31,9 @@ class KoreaBuildTest {
     void ogcSample() {
         String path = "ogc-sample";
         String[] args = new String[] {
-                "-i", getInputPath(path).getAbsolutePath(),
-                "-o", getOutputPath(path).getAbsolutePath(),
-                "-log", getLogPath(path).getAbsolutePath(),
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-log", ReleaseTestConfig.getLogPath(path).getAbsolutePath(),
                 //"-terrain", getInputPath(path).getAbsolutePath() + File.separator + "merged_dem_5m_trimmed.tif",
                 "-c", "5186",
         };
