@@ -215,8 +215,8 @@ class B3dmReleaseTest {
         String[] args = new String[] {
                 "-i", getInputPath(path).getAbsolutePath(),
                 "-o", getOutputPath(path).getAbsolutePath(),
-                "-c", "5186",
-                // "-rotateXAxis", "90",
+                //"-c", "5186",
+                "-rotateXAxis", "-90",
         };
         execute(args);
     }

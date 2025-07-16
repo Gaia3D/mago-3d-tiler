@@ -4,6 +4,7 @@ import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.assimp.AssimpConverter;
+import com.gaia3d.converter.assimp.AssimpConverterOptions;
 import com.gaia3d.converter.geometry.geojson.GeoJsonInstanceConverter;
 import com.gaia3d.converter.geometry.geopackage.GeoPackageInstanceConverter;
 import com.gaia3d.converter.geometry.shape.ShapeInstanceConverter;
@@ -83,7 +84,9 @@ public class InstancedProcessFlow implements ProcessFlow {
     }
 
     private Converter getConverter(FormatType formatType) {
-        return new AssimpConverter();
+        AssimpConverterOptions options = AssimpConverterOptions.builder()
+                .build();
+        return new AssimpConverter(options);
     }
 
     @Override

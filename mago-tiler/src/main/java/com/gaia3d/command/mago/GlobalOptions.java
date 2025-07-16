@@ -123,8 +123,13 @@ public class GlobalOptions {
 
     // Debug Mode
     private boolean debug = false;
+    // Level of Detail Colorize flag
     private boolean debugLod = false;
+    // leave temporary files flag
     private boolean isLeaveTemp = false;
+
+    // TODO : Experimental Option
+    private boolean isSplitByNode = false;
 
     private boolean gltf = false;
     private boolean glb = false;

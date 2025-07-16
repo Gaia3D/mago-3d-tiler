@@ -4,6 +4,7 @@ import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.assimp.AssimpConverter;
+import com.gaia3d.converter.assimp.AssimpConverterOptions;
 import com.gaia3d.converter.geometry.ExtrusionTempGenerator;
 import com.gaia3d.converter.geometry.citygml.CityGmlConverter;
 import com.gaia3d.converter.geometry.geojson.GeoJsonConverter;
@@ -99,7 +100,9 @@ public class PhotogrammetryProcessFlow implements ProcessFlow {
         } else if (formatType == FormatType.GEOJSON) {
             converter = new GeoJsonConverter();
         } else {
-            converter = new AssimpConverter();
+            AssimpConverterOptions options = AssimpConverterOptions.builder()
+                    .build();
+            converter = new AssimpConverter(options);
         }
         return converter;
     }

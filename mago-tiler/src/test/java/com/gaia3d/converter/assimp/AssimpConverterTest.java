@@ -28,7 +28,9 @@ class AssimpConverterTest {
 
         log.debug("Start loading files");
 
-        AssimpConverter assimpConverter = new AssimpConverter();
+        AssimpConverterOptions options = AssimpConverterOptions.builder()
+                .build();
+        AssimpConverter assimpConverter = new AssimpConverter(options);
         File inputFolder = new File("D:\\data\\mago-tiler-data\\input\\seoul-set\\");
         List<File> files = (List<File>) FileUtils.listFiles(inputFolder, new String[]{"3ds", "3DS"}, true);
         int size = files.size();
@@ -54,7 +56,9 @@ class AssimpConverterTest {
         File inputFolder = new File(classLoader.getResource("./sample-3ds").getFile());
         File inputFile = new File(inputFolder, "a_bd001.3ds");
 
-        AssimpConverter assimpConverter = new AssimpConverter();
+        AssimpConverterOptions options = AssimpConverterOptions.builder()
+                .build();
+        AssimpConverter assimpConverter = new AssimpConverter(options);
         List<GaiaScene> gaiaScenes = assimpConverter.load(inputFile);
         GaiaScene gaiaScene = gaiaScenes.get(0);
         GaiaSet gaiaSet = GaiaSet.fromGaiaScene(gaiaScene);

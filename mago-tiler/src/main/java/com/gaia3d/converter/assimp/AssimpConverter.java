@@ -1,12 +1,13 @@
 package com.gaia3d.converter.assimp;
 
+import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.basic.types.TextureType;
-import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.geometry.GaiaSceneTempGroup;
 import com.gaia3d.util.ImageUtils;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
@@ -28,14 +29,22 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * A class that converts a file to a GaiaScene object using Assimp.
  */
 @Slf4j
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class AssimpConverter implements Converter {
-    public final int DEFAULT_FLAGS = Assimp.aiProcess_GenNormals | Assimp.aiProcess_Triangulate | Assimp.aiProcess_JoinIdenticalVertices | Assimp.aiProcess_CalcTangentSpace | Assimp.aiProcess_SortByPType;
+
+    private final AssimpConverterOptions options;
+
+    public final int DEFAULT_FLAGS = Assimp.aiProcess_GenNormals |
+            Assimp.aiProcess_Triangulate |
+            Assimp.aiProcess_JoinIdenticalVertices |
+            Assimp.aiProcess_CalcTangentSpace |
+            Assimp.aiProcess_SortByPType;
 
     public List<GaiaScene> load(String filePath) {
         return load(new File(filePath));
@@ -55,18 +64,23 @@ public class AssimpConverter implements Converter {
         AIScene aiScene = Assimp.aiImportFile(file.getAbsolutePath(), DEFAULT_FLAGS);
 
         assert aiScene != null;
-        GaiaScene gaiaScene = convertScene(aiScene, path, file.getName());
-        gaiaScene.setOriginalPath(file.toPath());
 
-        GaiaAttribute attribute = new GaiaAttribute();
-        attribute.setIdentifier(UUID.randomUUID());
-        attribute.setFileName(file.getName());
-        attribute.setNodeName(gaiaScene.getNodes().get(0).getName());
-
-        gaiaScene.setAttribute(attribute);
-
+        // TODO : Handle multiple scenes in a single file
         List<GaiaScene> gaiaScenes = new ArrayList<>();
-        gaiaScenes.add(gaiaScene);
+        if (options.isSplitByNode()) {
+            gaiaScenes = convertScenes(file, aiScene, path);
+        } else {
+            GaiaScene gaiaScene = convertScene(aiScene, path, file.getName());
+            gaiaScene.setOriginalPath(file.toPath());
+
+            GaiaAttribute attribute = new GaiaAttribute();
+            attribute.setIdentifier(UUID.randomUUID());
+            attribute.setFileName(file.getName());
+            attribute.setNodeName(gaiaScene.getNodes().get(0).getName());
+            gaiaScene.setAttribute(attribute);
+
+            gaiaScenes.add(gaiaScene);
+        }
 
         Assimp.aiFreeScene(aiScene);
         return gaiaScenes;
@@ -96,6 +110,66 @@ public class AssimpConverter implements Converter {
         matrix4.m32(aiMatrix4x4.c4());
         matrix4.m33(aiMatrix4x4.d4());
         return matrix4;
+    }
+
+    /**
+     * Multiple scenes can be present in a single file, such as glTF files.
+     */
+    private List<GaiaScene> convertScenes(File file, AIScene aiScene, String filePath) {
+        String fileName = file.getName();
+        Path originalPath = file.toPath();
+
+        FormatType formatType = FormatType.fromExtension(FilenameUtils.getExtension(fileName));
+        GaiaScene gaiaScene = new GaiaScene();
+        AINode aiNode = aiScene.mRootNode();
+        List<String> embeddedTextures = getEmbeddedTexturePath(aiScene, filePath, fileName);
+
+        // convert materials
+        int numMaterials = aiScene.mNumMaterials();
+        PointerBuffer aiMaterials = aiScene.mMaterials();
+        for (int i = 0; i < numMaterials; i++) {
+            assert aiMaterials != null;
+            AIMaterial aiMaterial = AIMaterial.create(aiMaterials.get(i));
+            gaiaScene.getMaterials().add(processMaterial(aiMaterial, filePath, embeddedTextures));
+        }
+
+        assert aiNode != null;
+        GaiaNode node = processNode(gaiaScene, aiScene, aiNode, null, formatType);
+
+        List<GaiaScene> gaiaScenes = new ArrayList<>();
+        for (GaiaNode childNode : node.getChildren()) {
+            GaiaScene newScene = new GaiaScene();
+            newScene.setOriginalPath(originalPath);
+
+            List<GaiaMaterial> materials = gaiaScene.getMaterials();
+            materials = materials.stream().map(GaiaMaterial::clone).collect(Collectors.toList());
+            newScene.setMaterials(materials);
+            gaiaScenes.add(newScene);
+
+            GaiaNode rootNode = new GaiaNode();
+            node.setName(node.getName());
+            node.setParent(null);
+            node.setTransformMatrix(new Matrix4d().identity());
+            rootNode.recalculateTransform();
+
+            GaiaAttribute attribute = new GaiaAttribute();
+            attribute.setIdentifier(UUID.randomUUID());
+            attribute.setFileName(file.getName());
+            attribute.setNodeName(childNode.getName());
+            newScene.setAttribute(attribute);
+
+            List<GaiaNode> nodes = new ArrayList<>();
+            nodes.add(childNode);
+            rootNode.setChildren(nodes);
+            newScene.getNodes().add(rootNode);
+
+            GaiaBoundingBox boundingBox = rootNode.getBoundingBox(null);
+            double geometricError = boundingBox.getLongestDistance();
+            attribute.getAttributes().put("geometricError", String.valueOf(geometricError));
+
+            log.debug("Bounding Box for Node {}: {}", childNode.getName(), boundingBox);
+        }
+        return gaiaScenes;
     }
 
     private GaiaScene convertScene(AIScene aiScene, String filePath, String fileName) {
