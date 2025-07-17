@@ -237,6 +237,8 @@ public class GaiaStrictTranslation implements PreProcess {
         TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
         if (tileTransformInfo == null) {
             tileTransformInfo = TileTransformInfo.builder().position(position).build();
+        } else {
+            tileTransformInfo.setPosition(position);
         }
         return tileTransformInfo;
     }
