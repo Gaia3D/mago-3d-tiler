@@ -135,8 +135,6 @@ public class AssimpConverter implements Converter {
         String fileName = file.getName();
         Path originalPath = file.toPath();
 
-        TransformBaker transformBaker = new TransformBaker();
-
         FormatType formatType = FormatType.fromExtension(FilenameUtils.getExtension(fileName));
         GaiaScene gaiaScene = new GaiaScene();
 
@@ -154,13 +152,8 @@ public class AssimpConverter implements Converter {
 
         assert aiNode != null;
         GaiaNode node = processNode(gaiaScene, aiScene, aiNode, null, formatType);
-        //transformBaker.bake(node);
-
-        List<GaiaNode> allNodes = new ArrayList<>();
-        getAllNodes(allNodes, node, null);
-
         List<GaiaScene> gaiaScenes = new ArrayList<>();
-        for (GaiaNode childNode : allNodes) {
+        for (GaiaNode childNode : node.getChildren()) {
             GaiaScene newScene = new GaiaScene();
             newScene.setOriginalPath(originalPath);
 
@@ -174,8 +167,7 @@ public class AssimpConverter implements Converter {
             GaiaNode rootNode = new GaiaNode();
             node.setName(node.getName());
             node.setParent(null);
-            node.setTransformMatrix(transformMatrix);
-            //node.setTransformMatrix(new Matrix4d().identity());
+            node.setTransformMatrix(new Matrix4d().identity());
             rootNode.recalculateTransform();
 
             GaiaAttribute attribute = new GaiaAttribute();
