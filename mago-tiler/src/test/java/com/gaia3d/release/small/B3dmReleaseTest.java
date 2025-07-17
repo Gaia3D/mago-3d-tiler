@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 class B3dmReleaseTest {
 
     @Test
-    void batched00() {
+    void batched00A() {
         String path = "B00-up-axis-glb";
         String[] args = new String[] {
                 "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
@@ -21,11 +21,23 @@ class B3dmReleaseTest {
     }
 
     @Test
-    void batched00D() {
+    void batched00B() {
         String path = "B00-up-axis-glb";
         String[] args = new String[] {
                 "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath() + "-degree",
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath() + "-z-up",
+                "-c", "5186",
+                "-rotateXAxis", "90",
+        };
+        ReleaseTestConfig.execute(args);
+    }
+
+    @Test
+    void batched00C() {
+        String path = "B00-up-axis-glb";
+        String[] args = new String[] {
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath() + "-manual",
                 //"-c", "5186",
                 "-lon", "127.0",
                 "-lat", "37.0",
@@ -210,7 +222,7 @@ class B3dmReleaseTest {
                 "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 //"-c", "5186",
-                "-rotateXAxis", "-90",
+                //"-rotateXAxis", "-90",
         };
         ReleaseTestConfig.execute(args);
     }
@@ -314,6 +326,19 @@ class B3dmReleaseTest {
                 "-heightColumn", "rel_height",
                 "-terrain", ReleaseTestConfig.getInputPath("I10-forest-purdue-original-gpkg4").getAbsolutePath() + "/hamilton_dem_navd88_meters_4326.tif",
                 "-crs", "4326",
+        };
+        ReleaseTestConfig.execute(args);
+    }
+
+    @Disabled
+    @Test
+    void batched100() {
+        String path = "B100-cartesian-sample";
+        String[] args = new String[] {
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-rotateXAxis", "90",
+                "-crs", "4978",
         };
         ReleaseTestConfig.execute(args);
     }

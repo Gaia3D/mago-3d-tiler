@@ -128,9 +128,6 @@ public class GlobalOptions {
     // leave temporary files flag
     private boolean isLeaveTemp = false;
 
-    // TODO : Experimental Option
-    private boolean isSplitByNode = false;
-
     private boolean gltf = false;
     private boolean glb = false;
     private boolean classicTransformMatrix = false;
@@ -151,9 +148,10 @@ public class GlobalOptions {
     private boolean ignoreTextures = false; // ignore textures flag
 
     // [Experimental] 3D Data Options
-    private boolean largeMesh = false; // [Experimental] large mesh splitting mode flag
-    private boolean voxelLod = false; // [Experimental] voxel level of detail flag
+    //private boolean largeMesh = false; // [Experimental] large mesh splitting mode flag
+    //private boolean voxelLod = false; // [Experimental] voxel level of detail flag
     private boolean isPhotogrammetry = false; // [Experimental] isPhotogrammetry mode flag
+    private boolean isSplitByNode = false; // [Experimental] split by node flag
 
     /* 2D Data Column Options */
     private String heightColumn;
@@ -344,8 +342,8 @@ public class GlobalOptions {
         instance.setMaxTriangles(DEFAULT_MAX_TRIANGLES);
         instance.setMaxInstance(DEFAULT_MAX_INSTANCE);
         instance.setMaxNodeDepth(DEFAULT_MAX_NODE_DEPTH);
-        instance.setLargeMesh(command.hasOption(ProcessOptions.LARGE_MESH.getLongName()));
-        instance.setVoxelLod(command.hasOption(ProcessOptions.VOXEL_LOD.getLongName()));
+        //instance.setLargeMesh(command.hasOption(ProcessOptions.LARGE_MESH.getLongName()));
+        //instance.setVoxelLod(command.hasOption(ProcessOptions.VOXEL_LOD.getLongName()));
         instance.setPhotogrammetry(command.hasOption(ProcessOptions.PHOTOGRAMMETRY.getLongName()));
         instance.setLeaveTemp(command.hasOption(ProcessOptions.LEAVE_TEMP.getLongName()));
         instance.setUseQuantization(command.hasOption(ProcessOptions.MESH_QUANTIZATION.getLongName()) || DEFAULT_USE_QUANTIZATION);
@@ -493,8 +491,8 @@ public class GlobalOptions {
         log.info("Max Triangles: {}", maxTriangles);
         log.info("Max Instance Size: {}", maxInstance);
         log.info("Max Node Depth: {}", maxNodeDepth);
-        log.info("LargeMesh: {}", largeMesh);
-        log.info("Voxel LOD: {}", voxelLod);
+        //log.info("LargeMesh: {}", largeMesh);
+        //log.info("Voxel LOD: {}", voxelLod);
         log.info("isPhotogrammetry: {}", isPhotogrammetry);
         log.info("PointCloud Ratio: {}", pointRatio);
         log.info("Point Cloud Horizontal Grid: {}", POINTSCLOUD_HORIZONTAL_GRID);

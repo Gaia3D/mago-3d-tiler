@@ -25,10 +25,10 @@ import java.util.List;
 @Slf4j
 public class PointCloudProcessFlow implements ProcessFlow {
     private static final String MODEL_NAME = "PointCloudProcessFlow";
+    private final GlobalOptions globalOptions = GlobalOptions.getInstance();
 
     @Override
     public void run() throws IOException {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
         LasConverter converter = new LasConverter();
         PointCloudTempGenerator generator = new PointCloudTempGenerator(converter);
         PointCloudFileLoader fileLoader = new PointCloudFileLoader(converter, generator);

@@ -30,6 +30,25 @@ class RealisticReleaseTest {
 
     @Disabled
     @Test
+    void realistic01V1() {
+        String path = "R01-bansong-part-obj";
+        String[] args = new String[] {
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath() + "-V1",
+                "-it", "obj",
+                "-log", ReleaseTestConfig.getLogPath(path).getAbsolutePath(),
+                "-pg",
+                "-c", "5187",
+                "-leaveTemp",
+                "-rotateX", "90",
+                "-tilesVersion", "1.0",
+                //"-debug",
+        };
+        ReleaseTestConfig.execute(args);
+    }
+
+    @Disabled
+    @Test
     void realistic01() {
         String path = "R01-bansong-part-obj";
         String[] args = new String[] {

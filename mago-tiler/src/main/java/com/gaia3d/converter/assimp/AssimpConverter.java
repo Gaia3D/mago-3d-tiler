@@ -6,6 +6,7 @@ import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.geometry.GaiaSceneTempGroup;
+import com.gaia3d.process.preprocess.sub.TransformBaker;
 import com.gaia3d.util.ImageUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -111,6 +112,22 @@ public class AssimpConverter implements Converter {
         return matrix4;
     }
 
+    private void getAllNodes(List<GaiaNode> nodes, GaiaNode node, Matrix4d parentTransform) {
+        Matrix4d selfTransform = new Matrix4d(node.getTransformMatrix());
+        if (parentTransform != null) {
+            parentTransform.mul(selfTransform, selfTransform);
+            node.setTransformMatrix(selfTransform);
+        }
+
+        for (GaiaNode child : node.getChildren()) {
+            getAllNodes(nodes, child, selfTransform);
+        }
+
+        if (!node.getMeshes().isEmpty()) {
+            nodes.add(node);
+        }
+    }
+
     /**
      * Multiple scenes can be present in a single file, such as glTF files.
      */
@@ -118,8 +135,11 @@ public class AssimpConverter implements Converter {
         String fileName = file.getName();
         Path originalPath = file.toPath();
 
+        TransformBaker transformBaker = new TransformBaker();
+
         FormatType formatType = FormatType.fromExtension(FilenameUtils.getExtension(fileName));
         GaiaScene gaiaScene = new GaiaScene();
+
         AINode aiNode = aiScene.mRootNode();
         List<String> embeddedTextures = getEmbeddedTexturePath(aiScene, filePath, fileName);
 
@@ -134,9 +154,13 @@ public class AssimpConverter implements Converter {
 
         assert aiNode != null;
         GaiaNode node = processNode(gaiaScene, aiScene, aiNode, null, formatType);
+        //transformBaker.bake(node);
+
+        List<GaiaNode> allNodes = new ArrayList<>();
+        getAllNodes(allNodes, node, null);
 
         List<GaiaScene> gaiaScenes = new ArrayList<>();
-        for (GaiaNode childNode : node.getChildren()) {
+        for (GaiaNode childNode : allNodes) {
             GaiaScene newScene = new GaiaScene();
             newScene.setOriginalPath(originalPath);
 
@@ -145,10 +169,13 @@ public class AssimpConverter implements Converter {
             newScene.setMaterials(materials);
             gaiaScenes.add(newScene);
 
+            Matrix4d transformMatrix = new Matrix4d(node.getTransformMatrix());
+
             GaiaNode rootNode = new GaiaNode();
             node.setName(node.getName());
             node.setParent(null);
-            node.setTransformMatrix(new Matrix4d().identity());
+            node.setTransformMatrix(transformMatrix);
+            //node.setTransformMatrix(new Matrix4d().identity());
             rootNode.recalculateTransform();
 
             GaiaAttribute attribute = new GaiaAttribute();
@@ -157,6 +184,7 @@ public class AssimpConverter implements Converter {
             attribute.setNodeName(childNode.getName());
             newScene.setAttribute(attribute);
 
+            childNode.setTransformMatrix(new Matrix4d().identity());
             List<GaiaNode> nodes = new ArrayList<>();
             nodes.add(childNode);
             rootNode.setChildren(nodes);

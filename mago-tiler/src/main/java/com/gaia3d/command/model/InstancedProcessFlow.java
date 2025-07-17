@@ -33,10 +33,10 @@ import java.util.List;
 @Slf4j
 public class InstancedProcessFlow implements ProcessFlow {
     private static final String MODEL_NAME = "InstancedProcessFlow";
+    private final GlobalOptions globalOptions = GlobalOptions.getInstance();
 
     @Override
     public void run() throws IOException {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
         FormatType inputFormat = globalOptions.getInputFormat();
         Converter converter = getConverter(inputFormat);
         AttributeReader kmlReader = getAttributeReader(inputFormat);
@@ -86,6 +86,7 @@ public class InstancedProcessFlow implements ProcessFlow {
     private Converter getConverter(FormatType formatType) {
         AssimpConverterOptions options = AssimpConverterOptions.builder()
                 .build();
+        options.setSplitByNode(globalOptions.isSplitByNode());
         return new AssimpConverter(options);
     }
 
