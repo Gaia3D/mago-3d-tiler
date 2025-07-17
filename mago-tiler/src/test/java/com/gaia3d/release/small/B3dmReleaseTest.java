@@ -329,17 +329,4 @@ class B3dmReleaseTest {
         };
         ReleaseTestConfig.execute(args);
     }
-
-    @Disabled
-    @Test
-    void batched100() {
-        String path = "B100-cartesian-sample";
-        String[] args = new String[] {
-                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-rotateXAxis", "90",
-                "-crs", "4978",
-        };
-        ReleaseTestConfig.execute(args);
-    }
 }

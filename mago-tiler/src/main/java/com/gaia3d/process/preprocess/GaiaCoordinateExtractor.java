@@ -9,6 +9,8 @@ import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.GlobeUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.geotools.geopkg.Tile;
+import org.joml.Matrix3d;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
@@ -25,10 +27,22 @@ public class GaiaCoordinateExtractor implements PreProcess {
     @Override
     public TileInfo run(TileInfo tileInfo) {
         GaiaScene scene = tileInfo.getScene();
+        TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
+
+        CoordinateReferenceSystem sourceCrs = globalOptions.getCrs();
+        if (sourceCrs != null && sourceCrs.getName().equals("EPSG:4978")) {
+            log.info("[INFO] Using EPSG:4978 coordinate system.");
+            return extractCartesian(tileInfo);
+        }
+        return extractAndLocalize(tileInfo);
+    }
+
+    private TileInfo extractAndLocalize(TileInfo tileInfo) {
+        GaiaScene scene = tileInfo.getScene();
+        TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
 
         List<GaiaNode> nodes = scene.getNodes();
         Vector3d sourceCenter = getOrigin(scene);
-        TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
 
         sourceCenter = new Vector3d(sourceCenter); // Ensure we have a mutable copy
 
@@ -37,37 +51,69 @@ public class GaiaCoordinateExtractor implements PreProcess {
         tileTransformInfo.setPosition(targetCenter);
 
         Vector3d translation = new Vector3d(-sourceCenter.x, -sourceCenter.y, -sourceCenter.z);
-        //Matrix4d translationMatrix = new Matrix4d().translate(translation);
+        Matrix4d translationMatrix = new Matrix4d().translate(translation);
+
         for (GaiaNode node : nodes) {
             Matrix4d transform = node.getTransformMatrix();
-            transform.translate(translation);
-            //transform.mul(translationMatrix);
+            transform.mul(translationMatrix);
             node.setTransformMatrix(transform);
         }
         tileInfo.updateSceneInfo();
         return tileInfo;
     }
 
+    private TileInfo extractCartesian(TileInfo tileInfo) {
+        GaiaScene scene = tileInfo.getScene();
+        TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
+
+        List<GaiaNode> nodes = scene.getNodes();
+        GaiaBoundingBox boundingBox = scene.updateBoundingBox();
+        Vector3d sourceCenter = new Vector3d(boundingBox.getCenter());
+        Vector3d translation = sourceCenter.negate(new Vector3d());
+
+        //Vector3d cartographic = GlobeUtils.cartesianToGeographicWgs84(sourceCenter);
+        //tileTransformInfo.setPosition(cartographic);
+        tileTransformInfo.setPosition(sourceCenter);
+
+        //Matrix4d worldTransformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(cartographic);
+        //Matrix3d rotation = new Matrix3d(worldTransformMatrix);
+        //rotation.normal();
+        //rotation = clampEpsilonMatrix(rotation);
+        //log.info("[INFO] Using EPSG:4978 coordinate system. Center: {} -> {}", sourceCenter, cartographic);
+
+        Matrix4d transformMatrix = new Matrix4d().identity();
+        transformMatrix.setTranslation(translation);
+        for (GaiaNode node : nodes) {
+            Matrix4d transform = node.getTransformMatrix();
+            transform.mul(transformMatrix, transform);
+            node.setTransformMatrix(transform);
+        }
+        tileInfo.updateSceneInfo();
+        return tileInfo;
+    }
+
+
     private Vector3d getOrigin(GaiaScene scene) {
         Vector3d sourceCenter = new Vector3d(0.0d, 0.0d, 0.0d);
         FormatType formatType = globalOptions.getInputFormat();
         boolean isParametric = formatType == FormatType.CITYGML || formatType == FormatType.INDOORGML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON || formatType == FormatType.GEO_PACKAGE;
         if (isParametric) {
-            //Vector3d translation = scene.getTranslation();
-            //sourceCenter.set(translation);
+
         } else if (formatType == FormatType.KML) {
-            log.info("[INFO] KML format does not support coordinate extraction. Using default origin (0,0,0).");
+
         } else {
             GaiaBoundingBox boundingBox = scene.updateBoundingBox();
             sourceCenter = new Vector3d(boundingBox.getCenter());
         }
+
         sourceCenter.z = 0.0d;
         return sourceCenter;
     }
 
     private Vector3d extractDegree(TileTransformInfo tileTransformInfo, GaiaScene scene) {
+        CoordinateReferenceSystem sourceCrs = globalOptions.getCrs();
+
         Vector3d degreeCenter = new Vector3d(0.0d, 0.0d, 0.0d);
-        CoordinateReferenceSystem source = globalOptions.getCrs();
         FormatType formatType = globalOptions.getInputFormat();
         boolean isParametric = globalOptions.isParametric();
         if (isParametric) {
@@ -79,14 +125,50 @@ public class GaiaCoordinateExtractor implements PreProcess {
         } else {
             GaiaBoundingBox boundingBox = scene.updateBoundingBox();
             Vector3d boxCenter = boundingBox.getCenter();
-            if (source != null) {
+            if (sourceCrs != null && sourceCrs.getName().equals("EPSG:4978")) {
+                degreeCenter = GlobeUtils.cartesianToGeographicWgs84(boxCenter);
+                log.info("[INFO] Using EPSG:4978 coordinate system. Center: {} -> {}", boxCenter, degreeCenter);
+            } else if (sourceCrs != null) {
                 ProjCoordinate centerSource = new ProjCoordinate(boxCenter.x, boxCenter.y, boxCenter.z);
-                ProjCoordinate centerWgs84 = GlobeUtils.transform(source, centerSource);
+                ProjCoordinate centerWgs84 = GlobeUtils.transform(sourceCrs, centerSource);
                 degreeCenter = new Vector3d(centerWgs84.x, centerWgs84.y, 0);
             } else {
                 degreeCenter = new Vector3d(boxCenter.x, boxCenter.y, 0);
             }
         }
         return degreeCenter;
+    }
+
+    private Matrix3d clampEpsilonMatrix(Matrix3d matrix) {
+        double epsilon = 1e-1;
+        Matrix3d clampedMatrix = new Matrix3d(matrix);
+        clampedMatrix.m00(clampEpsilon(matrix.m00(), epsilon));
+        clampedMatrix.m01(clampEpsilon(matrix.m01(), epsilon));
+        clampedMatrix.m02(clampEpsilon(matrix.m02(), epsilon));
+
+        clampedMatrix.m10(clampEpsilon(matrix.m10(), epsilon));
+        clampedMatrix.m11(clampEpsilon(matrix.m11(), epsilon));
+        clampedMatrix.m12(clampEpsilon(matrix.m12(), epsilon));
+
+        clampedMatrix.m20(clampEpsilon(matrix.m20(), epsilon));
+        clampedMatrix.m21(clampEpsilon(matrix.m21(), epsilon));
+        clampedMatrix.m22(clampEpsilon(matrix.m22(), epsilon));
+
+        return clampedMatrix;
+    }
+
+    public static double clampEpsilon(double value, double epsilon) {
+        if (Math.abs(value) < epsilon) {
+            return 0.0f;
+        } else if (Math.abs(value - 1.0f) < epsilon) {
+            return 1.0f;
+        } else if (Math.abs(value + 1.0f) < epsilon) {
+            return -1.0f;
+        } else if (value > 1.0f) {
+            return 1.0f;
+        } else if (value < -1.0f) {
+            return -1.0f;
+        }
+        return value;
     }
 }

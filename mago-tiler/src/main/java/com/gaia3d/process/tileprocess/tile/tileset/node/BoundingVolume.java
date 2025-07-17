@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.locationtech.proj4j.ProjCoordinate;
 
@@ -56,6 +57,7 @@ public class BoundingVolume implements Serializable {
         double halfX = lengthX / 2;
         double halfY = lengthY / 2;
         double halfZ = lengthZ / 2;
+        double maxLength = Math.max(Math.max(halfX, halfY), halfZ);
         this.setType(type);
         if (BoundingVolumeType.REGION == type) {
             region = new double[6];
@@ -78,17 +80,17 @@ public class BoundingVolume implements Serializable {
             box[1] = center.y;
             box[2] = center.z;
             // halfX
-            box[3] = halfX;
+            box[3] = maxLength;
             box[4] = 0;
             box[5] = 0;
             // halfY
             box[6] = 0;
-            box[7] = halfY;
+            box[7] = maxLength;
             box[8] = 0;
             // halfZ
             box[9] = 0;
             box[10] = 0;
-            box[11] = halfZ;
+            box[11] = maxLength;
         } else if (BoundingVolumeType.SPHERE == type) {
             sphere = new double[4];
             sphere[0] = center.x;
@@ -138,7 +140,6 @@ public class BoundingVolume implements Serializable {
             double midX = (minX + maxX) / 2;
             double midY = (minY + maxY) / 2;
             for (TileInfo tileInfo : tileInfos) {
-                //GaiaScene scene = tileInfo.getScene();
                 GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();
 
                 TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
@@ -160,12 +161,86 @@ public class BoundingVolume implements Serializable {
                     }
                 }
             }
+        } else if (BoundingVolumeType.BOX == type) {
+            double centerX = box[0];
+            double centerY = box[1];
+            double centerZ = box[2];
+            double halfX1 = box[3];
+            double halfY1 = box[6];
+            double halfZ1 = box[9];
+            double halfX2 = box[4];
+            double halfY2 = box[7];
+            double halfZ2 = box[10];
+            double halfX3 = box[5];
+            double halfY3 = box[8];
+            double halfZ3 = box[11];
+
+
+            Vector3d halfVector1 = new Vector3d(halfX1, halfY1, halfZ1);
+            Vector3d halfVector2 = new Vector3d(halfX2, halfY2, halfZ2);
+            Vector3d halfVector3 = new Vector3d(halfX3, halfY3, halfZ3);
+            Matrix4d transformMatrix = new Matrix4d()
+                    .identity()
+                    .translate(centerX, centerY, centerZ)
+                    .scale(halfVector1.x(), halfVector1.y(), halfVector1.z())
+                    .rotateX(Math.toRadians(-90))
+                    .scale(halfVector2.x(), halfVector2.y(), halfVector2.z())
+                    .scale(halfVector3.x(), halfVector3.y(), halfVector3.z());
+
+
+
+            GaiaBoundingBox boundingBox = new GaiaBoundingBox();
+            boundingBox.addPoint(centerX - halfX1, centerY - halfY1, centerZ - halfZ1);
+            boundingBox.addPoint(centerX - halfX2, centerY - halfY2, centerZ - halfZ2);
+            boundingBox.addPoint(centerX + halfX3, centerY + halfY3, centerZ + halfZ3);
+
+            for (TileInfo tileInfo : tileInfos) {
+                GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();
+                TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
+                Vector3d worldCartesian = tileTransformInfo.getPosition();
+
+                BoundingVolume localBoundingVolume = new BoundingVolume(localBoundingBox, BoundingVolume.BoundingVolumeType.BOX);
+                Vector3d center = localBoundingVolume.calcCenter();
+
+                center.add(worldCartesian, center);
+
+                double minX = boundingBox.getMinX();
+                double minY = boundingBox.getMinY();
+                double maxX = boundingBox.getMaxX();
+                double maxY = boundingBox.getMaxY();
+                if (center.x() < minX + (maxX - minX) / 2) {
+                    if (center.y() < minY + (maxY - minY) / 2) {
+                        result.get(3).add(tileInfo); // Bottom Left
+                    } else {
+                        result.get(0).add(tileInfo); // Top Left
+                    }
+                } else {
+                    if (center.y() < minY + (maxY - minY) / 2) {
+                        result.get(2).add(tileInfo); // Bottom Right
+                    } else {
+                        result.get(1).add(tileInfo); // Top Right
+                    }
+                }
+            }
+        } else {
+            log.error("Unsupported bounding volume type: {}", type);
+            throw new IllegalArgumentException("Unsupported bounding volume type: " + type);
         }
         return result;
     }
 
     public Vector3d calcCenter() {
-        return new Vector3d((region[0] + region[2]) / 2, (region[1] + region[3]) / 2, (region[4] + region[5]) / 2);
+        if (BoundingVolumeType.REGION == type) {
+            return new Vector3d((region[0] + region[2]) / 2, (region[1] + region[3]) / 2, (region[4] + region[5]) / 2);
+        } else if (BoundingVolumeType.BOX == type) {
+            return new Vector3d(box[0], box[1], box[2]);
+        } else if (BoundingVolumeType.SPHERE == type) {
+            return new Vector3d(sphere[0], sphere[1], sphere[2]);
+        } else {
+            log.error("Unsupported bounding volume type: {}", type);
+            throw new IllegalArgumentException("Unsupported bounding volume type: " + type);
+        }
+        //return new Vector3d((region[0] + region[2]) / 2, (region[1] + region[3]) / 2, (region[4] + region[5]) / 2);
     }
 
     /**
@@ -174,22 +249,51 @@ public class BoundingVolume implements Serializable {
      * @return square bounding volume
      */
     public BoundingVolume createSqureBoundingVolume() {
-        double minX = region[0];
-        double minY = region[1];
-        double maxX = region[2];
-        double maxY = region[3];
-        double xLength = maxX - minX;
-        double yLength = maxY - minY;
-        double offset = Math.abs(xLength - yLength);
-        if (xLength > yLength) {
-            maxY = maxY + offset;
+        if (BoundingVolumeType.REGION == type) {
+            double minX = region[0];
+            double minY = region[1];
+            double maxX = region[2];
+            double maxY = region[3];
+            double xLength = maxX - minX;
+            double yLength = maxY - minY;
+            double offset = Math.abs(xLength - yLength);
+            if (xLength > yLength) {
+                maxY = maxY + offset;
+            } else {
+                maxX = maxX + offset;
+            }
+            BoundingVolume boundingVolume = new BoundingVolume(BoundingVolumeType.REGION);
+            boundingVolume.setRegion(new double[]{minX, minY, maxX, maxY, region[4], region[5]});
+            return boundingVolume;
+        } else if (BoundingVolumeType.BOX == type) {
+            double centerX = box[0];
+            double centerY = box[1];
+            double centerZ = box[2];
+            double halfX1 = box[3];
+            double halfY1 = box[6];
+            double halfZ1 = box[9];
+            double halfX2 = box[4];
+            double halfY2 = box[7];
+            double halfZ2 = box[10];
+            double halfX3 = box[5];
+            double halfY3 = box[8];
+            double halfZ3 = box[11];
+
+            double maxLength = Math.max(Math.max(halfX1, halfY1), halfZ1);
+            BoundingVolume boundingVolume = new BoundingVolume(BoundingVolumeType.BOX);
+            boundingVolume.setBox(new double[]{
+                centerX, centerY, centerZ,
+                maxLength, 0, 0,
+                0, maxLength, 0,
+                0, 0, maxLength
+            });
+            return boundingVolume;
         } else {
-            maxX = maxX + offset;
+            log.error("Unsupported bounding volume type: {}", type);
+            throw new IllegalArgumentException("Unsupported bounding volume type: " + type);
         }
-        BoundingVolume boundingVolume = new BoundingVolume(BoundingVolumeType.REGION);
-        boundingVolume.setRegion(new double[]{minX, minY, maxX, maxY, region[4], region[5]});
-        return boundingVolume;
     }
 }
+
 
 

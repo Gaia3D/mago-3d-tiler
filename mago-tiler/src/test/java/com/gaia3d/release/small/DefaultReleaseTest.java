@@ -84,6 +84,19 @@ class DefaultReleaseTest {
     }
 
     @Test
+    void batched01CARTESIAN() {
+        String path = "B01-wangsuk2-3ds";
+        String[] args = new String[] {
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath() + "-CARTESIAN",
+                "-crs", "4978",
+                //"-rotateXAxis", "90",
+                //"-debug",
+        };
+        ReleaseTestConfig.execute(args);
+    }
+
+    @Test
     void instanced06V1() {
         String path = "I04-forest-shp";
         String[] args = new String[] {

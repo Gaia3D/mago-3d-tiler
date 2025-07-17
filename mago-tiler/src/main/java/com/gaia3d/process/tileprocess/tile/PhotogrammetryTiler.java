@@ -58,7 +58,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         if (tileInfos.isEmpty()) {
             throw new TileProcessingException("Error : tileInfos is empty.");
         }
-        GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
+        GaiaBoundingBox globalBoundingBox = calcCartographicBoundingBox(tileInfos);
 
         // make globalBoundingBox as square
         double minLonDeg = globalBoundingBox.getMinX();
@@ -96,7 +96,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         globalBoundingBox.setMaxZ(globalBoundingBox.getMinZ() + desiredDistanceBetweenLat);// make CUBE boundingBox
         globalBoundingBox = new GaiaBoundingBox(minLonDeg, minLatDeg, globalBoundingBox.getMinZ(), maxLonDeg, maxLatDeg, globalBoundingBox.getMaxZ(), false);
 
-        Matrix4d transformMatrix = getTransformMatrix(globalBoundingBox);
+        Matrix4d transformMatrix = getTransformMatrixFromCartographic(globalBoundingBox);
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);
         }
@@ -1655,8 +1655,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         log.info("[Tile][LogicalNode][" + nodeCode + "][OBJECT{}]", tileInfos.size());
 
         double geometricError = calcGeometricError(tileInfos);
-        GaiaBoundingBox boundingBox = calcBoundingBox(tileInfos);
-        Matrix4d transformMatrix = getTransformMatrix(boundingBox);
+        GaiaBoundingBox boundingBox = calcCartographicBoundingBox(tileInfos);
+        Matrix4d transformMatrix = getTransformMatrixFromCartographic(boundingBox);
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);
         }
@@ -1690,8 +1690,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 }
             }
 
-            GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos); // cartographicBBox
-            Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
+            GaiaBoundingBox childBoundingBox = calcCartographicBoundingBox(tileInfos); // cartographicBBox
+            Matrix4d transformMatrix = getTransformMatrixFromCartographic(childBoundingBox);
             if (globalOptions.isClassicTransformMatrix()) {
                 rotateX90(transformMatrix);
             }
@@ -1747,8 +1747,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         int maxLevel = globalOptions.getMaxLod();
         boolean refineAdd = globalOptions.isRefineAdd();
 
-        GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
-        Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
+        GaiaBoundingBox childBoundingBox = calcCartographicBoundingBox(tileInfos);
+        Matrix4d transformMatrix = getTransformMatrixFromCartographic(childBoundingBox);
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);
         }

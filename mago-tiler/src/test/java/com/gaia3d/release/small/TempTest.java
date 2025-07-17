@@ -1,5 +1,6 @@
 package com.gaia3d.release.small;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class TempTest {
@@ -49,6 +50,21 @@ public class TempTest {
                 "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-debug",
                 "-c", "4326",
+        };
+        ReleaseTestConfig.execute(args);
+    }
+
+    // EPSG:4978 is a common 3D coordinate system (cartesian coordinate system)
+    // ECEF(Earth-Centered Earth-Fixed)
+    @Disabled
+    @Test
+    void batched100() {
+        String path = "B100-cartesian-sample";
+        String[] args = new String[] {
+                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-crs", "4978",
+                //"-rotateXAxis", "90",
         };
         ReleaseTestConfig.execute(args);
     }
