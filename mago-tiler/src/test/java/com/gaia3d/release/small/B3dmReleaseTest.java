@@ -240,8 +240,8 @@ class B3dmReleaseTest {
                 "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 //"-rotateX", "90",
                 "--crs", "3011",
-                "--xOffset", "151400",
-                "--yOffset", "6577000",
+                //"--xOffset", "151400",
+                //"--yOffset", "6577000",
                 //"-debug"
         };
         ReleaseTestConfig.execute(args);
@@ -254,8 +254,8 @@ class B3dmReleaseTest {
                 "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 "--crs", "3011",
-                "--xOffset", "151400",
-                "--yOffset", "6577000",
+                //"--xOffset", "151400",
+                //"--yOffset", "6577000",
                 //"-debug"
         };
         ReleaseTestConfig.execute(args);
