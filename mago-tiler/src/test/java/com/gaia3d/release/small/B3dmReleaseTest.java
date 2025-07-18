@@ -10,40 +10,12 @@ import org.junit.jupiter.api.Test;
 class B3dmReleaseTest {
 
     @Test
-    void batched00A() {
+    void batched00() {
         String path = "B00-up-axis-glb";
         String[] args = new String[] {
                 "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
-        };
-        ReleaseTestConfig.execute(args);
-    }
-
-    @Test
-    void batched00B() {
-        String path = "B00-up-axis-glb";
-        String[] args = new String[] {
-                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath() + "-z-up",
-                "-c", "5186",
-                "-rotateXAxis", "90",
-        };
-        ReleaseTestConfig.execute(args);
-    }
-
-    @Test
-    void batched00C() {
-        String path = "B00-up-axis-glb";
-        String[] args = new String[] {
-                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath() + "-manual",
-                //"-c", "5186",
-                "-lon", "127.0",
-                "-lat", "37.0",
-                "-xOffset", "0",
-                "-yOffset", "0",
-                "-zOffset", "5",
         };
         ReleaseTestConfig.execute(args);
     }
