@@ -1,7 +1,6 @@
 package com.gaia3d.converter.geometry.geojson;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.geometry.tessellator.GaiaExtruder;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.command.mago.AttributeFilter;
 import com.gaia3d.command.mago.GlobalOptions;
@@ -152,7 +151,7 @@ public class GeoJsonSurfaceConverter extends AbstractGeometryConverter implement
                             z = coordinate.getZ();
 
                             Vector3d position;
-                            CoordinateReferenceSystem crs = globalOptions.getCrs();
+                            CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
                             if (crs != null && !crs.getName().equals("EPSG:4326")) {
                                 ProjCoordinate projCoordinate = new ProjCoordinate(x, y, boundingBox.getMinZ());
                                 ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
@@ -181,7 +180,7 @@ public class GeoJsonSurfaceConverter extends AbstractGeometryConverter implement
                         z = coordinate.getZ();
 
                         Vector3d position;
-                        CoordinateReferenceSystem crs = globalOptions.getCrs();
+                        CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
                         if (crs != null && !crs.getName().equals("EPSG:4326")) {
                             ProjCoordinate projCoordinate = new ProjCoordinate(x, y, boundingBox.getMinZ());
                             ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);

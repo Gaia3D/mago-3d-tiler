@@ -89,7 +89,7 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                         double z = Double.parseDouble(vectors[2]) * scale;
 
                         Vector3d wgs84Position = new Vector3d(x, y, z);
-                        CoordinateReferenceSystem crs = globalOptions.getCrs();
+                        CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
                         if (crs != null) {
                             ProjCoordinate projCoordinate = new ProjCoordinate(x, y, boundingBox.getMinZ());
                             ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);

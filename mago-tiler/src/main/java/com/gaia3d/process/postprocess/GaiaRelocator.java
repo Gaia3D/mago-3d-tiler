@@ -20,7 +20,7 @@ public class GaiaRelocator implements PostProcess {
     public ContentInfo run(ContentInfo contentInfo) {
 
         GlobalOptions options = GlobalOptions.getInstance();
-        CoordinateReferenceSystem sourceCrs = options.getCrs();
+        CoordinateReferenceSystem sourceCrs = options.getSourceCrs();
         if (sourceCrs != null && sourceCrs.getName().equals("EPSG:4978")) {
             return relocateCartesian(contentInfo);
         } else {

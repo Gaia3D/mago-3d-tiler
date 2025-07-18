@@ -87,7 +87,7 @@ public class PointCloudTempGenerator {
     private GaiaPointCloudHeader readAllHeaders(List<File> fileList) {
         log.info("[Pre] Reading headers of all files");
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-        CoordinateReferenceSystem crs = globalOptions.getCrs();
+        CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
 
         float horizontalGridSize;
         float verticalGridSize;

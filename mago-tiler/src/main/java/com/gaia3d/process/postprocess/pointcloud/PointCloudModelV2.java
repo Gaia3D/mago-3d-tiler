@@ -58,7 +58,7 @@ public class PointCloudModelV2 implements ContentModel {
 
         Vector3d originalMinPosition = boundingBox.getMinPosition();
         Vector3d originalMaxPosition = boundingBox.getMaxPosition();
-        CoordinateReferenceSystem source = globalOptions.getCrs();
+        CoordinateReferenceSystem source = globalOptions.getSourceCrs();
         BasicCoordinateTransform transformer = new BasicCoordinateTransform(source, GlobeUtils.wgs84);
 
         ProjCoordinate transformedMinCoordinate = transformer.transform(new ProjCoordinate(originalMinPosition.x, originalMinPosition.y, originalMinPosition.z), new ProjCoordinate());

@@ -52,7 +52,7 @@ public class GlobalOptions {
     private FormatType inputFormat;
     private FormatType outputFormat;
 
-    private CoordinateReferenceSystem crs;
+    private CoordinateReferenceSystem sourceCrs;
     private CoordinateReferenceSystem targetCrs;
     private String proj;
     private Vector3d translateOffset;
@@ -64,13 +64,14 @@ public class GlobalOptions {
 
     private boolean useQuantization; // Use quantization via KHR_mesh_quantization
 
+    /* Tiling Options */
     // Level of Detail
     private int minLod;
     private int maxLod;
     // Geometric Error
     private int minGeometricError;
     private int maxGeometricError;
-
+    // Tile Options
     private int maxTriangles;
     private int maxInstance;
     private int maxNodeDepth;
@@ -80,31 +81,19 @@ public class GlobalOptions {
     private boolean debugLod = false;
     private boolean isLeaveTemp = false;
 
-    @Deprecated
-    private boolean gltf = false;
     private boolean glb = false;
     private boolean classicTransformMatrix = false;
-
     private byte multiThreadCount = 1;
 
     /* 3D Data Options */
     private boolean recursive = false;
     private double rotateX = 0; // degrees
 
-    @Deprecated
-    private boolean autoUpAxis = false;
-    @Deprecated
-    private boolean swapUpAxis = false;
-    @Deprecated
-    private boolean flipUpAxis = false;
-
     private boolean refineAdd = false; // 3dTiles refine option ADD fix flag
     private boolean flipCoordinate = false; // flip coordinate flag for 2D Data
     private boolean ignoreTextures = false; // ignore textures flag
 
     // [Experimental] 3D Data Options
-    //private boolean largeMesh = false; // [Experimental] large mesh splitting mode flag
-    //private boolean voxelLod = false; // [Experimental] voxel level of detail flag
     private boolean isPhotogrammetry = false; // [Experimental] isPhotogrammetry mode flag
     private boolean isSplitByNode = false; // [Experimental] split by node flag
 
@@ -143,22 +132,22 @@ public class GlobalOptions {
         if (command.getOptions() == null || command.getOptions().length == 0) {
             throw new IllegalArgumentException("Command line argument is empty.");
         }
-        String inputPath = command.getOptionValue(ProcessOptions.INPUT.getLongName());
-        String outputPath = command.getOptionValue(ProcessOptions.OUTPUT.getLongName());
+        String inputPath = command.getOptionValue(ProcessOptions.INPUT_PATH.getLongName());
+        String outputPath = command.getOptionValue(ProcessOptions.OUTPUT_PATH.getLongName());
         if (inputPath == null || outputPath == null) {
             throw new IllegalArgumentException("Please enter the value of the input and output arguments.");
         }
-        File input = new File(command.getOptionValue(ProcessOptions.INPUT.getLongName()));
-        File output = new File(command.getOptionValue(ProcessOptions.OUTPUT.getLongName()));
-        if (command.hasOption(ProcessOptions.INPUT.getLongName())) {
-            instance.setInputPath(command.getOptionValue(ProcessOptions.INPUT.getLongName()));
+        File input = new File(command.getOptionValue(ProcessOptions.INPUT_PATH.getLongName()));
+        File output = new File(command.getOptionValue(ProcessOptions.OUTPUT_PATH.getLongName()));
+        if (command.hasOption(ProcessOptions.INPUT_PATH.getLongName())) {
+            instance.setInputPath(command.getOptionValue(ProcessOptions.INPUT_PATH.getLongName()));
             OptionsCorrector.checkExistInputPath(input);
         } else {
             throw new IllegalArgumentException("Please enter the value of the input argument.");
         }
 
-        if (command.hasOption(ProcessOptions.OUTPUT.getLongName())) {
-            instance.setOutputPath(command.getOptionValue(ProcessOptions.OUTPUT.getLongName()));
+        if (command.hasOption(ProcessOptions.OUTPUT_PATH.getLongName())) {
+            instance.setOutputPath(command.getOptionValue(ProcessOptions.OUTPUT_PATH.getLongName()));
             OptionsCorrector.checkExistOutput(output);
         } else {
             throw new IllegalArgumentException("Please enter the value of the output argument.");
@@ -166,17 +155,9 @@ public class GlobalOptions {
 
         if (command.hasOption(ProcessOptions.TILES_VERSION.getLongName())) {
             String tilesVersion = command.getOptionValue(ProcessOptions.TILES_VERSION.getLongName());
-            if (tilesVersion.equals("1.0")) {
-                log.info("[Info] Using 3D Tiles version 1.0");
-            } else if (tilesVersion.equals("1.1")) {
-                log.info("[Info] Using 3D Tiles version 1.1");
-            } else {
-                throw new IllegalArgumentException("Invalid tiles version: " + tilesVersion + ". Supported versions are 1.0, 1.1, and 1.2.");
-            }
-            instance.setTilesVersion(command.getOptionValue(ProcessOptions.TILES_VERSION.getLongName()));
+            instance.setTilesVersion(tilesVersion);
         } else {
             instance.setTilesVersion(GlobalConstants.DEFAULT_TILES_VERSION);
-            log.info("[Info] Using GlobalDefaultConst.DEFAULT 3D Tiles version: {}", GlobalConstants.DEFAULT_TILES_VERSION);
         }
 
         boolean isRecursive;
@@ -186,7 +167,7 @@ public class GlobalOptions {
             isRecursive = OptionsCorrector.isRecursive(input);
         }
         instance.setRecursive(isRecursive);
-        instance.setLogPath(command.hasOption(ProcessOptions.LOG.getLongName()) ? command.getOptionValue(ProcessOptions.LOG.getLongName()) : null);
+        instance.setLogPath(command.hasOption(ProcessOptions.LOG_PATH.getLongName()) ? command.getOptionValue(ProcessOptions.LOG_PATH.getLongName()) : null);
 
         if (!command.hasOption(ProcessOptions.MERGE.getLongName())) {
             FormatType inputFormat;
@@ -223,16 +204,16 @@ public class GlobalOptions {
             }
         }
 
-        if (command.hasOption(ProcessOptions.TERRAIN.getLongName())) {
-            instance.setTerrainPath(command.getOptionValue(ProcessOptions.TERRAIN.getLongName()));
+        if (command.hasOption(ProcessOptions.TERRAIN_PATH.getLongName())) {
+            instance.setTerrainPath(command.getOptionValue(ProcessOptions.TERRAIN_PATH.getLongName()));
             OptionsCorrector.checkExistInputPath(new File(instance.getTerrainPath()));
         } else {
             instance.setTerrainPath(null);
             log.info("[Info] Terrain path is not set. No terrain data will be used.");
         }
 
-        if (command.hasOption(ProcessOptions.INSTANCE_FILE.getLongName())) {
-            instance.setInstancePath(command.getOptionValue(ProcessOptions.INSTANCE_FILE.getLongName()));
+        if (command.hasOption(ProcessOptions.INSTANCE_PATH.getLongName())) {
+            instance.setInstancePath(command.getOptionValue(ProcessOptions.INSTANCE_PATH.getLongName()));
             OptionsCorrector.checkExistInputPath(new File(instance.getInstancePath()));
         } else {
             String instancePath = instance.getInputPath() + File.separator + GlobalConstants.DEFAULT_INSTANCE_FILE;
@@ -241,11 +222,11 @@ public class GlobalOptions {
 
         if (command.hasOption(ProcessOptions.PROJ4.getLongName())) {
             instance.setProj(command.hasOption(ProcessOptions.PROJ4.getLongName()) ? command.getOptionValue(ProcessOptions.PROJ4.getLongName()) : null);
-            CoordinateReferenceSystem crs = null;
+            CoordinateReferenceSystem sourceCrs = null;
             if (instance.getProj() != null && !instance.getProj().isEmpty()) {
-                crs = new CRSFactory().createFromParameters("CUSTOM_CRS_PROJ", instance.getProj());
+                sourceCrs = new CRSFactory().createFromParameters("CUSTOM_CRS_PROJ", instance.getProj());
             }
-            instance.setCrs(crs);
+            instance.setSourceCrs(sourceCrs);
         }
 
         Vector3d translation = new Vector3d(0, 0, 0);
@@ -264,16 +245,16 @@ public class GlobalOptions {
         if (command.hasOption(ProcessOptions.CRS.getLongName()) || command.hasOption(ProcessOptions.PROJ4.getLongName())) {
             String crsString = command.getOptionValue(ProcessOptions.CRS.getLongName());
             String proj = command.getOptionValue(ProcessOptions.PROJ4.getLongName());
-            CoordinateReferenceSystem source = null;
+            CoordinateReferenceSystem sourceCrs = null;
 
             if (proj != null && !proj.isEmpty()) {
-                source = factory.createFromParameters("CUSTOM_CRS_PROJ", proj);
+                sourceCrs = factory.createFromParameters("CUSTOM_CRS_PROJ", proj);
             } else if (crsString != null && !crsString.isEmpty()) {
-                source = factory.createFromName("EPSG:" + crsString);
+                sourceCrs = factory.createFromName("EPSG:" + crsString);
             } else {
-                source = GlobalConstants.DEFAULT_CRS;
+                sourceCrs = GlobalConstants.DEFAULT_SOURCE_CRS;
             }
-            instance.setCrs(source);
+            instance.setSourceCrs(sourceCrs);
         } else if (command.hasOption(ProcessOptions.LONGITUDE.getLongName()) || command.hasOption(ProcessOptions.LATITUDE.getLongName())) {
             if (!command.hasOption(ProcessOptions.LONGITUDE.getLongName()) || !command.hasOption(ProcessOptions.LATITUDE.getLongName())) {
                 log.error("[ERROR] Please enter the value of the longitude and latitude arguments.");
@@ -284,16 +265,16 @@ public class GlobalOptions {
             double latitude = Double.parseDouble(command.getOptionValue(ProcessOptions.LATITUDE.getLongName()));
             String proj = "+proj=tmerc +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=" + longitude + " +lat_0=" + latitude;
             instance.setProj(proj);
-            CoordinateReferenceSystem source = factory.createFromParameters("CUSTOM_CRS_PROJ", proj);
-            instance.setCrs(source);
+            CoordinateReferenceSystem sourceCrs = factory.createFromParameters("CUSTOM_CRS_PROJ", proj);
+            instance.setSourceCrs(sourceCrs);
             log.info("Custom CRS: {}", proj);
         } else {
-            CoordinateReferenceSystem source = GlobalConstants.DEFAULT_CRS;
+            CoordinateReferenceSystem sourceCrs = GlobalConstants.DEFAULT_SOURCE_CRS;
             // GeoJSON GlobalDefaultConst.DEFAULT CRS
             if (instance.getInputFormat().equals(FormatType.GEOJSON)) {
-                source = factory.createFromName("EPSG:4326");
+                sourceCrs = factory.createFromName("EPSG:4326");
             }
-            instance.setCrs(source);
+            instance.setSourceCrs(sourceCrs);
         }
 
         /* 3D Data Options */
@@ -345,15 +326,6 @@ public class GlobalOptions {
 
         instance.setDebug(command.hasOption(ProcessOptions.DEBUG.getLongName()));
         boolean isRefineAdd = false;
-
-        if (command.hasOption(ProcessOptions.FLIP_UP_AXIS.getLongName())) {
-            log.warn("[WARN] FLIP_UP_AXIS is Deprecated option: {}", ProcessOptions.FLIP_UP_AXIS.getLongName());
-            log.warn("[WARN] Please use ROTATE_X_AXIS option instead of FLIP_UP_AXIS option.");
-        }
-        if (command.hasOption(ProcessOptions.SWAP_UP_AXIS.getLongName())) {
-            log.warn("[WARN] SWAP_UP_AXIS is Deprecated option: {}", ProcessOptions.SWAP_UP_AXIS.getLongName());
-            log.warn("[WARN] Please use ROTATE_X_AXIS option instead of SWAP_UP_AXIS option.");
-        }
         if (command.hasOption(ProcessOptions.REFINE_ADD.getLongName())) {
             isRefineAdd = true;
         }
@@ -385,7 +357,6 @@ public class GlobalOptions {
             instance.setMultiThreadCount((byte) threadCount);
         }
 
-        instance.setAutoUpAxis(command.hasOption(ProcessOptions.AUTO_UP_AXIS.getLongName()));
         instance.printDebugOptions();
 
         TilerExtensionModule extensionModule = new TilerExtensionModule();
@@ -415,16 +386,16 @@ public class GlobalOptions {
 
     public void printDebugOptions() {
         Mago3DTilerMain.drawLine();
+        log.info("3DTiles Version: {}", tilesVersion);
         log.info("Input Path: {}", inputPath);
         log.info("Output Path: {}", outputPath);
         log.info("Input Format: {}", inputFormat);
         log.info("Output Format: {}", outputFormat);
-        log.info("3D Tiles Version: {}", tilesVersion);
         log.info("Terrain File Path: {}", terrainPath);
         log.info("Instance File Path: {}", instancePath);
-        log.info("Log Path: {}", logPath);
+        log.info("Log File Path: {}", logPath);
         log.info("Recursive Path Search: {}", recursive);
-        log.info("Coordinate Reference System: {}", crs);
+        log.info("Source Coordinate Reference System: {}", sourceCrs);
         log.info("Proj4 Code: {}", proj);
         log.info("Debug Mode: {}", debug);
         Mago3DTilerMain.drawLine();
@@ -445,16 +416,14 @@ public class GlobalOptions {
         Mago3DTilerMain.drawLine();
         log.info("Mesh Quantization: {}", useQuantization);
         log.info("Rotate X-Axis: {}", rotateX);
-        log.info("Swap Up-Axis: {}", swapUpAxis);
-        log.info("Flip Up-Axis: {}", flipUpAxis);
         log.info("RefineAdd: {}", refineAdd);
         log.info("Flip Coordinate: {}", flipCoordinate);
-        log.info("Auto Up-Axis: {}", autoUpAxis);
         log.info("Ignore Textures: {}", ignoreTextures);
         log.info("Max Triangles: {}", maxTriangles);
         log.info("Max Instance Size: {}", maxInstance);
         log.info("Max Node Depth: {}", maxNodeDepth);
         log.info("isPhotogrammetry: {}", isPhotogrammetry);
+        Mago3DTilerMain.drawLine();
         log.info("PointCloud Ratio: {}", pointRatio);
         log.info("Point Cloud Horizontal Grid: {}", GlobalConstants.POINTSCLOUD_HORIZONTAL_GRID);
         log.info("Point Cloud Vertical Grid: {}", GlobalConstants.POINTSCLOUD_VERTICAL_GRID);

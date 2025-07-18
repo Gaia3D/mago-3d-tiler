@@ -52,7 +52,7 @@ public class ShapeInstanceConverter implements AttributeReader {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
 
         List<AttributeFilter> attributeFilters = globalOptions.getAttributeFilters();
-        boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalConstants.DEFAULT_CRS);
+        boolean isDefaultCrs = globalOptions.getSourceCrs().equals(GlobalConstants.DEFAULT_SOURCE_CRS);
         String altitudeColumnName = globalOptions.getAltitudeColumn();
         String headingColumnName = globalOptions.getHeadingColumn();
         String scaleColumnName = globalOptions.getScaleColumn();
@@ -81,7 +81,7 @@ public class ShapeInstanceConverter implements AttributeReader {
             if (isDefaultCrs && coordinateReferenceSystem != null) {
                 CoordinateReferenceSystem crs = GlobeUtils.convertProj4jCrsFromGeotoolsCrs(coordinateReferenceSystem);
                 log.info(" - Coordinate Reference System : {}", crs.getName());
-                globalOptions.setCrs(crs);
+                globalOptions.setSourceCrs(crs);
             }
 
             int count = 1;
@@ -165,7 +165,7 @@ public class ShapeInstanceConverter implements AttributeReader {
                     double y = point.getY();
 
                     Vector3d position;
-                    CoordinateReferenceSystem crs = globalOptions.getCrs();
+                    CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
                     if (crs != null) {
                         ProjCoordinate projCoordinate = new ProjCoordinate(x, y, GlobalConstants.DEFAULT_ALTITUDE);
                         ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);

@@ -48,7 +48,7 @@ public class GeoJsonInstanceConverter implements AttributeReader {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
 
         List<AttributeFilter> attributeFilters = globalOptions.getAttributeFilters();
-        boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalConstants.DEFAULT_CRS);
+        boolean isDefaultCrs = globalOptions.getSourceCrs().equals(GlobalConstants.DEFAULT_SOURCE_CRS);
         List<TileTransformInfo> result = new ArrayList<>();
         String altitudeColumnName = globalOptions.getAltitudeColumn();
         String headingColumnName = globalOptions.getHeadingColumn();
@@ -66,7 +66,7 @@ public class GeoJsonInstanceConverter implements AttributeReader {
             if (isDefaultCrs && coordinateReferenceSystem != null) {
                 CoordinateReferenceSystem crs = GlobeUtils.convertProj4jCrsFromGeotoolsCrs(coordinateReferenceSystem);
                 log.info(" - Coordinate Reference System : {}", crs.getName());
-                globalOptions.setCrs(crs);
+                globalOptions.setSourceCrs(crs);
             }
 
             while (iterator.hasNext()) {
@@ -146,7 +146,7 @@ public class GeoJsonInstanceConverter implements AttributeReader {
                     double y = point.getY();
 
                     Vector3d position;
-                    CoordinateReferenceSystem crs = globalOptions.getCrs();
+                    CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
                     if (crs != null) {
                         ProjCoordinate projCoordinate = new ProjCoordinate(x, y, 0.0d);
                         ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);

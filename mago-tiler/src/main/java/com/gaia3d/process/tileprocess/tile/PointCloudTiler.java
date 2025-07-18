@@ -45,7 +45,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         GaiaBoundingBox globalBoundingBox = calcCartographicBoundingBox(tileInfos);
 
-        CoordinateReferenceSystem source = globalOptions.getCrs();
+        CoordinateReferenceSystem source = globalOptions.getSourceCrs();
         Vector3d originalMinPosition = globalBoundingBox.getMinPosition();
         Vector3d originalMaxPosition = globalBoundingBox.getMaxPosition();
 
@@ -209,7 +209,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         Vector3d originalMinPosition = childBoundingBox.getMinPosition();
         Vector3d originalMaxPosition = childBoundingBox.getMaxPosition();
 
-        CoordinateReferenceSystem source = globalOptions.getCrs();
+        CoordinateReferenceSystem source = globalOptions.getSourceCrs();
         BasicCoordinateTransform transformer = new BasicCoordinateTransform(source, GlobeUtils.wgs84);
         ProjCoordinate transformedMinCoordinate = transformer.transform(new ProjCoordinate(originalMinPosition.x, originalMinPosition.y, originalMinPosition.z), new ProjCoordinate());
         Vector3d minPosition = new Vector3d(transformedMinCoordinate.x, transformedMinCoordinate.y, originalMinPosition.z);

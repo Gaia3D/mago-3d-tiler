@@ -9,7 +9,6 @@ import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.GlobeUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.geotools.geopkg.Tile;
 import org.joml.Matrix3d;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
@@ -29,7 +28,7 @@ public class GaiaCoordinateExtractor implements PreProcess {
         GaiaScene scene = tileInfo.getScene();
         TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
 
-        CoordinateReferenceSystem sourceCrs = globalOptions.getCrs();
+        CoordinateReferenceSystem sourceCrs = globalOptions.getSourceCrs();
         if (sourceCrs != null && sourceCrs.getName().equals("EPSG:4978")) {
             log.info("[INFO] Using EPSG:4978 coordinate system.");
             return extractCartesian(tileInfo);
@@ -102,7 +101,7 @@ public class GaiaCoordinateExtractor implements PreProcess {
     }
 
     private Vector3d extractDegree(TileTransformInfo tileTransformInfo, GaiaScene scene) {
-        CoordinateReferenceSystem sourceCrs = globalOptions.getCrs();
+        CoordinateReferenceSystem sourceCrs = globalOptions.getSourceCrs();
 
         Vector3d degreeCenter = new Vector3d(0.0d, 0.0d, 0.0d);
         FormatType formatType = globalOptions.getInputFormat();

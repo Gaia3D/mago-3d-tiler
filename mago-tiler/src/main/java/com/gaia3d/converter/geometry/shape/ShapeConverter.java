@@ -69,7 +69,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         InnerRingRemover innerRingRemover = new InnerRingRemover();
 
         List<AttributeFilter> attributeFilters = globalOptions.getAttributeFilters();
-        boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalConstants.DEFAULT_CRS);
+        boolean isDefaultCrs = globalOptions.getSourceCrs().equals(GlobalConstants.DEFAULT_SOURCE_CRS);
         boolean flipCoordinate = globalOptions.isFlipCoordinate();
         String heightColumnName = globalOptions.getHeightColumn();
         String altitudeColumnName = globalOptions.getAltitudeColumn();
@@ -105,7 +105,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             if (isDefaultCrs && coordinateReferenceSystem != null) {
                 CoordinateReferenceSystem crs = GlobeUtils.convertProj4jCrsFromGeotoolsCrs(coordinateReferenceSystem);
                 log.info(" - Coordinate Reference System : {}", crs.getName());
-                globalOptions.setCrs(crs);
+                globalOptions.setSourceCrs(crs);
             }
 
             while (iterator.hasNext()) {
@@ -234,7 +234,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                         z = coordinate.getZ();
 
                         Vector3d position;
-                        CoordinateReferenceSystem crs = globalOptions.getCrs();
+                        CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
                         if (crs != null && !crs.getName().equals("EPSG:4326")) {
                             ProjCoordinate projCoordinate = new ProjCoordinate(x, y, boundingBox.getMinZ());
                             ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
@@ -392,7 +392,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             for (int j = 0; j < pointsCount; j++) {
                 Vector3d point = pipeLineString.getPositions().get(j);
                 //Vector3d position = new Vector3d(x, y, z);
-                CoordinateReferenceSystem crs = globalOptions.getCrs();
+                CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
                 if (crs != null && !crs.getName().equals("EPSG:4326")) {
                     ProjCoordinate projCoordinate = new ProjCoordinate(point.x, point.y, point.z);
                     ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);

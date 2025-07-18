@@ -46,7 +46,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         Matrix4d transformMatrix = null;
 
         Node root = createRoot();
-        CoordinateReferenceSystem sourceCrs = globalOptions.getCrs();
+        CoordinateReferenceSystem sourceCrs = globalOptions.getSourceCrs();
         if (sourceCrs != null && sourceCrs.getName().equals("EPSG:4978")) {
             log.info("[INFO] Using EPSG:4978 coordinate system.");
             boundingBox = calcCartesianBoundingBox(tileInfos);
@@ -207,7 +207,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         Matrix4d transformMatrix = null;
 
         Node root = createRoot();
-        CoordinateReferenceSystem sourceCrs = globalOptions.getCrs();
+        CoordinateReferenceSystem sourceCrs = globalOptions.getSourceCrs();
         if (sourceCrs != null && sourceCrs.getName().equals("EPSG:4978")) {
             log.info("[INFO] Using EPSG:4978 coordinate system.");
             boundingBox = calcCartesianBoundingBox(tileInfos);
@@ -267,7 +267,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         Matrix4d transformMatrix = null;
 
         Node root = createRoot();
-        CoordinateReferenceSystem sourceCrs = globalOptions.getCrs();
+        CoordinateReferenceSystem sourceCrs = globalOptions.getSourceCrs();
         if (sourceCrs != null && sourceCrs.getName().equals("EPSG:4978")) {
             log.info("[INFO] Using EPSG:4978 coordinate system.");
             boundingBox = calcCartesianBoundingBox(tileInfos);
