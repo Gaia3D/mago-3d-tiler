@@ -1,6 +1,7 @@
-package com.gaia3d.release.small;
+package com.gaia3d.visual.release;
 
 import com.gaia3d.command.mago.Mago3DTilerMain;
+import com.gaia3d.visual.MagoTestConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
@@ -14,9 +15,9 @@ class RealisticReleaseTest {
     void realistic00() {
         String path = "R00-bansong-obj";
         String[] args = new String[] {
-                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-log", ReleaseTestConfig.getLogPath(path).getAbsolutePath(),
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-log", MagoTestConfig.getLogPath(path).getAbsolutePath(),
                 "-it", "obj",
                 "-pg",
                 "-c", "5187",
@@ -25,7 +26,7 @@ class RealisticReleaseTest {
                 //"-glb",
                 //"-debug",
         };
-        ReleaseTestConfig.execute(args);
+        MagoTestConfig.execute(args);
     }
 
     @Disabled
@@ -33,10 +34,10 @@ class RealisticReleaseTest {
     void realistic01V1() {
         String path = "R01-bansong-part-obj";
         String[] args = new String[] {
-                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath() + "-V1",
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-V1",
                 "-it", "obj",
-                "-log", ReleaseTestConfig.getLogPath(path).getAbsolutePath(),
+                "-log", MagoTestConfig.getLogPath(path).getAbsolutePath(),
                 "-pg",
                 "-c", "5187",
                 "-leaveTemp",
@@ -44,7 +45,7 @@ class RealisticReleaseTest {
                 "-tilesVersion", "1.0",
                 //"-debug",
         };
-        ReleaseTestConfig.execute(args);
+        MagoTestConfig.execute(args);
     }
 
     @Disabled
@@ -52,17 +53,17 @@ class RealisticReleaseTest {
     void realistic01() {
         String path = "R01-bansong-part-obj";
         String[] args = new String[] {
-                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-it", "obj",
-                "-log", ReleaseTestConfig.getLogPath(path).getAbsolutePath(),
+                "-log", MagoTestConfig.getLogPath(path).getAbsolutePath(),
                 "-pg",
                 "-c", "5187",
                 "-leaveTemp",
                 "-rotateX", "90",
                 //"-debug",
         };
-        ReleaseTestConfig.execute(args);
+        MagoTestConfig.execute(args);
     }
 
     //@Disabled
@@ -70,9 +71,9 @@ class RealisticReleaseTest {
     void realistic02() {
         String path = "R02-bansong-all-obj";
         String[] args = new String[] {
-                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-log", ReleaseTestConfig.getLogPath(path).getAbsolutePath(),
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-log", MagoTestConfig.getLogPath(path).getAbsolutePath(),
                 "-it", "obj",
                 "-pg",
                 "-c", "5187",
@@ -80,7 +81,7 @@ class RealisticReleaseTest {
                 "-leaveTemp",
                 //"-debug",
         };
-        ReleaseTestConfig.execute(args);
+        MagoTestConfig.execute(args);
     }
 
     @Disabled
@@ -88,16 +89,16 @@ class RealisticReleaseTest {
     void realistic03() {
         String path = "R03-gilcheon-part-obj";
         String[] args = new String[] {
-                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-log", ReleaseTestConfig.getLogPath(path).getAbsolutePath(),
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-log", MagoTestConfig.getLogPath(path).getAbsolutePath(),
                 "-it", "obj",
                 "-pg",
                 "-c", "5187",
                 "-rotateX", "90",
                 //"-debug",
         };
-        ReleaseTestConfig.execute(args);
+        MagoTestConfig.execute(args);
     }
 
     @Disabled
@@ -105,16 +106,16 @@ class RealisticReleaseTest {
     void realistic04() {
         String path = "R04-gilcheon-all-obj";
         String[] args = new String[] {
-                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-log", ReleaseTestConfig.getLogPath(path).getAbsolutePath(),
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-log", MagoTestConfig.getLogPath(path).getAbsolutePath(),
                 "-it", "obj",
                 "-pg",
                 "-c", "5187",
                 "-rotateX", "90",
                 //"-debug",
         };
-        ReleaseTestConfig.execute(args);
+        MagoTestConfig.execute(args);
     }
 
     @Disabled
@@ -122,16 +123,16 @@ class RealisticReleaseTest {
     void realistic05() {
         String path = "R05-sangcheon-all-obj";
         String[] args = new String[] {
-                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-log", ReleaseTestConfig.getLogPath(path).getAbsolutePath(),
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-log", MagoTestConfig.getLogPath(path).getAbsolutePath(),
                 "-it", "obj",
                 "-pg",
                 "-c", "5187",
                 "-rotateX", "90",
                 //"-debug",
         };
-        ReleaseTestConfig.execute(args);
+        MagoTestConfig.execute(args);
     }
 
     @Disabled
@@ -139,16 +140,16 @@ class RealisticReleaseTest {
     void realistic051() {
         String path = "R05-sangcheon-part-obj";
         String[] args = new String[] {
-                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-log", ReleaseTestConfig.getLogPath(path).getAbsolutePath(),
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-log", MagoTestConfig.getLogPath(path).getAbsolutePath(),
                 "-it", "obj",
                 "-pg",
                 "-c", "5187",
                 "-rotateX", "90",
                 //"-debug",
         };
-        ReleaseTestConfig.execute(args);
+        MagoTestConfig.execute(args);
     }
 
     @Disabled
@@ -156,16 +157,16 @@ class RealisticReleaseTest {
     void realistic06() {
         String path = "R06-khonkhan-part-obj";
         String[] args = new String[] {
-                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-log", ReleaseTestConfig.getLogPath(path).getAbsolutePath(),
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-log", MagoTestConfig.getLogPath(path).getAbsolutePath(),
                 "-it", "obj",
                 "-pg",
                 "-c", "32648",
                 //"-rotateX", "90",
                 //"-debug",
         };
-        ReleaseTestConfig.execute(args);
+        MagoTestConfig.execute(args);
     }
 
     @Disabled
@@ -173,12 +174,12 @@ class RealisticReleaseTest {
     void realistic07() {
         String path = "R07-sejong-bridge-ifc";
         String[] args = new String[] {
-                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
                 "-pg",
         };
-        ReleaseTestConfig.execute(args);
+        MagoTestConfig.execute(args);
     }
 
     private void execute(String[] args) {

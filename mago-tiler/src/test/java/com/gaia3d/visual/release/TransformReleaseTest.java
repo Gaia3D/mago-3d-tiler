@@ -1,5 +1,6 @@
-package com.gaia3d.release.small;
+package com.gaia3d.visual.release;
 
+import com.gaia3d.visual.MagoTestConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -12,31 +13,31 @@ class TransformReleaseTest {
     void batched00Original() {
         String path = "B00-up-axis-glb";
         String[] args = new String[] {
-                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
         };
-        ReleaseTestConfig.execute(args);
+        MagoTestConfig.execute(args);
     }
 
     @Test
     void batched00RotateX90() {
         String path = "B00-up-axis-glb";
         String[] args = new String[] {
-                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath() + "-rotateX90(manual)",
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-rotateX90(manual)",
                 "-c", "5186",
                 "-rotateXAxis", "90",
         };
-        ReleaseTestConfig.execute(args);
+        MagoTestConfig.execute(args);
     }
 
     @Test
     void batched00DegreeZ() {
         String path = "B00-up-axis-glb";
         String[] args = new String[] {
-                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath() + "-127-37-manual-0-0-0",
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-127-37-manual-0-0-0",
                 //"-c", "5186",
                 "-rotateXAxis", "90",
                 "-lon", "127.0",
@@ -45,15 +46,15 @@ class TransformReleaseTest {
                 "-yOffset", "0",
                 "-zOffset", "0",
         };
-        ReleaseTestConfig.execute(args);
+        MagoTestConfig.execute(args);
     }
 
     @Test
     void batched00DegreeA() {
         String path = "B00-up-axis-glb";
         String[] args = new String[] {
-                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath() + "-127-37-manual-10-0-0",
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-127-37-manual-10-0-0",
                 //"-c", "5186",
                 "-rotateXAxis", "90",
                 "-lon", "127.0",
@@ -62,15 +63,15 @@ class TransformReleaseTest {
                 "-yOffset", "0",
                 "-zOffset", "0",
         };
-        ReleaseTestConfig.execute(args);
+        MagoTestConfig.execute(args);
     }
 
     @Test
     void batched00DegreeB() {
         String path = "B00-up-axis-glb";
         String[] args = new String[] {
-                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath() + "-127-37-manual-0-10-0",
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-127-37-manual-0-10-0",
                 //"-c", "5186",
                 "-rotateXAxis", "90",
                 "-lon", "127.0",
@@ -79,15 +80,15 @@ class TransformReleaseTest {
                 "-yOffset", "10",
                 "-zOffset", "0",
         };
-        ReleaseTestConfig.execute(args);
+        MagoTestConfig.execute(args);
     }
 
     @Test
     void batched00DegreeC() {
         String path = "B00-up-axis-glb";
         String[] args = new String[] {
-                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath() + "-127-37-manual-0-0-10",
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-127-37-manual-0-0-10",
                 //"-c", "5186",
                 "-rotateXAxis", "90",
                 "-lon", "127.0",
@@ -96,7 +97,7 @@ class TransformReleaseTest {
                 "-yOffset", "0",
                 "-zOffset", "10",
         };
-        ReleaseTestConfig.execute(args);
+        MagoTestConfig.execute(args);
     }
 
 
@@ -104,8 +105,8 @@ class TransformReleaseTest {
     void batched00DegreeZWithTerrain() {
         String path = "B00-up-axis-glb";
         String[] args = new String[] {
-                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath() + "-127-37-manual-0-0-0-terrain",
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-127-37-manual-0-0-0-terrain",
                 //"-c", "5186",
                 "-rotateXAxis", "90",
                 "-lon", "127.0",
@@ -113,17 +114,17 @@ class TransformReleaseTest {
                 "-xOffset", "0",
                 "-yOffset", "0",
                 "-zOffset", "0",
-                "-terrain", ReleaseTestConfig.getTerrainPath("geoided-aster-southkorea.tif").getAbsolutePath(),
+                "-terrain", MagoTestConfig.getTerrainPath("geoided-aster-southkorea.tif").getAbsolutePath(),
         };
-        ReleaseTestConfig.execute(args);
+        MagoTestConfig.execute(args);
     }
 
     @Test
     void batched00DegreeAWithTerrain() {
         String path = "B00-up-axis-glb";
         String[] args = new String[] {
-                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath() + "-127-37-manual-10-0-0-terrain",
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-127-37-manual-10-0-0-terrain",
                 //"-c", "5186",
                 "-rotateXAxis", "90",
                 "-lon", "127.0",
@@ -131,17 +132,17 @@ class TransformReleaseTest {
                 "-xOffset", "10",
                 "-yOffset", "0",
                 "-zOffset", "0",
-                "-terrain", ReleaseTestConfig.getTerrainPath("geoided-aster-southkorea.tif").getAbsolutePath(),
+                "-terrain", MagoTestConfig.getTerrainPath("geoided-aster-southkorea.tif").getAbsolutePath(),
         };
-        ReleaseTestConfig.execute(args);
+        MagoTestConfig.execute(args);
     }
 
     @Test
     void batched00DegreeBWithTerrain() {
         String path = "B00-up-axis-glb";
         String[] args = new String[] {
-                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath() + "-127-37-manual-0-10-0-terrain",
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-127-37-manual-0-10-0-terrain",
                 //"-c", "5186",
                 "-rotateXAxis", "90",
                 "-lon", "127.0",
@@ -149,17 +150,17 @@ class TransformReleaseTest {
                 "-xOffset", "0",
                 "-yOffset", "10",
                 "-zOffset", "0",
-                "-terrain", ReleaseTestConfig.getTerrainPath("geoided-aster-southkorea.tif").getAbsolutePath(),
+                "-terrain", MagoTestConfig.getTerrainPath("geoided-aster-southkorea.tif").getAbsolutePath(),
         };
-        ReleaseTestConfig.execute(args);
+        MagoTestConfig.execute(args);
     }
 
     @Test
     void batched00DegreeCWithTerrain() {
         String path = "B00-up-axis-glb";
         String[] args = new String[] {
-                "-i", ReleaseTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", ReleaseTestConfig.getOutputPath(path).getAbsolutePath() + "-127-37-manual-0-0-10-terrain",
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-127-37-manual-0-0-10-terrain",
                 //"-c", "5186",
                 "-rotateXAxis", "90",
                 "-lon", "127.0",
@@ -167,8 +168,8 @@ class TransformReleaseTest {
                 "-xOffset", "0",
                 "-yOffset", "0",
                 "-zOffset", "10",
-                "-terrain", ReleaseTestConfig.getTerrainPath("geoided-aster-southkorea.tif").getAbsolutePath(),
+                "-terrain", MagoTestConfig.getTerrainPath("geoided-aster-southkorea.tif").getAbsolutePath(),
         };
-        ReleaseTestConfig.execute(args);
+        MagoTestConfig.execute(args);
     }
 }
