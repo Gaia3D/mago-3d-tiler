@@ -6,6 +6,7 @@ import com.gaia3d.basic.model.GaiaVertex;
 import com.gaia3d.basic.pointcloud.GaiaPointCloud;
 import com.gaia3d.basic.pointcloud.GaiaPointCloudHeader;
 import com.gaia3d.basic.pointcloud.GaiaPointCloudTemp;
+import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.util.GlobeUtils;
 import com.github.mreutegg.laszip4j.CloseablePointIterable;
@@ -126,7 +127,7 @@ public class LasConverter {
         log.debug("File Creation Date: {}", fileCreationDate);
         log.debug("Header Size: {}", headerSize);
 
-        boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalOptions.DEFAULT_CRS);
+        boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalConstants.DEFAULT_CRS);
         header.getVariableLengthRecords().forEach((record) -> {
             if (isDefaultCrs && record.getUserID().equals("LASF_Projection")) {
                 String wktCRS = record.getDataAsString();

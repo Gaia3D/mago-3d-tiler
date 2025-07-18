@@ -7,6 +7,7 @@ import com.gaia3d.basic.model.GaiaMaterial;
 import com.gaia3d.basic.model.GaiaTexture;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.TextureType;
+import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.tileprocess.tile.LevelOfDetail;
 import com.gaia3d.util.ImageResizer;
@@ -399,9 +400,9 @@ public class GaiaTextureCoordinator {
             int imageHeight = this.atlasImage.getHeight();
             float ratio = (float) imageWidth / imageHeight;
 
-            int lod0size = GlobalOptions.REALISTIC_LOD0_MAX_TEXTURE_SIZE;
-            int maximumSize = GlobalOptions.REALISTIC_MAX_TEXTURE_SIZE;
-            int minimumSize = GlobalOptions.REALISTIC_MIN_TEXTURE_SIZE;
+            int lod0size = GlobalConstants.REALISTIC_LOD0_MAX_TEXTURE_SIZE;
+            int maximumSize = GlobalConstants.REALISTIC_MAX_TEXTURE_SIZE;
+            int minimumSize = GlobalConstants.REALISTIC_MIN_TEXTURE_SIZE;
 
             double scaleFactor = lod.getRealisticScale();
             /*if (lodLevel > 0) {

@@ -57,7 +57,7 @@ public class BoundingVolume implements Serializable {
         double halfX = lengthX / 2;
         double halfY = lengthY / 2;
         double halfZ = lengthZ / 2;
-        double maxLength = Math.max(Math.max(halfX, halfY), halfZ);
+        double maxLength = Math.max(halfX, halfY);
         this.setType(type);
         if (BoundingVolumeType.REGION == type) {
             region = new double[6];
@@ -90,7 +90,7 @@ public class BoundingVolume implements Serializable {
             // halfZ
             box[9] = 0;
             box[10] = 0;
-            box[11] = maxLength;
+            box[11] = halfZ;
         } else if (BoundingVolumeType.SPHERE == type) {
             sphere = new double[4];
             sphere[0] = center.x;

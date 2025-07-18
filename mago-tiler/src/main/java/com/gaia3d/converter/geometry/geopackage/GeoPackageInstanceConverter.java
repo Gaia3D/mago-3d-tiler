@@ -1,6 +1,7 @@
 package com.gaia3d.converter.geometry.geopackage;
 
 import com.gaia3d.command.mago.AttributeFilter;
+import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.TileTransformInfo;
@@ -48,7 +49,7 @@ public class GeoPackageInstanceConverter implements AttributeReader {
 
         List<AttributeFilter> attributeFilters = globalOptions.getAttributeFilters();
         List<TileTransformInfo> result = new ArrayList<>();
-        boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalOptions.DEFAULT_CRS);
+        boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalConstants.DEFAULT_CRS);
         String altitudeColumnName = globalOptions.getAltitudeColumn();
         String headingColumnName = globalOptions.getHeadingColumn();
         String scaleColumnName = globalOptions.getScaleColumn();
@@ -74,10 +75,10 @@ public class GeoPackageInstanceConverter implements AttributeReader {
                     SimpleFeature feature = simpleFeatureReader.next();
                     Geometry geom = (Geometry) feature.getDefaultGeometry();
 
-                    double heading = getNumberAttribute(feature, headingColumnName, GlobalOptions.DEFAULT_HEIGHT);
-                    double altitude = getNumberAttribute(feature, altitudeColumnName, GlobalOptions.DEFAULT_ALTITUDE);
-                    double scale = getNumberAttribute(feature, scaleColumnName, GlobalOptions.DEFAULT_SCALE);
-                    double density = getNumberAttribute(feature, densityColumnName, GlobalOptions.DEFAULT_DENSITY);
+                    double heading = getNumberAttribute(feature, headingColumnName, GlobalConstants.DEFAULT_HEIGHT);
+                    double altitude = getNumberAttribute(feature, altitudeColumnName, GlobalConstants.DEFAULT_ALTITUDE);
+                    double scale = getNumberAttribute(feature, scaleColumnName, GlobalConstants.DEFAULT_SCALE);
+                    double density = getNumberAttribute(feature, densityColumnName, GlobalConstants.DEFAULT_DENSITY);
 
                     if (!attributeFilters.isEmpty()) {
                         boolean filterFlag = false;

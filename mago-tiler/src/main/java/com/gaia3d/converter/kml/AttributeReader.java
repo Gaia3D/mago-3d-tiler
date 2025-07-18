@@ -1,5 +1,6 @@
 package com.gaia3d.converter.kml;
 
+import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
@@ -70,7 +71,7 @@ public interface AttributeReader {
                 count = 1;
             }
         }
-        Random random = new Random(GlobalOptions.RANDOM_SEED);
+        Random random = new Random(GlobalConstants.RANDOM_SEED);
 
         List<Point> randomPoints = new ArrayList<>();
         for (int i = 0; i < count; i++) {
@@ -100,7 +101,7 @@ public interface AttributeReader {
             }
             //count *= 10;
         }
-        Random random = new Random(GlobalOptions.RANDOM_SEED);
+        Random random = new Random(GlobalConstants.RANDOM_SEED);
 
         List<Point> randomPoints = new ArrayList<>();
         for (int i = 0; i < count; i++) {

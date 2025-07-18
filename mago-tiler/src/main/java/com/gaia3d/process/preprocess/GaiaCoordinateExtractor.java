@@ -69,18 +69,9 @@ public class GaiaCoordinateExtractor implements PreProcess {
         List<GaiaNode> nodes = scene.getNodes();
         GaiaBoundingBox boundingBox = scene.updateBoundingBox();
         Vector3d sourceCenter = new Vector3d(boundingBox.getCenter());
-        Vector3d translation = sourceCenter.negate(new Vector3d());
-
-        //Vector3d cartographic = GlobeUtils.cartesianToGeographicWgs84(sourceCenter);
-        //tileTransformInfo.setPosition(cartographic);
         tileTransformInfo.setPosition(sourceCenter);
 
-        //Matrix4d worldTransformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(cartographic);
-        //Matrix3d rotation = new Matrix3d(worldTransformMatrix);
-        //rotation.normal();
-        //rotation = clampEpsilonMatrix(rotation);
-        //log.info("[INFO] Using EPSG:4978 coordinate system. Center: {} -> {}", sourceCenter, cartographic);
-
+        Vector3d translation = sourceCenter.negate(new Vector3d());
         Matrix4d transformMatrix = new Matrix4d().identity();
         transformMatrix.setTranslation(translation);
         for (GaiaNode node : nodes) {

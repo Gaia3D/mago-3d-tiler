@@ -52,8 +52,7 @@ public class GaiaRelocator implements PostProcess {
                 log.error("GaiaSet is null");
                 continue;
             }
-            //set.translate(translation);
-            set.translate(centerCartographic);
+            set.translate(translation);
         }
         return contentInfo;
     }
@@ -66,10 +65,6 @@ public class GaiaRelocator implements PostProcess {
         transformMatrix.translate(centerCartesian);
         Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
 
-
-        //Vector3d centerCartesian = GlobeUtils.geographicToCartesianWgs84(centerCartographic);
-        //Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerCartesian);
-        //Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
         for (TileInfo tileInfo : contentInfo.getTileInfos()) {
             TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
             Vector3d cartesianPosition = tileTransformInfo.getPosition();

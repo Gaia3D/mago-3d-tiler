@@ -23,6 +23,7 @@ public class Mago3DTilerMain {
             Options options = Configuration.createOptions();
             CommandLineParser parser = new DefaultParser();
             CommandLine command = parser.parse(Configuration.createOptions(), args);
+
             boolean isHelp = command.hasOption(ProcessOptions.HELP.getLongName());
             boolean isQuiet = command.hasOption(ProcessOptions.QUIET.getLongName());
             boolean hasLogPath = command.hasOption(ProcessOptions.LOG.getLongName());
@@ -47,10 +48,10 @@ public class Mago3DTilerMain {
             }
 
             printStart();
-            if (isHelp) {
+            if (isHelp || args.length == 0) {
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.setWidth(200);
-                formatter.printHelp("mago 3DTiler help", options);
+                formatter.printHelp(PROGRAM_NAME + " help", options);
                 return;
             }
             GlobalOptions.init(command);

@@ -1,5 +1,6 @@
 package com.gaia3d.release.small;
 
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.command.mago.Mago3DTilerMain;
 
 import java.io.File;
@@ -9,7 +10,11 @@ public class ReleaseTestConfig {
     public static final String INPUT_PATH = "D:/data/mago-3d-tiler/release-sample";
     public static final String TEMP_PATH = "D:/data/mago-3d-tiler/temp-sample";
 
+    public static final String TERRAIN_PATh = "D:/data/mago-3d-tiler/terrain-sample";
+
+
     public static void execute(String[] args) {
+        GlobalOptions.recreateInstance();
         Mago3DTilerMain.main(args);
     }
     public  static File getTempPath(String path) {
@@ -17,6 +22,9 @@ public class ReleaseTestConfig {
     }
     public static File getInputPath(String path) {
         return new File(ReleaseTestConfig.INPUT_PATH, path);
+    }
+    public static File getTerrainPath(String path) {
+        return new File(ReleaseTestConfig.TERRAIN_PATh, path);
     }
     public static File getOutputPath(String path) {
         return new File(ReleaseTestConfig.OUTPUT_PATH, path);

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.tileprocess.Tiler;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
@@ -267,10 +268,10 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         log.info("[Tile][ContentNode][" + nodeCode + "][LOD{}][OBJECT{}]", lod.getLevel(), tileInfos.size());
 
         int divideSize = tileInfos.size() / 4;
-        if (divideSize > GlobalOptions.DEFAULT_MAX_I3DM_FEATURE_COUNT) {
-            divideSize = GlobalOptions.DEFAULT_MAX_I3DM_FEATURE_COUNT;
-        } else if (divideSize < GlobalOptions.DEFAULT_MIN_I3DM_FEATURE_COUNT) {
-            divideSize = GlobalOptions.DEFAULT_MIN_I3DM_FEATURE_COUNT;
+        if (divideSize > GlobalConstants.DEFAULT_MAX_I3DM_FEATURE_COUNT) {
+            divideSize = GlobalConstants.DEFAULT_MAX_I3DM_FEATURE_COUNT;
+        } else if (divideSize < GlobalConstants.DEFAULT_MIN_I3DM_FEATURE_COUNT) {
+            divideSize = GlobalConstants.DEFAULT_MIN_I3DM_FEATURE_COUNT;
         }
         //int divideSize = globalOptions.getMaxInstance();
         // divide by globalOptions.getMaxInstance()

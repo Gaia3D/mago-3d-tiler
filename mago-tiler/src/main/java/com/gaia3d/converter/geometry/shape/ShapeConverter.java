@@ -6,6 +6,7 @@ import com.gaia3d.basic.geometry.tessellator.GaiaExtrusionSurface;
 import com.gaia3d.basic.geometry.tessellator.Vector3dOnlyHashEquals;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.command.mago.AttributeFilter;
+import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.DefaultSceneFactory;
@@ -68,7 +69,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         InnerRingRemover innerRingRemover = new InnerRingRemover();
 
         List<AttributeFilter> attributeFilters = globalOptions.getAttributeFilters();
-        boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalOptions.DEFAULT_CRS);
+        boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalConstants.DEFAULT_CRS);
         boolean flipCoordinate = globalOptions.isFlipCoordinate();
         String heightColumnName = globalOptions.getHeightColumn();
         String altitudeColumnName = globalOptions.getAltitudeColumn();

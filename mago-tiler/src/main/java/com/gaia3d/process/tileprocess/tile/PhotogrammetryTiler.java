@@ -16,6 +16,7 @@ import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.model.GaiaTexture;
 import com.gaia3d.basic.types.TextureType;
+import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.process.tileprocess.Tiler;
@@ -77,7 +78,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         double distanceBetweenLon = GlobeUtils.distanceBetweenLongitudesRad(minLatRad, minLonRad, maxLonRad);
         double distanceFinal = Math.max(distanceBetweenLat, distanceBetweenLon);
 
-        double desiredLeafDist = GlobalOptions.REALISTIC_LEAF_TILE_SIZE;
+        double desiredLeafDist = GlobalConstants.REALISTIC_LEAF_TILE_SIZE;
 
         int projectMaxDepthIdx = (int) Math.ceil(HalfEdgeUtils.log2(distanceFinal / desiredLeafDist));
         //int desiredDepthsCount = projectMaxDepthIdx + 1; // because the root is depth 0
@@ -520,7 +521,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             GaiaBoundingBox motherBBoxLC = new GaiaBoundingBox();
             GaiaBoundingBox motherCartographicBoundingBox = this.calculateCartographicBoundingBox(scene, transformMatrix, motherBBoxLC);
 
-            boolean makeSkirt = GlobalOptions.MAKE_SKIRT;
+            boolean makeSkirt = GlobalConstants.MAKE_SKIRT;
             tilerExtensionModule.decimateNetSurfaceAndCutByObliqueCamera(gaiaSceneList, resultDecimatedScenes, decimateParameters, halfEdgeOctree, cuttingPlanes, pixelsForMeter, screenPixelsForMeter, makeSkirt);
 
             if (resultDecimatedScenes.isEmpty()) {
@@ -662,7 +663,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 throw new RuntimeException(e);
             }
 
-            boolean makeSkirt = GlobalOptions.MAKE_SKIRT;
+            boolean makeSkirt = GlobalConstants.MAKE_SKIRT;
             tilerExtensionModule.decimateAndCutByObliqueCamera(gaiaSceneList, resultDecimatedScenes, decimateParameters, halfEdgeOctree, cuttingPlanes, screenPixelsForMeter, makeSkirt);
 
             if (resultDecimatedScenes.isEmpty()) {
@@ -1381,7 +1382,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 
         double testOctreSize = resultOctree.getMaxSize();
         boolean scissorTextures = true;
-        boolean makeSkirt = GlobalOptions.MAKE_SKIRT;
+        boolean makeSkirt = GlobalConstants.MAKE_SKIRT;
 
         // create tileInfos for the cut scenes
         String outputPathString = globalOptions.getOutputPath();
