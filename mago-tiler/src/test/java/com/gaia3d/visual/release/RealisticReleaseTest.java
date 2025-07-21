@@ -42,7 +42,7 @@ class RealisticReleaseTest {
                 "-c", "5187",
                 "-leaveTemp",
                 "-rotateX", "90",
-                "-tilesVersion", "1.0",
+                "-tilesVersion", "1.1",
                 //"-debug",
         };
         MagoTestConfig.execute(args);

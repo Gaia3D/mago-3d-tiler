@@ -69,4 +69,131 @@ public class ExperimentalTest {
         };
         MagoTestConfig.execute(args);
     }
+
+    @Test
+    void instance10() {
+        String path = "I10-forest-purdue";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-ot", "i3dm",
+                "--refineAdd",
+                "--scaleColumn", "rel_height",
+                "--instance", "D:\\data\\mago-3d-tiler\\release-sample\\sample-tree\\broad-tree-1m.glb",
+                "-terrain", MagoTestConfig.getTerrainPath("hamilton_dem_navd88_meters_4326.tif").getAbsolutePath(),
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void instance10A() {
+        String path = "I10-forest-purdue-original-geojson";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-crs", "4326",
+                "-ot", "i3dm",
+                "--refineAdd",
+                "--scaleColumn", "rel_height",
+                "--instance", "D:\\data\\mago-3d-tiler\\release-sample\\sample-tree\\broad-tree-1m.glb",
+                "-terrain", MagoTestConfig.getTerrainPath("hamilton_dem_navd88_meters_4326.tif").getAbsolutePath(),
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void instance10B() {
+        String path = "I10-forest-purdue-original-gpkg";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-crs", "4326",
+                "-ot", "i3dm",
+                "--refineAdd",
+                "--scaleColumn", "rel_height",
+                "--instance", "D:\\data\\mago-3d-tiler\\release-sample\\sample-tree\\broad-tree-1m.glb",
+                "-terrain", MagoTestConfig.getTerrainPath("hamilton_dem_navd88_meters_4326.tif").getAbsolutePath(),
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void instance10C() {
+        String path = "I10-forest-purdue-original-gpkg2";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-crs", "4326",
+                "-it", "gpkg",
+                "-ot", "i3dm",
+                "--refineAdd",
+                "--scaleColumn", "rel_height_m",
+                "--instance", "D:\\data\\mago-3d-tiler\\release-sample\\sample-tree\\broad-tree-1m.glb",
+                "-terrain", MagoTestConfig.getTerrainPath("hamilton_dem_navd88_meters_4326.tif").getAbsolutePath(),
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void instance10D() {
+        String path = "I10-forest-purdue-original-gpkg3";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-crs", "4326",
+                "-it", "gpkg",
+                "-ot", "i3dm",
+                "--refineAdd",
+                "--scaleColumn", "rel_height_m",
+                "--instance", "D:\\data\\mago-3d-tiler\\release-sample\\sample-tree\\broad-tree-1m.glb",
+                "-terrain", MagoTestConfig.getTerrainPath("hamilton_dem_navd88_meters_4326.tif").getAbsolutePath(),
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void instance10E() {
+        String path = "I10-forest-purdue-original-gpkg4";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-crs", "4326",
+                "-it", "gpkg",
+                "-ot", "i3dm",
+                "--refineAdd",
+                "--scaleColumn", "rel_height_m",
+                "--instance", "D:\\data\\mago-3d-tiler\\release-sample\\sample-tree\\broad-tree-1m.glb",
+                "-terrain", MagoTestConfig.getInputPath(path).getAbsolutePath() + "/hamilton_dem_navd88_meters_4326.tif",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void instanced08() {
+        String path = "I08-transmission-geojson";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-c", "5179",
+                "-it", "geojson",
+                "-ot", "i3dm",
+                "-refineAdd",
+                "-instance", MagoTestConfig.getInputPath(path).getAbsolutePath() + "/lite.glb",
+                "-terrain", MagoTestConfig.getTerrainPath("dem05-cog.tif").getAbsolutePath(),
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void instanced09() {
+        String path = "I09-transmission-line-geojson";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-c", "5179",
+                "-it", "geojson",
+                "-terrain", MagoTestConfig.getTerrainPath("dem05-cog.tif").getAbsolutePath(),
+        };
+        MagoTestConfig.execute(args);
+    }
 }

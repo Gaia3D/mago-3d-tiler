@@ -33,12 +33,24 @@ class PntsReleaseTest {
     }
 
     @Test
-    void pointcloud00Offset() {
+    void pointcloud00OffsetA() {
         String path = "P00-hwangyonggak-las";
         String[] args = new String[] {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-offset",
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-offset-100-100-100",
                 "-zOffset", "100.0",
+                "-xOffset", "100.0",
+                "-yOffset", "100.0",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void pointcloud00OffsetB() {
+        String path = "P00-hwangyonggak-las";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-offset-100-100-0",
                 "-xOffset", "100.0",
                 "-yOffset", "100.0",
         };
@@ -61,6 +73,7 @@ class PntsReleaseTest {
         String[] args = new String[] {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-c", "5186",
                 "-debug",
         };
         MagoTestConfig.execute(args);
