@@ -22,7 +22,6 @@ public class GaiaScaler implements PreProcess {
         }
 
         GaiaScene gaiaScene = tileInfo.getScene();
-
         List<GaiaNode> nodes = gaiaScene.getNodes();
         for (GaiaNode node : nodes) {
             Matrix4d transform = node.getTransformMatrix();

@@ -19,6 +19,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
+import org.locationtech.proj4j.CoordinateReferenceSystem;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -41,14 +42,25 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         double geometricError = calcGeometricError(tileInfos);
         geometricError = DecimalUtils.cutFast(geometricError);
 
-        GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
-        Matrix4d transformMatrix = getTransformMatrix(globalBoundingBox);
-        if (globalOptions.isClassicTransformMatrix()) {
-            rotateX90(transformMatrix);
-        }
+        GaiaBoundingBox boundingBox = null;
+        Matrix4d transformMatrix = null;
 
         Node root = createRoot();
-        root.setBoundingVolume(new BoundingVolume(globalBoundingBox, BoundingVolume.BoundingVolumeType.REGION));
+        CoordinateReferenceSystem sourceCrs = globalOptions.getSourceCrs();
+        if (sourceCrs != null && sourceCrs.getName().equals("EPSG:4978")) {
+            log.info("[INFO] Using EPSG:4978 coordinate system.");
+            boundingBox = calcCartesianBoundingBox(tileInfos);
+            transformMatrix = getTransformMatrixFromCartesian(boundingBox);
+            root.setBoundingVolume(new BoundingVolume(boundingBox, BoundingVolume.BoundingVolumeType.BOX));
+        } else {
+            boundingBox = calcCartographicBoundingBox(tileInfos);
+            transformMatrix = getTransformMatrixFromCartographic(boundingBox);
+            root.setBoundingVolume(new BoundingVolume(boundingBox, BoundingVolume.BoundingVolumeType.REGION));
+        }
+
+        if (globalOptions.isClassicTransformMatrix() && transformMatrix != null) {
+            rotateX90(transformMatrix);
+        }
         root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
         root.setGeometricError(geometricError);
 
@@ -189,12 +201,26 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         log.info("[Tile][LogicalNode][" + nodeCode + "][OBJECT{}]", tileInfos.size());
 
         double geometricError = calcGeometricError(tileInfos);
-        GaiaBoundingBox boundingBox = calcBoundingBox(tileInfos);
-        Matrix4d transformMatrix = getTransformMatrix(boundingBox);
+
+        BoundingVolume boundingVolume;
+        GaiaBoundingBox boundingBox = null;
+        Matrix4d transformMatrix = null;
+
+        Node root = createRoot();
+        CoordinateReferenceSystem sourceCrs = globalOptions.getSourceCrs();
+        if (sourceCrs != null && sourceCrs.getName().equals("EPSG:4978")) {
+            log.info("[INFO] Using EPSG:4978 coordinate system.");
+            boundingBox = calcCartesianBoundingBox(tileInfos);
+            transformMatrix = getTransformMatrixFromCartesian(boundingBox);
+            boundingVolume = new BoundingVolume(boundingBox, BoundingVolume.BoundingVolumeType.BOX);
+        } else {
+            boundingBox = calcCartographicBoundingBox(tileInfos);
+            transformMatrix = getTransformMatrixFromCartographic(boundingBox);
+            boundingVolume = new BoundingVolume(boundingBox, BoundingVolume.BoundingVolumeType.REGION);
+        }
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);
         }
-        BoundingVolume boundingVolume = new BoundingVolume(boundingBox, BoundingVolume.BoundingVolumeType.REGION);
         geometricError = DecimalUtils.cutFast(geometricError);
 
         Node childNode = new Node();
@@ -216,12 +242,46 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         int maxLevel = globalOptions.getMaxLod();
         boolean refineAdd = globalOptions.isRefineAdd();
 
-        GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
+        /*GaiaBoundingBox childBoundingBox = calcCartographicBoundingBox(tileInfos);
         Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);
         }
-        BoundingVolume boundingVolume = new BoundingVolume(childBoundingBox, BoundingVolume.BoundingVolumeType.REGION);
+
+
+
+
+        CoordinateReferenceSystem sourceCrs = globalOptions.getCrs();
+        BoundingVolume boundingVolume;
+        if (sourceCrs != null && sourceCrs.getName().equals("EPSG:4978")) {
+            log.info("[INFO] Using EPSG:4978 coordinate system.");
+            boundingVolume = new BoundingVolume(childBoundingBox, BoundingVolume.BoundingVolumeType.BOX);
+        } else {
+            boundingVolume = new BoundingVolume(childBoundingBox, BoundingVolume.BoundingVolumeType.REGION);
+        }*/
+
+
+
+        BoundingVolume boundingVolume;
+        GaiaBoundingBox boundingBox = null;
+        Matrix4d transformMatrix = null;
+
+        Node root = createRoot();
+        CoordinateReferenceSystem sourceCrs = globalOptions.getSourceCrs();
+        if (sourceCrs != null && sourceCrs.getName().equals("EPSG:4978")) {
+            log.info("[INFO] Using EPSG:4978 coordinate system.");
+            boundingBox = calcCartesianBoundingBox(tileInfos);
+            transformMatrix = getTransformMatrixFromCartesian(boundingBox);
+            boundingVolume = new BoundingVolume(boundingBox, BoundingVolume.BoundingVolumeType.BOX);
+        } else {
+            boundingBox = calcCartographicBoundingBox(tileInfos);
+            transformMatrix = getTransformMatrixFromCartographic(boundingBox);
+            boundingVolume = new BoundingVolume(boundingBox, BoundingVolume.BoundingVolumeType.REGION);
+        }
+        if (globalOptions.isClassicTransformMatrix()) {
+            rotateX90(transformMatrix);
+        }
+
 
         String nodeCode = parentNode.getNodeCode();
         LevelOfDetail minLod = LevelOfDetail.getByLevel(minLevel);
@@ -263,7 +323,7 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
             ContentInfo contentInfo = new ContentInfo();
             contentInfo.setName(nodeCode);
             contentInfo.setLod(lod);
-            contentInfo.setBoundingBox(childBoundingBox);
+            contentInfo.setBoundingBox(boundingBox);
             contentInfo.setNodeCode(nodeCode);
             contentInfo.setTileInfos(resultInfos);
             contentInfo.setRemainTileInfos(remainInfos);

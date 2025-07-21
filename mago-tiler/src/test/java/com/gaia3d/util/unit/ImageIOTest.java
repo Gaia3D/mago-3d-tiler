@@ -1,4 +1,4 @@
-package com.gaia3d.release.unit;
+package com.gaia3d.util.unit;
 
 import com.gaia3d.command.Configuration;
 import lombok.extern.slf4j.Slf4j;
@@ -55,5 +55,4 @@ public class ImageIOTest {
             throw new RuntimeException(e);
         }
     }
-
 }

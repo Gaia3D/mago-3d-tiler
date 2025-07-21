@@ -18,6 +18,7 @@ import com.gaia3d.basic.model.GaiaTexture;
 import com.gaia3d.basic.remesher.CellGrid3D;
 import com.gaia3d.basic.remesher.ReMeshParameters;
 import com.gaia3d.basic.types.TextureType;
+import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.process.tileprocess.Tiler;
@@ -61,7 +62,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         if (tileInfos.isEmpty()) {
             throw new TileProcessingException("Error : tileInfos is empty.");
         }
-        GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
+        GaiaBoundingBox globalBoundingBox = calcCartographicBoundingBox(tileInfos);
 
         // make globalBoundingBox as square
         double minLonDeg = globalBoundingBox.getMinX();
@@ -80,7 +81,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         double distanceBetweenLon = GlobeUtils.distanceBetweenLongitudesRad(minLatRad, minLonRad, maxLonRad);
         double distanceFinal = Math.max(distanceBetweenLat, distanceBetweenLon);
 
-        double desiredLeafDist = GlobalOptions.REALISTIC_LEAF_TILE_SIZE;
+        double desiredLeafDist = GlobalConstants.REALISTIC_LEAF_TILE_SIZE;
 
         int projectMaxDepthIdx = (int) Math.ceil(HalfEdgeUtils.log2(distanceFinal / desiredLeafDist));
         double desiredDistanceBetweenLat = desiredLeafDist * Math.pow(2, projectMaxDepthIdx);
@@ -96,7 +97,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         globalBoundingBox.setMaxZ(globalBoundingBox.getMinZ() + desiredDistanceBetweenLat);// make CUBE boundingBox
         globalBoundingBox = new GaiaBoundingBox(minLonDeg, minLatDeg, globalBoundingBox.getMinZ(), maxLonDeg, maxLatDeg, globalBoundingBox.getMaxZ(), false);
 
-        Matrix4d transformMatrix = getTransformMatrix(globalBoundingBox);
+        Matrix4d transformMatrix = getTransformMatrixFromCartographic(globalBoundingBox);
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);
         }
@@ -469,8 +470,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             GaiaBoundingBox motherBBoxLC = new GaiaBoundingBox();
             GaiaBoundingBox motherCartographicBoundingBox = this.calculateCartographicBoundingBox(scene, transformMatrix, motherBBoxLC);
 
-            boolean makeSkirt = GlobalOptions.MAKE_SKIRT;
-
+            boolean makeSkirt = GlobalConstants.MAKE_SKIRT;
             tilerExtensionModule.reMeshAndCutByObliqueCamera(gaiaSceneList, resultReMeshedScenes, reMeshParams, halfEdgeOctree, cuttingPlanes,
                     pixelsForMeter, screenPixelsForMeter, makeSkirt);
 
@@ -628,7 +628,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 throw new RuntimeException(e);
             }
 
-            boolean makeSkirt = GlobalOptions.MAKE_SKIRT;
+            boolean makeSkirt = GlobalConstants.MAKE_SKIRT;
             tilerExtensionModule.decimateAndCutByObliqueCamera(gaiaSceneList, resultDecimatedScenes, decimateParameters, halfEdgeOctree, cuttingPlanes, screenPixelsForMeter, makeSkirt);
 
             if (resultDecimatedScenes.isEmpty()) {
@@ -1274,7 +1274,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 
         double testOctreSize = resultOctree.getMaxSize();
         boolean scissorTextures = true;
-        boolean makeSkirt = GlobalOptions.MAKE_SKIRT;
+        boolean makeSkirt = GlobalConstants.MAKE_SKIRT;
 
         // create tileInfos for the cut scenes
         String outputPathString = globalOptions.getOutputPath();
@@ -1549,8 +1549,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         log.info("[Tile][LogicalNode][" + nodeCode + "][OBJECT{}]", tileInfos.size());
 
         double geometricError = calcGeometricError(tileInfos);
-        GaiaBoundingBox boundingBox = calcBoundingBox(tileInfos);
-        Matrix4d transformMatrix = getTransformMatrix(boundingBox);
+        GaiaBoundingBox boundingBox = calcCartographicBoundingBox(tileInfos);
+        Matrix4d transformMatrix = getTransformMatrixFromCartographic(boundingBox);
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);
         }
@@ -1584,8 +1584,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 }
             }
 
-            GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos); // cartographicBBox
-            Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
+            GaiaBoundingBox childBoundingBox = calcCartographicBoundingBox(tileInfos); // cartographicBBox
+            Matrix4d transformMatrix = getTransformMatrixFromCartographic(childBoundingBox);
             if (globalOptions.isClassicTransformMatrix()) {
                 rotateX90(transformMatrix);
             }
@@ -1641,8 +1641,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         int maxLevel = globalOptions.getMaxLod();
         boolean refineAdd = globalOptions.isRefineAdd();
 
-        GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
-        Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
+        GaiaBoundingBox childBoundingBox = calcCartographicBoundingBox(tileInfos);
+        Matrix4d transformMatrix = getTransformMatrixFromCartographic(childBoundingBox);
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);
         }

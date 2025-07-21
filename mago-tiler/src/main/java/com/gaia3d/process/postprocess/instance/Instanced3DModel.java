@@ -254,7 +254,7 @@ public class Instanced3DModel implements ContentModel {
     }
 
     private synchronized void createInstance(File file, ContentInfo contentInfo, TileInfo tileInfo) {
-        boolean isVoxelLod = GlobalOptions.getInstance().isVoxelLod();
+        //boolean isVoxelLod = GlobalOptions.getInstance().isVoxelLod();
 
         try {
             if (!file.exists()) {
@@ -275,7 +275,7 @@ public class Instanced3DModel implements ContentModel {
                 GaiaBoundingBox boundingBox = resultGaiaScene.updateBoundingBox();
                 float minSize = (float) boundingBox.getMinSize();
 
-                if (isVoxelLod) {
+                /*if (isVoxelLod) {
                     int lod = contentInfo.getLod().getLevel();
                     if (lod > 0) {
                         float octreeMinSize = minSize;
@@ -290,7 +290,7 @@ public class Instanced3DModel implements ContentModel {
                         }
                         resultGaiaScene = GeometryUtils.getGaiaSceneLego(resultGaiaScene, octreeMinSize);
                     }
-                }
+                }*/
 
                 /*boolean isRotateUpAxis = GlobalOptions.getInstance().isSwapUpAxis();
                 if (isRotateUpAxis) {

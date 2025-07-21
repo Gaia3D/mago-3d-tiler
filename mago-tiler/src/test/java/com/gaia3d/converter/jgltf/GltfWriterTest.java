@@ -39,6 +39,7 @@ class GltfWriterTest {
 
         AssimpConverterOptions options = AssimpConverterOptions.builder()
                 .build();
+        options.setSplitByNode(globalOptions.isSplitByNode());
         AssimpConverter converter = new AssimpConverter(options);
         GaiaScene scene = converter.load(file).stream().findFirst().orElseThrow();
 

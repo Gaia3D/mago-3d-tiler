@@ -8,6 +8,7 @@ import com.gaia3d.converter.assimp.AssimpConverterOptions;
 import com.gaia3d.converter.geometry.ExtrusionTempGenerator;
 import com.gaia3d.converter.geometry.citygml.CityGmlConverter;
 import com.gaia3d.converter.geometry.geojson.GeoJsonConverter;
+import com.gaia3d.converter.geometry.geojson.GeoJsonSurfaceConverter;
 import com.gaia3d.converter.geometry.geopackage.GeoPackageConverter;
 import com.gaia3d.converter.geometry.indoorgml.IndoorGmlConverter;
 import com.gaia3d.converter.geometry.shape.ShapeConverter;
@@ -37,10 +38,10 @@ import java.util.List;
 @Slf4j
 public class BatchedModelProcessFlow implements ProcessFlow {
     private static final String MODEL_NAME = "BatchedModelProcessFlow";
+    private final GlobalOptions globalOptions = GlobalOptions.getInstance();
 
     @Override
     public void run() throws IOException {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
         FormatType inputFormat = globalOptions.getInputFormat();
 
         Converter converter = getConverter(inputFormat);
@@ -62,8 +63,8 @@ public class BatchedModelProcessFlow implements ProcessFlow {
         preProcessors.add(new GaiaRotator());
         preProcessors.add(new GaiaTransformBaker());
 
-        preProcessors.add(new GaiaTranslator(geoTiffs));
         preProcessors.add(new GaiaCoordinateExtractor());
+        preProcessors.add(new GaiaTranslator(geoTiffs));
         preProcessors.add(new GaiaTexCoordCorrection());
         preProcessors.add(new GaiaTransformBaker());
 
@@ -88,7 +89,6 @@ public class BatchedModelProcessFlow implements ProcessFlow {
     }
 
     private Converter getConverter(FormatType formatType) {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
         Converter converter;
         if (formatType == FormatType.CITYGML) {
             converter = new CityGmlConverter();
@@ -103,6 +103,7 @@ public class BatchedModelProcessFlow implements ProcessFlow {
         } else {
             AssimpConverterOptions options = AssimpConverterOptions.builder()
                     .build();
+            options.setSplitByNode(globalOptions.isSplitByNode());
             converter = new AssimpConverter(options);
         }
         return converter;

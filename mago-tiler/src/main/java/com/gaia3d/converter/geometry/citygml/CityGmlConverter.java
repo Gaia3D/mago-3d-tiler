@@ -384,7 +384,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                 }
                 z = positions.get(i + 2);
                 Vector3d position = new Vector3d(x, y, z);
-                CoordinateReferenceSystem crs = globalOptions.getCrs();
+                CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
                 if (crs != null) {
                     ProjCoordinate projCoordinate = new ProjCoordinate(x, y, resultBBox.getMinZ());
                     ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
@@ -404,7 +404,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                     y = positions.get(i + 1);
                     z = positions.get(i + 2);
                     Vector3d position = new Vector3d(x, y, z);
-                    CoordinateReferenceSystem crs = globalOptions.getCrs();
+                    CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
                     if (crs != null) {
                         ProjCoordinate projCoordinate = new ProjCoordinate(x, y, resultBBox.getMinZ());
                         ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);

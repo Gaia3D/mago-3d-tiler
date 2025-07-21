@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.tileprocess.Tiler;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
@@ -48,8 +49,8 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
             instanceGeometricError = maximumGeometricError;
         }
 
-        GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
-        Matrix4d transformMatrix = getTransformMatrix(globalBoundingBox);
+        GaiaBoundingBox globalBoundingBox = calcCartographicBoundingBox(tileInfos);
+        Matrix4d transformMatrix = getTransformMatrixFromCartographic(globalBoundingBox);
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);
         }
@@ -128,7 +129,7 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
 
         GaiaBoundingBox gaiaBoundingBox = parentNode.getBoundingBox();
         if (gaiaBoundingBox == null) {
-            gaiaBoundingBox = calcBoundingBox(tileInfos);
+            gaiaBoundingBox = calcCartographicBoundingBox(tileInfos);
         }
         double distance = gaiaBoundingBox.getLongestDistance();
         if (nodeDepth > globalOptions.getMaxNodeDepth()) {
@@ -197,8 +198,8 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         log.info("[Tile][LogicalNode][" + nodeCode + "][OBJECT{}]", tileInfos.size());
 
         double geometricError = instanceGeometricError;
-        GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
-        Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
+        GaiaBoundingBox childBoundingBox = calcCartographicBoundingBox(tileInfos);
+        Matrix4d transformMatrix = getTransformMatrixFromCartographic(childBoundingBox);
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);
         }
@@ -226,8 +227,8 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         int maxLevel = globalOptions.getMaxLod();
         boolean refineAdd = globalOptions.isRefineAdd();
 
-        GaiaBoundingBox childBoundingBox = calcBoundingBox(tileInfos);
-        Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
+        GaiaBoundingBox childBoundingBox = calcCartographicBoundingBox(tileInfos);
+        Matrix4d transformMatrix = getTransformMatrixFromCartographic(childBoundingBox);
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);
         }
@@ -267,10 +268,10 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
         log.info("[Tile][ContentNode][" + nodeCode + "][LOD{}][OBJECT{}]", lod.getLevel(), tileInfos.size());
 
         int divideSize = tileInfos.size() / 4;
-        if (divideSize > GlobalOptions.DEFAULT_MAX_I3DM_FEATURE_COUNT) {
-            divideSize = GlobalOptions.DEFAULT_MAX_I3DM_FEATURE_COUNT;
-        } else if (divideSize < GlobalOptions.DEFAULT_MIN_I3DM_FEATURE_COUNT) {
-            divideSize = GlobalOptions.DEFAULT_MIN_I3DM_FEATURE_COUNT;
+        if (divideSize > GlobalConstants.DEFAULT_MAX_I3DM_FEATURE_COUNT) {
+            divideSize = GlobalConstants.DEFAULT_MAX_I3DM_FEATURE_COUNT;
+        } else if (divideSize < GlobalConstants.DEFAULT_MIN_I3DM_FEATURE_COUNT) {
+            divideSize = GlobalConstants.DEFAULT_MIN_I3DM_FEATURE_COUNT;
         }
         //int divideSize = globalOptions.getMaxInstance();
         // divide by globalOptions.getMaxInstance()

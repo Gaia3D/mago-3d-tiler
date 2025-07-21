@@ -251,8 +251,7 @@ public class Instanced3DModelV2 implements ContentModel {
     }
 
     private void createInstance(File file, ContentInfo contentInfo, TileInfo tileInfo, GaiaFeatureTable featureTable, GaiaBatchTableMap<String, List<String>> batchTableMap) {
-        boolean isVoxelLod = GlobalOptions.getInstance()
-                .isVoxelLod();
+        //boolean isVoxelLod = GlobalOptions.getInstance().isVoxelLod();
 
         try {
             GaiaScene firstGaiaScene = tileInfo.getScene();
@@ -270,7 +269,7 @@ public class Instanced3DModelV2 implements ContentModel {
             GaiaBoundingBox boundingBox = resultGaiaScene.updateBoundingBox();
             float minSize = (float) boundingBox.getMinSize();
 
-            if (isVoxelLod) {
+            /*if (isVoxelLod) {
                 int lod = contentInfo.getLod()
                         .getLevel();
                 if (lod > 0) {
@@ -286,7 +285,7 @@ public class Instanced3DModelV2 implements ContentModel {
                     }
                     resultGaiaScene = GeometryUtils.getGaiaSceneLego(resultGaiaScene, octreeMinSize);
                 }
-            }
+            }*/
             gltfWriter.writeGlb(resultGaiaScene, file, featureTable, batchTableMap);
         } catch (Exception e) {
             log.error("[ERROR] :", e);

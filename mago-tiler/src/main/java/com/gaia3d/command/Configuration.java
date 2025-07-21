@@ -1,6 +1,8 @@
 package com.gaia3d.command;
 
 import com.gaia3d.command.mago.ProcessOptions;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -81,7 +83,8 @@ public class Configuration {
     public static Options createOptions() {
         Options options = new Options();
         for (ProcessOptions processOptions : ProcessOptions.values()) {
-            options.addOption(processOptions.getShortName(), processOptions.getLongName(), processOptions.isArgRequired(), processOptions.getDescription());
+            Option newOption = new Option(processOptions.getShortName(), processOptions.getLongName(), processOptions.isArgValueRequired(), processOptions.getDescription());
+            options.addOption(newOption);
         }
         return options;
     }

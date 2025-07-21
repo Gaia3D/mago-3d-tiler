@@ -126,7 +126,7 @@ public class GaiaStrictTranslation implements PreProcess {
     private void transformNodeVertexPositionsToLocalCoords(GaiaNode node, Matrix4d globalTMatrixInv, Matrix4d parentMatrix, GaiaBoundingBox resultBBoxLC) {
         // check for meshes
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-        CoordinateReferenceSystem crs = globalOptions.getCrs();
+        CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
 
         // check node's parent matrix
         Matrix4d transformMatrix = new Matrix4d(node.getTransformMatrix());
@@ -218,7 +218,7 @@ public class GaiaStrictTranslation implements PreProcess {
             center.add(offset);
             position = new Vector3d(center.x, center.y, offset.z);
         } else {
-            CoordinateReferenceSystem source = globalOptions.getCrs();
+            CoordinateReferenceSystem source = globalOptions.getSourceCrs();
             GaiaBoundingBox boundingBox = gaiaScene.updateBoundingBox();
             Vector3d center = boundingBox.getCenter();
             center.add(offset);

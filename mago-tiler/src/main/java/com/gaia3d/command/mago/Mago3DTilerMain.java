@@ -9,6 +9,10 @@ import org.apache.logging.log4j.Level;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Main class for mago 3DTiler.
@@ -22,10 +26,11 @@ public class Mago3DTilerMain {
         try {
             Options options = Configuration.createOptions();
             CommandLineParser parser = new DefaultParser();
-            CommandLine command = parser.parse(Configuration.createOptions(), args);
+            CommandLine command = parser.parse(options, args);
+
             boolean isHelp = command.hasOption(ProcessOptions.HELP.getLongName());
             boolean isQuiet = command.hasOption(ProcessOptions.QUIET.getLongName());
-            boolean hasLogPath = command.hasOption(ProcessOptions.LOG.getLongName());
+            boolean hasLogPath = command.hasOption(ProcessOptions.LOG_PATH.getLongName());
             boolean isDebug = command.hasOption(ProcessOptions.DEBUG.getLongName());
             boolean isMerge = command.hasOption(ProcessOptions.MERGE.getLongName());
 
@@ -35,22 +40,27 @@ public class Mago3DTilerMain {
             } else if (isDebug) {
                 Configuration.initConsoleLogger("[%p][%d{HH:mm:ss}][%C{2}(%M:%L)]::%message%n");
                 if (hasLogPath) {
-                    Configuration.initFileLogger("[%p][%d{HH:mm:ss}][%C{2}(%M:%L)]::%message%n", command.getOptionValue(ProcessOptions.LOG.getLongName()));
+                    Configuration.initFileLogger("[%p][%d{HH:mm:ss}][%C{2}(%M:%L)]::%message%n", command.getOptionValue(ProcessOptions.LOG_PATH.getLongName()));
                 }
                 Configuration.setLevel(Level.DEBUG);
             } else {
                 Configuration.initConsoleLogger();
                 if (hasLogPath) {
-                    Configuration.initFileLogger(null, command.getOptionValue(ProcessOptions.LOG.getLongName()));
+                    Configuration.initFileLogger(null, command.getOptionValue(ProcessOptions.LOG_PATH.getLongName()));
                 }
                 Configuration.setLevel(Level.INFO);
             }
 
             printStart();
-            if (isHelp) {
+            if (isHelp || args.length == 0) {
                 HelpFormatter formatter = new HelpFormatter();
+                formatter.setOptionComparator(null);
                 formatter.setWidth(200);
-                formatter.printHelp("mago 3DTiler help", options);
+                formatter.setOptPrefix("-");
+                formatter.setSyntaxPrefix("Usage: ");
+                formatter.setLongOptPrefix(" --");
+                formatter.setLongOptSeparator(" ");
+                formatter.printHelp("command options", options);
                 return;
             }
             GlobalOptions.init(command);

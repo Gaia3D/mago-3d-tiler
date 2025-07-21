@@ -1,6 +1,7 @@
 package com.gaia3d.converter.geometry.geojson;
 
 import com.gaia3d.command.mago.AttributeFilter;
+import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.TileTransformInfo;
@@ -47,7 +48,7 @@ public class GeoJsonInstanceConverter implements AttributeReader {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
 
         List<AttributeFilter> attributeFilters = globalOptions.getAttributeFilters();
-        boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalOptions.DEFAULT_CRS);
+        boolean isDefaultCrs = globalOptions.getSourceCrs().equals(GlobalConstants.DEFAULT_SOURCE_CRS);
         List<TileTransformInfo> result = new ArrayList<>();
         String altitudeColumnName = globalOptions.getAltitudeColumn();
         String headingColumnName = globalOptions.getHeadingColumn();
@@ -65,17 +66,17 @@ public class GeoJsonInstanceConverter implements AttributeReader {
             if (isDefaultCrs && coordinateReferenceSystem != null) {
                 CoordinateReferenceSystem crs = GlobeUtils.convertProj4jCrsFromGeotoolsCrs(coordinateReferenceSystem);
                 log.info(" - Coordinate Reference System : {}", crs.getName());
-                globalOptions.setCrs(crs);
+                globalOptions.setSourceCrs(crs);
             }
 
             while (iterator.hasNext()) {
                 SimpleFeature feature = iterator.next();
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
 
-                double heading = getNumberAttribute(feature, headingColumnName, GlobalOptions.DEFAULT_HEIGHT);
-                double altitude = getNumberAttribute(feature, altitudeColumnName, GlobalOptions.DEFAULT_ALTITUDE);
-                double scale = getNumberAttribute(feature, scaleColumnName, GlobalOptions.DEFAULT_SCALE);
-                double density = getNumberAttribute(feature, densityColumnName, GlobalOptions.DEFAULT_DENSITY);
+                double heading = getNumberAttribute(feature, headingColumnName, GlobalConstants.DEFAULT_HEIGHT);
+                double altitude = getNumberAttribute(feature, altitudeColumnName, GlobalConstants.DEFAULT_ALTITUDE);
+                double scale = getNumberAttribute(feature, scaleColumnName, GlobalConstants.DEFAULT_SCALE);
+                double density = getNumberAttribute(feature, densityColumnName, GlobalConstants.DEFAULT_DENSITY);
 
                 if (!attributeFilters.isEmpty()) {
                     boolean filterFlag = false;
@@ -145,7 +146,7 @@ public class GeoJsonInstanceConverter implements AttributeReader {
                     double y = point.getY();
 
                     Vector3d position;
-                    CoordinateReferenceSystem crs = globalOptions.getCrs();
+                    CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
                     if (crs != null) {
                         ProjCoordinate projCoordinate = new ProjCoordinate(x, y, 0.0d);
                         ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);

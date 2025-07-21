@@ -1,8 +1,7 @@
-package com.gaia3d.release;
+package com.gaia3d.visual.env;
 
 import com.gaia3d.command.Configuration;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
@@ -12,7 +11,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-//@Tag("default")
 @Slf4j
 class DockerBuildTest {
 

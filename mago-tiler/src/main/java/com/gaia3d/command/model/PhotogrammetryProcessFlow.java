@@ -91,6 +91,7 @@ public class PhotogrammetryProcessFlow implements ProcessFlow {
         } else {
             AssimpConverterOptions options = AssimpConverterOptions.builder()
                     .build();
+            options.setSplitByNode(globalOptions.isSplitByNode());
             converter = new AssimpConverter(options);
         }
         return converter;

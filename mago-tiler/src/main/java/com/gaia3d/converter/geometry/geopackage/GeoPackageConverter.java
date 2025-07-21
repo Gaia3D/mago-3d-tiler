@@ -6,6 +6,7 @@ import com.gaia3d.basic.geometry.tessellator.GaiaExtrusionSurface;
 import com.gaia3d.basic.geometry.tessellator.Vector3dOnlyHashEquals;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.command.mago.AttributeFilter;
+import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.DefaultSceneFactory;
@@ -20,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.geotools.data.Transaction;
 import org.geotools.data.simple.SimpleFeatureReader;
 import org.geotools.geometry.jts.Geometries;
-import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geopkg.FeatureEntry;
 import org.geotools.geopkg.GeoPackage;
 import org.joml.Matrix4d;
@@ -68,7 +68,7 @@ public class GeoPackageConverter extends AbstractGeometryConverter implements Co
         InnerRingRemover innerRingRemover = new InnerRingRemover();
 
         List<AttributeFilter> attributeFilters = globalOptions.getAttributeFilters();
-        boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalOptions.DEFAULT_CRS);
+        boolean isDefaultCrs = globalOptions.getSourceCrs().equals(GlobalConstants.DEFAULT_SOURCE_CRS);
         boolean flipCoordinate = globalOptions.isFlipCoordinate();
         String heightColumnName = globalOptions.getHeightColumn();
         String altitudeColumnName = globalOptions.getAltitudeColumn();
@@ -101,7 +101,7 @@ public class GeoPackageConverter extends AbstractGeometryConverter implements Co
                 if (isDefaultCrs && coordinateReferenceSystem != null) {
                     CoordinateReferenceSystem crs = GlobeUtils.convertProj4jCrsFromGeotoolsCrs(coordinateReferenceSystem);
                     log.info(" - Coordinate Reference System : {}", crs.getName());
-                    globalOptions.setCrs(crs);
+                    globalOptions.setSourceCrs(crs);
                 }
 
                 Filter filter = Filter.INCLUDE;
@@ -249,7 +249,7 @@ public class GeoPackageConverter extends AbstractGeometryConverter implements Co
                             z = coordinate.getZ();
 
                             Vector3d position;
-                            CoordinateReferenceSystem crs = globalOptions.getCrs();
+                            CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
                             if (crs != null && !crs.getName().equals("EPSG:4326")) {
                                 ProjCoordinate projCoordinate = new ProjCoordinate(x, y, boundingBox.getMinZ());
                                 ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
@@ -405,7 +405,7 @@ public class GeoPackageConverter extends AbstractGeometryConverter implements Co
             for (int j = 0; j < pointsCount; j++) {
                 Vector3d point = pipeLineString.getPositions().get(j);
                 //Vector3d position = new Vector3d(x, y, z);
-                CoordinateReferenceSystem crs = globalOptions.getCrs();
+                CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
                 if (crs != null && !crs.getName().equals("EPSG:4326")) {
                     ProjCoordinate projCoordinate = new ProjCoordinate(point.x, point.y, point.z);
                     ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);

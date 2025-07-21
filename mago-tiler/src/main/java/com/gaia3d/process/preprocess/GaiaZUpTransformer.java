@@ -59,7 +59,9 @@ public class GaiaZUpTransformer implements PreProcess {
             Matrix3d rotationMatrix = createNormalMatrix3d(scene);
             boolean isZUp = isZUpAxis(rotationMatrix);
             boolean isYUp = isYUpAxis(rotationMatrix);
-            if (isZUp || isYUp) {
+            if (isZUp) {
+                return tileInfo;
+            } else if (isYUp) {
                 UpAxisTransformer.transformToZUp(scene);
                 return tileInfo;
             } else {

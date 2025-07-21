@@ -37,7 +37,7 @@ public abstract class DefaultTiler {
         return Math.min(Math.max(minimumGeometricError, calculatedGeometricError), maximumGeometricError);
     }
 
-    protected GaiaBoundingBox calcBoundingBox(List<TileInfo> tileInfos) {
+    protected GaiaBoundingBox calcCartographicBoundingBox(List<TileInfo> tileInfos) {
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         tileInfos.forEach(tileInfo -> {
             TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
@@ -50,6 +50,22 @@ public abstract class DefaultTiler {
         return boundingBox;
     }
 
+    protected GaiaBoundingBox calcCartesianBoundingBox(List<TileInfo> tileInfos) {
+        GaiaBoundingBox boundingBox = new GaiaBoundingBox();
+        tileInfos.forEach(tileInfo -> {
+            TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
+            Vector3d cartesian = tileTransformInfo.getPosition();
+            //Vector3d cartesian = GlobeUtils.cartesianToGeographicWgs84(cartographic);
+
+            Matrix4d transformMatrix = new Matrix4d().identity();
+            transformMatrix.setTranslation(cartesian);
+            GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();
+            localBoundingBox = localBoundingBox.multiplyMatrix4d(transformMatrix);
+            boundingBox.addBoundingBox(localBoundingBox);
+        });
+        return boundingBox;
+    }
+
     protected void rotateX90(Matrix4d matrix) {
         Matrix4d rotationMatrix = new Matrix4d();
         rotationMatrix.identity();
@@ -57,7 +73,14 @@ public abstract class DefaultTiler {
         matrix.mul(rotationMatrix, matrix);
     }
 
-    protected Matrix4d getTransformMatrix(GaiaBoundingBox cartographicBoundingBox) {
+    protected Matrix4d getTransformMatrixFromCartesian(GaiaBoundingBox cartesianBoundingBox) {
+        Vector3d cartesianCenter = cartesianBoundingBox.getCenter();
+        Matrix4d transformMatrix = new Matrix4d().identity();
+        transformMatrix.setTranslation(cartesianCenter);
+        return transformMatrix;
+    }
+
+    protected Matrix4d getTransformMatrixFromCartographic(GaiaBoundingBox cartographicBoundingBox) {
         Vector3d center = cartographicBoundingBox.getCenter();
         double[] cartesian = GlobeUtils.geographicToCartesianWgs84(center.x, center.y, center.z);
         return GlobeUtils.transformMatrixAtCartesianPointWgs84(cartesian[0], cartesian[1], cartesian[2]);

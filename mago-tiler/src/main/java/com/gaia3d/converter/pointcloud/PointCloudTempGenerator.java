@@ -3,6 +3,7 @@ package com.gaia3d.converter.pointcloud;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.pointcloud.GaiaPointCloudHeader;
 import com.gaia3d.basic.pointcloud.GaiaPointCloudTemp;
+import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -86,16 +87,16 @@ public class PointCloudTempGenerator {
     private GaiaPointCloudHeader readAllHeaders(List<File> fileList) {
         log.info("[Pre] Reading headers of all files");
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-        CoordinateReferenceSystem crs = globalOptions.getCrs();
+        CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
 
         float horizontalGridSize;
         float verticalGridSize;
         if (crs.getProjection() instanceof LongLatProjection) {
-            horizontalGridSize = GlobalOptions.POINTSCLOUD_HORIZONTAL_ARC;
-            verticalGridSize = GlobalOptions.POINTSCLOUD_VERTICAL_ARC;
+            horizontalGridSize = GlobalConstants.POINTSCLOUD_HORIZONTAL_ARC;
+            verticalGridSize = GlobalConstants.POINTSCLOUD_VERTICAL_ARC;
         } else {
-            horizontalGridSize = GlobalOptions.POINTSCLOUD_HORIZONTAL_GRID;
-            verticalGridSize = GlobalOptions.POINTSCLOUD_VERTICAL_GRID;
+            horizontalGridSize = GlobalConstants.POINTSCLOUD_HORIZONTAL_GRID;
+            verticalGridSize = GlobalConstants.POINTSCLOUD_VERTICAL_GRID;
         }
 
         List<GaiaPointCloudHeader> headers = new ArrayList<>();

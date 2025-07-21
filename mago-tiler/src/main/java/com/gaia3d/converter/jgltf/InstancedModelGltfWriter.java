@@ -163,11 +163,7 @@ public class InstancedModelGltfWriter extends GltfWriter {
     }
 
     private void applyInstanceFeaturesBinary(GlTF gltf, GltfBinary binary, GaiaFeatureTable featureTable) {
-        log.info("[Info] Apply instance features binary to glTF");
-
         int totalByteBufferLength = binary.calcTotalByteBufferLength() + binary.calcTotalImageByteBufferLength() + binary.calcTotalPropertyByteBufferLength();
-        //AtomicInteger bufferOffset = new AtomicInteger(totalByteBufferLength);
-
         List<ByteBuffer> instancingBuffers = binary.getInstancingBuffers();
 
         int featureCount = featureTable.getInstancesLength();
@@ -233,10 +229,6 @@ public class InstancedModelGltfWriter extends GltfWriter {
         List<Node> nodes = gltf.getNodes();
         nodes.forEach(node -> {
             if (node.getMesh() != null && node.getMesh() >= 0) {
-                log.info("[Info] Apply instance features to node: {}", node.getName());
-
-                //featureTable.getInstancedBuffer();
-
                 Map<String, Object> extensions = new HashMap<>();
                 ExtensionInstanceFeatures extensionInstanceFeatures = ExtensionInstanceFeatures.fromBatchTable(featureTable);
                 extensions.put(ExtensionConstant.INSTANCE_FEATURES.getExtensionName(), extensionInstanceFeatures);

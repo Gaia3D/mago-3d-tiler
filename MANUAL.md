@@ -44,59 +44,57 @@ java -jar mago-3d-tiler.jar --input "/data/input/sample" --output "/data/output/
 ```
 
 ## Command Line Options
-
-| Option            | Argument Required | Description |
-|-------------------|-------------------|-------------|
-| `-aa`, `--absoluteAltitude` | Yes | Absolute altitude value for extrusion model |
-| `-ac`, `--altitudeColumn`   | Yes | Altitude column for extrusion model |
-| `-af`, `--attributeFilter`  | Yes | Attribute filter for extrusion model (e.g. `"classification=window,door;type=building"`) |
-| `-c`, `--crs`               | Yes | Coordinate Reference System (EPSG codes like 4326, 3857, etc.) |
-| `-d`, `--debug`             | No  | Show detailed logs and halt on multi-threading bugs |
-| `-dc`, `--diameterColumn`   | Yes | Diameter column for extrusion model (unit: mm; default: `diameter`) |
-| `-f4`, `--force4ByteRGB`    | No  | Force 4-byte RGB for point cloud tiles |
-| `-fc`, `--flipCoordinate`   | No  | Flip X and Y in 2D data |
-| `--glb`                     | No  | Create `.glb` file with `.b3dm` |
-| `-h`, `--help`              | No  | Print help message |
-| `-hc`, `--heightColumn`     | Yes | Height column for extrusion model |
-| `-hd`, `--headingColumn`    | Yes | Heading column for I3DM conversion |
-| `-i`, `--input`             | Yes | Input directory path |
-| `-if`, `--instance`         | Yes | I3DM instance file path (default: `{OUTPUT}/instance.dae`) |
-| `-igtx`, `--ignoreTextures` | No  | Ignore diffuse textures |
-| `-it`, `--inputType`        | Yes | Input file type (`kml`, `3ds`, `fbx`, etc.) |
-| `-l`, `--log`               | Yes | Output log file path |
-| `-lat`, `--latitude`        | Yes | Latitude for coordinate transformation *(must be used with `--longitude`)* |
-| `-lm`, `--largeMesh`        | No  | [Experimental] Enable large mesh splitting |
-| `-lon`, `--longitude`       | Yes | Longitude for coordinate transformation *(must be used with `--latitude`)* |
-| `-lt`, `--leaveTemp`        | No  | Leave temporary files |
-| `-m`, `--merge`             | No  | Merge multiple `tileset.json` files |
-| `-mc`, `--multiThreadCount` | Yes | Number of threads to use |
-| `-mg`, `--maxGeometricError`| Yes | Maximum geometric error |
-| `-mh`, `--minimumHeight`    | Yes | Minimum height for extrusion model |
-| `-mp`, `--maxPoints`        | Yes | Max number of points per tile |
-| `-mx`, `--maxCount`         | Yes | Max triangles per node |
-| `-nc`, `--nameColumn`       | Yes | Name column for extrusion model |
-| `-ng`, `--minGeometricError`| Yes | Minimum geometric error |
-| `-nl`, `--minLod`           | Yes | Minimum Level of Detail |
-| `-o`, `--output`            | Yes | Output directory path |
-| `-ot`, `--outputType`       | Yes | Output 3D Tiles type (`b3dm`, `i3dm`, `pnts`) |
-| `-p`, `--proj`              | Yes | Proj4 CRS parameters (e.g. `+proj=tmerc ...`) |
-| `-pcr`, `--pointRatio`      | Yes | Ratio of points from original data |
-| `-pg`, `--photogrammetry`   | No  | [Experimental][GPU] Generate `.b3dm` from photogrammetry |
-| `-q`, `--quiet`             | No  | Silent mode (suppress logs) |
-| `-qt`, `--quantize`         | No  | Quantize mesh using `KHR_mesh_quantization` |
-| `-r`, `--recursive`         | No  | Process subdirectories recursively |
-| `-ra`, `--refineAdd`        | No  | Use 'ADD' refine mode for 3D Tiles |
-| `-ru`, `--flipUpAxis`       | No  | Rotate matrix 180° about X-axis |
-| `-rx`, `--rotateXAxis`      | Yes | Rotate X-axis by degrees |
-| `-sh`, `--skirtHeight`      | Yes | Building skirt height for extrusion model |
-| `-sp`, `--sourcePrecision`  | No  | Use original precision for point cloud |
-| `-su`, `--swapUpAxis`       | No  | Rotate matrix -90° about X-axis |
-| `-te`, `--terrain`          | Yes | GeoTIFF terrain file path (used with `clampToGround`) |
-| `-vl`, `--voxelLod`         | No  | [Experimental] Voxel LOD setting for `.i3dm` |
-| `-xl`, `--maxLod`           | Yes | Maximum Level of Detail |
-| `-xo`, `--xOffset`          | Yes | X offset for coordinate transformation |
-| `-yo`, `--yOffset`          | Yes | Y offset for coordinate transformation |
-| `-zo`, `--zeroOrigin`       | No  | [Experimental] Fix root transform matrix origin to (0, 0, 0) |
+| Option                             | Argument Required | Description                                                                                                                        |
+| ---------------------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `-h`, `--help`                     | No                | Print Help                                                                                                                         |
+| `-q`, `--quiet`                    | No                | Quiet mode/Silent mode                                                                                                             |
+| `-lt`, `--leaveTemp`               | No                | Leave temporary files                                                                                                              |
+| `-m`, `--merge`                    | No                | Merge tileset.json files                                                                                                           |
+| `-i`, `--input <arg>`              | Yes               | Input directory path                                                                                                               |
+| `-o`, `--output <arg>`             | Yes               | Output directory file path                                                                                                         |
+| `-it`, `--inputType <arg>`         | Yes               | Input files type \[kml, 3ds, fbx, obj, gltf/glb, las/laz, citygml, indoorgml, shp, geojson, gpkg]                                  |
+| `-ot`, `--outputType <arg>`        | Yes               | Output 3DTiles Type \[b3dm, i3dm, pnts]                                                                                            |
+| `-l`, `--log <arg>`                | Yes               | Output log file path                                                                                                               |
+| `-r`, `--recursive`                | No                | Tree directory deep navigation                                                                                                     |
+| `-te`, `--terrain <arg>`           | Yes               | GeoTiff Terrain file path, 3D Object applied as clampToGround (Supports geotiff format)                                            |
+| `-if`, `--instance <arg>`          | Yes               | Instance file path for I3DM (Default: {OUTPUT}/instance.dae)                                                                       |
+| `-qt`, `--quantize`                | No                | Quantize mesh to reduce glb size via "KHR\_mesh\_quantization" Extension                                                           |
+| `-c`, `--crs <arg>`                | Yes               | Coordinate Reference Systems, EPSG Code (4326, 3857, 32652, 5186...)                                                               |
+| `-p`, `--proj <arg>`               | Yes               | Proj4 parameters (ex: +proj=tmerc +la...)                                                                                          |
+| `-xo`, `--xOffset <arg>`           | Yes               | X Offset value for coordinate transformation                                                                                       |
+| `-yo`, `--yOffset <arg>`           | Yes               | Y Offset value for coordinate transformation                                                                                       |
+| `-zo`, `--zOffset <arg>`           | Yes               | Z Offset value for coordinate transformation                                                                                       |
+| `-lon`, `--longitude <arg>`        | Yes               | Longitude value for coordinate transformation. (The lon lat option must be used together).                                         |
+| `-lat`, `--latitude <arg>`         | Yes               | Latitude value for coordinate transformation. (The lon lat option must be used together).                                          |
+| `-rx`, `--rotateXAxis <arg>`       | Yes               | Rotate the X-Axis in degrees                                                                                                       |
+| `-ra`, `--refineAdd`               | No                | Set 3D Tiles Refine 'ADD' mode                                                                                                     |
+| `-mx`, `--maxCount <arg>`          | Yes               | Maximum number of triangles per node                                                                                               |
+| `-nl`, `--minLod <arg>`            | Yes               | Min level of detail                                                                                                                |
+| `-xl`, `--maxLod <arg>`            | Yes               | Max Level of detail                                                                                                                |
+| `-ng`, `--minGeometricError <arg>` | Yes               | Minimum geometric error                                                                                                            |
+| `-mg`, `--maxGeometricError <arg>` | Yes               | Maximum geometric error                                                                                                            |
+| `-mp`, `--maxPoints <arg>`         | Yes               | Maximum number of points per a tile                                                                                                |
+| `-pcr`, `--pointRatio <arg>`       | Yes               | Percentage of points from original data                                                                                            |
+| `-sp`, `--sourcePrecision`         | No                | Create point cloud tile with original precision                                                                                    |
+| `-f4`, `--force4ByteRGB`           | No                | Force 4Byte RGB for point cloud tile                                                                                               |
+| `-fc`, `--flipCoordinate`          | No                | Flip x, y coordinate for 2D Original Data                                                                                          |
+| `-af`, `--attributeFilter <arg>`   | Yes               | Attribute filter setting for extrusion model ex) "classification=window,door;type=building"                                        |
+| `-nc`, `--nameColumn <arg>`        | Yes               | Name column setting for extrusion model                                                                                            |
+| `-hc`, `--heightColumn <arg>`      | Yes               | Height column setting for extrusion model                                                                                          |
+| `-ac`, `--altitudeColumn <arg>`    | Yes               | Altitude Column setting for extrusion model                                                                                        |
+| `-hd`, `--headingColumn <arg>`     | Yes               | Heading column setting for I3DM converting                                                                                         |
+| `-scl`, `--scaleColumn <arg>`      | Yes               | Scale column setting for I3DM converting                                                                                           |
+| `-den`, `--densityColumn <arg>`    | Yes               | Density column setting for I3DM polygon converting                                                                                 |
+| `-dc`, `--diameterColumn <arg>`    | Yes               | Diameter column setting for pipe extrusion model, Specify a length unit for Diameter in millimeters(mm) (Default Column: diameter) |
+| `-mh`, `--minimumHeight <arg>`     | Yes               | Minimum height value for extrusion model                                                                                           |
+| `-aa`, `--absoluteAltitude <arg>`  | Yes               | Absolute altitude value for extrusion model                                                                                        |
+| `-sh`, `--skirtHeight <arg>`       | Yes               | Building Skirt height setting for extrusion model                                                                                  |
+| `-tv`, `--tilesVersion <arg>`      | Yes               | \[Experimental] 3DTiles Version \[Default: 1.1]\[1.0, 1.1]                                                                         |
+| `-pg`, `--photogrammetry`          | No                | \[Experimental] generate b3dm for photogrammetry model with GPU                                                                    |
+| `-mc`, `--multiThreadCount <arg>`  | Yes               | \[Deprecated] set thread count                                                                                                     |
+| `-glb`, `--glb`                    | No                | \[Deprecated] Create glb file with B3DM                                                                                            |
+| `-igtx`, `--ignoreTextures`        | No                | \[Deprecated] Ignore diffuse textures                                                                                              |
+| `-d`, `--debug`                    | No                | \[DEBUG] More detailed log output and stops on Multi-Thread bugs                                                                   |
 
 
 
@@ -120,11 +118,6 @@ java -jar mago-3d-tiler.jar -input "/input_path" -output "/output_path" -crs 385
 Can be used to convert common data.
 Except for point cloud data, if you do not enter an outputType, it will be generated as b3dm.
 
-```
-java -jar mago-3d-tiler.jar -input "/input_path/kml_with_collada" -output "/output_path/kml_with_collada"
-```
-
-Same case :
 ```
 java -jar mago-3d-tiler.jar -input "/input_path/kml_with_collada" -output "/output_path/kml_with_collada"
 ```
@@ -211,15 +204,9 @@ java -jar mago-3d-tiler.jar -input "/input_path/las" -inputType "las" -output "/
 ## Other Conversion Examples
 
 ### Up-Axis Swap Example
-mago3dTiler converts mesh z-up axis data to y-up axis. If your original data is y-up axis, you will need to add the `-rotateX <degree>` option to avoid converting it.
+mago3dTiler converts mesh z-up axis data to y-up axis. If your original data is y-up axis, you will need to add the `-rotateXAxis <degree>` option to avoid converting it.
 ```
-java -jar mago-3d-tiler.jar -input "/input_path/y-up-fbx" -inputType "fbx" -output "/output_path/y-up-fbx" -rotateX "90"
-```
-
-### Data flipped upside down
-If the converted data is flipped upside down, add the `-rotateX <degree>` option to convert it.
-```
-java -jar mago-3d-tiler.jar -input "/input_path/flip-y-up-fbx" -inputType "fbx" -output "/output_path/flip-y-up-fbx" -rotateX "180"
+java -jar mago-3d-tiler.jar -input "/input_path/y-up-fbx" -inputType "fbx" -output "/output_path/y-up-fbx" -rotateXAxis "90"
 ```
 
 ### Converting CityGML
@@ -231,7 +218,6 @@ java -jar mago-3d-tiler.jar -input "/input_path/citygml" -inputType "citygml" -o
 
 ### Converting Large Point-Clouds Data
 When converting large point-clouds, you can use the `-pointRatio` option to adjust the percentage of conversion points from the source data as follows.
-
 ```
 java -jar mago-3d-tiler.jar -input "/input_path/las" -inputType "las" -output "/output_path/las" -pointRatio "100"
 ```

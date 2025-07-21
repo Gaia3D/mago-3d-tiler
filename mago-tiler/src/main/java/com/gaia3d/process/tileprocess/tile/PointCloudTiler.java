@@ -43,9 +43,9 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
     @Override
     public Tileset run(List<TileInfo> tileInfos) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-        GaiaBoundingBox globalBoundingBox = calcBoundingBox(tileInfos);
+        GaiaBoundingBox globalBoundingBox = calcCartographicBoundingBox(tileInfos);
 
-        CoordinateReferenceSystem source = globalOptions.getCrs();
+        CoordinateReferenceSystem source = globalOptions.getSourceCrs();
         Vector3d originalMinPosition = globalBoundingBox.getMinPosition();
         Vector3d originalMaxPosition = globalBoundingBox.getMaxPosition();
 
@@ -59,7 +59,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         transformedBoundingBox.addPoint(minPosition);
         transformedBoundingBox.addPoint(maxPosition);
 
-        Matrix4d transformMatrix = getTransformMatrix(globalBoundingBox);
+        Matrix4d transformMatrix = getTransformMatrixFromCartographic(globalBoundingBox);
         rotateX90(transformMatrix);
 
         double geometricError = calcGeometricErrorFromWgs84(transformedBoundingBox);
@@ -169,7 +169,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
     }
 
     @Override
-    protected GaiaBoundingBox calcBoundingBox(List<TileInfo> tileInfos) {
+    protected GaiaBoundingBox calcCartographicBoundingBox(List<TileInfo> tileInfos) {
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         tileInfos.forEach(tileInfo -> {
             GaiaBoundingBox localBoundingBox = tileInfo.getPointCloud().getGaiaBoundingBox();
@@ -209,7 +209,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         Vector3d originalMinPosition = childBoundingBox.getMinPosition();
         Vector3d originalMaxPosition = childBoundingBox.getMaxPosition();
 
-        CoordinateReferenceSystem source = globalOptions.getCrs();
+        CoordinateReferenceSystem source = globalOptions.getSourceCrs();
         BasicCoordinateTransform transformer = new BasicCoordinateTransform(source, GlobeUtils.wgs84);
         ProjCoordinate transformedMinCoordinate = transformer.transform(new ProjCoordinate(originalMinPosition.x, originalMinPosition.y, originalMinPosition.z), new ProjCoordinate());
         Vector3d minPosition = new Vector3d(transformedMinCoordinate.x, transformedMinCoordinate.y, originalMinPosition.z);
@@ -220,7 +220,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         transformedBoundingBox.addPoint(minPosition);
         transformedBoundingBox.addPoint(maxPosition);
 
-        Matrix4d transformMatrix = getTransformMatrix(childBoundingBox);
+        Matrix4d transformMatrix = getTransformMatrixFromCartographic(childBoundingBox);
         rotateX90(transformMatrix);
         BoundingVolume boundingVolume = new BoundingVolume(transformedBoundingBox, BoundingVolume.BoundingVolumeType.REGION);
 
