@@ -44,57 +44,56 @@ console output:
 ----------------------------------------
 mago-3d-tiler(dev) by Gaia3D, Inc.
 ----------------------------------------
-usage: mago 3DTiler help
- -aa,--absoluteAltitude <arg>    Absolute altitude value for extrusion model
- -ac,--altitudeColumn <arg>      Altitude Column setting for extrusion model
- -af,--attributeFilter <arg>     Attribute filter setting for extrusion model ex) "classification=window,door;type=building"
- -c,--crs <arg>                  Coordinate Reference Systems, EPSG Code(4326, 3857, 32652, 5186...)
- -d,--debug                      More detailed log output and stops on Multi-Thread bugs.
- -dc,--diameterColumn <arg>      Diameter column setting for extrusion model, Specify a length unit for Diameter in millimeters(mm) (Default Column: diameter)
- -f4,--force4ByteRGB             Force 4Byte RGB for pointscloud tile.
- -fc,--flipCoordinate            Flip x, y coordinate for 2D Original Data.
- -glb,--glb                      Create glb file with B3DM.
- -h,--help                       Print Help
- -hc,--heightColumn <arg>        Height column setting for extrusion model
- -hd,--headingColumn <arg>       Heading column setting for I3DM converting
- -i,--input <arg>                Input directory path
- -if,--instance <arg>            Instance file path for I3DM (Default: {OUTPUT}/instance.dae)
- -igtx,--ignoreTextures          Ignore diffuse textures.
- -it,--inputType <arg>           Input files type [kml, 3ds, fbx, obj, gltf/glb, las/laz, citygml, indoorgml, shp, geojson, gpkg]
- -l,--log <arg>                  Output log file path.
- -lat,--latitude <arg>           Latitude value for coordinate transformation. (The lon lat option must be used together).
- -lm,--largeMesh                 [Experimental] Large Mesh Splitting Mode)
- -lon,--longitude <arg>          Longitude value for coordinate transformation. (The lon lat option must be used together).
- -lt,--leaveTemp                 Leave temporary files
- -m,--merge                      Merge tileset.json files
- -mc,--multiThreadCount <arg>    set Multi-Thread count
- -mg,--maxGeometricError <arg>   Maximum geometric error
- -mh,--minimumHeight <arg>       Minimum height value for extrusion model
- -mp,--maxPoints <arg>           Maximum number of points per a tile
- -mx,--maxCount <arg>            Maximum number of triangles per node.
- -nc,--nameColumn <arg>          Name column setting for extrusion model
- -ng,--minGeometricError <arg>   Minimum geometric error
- -nl,--minLod <arg>              min level of detail
- -o,--output <arg>               Output directory file path
- -ot,--outputType <arg>          Output 3DTiles Type [b3dm, i3dm, pnts]
- -p,--proj <arg>                 Proj4 parameters (ex: +proj=tmerc +la...)
- -pcr,--pointRatio <arg>         Percentage of points from original data
- -pg,--photogrammetry            [Experimental][GPU] generate b3dm for photogrammetry model
- -q,--quiet                      Quiet mode/Silent mode
- -qt,--quantize                  Quantize mesh to reduce glb size via "KHR_mesh_quantization" Extension
- -r,--recursive                  Tree directory deep navigation.
- -ra,--refineAdd                 Set 3D Tiles Refine 'ADD' mode
- -ru,--flipUpAxis                Rotate the matrix 180 degrees about the X-axis.
- -rx,--rotateXAxis <arg>         Rotate the X-Axis in degrees
- -sh,--skirtHeight <arg>         Building Skirt height setting for extrusion model
- -sp,--sourcePrecision           Create pointscloud tile with original precision.
- -su,--swapUpAxis                Rotate the matrix -90 degrees about the X-axis.
- -te,--terrain <arg>             GeoTiff Terrain file path, 3D Object applied as clampToGround (Supports geotiff format)
- -vl,--voxelLod                  [Experimental] Voxel Level Of Detail setting for i3dm
- -xl,--maxLod <arg>              Max Level of detail
- -xo,--xOffset <arg>             X Offset value for coordinate transformation
- -yo,--yOffset <arg>             Y Offset value for coordinate transformation
- -zo,--zeroOrigin                [Experimental] fix 3d root transformed matrix origin to zero point.
+Usage: command options
+ -h, --help                       Print Help
+ -q, --quiet                      Quiet mode/Silent mode
+ -lt, --leaveTemp                 Leave temporary files
+ -m, --merge                      Merge tileset.json files
+ -i, --input <arg>                Input directory path
+ -o, --output <arg>               Output directory file path
+ -it, --inputType <arg>           Input files type [kml, 3ds, fbx, obj, gltf/glb, las/laz, citygml, indoorgml, shp, geojson, gpkg]
+ -ot, --outputType <arg>          Output 3DTiles Type [b3dm, i3dm, pnts]
+ -l, --log <arg>                  Output log file path.
+ -r, --recursive                  Tree directory deep navigation.
+ -te, --terrain <arg>             GeoTiff Terrain file path, 3D Object applied as clampToGround (Supports geotiff format)
+ -if, --instance <arg>            Instance file path for I3DM (Default: {OUTPUT}/instance.dae)
+ -qt, --quantize                  Quantize mesh to reduce glb size via "KHR_mesh_quantization" Extension
+ -c, --crs <arg>                  Coordinate Reference Systems, EPSG Code(4326, 3857, 32652, 5186...)
+ -p, --proj <arg>                 Proj4 parameters (ex: +proj=tmerc +la...)
+ -xo, --xOffset <arg>             X Offset value for coordinate transformation
+ -yo, --yOffset <arg>             Y Offset value for coordinate transformation
+ -zo, --zOffset <arg>             Z Offset value for coordinate transformation
+ -lon, --longitude <arg>          Longitude value for coordinate transformation. (The lon lat option must be used together).
+ -lat, --latitude <arg>           Latitude value for coordinate transformation. (The lon lat option must be used together).
+ -rx, --rotateXAxis <arg>         Rotate the X-Axis in degrees
+ -ra, --refineAdd                 Set 3D Tiles Refine 'ADD' mode
+ -mx, --maxCount <arg>            Maximum number of triangles per node.
+ -nl, --minLod <arg>              min level of detail
+ -xl, --maxLod <arg>              Max Level of detail
+ -ng, --minGeometricError <arg>   Minimum geometric error
+ -mg, --maxGeometricError <arg>   Maximum geometric error
+ -mp, --maxPoints <arg>           Maximum number of points per a tile
+ -pcr, --pointRatio <arg>         Percentage of points from original data
+ -sp, --sourcePrecision           Create pointscloud tile with original precision.
+ -f4, --force4ByteRGB             Force 4Byte RGB for pointscloud tile.
+ -fc, --flipCoordinate            Flip x, y coordinate for 2D Original Data.
+ -af, --attributeFilter <arg>     Attribute filter setting for extrusion model ex) "classification=window,door;type=building"
+ -nc, --nameColumn <arg>          Name column setting for extrusion model
+ -hc, --heightColumn <arg>        Height column setting for extrusion model
+ -ac, --altitudeColumn <arg>      Altitude Column setting for extrusion model
+ -hd, --headingColumn <arg>       Heading column setting for I3DM converting
+ -scl, --scaleColumn <arg>        Scale column setting for I3DM converting
+ -den, --densityColumn <arg>      Density column setting for I3DM polygon converting
+ -dc, --diameterColumn <arg>      Diameter column setting for pipe extrusion model, Specify a length unit for Diameter in millimeters(mm) (Default Column: diameter)
+ -mh, --minimumHeight <arg>       Minimum height value for extrusion model
+ -aa, --absoluteAltitude <arg>    Absolute altitude value for extrusion model
+ -sh, --skirtHeight <arg>         Building Skirt height setting for extrusion model
+ -tv, --tilesVersion <arg>        [Experimental] 3DTiles Version [Default: 1.1][1.0, 1.1]
+ -pg, --photogrammetry            [Experimental] generate b3dm for photogrammetry model with GPU
+ -mc, --multiThreadCount <arg>    [Deprecated] set thread count
+ -glb, --glb                      [Deprecated] Create glb file with B3DM.
+ -igtx, --ignoreTextures          [Deprecated] Ignore diffuse textures.
+ -d, --debug                      [DEBUG] More detailed log output and stops on Multi-Thread bugs.
 ```
 This is a simple kml/collada -> 3dTiles conversion code with the mandatory argument values.    
 ```
