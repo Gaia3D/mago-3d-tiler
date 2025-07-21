@@ -44,7 +44,7 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         for (GaiaVertex vertex : vertices) {
             Vector3d position = vertex.getPosition();
-            Vector3d transformedPosition = new Vector3d(position);
+            Vector3d transformedPosition = new Vector3d();
             if (transform != null) {
                 transform.transformPosition(position, transformedPosition);
             }
