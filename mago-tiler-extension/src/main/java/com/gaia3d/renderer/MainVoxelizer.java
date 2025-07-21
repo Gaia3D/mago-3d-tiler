@@ -1,14 +1,15 @@
 package com.gaia3d.renderer;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
+import com.gaia3d.basic.geometry.octree.HalfEdgeOctree;
 import com.gaia3d.basic.geometry.voxel.VoxelGrid3D;
 import com.gaia3d.basic.geometry.voxel.VoxelizeParameters;
-import com.gaia3d.basic.halfedge.HalfEdgeFace;
-import com.gaia3d.basic.halfedge.HalfEdgeScene;
-import com.gaia3d.basic.halfedge.HalfEdgeSurface;
-import com.gaia3d.basic.halfedge.HalfEdgeUtils;
+import com.gaia3d.basic.halfedge.*;
 import com.gaia3d.basic.marchingcube.MarchingCube;
 import com.gaia3d.basic.model.*;
+import com.gaia3d.basic.remesher.ReMeshParameters;
+import com.gaia3d.basic.remesher.ReMesherVertexCluster;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.renderer.engine.*;
 import com.gaia3d.renderer.engine.dataStructure.GaiaScenesContainer;
@@ -23,6 +24,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
+import org.joml.Vector3i;
 
 import java.awt.image.BufferedImage;
 
@@ -139,8 +141,9 @@ public class MainVoxelizer implements IAppLogic {
             }
         }
 
+        int bufferImageType = BufferedImage.TYPE_INT_ARGB;
         double texturePixelsForMeter = voxelizeParameters.getTexturePixelsForMeter();
-        engine.makeBoxTexturesByObliqueCamera(halfEdgeScene, texturePixelsForMeter);
+        engine.makeBoxTexturesByObliqueCamera(halfEdgeScene, texturePixelsForMeter, bufferImageType);
         GaiaScene gaiaSceneWithTextures = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
 
         // delete the gaiaScene to free the memory.***
@@ -441,5 +444,108 @@ public class MainVoxelizer implements IAppLogic {
 //            colorImageTest.flush();
 //            colorImageTest = null;
         }
+    }
+
+    private void translateScene(GaiaScene gaiaScene, Vector3d translation) {
+        List<GaiaPrimitive> primitives = new ArrayList<>();
+        gaiaScene.extractPrimitives(primitives);
+
+        for (GaiaPrimitive primitive : primitives) {
+            List<GaiaVertex> vertices = primitive.getVertices();
+            for (GaiaVertex vertex : vertices) {
+                Vector3d position = vertex.getPosition();
+                position.add(translation);
+                vertex.setPosition(position);
+            }
+        }
+    }
+
+    public void reMeshAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, ReMeshParameters reMeshParams,
+                                            HalfEdgeOctree octree, List<GaiaAAPlane> cuttingPlanes, double depthTexPixelsForMeter, double screenPixelsForMeter,
+                                            boolean makeHorizontalSkirt) {
+        // Note: There are only one scene in the scenes list
+        // Must init gl
+        try {
+            engine.init();
+        } catch (Exception e) {
+            log.error("[ERROR] initializing the engine: ", e);
+        }
+
+        int scenesCount = scenes.size();
+
+        Map<Vector3i, List<GaiaVertex>> vertexClusters = new HashMap<>();
+        List<GaiaScene> resultGaiaScenes = new ArrayList<>();
+        Vector3d scenePositionRelToCellGrid = reMeshParams.getScenePositionRelToCellGrid();
+        Vector3d scenePosRelToCellGridNegative = new Vector3d(-scenePositionRelToCellGrid.x, -scenePositionRelToCellGrid.y, -scenePositionRelToCellGrid.z);
+
+        for (int i = 0; i < scenesCount; i++) {
+            GaiaScene gaiaScene = scenes.get(i);
+
+            // copy the gaiaScene
+            GaiaScene gaiaSceneCopy = gaiaScene.clone();
+
+            // 1rst, make the renderableGaiaScene
+            RenderableGaiaScene renderableScene = InternDataConverter.getRenderableGaiaScene(gaiaSceneCopy);
+            engine.getGaiaScenesContainer().addRenderableGaiaScene(renderableScene);
+
+            //**************************************************************************************************************************
+            // Note: to reMesh or decimate the scene, 1- it must spend its transform matrix, 2- join all surfaces, 3- and weld vertices.
+            //**************************************************************************************************************************
+            gaiaScene.makeTriangularFaces();
+            gaiaScene.spendTranformMatrix();
+            gaiaScene.joinAllSurfaces();
+            double weldError = 1e-6; // 1e-6 is a good value for remeshing
+            gaiaScene.weldVertices(weldError, false, false, false, false);
+            gaiaScene.deleteDegeneratedFaces();
+            List<GaiaMaterial> materials = gaiaScene.getMaterials();
+
+            // delete materials.
+            for (GaiaMaterial material : materials) {
+                material.clear();
+            }
+            gaiaScene.getMaterials().clear();
+
+            vertexClusters.clear();
+            translateScene(gaiaScene, scenePositionRelToCellGrid); // translate the scene to the cell grid position
+            ReMesherVertexCluster.reMeshScene(gaiaScene, reMeshParams, vertexClusters);
+            translateScene(gaiaScene, scenePosRelToCellGridNegative); // translate the scene back to the original position
+            resultGaiaScenes.add(gaiaScene);
+            vertexClusters.clear();
+        }
+
+        // take the halfEdgeScene and decimate and cut it
+        HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(resultGaiaScenes.get(0)); // only one scene
+//        DecimateParameters decimateParameters = new DecimateParameters();
+//        decimateParameters.setBasicValues(1.0, 0.01, 0.01, 6.0, 1000000, 1, 0.1);
+//        halfEdgeScene.decimate(decimateParameters);
+        boolean scissorTextures = false;
+        List<HalfEdgeScene> resultCutHalfEdgeScenes = HalfEdgeCutter.cutHalfEdgeSceneByGaiaAAPlanes(halfEdgeScene, cuttingPlanes, octree, scissorTextures, false);
+
+        int cutScenesCount = resultCutHalfEdgeScenes.size();
+        int i = 0;
+        int bufferImageType = BufferedImage.TYPE_INT_RGB;
+        for (HalfEdgeScene cutHalfEdgeScene : resultCutHalfEdgeScenes) {
+            log.info("makeBoxTexturesByObliqueCamera. cutScene : " + (i + 1) + " / " + cutScenesCount);
+            GaiaBoundingBox bbox = cutHalfEdgeScene.getBoundingBox();
+            double bboxMaxSize = bbox.getMaxSize();
+            // now, cut the halfEdgeScene and make cube-textures by rendering
+            double gridSpacing = bboxMaxSize / 3.0;
+            HalfEdgeOctree resultOctree = new HalfEdgeOctree(null);
+            HalfEdgeScene cuttedScene = HalfEdgeCutter.cutHalfEdgeSceneGridXYZ(cutHalfEdgeScene, gridSpacing, resultOctree);
+
+            if (makeHorizontalSkirt) {
+                cuttedScene.makeHorizontalSkirt();
+            }
+
+            // now make box textures for the cutScene
+            engine.makeBoxTexturesByObliqueCamera(cuttedScene, screenPixelsForMeter, bufferImageType);
+            cuttedScene.scissorTextures();
+            resultHalfEdgeScenes.add(cuttedScene);
+
+            i++;
+        }
+
+        engine.deleteObjects();
+        engine.getGaiaScenesContainer().deleteObjects();
     }
 }

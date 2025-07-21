@@ -123,6 +123,7 @@ public class MainRenderer implements IAppLogic {
         int lod = decimateParameters.getLod();
         int cutScenesCount = resultCutHalfEdgeScenes.size();
         int i = 0;
+        int bufferImageType = BufferedImage.TYPE_INT_RGB;
         for (HalfEdgeScene cutHalfEdgeScene : resultCutHalfEdgeScenes) {
             log.info("makeBoxTexturesByObliqueCamera. cutScene : " + (i + 1) + " / " + cutScenesCount);
             GaiaBoundingBox bbox = cutHalfEdgeScene.getBoundingBox();
@@ -141,7 +142,7 @@ public class MainRenderer implements IAppLogic {
             }
 
             // now make box textures for the cuttedScene
-            engine.makeBoxTexturesByObliqueCamera(cuttedScene, screenPixelsForMeter);
+            engine.makeBoxTexturesByObliqueCamera(cuttedScene, screenPixelsForMeter, bufferImageType);
 
             cuttedScene.scissorTextures();
             resultHalfEdgeScenes.add(cuttedScene);
@@ -226,6 +227,7 @@ public class MainRenderer implements IAppLogic {
 
         int cutScenesCount = resultCutHalfEdgeScenes.size();
         int i = 0;
+        int bufferImageType = BufferedImage.TYPE_INT_RGB;
         for (HalfEdgeScene cutHalfEdgeScene : resultCutHalfEdgeScenes) {
             log.info("makeBoxTexturesByObliqueCamera. cutScene : " + (i + 1) + " / " + cutScenesCount);
             GaiaBoundingBox bbox = cutHalfEdgeScene.getBoundingBox();
@@ -240,7 +242,7 @@ public class MainRenderer implements IAppLogic {
             }
 
             // now make box textures for the cuttedScene
-            engine.makeBoxTexturesByObliqueCamera(cuttedScene, screenPixelsForMeter);
+            engine.makeBoxTexturesByObliqueCamera(cuttedScene, screenPixelsForMeter, bufferImageType);
             cuttedScene.scissorTextures();
             resultHalfEdgeScenes.add(cuttedScene);
 
@@ -360,107 +362,6 @@ public class MainRenderer implements IAppLogic {
         BufferedImage depthImage = depthFbo.getBufferedImage(depthBufferedImageType);
         resultImages.add(depthImage);
         depthFbo.unbind();
-    }
-
-    public void makeNetSurfacesWithBoxTexturesObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters,
-                                                            double pixelsForMeter, double screenPixelsForMeter) {
-        // Must init gl
-        try {
-            engine.init();
-        } catch (Exception e) {
-            log.error("[ERROR] initializing the engine: ", e);
-        }
-
-        GaiaScenesContainer gaiaScenesContainer = engine.getGaiaScenesContainer();
-        int scenesCount = scenes.size();
-
-        for (int i = 0; i < scenesCount; i++) {
-            GaiaScene gaiaScene = scenes.get(i);
-            GaiaBoundingBox bbox = gaiaScene.updateBoundingBox();
-            double bboxMaxSize = bbox.getMaxSize();
-            int maxDepthScreenSize = (int) Math.ceil(pixelsForMeter * bboxMaxSize);
-            if (maxDepthScreenSize < 8) {
-                maxDepthScreenSize = 8;
-            }
-
-            if (maxDepthScreenSize > 1024) {
-                maxDepthScreenSize = 1024;
-            }
-
-            log.info("Engine.makeNetSurfaces() : maxDepthScreenSize = " + maxDepthScreenSize);
-
-            List<BufferedImage> depthRenderedImages = new ArrayList<>();
-            this.engine.getGaiaScenesContainer().deleteObjects();
-            getDepthRender(gaiaScene, BufferedImage.TYPE_INT_ARGB, depthRenderedImages, maxDepthScreenSize);
-
-            BufferedImage depthRenderedImage = depthRenderedImages.get(0);
-
-//            // save depthRenderedImage as png
-//            String tempFolderPath = "D:\\Result_mago3dTiler\\temp";
-//            String depthRenderedImagePath = tempFolderPath + "\\depthRenderedImage_" + i + ".png";
-//            // create the folder
-//            File tempFolder = new File(tempFolderPath);
-//            if (!tempFolder.exists())
-//            {
-//                tempFolder.mkdirs();
-//            }
-//            try {
-//                ImageIO.write(depthRenderedImage, "png", new File(depthRenderedImagePath));
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//            // end of saving depthRenderedImage as png.------------------------------------------------------------------
-
-            // make the netSurface by using the depthRenderedImage
-            boolean makeVerticalSkirt = false;
-            float[][] depthValues = com.gaia3d.util.ImageUtils.bufferedImageToFloatMatrix(depthRenderedImage);
-            int numCols = depthRenderedImage.getWidth();
-            int numRows = depthRenderedImage.getHeight();
-            HalfEdgeScene halfEdgeScene = HalfEdgeUtils.getHalfEdgeSceneRectangularNet(numCols, numRows, depthValues, bbox, makeVerticalSkirt);
-            if (halfEdgeScene == null) {
-                return;
-            }
-            halfEdgeScene.setOriginalPath(gaiaScene.getOriginalPath());
-
-            // decimate
-            halfEdgeScene.decimate(decimateParameters);
-
-            // now, cut the halfEdgeScene and make cube-textures by rendering
-            //double gridSpacing = 50.0; // original
-            double gridSpacing = bboxMaxSize / 3.0;
-            HalfEdgeOctree resultOctree = new HalfEdgeOctree(null);
-            log.info("[Tile][Photogrammetry][Decimate] Engine.decimate() : cutHalfEdgeSceneGridXYZ.");
-            HalfEdgeScene cuttedScene = HalfEdgeCutter.cutHalfEdgeSceneGridXYZ(halfEdgeScene, gridSpacing, resultOctree);
-//            cuttedScene.splitFacesByBestPlanesToProject();
-//
-//            // now make box textures for the cuttedScene
-//            log.info("[Tile][Photogrammetry][Decimate]  Engine.decimate() : makeBoxTexturesForHalfEdgeScene.");
-//            engine.makeBoxTexturesForHalfEdgeScene(cuttedScene);
-//
-//            // delete glBuffers of the material
-//            List<GaiaMaterial> materials = cuttedScene.getMaterials();
-//            for (GaiaMaterial material : materials) {
-//                Map<TextureType, List<GaiaTexture>> textures = material.getTextures();
-//                for (List<GaiaTexture> gaiaTextures : textures.values()) {
-//                    for (GaiaTexture gaiaTexture : gaiaTextures) {
-//                        int textureId = gaiaTexture.getTextureId();
-//                        if (textureId != -1) {
-//                            GL20.glDeleteTextures(textureId);
-//                            gaiaTexture.setTextureId(-1);
-//                        }
-//                    }
-//                }
-//            }
-
-            // now make box textures for the cuttedScene
-            log.info("Engine.decimate() : makeBoxTexturesByObliqueCamera.");
-            this.engine.makeBoxTexturesByObliqueCamera(cuttedScene, screenPixelsForMeter);
-
-            resultHalfEdgeScenes.add(cuttedScene);
-
-            gaiaScenesContainer.deleteObjects();
-            halfEdgeScene.deleteObjects();
-        }
     }
 
     public void getColorAndDepthRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<BufferedImage> resultImages, GaiaBoundingBox nodeBBox,

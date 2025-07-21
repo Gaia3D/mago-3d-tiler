@@ -806,32 +806,9 @@ class UnitTest {
     }
 
     @Test
-    void test_RealisticMesh_Thailand() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\";
-        String outputPath = "D:\\Result_mago3dTiler\\";
-        //String path = "Tile_+000_+000_+000";
-        //String path = "splittedTile";
-        String path = "RealisticMesh_Thailand";
-
-        String[] args = new String[]{
-                "-i", inputPath + path,
-                "-it", "fbx",
-                "-o", outputPath + path,
-                "-crs", "2096",
-                "-glb",
-                "-pg", // photo realistic mesh
-                "-minLod", "0",
-                "-maxLod", "0",
-                "-debug"
-        };
-        Mago3DTilerMain.main(args);
-    }
-
-
-    @Test
     void test_RealisticMesh_Thailand_Data_N_buildings() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\RealisticMesh_Thailand_multiTiles\\OBJ25sqkm\\Data\\";
-        String outputPath = "D:\\data\\mago-server\\output\\thailand_692buildings\\";
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\RealisticMesh_Thailand_multiTiles\\OBJ25sqkm\\Data_200buildings\\";
+        String outputPath = "D:\\data\\mago-server\\output\\thailand_200buildings\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
@@ -943,7 +920,7 @@ class UnitTest {
                 "-o", outputPath,
                 "-proj", "+proj=tmerc +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=127.9296192 +lat_0=37.3702212",
                 "-pg",
-                "-rx", "90",
+                "-rx", "90"
         };
         Mago3DTilerMain.main(args);
     }

@@ -15,6 +15,8 @@ import com.gaia3d.basic.model.GaiaMaterial;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.model.GaiaTexture;
+import com.gaia3d.basic.remesher.CellGrid3D;
+import com.gaia3d.basic.remesher.ReMeshParameters;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.TileTransformInfo;
@@ -33,6 +35,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
+import org.joml.Vector4d;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -80,7 +83,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         double desiredLeafDist = GlobalOptions.REALISTIC_LEAF_TILE_SIZE;
 
         int projectMaxDepthIdx = (int) Math.ceil(HalfEdgeUtils.log2(distanceFinal / desiredLeafDist));
-        //int desiredDepthsCount = projectMaxDepthIdx + 1; // because the root is depth 0
         double desiredDistanceBetweenLat = desiredLeafDist * Math.pow(2, projectMaxDepthIdx);
         double desiredAngRadLat = GlobeUtils.angRadLatitudeForDistance(minLatRad, desiredDistanceBetweenLat);
         double desiredAngRadLon = GlobeUtils.angRadLongitudeForDistance(minLatRad, desiredDistanceBetweenLat);
@@ -88,9 +90,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         double desiredAngDegLon = Math.toDegrees(desiredAngRadLon);
         maxLonDeg = minLonDeg + desiredAngDegLon;
         maxLatDeg = minLatDeg + desiredAngDegLat;
-        double minZ = globalBoundingBox.getMinZ();
-        double maxZ = globalBoundingBox.getMaxZ();
-        // end calculate the rootOctTree size.---
+        // end calculates the rootOctTree size.---
 
         // make CUBE boundingBox
         globalBoundingBox.setMaxZ(globalBoundingBox.getMinZ() + desiredDistanceBetweenLat);// make CUBE boundingBox
@@ -107,11 +107,10 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         root.setBoundingVolume(new BoundingVolume(globalBoundingBox, BoundingVolume.BoundingVolumeType.REGION));
         root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
 
-        /* Start lod 0 process */
+        /* Start lod 0 processes */
         int lod = 0;
         List<TileInfo> tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, null);
 
-        //int maxDepth = root.findMaxDepth();
         int currDepth = projectMaxDepthIdx - lod;
         Map<Node, List<TileInfo>> nodeTileInfoMap = new HashMap<>();
 
@@ -119,13 +118,13 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         cuttingAndScissorProcessST(tileInfosCopy, lod, root, cuttedTileInfos, projectMaxDepthIdx);
 
         // distribute contents to node in the correspondent depth
-        // After process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes
+        // After a process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes
         distributeContentsToNodesOctTree(root, cuttedTileInfos, currDepth, nodeTileInfoMap);
         makeContentsForNodes(nodeTileInfoMap, lod);
-        /* End lod 0 process */
+        /* End lod 0 processes */
 
         DecimateParameters decimateParameters = new DecimateParameters();
-        for (int d = 1; d < projectMaxDepthIdx; d++) {
+        for (int d = 1; d <= projectMaxDepthIdx; d++) {
             lod = d;
             tileInfosCopy.clear();
             nodeTileInfoMap.clear();
@@ -160,17 +159,16 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
             makeContentsForNodes(nodeTileInfoMap, lod);
 
-            if (d >= 3) {
+            if (d >= 2) {
                 break;
             }
         }
 
         // net surfaces with boxTextures
-        for (int d = 4; d < projectMaxDepthIdx; d++) {
+        for (int d = 3; d <= projectMaxDepthIdx; d++) {
             lod = d;
             currDepth = projectMaxDepthIdx - lod;
             double boxSizeForCurrDepth = desiredDistanceBetweenLat / Math.pow(2, (currDepth + 1));
-            //double pixelsForMeter = 100.0 / boxSizeForCurrDepth; // original.***
             double pixelsForMeter = 80.0 / boxSizeForCurrDepth;
             tileInfosCopy.clear();
             nodeTileInfoMap.clear();
@@ -196,7 +194,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 
             // make netSurfaces and decimate and cut scenes
             currDepth = projectMaxDepthIdx - lod;
-            decimateNetSurfacesAndCutScenes(tileInfosCopy, lod, root, projectMaxDepthIdx, decimateParameters, pixelsForMeter, screenPixelsForMeter);
+            reMeshAndCutScenes(tileInfosCopy, lod, root, projectMaxDepthIdx, decimateParameters, pixelsForMeter, screenPixelsForMeter);
             distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
             makeContentsForNodes(nodeTileInfoMap, lod);
 
@@ -204,9 +202,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 break;
             }
         }
-
-//        nodeTileInfoMap.clear(); // test. delete this.
-//        distributeContentsToNodesOctTree(root, tileInfosCopy, 6, nodeTileInfoMap); // test. delete this.
 
         // Check if is necessary netSurfaces nodes
         double maxDiffAngDeg = 20.0;
@@ -216,11 +211,9 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         double maxAspectRatio = 15.0;
         decimateParameters.setBasicValues(maxDiffAngDeg, hedgeMinLength, frontierMaxDiffAngDeg, maxAspectRatio, 1000000, 20, 1.8);
         lod = 6;
-        //lod = 1;
         for (int depth = projectMaxDepthIdx - lod; depth >= 0; depth--) {
             tileInfosCopy.clear();
             tileInfosCopy = this.getTileInfosCopy(tileInfos, 0, tileInfosCopy);
-
             createNetSurfaceNodes(root, tileInfosCopy, depth, projectMaxDepthIdx, decimateParameters);
         }
 
@@ -382,108 +375,66 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         }
     }
 
-    private void makeNetSurfacesWithBoxTextures(List<TileInfo> tileInfos, int lod, DecimateParameters decimateParameters, double pixelsForMeter) {
-        log.info("making netSurfaces scenes for lod : " + lod);
+    public void reMeshAndCutScenes(List<TileInfo> tileInfos, int lod, Node rootNode, int maxDepth, DecimateParameters decimateParameters,
+                                   double pixelsForMeter, double screenPixelsForMeter) {
+        log.info("ReMeshing and cutting scenes for lod : " + lod);
         TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
         List<GaiaScene> gaiaSceneList = new ArrayList<>();
-        List<HalfEdgeScene> resultDecimatedScenes = new ArrayList<>();
-
-        int tileInfosCount = tileInfos.size();
-        for (int i = 0; i < tileInfosCount; i++) {
-            log.info("making netSurfaces scene : " + i + " of " + tileInfosCount);
-            TileInfo tileInfo = tileInfos.get(i);
-            Path tempPath = tileInfo.getTempPath();
-            Path tempFolder = tempPath.getParent();
-
-            // load the file
-            GaiaSet gaiaSet;
-            try {
-                gaiaSet = GaiaSet.readFile(tempPath);
-                if (gaiaSet == null) {
-                    log.error("[ERROR] gaiaSet is null. pth : " + tempPath);
-                    continue;
-                }
-            } catch (IOException e) {
-                log.error("[ERROR] :", e);
-                throw new RuntimeException(e);
-            }
-            GaiaScene scene = new GaiaScene(gaiaSet);
-            scene.setOriginalPath(tileInfo.getTempPath());
-            //scene.setOriginalPath(tileInfo.getScenePath());
-            scene.makeTriangleFaces();
-
-            gaiaSceneList.clear();
-            resultDecimatedScenes.clear();
-            gaiaSceneList.add(scene);
-
-            if (!GaiaSceneUtils.checkSceneMaterials(scene)) {
-                log.error("[ERROR] scene has objects that uses materials that are not in the scene.");
-                continue;
-            }
-
-            double screenPixelsForMeter = 20.0;
-            tilerExtensionModule.makeNetSurfacesWithBoxTexturesObliqueCamera(gaiaSceneList, resultDecimatedScenes, decimateParameters, pixelsForMeter, screenPixelsForMeter);
-
-            if (resultDecimatedScenes.isEmpty()) {
-                // sometimes the resultDecimatedScenes is empty because when rendering the scene, the scene is almost out of the camera
-                log.error("[ERROR] resultDecimatedScenes is empty.");
-                gaiaSet.clear(); // delete gaiaSet
-                scene.clear(); // delete scene
-                continue;
-            }
-
-            HalfEdgeScene halfEdgeSceneLod = resultDecimatedScenes.get(0);
-
-            // Save the textures in a temp folder
-            List<GaiaMaterial> materials = halfEdgeSceneLod.getMaterials();
-            for (GaiaMaterial material : materials) {
-                List<GaiaTexture> textures = material.getTextures().get(TextureType.DIFFUSE);
-                for (GaiaTexture texture : textures) {
-                    // change the texture name
-                    String texturePath = texture.getPath();
-                    String rawTexturePath = texturePath.substring(0, texturePath.lastIndexOf("."));
-                    String extension = texturePath.substring(texturePath.lastIndexOf("."));
-                    String newTexturePath = rawTexturePath + "_" + lod + "." + extension;
-                    texture.setPath(newTexturePath);
-                    texture.setParentPath(tempFolder.toString());
-                    texture.saveImage(texture.getFullPath());
-                }
-            }
-
-            GaiaScene sceneLod1 = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneLod);
-
-            GaiaSet tempSetLod1 = GaiaSet.fromGaiaScene(sceneLod1);
-            halfEdgeSceneLod.deleteObjects();
-
-            LevelOfDetail levelOfDetail = LevelOfDetail.getByLevel(lod);
-            float scale = levelOfDetail.getTextureScale();
-
-            String aux = "lod" + lod;
-            Path tempFolderLod = tempFolder.resolve(aux);
-            Path currTempPathLod = tempSetLod1.writeFile(tempFolderLod, tileInfo.getSerial(), tempSetLod1.getAttribute()/*, scale*/);
-            tileInfo.setTempPath(currTempPathLod);
-            gaiaSet.clear(); // delete gaiaSet
-            scene.clear(); // delete scene
-            tempSetLod1.clear(); // delete tempSetLod1
-            sceneLod1.clear(); // delete sceneLod1
-        }
-    }
-
-
-    public void decimateNetSurfacesAndCutScenes(List<TileInfo> tileInfos, int lod, Node rootNode, int maxDepth, DecimateParameters decimateParameters, double pixelsForMeter, double screenPixelsForMeter) {
-        log.info("Decimating netSurfaces and cutting scenes for lod : " + lod);
-        TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
-        List<GaiaScene> gaiaSceneList = new ArrayList<>();
-        List<HalfEdgeScene> resultDecimatedScenes = new ArrayList<>();
+        List<HalfEdgeScene> resultReMeshedScenes = new ArrayList<>();
 
         List<TileInfo> newTileInfos = new ArrayList<>();
 
+        double voxelSizeMeter = 1.0;
+        double texturePixelSize = 1.0;
+        double texturePixelsForMeter = 4.0;
+
+        // dcLibrary scale 0.01 settings.***
+        GaiaBoundingBox nodeBBoxLC = rootNode.calculateLocalBoundingBox();
+        Matrix4d rootTransformMatrix = getNodeTransformMatrix(rootNode);
+        Matrix4d rootTransformMatrixInverse = new Matrix4d(rootTransformMatrix);
+        rootTransformMatrixInverse.invert();
+
+        double maxSize = nodeBBoxLC.getMaxSize();
+        // the maxSize is for rootNode that has maxDepth.***
+        // so, the maxSize rof lod is maxSize / Math.pow(2, maxDepth - lod);
+        if (lod > 0) {
+            maxSize = maxSize / Math.pow(2, maxDepth - lod);
+        }
+
+        // ifc round bridge settings.***
+        voxelSizeMeter = maxSize / 40.0;
+        texturePixelSize = maxSize / 512.0;
+        texturePixelsForMeter = 1.0 / texturePixelSize;
+
+        // Re mesh by vertex clustering.***************************************************************************
+        Vector3d cellGridOrigin = new Vector3d();
+        double cellSize = voxelSizeMeter;
+        CellGrid3D cellGrid = new CellGrid3D(cellGridOrigin, cellSize);
+        ReMeshParameters reMeshParams = new ReMeshParameters();
+        reMeshParams.setTexturePixelsForMeter(texturePixelsForMeter);
+        reMeshParams.setCellGrid(cellGrid);
+
+        int totalTexturesSaved = 0;
+
         int tileInfosCount = tileInfos.size();
         for (int i = 0; i < tileInfosCount; i++) {
-            log.info("Decimating netSurfaces and cutting scene : " + i + " of " + tileInfosCount + " for lod : " + lod);
+            log.info("ReMeshing and cutting scene : " + i + " of " + tileInfosCount + " for lod : " + lod);
             TileInfo tileInfo = tileInfos.get(i);
             Path tempPath = tileInfo.getTempPath();
             Path tempFolder = tempPath.getParent();
+            GaiaBoundingBox cartographicBBox = tileInfo.getCartographicBBox();
+            if (cartographicBBox == null) {
+                log.error("[ERROR] cartographicBBox is null.");
+                continue;
+            }
+
+            //Vector3d geoCoordCenter = tileInfo.getKmlInfo().getPosition(); // original.***
+            Vector3d geoCoordCenter = tileInfo.getTileTransformInfo().getPosition(); // use TileTransformInfo position instead of KmlInfo position
+            Vector3d scenePosWC = GlobeUtils.geographicToCartesianWgs84(geoCoordCenter);
+            Vector4d scenePosLC4d = new Vector4d(scenePosWC.x, scenePosWC.y, scenePosWC.z, 1.0);
+            scenePosLC4d = rootTransformMatrixInverse.transform(scenePosLC4d);
+            Vector3d scenePosLC = new Vector3d(scenePosLC4d.x, scenePosLC4d.y, scenePosLC4d.z);
+            reMeshParams.setScenePositionRelToCellGrid(scenePosLC);
 
             // load the file
             GaiaSet gaiaSet;
@@ -498,14 +449,12 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 throw new RuntimeException(e);
             }
             GaiaScene scene = new GaiaScene(gaiaSet);
-            GaiaBoundingBox gaiaSceneBBox = scene.updateBoundingBox();
             scene.setOriginalPath(tileInfo.getTempPath());
-            //scene.setOriginalPath(tileInfo.getScenePath());
             scene.makeTriangleFaces();
 
             gaiaSceneList.clear();
-            resultDecimatedScenes.clear();
             gaiaSceneList.add(scene);
+            resultReMeshedScenes.clear();
 
             List<GaiaAAPlane> cuttingPlanes = new ArrayList<>();
             Matrix4d transformMatrix = new Matrix4d();
@@ -521,10 +470,12 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             GaiaBoundingBox motherCartographicBoundingBox = this.calculateCartographicBoundingBox(scene, transformMatrix, motherBBoxLC);
 
             boolean makeSkirt = GlobalOptions.MAKE_SKIRT;
-            tilerExtensionModule.decimateNetSurfaceAndCutByObliqueCamera(gaiaSceneList, resultDecimatedScenes, decimateParameters, halfEdgeOctree, cuttingPlanes, pixelsForMeter, screenPixelsForMeter, makeSkirt);
 
-            if (resultDecimatedScenes.isEmpty()) {
-                log.error("[ERROR] resultDecimatedScenes is empty." + tempPath);
+            tilerExtensionModule.reMeshAndCutByObliqueCamera(gaiaSceneList, resultReMeshedScenes, reMeshParams, halfEdgeOctree, cuttingPlanes,
+                    pixelsForMeter, screenPixelsForMeter, makeSkirt);
+
+            if (resultReMeshedScenes.isEmpty()) {
+                log.error("[ERROR] resultReMeshedScenes is empty." + tempPath);
                 continue;
             }
 
@@ -542,9 +493,10 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 log.debug("cutTempLod folder created.");
             }
 
-            int resultDecimatedScenesCount = resultDecimatedScenes.size();
+
+            int resultDecimatedScenesCount = resultReMeshedScenes.size();
             for (int j = 0; j < resultDecimatedScenesCount; j++) {
-                HalfEdgeScene halfEdgeSceneLod = resultDecimatedScenes.get(j);
+                HalfEdgeScene halfEdgeSceneLod = resultReMeshedScenes.get(j);
                 GaiaBoundingBox boundingBoxCutLC = new GaiaBoundingBox();
                 GaiaScene gaiaSceneCut = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneLod);
                 GaiaBoundingBox cartographicBoundingBox = this.calculateCartographicBoundingBox(gaiaSceneCut, transformMatrix, boundingBoxCutLC);
@@ -584,11 +536,12 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                         // check if exist bufferedImage of the texture
 
                         if (texture.getBufferedImage() == null) {
-
+                            int hola = 0;
                         }
 
                         texture.setParentPath(imagesPath.toString());
                         texture.saveImage(texture.getFullPath());
+                        totalTexturesSaved++;
                     }
                 }
 
@@ -604,16 +557,29 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 newTileInfo.setBoundingBox(boundingBoxCutLC);
                 newTileInfo.setCartographicBBox(cartographicBoundingBox);
 
-                TileTransformInfo tileTransformInfoCut = TileTransformInfo.builder().position(tileInfo.getTileTransformInfo().getPosition()).build();
-                newTileInfo.setTileTransformInfo(tileTransformInfoCut);
+                TileTransformInfo kmlInfoCut = TileTransformInfo.builder().position(tileInfo.getTileTransformInfo().getPosition()).build();
+                newTileInfo.setTileTransformInfo(kmlInfoCut);
 
                 newTileInfo.setTempPath(tempPathLod);
                 newTileInfos.add(newTileInfo);
             }
         }
 
+        log.info("Total textures saved: " + totalTexturesSaved);
+
         tileInfos.clear();
         tileInfos.addAll(newTileInfos);
+    }
+
+    private Matrix4d getNodeTransformMatrix(Node node) {
+        Vector3d nodeCenterGeoCoordRad = node.getBoundingVolume().calcCenter();
+        Vector3d nodeCenterGeoCoordDeg = new Vector3d(Math.toDegrees(nodeCenterGeoCoordRad.x), Math.toDegrees(nodeCenterGeoCoordRad.y), nodeCenterGeoCoordRad.z);
+        Vector3d nodePosWC = GlobeUtils.geographicToCartesianWgs84(nodeCenterGeoCoordDeg);
+        Matrix4d nodeTMatrix = node.getTransformMatrix();
+        if (nodeTMatrix == null) {
+            nodeTMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(nodePosWC);
+        }
+        return nodeTMatrix;
     }
 
     public void decimateAndCutScenes(List<TileInfo> tileInfos, int lod, Node rootNode, int maxDepth, DecimateParameters decimateParameters, double screenPixelsForMeter) {
@@ -760,21 +726,12 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         tileInfos.addAll(newTileInfos);
     }
 
-    private double getNodeLatitudesLengthInMeters(Node node) {
-        // make globalBoundingBox as square
-        double[] region = node.getBoundingVolume().getRegion();
-        double minLatRad = region[1];
-        double maxLatRad = region[3];
-        return GlobeUtils.distanceBetweenLatitudesRad(minLatRad, maxLatRad);
-    }
-
     private void createNetSurfaceNodes(Node rootNode, List<TileInfo> tileInfos, int nodeDepth, int maxDepth, DecimateParameters decimateParameters) {
         // 1rst, find all tileInfos that intersects with the node
         log.info("Creating netSurface nodes for nodeDepth : " + nodeDepth + " of maxDepth : " + maxDepth);
         List<Node> nodes = new ArrayList<>();
         List<Node> intersectedNodes = new ArrayList<>();
 
-        //rootNode.getNodesByDepth(nodeDepth, nodes);
         List<TileInfo> tileInfosOfNode = new ArrayList<>();
         TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
         boolean makeVerticalSkirt = true;
@@ -806,12 +763,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             tileInfosOfNode.clear();
             Node node = nodes.get(i);
             tileInfosOfNode = nodeTileInfosMap.get(node);
-//            int tileInfosCount = tileInfos.size();
-//            for (TileInfo tileInfo : tileInfos) {
-//                if (intersectsNodeWithTileInfo(node, tileInfo)) {
-//                    tileInfosOfNode.add(tileInfo);
-//                }
-//            }
 
             int tileInfosOfNodeCount = tileInfosOfNode.size();
             if (tileInfosOfNodeCount == 0) continue;
@@ -988,28 +939,28 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             gaiaScene.clear();
             gaiaSet.clear();
 
-            // test save resultImages
-            String sceneName = "mosaicRenderTest_" + i + "_color";
-            String sceneRawName = sceneName;
-            imageExtension = "png";
-            String outputFolderPath = globalOptions.getOutputPath();
-            try {
-                File outputFile = new File(outputFolderPath, sceneRawName + "." + imageExtension);
-                log.info("[Write Image] : {}", outputFile.getAbsoluteFile());
-                ImageIO.write(bufferedImageColor, "png", outputFile);
-            } catch (Exception e) {
-                log.error("[ERROR] :", e);
-            }
-
-            try {
-                sceneName = "mosaicRenderTest_" + i + "_depth";
-                imageExtension = "png";
-                File outputFile = new File(outputFolderPath, sceneName + "." + imageExtension);
-                log.info("[Write Image] : {}", outputFile.getAbsoluteFile());
-                ImageIO.write(bufferedImageDepth, "png", outputFile);
-            } catch (Exception e) {
-                log.error("[ERROR] :", e);
-            }
+//            // test save resultImages
+//            String sceneName = "mosaicRenderTest_" + i + "_color";
+//            String sceneRawName = sceneName;
+//            imageExtension = "png";
+//            String outputFolderPath = globalOptions.getOutputPath();
+//            try {
+//                File outputFile = new File(outputFolderPath, sceneRawName + "." + imageExtension);
+//                log.info("[Write Image] : {}", outputFile.getAbsoluteFile());
+//                ImageIO.write(bufferedImageColor, "png", outputFile);
+//            } catch (Exception e) {
+//                log.error("[ERROR] :", e);
+//            }
+//
+//            try {
+//                sceneName = "mosaicRenderTest_" + i + "_depth";
+//                imageExtension = "png";
+//                File outputFile = new File(outputFolderPath, sceneName + "." + imageExtension);
+//                log.info("[Write Image] : {}", outputFile.getAbsoluteFile());
+//                ImageIO.write(bufferedImageDepth, "png", outputFile);
+//            } catch (Exception e) {
+//                log.error("[ERROR] :", e);
+//            }
         }
     }
 
@@ -1042,30 +993,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         }
 
         return floatMatrix;
-    }
-
-    private boolean intersectsNodeWithTileInfo(Node node, TileInfo tileInfo) {
-        BoundingVolume boundingVolume = node.getBoundingVolume();
-        double[] region = boundingVolume.getRegion();  // [minLonDeg, minLatDeg, maxLonDeg, maxLatDeg]
-
-        // compare longitudes
-        double minLonDeg = Math.toDegrees(region[0]);
-        double maxLonDeg = Math.toDegrees(region[2]);
-        GaiaBoundingBox tileBoundingBox = tileInfo.getCartographicBBox();
-
-        if (maxLonDeg < tileBoundingBox.getMinX() || minLonDeg > tileBoundingBox.getMaxX()) return false;
-
-        // compare latitudes
-        double minLatDeg = Math.toDegrees(region[1]);
-        double maxLatDeg = Math.toDegrees(region[3]);
-
-        if (maxLatDeg < tileBoundingBox.getMinY() || minLatDeg > tileBoundingBox.getMaxY()) return false;
-
-        // compare altitudes
-        double minAlt = region[4];
-        double maxAlt = region[5];
-
-        return !(maxAlt < tileBoundingBox.getMinZ()) && !(minAlt > tileBoundingBox.getMaxZ());
     }
 
     private void distributeContentsToNodesOctTree(Node rootNode, List<TileInfo> tileInfos, int nodeDepth, Map<Node, List<TileInfo>> nodeTileInfoMap) {
@@ -1121,42 +1048,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         return resultTileInfosCopy;
     }
 
-    private void makeSkirt(List<TileInfo> tileInfos) {
-        for (TileInfo tileInfo : tileInfos) {
-            Path path = tileInfo.getTempPath();
-
-            // load the file
-            try {
-                GaiaSet gaiaSet = GaiaSet.readFile(path);
-                if (gaiaSet == null) {
-                    log.error("[ERROR] gaiaSet is null. pth : " + path);
-                    continue;
-                }
-                GaiaScene scene = new GaiaScene(gaiaSet);
-
-                HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
-                halfEdgeScene.makeHorizontalSkirt();
-
-                // once scene is scissored, must change the materials of the gaiaSet and overwrite the file
-                GaiaScene skirtScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
-                GaiaSet gaiaSet2 = GaiaSet.fromGaiaScene(skirtScene);
-
-                // overwrite the file
-                gaiaSet2.writeFileInThePath(path);
-
-                scene.clear();
-                gaiaSet.clear();
-                halfEdgeScene.deleteObjects();
-                gaiaSet2.clear();
-                skirtScene.clear();
-            } catch (IOException e) {
-                log.error("[ERROR] :", e);
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    private HalfEdgeOctree getCuttingPlanesAndHalfEdgeOctree(TileInfo tileInfo, int lod, BoundingVolume rootNodeBoundingVolume, int depthIdx, List<GaiaAAPlane> resultPlanes, Matrix4d resultTransformMatrix) throws FileNotFoundException {
+    private HalfEdgeOctree getCuttingPlanesAndHalfEdgeOctree(TileInfo tileInfo, int lod, BoundingVolume rootNodeBoundingVolume, int depthIdx,
+                                                             List<GaiaAAPlane> resultPlanes, Matrix4d resultTransformMatrix) throws FileNotFoundException {
         // Note : tileInfos must contain only one tileInfo
         // calculate the divisions of the rectangle cake
         // int maxDepth = rootNode.findMaxDepth();
@@ -1407,7 +1300,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         System.gc();
     }
 
-    public List<TileInfo> cutHalfEdgeSceneByGaiaAAPlanesAndSaveTileInfos(HalfEdgeScene halfEdgeScene, List<GaiaAAPlane> planes, HalfEdgeOctree resultOctree, boolean scissorTextures, boolean makeSkirt, Path cutTempLodPath, Matrix4d transformMatrix, TileInfo motherTileInfo) {
+    public List<TileInfo> cutHalfEdgeSceneByGaiaAAPlanesAndSaveTileInfos(HalfEdgeScene halfEdgeScene, List<GaiaAAPlane> planes, HalfEdgeOctree resultOctree,
+                                                                         boolean scissorTextures, boolean makeSkirt, Path cutTempLodPath, Matrix4d transformMatrix, TileInfo motherTileInfo) {
         TileTransformInfo tileTransformInfo = motherTileInfo.getTileTransformInfo();
         Vector3d geoCoordPosition = tileTransformInfo.getPosition();
 
