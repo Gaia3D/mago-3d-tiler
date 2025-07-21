@@ -32,6 +32,10 @@ public class GaiaBoundingBox implements Serializable {
         return new Vector3d((minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2);
     }
 
+    public Vector3d getFloorCenter() {
+        return new Vector3d((minX + maxX) / 2, (minY + maxY) / 2, minZ);
+    }
+
     public Vector3d getMinPosition() {
         return new Vector3d(minX, minY, minZ);
     }
@@ -138,6 +142,31 @@ public class GaiaBoundingBox implements Serializable {
             maxY = boundingBox.getMaxY();
             maxZ = boundingBox.getMaxZ();
         }
+    }
+
+    public GaiaBoundingBox multiplyMatrix4d(Matrix4d matrix) {
+        return multiplyMatrix4d(matrix, this);
+    }
+
+    public GaiaBoundingBox multiplyMatrix4d(Matrix4d matrix, GaiaBoundingBox boundingBox) {
+        GaiaBoundingBox result = new GaiaBoundingBox();
+        Vector3d minPoint = new Vector3d(boundingBox.minX, boundingBox.minY, boundingBox.minZ);
+        Vector3d maxPoint = new Vector3d(boundingBox.maxX, boundingBox.maxY, boundingBox.maxZ);
+
+        // Transform the min and max points using the matrix
+        matrix.transformPosition(minPoint);
+        matrix.transformPosition(maxPoint);
+
+        // Set the transformed points as the new bounding box
+        result.setMinX(Math.min(minPoint.x, maxPoint.x));
+        result.setMinY(Math.min(minPoint.y, maxPoint.y));
+        result.setMinZ(Math.min(minPoint.z, maxPoint.z));
+        result.setMaxX(Math.max(minPoint.x, maxPoint.x));
+        result.setMaxY(Math.max(minPoint.y, maxPoint.y));
+        result.setMaxZ(Math.max(minPoint.z, maxPoint.z));
+        result.isInit = true;
+
+        return result;
     }
 
     public GaiaBoundingBox convertLocalToLonlatBoundingBox(Vector3d center) {

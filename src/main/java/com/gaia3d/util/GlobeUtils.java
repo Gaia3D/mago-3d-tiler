@@ -137,10 +137,10 @@ public class GlobeUtils {
         return cartesianToGeographicWgs84(new Vector3d(x, y, z));
     }
 
-    public static Vector3d cartesianToGeographicWgs84(Vector3d position) {
-        double x = position.x;
-        double y = position.y;
-        double z = position.z;
+    public static Vector3d cartesianToGeographicWgs84(Vector3d cartographic) {
+        double x = cartographic.x;
+        double y = cartographic.y;
+        double z = cartographic.z;
 
         double xxpyy = x * x + y * y;
         double sqrtXXpYY = Math.sqrt(xxpyy);
