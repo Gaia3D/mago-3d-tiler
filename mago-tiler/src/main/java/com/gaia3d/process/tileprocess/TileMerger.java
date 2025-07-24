@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
+import com.gaia3d.process.tileprocess.tile.tileset.TilesetV2;
 import com.gaia3d.process.tileprocess.tile.tileset.asset.AssetV1;
 import com.gaia3d.process.tileprocess.tile.tileset.asset.AssetV2;
 import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
@@ -93,8 +94,13 @@ public class TileMerger {
 
         for (File tilesetJson : tilesetJsons) {
             try {
-                Tileset tileset = objectMapper.readValue(tilesetJson, Tileset.class);
-                tilesetMap.put(tilesetJson, tileset);
+                if (globalOptions.getTilesVersion().equals("1.0")) {
+                    Tileset tileset = objectMapper.readValue(tilesetJson, Tileset.class);
+                    tilesetMap.put(tilesetJson, tileset);
+                } else {
+                    TilesetV2 tileset = objectMapper.readValue(tilesetJson, TilesetV2.class);
+                    tilesetMap.put(tilesetJson, tileset);
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
