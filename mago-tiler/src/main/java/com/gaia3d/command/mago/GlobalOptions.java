@@ -309,6 +309,8 @@ public class GlobalOptions {
         instance.setMinimumHeight(command.hasOption(ProcessOptions.MINIMUM_HEIGHT.getLongName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.MINIMUM_HEIGHT.getLongName())) : GlobalConstants.DEFAULT_MINIMUM_HEIGHT);
         instance.setSkirtHeight(command.hasOption(ProcessOptions.SKIRT_HEIGHT.getLongName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.SKIRT_HEIGHT.getLongName())) : GlobalConstants.DEFAULT_SKIRT_HEIGHT);
 
+        instance.setSplitByNode(command.hasOption(ProcessOptions.SPLIT_BY_NODE.getLongName()));
+
         // Attribute Filter ex) "classification=window,door;type=building"
         if (command.hasOption(ProcessOptions.ATTRIBUTE_FILTER.getLongName())) {
             List<AttributeFilter> attributeFilters = instance.getAttributeFilters();

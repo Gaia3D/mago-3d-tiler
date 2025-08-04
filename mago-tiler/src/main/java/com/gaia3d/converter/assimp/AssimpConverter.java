@@ -185,8 +185,6 @@ public class AssimpConverter implements Converter {
             GaiaBoundingBox boundingBox = rootNode.getBoundingBox(null);
             double geometricError = boundingBox.getLongestDistance();
             attribute.getAttributes().put("geometricError", String.valueOf(geometricError));
-
-            log.debug("Bounding Box for Node {}: {}", childNode.getName(), boundingBox);
         }
         return gaiaScenes;
     }

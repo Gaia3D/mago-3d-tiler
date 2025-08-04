@@ -36,6 +36,23 @@ class DefaultBuildTest {
     }
 
     @Test
+    void merge() {
+        ClassLoader classLoader = getClass().getClassLoader();
+        File input = new File(classLoader.getResource("./sample-output").getFile());
+        File output = new File(classLoader.getResource("./sample-output").getFile());
+        String[] args = {
+                "-input", input.getAbsolutePath(),
+                "-output", output.getAbsolutePath(),
+                "-merge",
+        };
+        try {
+            Mago3DTilerMain.main(args);
+        } catch (Exception e) {
+            assert false : "Expected no exception to be thrown for GeoPackage conversion.";
+        }
+    }
+
+    @Test
     void noInput() {
         //ERROR_CASE
         ClassLoader classLoader = getClass().getClassLoader();
