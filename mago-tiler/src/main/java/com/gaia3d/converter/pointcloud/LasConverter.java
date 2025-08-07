@@ -7,10 +7,7 @@ import com.gaia3d.basic.pointcloud.GaiaPointCloudTemp;
 import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.util.GlobeUtils;
-import com.github.mreutegg.laszip4j.CloseablePointIterable;
-import com.github.mreutegg.laszip4j.LASHeader;
-import com.github.mreutegg.laszip4j.LASPoint;
-import com.github.mreutegg.laszip4j.LASReader;
+import com.github.mreutegg.laszip4j.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
@@ -126,24 +123,28 @@ public class LasConverter {
         log.debug("Header Size: {}", headerSize);
 
         boolean isDefaultCrs = globalOptions.getSourceCrs().equals(GlobalConstants.DEFAULT_SOURCE_CRS);
-        header.getVariableLengthRecords().forEach((record) -> {
-            if (isDefaultCrs && record.getUserID().equals("LASF_Projection")) {
-                String wktCRS = record.getDataAsString();
-                CoordinateReferenceSystem crs = GlobeUtils.convertWkt(wktCRS);
-                if (crs != null) {
-                    var convertedCrs = GlobeUtils.convertProj4jCrsFromGeotoolsCrs(crs);
-                    globalOptions.setSourceCrs(convertedCrs);
-                    log.info(" - Coordinate Reference System : {}", wktCRS);
-                } else {
-                    String epsg = GlobeUtils.extractEpsgCodeFromWTK(wktCRS);
-                    if (epsg != null) {
-                        CRSFactory factory = new CRSFactory();
-                        globalOptions.setSourceCrs(factory.createFromName("EPSG:" + epsg));
-                        log.info(" - Coordinate Reference System : {}", epsg);
+        try {
+            header.getVariableLengthRecords().forEach((record) -> {
+                if (isDefaultCrs && record.getUserID().equals("LASF_Projection")) {
+                    String wktCRS = record.getDataAsString();
+                    CoordinateReferenceSystem crs = GlobeUtils.convertWkt(wktCRS);
+                    if (crs != null) {
+                        var convertedCrs = GlobeUtils.convertProj4jCrsFromGeotoolsCrs(crs);
+                        globalOptions.setSourceCrs(convertedCrs);
+                        log.info(" - Coordinate Reference System : {}", wktCRS);
+                    } else {
+                        String epsg = GlobeUtils.extractEpsgCodeFromWTK(wktCRS);
+                        if (epsg != null) {
+                            CRSFactory factory = new CRSFactory();
+                            globalOptions.setSourceCrs(factory.createFromName("EPSG:" + epsg));
+                            log.info(" - Coordinate Reference System : {}", epsg);
+                        }
                     }
                 }
-            }
-        });
+            });
+        } catch (Exception e) {
+            log.error("[ERROR] Failed to read LAS header.", e);
+        }
 
         int percentage = globalOptions.getPointRatio();
         if (percentage < 1) {
