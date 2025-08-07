@@ -58,6 +58,16 @@ public class GaiaBoundingBox implements Serializable {
         this.isInit = bbox.isInit;
     }
 
+    public void set(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
+        this.minX = minX;
+        this.minY = minY;
+        this.minZ = minZ;
+        this.maxX = maxX;
+        this.maxY = maxY;
+        this.maxZ = maxZ;
+        this.isInit = true;
+    }
+
     public void addPoint(double x, double y, double z) {
         addPoint(new Vector3d(x, y, z));
     }

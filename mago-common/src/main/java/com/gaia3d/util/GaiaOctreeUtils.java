@@ -2,7 +2,7 @@ package com.gaia3d.util;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.octree.GaiaFaceData;
-import com.gaia3d.basic.geometry.octree.GaiaOctree;
+import com.gaia3d.basic.geometry.octree.GaiaOctreeFaces;
 import com.gaia3d.basic.geometry.octree.GaiaOctreeCoordinate;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.TextureType;
@@ -122,12 +122,12 @@ public class GaiaOctreeUtils {
         }
     }
 
-    public static GaiaOctree getSceneOctree(GaiaScene gaiaScene, float octreeMinSize) {
+    public static GaiaOctreeFaces getSceneOctree(GaiaScene gaiaScene, float octreeMinSize) {
         List<GaiaFaceData> faceDataList = new ArrayList<>();
         getFaceDataListOfScene(gaiaScene, faceDataList);
 
         GaiaBoundingBox boundingBox = gaiaScene.updateBoundingBox();
-        GaiaOctree octree = new GaiaOctree(null);
+        GaiaOctreeFaces octree = new GaiaOctreeFaces(null);
         octree.setSize(boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ(), boundingBox.getMaxX(), boundingBox.getMaxY(), boundingBox.getMaxZ());
         octree.setAsCube();
         double size = octree.getMaxX() - octree.getMinX();
