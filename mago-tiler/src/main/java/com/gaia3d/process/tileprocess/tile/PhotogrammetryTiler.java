@@ -534,11 +534,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                     List<GaiaTexture> textures = material.getTextures().get(TextureType.DIFFUSE);
                     for (GaiaTexture texture : textures) {
                         // check if exist bufferedImage of the texture
-
-                        if (texture.getBufferedImage() == null) {
-                            int hola = 0;
-                        }
-
                         texture.setParentPath(imagesPath.toString());
                         texture.saveImage(texture.getFullPath());
                         totalTexturesSaved++;

@@ -131,7 +131,6 @@ public class MainRenderer implements IAppLogic {
             // now, cut the halfEdgeScene and make cube-textures by rendering
             double gridSpacing = bboxMaxSize / 3.0;
             if (lod == 1) {
-                // hola
                 gridSpacing = bboxMaxSize / 5.0;
             }
             HalfEdgeOctree resultOctree = new HalfEdgeOctree(null);

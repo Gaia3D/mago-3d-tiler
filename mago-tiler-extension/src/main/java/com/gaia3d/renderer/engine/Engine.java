@@ -248,7 +248,6 @@ public class Engine {
                 double minH = bbox.getMinZ();
                 double maxH = bbox.getMaxZ() * 1.1;
                 double dist = 6.0;
-                GaiaSceneUtils.deformSceneByVerticesConvexity(gaiaScene, dist, minH, maxH);
 
                 // now, update the renderableScene
                 InternDataConverter internDataConverter = new InternDataConverter();
