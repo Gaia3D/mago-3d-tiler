@@ -40,8 +40,18 @@ public class GaiaOctree<E> {
         this.contents.add(content);
     }
 
+    public void addContents(List<E> contents) {
+        if (contents != null && !contents.isEmpty()) {
+            this.contents.addAll(contents);
+        }
+    }
+
     public void removeContent(E content) {
         this.contents.remove(content);
+    }
+
+    public void clearContents() {
+        this.contents.clear();
     }
 
     public int getContentsLength() {
@@ -54,6 +64,10 @@ public class GaiaOctree<E> {
 
     public boolean isRoot() {
         return (parent == null);
+    }
+
+    protected GaiaOctree<E> createChild(GaiaBoundingBox boundingBox) {
+        return new GaiaOctree<>(this, boundingBox);
     }
 
     public void createChildren() {
@@ -75,56 +89,56 @@ public class GaiaOctree<E> {
 
         // idx 0. (minX, minY, minZ, midX, midY, midZ)
         childBBox.set(minX, minY, minZ, midX, midY, midZ);
-        GaiaOctree<E> child = new GaiaOctree<E>(this, childBBox);
+        GaiaOctree<E> child = createChild(childBBox);
         child.index = GaiaOctreeIndex.LEFT_FRONT_BOTTOM;
         child.depth = this.getDepth() + 1;
         children.add(child);
 
         // idx 1. (midX, minY, minZ, maxX, midY, midZ)
         childBBox.set(midX, minY, minZ, maxX, midY, midZ);
-        child = new GaiaOctree<E>(this, childBBox);
+        child = createChild(childBBox);
         child.index = GaiaOctreeIndex.RIGHT_FRONT_BOTTOM;
         child.depth = this.getDepth() + 1;
         children.add(child);
 
         // idx 2. (midX, midY, minZ, maxX, maxY, midZ)
         childBBox.set(midX, midY, minZ, maxX, maxY, midZ);
-        child = new GaiaOctree<E>(this, childBBox);
+        child = createChild(childBBox);
         child.index = GaiaOctreeIndex.RIGHT_REAR_BOTTOM;
         child.depth = this.getDepth() + 1;
         children.add(child);
 
         // idx 3. (minX, midY, minZ, midX, maxY, midZ)
         childBBox.set(minX, midY, minZ, midX, maxY, midZ);
-        child = new GaiaOctree<E>(this, childBBox);
+        child = createChild(childBBox);
         child.index = GaiaOctreeIndex.LEFT_REAR_BOTTOM;
         child.depth = this.getDepth() + 1;
         children.add(child);
 
         // idx 4.(minX, minY, midZ, midX, midY, maxZ)
         childBBox.set(minX, minY, midZ, midX, midY, maxZ);
-        child = new GaiaOctree<E>(this, childBBox);
+        child = createChild(childBBox);
         child.index = GaiaOctreeIndex.LEFT_FRONT_TOP;
         child.depth = this.getDepth() + 1;
         children.add(child);
 
         // idx 5.(midX, minY, midZ, maxX, midY, maxZ)
         childBBox.set(midX, minY, midZ, maxX, midY, maxZ);
-        child = new GaiaOctree<E>(this, childBBox);
+        child = createChild(childBBox);
         child.index = GaiaOctreeIndex.RIGHT_FRONT_TOP;
         child.depth = this.getDepth() + 1;
         children.add(child);
 
         // idx 6.(midX, midY, midZ, maxX, maxY, maxZ)
         childBBox.set(midX, midY, midZ, maxX, maxY, maxZ);
-        child = new GaiaOctree<E>(this, childBBox);
+        child = createChild(childBBox);
         child.index = GaiaOctreeIndex.RIGHT_REAR_TOP;
         child.depth = this.getDepth() + 1;
         children.add(child);
 
         // idx 7.(minX, midY, midZ, midX, maxY, maxZ)
         childBBox.set(minX, midY, midZ, midX, maxY, maxZ);
-        child = new GaiaOctree<E>(this, childBBox);
+        child = createChild(childBBox);
         child.index = GaiaOctreeIndex.LEFT_REAR_TOP;
         child.depth = this.getDepth() + 1;
         children.add(child);

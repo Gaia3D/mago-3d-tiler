@@ -2,6 +2,7 @@ package com.gaia3d.basic.halfedge;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.entities.GaiaPlane;
+import com.gaia3d.basic.geometry.octree.GaiaOctree;
 import com.gaia3d.basic.geometry.octree.GaiaOctreeVertices;
 import com.gaia3d.basic.model.*;
 import lombok.extern.slf4j.Slf4j;
@@ -1353,22 +1354,30 @@ public class HalfEdgeUtils {
 
     public static void weldVerticesGaiaSurface(GaiaSurface gaiaSurface, List<GaiaVertex> gaiaVertices, double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
         // Weld the vertices
-        GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null);
-        octreeVertices.getVertices().addAll(gaiaVertices);
-        octreeVertices.calculateSize();
-        octreeVertices.setAsCube();
+        GaiaBoundingBox boundingBox = new GaiaBoundingBox();
+        gaiaVertices.forEach(gaiaVertex -> {
+            boundingBox.addPoint(gaiaVertex.getPosition());
+        });
+
+        // make bbox as cube.***
+        GaiaBoundingBox cubeBoundingBox = boundingBox.createCubeFromMinPosition();
+        GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null, cubeBoundingBox);
+        octreeVertices.addContents(gaiaVertices);
+//        octreeVertices.getVertices().addAll(gaiaVertices);
+//        octreeVertices.calculateSize();
+//        octreeVertices.setAsCube();
         octreeVertices.setMaxDepth(10);
         octreeVertices.setMinBoxSize(1.0); // 1m
 
         octreeVertices.makeTreeByMinVertexCount(50);
 
-        List<GaiaOctreeVertices> octreesWithContents = new ArrayList<>();
-        octreeVertices.extractOctreesWithContents(octreesWithContents);
+        List<GaiaOctree<GaiaVertex>> octreesWithContents = octreeVertices.extractOctreesWithContents();
+        //octreeVertices.extractOctreesWithContents(octreesWithContents);
 
         Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster = new HashMap<>();
 
-        for (GaiaOctreeVertices octree : octreesWithContents) {
-            List<GaiaVertex> vertices = octree.getVertices();
+        for (GaiaOctree<GaiaVertex> octree : octreesWithContents) {
+            List<GaiaVertex> vertices = octree.getContents();
             getWeldableVertexMap(mapVertexToVertexMaster, vertices, error, checkTexCoord, checkNormal, checkColor, checkBatchId);
         }
 

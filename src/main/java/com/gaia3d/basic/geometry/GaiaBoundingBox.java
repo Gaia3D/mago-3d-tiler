@@ -298,4 +298,15 @@ public class GaiaBoundingBox implements Serializable {
     public boolean isBoxInside(GaiaBoundingBox box) {
         return box.getMinX() >= minX && box.getMinY() >= minY && box.getMinZ() >= minZ && box.getMaxX() <= maxX && box.getMaxY() <= maxY && box.getMaxZ() <= maxZ;
     }
+
+    public GaiaBoundingBox createCubeFromMinPosition() {
+        double maxSize = getMaxSize();
+        double minX = this.minX;
+        double minY = this.minY;
+        double minZ = this.minZ;
+        double maxX = minX + maxSize;
+        double maxY = minY + maxSize;
+        double maxZ = minZ + maxSize;
+        return new GaiaBoundingBox(minX, minY, minZ, maxX, maxY, maxZ, true);
+    }
 }

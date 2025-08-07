@@ -4,6 +4,7 @@ import com.gaia3d.basic.exchangable.GaiaBuffer;
 import com.gaia3d.basic.exchangable.GaiaBufferDataSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
+import com.gaia3d.basic.geometry.octree.GaiaOctree;
 import com.gaia3d.basic.geometry.octree.GaiaOctreeVertices;
 import com.gaia3d.basic.model.structure.PrimitiveStructure;
 import com.gaia3d.basic.types.AttributeType;
@@ -44,7 +45,7 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         for (GaiaVertex vertex : vertices) {
             Vector3d position = vertex.getPosition();
-            Vector3d transformedPosition = new Vector3d();
+            Vector3d transformedPosition = new Vector3d(position);
             if (transform != null) {
                 transform.transformPosition(position, transformedPosition);
             }
@@ -404,22 +405,25 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
 
     public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
         // Weld the vertices.
-        GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null);
-        octreeVertices.getVertices().addAll(this.vertices);
-        octreeVertices.calculateSize();
-        octreeVertices.setAsCube();
+        GaiaBoundingBox boundingBox = this.getBoundingBox(null);
+        double minX = boundingBox.getMinX();
+        double minY = boundingBox.getMinY();
+        double minZ = boundingBox.getMinZ();
+        double maxSize = boundingBox.getMaxSize();
+        boundingBox.set(minX, minY, minZ, minX + maxSize, minY + maxSize, minZ + maxSize); // cube bounding box
+
+        GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null, boundingBox);
+        octreeVertices.addContents(this.vertices);
         octreeVertices.setMaxDepth(10);
         octreeVertices.setMinBoxSize(1.0); // 1m
 
         octreeVertices.makeTreeByMinVertexCount(50);
 
-        List<GaiaOctreeVertices> octreesWithContents = new ArrayList<>();
-        octreeVertices.extractOctreesWithContents(octreesWithContents);
-
+        List<GaiaOctree<GaiaVertex>> octreesWithContents = octreeVertices.extractOctreesWithContents();
         Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster = new HashMap<>();
 
-        for (GaiaOctreeVertices octree : octreesWithContents) {
-            List<GaiaVertex> vertices = octree.getVertices();
+        for (GaiaOctree<GaiaVertex> octree : octreesWithContents) {
+            List<GaiaVertex> vertices = octree.getContents();
             getWeldableVertexMap(mapVertexToVertexMaster, vertices, error, checkTexCoord, checkNormal, checkColor, checkBatchId);
         }
 
