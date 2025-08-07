@@ -177,6 +177,18 @@ class B3dmReleaseTest {
     }
 
     @Test
+    void batched53_1() {
+        String path = "B53-railway-citygml";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-SBN",
+                "-c", "5186",
+                "-splitByNode"
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
     void batched70() {
         String path = "B70-sejong-bridge-ifc";
         String[] args = new String[] {

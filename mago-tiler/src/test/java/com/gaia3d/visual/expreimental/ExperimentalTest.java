@@ -6,12 +6,61 @@ import org.junit.jupiter.api.Test;
 
 public class ExperimentalTest {
     @Test
+    void sunEnergySample() {
+        String path = "sun-energy-sample";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-splitByNode",
+                "-it", "glb",
+                //"-rotateXAxis", "90",
+                "-refineAdd",
+                "-c", "5186",
+                "-debug"
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void sunEnergyIncheon() {
+        String path = "sun-energy-incheon2";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-splitByNode",
+                "-it", "glb",
+                //"-rotateXAxis", "90",
+                "-refineAdd",
+                "-c", "5186",
+                "-debug"
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void sunEnergy25cm() {
+        String path = "sun-energy-25cm";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-splitByNode",
+                "-it", "glb",
+                //"-rotateXAxis", "90",
+                "-refineAdd",
+                "-c", "5186",
+                "-debug"
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
     void incheon() {
         String path = "incheon";
         String[] args = new String[] {
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-rotateXAxis", "90",
+                "-splitByNode",
                 "-refineAdd",
                 "-c", "5186"
         };
@@ -25,8 +74,38 @@ public class ExperimentalTest {
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-rotateXAxis", "90",
+                "-splitByNode",
                 "-refineAdd",
                 "-c", "5186"
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void incheon_mini() {
+        String path = "incheon_mini";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-rotateXAxis", "90",
+                "-splitByNode",
+                "-refineAdd",
+                "-c", "5186"
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    //energy_manual
+
+    @Test
+    void energyManual() {
+        String path = "energy_manual";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-rotateXAxis", "90",
+                "-refineAdd",
+                //"-c", "5186"
         };
         MagoTestConfig.execute(args);
     }
@@ -51,6 +130,39 @@ public class ExperimentalTest {
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-debug",
                 "-c", "4326",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void ecefRedCube() {
+        String path = "ecef_red_cube.glb";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-c", "4978",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void ecefVoxel888() {
+        String path = "ecef_voxel_8x8x8.glb";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-c", "4978",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void ecefVoxel888V2() {
+        String path = "ecef_voxel_8x8x8_simple.glb";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-c", "4978",
         };
         MagoTestConfig.execute(args);
     }

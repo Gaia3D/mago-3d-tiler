@@ -63,8 +63,8 @@ public class GaiaStrictTranslation implements PreProcess {
         // calculate cartographic bounding box
         double[] centerCartesianWC = GlobeUtils.geographicToCartesianWgs84(centerGeoCoord.x, centerGeoCoord.y, centerGeoCoord.z);
         Matrix4d tMatrixAtCenterGeoCoord = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerCartesianWC[0], centerCartesianWC[1], centerCartesianWC[2]);
-        Matrix4d globalTMatrixInv = new Matrix4d(tMatrixAtCenterGeoCoord);
-        globalTMatrixInv.invert();
+        //Matrix4d globalTMatrixInv = new Matrix4d(tMatrixAtCenterGeoCoord);
+        //globalTMatrixInv.invert();
 
         // Calculate cartographicBoundingBox
         double minPosLCX = bboxLC.getMinX();

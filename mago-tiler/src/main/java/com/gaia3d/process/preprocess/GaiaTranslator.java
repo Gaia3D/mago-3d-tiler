@@ -32,27 +32,6 @@ public class GaiaTranslator implements PreProcess {
 
         GlobalOptions globalOptions = GlobalOptions.getInstance();
 
-        /*FormatType inputType = globalOptions.getInputFormat();
-        Vector3d center = getPosition(inputType, gaiaScene);
-        // set position terrain height
-        if (!coverages.isEmpty()) {
-            center.z = 0.0d;
-            coverages.forEach((coverage) -> {
-                DirectPosition worldPosition = new DirectPosition2D(DefaultGeographicCRS.WGS84, center.x, center.y);
-                double[] altitude = new double[1];
-                altitude[0] = 0.0d;
-                try {
-                    coverage.evaluate(worldPosition, altitude);
-                } catch (Exception e) {
-                    log.debug("[DEBUG] Failed to load terrain height. Out of range");
-                }
-                if (altitude[0] != 0.0d && !Double.isNaN(altitude[0])) {
-                    center.z = altitude[0];
-                }
-            });
-        }*/
-
-
         GaiaScene gaiaScene = tileInfo.getScene();
         GaiaBoundingBox boundingBox = gaiaScene.updateBoundingBox();
 
