@@ -77,7 +77,7 @@ public class Instanced3DModelTiler extends DefaultTiler implements Tiler {
             AssetV2 asset = new AssetV2();
             tileset.setAsset(asset);
         }
-        //tileset.setGeometricError(instanceGeometricError);
+        tileset.setGeometricError(instanceGeometricError);
         tileset.setRoot(root);
         return tileset;
     }

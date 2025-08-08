@@ -76,6 +76,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         root.setNodeCode("R");
         root.setBoundingBox(transformedBoundingBox);
         root.setRefine(Node.RefineType.ADD);
+        root.setGeometricError(geometricError);
 
         BoundingVolume boundingVolume = new BoundingVolume(transformedBoundingBox, BoundingVolume.BoundingVolumeType.REGION);
 
