@@ -86,6 +86,7 @@ dependencies {
     runtimeOnly "org.lwjgl:lwjgl-stb::natives-macos"
     runtimeOnly "org.lwjgl:lwjgl-ktx::natives-macos"
 }
+
 test {
     useJUnitPlatform {
         includeTags 'default'

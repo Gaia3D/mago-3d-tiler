@@ -4,6 +4,7 @@ import com.gaia3d.command.mago.ProcessOptions;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
@@ -107,7 +108,16 @@ public class Configuration {
         }
         File file = new File(path);
         if (file.exists() && file.isFile()) {
-            File backup = new File(path + "_" + file.lastModified());
+            File parentDir = file.getParentFile();
+
+            String fileName = file.getName();
+            String baseName = FilenameUtils.getBaseName(fileName);
+            String extension = FilenameUtils.getExtension(fileName);
+
+            long lastModified = file.lastModified();
+            String newFileName = baseName + "-" + lastModified + (extension.isEmpty() ? "" : "." + extension);
+
+            File backup = new File(parentDir, newFileName);
             Files.move(file.toPath(), backup.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
         return FileAppender.newBuilder().setName("FileLogger")

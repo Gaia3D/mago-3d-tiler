@@ -115,7 +115,6 @@ public class GaiaRelocationML implements PostProcess {
                         } catch (IOException e) {
                             log.debug("Error writing image: {}", e);
                         }
-                        int hola = 0;
                     }
                 }
             }
