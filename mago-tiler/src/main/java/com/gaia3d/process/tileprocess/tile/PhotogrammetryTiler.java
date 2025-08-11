@@ -9,7 +9,8 @@ import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.exchangable.SceneInfo;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
-import com.gaia3d.basic.geometry.octree.HalfEdgeOctree;
+import com.gaia3d.basic.geometry.octree.GaiaOctree;
+import com.gaia3d.basic.geometry.octree.HalfEdgeOctreeFaces;
 import com.gaia3d.basic.halfedge.*;
 import com.gaia3d.basic.model.GaiaMaterial;
 import com.gaia3d.basic.model.GaiaNode;
@@ -30,7 +31,6 @@ import com.gaia3d.process.tileprocess.tile.tileset.node.BoundingVolume;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Content;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 import com.gaia3d.util.DecimalUtils;
-import com.gaia3d.util.GaiaSceneUtils;
 import com.gaia3d.util.GlobeUtils;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -459,19 +459,27 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 
             List<GaiaAAPlane> cuttingPlanes = new ArrayList<>();
             Matrix4d transformMatrix = new Matrix4d();
-            HalfEdgeOctree halfEdgeOctree = null;
+
+            GaiaBoundingBox localBoundingBox = null;
             try {
                 BoundingVolume rootNodeBoundingVolume = rootNode.getBoundingVolume();
-                halfEdgeOctree = this.getCuttingPlanesAndHalfEdgeOctree(tileInfo, lod, rootNodeBoundingVolume, maxDepth, cuttingPlanes, transformMatrix);
+                localBoundingBox = this.getCuttingPlanesAndLocalBoundingBox(tileInfo, lod, rootNodeBoundingVolume, maxDepth, cuttingPlanes, transformMatrix);
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             }
+
+            double localBBoxXSize = localBoundingBox.getSizeX();
+            double localBBoxYSize = localBoundingBox.getSizeY();
+            double localBBoxZSize = localBoundingBox.getSizeZ();
 
             GaiaBoundingBox motherBBoxLC = new GaiaBoundingBox();
             GaiaBoundingBox motherCartographicBoundingBox = this.calculateCartographicBoundingBox(scene, transformMatrix, motherBBoxLC);
 
             boolean makeSkirt = GlobalConstants.MAKE_SKIRT;
-            tilerExtensionModule.reMeshAndCutByObliqueCamera(gaiaSceneList, resultReMeshedScenes, reMeshParams, halfEdgeOctree, cuttingPlanes,
+            HalfEdgeOctreeFaces halfEdgeOctreeFaces = new HalfEdgeOctreeFaces(null, localBoundingBox);
+            int currDepth = maxDepth - lod;
+            halfEdgeOctreeFaces.setLimitDepth(currDepth);
+            tilerExtensionModule.reMeshAndCutByObliqueCamera(gaiaSceneList, resultReMeshedScenes, reMeshParams, halfEdgeOctreeFaces, cuttingPlanes,
                     pixelsForMeter, screenPixelsForMeter, makeSkirt);
 
             if (resultReMeshedScenes.isEmpty()) {
@@ -614,17 +622,23 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 
             List<GaiaAAPlane> cuttingPlanes = new ArrayList<>();
             Matrix4d transformMatrix = new Matrix4d();
-            HalfEdgeOctree halfEdgeOctree = null;
+
+            GaiaBoundingBox localBoundingBox = null;
             try {
                 BoundingVolume rootNodeBoundingVolume = rootNode.getBoundingVolume();
                 BoundingVolume rootNodeBoundingVolumeCopy = new BoundingVolume(rootNodeBoundingVolume);
-                halfEdgeOctree = this.getCuttingPlanesAndHalfEdgeOctree(tileInfo, lod, rootNodeBoundingVolumeCopy, maxDepth, cuttingPlanes, transformMatrix);
+                localBoundingBox = this.getCuttingPlanesAndLocalBoundingBox(tileInfo, lod, rootNodeBoundingVolumeCopy, maxDepth, cuttingPlanes, transformMatrix);
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             }
 
             boolean makeSkirt = GlobalConstants.MAKE_SKIRT;
-            tilerExtensionModule.decimateAndCutByObliqueCamera(gaiaSceneList, resultDecimatedScenes, decimateParameters, halfEdgeOctree, cuttingPlanes, screenPixelsForMeter, makeSkirt);
+            HalfEdgeOctreeFaces halfEdgeOctreeFaces = new HalfEdgeOctreeFaces(null, localBoundingBox);
+//            halfEdgeOctreeFaces.setSize(localBoundingBox.getMinX(), localBoundingBox.getMinY(), localBoundingBox.getMinZ(),
+//                    localBoundingBox.getMaxX(), localBoundingBox.getMaxY(), localBoundingBox.getMaxZ());
+            int currDepth = maxDepth - lod;
+            halfEdgeOctreeFaces.setLimitDepth(currDepth);
+            tilerExtensionModule.decimateAndCutByObliqueCamera(gaiaSceneList, resultDecimatedScenes, decimateParameters, halfEdgeOctreeFaces, cuttingPlanes, screenPixelsForMeter, makeSkirt);
 
             if (resultDecimatedScenes.isEmpty()) {
                 log.error("[ERROR] resultDecimatedScenes is empty." + tempPath);
@@ -1043,8 +1057,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         return resultTileInfosCopy;
     }
 
-    private HalfEdgeOctree getCuttingPlanesAndHalfEdgeOctree(TileInfo tileInfo, int lod, BoundingVolume rootNodeBoundingVolume, int depthIdx,
-                                                             List<GaiaAAPlane> resultPlanes, Matrix4d resultTransformMatrix) throws FileNotFoundException {
+    private GaiaBoundingBox getCuttingPlanesAndLocalBoundingBox(TileInfo tileInfo, int lod, BoundingVolume rootNodeBoundingVolume, int depthIdx,
+                                                                List<GaiaAAPlane> resultPlanes, Matrix4d resultTransformMatrix) throws FileNotFoundException {
         // Note : tileInfos must contain only one tileInfo
         // calculate the divisions of the rectangle cake
         // int maxDepth = rootNode.findMaxDepth();
@@ -1117,7 +1131,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             double latDeg = latDivisions.get(i);
             double altitude = altDivisions.get(i);
 
-            // Longitude plane : create a point with lonDeg, geoCoordPosition.y, 0.0
+            // Longitude plane: create a point with lonDeg, geoCoordPosition.y, 0.0
             samplePointGeoCoord = new Vector3d(lonDeg, geoCoordPosition.y, 0.0);
             samplePointWC = GlobeUtils.geographicToCartesianWgs84(samplePointGeoCoord);
             transformMatrixInv.transformPosition(samplePointWC, samplePointLC);
@@ -1136,7 +1150,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 }
             }
 
-            // Latitude plane : create a point with geoCoordPosition.x, latDeg, 0.0
+            // Latitude plane: create a point with geoCoordPosition.x, latDeg, 0.0
             samplePointGeoCoord = new Vector3d(geoCoordPosition.x, latDeg, 0.0);
             samplePointWC = GlobeUtils.geographicToCartesianWgs84(samplePointGeoCoord);
             transformMatrixInv.transformPosition(samplePointWC, samplePointLC);
@@ -1155,7 +1169,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 }
             }
 
-            // Altitude plane : create a point with geoCoordPosition.x, geoCoordPosition.y, 0.0
+            // Altitude plane: create a point with geoCoordPosition.x, geoCoordPosition.y, 0.0
             samplePointGeoCoord = new Vector3d(geoCoordPosition.x, geoCoordPosition.y, altitude);
             samplePointWC = GlobeUtils.geographicToCartesianWgs84(samplePointGeoCoord);
             transformMatrixInv.transformPosition(samplePointWC, samplePointLC);
@@ -1179,11 +1193,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         resultPlanes.addAll(planesXZ);
         resultPlanes.addAll(planesYZ);
 
-        HalfEdgeOctree resultOctree = new HalfEdgeOctree(null);
-        resultOctree.setSize(localMinX, localMinY, localMinZ, localMaxX, localMaxY, localMaxZ);
-        resultOctree.setMaxDepth(currDepth);
-
-        return resultOctree;
+        GaiaBoundingBox resultBBox = new GaiaBoundingBox(localMinX, localMinY, localMinZ, localMaxX, localMaxY, localMaxZ, true);
+        return resultBBox;
     }
 
 
@@ -1263,11 +1274,11 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 
         Matrix4d transformMatrix = new Matrix4d();
-        HalfEdgeOctree resultOctree = this.getCuttingPlanesAndHalfEdgeOctree(tileInfo, lod, rootNodeBoundingVolume, depthIdx, allPlanes, transformMatrix);
+        GaiaBoundingBox boundingBox = this.getCuttingPlanesAndLocalBoundingBox(tileInfo, lod, rootNodeBoundingVolume, depthIdx, allPlanes, transformMatrix);
 
         log.debug("cutting rectangle cake one shoot. lod : " + lod);
 
-        double testOctreSize = resultOctree.getMaxSize();
+        //double testOctreSize = resultOctree.getMaxSize();
         boolean scissorTextures = true;
         boolean makeSkirt = GlobalConstants.MAKE_SKIRT;
 
@@ -1285,6 +1296,10 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             log.debug("cutTempLod folder created.");
         }
 
+        HalfEdgeOctreeFaces resultOctree = new HalfEdgeOctreeFaces(null, boundingBox);
+        //resultOctree.setSize(boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ(), boundingBox.getMaxX(), boundingBox.getMaxY(), boundingBox.getMaxZ());
+        resultOctree.setLimitDepth(depthIdx - lod);
+
         List<TileInfo> cutTileInfos = this.cutHalfEdgeSceneByGaiaAAPlanesAndSaveTileInfos(halfEdgeScene, allPlanes, resultOctree, scissorTextures, makeSkirt, cutTempLodPath, transformMatrix, tileInfo);
         resultTileInfos.addAll(cutTileInfos);
 
@@ -1295,7 +1310,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         System.gc();
     }
 
-    public List<TileInfo> cutHalfEdgeSceneByGaiaAAPlanesAndSaveTileInfos(HalfEdgeScene halfEdgeScene, List<GaiaAAPlane> planes, HalfEdgeOctree resultOctree,
+    public List<TileInfo> cutHalfEdgeSceneByGaiaAAPlanesAndSaveTileInfos(HalfEdgeScene halfEdgeScene, List<GaiaAAPlane> planes, HalfEdgeOctreeFaces resultOctree,
                                                                          boolean scissorTextures, boolean makeSkirt, Path cutTempLodPath, Matrix4d transformMatrix, TileInfo motherTileInfo) {
         TileTransformInfo tileTransformInfo = motherTileInfo.getTileTransformInfo();
         Vector3d geoCoordPosition = tileTransformInfo.getPosition();
@@ -1310,7 +1325,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         halfEdgeScene.deleteDegeneratedFaces();
 
         // now, distribute faces into octree
-        resultOctree.getFaces().clear();
+        //resultOctree.getFaces().clear();
         List<HalfEdgeSurface> surfaces = halfEdgeScene.extractSurfaces(null);
         for (HalfEdgeSurface surface : surfaces) {
             List<HalfEdgeFace> faces = surface.getFaces();
@@ -1318,13 +1333,13 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 if (face.getStatus() == ObjectStatus.DELETED) {
                     continue;
                 }
-                resultOctree.getFaces().add(face);
+                resultOctree.addContent(face);
             }
         }
 
-        resultOctree.distributeFacesToTargetDepth(resultOctree.getMaxDepth());
-        List<HalfEdgeOctree> octreesWithContents = new ArrayList<>();
-        resultOctree.extractOctreesWithFaces(octreesWithContents);
+        resultOctree.distributeFacesToTargetDepth(resultOctree.getLimitDepth());
+        List<GaiaOctree<HalfEdgeFace>> octreesWithContents = resultOctree.extractOctreesWithContents();
+        //resultOctree.extractOctreesWithFaces(octreesWithContents);
 
         // now, separate the surface by the octrees
         //List<HalfEdgeScene> resultScenes = new ArrayList<>();
@@ -1333,8 +1348,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         // set the classifyId for each face
         int octreesCount = octreesWithContents.size();
         for (int j = 0; j < octreesCount; j++) {
-            HalfEdgeOctree octree = octreesWithContents.get(j);
-            List<HalfEdgeFace> faces = octree.getFaces();
+            HalfEdgeOctreeFaces octree = (HalfEdgeOctreeFaces) octreesWithContents.get(j);
+            List<HalfEdgeFace> faces = octree.getContents();
             for (HalfEdgeFace face : faces) {
                 face.setClassifyId(j);
             }

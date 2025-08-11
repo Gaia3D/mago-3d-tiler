@@ -1366,8 +1366,8 @@ public class HalfEdgeUtils {
 //        octreeVertices.getVertices().addAll(gaiaVertices);
 //        octreeVertices.calculateSize();
 //        octreeVertices.setAsCube();
-        octreeVertices.setMaxDepth(10);
-        octreeVertices.setMinBoxSize(1.0); // 1m
+        octreeVertices.setLimitDepth(10);
+        octreeVertices.setLimitBoxSize(1.0); // 1m
 
         octreeVertices.makeTreeByMinVertexCount(50);
 

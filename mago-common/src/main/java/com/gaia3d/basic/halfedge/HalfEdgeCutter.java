@@ -2,7 +2,8 @@ package com.gaia3d.basic.halfedge;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
-import com.gaia3d.basic.geometry.octree.HalfEdgeOctree;
+import com.gaia3d.basic.geometry.octree.GaiaOctree;
+import com.gaia3d.basic.geometry.octree.HalfEdgeOctreeFaces;
 import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaMaterial;
 import lombok.extern.slf4j.Slf4j;
@@ -16,8 +17,9 @@ import java.util.Map;
 
 @Slf4j
 public class HalfEdgeCutter {
-    public static void getPlanesGridXYZForBox(GaiaBoundingBox bbox, double gridSpacing, List<GaiaAAPlane> resultPlanesYZ, List<GaiaAAPlane> resultPlanesXZ, List<GaiaAAPlane> resultPlanesXY, HalfEdgeOctree resultOctree) {
-        // Note : the grid is regularly spaced in the 3 axis
+    public static void getPlanesGridXYZForBox(GaiaBoundingBox bbox, double gridSpacing, List<GaiaAAPlane> resultPlanesYZ,
+                                              List<GaiaAAPlane> resultPlanesXZ, List<GaiaAAPlane> resultPlanesXY, HalfEdgeOctreeFaces resultOctree) {
+        // Note: the grid is regularly spaced in the 3 axis
         double maxSize = bbox.getMaxSize();
         int desiredDepth = (int) Math.ceil(HalfEdgeUtils.log2(maxSize / gridSpacing));
         double desiredDistanceRoot = gridSpacing * Math.pow(2, desiredDepth);
@@ -27,8 +29,8 @@ public class HalfEdgeCutter {
         cubeBBox.setMaxY(cubeBBox.getMinY() + desiredDistanceRoot);
         cubeBBox.setMaxZ(cubeBBox.getMinZ() + desiredDistanceRoot);
 
-        resultOctree.setSize(cubeBBox.getMinX(), cubeBBox.getMinY(), cubeBBox.getMinZ(), cubeBBox.getMaxX(), cubeBBox.getMaxY(), cubeBBox.getMaxZ());
-        resultOctree.setMaxDepth(desiredDepth);
+        resultOctree.getBoundingBox().set(cubeBBox.getMinX(), cubeBBox.getMinY(), cubeBBox.getMinZ(), cubeBBox.getMaxX(), cubeBBox.getMaxY(), cubeBBox.getMaxZ());
+        resultOctree.setLimitDepth(desiredDepth);
 
 
         // create GaiaAAPlanes
@@ -67,33 +69,20 @@ public class HalfEdgeCutter {
         }
     }
 
+
     public static List<HalfEdgeScene> cutHalfEdgeSceneByGaiaAAPlanes(HalfEdgeScene halfEdgeScene, List<GaiaAAPlane> planes,
-                                                                     HalfEdgeOctree resultOctree, boolean scissorTextures, boolean makeSkirt) {
+                                                                     HalfEdgeOctreeFaces resultOctree, boolean scissorTextures, boolean makeSkirt) {
         double error = 1e-5; //
         int planesCount = planes.size();
         for (int i = 0; i < planesCount; i++) {
             GaiaAAPlane plane = planes.get(i);
             halfEdgeScene.cutByPlane(plane.getPlaneType(), plane.getPoint(), error);
-
-//            List<HalfEdgeFace> faces = new ArrayList<>();
-//            double error2 = 1e-5;
-//            halfEdgeScene.getIntersectedFacesByPlane(plane.getPlaneType(), plane.getPoint(), faces, error2);
-//            if (faces.size() > 0) {
-//                log.info("plane intersected faces count = " + faces.size());
-//                List<HalfEdgeVertex> faceVertices = faces.get(0).getVertices(null);
-//                Vector3d pos0 = faceVertices.get(0).getPosition();
-//                Vector3d pos1 = faceVertices.get(1).getPosition();
-//                Vector3d pos2 = faceVertices.get(2).getPosition();
-//
-//
-//            }
         }
 
         //halfEdgeScene.deleteDegeneratedFaces();
         //halfEdgeScene.updateFacesList();
 
-        // now, distribute faces into octree
-        resultOctree.getFaces().clear();
+        resultOctree.getContents().clear();
         List<HalfEdgeSurface> surfaces = halfEdgeScene.extractSurfaces(null);
         for (HalfEdgeSurface surface : surfaces) {
             List<HalfEdgeFace> faces = surface.getFaces();
@@ -101,30 +90,22 @@ public class HalfEdgeCutter {
                 if (face.getStatus() == ObjectStatus.DELETED) {
                     continue;
                 }
-                resultOctree.getFaces().add(face);
+                resultOctree.addContent(face);
             }
         }
 
-        resultOctree.distributeFacesToTargetDepth(resultOctree.getMaxDepth());
-        List<HalfEdgeOctree> octreesWithContents = new ArrayList<>();
-        resultOctree.extractOctreesWithFaces(octreesWithContents);
+        resultOctree.distributeFacesToTargetDepth(resultOctree.getLimitDepth());
+        List<GaiaOctree<HalfEdgeFace>> octreesWithContents = resultOctree.extractOctreesWithContents();
+        //resultOctree.extractOctreesWithFaces(octreesWithContents);
 
         // now, separate the surface by the octrees
         List<HalfEdgeScene> resultScenes = new ArrayList<>();
 
         // set the classifyId for each face
         int octreesCount = octreesWithContents.size();
-//        for (int j = 0; j < octreesCount; j++) {
-//            HalfEdgeOctree octree = octreesWithContents.get(j);
-//            List<HalfEdgeFace> faces = octree.getFaces();
-//            for (HalfEdgeFace face : faces) {
-//                face.setClassifyId(j);
-//            }
-//        }
-
         for (int j = 0; j < octreesCount; j++) {
-            HalfEdgeOctree octree = octreesWithContents.get(j);
-            List<HalfEdgeFace> faces = octree.getFaces();
+            HalfEdgeOctreeFaces octree = (HalfEdgeOctreeFaces) octreesWithContents.get(j);
+            List<HalfEdgeFace> faces = octree.getContents();
             for (HalfEdgeFace face : faces) {
                 face.setClassifyId(j);
             }
@@ -150,7 +131,7 @@ public class HalfEdgeCutter {
         return resultScenes;
     }
 
-    public static HalfEdgeScene cutHalfEdgeSceneGridXYZ(HalfEdgeScene halfEdgeScene, double gridSpacing, HalfEdgeOctree resultOctree) {
+    public static HalfEdgeScene cutHalfEdgeSceneGridXYZ(HalfEdgeScene halfEdgeScene, double gridSpacing, HalfEdgeOctreeFaces resultOctree) {
         GaiaBoundingBox bbox = halfEdgeScene.getBoundingBox();
 
         List<GaiaAAPlane> resultPlanesYZ = new ArrayList<>();
@@ -180,7 +161,7 @@ public class HalfEdgeCutter {
         halfEdgeScene.deleteDegeneratedFaces();
 
         // now, distribute faces into octree
-        resultOctree.getFaces().clear();
+        resultOctree.getContents().clear();
         List<HalfEdgeSurface> surfaces = halfEdgeScene.extractSurfaces(null);
         for (HalfEdgeSurface surface : surfaces) {
             List<HalfEdgeFace> faces = surface.getFaces();
@@ -188,21 +169,21 @@ public class HalfEdgeCutter {
                 if (face.getStatus() == ObjectStatus.DELETED) {
                     continue;
                 }
-                resultOctree.getFaces().add(face);
+                resultOctree.addContent(face);
             }
         }
 
-        resultOctree.distributeFacesToTargetDepth(resultOctree.getMaxDepth());
-        List<HalfEdgeOctree> octreesWithContents = new ArrayList<>();
-        resultOctree.extractOctreesWithFaces(octreesWithContents);
+        resultOctree.distributeFacesToTargetDepth(resultOctree.getLimitDepth());
+        List<GaiaOctree<HalfEdgeFace>> octreesWithContents = resultOctree.extractOctreesWithContents();
+        //resultOctree.extractOctreesWithFaces(octreesWithContents);
 
         // now, separate the surface by the octrees
         // set the classifyId for each face
         List<HalfEdgeSurface> newSurfaces = new ArrayList<>();
         int octreesCount = octreesWithContents.size();
         for (int j = 0; j < octreesCount; j++) {
-            HalfEdgeOctree octree = octreesWithContents.get(j);
-            List<HalfEdgeFace> faces = octree.getFaces();
+            HalfEdgeOctreeFaces octree = (HalfEdgeOctreeFaces) octreesWithContents.get(j);
+            List<HalfEdgeFace> faces = octree.getContents();
             for (HalfEdgeFace face : faces) {
                 face.setClassifyId(j);
             }
@@ -211,10 +192,7 @@ public class HalfEdgeCutter {
             newSurfaces.add(newSurface);
 
             // now, clear the faces of the ecTree
-            octree.getFaces().clear();
-
-            // add the new surface to the octree
-            octree.getSurfaces().add(newSurface);
+            octree.getContents().clear();
         }
 
         // now join all newSurfaces into a one surface

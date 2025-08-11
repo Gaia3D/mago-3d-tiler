@@ -3,7 +3,7 @@ package com.gaia3d;
 import com.gaia3d.basic.exchangable.SceneInfo;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
-import com.gaia3d.basic.geometry.octree.HalfEdgeOctree;
+import com.gaia3d.basic.geometry.octree.HalfEdgeOctreeFaces;
 import com.gaia3d.basic.geometry.voxel.VoxelGrid3D;
 import com.gaia3d.basic.geometry.voxel.VoxelizeParameters;
 import com.gaia3d.basic.halfedge.DecimateParameters;
@@ -48,21 +48,21 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
-    public void decimateAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, HalfEdgeOctree octree, List<GaiaAAPlane> cuttingPlanes, double screenPixelsForMeter, boolean makeHorizontalSkirt) {
+    public void decimateAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, HalfEdgeOctreeFaces octree, List<GaiaAAPlane> cuttingPlanes, double screenPixelsForMeter, boolean makeHorizontalSkirt) {
         if (renderer == null) renderer = new MainRenderer();
         renderer.decimateAndCutByObliqueCamera(scenes, resultHalfEdgeScenes, decimateParameters, octree, cuttingPlanes, screenPixelsForMeter, makeHorizontalSkirt);
         deleteObjects();
     }
 
     @Override
-    public void decimateNetSurfaceAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, HalfEdgeOctree octree, List<GaiaAAPlane> cuttingPlanes, double depthTexPixelsForMeter, double screenPixelsForMeter, boolean makeHorizontalSkirt) {
+    public void decimateNetSurfaceAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, HalfEdgeOctreeFaces octree, List<GaiaAAPlane> cuttingPlanes, double depthTexPixelsForMeter, double screenPixelsForMeter, boolean makeHorizontalSkirt) {
         if (renderer == null) renderer = new MainRenderer();
         renderer.decimateNetSurfaceAndCutByObliqueCamera(scenes, resultHalfEdgeScenes, decimateParameters, octree, cuttingPlanes, depthTexPixelsForMeter, screenPixelsForMeter, makeHorizontalSkirt);
         deleteObjects();
     }
 
     @Override
-    public void reMeshAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, ReMeshParameters reMeshParams, HalfEdgeOctree octree,
+    public void reMeshAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, ReMeshParameters reMeshParams, HalfEdgeOctreeFaces octree,
                                             List<GaiaAAPlane> cuttingPlanes, double depthTexPixelsForMeter, double screenPixelsForMeter, boolean makeHorizontalSkirt) {
         if (voxelizer == null) voxelizer = new MainVoxelizer();
         voxelizer.reMeshAndCutByObliqueCamera(scenes, resultHalfEdgeScenes, reMeshParams, octree, cuttingPlanes, depthTexPixelsForMeter, screenPixelsForMeter,
