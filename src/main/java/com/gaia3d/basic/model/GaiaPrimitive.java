@@ -406,16 +406,11 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
     public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
         // Weld the vertices.
         GaiaBoundingBox boundingBox = this.getBoundingBox(null);
-        double minX = boundingBox.getMinX();
-        double minY = boundingBox.getMinY();
-        double minZ = boundingBox.getMinZ();
-        double maxSize = boundingBox.getMaxSize();
-        boundingBox.set(minX, minY, minZ, minX + maxSize, minY + maxSize, minZ + maxSize); // cube bounding box
-
-        GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null, boundingBox);
+        GaiaBoundingBox cubeBoundingBox = boundingBox.createCubeFromMinPosition();
+        GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null, cubeBoundingBox);
         octreeVertices.addContents(this.vertices);
-        octreeVertices.setMaxDepth(10);
-        octreeVertices.setMinBoxSize(1.0); // 1m
+        octreeVertices.setLimitDepth(10);
+        octreeVertices.setLimitBoxSize(1.0); // 1m
 
         octreeVertices.makeTreeByMinVertexCount(50);
 
@@ -476,7 +471,6 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
                 }
                 surface.setFaces(newFaces);
             }
-
         }
 
         // delete no used vertices
