@@ -15,11 +15,17 @@ import java.util.List;
 @Getter
 
 public class GaiaOctreeVertices extends GaiaOctree<GaiaVertex> {
-    private int maxDepth = 5;
-    private double minBoxSize = 1.0;
+    private int limitDepth = 5;
+    private double limitBoxSize = 1.0;
 
     public GaiaOctreeVertices(GaiaOctree<GaiaVertex> parent, GaiaBoundingBox boundingBox) {
         super(parent, boundingBox);
+
+        if (parent != null) {
+            GaiaOctreeVertices parentVertex = (GaiaOctreeVertices) parent;
+            this.limitDepth = parentVertex.getLimitDepth();
+            this.limitBoxSize = parentVertex.getLimitBoxSize();
+        }
     }
 
     @Override
@@ -27,59 +33,8 @@ public class GaiaOctreeVertices extends GaiaOctree<GaiaVertex> {
         return new GaiaOctreeVertices(this, boundingBox);
     }
 
-    public void setAsCube() {
-        // Only modify the maximum values
-        GaiaBoundingBox boundingBox = this.getBoundingBox();
-        double minX = boundingBox.getMinX();
-        double minY = boundingBox.getMinY();
-        double minZ = boundingBox.getMinZ();
-        double maxX = boundingBox.getMaxX();
-        double maxY = boundingBox.getMaxY();
-        double maxZ = boundingBox.getMaxZ();
-        double x = maxX - minX;
-        double y = maxY - minY;
-        double z = maxZ - minZ;
-        double max = Math.max(x, Math.max(y, z));
-        maxX = minX + max;
-        maxY = minY + max;
-        maxZ = minZ + max;
-        boundingBox.setMaxX(maxX);
-    }
-
-    public void makeTreeByMinBoxSize(double minBoxSize) {
-        GaiaBoundingBox boundingBox = this.getBoundingBox();
-        double minX = boundingBox.getMinX();
-        double minY = boundingBox.getMinY();
-        double minZ = boundingBox.getMinZ();
-        double maxX = boundingBox.getMaxX();
-        double maxY = boundingBox.getMaxY();
-        double maxZ = boundingBox.getMaxZ();
-
-        if ((maxX - minX) < minBoxSize || (maxY - minY) < minBoxSize || (maxZ - minZ) < minBoxSize) {
-            return;
-        }
-
-        if (this.getDepth() >= maxDepth) {
-            return;
-        }
-
-        List<GaiaVertex> contents = this.getContents();
-        if (contents.isEmpty()) {
-            return;
-        }
-
-        createChildren();
-        distributeContents();
-
-        List<GaiaOctree<GaiaVertex>> children = this.getChildren();
-        for (GaiaOctree<GaiaVertex> child : children) {
-            GaiaOctreeVertices childVertices = (GaiaOctreeVertices) child;
-            childVertices.makeTreeByMinBoxSize(minBoxSize);
-        }
-    }
-
     public void makeTreeByMinVertexCount(int minVertexCount) {
-        if (this.getDepth() >= maxDepth) {
+        if (this.getDepth() >= limitDepth) {
             return;
         }
 
@@ -95,14 +50,10 @@ public class GaiaOctreeVertices extends GaiaOctree<GaiaVertex> {
 
         GaiaBoundingBox boundingBox = this.getBoundingBox();
         double minX = boundingBox.getMinX();
-        double minY = boundingBox.getMinY();
-        double minZ = boundingBox.getMinZ();
         double maxX = boundingBox.getMaxX();
-        double maxY = boundingBox.getMaxY();
-        double maxZ = boundingBox.getMaxZ();
 
         double sizeX = maxX - minX;
-        if (sizeX < minBoxSize) {
+        if (sizeX < limitBoxSize) {
             return;
         }
 
@@ -115,44 +66,6 @@ public class GaiaOctreeVertices extends GaiaOctree<GaiaVertex> {
             childVertex.makeTreeByMinVertexCount(minVertexCount);
         }
     }
-
-//    public void calculateSize() {
-//        //List<GaiaVertex> contents = this.getContents();
-//        int verticesCount = vertices.size();
-//        if (verticesCount == 0) {
-//            return;
-//        }
-//
-//        minX = Double.MAX_VALUE;
-//        minY = Double.MAX_VALUE;
-//        minZ = Double.MAX_VALUE;
-//        maxX = -Double.MAX_VALUE;
-//        maxY = -Double.MAX_VALUE;
-//        maxZ = -Double.MAX_VALUE;
-//
-//        for (GaiaVertex vertex : vertices) {
-//            Vector3d position = vertex.getPosition();
-//            if (position.x < minX) {
-//                minX = position.x;
-//            }
-//            if (position.y < minY) {
-//                minY = position.y;
-//            }
-//            if (position.z < minZ) {
-//                minZ = position.z;
-//            }
-//            if (position.x > maxX) {
-//                maxX = position.x;
-//            }
-//            if (position.y > maxY) {
-//                maxY = position.y;
-//            }
-//            if (position.z > maxZ) {
-//                maxZ = position.z;
-//            }
-//        }
-//    }
-
 
     public void distributeContents() {
         List<GaiaVertex> contents = this.getContents();
@@ -210,16 +123,4 @@ public class GaiaOctreeVertices extends GaiaOctree<GaiaVertex> {
         // clear the vertices list
         contents.clear();
     }
-
-//    public void extractOctreesWithContents(List<GaiaOctreeVertices> octrees) {
-//        if (!vertices.isEmpty()) {
-//            octrees.add(this);
-//        }
-//
-//        if (children != null) {
-//            for (GaiaOctreeVertices child : children) {
-//                child.extractOctreesWithContents(octrees);
-//            }
-//        }
-//    }
 }

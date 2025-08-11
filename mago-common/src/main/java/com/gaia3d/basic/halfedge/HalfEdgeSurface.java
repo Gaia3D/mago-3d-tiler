@@ -2,7 +2,8 @@ package com.gaia3d.basic.halfedge;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
-import com.gaia3d.basic.geometry.octree.HalfEdgeOctree;
+import com.gaia3d.basic.geometry.octree.GaiaOctree;
+import com.gaia3d.basic.geometry.octree.HalfEdgeOctreeVertices;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.TextureType;
@@ -268,22 +269,37 @@ public class HalfEdgeSurface implements Serializable {
             resultMapVertexToSamePosVertices = new HashMap<>();
         }
 
-        HalfEdgeOctree octree = new HalfEdgeOctree(null);
-        List<HalfEdgeVertex> verticesCopy = new ArrayList<>(vertices);
-        octree.setVertices(verticesCopy);
-        octree.calculateSize();
-        octree.setMaxDepth(10);
-        octree.setMinBoxSize(1.0);
-        octree.makeTreeByMinVertexCount(20);
+//        HalfEdgeOctreeFaces octree = new HalfEdgeOctreeFaces(null);
+//        List<HalfEdgeVertex> verticesCopy = new ArrayList<>(vertices);
+//        octree.setVertices(verticesCopy);
+//        octree.calculateSize();
+//        octree.setMaxDepth(10);
+//        octree.setMinBoxSize(1.0);
+//        octree.makeTreeByMinVertexCount(20);
 
-        List<HalfEdgeOctree> nodesWithContents = new ArrayList<>();
-        octree.extractOctreesWithContents(nodesWithContents);
+        // new.**********************
+        GaiaBoundingBox bbox = new GaiaBoundingBox();
+        for (HalfEdgeVertex vertex : vertices) {
+            Vector3d position = vertex.getPosition();
+            bbox.addPoint(position);
+        }
+        HalfEdgeOctreeVertices octreeVertices = new HalfEdgeOctreeVertices(null, bbox);
+        octreeVertices.addContents(vertices);
+        octreeVertices.setLimitDepth(10);
+        octreeVertices.setLimitBoxSize(1.0);
+        octreeVertices.setLimitVertexCount(20);
+        octreeVertices.makeTree();
+        List<GaiaOctree<HalfEdgeVertex>> nodesWithContents = octreeVertices.extractOctreesWithContents();
+        // end new.**********************
+
+//        List<HalfEdgeOctreeFaces> nodesWithContents2 = new ArrayList<>();
+//        octree.extractOctreesWithContents(nodesWithContents2);
 
         int nodesWithContentsCount = nodesWithContents.size();
         log.info("nodesWithContentsCount = " + nodesWithContentsCount);
         for (int i = 0; i < nodesWithContentsCount; i++) {
-            HalfEdgeOctree node = nodesWithContents.get(i);
-            List<HalfEdgeVertex> vertices = node.getVertices();
+            HalfEdgeOctreeVertices node = (HalfEdgeOctreeVertices) nodesWithContents.get(i);
+            List<HalfEdgeVertex> vertices = node.getContents();
             int verticesCount = vertices.size();
             for (int j = 0; j < verticesCount; j++) {
                 HalfEdgeVertex vertex = vertices.get(j);

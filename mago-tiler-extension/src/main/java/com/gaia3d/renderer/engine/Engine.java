@@ -233,38 +233,6 @@ public class Engine {
                 gaiaScenesContainer.getProjection().setProjectionType(0);
             }
 
-            if (key == GLFW_KEY_P && action == GLFW_RELEASE) {
-                // pyramid deformation
-                // keep the camera position and target
-                Vector3d keepCameraPosition = new Vector3d(camera.getPosition());
-                Vector3d keepCameraDirection = new Vector3d(camera.getDirection());
-                Vector3d keepCameraUp = new Vector3d(camera.getUp());
-
-                // make a depthMap and normalMap
-
-                // do pyramidDeformation
-                GaiaScene gaiaScene = gaiaScenes.get(0);
-                GaiaBoundingBox bbox = gaiaScene.updateBoundingBox(); // before to set the transformMatrix
-                double minH = bbox.getMinZ();
-                double maxH = bbox.getMaxZ() * 1.1;
-                double dist = 6.0;
-                GaiaSceneUtils.deformSceneByVerticesConvexity(gaiaScene, dist, minH, maxH);
-
-                // now, update the renderableScene
-                InternDataConverter internDataConverter = new InternDataConverter();
-                RenderableGaiaScene renderableScene = InternDataConverter.getRenderableGaiaScene(gaiaScene);
-                this.getGaiaScenesContainer().getRenderableGaiaScenes().set(0, renderableScene);
-
-                // restore the camera position and target
-                camera.setPosition(keepCameraPosition);
-                camera.setDirection(keepCameraDirection);
-                camera.setUp(keepCameraUp);
-                camera.setDirty(true);
-
-                gaiaScenesContainer.setCamera(camera);
-                gaiaScenesContainer.getProjection().setProjectionType(0);
-            }
-
             if (key == GLFW_KEY_E && action == GLFW_RELEASE) {
                 // Eliminate the background color
                 // keep the camera position and target

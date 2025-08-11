@@ -2,7 +2,7 @@ package com.gaia3d.renderer;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
-import com.gaia3d.basic.geometry.octree.HalfEdgeOctree;
+import com.gaia3d.basic.geometry.octree.HalfEdgeOctreeFaces;
 import com.gaia3d.basic.geometry.voxel.VoxelGrid3D;
 import com.gaia3d.basic.geometry.voxel.VoxelizeParameters;
 import com.gaia3d.basic.halfedge.*;
@@ -461,9 +461,9 @@ public class MainVoxelizer implements IAppLogic {
     }
 
     public void reMeshAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, ReMeshParameters reMeshParams,
-                                            HalfEdgeOctree octree, List<GaiaAAPlane> cuttingPlanes, double depthTexPixelsForMeter, double screenPixelsForMeter,
+                                            HalfEdgeOctreeFaces octree, List<GaiaAAPlane> cuttingPlanes, double depthTexPixelsForMeter, double screenPixelsForMeter,
                                             boolean makeHorizontalSkirt) {
-        // Note: There are only one scene in the scenes list
+        // Note: There are only one scene in the scene list
         // Must init gl
         try {
             engine.init();
@@ -530,7 +530,7 @@ public class MainVoxelizer implements IAppLogic {
             double bboxMaxSize = bbox.getMaxSize();
             // now, cut the halfEdgeScene and make cube-textures by rendering
             double gridSpacing = bboxMaxSize / 3.0;
-            HalfEdgeOctree resultOctree = new HalfEdgeOctree(null);
+            HalfEdgeOctreeFaces resultOctree = new HalfEdgeOctreeFaces(null, bbox.clone());
             HalfEdgeScene cuttedScene = HalfEdgeCutter.cutHalfEdgeSceneGridXYZ(cutHalfEdgeScene, gridSpacing, resultOctree);
 
             if (makeHorizontalSkirt) {
