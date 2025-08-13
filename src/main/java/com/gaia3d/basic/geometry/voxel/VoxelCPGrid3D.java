@@ -14,7 +14,7 @@ public class VoxelCPGrid3D {
     private int gridsCountY;
     private int gridsCountZ;
     private VoxelCP[][][] voxels;
-    private double maxValue = 0.0;
+    private double[] minMaxValues;
 
     public VoxelCPGrid3D(int gridsCountX, int gridsCountY, int gridsCountZ) {
         this.gridsCountX = gridsCountX;

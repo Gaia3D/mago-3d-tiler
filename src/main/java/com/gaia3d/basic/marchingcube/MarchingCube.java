@@ -2,9 +2,13 @@ package com.gaia3d.basic.marchingcube;
 
 import com.gaia3d.basic.geometry.voxel.VoxelCPGrid3D;
 import com.gaia3d.basic.geometry.voxel.VoxelGrid3D;
+import com.gaia3d.basic.legend.GaiaColor;
+import com.gaia3d.basic.legend.LegendColors;
 import com.gaia3d.basic.model.*;
+import com.gaia3d.util.GeometryUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
+import org.joml.Vector4d;
 
 import java.util.List;
 
@@ -676,5 +680,172 @@ public class MarchingCube {
         }
 
         return gaiaScene;
+    }
+
+    public static GaiaScene makeGaiaSceneOnion(VoxelCPGrid3D voxelCPGrid3D, double[] isoValuesArray) {
+        int isoValuesCount = isoValuesArray.length;
+        GaiaScene gaiaSceneMaster = null;
+        double totalMinValue = voxelCPGrid3D.getMinMaxValues()[0];
+        double totalMaxValue = voxelCPGrid3D.getMinMaxValues()[1];
+
+        for (int i = 0; i < isoValuesCount; i++) {
+            double currIsoValue = isoValuesArray[i];
+            if (totalMaxValue > currIsoValue) {
+
+                // now, quantize the isoValue into rgba byte values.
+                float quantizedIsoValue = (float) ((currIsoValue - totalMinValue) / (totalMaxValue - totalMinValue));
+                byte[] encodedColor4 = new byte[4];
+                GeometryUtils.encodeFloat(quantizedIsoValue, encodedColor4);
+
+                GaiaScene gaiaScene = MarchingCube.makeGaiaScene(voxelCPGrid3D, currIsoValue);
+                if (gaiaScene == null) {
+                    continue;
+                }
+
+                gaiaScene.weldVertices(0.1, false, false, false, false);
+                gaiaScene.calculateVertexNormals();
+
+                List<GaiaPrimitive> gaiaPrimitives = gaiaScene.extractPrimitives(null);
+                for (int j = 0; j < gaiaPrimitives.size(); j++) {
+                    GaiaPrimitive gaiaPrimitive = gaiaPrimitives.get(j);
+                    gaiaPrimitive.setMaterialIndex(0);
+                    // set color to vertices.***
+                    List<GaiaVertex> gaiaVertices = gaiaPrimitive.getVertices();
+                    for (int k = 0; k < gaiaVertices.size(); k++) {
+                        GaiaVertex gaiaVertex = gaiaVertices.get(k);
+                        gaiaVertex.setColor(encodedColor4);
+                    }
+                }
+
+                // set random color to material.***
+                byte[] randomColor = new byte[4];
+                float randomRed = (float) Math.random();
+                randomColor[0] = (byte) (randomRed * 255.0f);
+                float randomGreen = (float) Math.random();
+                randomColor[1] = (byte) (randomGreen * 255.0f);
+                float randomBlue = (float) Math.random();
+                randomColor[2] = (byte) (randomBlue * 255.0f);
+                float alpha = 0.5f;
+                randomColor[3] = (byte) (alpha * 255.0f);
+                List<GaiaMaterial> gaiaMaterials = gaiaScene.getMaterials();
+                if (gaiaMaterials.size() == 0) {
+                    // add a new material.
+                    GaiaMaterial gaiaMaterial = new GaiaMaterial();
+                    gaiaMaterial.setDiffuseColor(new Vector4d(randomRed, randomGreen, randomBlue, alpha));
+                    gaiaMaterial.setBlend(true);
+                    gaiaMaterials.add(gaiaMaterial);
+                }
+                for (int j = 0; j < gaiaMaterials.size(); j++) {
+                    GaiaMaterial gaiaMaterial = gaiaMaterials.get(j);
+                    gaiaMaterial.setDiffuseColor(new Vector4d(randomRed, randomGreen, randomBlue, alpha));
+                    gaiaMaterial.setBlend(true);
+                }
+
+                if (gaiaSceneMaster == null) {
+                    gaiaSceneMaster = gaiaScene;
+                } else {
+                    GaiaNode rootNodeMaster = gaiaSceneMaster.getNodes().get(0);
+                    GaiaNode childNodeMaster = rootNodeMaster.getChildren().get(0);
+                    GaiaMesh meshMaster = childNodeMaster.getMeshes().get(0);
+                    GaiaPrimitive gaiaPrimitiveMaster = meshMaster.getPrimitives().get(0);
+
+                    for (int j = 0; j < gaiaPrimitives.size(); j++) {
+                        GaiaPrimitive gaiaPrimitive = gaiaPrimitives.get(j);
+                        gaiaPrimitiveMaster.addPrimitive(gaiaPrimitive);
+                    }
+                }
+
+                int hola = 0;
+            }
+        }
+
+        return gaiaSceneMaster;
+    }
+
+    public static GaiaScene makeGaiaSceneOnion(VoxelCPGrid3D voxelCPGrid3D, double[] isoValuesArray, LegendColors legendColors) {
+        int isoValuesCount = isoValuesArray.length;
+        GaiaScene gaiaSceneMaster = null;
+        double totalMinValue = voxelCPGrid3D.getMinMaxValues()[0];
+        double totalMaxValue = voxelCPGrid3D.getMinMaxValues()[1];
+
+        for (int i = 0; i < isoValuesCount; i++) {
+            double currIsoValue = isoValuesArray[i];
+            if (totalMaxValue > currIsoValue) {
+
+                // now, quantize the isoValue into rgba byte values.
+                float quantizedIsoValue = (float) ((currIsoValue - totalMinValue) / (totalMaxValue - totalMinValue));
+                byte[] encodedColor4 = new byte[4];
+                GeometryUtils.encodeFloat(quantizedIsoValue, encodedColor4);
+
+                GaiaScene gaiaScene = MarchingCube.makeGaiaScene(voxelCPGrid3D, currIsoValue);
+                if (gaiaScene == null) {
+                    continue;
+                }
+
+                gaiaScene.weldVertices(0.1, false, false, false, false);
+                gaiaScene.calculateVertexNormals();
+
+                List<GaiaPrimitive> gaiaPrimitives = gaiaScene.extractPrimitives(null);
+                for (int j = 0; j < gaiaPrimitives.size(); j++) {
+                    GaiaPrimitive gaiaPrimitive = gaiaPrimitives.get(j);
+                    gaiaPrimitive.setMaterialIndex(0);
+                    // set color to vertices.***
+                    List<GaiaVertex> gaiaVertices = gaiaPrimitive.getVertices();
+                    for (int k = 0; k < gaiaVertices.size(); k++) {
+                        GaiaVertex gaiaVertex = gaiaVertices.get(k);
+                        gaiaVertex.setColor(encodedColor4);
+                    }
+                }
+
+                // set color by legendColors.***
+                GaiaColor gaiaColor = legendColors.getColorLinearInterpolation(currIsoValue);
+                float redFloat = gaiaColor.getRed();
+                float greenFloat = gaiaColor.getGreen();
+                float blueFloat = gaiaColor.getBlue();
+                float alpha = gaiaColor.getAlpha();
+
+                // set random color to material.***
+//                byte[] randomColor = new byte[4];
+//                float randomRed = (float) Math.random();
+//                randomColor[0] = (byte) (randomRed * 255.0f);
+//                float randomGreen = (float) Math.random();
+//                randomColor[1] = (byte) (randomGreen * 255.0f);
+//                float randomBlue = (float) Math.random();
+//                randomColor[2] = (byte) (randomBlue * 255.0f);
+//                float alpha = 0.5f;
+//                randomColor[3] = (byte) (alpha * 255.0f);
+                List<GaiaMaterial> gaiaMaterials = gaiaScene.getMaterials();
+                if (gaiaMaterials.size() == 0) {
+                    // add a new material.
+                    GaiaMaterial gaiaMaterial = new GaiaMaterial();
+                    gaiaMaterial.setDiffuseColor(new Vector4d(redFloat, greenFloat, blueFloat, alpha));
+                    gaiaMaterial.setBlend(true);
+                    gaiaMaterials.add(gaiaMaterial);
+                }
+                for (int j = 0; j < gaiaMaterials.size(); j++) {
+                    GaiaMaterial gaiaMaterial = gaiaMaterials.get(j);
+                    gaiaMaterial.setDiffuseColor(new Vector4d(redFloat, greenFloat, blueFloat, alpha));
+                    gaiaMaterial.setBlend(true);
+                }
+
+                if (gaiaSceneMaster == null) {
+                    gaiaSceneMaster = gaiaScene;
+                } else {
+                    GaiaNode rootNodeMaster = gaiaSceneMaster.getNodes().get(0);
+                    GaiaNode childNodeMaster = rootNodeMaster.getChildren().get(0);
+                    GaiaMesh meshMaster = childNodeMaster.getMeshes().get(0);
+                    GaiaPrimitive gaiaPrimitiveMaster = meshMaster.getPrimitives().get(0);
+
+                    for (int j = 0; j < gaiaPrimitives.size(); j++) {
+                        GaiaPrimitive gaiaPrimitive = gaiaPrimitives.get(j);
+                        gaiaPrimitiveMaster.addPrimitive(gaiaPrimitive);
+                    }
+                }
+
+                int hola = 0;
+            }
+        }
+
+        return gaiaSceneMaster;
     }
 }
