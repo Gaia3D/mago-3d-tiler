@@ -32,6 +32,14 @@ public class LegendColors {
         setValueAndColor(value, color);
     }
 
+    public GaiaColor mix(GaiaColor color1, GaiaColor color2, double ratio) {
+        float r = (float) (color1.getRed() * (1 - ratio) + color2.getRed() * ratio);
+        float g = (float) (color1.getGreen() * (1 - ratio) + color2.getGreen() * ratio);
+        float b = (float) (color1.getBlue() * (1 - ratio) + color2.getBlue() * ratio);
+        float a = (float) (color1.getAlpha() * (1 - ratio) + color2.getAlpha() * ratio);
+        return new GaiaColor(r, g, b, a);
+    }
+
     public GaiaColor getColorLinearInterpolation(double value) {
         if (colorMap.isEmpty()) {
             log.warn("Color map is empty, returning default color.");
@@ -52,12 +60,7 @@ public class LegendColors {
             GaiaColor higherColor = higherEntry.getValue();
 
             double ratio = (value - lowerValue) / (higherValue - lowerValue);
-            float r = (float) (lowerColor.getRed() + ratio * (higherColor.getRed() - lowerColor.getRed()));
-            float g = (float) (lowerColor.getGreen() + ratio * (higherColor.getGreen() - lowerColor.getGreen()));
-            float b = (float) (lowerColor.getBlue() + ratio * (higherColor.getBlue() - lowerColor.getBlue()));
-            float a = (float) (lowerColor.getAlpha() + ratio * (higherColor.getAlpha() - lowerColor.getAlpha()));
-
-            return new GaiaColor(r, g, b, a);
+            return mix(lowerColor, higherColor, ratio);
         }
     }
 }

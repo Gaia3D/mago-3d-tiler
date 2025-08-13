@@ -27,6 +27,4 @@ public class GaiaColor {
         this.blue = blue;
         this.alpha = alpha;
     }
-
-
 }
