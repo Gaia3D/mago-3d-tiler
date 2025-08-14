@@ -27,4 +27,13 @@ public class GaiaColor {
         this.blue = blue;
         this.alpha = alpha;
     }
+
+    public byte[] getColorBytesArray() {
+        byte[] bytes = new byte[4];
+        bytes[0] = (byte) (red * 255.0);
+        bytes[1] = (byte) (green * 255.0);
+        bytes[2] = (byte) (blue * 255.0);
+        bytes[3] = (byte) (alpha * 255.0);
+        return bytes;
+    }
 }

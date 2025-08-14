@@ -773,9 +773,9 @@ public class MarchingCube {
             if (totalMaxValue > currIsoValue) {
 
                 // now, quantize the isoValue into rgba byte values.
-                float quantizedIsoValue = (float) ((currIsoValue - totalMinValue) / (totalMaxValue - totalMinValue));
-                byte[] encodedColor4 = new byte[4];
-                GeometryUtils.encodeFloat(quantizedIsoValue, encodedColor4);
+                //float quantizedIsoValue = (float) ((currIsoValue - totalMinValue) / (totalMaxValue - totalMinValue));
+                //byte[] encodedColor4 = new byte[4];
+                //GeometryUtils.encodeFloat(quantizedIsoValue, encodedColor4);
 
                 GaiaScene gaiaScene = MarchingCube.makeGaiaScene(voxelCPGrid3D, currIsoValue);
                 if (gaiaScene == null) {
@@ -785,6 +785,14 @@ public class MarchingCube {
                 gaiaScene.weldVertices(0.1, false, false, false, false);
                 gaiaScene.calculateVertexNormals();
 
+                // set color by legendColors.***
+                GaiaColor gaiaColor = legendColors.getColorLinearInterpolation(currIsoValue);
+                byte[] color4 = gaiaColor.getColorBytesArray();
+                float redFloat = gaiaColor.getRed();
+                float greenFloat = gaiaColor.getGreen();
+                float blueFloat = gaiaColor.getBlue();
+                float alpha = gaiaColor.getAlpha();
+
                 List<GaiaPrimitive> gaiaPrimitives = gaiaScene.extractPrimitives(null);
                 for (int j = 0; j < gaiaPrimitives.size(); j++) {
                     GaiaPrimitive gaiaPrimitive = gaiaPrimitives.get(j);
@@ -793,27 +801,13 @@ public class MarchingCube {
                     List<GaiaVertex> gaiaVertices = gaiaPrimitive.getVertices();
                     for (int k = 0; k < gaiaVertices.size(); k++) {
                         GaiaVertex gaiaVertex = gaiaVertices.get(k);
-                        gaiaVertex.setColor(encodedColor4);
+                        //gaiaVertex.setColor(encodedColor4);
+                        gaiaVertex.setColor(color4);
                     }
                 }
 
-                // set color by legendColors.***
-                GaiaColor gaiaColor = legendColors.getColorLinearInterpolation(currIsoValue);
-                float redFloat = gaiaColor.getRed();
-                float greenFloat = gaiaColor.getGreen();
-                float blueFloat = gaiaColor.getBlue();
-                float alpha = gaiaColor.getAlpha();
 
-                // set random color to material.***
-//                byte[] randomColor = new byte[4];
-//                float randomRed = (float) Math.random();
-//                randomColor[0] = (byte) (randomRed * 255.0f);
-//                float randomGreen = (float) Math.random();
-//                randomColor[1] = (byte) (randomGreen * 255.0f);
-//                float randomBlue = (float) Math.random();
-//                randomColor[2] = (byte) (randomBlue * 255.0f);
-//                float alpha = 0.5f;
-//                randomColor[3] = (byte) (alpha * 255.0f);
+
                 List<GaiaMaterial> gaiaMaterials = gaiaScene.getMaterials();
                 if (gaiaMaterials.size() == 0) {
                     // add a new material.
@@ -841,8 +835,6 @@ public class MarchingCube {
                         gaiaPrimitiveMaster.addPrimitive(gaiaPrimitive);
                     }
                 }
-
-                int hola = 0;
             }
         }
 
