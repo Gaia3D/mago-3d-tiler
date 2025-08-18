@@ -13,7 +13,7 @@ public class GlobalConstants {
     public static final int DEFAULT_MIN_LOD = 0;
     public static final int DEFAULT_MAX_LOD = 3;
     public static final int DEFAULT_MIN_GEOMETRIC_ERROR = 16;
-    public static final int DEFAULT_MAX_GEOMETRIC_ERROR = 1024;
+    public static final int DEFAULT_MAX_GEOMETRIC_ERROR = Integer.MAX_VALUE;
     public static final int DEFAULT_MAX_TRIANGLES = 65536 * 8;
     public static final int DEFAULT_MAX_NODE_DEPTH = 32;
     public static final int DEFAULT_MAX_INSTANCE = 1024 * 64;
