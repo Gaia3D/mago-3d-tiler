@@ -17,17 +17,20 @@ import java.util.List;
 @Getter
 
 public class GaiaOctreeFaces extends GaiaOctree<GaiaFaceData> {
-    //private int idx = -1;
-    //private GaiaOctreeCoordinate coordinate = new GaiaOctreeCoordinate();
-    private int maxDepth = 5;
+    private int limitDepth = 5;
 
     public GaiaOctreeFaces(GaiaOctree<GaiaFaceData> parent, GaiaBoundingBox boundingBox) {
         super(parent, boundingBox);
+
+        if (parent != null) {
+            GaiaOctreeFaces parentFaces = (GaiaOctreeFaces) parent;
+            this.limitDepth = parentFaces.getLimitDepth();
+        }
     }
 
-    public void addFaceDataList(List<GaiaFaceData> faceDataList) {
-        List<GaiaFaceData> contents = this.getContents();
-        contents.addAll(faceDataList);
+    @Override
+    public GaiaOctreeFaces createChild(GaiaBoundingBox childBoundingBox) {
+        return new GaiaOctreeFaces(this, childBoundingBox);
     }
 
     public void distributeContentsByCenterPoint() {
@@ -94,47 +97,6 @@ public class GaiaOctreeFaces extends GaiaOctree<GaiaFaceData> {
         contents.clear();
     }
 
-    public boolean intersectsBoundingBox(GaiaBoundingBox bbox) {
-        GaiaBoundingBox thisBbox = this.getBoundingBox();
-        if (thisBbox == null || bbox == null) {
-            return false;
-        }
-        return thisBbox.intersects(bbox);
-    }
-
-    public void distributeContentsByBoundingBox(boolean distributionUnique) {
-        List<GaiaFaceData> contents = this.getContents();
-        if (contents.isEmpty()) {
-            return;
-        }
-
-        int debugCounter = 0;
-        List<GaiaOctree<GaiaFaceData>> children = this.getChildren();
-        for (GaiaFaceData faceData : contents) {
-            GaiaBoundingBox bbox = faceData.getBoundingBox();
-            for (int i = 0; i < 8; i++) {
-                GaiaOctreeFaces child = (GaiaOctreeFaces) children.get(i);
-                GaiaBoundingBox childBbox = child.getBoundingBox();
-                if (childBbox.intersects(bbox)) {
-                    child.addContent(faceData);
-                    if (distributionUnique) {
-                        break;
-                    }
-                }
-            }
-
-            debugCounter++;
-        }
-
-        // once the contents are distributed, clear the list
-        contents.clear();
-    }
-
-    public GaiaBoundingBox getBoundingBox() {
-        GaiaBoundingBox boundingBox = this.getBoundingBox();
-        return boundingBox.clone();
-    }
-
     public void makeTree(double minBoxSize) {
         GaiaBoundingBox bbox = this.getBoundingBox();
         double minX = bbox.getMinX();
@@ -147,7 +109,7 @@ public class GaiaOctreeFaces extends GaiaOctree<GaiaFaceData> {
             return;
         }
 
-        if (this.getDepth() >= maxDepth) {
+        if (this.getDepth() >= limitDepth) {
             return;
         }
 
@@ -165,94 +127,4 @@ public class GaiaOctreeFaces extends GaiaOctree<GaiaFaceData> {
             childFaces.makeTree(minBoxSize);
         }
     }
-
-//    public void extractOctreesWithContents(List<GaiaOctreeFaces> octrees) {
-//        if (!faceDataList.isEmpty()) {
-//            octrees.add(this);
-//        }
-//        if (children != null) {
-//            for (GaiaOctreeFaces child : children) {
-//                child.extractOctreesWithContents(octrees);
-//            }
-//        }
-//    }
-
-//    public boolean[] hasNeighbor() {
-//        boolean[] result = new boolean[6];
-//        result[0] = false;
-//        result[1] = false;
-//        result[2] = false;
-//        result[3] = false;
-//        result[4] = false;
-//        result[5] = false;
-//
-//        int depth = this.getDepth();
-//        if (depth == 0) {
-//            return result;
-//        }
-//
-//        GaiaOctreeFaces parent = (GaiaOctreeFaces) this.getParent();
-//        if (parent == null) {
-//            return result;
-//        }
-//
-//        boolean includeChildren = false;
-//
-//        //Left octree
-//        GaiaOctreeCoordinate leftCoord = this.coordinate.getLeft();
-//        GaiaOctreeFaces leftOctree = getOctreeByCoordinate(leftCoord);
-//        if (leftOctree == null) {
-//            result[0] = false;
-//        } else if (leftOctree.hasContents(includeChildren)) {
-//            result[0] = true;
-//        }
-//
-//        //Right octree
-//        GaiaOctreeCoordinate rightCoord = this.coordinate.getRight();
-//        GaiaOctreeFaces rightOctree = getOctreeByCoordinate(rightCoord);
-//        if (rightOctree == null) {
-//            result[1] = false;
-//        } else if (rightOctree.hasContents(includeChildren)) {
-//            result[1] = true;
-//        }
-//
-//        //Front octree
-//        GaiaOctreeCoordinate frontCoord = this.coordinate.getFront();
-//        GaiaOctreeFaces frontOctree = getOctreeByCoordinate(frontCoord);
-//        if (frontOctree == null) {
-//            result[2] = false;
-//        } else if (frontOctree.hasContents(includeChildren)) {
-//            result[2] = true;
-//        }
-//
-//        //Rear octree
-//        GaiaOctreeCoordinate rearCoord = this.coordinate.getRear();
-//        GaiaOctreeFaces rearOctree = getOctreeByCoordinate(rearCoord);
-//        if (rearOctree == null) {
-//            result[3] = false;
-//        } else if (rearOctree.hasContents(includeChildren)) {
-//            result[3] = true;
-//        }
-//
-//        //Top octree
-//        GaiaOctreeCoordinate topCoord = this.coordinate.getTop();
-//        GaiaOctreeFaces topOctree = getOctreeByCoordinate(topCoord);
-//        if (topOctree == null) {
-//            result[5] = false;
-//        } else if (topOctree.hasContents(includeChildren)) {
-//            result[5] = true;
-//        }
-//
-//        //Bottom octree
-//        GaiaOctreeCoordinate bottomCoord = this.coordinate.getBottom();
-//        GaiaOctreeFaces bottomOctree = getOctreeByCoordinate(bottomCoord);
-//        if (bottomOctree == null) {
-//            result[4] = false;
-//        } else if (bottomOctree.hasContents(includeChildren)) {
-//            result[4] = true;
-//        }
-//
-//
-//        return result;
-//    }
 }

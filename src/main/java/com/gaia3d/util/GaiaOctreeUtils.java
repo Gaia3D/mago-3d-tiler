@@ -121,33 +121,4 @@ public class GaiaOctreeUtils {
             getFaceDataListOfNode(gaiaScene, node, resultFaceDataList);
         }
     }
-
-    public static GaiaOctreeFaces getSceneOctree(GaiaScene gaiaScene, float octreeMinSize) {
-        List<GaiaFaceData> faceDataList = new ArrayList<>();
-        getFaceDataListOfScene(gaiaScene, faceDataList);
-
-        GaiaBoundingBox boundingBox = gaiaScene.updateBoundingBox();
-        double minX = boundingBox.getMinX();
-        double minY = boundingBox.getMinY();
-        double minZ = boundingBox.getMinZ();
-        double maxSize = boundingBox.getMaxSize();
-        boundingBox.set(minX, minY, minZ, minX + maxSize, minY + maxSize, minZ + maxSize); // Make it a cube.
-        GaiaOctreeFaces octree = new GaiaOctreeFaces(null, boundingBox);
-        double size = maxSize;
-        int i = 0;
-        while (size > octreeMinSize) {
-            size /= 2.0;
-            i++;
-        }
-
-        int maxDepth = i;
-
-        octree.addFaceDataList(faceDataList);
-        octree.setMaxDepth(maxDepth);
-
-        //octree.recalculateSize();
-        octree.makeTree(octreeMinSize);
-
-        return octree;
-    }
 }
