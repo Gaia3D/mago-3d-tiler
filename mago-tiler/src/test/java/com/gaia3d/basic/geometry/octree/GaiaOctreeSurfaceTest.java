@@ -1,4 +1,10 @@
-import static org.junit.jupiter.api.Assertions.*;
-class GaiaOctreeSurfaceTest {
-  
+package com.gaia3d.basic.geometry.octree;
+
+
+public class GaiaOctreeSurfaceTest {
+
+    void testConstructor() {
+
+    }
+
 }
