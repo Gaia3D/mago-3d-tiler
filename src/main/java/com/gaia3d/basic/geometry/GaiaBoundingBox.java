@@ -1,16 +1,25 @@
 package com.gaia3d.basic.geometry;
 
+import com.gaia3d.basic.geometry.entities.GaiaPlane;
+import com.gaia3d.basic.geometry.entities.GaiaSegment;
+import com.gaia3d.basic.geometry.entities.GaiaTriangle;
+import com.gaia3d.basic.halfedge.PlaneType;
+import com.gaia3d.util.GeometryUtils;
 import com.gaia3d.util.GlobeUtils;
+import com.gaia3d.util.VectorUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
+import org.joml.Vector2d;
 import org.joml.Vector3d;
 
 import java.io.Serializable;
 import java.util.List;
+
+import static com.gaia3d.util.VectorUtils.cross;
 
 /**
  * GaiaBoundingBox is a class to store the bounding box of a geometry.
@@ -46,6 +55,261 @@ public class GaiaBoundingBox implements Serializable {
 
     public Vector3d getVolume() {
         return new Vector3d(maxX - minX, maxY - minY, maxZ - minZ);
+    }
+
+    public double getMaxRadius() {
+        Vector3d center = getCenter();
+        Vector3d minPosition = getMinPosition();
+        double radiusX = Math.abs(center.x - minPosition.x);
+        double radiusY = Math.abs(center.y - minPosition.y);
+        double radiusZ = Math.abs(center.z - minPosition.z);
+        return Math.sqrt(radiusX * radiusX + radiusY * radiusY + radiusZ * radiusZ);
+    }
+
+    public boolean intersectsPoint(Vector3d point) {
+        // Check if the point is inside the bounding box.
+        return !(point.x < minX) && !(point.x > maxX) && !(point.y < minY) && !(point.y > maxY) && !(point.z < minZ) && !(point.z > maxZ);
+    }
+
+    public boolean intersectsTriangle(GaiaTriangle triangle) {
+        // Check if the bounding box intersects with the triangle.
+        // This is a simple AABB vs triangle intersection test.
+        GaiaBoundingBox triangleBbox = triangle.getBoundingBox();
+        if (!this.intersects(triangleBbox)) {
+            return false; // No intersection if bounding boxes do not intersect.
+        }
+
+        // Check if some vertices of the triangle are inside the bounding box.
+        Vector3d[] trianglePoints = triangle.getPoints();
+        for (Vector3d point : trianglePoints) {
+            if (intersectsPoint(point)) {
+                return true; // At least one vertex is inside the bounding box.
+            }
+        }
+
+        // Check the distance of the bbox center to the triangle plane.
+        double maxRadius = getMaxRadius();
+        GaiaPlane trianglePlane = triangle.getPlane();
+        Vector3d center = getCenter();
+        double distanceToPlane = trianglePlane.distanceToPoint(center);
+        if (Math.abs(distanceToPlane) > maxRadius) {
+            return false; // The bounding box is too far from the triangle plane.
+        }
+
+        // Check if the plane intersects the bounding box.
+        if (!intersectsPlane(trianglePlane)) {
+            return false; // The bounding box does not intersect the triangle plane.
+        }
+
+        // Check if some edges of the triangle intersect the bounding box.
+        GaiaSegment[] triangleEdges = triangle.getSegments();
+        for (GaiaSegment edge : triangleEdges) {
+            if (this.intersectsSegment(edge)) {
+                return true; // At least one edge intersects the bounding box.
+            }
+        }
+
+        // Check if some edges of the bounding box intersect the triangle.
+        if (intersectsAASegmentsToTriangle(triangle)) {
+            return true; // At least one axis-aligned segment intersects the triangle.
+        }
+
+        return true;
+    }
+
+    private boolean intersectsAASegmentsToTriangle(GaiaTriangle triangle) {
+        GaiaPlane trianglePlane = triangle.getPlane();
+
+        Vector3d minPosition = getMinPosition();
+        Vector3d maxPosition = getMaxPosition();
+
+        Vector3d normal = trianglePlane.getNormal();
+        PlaneType bestPlane = GeometryUtils.getBestPlaneToProject(normal);
+        if (bestPlane == null) {
+            log.error("[ERROR][intersectsAASegmentToTriangle] : Best plane is null.");
+            return false; // No valid plane to project onto.
+        }
+
+        // axis X.***
+        GaiaSegment aaSegment1 = new GaiaSegment(new Vector3d(minPosition.x, minPosition.y, minPosition.z), new Vector3d(maxPosition.x, minPosition.y, minPosition.z));
+        if (intersectsAASegmentToTriangle(triangle, trianglePlane, aaSegment1, bestPlane)) {
+            return true; // Intersection found with the first segment.
+        }
+        GaiaSegment aaSegment2 = new GaiaSegment(new Vector3d(minPosition.x, maxPosition.y, minPosition.z), new Vector3d(maxPosition.x, maxPosition.y, minPosition.z));
+        if (intersectsAASegmentToTriangle(triangle, trianglePlane, aaSegment2, bestPlane)) {
+            return true; // Intersection found with the second segment.
+        }
+        GaiaSegment aaSegment3 = new GaiaSegment(new Vector3d(minPosition.x, minPosition.y, maxPosition.z), new Vector3d(maxPosition.x, minPosition.y, maxPosition.z));
+        if (intersectsAASegmentToTriangle(triangle, trianglePlane, aaSegment3, bestPlane)) {
+            return true; // Intersection found with the third segment.
+        }
+        GaiaSegment aaSegment4 = new GaiaSegment(new Vector3d(minPosition.x, maxPosition.y, maxPosition.z), new Vector3d(maxPosition.x, maxPosition.y, maxPosition.z));
+        if (intersectsAASegmentToTriangle(triangle, trianglePlane, aaSegment4, bestPlane)) {
+            return true; // Intersection found with the fourth segment.
+        }
+
+        // axis Y.***
+        GaiaSegment aaSegment5 = new GaiaSegment(new Vector3d(minPosition.x, minPosition.y, minPosition.z), new Vector3d(minPosition.x, maxPosition.y, minPosition.z));
+        if (intersectsAASegmentToTriangle(triangle, trianglePlane, aaSegment5, bestPlane)) {
+            return true; // Intersection found with the first segment.
+        }
+        GaiaSegment aaSegment6 = new GaiaSegment(new Vector3d(maxPosition.x, minPosition.y, minPosition.z), new Vector3d(maxPosition.x, maxPosition.y, minPosition.z));
+        if (intersectsAASegmentToTriangle(triangle, trianglePlane, aaSegment6, bestPlane)) {
+            return true; // Intersection found with the second segment.
+        }
+        GaiaSegment aaSegment7 = new GaiaSegment(new Vector3d(minPosition.x, minPosition.y, maxPosition.z), new Vector3d(minPosition.x, maxPosition.y, maxPosition.z));
+        if (intersectsAASegmentToTriangle(triangle, trianglePlane, aaSegment7, bestPlane)) {
+            return true; // Intersection found with the third segment.
+        }
+        GaiaSegment aaSegment8 = new GaiaSegment(new Vector3d(maxPosition.x, minPosition.y, maxPosition.z), new Vector3d(maxPosition.x, maxPosition.y, maxPosition.z));
+        if (intersectsAASegmentToTriangle(triangle, trianglePlane, aaSegment8, bestPlane)) {
+            return true; // Intersection found with the fourth segment.
+        }
+
+        // axis Z.***
+        GaiaSegment aaSegment9 = new GaiaSegment(new Vector3d(minPosition.x, minPosition.y, minPosition.z), new Vector3d(minPosition.x, minPosition.y, maxPosition.z));
+        if (intersectsAASegmentToTriangle(triangle, trianglePlane, aaSegment9, bestPlane)) {
+            return true; // Intersection found with the first segment.
+        }
+        GaiaSegment aaSegment10 = new GaiaSegment(new Vector3d(maxPosition.x, minPosition.y, minPosition.z), new Vector3d(maxPosition.x, minPosition.y, maxPosition.z));
+        if (intersectsAASegmentToTriangle(triangle, trianglePlane, aaSegment10, bestPlane)) {
+            return true; // Intersection found with the second segment.
+        }
+        GaiaSegment aaSegment11 = new GaiaSegment(new Vector3d(minPosition.x, maxPosition.y, minPosition.z), new Vector3d(minPosition.x, maxPosition.y, maxPosition.z));
+        if (intersectsAASegmentToTriangle(triangle, trianglePlane, aaSegment11, bestPlane)) {
+            return true; // Intersection found with the third segment.
+        }
+        GaiaSegment aaSegment12 = new GaiaSegment(new Vector3d(maxPosition.x, maxPosition.y, minPosition.z), new Vector3d(maxPosition.x, maxPosition.y, maxPosition.z));
+        if (intersectsAASegmentToTriangle(triangle, trianglePlane, aaSegment12, bestPlane)) {
+            return true; // Intersection found with the fourth segment.
+        }
+
+        return false; // No intersection found with any segment.
+    }
+
+    private boolean intersectsAASegmentToTriangle(GaiaTriangle triangle, GaiaPlane trianglePlane, GaiaSegment aaSegment, PlaneType bestPlane) {
+        // This method checks if an axis-aligned segment intersects with a triangle defined by its normal and D value.
+        // The triangle is defined in the form: normal.x * x + normal.y * y + normal.z * z + D = 0
+
+        Vector3d intersectionPoint = trianglePlane.intersectionSegment(aaSegment);
+        if (intersectionPoint == null) {
+            return false; // No intersection with the triangle plane.
+        }
+
+        Vector3d[] trianglePoints = triangle.getPoints();
+
+        Vector2d p = null;
+        Vector2d a = null;
+        Vector2d b = null;
+        Vector2d c = null;
+        if (bestPlane == PlaneType.XY) {
+            // Project the intersection point onto the XY plane.
+            p = new Vector2d(intersectionPoint.x, intersectionPoint.y);
+            a = new Vector2d(trianglePoints[0].x, trianglePoints[0].y);
+            b = new Vector2d(trianglePoints[1].x, trianglePoints[1].y);
+            c = new Vector2d(trianglePoints[2].x, trianglePoints[2].y);
+        } else if (bestPlane == PlaneType.XZ) {
+            // Project the intersection point onto the XZ plane.
+            p = new Vector2d(intersectionPoint.x, intersectionPoint.z);
+            a = new Vector2d(trianglePoints[0].x, trianglePoints[0].z);
+            b = new Vector2d(trianglePoints[1].x, trianglePoints[1].z);
+            c = new Vector2d(trianglePoints[2].x, trianglePoints[2].z);
+        } else if (bestPlane == PlaneType.YZ) {
+            // Project the intersection point onto the YZ plane.
+            p = new Vector2d(intersectionPoint.y, intersectionPoint.z);
+            a = new Vector2d(trianglePoints[0].y, trianglePoints[0].z);
+            b = new Vector2d(trianglePoints[1].y, trianglePoints[1].z);
+            c = new Vector2d(trianglePoints[2].y, trianglePoints[2].z);
+        }
+
+        if (p == null) {
+            log.error("[ERROR][intersectsAASegmentToTriangle] : Projection failed, one of the points is null.");
+            return false; // Projection failed, one of the points is null.
+        }
+
+        //double area = VectorUtils.cross(b.sub(a), c.sub(a));
+        double area1 = VectorUtils.cross(p.sub(a), b.sub(a));
+        double area2 = VectorUtils.cross(p.sub(b), c.sub(b));
+        double area3 = VectorUtils.cross(p.sub(c), a.sub(c));
+
+        boolean hasNeg = (area1 < 0) || (area2 < 0) || (area3 < 0);
+        boolean hasPos = (area1 > 0) || (area2 > 0) || (area3 > 0);
+
+        return !(hasNeg && hasPos);
+    }
+
+    private boolean intersectsSegment(GaiaSegment edge) {
+        // Check if the bounding box intersects with the segment.
+        // This is a simple AABB vs segment intersection test.
+        Vector3d start = edge.getStartPoint();
+        Vector3d end = edge.getEndPoint();
+
+        // Check if both endpoints of the segment are inside the bounding box.
+        if (intersectsPoint(start) || intersectsPoint(end)) {
+            return true; // At least one endpoint is inside the bounding box.
+        }
+
+        // Check if the segment intersects the bounding box by checking each axis.
+        double tEnter = 0.0;
+        double tExit = 1.0;
+
+        double[] minB = {minX, minY, minZ};
+        double[] maxB = {maxX, maxY, maxZ};
+
+        double[] startP = {start.x, start.y, start.z};
+        double[] endP = {end.x, end.y, end.z};
+
+        for (int i = 0; i < 3; i++) {
+            if (Math.abs(endP[i] - startP[i]) < 1e-8) { // Segment is parallel to the axis
+                if (startP[i] < minB[i] || startP[i] > maxB[i]) {
+                    return false; // Segment is outside the bounding box
+                }
+            } else {
+                double t1 = (minB[i] - startP[i]) / (endP[i] - startP[i]);
+                double t2 = (maxB[i] - startP[i]) / (endP[i] - startP[i]);
+                if (t1 > t2) {
+                    double temp = t1;
+                    t1 = t2;
+                    t2 = temp;
+                }
+                tEnter = Math.max(tEnter, t1);
+                tExit = Math.min(tExit, t2);
+                if (tEnter > tExit) {
+                    return false; // No intersection
+                }
+            }
+        }
+
+        // If we reach here, the segment intersects the bounding box.
+        return true;
+    }
+
+    public boolean intersectsPlane(GaiaPlane plane) {
+        // 1rst, check the 8 points of the bounding box against the plane.
+        // If there are some points on one side of the plane and some on the other side, then the bounding box intersects the plane.
+        int positiveCount = 0;
+        int negativeCount = 0;
+        double eps = 1e-8;
+        for (int i = 0; i < 8; i++) {
+            Vector3d point = new Vector3d(
+                    (i & 1) == 0 ? minX : maxX,
+                    (i & 2) == 0 ? minY : maxY,
+                    (i & 4) == 0 ? minZ : maxZ
+            );
+
+            double distance = plane.distanceToPoint(point);
+            if (distance > eps) {
+                positiveCount++;
+            } else if (distance < -eps) {
+                negativeCount++;
+            }
+
+            if (positiveCount > 0 && negativeCount > 0) {
+                return true; // The bounding box intersects the plane.
+            }
+        }
+
+        return false;
     }
 
     public void set(GaiaBoundingBox bbox) {

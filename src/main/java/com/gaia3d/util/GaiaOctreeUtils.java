@@ -23,15 +23,15 @@ public class GaiaOctreeUtils {
                     for (int j = 0, primitivesLength = mesh.getPrimitives().size(); j < primitivesLength; j++) {
                         GaiaPrimitive primitive = mesh.getPrimitives().get(j);
 
-                        // Get the material.
-                        int matId = primitive.getMaterialIndex();
-                        GaiaMaterial material = sceneParent.getMaterials().get(matId);
-                        GaiaTexture diffuseTexture = null;
-                        List<GaiaTexture> diffuseTexturesArray = material.getTextures().get(TextureType.DIFFUSE);
-                        if (!diffuseTexturesArray.isEmpty()) {
-                            diffuseTexture = diffuseTexturesArray.get(0);
-                            diffuseTexture.loadImage();
-                        }
+//                        // Get the material.
+//                        int matId = primitive.getMaterialIndex();
+//                        GaiaMaterial material = sceneParent.getMaterials().get(matId);
+//                        GaiaTexture diffuseTexture = null;
+//                        List<GaiaTexture> diffuseTexturesArray = material.getTextures().get(TextureType.DIFFUSE);
+//                        if (!diffuseTexturesArray.isEmpty()) {
+//                            diffuseTexture = diffuseTexturesArray.get(0);
+//                            diffuseTexture.loadImage();
+//                        }
 
                         if (primitive.getSurfaces() != null) {
                             for (int k = 0, surfacesLength = primitive.getSurfaces().size(); k < surfacesLength; k++) {
@@ -60,48 +60,48 @@ public class GaiaOctreeUtils {
                                             Vector2d texCoord1 = vertex1.getTexcoords();
                                             Vector2d texCoord2 = vertex2.getTexcoords();
 
-                                            Vector4d averageColor = material.getDiffuseColor();
-
-                                            if (texCoord0 != null && texCoord1 != null && texCoord2 != null) {
-
-                                                Vector2d texCoordCenter = new Vector2d();
-                                                texCoordCenter.add(texCoord0);
-                                                texCoordCenter.add(texCoord1);
-                                                texCoordCenter.add(texCoord2);
-                                                texCoordCenter.mul(1.0 / 3.0);
-
-                                                if (diffuseTexture != null) {
-                                                    //averageColor = GaiaTextureUtils.getColorOfTexture(diffuseTexture, texCoordCenter);
-                                                    averageColor = GaiaTextureUtils.getAverageColorOfTexture(diffuseTexture, texCoord0, texCoord1, texCoord2);
-                                                    if (averageColor == null) {
-                                                        averageColor = material.getDiffuseColor();
-                                                    } else {
-                                                        averageColor.x *= 2.0;
-                                                        if (averageColor.x > 1.0) averageColor.x = 1.0;
-
-                                                        averageColor.y *= 2.0;
-                                                        if (averageColor.y > 1.0) averageColor.y = 1.0;
-
-                                                        averageColor.z *= 2.0;
-                                                        if (averageColor.z > 1.0) averageColor.z = 1.0;
-                                                    }
-
-                                                }
-                                            }
+//                                            Vector4d averageColor = material.getDiffuseColor();
+//
+//                                            if (texCoord0 != null && texCoord1 != null && texCoord2 != null) {
+//
+//                                                Vector2d texCoordCenter = new Vector2d();
+//                                                texCoordCenter.add(texCoord0);
+//                                                texCoordCenter.add(texCoord1);
+//                                                texCoordCenter.add(texCoord2);
+//                                                texCoordCenter.mul(1.0 / 3.0);
+//
+//                                                if (diffuseTexture != null) {
+//                                                    //averageColor = GaiaTextureUtils.getColorOfTexture(diffuseTexture, texCoordCenter);
+//                                                    averageColor = GaiaTextureUtils.getAverageColorOfTexture(diffuseTexture, texCoord0, texCoord1, texCoord2);
+//                                                    if (averageColor == null) {
+//                                                        averageColor = material.getDiffuseColor();
+//                                                    } else {
+//                                                        averageColor.x *= 2.0;
+//                                                        if (averageColor.x > 1.0) averageColor.x = 1.0;
+//
+//                                                        averageColor.y *= 2.0;
+//                                                        if (averageColor.y > 1.0) averageColor.y = 1.0;
+//
+//                                                        averageColor.z *= 2.0;
+//                                                        if (averageColor.z > 1.0) averageColor.z = 1.0;
+//                                                    }
+//
+//                                                }
+//                                            }
 
                                             faceData.setSceneParent(sceneParent);
                                             faceData.setPrimitiveParent(primitive);
                                             faceData.setFace(face0);
-                                            faceData.setPrimaryColor(averageColor);
+                                            //faceData.setPrimaryColor(averageColor);
                                             resultFaceDataList.add(faceData);
                                         }
                                     }
                                 }
                             }
                         }
-                        if (diffuseTexture != null) {
-                            diffuseTexture.deleteObjects();
-                        }
+//                        if (diffuseTexture != null) {
+//                            diffuseTexture.deleteObjects();
+//                        }
                     }
                 }
             }
