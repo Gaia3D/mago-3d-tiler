@@ -1,5 +1,8 @@
 package com.gaia3d.converter.geometry;
 
+import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.entities.GaiaPlane;
+import com.gaia3d.basic.geometry.entities.GaiaSegment;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -51,5 +54,42 @@ public class GaiaTriangle {
         }
 
         this.normal.normalize();
+    }
+
+    public Vector3d getNormal() {
+        if (this.normal == null || this.normal.length() == 0) {
+            calcNormal();
+        }
+        return this.normal;
+    }
+
+    public GaiaBoundingBox getBoundingBox() {
+        GaiaBoundingBox boundingBox = new GaiaBoundingBox();
+        boundingBox.addPoint(positions[0]);
+        boundingBox.addPoint(positions[1]);
+        boundingBox.addPoint(positions[2]);
+        return boundingBox;
+    }
+
+    public GaiaPlane getPlane() {
+        Vector3d position = getCenter();
+        Vector3d normal = getNormal();
+        return new GaiaPlane(position, normal);
+    }
+
+    public Vector3d[] getPoints() {
+        Vector3d[] points = new Vector3d[3];
+        points[0] = new Vector3d(positions[0]);
+        points[1] = new Vector3d(positions[1]);
+        points[2] = new Vector3d(positions[2]);
+        return points;
+    }
+
+    public GaiaSegment[] getSegments() {
+        GaiaSegment[] segments = new GaiaSegment[3];
+        segments[0] = new GaiaSegment(new Vector3d(positions[0]), new Vector3d(positions[1]));
+        segments[1] = new GaiaSegment(new Vector3d(positions[1]), new Vector3d(positions[2]));
+        segments[2] = new GaiaSegment(new Vector3d(positions[2]), new Vector3d(positions[0]));
+        return segments;
     }
 }

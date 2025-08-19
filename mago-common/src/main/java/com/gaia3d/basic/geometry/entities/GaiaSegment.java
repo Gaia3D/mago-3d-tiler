@@ -1,6 +1,13 @@
 package com.gaia3d.basic.geometry.entities;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
+
+@Slf4j
+@Getter
+@Setter
 
 public class GaiaSegment {
     private Vector3d startPoint = null;
