@@ -119,8 +119,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         Map<Node, List<TileInfo>> nodeTileInfoMap = new HashMap<>();
 
         List<TileInfo> cuttedTileInfos = new ArrayList<>();
-        //cuttingAndScissorProcessST(tileInfosCopy, lod, root, cuttedTileInfos, projectMaxDepthIdx); // original.***
-        this.voxelizeScenes(tileInfosCopy, lod, root, nodeTileInfoMap, projectMaxDepthIdx);
+        cuttingAndScissorProcessST(tileInfosCopy, lod, root, cuttedTileInfos, projectMaxDepthIdx); // original.***
+        //this.voxelizeScenes(tileInfosCopy, lod, root, nodeTileInfoMap, projectMaxDepthIdx); // test voxelize.***
 
         // distribute contents to node in the correspondent depth
         // After a process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes
