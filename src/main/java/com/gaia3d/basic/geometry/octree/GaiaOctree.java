@@ -23,7 +23,7 @@ public class GaiaOctree<E> {
     // |         |         |        |         |         |
     // +---------+---------+        +---------+---------+
     private GaiaOctree<E> parent; // if null, this is the root octree
-    private final GaiaBoundingBox boundingBox = new GaiaBoundingBox();
+    private final GaiaBoundingBox boundingBox = new GaiaBoundingBox(); // bounding box of this octree
     //private int idx = -1;
     private GaiaOctreeIndex index = GaiaOctreeIndex.UNDEFINED;
     private int depth = 0; // depth in the octree

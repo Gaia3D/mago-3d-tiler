@@ -894,27 +894,12 @@ public class GeometryUtils {
         float absY = Math.abs((float) normal.y);
         float absZ = Math.abs((float) normal.z);
 
-        if (absX > absY && absX > absZ) {
-            // the best plane is the YZ plane
-            if (normal.x > 0) {
-                return PlaneType.YZ;
-            } else {
-                return PlaneType.YZNEG;
-            }
-        } else if (absY > absX && absY > absZ) {
-            // the best plane is the XZ plane
-            if (normal.y > 0) {
-                return PlaneType.XZ;
-            } else {
-                return PlaneType.XZNEG;
-            }
+        if (absX >= absY && absX >= absZ) {
+            return normal.x >= 0 ? PlaneType.YZ : PlaneType.YZNEG;
+        } else if (absY >= absX && absY >= absZ) {
+            return normal.y >= 0 ? PlaneType.XZ : PlaneType.XZNEG;
         } else {
-            // the best plane is the XY plane
-            if (normal.z > 0) {
-                return PlaneType.XY;
-            } else {
-                return PlaneType.XYNEG;
-            }
+            return normal.z >= 0 ? PlaneType.XY : PlaneType.XYNEG;
         }
     }
 }

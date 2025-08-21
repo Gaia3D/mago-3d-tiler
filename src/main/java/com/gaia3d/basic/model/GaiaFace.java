@@ -151,7 +151,14 @@ public class GaiaFace extends FaceStructure implements Serializable {
             if (vectorA.distance(vectorB) < error || vectorA.distance(vectorC) < error || vectorB.distance(vectorC) < error) {
                 return true;
             }
+
+            // check if the area of the triangle is zero.
+            double area = GeometryUtils.getTriangleArea(vertex1, vertex2, vertex3);
+            if (area < error) {
+                return true;
+            }
         }
+
 
         return false;
     }
