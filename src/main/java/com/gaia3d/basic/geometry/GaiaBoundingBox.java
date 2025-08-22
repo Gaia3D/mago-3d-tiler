@@ -148,7 +148,6 @@ public class GaiaBoundingBox implements Serializable {
         // axis X.***
         GaiaSegment aaSegment1 = new GaiaSegment(new Vector3d(minX, minY, minZ), new Vector3d(maxX, minY, minZ));
         if (intersectsAASegmentToTriangle(triangle, trianglePlane, aaSegment1, bestPlane, 0)) {
-            intersectsAASegmentToTriangle(triangle, trianglePlane, aaSegment1, bestPlane, 0);
             return true; // Intersection found with the first segment.
         }
         GaiaSegment aaSegment2 = new GaiaSegment(new Vector3d(minX, maxY, minZ), new Vector3d(maxX, maxY, minZ));
@@ -212,12 +211,12 @@ public class GaiaBoundingBox implements Serializable {
                 return false; // No intersection with the triangle plane.
             }
 
-            double dist1 = trianglePlane.distanceToPoint(aaSegment.getStartPoint());
-            double dist2 = trianglePlane.distanceToPoint(aaSegment.getEndPoint());
-            if(dist1>0 && dist2>0 || dist1<0 && dist2<0) {
-                intersectionPoint = trianglePlane.intersectionAASegment(aaSegment, axis);
-                int hola = 0;
-            }
+//            double dist1 = trianglePlane.distanceToPoint(aaSegment.getStartPoint());
+//            double dist2 = trianglePlane.distanceToPoint(aaSegment.getEndPoint());
+//            if(dist1>0 && dist2>0 || dist1<0 && dist2<0) {
+//                intersectionPoint = trianglePlane.intersectionAASegment(aaSegment, axis);
+//                int hola = 0;
+//            }
 
             Vector3d[] trianglePoints = triangle.getPoints();
 
@@ -262,19 +261,13 @@ public class GaiaBoundingBox implements Serializable {
             double area2 = VectorUtils.cross(pSubB, cSubB);
             double area3 = VectorUtils.cross(pSubC, aSubC);
 
-
             if (Double.isNaN(area1) || Double.isNaN(area2) || Double.isNaN(area3)) {
                 log.error("[ERROR][intersectsAASegmentToTriangle] : Area calculation resulted in NaN.");
                 return false; // Area calculation resulted in NaN, cannot determine intersection.
             }
 
-
             boolean hasNeg = (area1 < 0) || (area2 < 0) || (area3 < 0);
             boolean hasPos = (area1 > 0) || (area2 > 0) || (area3 > 0);
-            if(!(hasNeg && hasPos))
-            {
-                int hola = 0;
-            }
 
             return !(hasNeg && hasPos);
         }
