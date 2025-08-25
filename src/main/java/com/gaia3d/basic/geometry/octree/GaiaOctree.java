@@ -71,6 +71,10 @@ public class GaiaOctree<E> {
     }
 
     public void createChildren() {
+        if(children != null && (children.size() == 8)) {
+            return;
+        }
+
         children = new ArrayList<>(8);
 
         double minX = boundingBox.getMinX();

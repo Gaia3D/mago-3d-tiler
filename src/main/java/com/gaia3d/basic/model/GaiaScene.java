@@ -158,6 +158,7 @@ public class GaiaScene extends SceneStructure implements Serializable {
 
         GaiaNode node = new GaiaNode();
         node.getMeshes().add(meshMaster);
+        node.setParent(rootNode);
 
         children.add(node);
     }
