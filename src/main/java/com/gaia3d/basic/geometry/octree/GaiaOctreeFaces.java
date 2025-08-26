@@ -102,7 +102,7 @@ public class GaiaOctreeFaces extends GaiaOctree<GaiaFaceData> {
         contents.clear();
     }
 
-    private boolean intersects(GaiaTriangle triangle) {
+    public boolean intersects(GaiaTriangle triangle) {
         GaiaBoundingBox bbox = this.getBoundingBox();
         return bbox.intersectsTriangle(triangle);
     }
