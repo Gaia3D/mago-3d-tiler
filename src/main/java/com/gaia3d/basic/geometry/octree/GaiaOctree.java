@@ -1,7 +1,6 @@
 package com.gaia3d.basic.geometry.octree;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.util.GaiaOctreeUtils;
 import lombok.Getter;
 import lombok.Setter;
 

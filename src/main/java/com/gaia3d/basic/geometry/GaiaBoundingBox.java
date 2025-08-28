@@ -145,7 +145,7 @@ public class GaiaBoundingBox implements Serializable {
             return false; // No valid plane to project onto.
         }
 
-        // axis X.***
+        // axis X
         GaiaSegment aaSegment1 = new GaiaSegment(new Vector3d(minX, minY, minZ), new Vector3d(maxX, minY, minZ));
         if (intersectsAASegmentToTriangle(triangle, trianglePlane, aaSegment1, bestPlane, 0)) {
             return true; // Intersection found with the first segment.
@@ -163,7 +163,7 @@ public class GaiaBoundingBox implements Serializable {
             return true; // Intersection found with the fourth segment.
         }
 
-        // axis Y.***
+        // axis Y
         GaiaSegment aaSegment5 = new GaiaSegment(new Vector3d(minX, minY, minZ), new Vector3d(minX, maxY, minZ));
         if (intersectsAASegmentToTriangle(triangle, trianglePlane, aaSegment5, bestPlane, 1)) {
             return true; // Intersection found with the first segment.
@@ -181,7 +181,7 @@ public class GaiaBoundingBox implements Serializable {
             return true; // Intersection found with the fourth segment.
         }
 
-        // axis Z.***
+        // axis Z
         GaiaSegment aaSegment9 = new GaiaSegment(new Vector3d(minX, minY, minZ), new Vector3d(minX, minY, maxZ));
         if (intersectsAASegmentToTriangle(triangle, trianglePlane, aaSegment9, bestPlane, 2)) {
             return true; // Intersection found with the first segment.
