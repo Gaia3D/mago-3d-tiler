@@ -132,7 +132,7 @@ public class ReMesherVertexCluster {
         vertexToIndexMap.clear();
         mapVertexToFaces.clear();
 
-        // now delete degenerate faces.***
+        // now delete degenerate faces
         primitives.get(0).deleteDegeneratedFaces(); // here deletes no used vertices either.
     }
 

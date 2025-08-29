@@ -17,7 +17,7 @@ import org.joml.Vector4d;
 @Setter
 public class GaiaFaceData {
     // This class is used by GaiaOctree to store the face data.
-    private GaiaFace face = null; // main data.***
+    private GaiaFace face = null; // main data
     private GaiaScene sceneParent = null;
     private GaiaPrimitive primitiveParent = null;
     private GaiaBoundingBox boundingBox = null;
