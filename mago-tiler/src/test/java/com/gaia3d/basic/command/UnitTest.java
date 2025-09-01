@@ -912,7 +912,7 @@ class UnitTest {
     void testCollada_SangGiDe() {
         // _1building _2buildings _3buildings _4buildings _5buildings _6buildings _someBuildings
         String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\BB00-sangji-university_someBuildings\\";
-        String outputPath = "D:\\data\\mago-server\\output\\BB00-sangji-university_someBuildings\\";
+        String outputPath = "D:\\data\\mago-server\\output\\BB00-sangji-university_someBuildings_voxelized\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
@@ -921,6 +921,22 @@ class UnitTest {
                 "-proj", "+proj=tmerc +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=127.9296192 +lat_0=37.3702212",
                 "-pg",
                 "-rx", "90"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void test_JoGonHee() {
+        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\Incheon_CheongNa_JoGeonhee\\Production_5_org\\Data_someTiles\\";
+        String outputPath = "D:\\data\\mago-server\\output\\Incheon_CheongNa_JoGeonhee_Data_someTiles\\";
+
+        String[] args = new String[]{
+                "-i", inputPath,
+                "-inputType", "obj",
+                "-o", outputPath,
+                "-lon", "126.63887",
+                "-lat", "37.53292",
+                "-pg"
         };
         Mago3DTilerMain.main(args);
     }
@@ -1017,6 +1033,21 @@ class UnitTest {
                 "-it", "kml",
                 "-o", outputPath,
                 "-rx", "-90"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void test_germanyCityGML() {
+        // hwal-0, jat-0, nak-0, tree-0
+        String inputPath = "D:\\data\\CityGML\\GermanyData\\";
+        String outputPath = "D:\\data\\mago-server\\output\\GermanyData\\";
+
+        String[] args = new String[]{
+                "-i", inputPath,
+                "-it", "gml",
+                "-o", outputPath,
+                "-crs", "25832"
         };
         Mago3DTilerMain.main(args);
     }

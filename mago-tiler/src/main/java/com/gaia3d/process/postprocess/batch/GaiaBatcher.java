@@ -46,7 +46,7 @@ public class GaiaBatcher {
                 continue;
             }
             GaiaMaterial material = batchedMaterials.get(dataSet.getMaterialId());
-            for (int  j= i + 1; j < datasetsCount; j++) {
+            for (int j = i + 1; j < datasetsCount; j++) {
                 GaiaBufferDataSet dataSet2 = dataSets.get(j);
                 GaiaMaterial material2 = batchedMaterials.get(dataSet2.getMaterialId());
                 if (visitedMap.containsKey(dataSet2)) {
@@ -409,10 +409,27 @@ public class GaiaBatcher {
     }
 
     private GaiaMaterial findMaterial(List<GaiaMaterial> materials, int materialId) {
-        GaiaMaterial resultMaterial = materials.stream()
-                .filter((material) -> material.getId() == materialId)
-                .findFirst().orElseThrow();
-        return resultMaterial;
+        if (materials == null) {
+            throw new IllegalArgumentException("The material list is null.");
+        }
+        if (materialId < 0) {
+            throw new IllegalArgumentException("The materialId is negative.");
+        }
+        return materials.stream()
+                .filter(m -> m.getId() == materialId)
+                .findFirst()
+                .orElseThrow(() -> {
+                    String availableIds = materials.stream()
+                            .map(m -> String.valueOf(m.getId()))
+                            .collect(Collectors.joining(", "));
+                    return new IllegalArgumentException(
+                            "No material found with id=" + materialId +
+                                    ". IDs available: [" + availableIds + "]");
+                });
+//        GaiaMaterial resultMaterial = materials.stream()
+//                .filter((material) -> material.getId() == materialId)
+//                .findFirst().orElseThrow();
+//        return resultMaterial;
     }
 
     private List<GaiaBufferDataSet> batchDataSetsWithTheSameMaterial(List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> filteredMaterials) {
@@ -498,7 +515,7 @@ public class GaiaBatcher {
         int elementsCount = positionBuffer.getElementsCount();
         int length = elementsCount * 4;
         byte[] colorList = new byte[length];
-        for (int i = 0; i < length; i+=4) {
+        for (int i = 0; i < length; i += 4) {
             colorList[i] = (byte) (diffuseColor.x * 255);
             colorList[i + 1] = (byte) (diffuseColor.y * 255);
             colorList[i + 2] = (byte) (diffuseColor.z * 255);
