@@ -517,7 +517,7 @@ public class Engine {
             // ZNeg texture
             cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_ZNEG;
             BufferedImage imageZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
-                    mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType);
+                    mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor);
             imageZNeg = eliminateBackGroundColor(imageZNeg, backgroundColor);
 
             if (imageZNeg != null) {
@@ -532,7 +532,7 @@ public class Engine {
                 // YPosZNeg texture
                 cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_YPOS_ZNEG;
                 BufferedImage imageYpoZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
-                        mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType);
+                        mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor);
                 imageYpoZNeg = eliminateBackGroundColor(imageYpoZNeg, backgroundColor);
 
                 if (imageYpoZNeg != null) {
@@ -546,7 +546,7 @@ public class Engine {
                 // XNegZNeg texture
                 cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_XNEG_ZNEG;
                 BufferedImage imageXNegZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
-                        mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType);
+                        mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor);
                 imageXNegZNeg = eliminateBackGroundColor(imageXNegZNeg, backgroundColor);
 
                 if (imageXNegZNeg != null) {
@@ -560,7 +560,7 @@ public class Engine {
                 // YNegZNeg texture
                 cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_YNEG_ZNEG;
                 BufferedImage imageYNegZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
-                        mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType);
+                        mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor);
                 imageYNegZNeg = eliminateBackGroundColor(imageYNegZNeg, backgroundColor);
 
                 if (imageYNegZNeg != null) {
@@ -574,7 +574,7 @@ public class Engine {
                 // XPosZNeg texture
                 cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_XPOS_ZNEG;
                 BufferedImage imageXPosZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
-                        mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType);
+                        mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor);
                 imageXPosZNeg = eliminateBackGroundColor(imageXPosZNeg, backgroundColor);
 
                 if (imageXPosZNeg != null) {
@@ -1179,7 +1179,7 @@ public class Engine {
                                                                 Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix,
                                                                 double screenPixelsForMeter,
                                                                 FaceVisibilityDataManager faceVisibilityDataManager,
-                                                                int bufferImageType) {
+                                                                int bufferImageType, Vector4f backGroundColor) {
         // Calculate bbox relative to camera direction
         GaiaBoundingBox bbox = gaiaScene.updateBoundingBox();
         Vector3d bboxCenter = bbox.getCenter();
@@ -1293,7 +1293,7 @@ public class Engine {
         UniformsMap uniformsMap = sceneShaderProgram.getUniformsMap();
         uniformsMap.setUniform3fv("bboxMin", new Vector3f((float) expandedBBox.getMinX(), (float) expandedBBox.getMinY(), (float) expandedBBox.getMinZ()));
         uniformsMap.setUniform3fv("bboxMax", new Vector3f((float) expandedBBox.getMaxX(), (float) expandedBBox.getMaxY(), (float) expandedBBox.getMaxZ()));
-        Vector4f clearColor = new Vector4f(1.0f, 0.0f, 1.0f, 0.0f);
+        Vector4f clearColor = new Vector4f(backGroundColor);
         renderIntoFbo(colorFbo, sceneShaderProgram, gaiaScenesContainer, clearColor, true);
         colorFbo.bind();
         BufferedImage image = colorFbo.getBufferedImage(bufferImageType);
