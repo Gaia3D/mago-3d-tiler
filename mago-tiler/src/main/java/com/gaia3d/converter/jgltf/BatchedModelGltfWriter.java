@@ -281,7 +281,7 @@ public class BatchedModelGltfWriter extends GltfWriter {
         int vertexCount = gaiaMesh.getPositionsCount() / 3;
         boolean isOverShortVertices = vertexCount >= 65535;
         if (isOverShortVertices) {
-            log.warn("[WARN] The number of vertices count than 65535 ({})", vertexCount);
+            log.debug("[WARN] The number of vertices count than 65535 ({})", vertexCount);
         }
 
         GltfNodeBuffer nodeBuffer = initNodeBuffer(gaiaMesh, isOverShortVertices);

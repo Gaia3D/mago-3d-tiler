@@ -30,7 +30,6 @@ public class GaiaStrictCoordinateExtractor implements PreProcess {
 
         CoordinateReferenceSystem sourceCrs = globalOptions.getSourceCrs();
         if (sourceCrs != null && sourceCrs.getName().equals("EPSG:4978")) {
-            log.info("[INFO] Using EPSG:4978 coordinate system.");
             return extractCartesian(tileInfo);
         }
         return extractAndLocalize(tileInfo);
@@ -123,7 +122,6 @@ public class GaiaStrictCoordinateExtractor implements PreProcess {
             Vector3d boxCenter = boundingBox.getCenter();
             if (sourceCrs != null && sourceCrs.getName().equals("EPSG:4978")) {
                 degreeCenter = GlobeUtils.cartesianToGeographicWgs84(boxCenter);
-                log.info("[INFO] Using EPSG:4978 coordinate system. Center: {} -> {}", boxCenter, degreeCenter);
             } else if (sourceCrs != null) {
                 ProjCoordinate centerSource = new ProjCoordinate(boxCenter.x, boxCenter.y, boxCenter.z);
                 ProjCoordinate centerWgs84 = GlobeUtils.transform(sourceCrs, centerSource);
