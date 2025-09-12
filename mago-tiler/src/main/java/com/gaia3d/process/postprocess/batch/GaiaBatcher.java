@@ -415,21 +415,36 @@ public class GaiaBatcher {
         if (materialId < 0) {
             throw new IllegalArgumentException("The materialId is negative.");
         }
-        return materials.stream()
-                .filter(m -> m.getId() == materialId)
-                .findFirst()
-                .orElseThrow(() -> {
-                    String availableIds = materials.stream()
-                            .map(m -> String.valueOf(m.getId()))
-                            .collect(Collectors.joining(", "));
-                    return new IllegalArgumentException(
-                            "No material found with id=" + materialId +
-                                    ". IDs available: [" + availableIds + "]");
-                });
+//        return materials.stream()
+//                .filter(m -> m.getId() == materialId)
+//                .findFirst()
+//                .orElseThrow(() -> {
+//                    String availableIds = materials.stream()
+//                            .map(m -> String.valueOf(m.getId()))
+//                            .collect(Collectors.joining(", "));
+//                    return new IllegalArgumentException(
+//                            "No material found with id=" + materialId +
+//                                    ". IDs available: [" + availableIds + "]");
+//                });
+        //***********************************************************************************
 //        GaiaMaterial resultMaterial = materials.stream()
 //                .filter((material) -> material.getId() == materialId)
 //                .findFirst().orElseThrow();
 //        return resultMaterial;
+        //***********************************************************************************
+        Optional<GaiaMaterial> result = materials.stream()
+                .filter(m -> m.getId() == materialId)
+                .findFirst();
+
+        if (result.isPresent()) {
+            return result.get();
+        } else {
+            String availableIds = materials.stream()
+                    .map(m -> String.valueOf(m.getId()))
+                    .collect(Collectors.joining(", "));
+            log.warn("No material found with id={} (available ids: [{}])", materialId, availableIds);
+            return null;
+        }
     }
 
     private List<GaiaBufferDataSet> batchDataSetsWithTheSameMaterial(List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> filteredMaterials) {

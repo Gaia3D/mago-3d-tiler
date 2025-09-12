@@ -531,7 +531,9 @@ public class MainVoxelizer implements IAppLogic {
             // now, cut the halfEdgeScene and make cube-textures by rendering
             double gridSpacing = bboxMaxSize / 3.0;
             HalfEdgeOctreeFaces resultOctree = new HalfEdgeOctreeFaces(null, bbox.clone());
-            HalfEdgeScene cuttedScene = HalfEdgeCutter.cutHalfEdgeSceneGridXYZ(cutHalfEdgeScene, gridSpacing, resultOctree);
+            //HalfEdgeScene cuttedScene = HalfEdgeCutter.cutHalfEdgeSceneGridXYZ(cutHalfEdgeScene, gridSpacing, resultOctree);
+
+            HalfEdgeScene cuttedScene = cutHalfEdgeScene;
 
             if (makeHorizontalSkirt) {
                 cuttedScene.makeHorizontalSkirt();

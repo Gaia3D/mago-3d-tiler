@@ -927,8 +927,10 @@ class UnitTest {
 
     @Test
     void test_JoGonHee() {
+        // someTiles
         String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\Incheon_CheongNa_JoGeonhee\\Production_5_org\\Data_someTiles\\";
-        String outputPath = "D:\\data\\mago-server\\output\\Incheon_CheongNa_JoGeonhee_Data_someTiles\\";
+        String outputPath = "D:\\data\\mago-server\\output\\Incheon_CheongNa_JoGeonhee_P5_Data_someTiles\\";
+        //String outputPath = "E:\\temp\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
@@ -936,6 +938,8 @@ class UnitTest {
                 "-o", outputPath,
                 "-lon", "126.63887",
                 "-lat", "37.53292",
+                "-leaveTemp",
+                "-debug",
                 "-pg"
         };
         Mago3DTilerMain.main(args);

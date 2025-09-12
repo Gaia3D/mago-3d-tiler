@@ -446,6 +446,8 @@ public class Engine {
             // return depth test
             glEnable(GL20.GL_DEPTH_TEST);
 
+            log.info("background color eliminated.");
+
             return image;
         } catch (Exception e) {
             log.error("[ERROR] Error initializing the engine : ", e);

@@ -393,4 +393,86 @@ public class ImageUtils {
             log.error("[ERROR] :", e);
         }
     }
+
+    public static boolean isImageFullyTransparent(BufferedImage img) {
+        int width = img.getWidth();
+        int height = img.getHeight();
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int argb = img.getRGB(x, y);  // ARGB packed in int
+                int alpha = (argb >> 24) & 0xff;
+                int red = (argb >> 16) & 0xff;
+                int green = (argb >> 8) & 0xff;
+                int blue = (argb) & 0xff;
+
+                // Si no es completamente transparente (0,0,0,0), retorna false
+//                if (!(alpha == 0 && red == 0 && green == 0 && blue == 0)) {
+//                    return false;
+//                }
+
+                if (!(alpha == 0)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public static BufferedImage expandWithBorderFast(BufferedImage src, int n, boolean bordeCopiado) {
+        int w = src.getWidth();
+        int h = src.getHeight();
+        int newW = w + 2 * n;
+        int newH = h + 2 * n;
+
+        BufferedImage expanded = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
+
+        // Copiar centro
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int argb = src.getRGB(x, y);
+                expanded.setRGB(x + n, y + n, argb);
+            }
+        }
+
+        if (bordeCopiado) {
+            // Copiar bordes horizontales (arriba y abajo)
+            for (int x = 0; x < w; x++) {
+                int topPixel = src.getRGB(x, 0);
+                int bottomPixel = src.getRGB(x, h - 1);
+                for (int k = 0; k < n; k++) {
+                    expanded.setRGB(x + n, k, topPixel);                  // arriba
+                    expanded.setRGB(x + n, newH - n + k, bottomPixel);    // abajo
+                }
+            }
+
+            // Copiar bordes verticales (izquierda y derecha)
+            for (int y = 0; y < h; y++) {
+                int leftPixel = src.getRGB(0, y);
+                int rightPixel = src.getRGB(w - 1, y);
+                for (int k = 0; k < n; k++) {
+                    expanded.setRGB(k, y + n, leftPixel);                 // izquierda
+                    expanded.setRGB(newW - n + k, y + n, rightPixel);     // derecha
+                }
+            }
+
+            // Copiar esquinas
+            int topLeft = src.getRGB(0, 0);
+            int topRight = src.getRGB(w - 1, 0);
+            int bottomLeft = src.getRGB(0, h - 1);
+            int bottomRight = src.getRGB(w - 1, h - 1);
+
+            for (int y = 0; y < n; y++) {
+                for (int x = 0; x < n; x++) {
+                    expanded.setRGB(x, y, topLeft);                             // arriba-izq
+                    expanded.setRGB(newW - n + x, y, topRight);                 // arriba-der
+                    expanded.setRGB(x, newH - n + y, bottomLeft);               // abajo-izq
+                    expanded.setRGB(newW - n + x, newH - n + y, bottomRight);   // abajo-der
+                }
+            }
+        }
+        // Si bordeCopiado = false → padding queda transparente (ARGB=0)
+
+        return expanded;
+    }
 }
