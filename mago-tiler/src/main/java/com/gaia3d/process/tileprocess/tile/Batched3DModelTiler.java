@@ -48,7 +48,6 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         Node root = createRoot();
         CoordinateReferenceSystem sourceCrs = globalOptions.getSourceCrs();
         if (sourceCrs != null && sourceCrs.getName().equals("EPSG:4978")) {
-            log.info("[INFO] Using EPSG:4978 coordinate system.");
             boundingBox = calcCartesianBoundingBox(tileInfos);
             transformMatrix = getTransformMatrixFromCartesian(boundingBox);
             root.setBoundingVolume(new BoundingVolume(boundingBox, BoundingVolume.BoundingVolumeType.BOX));
@@ -209,7 +208,6 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         Node root = createRoot();
         CoordinateReferenceSystem sourceCrs = globalOptions.getSourceCrs();
         if (sourceCrs != null && sourceCrs.getName().equals("EPSG:4978")) {
-            log.info("[INFO] Using EPSG:4978 coordinate system.");
             boundingBox = calcCartesianBoundingBox(tileInfos);
             transformMatrix = getTransformMatrixFromCartesian(boundingBox);
             boundingVolume = new BoundingVolume(boundingBox, BoundingVolume.BoundingVolumeType.BOX);
@@ -269,7 +267,6 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         Node root = createRoot();
         CoordinateReferenceSystem sourceCrs = globalOptions.getSourceCrs();
         if (sourceCrs != null && sourceCrs.getName().equals("EPSG:4978")) {
-            log.info("[INFO] Using EPSG:4978 coordinate system.");
             boundingBox = calcCartesianBoundingBox(tileInfos);
             transformMatrix = getTransformMatrixFromCartesian(boundingBox);
             boundingVolume = new BoundingVolume(boundingBox, BoundingVolume.BoundingVolumeType.BOX);
