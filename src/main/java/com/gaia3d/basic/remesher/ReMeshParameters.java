@@ -21,4 +21,20 @@ public class ReMeshParameters {
     public ReMeshParameters() {
         this.cellAveragePositions = new HashMap<>();
     }
+
+    public void deleteCellAveragePositionInsideBox(Vector3i minCellIndex, Vector3i maxCellIndex) {
+        int cnt = 0;
+        for (int i = minCellIndex.x + 1; i < maxCellIndex.x; i++) {
+            for (int j = minCellIndex.y + 1; j < maxCellIndex.y; j++) {
+                for (int k = minCellIndex.z + 1; k < maxCellIndex.z; k++) {
+                    Vector3i cellIndex = new Vector3i(i, j, k);
+                    if (cellAveragePositions.containsKey(cellIndex)) {
+                        cellAveragePositions.remove(cellIndex);
+                        cnt++;
+                    }
+                }
+            }
+        }
+        log.debug("Deleted {} cell average positions inside the box.", cnt);
+    }
 }
