@@ -356,6 +356,11 @@ public class GlobalOptions {
         } else {
             int processorCount = Runtime.getRuntime().availableProcessors();
             int threadCount = processorCount > 1 ? processorCount / 2 : 1;
+
+            // Limit to maximum 3 threads for I/O overload prevention
+            if (threadCount > 3) {
+                threadCount = 3;
+            }
             instance.setMultiThreadCount((byte) threadCount);
         }
 
