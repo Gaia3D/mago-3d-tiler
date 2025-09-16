@@ -62,7 +62,7 @@ class B3dmReleaseTest {
         String[] args = new String[] {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-tilesVersion", "1.1",
+                //"-tilesVersion", "1.1",
         };
         MagoTestConfig.execute(args);
     }

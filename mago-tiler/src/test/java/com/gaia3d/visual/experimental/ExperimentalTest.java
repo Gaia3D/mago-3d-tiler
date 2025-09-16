@@ -1,4 +1,4 @@
-package com.gaia3d.visual.expreimental;
+package com.gaia3d.visual.experimental;
 
 import com.gaia3d.visual.MagoTestConfig;
 import org.junit.jupiter.api.Disabled;
@@ -7,204 +7,32 @@ import org.junit.jupiter.api.Test;
 public class ExperimentalTest {
 
     @Test
-    void voxelMini() {
-        String path = "voxel-mini";
+    void citygmlSNBJ20250908() {
+        String path = "20250908-SNBJ-GML";
         String[] args = new String[] {
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-rotateXAxis", "90",
-                "-refineAdd",
-                "-r"
+                //"-c", "5186",
+                //"-rotateXAxis", "90",
         };
         MagoTestConfig.execute(args);
     }
 
     @Test
-    void optimizedvoxel15() {
-        String path = "ydp-voxel-optimized";
+    void ldIfc24Extract20250827() {
+        String path = "20250827-ld-IFC24-extract";
         String[] args = new String[] {
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-c", "5186",
                 "-rotateXAxis", "90",
-                "-refineAdd",
-                "-r"
         };
         MagoTestConfig.execute(args);
     }
 
     @Test
-    void optimizedVoxel14() {
-        String path = "ydp-voxel-optimized-14";
-        String[] args = new String[] {
-                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-rotateXAxis", "90",
-                "-refineAdd",
-                "-r"
-        };
-        MagoTestConfig.execute(args);
-    }
-
-    @Test
-    void optimizedVoxel13() {
-        String path = "ydp-voxel-optimized-13";
-        String[] args = new String[] {
-                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-rotateXAxis", "90",
-                "-refineAdd",
-                "-r"
-        };
-        MagoTestConfig.execute(args);
-    }
-
-    @Test
-    void optimizedVoxel12() {
-        String path = "ydp-voxel-optimized-12";
-        String[] args = new String[] {
-                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-rotateXAxis", "90",
-                "-refineAdd",
-                "-r"
-        };
-        MagoTestConfig.execute(args);
-    }
-
-    @Test
-    void optimizedVoxel11() {
-        String path = "ydp-voxel-optimized-11";
-        String[] args = new String[] {
-                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-rotateXAxis", "90",
-                "-refineAdd",
-                "-r"
-        };
-        MagoTestConfig.execute(args);
-    }
-
-    @Test
-    void optimizedVoxel10() {
-        String path = "ydp-voxel-optimized-10";
-        String[] args = new String[] {
-                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-rotateXAxis", "90",
-                "-refineAdd",
-                "-r"
-        };
-        MagoTestConfig.execute(args);
-    }
-
-    @Test
-    void optimizedVoxel9() {
-        String path = "ydp-voxel-optimized-9";
-        String[] args = new String[] {
-                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-rotateXAxis", "90",
-                "-refineAdd",
-                "-r"
-        };
-        MagoTestConfig.execute(args);
-    }
-
-    @Test
-    void optimizedVoxel8() {
-        String path = "ydp-voxel-optimized-8";
-        String[] args = new String[] {
-                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-rotateXAxis", "90",
-                "-refineAdd",
-                "-r"
-        };
-        MagoTestConfig.execute(args);
-    }
-
-    @Test
-    void voxel15() {
-        String path = "ydp-voxel";
-        String[] args = new String[] {
-                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-rotateXAxis", "90",
-                "-refineAdd",
-                "-r"
-        };
-        MagoTestConfig.execute(args);
-    }
-
-    @Test
-    void voxelTerrainSample() {
-        String path = "voxel-terrain-sample";
-        String[] args = new String[] {
-                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-rotateXAxis", "90",
-                "-refineAdd",
-                "-r"
-        };
-        MagoTestConfig.execute(args);
-    }
-
-    @Test
-    void voxelTerrainSampleSingle() {
-        String path = "voxel-terrain-sample-single";
-        String[] args = new String[] {
-                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-rotateXAxis", "90",
-                "-refineAdd",
-                "-r"
-        };
-        MagoTestConfig.execute(args);
-    }
-
-    @Test
-    void voxelBuildingsSample() {
-        String path = "voxel-buildings-sample";
-        String[] args = new String[] {
-                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-rotateXAxis", "90",
-                "-refineAdd",
-                "-r"
-        };
-        MagoTestConfig.execute(args);
-    }
-
-    @Test
-    void voxelBuildingsSingle() {
-        String path = "voxel-buildings-sample-single";
-        String[] args = new String[] {
-                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-rotateXAxis", "90",
-                "-refineAdd",
-                "-r"
-        };
-        MagoTestConfig.execute(args);
-    }
-
-    @Test
-    void voxelSampleAll() {
-        String path = "voxel-buildings-sample-all";
-        String[] args = new String[] {
-                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-rotateXAxis", "90",
-                "-refineAdd",
-                "-r"
-        };
-        MagoTestConfig.execute(args);
-    }
-
-    //20250827-ld-IFC-extract
-    @Test
-    void ldIfcExtract20250827() {
-        String path = "20250827-ld-IFC-extract";
+    void ldIfc4Extract20250827() {
+        String path = "20250827-ld-IFC4-extract";
         String[] args = new String[] {
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
