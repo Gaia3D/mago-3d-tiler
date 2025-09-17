@@ -1,15 +1,9 @@
 package com.gaia3d.util;
 
-import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.octree.GaiaFaceData;
-import com.gaia3d.basic.geometry.octree.GaiaOctreeFaces;
-import com.gaia3d.basic.geometry.octree.GaiaOctreeCoordinate;
 import com.gaia3d.basic.model.*;
-import com.gaia3d.basic.types.TextureType;
 import org.joml.Vector2d;
-import org.joml.Vector4d;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class GaiaOctreeUtils {
@@ -17,11 +11,15 @@ public class GaiaOctreeUtils {
     public static void getFaceDataListOfNode(GaiaScene sceneParent, GaiaNode node, List<GaiaFaceData> resultFaceDataList) {
         // 1rst, check meshes.
         if (node.getMeshes() != null) {
-            for (int i = 0, length = node.getMeshes().size(); i < length; i++) {
-                GaiaMesh mesh = node.getMeshes().get(i);
+            for (int i = 0, length = node.getMeshes()
+                    .size(); i < length; i++) {
+                GaiaMesh mesh = node.getMeshes()
+                        .get(i);
                 if (mesh.getPrimitives() != null) {
-                    for (int j = 0, primitivesLength = mesh.getPrimitives().size(); j < primitivesLength; j++) {
-                        GaiaPrimitive primitive = mesh.getPrimitives().get(j);
+                    for (int j = 0, primitivesLength = mesh.getPrimitives()
+                            .size(); j < primitivesLength; j++) {
+                        GaiaPrimitive primitive = mesh.getPrimitives()
+                                .get(j);
 
 //                        // Get the material.
 //                        int matId = primitive.getMaterialIndex();
@@ -34,11 +32,15 @@ public class GaiaOctreeUtils {
 //                        }
 
                         if (primitive.getSurfaces() != null) {
-                            for (int k = 0, surfacesLength = primitive.getSurfaces().size(); k < surfacesLength; k++) {
-                                GaiaSurface surface = primitive.getSurfaces().get(k);
+                            for (int k = 0, surfacesLength = primitive.getSurfaces()
+                                    .size(); k < surfacesLength; k++) {
+                                GaiaSurface surface = primitive.getSurfaces()
+                                        .get(k);
                                 if (surface.getFaces() != null) {
-                                    for (int m = 0, facesLength = surface.getFaces().size(); m < facesLength; m++) {
-                                        GaiaFace face = surface.getFaces().get(m);
+                                    for (int m = 0, facesLength = surface.getFaces()
+                                            .size(); m < facesLength; m++) {
+                                        GaiaFace face = surface.getFaces()
+                                                .get(m);
 
                                         int indicesCount = face.getIndices().length;
                                         int[] indices = face.getIndices();
@@ -52,9 +54,12 @@ public class GaiaOctreeUtils {
                                             GaiaFace face0 = new GaiaFace();
                                             face0.setIndices(new int[]{index0, index1, index2});
 
-                                            GaiaVertex vertex0 = primitive.getVertices().get(index0);
-                                            GaiaVertex vertex1 = primitive.getVertices().get(index1);
-                                            GaiaVertex vertex2 = primitive.getVertices().get(index2);
+                                            GaiaVertex vertex0 = primitive.getVertices()
+                                                    .get(index0);
+                                            GaiaVertex vertex1 = primitive.getVertices()
+                                                    .get(index1);
+                                            GaiaVertex vertex2 = primitive.getVertices()
+                                                    .get(index2);
 
                                             Vector2d texCoord0 = vertex0.getTexcoords();
                                             Vector2d texCoord1 = vertex1.getTexcoords();
@@ -109,8 +114,10 @@ public class GaiaOctreeUtils {
 
         // now, check children.
         if (node.getChildren() != null) {
-            for (int i = 0, length = node.getChildren().size(); i < length; i++) {
-                GaiaNode child = node.getChildren().get(i);
+            for (int i = 0, length = node.getChildren()
+                    .size(); i < length; i++) {
+                GaiaNode child = node.getChildren()
+                        .get(i);
                 getFaceDataListOfNode(sceneParent, child, resultFaceDataList);
             }
         }
