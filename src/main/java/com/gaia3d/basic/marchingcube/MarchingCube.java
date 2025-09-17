@@ -1,9 +1,14 @@
 package com.gaia3d.basic.marchingcube;
 
+import com.gaia3d.basic.geometry.voxel.VoxelCPGrid3D;
 import com.gaia3d.basic.geometry.voxel.VoxelGrid3D;
+import com.gaia3d.basic.legend.GaiaColor;
+import com.gaia3d.basic.legend.LegendColors;
 import com.gaia3d.basic.model.*;
+import com.gaia3d.util.GeometryUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
+import org.joml.Vector4d;
 
 import java.util.List;
 
@@ -314,6 +319,18 @@ public class MarchingCube {
         );
     }
 
+    public static Vector3d interpolate(Vector3d p1, Vector3d p2, double valp1, double valp2, double iso) {
+        if (Math.abs(iso - valp1) < 0.00001) return p1;
+        if (Math.abs(iso - valp2) < 0.00001) return p2;
+        if (Math.abs(valp1 - valp2) < 0.00001) return p1;
+        double mu = (iso - valp1) / (valp2 - valp1);
+        return new Vector3d(
+                p1.x + mu * (p2.x - p1.x),
+                p1.y + mu * (p2.y - p1.y),
+                p1.z + mu * (p2.z - p1.z)
+        );
+    }
+
     public static GaiaScene makeGaiaScene(VoxelGrid3D voxelGrid3d, float isoValue) {
         GaiaScene gaiaScene = new GaiaScene();
         GaiaNode rootNode = new GaiaNode();
@@ -486,5 +503,341 @@ public class MarchingCube {
         }
 
         return gaiaScene;
+    }
+
+    public static GaiaScene makeGaiaScene(VoxelCPGrid3D voxelGrid3d, double isoValue) {
+        GaiaScene gaiaScene = null;
+        List<GaiaVertex> gaiaVertices = null;
+        GaiaSurface gaiaSurface = null;
+
+        int gridsCountX = voxelGrid3d.getGridsCountX();
+        int gridsCountY = voxelGrid3d.getGridsCountY();
+        int gridsCountZ = voxelGrid3d.getGridsCountZ();
+
+        log.info("start marching cube : {} {} {}", gridsCountX, gridsCountY, gridsCountZ);
+
+        for (int x = 0; x < gridsCountX - 1; x++) {
+            for (int y = 0; y < gridsCountY - 1; y++) {
+                for (int z = 0; z < gridsCountZ - 1; z++) {
+                    // Indices pointing to cube vertices
+                    //                6  ___________________  7
+                    //                  /|                 /|
+                    //                 / |                / |
+                    //                /  |               /  |
+                    //           4   /___|______________/5  |
+                    //              |    |              |   |                    z
+                    //              |    |              |   |                    ^
+                    //              |  2 |______________|___| 3                  |   y
+                    //              |   /               |   /                    |  /
+                    //              |  /                |  /                     | /
+                    //              | /                 | /                      |/
+                    //              |/__________________|/                       *-------> x
+                    //             0                     1
+
+                    double value0 = voxelGrid3d.getVoxelValue(x, y, z);
+                    double value1 = voxelGrid3d.getVoxelValue(x + 1, y, z);
+                    double value2 = voxelGrid3d.getVoxelValue(x, y + 1, z);
+                    double value3 = voxelGrid3d.getVoxelValue(x + 1, y + 1, z);
+                    double value4 = voxelGrid3d.getVoxelValue(x, y, z + 1);
+                    double value5 = voxelGrid3d.getVoxelValue(x + 1, y, z + 1);
+                    double value6 = voxelGrid3d.getVoxelValue(x, y + 1, z + 1);
+                    double value7 = voxelGrid3d.getVoxelValue(x + 1, y + 1, z + 1);
+
+                    int cubeIndex = 0;
+                    if (value0 < isoValue) cubeIndex |= 1;
+                    if (value1 < isoValue) cubeIndex |= 2;
+                    if (value2 < isoValue) cubeIndex |= 8;
+                    if (value3 < isoValue) cubeIndex |= 4;
+                    if (value4 < isoValue) cubeIndex |= 16;
+                    if (value5 < isoValue) cubeIndex |= 32;
+                    if (value6 < isoValue) cubeIndex |= 128;
+                    if (value7 < isoValue) cubeIndex |= 64;
+
+                    if (cubeIndex == 0 || cubeIndex == 255) {
+                        continue; // No triangles
+                    }
+
+                    // Get the edges of the cube that are intersected by the isosurface
+                    int edges = EDGE_TABLE[cubeIndex];
+                    if (edges == 0) {
+                        continue; // No triangles
+                    }
+
+                    // Calculate the vertices of the triangles
+                    float mu = 0.5f;
+                    Vector3d[] vertices = new Vector3d[12];
+                    if ((edges & 1) != 0) {
+                        Vector3d p0 = voxelGrid3d.getVoxelPosition(x, y, z); // 0
+                        Vector3d p1 = voxelGrid3d.getVoxelPosition(x + 1, y, z); // 1
+                        vertices[0] = interpolate(p0, p1, value0, value1, isoValue);
+                    }
+                    if ((edges & 2) != 0) {
+                        Vector3d p1 = voxelGrid3d.getVoxelPosition(x + 1, y, z); // 1
+                        Vector3d p3 = voxelGrid3d.getVoxelPosition(x + 1, y + 1, z); // 3
+                        vertices[1] = interpolate(p1, p3, value1, value3, isoValue);
+                    }
+                    if ((edges & 4) != 0) {
+                        Vector3d p3 = voxelGrid3d.getVoxelPosition(x + 1, y + 1, z); // 3
+                        Vector3d p2 = voxelGrid3d.getVoxelPosition(x, y + 1, z); // 2
+                        vertices[2] = interpolate(p2, p3, value2, value3, isoValue);
+                    }
+                    if ((edges & 8) != 0) {
+                        Vector3d p2 = voxelGrid3d.getVoxelPosition(x, y + 1, z); // 2
+                        Vector3d p0 = voxelGrid3d.getVoxelPosition(x, y, z); // 0
+                        vertices[3] = interpolate(p0, p2, value0, value2, isoValue);
+                    }
+                    if ((edges & 16) != 0) {
+                        Vector3d p4 = voxelGrid3d.getVoxelPosition(x, y, z + 1); // 4
+                        Vector3d p5 = voxelGrid3d.getVoxelPosition(x + 1, y, z + 1); // 5
+                        vertices[4] = interpolate(p4, p5, value4, value5, isoValue);
+                    }
+                    if ((edges & 32) != 0) {
+                        Vector3d p5 = voxelGrid3d.getVoxelPosition(x + 1, y, z + 1); // 5
+                        Vector3d p7 = voxelGrid3d.getVoxelPosition(x + 1, y + 1, z + 1); // 7
+                        vertices[5] = interpolate(p5, p7, value5, value7, isoValue);
+                    }
+                    if ((edges & 64) != 0) {
+                        Vector3d p7 = voxelGrid3d.getVoxelPosition(x + 1, y + 1, z + 1); // 7
+                        Vector3d p6 = voxelGrid3d.getVoxelPosition(x, y + 1, z + 1); // 6
+                        vertices[6] = interpolate(p6, p7, value6, value7, isoValue);
+                    }
+                    if ((edges & 128) != 0) {
+                        Vector3d p6 = voxelGrid3d.getVoxelPosition(x, y + 1, z + 1); // 6
+                        Vector3d p4 = voxelGrid3d.getVoxelPosition(x, y, z + 1); // 4
+                        vertices[7] = interpolate(p4, p6, value4, value6, isoValue);
+                    }
+                    if ((edges & 256) != 0) {
+                        Vector3d p0 = voxelGrid3d.getVoxelPosition(x, y, z); // 0
+                        Vector3d p4 = voxelGrid3d.getVoxelPosition(x, y, z + 1); // 4
+                        vertices[8] = interpolate(p0, p4, value0, value4, isoValue);
+                    }
+                    if ((edges & 512) != 0) {
+                        Vector3d p1 = voxelGrid3d.getVoxelPosition(x + 1, y, z); // 1
+                        Vector3d p5 = voxelGrid3d.getVoxelPosition(x + 1, y, z + 1); // 5
+                        vertices[9] = interpolate(p1, p5, value1, value5, isoValue);
+                    }
+                    if ((edges & 1024) != 0) {
+                        Vector3d p3 = voxelGrid3d.getVoxelPosition(x + 1, y + 1, z); // 3
+                        Vector3d p7 = voxelGrid3d.getVoxelPosition(x + 1, y + 1, z + 1); // 7
+                        vertices[10] = interpolate(p3, p7, value3, value7, isoValue);
+                    }
+                    if ((edges & 2048) != 0) {
+                        Vector3d p2 = voxelGrid3d.getVoxelPosition(x, y + 1, z); // 2
+                        Vector3d p6 = voxelGrid3d.getVoxelPosition(x, y + 1, z + 1); // 6
+                        vertices[11] = interpolate(p2, p6, value2, value6, isoValue);
+                    }
+
+                    int i = 0;
+                    cubeIndex <<= 4;
+                    while (TRIANGLE_TABLE[cubeIndex + i] != -1) {
+                        if(gaiaScene == null){
+                            gaiaScene = new GaiaScene();
+                            GaiaNode rootNode = new GaiaNode();
+                            gaiaScene.getNodes().add(rootNode);
+                            GaiaNode node = new GaiaNode();
+                            rootNode.getChildren().add(node);
+                            node.setName("VoxelGrid3D");
+                            GaiaMesh mesh = new GaiaMesh();
+                            node.getMeshes().add(mesh);
+                            GaiaPrimitive gaiaPrimitive = new GaiaPrimitive();
+                            mesh.getPrimitives().add(gaiaPrimitive);
+                            gaiaVertices = gaiaPrimitive.getVertices();
+                            gaiaSurface = new GaiaSurface();
+                            gaiaPrimitive.getSurfaces().add(gaiaSurface);
+                        }
+                        int index0 = TRIANGLE_TABLE[cubeIndex + i];
+                        int index1 = TRIANGLE_TABLE[cubeIndex + i + 1];
+                        int index2 = TRIANGLE_TABLE[cubeIndex + i + 2];
+
+                        Vector3d v0 = vertices[index0];
+                        Vector3d v1 = vertices[index1];
+                        Vector3d v2 = vertices[index2];
+
+                        GaiaVertex gaiaVertex0 = new GaiaVertex();
+                        gaiaVertex0.setPosition(v0);
+                        GaiaVertex gaiaVertex1 = new GaiaVertex();
+                        gaiaVertex1.setPosition(v1);
+                        GaiaVertex gaiaVertex2 = new GaiaVertex();
+                        gaiaVertex2.setPosition(v2);
+
+                        gaiaVertices.add(gaiaVertex0);
+                        gaiaVertices.add(gaiaVertex1);
+                        gaiaVertices.add(gaiaVertex2);
+
+                        GaiaFace gaiaFace = new GaiaFace();
+                        int[] indices = new int[3];
+                        indices[0] = gaiaVertices.size() - 3;
+                        indices[1] = gaiaVertices.size() - 2;
+                        indices[2] = gaiaVertices.size() - 1;
+                        gaiaFace.setIndices(indices);
+
+                        gaiaSurface.getFaces().add(gaiaFace);
+
+                        i += 3;
+                    }
+                }
+            }
+        }
+
+        return gaiaScene;
+    }
+
+    public static GaiaScene makeGaiaSceneOnion(VoxelCPGrid3D voxelCPGrid3D, double[] isoValuesArray) {
+        int isoValuesCount = isoValuesArray.length;
+        GaiaScene gaiaSceneMaster = null;
+        double totalMinValue = voxelCPGrid3D.getMinMaxValues()[0];
+        double totalMaxValue = voxelCPGrid3D.getMinMaxValues()[1];
+
+        for (int i = 0; i < isoValuesCount; i++) {
+            double currIsoValue = isoValuesArray[i];
+            if (totalMaxValue > currIsoValue) {
+
+                // now, quantize the isoValue into rgba byte values.
+                float quantizedIsoValue = (float) ((currIsoValue - totalMinValue) / (totalMaxValue - totalMinValue));
+                byte[] encodedColor4 = new byte[4];
+                GeometryUtils.encodeFloat(quantizedIsoValue, encodedColor4);
+
+                GaiaScene gaiaScene = MarchingCube.makeGaiaScene(voxelCPGrid3D, currIsoValue);
+                if (gaiaScene == null) {
+                    continue;
+                }
+
+                gaiaScene.weldVertices(0.1, false, false, false, false);
+                gaiaScene.calculateVertexNormals();
+
+                List<GaiaPrimitive> gaiaPrimitives = gaiaScene.extractPrimitives(null);
+                for (int j = 0; j < gaiaPrimitives.size(); j++) {
+                    GaiaPrimitive gaiaPrimitive = gaiaPrimitives.get(j);
+                    gaiaPrimitive.setMaterialIndex(0);
+                    // set color to vertices.***
+                    List<GaiaVertex> gaiaVertices = gaiaPrimitive.getVertices();
+                    for (int k = 0; k < gaiaVertices.size(); k++) {
+                        GaiaVertex gaiaVertex = gaiaVertices.get(k);
+                        gaiaVertex.setColor(encodedColor4);
+                    }
+                }
+
+                // set random color to material.***
+                byte[] randomColor = new byte[4];
+                float randomRed = (float) Math.random();
+                randomColor[0] = (byte) (randomRed * 255.0f);
+                float randomGreen = (float) Math.random();
+                randomColor[1] = (byte) (randomGreen * 255.0f);
+                float randomBlue = (float) Math.random();
+                randomColor[2] = (byte) (randomBlue * 255.0f);
+                float alpha = 0.5f;
+                randomColor[3] = (byte) (alpha * 255.0f);
+                List<GaiaMaterial> gaiaMaterials = gaiaScene.getMaterials();
+                if (gaiaMaterials.size() == 0) {
+                    // add a new material.
+                    GaiaMaterial gaiaMaterial = new GaiaMaterial();
+                    gaiaMaterial.setDiffuseColor(new Vector4d(randomRed, randomGreen, randomBlue, alpha));
+                    gaiaMaterial.setBlend(true);
+                    gaiaMaterials.add(gaiaMaterial);
+                }
+                for (int j = 0; j < gaiaMaterials.size(); j++) {
+                    GaiaMaterial gaiaMaterial = gaiaMaterials.get(j);
+                    gaiaMaterial.setDiffuseColor(new Vector4d(randomRed, randomGreen, randomBlue, alpha));
+                    gaiaMaterial.setBlend(true);
+                }
+
+                if (gaiaSceneMaster == null) {
+                    gaiaSceneMaster = gaiaScene;
+                } else {
+                    GaiaNode rootNodeMaster = gaiaSceneMaster.getNodes().get(0);
+                    GaiaNode childNodeMaster = rootNodeMaster.getChildren().get(0);
+                    GaiaMesh meshMaster = childNodeMaster.getMeshes().get(0);
+                    GaiaPrimitive gaiaPrimitiveMaster = meshMaster.getPrimitives().get(0);
+
+                    for (int j = 0; j < gaiaPrimitives.size(); j++) {
+                        GaiaPrimitive gaiaPrimitive = gaiaPrimitives.get(j);
+                        gaiaPrimitiveMaster.addPrimitive(gaiaPrimitive);
+                    }
+                }
+
+                int hola = 0;
+            }
+        }
+
+        return gaiaSceneMaster;
+    }
+
+    public static GaiaScene makeGaiaSceneOnion(VoxelCPGrid3D voxelCPGrid3D, double[] isoValuesArray, LegendColors legendColors) {
+        int isoValuesCount = isoValuesArray.length;
+        GaiaScene gaiaSceneMaster = null;
+        double totalMinValue = voxelCPGrid3D.getMinMaxValues()[0];
+        double totalMaxValue = voxelCPGrid3D.getMinMaxValues()[1];
+
+        for (int i = 0; i < isoValuesCount; i++) {
+            double currIsoValue = isoValuesArray[i];
+            if (totalMaxValue > currIsoValue) {
+
+                // now, quantize the isoValue into rgba byte values.
+                //float quantizedIsoValue = (float) ((currIsoValue - totalMinValue) / (totalMaxValue - totalMinValue));
+                //byte[] encodedColor4 = new byte[4];
+                //GeometryUtils.encodeFloat(quantizedIsoValue, encodedColor4);
+
+                GaiaScene gaiaScene = MarchingCube.makeGaiaScene(voxelCPGrid3D, currIsoValue);
+                if (gaiaScene == null) {
+                    continue;
+                }
+
+                gaiaScene.weldVertices(0.1, false, false, false, false);
+                gaiaScene.calculateVertexNormals();
+
+                // set color by legendColors.***
+                GaiaColor gaiaColor = legendColors.getColorLinearInterpolation(currIsoValue);
+                byte[] color4 = gaiaColor.getColorBytesArray();
+                float redFloat = gaiaColor.getRed();
+                float greenFloat = gaiaColor.getGreen();
+                float blueFloat = gaiaColor.getBlue();
+                float alpha = gaiaColor.getAlpha();
+
+                List<GaiaPrimitive> gaiaPrimitives = gaiaScene.extractPrimitives(null);
+                for (int j = 0; j < gaiaPrimitives.size(); j++) {
+                    GaiaPrimitive gaiaPrimitive = gaiaPrimitives.get(j);
+                    gaiaPrimitive.setMaterialIndex(0);
+                    // set color to vertices.***
+                    List<GaiaVertex> gaiaVertices = gaiaPrimitive.getVertices();
+                    for (int k = 0; k < gaiaVertices.size(); k++) {
+                        GaiaVertex gaiaVertex = gaiaVertices.get(k);
+                        //gaiaVertex.setColor(encodedColor4);
+                        gaiaVertex.setColor(color4);
+                    }
+                }
+
+
+
+                List<GaiaMaterial> gaiaMaterials = gaiaScene.getMaterials();
+                if (gaiaMaterials.size() == 0) {
+                    // add a new material.
+                    GaiaMaterial gaiaMaterial = new GaiaMaterial();
+                    gaiaMaterial.setDiffuseColor(new Vector4d(redFloat, greenFloat, blueFloat, alpha));
+                    gaiaMaterial.setBlend(true);
+                    gaiaMaterials.add(gaiaMaterial);
+                }
+                for (int j = 0; j < gaiaMaterials.size(); j++) {
+                    GaiaMaterial gaiaMaterial = gaiaMaterials.get(j);
+                    gaiaMaterial.setDiffuseColor(new Vector4d(redFloat, greenFloat, blueFloat, alpha));
+                    gaiaMaterial.setBlend(true);
+                }
+
+                if (gaiaSceneMaster == null) {
+                    gaiaSceneMaster = gaiaScene;
+                } else {
+                    GaiaNode rootNodeMaster = gaiaSceneMaster.getNodes().get(0);
+                    GaiaNode childNodeMaster = rootNodeMaster.getChildren().get(0);
+                    GaiaMesh meshMaster = childNodeMaster.getMeshes().get(0);
+                    GaiaPrimitive gaiaPrimitiveMaster = meshMaster.getPrimitives().get(0);
+
+                    for (int j = 0; j < gaiaPrimitives.size(); j++) {
+                        GaiaPrimitive gaiaPrimitive = gaiaPrimitives.get(j);
+                        gaiaPrimitiveMaster.addPrimitive(gaiaPrimitive);
+                    }
+                }
+            }
+        }
+
+        return gaiaSceneMaster;
     }
 }

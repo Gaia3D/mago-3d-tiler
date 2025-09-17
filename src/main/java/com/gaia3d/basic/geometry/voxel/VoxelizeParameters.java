@@ -19,5 +19,6 @@ public class VoxelizeParameters {
     private double texturePixelsForMeter = 20.0; // 20 pixels per meter as default
 
     public VoxelizeParameters() {
+
     }
 }

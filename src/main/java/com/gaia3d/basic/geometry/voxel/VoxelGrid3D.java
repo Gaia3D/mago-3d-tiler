@@ -37,6 +37,9 @@ public class VoxelGrid3D {
     }
 
     public Voxel getVoxel(int x, int y, int z) {
+        if (x < 0 || x >= gridsCountX || y < 0 || y >= gridsCountY || z < 0 || z >= gridsCountZ) {
+            return null;
+        }
         return voxels[x][y][z];
     }
 
