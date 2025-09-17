@@ -1,7 +1,6 @@
 package com.gaia3d.basic.geometry.octree;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.util.GaiaOctreeUtils;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,13 +21,15 @@ public class GaiaOctree<E> {
     // |    0    |    1    |        |    4    |    5    |
     // |         |         |        |         |         |
     // +---------+---------+        +---------+---------+
-    private GaiaOctree<E> parent; // if null, this is the root octree
+    // if null, this is the root octree
+    private GaiaOctree<E> parent;
+    // bounding box of this octree
     private final GaiaBoundingBox boundingBox = new GaiaBoundingBox();
-    //private int idx = -1;
     private GaiaOctreeIndex index = GaiaOctreeIndex.UNDEFINED;
-    private int depth = 0; // depth in the octree
+    // depth in the octree
+    private int depth = 0;
     private GaiaOctreeCoordinate coordinate = null;
-    private List<GaiaOctree<E>> children; // size 8
+    private List<GaiaOctree<E>> children;
     private final List<E> contents = new ArrayList<>();
 
     public GaiaOctree(GaiaOctree<E> parent, GaiaBoundingBox boundingBox) {
@@ -71,6 +72,10 @@ public class GaiaOctree<E> {
     }
 
     public void createChildren() {
+        if (children != null && (children.size() == 8)) {
+            return;
+        }
+
         children = new ArrayList<>(8);
 
         double minX = boundingBox.getMinX();

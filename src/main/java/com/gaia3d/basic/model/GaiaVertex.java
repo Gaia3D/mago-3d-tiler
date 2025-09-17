@@ -75,7 +75,8 @@ public class GaiaVertex extends VertexStructure implements Serializable {
 
         // 3rd, check normal.
         if (checkNormal && normal != null && vertex2.normal != null) {
-            if (normal.distance(vertex2.normal) > error) {
+            double dot = normal.dot(vertex2.normal);
+            if ((1.0 - dot) > error) {
                 return false;
             }
         }
