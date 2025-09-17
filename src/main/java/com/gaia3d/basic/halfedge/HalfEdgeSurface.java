@@ -2,7 +2,8 @@ package com.gaia3d.basic.halfedge;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
-import com.gaia3d.basic.geometry.octree.HalfEdgeOctree;
+import com.gaia3d.basic.geometry.octree.GaiaOctree;
+import com.gaia3d.basic.geometry.octree.HalfEdgeOctreeVertices;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.TextureType;
@@ -268,22 +269,37 @@ public class HalfEdgeSurface implements Serializable {
             resultMapVertexToSamePosVertices = new HashMap<>();
         }
 
-        HalfEdgeOctree octree = new HalfEdgeOctree(null);
-        List<HalfEdgeVertex> verticesCopy = new ArrayList<>(vertices);
-        octree.setVertices(verticesCopy);
-        octree.calculateSize();
-        octree.setMaxDepth(10);
-        octree.setMinBoxSize(1.0);
-        octree.makeTreeByMinVertexCount(20);
+//        HalfEdgeOctreeFaces octree = new HalfEdgeOctreeFaces(null);
+//        List<HalfEdgeVertex> verticesCopy = new ArrayList<>(vertices);
+//        octree.setVertices(verticesCopy);
+//        octree.calculateSize();
+//        octree.setMaxDepth(10);
+//        octree.setMinBoxSize(1.0);
+//        octree.makeTreeByMinVertexCount(20);
 
-        List<HalfEdgeOctree> nodesWithContents = new ArrayList<>();
-        octree.extractOctreesWithContents(nodesWithContents);
+        // new.**********************
+        GaiaBoundingBox bbox = new GaiaBoundingBox();
+        for (HalfEdgeVertex vertex : vertices) {
+            Vector3d position = vertex.getPosition();
+            bbox.addPoint(position);
+        }
+        HalfEdgeOctreeVertices octreeVertices = new HalfEdgeOctreeVertices(null, bbox);
+        octreeVertices.addContents(vertices);
+        octreeVertices.setLimitDepth(10);
+        octreeVertices.setLimitBoxSize(1.0);
+        octreeVertices.setLimitVertexCount(20);
+        octreeVertices.makeTree();
+        List<GaiaOctree<HalfEdgeVertex>> nodesWithContents = octreeVertices.extractOctreesWithContents();
+        // end new.**********************
+
+//        List<HalfEdgeOctreeFaces> nodesWithContents2 = new ArrayList<>();
+//        octree.extractOctreesWithContents(nodesWithContents2);
 
         int nodesWithContentsCount = nodesWithContents.size();
         log.info("nodesWithContentsCount = " + nodesWithContentsCount);
         for (int i = 0; i < nodesWithContentsCount; i++) {
-            HalfEdgeOctree node = nodesWithContents.get(i);
-            List<HalfEdgeVertex> vertices = node.getVertices();
+            HalfEdgeOctreeVertices node = (HalfEdgeOctreeVertices) nodesWithContents.get(i);
+            List<HalfEdgeVertex> vertices = node.getContents();
             int verticesCount = vertices.size();
             for (int j = 0; j < verticesCount; j++) {
                 HalfEdgeVertex vertex = vertices.get(j);
@@ -1296,7 +1312,7 @@ public class HalfEdgeSurface implements Serializable {
             }
 
         }
-        log.info("[Tile][PhotoRealistic][cut][cutByPlaneXY] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount);
+        log.info("[Tile][Photogrammetry][cut][cutByPlaneXY] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount);
     }
 
     private void cutByPlaneXZ(Vector3d planePosition, double error) {
@@ -1316,7 +1332,7 @@ public class HalfEdgeSurface implements Serializable {
                 hedgesCutCount++;
             }
         }
-        log.info("[Tile][PhotoRealistic][cut][cutByPlaneXZ] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount);
+        log.info("[Tile][Photogrammetry][cut][cutByPlaneXZ] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount);
     }
 
     private void cutByPlaneYZ(Vector3d planePosition, double error) {
@@ -1336,7 +1352,7 @@ public class HalfEdgeSurface implements Serializable {
                 hedgesCutCount++;
             }
         }
-        log.info("[Tile][PhotoRealistic][cut][cutByPlaneYZ] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount);
+        log.info("[Tile][Photogrammetry][cut][cutByPlaneYZ] hedgesCount = " + hedgesCount + " , hedgesCutCount = " + hedgesCutCount);
     }
 
     public boolean checkHalfEdgesFaces() {
@@ -2635,7 +2651,7 @@ public class HalfEdgeSurface implements Serializable {
         int imageType = existPngTextures ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
 
         GaiaTexture textureAtlas = new GaiaTexture();
-        log.info("[Tile][PhotoRealistic][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
+        log.info("[Tile][Photogrammetry][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
         textureAtlas.createImage(maxWidth, maxHeight, imageType);
         // fill the textureAtlas with fuchia color
 //        Color fuchiaColor = new Color(255, 255, 0);
@@ -2978,7 +2994,7 @@ public class HalfEdgeSurface implements Serializable {
         int imageType = existPngTextures ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
 
         GaiaTexture textureAtlas = new GaiaTexture();
-        log.info("[Tile][PhotoRealistic][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
+        log.info("[Tile][Photogrammetry][Atlas] Atlas maxWidth : " + maxWidth + " , maxHeight : " + maxHeight);
         textureAtlas.createImage(maxWidth, maxHeight, imageType);
         // fill the textureAtlas with fuchia color
         //Color fuchiaColor = new Color(255, 255, 0);
@@ -3118,14 +3134,14 @@ public class HalfEdgeSurface implements Serializable {
     private void doTextureAtlasProcess(List<GaiaTextureScissorData> textureScissorDates) {
         // here calculates the batchedBoundaries of each textureScissorData
         int textureScissorDatasCount = textureScissorDates.size();
-        log.info("[Tile][PhotoRealistic][Atlas] doTextureAtlasProcess() : textureScissorDatasCount = " + textureScissorDatasCount);
+        log.info("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : textureScissorDatasCount = " + textureScissorDatasCount);
 
         GillotinePacker gillotinePacker = new GillotinePacker();
 
         for (int i = 0; i < textureScissorDatasCount; i++) {
             GaiaTextureScissorData textureScissorData = textureScissorDates.get(i);
             if (!gillotinePacker.insert(textureScissorData)) {
-                log.info("[Tile][PhotoRealistic][Atlas] doTextureAtlasProcess() : gillotinePacker.insert() failed.");
+                log.info("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : gillotinePacker.insert() failed.");
             }
         }
     }

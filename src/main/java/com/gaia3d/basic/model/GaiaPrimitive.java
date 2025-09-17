@@ -4,6 +4,7 @@ import com.gaia3d.basic.exchangable.GaiaBuffer;
 import com.gaia3d.basic.exchangable.GaiaBufferDataSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
+import com.gaia3d.basic.geometry.octree.GaiaOctree;
 import com.gaia3d.basic.geometry.octree.GaiaOctreeVertices;
 import com.gaia3d.basic.model.structure.PrimitiveStructure;
 import com.gaia3d.basic.types.AttributeType;
@@ -404,22 +405,20 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
 
     public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
         // Weld the vertices.
-        GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null);
-        octreeVertices.getVertices().addAll(this.vertices);
-        octreeVertices.calculateSize();
-        octreeVertices.setAsCube();
-        octreeVertices.setMaxDepth(10);
-        octreeVertices.setMinBoxSize(1.0); // 1m
+        GaiaBoundingBox boundingBox = this.getBoundingBox(null);
+        GaiaBoundingBox cubeBoundingBox = boundingBox.createCubeFromMinPosition();
+        GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null, cubeBoundingBox);
+        octreeVertices.addContents(this.vertices);
+        octreeVertices.setLimitDepth(10);
+        octreeVertices.setLimitBoxSize(1.0); // 1m
 
         octreeVertices.makeTreeByMinVertexCount(50);
 
-        List<GaiaOctreeVertices> octreesWithContents = new ArrayList<>();
-        octreeVertices.extractOctreesWithContents(octreesWithContents);
-
+        List<GaiaOctree<GaiaVertex>> octreesWithContents = octreeVertices.extractOctreesWithContents();
         Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster = new HashMap<>();
 
-        for (GaiaOctreeVertices octree : octreesWithContents) {
-            List<GaiaVertex> vertices = octree.getVertices();
+        for (GaiaOctree<GaiaVertex> octree : octreesWithContents) {
+            List<GaiaVertex> vertices = octree.getContents();
             getWeldableVertexMap(mapVertexToVertexMaster, vertices, error, checkTexCoord, checkNormal, checkColor, checkBatchId);
         }
 
@@ -472,7 +471,6 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
                 }
                 surface.setFaces(newFaces);
             }
-
         }
 
         // delete no used vertices

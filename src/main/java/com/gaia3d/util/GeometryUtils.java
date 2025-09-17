@@ -3,7 +3,6 @@ package com.gaia3d.util;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.geometry.octree.GaiaFaceData;
-import com.gaia3d.basic.geometry.octree.GaiaOctree;
 import com.gaia3d.basic.halfedge.PlaneType;
 import com.gaia3d.basic.model.*;
 import org.joml.Vector2d;
@@ -804,58 +803,6 @@ public class GeometryUtils {
         }
 
         return cleanPointsArray;
-    }
-
-    public static GaiaScene getGaiaSceneLego(GaiaScene gaiaScene, float octreeMinSize) {
-        GaiaScene resultScene = new GaiaScene();
-        GaiaOctree gaiaOctree = GaiaOctreeUtils.getSceneOctree(gaiaScene, octreeMinSize);
-
-        List<GaiaOctree> octreeList = new ArrayList<>();
-        gaiaOctree.extractOctreesWithContents(octreeList);
-
-        GaiaNode nodeRoot = new GaiaNode();
-        resultScene.getNodes().add(nodeRoot);
-
-        GaiaNode node = new GaiaNode();
-        nodeRoot.getChildren().add(node);
-
-        GaiaMesh mesh = new GaiaMesh();
-        node.getMeshes().add(mesh);
-
-        GaiaPrimitive primitiveMaster = new GaiaPrimitive();
-        mesh.getPrimitives().add(primitiveMaster);
-
-        for (GaiaOctree octree : octreeList) {
-            boolean[] hasNeighbor = octree.hasNeighbor(); // left, right, front, rear, bottom, top.
-            GaiaBoundingBox bbox = octree.getBoundingBox();
-
-            GaiaPrimitive primitive = getPrimitiveFromBoundingBox(bbox, !hasNeighbor[0], !hasNeighbor[1], !hasNeighbor[2], !hasNeighbor[3], !hasNeighbor[4], !hasNeighbor[5]);
-
-            //Vector4d randomColor = new Vector4d(Math.random(), Math.random(), Math.random(), 1.0);
-            Vector4d averageColor = GeometryUtils.getAverageColor(octree.getFaceDataList());
-
-            //averageColor = new Vector4d(0.9, 0.9, 0.9, 1.0);
-
-            if (averageColor == null) {
-                averageColor = new Vector4d(1.0, 0.0, 1.0, 1.0);
-            }
-            byte[] color = new byte[4];
-            color[0] = (byte) (averageColor.x * 255);
-            color[1] = (byte) (averageColor.y * 255);
-            color[2] = (byte) (averageColor.z * 255);
-            color[3] = (byte) (averageColor.w * 255);
-
-
-            List<GaiaVertex> vertices = primitive.getVertices();
-            for (GaiaVertex vertex : vertices) {
-                vertex.setColor(color);
-            }
-            // End Test.------------------------------------------------------------------------------------------------
-
-            GaiaPrimitiveUtils.mergePrimitives(primitiveMaster, primitive);
-        }
-
-        return resultScene;
     }
 
     public static boolean isInvalidVector(Vector3d vector) {

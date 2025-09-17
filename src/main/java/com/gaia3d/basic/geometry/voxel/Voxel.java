@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Getter
 @Setter
-
 public class Voxel {
     private GaiaByteColor4 color = new GaiaByteColor4(0, 0, 0, 0);
     private double value = 0.0;

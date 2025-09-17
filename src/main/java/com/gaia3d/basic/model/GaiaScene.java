@@ -9,6 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.joml.Matrix4d;
+import org.joml.Vector2d;
+import org.joml.Vector3d;
 
 import java.io.Serializable;
 import java.nio.file.Path;
@@ -28,6 +30,9 @@ public class GaiaScene extends SceneStructure implements Serializable {
     private Path originalPath;
     private GaiaBoundingBox gaiaBoundingBox;
     private GaiaAttribute attribute;
+
+    // TODO: degree translation
+    private Vector3d translation = new Vector3d(0, 0, 0);
 
     public GaiaScene(GaiaSet gaiaSet) {
         List<GaiaBufferDataSet> bufferDataSets = gaiaSet.getBufferDataList();
@@ -50,15 +55,20 @@ public class GaiaScene extends SceneStructure implements Serializable {
         bufferDataSetsCopy.forEach((bufferDataSet) -> rootNode.getChildren().add(new GaiaNode(bufferDataSet)));
     }
 
-    public GaiaBoundingBox getBoundingBox() {
-        this.gaiaBoundingBox = new GaiaBoundingBox();
+    /**
+     * Updates the bounding box of the scene by iterating through all nodes.
+     * @return the updated GaiaBoundingBox of the scene.
+     */
+    public GaiaBoundingBox updateBoundingBox() {
+        GaiaBoundingBox newBoundingBox = new GaiaBoundingBox();
         for (GaiaNode node : this.getNodes()) {
             GaiaBoundingBox boundingBox = node.getBoundingBox(null);
             if (boundingBox != null) {
-                gaiaBoundingBox.addBoundingBox(boundingBox);
+                newBoundingBox.addBoundingBox(boundingBox);
             }
         }
-        return this.gaiaBoundingBox;
+        this.gaiaBoundingBox = newBoundingBox;
+        return newBoundingBox;
     }
 
     public void clear() {
@@ -67,10 +77,7 @@ public class GaiaScene extends SceneStructure implements Serializable {
         this.originalPath = null;
         this.gaiaBoundingBox = null;
         this.nodes.clear();
-
-        int materialsCount = this.materials.size();
-        for (int i = 0; i < materialsCount; i++) {
-            GaiaMaterial material = this.materials.get(i);
+        for (GaiaMaterial material : this.materials) {
             material.clear();
         }
         this.materials.clear();

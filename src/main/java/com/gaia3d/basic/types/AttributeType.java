@@ -15,22 +15,19 @@ public enum AttributeType implements Serializable {
     NORMAL("NORMAL3", "NORMAL"),
     TEXCOORD("TEXCOORD2", "TEXCOORD_0"),
     COLOR("COLOR4", "COLOR_0"),
-    BATCHID("OBJECTID", "_BATCHID");
 
-    final String gaia;
+    BATCHID("BATCHID", "_BATCHID"),
+    CLASSIFICATION("CLASSIFICATION", "_CLASSIFICATION"),
+    INTENSITY("INTENSITY", "_INTENSITY"),
+
+    FEATURE_ID_0("_FEATURE_ID_0", "_FEATURE_ID_0"),
+    FEATURE_ID_1("_FEATURE_ID_1", "_FEATURE_ID_1");
+
+    final String name;
     final String accessor;
 
-    AttributeType(String gaia, String accessor) {
-        this.gaia = gaia;
+    AttributeType(String name, String accessor) {
+        this.name = name;
         this.accessor = accessor;
-    }
-
-    public static AttributeType getGaiaAttribute(String gaia) {
-        for (AttributeType type : AttributeType.values()) {
-            if (type.gaia.equals(gaia)) {
-                return type;
-            }
-        }
-        return AttributeType.NONE;
     }
 }

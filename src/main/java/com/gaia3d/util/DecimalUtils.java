@@ -8,6 +8,10 @@ import java.util.Locale;
 
 @UtilityClass
 public class DecimalUtils {
+    public static double cutFast(double value) {
+        return Math.floor(value * 1e8) / 1e8;
+    }
+
     public static double cut(double value) {
         DecimalFormat decimalFormat = new DecimalFormat("0.00000000");
         decimalFormat.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ENGLISH));

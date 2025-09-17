@@ -45,7 +45,13 @@ public enum FormatType {
     B3DM("b3dm", "gltf", true),
     I3DM("i3dm", "gltf", true),
     PNTS("pnts", "gltf", true),
-    TEMP("tmp", "tmp", false);
+    TILESET("tileset", "json", true),
+    TEMP("tmp", "tmp", false),
+
+    INSTANCE("instance", "instance", false),
+    BATCH("batch", "batch", false),
+    POINTCLOUD("pointcloud", "pointcloud", false),
+    PHOTOGRAMMETRY("photogrammetry", "photogrammetry", false);
 
     private final String extension;
     private final String subExtension;
