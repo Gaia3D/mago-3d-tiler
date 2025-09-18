@@ -3,7 +3,9 @@ package com.gaia3d.util;
 import com.gaia3d.basic.geometry.octree.GaiaFaceData;
 import com.gaia3d.basic.model.*;
 import org.joml.Vector2d;
+import org.joml.Vector3d;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GaiaOctreeUtils {
@@ -31,6 +33,7 @@ public class GaiaOctreeUtils {
 //                            diffuseTexture.loadImage();
 //                        }
 
+                        List<GaiaVertex> primitiveVertices = primitive.getVertices();
                         if (primitive.getSurfaces() != null) {
                             for (int k = 0, surfacesLength = primitive.getSurfaces()
                                     .size(); k < surfacesLength; k++) {
@@ -54,12 +57,19 @@ public class GaiaOctreeUtils {
                                             GaiaFace face0 = new GaiaFace();
                                             face0.setIndices(new int[]{index0, index1, index2});
 
-                                            GaiaVertex vertex0 = primitive.getVertices()
-                                                    .get(index0);
-                                            GaiaVertex vertex1 = primitive.getVertices()
-                                                    .get(index1);
-                                            GaiaVertex vertex2 = primitive.getVertices()
-                                                    .get(index2);
+                                            GaiaVertex vertex0 = primitiveVertices.get(index0);
+                                            GaiaVertex vertex1 = primitiveVertices.get(index1);
+                                            GaiaVertex vertex2 = primitiveVertices.get(index2);
+
+                                            // check if the positions are valid.
+                                            Vector3d position0 = vertex0.getPosition();
+                                            Vector3d position1 = vertex1.getPosition();
+                                            Vector3d position2 = vertex2.getPosition();
+                                            if(Double.isNaN(position0.x) || Double.isNaN(position0.y) || Double.isNaN(position0.z) ||
+                                               Double.isNaN(position1.x) || Double.isNaN(position1.y) || Double.isNaN(position1.z) ||
+                                               Double.isNaN(position2.x) || Double.isNaN(position2.y) || Double.isNaN(position2.z)) {
+                                                continue;
+                                            }
 
                                             Vector2d texCoord0 = vertex0.getTexcoords();
                                             Vector2d texCoord1 = vertex1.getTexcoords();
