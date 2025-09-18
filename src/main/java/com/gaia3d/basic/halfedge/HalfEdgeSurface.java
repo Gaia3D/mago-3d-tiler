@@ -270,6 +270,15 @@ public class HalfEdgeSurface implements Serializable {
             resultMapVertexToSamePosVertices = new HashMap<>();
         }
 
+//        HalfEdgeOctreeFaces octree = new HalfEdgeOctreeFaces(null);
+//        List<HalfEdgeVertex> verticesCopy = new ArrayList<>(vertices);
+//        octree.setVertices(verticesCopy);
+//        octree.calculateSize();
+//        octree.setMaxDepth(10);
+//        octree.setMinBoxSize(1.0);
+//        octree.makeTreeByMinVertexCount(20);
+
+        // new.**********************
         GaiaBoundingBox bbox = new GaiaBoundingBox();
         for (HalfEdgeVertex vertex : vertices) {
             Vector3d position = vertex.getPosition();
@@ -282,6 +291,10 @@ public class HalfEdgeSurface implements Serializable {
         octreeVertices.setLimitVertexCount(20);
         octreeVertices.makeTree();
         List<GaiaOctree<HalfEdgeVertex>> nodesWithContents = octreeVertices.extractOctreesWithContents();
+        // end new.**********************
+
+//        List<HalfEdgeOctreeFaces> nodesWithContents2 = new ArrayList<>();
+//        octree.extractOctreesWithContents(nodesWithContents2);
 
         int nodesWithContentsCount = nodesWithContents.size();
         log.info("nodesWithContentsCount = " + nodesWithContentsCount);
