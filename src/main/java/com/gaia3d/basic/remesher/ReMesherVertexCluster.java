@@ -59,6 +59,9 @@ public class ReMesherVertexCluster {
             vertexToIndexMap.put(vertex, i);
         }
 
+        Vector3i sceneMinCellIndex = null;
+        Vector3i sceneMaxCellIndex = null;
+
         for (GaiaPrimitive primitive : primitives) {
             List<GaiaSurface> surfaces = primitive.getSurfaces();
             for (GaiaSurface surface : surfaces) {
@@ -72,6 +75,23 @@ public class ReMesherVertexCluster {
                         List<GaiaVertex> cluster = vertexClusters.computeIfAbsent(cellIndex, k -> new java.util.ArrayList<>());
                         cluster.add(vertex);
 
+                        // update scene min and max cell index
+                        int currCellX = cellIndex.x;
+                        int currCellY = cellIndex.y;
+                        int currCellZ = cellIndex.z;
+
+                        if (sceneMinCellIndex == null) {
+                            sceneMinCellIndex = new Vector3i(currCellX, currCellY, currCellZ);
+                            sceneMaxCellIndex = new Vector3i(currCellX, currCellY, currCellZ);
+                        } else {
+                            if (currCellX < sceneMinCellIndex.x) sceneMinCellIndex.x = currCellX;
+                            if (currCellY < sceneMinCellIndex.y) sceneMinCellIndex.y = currCellY;
+                            if (currCellZ < sceneMinCellIndex.z) sceneMinCellIndex.z = currCellZ;
+
+                            if (currCellX > sceneMaxCellIndex.x) sceneMaxCellIndex.x = currCellX;
+                            if (currCellY > sceneMaxCellIndex.y) sceneMaxCellIndex.y = currCellY;
+                            if (currCellZ > sceneMaxCellIndex.z) sceneMaxCellIndex.z = currCellZ;
+                        }
                     }
                 }
             }
@@ -132,7 +152,17 @@ public class ReMesherVertexCluster {
         vertexToIndexMap.clear();
         mapVertexToFaces.clear();
 
-        // now delete degenerate faces
+        if (sceneMinCellIndex != null && sceneMaxCellIndex != null) {
+            sceneMinCellIndex.x += 1;
+            sceneMinCellIndex.y += 1;
+            sceneMinCellIndex.z += 1;
+            sceneMaxCellIndex.x -= 1;
+            sceneMaxCellIndex.y -= 1;
+            sceneMaxCellIndex.z -= 1;
+            reMeshParams.deleteCellAveragePositionInsideBox(sceneMinCellIndex, sceneMaxCellIndex);
+        }
+
+        // now delete degenerate faces.***
         primitives.get(0).deleteDegeneratedFaces(); // here deletes no used vertices either.
     }
 
