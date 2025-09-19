@@ -262,7 +262,7 @@ public class GaiaBoundingBox implements Serializable {
             double area3 = VectorUtils.cross(pSubC, aSubC);
 
             if (Double.isNaN(area1) || Double.isNaN(area2) || Double.isNaN(area3)) {
-                log.error("[ERROR][intersectsAASegmentToTriangle] : Area calculation resulted in NaN.");
+                //log.error("[ERROR][intersectsAASegmentToTriangle] : Area calculation resulted in NaN.");
                 return false; // Area calculation resulted in NaN, cannot determine intersection.
             }
 
@@ -328,6 +328,7 @@ public class GaiaBoundingBox implements Serializable {
         // If there are some points on one side of the plane and some on the other side, then the bounding box intersects the plane.
         int positiveCount = 0;
         int negativeCount = 0;
+        int distanceZeroCount = 0;
         double eps = 1e-8;
         for (int i = 0; i < 8; i++) {
             Vector3d point = new Vector3d(
@@ -341,10 +342,16 @@ public class GaiaBoundingBox implements Serializable {
                 positiveCount++;
             } else if (distance < -eps) {
                 negativeCount++;
+            } else {
+                distanceZeroCount++;
             }
 
             if (positiveCount > 0 && negativeCount > 0) {
                 return true; // The bounding box intersects the plane.
+            }
+
+            if (distanceZeroCount > 2) {
+                return true; // some face is coplanar with the plane.
             }
         }
 
