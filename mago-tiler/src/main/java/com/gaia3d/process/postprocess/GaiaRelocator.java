@@ -28,11 +28,11 @@ public class GaiaRelocator implements PostProcess {
         if (sourceCrs != null && sourceCrs.getName().equals("EPSG:4978")) {
             return relocateCartesian(contentInfo);
         } else {
-            return relocateCartographicStrict(contentInfo);
+            return relocateCartographic(contentInfo);
         }
     }
 
-    private ContentInfo relocateCartographicStrict(ContentInfo contentInfo) {
+    private ContentInfo relocateCartographic(ContentInfo contentInfo) {
         GaiaBoundingBox allBoundingBox = contentInfo.getBoundingBox();
         Vector3d centerCartographic = allBoundingBox.getCenter();
         Vector3d centerCartesian = GlobeUtils.geographicToCartesianWgs84(centerCartographic);
@@ -73,7 +73,7 @@ public class GaiaRelocator implements PostProcess {
         return contentInfo;
     }
 
-    private ContentInfo relocateCartographic(ContentInfo contentInfo) {
+    private ContentInfo relocateCartographicFast(ContentInfo contentInfo) {
         GaiaBoundingBox allBoundingBox = contentInfo.getBoundingBox();
         Vector3d centerCartographic = allBoundingBox.getCenter();
         Vector3d centerCartesian = GlobeUtils.geographicToCartesianWgs84(centerCartographic);

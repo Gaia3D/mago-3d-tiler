@@ -946,17 +946,8 @@ class UnitTest {
     @Test
     void test_VoxelizedSolidOctrees() {
         // someTiles
-        String inputPath = "E:\\data\\VoxlizingProject\\output\\allKoreaSouthJinHun_4326_small\\temp\\octree\\L3\\";
-        //String inputPath = "E:\\data\\VoxlizingProject\\output\\allKoreaSouthJinHun_4326_small\\temp\\octree\\L4\\X135\\Y54\\Z0\\";
-        //String inputPath = "E:\\data\\VoxlizingProject\\output\\allKoreaSouthJinHun_4326_small\\temp\\octree\\L4\\X135\\Y55\\Z0\\";
-        //String inputPath = "E:\\data\\VoxlizingProject\\output\\allKoreaSouthJinHun_4326_small\\temp\\octree\\L4\\X135\\Y56\\Z0\\";
-
-        //String inputPath = "E:\\data\\VoxlizingProject\\output\\allKoreaSouthJinHun_4326_small\\temp\\octree\\L4\\X136\\Y54\\Z0\\";
-        //String inputPath = "E:\\data\\VoxlizingProject\\output\\allKoreaSouthJinHun_4326_small\\temp\\octree\\L4\\X136\\Y55\\Z0\\";
-        //String inputPath = "E:\\data\\VoxlizingProject\\output\\allKoreaSouthJinHun_4326_small\\temp\\octree\\L4\\X136\\Y56\\Z0\\";
-        //String inputPath = "E:\\data\\VoxlizingProject\\output\\allKoreaSouthJinHun_4326_small\\temp\\octree\\L4\\X136\\Y57\\Z0\\";
-        String outputPath = "C:\\data\\mago-server\\output\\allKoreaSouthJinHun_4326_small_L3\\";
-        //String outputPath = "E:\\temp\\";
+        String inputPath = "E:\\data\\VoxlizingProject\\output\\allKoreaSouthJinHun_4326_small\\temp\\octree\\L0\\";
+        String outputPath = "C:\\data\\mago-server\\output\\allKoreaSouthJinHun_4326_small_L0\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
@@ -964,6 +955,22 @@ class UnitTest {
                 "-o", outputPath
         };
         Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void test_VoxelizedSolidOctrees_All() {
+        // someTiles
+        for (int i = 0; i <= 10; i++) {
+            String inputPath = "E:\\data\\VoxlizingProject\\output\\allKoreaSouthJinHun_4326_small\\temp\\octree\\L" + i + "\\";
+            String outputPath = "C:\\data\\mago-server\\output\\allKoreaSouthJinHun_4326_small_L" + i + "\\";
+
+            String[] args = new String[]{
+                    "-i", inputPath,
+                    "-inputType", "kml",
+                    "-o", outputPath
+            };
+            Mago3DTilerMain.main(args);
+        }
     }
 
     @Test
