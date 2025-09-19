@@ -99,6 +99,309 @@ public class GeometryUtils {
         return (idx + pointsCount - 1) % pointsCount;
     }
 
+    public static GaiaPrimitive getPrimitiveFromBox(Vector3d leftFrontBottom, Vector3d rightFrontBottom, Vector3d rightRearBottom,Vector3d leftRearBottom,
+                                                    Vector3d leftFrontTop, Vector3d rightFrontTop, Vector3d rightRearTop,Vector3d leftRearTop,
+                                                    boolean left, boolean right, boolean front, boolean rear, boolean bottom, boolean top) {
+        GaiaPrimitive resultPrimitive = new GaiaPrimitive();
+
+        // make 6 GaiaSurface. Each surface has 2 gaiaFaces.
+
+        // 24 vertices.
+
+        //                           3--------2
+        //                          /        /     <- top
+        //                         /        /
+        //                        0--------1
+        //
+        //
+        //                             rear
+        //                  2        3--------2          2
+        //                 /|        |        |         /|
+        //                / |        |        |        / |
+        //     left ->   3  |     3--------2  |       3  |    <- right
+        //               |  1     |  0-----|--1       |  1
+        //               | /      |        |          | /
+        //               0        0--------1          0
+        //                          front
+        //
+        //
+        //                          3--------2
+        //                          /        /
+        //                         /        /   <- bottom
+        //                        0--------1
+
+
+
+        if (left) {
+            // leftFrontBottom - leftFrontTop - leftRearTop - leftRearBottom
+            GaiaPrimitive leftPrimitive = new GaiaPrimitive();
+
+            GaiaVertex vertex0 = new GaiaVertex();
+            // Left
+            Vector3d normalLeft = new Vector3d(-1, 0, 0);
+            vertex0.setPosition(new Vector3d(leftFrontBottom));
+            vertex0.setNormal(normalLeft);
+
+            GaiaVertex vertex1 = new GaiaVertex();
+            vertex1.setPosition(new Vector3d(leftFrontTop));
+            vertex1.setNormal(normalLeft);
+
+            GaiaVertex vertex2 = new GaiaVertex();
+            vertex2.setPosition(new Vector3d(leftRearTop));
+            vertex2.setNormal(normalLeft);
+
+            GaiaVertex vertex3 = new GaiaVertex();
+            vertex3.setPosition(new Vector3d(leftRearBottom));
+            vertex3.setNormal(normalLeft);
+
+            leftPrimitive.getVertices().add(vertex0);
+            leftPrimitive.getVertices().add(vertex1);
+            leftPrimitive.getVertices().add(vertex2);
+            leftPrimitive.getVertices().add(vertex3);
+
+            // LeftSurface.
+            GaiaSurface leftSurface = new GaiaSurface();
+            // 0, 3, 2, 1. The normal is (-1, 0, 0).
+
+            // Face0 (0, 3, 2).
+            GaiaFace face10 = new GaiaFace();
+            face10.setIndices(new int[]{0, 2, 3});
+            leftSurface.getFaces().add(face10);
+
+            // Face1 (0, 2, 1).
+            GaiaFace face11 = new GaiaFace();
+            face11.setIndices(new int[]{0, 1, 2});
+            leftSurface.getFaces().add(face11);
+
+            leftPrimitive.getSurfaces().add(leftSurface);
+            GaiaPrimitiveUtils.mergePrimitives(resultPrimitive, leftPrimitive);
+        }
+
+
+        if (right) {
+            // rightFrontBottom - rightRearBottom - rightRearTop - rightFrontTop
+            GaiaPrimitive rightPrimitive = new GaiaPrimitive();
+
+            // Right.
+            Vector3d normalRight = new Vector3d(1, 0, 0);
+            GaiaVertex vertex0 = new GaiaVertex(); // coincident with vertex5
+            vertex0.setPosition(new Vector3d(rightFrontBottom));
+            vertex0.setNormal(normalRight);
+
+            GaiaVertex vertex1 = new GaiaVertex(); // coincident with vertex9
+            vertex1.setPosition(new Vector3d(rightRearBottom));
+            vertex1.setNormal(normalRight);
+
+            GaiaVertex vertex2 = new GaiaVertex(); // coincident with vertex10
+            vertex2.setPosition(new Vector3d(rightRearTop));
+            vertex2.setNormal(normalRight);
+
+            GaiaVertex vertex3 = new GaiaVertex(); // coincident with vertex6
+            vertex3.setPosition(new Vector3d(rightFrontTop));
+            vertex3.setNormal(normalRight);
+
+            rightPrimitive.getVertices().add(vertex0);
+            rightPrimitive.getVertices().add(vertex1);
+            rightPrimitive.getVertices().add(vertex2);
+            rightPrimitive.getVertices().add(vertex3);
+
+            // RightSurface
+            GaiaSurface rightSurface = new GaiaSurface();
+            // 0, 1, 2, 3. The normal is (1, 0, 0)
+
+            // Face0 (0, 1, 2)
+            GaiaFace face8 = new GaiaFace();
+            face8.setIndices(new int[]{0, 1, 2});
+            rightSurface.getFaces().add(face8);
+
+            // Face1 (0, 2, 3)
+            GaiaFace face9 = new GaiaFace();
+            face9.setIndices(new int[]{0, 2, 3});
+            rightSurface.getFaces().add(face9);
+
+            rightPrimitive.getSurfaces().add(rightSurface);
+            GaiaPrimitiveUtils.mergePrimitives(resultPrimitive, rightPrimitive);
+        }
+
+        if (front) {
+            // leftFrontBottom - rightFrontBottom - rightFrontTop - leftFrontTop
+            GaiaPrimitive frontPrimitive = new GaiaPrimitive();
+
+            Vector3d normalFront = new Vector3d(0, -1, 0);
+            GaiaVertex vertex0 = new GaiaVertex(); // coincident with vertex0
+            vertex0.setPosition(new Vector3d(leftFrontBottom));
+            vertex0.setNormal(normalFront);
+
+            GaiaVertex vertex1 = new GaiaVertex(); // coincident with vertex1
+            vertex1.setPosition(new Vector3d(rightFrontBottom));
+            vertex1.setNormal(normalFront);
+
+            GaiaVertex vertex2 = new GaiaVertex();
+            vertex2.setPosition(new Vector3d(rightFrontTop));
+            vertex2.setNormal(normalFront);
+
+            GaiaVertex vertex3 = new GaiaVertex();
+            vertex3.setPosition(new Vector3d(leftFrontTop));
+            vertex3.setNormal(normalFront);
+
+            frontPrimitive.getVertices().add(vertex0);
+            frontPrimitive.getVertices().add(vertex1);
+            frontPrimitive.getVertices().add(vertex2);
+            frontPrimitive.getVertices().add(vertex3);
+
+            // FrontSurface
+            GaiaSurface frontSurface = new GaiaSurface();
+            // 0, 1, 2, 3. The normal is (0, -1, 0)
+
+            // Face0 (0, 1, 2)
+            GaiaFace face4 = new GaiaFace();
+            face4.setIndices(new int[]{0, 1, 2});
+            frontSurface.getFaces().add(face4);
+
+            // Face1 (0, 2, 3)
+            GaiaFace face5 = new GaiaFace();
+            face5.setIndices(new int[]{0, 2, 3});
+            frontSurface.getFaces().add(face5);
+
+            frontPrimitive.getSurfaces().add(frontSurface);
+            GaiaPrimitiveUtils.mergePrimitives(resultPrimitive, frontPrimitive);
+        }
+
+        if (rear) {
+            // rightRearBottom - leftRearBottom - leftRearTop - rightRearTop
+            GaiaPrimitive rearPrimitive = new GaiaPrimitive();
+
+            // Rear
+            Vector3d normalRear = new Vector3d(0, 1, 0);
+            GaiaVertex vertex0 = new GaiaVertex(); // coincident with vertex3
+            vertex0.setPosition(new Vector3d(rightRearBottom));
+            vertex0.setNormal(normalRear);
+
+            GaiaVertex vertex1 = new GaiaVertex(); // coincident with vertex2
+            vertex1.setPosition(new Vector3d(leftRearBottom));
+            vertex1.setNormal(normalRear);
+
+            GaiaVertex vertex2 = new GaiaVertex();
+            vertex2.setPosition(new Vector3d(leftRearTop));
+            vertex2.setNormal(normalRear);
+
+            GaiaVertex vertex3 = new GaiaVertex();
+            vertex3.setPosition(new Vector3d(rightRearTop));
+            vertex3.setNormal(normalRear);
+
+            rearPrimitive.getVertices().add(vertex0);
+            rearPrimitive.getVertices().add(vertex1);
+            rearPrimitive.getVertices().add(vertex2);
+            rearPrimitive.getVertices().add(vertex3);
+
+            // RearSurface
+            GaiaSurface backSurface = new GaiaSurface();
+            // 0, 3, 2, 1. The normal is (0, 1, 0)
+
+            // Face0 (0, 3, 2)
+            GaiaFace face6 = new GaiaFace();
+            face6.setIndices(new int[]{0, 2, 3});
+            backSurface.getFaces().add(face6);
+
+            // Face1 (0, 2, 1)
+            GaiaFace face7 = new GaiaFace();
+            face7.setIndices(new int[]{0, 1, 2});
+            backSurface.getFaces().add(face7);
+
+            rearPrimitive.getSurfaces().add(backSurface);
+            GaiaPrimitiveUtils.mergePrimitives(resultPrimitive, rearPrimitive);
+        }
+
+        if (bottom) {
+            // leftFrontBottom - leftRearBottom - rightRearBottom - rightFrontBottom
+            GaiaPrimitive bottomPrimitive = new GaiaPrimitive();
+            // Bottom
+            GaiaVertex vertex0 = new GaiaVertex();
+            Vector3d normalBottom = new Vector3d(0, 0, -1);
+            vertex0.setPosition(new Vector3d(leftFrontBottom));
+            vertex0.setNormal(normalBottom);
+
+            GaiaVertex vertex1 = new GaiaVertex();
+            vertex1.setPosition(new Vector3d(leftRearBottom));
+            vertex1.setNormal(normalBottom);
+
+            GaiaVertex vertex2 = new GaiaVertex();
+            vertex2.setPosition(new Vector3d(rightRearBottom));
+            vertex2.setNormal(normalBottom);
+
+            GaiaVertex vertex3 = new GaiaVertex();
+            vertex3.setPosition(new Vector3d(rightFrontBottom));
+            vertex3.setNormal(normalBottom);
+
+            bottomPrimitive.getVertices().add(vertex0);
+            bottomPrimitive.getVertices().add(vertex1);
+            bottomPrimitive.getVertices().add(vertex2);
+            bottomPrimitive.getVertices().add(vertex3);
+
+            // BottomSurface
+            GaiaSurface bottomSurface = new GaiaSurface();
+            // 0, 3, 2, 1. The normal is (0, 0, -1)
+            // Face0 (0, 2, 1)
+            GaiaFace face0 = new GaiaFace();
+            face0.setIndices(new int[]{0, 1, 2});
+            bottomSurface.getFaces().add(face0);
+
+            // Face1 (0, 3, 2)
+            GaiaFace face1 = new GaiaFace();
+            face1.setIndices(new int[]{0, 2, 3});
+            bottomSurface.getFaces().add(face1);
+
+            bottomPrimitive.getSurfaces().add(bottomSurface);
+            GaiaPrimitiveUtils.mergePrimitives(resultPrimitive, bottomPrimitive);
+        }
+
+        if (top) {
+            // leftFrontTop - rightFrontTop - rightRearTop - leftRearTop
+            GaiaPrimitive topPrimitive = new GaiaPrimitive();
+            // Top
+            Vector3d normalTop = new Vector3d(0, 0, 1);
+            GaiaVertex vertex0 = new GaiaVertex(); // coincident with vertex7
+            vertex0.setPosition(new Vector3d(leftFrontTop));
+            vertex0.setNormal(normalTop);
+
+            GaiaVertex vertex1 = new GaiaVertex(); // coincident with vertex6
+            vertex1.setPosition(new Vector3d(rightFrontTop));
+            vertex1.setNormal(normalTop);
+
+            GaiaVertex vertex2 = new GaiaVertex(); // coincident with vertex10
+            vertex2.setPosition(new Vector3d(rightRearTop));
+            vertex2.setNormal(normalTop);
+
+            GaiaVertex vertex3 = new GaiaVertex(); // coincident with vertex11
+            vertex3.setPosition(new Vector3d(leftRearTop));
+            vertex3.setNormal(normalTop);
+
+            topPrimitive.getVertices().add(vertex0);
+            topPrimitive.getVertices().add(vertex1);
+            topPrimitive.getVertices().add(vertex2);
+            topPrimitive.getVertices().add(vertex3);
+
+            // TopSurface
+            GaiaSurface topSurface = new GaiaSurface();
+            // 0, 1, 2, 3. The normal is (0, 0, 1)
+            //Vector3d normal = new Vector3d(0, 0, 1);
+            // Face0 (0, 1, 2)
+            GaiaFace face2 = new GaiaFace();
+            face2.setIndices(new int[]{0, 1, 2});
+            topSurface.getFaces().add(face2);
+
+            // Face1 (0, 2, 3)
+            GaiaFace face3 = new GaiaFace();
+            face3.setIndices(new int[]{0, 2, 3});
+            topSurface.getFaces().add(face3);
+
+            topPrimitive.getSurfaces().add(topSurface);
+            GaiaPrimitiveUtils.mergePrimitives(resultPrimitive, topPrimitive);
+        }
+
+        return resultPrimitive;
+    }
+
     public static GaiaPrimitive getPrimitiveFromBoundingBox(GaiaBoundingBox bbox, boolean left, boolean right, boolean front, boolean rear, boolean bottom, boolean top) {
         GaiaPrimitive resultPrimitive = new GaiaPrimitive();
 
