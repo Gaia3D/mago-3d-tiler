@@ -928,8 +928,8 @@ class UnitTest {
     @Test
     void test_JoGonHee() {
         // someTiles
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\Incheon_CheongNa_JoGeonhee\\Production_5_org\\Data_someTiles\\";
-        String outputPath = "D:\\data\\mago-server\\output\\Incheon_CheongNa_JoGeonhee_P5_Data_someTiles\\";
+        String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\Incheon_CheongNa_JoGeonhee\\Production_5_org\\Data_2000Tiles_B\\";
+        String outputPath = "C:\\data\\mago-server\\output\\Incheon_CheongNa_JoGeonhee_P5_Data_2000Tiles_B\\";
         //String outputPath = "E:\\temp\\";
 
         String[] args = new String[]{
@@ -938,9 +938,30 @@ class UnitTest {
                 "-o", outputPath,
                 "-lon", "126.63887",
                 "-lat", "37.53292",
-                "-leaveTemp",
-                "-debug",
                 "-pg"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void test_VoxelizedSolidOctrees() {
+        // someTiles
+        String inputPath = "E:\\data\\VoxlizingProject\\output\\allKoreaSouthJinHun_4326_small\\temp\\octree\\L3\\";
+        //String inputPath = "E:\\data\\VoxlizingProject\\output\\allKoreaSouthJinHun_4326_small\\temp\\octree\\L4\\X135\\Y54\\Z0\\";
+        //String inputPath = "E:\\data\\VoxlizingProject\\output\\allKoreaSouthJinHun_4326_small\\temp\\octree\\L4\\X135\\Y55\\Z0\\";
+        //String inputPath = "E:\\data\\VoxlizingProject\\output\\allKoreaSouthJinHun_4326_small\\temp\\octree\\L4\\X135\\Y56\\Z0\\";
+
+        //String inputPath = "E:\\data\\VoxlizingProject\\output\\allKoreaSouthJinHun_4326_small\\temp\\octree\\L4\\X136\\Y54\\Z0\\";
+        //String inputPath = "E:\\data\\VoxlizingProject\\output\\allKoreaSouthJinHun_4326_small\\temp\\octree\\L4\\X136\\Y55\\Z0\\";
+        //String inputPath = "E:\\data\\VoxlizingProject\\output\\allKoreaSouthJinHun_4326_small\\temp\\octree\\L4\\X136\\Y56\\Z0\\";
+        //String inputPath = "E:\\data\\VoxlizingProject\\output\\allKoreaSouthJinHun_4326_small\\temp\\octree\\L4\\X136\\Y57\\Z0\\";
+        String outputPath = "C:\\data\\mago-server\\output\\allKoreaSouthJinHun_4326_small_L3\\";
+        //String outputPath = "E:\\temp\\";
+
+        String[] args = new String[]{
+                "-i", inputPath,
+                "-inputType", "kml",
+                "-o", outputPath
         };
         Mago3DTilerMain.main(args);
     }
