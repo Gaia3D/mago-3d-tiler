@@ -44,7 +44,7 @@ public class GaiaTriangle {
             Vector3d edge1 = new Vector3d(point2).sub(point1);
             Vector3d edge2 = new Vector3d(point3).sub(point1);
             normal = new Vector3d();
-            normal.cross(edge1, edge2);
+            edge1.cross(edge2, normal);
             normal.normalize();
         }
         return normal;
@@ -52,6 +52,15 @@ public class GaiaTriangle {
 
     public GaiaPlane getPlane() {
         Vector3d normal = getNormal();
+        if (normal.length() == 0) {
+            log.info("[INFO][getPlane] : Normal vector is zero-length, cannot create plane.");
+            return null; // or throw an exception
+        }
+        // check NaN values in the normal vector
+        if (Double.isNaN(normal.x) || Double.isNaN(normal.y) || Double.isNaN(normal.z)) {
+            log.info("[INFO][getPlane] : Normal vector contains NaN values, cannot create plane.");
+            return null; // or throw an exception
+        }
         Vector3d position = new Vector3d(point1);
         return new GaiaPlane(position, normal);
     }
@@ -66,5 +75,13 @@ public class GaiaTriangle {
                 new GaiaSegment(new Vector3d(point2), new Vector3d(point3)),
                 new GaiaSegment(new Vector3d(point3), new Vector3d(point1))
         };
+    }
+
+    public Vector3d getBarycenter() {
+        return new Vector3d(
+                (point1.x + point2.x + point3.x) / 3,
+                (point1.y + point2.y + point3.y) / 3,
+                (point1.z + point2.z + point3.z) / 3
+        );
     }
 }

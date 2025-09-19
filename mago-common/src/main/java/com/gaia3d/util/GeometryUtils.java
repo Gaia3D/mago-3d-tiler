@@ -5,6 +5,7 @@ import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.geometry.octree.GaiaFaceData;
 import com.gaia3d.basic.halfedge.PlaneType;
 import com.gaia3d.basic.model.*;
+import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
@@ -894,27 +895,95 @@ public class GeometryUtils {
         float absY = Math.abs((float) normal.y);
         float absZ = Math.abs((float) normal.z);
 
-        if (absX > absY && absX > absZ) {
-            // the best plane is the YZ plane
-            if (normal.x > 0) {
-                return PlaneType.YZ;
-            } else {
-                return PlaneType.YZNEG;
-            }
-        } else if (absY > absX && absY > absZ) {
-            // the best plane is the XZ plane
-            if (normal.y > 0) {
-                return PlaneType.XZ;
-            } else {
-                return PlaneType.XZNEG;
-            }
+        if (absX >= absY && absX >= absZ) {
+            return normal.x >= 0 ? PlaneType.YZ : PlaneType.YZNEG;
+        } else if (absY >= absX && absY >= absZ) {
+            return normal.y >= 0 ? PlaneType.XZ : PlaneType.XZNEG;
         } else {
-            // the best plane is the XY plane
-            if (normal.z > 0) {
-                return PlaneType.XY;
-            } else {
-                return PlaneType.XYNEG;
-            }
+            return normal.z >= 0 ? PlaneType.XY : PlaneType.XYNEG;
         }
+    }
+
+    public static float mod(float a, float b) {
+        return (float) (a - b * Math.floor(a / b));
+    }
+
+    public static void encodeFloat(float value, byte[] result) {
+        /*
+        var bit_shift = [16777216.0, 65536.0, 256.0, 1.0];
+        var bit_mask = [0.0, 0.00390625, 0.00390625, 0.00390625];
+
+        // calculate value_A = depth * bit_shift * vec4(255).
+        var value_A = [depth * bit_shift[0] * 255.0, depth * bit_shift[1] * 255.0, depth * bit_shift[2] * 255.0, depth * bit_shift[3] * 255.0];
+        var value_B = [256.0, 256.0, 256.0, 256.0];
+
+        var resAux = [( ManagerUtils.mod(value_A[0], value_B[0]) )/255.0,
+            ( ManagerUtils.mod(value_A[1], value_B[1]) )/255.0,
+            ( ManagerUtils.mod(value_A[2], value_B[2]) )/255.0,
+            ( ManagerUtils.mod(value_A[3], value_B[3]) )/255.0];
+
+        var resBitMasked = [resAux[0] * bit_mask[0],
+            resAux[0] * bit_mask[1],
+            resAux[1] * bit_mask[2],
+            resAux[2] * bit_mask[3]];
+
+        var res = [resAux[0] - resBitMasked[0],
+            resAux[1] - resBitMasked[1],
+            resAux[2] - resBitMasked[2],
+            resAux[3] - resBitMasked[3]];
+
+        // reverse the result.
+        var reversedResult = [res[3], res[2], res[1], res[0]];
+
+         */
+
+        float[] bit_shift = {16777216.0f, 65536.0f, 256.0f, 1.0f};
+        float[] bit_mask = {0.0f, 0.00390625f, 0.00390625f, 0.00390625f};
+
+        // calculate value_A = depth * bit_shift * vec4(255).
+        float[] value_A = {value * bit_shift[0] * 255.0f, value * bit_shift[1] * 255.0f, value * bit_shift[2] * 255.0f, value * bit_shift[3] * 255.0f};
+        float[] value_B = {256.0f, 256.0f, 256.0f, 256.0f};
+
+        float[] resAux = {(mod(value_A[0], value_B[0])) / 255.0f, (mod(value_A[1], value_B[1])) / 255.0f, (mod(value_A[2], value_B[2])) / 255.0f, (mod(value_A[3], value_B[3])) / 255.0f};
+        //float[] resAux = {((value_A[0] % value_B[0])) / 255.0f, ((value_A[1]% value_B[1])) / 255.0f, ((value_A[2]% value_B[2])) / 255.0f, ((value_A[3]% value_B[3])) / 255.0f};
+
+        float[] resBitMasked = {resAux[0] * bit_mask[0], resAux[0] * bit_mask[1], resAux[1] * bit_mask[2], resAux[2] * bit_mask[3]};
+
+        float[] res = {resAux[0] - resBitMasked[0], resAux[1] - resBitMasked[1], resAux[2] - resBitMasked[2], resAux[3] - resBitMasked[3]};
+
+        // reverse the result.
+        float[] reversedResult = {res[3], res[2], res[1], res[0]};
+
+        result[0] = (byte) (reversedResult[0] * 255.0f);
+        result[1] = (byte) (reversedResult[1] * 255.0f);
+        result[2] = (byte) (reversedResult[2] * 255.0f);
+        result[3] = (byte) (reversedResult[3] * 255.0f);
+
+    }
+
+    public static void encodeFloatToInt(float value, int[] result) {
+
+        float[] bit_shift = {16777216.0f, 65536.0f, 256.0f, 1.0f};
+        float[] bit_mask = {0.0f, 0.00390625f, 0.00390625f, 0.00390625f};
+
+        // calculate value_A = depth * bit_shift * vec4(255).
+        float[] value_A = {value * bit_shift[0] * 255.0f, value * bit_shift[1] * 255.0f, value * bit_shift[2] * 255.0f, value * bit_shift[3] * 255.0f};
+        float[] value_B = {256.0f, 256.0f, 256.0f, 256.0f};
+
+        float[] resAux = {(mod(value_A[0], value_B[0])) / 255.0f, (mod(value_A[1], value_B[1])) / 255.0f, (mod(value_A[2], value_B[2])) / 255.0f, (mod(value_A[3], value_B[3])) / 255.0f};
+        //float[] resAux = {((value_A[0] % value_B[0])) / 255.0f, ((value_A[1]% value_B[1])) / 255.0f, ((value_A[2]% value_B[2])) / 255.0f, ((value_A[3]% value_B[3])) / 255.0f};
+
+        float[] resBitMasked = {resAux[0] * bit_mask[0], resAux[0] * bit_mask[1], resAux[1] * bit_mask[2], resAux[2] * bit_mask[3]};
+
+        float[] res = {resAux[0] - resBitMasked[0], resAux[1] - resBitMasked[1], resAux[2] - resBitMasked[2], resAux[3] - resBitMasked[3]};
+
+        // reverse the result.
+        float[] reversedResult = {res[3], res[2], res[1], res[0]};
+
+        result[0] = (int) (reversedResult[0] * 255.0f);
+        result[1] = (int) (reversedResult[1] * 255.0f);
+        result[2] = (int) (reversedResult[2] * 255.0f);
+        result[3] = (int) (reversedResult[3] * 255.0f);
+
     }
 }

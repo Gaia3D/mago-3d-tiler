@@ -158,12 +158,13 @@ public class GaiaScene extends SceneStructure implements Serializable {
 
         GaiaNode node = new GaiaNode();
         node.getMeshes().add(meshMaster);
+        node.setParent(rootNode);
 
         children.add(node);
     }
 
     public void getFinalVerticesCopy(List<GaiaVertex> finalVertices) {
-        // final vertices are the vertices multiplied by the transform matrix of the nodes.***
+        // final vertices are the vertices multiplied by the transform matrix of the nodes
         for (GaiaNode node : this.nodes) {
             node.getFinalVerticesCopy(null, finalVertices);
         }

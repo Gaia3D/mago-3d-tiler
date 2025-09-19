@@ -70,6 +70,26 @@ public class GaiaOctreeCoordinate {
         return parent;
     }
 
+    public int getIndexAtDepth() {
+        int index = 0;
+        int maxIndex = getMaxIndexAtDepth();
+        if (x < 0 || x >= maxIndex || y < 0 || y >= maxIndex || z < 0 || z >= maxIndex) {
+            log.error("Invalid octree coordinate. depth: {}, x: {}, y: {}, z: {}", depth, x, y, z);
+            return -1;
+        }
+
+        int xValue = x;
+        int yValue = y * maxIndex;
+        int zValue = z * maxIndex * maxIndex;
+        index = xValue + yValue + zValue;
+        return index;
+        //return x + (y * (int) Math.pow(2, depth)) + (z * (int) Math.pow(2, depth) * (int) Math.pow(2, depth));
+    }
+
+    public int getMaxIndexAtDepth() {
+        return (int) Math.pow(2, depth);
+    }
+
     public List<GaiaOctreeCoordinate> getFullPath(List<GaiaOctreeCoordinate> resultFullPath) {
         if (resultFullPath == null) {
             resultFullPath = new ArrayList<>();
