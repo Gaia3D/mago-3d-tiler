@@ -16,6 +16,7 @@ import com.gaia3d.process.postprocess.ContentModel;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTableMap;
 import com.gaia3d.process.postprocess.batch.GaiaBatcher;
 import com.gaia3d.process.postprocess.pointcloud.ByteAddress;
+import com.gaia3d.process.preprocess.sub.TransformBaker;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.GeometryUtils;
@@ -75,9 +76,7 @@ public class Instanced3DModel implements ContentModel {
         AtomicInteger batchIdIndex = new AtomicInteger();
         for (TileInfo tileInfo : tileInfos) {
             //y-up
-            //Vector3d normalUp = new Vector3d(0, 1, 0);
-            //Vector3d normalRight = new Vector3d(1, 0, 0);
-            Vector3d normalUp = new Vector3d(0, 0, -1);
+            Vector3d normalUp = new Vector3d(0, 1, 0);
             Vector3d normalRight = new Vector3d(1, 0, 0);
 
             // GPS Coordinates
@@ -97,11 +96,6 @@ public class Instanced3DModel implements ContentModel {
 
             normalUp = worldRotationMatrix3d.transform(normalUp);
             normalRight = worldRotationMatrix3d.transform(normalRight);
-
-            //normalUp = new Vector3d(worldRotationMatrix3d.m00(), worldRotationMatrix3d.m10(), worldRotationMatrix3d.m20());
-            //normalRight = new Vector3d(worldRotationMatrix3d.m01(), worldRotationMatrix3d.m11(), worldRotationMatrix3d.m21());
-            //normalUp = rotationMatrix.transform(normalUp);
-            //normalRight = rotationMatrix.transform(normalRight);
 
             // scale
             double scale = tileTransformInfo.getScaleZ();
@@ -163,6 +157,8 @@ public class Instanced3DModel implements ContentModel {
         featureTable.setNormalRight(new ByteAddress(positionBytes.length + normalUpBytes.length));
         featureTable.setScale(new ByteAddress(positionBytes.length + normalUpBytes.length + normalRightBytes.length));
 
+        int lod = contentInfo.getLod().getLevel();
+
         GaiaBatchTableMap<String, List<String>> batchTableMap = new GaiaBatchTableMap<>();
         AtomicInteger finalBatchIdIndex = new AtomicInteger();
         tileInfos.forEach((tileInfo) -> {
@@ -178,7 +174,6 @@ public class Instanced3DModel implements ContentModel {
             NodeName = StringUtils.convertUTF8(NodeName);
 
             batchTableMap.computeIfAbsent("UUID", k -> new ArrayList<>());
-
             batchTableMap.get("UUID").add(UUID);
 
             batchTableMap.computeIfAbsent("FileName", k -> new ArrayList<>());
@@ -189,6 +184,9 @@ public class Instanced3DModel implements ContentModel {
 
             batchTableMap.computeIfAbsent("BatchId", k -> new ArrayList<>());
             batchTableMap.get("BatchId").add(String.valueOf(batchId[finalBatchIdIndex.getAndIncrement()]));
+
+            batchTableMap.computeIfAbsent("LOD", k -> new ArrayList<>());
+            batchTableMap.get("LOD").add(String.valueOf(lod));
 
             if (attributes != null) {
                 attributes.forEach((key, value) -> {
@@ -217,7 +215,6 @@ public class Instanced3DModel implements ContentModel {
         batchTableJSONByteLength = batchTableJson.length();
         int batchTableBinaryByteLength = 0;
 
-        String lod = contentInfo.getLod().toString();
         String gltfUrl = "instance-" + lod + ".glb";
         int byteLength = 32 + featureTableJSONByteLength + featureTableBinaryByteLength + batchTableJSONByteLength + batchTableBinaryByteLength + gltfUrl.length();
 
@@ -292,11 +289,9 @@ public class Instanced3DModel implements ContentModel {
                     }
                 }*/
 
-                /*boolean isRotateUpAxis = GlobalOptions.getInstance().isSwapUpAxis();
-                if (isRotateUpAxis) {
-                    Matrix4d transformMatrix = resultGaiaScene.getNodes().get(0).getTransformMatrix();
-                    transformMatrix.rotateX(Math.toRadians(-90));
-                }*/
+                Matrix4d transformMatrix = resultGaiaScene.getNodes().get(0).getTransformMatrix();
+                transformMatrix.rotateX(Math.toRadians(-90));
+
                 gltfWriter.writeGlb(resultGaiaScene, file);
             }
         } catch (Exception e) {

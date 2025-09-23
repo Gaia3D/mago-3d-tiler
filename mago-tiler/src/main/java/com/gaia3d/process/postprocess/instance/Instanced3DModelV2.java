@@ -204,22 +204,16 @@ public class Instanced3DModelV2 implements ContentModel {
         GaiaBatchTableMap<String, List<String>> batchTableMap = new GaiaBatchTableMap<>();
         AtomicInteger finalBatchIdIndex = new AtomicInteger();
         tileInfos.forEach((tileInfo) -> {
-            GaiaAttribute attribute = tileInfo.getScene()
-                    .getAttribute();
-            Map<String, String> attributes = tileInfo.getTileTransformInfo()
-                    .getProperties();
+            GaiaAttribute attribute = tileInfo.getScene().getAttribute();
+            Map<String, String> attributes = tileInfo.getTileTransformInfo().getProperties();
 
-            String UUID = attribute.getIdentifier()
-                    .toString();
+            String UUID = attribute.getIdentifier().toString();
             String FileName = attribute.getFileName();
             String NodeName = attribute.getNodeName();
 
             UUID = StringUtils.convertUTF8(UUID);
             FileName = StringUtils.convertUTF8(FileName);
             NodeName = StringUtils.convertUTF8(NodeName);
-
-            batchTableMap.computeIfAbsent("LOD", k -> new ArrayList<>());
-            batchTableMap.get("LOD").add(String.valueOf(lod));
 
             batchTableMap.computeIfAbsent("UUID", k -> new ArrayList<>());
             batchTableMap.get("UUID").add(UUID);
@@ -232,6 +226,10 @@ public class Instanced3DModelV2 implements ContentModel {
 
             batchTableMap.computeIfAbsent("BatchId", k -> new ArrayList<>());
             batchTableMap.get("BatchId").add(String.valueOf(batchId[finalBatchIdIndex.getAndIncrement()]));
+
+            batchTableMap.computeIfAbsent("LOD", k -> new ArrayList<>());
+            batchTableMap.get("LOD").add(String.valueOf(lod));
+
 
             if (attributes != null) {
                 attributes.forEach((key, value) -> {
