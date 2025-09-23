@@ -1,7 +1,11 @@
-package com.gaia3d.converter.jgltf;
+package com.gaia3d.converter.jgltf.tiles;
 
 import com.gaia3d.basic.types.AccessorType;
 import com.gaia3d.basic.types.AttributeType;
+import com.gaia3d.converter.jgltf.GltfBinary;
+import com.gaia3d.converter.jgltf.GltfNodeBuffer;
+import com.gaia3d.converter.jgltf.GltfWriter;
+import com.gaia3d.converter.jgltf.Quantization;
 import com.gaia3d.converter.jgltf.extension.ExtensionConstant;
 import com.gaia3d.converter.jgltf.extension.ExtensionStructuralMetadata;
 import com.gaia3d.converter.jgltf.extension.ExtensionStructuralMetadataMapper;

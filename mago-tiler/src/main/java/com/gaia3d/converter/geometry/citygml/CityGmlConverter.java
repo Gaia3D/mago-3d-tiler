@@ -96,7 +96,6 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
 
             while (reader.hasNext()) {
                 CityModel cityModel = (CityModel) reader.next();
-                //List<GaiaExtrusionBuilding> buildingList = new ArrayList<>();
                 List<List<GaiaSurfaceModel>> buildingSurfacesList = new ArrayList<>();
                 List<AbstractCityObjectProperty> cityObjectMembers = cityModel.getCityObjectMembers();
                 for (AbstractCityObjectProperty cityObjectProperty : cityObjectMembers) {
@@ -110,7 +109,6 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                         } else {
                             buildingSurfacesList.add(convertSolidSurfaceProperty(cityObject, solid));
                         }
-                        //buildingList.addAll(convertSolidProperty(cityObject, solid));
                     }
 
                     List<MultiSurfaceProperty> multiSurfaceProperties = extractMultiSurfaceProperty(cityObject);
@@ -118,52 +116,9 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                         buildingSurfacesList.add(convertMultiSurfaceProperty(cityObject, multiSurfaceProperty));
                     }
 
-                    /*// TinRelief
-                    List<TriangleArrayProperty> triangleArrayProperties = extractTriangleArrayProperty(cityObject);
-                    for (TriangleArrayProperty triangleArrayProperty : triangleArrayProperties) {
-                        buildingSurfacesList.add(convertTriangleArrayProperty(cityObject, triangleArrayProperty));
-                    }*/
                 }
 
                 DefaultSceneFactory defaultSceneFactory = new DefaultSceneFactory();
-                /*for (GaiaExtrusionBuilding gaiaBuilding : buildingList) {
-                    GaiaScene scene = easySceneCreator.createScene(file);
-                    GaiaMaterial material = getMaterialByClassification(scene.getMaterials(), gaiaBuilding.getClassification());
-                    GaiaNode rootNode = scene.getNodes().get(0);
-
-                    GaiaAttribute attribute = scene.getAttribute();
-                    attribute.setAttributes(gaiaBuilding.getProperties());
-
-                    GaiaBoundingBox boundingBox = gaiaBuilding.getBoundingBox();
-                    Vector3d center = boundingBox.getCenter();
-                    center.z = center.z - skirtHeight;
-
-                    Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
-                    Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
-                    Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
-
-                    List<Vector3d> localPositions = new ArrayList<>();
-                    for (Vector3d position : gaiaBuilding.getPositions()) {
-                        Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
-                        Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv);
-                        localPosition.z = 0.0d;
-                        localPositions.add(localPosition);
-                    }
-
-                    Extrusion extrusion = extruder.extrude(localPositions, gaiaBuilding.getRoofHeight(), gaiaBuilding.getFloorHeight());
-                    GaiaNode node = createNode(material, extrusion.getPositions(), extrusion.getTriangles());
-                    rootNode.getChildren().add(node);
-
-                    Matrix4d rootTransformMatrix = new Matrix4d().identity();
-                    rootTransformMatrix.translate(center, rootTransformMatrix);
-                    rootNode.setTransformMatrix(rootTransformMatrix);
-
-                    if (rootNode.getChildren().size() <= 0) {
-                        log.debug("Invalid Scene : {}", rootNode.getName());
-                        continue;
-                    }
-                    scenes.add(scene);
-                }*/
 
                 for (List<GaiaSurfaceModel> surfaces : buildingSurfacesList) {
                     if (surfaces.isEmpty()) {
@@ -187,6 +142,8 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                     Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
                     Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
 
+                    CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
+
                     for (GaiaSurfaceModel buildingSurface : surfaces) {
                         GaiaMaterial material = getMaterialByClassification(scene.getMaterials(), buildingSurface.getClassification());
 
@@ -208,9 +165,13 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                                 continue;
                             }
                             for (Vector3d position : buildingSurface.getExteriorPositions()) {
-                                Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
-                                Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv);
-                                polygon.add(new Vector3dOnlyHashEquals(localPosition));
+                                if (crs.getName().equals("EPSG:4978")) {
+                                    polygon.add(position);
+                                } else {
+                                    Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
+                                    Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv);
+                                    polygon.add(localPosition);
+                                }
                             }
                             polygons.add(polygon);
 
@@ -232,9 +193,13 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                             // convert points to local coordinates
                             List<Vector3d> ExteriorPolygonLocal = new ArrayList<>();
                             for (Vector3d position : ExteriorPolygon) {
-                                Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
-                                Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv);
-                                ExteriorPolygonLocal.add(localPosition);
+                                if (crs.getName().equals("EPSG:4978")) {
+                                    ExteriorPolygonLocal.add(position);
+                                } else {
+                                    Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
+                                    Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv);
+                                    ExteriorPolygonLocal.add(localPosition);
+                                }
                             }
 
                             // interior points
@@ -242,9 +207,13 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                             for (List<Vector3d> interiorPolygon : interiorPolygons) {
                                 List<Vector3d> interiorPolygonLocal = new ArrayList<>();
                                 for (Vector3d position : interiorPolygon) {
-                                    Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
-                                    Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv);
-                                    interiorPolygonLocal.add(localPosition);
+                                    if (crs.getName().equals("EPSG:4978")) {
+                                        ExteriorPolygonLocal.add(position);
+                                    } else {
+                                        Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
+                                        Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv);
+                                        ExteriorPolygonLocal.add(localPosition);
+                                    }
                                 }
                                 interiorPolygonsLocal.add(interiorPolygonLocal);
                             }
@@ -267,7 +236,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
 
                     Vector3d degreeTranslation = scene.getTranslation();
                     degreeTranslation.set(center);
-
+                    
                     if (rootNode.getChildren().size() <= 0) {
                         log.debug("Invalid Scene : {}", rootNode.getName());
                         continue;
@@ -356,6 +325,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
         } else if (parent instanceof AbstractCityObject) {
             classification = getClassification((AbstractCityObject) parent);
         } else {
+            classification = Classification.WALL;
             log.info("Parent is not AbstractSpaceBoundary or AbstractCityObject:");
         }
         buildingSurfaces = convertSurfaceProperty(cityObject, classification, surfaceProperties);
@@ -385,7 +355,10 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                 z = positions.get(i + 2);
                 Vector3d position = new Vector3d(x, y, z);
                 CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
-                if (crs != null) {
+                if (crs.getName().equals("EPSG:4978")) {
+                    // If the CRS is EPSG:4978, we assume it's a cartesian coordinate system
+                    //position = GlobeUtils.cartesianToGeographicWgs84(position);
+                } else if (crs != null) {
                     ProjCoordinate projCoordinate = new ProjCoordinate(x, y, resultBBox.getMinZ());
                     ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
                     position = new Vector3d(centerWgs84.x, centerWgs84.y, z);
@@ -405,7 +378,10 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                     z = positions.get(i + 2);
                     Vector3d position = new Vector3d(x, y, z);
                     CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
-                    if (crs != null) {
+                    if (crs.getName().equals("EPSG:4978")) {
+                        // If the CRS is EPSG:4978, we assume it's a cartesian coordinate system
+                        //position = GlobeUtils.cartesianToGeographicWgs84(position);
+                    } else if (crs != null) {
                         ProjCoordinate projCoordinate = new ProjCoordinate(x, y, resultBBox.getMinZ());
                         ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
                         position = new Vector3d(centerWgs84.x, centerWgs84.y, z);

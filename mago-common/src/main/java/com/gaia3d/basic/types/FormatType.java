@@ -34,24 +34,32 @@ public enum FormatType {
     LWO("lwo", "lwo", false),
     LWS("lws", "lws", false),
     DirectX("x", "x", false),
+
     // 2D Formats,
     SHP("shp", "shp", false),
     GEOJSON("geojson", "json", false),
     GEO_PACKAGE("gpkg", "gpkg", false),
+
     //JSON("json", "", false),
     LAS("las", "laz", false),
     LAZ("laz", "las", false),
+
     // OUTPUT Formats
     B3DM("b3dm", "gltf", true),
     I3DM("i3dm", "gltf", true),
     PNTS("pnts", "gltf", true),
     TILESET("tileset", "json", true),
-    TEMP("tmp", "tmp", false),
 
-    INSTANCE("instance", "instance", false),
-    BATCH("batch", "batch", false),
-    POINTCLOUD("pointcloud", "pointcloud", false),
-    PHOTOGRAMMETRY("photogrammetry", "photogrammetry", false);
+    // 3DTiles Formats
+    INSTANCE("instance", "gltf", false),
+    BATCH("batch", "gltf", false),
+    POINTCLOUD("pointcloud", "gltf", false),
+
+    // Special Formats
+    FOREST("forest", "forest", false),
+    PHOTOGRAMMETRY("photogrammetry", "pg", false),
+
+    TEMP("tmp", "temp", false);
 
     private final String extension;
     private final String subExtension;

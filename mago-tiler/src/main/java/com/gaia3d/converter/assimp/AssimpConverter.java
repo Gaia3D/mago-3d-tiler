@@ -63,7 +63,10 @@ public class AssimpConverter implements Converter {
         String path = file.getAbsolutePath().replace(file.getName(), "");
         AIScene aiScene = Assimp.aiImportFile(file.getAbsolutePath(), DEFAULT_FLAGS);
 
-        assert aiScene != null;
+        if (aiScene == null) {
+            log.error("[ERROR] Assimp failed to load file: {}", file.getAbsolutePath());
+            return new ArrayList<>();
+        }
 
         // TODO : Handle multiple scenes in a single file
         List<GaiaScene> gaiaScenes = new ArrayList<>();

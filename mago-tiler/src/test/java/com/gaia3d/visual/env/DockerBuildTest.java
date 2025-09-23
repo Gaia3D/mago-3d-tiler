@@ -64,6 +64,54 @@ class DockerBuildTest {
         runCommand(argList);
     }
 
+    @Test
+    void runWithSimpleArm64() throws IOException {
+        ClassLoader classLoader = getClass().getClassLoader();
+
+        File input = new File(classLoader.getResource("./sample-3ds").getFile());
+        File resource = new File(input.getParent());
+
+        String dockerImage = "gaia3d/mago-3d-tiler:latest";
+        List<String> argList = new ArrayList<>();
+        argList.add("docker");
+        argList.add("run");
+        argList.add("--platform");
+        argList.add("linux/arm64");
+        argList.add("--rm");
+        argList.add("-v");
+        argList.add(resource.getAbsolutePath() + ":/workspace");
+        argList.add(dockerImage);
+        argList.add("--input");
+        argList.add("/workspace/sample-3ds");
+        argList.add("--output");
+        argList.add("/workspace/sample-output");
+        runCommand(argList);
+    }
+
+    @Test
+    void runWithSimpleAmd64() throws IOException {
+        ClassLoader classLoader = getClass().getClassLoader();
+
+        File input = new File(classLoader.getResource("./sample-3ds").getFile());
+        File resource = new File(input.getParent());
+
+        String dockerImage = "gaia3d/mago-3d-tiler:latest";
+        List<String> argList = new ArrayList<>();
+        argList.add("docker");
+        argList.add("run");
+        argList.add("--platform");
+        argList.add("linux/amd64");
+        argList.add("--rm");
+        argList.add("-v");
+        argList.add(resource.getAbsolutePath() + ":/workspace");
+        argList.add(dockerImage);
+        argList.add("--input");
+        argList.add("/workspace/sample-3ds");
+        argList.add("--output");
+        argList.add("/workspace/sample-output");
+        runCommand(argList);
+    }
+
     private void runCommand(List<String> argList) throws IOException {
         String[] args = argList.toArray(new String[0]);
 
