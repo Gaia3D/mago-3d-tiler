@@ -554,8 +554,7 @@ public class GltfWriter {
     }
 
     protected void createMaterial(GlTF gltf, GltfBinary binary, GaiaMaterial gaiaMaterial) {
-        List<GaiaTexture> diffuseTextures = gaiaMaterial.getTextures()
-                .get(TextureType.DIFFUSE);
+        List<GaiaTexture> diffuseTextures = gaiaMaterial.getTextures().get(TextureType.DIFFUSE);
 
         Material material = new Material();
         material.setName(gaiaMaterial.getName());
@@ -576,6 +575,7 @@ public class GltfWriter {
             material.setAlphaMode("OPAQUE");
         }
 
+
         MaterialPbrMetallicRoughness pbrMetallicRoughness = new MaterialPbrMetallicRoughness();
         if (!diffuseTextures.isEmpty()) {
             GaiaTexture gaiaTexture = diffuseTextures.get(0);
@@ -591,8 +591,19 @@ public class GltfWriter {
             pbrMetallicRoughness.setMetallicFactor(0.0f);
             pbrMetallicRoughness.setRoughnessFactor(0.5f);
         }
-
         material.setPbrMetallicRoughness(pbrMetallicRoughness);
+
+        List<GaiaTexture> normalsTextures = gaiaMaterial.getTextures().get(TextureType.NORMALS);
+        /* Normal map texture */
+        if (normalsTextures != null && !normalsTextures.isEmpty()) {
+            MaterialNormalTextureInfo normalTextureInfo = new MaterialNormalTextureInfo();
+            GaiaTexture gaiaTexture = normalsTextures.get(0);
+            int textureId = createTexture(gltf, binary, gaiaTexture);
+            normalTextureInfo.setIndex(textureId);
+            normalTextureInfo.setScale(1.0f);
+            material.setNormalTexture(normalTextureInfo);
+        }
+
         gltf.addMaterials(material);
     }
 
