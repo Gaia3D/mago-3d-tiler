@@ -229,6 +229,37 @@ public class BoundingVolume implements Serializable {
         return result;
     }
 
+    public List<TileInfo> getVolumeIncludeScenes(List<TileInfo> tileInfos, GaiaBoundingBox volume) {
+        List<TileInfo> result = new ArrayList<>();
+        if (BoundingVolumeType.REGION == type) {
+            double minX = region[0];
+            double minY = region[1];
+            double maxX = region[2];
+            double maxY = region[3];
+            double midX = (minX + maxX) / 2;
+            double midY = (minY + maxY) / 2;
+            for (TileInfo tileInfo : tileInfos) {
+                GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();
+                TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
+                localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(tileTransformInfo.getPosition());
+                /*BoundingVolume localBoundingVolume = new BoundingVolume(localBoundingBox, BoundingVolume.BoundingVolumeType.REGION);
+                Vector3d center = localBoundingVolume.calcCenter();*/
+                Vector3d center = localBoundingBox.getCenter();
+
+                boolean isInX = volume.getMinX() <= center.x() && center.x() <= volume.getMaxX();
+                boolean isInY = volume.getMinY() <= center.y() && center.y() <= volume.getMaxY();
+                boolean isInZ = volume.getMinZ() <= center.z() && center.z() <= volume.getMaxZ();
+                if (isInX && isInY && isInZ) {
+                    result.add(tileInfo);
+                }
+            }
+        } else {
+            // TODO
+            log.error("Unsupported bounding volume type: {}", type);
+        }
+        return result;
+    }
+
     public Vector3d calcCenter() {
         if (BoundingVolumeType.REGION == type) {
             return new Vector3d((region[0] + region[2]) / 2, (region[1] + region[3]) / 2, (region[4] + region[5]) / 2);
