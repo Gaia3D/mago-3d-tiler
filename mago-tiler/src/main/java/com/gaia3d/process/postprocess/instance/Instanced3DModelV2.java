@@ -5,14 +5,13 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.jgltf.InstancedModelGltfWriter;
+import com.gaia3d.converter.jgltf.tiles.InstancedModelGltfWriter;
 import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.process.postprocess.ContentModel;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTableMap;
 import com.gaia3d.process.postprocess.batch.GaiaBatcher;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
-import com.gaia3d.util.GeometryUtils;
 import com.gaia3d.util.GlobeUtils;
 import com.gaia3d.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -200,6 +199,8 @@ public class Instanced3DModelV2 implements ContentModel {
         featureTable.setNormalRight(new ByteAddress(positionBytes.length + normalUpBytes.length));
         featureTable.setScale(new ByteAddress(positionBytes.length + normalUpBytes.length + normalRightBytes.length));*/
 
+        int lod = contentInfo.getLod().getLevel();
+
         GaiaBatchTableMap<String, List<String>> batchTableMap = new GaiaBatchTableMap<>();
         AtomicInteger finalBatchIdIndex = new AtomicInteger();
         tileInfos.forEach((tileInfo) -> {
@@ -217,21 +218,20 @@ public class Instanced3DModelV2 implements ContentModel {
             FileName = StringUtils.convertUTF8(FileName);
             NodeName = StringUtils.convertUTF8(NodeName);
 
+            batchTableMap.computeIfAbsent("LOD", k -> new ArrayList<>());
+            batchTableMap.get("LOD").add(String.valueOf(lod));
+
             batchTableMap.computeIfAbsent("UUID", k -> new ArrayList<>());
-            batchTableMap.get("UUID")
-                    .add(UUID);
+            batchTableMap.get("UUID").add(UUID);
 
             batchTableMap.computeIfAbsent("FileName", k -> new ArrayList<>());
-            batchTableMap.get("FileName")
-                    .add(FileName);
+            batchTableMap.get("FileName").add(FileName);
 
             batchTableMap.computeIfAbsent("NodeName", k -> new ArrayList<>());
-            batchTableMap.get("NodeName")
-                    .add(NodeName);
+            batchTableMap.get("NodeName").add(NodeName);
 
             batchTableMap.computeIfAbsent("BatchId", k -> new ArrayList<>());
-            batchTableMap.get("BatchId")
-                    .add(String.valueOf(batchId[finalBatchIdIndex.getAndIncrement()]));
+            batchTableMap.get("BatchId").add(String.valueOf(batchId[finalBatchIdIndex.getAndIncrement()]));
 
             if (attributes != null) {
                 attributes.forEach((key, value) -> {
@@ -244,8 +244,7 @@ public class Instanced3DModelV2 implements ContentModel {
         });
 
         String glbFileName = nodeCode + "." + MAGIC;
-        File i3dmOutputFile = outputRoot.resolve(glbFileName)
-                .toFile();
+        File i3dmOutputFile = outputRoot.resolve(glbFileName).toFile();
         createInstance(i3dmOutputFile, contentInfo, tileInfos.get(0), featureTable, batchTableMap);
         return contentInfo;
     }
