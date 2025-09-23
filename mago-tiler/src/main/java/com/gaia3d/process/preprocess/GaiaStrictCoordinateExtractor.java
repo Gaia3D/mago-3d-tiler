@@ -39,7 +39,7 @@ public class GaiaStrictCoordinateExtractor implements PreProcess {
         GaiaScene scene = tileInfo.getScene();
         TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
 
-        List<GaiaNode> nodes = scene.getNodes();
+
         Vector3d sourceCenter = getOrigin(scene);
         sourceCenter = new Vector3d(sourceCenter); // Ensure we have a mutable copy
 
@@ -48,20 +48,15 @@ public class GaiaStrictCoordinateExtractor implements PreProcess {
         tileTransformInfo.setPosition(targetCenter);
 
         CoordinateReferenceSystem sourceCrs = globalOptions.getSourceCrs();
-        ProjCoordinate centerCoordinate = new ProjCoordinate(sourceCenter.x, sourceCenter.y, sourceCenter.z);
-        ProjCoordinate centerDegreeCoordinate = GlobeUtils.transform(sourceCrs, centerCoordinate);
-        Vector3d centerDegreeVector = new Vector3d(centerDegreeCoordinate.x, centerDegreeCoordinate.y, 0.0d);
+        if (!sourceCrs.getName().equals("EPSG:4326")) {
+            ProjCoordinate centerCoordinate = new ProjCoordinate(sourceCenter.x, sourceCenter.y, sourceCenter.z);
+            ProjCoordinate centerDegreeCoordinate = GlobeUtils.transform(sourceCrs, centerCoordinate);
+            Vector3d centerDegreeVector = new Vector3d(centerDegreeCoordinate.x, centerDegreeCoordinate.y, 0.0d);
 
-        GaiaBoundingBox localBoundingBox = new GaiaBoundingBox();
-        transformSceneVertexPositionsToLocalCoords(scene, centerDegreeVector, localBoundingBox);
+            GaiaBoundingBox localBoundingBox = new GaiaBoundingBox();
+            transformSceneVertexPositionsToLocalCoords(scene, centerDegreeVector, localBoundingBox);
+        }
 
-        /*Vector3d translation = new Vector3d(-sourceCenter.x, -sourceCenter.y, -sourceCenter.z);
-        Matrix4d translationMatrix = new Matrix4d().translate(translation);
-        for (GaiaNode node : nodes) {
-            Matrix4d transform = node.getTransformMatrix();
-            transform.mul(translationMatrix);
-            node.setTransformMatrix(transform);
-        }*/
         tileInfo.updateSceneInfo();
         return tileInfo;
     }

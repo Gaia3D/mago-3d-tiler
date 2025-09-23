@@ -244,12 +244,12 @@ public class GaiaBatcher {
         }).collect(Collectors.toList());
 
         /* clear Textures */
-        colorMaterials.stream().forEach((material) -> {
+        colorMaterials.forEach((material) -> {
             material.setName("COLOR_MATERIAL");
             material.getTextures().remove(TextureType.DIFFUSE);
             material.getTextures().put(TextureType.DIFFUSE, new ArrayList<>());
         });
-        colorDataSet.stream().forEach((bufferDataSet) -> {
+        colorDataSet.forEach((bufferDataSet) -> {
             createColorBuffer(colorMaterials, bufferDataSet, lod);
             bufferDataSet.getBuffers().remove(AttributeType.TEXCOORD);
         });
@@ -352,7 +352,7 @@ public class GaiaBatcher {
                     .filter((material) -> material.getId() == materialId)
                     .findFirst()
                     .orElseThrow();
-        }).collect(Collectors.toList());
+        }).toList();
 
         for (int i = 0; i < materials.size(); i++) {
             GaiaMaterial material = materials.get(i);
