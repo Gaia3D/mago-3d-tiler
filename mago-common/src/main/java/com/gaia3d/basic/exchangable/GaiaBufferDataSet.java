@@ -40,7 +40,7 @@ public class GaiaBufferDataSet implements Serializable {
         int[] indices = new int[0];
         List<GaiaVertex> vertices = new ArrayList<>();
         GaiaPrimitive primitive = new GaiaPrimitive();
-
+        int verticesCount = 0;
 
         for (Map.Entry<AttributeType, GaiaBuffer> entry : buffers.entrySet()) {
             AttributeType attributeType = entry.getKey();
@@ -64,6 +64,7 @@ public class GaiaBufferDataSet implements Serializable {
                         vertices.add(vertex);
                     }
                 }
+                verticesCount = vertices.size();
             } else if (attributeType.equals(AttributeType.NORMAL)) {
                 float[] normals = buffer.getFloats();
                 if (!vertices.isEmpty()) {
@@ -101,6 +102,13 @@ public class GaiaBufferDataSet implements Serializable {
 
         GaiaSurface surface = new GaiaSurface();
         GaiaFace face = new GaiaFace();
+
+        // Check indices. Indices must be from zero to verticesCount-1.
+        for (int index : indices) {
+            if (index < 0 || index >= verticesCount) {
+                throw new IllegalArgumentException("Invalid index in indices buffer: " + index);
+            }
+        }
 
         int[] indicesInt = new int[indices.length];
         System.arraycopy(indices, 0, indicesInt, 0, indices.length);

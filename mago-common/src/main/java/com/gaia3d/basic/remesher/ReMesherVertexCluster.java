@@ -153,7 +153,7 @@ public class ReMesherVertexCluster {
         mapVertexToFaces.clear();
 
         if (sceneMinCellIndex != null && sceneMaxCellIndex != null) {
-            sceneMinCellIndex.x += 1;
+            sceneMinCellIndex.x += 1; // to avoid boundary problems, do not delete the vertices in the boundary cells.
             sceneMinCellIndex.y += 1;
             sceneMinCellIndex.z += 1;
             sceneMaxCellIndex.x -= 1;

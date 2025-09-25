@@ -4,10 +4,12 @@ package com.gaia3d.renderer.engine.fbo;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL30;
 
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL11.glPixelStorei;
 import static org.lwjgl.opengl.GL11C.GL_PACK_ALIGNMENT;
@@ -35,7 +37,7 @@ public class Fbo {
         colorTextureId = GL30.glGenTextures();
         GL30.glBindTexture(GL30.GL_TEXTURE_2D, colorTextureId);
 
-        GL30.glEnable(GL30.GL_TEXTURE_2D);
+        //GL30.glEnable(GL30.GL_TEXTURE_2D);
         GL30.glTexImage2D(GL30.GL_TEXTURE_2D, 0, GL30.GL_RGBA, fboWidth, fboHeight, 0, GL30.GL_RGBA, GL30.GL_UNSIGNED_BYTE, (ByteBuffer) null);
         GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_WRAP_S, GL30.GL_CLAMP_TO_EDGE);
         GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_WRAP_T, GL30.GL_CLAMP_TO_EDGE);
