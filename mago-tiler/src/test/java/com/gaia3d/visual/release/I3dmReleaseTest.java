@@ -257,4 +257,23 @@ class I3dmReleaseTest {
         };
         MagoTestConfig.execute(args);
     }
+
+    //"/broad-tree-1m.glb"
+
+    @Test
+    void instanced10KoreaAverageTrees() {
+        String path = "I10-korea-average-trees";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-c", "5186",
+                "-tilesVersion", "1.0",
+                //"-it", "shp",
+                "-ot", "i3dm",
+                "-refineAdd",
+                "-instance", MagoTestConfig.getInputPath("sample-tree").getAbsolutePath() + "/broad.glb",
+                "-terrain", MagoTestConfig.getTerrainPath("dem05-cog.tif").getAbsolutePath(),
+        };
+        MagoTestConfig.execute(args);
+    }
 }

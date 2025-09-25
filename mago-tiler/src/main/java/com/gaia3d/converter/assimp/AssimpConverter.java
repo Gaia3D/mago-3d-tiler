@@ -63,7 +63,10 @@ public class AssimpConverter implements Converter {
         String path = file.getAbsolutePath().replace(file.getName(), "");
         AIScene aiScene = Assimp.aiImportFile(file.getAbsolutePath(), DEFAULT_FLAGS);
 
-        assert aiScene != null;
+        if (aiScene == null) {
+            log.error("[ERROR] Assimp failed to load file: {}", file.getAbsolutePath());
+            return new ArrayList<>();
+        }
 
         // TODO : Handle multiple scenes in a single file
         List<GaiaScene> gaiaScenes = new ArrayList<>();
@@ -513,6 +516,7 @@ public class AssimpConverter implements Converter {
                     normalTexPath = embeddedTexturePath;
                 }
             }
+
             File file = ImageUtils.getChildFile(parentPath, normalTexPath);
             if (file != null && file.exists() && file.isFile()) {
                 texture.setPath(normalTexPath);

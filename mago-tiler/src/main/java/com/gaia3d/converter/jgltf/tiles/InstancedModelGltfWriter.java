@@ -1,4 +1,4 @@
-package com.gaia3d.converter.jgltf;
+package com.gaia3d.converter.jgltf.tiles;
 
 import com.gaia3d.basic.model.GaiaMesh;
 import com.gaia3d.basic.model.GaiaNode;
@@ -6,6 +6,10 @@ import com.gaia3d.basic.model.GaiaPrimitive;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.types.AccessorType;
 import com.gaia3d.basic.types.AttributeType;
+import com.gaia3d.converter.jgltf.GltfBinary;
+import com.gaia3d.converter.jgltf.GltfNodeBuffer;
+import com.gaia3d.converter.jgltf.GltfWriter;
+import com.gaia3d.converter.jgltf.Quantization;
 import com.gaia3d.converter.jgltf.extension.ExtensionConstant;
 import com.gaia3d.converter.jgltf.extension.ExtensionInstanceFeatures;
 import com.gaia3d.converter.jgltf.extension.ExtensionMeshGpuInstancing;
@@ -13,7 +17,10 @@ import com.gaia3d.converter.jgltf.extension.ExtensionStructuralMetadata;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTableMap;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.postprocess.instance.Instanced3DModelBinary;
-import de.javagl.jgltf.impl.v2.*;
+import de.javagl.jgltf.impl.v2.BufferView;
+import de.javagl.jgltf.impl.v2.GlTF;
+import de.javagl.jgltf.impl.v2.MeshPrimitive;
+import de.javagl.jgltf.impl.v2.Node;
 import de.javagl.jgltf.model.GltfConstants;
 import de.javagl.jgltf.model.GltfModel;
 import de.javagl.jgltf.model.GltfModels;
@@ -111,8 +118,7 @@ public class InstancedModelGltfWriter extends GltfWriter {
         gltf.setExtensions(extensions);
 
         convertNode(gltf, binary, rootNode, gaiaScene.getNodes(), featureTable, batchTableMap);
-        gaiaScene.getMaterials()
-                .forEach(gaiaMaterial -> createMaterial(gltf, binary, gaiaMaterial));
+        gaiaScene.getMaterials().forEach(gaiaMaterial -> createMaterial(gltf, binary, gaiaMaterial));
         applyPropertiesBinary(gltf, binary, extensionStructuralMetadata);
         applyInstanceFeaturesBinary(gltf, binary, featureTable);
 
@@ -130,36 +136,32 @@ public class InstancedModelGltfWriter extends GltfWriter {
 
         List<ByteBuffer> buffers = binary.getPropertyBuffers();
 
-        extensionStructuralMetadata.getPropertyTables()
-                .forEach(propertyTable -> {
-                    propertyTable.getProperties()
-                            .forEach((name, property) -> {
-                                List<String> values = property.getPrimaryValues();
-                                ByteBuffer[] stringBuffers = createStringBuffers(values);
+        extensionStructuralMetadata.getPropertyTables().forEach(propertyTable -> {
+            propertyTable.getProperties().forEach((name, property) -> {
+                List<String> values = property.getPrimaryValues();
+                ByteBuffer[] stringBuffers = createStringBuffers(values);
 
-                                ByteBuffer stringBuffer = stringBuffers[0];
-                                ByteBuffer offsetBuffer = stringBuffers[1];
+                ByteBuffer stringBuffer = stringBuffers[0];
+                ByteBuffer offsetBuffer = stringBuffers[1];
 
-                                int stringBufferViewId = createBufferView(gltf, 0, bufferOffset.get(), stringBuffer.capacity(), -1, GL20.GL_ARRAY_BUFFER);
-                                property.setValues(stringBufferViewId);
+                int stringBufferViewId = createBufferView(gltf, 0, bufferOffset.get(), stringBuffer.capacity(), -1, GL20.GL_ARRAY_BUFFER);
+                property.setValues(stringBufferViewId);
 
-                                BufferView stringBufferView = gltf.getBufferViews()
-                                        .get(stringBufferViewId);
-                                stringBufferView.setName(name + "_values");
+                BufferView stringBufferView = gltf.getBufferViews().get(stringBufferViewId);
+                stringBufferView.setName(name + "_values");
 
-                                int offsetBufferViewId = createBufferView(gltf, 0, bufferOffset.get() + stringBuffer.capacity(), offsetBuffer.capacity(), -1, GL20.GL_ARRAY_BUFFER);
-                                property.setStringOffsets(offsetBufferViewId);
+                int offsetBufferViewId = createBufferView(gltf, 0, bufferOffset.get() + stringBuffer.capacity(), offsetBuffer.capacity(), -1, GL20.GL_ARRAY_BUFFER);
+                property.setStringOffsets(offsetBufferViewId);
 
-                                BufferView offsetBufferView = gltf.getBufferViews()
-                                        .get(offsetBufferViewId);
-                                offsetBufferView.setName(name + "_offsets");
+                BufferView offsetBufferView = gltf.getBufferViews().get(offsetBufferViewId);
+                offsetBufferView.setName(name + "_offsets");
 
-                                bufferOffset.addAndGet(stringBuffer.capacity() + offsetBuffer.capacity());
+                bufferOffset.addAndGet(stringBuffer.capacity() + offsetBuffer.capacity());
 
-                                buffers.add(stringBuffer);
-                                buffers.add(offsetBuffer);
-                            });
-                });
+                buffers.add(stringBuffer);
+                buffers.add(offsetBuffer);
+            });
+        });
     }
 
     private void applyInstanceFeaturesBinary(GlTF gltf, GltfBinary binary, GaiaFeatureTable featureTable) {
@@ -174,14 +176,10 @@ public class InstancedModelGltfWriter extends GltfWriter {
         byte[] scaleBuffer = instancedBuffer.getScaleBytes();
         byte[] featureIdBuffer = instancedBuffer.getFeatureIdBytes();
 
-        ByteBuffer translationByteBuffer = ByteBuffer.allocate(translationBuffer.length)
-                .order(ByteOrder.LITTLE_ENDIAN);
-        ByteBuffer rotationByteBuffer = ByteBuffer.allocate(rotationBuffer.length)
-                .order(ByteOrder.LITTLE_ENDIAN);
-        ByteBuffer scaleByteBuffer = ByteBuffer.allocate(scaleBuffer.length)
-                .order(ByteOrder.LITTLE_ENDIAN);
-        ByteBuffer featureIdByteBuffer = ByteBuffer.allocate(featureIdBuffer.length)
-                .order(ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer translationByteBuffer = ByteBuffer.allocate(translationBuffer.length).order(ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer rotationByteBuffer = ByteBuffer.allocate(rotationBuffer.length).order(ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer scaleByteBuffer = ByteBuffer.allocate(scaleBuffer.length).order(ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer featureIdByteBuffer = ByteBuffer.allocate(featureIdBuffer.length).order(ByteOrder.LITTLE_ENDIAN);
 
         translationByteBuffer.put(translationBuffer);
         rotationByteBuffer.put(rotationBuffer);
@@ -208,17 +206,13 @@ public class InstancedModelGltfWriter extends GltfWriter {
         int scaleBufferViewId = createBufferView(gltf, 0, totalByteBufferLength + translationByteBufferLength + rotationByteBufferLength, scaleByteBufferLength, 12, GL20.GL_ARRAY_BUFFER);
         int featureIdBufferViewId = createBufferView(gltf, 0, totalByteBufferLength + translationByteBufferLength + rotationByteBufferLength + scaleByteBufferLength, featureIdByteBufferLength, -1, GL20.GL_ARRAY_BUFFER);
 
-        BufferView translationBufferView = gltf.getBufferViews()
-                .get(translationBufferViewId);
+        BufferView translationBufferView = gltf.getBufferViews().get(translationBufferViewId);
         translationBufferView.setName("translation");
-        BufferView rotationBufferView = gltf.getBufferViews()
-                .get(rotationBufferViewId);
+        BufferView rotationBufferView = gltf.getBufferViews().get(rotationBufferViewId);
         rotationBufferView.setName("rotation");
-        BufferView scaleBufferView = gltf.getBufferViews()
-                .get(scaleBufferViewId);
+        BufferView scaleBufferView = gltf.getBufferViews().get(scaleBufferViewId);
         scaleBufferView.setName("scale");
-        BufferView featureIdBufferView = gltf.getBufferViews()
-                .get(featureIdBufferViewId);
+        BufferView featureIdBufferView = gltf.getBufferViews().get(featureIdBufferViewId);
         featureIdBufferView.setName("featureId");
 
         int translationAccessorId = createAccessor(gltf, translationBufferViewId, 0, featureCount, GltfConstants.GL_FLOAT, AccessorType.VEC3, false);
@@ -261,10 +255,8 @@ public class InstancedModelGltfWriter extends GltfWriter {
         totalStringLength = padMultiple4(totalStringLength);
         int encodedFeaturesCount = (encodedFeatures.length + 1) * 4; // Each offset is an int (4 bytes)
 
-        ByteBuffer stringBuffer = ByteBuffer.allocate(totalStringLength)
-                .order(ByteOrder.LITTLE_ENDIAN);
-        ByteBuffer offsetBuffer = ByteBuffer.allocate(encodedFeaturesCount)
-                .order(ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer stringBuffer = ByteBuffer.allocate(totalStringLength).order(ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer offsetBuffer = ByteBuffer.allocate(encodedFeaturesCount).order(ByteOrder.LITTLE_ENDIAN);
 
         int currentOffset = 0;
         offsetBuffer.putInt(currentOffset); // offset[0] = 0
@@ -285,8 +277,7 @@ public class InstancedModelGltfWriter extends GltfWriter {
         gaiaNodes.forEach((gaiaNode) -> {
             Node node = createNode(gltf, parentNode, gaiaNode, binary, featureTable);
 
-            int nodeId = gltf.getNodes()
-                    .size() - 1;
+            int nodeId = gltf.getNodes().size() - 1;
             if (parentNode != null) {
                 parentNode.addChildren(nodeId);
             }
@@ -307,8 +298,7 @@ public class InstancedModelGltfWriter extends GltfWriter {
     protected Node createNode(GlTF gltf, Node parentNode, GaiaNode gaiaNode, GltfBinary binary, GaiaFeatureTable featureTable) {
         Node node;
         if (parentNode == null) {
-            node = gltf.getNodes()
-                    .get(0);
+            node = gltf.getNodes().get(0);
         } else {
             node = new Node();
             gltf.addNodes(node);
@@ -463,16 +453,11 @@ public class InstancedModelGltfWriter extends GltfWriter {
         primitive.setAttributes(new HashMap<>());
         primitive.setIndices(nodeBuffer.getIndicesAccessorId());
 
-        if (nodeBuffer.getPositionsAccessorId() > -1)
-            primitive.getAttributes().put(AttributeType.POSITION.getAccessor(), nodeBuffer.getPositionsAccessorId());
-        if (nodeBuffer.getNormalsAccessorId() > -1)
-            primitive.getAttributes().put(AttributeType.NORMAL.getAccessor(), nodeBuffer.getNormalsAccessorId());
-        if (nodeBuffer.getColorsAccessorId() > -1)
-            primitive.getAttributes().put(AttributeType.COLOR.getAccessor(), nodeBuffer.getColorsAccessorId());
-        if (nodeBuffer.getTexcoordsAccessorId() > -1)
-            primitive.getAttributes().put(AttributeType.TEXCOORD.getAccessor(), nodeBuffer.getTexcoordsAccessorId());
-        if (nodeBuffer.getBatchIdAccessorId() > -1)
-            primitive.getAttributes().put(AttributeType.BATCHID.getAccessor(), nodeBuffer.getBatchIdAccessorId());
+        if (nodeBuffer.getPositionsAccessorId() > -1) {primitive.getAttributes().put(AttributeType.POSITION.getAccessor(), nodeBuffer.getPositionsAccessorId());}
+        if (nodeBuffer.getNormalsAccessorId() > -1) {primitive.getAttributes().put(AttributeType.NORMAL.getAccessor(), nodeBuffer.getNormalsAccessorId());}
+        if (nodeBuffer.getColorsAccessorId() > -1) {primitive.getAttributes().put(AttributeType.COLOR.getAccessor(), nodeBuffer.getColorsAccessorId());}
+        if (nodeBuffer.getTexcoordsAccessorId() > -1) {primitive.getAttributes().put(AttributeType.TEXCOORD.getAccessor(), nodeBuffer.getTexcoordsAccessorId());}
+        if (nodeBuffer.getBatchIdAccessorId() > -1) {primitive.getAttributes().put(AttributeType.BATCHID.getAccessor(), nodeBuffer.getBatchIdAccessorId());}
 
         return primitive;
     }

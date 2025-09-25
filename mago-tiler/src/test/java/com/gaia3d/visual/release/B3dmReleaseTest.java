@@ -52,6 +52,7 @@ class B3dmReleaseTest {
         String[] args = new String[] {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-c", "4326",
         };
         MagoTestConfig.execute(args);
     }

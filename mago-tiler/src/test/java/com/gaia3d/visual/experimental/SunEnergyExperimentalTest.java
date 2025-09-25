@@ -12,6 +12,7 @@ public class SunEnergyExperimentalTest {
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 //"-rotateXAxis", "90",
+                "-splitByNode",
                 "-crs", "5179",
         };
         MagoTestConfig.execute(args);

@@ -41,7 +41,6 @@ public class GaiaCoordinateExtractor implements PreProcess {
 
         List<GaiaNode> nodes = scene.getNodes();
         Vector3d sourceCenter = getOrigin(scene);
-
         sourceCenter = new Vector3d(sourceCenter); // Ensure we have a mutable copy
 
         // WGS 84 coordinate system (longitude, latitude, altitude)
@@ -66,7 +65,10 @@ public class GaiaCoordinateExtractor implements PreProcess {
 
         List<GaiaNode> nodes = scene.getNodes();
         GaiaBoundingBox boundingBox = scene.updateBoundingBox();
-        Vector3d sourceCenter = new Vector3d(boundingBox.getCenter());
+
+        Vector3d sourceCenter = extractDegree(tileTransformInfo, scene);
+
+        //Vector3d sourceCenter = new Vector3d(boundingBox.getCenter());
         tileTransformInfo.setPosition(sourceCenter);
 
         Vector3d translation = sourceCenter.negate(new Vector3d());

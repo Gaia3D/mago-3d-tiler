@@ -1,6 +1,6 @@
 subprojects {
     group "com.gaia3d"
-    version "1.13.2-release"
+    version "1.13.3-release"
     apply plugin: 'java'
     project.ext.lwjglVersion = "3.3.6"
 

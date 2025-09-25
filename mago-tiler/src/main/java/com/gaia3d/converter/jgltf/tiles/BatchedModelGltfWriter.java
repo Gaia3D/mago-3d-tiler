@@ -1,4 +1,4 @@
-package com.gaia3d.converter.jgltf;
+package com.gaia3d.converter.jgltf.tiles;
 
 import com.gaia3d.basic.model.GaiaMesh;
 import com.gaia3d.basic.model.GaiaNode;
@@ -6,6 +6,10 @@ import com.gaia3d.basic.model.GaiaPrimitive;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.types.AccessorType;
 import com.gaia3d.basic.types.AttributeType;
+import com.gaia3d.converter.jgltf.GltfBinary;
+import com.gaia3d.converter.jgltf.GltfNodeBuffer;
+import com.gaia3d.converter.jgltf.GltfWriter;
+import com.gaia3d.converter.jgltf.Quantization;
 import com.gaia3d.converter.jgltf.extension.ExtensionConstant;
 import com.gaia3d.converter.jgltf.extension.ExtensionMeshFeatures;
 import com.gaia3d.converter.jgltf.extension.ExtensionStructuralMetadata;
@@ -17,7 +21,6 @@ import de.javagl.jgltf.model.GltfModel;
 import de.javagl.jgltf.model.GltfModels;
 import de.javagl.jgltf.model.io.GltfModelWriter;
 import de.javagl.jgltf.model.io.v2.GltfAssetV2;
-import de.javagl.jgltf.validator.Validator;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
@@ -120,8 +123,7 @@ public class BatchedModelGltfWriter extends GltfWriter {
         gltf.setExtensions(extensions);
 
         convertNode(gltf, binary, rootNode, gaiaScene.getNodes(), batchTableMap, rtcCenterSmallArray);
-        gaiaScene.getMaterials()
-                .forEach(gaiaMaterial -> createMaterial(gltf, binary, gaiaMaterial));
+        gaiaScene.getMaterials().forEach(gaiaMaterial -> createMaterial(gltf, binary, gaiaMaterial));
         applyPropertiesBinary(gltf, binary, extensionStructuralMetadata);
 
         binary.fill();
@@ -138,36 +140,32 @@ public class BatchedModelGltfWriter extends GltfWriter {
 
         List<ByteBuffer> buffers = binary.getPropertyBuffers();
 
-        extensionStructuralMetadata.getPropertyTables()
-                .forEach(propertyTable -> {
-                    propertyTable.getProperties()
-                            .forEach((name, property) -> {
-                                List<String> values = property.getPrimaryValues();
-                                ByteBuffer[] stringBuffers = createStringBuffers(values);
+        extensionStructuralMetadata.getPropertyTables().forEach(propertyTable -> {
+            propertyTable.getProperties().forEach((name, property) -> {
+                List<String> values = property.getPrimaryValues();
+                ByteBuffer[] stringBuffers = createStringBuffers(values);
 
-                                ByteBuffer stringBuffer = stringBuffers[0];
-                                ByteBuffer offsetBuffer = stringBuffers[1];
+                ByteBuffer stringBuffer = stringBuffers[0];
+                ByteBuffer offsetBuffer = stringBuffers[1];
 
-                                int stringBufferViewId = createBufferView(gltf, 0, bufferOffset.get(), stringBuffer.capacity(), -1, GL20.GL_ARRAY_BUFFER);
-                                property.setValues(stringBufferViewId);
+                int stringBufferViewId = createBufferView(gltf, 0, bufferOffset.get(), stringBuffer.capacity(), -1, GL20.GL_ARRAY_BUFFER);
+                property.setValues(stringBufferViewId);
 
-                                BufferView stringBufferView = gltf.getBufferViews()
-                                        .get(stringBufferViewId);
-                                stringBufferView.setName(name + "_values");
+                BufferView stringBufferView = gltf.getBufferViews().get(stringBufferViewId);
+                stringBufferView.setName(name + "_values");
 
-                                int offsetBufferViewId = createBufferView(gltf, 0, bufferOffset.get() + stringBuffer.capacity(), offsetBuffer.capacity(), -1, GL20.GL_ARRAY_BUFFER);
-                                property.setStringOffsets(offsetBufferViewId);
+                int offsetBufferViewId = createBufferView(gltf, 0, bufferOffset.get() + stringBuffer.capacity(), offsetBuffer.capacity(), -1, GL20.GL_ARRAY_BUFFER);
+                property.setStringOffsets(offsetBufferViewId);
 
-                                BufferView offsetBufferView = gltf.getBufferViews()
-                                        .get(offsetBufferViewId);
-                                offsetBufferView.setName(name + "_offsets");
+                BufferView offsetBufferView = gltf.getBufferViews().get(offsetBufferViewId);
+                offsetBufferView.setName(name + "_offsets");
 
-                                bufferOffset.addAndGet(stringBuffer.capacity() + offsetBuffer.capacity());
+                bufferOffset.addAndGet(stringBuffer.capacity() + offsetBuffer.capacity());
 
-                                buffers.add(stringBuffer);
-                                buffers.add(offsetBuffer);
-                            });
-                });
+                buffers.add(stringBuffer);
+                buffers.add(offsetBuffer);
+            });
+        });
     }
 
     private ByteBuffer[] createStringBuffers(List<String> strings) {
@@ -185,10 +183,8 @@ public class BatchedModelGltfWriter extends GltfWriter {
         totalStringLength = padMultiple4(totalStringLength);
         int encodedFeaturesCount = (encodedFeatures.length + 1) * 4; // Each offset is an int (4 bytes)
 
-        ByteBuffer stringBuffer = ByteBuffer.allocate(totalStringLength)
-                .order(ByteOrder.LITTLE_ENDIAN);
-        ByteBuffer offsetBuffer = ByteBuffer.allocate(encodedFeaturesCount)
-                .order(ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer stringBuffer = ByteBuffer.allocate(totalStringLength).order(ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer offsetBuffer = ByteBuffer.allocate(encodedFeaturesCount).order(ByteOrder.LITTLE_ENDIAN);
 
         int currentOffset = 0;
         offsetBuffer.putInt(currentOffset); // offset[0] = 0
@@ -379,8 +375,7 @@ public class BatchedModelGltfWriter extends GltfWriter {
         }
 
         List<Material> materials = gltf.getMaterials();
-        GaiaPrimitive gaiaPrimitive = gaiaMesh.getPrimitives()
-                .get(0);
+        GaiaPrimitive gaiaPrimitive = gaiaMesh.getPrimitives().get(0);
         MeshPrimitive primitive = createPrimitive(nodeBuffer, gaiaPrimitive, materials, batchTableMap);
         int meshId = createMesh(gltf, primitive);
         node.setMesh(meshId);

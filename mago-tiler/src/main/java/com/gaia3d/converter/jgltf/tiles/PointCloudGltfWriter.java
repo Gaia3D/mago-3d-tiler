@@ -1,7 +1,11 @@
-package com.gaia3d.converter.jgltf;
+package com.gaia3d.converter.jgltf.tiles;
 
 import com.gaia3d.basic.types.AccessorType;
 import com.gaia3d.basic.types.AttributeType;
+import com.gaia3d.converter.jgltf.GltfBinary;
+import com.gaia3d.converter.jgltf.GltfNodeBuffer;
+import com.gaia3d.converter.jgltf.GltfWriter;
+import com.gaia3d.converter.jgltf.Quantization;
 import com.gaia3d.converter.jgltf.extension.ExtensionConstant;
 import com.gaia3d.converter.jgltf.extension.ExtensionStructuralMetadata;
 import com.gaia3d.converter.jgltf.extension.ExtensionStructuralMetadataMapper;
@@ -97,10 +101,8 @@ public class PointCloudGltfWriter extends GltfWriter {
             classificationByteBufferLength = padMultiple4(classificationByteBufferLength);
             intensityByteBufferLength = padMultiple4(intensityByteBufferLength);
 
-            ByteBuffer classificationByteBuffer = ByteBuffer.allocate(classificationByteBufferLength)
-                    .order(ByteOrder.LITTLE_ENDIAN);
-            ByteBuffer intensityByteBuffer = ByteBuffer.allocate(intensityByteBufferLength)
-                    .order(ByteOrder.LITTLE_ENDIAN);
+            ByteBuffer classificationByteBuffer = ByteBuffer.allocate(classificationByteBufferLength).order(ByteOrder.LITTLE_ENDIAN);
+            ByteBuffer intensityByteBuffer = ByteBuffer.allocate(intensityByteBufferLength).order(ByteOrder.LITTLE_ENDIAN);
             classificationByteBuffer.put(classificationBytes);
             intensityByteBuffer.put(intensityBytes);
             classificationByteBuffer.flip();
@@ -112,20 +114,15 @@ public class PointCloudGltfWriter extends GltfWriter {
             int classificationBufferViewId = createBufferView(gltf, 0, binaryTotalByteBufferLength, classificationByteBufferLength, 4, GL20.GL_ARRAY_BUFFER);
             int intensityBufferViewId = createBufferView(gltf, 0, binaryTotalByteBufferLength + classificationByteBufferLength, intensityByteBufferLength, 4, GL20.GL_ARRAY_BUFFER);
 
-            BufferView classificationBufferView = gltf.getBufferViews()
-                    .get(classificationBufferViewId);
+            BufferView classificationBufferView = gltf.getBufferViews().get(classificationBufferViewId);
             classificationBufferView.setName("classifications");
-            BufferView intensityBufferView = gltf.getBufferViews()
-                    .get(intensityBufferViewId);
+            BufferView intensityBufferView = gltf.getBufferViews().get(intensityBufferViewId);
             intensityBufferView.setName("intensities");
 
             int classificationAccessorId = createAccessor(gltf, classificationBufferViewId, 0, classificationByteBufferLength / 4, GltfConstants.GL_UNSIGNED_SHORT, AccessorType.SCALAR, false);
             int intensityAccessorId = createAccessor(gltf, intensityBufferViewId, 0, intensityByteBufferLength / 4, GltfConstants.GL_UNSIGNED_SHORT, AccessorType.SCALAR, false);
 
-            MeshPrimitive primitive = gltf.getMeshes()
-                    .get(0)
-                    .getPrimitives()
-                    .get(0);
+            MeshPrimitive primitive = gltf.getMeshes().get(0).getPrimitives().get(0);
             Map<String, Integer> attributes = primitive.getAttributes();
 
             Map<AttributeType, Integer> accessorMap = nodeBuffer.getAccessorMap();
@@ -161,8 +158,7 @@ public class PointCloudGltfWriter extends GltfWriter {
         Node node = createNode(gltf, parentNode);
         GltfNodeBuffer nodeBuffer = convertGeometryInfo(gltf, binary, pointCloudBuffer, node, featureTable, batchTable);
 
-        int nodeId = gltf.getNodes()
-                .size() - 1;
+        int nodeId = gltf.getNodes().size() - 1;
         if (parentNode != null) {
             parentNode.addChildren(nodeId);
         }
@@ -173,8 +169,7 @@ public class PointCloudGltfWriter extends GltfWriter {
     protected Node createNode(GlTF gltf, Node parentNode) {
         Node node;
         if (parentNode == null) {
-            node = gltf.getNodes()
-                    .get(0);
+            node = gltf.getNodes().get(0);
         } else {
             node = new Node();
             gltf.addNodes(node);
@@ -293,8 +288,7 @@ public class PointCloudGltfWriter extends GltfWriter {
             ByteBuffer positionsBuffer = nodeBuffer.getPositionsBuffer();
             int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, positionsBuffer.capacity(), 8, GL20.GL_ARRAY_BUFFER);
             nodeBuffer.setPositionsBufferViewId(bufferViewId);
-            BufferView bufferView = gltf.getBufferViews()
-                    .get(bufferViewId);
+            BufferView bufferView = gltf.getBufferViews().get(bufferViewId);
             bufferView.setName("positions");
             bufferOffset += positionsBuffer.capacity();
         }
@@ -311,8 +305,7 @@ public class PointCloudGltfWriter extends GltfWriter {
             ByteBuffer colorsBuffer = nodeBuffer.getColorsBuffer();
             int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, colorsBuffer.capacity(), 4, GL20.GL_ARRAY_BUFFER);
             nodeBuffer.setColorsBufferViewId(bufferViewId);
-            BufferView bufferView = gltf.getBufferViews()
-                    .get(bufferViewId);
+            BufferView bufferView = gltf.getBufferViews().get(bufferViewId);
             bufferView.setName("colors");
             bufferOffset += colorsBuffer.capacity();
         }
@@ -329,8 +322,7 @@ public class PointCloudGltfWriter extends GltfWriter {
             ByteBuffer batchIdBuffer = nodeBuffer.getBatchIdBuffer();
             int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, batchIdBuffer.capacity(), 4, GL20.GL_ARRAY_BUFFER);
             nodeBuffer.setBatchIdBufferViewId(bufferViewId);
-            BufferView bufferView = gltf.getBufferViews()
-                    .get(bufferViewId);
+            BufferView bufferView = gltf.getBufferViews().get(bufferViewId);
             bufferView.setName("batchIds");
             bufferOffset += batchIdBuffer.capacity();
         }

@@ -22,9 +22,21 @@ public class GeoDataCubeExperimentalTest {
     }
 
     @Test
+    void globalVoxels() {
+        String path = "global-dem-voxels";
+        testAutoVoxels(path, path + "-all-level", 3);
+    }
+
+    @Test
+    void koreaVoxels() {
+        String path = "korea-dem-voxels";
+        testAutoVoxels(path, path + "-all-level", 8);
+    }
+
+    @Test
     void yeongdeungpoVoxels() {
         String path = "yeongdeungpo-voxels";
-        testAutoVoxels(path, path + "-all-level", 15);
+        testAutoVoxels(path, path + "-all-level", 5);
     }
 
     @Test
