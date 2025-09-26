@@ -123,7 +123,7 @@ public class MainRendererBillBoard implements IAppLogic {
 
         List<GaiaFace> faces = new ArrayList<>();
 
-        int verticalRectanglesCount = 3;
+        int verticalRectanglesCount = 4;
         int increAngDeg = 180 / verticalRectanglesCount;
         for (int i = 0; i < verticalRectanglesCount; i++) {
             Vector3d camDir = new Vector3d(0, 1, 0);
@@ -212,29 +212,29 @@ public class MainRendererBillBoard implements IAppLogic {
 
 
         // test save images
-        try {
-            String randomId = String.valueOf(0);
-            String path = "D:\\Result_mago3dTiler";
-            String fileName = "atlasAlbedo_" + randomId;
-            String extension = ".png";
-            String imagePath = path + "\\" + fileName + extension;
-            File imageFile = new File(imagePath);
-            ImageIO.write(albedoImage, "png", imageFile);
-        } catch (IOException e) {
-            log.debug("Error writing image: {}", e);
-        }
-
-        try {
-            String randomId = String.valueOf(0);
-            String path = "D:\\Result_mago3dTiler";
-            String fileName = "atlasNormals_" + randomId;
-            String extension = ".png";
-            String imagePath = path + "\\" + fileName + extension;
-            File imageFile = new File(imagePath);
-            ImageIO.write(normalImage, "png", imageFile);
-        } catch (IOException e) {
-            log.debug("Error writing image: {}", e);
-        }
+//        try {
+//            String randomId = String.valueOf(0);
+//            String path = "D:\\Result_mago3dTiler";
+//            String fileName = "atlasAlbedo_" + randomId;
+//            String extension = ".png";
+//            String imagePath = path + "\\" + fileName + extension;
+//            File imageFile = new File(imagePath);
+//            ImageIO.write(albedoImage, "png", imageFile);
+//        } catch (IOException e) {
+//            log.debug("Error writing image: {}", e);
+//        }
+//
+//        try {
+//            String randomId = String.valueOf(0);
+//            String path = "D:\\Result_mago3dTiler";
+//            String fileName = "atlasNormals_" + randomId;
+//            String extension = ".png";
+//            String imagePath = path + "\\" + fileName + extension;
+//            File imageFile = new File(imagePath);
+//            ImageIO.write(normalImage, "png", imageFile);
+//        } catch (IOException e) {
+//            log.debug("Error writing image: {}", e);
+//        }
 
         int hola = 0;
     }
