@@ -3,17 +3,13 @@ package com.gaia3d.renderer;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.exchangable.SceneInfo;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
 import com.gaia3d.basic.geometry.octree.HalfEdgeOctreeFaces;
-import com.gaia3d.basic.halfedge.DecimateParameters;
-import com.gaia3d.basic.halfedge.HalfEdgeCutter;
-import com.gaia3d.basic.halfedge.HalfEdgeScene;
-import com.gaia3d.basic.halfedge.HalfEdgeUtils;
+import com.gaia3d.basic.halfedge.*;
 import com.gaia3d.basic.model.*;
-import com.gaia3d.renderer.engine.Engine;
-import com.gaia3d.renderer.engine.IAppLogic;
-import com.gaia3d.renderer.engine.InternDataConverter;
-import com.gaia3d.renderer.engine.Window;
+import com.gaia3d.basic.types.TextureType;
+import com.gaia3d.renderer.engine.*;
 import com.gaia3d.renderer.engine.dataStructure.GaiaScenesContainer;
 import com.gaia3d.renderer.engine.fbo.Fbo;
 import com.gaia3d.renderer.engine.fbo.FboManager;
@@ -22,17 +18,24 @@ import com.gaia3d.renderer.engine.graph.ShaderProgram;
 import com.gaia3d.renderer.engine.scene.Camera;
 import com.gaia3d.renderer.engine.scene.Projection;
 import com.gaia3d.renderer.renderable.RenderableGaiaScene;
+import com.gaia3d.util.GaiaTextureUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
+import org.joml.Vector2d;
 import org.joml.Vector3d;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -99,6 +102,7 @@ public class MainRendererBillBoard implements IAppLogic {
 
         GaiaScene treeScene = new GaiaScene();
         GaiaNode treeRootNode = new GaiaNode();
+        treeRootNode.setName("treeRoot");
         treeScene.getNodes().add(treeRootNode);
         GaiaNode treeNode = new GaiaNode();
         treeNode.setName("BillBoardNode");
@@ -111,9 +115,16 @@ public class MainRendererBillBoard implements IAppLogic {
             camera = new Camera();
         }
 
+        int bufferImageType = BufferedImage.TYPE_INT_ARGB;
+        List<BufferedImage> resultBufferedImages = new ArrayList<>();
 
-        int verticalRectanglesCount = 3;
-        int increAngDeg = 360 / verticalRectanglesCount;
+        List<TexturesAtlasData> albedoTexturesAtlasDataList = new ArrayList<>();
+        List<TexturesAtlasData> normalTexturesAtlasDataList = new ArrayList<>();
+
+        List<GaiaFace> faces = new ArrayList<>();
+
+        int verticalRectanglesCount = 4;
+        int increAngDeg = 180 / verticalRectanglesCount;
         for (int i = 0; i < verticalRectanglesCount; i++) {
             Vector3d camDir = new Vector3d(0, 1, 0);
             camDir.rotateZ(Math.toRadians(i * increAngDeg));
@@ -123,26 +134,123 @@ public class MainRendererBillBoard implements IAppLogic {
             camera.setUp(camUp);
             gaiaScenesContainer.setCamera(camera);
 
-//            // Make the rectangle of the billboard
-//            GaiaPrimitive treePrimitive = new GaiaPrimitive();
-//            treeMesh.getPrimitives().add(treePrimitive);
-//            GaiaSurface treeSurface = new GaiaSurface();
-//            treePrimitive.getSurfaces().add(treeSurface);
+            resultBufferedImages.clear();
+            GaiaPrimitive primitive = engine.makeRectangleTextureByCameraDirection(scene, camDir, resultBufferedImages, bufferImageType, i);
+            faces.clear();
+            int classifyId = i;
+            primitive.extractGaiaFaces(faces);
+            for (int j = 0; j < faces.size(); j++) {
+                GaiaFace face = faces.get(j);
+                face.setClassifyId(classifyId);
+            }
+            BufferedImage albedoImage = resultBufferedImages.get(0);
+            BufferedImage normalImage = resultBufferedImages.get(1);
+
+            TexturesAtlasData albedoTexturesAtlasData = new TexturesAtlasData();
+            albedoTexturesAtlasData.setTextureImage(albedoImage);
+            albedoTexturesAtlasData.setClassifyId(classifyId);
+            albedoTexturesAtlasDataList.add(albedoTexturesAtlasData);
+
+            TexturesAtlasData normalTexturesAtlasData = new TexturesAtlasData();
+            normalTexturesAtlasData.setTextureImage(normalImage);
+            normalTexturesAtlasData.setClassifyId(classifyId);
+            normalTexturesAtlasDataList.add(normalTexturesAtlasData);
+
+            treeMesh.getPrimitives().add(primitive);
 //
-//            //     v3 +-------+ v2
-//            //        |       |
-//            //        |       |
-//            //     v0 +-------+ v1
+//            // add the textures to the material
+//            GaiaMaterial material = new GaiaMaterial();
+//            material.setName("BillBoardMaterial" + i);
 //
-//            GaiaVertex v0 = new GaiaVertex();
-//            GaiaVertex v1 = new GaiaVertex();
-//            GaiaVertex v2 = new GaiaVertex();
-//            GaiaVertex v3 = new GaiaVertex();
-            List<BufferedImage> resultBufferedImages = new ArrayList<>();
-            int bufferImageType = BufferedImage.TYPE_INT_ARGB;
-            engine.makeRectangleTextureByCameraDirection(scene, camDir, resultBufferedImages, bufferImageType, i);
-            //break;
+//
+//            GaiaTexture albedoTexture = new GaiaTexture();
+//            albedoTexture.setName("BillBoardAlbedoTexture" + i);
+//            albedoTexture.setBufferedImage(albedoImage);
+//            albedoTexture.setFormat(albedoImage.getType());
+//            albedoTexture.setWidth(albedoImage.getWidth());
+//            albedoTexture.setHeight(albedoImage.getHeight());
+//            albedoTexture.setType(TextureType.DIFFUSE);
+//            albedoTexture.setPath("BillBoardAlbedoTexture" + i + ".png");
+//
+//            GaiaTexture normalTexture = new GaiaTexture();
+//            normalTexture.setName("BillBoardNormalTexture" + i);
+//            normalTexture.setBufferedImage(normalImage);
+//            normalTexture.setFormat(normalImage.getType());
+//            normalTexture.setWidth(normalImage.getWidth());
+//            normalTexture.setHeight(normalImage.getHeight());
+//            normalTexture.setType(TextureType.NORMALS);
+//            normalTexture.setPath("BillBoardNormalTexture" + i + ".png");
+//
+//            Map<TextureType, List<GaiaTexture>> textures = new HashMap<>();
+//            List<GaiaTexture> diffuseTextures = new ArrayList<>();
+//            diffuseTextures.add(albedoTexture);
+//            textures.put(TextureType.DIFFUSE, diffuseTextures);
+//            List<GaiaTexture> normalTextures = new ArrayList<>();
+//            normalTextures.add(normalTexture);
+//            textures.put(TextureType.NORMALS, normalTextures);
+//            material.setTextures(textures);
+//
+//            int materialsCount = treeScene.getMaterials().size();
+//            material.setId(materialsCount);
+//            treeScene.getMaterials().add(material);
+//
+//            primitive.setMaterialIndex(materialsCount);
+
+            int hola = 0;
         }
+
+        TextureAtlasManager textureAtlasManager = new TextureAtlasManager();
+        textureAtlasManager.doAtlasTextureProcess(albedoTexturesAtlasDataList);
+        treeScene.joinAllSurfaces();
+        textureAtlasManager.recalculateTexCoordsAfterTextureAtlasing(treeScene, albedoTexturesAtlasDataList);
+
+        GaiaTexture atlasAlbedoTexture = textureAtlasManager.makeAtlasTexture(albedoTexturesAtlasDataList, bufferImageType);
+        BufferedImage albedoImage = atlasAlbedoTexture.getBufferedImage();
+        atlasAlbedoTexture.setName("BillBoardAlbedoTexture");
+        atlasAlbedoTexture.setFormat(albedoImage.getType());
+        atlasAlbedoTexture.setWidth(albedoImage.getWidth());
+        atlasAlbedoTexture.setHeight(albedoImage.getHeight());
+        atlasAlbedoTexture.setType(TextureType.DIFFUSE);
+        atlasAlbedoTexture.setPath("BillBoardAlbedoTexture" + ".png");
+
+        GaiaMaterial material = new GaiaMaterial();
+        material.setName("BillBoardMaterial");
+        int materialsCount = treeScene.getMaterials().size();
+        material.setId(materialsCount);
+        treeScene.getMaterials().add(material);
+
+        Map<TextureType, List<GaiaTexture>> textures = new HashMap<>();
+        List<GaiaTexture> diffuseTextures = new ArrayList<>();
+        diffuseTextures.add(atlasAlbedoTexture);
+        textures.put(TextureType.DIFFUSE, diffuseTextures);
+//        List<GaiaTexture> normalTextures = new ArrayList<>();
+//        normalTextures.add(normalTexture);
+//        textures.put(TextureType.NORMALS, normalTextures);
+        material.setTextures(textures);
+
+        List<GaiaPrimitive> primitives = new ArrayList<>();
+        treeScene.extractPrimitives(primitives);
+        int primitiveCount = primitives.size();
+        for (int i = 0; i < primitiveCount; i++) {
+            GaiaPrimitive primitive = primitives.get(i);
+            primitive.setMaterialIndex(0);
+        }
+        resultScenes.add(treeScene);
+
+
+        // test save images
+        try {
+            String randomId = String.valueOf(0);
+            String path = "D:\\Result_mago3dTiler";
+            String fileName = "atlasAlbedo_" + randomId;
+            String extension = ".png";
+            String imagePath = path + "\\" + fileName + extension;
+            File imageFile = new File(imagePath);
+            ImageIO.write(albedoImage, "png", imageFile);
+        } catch (IOException e) {
+            log.debug("Error writing image: {}", e);
+        }
+
         int hola = 0;
     }
 

@@ -697,8 +697,8 @@ class UnitTest {
     @Test
     void test_JoGonHee() {
         // someTiles
-        String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\Incheon_CheongNa_JoGeonhee\\Production_6\\L22_4489Buildings\\";
-        String outputPath = "C:\\data\\mago-server\\output\\Incheon_P6_L22_4489Buildings\\";
+        String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\Incheon_CheongNa_JoGeonhee\\Production_6\\L22_016_120\\";
+        String outputPath = "C:\\data\\mago-server\\output\\Incheon_P6_L22_016_120\\";
         //String outputPath = "E:\\temp\\";
 
         String[] args = new String[]{
@@ -844,7 +844,14 @@ class UnitTest {
         // hwal-0, jat-0, nak-0, tree-0
         String inputPath = "E:\\data\\trees\\pino_lod0\\LOD0-1m.glb";
         String outputPath = "E:\\data\\trees\\output\\";
-        
+
+//        String[] args = new String[]{
+//                "-i", inputPath,
+//                "-it", "glb",
+//                "-o", outputPath
+//        };
+//        Mago3DTilerMain.main(args);
+
         TreeCreator treeCreator = new TreeCreator();
         treeCreator.createTreeBillBoard(inputPath, outputPath);
     }

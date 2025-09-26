@@ -337,18 +337,18 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
 
     public void addPrimitive(GaiaPrimitive primitive) {
         int verticesCount = this.vertices.size();
-        int primitiveVerticesCount = primitive.getVertices().size();
         this.vertices.addAll(primitive.getVertices());
         for (GaiaSurface surface : primitive.getSurfaces()) {
             List<GaiaFace> faces = surface.getFaces();
             for (GaiaFace face : faces) {
-                int[] indices = face.getIndices();
+                GaiaFace newFace = new GaiaFace();
+                newFace.copyFrom(face);
+
+                // recalculate indices
+                int[] indices = newFace.getIndices();
                 for (int i = 0; i < indices.length; i++) {
                     indices[i] += verticesCount;
                 }
-
-                GaiaFace newFace = new GaiaFace();
-                newFace.setIndices(indices);
                 this.surfaces.get(0).getFaces().add(newFace);
             }
         }
