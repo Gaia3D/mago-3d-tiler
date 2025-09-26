@@ -122,7 +122,9 @@ public class MainRendererBillBoard implements IAppLogic {
         List<TexturesAtlasData> normalTexturesAtlasDataList = new ArrayList<>();
 
         List<GaiaFace> faces = new ArrayList<>();
+        int classifyId = 0;
 
+        // vertical rectangles
         int verticalRectanglesCount = 4;
         int increAngDeg = 180 / verticalRectanglesCount;
         for (int i = 0; i < verticalRectanglesCount; i++) {
@@ -137,7 +139,6 @@ public class MainRendererBillBoard implements IAppLogic {
             resultBufferedImages.clear();
             GaiaPrimitive primitive = engine.makeRectangleTextureByCameraDirection(scene, camDir, resultBufferedImages, bufferImageType, i);
             faces.clear();
-            int classifyId = i;
             primitive.extractGaiaFaces(faces);
             for (int j = 0; j < faces.size(); j++) {
                 GaiaFace face = faces.get(j);
@@ -157,8 +158,45 @@ public class MainRendererBillBoard implements IAppLogic {
             normalTexturesAtlasDataList.add(normalTexturesAtlasData);
 
             treeMesh.getPrimitives().add(primitive);
+            classifyId++;
             int hola = 0;
         }
+
+        // horizontal rectangles. here the camera direcction (0, 0, -1) is looking down always.
+        Vector3d camDir = new Vector3d(0, 0, -1);
+        Vector3d camUp = new Vector3d(0, 1, 0);
+        camera.setPosition(bboxCenter);
+        camera.setDirection(camDir);
+        camera.setUp(camUp);
+        gaiaScenesContainer.setCamera(camera);
+        int horizontalRectanglesCount = 1;
+        for (int i = 0; i < horizontalRectanglesCount; i++) {
+            resultBufferedImages.clear();
+            GaiaPrimitive primitive = engine.makeRectangleTextureByCameraDirection(scene, camDir, resultBufferedImages, bufferImageType, i);
+            faces.clear();
+            primitive.extractGaiaFaces(faces);
+            for (int j = 0; j < faces.size(); j++) {
+                GaiaFace face = faces.get(j);
+                face.setClassifyId(classifyId);
+            }
+            BufferedImage albedoImage = resultBufferedImages.get(0);
+            BufferedImage normalImage = resultBufferedImages.get(1);
+
+            TexturesAtlasData albedoTexturesAtlasData = new TexturesAtlasData();
+            albedoTexturesAtlasData.setTextureImage(albedoImage);
+            albedoTexturesAtlasData.setClassifyId(classifyId);
+            albedoTexturesAtlasDataList.add(albedoTexturesAtlasData);
+
+            TexturesAtlasData normalTexturesAtlasData = new TexturesAtlasData();
+            normalTexturesAtlasData.setTextureImage(normalImage);
+            normalTexturesAtlasData.setClassifyId(classifyId);
+            normalTexturesAtlasDataList.add(normalTexturesAtlasData);
+
+            treeMesh.getPrimitives().add(primitive);
+            classifyId++;
+            int hola = 0;
+        }
+
 
         TextureAtlasManager textureAtlasManager = new TextureAtlasManager();
         textureAtlasManager.doAtlasTextureProcess(albedoTexturesAtlasDataList);
