@@ -1029,30 +1029,30 @@ public class Engine {
         fboMRT.unbind();
 
         // test save images
-        try {
-            String randomId = String.valueOf(idxTest);
-            String path = "D:\\Result_mago3dTiler";
-            String fileName = "albedo_" + randomId;
-            String extension = ".png";
-            String imagePath = path + "\\" + fileName + extension;
-            File imageFile = new File(imagePath);
-            ImageIO.write(colorImage, "png", imageFile);
-        } catch (IOException e) {
-            log.debug("Error writing image: {}", e);
-        }
-
-        // test save images
-        try {
-            String randomId = String.valueOf(idxTest);
-            String path = "D:\\Result_mago3dTiler";
-            String fileName = "normal_" + randomId;
-            String extension = ".png";
-            String imagePath = path + "\\" + fileName + extension;
-            File imageFile = new File(imagePath);
-            ImageIO.write(normalImage, "png", imageFile);
-        } catch (IOException e) {
-            log.debug("Error writing image: {}", e);
-        }
+//        try {
+//            String randomId = String.valueOf(idxTest);
+//            String path = "D:\\Result_mago3dTiler";
+//            String fileName = "albedo_" + randomId;
+//            String extension = ".png";
+//            String imagePath = path + "\\" + fileName + extension;
+//            File imageFile = new File(imagePath);
+//            ImageIO.write(colorImage, "png", imageFile);
+//        } catch (IOException e) {
+//            log.debug("Error writing image: {}", e);
+//        }
+//
+//        // test save images
+//        try {
+//            String randomId = String.valueOf(idxTest);
+//            String path = "D:\\Result_mago3dTiler";
+//            String fileName = "normal_" + randomId;
+//            String extension = ".png";
+//            String imagePath = path + "\\" + fileName + extension;
+//            File imageFile = new File(imagePath);
+//            ImageIO.write(normalImage, "png", imageFile);
+//        } catch (IOException e) {
+//            log.debug("Error writing image: {}", e);
+//        }
 
         fboManager.deleteFboMRT("mrtRender");
 

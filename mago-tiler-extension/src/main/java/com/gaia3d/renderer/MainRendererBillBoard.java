@@ -123,7 +123,7 @@ public class MainRendererBillBoard implements IAppLogic {
 
         List<GaiaFace> faces = new ArrayList<>();
 
-        int verticalRectanglesCount = 4;
+        int verticalRectanglesCount = 3;
         int increAngDeg = 180 / verticalRectanglesCount;
         for (int i = 0; i < verticalRectanglesCount; i++) {
             Vector3d camDir = new Vector3d(0, 1, 0);
@@ -157,53 +157,16 @@ public class MainRendererBillBoard implements IAppLogic {
             normalTexturesAtlasDataList.add(normalTexturesAtlasData);
 
             treeMesh.getPrimitives().add(primitive);
-//
-//            // add the textures to the material
-//            GaiaMaterial material = new GaiaMaterial();
-//            material.setName("BillBoardMaterial" + i);
-//
-//
-//            GaiaTexture albedoTexture = new GaiaTexture();
-//            albedoTexture.setName("BillBoardAlbedoTexture" + i);
-//            albedoTexture.setBufferedImage(albedoImage);
-//            albedoTexture.setFormat(albedoImage.getType());
-//            albedoTexture.setWidth(albedoImage.getWidth());
-//            albedoTexture.setHeight(albedoImage.getHeight());
-//            albedoTexture.setType(TextureType.DIFFUSE);
-//            albedoTexture.setPath("BillBoardAlbedoTexture" + i + ".png");
-//
-//            GaiaTexture normalTexture = new GaiaTexture();
-//            normalTexture.setName("BillBoardNormalTexture" + i);
-//            normalTexture.setBufferedImage(normalImage);
-//            normalTexture.setFormat(normalImage.getType());
-//            normalTexture.setWidth(normalImage.getWidth());
-//            normalTexture.setHeight(normalImage.getHeight());
-//            normalTexture.setType(TextureType.NORMALS);
-//            normalTexture.setPath("BillBoardNormalTexture" + i + ".png");
-//
-//            Map<TextureType, List<GaiaTexture>> textures = new HashMap<>();
-//            List<GaiaTexture> diffuseTextures = new ArrayList<>();
-//            diffuseTextures.add(albedoTexture);
-//            textures.put(TextureType.DIFFUSE, diffuseTextures);
-//            List<GaiaTexture> normalTextures = new ArrayList<>();
-//            normalTextures.add(normalTexture);
-//            textures.put(TextureType.NORMALS, normalTextures);
-//            material.setTextures(textures);
-//
-//            int materialsCount = treeScene.getMaterials().size();
-//            material.setId(materialsCount);
-//            treeScene.getMaterials().add(material);
-//
-//            primitive.setMaterialIndex(materialsCount);
-
             int hola = 0;
         }
 
         TextureAtlasManager textureAtlasManager = new TextureAtlasManager();
         textureAtlasManager.doAtlasTextureProcess(albedoTexturesAtlasDataList);
+        textureAtlasManager.copyAtlasTextureProcess(albedoTexturesAtlasDataList, normalTexturesAtlasDataList);
         treeScene.joinAllSurfaces();
         textureAtlasManager.recalculateTexCoordsAfterTextureAtlasing(treeScene, albedoTexturesAtlasDataList);
 
+        // albedo texture atlas
         GaiaTexture atlasAlbedoTexture = textureAtlasManager.makeAtlasTexture(albedoTexturesAtlasDataList, bufferImageType);
         BufferedImage albedoImage = atlasAlbedoTexture.getBufferedImage();
         atlasAlbedoTexture.setName("BillBoardAlbedoTexture");
@@ -212,6 +175,16 @@ public class MainRendererBillBoard implements IAppLogic {
         atlasAlbedoTexture.setHeight(albedoImage.getHeight());
         atlasAlbedoTexture.setType(TextureType.DIFFUSE);
         atlasAlbedoTexture.setPath("BillBoardAlbedoTexture" + ".png");
+
+        // normal texture atlas
+        GaiaTexture atlasNormalTexture = textureAtlasManager.makeAtlasTexture(normalTexturesAtlasDataList, bufferImageType);
+        BufferedImage normalImage = atlasNormalTexture.getBufferedImage();
+        atlasNormalTexture.setName("BillBoardNormalTexture");
+        atlasNormalTexture.setFormat(normalImage.getType());
+        atlasNormalTexture.setWidth(normalImage.getWidth());
+        atlasNormalTexture.setHeight(normalImage.getHeight());
+        atlasNormalTexture.setType(TextureType.NORMALS);
+        atlasNormalTexture.setPath("BillBoardNormalTexture" + ".png");
 
         GaiaMaterial material = new GaiaMaterial();
         material.setName("BillBoardMaterial");
@@ -223,9 +196,9 @@ public class MainRendererBillBoard implements IAppLogic {
         List<GaiaTexture> diffuseTextures = new ArrayList<>();
         diffuseTextures.add(atlasAlbedoTexture);
         textures.put(TextureType.DIFFUSE, diffuseTextures);
-//        List<GaiaTexture> normalTextures = new ArrayList<>();
-//        normalTextures.add(normalTexture);
-//        textures.put(TextureType.NORMALS, normalTextures);
+        List<GaiaTexture> normalTextures = new ArrayList<>();
+        normalTextures.add(atlasNormalTexture);
+        textures.put(TextureType.NORMALS, normalTextures);
         material.setTextures(textures);
 
         List<GaiaPrimitive> primitives = new ArrayList<>();
@@ -247,6 +220,18 @@ public class MainRendererBillBoard implements IAppLogic {
             String imagePath = path + "\\" + fileName + extension;
             File imageFile = new File(imagePath);
             ImageIO.write(albedoImage, "png", imageFile);
+        } catch (IOException e) {
+            log.debug("Error writing image: {}", e);
+        }
+
+        try {
+            String randomId = String.valueOf(0);
+            String path = "D:\\Result_mago3dTiler";
+            String fileName = "atlasNormals_" + randomId;
+            String extension = ".png";
+            String imagePath = path + "\\" + fileName + extension;
+            File imageFile = new File(imagePath);
+            ImageIO.write(normalImage, "png", imageFile);
         } catch (IOException e) {
             log.debug("Error writing image: {}", e);
         }

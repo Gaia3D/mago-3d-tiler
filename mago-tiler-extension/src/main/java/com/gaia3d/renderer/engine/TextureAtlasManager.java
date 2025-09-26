@@ -1,10 +1,7 @@
 package com.gaia3d.renderer.engine;
 
 import com.gaia3d.basic.geometry.GaiaRectangle;
-import com.gaia3d.basic.halfedge.CameraDirectionType;
-import com.gaia3d.basic.halfedge.HalfEdgeFace;
-import com.gaia3d.basic.halfedge.HalfEdgeScene;
-import com.gaia3d.basic.halfedge.HalfEdgeVertex;
+import com.gaia3d.basic.halfedge.*;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.util.GaiaTextureUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +14,21 @@ import java.util.List;
 
 @Slf4j
 public class TextureAtlasManager {
+
+    public void doAtlasTextureProcessByPacker(List<TexturesAtlasData> texAtlasDatasList) {
+        // here calculates the batchedBoundaries of each textureScissorData
+        int textureScissorDatasCount = texAtlasDatasList.size();
+        log.info("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : textureScissorDatasCount = " + textureScissorDatasCount);
+
+        TextureAtlasPacker gillotinePacker = new TextureAtlasPacker();
+
+        for (int i = 0; i < textureScissorDatasCount; i++) {
+            TexturesAtlasData textureScissorData = texAtlasDatasList.get(i);
+            if (!gillotinePacker.insert(textureScissorData)) {
+                log.info("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : gillotinePacker.insert() failed.");
+            }
+        }
+    }
 
     public void doAtlasTextureProcess(List<TexturesAtlasData> texAtlasDatasList) {
         // 1rst, sort the texAtlasData by width and height
@@ -495,5 +507,16 @@ public class TextureAtlasManager {
         g2d.dispose();
 
         return textureAtlas;
+    }
+
+    public void copyAtlasTextureProcess(List<TexturesAtlasData> texAtlasDatasListSource, List<TexturesAtlasData> texAtlasDatasListDest) {
+        int texAtlasDatasCount = texAtlasDatasListSource.size();
+        for (int i = 0; i < texAtlasDatasCount; i++) {
+            TexturesAtlasData texAtlasDataSource = texAtlasDatasListSource.get(i);
+            TexturesAtlasData texAtlasDataDest = texAtlasDatasListDest.get(i);
+
+            texAtlasDataDest.setBatchedBoundary(texAtlasDataSource.getBatchedBoundary());
+            texAtlasDataDest.setCurrentBoundary(texAtlasDataSource.getCurrentBoundary());
+        }
     }
 }
