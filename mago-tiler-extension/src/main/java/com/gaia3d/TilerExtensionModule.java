@@ -80,9 +80,9 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
-    public void makeBillBoard(List<GaiaScene> scenes, List<GaiaScene> resultScenes) {
+    public void makeBillBoard(List<GaiaScene> scenes, List<GaiaScene> resultScenes, int verticalPlanesCount, int horizontalPlanesCount) {
         if (rendererBillboard == null) rendererBillboard = new MainRendererBillBoard();
-        rendererBillboard.makeBillBoard(scenes, resultScenes);
+        rendererBillboard.makeBillBoard(scenes, resultScenes, verticalPlanesCount, horizontalPlanesCount);
         deleteObjects();
     }
 

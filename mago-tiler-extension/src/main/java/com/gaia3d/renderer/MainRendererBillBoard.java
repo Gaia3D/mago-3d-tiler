@@ -63,7 +63,7 @@ public class MainRendererBillBoard implements IAppLogic {
         this.engine.getHalfEdgeRenderer().setColorMode(colorMode);
     }
 
-    public void makeBillBoard(List<GaiaScene> scenes, List<GaiaScene> resultScenes) {
+    public void makeBillBoard(List<GaiaScene> scenes, List<GaiaScene> resultScenes, int verticalPlanesCount, int horizontalPlanesCount) {
         // Note : There are only one scene in the scenes list
         // Must init gl
         try {
@@ -125,9 +125,8 @@ public class MainRendererBillBoard implements IAppLogic {
         int classifyId = 0;
 
         // vertical rectangles
-        int verticalRectanglesCount = 4;
-        int increAngDeg = 180 / verticalRectanglesCount;
-        for (int i = 0; i < verticalRectanglesCount; i++) {
+        int increAngDeg = 180 / verticalPlanesCount;
+        for (int i = 0; i < verticalPlanesCount; i++) {
             Vector3d camDir = new Vector3d(0, 1, 0);
             camDir.rotateZ(Math.toRadians(i * increAngDeg));
             Vector3d camUp = new Vector3d(0, 0, 1);
@@ -137,7 +136,7 @@ public class MainRendererBillBoard implements IAppLogic {
             gaiaScenesContainer.setCamera(camera);
 
             resultBufferedImages.clear();
-            GaiaPrimitive primitive = engine.makeRectangleTextureByCameraDirection(scene, camDir, resultBufferedImages, bufferImageType, i);
+            GaiaPrimitive primitive = engine.makeRectangleTextureByCameraDirection(scene, camDir, resultBufferedImages, bufferImageType, classifyId);
             faces.clear();
             primitive.extractGaiaFaces(faces);
             for (int j = 0; j < faces.size(); j++) {
@@ -169,10 +168,10 @@ public class MainRendererBillBoard implements IAppLogic {
         camera.setDirection(camDir);
         camera.setUp(camUp);
         gaiaScenesContainer.setCamera(camera);
-        int horizontalRectanglesCount = 1;
-        for (int i = 0; i < horizontalRectanglesCount; i++) {
+        horizontalPlanesCount = 1; // temp.***
+        for (int i = 0; i < horizontalPlanesCount; i++) {
             resultBufferedImages.clear();
-            GaiaPrimitive primitive = engine.makeRectangleTextureByCameraDirection(scene, camDir, resultBufferedImages, bufferImageType, i);
+            GaiaPrimitive primitive = engine.makeRectangleTextureByCameraDirection(scene, camDir, resultBufferedImages, bufferImageType, classifyId);
             faces.clear();
             primitive.extractGaiaFaces(faces);
             for (int j = 0; j < faces.size(); j++) {

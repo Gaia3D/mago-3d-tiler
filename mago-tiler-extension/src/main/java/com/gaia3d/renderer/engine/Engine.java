@@ -868,12 +868,12 @@ public class Engine {
         expandedBBox.expand(expandedMaxSize * 0.02);
 
         // set camera position and direction
-        Camera camera = gaiaScenesContainer.getCamera();
-        camera.setPosition(bboxCenter);
-        camera.setDirection(cameraDirection);
-        Vector3d up = camera.calculateUpVector(cameraDirection);
-        camera.setUp(up);
-        gaiaScenesContainer.setCamera(camera);
+//        Camera camera = gaiaScenesContainer.getCamera();
+//        camera.setPosition(bboxCenter);
+//        camera.setDirection(cameraDirection);
+//        Vector3d up = camera.calculateUpVector(cameraDirection);
+//        camera.setUp(up);
+//        gaiaScenesContainer.setCamera(camera);
 
         Matrix4d modelViewMatrix = camera.getModelViewMatrix();
         Matrix4d modelViewMatrixInv = new Matrix4d(modelViewMatrix);

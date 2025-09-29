@@ -697,8 +697,8 @@ class UnitTest {
     @Test
     void test_JoGonHee() {
         // someTiles
-        String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\Incheon_CheongNa_JoGeonhee\\Production_6\\L22_016_120\\";
-        String outputPath = "C:\\data\\mago-server\\output\\Incheon_P6_L22_016_120\\";
+        String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\Incheon_CheongNa_JoGeonhee\\Production_6\\L22_4489Buildings\\";
+        String outputPath = "C:\\data\\mago-server\\output\\Incheon_P6_L22_4489Buildings\\";
         //String outputPath = "E:\\temp\\";
 
         String[] args = new String[]{

@@ -34,8 +34,8 @@ public interface ExtensionModuleFrame {
 
     void voxelize(List<GaiaScene> scenes, List<VoxelGrid3D> resultVoxelGrids, List<GaiaScene> resultGaiaScenes, VoxelizeParameters voxelizeParameters);
 
-    void makeBillBoard(List<GaiaScene> scenes, List<GaiaScene> resultScenes);
-    
+    void makeBillBoard(List<GaiaScene> scenes, List<GaiaScene> resultScenes, int verticalPlanesCount, int horizontalPlanesCount);
+
 
     void deleteObjects();
 }
