@@ -164,14 +164,18 @@ public class MainRendererBillBoard implements IAppLogic {
         // horizontal rectangles. here the camera direcction (0, 0, -1) is looking down always.
         Vector3d camDir = new Vector3d(0, 0, -1);
         Vector3d camUp = new Vector3d(0, 1, 0);
+        Vector3d bboxTopCenter = new Vector3d(bboxCenter.x, bboxCenter.y, bbox.getMaxZ());
         camera.setPosition(bboxCenter);
         camera.setDirection(camDir);
         camera.setUp(camUp);
         gaiaScenesContainer.setCamera(camera);
-        horizontalPlanesCount = 1; // temp.***
+        Vector3d bboxFloorCenter = bbox.getFloorCenter();
+        double increDist = bbox.getSizeZ() / (horizontalPlanesCount + 1);
         for (int i = 0; i < horizontalPlanesCount; i++) {
             resultBufferedImages.clear();
-            GaiaPrimitive primitive = engine.makeRectangleTextureByCameraDirection(scene, camDir, resultBufferedImages, bufferImageType, classifyId);
+            GaiaBoundingBox delimiterBBox = new GaiaBoundingBox();
+            delimiterBBox.set(bbox.getMinX(), bbox.getMinY(), bboxFloorCenter.z + (i + 1) * increDist, bbox.getMaxX(), bbox.getMaxY(), bboxTopCenter.z);
+            GaiaPrimitive primitive = engine.makeRectangleTextureByCameraDirectionTreeBillboradTopDown(scene, camDir, resultBufferedImages, bufferImageType, delimiterBBox, classifyId);
             faces.clear();
             primitive.extractGaiaFaces(faces);
             for (int j = 0; j < faces.size(); j++) {

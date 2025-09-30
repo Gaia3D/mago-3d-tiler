@@ -45,8 +45,8 @@ public class TreeCreator {
         TreeBillBoardParameters treeBillBoardParameters = new TreeBillBoardParameters();
 
         TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
-        int horizontalPlanesCount = 1;
-        int verticalPlanesCount = 3;
+        int horizontalPlanesCount = 2;
+        int verticalPlanesCount = 2;
         tilerExtensionModule.makeBillBoard(gaiaScenes, resultGaiaScenes, verticalPlanesCount, horizontalPlanesCount);
 
         // rotate 90 degree to make the tree upright
@@ -76,7 +76,7 @@ public class TreeCreator {
             globalOptions.setTilesVersion("1.1");
             GaiaScene gaiaScene = resultGaiaScenes.get(0);
             GltfWriter gltfWriter = new GltfWriter();
-            String outputFilePath = outputPath + File.separator + "tree_billboard_" + i + ".glb";
+            String outputFilePath = outputPath + File.separator + "tree_billboard_v" + verticalPlanesCount + "h" + horizontalPlanesCount + "_L" + i + ".glb";
             gltfWriter.writeGlb(gaiaScene, outputFilePath);
             int hola = 0;
         }

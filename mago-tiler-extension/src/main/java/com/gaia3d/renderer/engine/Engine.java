@@ -856,6 +856,233 @@ public class Engine {
         }
     }
 
+    public GaiaPrimitive makeRectangleTextureByCameraDirectionTreeBillboradTopDown(GaiaScene gaiaScene, Vector3d cameraDirection, List<BufferedImage> resultBufferedImages, int bufferImageType,
+                                                                                   GaiaBoundingBox optionalDelimiterBBox, int idxTest) {
+        // Function used by MainRendererBillboard to make the rectangle texture of the scene (a tree).
+        // Calculate bbox relative to camera direction
+        GaiaBoundingBox bbox = gaiaScene.updateBoundingBox();
+        Vector3d bboxCenter = bbox.getCenter();
+
+        // expanded box for shader (delimiting box with a little buffer)
+        GaiaBoundingBox expandedBBox = bbox.clone();
+        double expandedMaxSize = expandedBBox.getMaxSize();
+        expandedBBox.expand(expandedMaxSize * 0.02);
+
+        Matrix4d modelViewMatrix = camera.getModelViewMatrix();
+        Matrix4d modelViewMatrixInv = new Matrix4d(modelViewMatrix);
+        modelViewMatrixInv.invert();
+
+        List<Vector3d> transformedVertices = new ArrayList<>();
+
+        //******************************************************************************************************************
+        // If the scene was spend the node's transform, you can use the following code to get the transformed vertices
+        List<GaiaPrimitive> gaiaPrimitives = gaiaScene.extractPrimitives(null);
+        List<GaiaVertex> gaiaVertices = new ArrayList<>();
+
+        // check if exists optionalDelimiterBBox to select only the vertices inside it
+        if (optionalDelimiterBBox == null) {
+            for (GaiaPrimitive gaiaPrimitive : gaiaPrimitives) {
+                gaiaVertices.addAll(gaiaPrimitive.getVertices());
+            }
+        } else {
+            // get only the vertices inside the optionalDelimiterBBox
+            for (GaiaPrimitive gaiaPrimitive : gaiaPrimitives) {
+                List<GaiaVertex> primitiveVertices = gaiaPrimitive.getVertices();
+                for (GaiaVertex vertex : primitiveVertices) {
+                    Vector3d vertexPos = vertex.getPosition();
+                    if (optionalDelimiterBBox.intersectsPoint(vertexPos)) {
+                        gaiaVertices.add(vertex);
+                    }
+                }
+            }
+
+            // recalculate the expandedBBox with the optionalDelimiterBBox
+            expandedBBox = optionalDelimiterBBox.clone();
+            double expandedMaxSize2 = expandedBBox.getMaxSize();
+            expandedBBox.expand(expandedMaxSize2 * 0.02);
+
+            // set camera position and direction
+            Camera camera = gaiaScenesContainer.getCamera();
+            camera.setPosition(optionalDelimiterBBox.getCenter());
+            camera.setDirection(cameraDirection);
+            Vector3d up = camera.calculateUpVector(cameraDirection);
+            camera.setUp(up);
+            gaiaScenesContainer.setCamera(camera);
+        }
+
+        for (GaiaVertex vertex : gaiaVertices) {
+            Vector3d vertexPos3d = vertex.getPosition();
+            Vector4d transformedPos4d = new Vector4d();
+            Vector4d vertexPos4d = new Vector4d(vertexPos3d.x, vertexPos3d.y, vertexPos3d.z, 1.0);
+            modelViewMatrix.transform(vertexPos4d, transformedPos4d);
+            Vector3d transformedPos3d = new Vector3d(transformedPos4d.x, transformedPos4d.y, transformedPos4d.z);
+            transformedVertices.add(transformedPos3d);
+        }
+        // End of transform the vertices relative to camera.-------------------------------------------------------------
+
+        GaiaBoundingBox bboxTransformed = new GaiaBoundingBox();
+        bboxTransformed.setFromPoints(transformedVertices);
+        Vector3d center = bboxTransformed.getCenter();
+
+        //     v3 +-------------+ v2
+        //        |            /|
+        //        |    f2    /  |
+        //        |        /    |
+        //        |      /      |
+        //        |    /  f1    |
+        //        |  /          |
+        //     v0 +/------------+ v1
+
+        GaiaVertex v0 = new GaiaVertex();
+        GaiaVertex v1 = new GaiaVertex();
+        GaiaVertex v2 = new GaiaVertex();
+        GaiaVertex v3 = new GaiaVertex();
+
+        double maxX = bboxTransformed.getMaxX();
+        double maxY = bboxTransformed.getMaxY();
+        double minX = bboxTransformed.getMinX();
+        double minY = bboxTransformed.getMinY();
+        double maxZ = bboxTransformed.getMaxZ();
+        double minZ = bboxTransformed.getMinZ();
+        double xLength = bboxTransformed.getSizeX();
+        double yLength = bboxTransformed.getSizeY();
+        double midZ = bboxTransformed.getCenter().z;
+
+        Vector4d pos0RelToCamera = new Vector4d(minX, minY, minZ, 1.0);
+        Vector4d pos1RelToCamera = new Vector4d(maxX, minY, minZ, 1.0);
+        Vector4d pos2RelToCamera = new Vector4d(maxX, maxY, minZ, 1.0);
+        Vector4d pos3RelToCamera = new Vector4d(minX, maxY, minZ, 1.0);
+
+        Vector4d pos0ModelCoords = new Vector4d();
+        Vector4d pos1ModelCoords = new Vector4d();
+        Vector4d pos2ModelCoords = new Vector4d();
+        Vector4d pos3ModelCoords = new Vector4d();
+        modelViewMatrixInv.transform(pos0RelToCamera, pos0ModelCoords);
+        modelViewMatrixInv.transform(pos1RelToCamera, pos1ModelCoords);
+        modelViewMatrixInv.transform(pos2RelToCamera, pos2ModelCoords);
+        modelViewMatrixInv.transform(pos3RelToCamera, pos3ModelCoords);
+
+        // set positions in model coordinates
+        v0.setPosition(new Vector3d(pos0ModelCoords.x, pos0ModelCoords.y, pos0ModelCoords.z));
+        v1.setPosition(new Vector3d(pos1ModelCoords.x, pos1ModelCoords.y, pos1ModelCoords.z));
+        v2.setPosition(new Vector3d(pos2ModelCoords.x, pos2ModelCoords.y, pos2ModelCoords.z));
+        v3.setPosition(new Vector3d(pos3ModelCoords.x, pos3ModelCoords.y, pos3ModelCoords.z));
+
+        // set texCoords
+        v0.setTexcoords(new Vector2d(0.0, 1.0 - 0.0)); // invert the texCoordY
+        v1.setTexcoords(new Vector2d(1.0, 1.0 - 0.0));
+        v2.setTexcoords(new Vector2d(1.0, 1.0 - 1.0));
+        v3.setTexcoords(new Vector2d(0.0, 1.0 - 1.0));
+
+        GaiaPrimitive resultPrimitive = new GaiaPrimitive();
+        resultPrimitive.getVertices().add(v0);
+        resultPrimitive.getVertices().add(v1);
+        resultPrimitive.getVertices().add(v2);
+        resultPrimitive.getVertices().add(v3);
+        GaiaSurface resultSurface = new GaiaSurface();
+        resultPrimitive.getSurfaces().add(resultSurface);
+        // face 1.
+        GaiaFace face1 = new GaiaFace();
+        int indices[] = {0, 1, 2};
+        face1.setIndices(indices);
+        resultSurface.getFaces().add(face1);
+        // face 2.
+        GaiaFace face2 = new GaiaFace();
+        int indices2[] = {0, 2, 3};
+        face2.setIndices(indices2);
+        resultSurface.getFaces().add(face2);
+
+        // now do render : albedo + normal.*****************************************************************************
+        float near = (float) -maxZ;
+        float far = (float) -minZ;
+
+        float maxSize = (float) Math.max(xLength, yLength);
+        float zOffSet = maxSize * 0.001f;
+        if (zOffSet < 0.4) {
+            zOffSet = 0.4f;
+        }
+
+        far += zOffSet; // make a little more far
+        near -= zOffSet; // make a little more near
+
+        Projection projection = gaiaScenesContainer.getProjection();
+        projection.setProjectionOrthographic((float) minX, (float) maxX, (float) minY, (float) maxY, near, far);
+        gaiaScenesContainer.setProjection(projection);
+
+        // Take FboManager from engine
+        FboManager fboManager = this.getFboManager();
+
+        // create the fbo
+        int maxScreenSize = 512;
+        int fboWidth = maxScreenSize;
+        int fboHeight = maxScreenSize;
+
+        double screenPixelsForMeter = 1000.0;
+        fboWidth = (int) (xLength * screenPixelsForMeter);
+        fboHeight = (int) (yLength * screenPixelsForMeter);
+
+        fboWidth = Math.max(fboWidth, 1);
+        fboHeight = Math.max(fboHeight, 1);
+
+        int colorAttachmentCount = 2; // 0 : color, 1 : normal
+        FboMRT fboMRT = fboManager.getOrCreateFboMRT("mrtRender", fboWidth, fboHeight, colorAttachmentCount);
+
+        // shader program
+        ShaderManager shaderManager = getShaderManager();
+
+        // color render
+        ShaderProgram sceneShaderProgram = shaderManager.getShaderProgram("sceneDelimited_v2");
+        sceneShaderProgram.bind();
+
+
+        // set uniform map
+        UniformsMap uniformsMap = sceneShaderProgram.getUniformsMap();
+        uniformsMap.setUniform1i("albedoTexture", 0); // GL_TEXTURE0
+        uniformsMap.setUniform1i("normalTexture", 1); // GL_TEXTURE1
+        uniformsMap.setUniform3fv("bboxMin", new Vector3f((float) expandedBBox.getMinX(), (float) expandedBBox.getMinY(), (float) expandedBBox.getMinZ()));
+        uniformsMap.setUniform3fv("bboxMax", new Vector3f((float) expandedBBox.getMaxX(), (float) expandedBBox.getMaxY(), (float) expandedBBox.getMaxZ()));
+        Vector4f backGroundColor = new Vector4f(0.0f, 0.0f, 0.0f, 0.0f);
+        Vector4f clearColor = new Vector4f(backGroundColor);
+        renderIntoFboMRT(fboMRT, sceneShaderProgram, gaiaScenesContainer, clearColor, true);
+
+        fboMRT.bind();
+        BufferedImage colorImage = fboMRT.getBufferedImage(0, bufferImageType);
+        BufferedImage normalImage = fboMRT.getBufferedImage(1, bufferImageType);
+        fboMRT.unbind();
+
+        // test save images
+//        try {
+//            String randomId = String.valueOf(idxTest);
+//            String path = "D:\\Result_mago3dTiler";
+//            String fileName = "albedo_" + randomId;
+//            String extension = ".png";
+//            String imagePath = path + "\\" + fileName + extension;
+//            File imageFile = new File(imagePath);
+//            ImageIO.write(colorImage, "png", imageFile);
+//        } catch (IOException e) {
+//            log.debug("Error writing image: {}", e);
+//        }
+//
+//        // test save images
+//        try {
+//            String randomId = String.valueOf(idxTest);
+//            String path = "D:\\Result_mago3dTiler";
+//            String fileName = "normal_" + randomId;
+//            String extension = ".png";
+//            String imagePath = path + "\\" + fileName + extension;
+//            File imageFile = new File(imagePath);
+//            ImageIO.write(normalImage, "png", imageFile);
+//        } catch (IOException e) {
+//            log.debug("Error writing image: {}", e);
+//        }
+
+        fboManager.deleteFboMRT("mrtRender");
+
+        resultBufferedImages.add(colorImage);
+        resultBufferedImages.add(normalImage);
+        return resultPrimitive;
+    }
+
     public GaiaPrimitive makeRectangleTextureByCameraDirection(GaiaScene gaiaScene, Vector3d cameraDirection, List<BufferedImage> resultBufferedImages, int bufferImageType, int idxTest) {
         // Function used by MainRendererBillboard to make the rectangle texture of the scene (a tree).
         // Calculate bbox relative to camera direction
