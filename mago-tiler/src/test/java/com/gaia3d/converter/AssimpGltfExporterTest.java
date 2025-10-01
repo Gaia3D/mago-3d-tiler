@@ -1,7 +1,6 @@
 package com.gaia3d.converter;
 
 import com.gaia3d.command.Configuration;
-import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.assimp.AssimpConverterOptions;
@@ -11,8 +10,6 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class AssimpGltfExporterTest {
 
     static {
@@ -21,14 +18,11 @@ class AssimpGltfExporterTest {
 
     @Test
     void exportGlb() {
-        String inputPath = "D:\\data\\mago-3d-tiler\\assimp-sample\\tree\\LOD0-1m.glb";
-        //String inputPath = "D:\\data\\mago-3d-tiler\\assimp-sample\\tree\\LOD0-1m-test.glb";
-        String outputPath = "E:\\data\\mago-server\\output\\tree\\LOD0-1m.glb";
+        //String inputPath = "D:\\data\\mago-3d-tiler\\assimp-sample\\tree\\LOD0-1m.glb";
+        String inputPath = "D:\\data\\mago-3d-tiler\\assimp-sample\\tree\\instance-LOD0.glb";
+        String outputPath = "E:\\data\\mago-server\\output\\tree\\TEST.glb";
 
-        AssimpConverterOptions options = AssimpConverterOptions.builder()
-                .isGenerateNormals(true)
-                .isSplitByNode(false)
-                .build();
+        AssimpConverterOptions options = AssimpConverterOptions.builder().isGenerateNormals(true).isSplitByNode(false).build();
         AssimpConverter converter = new AssimpConverter(options);
         GaiaBatcher gaiaBatcher = new GaiaBatcher();
         GltfWriter gltfWriter = new GltfWriter();
@@ -42,8 +36,5 @@ class AssimpGltfExporterTest {
         File inputFile = new File(inputPath);
         File outputFile = new File(outputPath);
         exporter.exportGlb(inputFile, outputFile);
-
-
-
     }
 }
