@@ -161,6 +161,8 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         }
         ImageResizer imageResizer = new ImageResizer();
         this.bufferedImage = imageResizer.resizeImageGraphic2D(this.bufferedImage, width, height);
+        this.width = width;
+        this.height = height;
     }
 
     public BufferedImage getBufferedImage() {

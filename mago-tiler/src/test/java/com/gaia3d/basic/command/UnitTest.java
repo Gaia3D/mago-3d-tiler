@@ -2,6 +2,8 @@ package com.gaia3d.basic.command;
 
 import com.gaia3d.command.Configuration;
 import com.gaia3d.command.mago.Mago3DTilerMain;
+import com.gaia3d.converter.assimp.AssimpConverterOptions;
+import com.gaia3d.modifier.TreeCreator;
 import com.gaia3d.util.GlobeUtils;
 import com.gaia3d.util.ImageUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -278,105 +280,6 @@ class UnitTest {
     }
 
     @Test
-    void test3ds() {
-        String path = "3ds";
-        String[] args = new String[]{
-                "-i", INPUT_PATH + path,
-                "-it", "3ds",
-                "-o", OUTPUT_PATH + path,
-                "-crs", "5186",
-                "-autoUpAxis"
-        };
-        Mago3DTilerMain.main(args);
-    }
-
-    @Test
-    void testKmlWith3ds() {
-        String path = "kml-with-3ds";
-        String[] args = new String[]{
-                "-i", INPUT_PATH + path,
-                "-it", "kml",
-                "-o", OUTPUT_PATH + path,
-                "-crs", "4326",
-                "-autoUpAxis",
-                "-maxCount", "1024",
-                "-minLod", "0",
-                "-maxLod", "3",
-                //"-reverseTexCoord",
-                "-multiThread",
-        };
-        Mago3DTilerMain.main(args);
-    }
-
-    //@Test
-    void testIfcWithKml() {
-        String path = "ifc";
-        String[] args = new String[]{
-                "-i", INPUT_PATH + path,
-                "-it", "kml",
-                "-o", OUTPUT_PATH + path,
-                "-crs", "4326",
-                "-autoUpAxis",
-                "-maxCount", "1024",
-                "-minLod", "0",
-                "-maxLod", "3",
-                "-multiThread",
-        };
-        Mago3DTilerMain.main(args);
-    }
-
-    @Test
-    void testCollada() {
-        String path = "collada";
-        String[] args = new String[]{
-                "-i", INPUT_PATH + path,
-                "-it", "kml",
-                "-o", OUTPUT_PATH + path,
-                "-crs", "4326",
-                "-autoUpAxis",
-                "-maxCount", "1024",
-                "-minLod", "0",
-                "-maxLod", "3",
-                //"-multiThread",
-        };
-        Mago3DTilerMain.main(args);
-    }
-
-    @Test
-    void testKml() {
-        String path = "kml";
-        String[] args = new String[]{
-                "-i", INPUT_PATH + path,
-                "-it", "kml",
-                "-o", OUTPUT_PATH + path,
-                "-crs", "4326",
-                "-autoUpAxis",
-                "-maxCount", "1024",
-                "-minLod", "0",
-                "-maxLod", "3",
-                //"-multiThread",
-        };
-        Mago3DTilerMain.main(args);
-    }
-
-    @Test
-    void testCityGml() {
-        String path = "citygml";
-        String[] args = new String[]{
-                "-i", INPUT_PATH + path,
-                "-it", "gml",
-                "-o", OUTPUT_PATH + path,
-                "-crs", "4326",
-                "-flipCoordinate",
-                "-maxCount", "1024",
-                "-multiThread",
-                "-refineAdd",
-        };
-        Mago3DTilerMain.main(args);
-    }
-
-
-    @Test
     void setUnderground() {
         String path = "case29-shp-wtl-pipe";
         String inputPath = "D:\\Mago3DTiler-UnitTest\\input\\";
@@ -415,24 +318,6 @@ class UnitTest {
                 "-it", "3ds",
                 "-o", outputPath + path,
                 "-crs", "5186",
-        };
-        Mago3DTilerMain.main(args);
-    }
-
-    @Test
-    void testShape() {
-        String inputPath = "D:\\data\\unit-test\\";
-        String outputPath = "D:\\Result_mago3dTiler\\";
-        String path = "shape";
-        String[] args = new String[]{
-                "-i", inputPath + path,
-                "-it", "shp",
-                "-o", outputPath + path,
-                "-proj", "+proj=tmerc +lat_0=38 +lon_0=127.0028902777778 +k=1 +x_0=200000 +y_0=500000 +ellps=bessel +units=m +no_defs +towgs84=-115.80,474.99,674.11,1.16,-2.31,-1.63,6.43",
-                "-maxCount", "4096",
-                "-multiThread",
-                "-refineAdd",
-                "-d"
         };
         Mago3DTilerMain.main(args);
     }
@@ -599,20 +484,6 @@ class UnitTest {
     }
 
     @Test
-    void testLas() {
-        String path = "las";
-        String[] args = new String[]{
-                "-i", INPUT_PATH + path,
-                "-it", "las",
-                "-o", OUTPUT_PATH + path,
-                "-maxCount", "1024",
-                "-multiThread",
-                "-proj", "+proj=utm +zone=52 +datum=WGS84 +units=m +no_defs",
-        };
-        Mago3DTilerMain.main(args);
-    }
-
-    @Test
     void testFbxHayashiSan() {
         String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\workspace\\";
         String outputPath = "D:\\Result_mago3dTiler\\";
@@ -629,108 +500,6 @@ class UnitTest {
                 "-largeMesh",
                 "-glb",
                 "-debug"
-        };
-        Mago3DTilerMain.main(args);
-    }
-
-    @Test
-    void testGoyangChangRung() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\고양창릉데이터\\abs\\";
-        String outputPath = "D:\\Result_mago3dTiler\\";
-        String path = "bridge";
-
-        String[] args = new String[]{
-                "-i", inputPath + path,
-                "-it", "3ds",
-                "-o", outputPath + path,
-                "-crs", "5186",
-                "-multiThreadCount", "1",
-                "-rotateUpAxis",
-                //"-largeMesh",
-                "-debug",
-                "-glb"
-        };
-        Mago3DTilerMain.main(args);
-    }
-
-    @Test
-    void test_CityGML_RailWayGML() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\";
-        String outputPath = "D:\\Result_mago3dTiler\\";
-        String path = "RailWay";
-
-        String[] args = new String[]{
-                "-i", inputPath + path,
-                "-it", "gml",
-                "-o", outputPath + path,
-                "-crs", "3857",
-                "-multiThreadCount", "1",
-                "-rotateUpAxis",
-                //"-largeMesh",
-                "-debug",
-                "-glb"
-        };
-        Mago3DTilerMain.main(args);
-    }
-
-    @Test
-    void test_CityGML_RailWayWithTextures() {
-        // No tested yet
-        String inputPath = "D:\\data\\CityGML\\";
-        String outputPath = "D:\\Result_mago3dTiler\\";
-        String path = "RailWayWithTextures";
-
-        String[] args = new String[]{
-                "-i", inputPath + path,
-                "-it", "gml",
-                "-o", outputPath + path,
-                "-crs", "5186",
-                "-multiThreadCount", "1",
-                "-rotateUpAxis",
-                //"-largeMesh",
-                "-debug",
-                "-glb"
-        };
-        Mago3DTilerMain.main(args);
-    }
-
-    // -input "/input_path/i3dm"
-    // -output "/output_path/i3dm"
-    // -inputType "shp"
-    // -outputType "i3dm"
-    // -instance "/input_path/instance.gltf"
-    @Test
-    void test_I3dm_GoyangChangRung_trees() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\고양창릉데이터\\abs\\tree_shp\\";
-        String outputPath = "D:\\Result_mago3dTiler\\";
-        String path = "tree";
-
-        String[] args = new String[]{
-                "-i", inputPath,
-                "-it", "shp",
-                "-o", outputPath + path,
-                "-crs", "5186",
-                "-outputType", "i3dm",
-                "-instance", inputPath + "tree-map.3ds",
-                "-vl", "true"
-        };
-        Mago3DTilerMain.main(args);
-    }
-
-    @Test
-    void test_I3dm_IncheonSemaphore() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\incheonGyeyang_semaphore\\incheonSemaphore_shp\\";
-        String outputPath = "D:\\Result_mago3dTiler\\";
-        String path = "incheonSemaphore_shp";
-
-        String[] args = new String[]{
-                "-i", inputPath,
-                "-it", "shp",
-                "-o", outputPath + path,
-                "-crs", "5186",
-                "-outputType", "i3dm",
-                "-instance", inputPath + "lamp001.3ds",
-                "-vl", "true"
         };
         Mago3DTilerMain.main(args);
     }
@@ -928,8 +697,8 @@ class UnitTest {
     @Test
     void test_JoGonHee() {
         // someTiles
-        String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\Incheon_CheongNa_JoGeonhee\\Production_5_org\\Data_2000Tiles_B\\";
-        String outputPath = "C:\\data\\mago-server\\output\\Incheon_CheongNa_JoGeonhee_P5_Data_2000Tiles_B\\";
+        String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\Incheon_CheongNa_JoGeonhee\\Production_6\\L22_X016_026_Y000_040\\";
+        String outputPath = "C:\\data\\mago-server\\output\\Incheon_P6_L22_X016_026_Y000_040\\";
         //String outputPath = "E:\\temp\\";
 
         String[] args = new String[]{
@@ -938,7 +707,9 @@ class UnitTest {
                 "-o", outputPath,
                 "-lon", "126.63887",
                 "-lat", "37.53292",
-                "-pg"
+                "--quantize",
+                "-pg",
+                "-debug"
         };
         Mago3DTilerMain.main(args);
     }
@@ -1070,17 +841,19 @@ class UnitTest {
     }
 
     @Test
-    void test_germanyCityGML() {
+    void test_treeBillBoard() {
         // hwal-0, jat-0, nak-0, tree-0
-        String inputPath = "D:\\data\\CityGML\\GermanyData\\";
-        String outputPath = "D:\\data\\mago-server\\output\\GermanyData\\";
+        String inputPath = "E:\\data\\trees\\pino_lod0\\LOD0-1m.glb";
+        String outputPath = "E:\\data\\trees\\output\\";
 
-        String[] args = new String[]{
-                "-i", inputPath,
-                "-it", "gml",
-                "-o", outputPath,
-                "-crs", "25832"
-        };
-        Mago3DTilerMain.main(args);
+//        String[] args = new String[]{
+//                "-i", inputPath,
+//                "-it", "glb",
+//                "-o", outputPath
+//        };
+//        Mago3DTilerMain.main(args);
+
+        TreeCreator treeCreator = new TreeCreator();
+        treeCreator.createTreeBillBoard(inputPath, outputPath);
     }
 }

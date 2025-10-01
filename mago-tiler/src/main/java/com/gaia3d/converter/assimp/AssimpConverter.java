@@ -314,6 +314,7 @@ public class AssimpConverter implements Converter {
             material.setSpecularColor(specVector4d);
         }
 
+
         AIString diffPath = AIString.calloc();
         Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_DIFFUSE, 0, diffPath, (IntBuffer) null, null, null, null, null, null);
         String diffTexPath = diffPath.dataString();
@@ -490,6 +491,7 @@ public class AssimpConverter implements Converter {
             material.getTextures().put(TextureType.SHININESS, textures);
         }
 
+        // Normal textures.
         if (!normalTexPath.isEmpty()) {
             textures = new ArrayList<>();
             GaiaTexture texture = new GaiaTexture();

@@ -11,6 +11,7 @@ import com.gaia3d.basic.halfedge.HalfEdgeScene;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.remesher.ReMeshParameters;
 import com.gaia3d.renderer.MainRenderer;
+import com.gaia3d.renderer.MainRendererBillBoard;
 import com.gaia3d.renderer.MainVoxelizer;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
@@ -23,6 +24,7 @@ import java.util.Map;
 public class TilerExtensionModule implements ExtensionModuleFrame {
     MainRenderer renderer;
     MainVoxelizer voxelizer;
+    MainRendererBillBoard rendererBillboard;
 
     @Override
     public String getName() {
@@ -74,6 +76,13 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     public void voxelize(List<GaiaScene> scenes, List<VoxelGrid3D> resultVoxelGrids, List<GaiaScene> resultGaiaScenes, VoxelizeParameters voxelizeParameters) {
         if (voxelizer == null) voxelizer = new MainVoxelizer();
         voxelizer.voxelize(scenes, resultVoxelGrids, resultGaiaScenes, voxelizeParameters);
+        deleteObjects();
+    }
+
+    @Override
+    public void makeBillBoard(List<GaiaScene> scenes, List<GaiaScene> resultScenes, int verticalPlanesCount, int horizontalPlanesCount) {
+        if (rendererBillboard == null) rendererBillboard = new MainRendererBillBoard();
+        rendererBillboard.makeBillBoard(scenes, resultScenes, verticalPlanesCount, horizontalPlanesCount);
         deleteObjects();
     }
 

@@ -57,7 +57,12 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
                                             List<GaiaAAPlane> cuttingPlanes, double depthTexPixelsForMeter, double screenPixelsForMeter, boolean makeHorizontalSkirt) {
     }
 
+    @Override
     public void voxelize(List<GaiaScene> scenes, List<VoxelGrid3D> resultVoxelGrids, List<GaiaScene> resultGaiaScenes, VoxelizeParameters voxelizeParameters) {
+    }
+
+    @Override
+    public void makeBillBoard(List<GaiaScene> scenes, List<GaiaScene> resultScenes, int verticalPlanesCount, int horizontalPlanesCount) {
     }
 
     @Override

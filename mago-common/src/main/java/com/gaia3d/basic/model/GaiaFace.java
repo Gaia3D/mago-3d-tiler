@@ -53,6 +53,21 @@ public class GaiaFace extends FaceStructure implements Serializable {
         return resultBoundingBox;
     }
 
+    public void copyFrom(GaiaFace sourceFace) {
+        this.id = sourceFace.id;
+        this.classifyId = sourceFace.classifyId;
+        if (sourceFace.indices != null) {
+            this.indices = sourceFace.indices.clone();
+        } else {
+            this.indices = null;
+        }
+        if (sourceFace.faceNormal != null) {
+            this.faceNormal = new Vector3d(sourceFace.faceNormal);
+        } else {
+            this.faceNormal = null;
+        }
+    }
+
     public boolean validateNormal(Vector3d normal) {
         return !Double.isNaN(normal.lengthSquared()) && !Double.isNaN(normal.x()) && !Double.isNaN(normal.y()) && !Double.isNaN(normal.z()) && !Float.isNaN((float) normal.x()) && !Float.isNaN((float) normal.y()) && !Float.isNaN((float) normal.z());
     }
