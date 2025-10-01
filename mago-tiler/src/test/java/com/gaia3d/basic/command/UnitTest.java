@@ -697,8 +697,8 @@ class UnitTest {
     @Test
     void test_JoGonHee() {
         // someTiles
-        String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\Incheon_CheongNa_JoGeonhee\\Production_6\\L22_4489Buildings\\";
-        String outputPath = "C:\\data\\mago-server\\output\\Incheon_P6_L22_4489Buildings\\";
+        String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\Incheon_CheongNa_JoGeonhee\\Production_6\\L22_X016_026_Y000_040\\";
+        String outputPath = "C:\\data\\mago-server\\output\\Incheon_P6_L22_X016_026_Y000_040\\";
         //String outputPath = "E:\\temp\\";
 
         String[] args = new String[]{
@@ -707,6 +707,7 @@ class UnitTest {
                 "-o", outputPath,
                 "-lon", "126.63887",
                 "-lat", "37.53292",
+                "--quantize",
                 "-pg",
                 "-debug"
         };

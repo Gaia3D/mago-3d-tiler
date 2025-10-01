@@ -49,7 +49,8 @@ public class GltfWriter {
 
     /**
      * Write the glTF file from the GaiaScene object.
-     * @param gaiaScene The GaiaScene object to be written.
+     *
+     * @param gaiaScene  The GaiaScene object to be written.
      * @param outputPath The output path of the glTF file.
      */
     public void writeGltf(GaiaScene gaiaScene, File outputPath) {
@@ -65,7 +66,8 @@ public class GltfWriter {
 
     /**
      * Write the glTF file from the GaiaScene object.
-     * @param gaiaScene The GaiaScene object to be written.
+     *
+     * @param gaiaScene  The GaiaScene object to be written.
      * @param outputPath The output path of the glTF file.
      */
     public void writeGltf(GaiaScene gaiaScene, String outputPath) {
@@ -74,7 +76,8 @@ public class GltfWriter {
 
     /**
      * Write the glTF file from the GaiaScene object.
-     * @param gaiaScene The GaiaScene object to be written.
+     *
+     * @param gaiaScene  The GaiaScene object to be written.
      * @param outputPath The output path of the glTF file.
      */
     public void writeGlb(GaiaScene gaiaScene, File outputPath) {
@@ -90,7 +93,8 @@ public class GltfWriter {
 
     /**
      * Write the glTF file from the GaiaScene object.
-     * @param gaiaScene The GaiaScene object to be written.
+     *
+     * @param gaiaScene    The GaiaScene object to be written.
      * @param outputStream The output stream of the glTF file.
      */
     public void writeGlb(GaiaScene gaiaScene, OutputStream outputStream) {
@@ -108,7 +112,8 @@ public class GltfWriter {
 
     /**
      * Write the glTF file from the GaiaScene object.
-     * @param gaiaScene The GaiaScene object to be written.
+     *
+     * @param gaiaScene  The GaiaScene object to be written.
      * @param outputPath The output path of the glTF file.
      */
     public void writeGlb(GaiaScene gaiaScene, String outputPath) {
@@ -508,8 +513,12 @@ public class GltfWriter {
         bufferView.setBuffer(buffer);
         bufferView.setByteOffset(offset);
         bufferView.setByteLength(length);
-        if (target > -1) {bufferView.setTarget(target);}
-        if (stride > -1) {bufferView.setByteStride(stride);}
+        if (target > -1) {
+            bufferView.setTarget(target);
+        }
+        if (stride > -1) {
+            bufferView.setByteStride(stride);
+        }
         gltf.addBufferViews(bufferView);
         return gltf.getBufferViews().size() - 1;
     }
@@ -589,6 +598,10 @@ public class GltfWriter {
     protected int createImage(GlTF gltf, GltfBinary binary, GaiaTexture gaiaTexture) {
         String extension = FilenameUtils.getExtension(gaiaTexture.getPath());
         String mimeType = ImageUtils.getMimeTypeByExtension(extension);
+
+        if (globalOptions.isPhotogrammetry()) {
+            mimeType = "image/jpeg";
+        }
 
         Image image = new Image();
         image.setMimeType(mimeType);
@@ -715,6 +728,10 @@ public class GltfWriter {
             assert formatName != null;
 
             if (globalOptions.isPhotogrammetry() || mimeType.equals("image/jpeg")) {
+                if (globalOptions.isPhotogrammetry()) {
+                    bufferedImage = convertTo3ByteBGR(bufferedImage);
+                    formatName = "jpeg";
+                }
                 ImageIO.write(bufferedImage, formatName, baos);
                 imageBytes = baos.toByteArray();
                 bufferedImage.flush();
@@ -762,6 +779,17 @@ public class GltfWriter {
         return imageString;
     }
 
+    private BufferedImage convertTo3ByteBGR(BufferedImage image) {
+        if (image.getType() == BufferedImage.TYPE_3BYTE_BGR) {
+            return image;
+        }
+        BufferedImage convertedImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+        Graphics2D graphics = convertedImage.createGraphics();
+        graphics.drawImage(image, 0, 0, null);
+        graphics.dispose();
+        return convertedImage;
+    }
+
     private String writeJpegImage(BufferedImage bufferedImage, float quality) {
         ByteArrayOutputStream baos = null;
         ImageOutputStream ios = null;
@@ -777,11 +805,11 @@ public class GltfWriter {
             param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
             param.setCompressionQuality(quality);
 
-            BufferedImage convertedImage = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
-            Graphics2D graphics = convertedImage.createGraphics();
-            graphics.drawImage(bufferedImage, 0, 0, null);
-            graphics.dispose();
-            bufferedImage = convertedImage;
+//            BufferedImage convertedImage = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+//            Graphics2D graphics = convertedImage.createGraphics();
+//            graphics.drawImage(bufferedImage, 0, 0, null);
+//            graphics.dispose();
+            bufferedImage = convertTo3ByteBGR(bufferedImage);
 
             writer.write(null, new IIOImage(bufferedImage, null, null), param); // 5
             byte[] bytes = baos.toByteArray();
