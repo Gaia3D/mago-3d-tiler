@@ -372,7 +372,9 @@ public class GlobalOptions {
             log.error("[ERROR] *** Extension Module is not supported ***");
             throw new IllegalArgumentException("Extension Module is not supported.");
         } else {
-            instance.setUseQuantization(false);
+            if (instance.isPhotogrammetry()) {
+                instance.setUseQuantization(true);
+            }
         }
     }
 
