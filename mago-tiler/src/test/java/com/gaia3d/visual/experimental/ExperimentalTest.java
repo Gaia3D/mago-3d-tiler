@@ -7,6 +7,30 @@ import org.junit.jupiter.api.Test;
 public class ExperimentalTest {
 
     @Test
+    void multiPolygonZGeoJSON() {
+        String path = "multi-polygon-z-geojson";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-c", "5186",
+                //"-rotateXAxis", "90",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void multiPolygonZShape() {
+        String path = "multi-polygon-z-shape";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-c", "5186",
+                //"-rotateXAxis", "90",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
     void citygmlSNBJ20250908() {
         String path = "20250908-SNBJ-GML";
         String[] args = new String[] {
