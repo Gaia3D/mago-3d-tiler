@@ -2,7 +2,6 @@ package com.gaia3d.command;
 
 import com.gaia3d.command.mago.ProcessOptions;
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Level;
@@ -120,14 +119,7 @@ public class Configuration {
             File backup = new File(parentDir, newFileName);
             Files.move(file.toPath(), backup.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
-        return FileAppender.newBuilder().setName("FileLogger")
-                .withFileName(path)
-                .withAppend(true)
-                /*.withImmediateFlush(true)
-                .withBufferedIo(true)
-                .withBufferSize(8192)*/
-                .setLayout(layout)
-                .build();
+        return FileAppender.newBuilder().setName("FileLogger").withFileName(path).withAppend(true).setLayout(layout).build();
     }
 
     private static ConsoleAppender createConsoleAppender(PatternLayout layout) {

@@ -28,6 +28,7 @@ class B3dmReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
+                //"--quantize",
                 // "-rotateXAxis", "90",
                 //"-leaveTemp"
                 //"-debug",
@@ -63,6 +64,7 @@ class B3dmReleaseTest {
         String[] args = new String[] {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "--quantize"
                 //"-tilesVersion", "1.1",
         };
         MagoTestConfig.execute(args);

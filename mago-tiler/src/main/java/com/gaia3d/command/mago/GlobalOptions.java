@@ -62,7 +62,10 @@ public class GlobalOptions {
     private int pointRatio = 0; // Percentage of points from original data
     private boolean force4ByteRGB = false; // Force 4Byte RGB for pointscloud tile
 
-    private boolean useQuantization; // Use quantization via KHR_mesh_quantization
+    // Use quantization via KHR_mesh_quantization
+    private boolean useQuantization;
+    private boolean useByteNormal = false;
+    private boolean useShortTexCoord = false;
 
     /* Tiling Options */
     // Level of Detail
@@ -368,14 +371,20 @@ public class GlobalOptions {
 
         TilerExtensionModule extensionModule = new TilerExtensionModule();
         extensionModule.executePhotogrammetry(null, null);
-        if (!extensionModule.isSupported() && instance.isPhotogrammetry()) {
-            log.error("[ERROR] *** Extension Module is not supported ***");
-            throw new IllegalArgumentException("Extension Module is not supported.");
-        } else {
-            if (instance.isPhotogrammetry()) {
-                instance.setUseQuantization(true);
+        if (instance.isPhotogrammetry()) {
+            instance.setUseQuantization(true);
+            if (!extensionModule.isSupported()) {
+                log.error("[ERROR] *** Photogrammetry is not supported ***");
+                throw new IllegalArgumentException("Photogrammetry is not supported.");
             }
         }
+
+
+        if (instance.isUseQuantization()) {
+            instance.setUseByteNormal(true);
+            instance.setUseShortTexCoord(true);
+        }
+
     }
 
     private static void initVersionInfo() {

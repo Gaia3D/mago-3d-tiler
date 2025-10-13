@@ -7,12 +7,26 @@ import org.junit.jupiter.api.Test;
 public class ExperimentalTest {
 
     @Test
+    void multiPolygonZGeoJSONSmall() {
+        String path = "multi-polygon-z-geojson-small";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-c", "5186",
+                //"--quantize"
+                //"-rotateXAxis", "90",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
     void multiPolygonZGeoJSON() {
         String path = "multi-polygon-z-geojson";
         String[] args = new String[] {
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
+                "--quantize"
                 //"-rotateXAxis", "90",
         };
         MagoTestConfig.execute(args);

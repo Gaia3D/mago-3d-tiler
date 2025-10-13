@@ -272,6 +272,23 @@ public class BatchedModelGltfWriter extends GltfWriter {
         float[] normals = gaiaMesh.getNormals();
         byte[] colors = gaiaMesh.getColors();
         float[] texcoords = gaiaMesh.getTexcoords();
+        short[] unsignedShortsTexcoords = null;
+        if (texcoords != null) {
+            unsignedShortsTexcoords = new short[texcoords.length];
+            for (int i = 0; i < texcoords.length; i++) {
+                int intValue = (int) (texcoords[i] * 65535);
+
+                boolean overFlow = intValue < 0 || intValue > 65535;
+                if (overFlow) {
+                    log.warn("[WARN] The texture coordinate value is out of range (0 ~ 65535): {}", intValue);
+                    intValue = Math.max(0, Math.min(65535, intValue));
+                }
+
+                short shortValue = Quantization.convertSignedShortFromUnsignedShort(intValue);
+                unsignedShortsTexcoords[i] = shortValue;
+            }
+        }
+
         float[] batchIds = gaiaMesh.getBatchIds();
 
         int vertexCount = gaiaMesh.getPositionsCount() / 3;
@@ -319,8 +336,16 @@ public class BatchedModelGltfWriter extends GltfWriter {
             }
         }
         if (normalsBuffer != null) {
-            for (Float normal : normals) {
-                normalsBuffer.putFloat(normal);
+            if (globalOptions.isUseByteNormal()) {
+                byte[] normalBytes = convertNormals(normals);
+                normalsBuffer.put(normalBytes);
+                /*for (byte normalByte : normalBytes) {
+                    normalsBuffer.put(normalByte);
+                }*/
+            } else {
+                for (Float normal : normals) {
+                    normalsBuffer.putFloat(normal);
+                }
             }
         }
         if (colorsBuffer != null) {
@@ -329,8 +354,14 @@ public class BatchedModelGltfWriter extends GltfWriter {
             }
         }
         if (texcoordsBuffer != null) {
-            for (Float textureCoordinate : texcoords) {
-                texcoordsBuffer.putFloat(textureCoordinate);
+            if (globalOptions.isUseShortTexCoord() && unsignedShortsTexcoords != null) {
+                for (Short textureCoordinate : unsignedShortsTexcoords) {
+                    texcoordsBuffer.putShort(textureCoordinate);
+                }
+            } else {
+                for (Float textureCoordinate : texcoords) {
+                    texcoordsBuffer.putFloat(textureCoordinate);
+                }
             }
         }
         if (batchIdBuffer != null) {
@@ -358,16 +389,26 @@ public class BatchedModelGltfWriter extends GltfWriter {
             }
         }
         if (normalsBufferViewId > -1 && normals.length > 0) {
-            int normalsAccessorId = createAccessor(gltf, normalsBufferViewId, 0, normals.length / 3, GltfConstants.GL_FLOAT, AccessorType.VEC3, false);
-            nodeBuffer.setNormalsAccessorId(normalsAccessorId);
+            if (globalOptions.isUseByteNormal()) {
+                int normalsAccessorId = createAccessor(gltf, normalsBufferViewId, 0, normals.length / 4, GltfConstants.GL_BYTE, AccessorType.VEC3, true);
+                nodeBuffer.setNormalsAccessorId(normalsAccessorId);
+            } else {
+                int normalsAccessorId = createAccessor(gltf, normalsBufferViewId, 0, normals.length / 3, GltfConstants.GL_FLOAT, AccessorType.VEC3, false);
+                nodeBuffer.setNormalsAccessorId(normalsAccessorId);
+            }
         }
         if (colorsBufferViewId > -1 && colors.length > 0) {
             int colorsAccessorId = createAccessor(gltf, colorsBufferViewId, 0, colors.length / 4, GltfConstants.GL_UNSIGNED_BYTE, AccessorType.VEC4, true);
             nodeBuffer.setColorsAccessorId(colorsAccessorId);
         }
         if (texcoordsBufferViewId > -1 && texcoords.length > 0) {
-            int texcoordsAccessorId = createAccessor(gltf, texcoordsBufferViewId, 0, texcoords.length / 2, GltfConstants.GL_FLOAT, AccessorType.VEC2, false);
-            nodeBuffer.setTexcoordsAccessorId(texcoordsAccessorId);
+            if (globalOptions.isUseShortTexCoord()) {
+                int texcoordsAccessorId = createAccessor(gltf, texcoordsBufferViewId, 0, texcoords.length / 2, GltfConstants.GL_UNSIGNED_SHORT, AccessorType.VEC2, true);
+                nodeBuffer.setTexcoordsAccessorId(texcoordsAccessorId);
+            } else {
+                int texcoordsAccessorId = createAccessor(gltf, texcoordsBufferViewId, 0, texcoords.length / 2, GltfConstants.GL_FLOAT, AccessorType.VEC2, false);
+                nodeBuffer.setTexcoordsAccessorId(texcoordsAccessorId);
+            }
         }
         if (batchIdBufferViewId > -1 && batchIds.length > 0) {
             int batchIdAccessorId = createAccessor(gltf, batchIdBufferViewId, 0, batchIds.length, GltfConstants.GL_FLOAT, AccessorType.SCALAR, false);
