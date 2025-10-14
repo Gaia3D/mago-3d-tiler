@@ -1538,7 +1538,7 @@ public class Engine {
         URL url = getClass().getClassLoader().getResource("shaders");
         File shaderFolder = new File(url.getPath());
 
-        log.info("shaderFolder: {}", shaderFolder.getAbsolutePath());
+        //log.info("shaderFolder: {}", shaderFolder.getAbsolutePath());
 
 
 //        log.info("vertexShaderText: {}", vertexShaderText);

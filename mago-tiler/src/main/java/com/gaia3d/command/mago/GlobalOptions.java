@@ -289,8 +289,6 @@ public class GlobalOptions {
         instance.setMaxTriangles(GlobalConstants.DEFAULT_MAX_TRIANGLES);
         instance.setMaxInstance(GlobalConstants.DEFAULT_MAX_INSTANCE);
         instance.setMaxNodeDepth(GlobalConstants.DEFAULT_MAX_NODE_DEPTH);
-        //instance.setLargeMesh(command.hasOption(ProcessOptions.LARGE_MESH.getLongName()));
-        //instance.setVoxelLod(command.hasOption(ProcessOptions.VOXEL_LOD.getLongName()));
         instance.setPhotogrammetry(command.hasOption(ProcessOptions.PHOTOGRAMMETRY.getLongName()));
         instance.setLeaveTemp(command.hasOption(ProcessOptions.LEAVE_TEMP.getLongName()));
         instance.setUseQuantization(command.hasOption(ProcessOptions.MESH_QUANTIZATION.getLongName()) || GlobalConstants.DEFAULT_USE_QUANTIZATION);

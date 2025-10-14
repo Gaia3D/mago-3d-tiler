@@ -795,11 +795,12 @@ public class GltfWriter {
 
             if (globalOptions.isPhotogrammetry() || mimeType.equals("image/jpeg")) {
                 if (globalOptions.isPhotogrammetry()) {
-                    bufferedImage = convertTo3ByteBGR(bufferedImage);
                     formatName = "jpeg";
+                    bufferedImage = convertTo3ByteBGR(bufferedImage);
                 }
-                ImageIO.write(bufferedImage, formatName, baos);
-                imageBytes = baos.toByteArray();
+
+                float quality = 0.75f;
+                imageBytes = writeJpeg(bufferedImage, quality);
                 bufferedImage.flush();
             } else {
                 ImageIO.write(bufferedImage, formatName, baos);
@@ -831,7 +832,7 @@ public class GltfWriter {
 
             if (globalOptions.isPhotogrammetry() || mimeType.equals("image/jpeg")) {
                 float quality = 0.75f;
-                imageString = writeJpegImage(bufferedImage, quality);
+                imageString = writeJpegImageUrl(bufferedImage, quality);
             } else {
                 ImageIO.write(bufferedImage, formatName, baos);
                 byte[] bytes = baos.toByteArray();
@@ -856,7 +857,7 @@ public class GltfWriter {
         return convertedImage;
     }
 
-    private String writeJpegImage(BufferedImage bufferedImage, float quality) {
+    private byte[] writeJpeg(BufferedImage bufferedImage, float quality) {
         ByteArrayOutputStream baos = null;
         ImageOutputStream ios = null;
         try {
@@ -871,20 +872,15 @@ public class GltfWriter {
             param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
             param.setCompressionQuality(quality);
 
-//            BufferedImage convertedImage = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
-//            Graphics2D graphics = convertedImage.createGraphics();
-//            graphics.drawImage(bufferedImage, 0, 0, null);
-//            graphics.dispose();
             bufferedImage = convertTo3ByteBGR(bufferedImage);
 
             writer.write(null, new IIOImage(bufferedImage, null, null), param); // 5
             byte[] bytes = baos.toByteArray();
-            String imageString = "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(bytes);
             bufferedImage.flush();
 
             baos.close();
             ios.close();
-            return imageString;
+            return bytes;
         } catch (IOException e) {
             log.error("[ERROR] :", e);
             log.error("[ERROR] Error writing jpeg image");
@@ -902,5 +898,10 @@ public class GltfWriter {
             }
         }
         return null;
+    }
+
+    private String writeJpegImageUrl(BufferedImage bufferedImage, float quality) {
+        byte[] bytes = writeJpeg(bufferedImage, quality);
+        return "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(bytes);
     }
 }
