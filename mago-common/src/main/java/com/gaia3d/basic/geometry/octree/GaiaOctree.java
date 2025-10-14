@@ -10,6 +10,9 @@ import java.util.List;
 @Getter
 @Setter
 public class GaiaOctree<E> {
+    // bounding box of this octree
+    private final GaiaBoundingBox boundingBox = new GaiaBoundingBox();
+    private final List<E> contents = new ArrayList<>();
     // children indices
     // down                         up
     // +---------+---------+        +---------+---------+
@@ -23,14 +26,11 @@ public class GaiaOctree<E> {
     // +---------+---------+        +---------+---------+
     // if null, this is the root octree
     private GaiaOctree<E> parent;
-    // bounding box of this octree
-    private final GaiaBoundingBox boundingBox = new GaiaBoundingBox();
     private GaiaOctreeIndex index = GaiaOctreeIndex.UNDEFINED;
     // depth in the octree
     private int depth = 0;
     private GaiaOctreeCoordinate coordinate = null;
     private List<GaiaOctree<E>> children;
-    private final List<E> contents = new ArrayList<>();
 
     public GaiaOctree(GaiaOctree<E> parent, GaiaBoundingBox boundingBox) {
         this.parent = parent;
@@ -200,8 +200,7 @@ public class GaiaOctree<E> {
     }
 
     protected void setVolumeSize(GaiaBoundingBox boundingBox) {
-        this.setVolumeSize(boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ(),
-                boundingBox.getMaxX(), boundingBox.getMaxY(), boundingBox.getMaxZ());
+        this.setVolumeSize(boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ(), boundingBox.getMaxX(), boundingBox.getMaxY(), boundingBox.getMaxZ());
     }
 
     protected void setVolumeSize(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {

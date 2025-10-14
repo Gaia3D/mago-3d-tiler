@@ -7,13 +7,11 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 @Setter
 @Getter
-
 public class GaiaOctreeVertices extends GaiaOctree<GaiaVertex> {
     private int limitDepth = 5;
     private double limitBoxSize = 1.0;

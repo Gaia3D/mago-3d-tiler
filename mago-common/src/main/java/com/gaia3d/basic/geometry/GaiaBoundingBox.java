@@ -514,6 +514,10 @@ public class GaiaBoundingBox implements Serializable {
         return Math.sqrt(volume.x * volume.x + volume.y * volume.y + volume.z * volume.z);
     }
 
+    public Vector3d getSize() {
+        return new Vector3d(maxX - minX, maxY - minY, maxZ - minZ);
+    }
+
     public double getSizeX() {
         return maxX - minX;
     }

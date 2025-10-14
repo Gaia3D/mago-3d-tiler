@@ -1,23 +1,17 @@
 package com.gaia3d.basic.geometry.octree;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.geometry.entities.GaiaPlane;
 import com.gaia3d.basic.geometry.entities.GaiaTriangle;
-import com.gaia3d.util.GaiaOctreeUtils;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 @Setter
 @Getter
-
 public class GaiaOctreeFaces extends GaiaOctree<GaiaFaceData> {
     private int limitDepth = 5;
     private double limitSize = 1.0; // Minimum size of the bounding box to stop subdividing
@@ -116,13 +110,13 @@ public class GaiaOctreeFaces extends GaiaOctree<GaiaFaceData> {
         List<GaiaOctree<GaiaFaceData>> children = this.getChildren();
         for (GaiaFaceData faceData : contents) {
             GaiaTriangle triangle = faceData.getTriangle();
-            for(int i = 0; i < children.size(); i++) {
-                GaiaOctreeFaces child = (GaiaOctreeFaces)children.get(i);
+            for (int i = 0; i < children.size(); i++) {
+                GaiaOctreeFaces child = (GaiaOctreeFaces) children.get(i);
                 if (child == null) {
                     log.error("[ERROR][distributeContentsByIntersection] : Child octree is null at index " + i);
                     continue;
                 }
-                if(child.intersects(triangle)) {
+                if (child.intersects(triangle)) {
                     child.addContent(faceData);
                     if (!this.contentsCanBeInMultipleChildren) {
                         break;
