@@ -203,8 +203,24 @@ public class GlobeUtils {
     }
 
     public static ProjCoordinate transform(CoordinateReferenceSystem source, ProjCoordinate coordinate) {
-        BasicCoordinateTransform transformer = new BasicCoordinateTransform(source, wgs84);
+        return transform(source, wgs84, coordinate);
+    }
+
+    public static ProjCoordinate transform(CoordinateReferenceSystem source, CoordinateReferenceSystem target,ProjCoordinate coordinate) {
+        BasicCoordinateTransform transformer = new BasicCoordinateTransform(source, target);
         return transformer.transform(coordinate, new ProjCoordinate());
+    }
+
+    public static Vector3d transform(CoordinateReferenceSystem source, Vector3d coordinate) {
+        ProjCoordinate srcCoord = new ProjCoordinate(coordinate.x, coordinate.y, coordinate.z);
+        ProjCoordinate dstCoord = transform(source, srcCoord);
+        return new Vector3d(dstCoord.x, dstCoord.y, dstCoord.z);
+    }
+
+    public static Vector3d transform(CoordinateReferenceSystem source, CoordinateReferenceSystem target, Vector3d coordinate) {
+        ProjCoordinate srcCoord = new ProjCoordinate(coordinate.x, coordinate.y, coordinate.z);
+        ProjCoordinate dstCoord = transform(source, target, srcCoord);
+        return new Vector3d(dstCoord.x, dstCoord.y, dstCoord.z);
     }
 
     public static Coordinate transformOnGeotools(org.opengis.referencing.crs.CoordinateReferenceSystem source, Coordinate coordinate) {
