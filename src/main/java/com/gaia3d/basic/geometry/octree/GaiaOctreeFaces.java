@@ -12,7 +12,6 @@ import java.util.List;
 @Slf4j
 @Setter
 @Getter
-
 public class GaiaOctreeFaces extends GaiaOctree<GaiaFaceData> {
     private int limitDepth = 5;
     private double limitSize = 1.0; // Minimum size of the bounding box to stop subdividing

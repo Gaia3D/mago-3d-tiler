@@ -12,7 +12,6 @@ import java.util.List;
 @Slf4j
 @Setter
 @Getter
-
 public class HalfEdgeOctreeFaces extends GaiaOctree<HalfEdgeFace> {
     private int limitDepth = 5;
 
@@ -30,9 +29,9 @@ public class HalfEdgeOctreeFaces extends GaiaOctree<HalfEdgeFace> {
 
     public void distributeFacesToTargetDepth(int targetDepth) {
         List<HalfEdgeFace> faces = this.getContents();
-        if (faces.isEmpty()) return;
+        if (faces.isEmpty()) {return;}
 
-        if (this.getDepth() >= targetDepth) return;
+        if (this.getDepth() >= targetDepth) {return;}
 
         if (this.getChildren() == null || this.getChildren().isEmpty()) {
             this.createChildren();

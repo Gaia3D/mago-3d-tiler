@@ -12,7 +12,6 @@ import java.util.List;
 @Slf4j
 @Setter
 @Getter
-
 public class HalfEdgeOctreeVertices extends GaiaOctree<HalfEdgeVertex> {
     private int limitDepth = 5;
     private double limitBoxSize = 1.0;

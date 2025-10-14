@@ -59,7 +59,7 @@ public class GaiaFaceData {
         }
         return plane;
     }
-    
+
     public GaiaTriangle getTriangle() {
         if (triangle == null) {
             int[] indices = face.getIndices();
