@@ -478,6 +478,8 @@ public class MainVoxelizer implements IAppLogic {
         Vector3d scenePositionRelToCellGrid = reMeshParams.getScenePositionRelToCellGrid();
         Vector3d scenePosRelToCellGridNegative = new Vector3d(-scenePositionRelToCellGrid.x, -scenePositionRelToCellGrid.y, -scenePositionRelToCellGrid.z);
 
+        double weldError = 1e-4; // 1e-6 is a good value for remeshing
+
         for (int i = 0; i < scenesCount; i++) {
             GaiaScene gaiaScene = scenes.get(i);
 
@@ -494,7 +496,6 @@ public class MainVoxelizer implements IAppLogic {
             gaiaScene.makeTriangularFaces();
             gaiaScene.spendTranformMatrix();
             gaiaScene.joinAllSurfaces();
-            double weldError = 1e-6; // 1e-6 is a good value for remeshing
             gaiaScene.weldVertices(weldError, false, false, false, false);
             gaiaScene.deleteDegeneratedFaces();
             List<GaiaMaterial> materials = gaiaScene.getMaterials();
@@ -513,11 +514,18 @@ public class MainVoxelizer implements IAppLogic {
             vertexClusters.clear();
         }
 
+
+        resultGaiaScenes.get(0).weldVertices(weldError, false, false, false, false);
+
         // take the halfEdgeScene and decimate and cut it
         HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(resultGaiaScenes.get(0)); // only one scene
+
+        // Decimate the halfEdgeScene.**********************************************************************************************
 //        DecimateParameters decimateParameters = new DecimateParameters();
-//        decimateParameters.setBasicValues(1.0, 0.01, 0.01, 6.0, 1000000, 1, 0.1);
+//        decimateParameters.setBasicValues(1.0, 0.01, 0.01, 12.0, 1000000, 1, 0.1);
 //        halfEdgeScene.decimate(decimateParameters);
+        // End of decimating the halfEdgeScene.*************************************************************************************
+
         boolean scissorTextures = false;
         List<HalfEdgeScene> resultCutHalfEdgeScenes = HalfEdgeCutter.cutHalfEdgeSceneByGaiaAAPlanes(halfEdgeScene, cuttingPlanes, octree, scissorTextures, false);
 

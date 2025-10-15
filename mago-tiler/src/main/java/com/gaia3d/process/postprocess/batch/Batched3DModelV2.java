@@ -123,6 +123,9 @@ public class Batched3DModelV2 implements ContentModel {
 
         String glbFileName = nodeCode + "." + MAGIC;
         File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
+        if (globalOptions.isPhotogrammetry()) {
+            scene.deleteNormals();
+        }
         this.gltfWriter.writeGlb(scene, glbOutputFile, featureTable, batchTableMap);
         return contentInfo;
     }

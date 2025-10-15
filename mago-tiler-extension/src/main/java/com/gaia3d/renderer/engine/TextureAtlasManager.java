@@ -65,7 +65,7 @@ public class TextureAtlasManager {
             return Double.compare(h2, h1);
         });
 
-        // make an unique atlasDataList alternating the texAtlasDataWidther and texAtlasDataHigher
+        // make a unique atlasDataList alternating the texAtlasDataWidther and texAtlasDataHigher
         texAtlasDatasList.clear();
         int texAtlasDataWidtherCount = texAtlasDataWidther.size();
         int texAtlasDataHigherCount = texAtlasDataHigher.size();
@@ -513,10 +513,36 @@ public class TextureAtlasManager {
         int texAtlasDatasCount = texAtlasDatasListSource.size();
         for (int i = 0; i < texAtlasDatasCount; i++) {
             TexturesAtlasData texAtlasDataSource = texAtlasDatasListSource.get(i);
-            TexturesAtlasData texAtlasDataDest = texAtlasDatasListDest.get(i);
+            int sourceClassifyId = texAtlasDataSource.getClassifyId();
 
-            texAtlasDataDest.setBatchedBoundary(texAtlasDataSource.getBatchedBoundary());
-            texAtlasDataDest.setCurrentBoundary(texAtlasDataSource.getCurrentBoundary());
+            // find the dest texAtlasData with the same classifyId
+            boolean found = false;
+            int destIndex = -1;
+            int texAtlasDatasDestCount = texAtlasDatasListDest.size();
+            for (int j = 0; j < texAtlasDatasDestCount; j++) {
+                TexturesAtlasData texAtlasDataDest = texAtlasDatasListDest.get(j);
+                int destClassifyId = texAtlasDataDest.getClassifyId();
+                if (sourceClassifyId == destClassifyId) {
+                    found = true;
+                    destIndex = j;
+                    break;
+                }
+            }
+            if (!found) {
+                log.error("[ERROR] copyAtlasTextureProcess() : cannot find the dest texAtlasData with classifyId = " + sourceClassifyId);
+                continue;
+            }
+            TexturesAtlasData texAtlasDataDest = texAtlasDatasListDest.get(destIndex);
+
+            GaiaRectangle batchedBoundary = texAtlasDataSource.getBatchedBoundary();
+            GaiaRectangle batchedBoundaryCopy = new GaiaRectangle(batchedBoundary);
+            texAtlasDataDest.setBatchedBoundary(batchedBoundaryCopy);
+
+            GaiaRectangle currentBoundary = texAtlasDataSource.getCurrentBoundary();
+            if (currentBoundary != null) {
+                GaiaRectangle currentBoundaryCopy = new GaiaRectangle(currentBoundary);
+                texAtlasDataDest.setCurrentBoundary(currentBoundaryCopy);
+            }
         }
     }
 }
