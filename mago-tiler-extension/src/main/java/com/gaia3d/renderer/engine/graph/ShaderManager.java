@@ -91,7 +91,7 @@ public class ShaderManager {
 
     private void createSceneDelimitedV2Shader() {
         // create a delimitedScene shader program with normal textures included
-        String vertexShaderText = readResource("shaders/sceneDelimitedV330.vert");
+        String vertexShaderText = readResource("shaders/sceneDelimitedV330_normalIncluded.vert");
         String fragmentShaderText = readResource("shaders/sceneDelimitedV330_normalIncluded.frag");
         java.util.List<ShaderProgram.ShaderModuleData> shaderModuleDataList = new ArrayList<>();
         shaderModuleDataList = new ArrayList<>();
