@@ -17,6 +17,7 @@ import org.locationtech.proj4j.ProjCoordinate;
 
 import java.util.List;
 
+@Deprecated
 @Slf4j
 @AllArgsConstructor
 public class GaiaStrictCoordinateExtractor implements PreProcess {
@@ -25,40 +26,11 @@ public class GaiaStrictCoordinateExtractor implements PreProcess {
 
     @Override
     public TileInfo run(TileInfo tileInfo) {
-        GaiaScene scene = tileInfo.getScene();
-        TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
-
         CoordinateReferenceSystem sourceCrs = globalOptions.getSourceCrs();
         if (sourceCrs != null && sourceCrs.getName().equals("EPSG:4978")) {
             return extractCartesian(tileInfo);
         }
-        return extractAndLocalize(tileInfo);
-    }
-
-    private TileInfo extractAndLocalize(TileInfo tileInfo) {
-        GaiaScene scene = tileInfo.getScene();
-        TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
-
-
-        Vector3d sourceCenter = getOrigin(scene);
-        sourceCenter = new Vector3d(sourceCenter); // Ensure we have a mutable copy
-
-        // WGS 84 coordinate system (longitude, latitude, altitude)
-        Vector3d targetCenter = extractDegree(tileTransformInfo, scene);
-        tileTransformInfo.setPosition(targetCenter);
-
-        CoordinateReferenceSystem sourceCrs = globalOptions.getSourceCrs();
-        if (!sourceCrs.getName().equals("EPSG:4326")) {
-            ProjCoordinate centerCoordinate = new ProjCoordinate(sourceCenter.x, sourceCenter.y, sourceCenter.z);
-            ProjCoordinate centerDegreeCoordinate = GlobeUtils.transform(sourceCrs, centerCoordinate);
-            Vector3d centerDegreeVector = new Vector3d(centerDegreeCoordinate.x, centerDegreeCoordinate.y, 0.0d);
-
-            GaiaBoundingBox localBoundingBox = new GaiaBoundingBox();
-            transformSceneVertexPositionsToLocalCoords(scene, centerDegreeVector, localBoundingBox);
-        }
-
-        tileInfo.updateSceneInfo();
-        return tileInfo;
+        return extractAndStrictLocalize(tileInfo);
     }
 
     private TileInfo extractCartesian(TileInfo tileInfo) {
@@ -78,6 +50,31 @@ public class GaiaStrictCoordinateExtractor implements PreProcess {
             transform.mul(transformMatrix, transform);
             node.setTransformMatrix(transform);
         }
+        tileInfo.updateSceneInfo();
+        return tileInfo;
+    }
+
+    private TileInfo extractAndStrictLocalize(TileInfo tileInfo) {
+        GaiaScene scene = tileInfo.getScene();
+        TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
+
+        Vector3d sourceCenter = getOrigin(scene);
+        sourceCenter = new Vector3d(sourceCenter); // Ensure we have a mutable copy
+
+        // WGS 84 coordinate system (longitude, latitude, altitude)
+        Vector3d targetCenter = extractDegree(tileTransformInfo, scene);
+        tileTransformInfo.setPosition(targetCenter);
+
+        CoordinateReferenceSystem sourceCrs = globalOptions.getSourceCrs();
+        if (!sourceCrs.getName().equals("EPSG:4326")) {
+            ProjCoordinate centerCoordinate = new ProjCoordinate(sourceCenter.x, sourceCenter.y, sourceCenter.z);
+            ProjCoordinate centerDegreeCoordinate = GlobeUtils.transform(sourceCrs, centerCoordinate);
+            Vector3d centerDegreeVector = new Vector3d(centerDegreeCoordinate.x, centerDegreeCoordinate.y, 0.0d);
+
+            GaiaBoundingBox localBoundingBox = new GaiaBoundingBox();
+            transformSceneVertexPositionsToLocalCoords(scene, centerDegreeVector, localBoundingBox);
+        }
+
         tileInfo.updateSceneInfo();
         return tileInfo;
     }
@@ -126,39 +123,6 @@ public class GaiaStrictCoordinateExtractor implements PreProcess {
             }
         }
         return degreeCenter;
-    }
-
-    private Matrix3d clampEpsilonMatrix(Matrix3d matrix) {
-        double epsilon = 1e-1;
-        Matrix3d clampedMatrix = new Matrix3d(matrix);
-        clampedMatrix.m00(clampEpsilon(matrix.m00(), epsilon));
-        clampedMatrix.m01(clampEpsilon(matrix.m01(), epsilon));
-        clampedMatrix.m02(clampEpsilon(matrix.m02(), epsilon));
-
-        clampedMatrix.m10(clampEpsilon(matrix.m10(), epsilon));
-        clampedMatrix.m11(clampEpsilon(matrix.m11(), epsilon));
-        clampedMatrix.m12(clampEpsilon(matrix.m12(), epsilon));
-
-        clampedMatrix.m20(clampEpsilon(matrix.m20(), epsilon));
-        clampedMatrix.m21(clampEpsilon(matrix.m21(), epsilon));
-        clampedMatrix.m22(clampEpsilon(matrix.m22(), epsilon));
-
-        return clampedMatrix;
-    }
-
-    public static double clampEpsilon(double value, double epsilon) {
-        if (Math.abs(value) < epsilon) {
-            return 0.0f;
-        } else if (Math.abs(value - 1.0f) < epsilon) {
-            return 1.0f;
-        } else if (Math.abs(value + 1.0f) < epsilon) {
-            return -1.0f;
-        } else if (value > 1.0f) {
-            return 1.0f;
-        } else if (value < -1.0f) {
-            return -1.0f;
-        }
-        return value;
     }
 
     private void transformSceneVertexPositionsToLocalCoords(GaiaScene scene, Vector3d geoCoordReference, GaiaBoundingBox localBoundingBox) {

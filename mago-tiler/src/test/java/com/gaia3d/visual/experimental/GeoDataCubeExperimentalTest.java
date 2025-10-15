@@ -27,6 +27,14 @@ public class GeoDataCubeExperimentalTest {
         testAutoVoxels(path, path + "-all-level", 3);
     }
 
+    //voxel-korea-all
+
+    @Test
+    void koreaAllVoxels() {
+        String path = "voxel-korea-all";
+        testAutoVoxels(path, path + "-all-level", 8);
+    }
+
     @Test
     void koreaVoxels() {
         String path = "korea-dem-voxels";
@@ -49,6 +57,12 @@ public class GeoDataCubeExperimentalTest {
     void pointcloudTemple() {
         String path = "pointcloud-temple";
         testAutoVoxels(path, path + "-all-level", 15);
+    }
+
+    @Test
+    void ws2VoxelFullset10() {
+        String path = "ws2-voxel-fullset";
+        testAutoVoxels(path, path + "-all-level", 10);
     }
 
     @Test
