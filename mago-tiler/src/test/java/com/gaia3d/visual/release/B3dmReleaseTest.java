@@ -28,7 +28,7 @@ class B3dmReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
-                //"--quantize",
+                "--quantize",
                 // "-rotateXAxis", "90",
                 //"-leaveTemp"
                 //"-debug",

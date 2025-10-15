@@ -46,6 +46,12 @@ public class GeoDataCubeExperimentalTest {
     }
 
     @Test
+    void pointcloudTemple() {
+        String path = "pointcloud-temple";
+        testAutoVoxels(path, path + "-all-level", 15);
+    }
+
+    @Test
     void ws2VoxelTerrain() {
         String path = "ws2-voxel-terrain";
         String[] args = new String[] {

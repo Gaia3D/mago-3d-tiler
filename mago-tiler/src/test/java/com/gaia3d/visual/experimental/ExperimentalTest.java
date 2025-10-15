@@ -7,6 +7,57 @@ import org.junit.jupiter.api.Test;
 public class ExperimentalTest {
 
     @Test
+    void pointcloudIntersection00() {
+        String path = "geostory-intersection-00";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-c", "32652",
+                "-tilesVersion", "1.0",
+                "-r",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void pointcloudIntersection01() {
+        String path = "geostory-intersection-01";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-c", "5186",
+                "-r",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void pointcloudIntersection02() {
+        String path = "geostory-intersection-02";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-c", "32652",
+                "-tilesVersion", "1.0",
+                "-r",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void pointcloudIntersection03() {
+        String path = "geostory-intersection-03";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-c", "32652",
+                "-tilesVersion", "1.0",
+                "-r",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
     void multiPolygonZGeoJSONSmall() {
         String path = "multi-polygon-z-geojson-small";
         String[] args = new String[] {

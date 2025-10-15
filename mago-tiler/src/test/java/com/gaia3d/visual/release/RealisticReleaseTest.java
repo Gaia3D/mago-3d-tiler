@@ -37,12 +37,11 @@ class RealisticReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-V1",
                 "-it", "obj",
-                "-log", MagoTestConfig.getLogPath(path).getAbsolutePath(),
+                "-log", MagoTestConfig.getLogPath(path).getAbsolutePath() + "-V1",
                 "-pg",
                 "-c", "5187",
                 "-leaveTemp",
                 "-rotateX", "90",
-                "-tilesVersion", "1.1",
                 //"-debug",
         };
         MagoTestConfig.execute(args);
