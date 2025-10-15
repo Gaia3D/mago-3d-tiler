@@ -1,5 +1,6 @@
 package com.gaia3d.converter.jgltf.tiles;
 
+import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.types.AccessorType;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.converter.jgltf.GltfBinary;
@@ -21,6 +22,8 @@ import de.javagl.jgltf.model.io.v2.GltfAssetV2;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
+import org.joml.Quaterniond;
+import org.joml.Vector3d;
 import org.lwjgl.opengl.GL20;
 
 import java.io.File;
@@ -62,8 +65,24 @@ public class PointCloudGltfWriter extends GltfWriter {
         Node rootNode = initNode();
         initScene(gltf, rootNode);
 
+        /*double[] rtcCenterOrigin = featureTable.getRtcCenter();
+        rootNode.setTranslation(new float[]{(float) rtcCenterOrigin[0], (float) rtcCenterOrigin[2], (float) -rtcCenterOrigin[1]});*/
+
         double[] rtcCenterOrigin = featureTable.getRtcCenter();
-        rootNode.setTranslation(new float[]{(float) rtcCenterOrigin[0], (float) rtcCenterOrigin[2], (float) -rtcCenterOrigin[1]});
+        double rctCenterX = rtcCenterOrigin[0];
+        double rctCenterY = rtcCenterOrigin[1];
+        double rctCenterZ = rtcCenterOrigin[2];
+
+        float rtcCenterXBig = (float) Math.floor(rctCenterX);
+        float rtcCenterYBig = (float) Math.floor(rctCenterY);
+        float rtcCenterZBig = (float) Math.floor(rctCenterZ);
+        float[] rtcCenterBigArray = new float[]{rtcCenterXBig, rtcCenterZBig, -rtcCenterYBig,};
+
+        float rtcCenterXSmall = (float) (rctCenterX - rtcCenterXBig);
+        float rtcCenterYSmall = (float) (rctCenterY - rtcCenterYBig);
+        float rtcCenterZSmall = (float) (rctCenterZ - rtcCenterZBig);
+        float[] rtcCenterSmallArray = new float[]{rtcCenterXSmall, rtcCenterZSmall, -rtcCenterYSmall,};
+        rootNode.setTranslation(rtcCenterBigArray);
 
         gltf.addExtensionsUsed(ExtensionConstant.MESH_QUANTIZATION.getExtensionName());
         gltf.addExtensionsRequired(ExtensionConstant.MESH_QUANTIZATION.getExtensionName());
@@ -75,7 +94,7 @@ public class PointCloudGltfWriter extends GltfWriter {
         extensions.put(ExtensionConstant.STRUCTURAL_METADATA.getExtensionName(), extensionStructuralMetadata);
         gltf.setExtensions(extensions);
 
-        convertNode(gltf, binary, rootNode, pointCloudBuffer, featureTable, batchTable);
+        convertNode(gltf, binary, rootNode, pointCloudBuffer, featureTable, batchTable, rtcCenterSmallArray);
 
         applyInstanceFeaturesBinary(gltf, binary, pointCloudBuffer);
 
@@ -151,11 +170,10 @@ public class PointCloudGltfWriter extends GltfWriter {
 
     }
 
-
-    protected void convertNode(GlTF gltf, GltfBinary binary, Node parentNode, PointCloudBuffer pointCloudBuffer, GaiaFeatureTable featureTable, GaiaBatchTable batchTable) {
+    protected void convertNode(GlTF gltf, GltfBinary binary, Node parentNode, PointCloudBuffer pointCloudBuffer, GaiaFeatureTable featureTable, GaiaBatchTable batchTable, float[] translation) {
         List<GltfNodeBuffer> nodeBuffers = binary.getNodeBuffers();
 
-        Node node = createNode(gltf, parentNode);
+        Node node = createNode(gltf, parentNode, translation);
         GltfNodeBuffer nodeBuffer = convertGeometryInfo(gltf, binary, pointCloudBuffer, node, featureTable, batchTable);
 
         int nodeId = gltf.getNodes().size() - 1;
@@ -166,30 +184,40 @@ public class PointCloudGltfWriter extends GltfWriter {
         nodeBuffers.add(nodeBuffer);
     }
 
-    protected Node createNode(GlTF gltf, Node parentNode) {
+    protected Node createNode(GlTF gltf, Node parentNode, float[] translation) {
         Node node;
         if (parentNode == null) {
-            node = gltf.getNodes().get(0);
+            List<Node> nodes = gltf.getNodes();
+            node = nodes.get(0);
         } else {
             node = new Node();
             gltf.addNodes(node);
         }
 
+        node.setTranslation(translation);
         node.setName("PointCloudNode");
         return node;
     }
 
     protected GltfNodeBuffer convertGeometryInfo(GlTF gltf, GltfBinary binary, PointCloudBuffer pointCloudBuffer, Node node, GaiaFeatureTable featureTable, GaiaBatchTable batchTable) {
+
         float[] positions = pointCloudBuffer.getPositions();
 
         short[] unsignedShortsPositions = null;
         float[] otm = node.getMatrix();
         Matrix4d originalTransformMatrix;
+        float[] translation = node.getTranslation();
         if (otm == null) {
             otm = new float[16];
             Matrix4d identityMatrix = new Matrix4d();
             identityMatrix.identity();
             originalTransformMatrix = identityMatrix;
+            if (translation != null) {
+                Vector3d translationVector = new Vector3d(translation[0], translation[1], translation[2]);
+                Quaterniond rotationQuaternion = new Quaterniond();
+                Vector3d scaleVector = new Vector3d(1.0, 1.0, 1.0);
+                originalTransformMatrix.translate(translationVector).rotate(rotationQuaternion).scale(scaleVector);
+            }
         } else {
             originalTransformMatrix = new Matrix4d(otm[0], otm[1], otm[2], otm[3], otm[4], otm[5], otm[6], otm[7], otm[8], otm[9], otm[10], otm[11], otm[12], otm[13], otm[14], otm[15]);
         }
