@@ -19,10 +19,10 @@ class TreeCreatorTest {
         //treeBillBoardParameters.setVerticalRectanglesCount(4);
         //treeBillBoardParameters.setHorizontalRectanglesCount(4);
 
-        treeBillBoardParameters.setVerticalRectanglesCount(2);
-        treeBillBoardParameters.setHorizontalRectanglesCount(8);
+        treeBillBoardParameters.setVerticalRectanglesCount(4);
+        treeBillBoardParameters.setHorizontalRectanglesCount(5);
 
-        String inputPath = "D:\\data\\korea-forest-service\\original.glb";
+        String inputPath = "D:\\data\\korea-forest-service\\birch.glb";
         String outputPath = "E:\\data\\mago-server\\output\\korea-forest-service\\";
         TreeCreator treeCreator = new TreeCreator();
         treeCreator.createTreeBillBoard(treeBillBoardParameters, inputPath, outputPath);

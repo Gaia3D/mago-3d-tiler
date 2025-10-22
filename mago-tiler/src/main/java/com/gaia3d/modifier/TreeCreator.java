@@ -56,7 +56,7 @@ public class TreeCreator {
             gaiaScene.spendTranformMatrix();
         }
 
-        int lodCount = 5;
+        int lodCount = 6;
         for (int i = 0; i < lodCount; i++) {
             if (i == 0) {
                 int maxTextureSize = 1024;
@@ -74,8 +74,12 @@ public class TreeCreator {
                 int maxTextureSize = 128;
                 // resize the texture of materials if it is larger than maxTextureSize
                 resultGaiaScenes.forEach(gaiaScene -> resizeMaterialTextures(gaiaScene, maxTextureSize));
-            } else {
+            } else if (i == 4) {
                 int maxTextureSize = 64;
+                // resize the texture of materials if it is larger than maxTextureSize
+                resultGaiaScenes.forEach(gaiaScene -> resizeMaterialTextures(gaiaScene, maxTextureSize));
+            } else {
+                int maxTextureSize = 32;
                 // resize the texture of materials if it is larger than maxTextureSize
                 resultGaiaScenes.forEach(gaiaScene -> resizeMaterialTextures(gaiaScene, maxTextureSize));
             }

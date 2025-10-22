@@ -839,6 +839,8 @@ public class Engine {
                 glDisable(GL_BLEND);
             }
 
+            glDisable(GL_BLEND);
+
             // render the scene
             shaderProgram.bind();
 
@@ -924,6 +926,110 @@ public class Engine {
         bboxTransformed.setFromPoints(transformedVertices);
         Vector3d center = bboxTransformed.getCenter();
 
+        // pyramid vertices in camera coordinates
+
+        GaiaVertex v0 = new GaiaVertex();
+        GaiaVertex v1 = new GaiaVertex();
+        GaiaVertex v2 = new GaiaVertex();
+        GaiaVertex v3 = new GaiaVertex();
+        GaiaVertex v4 = new GaiaVertex(); // center top vertex
+
+        double maxX = bboxTransformed.getMaxX();
+        double maxY = bboxTransformed.getMaxY();
+        double minX = bboxTransformed.getMinX();
+        double minY = bboxTransformed.getMinY();
+        double maxZ = bboxTransformed.getMaxZ();
+        double minZ = bboxTransformed.getMinZ();
+        double xLength = bboxTransformed.getSizeX();
+        double yLength = bboxTransformed.getSizeY();
+        double midZ = bboxTransformed.getCenter().z;
+
+        Vector4d pos0RelToCamera = new Vector4d(minX, minY, minZ, 1.0);
+        Vector4d pos1RelToCamera = new Vector4d(maxX, minY, minZ, 1.0);
+        Vector4d pos2RelToCamera = new Vector4d(maxX, maxY, minZ, 1.0);
+        Vector4d pos3RelToCamera = new Vector4d(minX, maxY, minZ, 1.0);
+
+        Vector4d pos0ModelCoords = new Vector4d();
+        Vector4d pos1ModelCoords = new Vector4d();
+        Vector4d pos2ModelCoords = new Vector4d();
+        Vector4d pos3ModelCoords = new Vector4d();
+        modelViewMatrixInv.transform(pos0RelToCamera, pos0ModelCoords);
+        modelViewMatrixInv.transform(pos1RelToCamera, pos1ModelCoords);
+        modelViewMatrixInv.transform(pos2RelToCamera, pos2ModelCoords);
+        modelViewMatrixInv.transform(pos3RelToCamera, pos3ModelCoords);
+
+        GaiaBoundingBox modelBBox = new GaiaBoundingBox();
+        modelBBox.addPoint(new Vector3d(pos0ModelCoords.x, pos0ModelCoords.y, pos0ModelCoords.z));
+        modelBBox.addPoint(new Vector3d(pos1ModelCoords.x, pos1ModelCoords.y, pos1ModelCoords.z));
+        modelBBox.addPoint(new Vector3d(pos2ModelCoords.x, pos2ModelCoords.y, pos2ModelCoords.z));
+        modelBBox.addPoint(new Vector3d(pos3ModelCoords.x, pos3ModelCoords.y, pos3ModelCoords.z));
+
+        Vector3d modelCenter = modelBBox.getCenter();
+
+        // set positions in model coordinates
+        v0.setPosition(new Vector3d(pos0ModelCoords.x, pos0ModelCoords.y, pos0ModelCoords.z));
+        v1.setPosition(new Vector3d(pos1ModelCoords.x, pos1ModelCoords.y, pos1ModelCoords.z));
+        v2.setPosition(new Vector3d(pos2ModelCoords.x, pos2ModelCoords.y, pos2ModelCoords.z));
+        v3.setPosition(new Vector3d(pos3ModelCoords.x, pos3ModelCoords.y, pos3ModelCoords.z));
+        v4.setPosition(new Vector3d(modelCenter.x, modelCenter.y, pos3ModelCoords.z - 0.1d)); // top center vertex
+
+        // set texCoords
+        v0.setTexcoords(new Vector2d(0.0, 1.0 - 0.0)); // invert the texCoordY
+        v1.setTexcoords(new Vector2d(1.0, 1.0 - 0.0));
+        v2.setTexcoords(new Vector2d(1.0, 1.0 - 1.0));
+        v3.setTexcoords(new Vector2d(0.0, 1.0 - 1.0));
+        v4.setTexcoords(new Vector2d(0.5, 1.0 - 0.5)); // top center texCoord
+
+        // calculate normals
+        Vector3d edge1 = new Vector3d();
+        Vector3d edge2 = new Vector3d();
+        v0.getPosition().sub(v1.getPosition(), edge1);
+        v0.getPosition().sub(v2.getPosition(), edge2);
+        Vector3d normal = new Vector3d();
+        edge2.cross(edge1, normal);
+        normal.normalize();
+        v0.setNormal(new Vector3d(normal));
+        v1.setNormal(new Vector3d(normal));
+        v2.setNormal(new Vector3d(normal));
+        v3.setNormal(new Vector3d(normal));
+        v4.setNormal(new Vector3d(normal));
+
+        GaiaPrimitive resultPrimitive = new GaiaPrimitive();
+        resultPrimitive.getVertices().add(v0);
+        resultPrimitive.getVertices().add(v1);
+        resultPrimitive.getVertices().add(v2);
+        resultPrimitive.getVertices().add(v3);
+        resultPrimitive.getVertices().add(v4);
+
+        GaiaSurface resultSurface = new GaiaSurface();
+        resultPrimitive.getSurfaces().add(resultSurface);
+        // face 1
+        GaiaFace face1 = new GaiaFace();
+        int indices[] = {0, 1, 4};
+        face1.setIndices(indices);
+        resultSurface.getFaces().add(face1);
+
+        // face 2
+        GaiaFace face2 = new GaiaFace();
+        int indices2[] = {1, 2, 4};
+        face2.setIndices(indices2);
+        resultSurface.getFaces().add(face2);
+
+        // face 3
+        GaiaFace face3 = new GaiaFace();
+        int indices3[] = {2, 3, 4};
+        face3.setIndices(indices3);
+        resultSurface.getFaces().add(face3);
+
+        // face 4
+        GaiaFace face4 = new GaiaFace();
+        int indices4[] = {3, 0, 4};
+        face4.setIndices(indices4);
+        resultSurface.getFaces().add(face4);
+
+
+        // calculate normals
+
         //     v3 +-------------+ v2
         //        |            /|
         //        |    f2    /  |
@@ -933,7 +1039,7 @@ public class Engine {
         //        |  /          |
         //     v0 +/------------+ v1
 
-        GaiaVertex v0 = new GaiaVertex();
+        /*GaiaVertex v0 = new GaiaVertex();
         GaiaVertex v1 = new GaiaVertex();
         GaiaVertex v2 = new GaiaVertex();
         GaiaVertex v3 = new GaiaVertex();
@@ -974,6 +1080,20 @@ public class Engine {
         v2.setTexcoords(new Vector2d(1.0, 1.0 - 1.0));
         v3.setTexcoords(new Vector2d(0.0, 1.0 - 1.0));
 
+        // calculate normals
+        Vector3d edge1 = new Vector3d();
+        Vector3d edge2 = new Vector3d();
+        v0.getPosition().sub(v1.getPosition(), edge1);
+        v0.getPosition().sub(v2.getPosition(), edge2);
+        Vector3d normal = new Vector3d();
+        edge2.cross(edge1, normal);
+        normal.normalize();
+        v0.setNormal(new Vector3d(normal));
+        v1.setNormal(new Vector3d(normal));
+        v2.setNormal(new Vector3d(normal));
+        v3.setNormal(new Vector3d(normal));
+        v4.setNormal(new Vector3d(normal));
+
         GaiaPrimitive resultPrimitive = new GaiaPrimitive();
         resultPrimitive.getVertices().add(v0);
         resultPrimitive.getVertices().add(v1);
@@ -990,7 +1110,7 @@ public class Engine {
         GaiaFace face2 = new GaiaFace();
         int indices2[] = {0, 2, 3};
         face2.setIndices(indices2);
-        resultSurface.getFaces().add(face2);
+        resultSurface.getFaces().add(face2);*/
 
         // now do render : albedo + normal.*****************************************************************************
         float near = (float) -maxZ;
@@ -1014,10 +1134,10 @@ public class Engine {
 
         // create the fbo
         int maxScreenSize = 512;
-        int fboWidth = maxScreenSize;
-        int fboHeight = maxScreenSize;
+        int fboWidth;
+        int fboHeight;
 
-        double screenPixelsForMeter = 1000.0;
+        double screenPixelsForMeter = 2000.0;
         fboWidth = (int) (xLength * screenPixelsForMeter);
         fboHeight = (int) (yLength * screenPixelsForMeter);
 
@@ -1179,6 +1299,19 @@ public class Engine {
         v2.setTexcoords(new Vector2d(1.0, 1.0 - 1.0));
         v3.setTexcoords(new Vector2d(0.0, 1.0 - 1.0));
 
+        // calculate normals
+        Vector3d edge1 = new Vector3d();
+        Vector3d edge2 = new Vector3d();
+        v0.getPosition().sub(v1.getPosition(), edge1);
+        v0.getPosition().sub(v2.getPosition(), edge2);
+        Vector3d normal = new Vector3d();
+        edge2.cross(edge1, normal);
+        normal.normalize();
+        v0.setNormal(new Vector3d(normal));
+        v1.setNormal(new Vector3d(normal));
+        v2.setNormal(new Vector3d(normal));
+        v3.setNormal(new Vector3d(normal));
+
         GaiaPrimitive resultPrimitive = new GaiaPrimitive();
         resultPrimitive.getVertices().add(v0);
         resultPrimitive.getVertices().add(v1);
@@ -1219,10 +1352,10 @@ public class Engine {
 
         // create the fbo
         int maxScreenSize = 512;
-        int fboWidth = maxScreenSize;
-        int fboHeight = maxScreenSize;
+        int fboWidth;
+        int fboHeight;
 
-        double screenPixelsForMeter = 1000.0;
+        double screenPixelsForMeter = 2000.0;
         fboWidth = (int) (xLength * screenPixelsForMeter);
         fboHeight = (int) (yLength * screenPixelsForMeter);
 
@@ -1387,8 +1520,8 @@ public class Engine {
         FboManager fboManager = this.getFboManager();
 
         // create the fbo
-        int fboWidth = maxScreenSize;
-        int fboHeight = maxScreenSize;
+        int fboWidth;
+        int fboHeight;
 
         fboWidth = (int) (xLength * screenPixelsForMeter);
         fboHeight = (int) (yLength * screenPixelsForMeter);

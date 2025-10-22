@@ -111,7 +111,7 @@ public class MainRendererBillBoard implements IAppLogic {
         int classifyId = 0;
 
         // vertical rectangles
-        int increAngDeg = 180 / verticalPlanesCount;
+        int increAngDeg = verticalPlanesCount != 0 ? 180 / verticalPlanesCount : 0;
         for (int i = 0; i < verticalPlanesCount; i++) {
             Vector3d camDir = new Vector3d(0, 1, 0);
             camDir.rotateZ(Math.toRadians(i * increAngDeg));
