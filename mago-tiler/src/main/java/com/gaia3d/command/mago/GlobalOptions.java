@@ -99,6 +99,7 @@ public class GlobalOptions {
     // [Experimental] 3D Data Options
     private boolean isPhotogrammetry = false; // [Experimental] isPhotogrammetry mode flag
     private boolean isSplitByNode = false; // [Experimental] split by node flag
+    private boolean isCurvatureCorrection = false; // [Experimental] curvature correction flag
 
     /* 2D Data Column Options */
     private String heightColumn = null;
@@ -377,6 +378,7 @@ public class GlobalOptions {
             }
         }
 
+        instance.setCurvatureCorrection(command.hasOption(ProcessOptions.CURVATURE_CORRECTION.getLongName()));
 
         if (instance.isUseQuantization()) {
             instance.setUseByteNormal(true);

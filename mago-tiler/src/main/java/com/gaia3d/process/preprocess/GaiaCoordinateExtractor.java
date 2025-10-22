@@ -30,10 +30,10 @@ public class GaiaCoordinateExtractor implements PreProcess {
             return extractCartesian(tileInfo);
         }
 
-        if (globalOptions.getInputFormat().equals(FormatType.KML)) {
-            return extractAndLocalize(tileInfo);
-        } else {
+        if (globalOptions.isCurvatureCorrection()) {
             return extractAndStrictLocalize(tileInfo);
+        } else {
+            return extractAndLocalize(tileInfo);
         }
     }
 
