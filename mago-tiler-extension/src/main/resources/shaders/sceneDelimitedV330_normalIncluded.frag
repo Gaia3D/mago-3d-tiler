@@ -54,6 +54,10 @@ void main(void) {
         finalColor = texture(albedoTexture, vTexCoord);
     }
 
+    if (finalColor.a == 0.0) {
+        discard;
+    }
+
     outAlbedo = finalColor;
 
     // Transform normal from tangent to world space

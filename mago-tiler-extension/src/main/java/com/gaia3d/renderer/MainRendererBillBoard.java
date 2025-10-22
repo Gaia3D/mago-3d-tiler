@@ -1,43 +1,29 @@
 package com.gaia3d.renderer;
 
-import com.gaia3d.basic.exchangable.GaiaSet;
-import com.gaia3d.basic.exchangable.SceneInfo;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
 import com.gaia3d.basic.geometry.octree.HalfEdgeOctreeFaces;
-import com.gaia3d.basic.halfedge.*;
+import com.gaia3d.basic.halfedge.DecimateParameters;
+import com.gaia3d.basic.halfedge.HalfEdgeCutter;
+import com.gaia3d.basic.halfedge.HalfEdgeScene;
+import com.gaia3d.basic.halfedge.HalfEdgeUtils;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.renderer.engine.*;
 import com.gaia3d.renderer.engine.dataStructure.GaiaScenesContainer;
-import com.gaia3d.renderer.engine.fbo.Fbo;
-import com.gaia3d.renderer.engine.fbo.FboManager;
-import com.gaia3d.renderer.engine.graph.ShaderManager;
-import com.gaia3d.renderer.engine.graph.ShaderProgram;
 import com.gaia3d.renderer.engine.scene.Camera;
-import com.gaia3d.renderer.engine.scene.Projection;
 import com.gaia3d.renderer.renderable.RenderableGaiaScene;
-import com.gaia3d.util.GaiaTextureUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
-import org.joml.Vector2d;
 import org.joml.Vector3d;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.lwjgl.opengl.GL11.*;
 
 @SuppressWarnings("ALL")
 @Slf4j
@@ -200,7 +186,6 @@ public class MainRendererBillBoard implements IAppLogic {
             int hola = 0;
         }
 
-
         TextureAtlasManager textureAtlasManager = new TextureAtlasManager();
         textureAtlasManager.doAtlasTextureProcess(albedoTexturesAtlasDataList);
         textureAtlasManager.copyAtlasTextureProcess(albedoTexturesAtlasDataList, normalTexturesAtlasDataList);
@@ -241,6 +226,8 @@ public class MainRendererBillBoard implements IAppLogic {
         normalTextures.add(atlasNormalTexture);
         textures.put(TextureType.NORMALS, normalTextures);
         material.setTextures(textures);
+        material.setBlend(false);
+        material.setShininess(1.0f);
 
         List<GaiaPrimitive> primitives = new ArrayList<>();
         treeScene.extractPrimitives(primitives);
@@ -250,38 +237,9 @@ public class MainRendererBillBoard implements IAppLogic {
             primitive.setMaterialIndex(0);
         }
         resultScenes.add(treeScene);
-
-
-        // test save images
-//        try {
-//            String randomId = String.valueOf(0);
-//            String path = "D:\\Result_mago3dTiler";
-//            String fileName = "atlasAlbedo_" + randomId;
-//            String extension = ".png";
-//            String imagePath = path + "\\" + fileName + extension;
-//            File imageFile = new File(imagePath);
-//            ImageIO.write(albedoImage, "png", imageFile);
-//        } catch (IOException e) {
-//            log.debug("Error writing image: {}", e);
-//        }
-//
-//        try {
-//            String randomId = String.valueOf(0);
-//            String path = "D:\\Result_mago3dTiler";
-//            String fileName = "atlasNormals_" + randomId;
-//            String extension = ".png";
-//            String imagePath = path + "\\" + fileName + extension;
-//            File imageFile = new File(imagePath);
-//            ImageIO.write(normalImage, "png", imageFile);
-//        } catch (IOException e) {
-//            log.debug("Error writing image: {}", e);
-//        }
-
-        int hola = 0;
     }
 
-    public void decimateAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters,
-                                              HalfEdgeOctreeFaces octree, List<GaiaAAPlane> cuttingPlanes, double screenPixelsForMeter, boolean makeHorizontalSkirt) {
+    public void decimateAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, DecimateParameters decimateParameters, HalfEdgeOctreeFaces octree, List<GaiaAAPlane> cuttingPlanes, double screenPixelsForMeter, boolean makeHorizontalSkirt) {
         // Note : There are only one scene in the scenes list
         // Must init gl
         try {
@@ -340,7 +298,6 @@ public class MainRendererBillBoard implements IAppLogic {
         boolean scissorTextures = false;
         List<HalfEdgeScene> resultCutHalfEdgeScenes = HalfEdgeCutter.cutHalfEdgeSceneByGaiaAAPlanes(halfEdgeScene, cuttingPlanes, octree, scissorTextures, false);
 
-
         int lod = decimateParameters.getLod();
         int cutScenesCount = resultCutHalfEdgeScenes.size();
         int i = 0;
@@ -381,7 +338,7 @@ public class MainRendererBillBoard implements IAppLogic {
 
     }
 
-    public void getDepthRender(GaiaScene gaiaScene, int bufferedImageType, List<BufferedImage> resultImages, int maxDepthScreenSize) {
+    /*public void getDepthRender(GaiaScene gaiaScene, int bufferedImageType, List<BufferedImage> resultImages, int maxDepthScreenSize) {
         // render the scene
         log.info("Rendering the scene...getDepthRender");
 
@@ -392,7 +349,7 @@ public class MainRendererBillBoard implements IAppLogic {
             log.error("[ERROR] initializing the engine: ", e);
         }
 
-        int screenWidth = 1000; // no used var
+        int screenWidth = 1000;
         int screenHeight = 600; // no used var
 
         //GaiaScenesContainer gaiaScenesContainer = new GaiaScenesContainer(screenWidth, screenHeight); // original
@@ -490,9 +447,9 @@ public class MainRendererBillBoard implements IAppLogic {
         BufferedImage depthImage = depthFbo.getBufferedImage(depthBufferedImageType);
         resultImages.add(depthImage);
         depthFbo.unbind();
-    }
+    }*/
 
-    public void getColorAndDepthRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<BufferedImage> resultImages, GaiaBoundingBox nodeBBox,
+    /*public void getColorAndDepthRender(List<SceneInfo> sceneInfos, int bufferedImageType, List<BufferedImage> resultImages, GaiaBoundingBox nodeBBox,
                                        Matrix4d nodeTMatrix, int maxScreenSize, int maxDepthScreenSize) {
         // render the scene
         log.info("Rendering the scene...getColorAndDepthRender");
@@ -686,7 +643,7 @@ public class MainRendererBillBoard implements IAppLogic {
         for (RenderableGaiaScene renderableScene : renderableGaiaScenes) {
             renderableScene.deleteGLBuffers();
         }
-    }
+    }*/
 
     public void deleteObjects() {
         engine.deleteObjects();

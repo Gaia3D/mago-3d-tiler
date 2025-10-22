@@ -3,6 +3,7 @@ package com.gaia3d.basic.command;
 import com.gaia3d.command.Configuration;
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import com.gaia3d.converter.assimp.AssimpConverterOptions;
+import com.gaia3d.modifier.TreeBillBoardParameters;
 import com.gaia3d.modifier.TreeCreator;
 import com.gaia3d.util.GlobeUtils;
 import com.gaia3d.util.ImageUtils;
@@ -853,7 +854,11 @@ class UnitTest {
 //        };
 //        Mago3DTilerMain.main(args);
 
+        TreeBillBoardParameters treeBillBoardParameters = new TreeBillBoardParameters();
+        treeBillBoardParameters.setVerticalRectanglesCount(3);
+        treeBillBoardParameters.setHorizontalRectanglesCount(5);
+
         TreeCreator treeCreator = new TreeCreator();
-        treeCreator.createTreeBillBoard(inputPath, outputPath);
+        treeCreator.createTreeBillBoard(treeBillBoardParameters, inputPath, outputPath);
     }
 }
