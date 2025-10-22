@@ -191,14 +191,14 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                             List<Vector3d> ExteriorPolygon = buildingSurface.getExteriorPositions();
 
                             // convert points to local coordinates
-                            List<Vector3d> ExteriorPolygonLocal = new ArrayList<>();
+                            List<Vector3d> exteriorPolygonLocal = new ArrayList<>();
                             for (Vector3d position : ExteriorPolygon) {
                                 if (crs.getName().equals("EPSG:4978")) {
-                                    ExteriorPolygonLocal.add(position);
+                                    exteriorPolygonLocal.add(position);
                                 } else {
                                     Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
                                     Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv);
-                                    ExteriorPolygonLocal.add(localPosition);
+                                    exteriorPolygonLocal.add(localPosition);
                                 }
                             }
 
@@ -208,16 +208,16 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                                 List<Vector3d> interiorPolygonLocal = new ArrayList<>();
                                 for (Vector3d position : interiorPolygon) {
                                     if (crs.getName().equals("EPSG:4978")) {
-                                        ExteriorPolygonLocal.add(position);
+                                        interiorPolygonLocal.add(position);
                                     } else {
                                         Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
                                         Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv);
-                                        ExteriorPolygonLocal.add(localPosition);
+                                        interiorPolygonLocal.add(localPosition);
                                     }
                                 }
                                 interiorPolygonsLocal.add(interiorPolygonLocal);
                             }
-                            GaiaPrimitive primitive = createSurfaceFromExteriorAndInteriorPolygons(ExteriorPolygonLocal, interiorPolygonsLocal);
+                            GaiaPrimitive primitive = createSurfaceFromExteriorAndInteriorPolygons(exteriorPolygonLocal, interiorPolygonsLocal);
                             if (primitive.getSurfaces().isEmpty() || primitive.getVertices().size() < 3) {
                                 log.debug("Invalid Geometry : {}", buildingSurface.getId());
                                 log.debug("Vertices count : {}", primitive.getVertices().size());
@@ -236,7 +236,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
 
                     Vector3d degreeTranslation = scene.getTranslation();
                     degreeTranslation.set(center);
-                    
+
                     if (rootNode.getChildren().size() <= 0) {
                         log.debug("Invalid Scene : {}", rootNode.getName());
                         continue;
@@ -325,7 +325,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
         } else if (parent instanceof AbstractCityObject) {
             classification = getClassification((AbstractCityObject) parent);
         } else {
-            classification = Classification.WALL;
+            //classification = Classification.WALL;
             log.info("Parent is not AbstractSpaceBoundary or AbstractCityObject:");
         }
         buildingSurfaces = convertSurfaceProperty(cityObject, classification, surfaceProperties);
@@ -1214,7 +1214,8 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
         } else if (abstractSpaceBoundary instanceof ReliefFeature) {
             return Classification.GROUND;
         } else {
-            return Classification.UNKNOWN;
+            //return Classification.UNKNOWN;
+            return Classification.WALL;
         }
     }
 
@@ -1277,6 +1278,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             return Classification.INSTALLATION;
         }
         log.info("Unsupported city object type: {}", cityObject.getClass().getSimpleName());
-        return Classification.UNKNOWN;
+        return Classification.WALL;
+        //return Classification.UNKNOWN;
     }
 }
