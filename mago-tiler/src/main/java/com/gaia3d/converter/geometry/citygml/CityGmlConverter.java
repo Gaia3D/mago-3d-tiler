@@ -1,13 +1,14 @@
 package com.gaia3d.converter.geometry.citygml;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.geometry.tessellator.Vector3dOnlyHashEquals;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.Classification;
-import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.DefaultSceneFactory;
-import com.gaia3d.converter.geometry.*;
+import com.gaia3d.converter.geometry.AbstractGeometryConverter;
+import com.gaia3d.converter.geometry.GaiaSceneTempGroup;
+import com.gaia3d.converter.geometry.GaiaSurfaceModel;
+import com.gaia3d.converter.geometry.Parametric3DOptions;
 import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,7 +50,10 @@ import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 import org.xmlobjects.builder.ObjectBuildException;
 import org.xmlobjects.gml.adapter.geometry.primitives.AbstractRingPropertyAdapter;
-import org.xmlobjects.gml.model.geometry.*;
+import org.xmlobjects.gml.model.geometry.DirectPosition;
+import org.xmlobjects.gml.model.geometry.DirectPositionList;
+import org.xmlobjects.gml.model.geometry.GeometricPosition;
+import org.xmlobjects.gml.model.geometry.GeometricPositionList;
 import org.xmlobjects.gml.model.geometry.aggregates.MultiSurface;
 import org.xmlobjects.gml.model.geometry.aggregates.MultiSurfaceProperty;
 import org.xmlobjects.gml.model.geometry.complexes.CompositeSolid;
@@ -60,12 +64,16 @@ import org.xmlobjects.model.Child;
 import javax.xml.namespace.QName;
 import java.io.File;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
 public class CityGmlConverter extends AbstractGeometryConverter implements Converter {
-    private final GlobalOptions globalOptions = GlobalOptions.getInstance();
+
+    private final Parametric3DOptions options;
 
     @Override
     public List<GaiaScene> load(String path) {
@@ -142,7 +150,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                     Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
                     Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
 
-                    CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
+                    CoordinateReferenceSystem crs = options.getSourceCrs();
 
                     for (GaiaSurfaceModel buildingSurface : surfaces) {
                         GaiaMaterial material = getMaterialByClassification(scene.getMaterials(), buildingSurface.getClassification());
@@ -246,7 +254,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             }
             reader.close();
         } catch (CityGMLContextException | CityGMLReadException e) {
-             log.error("[ERROR] Failed to read citygml file: {}", file.getName());
+            log.error("[ERROR] Failed to read citygml file: {}", file.getName());
             throw new RuntimeException(e);
         }
 
@@ -255,7 +263,6 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
 
     private List<GaiaSurfaceModel> convertSolidSurfaceProperty(AbstractCityObject cityObject, AbstractSolid abstractSolid) {
         List<GaiaSurfaceModel> buildingSurfaces = new ArrayList<>();
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
 
         List<Solid> solids = new ArrayList<>();
         if (abstractSolid == null) {
@@ -335,8 +342,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
     private List<Vector3d> convertLinearRingToPolygon(LinearRing linearRing, GaiaBoundingBox resultBBox) {
         List<Vector3d> polygon = new ArrayList<>();
 
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
-        boolean flipCoordinate = globalOptions.isFlipCoordinate();
+        boolean flipCoordinate = options.isFlipCoordinate();
 
         GeometricPositionList geometricPositionList = linearRing.getControlPoints();
         DirectPositionList directPositions = geometricPositionList.getPosList();
@@ -354,7 +360,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                 }
                 z = positions.get(i + 2);
                 Vector3d position = new Vector3d(x, y, z);
-                CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
+                CoordinateReferenceSystem crs = options.getSourceCrs();
                 if (crs.getName().equals("EPSG:4978")) {
                     // If the CRS is EPSG:4978, we assume it's a cartesian coordinate system
                     //position = GlobeUtils.cartesianToGeographicWgs84(position);
@@ -377,7 +383,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                     y = positions.get(i + 1);
                     z = positions.get(i + 2);
                     Vector3d position = new Vector3d(x, y, z);
-                    CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
+                    CoordinateReferenceSystem crs = options.getSourceCrs();
                     if (crs.getName().equals("EPSG:4978")) {
                         // If the CRS is EPSG:4978, we assume it's a cartesian coordinate system
                         //position = GlobeUtils.cartesianToGeographicWgs84(position);
@@ -867,7 +873,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             object.getBoundaries().forEach(childProperty -> {
                 boundaries.add(childProperty.getObject());
             });
-        }  else {
+        } else {
             log.info("Unsupported city object type: {}", cityObject.getClass().getSimpleName());
         }
 
@@ -1209,7 +1215,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
             return Classification.WINDOW;
         } else if (abstractSpaceBoundary instanceof WaterSurface) {
             return Classification.WATER;
-        }else if (abstractSpaceBoundary instanceof WaterGroundSurface) {
+        } else if (abstractSpaceBoundary instanceof WaterGroundSurface) {
             return Classification.GROUND;
         } else if (abstractSpaceBoundary instanceof ReliefFeature) {
             return Classification.GROUND;

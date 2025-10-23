@@ -7,13 +7,9 @@ import com.gaia3d.basic.geometry.tessellator.Vector3dOnlyHashEquals;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.command.mago.AttributeFilter;
 import com.gaia3d.command.mago.GlobalConstants;
-import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.DefaultSceneFactory;
-import com.gaia3d.converter.geometry.AbstractGeometryConverter;
-import com.gaia3d.converter.geometry.GaiaExtrusionModel;
-import com.gaia3d.converter.geometry.GaiaSceneTempGroup;
-import com.gaia3d.converter.geometry.InnerRingRemover;
+import com.gaia3d.converter.geometry.*;
 import com.gaia3d.converter.geometry.pipe.GaiaPipeLineString;
 import com.gaia3d.converter.geometry.pipe.PipeType;
 import com.gaia3d.util.GlobeUtils;
@@ -46,7 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RequiredArgsConstructor
 public class ShapeConverter extends AbstractGeometryConverter implements Converter {
 
-    private final GlobalOptions globalOptions = GlobalOptions.getInstance();
+    private final Parametric3DOptions options;
 
     @Override
     public List<GaiaScene> load(String path) {
@@ -68,17 +64,16 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
         List<GaiaSceneTempGroup> sceneTemps = new ArrayList<>();
         InnerRingRemover innerRingRemover = new InnerRingRemover();
 
-        List<AttributeFilter> attributeFilters = globalOptions.getAttributeFilters();
-        boolean isDefaultCrs = globalOptions.getSourceCrs().equals(GlobalConstants.DEFAULT_SOURCE_CRS);
-        boolean flipCoordinate = globalOptions.isFlipCoordinate();
-        String heightColumnName = globalOptions.getHeightColumn();
-        String altitudeColumnName = globalOptions.getAltitudeColumn();
-        String diameterColumnName = globalOptions.getDiameterColumn();
-        String scaleColumnName = globalOptions.getScaleColumn();
+        List<AttributeFilter> attributeFilters = options.getAttributeFilters();
+        boolean isDefaultCrs = options.getSourceCrs().equals(GlobalConstants.DEFAULT_SOURCE_CRS);
+        boolean flipCoordinate = options.isFlipCoordinate();
+        String heightColumnName = options.getHeightColumnName();
+        String altitudeColumnName = options.getAltitudeColumnName();
+        String diameterColumnName = options.getDiameterColumnName();
 
-        double absoluteAltitudeValue = globalOptions.getAbsoluteAltitude();
-        double minimumHeightValue = globalOptions.getMinimumHeight();
-        double skirtHeight = globalOptions.getSkirtHeight();
+        double absoluteAltitudeValue = options.getAbsoluteAltitudeValue();
+        double minimumHeightValue = options.getMinimumHeightValue();
+        double skirtHeight = options.getSkirtHeight();
 
         ShpFiles shpFiles = null;
         ShapefileReader reader = null;
@@ -105,7 +100,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             if (isDefaultCrs && coordinateReferenceSystem != null) {
                 CoordinateReferenceSystem crs = GlobeUtils.convertProj4jCrsFromGeotoolsCrs(coordinateReferenceSystem);
                 log.info(" - Coordinate Reference System : {}", crs.getName());
-                globalOptions.setSourceCrs(crs);
+                options.setSourceCrs(crs);
             }
 
             while (iterator.hasNext()) {
@@ -234,7 +229,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
                         z = coordinate.getZ();
 
                         Vector3d position;
-                        CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
+                        CoordinateReferenceSystem crs = options.getSourceCrs();
                         if (crs != null && !crs.getName().equals("EPSG:4326")) {
                             ProjCoordinate projCoordinate = new ProjCoordinate(x, y, boundingBox.getMinZ());
                             ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
@@ -276,7 +271,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             convertPipeLineStrings(pipeLineStrings, sceneTemps, input, output);
             convertExtrusionBuildings(buildings, sceneTemps, input, output);
         } catch (IOException e) {
-            if (shpFiles != null) shpFiles.dispose();
+            if (shpFiles != null) {shpFiles.dispose();}
             log.error("[ERROR] while reading shapefile", e);
             throw new RuntimeException(e);
         }
@@ -290,7 +285,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
     }
 
     private void convertExtrusionBuildings(List<GaiaExtrusionModel> buildings, List<GaiaSceneTempGroup> sceneTemps, File input, File output) {
-        double skirtHeight = globalOptions.getSkirtHeight();
+        double skirtHeight = options.getSkirtHeight();
         GaiaExtruder gaiaExtruder = new GaiaExtruder();
 
         int sceneCount = 10000;
@@ -348,7 +343,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             Vector3d degreeTranslation = scene.getTranslation();
             degreeTranslation.set(center);
 
-
             scenes.add(scene);
             if (scenes.size() >= sceneCount) {
                 String tempName = UUID.randomUUID() + "_" + input.getName();
@@ -383,7 +377,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             return;
         }
 
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
         for (GaiaPipeLineString pipeLineString : pipeLineStrings) {
             int pointsCount = pipeLineString.getPositions().size();
             pipeLineString.setBoundingBox(new GaiaBoundingBox());
@@ -392,7 +385,7 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             for (int j = 0; j < pointsCount; j++) {
                 Vector3d point = pipeLineString.getPositions().get(j);
                 //Vector3d position = new Vector3d(x, y, z);
-                CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
+                CoordinateReferenceSystem crs = options.getSourceCrs();
                 if (crs != null && !crs.getName().equals("EPSG:4326")) {
                     ProjCoordinate projCoordinate = new ProjCoordinate(point.x, point.y, point.z);
                     ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);

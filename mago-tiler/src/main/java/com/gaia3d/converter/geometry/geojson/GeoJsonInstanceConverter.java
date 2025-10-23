@@ -2,11 +2,11 @@ package com.gaia3d.converter.geometry.geojson;
 
 import com.gaia3d.command.mago.AttributeFilter;
 import com.gaia3d.command.mago.GlobalConstants;
-import com.gaia3d.command.mago.GlobalOptions;
+import com.gaia3d.converter.geometry.Parametric3DOptions;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.util.GlobeUtils;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
@@ -33,8 +33,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  * It reads kml files and returns the information of the kml file.
  */
 @Slf4j
-@NoArgsConstructor
+@RequiredArgsConstructor
 public class GeoJsonInstanceConverter implements AttributeReader {
+
+    private final Parametric3DOptions options;
 
     //read kml file
     @Override
@@ -45,15 +47,14 @@ public class GeoJsonInstanceConverter implements AttributeReader {
 
     @Override
     public List<TileTransformInfo> readAll(File file) {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
 
-        List<AttributeFilter> attributeFilters = globalOptions.getAttributeFilters();
-        boolean isDefaultCrs = globalOptions.getSourceCrs().equals(GlobalConstants.DEFAULT_SOURCE_CRS);
+        List<AttributeFilter> attributeFilters = options.getAttributeFilters();
+        boolean isDefaultCrs = options.getSourceCrs().equals(GlobalConstants.DEFAULT_SOURCE_CRS);
         List<TileTransformInfo> result = new ArrayList<>();
-        String altitudeColumnName = globalOptions.getAltitudeColumn();
-        String headingColumnName = globalOptions.getHeadingColumn();
-        String scaleColumnName = globalOptions.getScaleColumn();
-        String densityColumnName = globalOptions.getDensityColumn();
+        String altitudeColumnName = options.getAltitudeColumnName();
+        String headingColumnName = options.getHeadingColumnName();
+        String scaleColumnName = options.getScaleColumnName();
+        String densityColumnName = options.getDensityColumnName();
 
         try (BufferedInputStream bufferedInputStream = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
             FeatureJSON geojson = new FeatureJSON();
@@ -66,7 +67,7 @@ public class GeoJsonInstanceConverter implements AttributeReader {
             if (isDefaultCrs && coordinateReferenceSystem != null) {
                 CoordinateReferenceSystem crs = GlobeUtils.convertProj4jCrsFromGeotoolsCrs(coordinateReferenceSystem);
                 log.info(" - Coordinate Reference System : {}", crs.getName());
-                globalOptions.setSourceCrs(crs);
+                options.setSourceCrs(crs);
             }
 
             while (iterator.hasNext()) {
@@ -146,7 +147,7 @@ public class GeoJsonInstanceConverter implements AttributeReader {
                     double y = point.getY();
 
                     Vector3d position;
-                    CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
+                    CoordinateReferenceSystem crs = options.getSourceCrs();
                     if (crs != null) {
                         ProjCoordinate projCoordinate = new ProjCoordinate(x, y, 0.0d);
                         ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
@@ -155,17 +156,7 @@ public class GeoJsonInstanceConverter implements AttributeReader {
                         position = new Vector3d(x, y, altitude);
                     }
 
-                    TileTransformInfo tileTransformInfo = TileTransformInfo.builder()
-                            .name("I3dmFromGeojson")
-                            .position(position)
-                            .heading(heading)
-                            .tilt(0.0d)
-                            .roll(0.0d)
-                            .scaleX(scale)
-                            .scaleY(scale)
-                            .scaleZ(scale)
-                            .properties(attributes)
-                            .build();
+                    TileTransformInfo tileTransformInfo = TileTransformInfo.builder().name("I3dmFromGeojson").position(position).heading(heading).tilt(0.0d).roll(0.0d).scaleX(scale).scaleY(scale).scaleZ(scale).properties(attributes).build();
                     result.add(tileTransformInfo);
                 }
             }

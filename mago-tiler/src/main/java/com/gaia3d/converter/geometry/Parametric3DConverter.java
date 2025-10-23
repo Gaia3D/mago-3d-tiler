@@ -10,7 +10,7 @@ import java.util.List;
 
 @Slf4j
 @NoArgsConstructor
-public class GISVectorConverter {
+public class Parametric3DConverter {
 
     /**
      * Surface Polygon (Polygon with Z)

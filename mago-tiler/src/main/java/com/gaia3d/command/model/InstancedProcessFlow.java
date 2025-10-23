@@ -5,6 +5,7 @@ import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.assimp.AssimpConverterOptions;
+import com.gaia3d.converter.geometry.Parametric3DOptions;
 import com.gaia3d.converter.geometry.geojson.GeoJsonInstanceConverter;
 import com.gaia3d.converter.geometry.geopackage.GeoPackageInstanceConverter;
 import com.gaia3d.converter.geometry.shape.ShapeInstanceConverter;
@@ -72,13 +73,29 @@ public class InstancedProcessFlow implements ProcessFlow {
     }
 
     private AttributeReader getAttributeReader(FormatType formatType) {
+        Parametric3DOptions vectorOptions = Parametric3DOptions.builder()
+                .attributeFilters(globalOptions.getAttributeFilters())
+                .sourceCrs(globalOptions.getSourceCrs())
+                .targetCrs(globalOptions.getTargetCrs())
+                .heightColumnName(globalOptions.getHeightColumn())
+                .altitudeColumnName(globalOptions.getAltitudeColumn())
+                .diameterColumnName(globalOptions.getDiameterColumn())
+                .scaleColumnName(globalOptions.getScaleColumn())
+                .densityColumnName(globalOptions.getDensityColumn())
+                .headingColumnName(globalOptions.getHeadingColumn())
+                .absoluteAltitudeValue(globalOptions.getAbsoluteAltitude())
+                .minimumHeightValue(globalOptions.getMinimumHeight())
+                .skirtHeight(globalOptions.getSkirtHeight())
+                .flipCoordinate(globalOptions.isFlipCoordinate())
+                .build();
+
         AttributeReader reader = null;
         if (formatType == FormatType.SHP) {
-            reader = new ShapeInstanceConverter();
+            reader = new ShapeInstanceConverter(vectorOptions);
         } else if (formatType == FormatType.GEOJSON) {
-            reader = new GeoJsonInstanceConverter();
+            reader = new GeoJsonInstanceConverter(vectorOptions);
         } else if (formatType == FormatType.GEO_PACKAGE) {
-            reader = new GeoPackageInstanceConverter();
+            reader = new GeoPackageInstanceConverter(vectorOptions);
         } else {
             reader = new JacksonKmlReader();
         }

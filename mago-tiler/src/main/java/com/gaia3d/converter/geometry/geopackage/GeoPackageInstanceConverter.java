@@ -2,11 +2,11 @@ package com.gaia3d.converter.geometry.geopackage;
 
 import com.gaia3d.command.mago.AttributeFilter;
 import com.gaia3d.command.mago.GlobalConstants;
-import com.gaia3d.command.mago.GlobalOptions;
+import com.gaia3d.converter.geometry.Parametric3DOptions;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.util.GlobeUtils;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.data.Transaction;
 import org.geotools.data.simple.SimpleFeatureReader;
@@ -33,10 +33,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  * It reads kml files and returns the information of the kml file.
  */
 @Slf4j
-@NoArgsConstructor
+@RequiredArgsConstructor
 public class GeoPackageInstanceConverter implements AttributeReader {
 
-    //read kml file
+    private final Parametric3DOptions options;
+
     @Override
     public TileTransformInfo read(File file) {
         log.error("ShapePointReader read method is not implemented yet.");
@@ -45,15 +46,14 @@ public class GeoPackageInstanceConverter implements AttributeReader {
 
     @Override
     public List<TileTransformInfo> readAll(File file) {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
 
-        List<AttributeFilter> attributeFilters = globalOptions.getAttributeFilters();
+        List<AttributeFilter> attributeFilters = options.getAttributeFilters();
         List<TileTransformInfo> result = new ArrayList<>();
-        boolean isDefaultCrs = globalOptions.getSourceCrs().equals(GlobalConstants.DEFAULT_SOURCE_CRS);
-        String altitudeColumnName = globalOptions.getAltitudeColumn();
-        String headingColumnName = globalOptions.getHeadingColumn();
-        String scaleColumnName = globalOptions.getScaleColumn();
-        String densityColumnName = globalOptions.getDensityColumn();
+        boolean isDefaultCrs = options.getSourceCrs().equals(GlobalConstants.DEFAULT_SOURCE_CRS);
+        String altitudeColumnName = options.getAltitudeColumnName();
+        String headingColumnName = options.getHeadingColumnName();
+        String scaleColumnName = options.getScaleColumnName();
+        String densityColumnName = options.getDensityColumnName();
 
         GeoPackage geoPackage = null;
         try {
@@ -65,7 +65,7 @@ public class GeoPackageInstanceConverter implements AttributeReader {
                 if (isDefaultCrs && coordinateReferenceSystem != null) {
                     CoordinateReferenceSystem crs = GlobeUtils.convertProj4jCrsFromGeotoolsCrs(coordinateReferenceSystem);
                     log.info(" - Coordinate Reference System : {}", crs.getName());
-                    globalOptions.setSourceCrs(crs);
+                    options.setSourceCrs(crs);
                 }
 
                 Filter filter = Filter.INCLUDE;
@@ -147,7 +147,7 @@ public class GeoPackageInstanceConverter implements AttributeReader {
                         double y = point.getY();
 
                         Vector3d position;
-                        CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
+                        CoordinateReferenceSystem crs = options.getSourceCrs();
                         if (crs != null) {
                             ProjCoordinate projCoordinate = new ProjCoordinate(x, y, 0.0d);
                             ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
@@ -156,17 +156,7 @@ public class GeoPackageInstanceConverter implements AttributeReader {
                             position = new Vector3d(x, y, altitude);
                         }
 
-                        TileTransformInfo tileTransformInfo = TileTransformInfo.builder()
-                                .name("I3dmFromGeoPackage")
-                                .position(position)
-                                .heading(heading)
-                                .tilt(0.0d)
-                                .roll(0.0d)
-                                .scaleX(scale)
-                                .scaleY(scale)
-                                .scaleZ(scale)
-                                .properties(attributes)
-                                .build();
+                        TileTransformInfo tileTransformInfo = TileTransformInfo.builder().name("I3dmFromGeoPackage").position(position).heading(heading).tilt(0.0d).roll(0.0d).scaleX(scale).scaleY(scale).scaleZ(scale).properties(attributes).build();
                         result.add(tileTransformInfo);
                     }
                 }

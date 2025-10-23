@@ -7,16 +7,13 @@ import com.gaia3d.basic.geometry.tessellator.Vector3dOnlyHashEquals;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.command.mago.AttributeFilter;
 import com.gaia3d.command.mago.GlobalConstants;
-import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.DefaultSceneFactory;
-import com.gaia3d.converter.geometry.AbstractGeometryConverter;
-import com.gaia3d.converter.geometry.GaiaExtrusionModel;
-import com.gaia3d.converter.geometry.GaiaSceneTempGroup;
-import com.gaia3d.converter.geometry.InnerRingRemover;
+import com.gaia3d.converter.geometry.*;
 import com.gaia3d.converter.geometry.pipe.GaiaPipeLineString;
 import com.gaia3d.converter.geometry.pipe.PipeType;
 import com.gaia3d.util.GlobeUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.data.Transaction;
 import org.geotools.data.simple.SimpleFeatureReader;
@@ -43,9 +40,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  * GeoPackage Converter
  */
 @Slf4j
+@RequiredArgsConstructor
 public class GeoPackageConverter extends AbstractGeometryConverter implements Converter {
 
-    private static final GlobalOptions globalOptions = GlobalOptions.getInstance();
+    private final Parametric3DOptions globalOptions;
 
     @Override
     public List<GaiaScene> load(String path) {
@@ -70,13 +68,12 @@ public class GeoPackageConverter extends AbstractGeometryConverter implements Co
         List<AttributeFilter> attributeFilters = globalOptions.getAttributeFilters();
         boolean isDefaultCrs = globalOptions.getSourceCrs().equals(GlobalConstants.DEFAULT_SOURCE_CRS);
         boolean flipCoordinate = globalOptions.isFlipCoordinate();
-        String heightColumnName = globalOptions.getHeightColumn();
-        String altitudeColumnName = globalOptions.getAltitudeColumn();
-        String diameterColumnName = globalOptions.getDiameterColumn();
-        String scaleColumnName = globalOptions.getScaleColumn();
+        String heightColumnName = globalOptions.getHeightColumnName();
+        String altitudeColumnName = globalOptions.getAltitudeColumnName();
+        String diameterColumnName = globalOptions.getDiameterColumnName();
 
-        double absoluteAltitudeValue = globalOptions.getAbsoluteAltitude();
-        double minimumHeightValue = globalOptions.getMinimumHeight();
+        double absoluteAltitudeValue = globalOptions.getAbsoluteAltitudeValue();
+        double minimumHeightValue = globalOptions.getMinimumHeightValue();
         double skirtHeight = globalOptions.getSkirtHeight();
 
         GeoPackage geoPackage = null;
@@ -396,7 +393,6 @@ public class GeoPackageConverter extends AbstractGeometryConverter implements Co
             return;
         }
 
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
         for (GaiaPipeLineString pipeLineString : pipeLineStrings) {
             int pointsCount = pipeLineString.getPositions().size();
             pipeLineString.setBoundingBox(new GaiaBoundingBox());

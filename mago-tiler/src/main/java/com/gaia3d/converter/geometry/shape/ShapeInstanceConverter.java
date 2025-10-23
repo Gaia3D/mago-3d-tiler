@@ -2,11 +2,11 @@ package com.gaia3d.converter.geometry.shape;
 
 import com.gaia3d.command.mago.AttributeFilter;
 import com.gaia3d.command.mago.GlobalConstants;
-import com.gaia3d.command.mago.GlobalOptions;
+import com.gaia3d.converter.geometry.Parametric3DOptions;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.util.GlobeUtils;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.data.Query;
 import org.geotools.data.shapefile.ShapefileDataStore;
@@ -37,8 +37,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  * It reads kml files and returns the information of the kml file.
  */
 @Slf4j
-@NoArgsConstructor
+@RequiredArgsConstructor
 public class ShapeInstanceConverter implements AttributeReader {
+
+    private final Parametric3DOptions options;
 
     //read kml file
     @Override
@@ -49,14 +51,13 @@ public class ShapeInstanceConverter implements AttributeReader {
 
     @Override
     public List<TileTransformInfo> readAll(File file) {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
 
-        List<AttributeFilter> attributeFilters = globalOptions.getAttributeFilters();
-        boolean isDefaultCrs = globalOptions.getSourceCrs().equals(GlobalConstants.DEFAULT_SOURCE_CRS);
-        String altitudeColumnName = globalOptions.getAltitudeColumn();
-        String headingColumnName = globalOptions.getHeadingColumn();
-        String scaleColumnName = globalOptions.getScaleColumn();
-        String densityColumnName = globalOptions.getDensityColumn();
+        List<AttributeFilter> attributeFilters = options.getAttributeFilters();
+        boolean isDefaultCrs = options.getSourceCrs().equals(GlobalConstants.DEFAULT_SOURCE_CRS);
+        String altitudeColumnName = options.getAltitudeColumnName();
+        String headingColumnName = options.getHeadingColumnName();
+        String scaleColumnName = options.getScaleColumnName();
+        String densityColumnName = options.getDensityColumnName();
 
         List<TileTransformInfo> result = new ArrayList<>();
         ShpFiles shpFiles;
@@ -81,7 +82,7 @@ public class ShapeInstanceConverter implements AttributeReader {
             if (isDefaultCrs && coordinateReferenceSystem != null) {
                 CoordinateReferenceSystem crs = GlobeUtils.convertProj4jCrsFromGeotoolsCrs(coordinateReferenceSystem);
                 log.info(" - Coordinate Reference System : {}", crs.getName());
-                globalOptions.setSourceCrs(crs);
+                options.setSourceCrs(crs);
             }
 
             int count = 1;
@@ -165,7 +166,7 @@ public class ShapeInstanceConverter implements AttributeReader {
                     double y = point.getY();
 
                     Vector3d position;
-                    CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
+                    CoordinateReferenceSystem crs = options.getSourceCrs();
                     if (crs != null) {
                         ProjCoordinate projCoordinate = new ProjCoordinate(x, y, GlobalConstants.DEFAULT_ALTITUDE);
                         ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);

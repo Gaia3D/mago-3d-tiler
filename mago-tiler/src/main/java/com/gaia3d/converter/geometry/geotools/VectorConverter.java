@@ -14,7 +14,6 @@ public class VectorConverter {
 
     public void convert(List<Geometry> geometries) {
         VectorCollection collection = filter(geometries);
-
     }
 
     private VectorCollection filter(List<Geometry> geometries) {

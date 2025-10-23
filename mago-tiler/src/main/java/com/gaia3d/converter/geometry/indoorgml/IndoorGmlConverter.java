@@ -6,15 +6,16 @@ import com.gaia3d.basic.model.GaiaMesh;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaPrimitive;
 import com.gaia3d.basic.model.GaiaScene;
-import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.DefaultSceneFactory;
 import com.gaia3d.converter.geometry.AbstractGeometryConverter;
-import com.gaia3d.converter.geometry.GaiaSurfaceModel;
 import com.gaia3d.converter.geometry.GaiaSceneTempGroup;
+import com.gaia3d.converter.geometry.GaiaSurfaceModel;
+import com.gaia3d.converter.geometry.Parametric3DOptions;
 import com.gaia3d.util.GlobeUtils;
 import edu.stem.indoor.IndoorFeatures;
 import edu.stem.space.*;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
@@ -29,7 +30,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
+@RequiredArgsConstructor
 public class IndoorGmlConverter extends AbstractGeometryConverter implements Converter {
+
+    private final Parametric3DOptions options;
+
     @Override
     public List<GaiaScene> load(String path) {
         return convert(new File(path));
@@ -53,7 +58,7 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
     @Override
     protected List<GaiaScene> convert(File file) {
         List<GaiaScene> scenes = new ArrayList<>();
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
+
         DefaultSceneFactory defaultSceneFactory = new DefaultSceneFactory();
 
         try {
@@ -89,7 +94,7 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                         double z = Double.parseDouble(vectors[2]) * scale;
 
                         Vector3d wgs84Position = new Vector3d(x, y, z);
-                        CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
+                        CoordinateReferenceSystem crs = options.getSourceCrs();
                         if (crs != null) {
                             ProjCoordinate projCoordinate = new ProjCoordinate(x, y, boundingBox.getMinZ());
                             ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
@@ -105,12 +110,7 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
                         log.info("Polygon is not closed. Adding the first point to the end of the list.");
                     }
 
-                    GaiaSurfaceModel buildingSurface = GaiaSurfaceModel.builder()
-                            .id(cellSpace.getId())
-                            .name(cellSpace.getName())
-                            .boundingBox(boundingBox)
-                            .exteriorPositions(vertices)
-                            .build();
+                    GaiaSurfaceModel buildingSurface = GaiaSurfaceModel.builder().id(cellSpace.getId()).name(cellSpace.getName()).boundingBox(boundingBox).exteriorPositions(vertices).build();
                     gaiaBuildingSurfaces.add(buildingSurface);
                 }
 
