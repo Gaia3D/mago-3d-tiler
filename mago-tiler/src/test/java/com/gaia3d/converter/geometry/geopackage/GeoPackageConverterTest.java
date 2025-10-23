@@ -1,6 +1,7 @@
 package com.gaia3d.converter.geometry.geopackage;
 
 import com.gaia3d.command.Configuration;
+import com.gaia3d.converter.geometry.Parametric3DOptions;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.*;
@@ -27,7 +28,9 @@ class GeoPackageConverterTest {
         GeometryFactory geometryFactory = new GeometryFactory();
         Polygon polygon = geometryFactory.createPolygon(coordinates);
 
-        GeoPackageInstanceConverter geoPackageConverter = new GeoPackageInstanceConverter();
+        Parametric3DOptions vectorOptions = Parametric3DOptions.builder()
+                .build();
+        GeoPackageInstanceConverter geoPackageConverter = new GeoPackageInstanceConverter(vectorOptions);
 
         log.info("area: {}", area);
         List<Point> points = geoPackageConverter.getRandomContainsPoints(polygon, geometryFactory, 1000);

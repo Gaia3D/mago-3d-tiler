@@ -80,20 +80,10 @@ public class PhotogrammetryProcessFlow implements ProcessFlow {
 
     private Converter getConverter(FormatType formatType) {
         Converter converter;
-        if (formatType == FormatType.CITYGML) {
-            converter = new CityGmlConverter();
-        } else if (formatType == FormatType.INDOORGML) {
-            converter = new IndoorGmlConverter();
-        } else if (formatType == FormatType.SHP) {
-            converter = new ShapeConverter();
-        } else if (formatType == FormatType.GEOJSON) {
-            converter = new GeoJsonConverter();
-        } else {
-            AssimpConverterOptions options = AssimpConverterOptions.builder()
-                    .build();
-            options.setSplitByNode(globalOptions.isSplitByNode());
-            converter = new AssimpConverter(options);
-        }
+        AssimpConverterOptions options = AssimpConverterOptions.builder()
+                .build();
+        options.setSplitByNode(globalOptions.isSplitByNode());
+        converter = new AssimpConverter(options);
         return converter;
     }
 
