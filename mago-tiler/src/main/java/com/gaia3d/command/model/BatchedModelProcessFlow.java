@@ -5,13 +5,13 @@ import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.assimp.AssimpConverterOptions;
-import com.gaia3d.converter.geometry.ExtrusionTempGenerator;
-import com.gaia3d.converter.geometry.citygml.CityGmlConverter;
-import com.gaia3d.converter.geometry.geojson.GeoJsonConverter;
-import com.gaia3d.converter.geometry.geojson.GeoJsonSurfaceConverter;
-import com.gaia3d.converter.geometry.geopackage.GeoPackageConverter;
-import com.gaia3d.converter.geometry.indoorgml.IndoorGmlConverter;
-import com.gaia3d.converter.geometry.shape.ShapeConverter;
+import com.gaia3d.converter.parametric.ExtrusionTempGenerator;
+import com.gaia3d.converter.parametric.Parametric3DOptions;
+import com.gaia3d.converter.parametric.citygml.CityGmlConverter;
+import com.gaia3d.converter.parametric.geojson.GeoJsonConverter;
+import com.gaia3d.converter.parametric.geopackage.GeoPackageConverter;
+import com.gaia3d.converter.parametric.indoorgml.IndoorGmlConverter;
+import com.gaia3d.converter.parametric.shape.ShapeConverter;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.FastKmlReader;
 import com.gaia3d.converter.loader.BatchedFileLoader;
@@ -63,7 +63,7 @@ public class BatchedModelProcessFlow implements ProcessFlow {
         preProcessors.add(new GaiaRotator());
         preProcessors.add(new GaiaTransformBaker());
 
-        preProcessors.add(new GaiaStrictCoordinateExtractor());
+        preProcessors.add(new GaiaCoordinateExtractor());
         preProcessors.add(new GaiaTranslator(geoTiffs));
         preProcessors.add(new GaiaTexCoordCorrection());
         preProcessors.add(new GaiaTransformBaker());
@@ -89,20 +89,36 @@ public class BatchedModelProcessFlow implements ProcessFlow {
     }
 
     private Converter getConverter(FormatType formatType) {
+
+        Parametric3DOptions vectorOptions = Parametric3DOptions.builder()
+                .attributeFilters(globalOptions.getAttributeFilters())
+                .sourceCrs(globalOptions.getSourceCrs())
+                .targetCrs(globalOptions.getTargetCrs())
+                .heightColumnName(globalOptions.getHeightColumn())
+                .altitudeColumnName(globalOptions.getAltitudeColumn())
+                .diameterColumnName(globalOptions.getDiameterColumn())
+                .scaleColumnName(globalOptions.getScaleColumn())
+                .densityColumnName(globalOptions.getDensityColumn())
+                .headingColumnName(globalOptions.getHeadingColumn())
+                .absoluteAltitudeValue(globalOptions.getAbsoluteAltitude())
+                .minimumHeightValue(globalOptions.getMinimumHeight())
+                .skirtHeight(globalOptions.getSkirtHeight())
+                .flipCoordinate(globalOptions.isFlipCoordinate())
+                .build();
+
         Converter converter;
         if (formatType == FormatType.CITYGML) {
-            converter = new CityGmlConverter();
+            converter = new CityGmlConverter(vectorOptions);
         } else if (formatType == FormatType.INDOORGML) {
-            converter = new IndoorGmlConverter();
+            converter = new IndoorGmlConverter(vectorOptions);
         } else if (formatType == FormatType.SHP) {
-            converter = new ShapeConverter();
+            converter = new ShapeConverter(vectorOptions);
         } else if (formatType == FormatType.GEOJSON) {
-            converter = new GeoJsonConverter();
+            converter = new GeoJsonConverter(vectorOptions);
         } else if (formatType == FormatType.GEO_PACKAGE) {
-            converter = new GeoPackageConverter();
+            converter = new GeoPackageConverter(vectorOptions);
         } else {
-            AssimpConverterOptions options = AssimpConverterOptions.builder()
-                    .build();
+            AssimpConverterOptions options = AssimpConverterOptions.builder().build();
             options.setSplitByNode(globalOptions.isSplitByNode());
             converter = new AssimpConverter(options);
         }

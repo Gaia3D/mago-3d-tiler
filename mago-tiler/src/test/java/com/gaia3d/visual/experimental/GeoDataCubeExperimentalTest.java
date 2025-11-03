@@ -22,9 +22,23 @@ public class GeoDataCubeExperimentalTest {
     }
 
     @Test
+    void geostoryIntersectionVoxel() {
+        String path = "mago-voxelizer-samples/geostory-intersection";
+        testAutoVoxels(path, path + "-all-level", 16);
+    }
+
+    @Test
     void globalVoxels() {
         String path = "global-dem-voxels";
         testAutoVoxels(path, path + "-all-level", 3);
+    }
+
+    //voxel-korea-all
+
+    @Test
+    void koreaAllVoxels() {
+        String path = "voxel-korea-all";
+        testAutoVoxels(path, path + "-all-level", 8);
     }
 
     @Test
@@ -34,9 +48,21 @@ public class GeoDataCubeExperimentalTest {
     }
 
     @Test
-    void yeongdeungpoVoxels() {
-        String path = "yeongdeungpo-voxels";
-        testAutoVoxels(path, path + "-all-level", 5);
+    void dongjakVoxels() {
+        String path = "dongjak-voxels";
+        testAutoVoxels(path, path + "-all-level", 15);
+    }
+
+    @Test
+    void yeongdeungpo() {
+        String path = "mago-voxelizer-samples/yeongdeungpo";
+        testAutoVoxels(path, path + "-all-level", 16);
+    }
+
+    @Test
+    void yeongdeungpoTerrain() {
+        String path = "mago-voxelizer-samples/yeongdeungpo-terrain";
+        testAutoVoxels(path, path + "-all-level", 16);
     }
 
     @Test
@@ -49,6 +75,12 @@ public class GeoDataCubeExperimentalTest {
     void pointcloudTemple() {
         String path = "pointcloud-temple";
         testAutoVoxels(path, path + "-all-level", 15);
+    }
+
+    @Test
+    void ws2VoxelFullset10() {
+        String path = "ws2-voxel-fullset";
+        testAutoVoxels(path, path + "-all-level", 10);
     }
 
     @Test

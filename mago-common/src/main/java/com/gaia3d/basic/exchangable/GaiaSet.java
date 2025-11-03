@@ -18,11 +18,16 @@ import org.apache.commons.io.FilenameUtils;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -228,7 +233,52 @@ public class GaiaSet implements Serializable {
             if (!imageFile.exists()) {
                 log.error("[ERROR] Texture Input Image Path is not exists. {}", diffusePath);
             } else {
-                FileUtils.copyFile(imageFile, outputImageFile);
+                // Limit file size to 512KB
+                if (imageFile.length() > 4096 * 1024) {
+                    log.warn("[WARN] Texture Input Image File size is {} bytes.", imageFile.length());
+
+                    // mime type check
+                    boolean isJpeg = imageFile.getName().toLowerCase().endsWith(".jpg") || imageFile.getName().toLowerCase().endsWith(".jpeg");
+                    boolean isPng = imageFile.getName().toLowerCase().endsWith(".png");
+
+                    int maximumLength = 1024; // px
+
+
+                    ImageResizer imageResizer = new ImageResizer();
+                    BufferedImage bufferedImage = ImageIO.read(imageFile);
+                    int width = bufferedImage.getWidth();
+                    int height = bufferedImage.getHeight();
+
+                    if (width > maximumLength || height > maximumLength) {
+                        if (width >= height) {
+                            int resizeWidth = maximumLength;
+                            int resizeHeight = (int) (((double) height / (double) width) * (double) maximumLength);
+                            bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight, true);
+                        } else {
+                            int resizeHeight = maximumLength;
+                            int resizeWidth = (int) (((double) width / (double) height) * (double) maximumLength);
+                            bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight, true);
+                        }
+                    }
+                    if (isJpeg) {
+                        //ImageIO.write(bufferedImage, "jpg", outputImageFile);
+                        byte[] bytes = writeJpeg(bufferedImage, 1.0f);
+                        if (bytes != null) {
+                            try (BufferedOutputStream fos = new BufferedOutputStream(new FileOutputStream(outputImageFile))) {
+                                fos.write(bytes);
+                                fos.flush();
+                            } catch (IOException e) {
+                                log.error("[ERROR] :", e);
+                            }
+                        }
+                    } else if (isPng) {
+                        ImageIO.write(bufferedImage, "png", outputImageFile);
+                    } else {
+                        log.error("[ERROR] Texture Input Image File type is not supported. {}", imageFile.getName());
+                    }
+                } else {
+                    FileUtils.copyFile(imageFile, outputImageFile);
+                }
             }
         }
     }
@@ -352,5 +402,46 @@ public class GaiaSet implements Serializable {
             material.clear();
         }
         this.materials.clear();
+    }
+
+    private byte[] writeJpeg(BufferedImage bufferedImage, float quality) {
+        ByteArrayOutputStream baos = null;
+        ImageOutputStream ios = null;
+        try {
+            baos = new ByteArrayOutputStream();
+            ios = ImageIO.createImageOutputStream(baos);
+
+            // Image compression
+            Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpg");
+            ImageWriter writer = writers.next();
+            writer.setOutput(ios);
+            ImageWriteParam param = writer.getDefaultWriteParam();
+            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            param.setCompressionQuality(quality);
+
+            writer.write(null, new IIOImage(bufferedImage, null, null), param); // 5
+            byte[] bytes = baos.toByteArray();
+            bufferedImage.flush();
+
+            baos.close();
+            ios.close();
+            return bytes;
+        } catch (IOException e) {
+            log.error("[ERROR] :", e);
+            log.error("[ERROR] Error writing jpeg image");
+            try {
+                baos.close();
+            } catch (IOException ex) {
+                log.error("[ERROR] :", ex);
+            }
+            if (ios != null) {
+                try {
+                    ios.close();
+                } catch (IOException ex) {
+                    log.error("[ERROR] :", ex);
+                }
+            }
+        }
+        return null;
     }
 }

@@ -1,7 +1,7 @@
 package com.gaia3d.converter;
 
 import com.gaia3d.basic.model.GaiaScene;
-import com.gaia3d.converter.geometry.GaiaSceneTempGroup;
+import com.gaia3d.converter.parametric.GaiaSceneTempGroup;
 
 import java.io.File;
 import java.nio.file.Path;

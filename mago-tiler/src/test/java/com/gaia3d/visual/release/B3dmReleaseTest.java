@@ -29,9 +29,6 @@ class B3dmReleaseTest {
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
                 "--quantize",
-                // "-rotateXAxis", "90",
-                //"-leaveTemp"
-                //"-debug",
         };
         MagoTestConfig.execute(args);
     }
@@ -42,7 +39,6 @@ class B3dmReleaseTest {
         String[] args = new String[] {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                // "-rotateXAxis", "90",
         };
         MagoTestConfig.execute(args);
     }
@@ -64,21 +60,6 @@ class B3dmReleaseTest {
         String[] args = new String[] {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                "--quantize"
-                //"-tilesVersion", "1.1",
-        };
-        MagoTestConfig.execute(args);
-    }
-
-    @Test
-    void batched05() {
-        String path = "B05-seoul-part-geojson";
-        String[] args = new String[] {
-                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                //"-terrain", ReleaseTestConfig.getInputPath(path).getAbsolutePath() + "/seoul.tif",
-                "-terrain", "G:\\(archive)\\(archive) 3차원 데이터 모음\\GeoTIFF\\korea_5m\\5m\\37608(서울)",
-                "-c", "5186"
         };
         MagoTestConfig.execute(args);
     }
@@ -107,7 +88,6 @@ class B3dmReleaseTest {
         MagoTestConfig.execute(args);
     }
 
-    /* This test is disabled because it requires a large input file. */
     @Disabled
     @Test
     void batched08() {
@@ -180,25 +160,12 @@ class B3dmReleaseTest {
     }
 
     @Test
-    void batched53_1() {
-        String path = "B53-railway-citygml";
-        String[] args = new String[] {
-                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-SBN",
-                "-c", "5186",
-                "-splitByNode"
-        };
-        MagoTestConfig.execute(args);
-    }
-
-    @Test
     void batched70() {
         String path = "B70-sejong-bridge-ifc";
         String[] args = new String[] {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
-                // "-rotateXAxis", "90",
         };
         MagoTestConfig.execute(args);
     }
@@ -209,8 +176,6 @@ class B3dmReleaseTest {
         String[] args = new String[] {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                //"-c", "5186",
-                //"-rotateXAxis", "-90",
         };
         MagoTestConfig.execute(args);
     }
@@ -221,7 +186,6 @@ class B3dmReleaseTest {
         String[] args = new String[] {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                // "-rotateXAxis", "90",
         };
         MagoTestConfig.execute(args);
     }
@@ -232,47 +196,28 @@ class B3dmReleaseTest {
         String[] args = new String[] {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                // "-rotateXAxis", "90",
         };
         MagoTestConfig.execute(args);
     }
 
     @Test
-    void batched80() {
-        String path = "B80-kku-tile-dae-kml";
+    void batched74() {
+        String path = "B74-student-room-citygml";
         String[] args = new String[] {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                // "-rotateXAxis", "90",
+                "-it", "citygml",
         };
         MagoTestConfig.execute(args);
     }
 
     @Test
-    void batched81() {
-        String path = "B81-glb-problems-kml";
+    void batched75() {
+        String path = "B75-social-room-citygml";
         String[] args = new String[] {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                //"-rotateX", "90",
-                "--crs", "3011",
-                //"--xOffset", "151400",
-                //"--yOffset", "6577000",
-                //"-debug"
-        };
-        MagoTestConfig.execute(args);
-    }
-
-    @Test
-    void batched82() {
-        String path = "B82-glb-problems-good-kml";
-        String[] args = new String[] {
-                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                "--crs", "3011",
-                //"--xOffset", "151400",
-                //"--yOffset", "6577000",
-                //"-debug"
+                "-it", "citygml",
         };
         MagoTestConfig.execute(args);
     }
@@ -284,7 +229,6 @@ class B3dmReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-tilesVersion", "1.1",
-                //"-debug"
         };
         MagoTestConfig.execute(args);
     }
@@ -299,21 +243,6 @@ class B3dmReleaseTest {
                 "-heightColumn", "rel_height",
                 "-tilesVersion", "1.1",
                 "-c", "3857",
-        };
-        MagoTestConfig.execute(args);
-    }
-
-    @Disabled
-    @Test
-    void batched92() {
-        String path = "B92-buildings";
-        String[] args = new String[] {
-                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-it", "geojson",
-                "-heightColumn", "rel_height",
-                "-terrain", MagoTestConfig.getInputPath("I10-forest-purdue-original-gpkg4").getAbsolutePath() + "/hamilton_dem_navd88_meters_4326.tif",
-                "-crs", "4326",
         };
         MagoTestConfig.execute(args);
     }

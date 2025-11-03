@@ -85,6 +85,7 @@ public enum ProcessOptions {
     TILES_VERSION("tilesVersion", "tv",  true, false, "[Experimental] 3DTiles Version [1.0, 1.1][Default: 1.1]"),
     PHOTOGRAMMETRY("photogrammetry", "pg", false, false, "[Experimental] generate b3dm for photogrammetry model with GPU"),
     SPLIT_BY_NODE("splitByNode", "sbn", false, false, "[Experimental] Split tiles by nodes of scene."),
+    CURVATURE_CORRECTION("curvatureCorrection", "cc", false, false, "[Experimental] Apply curvature correction for ellipsoid surface."),
 
     /* Deprecated Options */
     MULTI_THREAD_COUNT("multiThreadCount", "mc",  true, false, "[Deprecated] set thread count"),
