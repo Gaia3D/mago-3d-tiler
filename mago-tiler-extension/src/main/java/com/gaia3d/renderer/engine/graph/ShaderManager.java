@@ -31,7 +31,9 @@ public class ShaderManager {
         // 1rst, check if exist the shader program
         if (!mapNameShaderProgram.containsKey(shaderProgramName)) {
             // if not exist, create it.
-            if (shaderProgramName.equals("sceneDelimited_v2")) {
+            if (shaderProgramName.equals("sceneDelimited_withDepthTex")) {
+                createSceneDelimitedWithDepthTexShader();
+            } else if (shaderProgramName.equals("sceneDelimited_v2")) {
                 createSceneDelimitedV2Shader();
             } else {
                 log.error("[ERROR] Shader program with name {} does not exist!", shaderProgramName);
@@ -87,6 +89,29 @@ public class ShaderManager {
 
         shaderProgram.createUniforms(uniformNames);
         shaderProgram.validate();
+    }
+
+    private void createSceneDelimitedWithDepthTexShader() {
+        // create a delimitedScene shader program with normal textures included
+        String vertexShaderText = readResource("shaders/sceneDelimitedWithDepthTexV330.vert");
+        String fragmentShaderText = readResource("shaders/sceneDelimitedWithDepthTexV330.frag");
+        java.util.List<ShaderProgram.ShaderModuleData> shaderModuleDataList = new ArrayList<>();
+        shaderModuleDataList = new ArrayList<>();
+        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(vertexShaderText, GL20.GL_VERTEX_SHADER));
+        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(fragmentShaderText, GL20.GL_FRAGMENT_SHADER));
+        ShaderProgram shaderProgram = this.createShaderProgram("sceneDelimited_withDepthTex", shaderModuleDataList);
+        setActiveUniformsAndValidate(shaderProgram);
+
+        // albedo → texture0
+        shaderProgram.bind();
+        int programId = shaderProgram.getProgramId();
+        int locTex0 = GL20.glGetUniformLocation(programId, "albedoTexture");
+        GL20.glUniform1i(locTex0, 0); // GL_TEXTURE0
+
+        // depth → texture1
+        int locTex1 = GL20.glGetUniformLocation(programId, "depthTexture");
+        GL20.glUniform1i(locTex1, 1); // GL_TEXTURE1
+        shaderProgram.unbind();
     }
 
     private void createSceneDelimitedV2Shader() {

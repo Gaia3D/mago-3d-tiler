@@ -19,6 +19,13 @@ public class CellGrid3D {
 
     // Return the cell index that contains the point v
     public Vector3i getCellIndex(Vector3d v) {
+        int ix = (int) Math.floor(((v.x - origin.x) / cellSize));
+        int iy = (int) Math.floor(((v.y - origin.y) / cellSize));
+        int iz = (int) Math.floor(((v.z - origin.z) / cellSize));
+        return new Vector3i(ix, iy, iz);
+    }
+
+    public Vector3i getCellIndex_original(Vector3d v) {
         int ix = (int) Math.floor((v.x - origin.x) / cellSize);
         int iy = (int) Math.floor((v.y - origin.y) / cellSize);
         int iz = (int) Math.floor((v.z - origin.z) / cellSize);

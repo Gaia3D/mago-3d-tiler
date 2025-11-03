@@ -32,6 +32,9 @@ public interface ExtensionModuleFrame {
     void reMeshAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, ReMeshParameters reMeshParams, HalfEdgeOctreeFaces octree,
                                      List<GaiaAAPlane> cuttingPlanes, double depthTexPixelsForMeter, double screenPixelsForMeter, boolean makeHorizontalSkirt);
 
+    void integralReMeshByObliqueCameraV2(List<SceneInfo> sceneInfos, List<HalfEdgeScene> resultHalfEdgeScenes, ReMeshParameters reMeshParams, GaiaBoundingBox nodeBBox,
+                                         Matrix4d nodeTMatrix, int maxScreenSize, List<BufferedImage> resultImages, String outputPathString, String nodeName);
+
     void voxelize(List<GaiaScene> scenes, List<VoxelGrid3D> resultVoxelGrids, List<GaiaScene> resultGaiaScenes, VoxelizeParameters voxelizeParameters);
 
     void makeBillBoard(List<GaiaScene> scenes, List<GaiaScene> resultScenes, int verticalPlanesCount, int horizontalPlanesCount);

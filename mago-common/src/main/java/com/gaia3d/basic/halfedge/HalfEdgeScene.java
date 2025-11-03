@@ -601,7 +601,7 @@ public class HalfEdgeScene implements Serializable {
 
         }
     }
-
+    
     public void makeHorizontalSkirt() {
         GaiaBoundingBox bbox = getBoundingBox();
         if (bbox == null) {

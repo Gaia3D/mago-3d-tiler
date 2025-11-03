@@ -10,6 +10,7 @@ import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.renderer.engine.dataStructure.FaceVisibilityData;
 import com.gaia3d.renderer.engine.dataStructure.FaceVisibilityDataManager;
 import com.gaia3d.renderer.engine.dataStructure.GaiaScenesContainer;
+import com.gaia3d.renderer.engine.dataStructure.IntegralReMeshParameters;
 import com.gaia3d.renderer.engine.fbo.Fbo;
 import com.gaia3d.renderer.engine.fbo.FboMRT;
 import com.gaia3d.renderer.engine.fbo.FboManager;
@@ -350,13 +351,6 @@ public class Engine {
         gaiaScene.unWeldVertices();
 
         // now, make a map<GaiaFace, Integer> for the faces
-        List<GaiaFace> faces = gaiaScene.extractGaiaFaces(null);
-        int facesCount = faces.size();
-        for (int i = 0; i < facesCount; i++) {
-            GaiaFace face = faces.get(i);
-            face.setId(i);
-        }
-
         List<GaiaPrimitive> primitives = gaiaScene.extractPrimitives(null);
         int primitivesCount = primitives.size();
         for (int i = 0; i < primitivesCount; i++) {
@@ -364,6 +358,9 @@ public class Engine {
             List<GaiaFace> primitiveFaces = primitive.extractGaiaFaces(null);
             for (GaiaFace face : primitiveFaces) {
                 int faceId = face.getId();
+                if (faceId < 0) {
+                    throw new RuntimeException("faceId < 0");
+                }
                 byte[] byteColor = GaiaColorUtils.decodeColor4(faceId);
                 int[] faceIndices = face.getIndices();
                 for (int index : faceIndices) {
@@ -457,6 +454,127 @@ public class Engine {
         return null;
     }
 
+    public void makeIntegralBoxTexturesByObliqueCamera(HalfEdgeScene halfEdgeScene, double screenPixelsForMeter, int bufferImageType, GaiaBoundingBox integralBox,
+                                                       IntegralReMeshParameters integralReMeshParameters,
+                                                       Map<Integer, Map<GaiaFace, HalfEdgeFace>> mapClassifyIdToGaiaFaceToHalfEdgeFace,
+                                                       Map<Integer, Map<GaiaFace, CameraDirectionTypeInfo>> mapClassifyIdToGaiaFaceToCameraDirectionTypeInfo,
+                                                       Map<Integer, Map<CameraDirectionType, GaiaBoundingBox>> mapClassificationCamDirTypeBBox,
+                                                       Map<Integer, Map<CameraDirectionType, Matrix4d>> mapClassificationCamDirTypeModelViewMatrix,
+                                                       Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapClassificationCamDirTypeFacesList,
+                                                       FaceVisibilityDataManager faceVisibilityDataManager) {
+        //*************************************************************
+        // Inside of integralBox, there are all scenes of the node.
+        //*************************************************************
+        // 1rst, extract all surfaces
+        List<HalfEdgeSurface> surfaces = halfEdgeScene.extractSurfaces(null);
+
+        Map<Integer, List<HalfEdgeFace>> facesClassificationMap = new HashMap<>();
+        int surfacesCount = surfaces.size();
+        for (int i = 0; i < surfacesCount; i++) {
+            HalfEdgeSurface surface = surfaces.get(i);
+            int facesCount = surface.getFaces().size();
+            for (int j = 0; j < facesCount; j++) {
+                HalfEdgeFace face = surface.getFaces().get(j);
+                int classificationId = face.getClassifyId();
+                List<HalfEdgeFace> facesList = facesClassificationMap.computeIfAbsent(classificationId, k -> new ArrayList<>());
+                facesList.add(face);
+            }
+        }
+
+        // create 5 color fbos and 5 colorCoded fbos
+//        int fboWidth = 1024;
+//        int fboHeight = 1024;
+
+        Fbo colorFbo_ZNEG = integralReMeshParameters.getColorFboMap().get("ZNEG");
+        Fbo colorFbo_XPOS_ZNEG = integralReMeshParameters.getColorFboMap().get("XPOS_ZNEG");
+        Fbo colorFbo_XNEG_ZNEG = integralReMeshParameters.getColorFboMap().get("XNEG_ZNEG");
+        Fbo colorFbo_YPOS_ZNEG = integralReMeshParameters.getColorFboMap().get("YPOS_ZNEG");
+        Fbo colorFbo_YNEG_ZNEG = integralReMeshParameters.getColorFboMap().get("YNEG_ZNEG");
+
+        Fbo colorCodedFbo_ZNEG = integralReMeshParameters.getColorCodeFboMap().get("ZNEG");
+        Fbo colorCodedFbo_XPOS_ZNEG = integralReMeshParameters.getColorCodeFboMap().get("XPOS_ZNEG");
+        Fbo colorCodedFbo_XNEG_ZNEG = integralReMeshParameters.getColorCodeFboMap().get("XNEG_ZNEG");
+        Fbo colorCodedFbo_YPOS_ZNEG = integralReMeshParameters.getColorCodeFboMap().get("YPOS_ZNEG");
+        Fbo colorCodedFbo_YNEG_ZNEG = integralReMeshParameters.getColorCodeFboMap().get("YNEG_ZNEG");
+
+        CameraDirectionType cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_UNKNOWN;
+        int classifiedFacesCount = facesClassificationMap.size();
+        int count = 0;
+        boolean testBool = false;
+        for (Map.Entry<Integer, List<HalfEdgeFace>> entry : facesClassificationMap.entrySet()) {
+            log.info("makeBoxTexturesByObliqueCamera : " + count + " / " + classifiedFacesCount);
+
+            int classificationId = entry.getKey();
+            List<HalfEdgeFace> facesList = entry.getValue();
+
+            Map<GaiaFace, HalfEdgeFace> mapGaiaFaceToHalfEdgeFace = mapClassifyIdToGaiaFaceToHalfEdgeFace.computeIfAbsent(classificationId, k -> new HashMap<>());
+            Map<GaiaFace, CameraDirectionTypeInfo> mapGaiaFaceToCameraDirectionTypeInfo = mapClassifyIdToGaiaFaceToCameraDirectionTypeInfo.computeIfAbsent(classificationId, k -> new HashMap<>());
+
+            GaiaScene gaiaSceneFromFaces = HalfEdgeUtils.gaiaSceneFromHalfEdgeFaces(facesList, mapGaiaFaceToHalfEdgeFace);
+            RenderableGaiaScene renderableGaiaSceneColorCoded = getColorCodedRenderableScene(gaiaSceneFromFaces);
+
+            // now, set projection matrix as orthographic, and set camera's position and target
+            // calculate the projectionMatrix for the camera
+            int maxScreenSize = boxRenderingMaxSize;
+
+            // to calculate the texCoords, we need the transformed bbox and the modelViewMatrix
+            Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox = mapClassificationCamDirTypeBBox.computeIfAbsent(classificationId, k -> new HashMap<>());
+            Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix = mapClassificationCamDirTypeModelViewMatrix.computeIfAbsent(classificationId, k -> new HashMap<>());
+
+            Vector4f backgroundColor = new Vector4f(0.5f, 0.5f, 0.5f, 0.0f); // grey color, alpha=0
+
+            // ZNeg texture
+            cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_ZNEG;
+            BufferedImage imageZNeg = makeIntegralColorCodeTextureByCameraDirectionAndBBox(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
+                    mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor, integralBox,
+                    colorFbo_ZNEG, colorCodedFbo_ZNEG);
+
+            // YPosZNeg texture
+            cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_YPOS_ZNEG;
+            BufferedImage imageYpoZNeg = makeIntegralColorCodeTextureByCameraDirectionAndBBox(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
+                    mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor, integralBox,
+                    colorFbo_YPOS_ZNEG, colorCodedFbo_YPOS_ZNEG);
+
+            // XNegZNeg texture
+            cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_XNEG_ZNEG;
+            BufferedImage imageXNegZNeg = makeIntegralColorCodeTextureByCameraDirectionAndBBox(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
+                    mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor, integralBox,
+                    colorFbo_XNEG_ZNEG, colorCodedFbo_XNEG_ZNEG);
+
+            // YNegZNeg texture
+            cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_YNEG_ZNEG;
+            BufferedImage imageYNegZNeg = makeIntegralColorCodeTextureByCameraDirectionAndBBox(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
+                    mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor, integralBox,
+                    colorFbo_YNEG_ZNEG, colorCodedFbo_YNEG_ZNEG);
+
+            // XPosZNeg texture
+            cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_XPOS_ZNEG;
+            BufferedImage imageXPosZNeg = makeIntegralColorCodeTextureByCameraDirectionAndBBox(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
+                    mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor, integralBox,
+                    colorFbo_XPOS_ZNEG, colorCodedFbo_XPOS_ZNEG);
+
+            // delete the renderableScene-colorCoded
+            renderableGaiaSceneColorCoded.deleteGLBuffers();
+        }
+    }
+
+    private void TEST_SaveImages(Fbo fbo, CameraDirectionType cameraDirectionType, String fileName) {
+        // test save images.
+        try {
+            String randomId = cameraDirectionType.name();
+            String path = "D:\\Result_mago3dTiler";
+            String fileNameFinal = fileName + "_" + randomId;
+            String extension = ".png";
+            String imagePath = path + "\\" + fileNameFinal + extension;
+            File imageFile = new File(imagePath);
+            fbo.bind();
+            BufferedImage image = fbo.getBufferedImage(BufferedImage.TYPE_INT_ARGB);
+            fbo.unbind();
+            ImageIO.write(image, "png", imageFile);
+        } catch (IOException e) {
+            log.debug("Error writing image: {}", e);
+        }
+    }
 
     public void makeBoxTexturesByObliqueCamera(HalfEdgeScene halfEdgeScene, double screenPixelsForMeter, int bufferImageType) {
         // Must know all faces classification ids
@@ -498,6 +616,14 @@ public class Engine {
             Map<GaiaFace, CameraDirectionTypeInfo> mapGaiaFaceToCameraDirectionTypeInfo = mapClassifyIdToGaiaFaceToCameraDirectionTypeInfo.computeIfAbsent(classificationId, k -> new HashMap<>());
 
             GaiaScene gaiaSceneFromFaces = HalfEdgeUtils.gaiaSceneFromHalfEdgeFaces(facesList, mapGaiaFaceToHalfEdgeFace);
+
+            // set face ids for colorCode rendering.***
+            List<GaiaFace> gaiaFaces = gaiaSceneFromFaces.extractGaiaFaces(null);
+            int gaiaFacesCount = gaiaFaces.size();
+            for (int i = 0; i < gaiaFacesCount; i++) {
+                GaiaFace gaiaFace = gaiaFaces.get(i);
+                gaiaFace.setId(i);
+            }
             RenderableGaiaScene renderableGaiaSceneColorCoded = getColorCodedRenderableScene(gaiaSceneFromFaces);
 
             GaiaBoundingBox sceneBbox = gaiaSceneFromFaces.updateBoundingBox();
@@ -780,6 +906,55 @@ public class Engine {
                 glClear(GL_COLOR_BUFFER_BIT);
             }
             glClear(GL_DEPTH_BUFFER_BIT);
+            glEnable(GL_DEPTH_TEST);
+
+            // enable cull face
+            glEnable(GL_CULL_FACE);
+
+            // set blend func
+            if (blendColors) {
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            } else {
+                glDisable(GL_BLEND);
+            }
+
+            // render the scene
+            shaderProgram.bind();
+
+            Camera camera = gaiaScenesContainer.getCamera();
+            Matrix4d modelViewMatrix = camera.getModelViewMatrix();
+            UniformsMap uniformsMap = shaderProgram.getUniformsMap();
+            uniformsMap.setUniformMatrix4fv("uModelViewMatrix", new Matrix4f(modelViewMatrix));
+            renderer.render(gaiaScenesContainer, shaderProgram);
+
+            shaderProgram.unbind();
+
+            fbo.unbind();
+        } catch (Exception e) {
+            log.error("[ERROR] Error initializing the engine : ", e);
+        }
+    }
+
+    private void renderIntoFbo(Fbo fbo, ShaderProgram shaderProgram, GaiaScenesContainer gaiaScenesContainer, Vector4f clearColor, boolean blendColors, boolean clearDepth) {
+        // render the renderableScene
+        try {
+            fbo.bind();
+
+            int[] width = new int[1];
+            int[] height = new int[1];
+            width[0] = fbo.getFboWidth();
+            height[0] = fbo.getFboHeight();
+
+            glViewport(0, 0, width[0], height[0]);
+            if (clearColor != null) {
+                glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
+                glClear(GL_COLOR_BUFFER_BIT);
+            }
+
+            if (clearDepth) {
+                glClear(GL_DEPTH_BUFFER_BIT);
+            }
             glEnable(GL_DEPTH_TEST);
 
             // enable cull face
@@ -1286,6 +1461,176 @@ public class Engine {
         resultBufferedImages.add(colorImage);
         resultBufferedImages.add(normalImage);
         return resultPrimitive;
+    }
+
+    private BufferedImage makeIntegralColorCodeTextureByCameraDirectionAndBBox(GaiaScene gaiaScene,
+                                                                               RenderableGaiaScene renderableScene,
+                                                                               CameraDirectionType cameraDirectionType,
+                                                                               int maxScreenSize,
+                                                                               Map<CameraDirectionType, GaiaBoundingBox> mapCameraDirectionTypeBBox,
+                                                                               Map<CameraDirectionType, Matrix4d> mapCameraDirectionTypeModelViewMatrix,
+                                                                               double screenPixelsForMeter,
+                                                                               FaceVisibilityDataManager faceVisibilityDataManager,
+                                                                               int bufferImageType, Vector4f backGroundColor, GaiaBoundingBox targetBbox,
+                                                                               Fbo colorFbo, Fbo colorCodeFbo) {
+        GaiaBoundingBox sceneBbox = gaiaScene.updateBoundingBox();
+
+        // expanded box for shader (delimiting box with a little buffer)
+        GaiaBoundingBox expandedBBox = targetBbox.clone();
+        double expandedMaxSize = expandedBBox.getMaxSize();
+        //expandedBBox.expand(expandedMaxSize * 0.02);
+        expandedBBox.expand(expandedMaxSize * 2.0); // provisionally large expansion. In integralMode, the targetBbox is centered in the origin.
+
+        Vector3d targetBBoxCenter = targetBbox.getCenter();
+
+        // set camera position
+        Vector3d camDir = CameraDirectionType.getCameraDirection(cameraDirectionType);
+        Camera camera = gaiaScenesContainer.getCamera();
+        camera.setPosition(targetBBoxCenter);
+        camera.setDirection(camDir);
+        Vector3d up = camera.calculateUpVector(camDir);
+        camera.setUp(up);
+        gaiaScenesContainer.setCamera(camera);
+
+        Matrix4d modelViewMatrix = camera.getModelViewMatrix();
+
+        List<Vector3d> transformedVertices = new ArrayList<>();
+
+        // take the 8 vertices of the targetBbox and transform them
+        List<Vector3d> bboxVertices = targetBbox.getVertices();
+        for (Vector3d vertexPos3d : bboxVertices) {
+            Vector4d transformedPos4d = new Vector4d();
+            Vector4d vertexPos4d = new Vector4d(vertexPos3d.x, vertexPos3d.y, vertexPos3d.z, 1.0);
+            modelViewMatrix.transform(vertexPos4d, transformedPos4d);
+            Vector3d transformedPos3d = new Vector3d(transformedPos4d.x, transformedPos4d.y, transformedPos4d.z);
+            transformedVertices.add(transformedPos3d);
+        }
+
+        GaiaBoundingBox bboxTransformed = new GaiaBoundingBox();
+        bboxTransformed.setFromPoints(transformedVertices);
+
+        mapCameraDirectionTypeBBox.put(cameraDirectionType, bboxTransformed);
+        mapCameraDirectionTypeModelViewMatrix.put(cameraDirectionType, new Matrix4d(modelViewMatrix));
+
+        // now we can calculate the projection matrix
+        float xLength = (float) bboxTransformed.getSizeX();
+        float yLength = (float) bboxTransformed.getSizeY();
+
+        float maxX = (float) bboxTransformed.getMaxX();
+        float maxY = (float) bboxTransformed.getMaxY();
+        float maxZ = (float) bboxTransformed.getMaxZ();
+        float minX = (float) bboxTransformed.getMinX();
+        float minY = (float) bboxTransformed.getMinY();
+        float minZ = (float) bboxTransformed.getMinZ();
+        // attention! : near = -maxZ, far = -minZ
+        float near = -maxZ; // test large near and far
+        float far = -minZ;
+
+        float maxSize = Math.max(xLength, yLength);
+        float zOffSet = maxSize * 0.001f;
+        if (zOffSet < 0.4) {
+            zOffSet = 0.4f;
+        }
+
+        far += zOffSet; // make a little more far
+        near -= zOffSet; // make a little more near
+
+        Projection projection = gaiaScenesContainer.getProjection();
+        projection.setProjectionOrthographic(minX, maxX, minY, maxY, near, far);
+        gaiaScenesContainer.setProjection(projection);
+
+        // render the renderableScene
+        // shader program
+        ShaderManager shaderManager = getShaderManager();
+
+        // color render
+        ShaderProgram sceneShaderProgram = shaderManager.getShaderProgram("sceneDelimited");
+        sceneShaderProgram.bind();
+        // set uniform map
+        UniformsMap uniformsMap = sceneShaderProgram.getUniformsMap();
+        uniformsMap.setUniform3fv("bboxMin", new Vector3f((float) expandedBBox.getMinX(), (float) expandedBBox.getMinY(), (float) expandedBBox.getMinZ()));
+        uniformsMap.setUniform3fv("bboxMax", new Vector3f((float) expandedBBox.getMaxX(), (float) expandedBBox.getMaxY(), (float) expandedBBox.getMaxZ()));
+        Vector4f clearColor = null; // if null, it will not clear the color buffer
+        renderIntoFbo(colorFbo, sceneShaderProgram, gaiaScenesContainer, null, true, false);
+        colorFbo.bind();
+        BufferedImage image = colorFbo.getBufferedImage(bufferImageType);
+
+//        // as a test, paint the image in a color. Red
+//        Color color = new Color(255, 0, 0);
+//        if (cameraDirectionType == CameraDirectionType.CAMERA_DIRECTION_ZNEG) {
+//            color = new Color(0, 255, 255);
+//        } else if (cameraDirectionType == CameraDirectionType.CAMERA_DIRECTION_XPOS_ZNEG) {
+//            color = new Color(255, 0, 0);
+//        }
+//        else if (cameraDirectionType == CameraDirectionType.CAMERA_DIRECTION_XNEG_ZNEG) {
+//            color = new Color(100, 0, 0);
+//        }
+//        else if (cameraDirectionType == CameraDirectionType.CAMERA_DIRECTION_YPOS_ZNEG) {
+//            color = new Color(0, 255, 0);
+//        }
+//        else if (cameraDirectionType == CameraDirectionType.CAMERA_DIRECTION_YNEG_ZNEG) {
+//            color = new Color(0, 100, 0);
+//        }
+//
+//        Graphics2D g2d = image.createGraphics();
+//        g2d.setColor(color);
+//        g2d.fillRect(0, 0, image.getWidth(), image.getHeight());
+//        g2d.dispose();
+//        // end test
+
+
+        colorFbo.unbind();
+
+        // colorCoded render
+        RenderableGaiaScene renderableSceneCurrent = gaiaScenesContainer.getRenderableGaiaScenes().get(0);
+        gaiaScenesContainer.getRenderableGaiaScenes().clear();
+        gaiaScenesContainer.getRenderableGaiaScenes().add(renderableScene);
+
+        ShaderProgram colorCodeShaderProgram = shaderManager.getShaderProgram("trianglesDelimitedColorCode");
+        colorCodeShaderProgram.bind();
+        uniformsMap = sceneShaderProgram.getUniformsMap();
+        uniformsMap.setUniform3fv("bboxMin", new Vector3f((float) expandedBBox.getMinX(), (float) expandedBBox.getMinY(), (float) expandedBBox.getMinZ()));
+        uniformsMap.setUniform3fv("bboxMax", new Vector3f((float) expandedBBox.getMaxX(), (float) expandedBBox.getMaxY(), (float) expandedBBox.getMaxZ()));
+
+        renderIntoFbo(colorCodeFbo, colorCodeShaderProgram, gaiaScenesContainer, clearColor, false, false);
+        colorCodeFbo.bind();
+        BufferedImage imageColorCode = colorCodeFbo.getBufferedImage(BufferedImage.TYPE_INT_ARGB);
+        colorCodeFbo.unbind();
+
+        // restore the current renderableScene
+        gaiaScenesContainer.getRenderableGaiaScenes().clear();
+        gaiaScenesContainer.getRenderableGaiaScenes().add(renderableSceneCurrent);
+
+//        // test save images
+//        try {
+//            String randomId = cameraDirectionType.name();
+//            String path = "D:\\Result_mago3dTiler";
+//            String fileName = "albedo_" + randomId;
+//            String extension = ".png";
+//            String imagePath = path + "\\" + fileName + extension;
+//            File imageFile = new File(imagePath);
+//            ImageIO.write(image, "png", imageFile);
+//        } catch (IOException e) {
+//            log.debug("Error writing image: {}", e);
+//        }
+//
+//        // test save images
+//        try {
+//            String randomId = cameraDirectionType.name();
+//            String path = "D:\\Result_mago3dTiler";
+//            String fileName = "colorCoded_" + randomId;
+//            String extension = ".png";
+//            String imagePath = path + "\\" + fileName + extension;
+//            File imageFile = new File(imagePath);
+//            ImageIO.write(imageColorCode, "png", imageFile);
+//        } catch (IOException e) {
+//            log.debug("Error writing image: {}", e);
+//        }
+
+        // check the colorCoded image
+        colorCodeFbo.bind();
+
+        return image;
     }
 
     private BufferedImage makeColorCodeTextureByCameraDirection(GaiaScene gaiaScene,

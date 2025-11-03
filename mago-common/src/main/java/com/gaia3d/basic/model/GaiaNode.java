@@ -382,6 +382,7 @@ public class GaiaNode extends NodeStructure implements Serializable {
         }
 
         for (GaiaNode child : children) {
+            child.setParent(this);
             child.spendTranformMatrix();
         }
 

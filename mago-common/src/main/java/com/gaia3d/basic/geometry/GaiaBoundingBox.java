@@ -81,7 +81,7 @@ public class GaiaBoundingBox implements Serializable {
 
         // Check if the barycentric coordinates of the triangle are inside the bounding box.
         Vector3d barycenter = triangle.getBarycenter();
-        if( intersectsPoint(barycenter)) {
+        if (intersectsPoint(barycenter)) {
             return true; // The barycenter of the triangle is inside the bounding box.
         }
 
@@ -96,7 +96,7 @@ public class GaiaBoundingBox implements Serializable {
         // Check the distance of the bbox center to the triangle plane.
         double maxRadius = getMaxRadius();
         GaiaPlane trianglePlane = triangle.getPlane();
-        if(trianglePlane == null) {
+        if (trianglePlane == null) {
             log.info("[INFO][intersectsTriangle] : Triangle plane is null.");
             return false; // No valid triangle plane to check against.
         }
@@ -133,7 +133,7 @@ public class GaiaBoundingBox implements Serializable {
 
     private boolean intersectsAASegmentsToTriangle(GaiaTriangle triangle) {
         GaiaPlane trianglePlane = triangle.getPlane();
-        if(trianglePlane == null){
+        if (trianglePlane == null) {
             log.info("[INFO][intersectsAASegmentsToTriangle] : Triangle plane is null.");
             return false; // No valid triangle plane to check against.
         }
@@ -270,8 +270,7 @@ public class GaiaBoundingBox implements Serializable {
             boolean hasPos = (area1 > 0) || (area2 > 0) || (area3 > 0);
 
             return !(hasNeg && hasPos);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("[ERROR][intersectsAASegmentToTriangle] : Exception occurred while checking intersection.", e);
             return false; // An exception occurred, cannot determine intersection.
         }
@@ -622,5 +621,18 @@ public class GaiaBoundingBox implements Serializable {
         double maxY = minY + maxSize;
         double maxZ = minZ + maxSize;
         return new GaiaBoundingBox(minX, minY, minZ, maxX, maxY, maxZ, true);
+    }
+
+    public List<Vector3d> getVertices() {
+        return List.of(
+                new Vector3d(minX, minY, minZ),
+                new Vector3d(maxX, minY, minZ),
+                new Vector3d(maxX, maxY, minZ),
+                new Vector3d(minX, maxY, minZ),
+                new Vector3d(minX, minY, maxZ),
+                new Vector3d(maxX, minY, maxZ),
+                new Vector3d(maxX, maxY, maxZ),
+                new Vector3d(minX, maxY, maxZ)
+        );
     }
 }

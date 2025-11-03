@@ -97,6 +97,7 @@ public class HalfEdgeUtils {
                 indices[i] = index;
             }
             gaiaFace.setIndices(indices);
+            gaiaFace.setId(halfEdgeFace.getId());
             gaiaFace.setClassifyId(halfEdgeFace.getClassifyId());
             gaiaSurface.getFaces().add(gaiaFace);
 
@@ -877,6 +878,8 @@ public class HalfEdgeUtils {
             currHalfEdge.setNext(nextHalfEdge);
         }
 
+        halfEdgeFace.setId(gaiaFace.getId());
+
         return halfEdgeFace;
     }
 
@@ -1583,6 +1586,7 @@ public class HalfEdgeUtils {
         List<GaiaFace> gaiaFaces = new ArrayList<>();
         int[] indices = gaiaFace.getIndices();
         Vector3d normal = gaiaFace.getFaceNormal();
+        int faceId = gaiaFace.getId();
         int indicesCount = indices.length;
 
         for (int i = 0; i < indicesCount - 2; i += 3) {
@@ -1591,6 +1595,7 @@ public class HalfEdgeUtils {
             }
             GaiaFace gaiaTriangleFace = new GaiaFace();
             gaiaTriangleFace.setIndices(new int[]{indices[i], indices[i + 1], indices[i + 2]});
+            gaiaTriangleFace.setId(faceId);
             if (normal != null) {
                 gaiaTriangleFace.setFaceNormal(new Vector3d(normal));
             }
