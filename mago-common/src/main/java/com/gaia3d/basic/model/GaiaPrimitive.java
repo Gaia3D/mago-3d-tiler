@@ -606,6 +606,13 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
             Vector3d transformedPosition = new Vector3d();
             finalMatrix.transformPosition(position, transformedPosition);
             vertex.setPosition(transformedPosition);
+
+            Vector3d normal = vertex.getNormal();
+            if (normal != null) {
+                Vector3d transformedNormal = new Vector3d();
+                finalMatrix.transformPosition(normal, transformedNormal);
+                vertex.setNormal(transformedNormal);
+            }
         }
     }
 
