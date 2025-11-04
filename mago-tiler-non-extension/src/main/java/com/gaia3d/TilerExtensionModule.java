@@ -58,6 +58,11 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
+    public void integralReMeshByObliqueCameraV2(List<SceneInfo> sceneInfos, List<HalfEdgeScene> resultHalfEdgeScenes, ReMeshParameters reMeshParams, GaiaBoundingBox nodeBBox,
+                                                Matrix4d nodeTMatrix, int maxScreenSize, List<BufferedImage> resultImages, String outputPathString, String nodeName) {
+    }
+
+    @Override
     public void voxelize(List<GaiaScene> scenes, List<VoxelGrid3D> resultVoxelGrids, List<GaiaScene> resultGaiaScenes, VoxelizeParameters voxelizeParameters) {
     }
 

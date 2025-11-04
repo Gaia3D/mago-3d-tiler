@@ -62,6 +62,16 @@ public class ReMesherVertexCluster {
         Vector3i sceneMinCellIndex = null;
         Vector3i sceneMaxCellIndex = null;
 
+        GaiaBoundingBox sceneBoundingBox = gaiaScene.updateBoundingBox();
+        double minX = sceneBoundingBox.getMinX();
+        double minY = sceneBoundingBox.getMinY();
+        double minZ = sceneBoundingBox.getMinZ();
+        double maxX = sceneBoundingBox.getMaxX();
+        double maxY = sceneBoundingBox.getMaxY();
+        double maxZ = sceneBoundingBox.getMaxZ();
+
+        double error = 0.01; // 1 cm error margin
+
         for (GaiaPrimitive primitive : primitives) {
             List<GaiaSurface> surfaces = primitive.getSurfaces();
             for (GaiaSurface surface : surfaces) {
@@ -107,7 +117,14 @@ public class ReMesherVertexCluster {
             }
 
             // check if exists the average position for the cell
-            Vector3d averagePosition = cellAveragePositions.get(cellIndex);
+            Vector3d averagePosition = cellAveragePositions.get(cellIndex); // original.***
+            //Vector3d averagePosition = cellGrid.getCellCenter(cellIndex);
+            boolean positionIsMinX = false;
+            boolean positionIsMinY = false;
+            boolean positionIsMinZ = false;
+            boolean positionIsMaxX = false;
+            boolean positionIsMaxY = false;
+            boolean positionIsMaxZ = false;
             if (averagePosition == null) {
                 // Calculate the average position of the cluster
                 averagePosition = new Vector3d();
@@ -116,9 +133,25 @@ public class ReMesherVertexCluster {
                         log.error("ReMesh process: vertex or position is null");
                         continue;
                     }
+                    Vector3d position = vertex.getPosition();
+                    if (Math.abs(position.x - minX) < error) positionIsMinX = true;
+                    if (Math.abs(position.y - minY) < error) positionIsMinY = true;
+                    if (Math.abs(position.z - minZ) < error) positionIsMinZ = true;
+                    if (Math.abs(position.x - maxX) < error) positionIsMaxX = true;
+                    if (Math.abs(position.y - maxY) < error) positionIsMaxY = true;
+                    if (Math.abs(position.z - maxZ) < error) positionIsMaxZ = true;
                     averagePosition.add(vertex.getPosition());
                 }
                 averagePosition.div(cluster.size());
+
+                // check if the average position is boundary position
+                if (positionIsMinX) averagePosition.x = minX;
+                if (positionIsMinY) averagePosition.y = minY;
+                if (positionIsMinZ) averagePosition.z = minZ;
+                if (positionIsMaxX) averagePosition.x = maxX;
+                if (positionIsMaxY) averagePosition.y = maxY;
+                if (positionIsMaxZ) averagePosition.z = maxZ;
+
                 cellAveragePositions.put(cellIndex, averagePosition);
             } else {
                 // If the average position already exists, use it
@@ -163,7 +196,8 @@ public class ReMesherVertexCluster {
         }
 
         // now delete degenerate faces.***
-        primitives.get(0).deleteDegeneratedFaces(); // here deletes no used vertices either.
+        GaiaPrimitive primitive = primitives.get(0);
+        primitive.deleteDegeneratedFaces(); // here deletes no used vertices either.
     }
 
     public static void reMesh(List<SceneInfo> sceneInfos, ReMeshParameters reMeshParameters, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, List<GaiaScene> resultGaiaScenes) {

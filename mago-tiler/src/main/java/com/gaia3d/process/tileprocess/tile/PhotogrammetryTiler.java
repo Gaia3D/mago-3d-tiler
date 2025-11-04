@@ -39,6 +39,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
+import org.joml.Vector3i;
 import org.joml.Vector4d;
 
 import javax.imageio.ImageIO;
@@ -58,8 +59,8 @@ import java.util.stream.Collectors;
 public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
     public final GlobalOptions globalOptions = GlobalOptions.getInstance();
 
-    @Override
-    public Tileset run(List<TileInfo> tileInfos) throws FileNotFoundException {
+    //@Override
+    public Tileset run_original(List<TileInfo> tileInfos) throws FileNotFoundException {
         // In photoRealistic, 1rst make an empty octTree.              *
         // then use rectangleCakeCutter to fill the octTree.           *
         if (tileInfos.isEmpty()) {
@@ -202,7 +203,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
             makeContentsForNodes(nodeTileInfoMap, lod);
 
-            if (d >= 5) {
+            if (d >= 6) {
                 break;
             }
         }
@@ -214,7 +215,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         double frontierMaxDiffAngDeg = 1.0;
         double maxAspectRatio = 15.0;
         decimateParameters.setBasicValues(maxDiffAngDeg, hedgeMinLength, frontierMaxDiffAngDeg, maxAspectRatio, 1000000, 20, 1.8);
-        lod = 6;
+        lod = 7;
         for (int depth = projectMaxDepthIdx - lod; depth >= 0; depth--) {
             tileInfosCopy.clear();
             tileInfosCopy = this.getTileInfosCopy(tileInfos, 0, tileInfosCopy);
@@ -241,6 +242,220 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         tileset.setRoot(root);
         return tileset;
     }
+
+    @Override
+    public Tileset run(List<TileInfo> tileInfos) throws FileNotFoundException {
+        // In photoRealistic, 1rst make an empty octTree.              *
+        // then use rectangleCakeCutter to fill the octTree.           *
+        if (tileInfos.isEmpty()) {
+            throw new TileProcessingException("Error : tileInfos is empty.");
+        }
+        GaiaBoundingBox globalBoundingBox = calcCartographicBoundingBox(tileInfos);
+
+        // make globalBoundingBox as square
+        double minLonDeg = globalBoundingBox.getMinX();
+        double minLatDeg = globalBoundingBox.getMinY();
+        double maxLonDeg = globalBoundingBox.getMaxX();
+        double maxLatDeg = globalBoundingBox.getMaxY();
+
+        // calculate the rootOctTree size
+        double minLatRad = Math.toRadians(minLatDeg);
+        double maxLatRad = Math.toRadians(maxLatDeg);
+        double minLonRad = Math.toRadians(minLonDeg);
+        double maxLonRad = Math.toRadians(maxLonDeg);
+
+        // find max distance
+        double distanceBetweenLat = GlobeUtils.distanceBetweenLatitudesRad(minLatRad, maxLatRad);
+        double distanceBetweenLon = GlobeUtils.distanceBetweenLongitudesRad(minLatRad, minLonRad, maxLonRad);
+        double distanceFinal = Math.max(distanceBetweenLat, distanceBetweenLon);
+
+        double desiredLeafDist = GlobalConstants.REALISTIC_LEAF_TILE_SIZE;
+
+        int projectMaxDepthIdx = (int) Math.ceil(HalfEdgeUtils.log2(distanceFinal / desiredLeafDist));
+        double desiredDistanceBetweenLat = desiredLeafDist * Math.pow(2, projectMaxDepthIdx);
+        double desiredAngRadLat = GlobeUtils.angRadLatitudeForDistance(minLatRad, desiredDistanceBetweenLat);
+        double desiredAngRadLon = GlobeUtils.angRadLongitudeForDistance(minLatRad, desiredDistanceBetweenLat);
+        double desiredAngDegLat = Math.toDegrees(desiredAngRadLat);
+        double desiredAngDegLon = Math.toDegrees(desiredAngRadLon);
+        maxLonDeg = minLonDeg + desiredAngDegLon;
+        maxLatDeg = minLatDeg + desiredAngDegLat;
+        // end calculates the rootOctTree size.---
+
+        // make CUBE boundingBox
+        globalBoundingBox.setMaxZ(globalBoundingBox.getMinZ() + desiredDistanceBetweenLat);// make CUBE boundingBox
+        globalBoundingBox = new GaiaBoundingBox(minLonDeg, minLatDeg, globalBoundingBox.getMinZ(), maxLonDeg, maxLatDeg, globalBoundingBox.getMaxZ(), false);
+
+        Matrix4d transformMatrix = getTransformMatrixFromCartographic(globalBoundingBox);
+        if (globalOptions.isClassicTransformMatrix()) {
+            rotateX90(transformMatrix);
+        }
+
+        Node root = createRoot();
+        root.setNodeCode("R");
+        root.setDepth(0);
+        root.setBoundingVolume(new BoundingVolume(globalBoundingBox, BoundingVolume.BoundingVolumeType.REGION));
+        root.setTransformMatrix(transformMatrix, globalOptions.isClassicTransformMatrix());
+
+        /* Start lod 0 processes */
+        int lod = 0;
+        List<TileInfo> tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, null);
+
+        int currDepth = projectMaxDepthIdx - lod;
+        Map<Node, List<TileInfo>> nodeTileInfoMap = new HashMap<>();
+
+        List<TileInfo> cuttedTileInfos = new ArrayList<>();
+        cuttingAndScissorProcessST(tileInfosCopy, lod, root, cuttedTileInfos, projectMaxDepthIdx); // original.***
+
+        // distribute contents to node in the correspondent depth
+        // After a process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes
+        distributeContentsToNodesOctTree(root, cuttedTileInfos, currDepth, nodeTileInfoMap);
+        makeContentsForNodes(nodeTileInfoMap, lod);
+        /* End lod 0 processes */
+
+        DecimateParameters decimateParameters = new DecimateParameters();
+        for (int d = 1; d <= projectMaxDepthIdx; d++) {
+            lod = d;
+            tileInfosCopy.clear();
+            nodeTileInfoMap.clear();
+            tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
+            double screenPixelsForMeterLod1 = 22.0;
+            double screenPixelsForMeter = 0.0;
+            if (d == 1) {
+                decimateParameters.setBasicValues(6.0, 0.4, 0.9, 32.0, 1000000, 1, 1.0);
+                decimateParameters.setLod(d);
+                screenPixelsForMeter = screenPixelsForMeterLod1;
+            } else if (d == 2) {
+                decimateParameters.setBasicValues(11.0, 0.4, 1.0, 32.0, 1000000, 2, 1.5);
+                decimateParameters.setLod(d);
+                screenPixelsForMeter = screenPixelsForMeterLod1 / 2.0;
+            } else if (d == 3) {
+                decimateParameters.setBasicValues(16.0, 0.6, 1.0, 32.0, 1000000, 2, 2.0);
+                decimateParameters.setLod(d);
+                screenPixelsForMeter = screenPixelsForMeterLod1 / 4.0;
+            } else if (d == 4) {
+                decimateParameters.setBasicValues(22.0, 0.8, 1.0, 32.0, 1000000, 2, 2.5);
+                decimateParameters.setLod(d);
+                screenPixelsForMeter = screenPixelsForMeterLod1 / 8.0;
+            } else {
+                decimateParameters.setBasicValues(25.0, 0.2, 0.9, 32.0, 1000000, 2, 1.0);
+                decimateParameters.setLod(d);
+                screenPixelsForMeter = screenPixelsForMeterLod1 / 16.0;
+            }
+
+            // decimate and cut scenes
+            currDepth = projectMaxDepthIdx - lod;
+            decimateAndCutScenes(tileInfosCopy, lod, root, projectMaxDepthIdx, decimateParameters, screenPixelsForMeter);
+            distributeContentsToNodesOctTree(root, tileInfosCopy, currDepth, nodeTileInfoMap);
+            makeContentsForNodes(nodeTileInfoMap, lod);
+
+            if (d >= 2) {
+                break;
+            }
+        }
+
+        // net surfaces with boxTextures
+        ReMeshParameters reMeshParams = new ReMeshParameters();
+        for (int d = 3; d <= projectMaxDepthIdx; d++) {
+            lod = d;
+            currDepth = projectMaxDepthIdx - lod;
+            double boxSizeForCurrDepth = desiredDistanceBetweenLat / Math.pow(2, (currDepth + 1));
+            double pixelsForMeter = 80.0 / boxSizeForCurrDepth;
+            tileInfosCopy.clear();
+            nodeTileInfoMap.clear();
+            tileInfosCopy = this.getTileInfosCopy(tileInfos, lod, tileInfosCopy);
+            double screenPixelsForMeterLod1 = 22.0;
+            double screenPixelsForMeter = 0.0;
+            // public void setBasicValues(double maxDiffAngDegrees, double hedgeMinLength, double frontierMaxDiffAngDeg, double maxAspectRatio, int maxCollapsesCount)
+            decimateParameters.setBasicValues(10.0, 0.5, 1.0, 6.0, 1000000, 1, 1.8);
+            decimateParameters.setLod(3);
+            if (d <= 3) {
+                decimateParameters.setBasicValues(16.0, 1.0, 1.0, 15.0, 1000000, 1, 1.8);
+                screenPixelsForMeter = screenPixelsForMeterLod1 / 2.0;
+            } else if (d == 4) {
+                decimateParameters.setBasicValues(21.0, 1.2, 1.0, 15.0, 1000000, 1, 1.8);
+                screenPixelsForMeter = screenPixelsForMeterLod1 / 3.0;
+            } else if (d == 5) {
+                decimateParameters.setBasicValues(26.0, 1.5, 1.0, 15.0, 1000000, 1, 1.8);
+                screenPixelsForMeter = screenPixelsForMeterLod1 / 8.0;
+            } else if (d == 6) {
+                decimateParameters.setBasicValues(30.0, 2.0, 1.0, 15.0, 1000000, 1, 1.8);
+                screenPixelsForMeter = screenPixelsForMeterLod1 / 16.0;
+            }
+
+            // make netSurfaces and decimate and cut scenes
+            currDepth = projectMaxDepthIdx - lod;
+
+            // check if remeshParams has Map<Vector3i, Vector3d> cellAveragePositions
+            Map<Vector3i, Vector3d> cellAveragePositions = reMeshParams.getCellAveragePositions();
+            if (!cellAveragePositions.isEmpty()) {
+                Map<Vector3i, Vector3d> cellAveragePositionsUpLevel = new HashMap<>();
+                // we ascend one level in the octree, so we transfer only the cell average positions that belong to the upper level
+                // calculate the new cell grid
+                for (Map.Entry<Vector3i, Vector3d> entry : cellAveragePositions.entrySet()) {
+                    Vector3i cellIndex = entry.getKey();
+                    Vector3i upLevelCellIndex = new Vector3i(cellIndex.x / 2, cellIndex.y / 2, cellIndex.z / 2);
+                    if (!cellAveragePositionsUpLevel.containsKey(upLevelCellIndex)) {
+                        cellAveragePositionsUpLevel.put(upLevelCellIndex, entry.getValue());
+                    } else {
+                        // average the positions
+                        Vector3d existingPos = cellAveragePositionsUpLevel.get(upLevelCellIndex);
+                        Vector3d newPos = entry.getValue();
+                        Vector3d avgPos = new Vector3d(
+                                (existingPos.x + newPos.x) / 2.0,
+                                (existingPos.y + newPos.y) / 2.0,
+                                (existingPos.z + newPos.z) / 2.0
+                        );
+                        cellAveragePositionsUpLevel.put(upLevelCellIndex, avgPos);
+                    }
+                }
+
+                reMeshParams.setCellAveragePositions(cellAveragePositionsUpLevel);
+            }
+
+            cuttedTileInfos.clear();
+            cuttingAndScissorProcessST(tileInfosCopy, lod, root, cuttedTileInfos, projectMaxDepthIdx); // original.***
+            integralReMeshScenesV2(cuttedTileInfos, lod, currDepth, root, projectMaxDepthIdx, decimateParameters, pixelsForMeter, screenPixelsForMeter, reMeshParams);
+
+            if (d >= 7) {
+                break;
+            }
+        }
+
+        // Check if is necessary netSurfaces nodes
+        double maxDiffAngDeg = 20.0;
+        double hedgeMinLength = 1.5;
+        hedgeMinLength = 0.1;
+        double frontierMaxDiffAngDeg = 1.0;
+        double maxAspectRatio = 15.0;
+        decimateParameters.setBasicValues(maxDiffAngDeg, hedgeMinLength, frontierMaxDiffAngDeg, maxAspectRatio, 1000000, 20, 1.8);
+        lod = 8;
+        for (int depth = projectMaxDepthIdx - lod; depth >= 0; depth--) {
+            tileInfosCopy.clear();
+            tileInfosCopy = this.getTileInfosCopy(tileInfos, 0, tileInfosCopy);
+            createNetSurfaceNodes(root, tileInfosCopy, depth, projectMaxDepthIdx, decimateParameters);
+        }
+
+        // now, delete nodes that have no contents
+        root.deleteNoContentNodes();
+        setGeometryErrorToNodeManual(root, projectMaxDepthIdx);
+
+        root.setGeometricError(1000.0);
+
+        Tileset tileset;
+        if (globalOptions.getTilesVersion().equals("1.0")) {
+            tileset = new Tileset();
+            AssetV1 asset = new AssetV1();
+            tileset.setAsset(asset);
+        } else {
+            tileset = new TilesetV2();
+            AssetV2 asset = new AssetV2();
+            tileset.setAsset(asset);
+        }
+        tileset.setGeometricError(1000.0);
+        tileset.setRoot(root);
+        return tileset;
+    }
+
 
     private void cuttingAndScissorProcessST(List<TileInfo> tileInfos, int lod, Node rootNode, List<TileInfo> resultTileInfos, int maxDepth) {
         // Single-threading
@@ -618,13 +833,40 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         }
 
         // ifc round bridge settings.***
-        voxelSizeMeter = maxSize / 40.0;
+        voxelSizeMeter = maxSize / 30.0;
         texturePixelSize = maxSize / 512.0;
         texturePixelsForMeter = 1.0 / texturePixelSize;
+
+        int tileInfosCount = tileInfos.size();
+
+        // 1rst, calculate the average bbox minSize among tileInfos.***
+//        double bboxMinSize = Double.MAX_VALUE;
+//        double averageBBoxMinSize = 0.0;
+//        for (int i = 0; i < tileInfosCount; i++) {
+//            TileInfo tileInfo = tileInfos.get(i);
+//            GaiaBoundingBox bbox = tileInfo.getBoundingBox();
+//            double tileMinSizeX = bbox.getSizeX();
+//            double tileMinSizeY = bbox.getSizeY();
+//            if (tileMinSizeX < bboxMinSize) {
+//                bboxMinSize = tileMinSizeX;
+//            }
+//
+//            if (tileMinSizeY < bboxMinSize) {
+//                bboxMinSize = tileMinSizeY;
+//            }
+//
+//            averageBBoxMinSize += bboxMinSize;
+//        }
+//
+//        averageBBoxMinSize = averageBBoxMinSize / (double) tileInfosCount;
 
         // Re mesh by vertex clustering.***************************************************************************
         Vector3d cellGridOrigin = new Vector3d();
         double cellSize = voxelSizeMeter;
+//        if (cellSize > averageBBoxMinSize * 0.5) {
+//            cellSize = averageBBoxMinSize * 0.5;
+//            log.info("Cell Size is adjusted to bboxMinSize / 1.5 : " + cellSize);
+//        }
         CellGrid3D cellGrid = new CellGrid3D(cellGridOrigin, cellSize);
         ReMeshParameters reMeshParams = new ReMeshParameters();
         reMeshParams.setTexturePixelsForMeter(texturePixelsForMeter);
@@ -632,7 +874,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 
         int totalTexturesSaved = 0;
 
-        int tileInfosCount = tileInfos.size();
+        tileInfosCount = tileInfos.size();
         for (int i = 0; i < tileInfosCount; i++) {
             log.info("ReMeshing and cutting scene : " + i + " of " + tileInfosCount + " for lod : " + lod);
             TileInfo tileInfo = tileInfos.get(i);
@@ -787,6 +1029,252 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 
         tileInfos.clear();
         tileInfos.addAll(newTileInfos);
+    }
+
+    public void integralReMeshScenesV2(List<TileInfo> tileInfos, int lod, int nodeDepth, Node rootNode, int maxDepth, DecimateParameters decimateParameters,
+                                       double pixelsForMeter, double screenPixelsForMeter, ReMeshParameters reMeshParams) {
+        // 1rst, find all tileInfos that intersects with the node
+        log.info("Creating netSurface nodes for nodeDepth : " + nodeDepth + " of maxDepth : " + maxDepth);
+        List<Node> nodes = new ArrayList<>();
+        List<Node> intersectedNodes = new ArrayList<>();
+
+        List<TileInfo> tileInfosOfNode = new ArrayList<>();
+        TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
+        boolean makeVerticalSkirt = true;
+
+        // ReMeshParameters.***
+        GaiaBoundingBox rootNodeBBoxLC = rootNode.calculateLocalBoundingBox();
+        Matrix4d rootTransformMatrix = getNodeTransformMatrix(rootNode);
+        Matrix4d rootTransformMatrixInverse = new Matrix4d(rootTransformMatrix);
+        rootTransformMatrixInverse.invert();
+
+        Map<Node, List<TileInfo>> nodeTileInfosMap = new HashMap<>();
+        for (TileInfo tileInfo : tileInfos) {
+            GaiaBoundingBox cartographicBBox = tileInfo.getCartographicBBox();
+            if (cartographicBBox == null) {
+                log.error("[ERROR] cartographicBBox is null.");
+                continue;
+            }
+
+            intersectedNodes.clear();
+            //*************************************************************************************************************************************
+            // in integral-reMesh, the intersection between node and tileInfo must be between node and the cartographicCenterDegree of tileInfo.***
+            Vector3d cartographicCenterDegree = cartographicBBox.getCenter();
+            rootNode.getIntersectedNodesAsOctree(cartographicCenterDegree, nodeDepth, intersectedNodes);
+            //*************************************************************************************************************************************
+
+            int intersectedNodesCount = intersectedNodes.size();
+            for (int i = 0; i < intersectedNodesCount; i++) {
+                Node node = intersectedNodes.get(i);
+                if (node.getDepth() != nodeDepth) continue;
+                List<TileInfo> tileInfosOfNodeList = nodeTileInfosMap.computeIfAbsent(node, k -> new ArrayList<>());
+                tileInfosOfNodeList.add(tileInfo);
+            }
+        }
+
+        // 1rst, calculate the average bbox minSize among tileInfos.***
+        double bboxMinSize = Double.MAX_VALUE;
+        double averageBBoxMinSize = 0.0;
+        int tileInfosCount = tileInfos.size();
+        for (int i = 0; i < tileInfosCount; i++) {
+            TileInfo tileInfo = tileInfos.get(i);
+            GaiaBoundingBox bbox = tileInfo.getBoundingBox();
+            double tileMinSizeX = bbox.getSizeX();
+            double tileMinSizeY = bbox.getSizeY();
+
+            if (tileMinSizeX < tileMinSizeY) {
+                bboxMinSize = tileMinSizeX;
+            } else {
+                bboxMinSize = tileMinSizeY;
+            }
+
+            averageBBoxMinSize += bboxMinSize;
+        }
+
+        averageBBoxMinSize = averageBBoxMinSize / (double) tileInfosCount;
+
+        // Re mesh by vertex clustering.***************************************************************************
+        double maxSize = rootNodeBBoxLC.getMaxSize();
+        // the maxSize is for rootNode that has maxDepth.***
+        // so, the maxSize rof lod is maxSize / Math.pow(2, maxDepth - lod);
+        if (lod > 0) {
+            maxSize = maxSize / Math.pow(2, maxDepth - lod);
+        }
+
+        // ifc round bridge settings.***
+        double voxelSizeMeter = maxSize / 40.0;
+        double texturePixelSize = maxSize / 512.0;
+        double texturePixelsForMeter = 1.0 / texturePixelSize;
+
+
+        Vector3d cellGridOrigin = new Vector3d(0.0, 0.0, 0.0);
+        double cellSize = voxelSizeMeter;
+        double factor = 0.9;
+        if (cellSize > averageBBoxMinSize * factor) {
+            cellSize = averageBBoxMinSize * factor;
+            log.info("Cell Size is adjusted to bboxMinSize * 0.9 : " + cellSize);
+
+            // delete cellAveragePositions of reMeshParams because the new cellSize is not the half of the old cellSize.***
+            Map<Vector3i, Vector3d> cellAveragePositions = reMeshParams.getCellAveragePositions();
+            if (cellAveragePositions != null) {
+                cellAveragePositions.clear();
+            }
+        }
+
+        CellGrid3D cellGrid = new CellGrid3D(cellGridOrigin, cellSize);
+        reMeshParams.setTexturePixelsForMeter(texturePixelsForMeter);
+        reMeshParams.setCellGrid(cellGrid);
+        // End reMeshParameters.***
+
+        nodes = new ArrayList<>(nodeTileInfosMap.keySet());
+
+        int nodesCount = nodes.size();
+        for (int i = 0; i < nodesCount; i++) {
+            tileInfosOfNode.clear();
+            Node node = nodes.get(i);
+
+            tileInfosOfNode = nodeTileInfosMap.get(node);
+
+            int tileInfosOfNodeCount = tileInfosOfNode.size();
+            if (tileInfosOfNodeCount == 0) continue;
+
+            node.setRefine(Node.RefineType.REPLACE);
+
+            // create sceneInfos
+            List<SceneInfo> sceneInfos = new ArrayList<>();
+            for (int j = 0; j < tileInfosOfNodeCount; j++) {
+                TileInfo tileInfo = tileInfosOfNode.get(j);
+                SceneInfo sceneInfo = new SceneInfo();
+                sceneInfo.setScenePath(tileInfo.getTempPath().toString());
+                TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
+                Vector3d geoCoordPosition = tileTransformInfo.getPosition();
+                Vector3d posWC = GlobeUtils.geographicToCartesianWgs84(geoCoordPosition);
+                Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(posWC);
+                sceneInfo.setTransformMatrix(transformMatrix);
+
+                // for remeshParams.******************************************************************************************
+                Vector3d geoCoordCenter = tileInfo.getTileTransformInfo().getPosition(); // use TileTransformInfo position instead of KmlInfo position
+                Vector3d scenePosWC = GlobeUtils.geographicToCartesianWgs84(geoCoordCenter);
+                Vector4d scenePosLC4d = new Vector4d(scenePosWC.x, scenePosWC.y, scenePosWC.z, 1.0);
+                scenePosLC4d = rootTransformMatrixInverse.transform(scenePosLC4d);
+                Vector3d scenePosLC = new Vector3d(scenePosLC4d.x, scenePosLC4d.y, scenePosLC4d.z);
+
+                sceneInfo.setScenePosLC(scenePosLC);
+
+                sceneInfos.add(sceneInfo);
+            }
+
+            if (sceneInfos.isEmpty()) {
+                log.error("[ERROR] Error : sceneInfos is empty.");
+                continue;
+            }
+
+            // render the sceneInfos and obtain the color and depth images
+            List<BufferedImage> resultImages = new ArrayList<>();
+            int bufferedImageType = BufferedImage.TYPE_INT_RGB;
+
+            Vector3d nodeCenterGeoCoordRad = node.getBoundingVolume().calcCenter();
+            Vector3d nodeCenterGeoCoordDeg = new Vector3d(Math.toDegrees(nodeCenterGeoCoordRad.x), Math.toDegrees(nodeCenterGeoCoordRad.y), nodeCenterGeoCoordRad.z);
+            Vector3d nodePosWC = GlobeUtils.geographicToCartesianWgs84(nodeCenterGeoCoordDeg);
+            Matrix4d nodeTMatrix = node.getTransformMatrix();
+            if (nodeTMatrix == null) {
+                nodeTMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(nodePosWC);
+            }
+            GaiaBoundingBox nodeBBoxLC = node.calculateLocalBoundingBox();
+            //GaiaBoundingBox nodeCartographicBBox = node.calculateCartographicBoundingBox();
+
+            log.info("nodeCode : " + node.getNodeCode() + "currNodeIdx : " + i + "of : " + nodesCount);
+            int maxScreenSize = 1024;
+
+            List<HalfEdgeScene> resultHalfEdgeScenes = new ArrayList<>();
+            String outputPathString = globalOptions.getOutputPath();
+            String nodeName = "node_L_" + nodeDepth + "_" + i;
+            tilerExtensionModule.integralReMeshByObliqueCameraV2(sceneInfos, resultHalfEdgeScenes, reMeshParams, nodeBBoxLC,
+                    nodeTMatrix, maxScreenSize, resultImages, outputPathString, nodeName);
+            //************************************************************************************************************************************************
+            if (resultHalfEdgeScenes.isEmpty()) {
+                log.info("IntegralReMesh resultHalfEdgeScenes is empty.");
+                continue;
+            }
+
+            HalfEdgeScene halfEdgeScene = resultHalfEdgeScenes.get(0);
+
+            String netTempPathString = outputPathString + File.separator + "temp" + File.separator + "reMeshTemp";
+            String netSetFolderPathString = netTempPathString + File.separator + nodeName;
+            Path netSetFolderPath = Paths.get(netSetFolderPathString);
+
+            GaiaScene gaiaScene = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
+            GaiaSet gaiaSet = GaiaSet.fromGaiaScene(gaiaScene);
+            Path netSetPath = Paths.get(netSetFolderPathString + File.separator + "netSet_nodeDepth_" + nodeDepth + "_" + i + ".tmp");
+            gaiaSet.writeFileInThePath(netSetPath);
+
+            List<GaiaNode> gaiaNodes = gaiaScene.getNodes();
+            for (GaiaNode gaiaNode : gaiaNodes) {
+                gaiaNode.clear();
+            }
+
+            //calculate lod
+            //int lod = maxDepth - nodeDepth;
+            double netSurfaceGeometricError = (lod + 1);
+            node.setGeometricError(netSurfaceGeometricError);
+
+            // make contents for the node
+            List<TileInfo> netTileInfos = new ArrayList<>();
+            TileInfo tileInfoNet = TileInfo.builder().scene(gaiaScene).outputPath(netSetFolderPath).build();
+            tileInfoNet.setTempPath(netSetPath);
+            Matrix4d transformMatrixNet = new Matrix4d(nodeTMatrix);
+            tileInfoNet.setTransformMatrix(transformMatrixNet);
+            tileInfoNet.setBoundingBox(nodeBBoxLC);
+            tileInfoNet.setCartographicBBox(null);
+
+            // make a kmlInfo for the cut scene
+            TileTransformInfo tileTransformInfoCut = TileTransformInfo.builder().position(nodeCenterGeoCoordDeg).build();
+            tileInfoNet.setTileTransformInfo(tileTransformInfoCut);
+            netTileInfos.add(tileInfoNet);
+
+            ContentInfo contentInfo = new ContentInfo();
+            String nodeCode = node.getNodeCode();
+            contentInfo.setName(nodeCode);
+            LevelOfDetail lodLevel = LevelOfDetail.getByLevel(3);
+            int lodError = lodLevel.getGeometricError();
+            contentInfo.setLod(lodLevel);
+            GaiaBoundingBox nodeCartographicBBox = node.calculateCartographicBoundingBox();
+            contentInfo.setBoundingBox(nodeCartographicBBox); // must be cartographicBBox
+            contentInfo.setNodeCode(node.getNodeCode());
+            contentInfo.setTileInfos(netTileInfos);
+            contentInfo.setRemainTileInfos(null);
+            contentInfo.setTransformMatrix(nodeTMatrix);
+
+            Content content = new Content();
+            if (globalOptions.getTilesVersion().equals("1.0")) {
+                content.setUri("data/" + nodeCode + ".b3dm");
+            } else {
+                content.setUri("data/" + nodeCode + ".glb");
+            }
+            content.setContentInfo(contentInfo);
+            if (node.getContent() != null) {
+                log.info("Error : node.getContent() is not null. NetSurfaces lod 5 or more******************************");
+            }
+            node.setContent(content);
+
+            // delete scenes
+            halfEdgeScene.deleteObjects();
+            gaiaScene.clear();
+            gaiaSet.clear();
+
+//            // test save resultImages
+//            String sceneName = "mosaicRenderTest_" + i + "_color";
+//            String sceneRawName = sceneName;
+//            String imageExtension = "jpg";
+//            String outputFolderPath = globalOptions.getOutputPath();
+//            try {
+//                File outputFile = new File(outputFolderPath, sceneRawName + "." + imageExtension);
+//                log.info("[Write Image] : {}", outputFile.getAbsoluteFile());
+//                ImageIO.write(bufferedImageColor, "jpg", outputFile);
+//            } catch (Exception e) {
+//                log.error("[ERROR] :", e);
+//            }
+        }
     }
 
     private Matrix4d getNodeTransformMatrix(Node node) {
@@ -1512,7 +2000,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         }
 
         HalfEdgeOctreeFaces resultOctree = new HalfEdgeOctreeFaces(null, boundingBox);
-        //resultOctree.setSize(boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ(), boundingBox.getMaxX(), boundingBox.getMaxY(), boundingBox.getMaxZ());
         resultOctree.setLimitDepth(depthIdx - lod);
 
         List<TileInfo> cutTileInfos = this.cutHalfEdgeSceneByGaiaAAPlanesAndSaveTileInfos(halfEdgeScene, allPlanes, resultOctree, scissorTextures, makeSkirt, cutTempLodPath, transformMatrix, tileInfo);
@@ -1532,10 +2019,15 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 
         double error = 1e-4;
         int planesCount = planes.size();
+        boolean cut = false;
         for (int i = 0; i < planesCount; i++) {
             GaiaAAPlane plane = planes.get(i);
-            halfEdgeScene.cutByPlane(plane.getPlaneType(), plane.getPoint(), error);
+            if (halfEdgeScene.cutByPlane(plane.getPlaneType(), plane.getPoint(), error)) {
+                cut = true;
+            }
         }
+
+        List<TileInfo> cutTileInfos = new ArrayList<>();
 
         halfEdgeScene.deleteDegeneratedFaces();
 
@@ -1554,11 +2046,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 
         resultOctree.distributeFacesToTargetDepth(resultOctree.getLimitDepth());
         List<GaiaOctree<HalfEdgeFace>> octreesWithContents = resultOctree.extractOctreesWithContents();
-        //resultOctree.extractOctreesWithFaces(octreesWithContents);
-
-        // now, separate the surface by the octrees
-        //List<HalfEdgeScene> resultScenes = new ArrayList<>();
-        List<TileInfo> cutTileInfos = new ArrayList<>();
 
         // set the classifyId for each face
         int octreesCount = octreesWithContents.size();
@@ -1576,7 +2063,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             // create a new HalfEdgeScene
             HalfEdgeScene cuttedScene = halfEdgeScene.cloneByClassifyId(classifyId);
             cuttedScene.deleteNoUsedMaterials();
-            if (scissorTextures) {
+            if (scissorTextures && cut) {
                 cuttedScene.scissorTexturesByMotherScene(halfEdgeScene.getMaterials());
             }
 
