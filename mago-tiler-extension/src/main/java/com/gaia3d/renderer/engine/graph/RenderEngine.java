@@ -224,6 +224,14 @@ public class RenderEngine {
         GL20.glLineWidth(1.0f);
     }
 
+    private double linearToSrgb(double linear) {
+        if (linear <= 0.0031308) {
+            return linear * 12.92;
+        } else {
+            return (1.055 * Math.pow(linear, 1.0/2.4) - 0.055);
+        }
+    }
+
     private void renderGaiaMesh(RenderableMesh renderableMesh, ShaderProgram shaderProgram) {
         UniformsMap uniformsMap = shaderProgram.getUniformsMap();
 
@@ -296,7 +304,13 @@ public class RenderEngine {
                         GL30.glActiveTexture(GL20.GL_TEXTURE1);
                         GL30.glBindTexture(GL20.GL_TEXTURE_2D, normalTexture.getTextureId());
                         textureBinded = true;
+                        // set up uniform to disable normal mapping
+                        uniformsMap.setUniform1i("uUseNormalMap", 1);
                     }
+                }
+                else {
+                    // set up uniform to disable normal mapping
+                    uniformsMap.setUniform1i("uUseNormalMap", 0);
                 }
             }
 
@@ -312,8 +326,14 @@ public class RenderEngine {
             if (!textureBinded) {
                 // get diffuse color from material
                 Vector4d diffuseColor = material.getDiffuseColor();
+                Vector4d srgb = new Vector4d();
+                srgb.x = linearToSrgb(diffuseColor.x);
+                srgb.y = linearToSrgb(diffuseColor.y);
+                srgb.z = linearToSrgb(diffuseColor.z);
+                diffuseColor = srgb;
+
                 uniformsMap.setUniform1i("uColorMode", 0);
-                uniformsMap.setUniform4fv("uOneColor", new Vector4f((float) diffuseColor.x, (float) diffuseColor.y, (float) diffuseColor.z, (float) diffuseColor.w));
+                uniformsMap.setUniform4fv("uOneColor", new Vector4f((float) srgb.x, (float) srgb.y, (float) srgb.z, (float) srgb.w));
             }
 
             if (status == 1) {

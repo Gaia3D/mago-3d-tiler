@@ -122,7 +122,7 @@ public class MainRendererBillBoard implements IAppLogic {
             gaiaScenesContainer.setCamera(camera);
 
             resultBufferedImages.clear();
-            GaiaPrimitive primitive = engine.makeRectangleTextureByCameraDirection(scene, camDir, resultBufferedImages, bufferImageType, classifyId);
+            GaiaPrimitive primitive = engine.makeRectangleTextureByCameraDirection4Tree(scene, camDir, resultBufferedImages, bufferImageType, classifyId);
             faces.clear();
             primitive.extractGaiaFaces(faces);
             for (int j = 0; j < faces.size(); j++) {
@@ -147,6 +147,7 @@ public class MainRendererBillBoard implements IAppLogic {
             int hola = 0;
         }
 
+        float trunkHeight = 0.0f;
         // horizontal rectangles. here the camera direcction (0, 0, -1) is looking down always.
         Vector3d camDir = new Vector3d(0, 0, -1);
         Vector3d camUp = new Vector3d(0, 1, 0);
@@ -156,12 +157,20 @@ public class MainRendererBillBoard implements IAppLogic {
         camera.setUp(camUp);
         gaiaScenesContainer.setCamera(camera);
         Vector3d bboxFloorCenter = bbox.getFloorCenter();
-        double increDist = bbox.getSizeZ() / (horizontalPlanesCount + 1);
+        double increDist = (bbox.getSizeZ() - trunkHeight) / (horizontalPlanesCount + 1);
         for (int i = 0; i < horizontalPlanesCount; i++) {
             resultBufferedImages.clear();
             GaiaBoundingBox delimiterBBox = new GaiaBoundingBox();
-            delimiterBBox.set(bbox.getMinX(), bbox.getMinY(), bboxFloorCenter.z + (i + 1) * increDist, bbox.getMaxX(), bbox.getMaxY(), bboxTopCenter.z);
-            GaiaPrimitive primitive = engine.makeRectangleTextureByCameraDirectionTreeBillboradTopDown(scene, camDir, resultBufferedImages, bufferImageType, delimiterBBox, classifyId);
+            double bboxFloorZ = -(increDist / 2) + trunkHeight + bboxFloorCenter.z + (i + 1) * increDist;
+            double bboxCeilZ = -(increDist / 2) + trunkHeight + bboxFloorCenter.z + (i + 2) * increDist;
+
+            if (i == 0) {
+                //bboxFloorZ = bboxFloorCenter.z;
+            }
+
+            delimiterBBox.set(bbox.getMinX(), bbox.getMinY(), bboxFloorZ, bbox.getMaxX(), bbox.getMaxY(), bboxCeilZ);
+
+            GaiaPrimitive primitive = engine.makeRectangleTextureByCameraDirectionTreeBillboradTopDown4Tree(scene, camDir, resultBufferedImages, bufferImageType, delimiterBBox, classifyId);
             faces.clear();
             primitive.extractGaiaFaces(faces);
             for (int j = 0; j < faces.size(); j++) {

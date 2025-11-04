@@ -3,7 +3,6 @@ package com.gaia3d.renderer.engine;
 import com.gaia3d.basic.exchangable.GaiaBufferDataSet;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.halfedge.*;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.TextureType;
@@ -21,7 +20,6 @@ import com.gaia3d.renderer.renderable.RenderableGaiaScene;
 import com.gaia3d.renderer.renderable.RenderablePrimitive;
 import com.gaia3d.renderer.renderable.SelectionColorManager;
 import com.gaia3d.util.GaiaColorUtils;
-import com.gaia3d.util.GaiaSceneUtils;
 import com.gaia3d.util.GaiaTextureUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,8 +31,6 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -858,8 +854,8 @@ public class Engine {
         }
     }
 
-    public GaiaPrimitive makeRectangleTextureByCameraDirectionTreeBillboradTopDown(GaiaScene gaiaScene, Vector3d cameraDirection, List<BufferedImage> resultBufferedImages, int bufferImageType,
-                                                                                   GaiaBoundingBox optionalDelimiterBBox, int idxTest) {
+    public GaiaPrimitive makeRectangleTextureByCameraDirectionTreeBillboradTopDown4Tree(GaiaScene gaiaScene, Vector3d cameraDirection, List<BufferedImage> resultBufferedImages, int bufferImageType,
+                                                                                        GaiaBoundingBox optionalDelimiterBBox, int idxTest) {
         // Function used by MainRendererBillboard to make the rectangle texture of the scene (a tree).
         // Calculate bbox relative to camera direction
         GaiaBoundingBox bbox = gaiaScene.updateBoundingBox();
@@ -944,10 +940,10 @@ public class Engine {
         double yLength = bboxTransformed.getSizeY();
         double midZ = bboxTransformed.getCenter().z;
 
-        Vector4d pos0RelToCamera = new Vector4d(minX, minY, minZ, 1.0);
-        Vector4d pos1RelToCamera = new Vector4d(maxX, minY, minZ, 1.0);
-        Vector4d pos2RelToCamera = new Vector4d(maxX, maxY, minZ, 1.0);
-        Vector4d pos3RelToCamera = new Vector4d(minX, maxY, minZ, 1.0);
+        Vector4d pos0RelToCamera = new Vector4d(minX, minY, midZ, 1.0);
+        Vector4d pos1RelToCamera = new Vector4d(maxX, minY, midZ, 1.0);
+        Vector4d pos2RelToCamera = new Vector4d(maxX, maxY, midZ, 1.0);
+        Vector4d pos3RelToCamera = new Vector4d(minX, maxY, midZ, 1.0);
 
         Vector4d pos0ModelCoords = new Vector4d();
         Vector4d pos1ModelCoords = new Vector4d();
@@ -971,7 +967,7 @@ public class Engine {
         v1.setPosition(new Vector3d(pos1ModelCoords.x, pos1ModelCoords.y, pos1ModelCoords.z));
         v2.setPosition(new Vector3d(pos2ModelCoords.x, pos2ModelCoords.y, pos2ModelCoords.z));
         v3.setPosition(new Vector3d(pos3ModelCoords.x, pos3ModelCoords.y, pos3ModelCoords.z));
-        v4.setPosition(new Vector3d(modelCenter.x, modelCenter.y, pos3ModelCoords.z - 0.1d)); // top center vertex
+        v4.setPosition(new Vector3d(modelCenter.x, modelCenter.y, pos3ModelCoords.z + 0.1)); // top center vertex
 
         // set texCoords
         v0.setTexcoords(new Vector2d(0.0, 1.0 - 0.0)); // invert the texCoordY
@@ -986,8 +982,9 @@ public class Engine {
         v0.getPosition().sub(v1.getPosition(), edge1);
         v0.getPosition().sub(v2.getPosition(), edge2);
         Vector3d normal = new Vector3d();
-        edge2.cross(edge1, normal);
+        edge1.cross(edge2, normal);
         normal.normalize();
+
         v0.setNormal(new Vector3d(normal));
         v1.setNormal(new Vector3d(normal));
         v2.setNormal(new Vector3d(normal));
@@ -1154,7 +1151,6 @@ public class Engine {
         ShaderProgram sceneShaderProgram = shaderManager.getShaderProgram("sceneDelimited_v2");
         sceneShaderProgram.bind();
 
-
         // set uniform map
         UniformsMap uniformsMap = sceneShaderProgram.getUniformsMap();
         uniformsMap.setUniform1i("albedoTexture", 0); // GL_TEXTURE0
@@ -1203,7 +1199,7 @@ public class Engine {
         return resultPrimitive;
     }
 
-    public GaiaPrimitive makeRectangleTextureByCameraDirection(GaiaScene gaiaScene, Vector3d cameraDirection, List<BufferedImage> resultBufferedImages, int bufferImageType, int idxTest) {
+    public GaiaPrimitive makeRectangleTextureByCameraDirection4Tree(GaiaScene gaiaScene, Vector3d cameraDirection, List<BufferedImage> resultBufferedImages, int bufferImageType, int idxTest) {
         // Function used by MainRendererBillboard to make the rectangle texture of the scene (a tree).
         // Calculate bbox relative to camera direction
         GaiaBoundingBox bbox = gaiaScene.updateBoundingBox();
@@ -1245,6 +1241,34 @@ public class Engine {
         }
         // End of transform the vertices relative to camera.-------------------------------------------------------------
 
+
+        // find tree root position
+        Vector3d candidate = null;
+        for (Vector3d transformedVertex : transformedVertices) {
+            if (candidate == null) {
+                candidate = transformedVertex;
+            } else {
+                if (transformedVertex.y < candidate.y) {
+                    candidate = transformedVertex;
+                }
+            }
+        }
+        double tolorance = 0.1;
+        Vector3d treeRootPosition = new Vector3d();
+        int count = 0;
+        for (Vector3d transformedVertex : transformedVertices) {
+            if (Math.abs(transformedVertex.y - candidate.y) < tolorance) {
+                treeRootPosition.add(transformedVertex);
+                count++;
+            }
+        }
+        treeRootPosition.set(treeRootPosition.x / count, treeRootPosition.y / count, treeRootPosition.z / count);
+
+        Vector3d cameraPosition = camera.getPosition();
+
+        double xOffset = treeRootPosition.x;
+        double zOffset = treeRootPosition.z;
+
         GaiaBoundingBox bboxTransformed = new GaiaBoundingBox();
         bboxTransformed.setFromPoints(transformedVertices);
         Vector3d center = bboxTransformed.getCenter();
@@ -1263,15 +1287,16 @@ public class Engine {
         GaiaVertex v2 = new GaiaVertex();
         GaiaVertex v3 = new GaiaVertex();
 
-        double maxX = bboxTransformed.getMaxX();
-        double maxY = bboxTransformed.getMaxY();
         double minX = bboxTransformed.getMinX();
+        double maxX = bboxTransformed.getMaxX();
         double minY = bboxTransformed.getMinY();
-        double maxZ = bboxTransformed.getMaxZ();
+        double maxY = bboxTransformed.getMaxY();
         double minZ = bboxTransformed.getMinZ();
+        double maxZ = bboxTransformed.getMaxZ();
         double xLength = bboxTransformed.getSizeX();
         double yLength = bboxTransformed.getSizeY();
-        double midZ = bboxTransformed.getCenter().z;
+        //double midZ = bboxTransformed.getCenter().z;
+        double midZ = treeRootPosition.z; // place the rectangle at the tree root z position
 
         Vector4d pos0RelToCamera = new Vector4d(minX, minY, midZ, 1.0);
         Vector4d pos1RelToCamera = new Vector4d(maxX, minY, midZ, 1.0);
@@ -1305,7 +1330,7 @@ public class Engine {
         v0.getPosition().sub(v1.getPosition(), edge1);
         v0.getPosition().sub(v2.getPosition(), edge2);
         Vector3d normal = new Vector3d();
-        edge2.cross(edge1, normal);
+        edge1.cross(edge2, normal);
         normal.normalize();
         v0.setNormal(new Vector3d(normal));
         v1.setNormal(new Vector3d(normal));

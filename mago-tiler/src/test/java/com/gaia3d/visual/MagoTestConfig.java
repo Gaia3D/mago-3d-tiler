@@ -7,6 +7,7 @@ import java.io.File;
 
 public class MagoTestConfig {
     public static final String OUTPUT_PATH = "E:/data/mago-server/output";
+    public static final String SSD_INPUT_PATH = "C:/Workspace/mago-3d-tiler/";
     public static final String INPUT_PATH = "D:/data/mago-3d-tiler/release-sample";
     public static final String TEMP_PATH = "D:/data/mago-3d-tiler/temp-sample";
     public static final String TERRAIN_PATh = "D:/data/mago-3d-tiler/terrain-sample";
@@ -17,6 +18,9 @@ public class MagoTestConfig {
     }
     public  static File getTempPath(String path) {
         return new File(MagoTestConfig.TEMP_PATH, path);
+    }
+    public static File getSsdInputPath(String path) {
+        return new File(MagoTestConfig.SSD_INPUT_PATH, path);
     }
     public static File getInputPath(String path) {
         return new File(MagoTestConfig.INPUT_PATH, path);

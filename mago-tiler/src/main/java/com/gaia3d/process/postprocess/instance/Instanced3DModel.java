@@ -289,8 +289,8 @@ public class Instanced3DModel implements ContentModel {
                     }
                 }*/
 
-                Matrix4d transformMatrix = resultGaiaScene.getNodes().get(0).getTransformMatrix();
-                transformMatrix.rotateX(Math.toRadians(-90));
+                //Matrix4d transformMatrix = resultGaiaScene.getNodes().get(0).getTransformMatrix();
+                //transformMatrix.rotateX(Math.toRadians(-90));
 
                 gltfWriter.writeGlb(resultGaiaScene, file);
             }

@@ -7,6 +7,8 @@ uniform sampler2D normalTexture;// texture1
 // colorMode = 0: oneColor, 1: vertexColor, 2: textureColor
 uniform int uColorMode;
 uniform vec4 uOneColor;
+// unuse = 0, use = 1
+uniform int uUseNormalMap;
 
 uniform vec3 bboxMin;// render only the part of the scene that is inside the bounding box
 uniform vec3 bboxMax;// render only the part of the scene that is inside the bounding box
@@ -59,12 +61,16 @@ void main(void) {
     }
 
     outAlbedo = finalColor;
+    //outAlbedo = vec4(vCamDir, 1.0);
 
     // Transform normal from tangent to world space
-    mat3 TBN = mat3(vTangent, vBitangent, vNormal);
-    //mat3 tbnInverse = inverse(TBN);
-    vec3 n = decodedNormal(vTexCoord);
-    n = normalize(TBN * n);
+    vec3 n = vNormal;
+    if (uUseNormalMap == 1) {
+        mat3 TBN = mat3(vTangent, vBitangent, vNormal);
+        //mat3 tbnInverse = inverse(TBN);
+        vec3 n = decodedNormal(vTexCoord);
+        n = normalize(TBN * n);
+    }
 
     // now, with camDir and camUp make TBN2 matrix to transform from world to view space
     //    vec3 camRight = normalize(cross(vCamDir, vCamUp));
