@@ -233,52 +233,7 @@ public class GaiaSet implements Serializable {
             if (!imageFile.exists()) {
                 log.error("[ERROR] Texture Input Image Path is not exists. {}", diffusePath);
             } else {
-                // Limit file size to 512KB
-                if (imageFile.length() > 4096 * 1024) {
-                    log.warn("[WARN] Texture Input Image File size is {} bytes.", imageFile.length());
-
-                    // mime type check
-                    boolean isJpeg = imageFile.getName().toLowerCase().endsWith(".jpg") || imageFile.getName().toLowerCase().endsWith(".jpeg");
-                    boolean isPng = imageFile.getName().toLowerCase().endsWith(".png");
-
-                    int maximumLength = 1024; // px
-
-
-                    ImageResizer imageResizer = new ImageResizer();
-                    BufferedImage bufferedImage = ImageIO.read(imageFile);
-                    int width = bufferedImage.getWidth();
-                    int height = bufferedImage.getHeight();
-
-                    if (width > maximumLength || height > maximumLength) {
-                        if (width >= height) {
-                            int resizeWidth = maximumLength;
-                            int resizeHeight = (int) (((double) height / (double) width) * (double) maximumLength);
-                            bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight, true);
-                        } else {
-                            int resizeHeight = maximumLength;
-                            int resizeWidth = (int) (((double) width / (double) height) * (double) maximumLength);
-                            bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight, true);
-                        }
-                    }
-                    if (isJpeg) {
-                        //ImageIO.write(bufferedImage, "jpg", outputImageFile);
-                        byte[] bytes = writeJpeg(bufferedImage, 1.0f);
-                        if (bytes != null) {
-                            try (BufferedOutputStream fos = new BufferedOutputStream(new FileOutputStream(outputImageFile))) {
-                                fos.write(bytes);
-                                fos.flush();
-                            } catch (IOException e) {
-                                log.error("[ERROR] :", e);
-                            }
-                        }
-                    } else if (isPng) {
-                        ImageIO.write(bufferedImage, "png", outputImageFile);
-                    } else {
-                        log.error("[ERROR] Texture Input Image File type is not supported. {}", imageFile.getName());
-                    }
-                } else {
-                    FileUtils.copyFile(imageFile, outputImageFile);
-                }
+                FileUtils.copyFile(imageFile, outputImageFile);
             }
         }
     }
