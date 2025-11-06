@@ -19,10 +19,12 @@ public class CellGrid3D {
 
     // Return the cell index that contains the point v
     public Vector3i getCellIndex(Vector3d v) {
-        double error = 1e-6;
-        int ix = (int) Math.floor(((v.x - origin.x) / cellSize + error));
-        int iy = (int) Math.floor(((v.y - origin.y) / cellSize + error));
-        int iz = (int) Math.floor(((v.z - origin.z) / cellSize + error));
+        // epsilon = 1e-6 for double precision issues
+        // epsilon = 1e-4 for float precision issues
+        double epsilon = 1e-6;
+        int ix = (int) Math.floor(((v.x - origin.x) / cellSize + epsilon));
+        int iy = (int) Math.floor(((v.y - origin.y) / cellSize + epsilon));
+        int iz = (int) Math.floor(((v.z - origin.z) / cellSize + epsilon));
         return new Vector3i(ix, iy, iz);
     }
 

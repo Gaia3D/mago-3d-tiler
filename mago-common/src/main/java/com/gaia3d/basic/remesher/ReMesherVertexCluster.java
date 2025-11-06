@@ -120,12 +120,6 @@ public class ReMesherVertexCluster {
 
             // check if exists the average position for the cell
             Vector3d averagePosition = cellAveragePositions.get(cellIndex); // original.***
-            boolean positionIsMinX = false;
-            boolean positionIsMinY = false;
-            boolean positionIsMinZ = false;
-            boolean positionIsMaxX = false;
-            boolean positionIsMaxY = false;
-            boolean positionIsMaxZ = false;
             if (averagePosition == null) {
                 // Calculate the average position of the cluster
                 averagePosition = new Vector3d();
@@ -134,25 +128,9 @@ public class ReMesherVertexCluster {
                         log.error("ReMesh process: vertex or position is null");
                         continue;
                     }
-                    Vector3d position = vertex.getPosition();
-                    if (Math.abs(position.x - minX) < error) positionIsMinX = true;
-                    if (Math.abs(position.y - minY) < error) positionIsMinY = true;
-                    if (Math.abs(position.z - minZ) < error) positionIsMinZ = true;
-                    if (Math.abs(position.x - maxX) < error) positionIsMaxX = true;
-                    if (Math.abs(position.y - maxY) < error) positionIsMaxY = true;
-                    if (Math.abs(position.z - maxZ) < error) positionIsMaxZ = true;
                     averagePosition.add(vertex.getPosition());
                 }
                 averagePosition.div(cluster.size());
-
-                // check if the average position is boundary position
-//                if (positionIsMinX) averagePosition.x = minX;
-//                if (positionIsMinY) averagePosition.y = minY;
-//                if (positionIsMinZ) averagePosition.z = minZ;
-//                if (positionIsMaxX) averagePosition.x = maxX;
-//                if (positionIsMaxY) averagePosition.y = maxY;
-//                if (positionIsMaxZ) averagePosition.z = maxZ;
-
                 cellAveragePositions.put(cellIndex, averagePosition);
             } else {
                 // If the average position already exists, use it

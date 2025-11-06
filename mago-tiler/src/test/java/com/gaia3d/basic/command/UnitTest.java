@@ -610,8 +610,8 @@ class UnitTest {
 
     @Test
     void test_RealisticMesh_LeeDongHun_Data_BANSONG() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\BANSONG\\";
-        String outputPath = "D:\\data\\mago-server\\output\\BANSONG\\";
+        String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\BANSONG\\";
+        String outputPath = "C:\\data\\mago-server\\output\\BANSONG\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
@@ -643,8 +643,8 @@ class UnitTest {
 
     @Test
     void test_RealisticMesh_LeeDongHun_Data_SANGCHEON() {
-        String inputPath = "D:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\SANGCHEON\\";
-        String outputPath = "D:\\data\\mago-server\\output\\SANGCHEON\\";
+        String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\SANGCHEON\\";
+        String outputPath = "C:\\data\\mago-server\\output\\SANGCHEON\\";
 
         String[] args = new String[]{
                 "-i", inputPath,

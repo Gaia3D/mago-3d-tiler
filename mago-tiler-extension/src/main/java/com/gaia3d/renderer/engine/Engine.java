@@ -552,23 +552,23 @@ public class Engine {
         }
     }
 
-    private void TEST_SaveImages(Fbo fbo, CameraDirectionType cameraDirectionType, String fileName) {
-        // test save images.
-        try {
-            String randomId = cameraDirectionType.name();
-            String path = "D:\\Result_mago3dTiler";
-            String fileNameFinal = fileName + "_" + randomId;
-            String extension = ".png";
-            String imagePath = path + "\\" + fileNameFinal + extension;
-            File imageFile = new File(imagePath);
-            fbo.bind();
-            BufferedImage image = fbo.getBufferedImage(BufferedImage.TYPE_INT_ARGB);
-            fbo.unbind();
-            ImageIO.write(image, "png", imageFile);
-        } catch (IOException e) {
-            log.debug("Error writing image: {}", e);
-        }
-    }
+//    private void TEST_SaveImages(Fbo fbo, CameraDirectionType cameraDirectionType, String fileName) {
+//        // test save images.
+//        try {
+//            String randomId = cameraDirectionType.name();
+//            String path = "D:\\Result_mago3dTiler";
+//            String fileNameFinal = fileName + "_" + randomId;
+//            String extension = ".png";
+//            String imagePath = path + "\\" + fileNameFinal + extension;
+//            File imageFile = new File(imagePath);
+//            fbo.bind();
+//            BufferedImage image = fbo.getBufferedImage(BufferedImage.TYPE_INT_ARGB);
+//            fbo.unbind();
+//            ImageIO.write(image, "png", imageFile);
+//        } catch (IOException e) {
+//            log.debug("Error writing image: {}", e);
+//        }
+//    }
 
     public void makeBoxTexturesByObliqueCamera(HalfEdgeScene halfEdgeScene, double screenPixelsForMeter, int bufferImageType) {
         // Must know all faces classification ids
