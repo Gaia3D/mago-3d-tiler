@@ -610,6 +610,20 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
             finalMatrix.transformPosition(position, transformedPosition);
             vertex.setPosition(transformedPosition);
         }
+
+        // Also transform normals if they exist
+        Matrix3d normalMatrix = new Matrix3d();
+        finalMatrix.get3x3(normalMatrix);
+        normalMatrix.invert().transpose();
+        for (GaiaVertex vertex : vertices) {
+            Vector3d normal = vertex.getNormal();
+            if (normal != null) {
+                Vector3d transformedNormal = new Vector3d();
+                normalMatrix.transform(normal, transformedNormal);
+                transformedNormal.normalize();
+                vertex.setNormal(transformedNormal);
+            }
+        }
     }
 
     public void makeTriangularFaces() {

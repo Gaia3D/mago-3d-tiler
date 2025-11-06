@@ -444,8 +444,6 @@ public class Engine {
             // return depth test
             glEnable(GL20.GL_DEPTH_TEST);
 
-            log.info("background color eliminated.");
-
             return image;
         } catch (Exception e) {
             log.error("[ERROR] Error initializing the engine : ", e);
@@ -1612,7 +1610,7 @@ public class Engine {
         GaiaBoundingBox expandedBBox = targetBbox.clone();
         double expandedMaxSize = expandedBBox.getMaxSize();
         //expandedBBox.expand(expandedMaxSize * 0.02);
-        expandedBBox.expand(expandedMaxSize * 2.0); // provisionally large expansion. In integralMode, the targetBbox is centered in the origin.
+        expandedBBox.expand(expandedMaxSize * 4.0); // provisionally large expansion. In integralMode, the targetBbox is centered in the origin.
 
         Vector3d targetBBoxCenter = targetBbox.getCenter();
 

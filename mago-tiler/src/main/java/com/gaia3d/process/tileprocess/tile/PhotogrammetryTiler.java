@@ -2,6 +2,7 @@ package com.gaia3d.process.tileprocess.tile;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.json.JsonWriteFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.TilerExtensionModule;
 import com.gaia3d.basic.exception.TileProcessingException;
@@ -226,8 +227,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         root.deleteNoContentNodes();
         setGeometryErrorToNodeManual(root, projectMaxDepthIdx);
 
-        root.setGeometricError(1000.0);
-
         Tileset tileset;
         if (globalOptions.getTilesVersion().equals("1.0")) {
             tileset = new Tileset();
@@ -238,7 +237,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             AssetV2 asset = new AssetV2();
             tileset.setAsset(asset);
         }
-        tileset.setGeometricError(1000.0);
+        tileset.setGeometricError(root.getGeometricError());
         tileset.setRoot(root);
         return tileset;
     }
@@ -391,23 +390,23 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 Map<Vector3i, Vector3d> cellAveragePositionsUpLevel = new HashMap<>();
                 // we ascend one level in the octree, so we transfer only the cell average positions that belong to the upper level
                 // calculate the new cell grid
-                for (Map.Entry<Vector3i, Vector3d> entry : cellAveragePositions.entrySet()) {
-                    Vector3i cellIndex = entry.getKey();
-                    Vector3i upLevelCellIndex = new Vector3i(cellIndex.x / 2, cellIndex.y / 2, cellIndex.z / 2);
-                    if (!cellAveragePositionsUpLevel.containsKey(upLevelCellIndex)) {
-                        cellAveragePositionsUpLevel.put(upLevelCellIndex, entry.getValue());
-                    } else {
-                        // average the positions
-                        Vector3d existingPos = cellAveragePositionsUpLevel.get(upLevelCellIndex);
-                        Vector3d newPos = entry.getValue();
-                        Vector3d avgPos = new Vector3d(
-                                (existingPos.x + newPos.x) / 2.0,
-                                (existingPos.y + newPos.y) / 2.0,
-                                (existingPos.z + newPos.z) / 2.0
-                        );
-                        cellAveragePositionsUpLevel.put(upLevelCellIndex, avgPos);
-                    }
-                }
+//                for (Map.Entry<Vector3i, Vector3d> entry : cellAveragePositions.entrySet()) {
+//                    Vector3i cellIndex = entry.getKey();
+//                    Vector3i upLevelCellIndex = new Vector3i(cellIndex.x / 2, cellIndex.y / 2, cellIndex.z / 2);
+//                    if (!cellAveragePositionsUpLevel.containsKey(upLevelCellIndex)) {
+//                        cellAveragePositionsUpLevel.put(upLevelCellIndex, entry.getValue());
+//                    } else {
+//                        // average the positions
+//                        Vector3d existingPos = cellAveragePositionsUpLevel.get(upLevelCellIndex);
+//                        Vector3d newPos = entry.getValue();
+//                        Vector3d avgPos = new Vector3d(
+//                                (existingPos.x + newPos.x) / 2.0,
+//                                (existingPos.y + newPos.y) / 2.0,
+//                                (existingPos.z + newPos.z) / 2.0
+//                        );
+//                        cellAveragePositionsUpLevel.put(upLevelCellIndex, avgPos);
+//                    }
+//                }
 
                 reMeshParams.setCellAveragePositions(cellAveragePositionsUpLevel);
             }
@@ -439,8 +438,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         root.deleteNoContentNodes();
         setGeometryErrorToNodeManual(root, projectMaxDepthIdx);
 
-        root.setGeometricError(1000.0);
-
         Tileset tileset;
         if (globalOptions.getTilesVersion().equals("1.0")) {
             tileset = new Tileset();
@@ -451,7 +448,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             AssetV2 asset = new AssetV2();
             tileset.setAsset(asset);
         }
-        tileset.setGeometricError(1000.0);
+        tileset.setGeometricError(root.getGeometricError());
         tileset.setRoot(root);
         return tileset;
     }
@@ -545,31 +542,45 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
     private void setGeometryErrorToNodeManual(Node node, int maxDepth) {
         int lod = maxDepth - node.getDepth();
 
-        double geometricError;
-        if (lod == 0) {
-            geometricError = 0.01;
-        } else if (lod == 1) {
-            geometricError = 1.0;
-        } else if (lod == 2) {
-            geometricError = 2.0;
-        } else if (lod == 3) {
-            geometricError = 4.0;
-        } else if (lod == 4) {
-            geometricError = 8.0;
-        } else if (lod == 5) {
-            geometricError = 16.0;
-        } else if (lod == 6) {
-            geometricError = 32.0;
-        } else if (lod == 7) {
-            geometricError = 64.0;
-        } else if (lod > 7) {
-            geometricError = 128.0;
-        } else {
-            // less than 0
-            geometricError = 0.01;
+        double geometricError = 0;
+//        if (lod == 0) {
+//            geometricError = 0.01;
+//        } else if (lod == 1) {
+//            geometricError = 1.0;
+//        } else if (lod == 2) {
+//            geometricError = 2.0;
+//        } else if (lod == 3) {
+//            geometricError = 4.0;
+//        } else if (lod == 4) {
+//            geometricError = 8.0;
+//        } else if (lod == 5) {
+//            geometricError = 16.0;
+//        } else if (lod == 6) {
+//            geometricError = 32.0;
+//        } else if (lod == 7) {
+//            geometricError = 64.0;
+//        } else if (lod > 7) {
+//            geometricError = 128.0;
+//        } else {
+//            // less than 0
+//            geometricError = 0.01;
+//        }
+
+        BoundingVolume bVolume = node.getBoundingVolume();
+        if (bVolume != null) {
+            double[] region = bVolume.getRegion();
+            if (region != null) {
+                double minLatRad = region[1];
+                double maxLatRad = region[3];
+
+                // calculate the distance between minLatRad and maxLatRad in meters
+                double earthRadius = 6378137.0; // in meters
+                double latDiff = maxLatRad - minLatRad;
+                double nodeSize = earthRadius * latDiff;
+                geometricError = nodeSize * 0.10; // 10% of the node size
+            }
         }
 
-        //double geometricError = (lod * factor + 0.01);
         node.setGeometricError(geometricError);
         List<Node> children = node.getChildren();
         if (children != null) {
@@ -1169,10 +1180,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 continue;
             }
 
-            // render the sceneInfos and obtain the color and depth images
-            List<BufferedImage> resultImages = new ArrayList<>();
-            int bufferedImageType = BufferedImage.TYPE_INT_RGB;
-
             Vector3d nodeCenterGeoCoordRad = node.getBoundingVolume().calcCenter();
             Vector3d nodeCenterGeoCoordDeg = new Vector3d(Math.toDegrees(nodeCenterGeoCoordRad.x), Math.toDegrees(nodeCenterGeoCoordRad.y), nodeCenterGeoCoordRad.z);
             Vector3d nodePosWC = GlobeUtils.geographicToCartesianWgs84(nodeCenterGeoCoordDeg);
@@ -1183,14 +1190,14 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             GaiaBoundingBox nodeBBoxLC = node.calculateLocalBoundingBox();
             //GaiaBoundingBox nodeCartographicBBox = node.calculateCartographicBoundingBox();
 
-            log.info("nodeCode : " + node.getNodeCode() + "currNodeIdx : " + i + "of : " + nodesCount);
+            log.info("nodeCode : " + node.getNodeCode() + " currNodeIdx : " + i + " / " + nodesCount);
             int maxScreenSize = 1024;
 
             List<HalfEdgeScene> resultHalfEdgeScenes = new ArrayList<>();
             String outputPathString = globalOptions.getOutputPath();
             String nodeName = "node_L_" + nodeDepth + "_" + i;
             tilerExtensionModule.integralReMeshByObliqueCameraV2(sceneInfos, resultHalfEdgeScenes, reMeshParams, nodeBBoxLC,
-                    nodeTMatrix, maxScreenSize, resultImages, outputPathString, nodeName);
+                    nodeTMatrix, maxScreenSize, outputPathString, nodeName, lod);
             //************************************************************************************************************************************************
             if (resultHalfEdgeScenes.isEmpty()) {
                 log.info("IntegralReMesh resultHalfEdgeScenes is empty.");
