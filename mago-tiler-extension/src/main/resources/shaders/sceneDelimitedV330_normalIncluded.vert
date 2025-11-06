@@ -49,6 +49,8 @@ void main(void) {
     vBitangent = bitangent;
 
     // camera direction
-    vCamDir = uCameraDirection;
-    vCamUp = uCameraUp;
+    //vCamDir = uCameraDirection;
+    //vCamUp = uCameraUp;
+    vCamDir = vec3(uModelViewMatrix[2][0], uModelViewMatrix[2][1], uModelViewMatrix[2][2]);
+    vCamUp = vec3(uModelViewMatrix[1][0], uModelViewMatrix[1][1], uModelViewMatrix[1][2]);
 }
