@@ -1,8 +1,10 @@
-package com.gaia3d.visual.experimental;
+package com.gaia3d.local.experimental;
 
-import com.gaia3d.visual.MagoTestConfig;
+import com.gaia3d.local.MagoTestConfig;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+@Tag("experimental")
 public class SunEnergyExperimentalTest {
 
     @Test

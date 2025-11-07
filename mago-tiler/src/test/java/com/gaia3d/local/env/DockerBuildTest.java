@@ -1,4 +1,4 @@
-package com.gaia3d.visual.env;
+package com.gaia3d.local.env;
 
 import com.gaia3d.command.Configuration;
 import lombok.extern.slf4j.Slf4j;
@@ -46,8 +46,6 @@ class DockerBuildTest {
 
         File input = new File(classLoader.getResource("./sample-3ds").getFile());
         File resource = new File(input.getParent());
-
-        // docker run --rm -v "/workspace:/workspace" gaia3d/mago-3d-tiler -it 3ds -i /workspace/3ds-samples -o /workspace/sample-3d-tiles -crs 5186
 
         String dockerImage = "gaia3d/mago-3d-tiler:latest";
         List<String> argList = new ArrayList<>();

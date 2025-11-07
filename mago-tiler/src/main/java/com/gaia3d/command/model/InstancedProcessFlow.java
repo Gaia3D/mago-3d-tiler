@@ -21,6 +21,7 @@ import com.gaia3d.process.preprocess.*;
 import com.gaia3d.process.tileprocess.Pipeline;
 import com.gaia3d.process.tileprocess.TilingProcess;
 import com.gaia3d.process.tileprocess.tile.Instanced3DModelTiler;
+import com.gaia3d.process.tileprocess.tile.Instanced3DModelTiler4Trees;
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.coverage.grid.GridCoverage2D;
 

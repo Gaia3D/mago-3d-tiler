@@ -1,4 +1,4 @@
-package com.gaia3d.visual.env;
+package com.gaia3d.local.env;
 
 import com.gaia3d.command.Configuration;
 import lombok.extern.slf4j.Slf4j;

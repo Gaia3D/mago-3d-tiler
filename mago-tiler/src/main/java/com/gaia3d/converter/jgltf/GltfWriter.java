@@ -626,7 +626,9 @@ public class GltfWriter {
         Material material = new Material();
         material.setName(gaiaMaterial.getName());
         FormatType formatType = globalOptions.getInputFormat();
+
         material.setDoubleSided(formatType != null && formatType.equals(FormatType.CITYGML));
+        //material.setDoubleSided(true);
 
         // Set the alpha mode
         boolean isOpaque = gaiaMaterial.isOpaqueMaterial();

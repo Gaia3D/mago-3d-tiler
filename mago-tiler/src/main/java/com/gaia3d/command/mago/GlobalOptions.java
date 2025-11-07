@@ -84,6 +84,7 @@ public class GlobalOptions {
     private boolean debugLod = false;
     private boolean isLeaveTemp = false;
 
+    private boolean doubleSided = true;
     private boolean glb = false;
     private boolean classicTransformMatrix = false;
     private byte multiThreadCount = 1;

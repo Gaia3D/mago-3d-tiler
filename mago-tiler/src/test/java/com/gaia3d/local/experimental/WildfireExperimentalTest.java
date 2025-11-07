@@ -1,10 +1,11 @@
-package com.gaia3d.visual.experimental;
+package com.gaia3d.local.experimental;
 
-import com.gaia3d.visual.MagoTestConfig;
+import com.gaia3d.local.MagoTestConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+@Tag("experimental")
 @Slf4j
 public class WildfireExperimentalTest {
 
@@ -17,7 +18,7 @@ public class WildfireExperimentalTest {
                 "-c", "5179",
                 "-ot", "i3dm",
                 "-instance", MagoTestConfig.getTempPath(path).getAbsolutePath() + "/instance.glb",
-                "-terrain", MagoTestConfig.getTerrainPath("dem05-cog.tif").getAbsolutePath(),
+                "-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }
@@ -34,7 +35,7 @@ public class WildfireExperimentalTest {
                 "--refineAdd",
                 "--tilesVersion", "1.0",
                 "-instance", MagoTestConfig.getSsdInputPath(path).getAbsolutePath() + "/instance.glb",
-                //"-terrain", MagoTestConfig.getTerrainPath("dem05-cog.tif").getAbsolutePath(),
+                "-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }
@@ -50,7 +51,7 @@ public class WildfireExperimentalTest {
                 "-it", "gpkg",
                 "--tilesVersion", "1.0",
                 "-instance", MagoTestConfig.getSsdInputPath(path).getAbsolutePath() + "/instance.glb",
-                //"-terrain", MagoTestConfig.getTerrainPath("dem05-cog.tif").getAbsolutePath(),
+                //"-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }
@@ -67,7 +68,7 @@ public class WildfireExperimentalTest {
                 "--refineAdd",
                 "--tilesVersion", "1.0",
                 "-instance", MagoTestConfig.getSsdInputPath(path).getAbsolutePath() + "/instance.glb",
-                //"-terrain", MagoTestConfig.getTerrainPath("dem05-cog.tif").getAbsolutePath(),
+                //"-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }
@@ -85,7 +86,7 @@ public class WildfireExperimentalTest {
                 //"--refineAdd",
                 "--tilesVersion", "1.0",
                 "-instance", MagoTestConfig.getSsdInputPath(path).getAbsolutePath() + "/instance.glb",
-                //"-terrain", MagoTestConfig.getTerrainPath("dem05-cog.tif").getAbsolutePath(),
+                //"-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }
@@ -102,7 +103,7 @@ public class WildfireExperimentalTest {
                 "--refineAdd",
                 "--tilesVersion", "1.0",
                 "-instance", MagoTestConfig.getSsdInputPath(path).getAbsolutePath() + "/instance.glb",
-                //"-terrain", MagoTestConfig.getTerrainPath("dem05-cog.tif").getAbsolutePath(),
+                //"-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }
@@ -119,7 +120,7 @@ public class WildfireExperimentalTest {
                 "--refineAdd",
                 "--tilesVersion", "1.0",
                 "-instance", MagoTestConfig.getSsdInputPath(path).getAbsolutePath() + "/instance.glb",
-                //"-terrain", MagoTestConfig.getTerrainPath("dem05-cog.tif").getAbsolutePath(),
+                //"-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }

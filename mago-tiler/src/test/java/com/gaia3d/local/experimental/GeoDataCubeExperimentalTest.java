@@ -1,13 +1,19 @@
-package com.gaia3d.visual.experimental;
+package com.gaia3d.local.experimental;
 
-import com.gaia3d.visual.MagoTestConfig;
+import com.gaia3d.local.MagoTestConfig;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+@Tag("experimental")
 public class GeoDataCubeExperimentalTest {
 
     void testAutoVoxels(String path, String outputPath, int maxLevel) {
+        testAutoVoxels(path, outputPath, 0, maxLevel);
+    }
+
+    void testAutoVoxels(String path, String outputPath, int minLevel, int maxLevel) {
         String prefix = "L";
-        for (int level = 0; level <= maxLevel; level++) {
+        for (int level = minLevel; level <= maxLevel; level++) {
             String levelPath = prefix + level;
             String fullPath = path + "/" + levelPath;
             String outputFullPath = outputPath + "/" + levelPath;
@@ -34,6 +40,19 @@ public class GeoDataCubeExperimentalTest {
     }
 
     //voxel-korea-all
+
+
+    @Test
+    void seoulVworld3dTiles() {
+        String path = "seoul-vworld-3dtiles";
+        testAutoVoxels(path, path + "-all-level", 10, 10);
+    }
+
+    @Test
+    void seoulDem3dTiles() {
+        String path = "seoul-dem-3dtiles";
+        testAutoVoxels(path, path + "-all-level", 0, 15);
+    }
 
     @Test
     void koreaAllVoxels() {

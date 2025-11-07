@@ -252,11 +252,12 @@ public class Instanced3DModelTiler4Trees extends DefaultTiler implements Tiler {
         }
 
         if (refineAdd) {
-            if (lod.getLevel() == 0) {
+            /*if (lod.getLevel() == 0) {
                 lod = LevelOfDetail.LOD0;
             } else {
                 lod = LevelOfDetail.LOD3;
-            }
+            }*/
+            lod = LevelOfDetail.getByLevel(lod.getLevel());
         }
 
         nodeCode = nodeCode + index;
@@ -297,6 +298,10 @@ public class Instanced3DModelTiler4Trees extends DefaultTiler implements Tiler {
                 List<TileInfo> tempInheritanceTileInfos = boundingVolume.getVolumeIncludeScenes(inheritanceTileInfos, childBoundingBox);
                 totalResultInfos.addAll(tempInheritanceTileInfos);
             }
+
+            if (remainInfos.isEmpty() && lod != LevelOfDetail.LOD0) {
+                remainInfos.addAll(tileInfos);
+            }
         } else {
             resultInfos = tileInfos.stream()
                     .limit(tileInfos.size())
@@ -305,17 +310,6 @@ public class Instanced3DModelTiler4Trees extends DefaultTiler implements Tiler {
                     .skip(0)
                     .collect(Collectors.toList());
             totalResultInfos = new ArrayList<>(resultInfos);
-        }
-
-        // TODO: check node count
-        if (nodeCode.equals("R000C0")) {
-            log.info("");
-        } else if (nodeCode.equals("R000C00")) {
-            log.info("");
-        } else if (nodeCode.equals("R000C000")) {
-            log.info("");
-        } else if (nodeCode.equals("R000C0000")) {
-            log.info("");
         }
 
         Node childNode = new Node();
@@ -329,14 +323,7 @@ public class Instanced3DModelTiler4Trees extends DefaultTiler implements Tiler {
         }
         childNode.setGeometricError(lodError);
         childNode.setChildren(new ArrayList<>());
-
-        //childNode.setRefine(refineAdd ? Node.RefineType.ADD : Node.RefineType.REPLACE);
-        if (refineAdd) {
-            childNode.setRefine(Node.RefineType.ADD);
-            childNode.setRefine(Node.RefineType.REPLACE);
-        } else {
-            childNode.setRefine(Node.RefineType.REPLACE);
-        }
+        childNode.setRefine(Node.RefineType.REPLACE);
 
         if (!resultInfos.isEmpty()) {
             ContentInfo contentInfo = new ContentInfo();

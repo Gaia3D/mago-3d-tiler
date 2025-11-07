@@ -1,6 +1,6 @@
-package com.gaia3d.visual.release;
+package com.gaia3d.local.release;
 
-import com.gaia3d.visual.MagoTestConfig;
+import com.gaia3d.local.MagoTestConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;

@@ -1,4 +1,4 @@
-package com.gaia3d.visual;
+package com.gaia3d.local;
 
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.command.mago.Mago3DTilerMain;

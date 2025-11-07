@@ -1,0 +1,20 @@
+# docker run --rm \n
+#  -v "D:/data/mago-3d-tiler/release-sample/A00-Thonker-glb:/input/" \n
+#  -v "E:/data/mago-server/output:/output/" \n
+# gaia3d/mago-3d-tiler \n
+# -merge \n
+# -input /ff-static-resource/FOREST_MAP/ \n
+# -output /ff-static-resource/FOREST_MAP/
+
+version: '3.8'
+services:
+  mago-tiler:
+    image: gaia3d/mago-3d-tiler:latest
+    platform: linux/amd64
+    container_name: mago-tiler
+    volumes:
+      - D:/data/mago-3d-tiler/release-sample:/input
+      - E:/data/mago-server/output:/output
+    command: >
+      -input /input/B03-wangsuk2-geojson
+      -output /output/B03-wangsuk2-geojson

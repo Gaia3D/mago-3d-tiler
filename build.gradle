@@ -1,6 +1,6 @@
 subprojects {
     group "com.gaia3d"
-    version "1.13.3-release"
+    version "1.14.0-release"
     apply plugin: 'java'
     project.ext.lwjglVersion = "3.3.6"
 
@@ -47,19 +47,18 @@ project(':mago-tiler') {
         implementation project(':mago-common')
         implementation project(':mago-io')
         implementation project(':mago-tiler-extension')
-        //implementation project(':mago-tiler-non-extension')
     }
 }
 
+// Extension module build configuration
 project(':mago-tiler-extension') {
-    // Extension module build configuration
     dependencies {
         implementation project(':mago-common')
     }
 }
 
+// Extension module build configuration
 project(':mago-tiler-non-extension') {
-    // Extension module build configuration
     dependencies {
         implementation project(':mago-common')
     }
@@ -73,15 +72,14 @@ tasks.register('release') {
 
 tasks.register('javadoc', Javadoc) {
     group = 'Documentation'
-    description = 'Generates Javadoc for mago-tiler module.'
+    description = 'Generates Javadoc for mago-3d-tiler module.'
 
     def includedProjects = [
             project(':mago-tiler'),
             project(':mago-common'),
             project(':mago-io'),
-            //project(':mago-tiler-extension')
+            project(':mago-tiler-extension')
     ]
-
     source = files(includedProjects.collect { it.sourceSets.main.allJava })
     classpath = files(includedProjects.collect { it.sourceSets.main.compileClasspath })
     destinationDir = file("/docs/")

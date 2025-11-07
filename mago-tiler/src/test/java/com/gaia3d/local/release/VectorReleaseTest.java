@@ -1,6 +1,6 @@
-package com.gaia3d.visual.release;
+package com.gaia3d.local.release;
 
-import com.gaia3d.visual.MagoTestConfig;
+import com.gaia3d.local.MagoTestConfig;
 import org.junit.jupiter.api.Test;
 
 public class VectorReleaseTest {

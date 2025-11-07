@@ -1,9 +1,11 @@
-package com.gaia3d.visual.experimental;
+package com.gaia3d.local.experimental;
 
-import com.gaia3d.visual.MagoTestConfig;
+import com.gaia3d.local.MagoTestConfig;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+@Tag("experimental")
 public class ExperimentalTest {
 
     @Test
@@ -462,7 +464,7 @@ public class ExperimentalTest {
                 "-ot", "i3dm",
                 "-refineAdd",
                 "-instance", MagoTestConfig.getInputPath(path).getAbsolutePath() + "/lite.glb",
-                "-terrain", MagoTestConfig.getTerrainPath("dem05-cog.tif").getAbsolutePath(),
+                "-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }
@@ -475,7 +477,7 @@ public class ExperimentalTest {
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5179",
                 "-it", "geojson",
-                "-terrain", MagoTestConfig.getTerrainPath("dem05-cog.tif").getAbsolutePath(),
+                "-terrain", MagoTestConfig.getSsdInputPath("dem05-cog.tif").getAbsolutePath(),
         };
         MagoTestConfig.execute(args);
     }
