@@ -681,7 +681,7 @@ public class MainVoxelizer implements IAppLogic {
         }
 
 
-        TEST_SaveImagesOfIntegralReMeshFBOs(integralReMeshParameters, "integral");
+        //TEST_SaveImagesOfIntegralReMeshFBOs(integralReMeshParameters, "integral");
 
         // Join all surfaces and weld vertices of the gaiaSceneMaster.
         gaiaSceneMaster.joinAllSurfaces();
@@ -1016,7 +1016,7 @@ public class MainVoxelizer implements IAppLogic {
         }
 
         BufferedImage atlasImage = atlasTexture.getBufferedImage();
-        TEST_SaveBufferedImage(atlasImage, "integral_atlasTexture");
+        //TEST_SaveBufferedImage(atlasImage, "integral_atlasTexture");
 
         // delete texturesAtlasDataList
         for (TexturesAtlasData texturesAtlasData : texturesAtlasDataList) {
@@ -1053,7 +1053,7 @@ public class MainVoxelizer implements IAppLogic {
         GaiaTexture atlasScissoredTexture = atlasTextures.get(0);
         atlasScissoredTexture.setParentPath(netSetImagesFolderPath.toString());
 
-        TEST_SaveBufferedImage(atlasScissoredTexture.getBufferedImage(), "diffuse_atlasTexture");
+        //TEST_SaveBufferedImage(atlasScissoredTexture.getBufferedImage(), "diffuse_atlasTexture");
 
         // save the atlas image to disk
         try {
@@ -1094,53 +1094,6 @@ public class MainVoxelizer implements IAppLogic {
 
         // delete pixels
         pixels.clear();
-    }
-
-    private void TEST_SaveImagesOfIntegralReMeshFBOs(IntegralReMeshParameters integralReMeshParameters, String fileName) {
-        // test save images.
-        Map<String, Fbo> colorFboMap = integralReMeshParameters.getColorFboMap();
-        for (String cameraDirectionTypeStr : colorFboMap.keySet()) {
-            Fbo fbo = colorFboMap.get(cameraDirectionTypeStr);
-            TEST_SaveImages(fbo, cameraDirectionTypeStr, fileName);
-        }
-
-        Map<String, Fbo> colorCodeFboMap = integralReMeshParameters.getColorCodeFboMap();
-        for (String cameraDirectionTypeStr : colorCodeFboMap.keySet()) {
-            Fbo fbo = colorCodeFboMap.get(cameraDirectionTypeStr);
-            TEST_SaveImages(fbo, cameraDirectionTypeStr, fileName + "_colorCode");
-        }
-    }
-
-    private void TEST_SaveImages(Fbo fbo, String camTypeName, String fileName) {
-        // test save images.
-        try {
-            String randomId = camTypeName;
-            String path = "D:\\Result_mago3dTiler";
-            String fileNameFinal = fileName + "_" + randomId;
-            String extension = ".png";
-            String imagePath = path + "\\" + fileNameFinal + extension;
-            File imageFile = new File(imagePath);
-            fbo.bind();
-            BufferedImage image = fbo.getBufferedImage(BufferedImage.TYPE_INT_ARGB);
-            fbo.unbind();
-            ImageIO.write(image, "png", imageFile);
-        } catch (IOException e) {
-            log.debug("Error writing image: {}", e);
-        }
-    }
-
-    private void TEST_SaveBufferedImage(BufferedImage bufferedImage, String fileName) {
-        // test save images.
-        try {
-            String path = "D:\\Result_mago3dTiler";
-            String fileNameFinal = fileName + "_" + "atlas";
-            String extension = ".png";
-            String imagePath = path + "\\" + fileNameFinal + extension;
-            File imageFile = new File(imagePath);
-            ImageIO.write(bufferedImage, "png", imageFile);
-        } catch (IOException e) {
-            log.debug("Error writing image: {}", e);
-        }
     }
 
     public void reMeshAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, ReMeshParameters reMeshParams,
