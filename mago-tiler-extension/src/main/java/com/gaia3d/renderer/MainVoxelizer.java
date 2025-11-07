@@ -475,7 +475,7 @@ public class MainVoxelizer implements IAppLogic {
     }
 
     public void integralReMeshByObliqueCameraV2(List<SceneInfo> sceneInfos, List<HalfEdgeScene> resultHalfEdgeScenes, ReMeshParameters reMeshParams, GaiaBoundingBox nodeBBox,
-                                                Matrix4d nodeTMatrix, int maxScreenSize, List<BufferedImage> resultImages, String outputPathString, String nodeName) {
+                                                Matrix4d nodeTMatrix, int maxScreenSize, String outputPathString, String nodeName, int lod) {
         // Note: There are only one scene in the scene list
         // Must init gl
         try {
@@ -633,7 +633,7 @@ public class MainVoxelizer implements IAppLogic {
 
             try {
                 // render the scene
-                log.info("Rendering the scene : " + i + " of scenesCount : " + scenesCount);
+                log.info("Rendering the scene : " + i + " of scenesCount : " + scenesCount + " LOD : " + lod);
 
                 // for each gaiaScene, set the available faceIds, to use for colorCoded rendering
                 List<GaiaFace> gaiaFaces = gaiaScene.extractGaiaFaces(null);
@@ -952,9 +952,9 @@ public class MainVoxelizer implements IAppLogic {
                         double texCoordX = (x - bbox.getMinX()) / bbox.getSizeX();
                         double texCoordY = (y - bbox.getMinY()) / bbox.getSizeY();
 
-                        if (texCoordX < 0.0 || texCoordX > 1.0 || texCoordY < 0.0 || texCoordY > 1.0) {
-                            log.info("makeBoxTexturesByObliqueCamera() : texCoordX or texCoordY is out of range." + "camDirType = " + cameraDirectionType);
-                        }
+//                        if (texCoordX < 0.0 || texCoordX > 1.0 || texCoordY < 0.0 || texCoordY > 1.0) {
+//                            log.info("makeBoxTexturesByObliqueCamera() : texCoordX or texCoordY is out of range." + "camDirType = " + cameraDirectionType);
+//                        }
 
                         // invert the texCoordY
                         texCoordY = 1.0 - texCoordY;
