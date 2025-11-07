@@ -5,11 +5,7 @@ import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.assimp.AssimpConverterOptions;
-import com.gaia3d.converter.geometry.ExtrusionTempGenerator;
-import com.gaia3d.converter.geometry.citygml.CityGmlConverter;
-import com.gaia3d.converter.geometry.geojson.GeoJsonConverter;
-import com.gaia3d.converter.geometry.indoorgml.IndoorGmlConverter;
-import com.gaia3d.converter.geometry.shape.ShapeConverter;
+import com.gaia3d.converter.parametric.ExtrusionTempGenerator;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.FastKmlReader;
 import com.gaia3d.converter.loader.BatchedFileLoader;
@@ -80,20 +76,10 @@ public class PhotogrammetryProcessFlow implements ProcessFlow {
 
     private Converter getConverter(FormatType formatType) {
         Converter converter;
-        if (formatType == FormatType.CITYGML) {
-            converter = new CityGmlConverter();
-        } else if (formatType == FormatType.INDOORGML) {
-            converter = new IndoorGmlConverter();
-        } else if (formatType == FormatType.SHP) {
-            converter = new ShapeConverter();
-        } else if (formatType == FormatType.GEOJSON) {
-            converter = new GeoJsonConverter();
-        } else {
-            AssimpConverterOptions options = AssimpConverterOptions.builder()
-                    .build();
-            options.setSplitByNode(globalOptions.isSplitByNode());
-            converter = new AssimpConverter(options);
-        }
+        AssimpConverterOptions options = AssimpConverterOptions.builder()
+                .build();
+        options.setSplitByNode(globalOptions.isSplitByNode());
+        converter = new AssimpConverter(options);
         return converter;
     }
 

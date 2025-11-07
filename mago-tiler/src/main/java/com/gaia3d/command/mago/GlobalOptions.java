@@ -62,7 +62,10 @@ public class GlobalOptions {
     private int pointRatio = 0; // Percentage of points from original data
     private boolean force4ByteRGB = false; // Force 4Byte RGB for pointscloud tile
 
-    private boolean useQuantization; // Use quantization via KHR_mesh_quantization
+    // Use quantization via KHR_mesh_quantization
+    private boolean useQuantization;
+    private boolean useByteNormal = false;
+    private boolean useShortTexCoord = false;
 
     /* Tiling Options */
     // Level of Detail
@@ -81,6 +84,7 @@ public class GlobalOptions {
     private boolean debugLod = false;
     private boolean isLeaveTemp = false;
 
+    private boolean doubleSided = true;
     private boolean glb = false;
     private boolean classicTransformMatrix = false;
     private byte multiThreadCount = 1;
@@ -96,6 +100,7 @@ public class GlobalOptions {
     // [Experimental] 3D Data Options
     private boolean isPhotogrammetry = false; // [Experimental] isPhotogrammetry mode flag
     private boolean isSplitByNode = false; // [Experimental] split by node flag
+    private boolean isCurvatureCorrection = false; // [Experimental] curvature correction flag
 
     /* 2D Data Column Options */
     private String heightColumn = null;
@@ -286,8 +291,6 @@ public class GlobalOptions {
         instance.setMaxTriangles(GlobalConstants.DEFAULT_MAX_TRIANGLES);
         instance.setMaxInstance(GlobalConstants.DEFAULT_MAX_INSTANCE);
         instance.setMaxNodeDepth(GlobalConstants.DEFAULT_MAX_NODE_DEPTH);
-        //instance.setLargeMesh(command.hasOption(ProcessOptions.LARGE_MESH.getLongName()));
-        //instance.setVoxelLod(command.hasOption(ProcessOptions.VOXEL_LOD.getLongName()));
         instance.setPhotogrammetry(command.hasOption(ProcessOptions.PHOTOGRAMMETRY.getLongName()));
         instance.setLeaveTemp(command.hasOption(ProcessOptions.LEAVE_TEMP.getLongName()));
         instance.setUseQuantization(command.hasOption(ProcessOptions.MESH_QUANTIZATION.getLongName()) || GlobalConstants.DEFAULT_USE_QUANTIZATION);
@@ -308,6 +311,8 @@ public class GlobalOptions {
         instance.setAbsoluteAltitude(command.hasOption(ProcessOptions.ABSOLUTE_ALTITUDE.getLongName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.ABSOLUTE_ALTITUDE.getLongName())) : GlobalConstants.DEFAULT_ABSOLUTE_ALTITUDE);
         instance.setMinimumHeight(command.hasOption(ProcessOptions.MINIMUM_HEIGHT.getLongName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.MINIMUM_HEIGHT.getLongName())) : GlobalConstants.DEFAULT_MINIMUM_HEIGHT);
         instance.setSkirtHeight(command.hasOption(ProcessOptions.SKIRT_HEIGHT.getLongName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.SKIRT_HEIGHT.getLongName())) : GlobalConstants.DEFAULT_SKIRT_HEIGHT);
+
+        instance.setSplitByNode(command.hasOption(ProcessOptions.SPLIT_BY_NODE.getLongName()));
 
         // Attribute Filter ex) "classification=window,door;type=building"
         if (command.hasOption(ProcessOptions.ATTRIBUTE_FILTER.getLongName())) {
@@ -354,6 +359,11 @@ public class GlobalOptions {
         } else {
             int processorCount = Runtime.getRuntime().availableProcessors();
             int threadCount = processorCount > 1 ? processorCount / 2 : 1;
+
+            // Limit to maximum 3 threads for I/O overload prevention
+            if (threadCount > 3) {
+                threadCount = 3;
+            }
             instance.setMultiThreadCount((byte) threadCount);
         }
 
@@ -361,12 +371,21 @@ public class GlobalOptions {
 
         TilerExtensionModule extensionModule = new TilerExtensionModule();
         extensionModule.executePhotogrammetry(null, null);
-        if (!extensionModule.isSupported() && instance.isPhotogrammetry()) {
-            log.error("[ERROR] *** Extension Module is not supported ***");
-            throw new IllegalArgumentException("Extension Module is not supported.");
-        } else {
-            instance.setUseQuantization(false);
+        if (instance.isPhotogrammetry()) {
+            instance.setUseQuantization(true);
+            if (!extensionModule.isSupported()) {
+                log.error("[ERROR] *** Photogrammetry is not supported ***");
+                throw new IllegalArgumentException("Photogrammetry is not supported.");
+            }
         }
+
+        instance.setCurvatureCorrection(command.hasOption(ProcessOptions.CURVATURE_CORRECTION.getLongName()));
+
+        if (instance.isUseQuantization()) {
+            instance.setUseByteNormal(true);
+            instance.setUseShortTexCoord(true);
+        }
+
     }
 
     private static void initVersionInfo() {

@@ -52,7 +52,6 @@ public class GaiaZUpTransformer implements PreProcess {
         GaiaScene scene = tileInfo.getScene();
         try {
             if (globalOptions.isParametric()) {
-                log.info("[PRE] Skipping Z-Up transformation for parametric scene.");
                 return tileInfo;
             }
 

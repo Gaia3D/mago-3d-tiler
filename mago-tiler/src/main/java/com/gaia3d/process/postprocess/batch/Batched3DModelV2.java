@@ -5,14 +5,12 @@ import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.jgltf.BatchedModelGltfWriter;
+import com.gaia3d.converter.jgltf.tiles.BatchedModelGltfWriter;
 import com.gaia3d.process.postprocess.ContentModel;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.StringUtils;
-import de.javagl.jgltf.model.GltfUtils;
-import de.javagl.jgltf.validator.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix3d;
 import org.joml.Matrix4d;
@@ -125,6 +123,9 @@ public class Batched3DModelV2 implements ContentModel {
 
         String glbFileName = nodeCode + "." + MAGIC;
         File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
+        if (globalOptions.isPhotogrammetry()) {
+            scene.deleteNormals();
+        }
         this.gltfWriter.writeGlb(scene, glbOutputFile, featureTable, batchTableMap);
         return contentInfo;
     }

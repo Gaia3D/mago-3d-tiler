@@ -6,15 +6,15 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum ProcessOptions {
-    // Default Options
+    /* Default Options */
     HELP("help", "h", false, false, "Print Help"),
     QUIET("quiet", "q", false, false,"Quiet mode/Silent mode"),
     LEAVE_TEMP("leaveTemp", "lt", false, false, "Leave temporary files"),
     MERGE("merge", "m", false, false, "Merge tileset.json files"),
 
     /* Path Options */
-    INPUT_PATH("input", "i", true, true, "Input directory path"),
-    OUTPUT_PATH("output", "o", true, true, "Output directory file path"),
+    INPUT_PATH("input", "i", true, true, "[Required] Input directory path"),
+    OUTPUT_PATH("output", "o", true, true, "[Required] Output directory path"),
     INPUT_TYPE("inputType", "it", true, false, "Input files type [kml, 3ds, fbx, obj, gltf/glb, las/laz, citygml, indoorgml, shp, geojson, gpkg]"),
     OUTPUT_TYPE("outputType", "ot", true, false, "Output 3DTiles Type [b3dm, i3dm, pnts]"),
     LOG_PATH("log", "l", true, false, "Output log file path."),
@@ -23,7 +23,7 @@ public enum ProcessOptions {
     TERRAIN_PATH("terrain", "te", true, false, "GeoTiff Terrain file path, 3D Object applied as clampToGround (Supports geotiff format)"),
     INSTANCE_PATH("instance", "if", true, false, "Instance file path for I3DM (Default: {OUTPUT}/instance.dae)"),
 
-    MESH_QUANTIZATION("quantize", "qt", false, false, "Quantize mesh to reduce glb size via \"KHR_mesh_quantization\" Extension"),
+    MESH_QUANTIZATION("quantize", "qt", false, false, "Quantize glTF 3DMesh via \"KHR_mesh_quantization\" Extension"),
 
     /* Coordinate Setting Options */
     CRS("crs", "c", true, false,"Coordinate Reference Systems, EPSG Code(4326, 3857, 32652, 5186...)"),
@@ -52,38 +52,40 @@ public enum ProcessOptions {
     // TRANSLATE_Z("translateZ", "tz",  true, false, "Translate the Z-Axis by a factor"),
 
     /* Tiling Control Options */
-    REFINE_ADD("refineAdd", "ra", false, false, "Set 3D Tiles Refine 'ADD' mode"),
-    MAX_COUNT("maxCount", "mx",  true, false, "Maximum number of triangles per node."),
-    MIN_LOD("minLod", "nl",  true, false, "min level of detail"),
-    MAX_LOD("maxLod", "xl",  true, false, "Max Level of detail"),
-    MIN_GEOMETRIC_ERROR("minGeometricError", "ng",  true, false, "Minimum geometric error"),
-    MAX_GEOMETRIC_ERROR("maxGeometricError", "mg",  true, false, "Maximum geometric error"),
-    MAX_POINTS("maxPoints", "mp",  true, false, "Maximum number of points per a tile"),
+    REFINE_ADD("refineAdd", "ra", false, false, "[Tileset] Set 3D Tiles Refine 'ADD' mode"),
+    MAX_COUNT("maxCount", "mx",  true, false, "[Tileset] Maximum number of triangles per node."),
+    MIN_LOD("minLod", "nl",  true, false, "[Tileset] min level of detail"),
+    MAX_LOD("maxLod", "xl",  true, false, "[Tileset] Max Level of detail"),
+    MIN_GEOMETRIC_ERROR("minGeometricError", "ng",  true, false, "[Tileset] Minimum geometric error"),
+    MAX_GEOMETRIC_ERROR("maxGeometricError", "mg",  true, false, "[Tileset] Maximum geometric error"),
+    MAX_POINTS("maxPoints", "mp",  true, false, "[Tileset] Maximum number of points per a tile"),
 
     // PointCloud Options
-    POINT_RATIO("pointRatio", "pcr",  true, false, "Percentage of points from original data"),
-    POINT_PRECISION("sourcePrecision", "sp", false, false, "Create pointscloud tile with original precision. "),
-    POINT_FORCE_4BYTE_RGB("force4ByteRGB", "f4", false, false, "Force 4Byte RGB for pointscloud tile."),
+    POINT_RATIO("pointRatio", "pcr",  true, false, "[PointCloud] Percentage of points from original data"),
+    POINT_PRECISION("sourcePrecision", "sp", false, false, "[PointCloud] Create pointscloud tile with original precision. "),
+    POINT_FORCE_4BYTE_RGB("force4ByteRGB", "f4", false, false, "[PointCloud] Force 4Byte RGB for pointscloud tile."),
 
     /* GIS Vector Generate Options */
-    FLIP_COORDINATE("flipCoordinate", "fc", false, false, "Flip x, y coordinate for 2D Original Data."),
-    ATTRIBUTE_FILTER("attributeFilter", "af",  true, false, "Attribute filter setting for extrusion model ex) \"classification=window,door;type=building\""),
-
-    NAME_COLUMN("nameColumn", "nc",  true, false, "Name column setting for extrusion model"),
-    HEIGHT_COLUMN("heightColumn", "hc",  true, false, "Height column setting for extrusion model"),
-    ALTITUDE_COLUMN("altitudeColumn", "ac",  true, false, "Altitude Column setting for extrusion model"),
-    HEADING_COLUMN("headingColumn", "hd",  true, false, "Heading column setting for I3DM converting"),
-    SCALE_COLUMN("scaleColumn", "scl",  true, false, "Scale column setting for I3DM converting"),
-    DENSITY_COLUMN("densityColumn", "den",  true, false, "Density column setting for I3DM polygon converting"),
-    DIAMETER_COLUMN("diameterColumn", "dc",  true, false, "Diameter column setting for pipe extrusion model, Specify a length unit for Diameter in millimeters(mm) (Default Column: diameter)"),
-
-    MINIMUM_HEIGHT("minimumHeight", "mh",  true, false, "Minimum height value for extrusion model"),
-    ABSOLUTE_ALTITUDE("absoluteAltitude", "aa",  true, false, "Absolute altitude value for extrusion model"),
-    SKIRT_HEIGHT("skirtHeight", "sh",  true, false, "Building Skirt height setting for extrusion model"),
+    FLIP_COORDINATE("flipCoordinate", "fc", false, false, "[GISVector] Flip x, y coordinate for 2D Original Data."),
+    ATTRIBUTE_FILTER("attributeFilter", "af",  true, false, "[GISVector] Attribute filter setting for extrusion model ex) \"classification=window,door;type=building\""),
+    // GIS Vector Column Options
+    NAME_COLUMN("nameColumn", "nc",  true, false, "[GISVector] Name column setting for extrusion model"),
+    HEIGHT_COLUMN("heightColumn", "hc",  true, false, "[GISVector] Height column setting for extrusion model"),
+    ALTITUDE_COLUMN("altitudeColumn", "ac",  true, false, "[GISVector] Altitude Column setting for extrusion model"),
+    HEADING_COLUMN("headingColumn", "hd",  true, false, "[GISVector] Heading column setting for I3DM converting"),
+    SCALE_COLUMN("scaleColumn", "scl",  true, false, "[GISVector] Scale column setting for I3DM converting"),
+    DENSITY_COLUMN("densityColumn", "den",  true, false, "[GISVector] Density column setting for I3DM polygon converting"),
+    DIAMETER_COLUMN("diameterColumn", "dc",  true, false, "[GISVector] Diameter column setting for pipe extrusion model, Specify a length unit for Diameter in millimeters(mm) (Default Column: diameter)"),
+    // EXTRUSION Options
+    MINIMUM_HEIGHT("minimumHeight", "mh",  true, false, "[GISVector] Minimum height value for extrusion model"),
+    ABSOLUTE_ALTITUDE("absoluteAltitude", "aa",  true, false, "[GISVector] Absolute altitude value for extrusion model"),
+    SKIRT_HEIGHT("skirtHeight", "sh",  true, false, "[GISVector] Building Skirt height setting for extrusion model"),
 
     /* Experimental Options */
-    TILES_VERSION("tilesVersion", "tv",  true, false, "[Experimental] 3DTiles Version [Default: 1.1][1.0, 1.1]"),
+    TILES_VERSION("tilesVersion", "tv",  true, false, "[Experimental] 3DTiles Version [1.0, 1.1][Default: 1.1]"),
     PHOTOGRAMMETRY("photogrammetry", "pg", false, false, "[Experimental] generate b3dm for photogrammetry model with GPU"),
+    SPLIT_BY_NODE("splitByNode", "sbn", false, false, "[Experimental] Split tiles by nodes of scene."),
+    CURVATURE_CORRECTION("curvatureCorrection", "cc", false, false, "[Experimental] Apply curvature correction for ellipsoid surface."),
 
     /* Deprecated Options */
     MULTI_THREAD_COUNT("multiThreadCount", "mc",  true, false, "[Deprecated] set thread count"),
@@ -96,7 +98,7 @@ public enum ProcessOptions {
     //VOXEL_LOD("voxelLod", "vl", false, false, "[Experimental] Voxel Level Of Detail setting for i3dm"),
     //ZERO_ORIGIN("zeroOrigin", "zo", false, false, "[Experimental] fix 3d root transformed matrix origin to zero point."),
 
-    /* debug Options */
+    /* Debug Options */
     DEBUG("debug", "d", false, false, "[DEBUG] More detailed log output and stops on Multi-Thread bugs.");
 
     private final String longName;

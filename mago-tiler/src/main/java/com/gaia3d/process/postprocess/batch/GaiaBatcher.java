@@ -46,7 +46,7 @@ public class GaiaBatcher {
                 continue;
             }
             GaiaMaterial material = batchedMaterials.get(dataSet.getMaterialId());
-            for (int  j= i + 1; j < datasetsCount; j++) {
+            for (int j = i + 1; j < datasetsCount; j++) {
                 GaiaBufferDataSet dataSet2 = dataSets.get(j);
                 GaiaMaterial material2 = batchedMaterials.get(dataSet2.getMaterialId());
                 if (visitedMap.containsKey(dataSet2)) {
@@ -244,12 +244,12 @@ public class GaiaBatcher {
         }).collect(Collectors.toList());
 
         /* clear Textures */
-        colorMaterials.stream().forEach((material) -> {
+        colorMaterials.forEach((material) -> {
             material.setName("COLOR_MATERIAL");
             material.getTextures().remove(TextureType.DIFFUSE);
             material.getTextures().put(TextureType.DIFFUSE, new ArrayList<>());
         });
-        colorDataSet.stream().forEach((bufferDataSet) -> {
+        colorDataSet.forEach((bufferDataSet) -> {
             createColorBuffer(colorMaterials, bufferDataSet, lod);
             bufferDataSet.getBuffers().remove(AttributeType.TEXCOORD);
         });
@@ -352,7 +352,7 @@ public class GaiaBatcher {
                     .filter((material) -> material.getId() == materialId)
                     .findFirst()
                     .orElseThrow();
-        }).collect(Collectors.toList());
+        }).toList();
 
         for (int i = 0; i < materials.size(); i++) {
             GaiaMaterial material = materials.get(i);
@@ -409,10 +409,42 @@ public class GaiaBatcher {
     }
 
     private GaiaMaterial findMaterial(List<GaiaMaterial> materials, int materialId) {
-        GaiaMaterial resultMaterial = materials.stream()
-                .filter((material) -> material.getId() == materialId)
-                .findFirst().orElseThrow();
-        return resultMaterial;
+        if (materials == null) {
+            throw new IllegalArgumentException("The material list is null.");
+        }
+        if (materialId < 0) {
+            throw new IllegalArgumentException("The materialId is negative.");
+        }
+//        return materials.stream()
+//                .filter(m -> m.getId() == materialId)
+//                .findFirst()
+//                .orElseThrow(() -> {
+//                    String availableIds = materials.stream()
+//                            .map(m -> String.valueOf(m.getId()))
+//                            .collect(Collectors.joining(", "));
+//                    return new IllegalArgumentException(
+//                            "No material found with id=" + materialId +
+//                                    ". IDs available: [" + availableIds + "]");
+//                });
+        //***********************************************************************************
+//        GaiaMaterial resultMaterial = materials.stream()
+//                .filter((material) -> material.getId() == materialId)
+//                .findFirst().orElseThrow();
+//        return resultMaterial;
+        //***********************************************************************************
+        Optional<GaiaMaterial> result = materials.stream()
+                .filter(m -> m.getId() == materialId)
+                .findFirst();
+
+        if (result.isPresent()) {
+            return result.get();
+        } else {
+            String availableIds = materials.stream()
+                    .map(m -> String.valueOf(m.getId()))
+                    .collect(Collectors.joining(", "));
+            log.warn("No material found with id={} (available ids: [{}])", materialId, availableIds);
+            return null;
+        }
     }
 
     private List<GaiaBufferDataSet> batchDataSetsWithTheSameMaterial(List<GaiaBufferDataSet> dataSets, List<GaiaMaterial> filteredMaterials) {
@@ -498,7 +530,7 @@ public class GaiaBatcher {
         int elementsCount = positionBuffer.getElementsCount();
         int length = elementsCount * 4;
         byte[] colorList = new byte[length];
-        for (int i = 0; i < length; i+=4) {
+        for (int i = 0; i < length; i += 4) {
             colorList[i] = (byte) (diffuseColor.x * 255);
             colorList[i + 1] = (byte) (diffuseColor.y * 255);
             colorList[i + 2] = (byte) (diffuseColor.z * 255);

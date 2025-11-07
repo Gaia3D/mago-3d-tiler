@@ -10,6 +10,7 @@ import java.util.Map;
 @Setter
 public class FboManager {
     private Map<String, Fbo> mapNameFbos;
+    private Map<String, FboMRT> mapNameFboMRTs;
 
     public FboManager() {
         mapNameFbos = new HashMap<>();
@@ -19,6 +20,15 @@ public class FboManager {
         Fbo fbo = new Fbo(name, fboWidth, fboHeight);
         mapNameFbos.put(name, fbo);
         return fbo;
+    }
+
+    public FboMRT createFboMRT(String name, int fboWidth, int fboHeight, int numColorAttachments) {
+        if (mapNameFboMRTs == null) {
+            mapNameFboMRTs = new HashMap<>();
+        }
+        FboMRT fboMRT = new FboMRT(name, fboWidth, fboHeight, numColorAttachments);
+        mapNameFboMRTs.put(name, fboMRT);
+        return fboMRT;
     }
 
     public Fbo getOrCreateFbo(String name, int fboWidth, int fboHeight) {
@@ -34,6 +44,46 @@ public class FboManager {
         //fbo.resize(fboWidth, fboHeight);
 
         return fbo;
+    }
+
+    public FboMRT getOrCreateFboMRT(String name, int fboWidth, int fboHeight, int numColorAttachments) {
+        if (mapNameFboMRTs == null) {
+            mapNameFboMRTs = new HashMap<>();
+        }
+        FboMRT fboMRT = mapNameFboMRTs.get(name);
+        if (fboMRT == null) {
+            fboMRT = createFboMRT(name, fboWidth, fboHeight, numColorAttachments);
+        }
+
+        if (fboMRT.getFboWidth() != fboWidth || fboMRT.getFboHeight() != fboHeight || fboMRT.getNumColorAttachments() != numColorAttachments) {
+            deleteFboMRT(name);
+            fboMRT = createFboMRT(name, fboWidth, fboHeight, numColorAttachments);
+        }
+        //fbo.resize(fboWidth, fboHeight);
+
+        return fboMRT;
+    }
+
+    public void deleteFboMRT(String name) {
+        if (mapNameFboMRTs == null) {
+            return;
+        }
+        FboMRT fboMRT = mapNameFboMRTs.get(name);
+        if (fboMRT != null) {
+            fboMRT.cleanup();
+            mapNameFboMRTs.remove(name);
+        }
+    }
+
+    public FboMRT getFboMRT(String name) {
+        if (mapNameFboMRTs == null) {
+            return null;
+        }
+        // 1rst check if exist
+        if (mapNameFboMRTs.containsKey(name)) {
+            return mapNameFboMRTs.get(name);
+        }
+        return null;
     }
 
     public Fbo getFbo(String name) {
@@ -57,5 +107,12 @@ public class FboManager {
             fbo.cleanup();
         }
         mapNameFbos.clear();
+
+        if (mapNameFboMRTs != null) {
+            for (FboMRT fboMRT : mapNameFboMRTs.values()) {
+                fboMRT.cleanup();
+            }
+            mapNameFboMRTs.clear();
+        }
     }
 }

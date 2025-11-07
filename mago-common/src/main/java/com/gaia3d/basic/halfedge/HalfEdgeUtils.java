@@ -2,6 +2,7 @@ package com.gaia3d.basic.halfedge;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.entities.GaiaPlane;
+import com.gaia3d.basic.geometry.octree.GaiaOctree;
 import com.gaia3d.basic.geometry.octree.GaiaOctreeVertices;
 import com.gaia3d.basic.model.*;
 import lombok.extern.slf4j.Slf4j;
@@ -96,6 +97,7 @@ public class HalfEdgeUtils {
                 indices[i] = index;
             }
             gaiaFace.setIndices(indices);
+            gaiaFace.setId(halfEdgeFace.getId());
             gaiaFace.setClassifyId(halfEdgeFace.getClassifyId());
             gaiaSurface.getFaces().add(gaiaFace);
 
@@ -876,6 +878,8 @@ public class HalfEdgeUtils {
             currHalfEdge.setNext(nextHalfEdge);
         }
 
+        halfEdgeFace.setId(gaiaFace.getId());
+
         return halfEdgeFace;
     }
 
@@ -1353,22 +1357,30 @@ public class HalfEdgeUtils {
 
     public static void weldVerticesGaiaSurface(GaiaSurface gaiaSurface, List<GaiaVertex> gaiaVertices, double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
         // Weld the vertices
-        GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null);
-        octreeVertices.getVertices().addAll(gaiaVertices);
-        octreeVertices.calculateSize();
-        octreeVertices.setAsCube();
-        octreeVertices.setMaxDepth(10);
-        octreeVertices.setMinBoxSize(1.0); // 1m
+        GaiaBoundingBox boundingBox = new GaiaBoundingBox();
+        gaiaVertices.forEach(gaiaVertex -> {
+            boundingBox.addPoint(gaiaVertex.getPosition());
+        });
+
+        // make bbox as cube.***
+        GaiaBoundingBox cubeBoundingBox = boundingBox.createCubeFromMinPosition();
+        GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null, cubeBoundingBox);
+        octreeVertices.addContents(gaiaVertices);
+//        octreeVertices.getVertices().addAll(gaiaVertices);
+//        octreeVertices.calculateSize();
+//        octreeVertices.setAsCube();
+        octreeVertices.setLimitDepth(10);
+        octreeVertices.setLimitBoxSize(1.0); // 1m
 
         octreeVertices.makeTreeByMinVertexCount(50);
 
-        List<GaiaOctreeVertices> octreesWithContents = new ArrayList<>();
-        octreeVertices.extractOctreesWithContents(octreesWithContents);
+        List<GaiaOctree<GaiaVertex>> octreesWithContents = octreeVertices.extractOctreesWithContents();
+        //octreeVertices.extractOctreesWithContents(octreesWithContents);
 
         Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster = new HashMap<>();
 
-        for (GaiaOctreeVertices octree : octreesWithContents) {
-            List<GaiaVertex> vertices = octree.getVertices();
+        for (GaiaOctree<GaiaVertex> octree : octreesWithContents) {
+            List<GaiaVertex> vertices = octree.getContents();
             getWeldableVertexMap(mapVertexToVertexMaster, vertices, error, checkTexCoord, checkNormal, checkColor, checkBatchId);
         }
 
@@ -1574,6 +1586,7 @@ public class HalfEdgeUtils {
         List<GaiaFace> gaiaFaces = new ArrayList<>();
         int[] indices = gaiaFace.getIndices();
         Vector3d normal = gaiaFace.getFaceNormal();
+        int faceId = gaiaFace.getId();
         int indicesCount = indices.length;
 
         for (int i = 0; i < indicesCount - 2; i += 3) {
@@ -1582,6 +1595,7 @@ public class HalfEdgeUtils {
             }
             GaiaFace gaiaTriangleFace = new GaiaFace();
             gaiaTriangleFace.setIndices(new int[]{indices[i], indices[i + 1], indices[i + 2]});
+            gaiaTriangleFace.setId(faceId);
             if (normal != null) {
                 gaiaTriangleFace.setFaceNormal(new Vector3d(normal));
             }

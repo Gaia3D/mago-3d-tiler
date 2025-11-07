@@ -17,6 +17,7 @@ public class ContentInfo {
     private String nodeCode;
     private LevelOfDetail lod;
     private List<TileInfo> tileInfos;
+    private List<TileInfo> tempTileInfos;
     private List<TileInfo> remainTileInfos;
     private GaiaBoundingBox boundingBox;
     private GaiaSet batchedSet;
@@ -28,6 +29,9 @@ public class ContentInfo {
             if (set != null) {
                 set.deleteTextures();
             }
+        }
+        if (tempTileInfos == null) {
+            return;
         }
         if (remainTileInfos == null) {
             return;
@@ -47,6 +51,10 @@ public class ContentInfo {
         if (this.tileInfos != null) {
             this.tileInfos.forEach(TileInfo::clear);
             this.tileInfos = null;
+        }
+        if (this.tempTileInfos != null) {
+            this.tempTileInfos.forEach(TileInfo::clear);
+            this.tempTileInfos = null;
         }
         if (this.remainTileInfos != null) {
             this.remainTileInfos.forEach(TileInfo::clear);

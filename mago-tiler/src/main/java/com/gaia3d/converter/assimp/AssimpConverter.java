@@ -5,8 +5,7 @@ import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.converter.Converter;
-import com.gaia3d.converter.geometry.GaiaSceneTempGroup;
-import com.gaia3d.process.preprocess.sub.TransformBaker;
+import com.gaia3d.converter.parametric.GaiaSceneTempGroup;
 import com.gaia3d.util.ImageUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -63,7 +62,10 @@ public class AssimpConverter implements Converter {
         String path = file.getAbsolutePath().replace(file.getName(), "");
         AIScene aiScene = Assimp.aiImportFile(file.getAbsolutePath(), DEFAULT_FLAGS);
 
-        assert aiScene != null;
+        if (aiScene == null) {
+            log.error("[ERROR] Assimp failed to load file: {}", file.getAbsolutePath());
+            return new ArrayList<>();
+        }
 
         // TODO : Handle multiple scenes in a single file
         List<GaiaScene> gaiaScenes = new ArrayList<>();
@@ -185,8 +187,6 @@ public class AssimpConverter implements Converter {
             GaiaBoundingBox boundingBox = rootNode.getBoundingBox(null);
             double geometricError = boundingBox.getLongestDistance();
             attribute.getAttributes().put("geometricError", String.valueOf(geometricError));
-
-            log.debug("Bounding Box for Node {}: {}", childNode.getName(), boundingBox);
         }
         return gaiaScenes;
     }
@@ -313,6 +313,7 @@ public class AssimpConverter implements Converter {
             material.setSpecularColor(specVector4d);
         }
 
+
         AIString diffPath = AIString.calloc();
         Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_DIFFUSE, 0, diffPath, (IntBuffer) null, null, null, null, null, null);
         String diffTexPath = diffPath.dataString();
@@ -328,6 +329,10 @@ public class AssimpConverter implements Converter {
         AIString shininessPath = AIString.calloc();
         Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_SHININESS, 0, shininessPath, (IntBuffer) null, null, null, null, null, null);
         String shininessTexPath = shininessPath.dataString();
+
+        AIString normalPath = AIString.calloc();
+        Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_NORMALS, 0, normalPath, (IntBuffer) null, null, null, null, null, null);
+        String normalTexPath = normalPath.dataString();
 
         File parentPath = new File(path);
         if (!diffTexPath.isEmpty()) {
@@ -483,6 +488,45 @@ public class AssimpConverter implements Converter {
         } else {
             textures = new ArrayList<>();
             material.getTextures().put(TextureType.SHININESS, textures);
+        }
+
+        // Normal textures.
+        if (!normalTexPath.isEmpty()) {
+            textures = new ArrayList<>();
+            GaiaTexture texture = new GaiaTexture();
+            texture.setPath(normalTexPath);
+            texture.setType(TextureType.NORMALS);
+            texture.setParentPath(path);
+
+            // embedded texture check
+            if (normalTexPath.startsWith("*")) {
+                String embeddedTexturePath = embeddedTextures.get(Integer.parseInt(normalTexPath.substring(1)));
+                log.debug("Original Texture Path: {}", normalTexPath);
+                log.debug("Embedded Texture Path: {}", embeddedTexturePath);
+                normalTexPath = "embedded_textures" + File.separator + embeddedTexturePath;
+            } else {
+                File filePath = new File(normalTexPath);
+                String fileName = filePath.getName();
+                String embeddedTexturePath = "embedded_textures" + File.separator + fileName;
+                File inputFile = new File(parentPath, embeddedTexturePath);
+                if (inputFile.exists() && inputFile.isFile()) {
+                    log.debug("Original Texture Path: {}", normalTexPath);
+                    log.debug("Corrected Texture Path: {}", embeddedTexturePath);
+                    normalTexPath = embeddedTexturePath;
+                }
+            }
+
+            File file = ImageUtils.getChildFile(parentPath, normalTexPath);
+            if (file != null && file.exists() && file.isFile()) {
+                texture.setPath(normalTexPath);
+                textures.add(texture);
+                material.getTextures().put(texture.getType(), textures);
+            } else {
+                log.error("[ERROR] Normal Texture is not found: {}", normalTexPath);
+            }
+        } else {
+            textures = new ArrayList<>();
+            material.getTextures().put(TextureType.NORMALS, textures);
         }
 
         if (0.0f < opacity && opacity < 1.0f) {

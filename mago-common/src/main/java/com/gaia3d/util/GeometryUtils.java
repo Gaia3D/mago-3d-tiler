@@ -3,9 +3,9 @@ package com.gaia3d.util;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.geometry.octree.GaiaFaceData;
-import com.gaia3d.basic.geometry.octree.GaiaOctree;
 import com.gaia3d.basic.halfedge.PlaneType;
 import com.gaia3d.basic.model.*;
+import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
@@ -97,6 +97,309 @@ public class GeometryUtils {
 
     public static int getPrevIdx(int idx, int pointsCount) {
         return (idx + pointsCount - 1) % pointsCount;
+    }
+
+    public static GaiaPrimitive getPrimitiveFromBox(Vector3d leftFrontBottom, Vector3d rightFrontBottom, Vector3d rightRearBottom,Vector3d leftRearBottom,
+                                                    Vector3d leftFrontTop, Vector3d rightFrontTop, Vector3d rightRearTop,Vector3d leftRearTop,
+                                                    boolean left, boolean right, boolean front, boolean rear, boolean bottom, boolean top) {
+        GaiaPrimitive resultPrimitive = new GaiaPrimitive();
+
+        // make 6 GaiaSurface. Each surface has 2 gaiaFaces.
+
+        // 24 vertices.
+
+        //                           3--------2
+        //                          /        /     <- top
+        //                         /        /
+        //                        0--------1
+        //
+        //
+        //                             rear
+        //                  2        3--------2          2
+        //                 /|        |        |         /|
+        //                / |        |        |        / |
+        //     left ->   3  |     3--------2  |       3  |    <- right
+        //               |  1     |  0-----|--1       |  1
+        //               | /      |        |          | /
+        //               0        0--------1          0
+        //                          front
+        //
+        //
+        //                          3--------2
+        //                          /        /
+        //                         /        /   <- bottom
+        //                        0--------1
+
+
+
+        if (left) {
+            // leftFrontBottom - leftFrontTop - leftRearTop - leftRearBottom
+            GaiaPrimitive leftPrimitive = new GaiaPrimitive();
+
+            GaiaVertex vertex0 = new GaiaVertex();
+            // Left
+            Vector3d normalLeft = new Vector3d(-1, 0, 0);
+            vertex0.setPosition(new Vector3d(leftFrontBottom));
+            vertex0.setNormal(normalLeft);
+
+            GaiaVertex vertex1 = new GaiaVertex();
+            vertex1.setPosition(new Vector3d(leftFrontTop));
+            vertex1.setNormal(normalLeft);
+
+            GaiaVertex vertex2 = new GaiaVertex();
+            vertex2.setPosition(new Vector3d(leftRearTop));
+            vertex2.setNormal(normalLeft);
+
+            GaiaVertex vertex3 = new GaiaVertex();
+            vertex3.setPosition(new Vector3d(leftRearBottom));
+            vertex3.setNormal(normalLeft);
+
+            leftPrimitive.getVertices().add(vertex0);
+            leftPrimitive.getVertices().add(vertex1);
+            leftPrimitive.getVertices().add(vertex2);
+            leftPrimitive.getVertices().add(vertex3);
+
+            // LeftSurface.
+            GaiaSurface leftSurface = new GaiaSurface();
+            // 0, 3, 2, 1. The normal is (-1, 0, 0).
+
+            // Face0 (0, 3, 2).
+            GaiaFace face10 = new GaiaFace();
+            face10.setIndices(new int[]{0, 2, 3});
+            leftSurface.getFaces().add(face10);
+
+            // Face1 (0, 2, 1).
+            GaiaFace face11 = new GaiaFace();
+            face11.setIndices(new int[]{0, 1, 2});
+            leftSurface.getFaces().add(face11);
+
+            leftPrimitive.getSurfaces().add(leftSurface);
+            GaiaPrimitiveUtils.mergePrimitives(resultPrimitive, leftPrimitive);
+        }
+
+
+        if (right) {
+            // rightFrontBottom - rightRearBottom - rightRearTop - rightFrontTop
+            GaiaPrimitive rightPrimitive = new GaiaPrimitive();
+
+            // Right.
+            Vector3d normalRight = new Vector3d(1, 0, 0);
+            GaiaVertex vertex0 = new GaiaVertex(); // coincident with vertex5
+            vertex0.setPosition(new Vector3d(rightFrontBottom));
+            vertex0.setNormal(normalRight);
+
+            GaiaVertex vertex1 = new GaiaVertex(); // coincident with vertex9
+            vertex1.setPosition(new Vector3d(rightRearBottom));
+            vertex1.setNormal(normalRight);
+
+            GaiaVertex vertex2 = new GaiaVertex(); // coincident with vertex10
+            vertex2.setPosition(new Vector3d(rightRearTop));
+            vertex2.setNormal(normalRight);
+
+            GaiaVertex vertex3 = new GaiaVertex(); // coincident with vertex6
+            vertex3.setPosition(new Vector3d(rightFrontTop));
+            vertex3.setNormal(normalRight);
+
+            rightPrimitive.getVertices().add(vertex0);
+            rightPrimitive.getVertices().add(vertex1);
+            rightPrimitive.getVertices().add(vertex2);
+            rightPrimitive.getVertices().add(vertex3);
+
+            // RightSurface
+            GaiaSurface rightSurface = new GaiaSurface();
+            // 0, 1, 2, 3. The normal is (1, 0, 0)
+
+            // Face0 (0, 1, 2)
+            GaiaFace face8 = new GaiaFace();
+            face8.setIndices(new int[]{0, 1, 2});
+            rightSurface.getFaces().add(face8);
+
+            // Face1 (0, 2, 3)
+            GaiaFace face9 = new GaiaFace();
+            face9.setIndices(new int[]{0, 2, 3});
+            rightSurface.getFaces().add(face9);
+
+            rightPrimitive.getSurfaces().add(rightSurface);
+            GaiaPrimitiveUtils.mergePrimitives(resultPrimitive, rightPrimitive);
+        }
+
+        if (front) {
+            // leftFrontBottom - rightFrontBottom - rightFrontTop - leftFrontTop
+            GaiaPrimitive frontPrimitive = new GaiaPrimitive();
+
+            Vector3d normalFront = new Vector3d(0, -1, 0);
+            GaiaVertex vertex0 = new GaiaVertex(); // coincident with vertex0
+            vertex0.setPosition(new Vector3d(leftFrontBottom));
+            vertex0.setNormal(normalFront);
+
+            GaiaVertex vertex1 = new GaiaVertex(); // coincident with vertex1
+            vertex1.setPosition(new Vector3d(rightFrontBottom));
+            vertex1.setNormal(normalFront);
+
+            GaiaVertex vertex2 = new GaiaVertex();
+            vertex2.setPosition(new Vector3d(rightFrontTop));
+            vertex2.setNormal(normalFront);
+
+            GaiaVertex vertex3 = new GaiaVertex();
+            vertex3.setPosition(new Vector3d(leftFrontTop));
+            vertex3.setNormal(normalFront);
+
+            frontPrimitive.getVertices().add(vertex0);
+            frontPrimitive.getVertices().add(vertex1);
+            frontPrimitive.getVertices().add(vertex2);
+            frontPrimitive.getVertices().add(vertex3);
+
+            // FrontSurface
+            GaiaSurface frontSurface = new GaiaSurface();
+            // 0, 1, 2, 3. The normal is (0, -1, 0)
+
+            // Face0 (0, 1, 2)
+            GaiaFace face4 = new GaiaFace();
+            face4.setIndices(new int[]{0, 1, 2});
+            frontSurface.getFaces().add(face4);
+
+            // Face1 (0, 2, 3)
+            GaiaFace face5 = new GaiaFace();
+            face5.setIndices(new int[]{0, 2, 3});
+            frontSurface.getFaces().add(face5);
+
+            frontPrimitive.getSurfaces().add(frontSurface);
+            GaiaPrimitiveUtils.mergePrimitives(resultPrimitive, frontPrimitive);
+        }
+
+        if (rear) {
+            // rightRearBottom - leftRearBottom - leftRearTop - rightRearTop
+            GaiaPrimitive rearPrimitive = new GaiaPrimitive();
+
+            // Rear
+            Vector3d normalRear = new Vector3d(0, 1, 0);
+            GaiaVertex vertex0 = new GaiaVertex(); // coincident with vertex3
+            vertex0.setPosition(new Vector3d(rightRearBottom));
+            vertex0.setNormal(normalRear);
+
+            GaiaVertex vertex1 = new GaiaVertex(); // coincident with vertex2
+            vertex1.setPosition(new Vector3d(leftRearBottom));
+            vertex1.setNormal(normalRear);
+
+            GaiaVertex vertex2 = new GaiaVertex();
+            vertex2.setPosition(new Vector3d(leftRearTop));
+            vertex2.setNormal(normalRear);
+
+            GaiaVertex vertex3 = new GaiaVertex();
+            vertex3.setPosition(new Vector3d(rightRearTop));
+            vertex3.setNormal(normalRear);
+
+            rearPrimitive.getVertices().add(vertex0);
+            rearPrimitive.getVertices().add(vertex1);
+            rearPrimitive.getVertices().add(vertex2);
+            rearPrimitive.getVertices().add(vertex3);
+
+            // RearSurface
+            GaiaSurface backSurface = new GaiaSurface();
+            // 0, 3, 2, 1. The normal is (0, 1, 0)
+
+            // Face0 (0, 3, 2)
+            GaiaFace face6 = new GaiaFace();
+            face6.setIndices(new int[]{0, 2, 3});
+            backSurface.getFaces().add(face6);
+
+            // Face1 (0, 2, 1)
+            GaiaFace face7 = new GaiaFace();
+            face7.setIndices(new int[]{0, 1, 2});
+            backSurface.getFaces().add(face7);
+
+            rearPrimitive.getSurfaces().add(backSurface);
+            GaiaPrimitiveUtils.mergePrimitives(resultPrimitive, rearPrimitive);
+        }
+
+        if (bottom) {
+            // leftFrontBottom - leftRearBottom - rightRearBottom - rightFrontBottom
+            GaiaPrimitive bottomPrimitive = new GaiaPrimitive();
+            // Bottom
+            GaiaVertex vertex0 = new GaiaVertex();
+            Vector3d normalBottom = new Vector3d(0, 0, -1);
+            vertex0.setPosition(new Vector3d(leftFrontBottom));
+            vertex0.setNormal(normalBottom);
+
+            GaiaVertex vertex1 = new GaiaVertex();
+            vertex1.setPosition(new Vector3d(leftRearBottom));
+            vertex1.setNormal(normalBottom);
+
+            GaiaVertex vertex2 = new GaiaVertex();
+            vertex2.setPosition(new Vector3d(rightRearBottom));
+            vertex2.setNormal(normalBottom);
+
+            GaiaVertex vertex3 = new GaiaVertex();
+            vertex3.setPosition(new Vector3d(rightFrontBottom));
+            vertex3.setNormal(normalBottom);
+
+            bottomPrimitive.getVertices().add(vertex0);
+            bottomPrimitive.getVertices().add(vertex1);
+            bottomPrimitive.getVertices().add(vertex2);
+            bottomPrimitive.getVertices().add(vertex3);
+
+            // BottomSurface
+            GaiaSurface bottomSurface = new GaiaSurface();
+            // 0, 3, 2, 1. The normal is (0, 0, -1)
+            // Face0 (0, 2, 1)
+            GaiaFace face0 = new GaiaFace();
+            face0.setIndices(new int[]{0, 1, 2});
+            bottomSurface.getFaces().add(face0);
+
+            // Face1 (0, 3, 2)
+            GaiaFace face1 = new GaiaFace();
+            face1.setIndices(new int[]{0, 2, 3});
+            bottomSurface.getFaces().add(face1);
+
+            bottomPrimitive.getSurfaces().add(bottomSurface);
+            GaiaPrimitiveUtils.mergePrimitives(resultPrimitive, bottomPrimitive);
+        }
+
+        if (top) {
+            // leftFrontTop - rightFrontTop - rightRearTop - leftRearTop
+            GaiaPrimitive topPrimitive = new GaiaPrimitive();
+            // Top
+            Vector3d normalTop = new Vector3d(0, 0, 1);
+            GaiaVertex vertex0 = new GaiaVertex(); // coincident with vertex7
+            vertex0.setPosition(new Vector3d(leftFrontTop));
+            vertex0.setNormal(normalTop);
+
+            GaiaVertex vertex1 = new GaiaVertex(); // coincident with vertex6
+            vertex1.setPosition(new Vector3d(rightFrontTop));
+            vertex1.setNormal(normalTop);
+
+            GaiaVertex vertex2 = new GaiaVertex(); // coincident with vertex10
+            vertex2.setPosition(new Vector3d(rightRearTop));
+            vertex2.setNormal(normalTop);
+
+            GaiaVertex vertex3 = new GaiaVertex(); // coincident with vertex11
+            vertex3.setPosition(new Vector3d(leftRearTop));
+            vertex3.setNormal(normalTop);
+
+            topPrimitive.getVertices().add(vertex0);
+            topPrimitive.getVertices().add(vertex1);
+            topPrimitive.getVertices().add(vertex2);
+            topPrimitive.getVertices().add(vertex3);
+
+            // TopSurface
+            GaiaSurface topSurface = new GaiaSurface();
+            // 0, 1, 2, 3. The normal is (0, 0, 1)
+            //Vector3d normal = new Vector3d(0, 0, 1);
+            // Face0 (0, 1, 2)
+            GaiaFace face2 = new GaiaFace();
+            face2.setIndices(new int[]{0, 1, 2});
+            topSurface.getFaces().add(face2);
+
+            // Face1 (0, 2, 3)
+            GaiaFace face3 = new GaiaFace();
+            face3.setIndices(new int[]{0, 2, 3});
+            topSurface.getFaces().add(face3);
+
+            topPrimitive.getSurfaces().add(topSurface);
+            GaiaPrimitiveUtils.mergePrimitives(resultPrimitive, topPrimitive);
+        }
+
+        return resultPrimitive;
     }
 
     public static GaiaPrimitive getPrimitiveFromBoundingBox(GaiaBoundingBox bbox, boolean left, boolean right, boolean front, boolean rear, boolean bottom, boolean top) {
@@ -806,58 +1109,6 @@ public class GeometryUtils {
         return cleanPointsArray;
     }
 
-    public static GaiaScene getGaiaSceneLego(GaiaScene gaiaScene, float octreeMinSize) {
-        GaiaScene resultScene = new GaiaScene();
-        GaiaOctree gaiaOctree = GaiaOctreeUtils.getSceneOctree(gaiaScene, octreeMinSize);
-
-        List<GaiaOctree> octreeList = new ArrayList<>();
-        gaiaOctree.extractOctreesWithContents(octreeList);
-
-        GaiaNode nodeRoot = new GaiaNode();
-        resultScene.getNodes().add(nodeRoot);
-
-        GaiaNode node = new GaiaNode();
-        nodeRoot.getChildren().add(node);
-
-        GaiaMesh mesh = new GaiaMesh();
-        node.getMeshes().add(mesh);
-
-        GaiaPrimitive primitiveMaster = new GaiaPrimitive();
-        mesh.getPrimitives().add(primitiveMaster);
-
-        for (GaiaOctree octree : octreeList) {
-            boolean[] hasNeighbor = octree.hasNeighbor(); // left, right, front, rear, bottom, top.
-            GaiaBoundingBox bbox = octree.getBoundingBox();
-
-            GaiaPrimitive primitive = getPrimitiveFromBoundingBox(bbox, !hasNeighbor[0], !hasNeighbor[1], !hasNeighbor[2], !hasNeighbor[3], !hasNeighbor[4], !hasNeighbor[5]);
-
-            //Vector4d randomColor = new Vector4d(Math.random(), Math.random(), Math.random(), 1.0);
-            Vector4d averageColor = GeometryUtils.getAverageColor(octree.getFaceDataList());
-
-            //averageColor = new Vector4d(0.9, 0.9, 0.9, 1.0);
-
-            if (averageColor == null) {
-                averageColor = new Vector4d(1.0, 0.0, 1.0, 1.0);
-            }
-            byte[] color = new byte[4];
-            color[0] = (byte) (averageColor.x * 255);
-            color[1] = (byte) (averageColor.y * 255);
-            color[2] = (byte) (averageColor.z * 255);
-            color[3] = (byte) (averageColor.w * 255);
-
-
-            List<GaiaVertex> vertices = primitive.getVertices();
-            for (GaiaVertex vertex : vertices) {
-                vertex.setColor(color);
-            }
-            // End Test.------------------------------------------------------------------------------------------------
-
-            GaiaPrimitiveUtils.mergePrimitives(primitiveMaster, primitive);
-        }
-
-        return resultScene;
-    }
-
     public static boolean isInvalidVector(Vector3d vector) {
         return !isValidVector(vector);
     }
@@ -947,27 +1198,95 @@ public class GeometryUtils {
         float absY = Math.abs((float) normal.y);
         float absZ = Math.abs((float) normal.z);
 
-        if (absX > absY && absX > absZ) {
-            // the best plane is the YZ plane
-            if (normal.x > 0) {
-                return PlaneType.YZ;
-            } else {
-                return PlaneType.YZNEG;
-            }
-        } else if (absY > absX && absY > absZ) {
-            // the best plane is the XZ plane
-            if (normal.y > 0) {
-                return PlaneType.XZ;
-            } else {
-                return PlaneType.XZNEG;
-            }
+        if (absX >= absY && absX >= absZ) {
+            return normal.x >= 0 ? PlaneType.YZ : PlaneType.YZNEG;
+        } else if (absY >= absX && absY >= absZ) {
+            return normal.y >= 0 ? PlaneType.XZ : PlaneType.XZNEG;
         } else {
-            // the best plane is the XY plane
-            if (normal.z > 0) {
-                return PlaneType.XY;
-            } else {
-                return PlaneType.XYNEG;
-            }
+            return normal.z >= 0 ? PlaneType.XY : PlaneType.XYNEG;
         }
+    }
+
+    public static float mod(float a, float b) {
+        return (float) (a - b * Math.floor(a / b));
+    }
+
+    public static void encodeFloat(float value, byte[] result) {
+        /*
+        var bit_shift = [16777216.0, 65536.0, 256.0, 1.0];
+        var bit_mask = [0.0, 0.00390625, 0.00390625, 0.00390625];
+
+        // calculate value_A = depth * bit_shift * vec4(255).
+        var value_A = [depth * bit_shift[0] * 255.0, depth * bit_shift[1] * 255.0, depth * bit_shift[2] * 255.0, depth * bit_shift[3] * 255.0];
+        var value_B = [256.0, 256.0, 256.0, 256.0];
+
+        var resAux = [( ManagerUtils.mod(value_A[0], value_B[0]) )/255.0,
+            ( ManagerUtils.mod(value_A[1], value_B[1]) )/255.0,
+            ( ManagerUtils.mod(value_A[2], value_B[2]) )/255.0,
+            ( ManagerUtils.mod(value_A[3], value_B[3]) )/255.0];
+
+        var resBitMasked = [resAux[0] * bit_mask[0],
+            resAux[0] * bit_mask[1],
+            resAux[1] * bit_mask[2],
+            resAux[2] * bit_mask[3]];
+
+        var res = [resAux[0] - resBitMasked[0],
+            resAux[1] - resBitMasked[1],
+            resAux[2] - resBitMasked[2],
+            resAux[3] - resBitMasked[3]];
+
+        // reverse the result.
+        var reversedResult = [res[3], res[2], res[1], res[0]];
+
+         */
+
+        float[] bit_shift = {16777216.0f, 65536.0f, 256.0f, 1.0f};
+        float[] bit_mask = {0.0f, 0.00390625f, 0.00390625f, 0.00390625f};
+
+        // calculate value_A = depth * bit_shift * vec4(255).
+        float[] value_A = {value * bit_shift[0] * 255.0f, value * bit_shift[1] * 255.0f, value * bit_shift[2] * 255.0f, value * bit_shift[3] * 255.0f};
+        float[] value_B = {256.0f, 256.0f, 256.0f, 256.0f};
+
+        float[] resAux = {(mod(value_A[0], value_B[0])) / 255.0f, (mod(value_A[1], value_B[1])) / 255.0f, (mod(value_A[2], value_B[2])) / 255.0f, (mod(value_A[3], value_B[3])) / 255.0f};
+        //float[] resAux = {((value_A[0] % value_B[0])) / 255.0f, ((value_A[1]% value_B[1])) / 255.0f, ((value_A[2]% value_B[2])) / 255.0f, ((value_A[3]% value_B[3])) / 255.0f};
+
+        float[] resBitMasked = {resAux[0] * bit_mask[0], resAux[0] * bit_mask[1], resAux[1] * bit_mask[2], resAux[2] * bit_mask[3]};
+
+        float[] res = {resAux[0] - resBitMasked[0], resAux[1] - resBitMasked[1], resAux[2] - resBitMasked[2], resAux[3] - resBitMasked[3]};
+
+        // reverse the result.
+        float[] reversedResult = {res[3], res[2], res[1], res[0]};
+
+        result[0] = (byte) (reversedResult[0] * 255.0f);
+        result[1] = (byte) (reversedResult[1] * 255.0f);
+        result[2] = (byte) (reversedResult[2] * 255.0f);
+        result[3] = (byte) (reversedResult[3] * 255.0f);
+
+    }
+
+    public static void encodeFloatToInt(float value, int[] result) {
+
+        float[] bit_shift = {16777216.0f, 65536.0f, 256.0f, 1.0f};
+        float[] bit_mask = {0.0f, 0.00390625f, 0.00390625f, 0.00390625f};
+
+        // calculate value_A = depth * bit_shift * vec4(255).
+        float[] value_A = {value * bit_shift[0] * 255.0f, value * bit_shift[1] * 255.0f, value * bit_shift[2] * 255.0f, value * bit_shift[3] * 255.0f};
+        float[] value_B = {256.0f, 256.0f, 256.0f, 256.0f};
+
+        float[] resAux = {(mod(value_A[0], value_B[0])) / 255.0f, (mod(value_A[1], value_B[1])) / 255.0f, (mod(value_A[2], value_B[2])) / 255.0f, (mod(value_A[3], value_B[3])) / 255.0f};
+        //float[] resAux = {((value_A[0] % value_B[0])) / 255.0f, ((value_A[1]% value_B[1])) / 255.0f, ((value_A[2]% value_B[2])) / 255.0f, ((value_A[3]% value_B[3])) / 255.0f};
+
+        float[] resBitMasked = {resAux[0] * bit_mask[0], resAux[0] * bit_mask[1], resAux[1] * bit_mask[2], resAux[2] * bit_mask[3]};
+
+        float[] res = {resAux[0] - resBitMasked[0], resAux[1] - resBitMasked[1], resAux[2] - resBitMasked[2], resAux[3] - resBitMasked[3]};
+
+        // reverse the result.
+        float[] reversedResult = {res[3], res[2], res[1], res[0]};
+
+        result[0] = (int) (reversedResult[0] * 255.0f);
+        result[1] = (int) (reversedResult[1] * 255.0f);
+        result[2] = (int) (reversedResult[2] * 255.0f);
+        result[3] = (int) (reversedResult[3] * 255.0f);
+
     }
 }

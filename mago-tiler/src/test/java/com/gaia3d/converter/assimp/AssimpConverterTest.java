@@ -8,6 +8,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Level;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.lwjgl.assimp.AIScene;
+import org.lwjgl.assimp.Assimp;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -16,6 +18,13 @@ import java.util.List;
 @SuppressWarnings("ALL")
 @Slf4j
 class AssimpConverterTest {
+
+    @Test
+    void loadTest() {
+        File file = new File("D:\\data\\mago-3d-tiler\\temp-sample\\20250827-ld-IFC-extract\\val.ifc");
+        AIScene aiScene = Assimp.aiImportFile(file.getAbsolutePath(), 0);
+        assert aiScene != null;
+    }
 
     /**
      * Stress test for loading 3D models.

@@ -375,14 +375,14 @@ public class GaiaNode extends NodeStructure implements Serializable {
         Matrix4d identity = new Matrix4d();
         identity.identity();
 
-        if (finalMatrix.equals(identity)) {
-            return;
+        if (!finalMatrix.equals(identity)) {
+            for (GaiaMesh mesh : meshes) {
+                mesh.transformPoints(finalMatrix);
+            }
         }
 
-        for (GaiaMesh mesh : meshes) {
-            mesh.transformPoints(finalMatrix);
-        }
         for (GaiaNode child : children) {
+            child.setParent(this);
             child.spendTranformMatrix();
         }
 

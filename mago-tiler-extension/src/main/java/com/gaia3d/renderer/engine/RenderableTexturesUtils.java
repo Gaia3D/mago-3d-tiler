@@ -3,7 +3,7 @@ package com.gaia3d.renderer.engine;
 import com.gaia3d.util.ImageResizer;
 import com.gaia3d.util.ImageUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL30;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
@@ -20,17 +20,23 @@ public class RenderableTexturesUtils {
         ByteBuffer buffer = ByteBuffer.allocateDirect(byteArray.length);
         buffer.put(byteArray);
         buffer.flip();
-        int textureId = GL20.glGenTextures();
+        int textureId = GL30.glGenTextures();
 
-        GL20.glActiveTexture(GL20.GL_TEXTURE0);
-        GL20.glBindTexture(GL20.GL_TEXTURE_2D, textureId);
+        GL30.glActiveTexture(GL30.GL_TEXTURE0);
+        // get currently bound texture
+        int boundTex = GL30.glGetInteger(GL30.GL_TEXTURE_BINDING_2D);
 
-        GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_MIN_FILTER, minFilter); // GL_LINEAR
-        GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_MAG_FILTER, magFilter);
-        GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_WRAP_S, wrapS);
-        GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_WRAP_T, wrapT);
+        GL30.glBindTexture(GL30.GL_TEXTURE_2D, textureId);
+
+        GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MIN_FILTER, minFilter); // GL_LINEAR
+        GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MAG_FILTER, magFilter);
+        GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_WRAP_S, wrapS);
+        GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_WRAP_T, wrapT);
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, glFormat, GL_UNSIGNED_BYTE, buffer);
+
+        // restore previously bound texture
+        GL30.glBindTexture(GL30.GL_TEXTURE_2D, boundTex);
         return textureId;
     }
 

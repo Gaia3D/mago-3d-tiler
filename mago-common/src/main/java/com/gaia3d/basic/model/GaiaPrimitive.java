@@ -4,6 +4,7 @@ import com.gaia3d.basic.exchangable.GaiaBuffer;
 import com.gaia3d.basic.exchangable.GaiaBufferDataSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
+import com.gaia3d.basic.geometry.octree.GaiaOctree;
 import com.gaia3d.basic.geometry.octree.GaiaOctreeVertices;
 import com.gaia3d.basic.model.structure.PrimitiveStructure;
 import com.gaia3d.basic.types.AttributeType;
@@ -44,7 +45,7 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         for (GaiaVertex vertex : vertices) {
             Vector3d position = vertex.getPosition();
-            Vector3d transformedPosition = new Vector3d();
+            Vector3d transformedPosition = new Vector3d(position);
             if (transform != null) {
                 transform.transformPosition(position, transformedPosition);
             }
@@ -336,18 +337,18 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
 
     public void addPrimitive(GaiaPrimitive primitive) {
         int verticesCount = this.vertices.size();
-        int primitiveVerticesCount = primitive.getVertices().size();
         this.vertices.addAll(primitive.getVertices());
         for (GaiaSurface surface : primitive.getSurfaces()) {
             List<GaiaFace> faces = surface.getFaces();
             for (GaiaFace face : faces) {
-                int[] indices = face.getIndices();
+                GaiaFace newFace = new GaiaFace();
+                newFace.copyFrom(face);
+
+                // recalculate indices
+                int[] indices = newFace.getIndices();
                 for (int i = 0; i < indices.length; i++) {
                     indices[i] += verticesCount;
                 }
-
-                GaiaFace newFace = new GaiaFace();
-                newFace.setIndices(indices);
                 this.surfaces.get(0).getFaces().add(newFace);
             }
         }
@@ -404,22 +405,23 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
 
     public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
         // Weld the vertices.
-        GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null);
-        octreeVertices.getVertices().addAll(this.vertices);
-        octreeVertices.calculateSize();
-        octreeVertices.setAsCube();
-        octreeVertices.setMaxDepth(10);
-        octreeVertices.setMinBoxSize(1.0); // 1m
+        GaiaBoundingBox boundingBox = this.getBoundingBox(null);
+        if (boundingBox == null) {
+            return;
+        }
+        GaiaBoundingBox cubeBoundingBox = boundingBox.createCubeFromMinPosition();
+        GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null, cubeBoundingBox);
+        octreeVertices.addContents(this.vertices);
+        octreeVertices.setLimitDepth(10);
+        octreeVertices.setLimitBoxSize(1.0); // 1m
 
         octreeVertices.makeTreeByMinVertexCount(50);
 
-        List<GaiaOctreeVertices> octreesWithContents = new ArrayList<>();
-        octreeVertices.extractOctreesWithContents(octreesWithContents);
-
+        List<GaiaOctree<GaiaVertex>> octreesWithContents = octreeVertices.extractOctreesWithContents();
         Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster = new HashMap<>();
 
-        for (GaiaOctreeVertices octree : octreesWithContents) {
-            List<GaiaVertex> vertices = octree.getVertices();
+        for (GaiaOctree<GaiaVertex> octree : octreesWithContents) {
+            List<GaiaVertex> vertices = octree.getContents();
             getWeldableVertexMap(mapVertexToVertexMaster, vertices, error, checkTexCoord, checkNormal, checkColor, checkBatchId);
         }
 
@@ -472,7 +474,6 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
                 }
                 surface.setFaces(newFaces);
             }
-
         }
 
         // delete no used vertices
@@ -608,6 +609,27 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
             Vector3d transformedPosition = new Vector3d();
             finalMatrix.transformPosition(position, transformedPosition);
             vertex.setPosition(transformedPosition);
+
+            Vector3d normal = vertex.getNormal();
+            if (normal != null) {
+                Vector3d transformedNormal = new Vector3d();
+                finalMatrix.transformPosition(normal, transformedNormal);
+                vertex.setNormal(transformedNormal);
+            }
+        }
+
+        // Also transform normals if they exist
+        Matrix3d normalMatrix = new Matrix3d();
+        finalMatrix.get3x3(normalMatrix);
+        normalMatrix.invert().transpose();
+        for (GaiaVertex vertex : vertices) {
+            Vector3d normal = vertex.getNormal();
+            if (normal != null) {
+                Vector3d transformedNormal = new Vector3d();
+                normalMatrix.transform(normal, transformedNormal);
+                transformedNormal.normalize();
+                vertex.setNormal(transformedNormal);
+            }
         }
     }
 

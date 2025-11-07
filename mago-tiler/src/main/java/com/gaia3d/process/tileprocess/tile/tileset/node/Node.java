@@ -463,9 +463,32 @@ public class Node {
         return true;
     }
 
+    public boolean intersectsCartographicPointDegree(Vector3d cartographicPointDegree) {
+        double[] region = this.getBoundingVolume().getRegion();// minx, miny, maxx, maxy, minz, maxz
+        double minLon = region[0];
+        double minLat = region[1];
+        double maxLon = region[2];
+        double maxLat = region[3];
+        double minAltitude = region[4];
+        double maxAltitude = region[5];
+        double lonRad = Math.toRadians(cartographicPointDegree.x);
+        double latRad = Math.toRadians(cartographicPointDegree.y);
+        double altitude = cartographicPointDegree.z;
+        if (lonRad < minLon || lonRad > maxLon) {
+            return false;
+        }
+        if (latRad < minLat || latRad > maxLat) {
+            return false;
+        }
+        if (altitude < minAltitude || altitude > maxAltitude) {
+            return false;
+        }
+        return true;
+    }
+
     public void getIntersectedNodesAsOctree(GaiaBoundingBox cartographicBBox, int depth, List<Node> resultIntersectedNodes) {
         // 1rst, check if the bounding box intersects with this node
-        if(!intersectsCartographicBoundingBox(cartographicBBox)) {
+        if (!intersectsCartographicBoundingBox(cartographicBBox)) {
             return;
         }
 
@@ -489,8 +512,39 @@ public class Node {
         //        |            |            |        |            |            |
         //        +------------+------------+        +------------+------------+
 
-        for(Node childNode : children) {
+        for (Node childNode : children) {
             childNode.getIntersectedNodesAsOctree(cartographicBBox, depth, resultIntersectedNodes);
+        }
+    }
+
+    public void getIntersectedNodesAsOctree(Vector3d cartographicPointDegree, int depth, List<Node> resultIntersectedNodes) {
+        // 1rst, check if the bounding box intersects with this node
+        if (!intersectsCartographicPointDegree(cartographicPointDegree)) {
+            return;
+        }
+
+        if (this.depth == depth) {
+            resultIntersectedNodes.add(this);
+            return;
+        }
+
+        if (children == null || children.isEmpty()) {
+            this.createOctTreeChildren();
+        }
+
+        //              bottom                                top
+        //        +------------+------------+        +------------+------------+
+        //        |            |            |        |            |            |
+        //        |     3      |     2      |        |     7      |     6      |
+        //        |            |            |        |            |            |
+        //        +------------+------------+        +------------+------------+
+        //        |            |            |        |            |            |
+        //        |     0      |     1      |        |     4      |     5      |
+        //        |            |            |        |            |            |
+        //        +------------+------------+        +------------+------------+
+
+        for (Node childNode : children) {
+            childNode.getIntersectedNodesAsOctree(cartographicPointDegree, depth, resultIntersectedNodes);
         }
     }
 

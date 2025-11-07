@@ -18,11 +18,16 @@ import org.apache.commons.io.FilenameUtils;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -352,5 +357,46 @@ public class GaiaSet implements Serializable {
             material.clear();
         }
         this.materials.clear();
+    }
+
+    private byte[] writeJpeg(BufferedImage bufferedImage, float quality) {
+        ByteArrayOutputStream baos = null;
+        ImageOutputStream ios = null;
+        try {
+            baos = new ByteArrayOutputStream();
+            ios = ImageIO.createImageOutputStream(baos);
+
+            // Image compression
+            Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpg");
+            ImageWriter writer = writers.next();
+            writer.setOutput(ios);
+            ImageWriteParam param = writer.getDefaultWriteParam();
+            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            param.setCompressionQuality(quality);
+
+            writer.write(null, new IIOImage(bufferedImage, null, null), param); // 5
+            byte[] bytes = baos.toByteArray();
+            bufferedImage.flush();
+
+            baos.close();
+            ios.close();
+            return bytes;
+        } catch (IOException e) {
+            log.error("[ERROR] :", e);
+            log.error("[ERROR] Error writing jpeg image");
+            try {
+                baos.close();
+            } catch (IOException ex) {
+                log.error("[ERROR] :", ex);
+            }
+            if (ios != null) {
+                try {
+                    ios.close();
+                } catch (IOException ex) {
+                    log.error("[ERROR] :", ex);
+                }
+            }
+        }
+        return null;
     }
 }

@@ -16,6 +16,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector4d;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL30;
 
 import java.awt.image.BufferedImage;
 import java.util.List;
@@ -223,6 +224,14 @@ public class RenderEngine {
         GL20.glLineWidth(1.0f);
     }
 
+    private double linearToSrgb(double linear) {
+        if (linear <= 0.0031308) {
+            return linear * 12.92;
+        } else {
+            return (1.055 * Math.pow(linear, 1.0/2.4) - 0.055);
+        }
+    }
+
     private void renderGaiaMesh(RenderableMesh renderableMesh, ShaderProgram shaderProgram) {
         UniformsMap uniformsMap = shaderProgram.getUniformsMap();
 
@@ -263,11 +272,45 @@ public class RenderEngine {
 
                         // colorMode = 0: oneColor, 1: vertexColor, 2: textureColor
                         uniformsMap.setUniform1i("uColorMode", 2);
-                        GL20.glEnable(GL20.GL_TEXTURE_2D);
-                        GL20.glActiveTexture(GL20.GL_TEXTURE0);
-                        GL20.glBindTexture(GL20.GL_TEXTURE_2D, diffuseTexture.getTextureId());
+                        GL30.glActiveTexture(GL30.GL_TEXTURE0);
+                        GL30.glBindTexture(GL30.GL_TEXTURE_2D, diffuseTexture.getTextureId());
                         textureBinded = true;
                     }
+                }
+
+                // normal textures if exist
+                if (mapTextures.containsKey(TextureType.NORMALS)) {
+                    List<GaiaTexture> normalTextures = mapTextures.get(TextureType.NORMALS);
+                    if (!normalTextures.isEmpty()) {
+                        GaiaTexture normalTexture = normalTextures.get(0);
+                        if (normalTexture.getTextureId() < 0) {
+                            int minFilter = GL_LINEAR; // GL_LINEAR, GL_NEAREST
+                            int magFilter = GL_LINEAR;
+                            int wrapS = GL_REPEAT; // GL_CLAMP_TO_EDGE
+                            int wrapT = GL_REPEAT;
+                            BufferedImage bufferedImage = normalTexture.getBufferedImage();
+                            if (bufferedImage == null) {
+                                log.error("[ERROR] bufferedImage is null.");
+                                continue;
+                            }
+                            int textureId = RenderableTexturesUtils.createGlTextureFromBufferedImage(bufferedImage, minFilter, magFilter, wrapS, wrapT, true);
+
+                            normalTexture.setTextureId(textureId);
+                            normalTexture.setBufferedImage(null);
+                        }
+
+                        // colorMode = 0: oneColor, 1: vertexColor, 2: textureColor
+                        uniformsMap.setUniform1i("uColorMode", 2);
+                        GL30.glActiveTexture(GL20.GL_TEXTURE1);
+                        GL30.glBindTexture(GL20.GL_TEXTURE_2D, normalTexture.getTextureId());
+                        textureBinded = true;
+                        // set up uniform to disable normal mapping
+                        uniformsMap.setUniform1i("uUseNormalMap", 1);
+                    }
+                }
+                else {
+                    // set up uniform to disable normal mapping
+                    uniformsMap.setUniform1i("uUseNormalMap", 0);
                 }
             }
 
@@ -283,8 +326,14 @@ public class RenderEngine {
             if (!textureBinded) {
                 // get diffuse color from material
                 Vector4d diffuseColor = material.getDiffuseColor();
+                Vector4d srgb = new Vector4d();
+                srgb.x = linearToSrgb(diffuseColor.x);
+                srgb.y = linearToSrgb(diffuseColor.y);
+                srgb.z = linearToSrgb(diffuseColor.z);
+                diffuseColor = srgb;
+
                 uniformsMap.setUniform1i("uColorMode", 0);
-                uniformsMap.setUniform4fv("uOneColor", new Vector4f((float) diffuseColor.x, (float) diffuseColor.y, (float) diffuseColor.z, (float) diffuseColor.w));
+                uniformsMap.setUniform4fv("uOneColor", new Vector4f((float) srgb.x, (float) srgb.y, (float) srgb.z, (float) srgb.w));
             }
 
             if (status == 1) {
@@ -344,7 +393,7 @@ public class RenderEngine {
 
 
             // return polygonMode to fill
-            GL20.glPolygonMode(GL20.GL_FRONT_AND_BACK, GL20.GL_FILL);
+            GL30.glPolygonMode(GL20.GL_FRONT_AND_BACK, GL20.GL_FILL);
             GL20.glBindTexture(GL20.GL_TEXTURE_2D, 0); // unbind texture
         }
     }

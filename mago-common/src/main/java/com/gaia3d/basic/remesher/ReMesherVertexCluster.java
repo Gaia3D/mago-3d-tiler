@@ -46,6 +46,8 @@ public class ReMesherVertexCluster {
         Map<GaiaVertex, List<GaiaFace>> mapVertexToFaces = makeMapVertexToFaces(gaiaScene);
         Map<GaiaVertex, Integer> vertexToIndexMap = new HashMap<>();
 
+        //GaiaBoundingBox originalBBox = gaiaScene.updateBoundingBox();
+
         List<GaiaPrimitive> primitives = gaiaScene.extractPrimitives(null);
         // There are only 1 primitive in the gaiaScene, so we can use it directly.
         List<GaiaVertex> vertices = primitives.get(0).getVertices();
@@ -58,6 +60,19 @@ public class ReMesherVertexCluster {
             GaiaVertex vertex = vertices.get(i);
             vertexToIndexMap.put(vertex, i);
         }
+
+        Vector3i sceneMinCellIndex = null;
+        Vector3i sceneMaxCellIndex = null;
+
+        GaiaBoundingBox sceneBoundingBox = gaiaScene.updateBoundingBox();
+        double minX = sceneBoundingBox.getMinX();
+        double minY = sceneBoundingBox.getMinY();
+        double minZ = sceneBoundingBox.getMinZ();
+        double maxX = sceneBoundingBox.getMaxX();
+        double maxY = sceneBoundingBox.getMaxY();
+        double maxZ = sceneBoundingBox.getMaxZ();
+
+        double error = 0.01; // 1 cm error margin
 
         for (GaiaPrimitive primitive : primitives) {
             List<GaiaSurface> surfaces = primitive.getSurfaces();
@@ -72,6 +87,23 @@ public class ReMesherVertexCluster {
                         List<GaiaVertex> cluster = vertexClusters.computeIfAbsent(cellIndex, k -> new java.util.ArrayList<>());
                         cluster.add(vertex);
 
+                        // update scene min and max cell index
+                        int currCellX = cellIndex.x;
+                        int currCellY = cellIndex.y;
+                        int currCellZ = cellIndex.z;
+
+                        if (sceneMinCellIndex == null) {
+                            sceneMinCellIndex = new Vector3i(currCellX, currCellY, currCellZ);
+                            sceneMaxCellIndex = new Vector3i(currCellX, currCellY, currCellZ);
+                        } else {
+                            if (currCellX < sceneMinCellIndex.x) sceneMinCellIndex.x = currCellX;
+                            if (currCellY < sceneMinCellIndex.y) sceneMinCellIndex.y = currCellY;
+                            if (currCellZ < sceneMinCellIndex.z) sceneMinCellIndex.z = currCellZ;
+
+                            if (currCellX > sceneMaxCellIndex.x) sceneMaxCellIndex.x = currCellX;
+                            if (currCellY > sceneMaxCellIndex.y) sceneMaxCellIndex.y = currCellY;
+                            if (currCellZ > sceneMaxCellIndex.z) sceneMaxCellIndex.z = currCellZ;
+                        }
                     }
                 }
             }
@@ -87,7 +119,7 @@ public class ReMesherVertexCluster {
             }
 
             // check if exists the average position for the cell
-            Vector3d averagePosition = cellAveragePositions.get(cellIndex);
+            Vector3d averagePosition = cellAveragePositions.get(cellIndex); // original.***
             if (averagePosition == null) {
                 // Calculate the average position of the cluster
                 averagePosition = new Vector3d();
@@ -129,11 +161,33 @@ public class ReMesherVertexCluster {
             }
         }
 
+//        // after reMesh, calculate bbox again
+//        GaiaBoundingBox newBBox = gaiaScene.updateBoundingBox();
+//
+//        double xSizeDiff = Math.abs((originalBBox.getMaxX() - originalBBox.getMinX()) - (newBBox.getMaxX() - newBBox.getMinX()));
+//        double ySizeDiff = Math.abs((originalBBox.getMaxY() - originalBBox.getMinY()) - (newBBox.getMaxY() - newBBox.getMinY()));
+//        double zSizeDiff = Math.abs((originalBBox.getMaxZ() - originalBBox.getMinZ()) - (newBBox.getMaxZ() - newBBox.getMinZ()));
+//        double maxDiffAllowed = 1.0; // 1 meter
+//        if (xSizeDiff > maxDiffAllowed || ySizeDiff > maxDiffAllowed || zSizeDiff > maxDiffAllowed) {
+//            log.warn("ReMesh process: bbox size changed significantly after reMesh. Original BBox: {}, New BBox: {}", originalBBox, newBBox);
+//        }
+
         vertexToIndexMap.clear();
         mapVertexToFaces.clear();
 
+        if (sceneMinCellIndex != null && sceneMaxCellIndex != null) {
+            sceneMinCellIndex.x += 1; // to avoid boundary problems, do not delete the vertices in the boundary cells.
+            sceneMinCellIndex.y += 1;
+            sceneMinCellIndex.z += 1;
+            sceneMaxCellIndex.x -= 1;
+            sceneMaxCellIndex.y -= 1;
+            sceneMaxCellIndex.z -= 1;
+            reMeshParams.deleteCellAveragePositionInsideBox(sceneMinCellIndex, sceneMaxCellIndex);
+        }
+
         // now delete degenerate faces.***
-        primitives.get(0).deleteDegeneratedFaces(); // here deletes no used vertices either.
+        GaiaPrimitive primitive = primitives.get(0);
+        primitive.deleteDegeneratedFaces(); // here deletes no used vertices either.
     }
 
     public static void reMesh(List<SceneInfo> sceneInfos, ReMeshParameters reMeshParameters, GaiaBoundingBox nodeBBox, Matrix4d nodeTMatrix, List<GaiaScene> resultGaiaScenes) {

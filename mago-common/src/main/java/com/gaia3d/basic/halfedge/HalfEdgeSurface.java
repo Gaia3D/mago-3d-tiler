@@ -2,11 +2,13 @@ package com.gaia3d.basic.halfedge;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.GaiaRectangle;
-import com.gaia3d.basic.geometry.octree.HalfEdgeOctree;
+import com.gaia3d.basic.geometry.octree.GaiaOctree;
+import com.gaia3d.basic.geometry.octree.HalfEdgeOctreeVertices;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.util.GaiaTextureUtils;
+import com.gaia3d.util.ImageUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -268,22 +270,37 @@ public class HalfEdgeSurface implements Serializable {
             resultMapVertexToSamePosVertices = new HashMap<>();
         }
 
-        HalfEdgeOctree octree = new HalfEdgeOctree(null);
-        List<HalfEdgeVertex> verticesCopy = new ArrayList<>(vertices);
-        octree.setVertices(verticesCopy);
-        octree.calculateSize();
-        octree.setMaxDepth(10);
-        octree.setMinBoxSize(1.0);
-        octree.makeTreeByMinVertexCount(20);
+//        HalfEdgeOctreeFaces octree = new HalfEdgeOctreeFaces(null);
+//        List<HalfEdgeVertex> verticesCopy = new ArrayList<>(vertices);
+//        octree.setVertices(verticesCopy);
+//        octree.calculateSize();
+//        octree.setMaxDepth(10);
+//        octree.setMinBoxSize(1.0);
+//        octree.makeTreeByMinVertexCount(20);
 
-        List<HalfEdgeOctree> nodesWithContents = new ArrayList<>();
-        octree.extractOctreesWithContents(nodesWithContents);
+        // new.**********************
+        GaiaBoundingBox bbox = new GaiaBoundingBox();
+        for (HalfEdgeVertex vertex : vertices) {
+            Vector3d position = vertex.getPosition();
+            bbox.addPoint(position);
+        }
+        HalfEdgeOctreeVertices octreeVertices = new HalfEdgeOctreeVertices(null, bbox);
+        octreeVertices.addContents(vertices);
+        octreeVertices.setLimitDepth(10);
+        octreeVertices.setLimitBoxSize(1.0);
+        octreeVertices.setLimitVertexCount(20);
+        octreeVertices.makeTree();
+        List<GaiaOctree<HalfEdgeVertex>> nodesWithContents = octreeVertices.extractOctreesWithContents();
+        // end new.**********************
+
+//        List<HalfEdgeOctreeFaces> nodesWithContents2 = new ArrayList<>();
+//        octree.extractOctreesWithContents(nodesWithContents2);
 
         int nodesWithContentsCount = nodesWithContents.size();
         log.info("nodesWithContentsCount = " + nodesWithContentsCount);
         for (int i = 0; i < nodesWithContentsCount; i++) {
-            HalfEdgeOctree node = nodesWithContents.get(i);
-            List<HalfEdgeVertex> vertices = node.getVertices();
+            HalfEdgeOctreeVertices node = (HalfEdgeOctreeVertices) nodesWithContents.get(i);
+            List<HalfEdgeVertex> vertices = node.getContents();
             int verticesCount = vertices.size();
             for (int j = 0; j < verticesCount; j++) {
                 HalfEdgeVertex vertex = vertices.get(j);
@@ -2381,8 +2398,10 @@ public class HalfEdgeSurface implements Serializable {
         int texHeight = texture.getHeight();
 
         // must find welded face-groups (faces group that are not connected with other faces)
-        List<List<HalfEdgeFace>> resultWeldedFacesGroups = new ArrayList<>();
-        getWeldedFacesGroups(resultWeldedFacesGroups);
+        List<List<HalfEdgeFace>> weldedFacesGroups_ = new ArrayList<>();
+        getWeldedFacesGroups(weldedFacesGroups_);
+        List<List<HalfEdgeFace>> mergedWeldedFacesGroups = new ArrayList<>();
+        mergeWeldedFacesGroupsByTexCoords(weldedFacesGroups_, mergedWeldedFacesGroups);
 
         // now, for each faceGroup, create a scissorData
         // there are 2 types of scissorData :
@@ -2390,15 +2409,16 @@ public class HalfEdgeSurface implements Serializable {
         // 2- more height than width.
         List<GaiaTextureScissorData> textureScissorDatasWidth = new ArrayList<>();
         List<GaiaTextureScissorData> textureScissorDatasHeight = new ArrayList<>();
-        int weldedFacesGroupsCount = resultWeldedFacesGroups.size();
+        int weldedFacesGroupsCount = mergedWeldedFacesGroups.size();
 
         List<HalfEdgeVertex> faceVertices = new ArrayList<>();
         Map<HalfEdgeVertex, HalfEdgeVertex> groupVertexMap = new HashMap<>();
         Map<HalfEdgeVertex, HalfEdgeVertex> visitedVertexMap = new HashMap<>();
 
+
         boolean invertTexCoordY = false;
         for (int i = 0; i < weldedFacesGroupsCount; i++) {
-            List<HalfEdgeFace> weldedFacesGroup = resultWeldedFacesGroups.get(i);
+            List<HalfEdgeFace> weldedFacesGroup = mergedWeldedFacesGroups.get(i);
             GaiaRectangle groupTexCoordBRect = new GaiaRectangle();
             int weldedFacesCount = weldedFacesGroup.size();
             for (int j = 0; j < weldedFacesCount; j++) {
@@ -2412,13 +2432,6 @@ public class HalfEdgeSurface implements Serializable {
                     groupTexCoordBRect.addBoundingRectangle(texCoordBRect);
                 }
             }
-
-//            double texCoordBboxWidth = groupTexCoordBRect.getWidth();
-//            double texCoordBboxHeight = groupTexCoordBRect.getHeight();
-//
-//            if (texCoordBboxWidth < 0.0001 || texCoordBboxHeight < 0.0001) {
-//
-//            }
 
             // check if must translate to positive quadrant
             if (groupTexCoordBRect.getMinX() < 0.0 || groupTexCoordBRect.getMinX() > 1.0 || groupTexCoordBRect.getMinY() < 0.0 || groupTexCoordBRect.getMinY() > 1.0) {
@@ -2459,15 +2472,43 @@ public class HalfEdgeSurface implements Serializable {
             // create a new GaiaTextureScissorData
             GaiaTextureScissorData textureScissorData = new GaiaTextureScissorData();
             textureScissorData.setTexCoordBoundary(groupTexCoordBRect);
-            double minPixelPosX = groupTexCoordBRect.getMinX() * texWidth;
-            double minPixelPosY = groupTexCoordBRect.getMinY() * texHeight;
-            double maxPixelPosX = groupTexCoordBRect.getMaxX() * texWidth;
-            double maxPixelPosY = groupTexCoordBRect.getMaxY() * texHeight;
-            GaiaRectangle pixelRect = new GaiaRectangle(minPixelPosX, minPixelPosY, maxPixelPosX, maxPixelPosY);
-            textureScissorData.setCurrentBoundary(pixelRect);
-            textureScissorData.setFaces(weldedFacesGroup); // set the faces
+
+            // calculate the expanded boundary in pixels
+            double groupTexCoordMinX = groupTexCoordBRect.getMinX();
+            double groupTexCoordMinY = groupTexCoordBRect.getMinY();
+            double groupTexCoordMaxX = groupTexCoordBRect.getMaxX();
+            double groupTexCoordMaxY = groupTexCoordBRect.getMaxY();
+            double minPixelPosX = groupTexCoordMinX * (double) texWidth;
+            double minPixelPosY = groupTexCoordMinY * (double) texHeight;
+            double maxPixelPosX = groupTexCoordMaxX * (double) texWidth;
+            double maxPixelPosY = groupTexCoordMaxY * (double) texHeight;
+            GaiaRectangle noExpandedRect = new GaiaRectangle(minPixelPosX, minPixelPosY, maxPixelPosX, maxPixelPosY);
+            textureScissorData.setNoExpandedBoundary(noExpandedRect);
+
             double width = groupTexCoordBRect.getWidthInt();
             double height = groupTexCoordBRect.getHeightInt();
+
+            double pixelWidth = maxPixelPosX - minPixelPosX;
+            double pixelHeight = maxPixelPosY - minPixelPosY;
+
+            int expandedPixels = 2;
+
+            if (pixelWidth > 200 || pixelHeight > 200) {
+                expandedPixels = 5;
+            } else if (pixelWidth > 100 || pixelHeight > 100) {
+                expandedPixels = 4;
+            }
+
+            minPixelPosX -= expandedPixels;
+            minPixelPosY -= expandedPixels;
+            maxPixelPosX += expandedPixels;
+            maxPixelPosY += expandedPixels;
+            textureScissorData.setExpandedPixel(expandedPixels);
+
+            GaiaRectangle expandedCurrBoundary = new GaiaRectangle(minPixelPosX, minPixelPosY, maxPixelPosX, maxPixelPosY);
+            textureScissorData.setCurrentBoundary(expandedCurrBoundary);
+
+            textureScissorData.setFaces(weldedFacesGroup); // set the faces
 
             if (width == 0 || height == 0) {
                 continue;
@@ -2503,9 +2544,6 @@ public class HalfEdgeSurface implements Serializable {
         }
 
         // do texture atlas process
-        int scissorDatesCountPre = textureScissorDatas.size();
-        int mergedCount = mergeScissorDates(textureScissorDatas);
-        log.info("scissorProcess : scissorDates mergedCount = " + mergedCount);
         doTextureAtlasProcess(textureScissorDatas);
 
         // TODO : must recalculate the texCoords for each faceGroup. is not necessary to recalculate all texCoords
@@ -2524,17 +2562,14 @@ public class HalfEdgeSurface implements Serializable {
 
         }
 
-//        if (maxWidth > 8192 || maxHeight > 8192) {
-//            log.warn("HalfEdgeSurface.scissorTextures() : maxWidth > 8192 || maxHeight > 8192.");
-//            // use the original images
-//            return;
-//        }
-
         visitedVertexMap.clear();
 
         int textureScissorDatasCount = textureScissorDatas.size();
         for (int i = 0; i < textureScissorDatasCount; i++) {
             GaiaTextureScissorData textureScissorData = textureScissorDatas.get(i);
+            if (!textureScissorData.TEST_Check()) {
+                log.error("[ERROR] HalfEdgeSurface.scissorTextures() : textureScissorData.TEST_Check() == false.");
+            }
             List<HalfEdgeFace> faceGroup = textureScissorData.getFaces();
             GaiaRectangle currentBoundary = textureScissorData.getCurrentBoundary();
             GaiaRectangle batchedBoundary = textureScissorData.getBatchedBoundary();
@@ -2565,25 +2600,9 @@ public class HalfEdgeSurface implements Serializable {
                 }
             }
 
-//            // now, calculate the vertex list from the map
+            // now, calculate the vertex list from the map
             List<HalfEdgeVertex> vertexList = new ArrayList<>(groupVertexMap.values());
-//            Map<HalfEdgeVertex, HalfEdgeVertex> vertextoVertexCopyMap = new HashMap<>();
-//            for (int k = 0; k < vertexList.size(); k++) {
-//                HalfEdgeVertex vertex = vertexList.get(k);
-//                HalfEdgeVertex vertexCopy = new HalfEdgeVertex();
-//                vertexCopy.copyFrom(vertex);
-//                vertextoVertexCopyMap.put(vertex, vertexCopy);
-//            }
-
-//            Map<HalfEdgeVertex, HalfEdgeVertex> visitedVertices = new HashMap<>();
-//
-//            List<HalfEdgeVertex> resultEqualVertices = new ArrayList<>();
-//            if (TestUtils.checkIfExistCoincidentTexCoords(vertexList, resultEqualVertices, visitedVertices)) { // test*************************
-//
-//            }
-
             int verticesCount = vertexList.size();
-
             int currBoundaryWidth = currentBoundary.getWidthInt();
             int currBoundaryHeight = currentBoundary.getHeightInt();
             double texCoordClampError = 0.0025;
@@ -2601,16 +2620,21 @@ public class HalfEdgeSurface implements Serializable {
                     double x = texCoord.x;
                     double y = texCoord.y;
 
-//                    double pixelX = x * texWidth;
-//                    double pixelY = y * texHeight;
-//                    double xRelOld = (pixelX - currentBoundary.getMinX()) / currentBoundary.getWidthInt();
-//                    double yRelOld = (pixelY - currentBoundary.getMinY()) / currentBoundary.getHeightInt(); // original
-
                     double xRel = (x - texCoordBoundary.getMinX()) / texCoordBoundary.getWidth();
                     double yRel = (y - texCoordBoundary.getMinY()) / texCoordBoundary.getHeight(); // original
 
+                    // now calculate the texCoordRel (0-1) inside the currentBoundary. The currentBoundary is a expandedPixels bigger than the originalBoundary
+                    int expandedPixels = textureScissorData.getExpandedPixel();
+                    double originalBoundaryMinX = currentBoundary.getMinX() + expandedPixels;
+                    double originalBoundaryMinY = currentBoundary.getMinY() + expandedPixels;
+                    double originalBoundaryMaxX = currentBoundary.getMaxX() - expandedPixels;
+                    double originalBoundaryMaxY = currentBoundary.getMaxY() - expandedPixels;
+                    double originalBoundaryWidth = originalBoundaryMaxX - originalBoundaryMinX;
+                    double originalBoundaryHeight = originalBoundaryMaxY - originalBoundaryMinY;
+                    xRel = (originalBoundaryMinX + xRel * originalBoundaryWidth - currentBoundary.getMinX()) / currBoundaryWidth;
+                    yRel = (originalBoundaryMinY + yRel * originalBoundaryHeight - currentBoundary.getMinY()) / currBoundaryHeight;
+
                     Vector2d texCoordRel = new Vector2d(xRel, yRel);
-                    //texCoordClampError = 0.0025;
                     GaiaTextureUtils.clampTextureCoordinate(texCoordRel, 0.01);
 
                     xRel = texCoordRel.x;
@@ -2649,38 +2673,66 @@ public class HalfEdgeSurface implements Serializable {
 
         // draw the images into textureAtlas
         Graphics2D g2d = textureAtlas.getBufferedImage().createGraphics();
+        int atlasWidth = textureAtlas.getWidth();
+        int atlasHeight = textureAtlas.getHeight();
         textureScissorDatasCount = textureScissorDatas.size();
         for (int i = 0; i < textureScissorDatasCount; i++) {
             GaiaTextureScissorData textureScissorData = textureScissorDatas.get(i);
             GaiaRectangle currentBoundary = textureScissorData.getCurrentBoundary();
             GaiaRectangle batchedBoundary = textureScissorData.getBatchedBoundary();
             GaiaRectangle originBoundary = textureScissorData.getOriginBoundary();
+            GaiaRectangle noExpandedBoundary = textureScissorData.getNoExpandedBoundary();
+            int expandedPixels = textureScissorData.getExpandedPixel();
+
+            if (!textureScissorData.TEST_Check()) {
+                log.error("[ERROR] HalfEdgeSurface.scissorTextures() : textureScissorData.TEST_Check() == false.");
+            }
 
             // 1 - read from "texture" the currentBoundary
             // 2 - write into "textureAtlas" the batchedBoundary
             BufferedImage image = texture.getBufferedImage();
-            int subImageMinX = (int) currentBoundary.getMinX();
-            int subImageMinY = (int) currentBoundary.getMinY();
 
             int subImageW = Math.max(currentBoundary.getWidthInt(), 1);
             int subImageH = Math.max(currentBoundary.getHeightInt(), 1);
 
-            int testImageWidth = image.getWidth();
-            int testImageHeight = image.getHeight();
-            if (subImageMinX + subImageW > testImageWidth) {
-                subImageW = testImageWidth - subImageMinX;
+            // load the reducedSubImage (without expandedPixels)
+            int reducedSubImageMinX = (int) Math.floor(noExpandedBoundary.getMinX());
+            int reducedSubImageMinY = (int) Math.floor(noExpandedBoundary.getMinY());
+            int reducedSubImageW = noExpandedBoundary.getWidthInt();
+            int reducedSubImageH = noExpandedBoundary.getHeightInt();
+            if (reducedSubImageW < 1) {
+                reducedSubImageW = 1;
             }
-
-            if (subImageMinY + subImageH > testImageHeight) {
-                subImageH = testImageHeight - subImageMinY;
+            if (reducedSubImageH < 1) {
+                reducedSubImageH = 1;
             }
-
-            if (subImageMinX < 0 || subImageMinX > testImageWidth || subImageMinY < 0 || subImageMinY > testImageHeight) {
+            BufferedImage reducedSubImage = null;
+            try {
+                reducedSubImage = image.getSubimage(reducedSubImageMinX, reducedSubImageMinY, reducedSubImageW, reducedSubImageH);
+            } catch (Exception ex) {
+                log.error("[ERROR] HalfEdgeSurface.scissorTextures() : Exception in image.getSubimage(). ex = " + ex.getMessage());
                 continue;
             }
 
-            BufferedImage subImage = image.getSubimage(subImageMinX, subImageMinY, subImageW, subImageH);
-            g2d.drawImage(subImage, (int) batchedBoundary.getMinX(), (int) batchedBoundary.getMinY(), null); // original code
+            // now create a new BufferedImage with expandedPixels
+            boolean clampTexture = true;
+            BufferedImage expandedSubImage = ImageUtils.expandWithBorderFast(reducedSubImage, expandedPixels, clampTexture);
+
+            ////BufferedImage subImage = image.getSubimage(subImageMinX, subImageMinY, subImageW, subImageH);
+            //g2d.drawImage(subImage, (int) batchedBoundary.getMinX(), (int) batchedBoundary.getMinY(), null); // original code
+            int batchedW = batchedBoundary.getWidthInt();
+            int batchedH = batchedBoundary.getHeightInt();
+            int batchedMinX = (int) batchedBoundary.getMinX();
+            int batchedMinY = (int) batchedBoundary.getMinY();
+            if (batchedBoundary.getWidthInt() > atlasWidth || batchedBoundary.getHeightInt() > atlasHeight) {
+                int hola = 0;
+            }
+            if (batchedMinX + batchedBoundary.getWidthInt() > atlasWidth || batchedMinY + batchedBoundary.getHeightInt() > atlasHeight) {
+                int hola = 0;
+            }
+            if (!g2d.drawImage(expandedSubImage, (int) batchedBoundary.getMinX(), (int) batchedBoundary.getMinY(), null)) {
+                int hola = 0;
+            }
         }
         g2d.dispose();
 
@@ -2709,12 +2761,8 @@ public class HalfEdgeSurface implements Serializable {
 
         // TODO : test
         textureImageExtension = "png";
-
         String textureAtlasName = textureRawNameParts[0] + "_atlas_image" + "." + textureImageExtension;
-
         String textureAtlasPath = imageParentPath + File.separator + textureAtlasName;
-        //textureAtlas.setBufferedImage(ImageUtils.clampBackGroundColor(textureAtlas.getBufferedImage(), new Color(255, 0, 255), 1, 200));
-        //textureAtlas.saveImage(textureAtlasPath);
 
         // change the diffuseTexture path
         texture.clear(); // free memory the original texture
@@ -2748,9 +2796,12 @@ public class HalfEdgeSurface implements Serializable {
         int texWidth = textureMother.getWidth();
         int texHeight = textureMother.getHeight();
 
+
         // must find welded face-groups (faces group that are not connected with other faces)
-        List<List<HalfEdgeFace>> resultWeldedFacesGroups = new ArrayList<>();
-        getWeldedFacesGroups(resultWeldedFacesGroups);
+        List<List<HalfEdgeFace>> weldedFacesGroups_ = new ArrayList<>();
+        getWeldedFacesGroups(weldedFacesGroups_);
+        List<List<HalfEdgeFace>> mergedWeldedFacesGroups = new ArrayList<>();
+        mergeWeldedFacesGroupsByTexCoords(weldedFacesGroups_, mergedWeldedFacesGroups);
 
         // now, for each faceGroup, create a scissorData
         // there are 2 types of scissorData :
@@ -2758,7 +2809,7 @@ public class HalfEdgeSurface implements Serializable {
         // 2- more height than width.
         List<GaiaTextureScissorData> textureScissorDatasWidth = new ArrayList<>();
         List<GaiaTextureScissorData> textureScissorDatasHeight = new ArrayList<>();
-        int weldedFacesGroupsCount = resultWeldedFacesGroups.size();
+        int weldedFacesGroupsCount = mergedWeldedFacesGroups.size();
 
         List<HalfEdgeVertex> faceVertices = new ArrayList<>();
         Map<HalfEdgeVertex, HalfEdgeVertex> groupVertexMap = new HashMap<>();
@@ -2767,7 +2818,7 @@ public class HalfEdgeSurface implements Serializable {
         boolean invertTexCoordY = false;// original
         for (int i = 0; i < weldedFacesGroupsCount; i++) {
             GaiaRectangle groupTexCoordBRect = new GaiaRectangle();
-            List<HalfEdgeFace> weldedFacesGroup = resultWeldedFacesGroups.get(i);
+            List<HalfEdgeFace> weldedFacesGroup = mergedWeldedFacesGroups.get(i);
             int weldedFacesCount = weldedFacesGroup.size();
             if (weldedFacesCount == 0) {
 
@@ -2833,14 +2884,38 @@ public class HalfEdgeSurface implements Serializable {
             // create a new GaiaTextureScissorData
             GaiaTextureScissorData textureScissorData = new GaiaTextureScissorData();
             textureScissorData.setTexCoordBoundary(groupTexCoordBRect);
-            double minPixelPosX = groupTexCoordBRect.getMinX() * texWidth;
-            double minPixelPosY = groupTexCoordBRect.getMinY() * texHeight;
-            double maxPixelPosX = groupTexCoordBRect.getMaxX() * texWidth;
-            double maxPixelPosY = groupTexCoordBRect.getMaxY() * texHeight;
-            GaiaRectangle pixelRect = new GaiaRectangle(minPixelPosX, minPixelPosY, maxPixelPosX, maxPixelPosY);
-            textureScissorData.setCurrentBoundary(pixelRect);
+            double groupTexCoordMinX = groupTexCoordBRect.getMinX();
+            double groupTexCoordMinY = groupTexCoordBRect.getMinY();
+            double groupTexCoordMaxX = groupTexCoordBRect.getMaxX();
+            double groupTexCoordMaxY = groupTexCoordBRect.getMaxY();
+            double minPixelPosX = groupTexCoordMinX * (double) texWidth;
+            double minPixelPosY = groupTexCoordMinY * (double) texHeight;
+            double maxPixelPosX = groupTexCoordMaxX * (double) texWidth;
+            double maxPixelPosY = groupTexCoordMaxY * (double) texHeight;
+            GaiaRectangle noExpandedRect = new GaiaRectangle(minPixelPosX, minPixelPosY, maxPixelPosX, maxPixelPosY);
+            textureScissorData.setNoExpandedBoundary(noExpandedRect);
+
             double width = groupTexCoordBRect.getWidthInt();
             double height = groupTexCoordBRect.getHeightInt();
+
+            double pixelWidth = maxPixelPosX - minPixelPosX;
+            double pixelHeight = maxPixelPosY - minPixelPosY;
+            int expandedPixels = 2;
+            if (pixelWidth > 100 || pixelHeight > 100) {
+                expandedPixels = 3;
+            }
+
+            minPixelPosX -= expandedPixels;
+            minPixelPosY -= expandedPixels;
+            maxPixelPosX += expandedPixels;
+            maxPixelPosY += expandedPixels;
+            textureScissorData.setExpandedPixel(expandedPixels);
+
+            GaiaRectangle expandedCurrBoundary = new GaiaRectangle(minPixelPosX, minPixelPosY, maxPixelPosX, maxPixelPosY);
+            textureScissorData.setCurrentBoundary(expandedCurrBoundary);
+
+            textureScissorData.setFaces(weldedFacesGroup); // set the faces
+
 
             if (width == 0 || height == 0) {
                 //continue;
@@ -2878,8 +2953,6 @@ public class HalfEdgeSurface implements Serializable {
         }
 
         // do texture atlas process
-        int mergedCount = mergeScissorDates(textureScissorDatas);
-        log.info("scissorProcess : scissorDates mergedCount = " + mergedCount);
         doTextureAtlasProcess(textureScissorDatas);
 
         int maxWidth = getMaxWidth(textureScissorDatas);
@@ -2900,8 +2973,6 @@ public class HalfEdgeSurface implements Serializable {
             GaiaRectangle batchedBoundary = textureScissorData.getBatchedBoundary();
             GaiaRectangle texCoordBoundary = textureScissorData.getTexCoordBoundary();
 
-            //GaiaRectangle texCoordRect_TEST = faceGroupToTexCoordBRectMap_TEST.get(faceGroup);
-
             // obtain all vertex of the faceGroup
             groupVertexMap.clear();
             int facesCount = faceGroup.size();
@@ -2909,7 +2980,7 @@ public class HalfEdgeSurface implements Serializable {
             for (int j = 0; j < facesCount; j++) {
                 HalfEdgeFace face = faceGroup.get(j);
                 if (face.getStatus() == ObjectStatus.DELETED) {
-
+                    continue;
                 }
                 //groupTexCoordBRect = face.getTexCoordBoundingRectangle(groupTexCoordBRect, invertTexCoordY);
                 faceVertices.clear();
@@ -2923,9 +2994,7 @@ public class HalfEdgeSurface implements Serializable {
 
             // now, calculate the vertex list from the map
             List<HalfEdgeVertex> vertexList = new ArrayList<>(groupVertexMap.values());
-
             int verticesCount = vertexList.size();
-
             int currBoundaryWidth = currentBoundary.getWidthInt();
             int currBoundaryHeight = currentBoundary.getHeightInt();
             double texCoordClampError = 0.0025;
@@ -2943,13 +3012,19 @@ public class HalfEdgeSurface implements Serializable {
                     double x = texCoord.x;
                     double y = texCoord.y;
 
-//                    double pixelX = x * texWidth;
-//                    double pixelY = y * texHeight;
-//                    double xRelOld = (pixelX - currentBoundary.getMinX()) / currentBoundary.getWidthInt();
-//                    double yRelOld = (pixelY - currentBoundary.getMinY()) / currentBoundary.getHeightInt(); // original
-
                     double xRel = (x - texCoordBoundary.getMinX()) / texCoordBoundary.getWidth();
                     double yRel = (y - texCoordBoundary.getMinY()) / texCoordBoundary.getHeight(); // original
+
+                    // now calculate the texCoordRel (0-1) inside the currentBoundary. The currentBoundary is a expandedPixels bigger than the originalBoundary
+                    int expandedPixels = textureScissorData.getExpandedPixel();
+                    double originalBoundaryMinX = currentBoundary.getMinX() + expandedPixels;
+                    double originalBoundaryMinY = currentBoundary.getMinY() + expandedPixels;
+                    double originalBoundaryMaxX = currentBoundary.getMaxX() - expandedPixels;
+                    double originalBoundaryMaxY = currentBoundary.getMaxY() - expandedPixels;
+                    double originalBoundaryWidth = originalBoundaryMaxX - originalBoundaryMinX;
+                    double originalBoundaryHeight = originalBoundaryMaxY - originalBoundaryMinY;
+                    xRel = (originalBoundaryMinX + xRel * originalBoundaryWidth - currentBoundary.getMinX()) / currBoundaryWidth;
+                    yRel = (originalBoundaryMinY + yRel * originalBoundaryHeight - currentBoundary.getMinY()) / currBoundaryHeight;
 
                     Vector2d texCoordRel = new Vector2d(xRel, yRel);
                     GaiaTextureUtils.clampTextureCoordinate(texCoordRel, texCoordClampError);
@@ -2998,32 +3073,53 @@ public class HalfEdgeSurface implements Serializable {
             GaiaRectangle currentBoundary = textureScissorData.getCurrentBoundary();
             GaiaRectangle batchedBoundary = textureScissorData.getBatchedBoundary();
             GaiaRectangle originBoundary = textureScissorData.getOriginBoundary();
+            GaiaRectangle noExpandedBoundary = textureScissorData.getNoExpandedBoundary();
 
             // 1 - read from "texture" the currentBoundary
             // 2 - write into "textureAtlas" the batchedBoundary
             BufferedImage image = textureMother.getBufferedImage();
-            int subImageMinX = (int) currentBoundary.getMinX();
-            int subImageMinY = (int) currentBoundary.getMinY();
 
             int subImageW = Math.max(currentBoundary.getWidthInt(), 1);
             int subImageH = Math.max(currentBoundary.getHeightInt(), 1);
 
             int testImageWidth = image.getWidth();
             int testImageHeight = image.getHeight();
-            if (subImageMinX + subImageW > testImageWidth) {
-                subImageW = testImageWidth - subImageMinX;
-            }
 
-            if (subImageMinY + subImageH > testImageHeight) {
-                subImageH = testImageHeight - subImageMinY;
+            // load the reducedSubImage (without expandedPixels)
+            int reducedSubImageMinX = (int) Math.floor(noExpandedBoundary.getMinX());
+            int reducedSubImageMinY = (int) Math.floor(noExpandedBoundary.getMinY());
+            int reducedSubImageW = noExpandedBoundary.getWidthInt();
+            int reducedSubImageH = noExpandedBoundary.getHeightInt();
+            if (reducedSubImageW < 1) {
+                reducedSubImageW = 1;
             }
-
-            if (subImageMinX < 0 || subImageMinX > testImageWidth || subImageMinY < 0 || subImageMinY > testImageHeight) {
+            if (reducedSubImageH < 1) {
+                reducedSubImageH = 1;
+            }
+            BufferedImage reducedSubImage = null;
+            try {
+                reducedSubImage = image.getSubimage(reducedSubImageMinX, reducedSubImageMinY, reducedSubImageW, reducedSubImageH);
+            } catch (Exception ex) {
+                log.error("[ERROR] HalfEdgeSurface.scissorTextures() : Exception in image.getSubimage(). ex = " + ex.getMessage());
                 continue;
             }
 
-            BufferedImage subImage = image.getSubimage(subImageMinX, subImageMinY, subImageW, subImageH);
-            g2d.drawImage(subImage, (int) batchedBoundary.getMinX(), (int) batchedBoundary.getMinY(), null); // original code
+            // now create a new BufferedImage with expandedPixels
+            boolean clampTexture = true;
+            int expandedPixels = textureScissorData.getExpandedPixel();
+            BufferedImage expandedSubImage = ImageUtils.expandWithBorderFast(reducedSubImage, expandedPixels, clampTexture);
+//            BufferedImage subImage = new BufferedImage(subImageW, subImageH, imageType);
+//            Graphics2D g2dSubImage = subImage.createGraphics();
+//            // fill with fuchia color
+//            Color whiteColor = new Color(255, 255, 255);
+//            g2dSubImage.setColor(whiteColor);
+//            g2dSubImage.fillRect(0, 0, subImageW, subImageH);
+//            // draw the reducedSubImage into subImage
+//            g2dSubImage.drawImage(reducedSubImage, expandedPixels, expandedPixels, null);
+//            g2dSubImage.dispose();
+
+            //BufferedImage subImage = image.getSubimage(subImageMinX, subImageMinY, subImageW, subImageH);
+            g2d.drawImage(expandedSubImage, (int) batchedBoundary.getMinX(), (int) batchedBoundary.getMinY(), null); // original code
         }
         g2d.dispose();
 
@@ -3050,7 +3146,6 @@ public class HalfEdgeSurface implements Serializable {
 
         // TODO : test
         textureImageExtension = "png";
-
         String textureAtlasName = textureRawNameParts[0] + "_atlas_image" + "." + textureImageExtension;
 
         // change the diffuseTexture path
@@ -3188,6 +3283,7 @@ public class HalfEdgeSurface implements Serializable {
         Map<HalfEdgeVertex, List<HalfEdgeFace>> vertexFacesMap = getMapVertexAllFaces(null);
         Map<HalfEdgeFace, HalfEdgeFace> mapVisitedFaces = new HashMap<>();
         int facesCount = faces.size();
+        List<GaiaTextureScissorData> textureScissorDatas = new ArrayList<>();
         for (int i = 0; i < facesCount; i++) {
             HalfEdgeFace face = faces.get(i);
             if (face.getStatus() == ObjectStatus.DELETED) {
@@ -3206,31 +3302,60 @@ public class HalfEdgeSurface implements Serializable {
         return resultWeldedFacesGroups;
     }
 
-    public List<List<HalfEdgeFace>> getWeldedFacesGroupsRecursive(List<List<HalfEdgeFace>> resultWeldedFacesGroups) {
+    public List<List<HalfEdgeFace>> mergeWeldedFacesGroupsByTexCoords(List<List<HalfEdgeFace>> weldedFacesGroups, List<List<HalfEdgeFace>> resultWeldedFacesGroups) {
         if (resultWeldedFacesGroups == null) {
             resultWeldedFacesGroups = new ArrayList<>();
         }
 
-        Map<HalfEdgeVertex, List<HalfEdgeFace>> vertexFacesMap = getMapVertexAllFaces(null);
-        Map<HalfEdgeFace, HalfEdgeFace> mapVisitedFaces = new HashMap<>();
-        int facesCount = faces.size();
-        for (int i = 0; i < facesCount; i++) {
-            HalfEdgeFace face = faces.get(i);
-            if (face.getStatus() == ObjectStatus.DELETED) {
+        // now, join the groups that are connected by vertex
+        List<GaiaTextureScissorData> textureScissorDatas = new ArrayList<>();
+        boolean invertTexCoordY = false;
+        int weldedFacesGroupsCount = weldedFacesGroups.size();
+        for (int i = 0; i < weldedFacesGroupsCount; i++) {
+            List<HalfEdgeFace> weldedFacesGroup = weldedFacesGroups.get(i);
+            GaiaRectangle groupTexCoordBRect = new GaiaRectangle();
+            int weldedFacesCount = weldedFacesGroup.size();
+            for (int j = 0; j < weldedFacesCount; j++) {
+                GaiaRectangle texCoordBRect = new GaiaRectangle();
+                HalfEdgeFace face = weldedFacesGroup.get(j);
+                texCoordBRect = face.getTexCoordBoundingRectangle(texCoordBRect, invertTexCoordY);
+
+                if (j == 0) {
+                    groupTexCoordBRect.copyFrom(texCoordBRect);
+                } else {
+                    groupTexCoordBRect.addBoundingRectangle(texCoordBRect);
+                }
+            }
+
+            // create a new GaiaTextureScissorData
+            double width = groupTexCoordBRect.getWidthInt();
+            double height = groupTexCoordBRect.getHeightInt();
+
+            if (width == 0 || height == 0) {
                 continue;
             }
 
-            if (mapVisitedFaces.containsKey(face)) {
-                continue;
-            }
+            GaiaTextureScissorData textureScissorData = new GaiaTextureScissorData();
+            textureScissorData.setTexCoordBoundary(groupTexCoordBRect);
+            textureScissorData.setFaces(weldedFacesGroup); // set the faces
+            textureScissorDatas.add(textureScissorData);
+        }
 
-            List<HalfEdgeFace> weldedFaces = new ArrayList<>();
-            face.getWeldedFacesRecursive(weldedFaces, mapVisitedFaces);
-            resultWeldedFacesGroups.add(weldedFaces);
+        int scissorDatesCountPre = textureScissorDatas.size();
+        this.mergeScissorDates(textureScissorDatas);
+        log.info("getWeldedFacesGroups : scissorDates mergedCount = " + (scissorDatesCountPre - textureScissorDatas.size()));
+
+        resultWeldedFacesGroups.clear();
+        weldedFacesGroupsCount = textureScissorDatas.size();
+        for (int i = 0; i < weldedFacesGroupsCount; i++) {
+            GaiaTextureScissorData textureScissorData = textureScissorDatas.get(i);
+            List<HalfEdgeFace> weldedFacesGroup = textureScissorData.getFaces();
+            resultWeldedFacesGroups.add(weldedFacesGroup);
         }
 
         return resultWeldedFacesGroups;
     }
+
 
     public int getTrianglesCount() {
         int hedgesCount = halfEdges.size();

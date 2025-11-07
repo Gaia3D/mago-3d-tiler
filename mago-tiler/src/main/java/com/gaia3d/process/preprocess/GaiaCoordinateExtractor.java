@@ -25,15 +25,16 @@ public class GaiaCoordinateExtractor implements PreProcess {
 
     @Override
     public TileInfo run(TileInfo tileInfo) {
-        GaiaScene scene = tileInfo.getScene();
-        TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
-
         CoordinateReferenceSystem sourceCrs = globalOptions.getSourceCrs();
         if (sourceCrs != null && sourceCrs.getName().equals("EPSG:4978")) {
-            log.info("[INFO] Using EPSG:4978 coordinate system.");
             return extractCartesian(tileInfo);
         }
-        return extractAndLocalize(tileInfo);
+
+        if (globalOptions.isCurvatureCorrection()) {
+            return extractAndStrictLocalize(tileInfo);
+        } else {
+            return extractAndLocalize(tileInfo);
+        }
     }
 
     private TileInfo extractAndLocalize(TileInfo tileInfo) {
@@ -42,7 +43,6 @@ public class GaiaCoordinateExtractor implements PreProcess {
 
         List<GaiaNode> nodes = scene.getNodes();
         Vector3d sourceCenter = getOrigin(scene);
-
         sourceCenter = new Vector3d(sourceCenter); // Ensure we have a mutable copy
 
         // WGS 84 coordinate system (longitude, latitude, altitude)
@@ -61,13 +61,37 @@ public class GaiaCoordinateExtractor implements PreProcess {
         return tileInfo;
     }
 
+    private TileInfo extractAndStrictLocalize(TileInfo tileInfo) {
+        GaiaScene scene = tileInfo.getScene();
+        TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
+
+        Vector3d sourceCenter = getOrigin(scene);
+        sourceCenter = new Vector3d(sourceCenter); // Ensure we have a mutable copy
+
+        // WGS 84 coordinate system (longitude, latitude, altitude)
+        Vector3d targetCenter = extractDegree(tileTransformInfo, scene);
+        tileTransformInfo.setPosition(targetCenter);
+
+        CoordinateReferenceSystem sourceCrs = globalOptions.getSourceCrs();
+        if (!sourceCrs.getName().equals("EPSG:4326")) {
+            ProjCoordinate centerCoordinate = new ProjCoordinate(sourceCenter.x, sourceCenter.y, sourceCenter.z);
+            ProjCoordinate centerDegreeCoordinate = GlobeUtils.transform(sourceCrs, centerCoordinate);
+            Vector3d centerDegreeVector = new Vector3d(centerDegreeCoordinate.x, centerDegreeCoordinate.y, 0.0d);
+
+            GaiaBoundingBox localBoundingBox = new GaiaBoundingBox();
+            transformSceneVertexPositionsToLocalCoords(scene, centerDegreeVector, localBoundingBox);
+        }
+
+        tileInfo.updateSceneInfo();
+        return tileInfo;
+    }
+
     private TileInfo extractCartesian(TileInfo tileInfo) {
         GaiaScene scene = tileInfo.getScene();
         TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
 
         List<GaiaNode> nodes = scene.getNodes();
-        GaiaBoundingBox boundingBox = scene.updateBoundingBox();
-        Vector3d sourceCenter = new Vector3d(boundingBox.getCenter());
+        Vector3d sourceCenter = extractDegree(tileTransformInfo, scene);
         tileTransformInfo.setPosition(sourceCenter);
 
         Vector3d translation = sourceCenter.negate(new Vector3d());
@@ -81,7 +105,6 @@ public class GaiaCoordinateExtractor implements PreProcess {
         tileInfo.updateSceneInfo();
         return tileInfo;
     }
-
 
     private Vector3d getOrigin(GaiaScene scene) {
         Vector3d sourceCenter = new Vector3d(0.0d, 0.0d, 0.0d);
@@ -117,7 +140,6 @@ public class GaiaCoordinateExtractor implements PreProcess {
             Vector3d boxCenter = boundingBox.getCenter();
             if (sourceCrs != null && sourceCrs.getName().equals("EPSG:4978")) {
                 degreeCenter = GlobeUtils.cartesianToGeographicWgs84(boxCenter);
-                log.info("[INFO] Using EPSG:4978 coordinate system. Center: {} -> {}", boxCenter, degreeCenter);
             } else if (sourceCrs != null) {
                 ProjCoordinate centerSource = new ProjCoordinate(boxCenter.x, boxCenter.y, boxCenter.z);
                 ProjCoordinate centerWgs84 = GlobeUtils.transform(sourceCrs, centerSource);
@@ -129,36 +151,70 @@ public class GaiaCoordinateExtractor implements PreProcess {
         return degreeCenter;
     }
 
-    private Matrix3d clampEpsilonMatrix(Matrix3d matrix) {
-        double epsilon = 1e-1;
-        Matrix3d clampedMatrix = new Matrix3d(matrix);
-        clampedMatrix.m00(clampEpsilon(matrix.m00(), epsilon));
-        clampedMatrix.m01(clampEpsilon(matrix.m01(), epsilon));
-        clampedMatrix.m02(clampEpsilon(matrix.m02(), epsilon));
+    private void transformSceneVertexPositionsToLocalCoords(GaiaScene scene, Vector3d geoCoordReference, GaiaBoundingBox localBoundingBox) {
+        double[] centerCartesianWC = GlobeUtils.geographicToCartesianWgs84(geoCoordReference.x, geoCoordReference.y, geoCoordReference.z);
 
-        clampedMatrix.m10(clampEpsilon(matrix.m10(), epsilon));
-        clampedMatrix.m11(clampEpsilon(matrix.m11(), epsilon));
-        clampedMatrix.m12(clampEpsilon(matrix.m12(), epsilon));
+        Matrix4d globalTransformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerCartesianWC[0], centerCartesianWC[1], centerCartesianWC[2]);
+        Matrix4d globalTransformMatrixInverse = new Matrix4d(globalTransformMatrix);
+        globalTransformMatrixInverse.invert();
 
-        clampedMatrix.m20(clampEpsilon(matrix.m20(), epsilon));
-        clampedMatrix.m21(clampEpsilon(matrix.m21(), epsilon));
-        clampedMatrix.m22(clampEpsilon(matrix.m22(), epsilon));
-
-        return clampedMatrix;
+        List<GaiaNode> rootNodes = scene.getNodes();
+        for (GaiaNode rootNode : rootNodes) {
+            this.transformNodeVertexPositionsToLocalCoords(null, rootNode, globalTransformMatrixInverse, localBoundingBox);
+        }
     }
 
-    public static double clampEpsilon(double value, double epsilon) {
-        if (Math.abs(value) < epsilon) {
-            return 0.0f;
-        } else if (Math.abs(value - 1.0f) < epsilon) {
-            return 1.0f;
-        } else if (Math.abs(value + 1.0f) < epsilon) {
-            return -1.0f;
-        } else if (value > 1.0f) {
-            return 1.0f;
-        } else if (value < -1.0f) {
-            return -1.0f;
+    private void transformNodeVertexPositionsToLocalCoords(Matrix4d parentMatrix, GaiaNode node, Matrix4d globalTMatrixInv, GaiaBoundingBox localBoundingBox) {
+        // check for meshes
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        CoordinateReferenceSystem crs = globalOptions.getSourceCrs();
+
+        Matrix4d transformMatrix = new Matrix4d(node.getTransformMatrix());
+        if (parentMatrix != null) {
+            parentMatrix.mul(transformMatrix, transformMatrix);
         }
-        return value;
+
+        Vector3d offset = globalOptions.getTranslateOffset();
+        if (offset == null) {
+            offset = new Vector3d();
+        }
+
+        List<GaiaMesh> meshes = node.getMeshes();
+        if (meshes != null) {
+            for (GaiaMesh gaiaMesh : meshes) {
+                List<GaiaPrimitive> primitives = gaiaMesh.getPrimitives();
+                if (primitives != null && !primitives.isEmpty()) {
+                    for (GaiaPrimitive primitive : primitives) {
+                        List<GaiaVertex> vertices = primitive.getVertices();
+                        if (vertices != null && !vertices.isEmpty()) {
+                            for (GaiaVertex vertex : vertices) {
+                                Vector3d pos = new Vector3d(vertex.getPosition());
+                                pos.add(offset);
+                                transformMatrix.transformPosition(pos); // CRS coords
+
+                                // calculate the geoCoords of the "pos"
+                                ProjCoordinate vertexSource = new ProjCoordinate(pos.x, pos.y, pos.z);
+                                ProjCoordinate vertexWgs84 = GlobeUtils.transform(crs, vertexSource);
+
+                                // calculate the posWC of the "vertexWgs84"
+                                double[] posWC = GlobeUtils.geographicToCartesianWgs84(vertexWgs84.x, vertexWgs84.y, vertexSource.z);
+                                Vector3d posWCVector = new Vector3d(posWC[0], posWC[1], posWC[2]);
+                                Vector3d posLC = globalTMatrixInv.transformPosition(posWCVector);
+
+                                localBoundingBox.addPoint(posLC);
+                                vertex.setPosition(posLC);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (node.getChildren() != null) {
+            for (int i = 0; i < node.getChildren().size(); i++) {
+                GaiaNode childNode = node.getChildren().get(i);
+                this.transformNodeVertexPositionsToLocalCoords(transformMatrix, childNode, globalTMatrixInv, localBoundingBox);
+            }
+        }
     }
 }
