@@ -45,7 +45,7 @@ public class GeoDataCubeExperimentalTest {
     @Test
     void seoulVworld3dTiles() {
         String path = "seoul-vworld-3dtiles";
-        testAutoVoxels(path, path + "-all-level", 10, 10);
+        testAutoVoxels(path, path + "-all-level", 0, 16);
     }
 
     @Test

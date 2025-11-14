@@ -481,4 +481,15 @@ public class ExperimentalTest {
         };
         MagoTestConfig.execute(args);
     }
+
+    @Test
+    void PNT_CL2_LINZ() {
+        String path = "CL2_BA32_2024_1000_3805";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-c", "2193",
+        };
+        MagoTestConfig.execute(args);
+    }
 }
