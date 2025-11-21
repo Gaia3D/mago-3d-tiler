@@ -2602,7 +2602,7 @@ public class HalfEdgeSurface implements Serializable {
         int textureScissorDatasCount = textureScissorDatas.size();
         for (int i = 0; i < textureScissorDatasCount; i++) {
             GaiaTextureScissorData textureScissorData = textureScissorDatas.get(i);
-            if (!textureScissorData.TEST_Check()) {
+            if (!textureScissorData.validate()) {
                 log.error("[ERROR] HalfEdgeSurface.scissorTextures() : textureScissorData.TEST_Check() == false.");
             }
             List<HalfEdgeFace> faceGroup = textureScissorData.getFaces();
@@ -2719,7 +2719,7 @@ public class HalfEdgeSurface implements Serializable {
             GaiaRectangle noExpandedBoundary = textureScissorData.getNoExpandedBoundary();
             int expandedPixels = textureScissorData.getExpandedPixel();
 
-            if (!textureScissorData.TEST_Check()) {
+            if (!textureScissorData.validate()) {
                 log.error("[ERROR] HalfEdgeSurface.scissorTextures() : textureScissorData.TEST_Check() == false.");
             }
 

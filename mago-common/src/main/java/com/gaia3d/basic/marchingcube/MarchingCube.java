@@ -14,7 +14,7 @@ import java.util.List;
 
 @Slf4j
 public class MarchingCube {
-    private static int[] EDGE_TABLE = {
+    private static final int[] EDGE_TABLE = {
             0x0, 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
             0x80c, 0x905, 0xa0f, 0xb06, 0xc0a, 0xd03, 0xe09, 0xf00,
             0x190, 0x99, 0x393, 0x29a, 0x596, 0x49f, 0x795, 0x69c,
@@ -48,7 +48,7 @@ public class MarchingCube {
             0xf00, 0xe09, 0xd03, 0xc0a, 0xb06, 0xa0f, 0x905, 0x80c,
             0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0
     };
-    private static int[] TRIANGLE_TABLE = {
+    private static final int[] TRIANGLE_TABLE = {
             -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
             0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
             0, 1, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -728,7 +728,7 @@ public class MarchingCube {
                 float alpha = 0.5f;
                 randomColor[3] = (byte) (alpha * 255.0f);
                 List<GaiaMaterial> gaiaMaterials = gaiaScene.getMaterials();
-                if (gaiaMaterials.size() == 0) {
+                if (gaiaMaterials.isEmpty()) {
                     // add a new material.
                     GaiaMaterial gaiaMaterial = new GaiaMaterial();
                     gaiaMaterial.setDiffuseColor(new Vector4d(randomRed, randomGreen, randomBlue, alpha));
@@ -804,8 +804,7 @@ public class MarchingCube {
 
 
                 List<GaiaMaterial> gaiaMaterials = gaiaScene.getMaterials();
-                if (gaiaMaterials.size() == 0) {
-                    // add a new material.
+                if (gaiaMaterials.isEmpty()) {
                     GaiaMaterial gaiaMaterial = new GaiaMaterial();
                     gaiaMaterial.setDiffuseColor(new Vector4d(redFloat, greenFloat, blueFloat, alpha));
                     gaiaMaterial.setBlend(true);

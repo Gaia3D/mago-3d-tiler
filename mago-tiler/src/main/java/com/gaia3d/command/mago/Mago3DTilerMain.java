@@ -1,6 +1,5 @@
 package com.gaia3d.command.mago;
 
-import com.gaia3d.basic.exception.Reporter;
 import com.gaia3d.command.Configuration;
 import com.gaia3d.util.DecimalUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -68,8 +67,6 @@ public class Mago3DTilerMain {
             }
 
             GlobalOptions globalOptions = GlobalOptions.getInstance();
-            Reporter reporter = globalOptions.getReporter();
-            reporter.writeReportFile(new File(globalOptions.getOutputPath()));
         } catch (ParseException e) {
             log.error("[ERROR] Failed to parse command line options, Please check the arguments.", e);
             throw new RuntimeException("Failed to parse command line options, Please check the arguments.", e);
@@ -100,21 +97,10 @@ public class Mago3DTilerMain {
      */
     private static void printEnd() {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
-        Reporter reporter = globalOptions.getReporter();
-        long duration = reporter.getDuration();
-        reporter.getDuration();
         drawLine();
         log.info("[Process Summary]");
-        log.info("End Process Time : {}", DecimalUtils.millisecondToDisplayTime(duration));
         log.info("Total tile contents count : {}", globalOptions.getTileCount());
         log.info("Total 'tileset.json' File Size : {}", DecimalUtils.byteCountToDisplaySize(globalOptions.getTilesetSize()));
-        drawLine();
-        log.info("[Report Summary]");
-        log.info("Info : {}", reporter.getInfoCount());
-        log.info("Warning : {}", reporter.getWarningCount());
-        log.info("Error : {}", reporter.getErrorCount());
-        log.info("Fatal : {}", reporter.getFatalCount());
-        log.info("Total Report Count : {}", reporter.getReportList().size());
         drawLine();
     }
 

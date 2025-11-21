@@ -117,9 +117,7 @@ public class InternDataConverter {
             GaiaMaterial material = null;
 
             if (matId >= 0) {
-                material = parentRenderableGaiaScene.getMaterials().stream().filter((materialToFind) -> {
-                    return materialToFind.getId() == matId;
-                }).findFirst().get();
+                material = parentRenderableGaiaScene.getMaterials().stream().filter((materialToFind) -> materialToFind.getId() == matId).findFirst().orElseThrow();;
             }
 
             renderablePrimitive.setMaterial(material);

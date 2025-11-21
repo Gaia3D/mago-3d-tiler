@@ -1,7 +1,5 @@
 package com.gaia3d.process.preprocess;
 
-import com.gaia3d.basic.exception.ReportLevel;
-import com.gaia3d.basic.exception.Reporter;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
@@ -64,7 +62,7 @@ public class GaiaZUpTransformer implements PreProcess {
                 UpAxisTransformer.transformToZUp(scene);
                 return tileInfo;
             } else {
-                log.warn("[PRE] Scene is not in Z-Up or Y-Up orientation. {}", tileInfo.getName());
+                //log.warn("[PRE] Scene is not in Z-Up or Y-Up orientation. {}", tileInfo.getName());
 
                 // It is assumed that the scene is in Y-Up orientation.
                 List<GaiaNode> nodes = scene.getNodes();
@@ -85,8 +83,6 @@ public class GaiaZUpTransformer implements PreProcess {
         } catch (Exception e) {
             String message = "Failed to transform scene to Z-Up orientation: " + e.getMessage();
             log.error(message, e);
-            Reporter reporter = GlobalOptions.getInstance().getReporter();
-            reporter.addReport(message, ReportLevel.ERROR);
             throw new RuntimeException(message, e);
         }
 

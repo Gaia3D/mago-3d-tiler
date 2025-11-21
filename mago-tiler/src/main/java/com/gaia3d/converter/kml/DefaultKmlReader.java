@@ -22,9 +22,6 @@ import java.util.List;
  */
 @Slf4j
 public class DefaultKmlReader implements AttributeReader {
-    public DefaultKmlReader() {
-
-    }
 
     //read kml file
     @Override

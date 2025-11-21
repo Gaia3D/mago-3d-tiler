@@ -26,7 +26,7 @@ public class ReMesherVertexCluster {
             for (GaiaSurface surface : surfaces) {
                 List<GaiaFace> faces = surface.getFaces();
                 for (GaiaFace face : faces) {
-                    int indices[] = face.getIndices();
+                    int[] indices = face.getIndices();
                     for (int index : indices) {
                         GaiaVertex vertex = vertices.get(index);
                         List<GaiaFace> faceList = mapVertexToFaces.computeIfAbsent(vertex, k -> new java.util.ArrayList<>());

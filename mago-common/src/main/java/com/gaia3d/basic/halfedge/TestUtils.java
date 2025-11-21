@@ -91,22 +91,17 @@ public class TestUtils {
     }
 
     public static boolean checkHalfEdgeScene(HalfEdgeScene scene) {
-        // 1rst, check vertices
         List<HalfEdgeSurface> surfaces = scene.extractSurfaces(null);
         for (HalfEdgeSurface halfEdgeSurface : surfaces) {
             TestUtils.checkHalfEdgeSurface(halfEdgeSurface);
         }
-
         return true;
     }
 
     public static boolean checkHalfEdgeSurface(HalfEdgeSurface halfEdgeSurface) {
         List<HalfEdgeVertex> vertices = halfEdgeSurface.getVertices();
-        int verticesCount = vertices.size();
-        Map<HalfEdgeVertex, HalfEdgeVertex> verticesMap = new HashMap<>();
-        if (verticesCount == 0) {
 
-        }
+        Map<HalfEdgeVertex, HalfEdgeVertex> verticesMap = new HashMap<>();
         for (HalfEdgeFace face : halfEdgeSurface.getFaces()) {
             List<HalfEdge> faceHalfEdges = face.getHalfEdgesLoop(null);
             for (HalfEdge halfEdge : faceHalfEdges) {
@@ -173,7 +168,6 @@ public class TestUtils {
     }
 
     public static boolean checkGaiaScene(GaiaScene scene) {
-        // 1rst, check vertices
         List<GaiaPrimitive> primitives = scene.extractPrimitives(null);
         for (GaiaPrimitive primitive : primitives) {
             TestUtils.checkGaiaPrimitive(primitive);
@@ -184,11 +178,8 @@ public class TestUtils {
 
     public static boolean checkGaiaPrimitive(GaiaPrimitive primitive) {
         List<GaiaVertex> vertices = primitive.getVertices();
-        int verticesCount = vertices.size();
         Map<GaiaVertex, GaiaVertex> verticesMap = new HashMap<>();
-        if (verticesCount == 0) {
 
-        }
         for (GaiaSurface surface : primitive.getSurfaces()) {
             int[] surfaceIndices = surface.getIndices();
             for (GaiaFace face : surface.getFaces()) {

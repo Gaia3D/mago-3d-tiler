@@ -512,7 +512,7 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         }
     }
 
-    public boolean deleteNoUsedVertices() {
+    public void deleteNoUsedVertices() {
         // Sometimes, there are no used vertices
         // The no used vertices must be deleted (vertex indices of the faces will be modified!)
         Map<GaiaVertex, Integer> vertexIdxMap = new HashMap<>();
@@ -568,8 +568,6 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
             this.getVertices().clear();
             this.setVertices(usedVertices);
         }
-
-        return false;
     }
 
     public void deleteObjects() {

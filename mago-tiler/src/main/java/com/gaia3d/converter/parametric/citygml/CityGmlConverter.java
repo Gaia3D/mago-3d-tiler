@@ -50,10 +50,7 @@ import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 import org.xmlobjects.builder.ObjectBuildException;
 import org.xmlobjects.gml.adapter.geometry.primitives.AbstractRingPropertyAdapter;
-import org.xmlobjects.gml.model.geometry.DirectPosition;
-import org.xmlobjects.gml.model.geometry.DirectPositionList;
-import org.xmlobjects.gml.model.geometry.GeometricPosition;
-import org.xmlobjects.gml.model.geometry.GeometricPositionList;
+import org.xmlobjects.gml.model.geometry.*;
 import org.xmlobjects.gml.model.geometry.aggregates.MultiSurface;
 import org.xmlobjects.gml.model.geometry.aggregates.MultiSurfaceProperty;
 import org.xmlobjects.gml.model.geometry.complexes.CompositeSolid;
@@ -361,10 +358,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                 z = positions.get(i + 2);
                 Vector3d position = new Vector3d(x, y, z);
                 CoordinateReferenceSystem crs = options.getSourceCrs();
-                if (crs.getName().equals("EPSG:4978")) {
-                    // If the CRS is EPSG:4978, we assume it's a cartesian coordinate system
-                    //position = GlobeUtils.cartesianToGeographicWgs84(position);
-                } else if (crs != null) {
+                if (crs != null) {
                     ProjCoordinate projCoordinate = new ProjCoordinate(x, y, resultBBox.getMinZ());
                     ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
                     position = new Vector3d(centerWgs84.x, centerWgs84.y, z);
@@ -384,10 +378,7 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                     z = positions.get(i + 2);
                     Vector3d position = new Vector3d(x, y, z);
                     CoordinateReferenceSystem crs = options.getSourceCrs();
-                    if (crs.getName().equals("EPSG:4978")) {
-                        // If the CRS is EPSG:4978, we assume it's a cartesian coordinate system
-                        //position = GlobeUtils.cartesianToGeographicWgs84(position);
-                    } else if (crs != null) {
+                    if (crs != null) {
                         ProjCoordinate projCoordinate = new ProjCoordinate(x, y, resultBBox.getMinZ());
                         ProjCoordinate centerWgs84 = GlobeUtils.transform(crs, projCoordinate);
                         position = new Vector3d(centerWgs84.x, centerWgs84.y, z);
@@ -901,15 +892,15 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
         }
 
         // Implicit Geometry, It is like instanced model
-        for (ImplicitGeometryProperty implicitGeometryProperty : implicitGeometryProperties) {
-            // TODO : Implicit Geometry
-            /*ImplicitGeometry implicitGeometry = implicitGeometryProperty.getObject();
+        // TODO : Implicit Geometry
+        /*for (ImplicitGeometryProperty implicitGeometryProperty : implicitGeometryProperties) {
+            ImplicitGeometry implicitGeometry = implicitGeometryProperty.getObject();
             log.info("Implicit Geometry: {}", implicitGeometry.getId());
             GeometryProperty geometryProperty = implicitGeometry.getRelativeGeometry();
             MultiSurface multiSurface = (MultiSurface) geometryProperty.getObject();
             MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty(multiSurface);
-            multiSurfaces.add(multiSurfaceProperty);*/
-        }
+            multiSurfaces.add(multiSurfaceProperty);
+        }*/
 
         return multiSurfaces;
     }

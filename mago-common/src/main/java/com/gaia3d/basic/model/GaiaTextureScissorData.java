@@ -57,7 +57,7 @@ public class GaiaTextureScissorData {
         return !(mergedArea > thisArea + otherArea);
     }
 
-    public boolean TEST_Check() {
+    public boolean validate() {
         if (currentBoundary == null || noExpandedBoundary == null) {
             return true;
         }

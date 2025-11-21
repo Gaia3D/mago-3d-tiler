@@ -1,7 +1,6 @@
 package com.gaia3d.command.mago;
 
 import com.gaia3d.TilerExtensionModule;
-import com.gaia3d.basic.exception.Reporter;
 import com.gaia3d.basic.types.FormatType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,7 +26,6 @@ import java.util.List;
 @Slf4j
 public class GlobalOptions {
     private static GlobalOptions instance = new GlobalOptions();
-    private Reporter reporter;
 
     private boolean isParametric = false;
 
@@ -124,7 +122,6 @@ public class GlobalOptions {
     public static GlobalOptions getInstance() {
         if (instance.javaVersionInfo == null) {
             initVersionInfo();
-            instance.reporter = new Reporter("", instance.version);
         }
         return instance;
     }
@@ -360,9 +357,9 @@ public class GlobalOptions {
             int processorCount = Runtime.getRuntime().availableProcessors();
             int threadCount = processorCount > 1 ? processorCount / 2 : 1;
 
-            // Limit to maximum 3 threads for I/O overload prevention
-            if (threadCount > 3) {
-                threadCount = 3;
+            // Limit to maximum 4 threads for I/O overload prevention
+            if (threadCount > 4) {
+                threadCount = 4;
             }
             instance.setMultiThreadCount((byte) threadCount);
         }

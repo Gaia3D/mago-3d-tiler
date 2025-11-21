@@ -60,7 +60,6 @@ public class TilingPipeline implements Pipeline {
             deleteTemp();
         } catch (InterruptedException e) {
             log.error("[ERROR][Pipeline] : ", e);
-            globalOptions.getReporter().addReport(e);
             throw new RuntimeException(e);
         }
     }
@@ -105,7 +104,6 @@ public class TilingPipeline implements Pipeline {
                     }
                 } catch (RuntimeException e) {
                     log.error("[ERROR][PreProcess] : ", e);
-                    globalOptions.getReporter().addReport(e);
                 }
             };
             tasks.add(callableTask);
@@ -159,8 +157,6 @@ public class TilingPipeline implements Pipeline {
                     tileInfosClone.clear();
                 } catch (RuntimeException e) {
                     log.error("[ERROR][PostProcess] : ", e);
-                    globalOptions.getReporter()
-                            .addReport(e);
                 }
             };
             tasks.add(callableTask);

@@ -175,8 +175,7 @@ public class Instanced3DModelV2 implements ContentModel {
                 attributes.forEach((key, value) -> {
                     String utf8Value = StringUtils.convertUTF8(value);
                     batchTableMap.computeIfAbsent(key, k -> new ArrayList<>());
-                    batchTableMap.get(key)
-                            .add(utf8Value);
+                    batchTableMap.get(key).add(utf8Value);
                 });
             }
         });

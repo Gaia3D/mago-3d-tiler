@@ -1,7 +1,5 @@
 package com.gaia3d.process.preprocess;
 
-import com.gaia3d.basic.exception.ReportLevel;
-import com.gaia3d.basic.exception.Reporter;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
@@ -27,8 +25,6 @@ public class GaiaSceneValidator implements PreProcess {
         if (gaiaScene == null || gaiaScene.getNodes() == null || gaiaScene.getNodes().isEmpty()) {
             String message = "GaiaScene is empty or null, skipping Z-Up transformation.";
             log.warn(message);
-            Reporter reporter = globalOptions.getReporter();
-            reporter.addReport(message, ReportLevel.WARN);
             return false;
         }
         return true;

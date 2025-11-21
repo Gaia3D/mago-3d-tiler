@@ -724,15 +724,12 @@ public class HalfEdgeUtils {
         return resultWeldedFacesGroups;
     }
 
-    public static boolean getWeldedFacesWithFace(HalfEdgeFace face, List<HalfEdgeFace> resultWeldedFaces, Map<HalfEdgeFace, HalfEdgeFace> mapVisitedFaces) {
+    public static void getWeldedFacesWithFace(HalfEdgeFace face, List<HalfEdgeFace> resultWeldedFaces, Map<HalfEdgeFace, HalfEdgeFace> mapVisitedFaces) {
         List<HalfEdgeFace> weldedFacesAux = new ArrayList<>();
         List<HalfEdgeFace> faces = new ArrayList<>();
         faces.add(face);
-        //mapVisitedFaces.put(face, face);
         boolean finished = false;
-        int counter = 0;
-        while (!finished)// && counter < 10000000)
-        {
+        while (!finished) {
             List<HalfEdgeFace> newAddedfaces = new ArrayList<>();
             int facesCount = faces.size();
             for (int i = 0; i < facesCount; i++) {
@@ -758,12 +755,7 @@ public class HalfEdgeUtils {
                 faces.clear();
                 faces.addAll(newAddedfaces);
             }
-
-            counter++;
         }
-
-
-        return true;
     }
 
     public static List<HalfEdgeVertex> getVerticesOfFaces(List<HalfEdgeFace> faces, List<HalfEdgeVertex> resultVertices) {

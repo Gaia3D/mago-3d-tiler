@@ -292,12 +292,6 @@ public class BoundingVolume implements Serializable {
             double halfX1 = box[3];
             double halfY1 = box[6];
             double halfZ1 = box[9];
-            double halfX2 = box[4];
-            double halfY2 = box[7];
-            double halfZ2 = box[10];
-            double halfX3 = box[5];
-            double halfY3 = box[8];
-            double halfZ3 = box[11];
 
             double maxLength = Math.max(Math.max(halfX1, halfY1), halfZ1);
             BoundingVolume boundingVolume = new BoundingVolume(BoundingVolumeType.BOX);

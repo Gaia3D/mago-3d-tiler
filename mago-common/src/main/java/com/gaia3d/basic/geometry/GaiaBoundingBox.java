@@ -119,10 +119,6 @@ public class GaiaBoundingBox implements Serializable {
 
         // Check if some edges of the bounding box intersect the triangle.
         if (intersectsAASegmentsToTriangle(triangle)) {
-//            if (!this.intersects(triangleBbox)) {
-//                intersectsAASegmentsToTriangle(triangle);
-//                int hola = 0;
-//            }
             return true; // At least one axis-aligned segment intersects the triangle.
         }
 

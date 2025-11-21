@@ -8,7 +8,7 @@ import java.util.List;
 public class TextureAtlasPacker {
     private final List<GaiaRectangle> freeRectangles = new ArrayList<>();
     private final List<TexturesAtlasData> placedRectangles = new ArrayList<>();
-    private GaiaRectangle currentBoundary;
+    private final GaiaRectangle currentBoundary;
 
     public TextureAtlasPacker() {
         //freeRectangles.add(new GaiaRectangle(0, 0, 0, 0));
@@ -16,8 +16,6 @@ public class TextureAtlasPacker {
     }
 
     public boolean insert(TexturesAtlasData texScissorData) {
-
-        int bestIndex = -1;
         GaiaRectangle bestRect = null;
 
         GaiaRectangle rectBoundary = texScissorData.getOriginalBoundary();
@@ -27,20 +25,16 @@ public class TextureAtlasPacker {
         double currentBoundaryArea = currentBoundary.getArea();
 
         double currentCandidateArea = Double.MAX_VALUE;
-        double bestAreaFit = Double.MAX_VALUE;
-
         GaiaRectangle candidateFreeRect = null;
         if (freeRectangles.size() == 1) {
             GaiaRectangle firstRect = texScissorData.getOriginalBoundary();
             currentBoundary.addBoundingRectangle(firstRect);
             bestRect = freeRectangles.get(0);
-            bestIndex = 0;
         } else {
             for (int i = 0; i < freeRectangles.size(); i++) {
                 GaiaRectangle freeRect = freeRectangles.get(i);
                 if (rectWidth < freeRect.getWidth() && rectHeight < freeRect.getHeight()) {
                     if (bestRect == null) {
-                        bestIndex = i;
                         bestRect = freeRect;
                     }
                     GaiaRectangle candidateTotalBoundary = new GaiaRectangle(currentBoundary);
@@ -49,16 +43,13 @@ public class TextureAtlasPacker {
                     GaiaRectangle placedRect = new GaiaRectangle(freeMinX, freeMinY, freeMinX + rectWidth, freeMinY + rectHeight);
                     candidateTotalBoundary.addBoundingRectangle(placedRect);
                     double currTotalArea = candidateTotalBoundary.getArea();
-                    //double areaFit = freeRect.getArea() - rect.getOriginBoundary().getArea();
 
                     if (Math.abs(currTotalArea - currentBoundaryArea) < 1.0) {
-                        bestIndex = i;
                         bestRect = freeRect;
                         break;
                     } else {
                         if (currTotalArea < currentCandidateArea) {
                             currentCandidateArea = currTotalArea;
-                            bestIndex = i;
                             bestRect = freeRect;
                         }
                     }
