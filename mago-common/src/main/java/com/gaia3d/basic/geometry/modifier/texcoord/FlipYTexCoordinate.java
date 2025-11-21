@@ -1,4 +1,4 @@
-package com.gaia3d.basic.geometry.modifier;
+package com.gaia3d.basic.geometry.modifier.texcoord;
 
 import com.gaia3d.basic.model.*;
 import org.joml.Vector2d;

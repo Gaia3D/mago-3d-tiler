@@ -1,4 +1,4 @@
-package com.gaia3d.basic.geometry.modifier;
+package com.gaia3d.basic.geometry.modifier.topology;
 
 import com.gaia3d.basic.model.*;
 import lombok.extern.slf4j.Slf4j;

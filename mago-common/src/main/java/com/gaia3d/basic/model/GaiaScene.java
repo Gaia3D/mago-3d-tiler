@@ -107,18 +107,21 @@ public class GaiaScene extends SceneStructure implements Serializable {
         return triangleCount;
     }
 
+    @Deprecated
     public void makeTriangleFaces() {
         for (GaiaNode node : this.nodes) {
             node.makeTriangleFaces();
         }
     }
 
+    @Deprecated
     public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
         for (GaiaNode node : this.nodes) {
             node.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
         }
     }
 
+    @Deprecated
     public void unWeldVertices() {
         for (GaiaNode node : this.nodes) {
             node.unWeldVertices();
@@ -191,18 +194,21 @@ public class GaiaScene extends SceneStructure implements Serializable {
         }
     }
 
+    @Deprecated
     public void deleteDegeneratedFaces() {
         for (GaiaNode node : this.nodes) {
             node.deleteDegeneratedFaces();
         }
     }
 
+    @Deprecated
     public void spendTransformMatrix() {
         for (GaiaNode node : this.nodes) {
             node.spendTransformMatrix();
         }
     }
 
+    @Deprecated
     public void makeTriangularFaces() {
         for (GaiaNode node : this.nodes) {
             node.makeTriangularFaces();

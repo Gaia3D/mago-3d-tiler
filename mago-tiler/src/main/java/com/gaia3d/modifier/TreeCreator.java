@@ -10,7 +10,7 @@ import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.assimp.AssimpConverterOptions;
 import com.gaia3d.converter.jgltf.GltfWriter;
-import com.gaia3d.basic.geometry.modifier.FlipYTexCoordinate;
+import com.gaia3d.basic.geometry.modifier.texcoord.FlipYTexCoordinate;
 import com.gaia3d.util.ImageResizer;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

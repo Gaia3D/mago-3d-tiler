@@ -1,4 +1,4 @@
-package com.gaia3d.basic.geometry.modifier;
+package com.gaia3d.basic.geometry.modifier.topology;
 
 import com.gaia3d.basic.halfedge.HalfEdge;
 import com.gaia3d.basic.halfedge.HalfEdgeFace;

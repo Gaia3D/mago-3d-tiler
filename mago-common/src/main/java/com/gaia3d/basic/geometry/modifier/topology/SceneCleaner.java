@@ -1,4 +1,4 @@
-package com.gaia3d.basic.geometry.modifier;
+package com.gaia3d.basic.geometry.modifier.topology;
 
 import com.gaia3d.basic.model.*;
 import lombok.extern.slf4j.Slf4j;
@@ -70,7 +70,7 @@ public class SceneCleaner {
                                 (p2.z - p1.z) * (p3.x - p1.x) == (p3.z - p1.z) * (p2.x - p1.x);
                         if (isCollinear) {
                             log.debug("[DEBUG] Degenerate triangle found due to collinear vertices: {}, {}, {}", p1, p2, p3);
-                            continue; // Skip degenerate triangle
+                            continue;
                         }
 
                         newIndices.add(indices[i]);

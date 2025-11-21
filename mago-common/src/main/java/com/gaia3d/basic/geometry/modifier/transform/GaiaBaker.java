@@ -1,4 +1,4 @@
-package com.gaia3d.basic.geometry.modifier;
+package com.gaia3d.basic.geometry.modifier.transform;
 
 import com.gaia3d.basic.model.*;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +15,7 @@ import java.util.List;
  * thus creating a final, baked version of the scene that is ready for use.
  */
 @Slf4j
-public class TransformBaker {
+public class GaiaBaker {
 
     /**
      * Bakes the transformation of a GaiaScene.
