@@ -229,14 +229,14 @@ public class GltfWriter {
         byte[] colors = gaiaMesh.getColors();
         float[] texcoords = gaiaMesh.getTexcoords();
         short[] unsignedShortsTexcoords = null;
-        if (texcoords != null) {
+        if (globalOptions.isUseShortTexCoord() && texcoords != null) {
             unsignedShortsTexcoords = new short[texcoords.length];
             for (int i = 0; i < unsignedShortsTexcoords.length; i++) {
                 int intValue = unsignedShortsTexcoords[i] * 65535;
 
                 boolean overFlow = intValue < 0 || intValue > 65535;
                 if (overFlow) {
-                    log.warn("[WARN] The texture coordinate value is out of range (0 ~ 65535): {}", intValue);
+                    log.debug("[WARN] The short texCoord value is out of range (0 ~ 65535): {}", intValue);
                     intValue = Math.max(0, Math.min(65535, intValue));
                 }
 
@@ -251,7 +251,7 @@ public class GltfWriter {
         int vertexCount = gaiaMesh.getPositionsCount() / 3;
         boolean isOverShortVertices = vertexCount >= 65535;
         if (isOverShortVertices) {
-            log.warn("[WARN] The number of vertices count than 65535 ({})", vertexCount);
+            log.debug("[WARN] The number of short vertices count than 65535 ({})", vertexCount);
         }
 
         GltfNodeBuffer nodeBuffer = initNodeBuffer(gaiaMesh, isOverShortVertices);

@@ -29,7 +29,6 @@ class RealisticReleaseTest {
         MagoTestConfig.execute(args);
     }
 
-    @Disabled
     @Test
     void realistic01V1() {
         String path = "R01-bansong-part-obj";

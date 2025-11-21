@@ -492,4 +492,41 @@ public class ExperimentalTest {
         };
         MagoTestConfig.execute(args);
     }
+
+    @Test
+    void deck4251118() {
+        String path = "deck4_251118";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-rotateXAxis", "90",
+                "-tilesVersion", "1.0",
+                "-crs", "5186"
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void deck1251118() {
+        String path = "deck1_251118";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-rotateXAxis", "90",
+                "-tilesVersion", "1.0",
+                "-crs", "5186"
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void tuvFnft2019() {
+        String path = "TuvFnft2019";
+        String[] args = new String[] {
+                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                //"-c", "32760",
+        };
+        MagoTestConfig.execute(args);
+    }
 }

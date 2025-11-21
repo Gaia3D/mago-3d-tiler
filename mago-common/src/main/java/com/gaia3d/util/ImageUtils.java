@@ -367,7 +367,6 @@ public class ImageUtils {
     }
 
     public static BufferedImage changeBackgroundColor(BufferedImage image, Color oldColor, Color newColor) {
-        log.debug("Change Background Color");
         int width = image.getWidth();
         int height = image.getHeight();
         BufferedImage newImage = new BufferedImage(width, height, image.getType());
