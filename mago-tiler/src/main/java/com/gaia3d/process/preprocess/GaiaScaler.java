@@ -3,10 +3,10 @@ package com.gaia3d.process.preprocess;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.converter.kml.TileTransformInfo;
+import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
-import com.gaia3d.process.tileprocess.tile.TileInfo;
 
 import java.util.List;
 

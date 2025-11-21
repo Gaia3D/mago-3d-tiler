@@ -2,7 +2,6 @@ package com.gaia3d.process.tileprocess.tile;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.json.JsonWriteFeature;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.TilerExtensionModule;
 import com.gaia3d.basic.exception.TileProcessingException;
@@ -10,7 +9,6 @@ import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.exchangable.SceneInfo;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
-import com.gaia3d.basic.geometry.octree.GaiaFaceData;
 import com.gaia3d.basic.geometry.octree.GaiaOctree;
 import com.gaia3d.basic.geometry.octree.GaiaOctreeFaces;
 import com.gaia3d.basic.geometry.octree.HalfEdgeOctreeFaces;

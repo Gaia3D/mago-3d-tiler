@@ -1,7 +1,6 @@
 package com.gaia3d.converter.kml;
 
 import com.gaia3d.command.mago.GlobalConstants;
-import com.gaia3d.command.mago.GlobalOptions;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.locationtech.jts.geom.*;

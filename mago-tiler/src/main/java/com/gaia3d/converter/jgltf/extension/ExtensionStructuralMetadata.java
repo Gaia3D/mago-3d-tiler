@@ -2,7 +2,6 @@ package com.gaia3d.converter.jgltf.extension;
 
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.process.postprocess.DataType;
-import com.gaia3d.process.postprocess.batch.GaiaBatchTable;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTableMap;
 import com.gaia3d.process.postprocess.pointcloud.PointCloudBuffer;
 import com.gaia3d.process.tileprocess.tile.tileset.schema.ClassProperty;

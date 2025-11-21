@@ -2,9 +2,9 @@ package com.gaia3d.converter.parametric.geopackage;
 
 import com.gaia3d.command.mago.AttributeFilter;
 import com.gaia3d.command.mago.GlobalConstants;
-import com.gaia3d.converter.parametric.Parametric3DOptions;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.TileTransformInfo;
+import com.gaia3d.converter.parametric.Parametric3DOptions;
 import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -16,7 +16,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.lwjgl.assimp.Assimp;
 
 import java.awt.image.BufferedImage;
 import java.io.File;

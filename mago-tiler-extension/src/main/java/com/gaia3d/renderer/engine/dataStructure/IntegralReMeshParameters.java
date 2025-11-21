@@ -11,8 +11,6 @@ import org.lwjgl.opengl.GL20;
 import java.util.Map;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL11.glClear;
-import static org.lwjgl.opengl.GL11.glDisable;
 
 @Getter
 @Setter

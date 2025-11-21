@@ -4,7 +4,6 @@ import com.gaia3d.util.GeometryUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
-import org.locationtech.jts.math.Vector3D;
 
 import java.util.ArrayList;
 import java.util.Collections;

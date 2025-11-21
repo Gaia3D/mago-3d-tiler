@@ -1,6 +1,5 @@
 package com.gaia3d.scanner;
 
-import com.gaia3d.command.mago.GlobalOptions;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;

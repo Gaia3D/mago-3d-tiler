@@ -4,12 +4,10 @@ package com.gaia3d.renderer.engine.fbo;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL30;
 
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL11.glPixelStorei;
 import static org.lwjgl.opengl.GL11C.GL_PACK_ALIGNMENT;

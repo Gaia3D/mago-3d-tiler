@@ -8,7 +8,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
 
-import java.io.*;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 

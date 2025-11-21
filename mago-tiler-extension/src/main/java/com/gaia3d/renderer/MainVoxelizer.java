@@ -10,7 +10,6 @@ import com.gaia3d.basic.geometry.voxel.VoxelizeParameters;
 import com.gaia3d.basic.halfedge.*;
 import com.gaia3d.basic.marchingcube.MarchingCube;
 import com.gaia3d.basic.model.*;
-import com.gaia3d.basic.remesher.CellGrid3D;
 import com.gaia3d.basic.remesher.ReMeshParameters;
 import com.gaia3d.basic.remesher.ReMesherVertexCluster;
 import com.gaia3d.basic.types.TextureType;
@@ -23,10 +22,9 @@ import com.gaia3d.renderer.engine.fbo.Fbo;
 import com.gaia3d.renderer.engine.fbo.FboManager;
 import com.gaia3d.renderer.engine.graph.ShaderManager;
 import com.gaia3d.renderer.engine.graph.ShaderProgram;
-import com.gaia3d.renderer.engine.scene.Projection;
 import com.gaia3d.renderer.engine.scene.Camera;
+import com.gaia3d.renderer.engine.scene.Projection;
 import com.gaia3d.renderer.renderable.RenderableGaiaScene;
-import com.gaia3d.util.GaiaSceneUtils;
 import com.gaia3d.util.GaiaTextureUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -35,14 +33,16 @@ import org.joml.*;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.Math;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.lwjgl.opengl.GL11.*;
 

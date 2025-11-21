@@ -1,6 +1,5 @@
 package com.gaia3d.converter.jgltf.extension;
 
-import com.gaia3d.process.postprocess.batch.GaiaBatchTableMap;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import lombok.Getter;
 import lombok.Setter;

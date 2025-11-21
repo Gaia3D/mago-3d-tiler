@@ -1,7 +1,10 @@
 package com.gaia3d.renderer.engine;
 
 import com.gaia3d.basic.geometry.GaiaRectangle;
-import com.gaia3d.basic.halfedge.*;
+import com.gaia3d.basic.halfedge.CameraDirectionType;
+import com.gaia3d.basic.halfedge.HalfEdgeFace;
+import com.gaia3d.basic.halfedge.HalfEdgeScene;
+import com.gaia3d.basic.halfedge.HalfEdgeVertex;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.util.GaiaTextureUtils;
 import lombok.extern.slf4j.Slf4j;

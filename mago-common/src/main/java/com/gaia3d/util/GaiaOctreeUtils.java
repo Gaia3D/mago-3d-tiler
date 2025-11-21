@@ -2,7 +2,6 @@ package com.gaia3d.util;
 
 import com.gaia3d.basic.geometry.octree.GaiaFaceData;
 import com.gaia3d.basic.model.*;
-import org.joml.Vector2d;
 import org.joml.Vector3d;
 
 import java.util.List;

@@ -1,6 +1,5 @@
 package com.gaia3d.util;
 
-import com.gaia3d.basic.geometry.octree.GaiaOctreeVertices;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.model.structure.GaiaFaceExplicit;
 import lombok.extern.slf4j.Slf4j;

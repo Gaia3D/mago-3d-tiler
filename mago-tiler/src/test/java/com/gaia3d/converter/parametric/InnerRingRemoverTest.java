@@ -3,7 +3,7 @@ package com.gaia3d.converter.parametric;
 import org.joml.Vector2d;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 class InnerRingRemoverTest {

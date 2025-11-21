@@ -9,7 +9,6 @@ import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.GlobeUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.joml.Matrix3d;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.locationtech.proj4j.CoordinateReferenceSystem;

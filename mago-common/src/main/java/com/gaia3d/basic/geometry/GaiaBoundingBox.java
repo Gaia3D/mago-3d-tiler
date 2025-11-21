@@ -19,8 +19,6 @@ import org.joml.Vector3d;
 import java.io.Serializable;
 import java.util.List;
 
-import static com.gaia3d.util.VectorUtils.cross;
-
 /**
  * GaiaBoundingBox is a class to store the bounding box of a geometry.
  * It can be used to calculate the center and volume of the geometry.

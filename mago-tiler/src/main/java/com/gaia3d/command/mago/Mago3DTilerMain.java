@@ -9,10 +9,6 @@ import org.apache.logging.log4j.Level;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
 
 /**
  * Main class for mago 3DTiler.

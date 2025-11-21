@@ -1,8 +1,6 @@
 package com.gaia3d.process.tileprocess.tile.tileset.schema;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.gaia3d.process.postprocess.ComponentType;
-import com.gaia3d.process.tileprocess.tile.tileset.node.Range;
 import lombok.Getter;
 import lombok.Setter;
 

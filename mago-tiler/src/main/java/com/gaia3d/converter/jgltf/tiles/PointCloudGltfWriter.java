@@ -1,6 +1,5 @@
 package com.gaia3d.converter.jgltf.tiles;
 
-import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.types.AccessorType;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.converter.jgltf.GltfBinary;

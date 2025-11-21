@@ -1,14 +1,10 @@
 package com.gaia3d.basic.geometry.entities;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.halfedge.PlaneType;
-import com.gaia3d.util.GeometryUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
-
-import javax.swing.text.Segment;
 
 @Slf4j
 @Getter

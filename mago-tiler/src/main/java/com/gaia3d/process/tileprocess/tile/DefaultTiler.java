@@ -8,7 +8,7 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
-import com.gaia3d.process.tileprocess.tile.tileset.asset.*;
+import com.gaia3d.process.tileprocess.tile.tileset.asset.AssetV1;
 import com.gaia3d.process.tileprocess.tile.tileset.node.Node;
 import com.gaia3d.util.GlobeUtils;
 import lombok.extern.slf4j.Slf4j;
