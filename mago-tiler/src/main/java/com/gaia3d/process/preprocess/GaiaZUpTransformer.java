@@ -23,11 +23,11 @@ import java.util.List;
 public class GaiaZUpTransformer implements PreProcess {
 
     /*
-    * Z-Up axis matrix:
-    * 1.0, 0.0, 0.0,
-    * 0.0, 1.0, 0.0,
-    * 0.0, 0.0, 1.0
-    */
+     * Z-Up axis matrix:
+     * 1.0, 0.0, 0.0,
+     * 0.0, 1.0, 0.0,
+     * 0.0, 0.0, 1.0
+     */
     private final Matrix3d zUpAxisMatrix = new Matrix3d(
             1.0, 0.0, 0.0,
             0.0, 1.0, 0.0,
@@ -35,11 +35,11 @@ public class GaiaZUpTransformer implements PreProcess {
     );
 
     /*
-    * Y-Up axis matrix:
-    * 1.0, 0.0, 0.0,
-    * 0.0, 0.0, 1.0,
-    * 0.0, -1.0, 0.0
-    */
+     * Y-Up axis matrix:
+     * 1.0, 0.0, 0.0,
+     * 0.0, 0.0, 1.0,
+     * 0.0, -1.0, 0.0
+     */
     private final Matrix3d yUpAxisMatrix = new Matrix3d(
             1.0, 0.0, 0.0,
             0.0, 0.0, -1.0,

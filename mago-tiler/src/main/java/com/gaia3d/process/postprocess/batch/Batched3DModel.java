@@ -77,7 +77,6 @@ public class Batched3DModel implements ContentModel {
             nodeNameList.add(nodeName);
         });
 
-
         if (batchedSet == null) {
             log.error("[ERROR] BatchedSet is null, return null.");
             return contentInfo;
@@ -267,8 +266,7 @@ public class Batched3DModel implements ContentModel {
                     buffer = new byte[is.available()];
                 }
             }
-            if (flip)
-                byteBuffer.flip();
+            if (flip) {byteBuffer.flip();}
             return byteBuffer;
         } catch (IOException e) {
             log.error("[ERROR] FileUtils.readBytes: " + e.getMessage());

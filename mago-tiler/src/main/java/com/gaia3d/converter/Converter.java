@@ -12,8 +12,11 @@ import java.util.List;
  */
 public interface Converter {
     List<GaiaScene> load(String path);
+
     List<GaiaScene> load(File file);
+
     List<GaiaScene> load(Path path);
+
     List<GaiaSceneTempGroup> convertTemp(File input, File output);
 }
 

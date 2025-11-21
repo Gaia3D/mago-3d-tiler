@@ -40,7 +40,7 @@ public class SurfaceSeparator {
 
             List<HalfEdgeSurface> separatedSurfaces = new ArrayList<>();
             for (List<HalfEdgeFace> weldedFaces : weldedFacesGroups) {
-                if (weldedFaces.isEmpty()) continue;
+                if (weldedFaces.isEmpty()) {continue;}
 
                 HalfEdgeSurface newSurface = new HalfEdgeSurface();
                 newSurface.setFaces(weldedFaces);

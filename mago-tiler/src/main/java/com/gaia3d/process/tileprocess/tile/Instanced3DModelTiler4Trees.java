@@ -172,7 +172,7 @@ public class Instanced3DModelTiler4Trees extends DefaultTiler implements Tiler {
                             createNode(childNode, childTileInfos, inheritanceTileInfos, nodeDepth + 1);
                         }
                     } else {
-                        createNode(childNode, childTileInfos, inheritanceTileInfos,nodeDepth + 1);
+                        createNode(childNode, childTileInfos, inheritanceTileInfos, nodeDepth + 1);
                     }
                 }
             }
@@ -272,7 +272,6 @@ public class Instanced3DModelTiler4Trees extends DefaultTiler implements Tiler {
         }
 
         log.info("[Tile][ContentNode][" + nodeCode + "][LOD{}][OBJECT{}]", lod.getLevel(), tileInfos.size());
-
 
         int divideSize = tileInfos.size() / 4;
         if (divideSize > GlobalConstants.DEFAULT_MAX_I3DM_FEATURE_COUNT) {

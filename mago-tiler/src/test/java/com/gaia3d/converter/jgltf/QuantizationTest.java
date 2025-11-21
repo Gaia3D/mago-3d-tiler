@@ -16,7 +16,7 @@ class QuantizationTest {
         Configuration.initConsoleLogger();
 
         // cube sample
-        float[] positions = new float[] {
+        float[] positions = new float[]{
                 -1, -1, -1, // left-bottom-back
                 -1, -1, 1, // left-bottom-front
                 -1, 1, -1, // left-top-back
@@ -31,7 +31,7 @@ class QuantizationTest {
         originalMatrix.identity();
 
         // expected quantization matrix
-        double[] expectedMatrixArray = new double[] {
+        double[] expectedMatrixArray = new double[]{
                 2.0, 0.0, 0.0, 0.0,
                 0.0, 2.0, 0.0, 0.0,
                 0.0, 0.0, 2.0, 0.0,
@@ -99,7 +99,7 @@ class QuantizationTest {
         Configuration.initConsoleLogger();
 
         // cube sample
-        float[] positions = new float[] {
+        float[] positions = new float[]{
                 -1, -1, -1, // left-bottom-back
                 -1, -1, 1, // left-bottom-front
                 -1, 1, -1, // left-top-back
@@ -118,7 +118,7 @@ class QuantizationTest {
         assertEquals(32, quantizedPositions.length);
 
         // expected quantized positions
-        short[] expectedQuantizedPositions = new short[] {
+        short[] expectedQuantizedPositions = new short[]{
                 0, 0, 0, 0,
                 0, 0, -1, 0,
                 0, -1, 0, 0,

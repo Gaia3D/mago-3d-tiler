@@ -18,6 +18,7 @@ import java.util.Random;
 
 public interface AttributeReader {
     TileTransformInfo read(File file);
+
     List<TileTransformInfo> readAll(File file);
 
     default Geometry transformGeometry(Geometry polygon, CoordinateReferenceSystem sourceCRS) throws FactoryException, TransformException {

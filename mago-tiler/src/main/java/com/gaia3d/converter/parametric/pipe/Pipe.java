@@ -140,7 +140,6 @@ public class Pipe extends TopologicalEdge {
             transformedCirclePoints.add(transformedPoint);
         }
 
-
         Vector3d extrusionVector = new Vector3d(endLinkPos).sub(startLinkPos);
         boolean isLateralSurfaceSmooth = true;
         GaiaPrimitive primitive = modeler3D.getExtrudedPrimitive(transformedCirclePoints, extrusionVector, this.bottomCap, this.topCap, true, isLateralSurfaceSmooth);

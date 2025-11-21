@@ -306,7 +306,6 @@ public class Modeler3D {
             }
         }
 
-
         if (pipeLinePrev != null) {
             // concatenate the pipeLine with the pipeLinePrev.
             // remove the last point of pipeLinePrev.

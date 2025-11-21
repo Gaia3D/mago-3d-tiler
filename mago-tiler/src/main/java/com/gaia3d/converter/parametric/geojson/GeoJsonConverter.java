@@ -384,7 +384,6 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                 Vector3d degreeTranslation = scene.getTranslation();
                 degreeTranslation.set(center);
 
-
                 if (rootNode.getChildren().size() <= 0) {
                     log.debug("Invalid Scene : {}", rootNode.getName());
                     continue;
@@ -426,7 +425,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                 sceneTemps.add(sceneTemp);
             }
         } catch (IOException e) {
-             log.error("[ERROR] Failed to read GeoJSON file : {}", input.getAbsolutePath(), e);
+            log.error("[ERROR] Failed to read GeoJSON file : {}", input.getAbsolutePath(), e);
             throw new RuntimeException(e);
         }
         return sceneTemps;
@@ -491,8 +490,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
 
                 // interior points.***
                 List<List<Vector3d>> interiorPolygonsLocal = new ArrayList<>();
-                for(List<Vector3d> interiorPolygon : interiorPolygons)
-                {
+                for (List<Vector3d> interiorPolygon : interiorPolygons) {
                     List<Vector3d> interiorPolygonLocal = new ArrayList<>();
                     for (Vector3d position : interiorPolygon) {
                         Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);

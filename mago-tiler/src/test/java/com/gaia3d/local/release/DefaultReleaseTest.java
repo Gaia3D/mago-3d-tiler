@@ -11,7 +11,7 @@ class DefaultReleaseTest {
     @Test
     void batched53V1() {
         String path = "B53-railway-citygml";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-V1",
                 "-tilesVersion", "1.0",
@@ -23,7 +23,7 @@ class DefaultReleaseTest {
     @Test
     void batched53V2() {
         String path = "B53-railway-citygml";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-V2",
                 "-tilesVersion", "1.1",
@@ -35,7 +35,7 @@ class DefaultReleaseTest {
     @Test
     void batched03V1() {
         String path = "B03-wangsuk2-geojson";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-V1",
                 "-tilesVersion", "1.0",
@@ -47,7 +47,7 @@ class DefaultReleaseTest {
     @Test
     void batched03V2() {
         String path = "B03-wangsuk2-geojson";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-V2",
                 "-tilesVersion", "1.1",
@@ -59,7 +59,7 @@ class DefaultReleaseTest {
     @Test
     void batched01V1() {
         String path = "B01-wangsuk2-3ds";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-V1",
                 "-c", "5186",
@@ -73,7 +73,7 @@ class DefaultReleaseTest {
     @Test
     void batched01V2() {
         String path = "B01-wangsuk2-3ds";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-V2",
                 "-c", "5186",
@@ -87,7 +87,7 @@ class DefaultReleaseTest {
     @Test
     void batched01CARTESIAN() {
         String path = "B01-wangsuk2-3ds";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-CARTESIAN",
                 "-crs", "4978",
@@ -100,7 +100,7 @@ class DefaultReleaseTest {
     @Test
     void instanced06V1() {
         String path = "I04-forest-shp";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-V1",
                 "-c", "5179",
@@ -116,9 +116,9 @@ class DefaultReleaseTest {
     }
 
     @Test
-    void  instanced06V2() {
+    void instanced06V2() {
         String path = "I04-forest-shp";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-V2",
                 "-c", "5179",
@@ -137,7 +137,7 @@ class DefaultReleaseTest {
     @Test
     void pointcloud00V1() {
         String path = "P00-hwangyonggak-las";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-V1",
                 "-tilesVersion", "1.0",
@@ -149,7 +149,7 @@ class DefaultReleaseTest {
     @Test
     void pointcloud00V2() {
         String path = "P00-hwangyonggak-las";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-V2",
                 "-c", "32652",
@@ -161,7 +161,7 @@ class DefaultReleaseTest {
     @Test
     void realistic00V1() {
         String path = "R00-bansong-obj";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-V1",
                 "-it", "obj",
@@ -176,7 +176,7 @@ class DefaultReleaseTest {
     @Test
     void realistic00V2() {
         String path = "R00-bansong-obj";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-V2",
                 "-it", "obj",
@@ -192,7 +192,7 @@ class DefaultReleaseTest {
     @Test
     void pointcloud06V1() {
         String path = "P06-classification-las";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-V1",
                 "-tilesVersion", "1.0",
@@ -203,7 +203,7 @@ class DefaultReleaseTest {
     @Test
     void pointcloud06V2() {
         String path = "P06-classification-las";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-V2",
                 "-tilesVersion", "1.1",

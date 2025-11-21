@@ -79,7 +79,7 @@ public class PhotogrammetryRotation implements PreProcess {
         return transformMatrix;
     }
 
-    private Matrix4d rotateX(Matrix4d transformMatrix , double degree) {
+    private Matrix4d rotateX(Matrix4d transformMatrix, double degree) {
         Matrix4d xRotMatrix = new Matrix4d();
         xRotMatrix.rotateX(Math.toRadians(degree));
         xRotMatrix.mul(transformMatrix, transformMatrix);

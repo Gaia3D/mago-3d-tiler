@@ -34,8 +34,7 @@ public class Mago3DTiler {
 
     /**
      * get 3dTiles process model (batched, instance, point cloud)
-     *
-     * @param inputFormat  FormatType
+     * @param inputFormat FormatType
      * @param outputFormat FormatType
      * @return ProcessFlowModel
      */

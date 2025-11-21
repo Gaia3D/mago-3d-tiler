@@ -258,8 +258,6 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
             boundingVolume = new BoundingVolume(childBoundingBox, BoundingVolume.BoundingVolumeType.REGION);
         }*/
 
-
-
         BoundingVolume boundingVolume;
         GaiaBoundingBox boundingBox = null;
         Matrix4d transformMatrix = null;
@@ -278,7 +276,6 @@ public class Batched3DModelTiler extends DefaultTiler implements Tiler {
         if (globalOptions.isClassicTransformMatrix()) {
             rotateX90(transformMatrix);
         }
-
 
         String nodeCode = parentNode.getNodeCode();
         LevelOfDetail minLod = LevelOfDetail.getByLevel(minLevel);

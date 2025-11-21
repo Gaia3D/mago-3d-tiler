@@ -286,7 +286,7 @@ public class GeoPackageConverter extends AbstractGeometryConverter implements Co
 
             geoPackage.close();
         } catch (IOException e) {
-            if (geoPackage != null) geoPackage.close();
+            if (geoPackage != null) {geoPackage.close();}
             throw new RuntimeException(e);
         }
         return sceneTemps;

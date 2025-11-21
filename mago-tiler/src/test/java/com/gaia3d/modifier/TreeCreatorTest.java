@@ -1,4 +1,3 @@
-
 package com.gaia3d.modifier;
 
 import com.gaia3d.command.Configuration;
@@ -30,7 +29,7 @@ class TreeCreatorTest {
         String inputPath = "D:\\data\\korea-forest-service\\original.glb";
         String outputPath = "E:\\data\\mago-server\\output\\BillboardCreation\\";
         File outputDir = new File(outputPath);
-        if(!outputDir.exists() && !outputDir.mkdirs()) {
+        if (!outputDir.exists() && !outputDir.mkdirs()) {
             throw new RuntimeException("Output directory creation failed");
         }
 

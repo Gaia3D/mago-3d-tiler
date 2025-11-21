@@ -32,7 +32,7 @@ public class GaiaSceneTempGroup {
                 oos.writeObject(gaiaSceneTemps);
                 tempScene = null;
             } catch (IOException e) {
-                 log.error("[ERROR] Failed to minimize GaiaScene", e);
+                log.error("[ERROR] Failed to minimize GaiaScene", e);
             }
             isMinimized = true;
             this.tempFile = minimizedFile;
@@ -46,7 +46,7 @@ public class GaiaSceneTempGroup {
                 List<GaiaScene> gaiaScenes = gaiaSceneTemps.stream().map(GaiaSceneTemp::to).toList();
                 tempScene = gaiaScenes;
             } catch (IOException | ClassNotFoundException e) {
-                 log.error("[ERROR] Failed to maximize GaiaScene", e);
+                log.error("[ERROR] Failed to maximize GaiaScene", e);
             }
             isMinimized = false;
             tempFile = null;

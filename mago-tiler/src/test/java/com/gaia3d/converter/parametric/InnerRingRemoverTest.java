@@ -10,8 +10,8 @@ class InnerRingRemoverTest {
 
     @Test
     void crossSame() {
-        Vector2d a = new Vector2d(73.7843483535828,18.62558007045379);
-        Vector2d b = new Vector2d(73.7843483535828,18.62558007045379);
+        Vector2d a = new Vector2d(73.7843483535828, 18.62558007045379);
+        Vector2d b = new Vector2d(73.7843483535828, 18.62558007045379);
         Vector2d c = new Vector2d(73.78440228477372, 18.6259135389622);
 
         InnerRingRemover innerRingRemover = new InnerRingRemover();
@@ -21,9 +21,9 @@ class InnerRingRemoverTest {
 
     @Test
     void crossSame2() {
-        Vector2d a = new Vector2d(73.7843483535828,18.62558007045379);
+        Vector2d a = new Vector2d(73.7843483535828, 18.62558007045379);
         Vector2d b = new Vector2d(73.78440228477372, 18.6259135389622);
-        Vector2d c = new Vector2d(73.7843483535828,18.62558007045379);
+        Vector2d c = new Vector2d(73.7843483535828, 18.62558007045379);
 
         InnerRingRemover innerRingRemover = new InnerRingRemover();
         double result = innerRingRemover.cross(a, b, c);
@@ -32,9 +32,9 @@ class InnerRingRemoverTest {
 
     @Test
     void crossSame3() {
-        Vector2d a = new Vector2d(73.7843483535828,18.62558007045379);
-        Vector2d b = new Vector2d(73.7843483535828,18.62558007045379);
-        Vector2d c = new Vector2d(73.7843483535828,18.62558007045379);
+        Vector2d a = new Vector2d(73.7843483535828, 18.62558007045379);
+        Vector2d b = new Vector2d(73.7843483535828, 18.62558007045379);
+        Vector2d c = new Vector2d(73.7843483535828, 18.62558007045379);
 
         InnerRingRemover innerRingRemover = new InnerRingRemover();
         double result = innerRingRemover.cross(a, b, c);
@@ -43,8 +43,8 @@ class InnerRingRemoverTest {
 
     @Test
     void cross() {
-        Vector2d a = new Vector2d(73.7843483535828,18.62558007045379);
-        Vector2d b = new Vector2d(73.78435220006716,18.62560341010312);
+        Vector2d a = new Vector2d(73.7843483535828, 18.62558007045379);
+        Vector2d b = new Vector2d(73.78435220006716, 18.62560341010312);
         Vector2d c = new Vector2d(73.78440228477372, 18.6259135389622);
 
         InnerRingRemover innerRingRemover = new InnerRingRemover();
@@ -54,9 +54,9 @@ class InnerRingRemoverTest {
 
     @Test
     void cross2() {
-        Vector2d a = new Vector2d(73.78291833506383,	18.62630056325255);
-        Vector2d b = new Vector2d(73.78291229,	18.626253743514127);
-        Vector2d c = new Vector2d(73.78290929128853,	18.62623056109944);
+        Vector2d a = new Vector2d(73.78291833506383, 18.62630056325255);
+        Vector2d b = new Vector2d(73.78291229, 18.626253743514127);
+        Vector2d c = new Vector2d(73.78290929128853, 18.62623056109944);
 
         InnerRingRemover innerRingRemover = new InnerRingRemover();
         double result = innerRingRemover.cross(a, b, c);

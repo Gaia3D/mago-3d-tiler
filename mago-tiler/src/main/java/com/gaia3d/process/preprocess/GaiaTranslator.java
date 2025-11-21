@@ -54,7 +54,7 @@ public class GaiaTranslator implements PreProcess {
 
     private double getTerrainHeightFromCartographic(Vector3d cartographic) {
         Vector3d center = new Vector3d(cartographic.x, cartographic.y, 0.0);
-        if (coverages!=null && !coverages.isEmpty()) {
+        if (coverages != null && !coverages.isEmpty()) {
             for (GridCoverage2D coverage : coverages) {
                 DirectPosition worldPosition = new DirectPosition2D(DefaultGeographicCRS.WGS84, center.x, center.y);
                 double[] altitude = new double[1];

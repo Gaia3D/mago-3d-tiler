@@ -953,7 +953,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 log.debug("cutTempLod folder created.");
             }
 
-
             int resultDecimatedScenesCount = resultReMeshedScenes.size();
             for (int j = 0; j < resultDecimatedScenesCount; j++) {
                 HalfEdgeScene halfEdgeSceneLod = resultReMeshedScenes.get(j);
@@ -1062,7 +1061,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             int intersectedNodesCount = intersectedNodes.size();
             for (int i = 0; i < intersectedNodesCount; i++) {
                 Node node = intersectedNodes.get(i);
-                if (node.getDepth() != nodeDepth) continue;
+                if (node.getDepth() != nodeDepth) {continue;}
                 List<TileInfo> tileInfosOfNodeList = nodeTileInfosMap.computeIfAbsent(node, k -> new ArrayList<>());
                 tileInfosOfNodeList.add(tileInfo);
             }
@@ -1102,7 +1101,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         double texturePixelSize = maxSize / 512.0;
         double texturePixelsForMeter = 1.0 / texturePixelSize;
 
-
         Vector3d cellGridOrigin = new Vector3d(0.0, 0.0, 0.0);
         double cellSize = voxelSizeMeter;
         double factor = 0.9;
@@ -1134,7 +1132,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             tileInfosOfNode = nodeTileInfosMap.get(node);
 
             int tileInfosOfNodeCount = tileInfosOfNode.size();
-            if (tileInfosOfNodeCount == 0) continue;
+            if (tileInfosOfNodeCount == 0) {continue;}
 
             node.setRefine(Node.RefineType.REPLACE);
 
@@ -1458,7 +1456,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             int intersectedNodesCount = intersectedNodes.size();
             for (int i = 0; i < intersectedNodesCount; i++) {
                 Node node = intersectedNodes.get(i);
-                if (node.getDepth() != nodeDepth) continue;
+                if (node.getDepth() != nodeDepth) {continue;}
                 List<TileInfo> tileInfosOfNodeList = nodeTileInfosMap.computeIfAbsent(node, k -> new ArrayList<>());
                 tileInfosOfNodeList.add(tileInfo);
             }
@@ -1473,7 +1471,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             tileInfosOfNode = nodeTileInfosMap.get(node);
 
             int tileInfosOfNodeCount = tileInfosOfNode.size();
-            if (tileInfosOfNodeCount == 0) continue;
+            if (tileInfosOfNodeCount == 0) {continue;}
 
             node.setRefine(Node.RefineType.REPLACE);
 
@@ -1569,7 +1567,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 
             halfEdgeScene.decimate(decimateParameters); // new.***
 
-            if (halfEdgeScene.getTrianglesCount() == 0) continue;
+            if (halfEdgeScene.getTrianglesCount() == 0) {continue;}
 
             // now, create material for the halfEdgeScene
             List<GaiaMaterial> materials = new ArrayList<>();
@@ -1836,8 +1834,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             transformMatrixInv.transformPosition(samplePointWC, samplePointLC);
 
             // check local min max X
-            if (samplePointLC.x < localMinX) localMinX = samplePointLC.x;
-            if (samplePointLC.x > localMaxX) localMaxX = samplePointLC.x;
+            if (samplePointLC.x < localMinX) {localMinX = samplePointLC.x;}
+            if (samplePointLC.x > localMaxX) {localMaxX = samplePointLC.x;}
 
             // check if the planeLC cuts the setBBox
             if (samplePointLC.x > setBBox.getMinX() && samplePointLC.x < setBBox.getMaxX()) {
@@ -1855,8 +1853,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             transformMatrixInv.transformPosition(samplePointWC, samplePointLC);
 
             // check local min max Y
-            if (samplePointLC.y < localMinY) localMinY = samplePointLC.y;
-            if (samplePointLC.y > localMaxY) localMaxY = samplePointLC.y;
+            if (samplePointLC.y < localMinY) {localMinY = samplePointLC.y;}
+            if (samplePointLC.y > localMaxY) {localMaxY = samplePointLC.y;}
 
             // check if the planeLC cuts the setBBox
             if (samplePointLC.y > setBBox.getMinY() && samplePointLC.y < setBBox.getMaxY()) {
@@ -1874,8 +1872,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             transformMatrixInv.transformPosition(samplePointWC, samplePointLC);
 
             // check local min max Z
-            if (samplePointLC.z < localMinZ) localMinZ = samplePointLC.z;
-            if (samplePointLC.z > localMaxZ) localMaxZ = samplePointLC.z;
+            if (samplePointLC.z < localMinZ) {localMinZ = samplePointLC.z;}
+            if (samplePointLC.z > localMaxZ) {localMaxZ = samplePointLC.z;}
 
             // check if the planeLC cuts the setBBox
             if (samplePointLC.z > setBBox.getMinZ() && samplePointLC.z < setBBox.getMaxZ()) {
@@ -1963,7 +1961,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 
         // load the file
         GaiaSet gaiaSet = GaiaSet.readFile(path);
-        if (gaiaSet == null) return;
+        if (gaiaSet == null) {return;}
 
         GaiaScene scene = new GaiaScene(gaiaSet);
 

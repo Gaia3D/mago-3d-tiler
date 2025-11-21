@@ -25,6 +25,7 @@ public class InnerRing {
         Vector2d bc = b.sub(c, new Vector2d());
         return cross(ab, bc);
     }
+
     public double cross(Vector2d a, Vector2d b) {
         return (a.x * b.y) - (a.y * b.x);
     }

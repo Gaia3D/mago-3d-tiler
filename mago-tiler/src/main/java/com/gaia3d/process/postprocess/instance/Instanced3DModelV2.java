@@ -88,7 +88,6 @@ public class Instanced3DModelV2 implements ContentModel {
             Matrix3d inverseWorldRotationMatrix3d = inverseTransformMatrix.get3x3(new Matrix3d());
             //worldRotationMatrix3d.rotateX(Math.toRadians(-90));
 
-
             // rotate
             double headingValue = Math.toRadians(tileTransformInfo.getHeading());
             double pitchValue = Math.toRadians(tileTransformInfo.getTilt());
@@ -131,7 +130,6 @@ public class Instanced3DModelV2 implements ContentModel {
                     //.rotateZ(-headingValue)
                     .scale(scaleX, scaleY, scaleZ);
             transformMatrices.add(instanceTransformMatrix);
-
 
             Matrix3d xRotationMatrix3d = new Matrix3d();
             xRotationMatrix3d.identity();
@@ -177,7 +175,8 @@ public class Instanced3DModelV2 implements ContentModel {
         System.arraycopy(positionBytes, 0, featureTableBytes, 0, positionBytes.length);
         System.arraycopy(normalUpBytes, 0, featureTableBytes, positionBytes.length, normalUpBytes.length);
         System.arraycopy(normalRightBytes, 0, featureTableBytes, positionBytes.length + normalUpBytes.length, normalRightBytes.length);
-        System.arraycopy(scaleBytes, 0, featureTableBytes, positionBytes.length + normalUpBytes.length + normalRightBytes.length, scaleBytes.length)*/;
+        System.arraycopy(scaleBytes, 0, featureTableBytes, positionBytes.length + normalUpBytes.length + normalRightBytes.length, scaleBytes.length)*/
+        ;
 
         GaiaFeatureTable featureTable = new GaiaFeatureTable();
 
@@ -229,7 +228,6 @@ public class Instanced3DModelV2 implements ContentModel {
 
             batchTableMap.computeIfAbsent("LOD", k -> new ArrayList<>());
             batchTableMap.get("LOD").add(String.valueOf(lod));
-
 
             if (attributes != null) {
                 attributes.forEach((key, value) -> {

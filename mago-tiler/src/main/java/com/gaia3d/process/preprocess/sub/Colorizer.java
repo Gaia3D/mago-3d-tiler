@@ -162,7 +162,6 @@ public class Colorizer {
                             }
                         }
 
-
                         byte[] faceColor = new byte[4];
                         faceColor[0] = vertexColor[0];
                         faceColor[1] = vertexColor[1];

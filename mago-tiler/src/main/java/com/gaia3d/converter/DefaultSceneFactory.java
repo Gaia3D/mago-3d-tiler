@@ -90,8 +90,6 @@ public class DefaultSceneFactory {
         node.setTransformMatrix(transformMatrix);
         node.setName("grid-node");
 
-
-
         GaiaMesh mesh = new GaiaMesh();
 
         GaiaPrimitive primitive = new GaiaPrimitive();

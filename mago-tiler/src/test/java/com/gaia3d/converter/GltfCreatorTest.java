@@ -56,7 +56,7 @@ public class GltfCreatorTest {
 
         GlobalOptions globalOptions = GlobalOptions.getInstance();
 
-        int[] gridSizes = new int[] {8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192};
+        int[] gridSizes = new int[]{8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192};
         for (int gridSize : gridSizes) {
             File file = new File("E:/workspace/", gridSize + "x" + gridSize + ".glb");
             log.info("Creating gltf file: {}", file.getAbsolutePath());
@@ -149,7 +149,6 @@ public class GltfCreatorTest {
 
             ReferencedEnvelope envelope2 = new ReferencedEnvelope(minLat, maxLat, minLon, maxLon, sourceCRS);
             gridCoverage2D = new GridCoverageFactory().create("one", imageWorker.getRenderedImage(), envelope2);
-
 
             log.info("End converting vector to raster");
 

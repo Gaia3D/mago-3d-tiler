@@ -52,8 +52,7 @@ public class GltfWriter {
 
     /**
      * Write the glTF file from the GaiaScene object.
-     *
-     * @param gaiaScene  The GaiaScene object to be written.
+     * @param gaiaScene The GaiaScene object to be written.
      * @param outputPath The output path of the glTF file.
      */
     public void writeGltf(GaiaScene gaiaScene, File outputPath) {
@@ -69,8 +68,7 @@ public class GltfWriter {
 
     /**
      * Write the glTF file from the GaiaScene object.
-     *
-     * @param gaiaScene  The GaiaScene object to be written.
+     * @param gaiaScene The GaiaScene object to be written.
      * @param outputPath The output path of the glTF file.
      */
     public void writeGltf(GaiaScene gaiaScene, String outputPath) {
@@ -79,8 +77,7 @@ public class GltfWriter {
 
     /**
      * Write the glTF file from the GaiaScene object.
-     *
-     * @param gaiaScene  The GaiaScene object to be written.
+     * @param gaiaScene The GaiaScene object to be written.
      * @param outputPath The output path of the glTF file.
      */
     public void writeGlb(GaiaScene gaiaScene, File outputPath) {
@@ -96,8 +93,7 @@ public class GltfWriter {
 
     /**
      * Write the glTF file from the GaiaScene object.
-     *
-     * @param gaiaScene    The GaiaScene object to be written.
+     * @param gaiaScene The GaiaScene object to be written.
      * @param outputStream The output stream of the glTF file.
      */
     public void writeGlb(GaiaScene gaiaScene, OutputStream outputStream) {
@@ -115,8 +111,7 @@ public class GltfWriter {
 
     /**
      * Write the glTF file from the GaiaScene object.
-     *
-     * @param gaiaScene  The GaiaScene object to be written.
+     * @param gaiaScene The GaiaScene object to be written.
      * @param outputPath The output path of the glTF file.
      */
     public void writeGlb(GaiaScene gaiaScene, String outputPath) {
@@ -178,7 +173,7 @@ public class GltfWriter {
         int length = values.length;
         int index = 0;
         byte[] bytes = new byte[length];
-        for (int i = 0; i < length; i ++) {
+        for (int i = 0; i < length; i++) {
             float value = values[index++];
             bytes[i] = convertNormal(value);
         }
@@ -247,7 +242,6 @@ public class GltfWriter {
                 unsignedShortsTexcoords[i] = shortValue;
             }
         }
-
 
         float[] batchIds = gaiaMesh.getBatchIds();
 

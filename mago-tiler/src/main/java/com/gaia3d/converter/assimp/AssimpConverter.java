@@ -216,7 +216,6 @@ public class AssimpConverter implements Converter {
         node.recalculateTransform();
         gaiaScene.getNodes().add(node);
 
-
         return gaiaScene;
     }
 
@@ -262,7 +261,6 @@ public class AssimpConverter implements Converter {
 
     private GaiaMaterial processMaterial(AIMaterial aiMaterial, String path, List<String> embeddedTextures) {
         GaiaMaterial material = new GaiaMaterial();
-
 
         float opacity = 1.0f;
         int properties = aiMaterial.mNumProperties();
@@ -312,7 +310,6 @@ public class AssimpConverter implements Converter {
             specVector4d = new Vector4d(specColor.r(), specColor.g(), specColor.b(), specColor.a());
             material.setSpecularColor(specVector4d);
         }
-
 
         AIString diffPath = AIString.calloc();
         Assimp.aiGetMaterialTexture(aiMaterial, Assimp.aiTextureType_DIFFUSE, 0, diffPath, (IntBuffer) null, null, null, null, null, null);
@@ -604,7 +601,6 @@ public class AssimpConverter implements Converter {
             GaiaFace face = processFace(aiFace);
             surface.getFaces().add(face);
         }
-
 
         int mNumVertices = aiMesh.mNumVertices();
         AIVector3D.Buffer verticesBuffer = aiMesh.mVertices();

@@ -55,7 +55,7 @@ public class ShapeEncodingFix {
                 List<String> lines = Files.readAllLines(Path.of(cpgFile.getAbsolutePath()));
                 if (!lines.isEmpty()) {
                     String firstLine = lines.get(0);
-                    encoding = ENCODING_MAP.getOrDefault(firstLine  , "UTF-8");
+                    encoding = ENCODING_MAP.getOrDefault(firstLine, "UTF-8");
                     log.info("Detected Encoding: {}", encoding);
                 }
             } catch (IOException e) {

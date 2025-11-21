@@ -12,7 +12,7 @@ public class WildfireExperimentalTest {
     @Test
     void koreaForestService() {
         String path = "korea-forest-service";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5179",
@@ -26,7 +26,7 @@ public class WildfireExperimentalTest {
     @Test
     void forest5000haReplaceWithAdd() {
         String path = "forest-5000ha-300ha";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getSsdInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-ReplaceWithAdd",
                 "-c", "5186",
@@ -43,7 +43,7 @@ public class WildfireExperimentalTest {
     @Test
     void forest5000haReplace() {
         String path = "forest-5000ha-300ha";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getSsdInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-replace",
                 "-c", "5186",
@@ -59,7 +59,7 @@ public class WildfireExperimentalTest {
     @Test
     void forest5000haAdd() {
         String path = "forest-5000ha-300ha";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getSsdInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-add",
                 "-c", "5186",
@@ -77,7 +77,7 @@ public class WildfireExperimentalTest {
     @Test
     void seoraksan300ha() {
         String path = "seoraksan-300ha";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getSsdInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
@@ -94,7 +94,7 @@ public class WildfireExperimentalTest {
     @Test
     void seoraksan600ha() {
         String path = "seoraksan-600ha";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getSsdInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
@@ -111,7 +111,7 @@ public class WildfireExperimentalTest {
     @Test
     void seoraksan1200ha() {
         String path = "seoraksan-1200ha";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getSsdInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",

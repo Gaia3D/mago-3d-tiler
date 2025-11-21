@@ -127,7 +127,6 @@ public class GeoJsonSurfaceConverter extends AbstractGeometryConverter implement
                     attributes.put(attributeDescriptor.getName().getLocalPart(), attributeString);
                 });
 
-
                 for (Polygon polygon : polygons) {
                     //log.debug("Polygon : {}", polygon);
                     LineString lineString = polygon.getExteriorRing();
@@ -138,7 +137,7 @@ public class GeoJsonSurfaceConverter extends AbstractGeometryConverter implement
                     for (int i = 0; i < interiorRingLength; i++) {
                         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
                         List<Vector3d> positions = new ArrayList<>();
-                        LineString interiorRingLineString= polygon.getInteriorRingN(i);
+                        LineString interiorRingLineString = polygon.getInteriorRingN(i);
                         Coordinate[] interiorCoordinates = interiorRingLineString.getCoordinates();
 
                         for (Coordinate coordinate : interiorCoordinates) {
@@ -262,8 +261,7 @@ public class GeoJsonSurfaceConverter extends AbstractGeometryConverter implement
 
                 // interior points.***
                 List<List<Vector3d>> interiorPolygonsLocal = new ArrayList<>();
-                for(List<Vector3d> interiorPolygon : interiorPolygons)
-                {
+                for (List<Vector3d> interiorPolygon : interiorPolygons) {
                     List<Vector3d> interiorPolygonLocal = new ArrayList<>();
                     for (Vector3d position : interiorPolygon) {
                         Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);

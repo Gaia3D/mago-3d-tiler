@@ -55,9 +55,8 @@ public class InnerRingRemover {
             return Double.compare(distanceA, distanceB);
         }).toList();
 
-        Point2DTess leftDownPoint = new Point2DTess(inneringLeftDown,null, null);
+        Point2DTess leftDownPoint = new Point2DTess(inneringLeftDown, null, null);
         double error = 1E-10;
-
 
         Vector2d nearestOuterRing = null;
         for (Vector2d outerRing : nearestOuterRings) {

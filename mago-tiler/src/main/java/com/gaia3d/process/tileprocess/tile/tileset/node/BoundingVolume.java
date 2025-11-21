@@ -175,7 +175,6 @@ public class BoundingVolume implements Serializable {
             double halfY3 = box[8];
             double halfZ3 = box[11];
 
-
             Vector3d halfVector1 = new Vector3d(halfX1, halfY1, halfZ1);
             Vector3d halfVector2 = new Vector3d(halfX2, halfY2, halfZ2);
             Vector3d halfVector3 = new Vector3d(halfX3, halfY3, halfZ3);
@@ -186,8 +185,6 @@ public class BoundingVolume implements Serializable {
                     .rotateX(Math.toRadians(-90))
                     .scale(halfVector2.x(), halfVector2.y(), halfVector2.z())
                     .scale(halfVector3.x(), halfVector3.y(), halfVector3.z());
-
-
 
             GaiaBoundingBox boundingBox = new GaiaBoundingBox();
             boundingBox.addPoint(centerX - halfX1, centerY - halfY1, centerZ - halfZ1);
@@ -313,10 +310,10 @@ public class BoundingVolume implements Serializable {
             double maxLength = Math.max(Math.max(halfX1, halfY1), halfZ1);
             BoundingVolume boundingVolume = new BoundingVolume(BoundingVolumeType.BOX);
             boundingVolume.setBox(new double[]{
-                centerX, centerY, centerZ,
-                maxLength, 0, 0,
-                0, maxLength, 0,
-                0, 0, maxLength
+                    centerX, centerY, centerZ,
+                    maxLength, 0, 0,
+                    0, maxLength, 0,
+                    0, 0, maxLength
             });
             return boundingVolume;
         } else {

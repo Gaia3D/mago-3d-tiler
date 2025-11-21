@@ -60,8 +60,7 @@ public class GaiaTriangleReduction {
         return resultReducedSurface;
     }
 
-    public HalfEdgeSurface getHalfEdgeSurface(GaiaSurface surface, List<GaiaVertex> vertices)
-    {
+    public HalfEdgeSurface getHalfEdgeSurface(GaiaSurface surface, List<GaiaVertex> vertices) {
         HalfEdgeSurface halfEdgeSurface = new HalfEdgeSurface();
 
         for (GaiaFace face : surface.getFaces()) {
@@ -73,8 +72,7 @@ public class GaiaTriangleReduction {
         return halfEdgeSurface;
     }
 
-    public HalfEdgeFace getHalfEdgeFace(GaiaFace face, List<GaiaVertex> vertices, HalfEdgeSurface halfEdgeSurface)
-    {
+    public HalfEdgeFace getHalfEdgeFace(GaiaFace face, List<GaiaVertex> vertices, HalfEdgeSurface halfEdgeSurface) {
         HalfEdgeFace halfEdgeFace = new HalfEdgeFace();
         int[] indices = face.getIndices();
         int indicesCount = indices.length;
@@ -84,8 +82,7 @@ public class GaiaTriangleReduction {
 
         HalfEdge halfEdge1rst = null;
         HalfEdge halfEdgelast = null;
-        for (int i=0; i<indicesCount; i++)
-        {
+        for (int i = 0; i < indicesCount; i++) {
             int vertexIndex = indices[i];
             GaiaVertex vertex = vertices.get(vertexIndex);
             HalfEdgeVertex halfEdgeVertex = new HalfEdgeVertex(vertex);
@@ -96,13 +93,11 @@ public class GaiaTriangleReduction {
             halfEdge.setFace(halfEdgeFace);
             halfEdgeFace.setHalfEdge(halfEdge);
 
-            if (i == 0)
-            {
+            if (i == 0) {
                 halfEdge1rst = halfEdge;
             }
 
-            if (halfEdgelast != null)
-            {
+            if (halfEdgelast != null) {
                 halfEdgelast.setNext(halfEdge);
             }
 

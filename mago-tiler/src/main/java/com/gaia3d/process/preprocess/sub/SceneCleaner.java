@@ -29,7 +29,7 @@ public class SceneCleaner {
         }
 
         List<GaiaMesh> meshes = node.getMeshes();
-        if (meshes == null) return;
+        if (meshes == null) {return;}
         for (GaiaMesh mesh : meshes) {
             removeDegenerateTriangles(mesh);
         }
@@ -37,14 +37,14 @@ public class SceneCleaner {
 
     private void removeDegenerateTriangles(GaiaMesh mesh) {
         List<GaiaPrimitive> primitives = mesh.getPrimitives();
-        if (primitives == null) return;
+        if (primitives == null) {return;}
         for (GaiaPrimitive primitive : primitives) {
             List<GaiaVertex> vertices = primitive.getVertices();
             List<GaiaSurface> surfaces = primitive.getSurfaces();
-            if (vertices == null || surfaces == null) continue;
+            if (vertices == null || surfaces == null) {continue;}
             for (GaiaSurface surface : surfaces) {
                 List<GaiaFace> faces = surface.getFaces();
-                if (faces == null) continue;
+                if (faces == null) {continue;}
 
                 List<GaiaFace> newFaces = new ArrayList<>();
                 for (GaiaFace face : faces) {
@@ -66,8 +66,8 @@ public class SceneCleaner {
                         }
 
                         boolean isCollinear = (p2.x - p1.x) * (p3.y - p1.y) == (p3.x - p1.x) * (p2.y - p1.y) &&
-                                            (p2.y - p1.y) * (p3.z - p1.z) == (p3.y - p1.y) * (p2.z - p1.z) &&
-                                            (p2.z - p1.z) * (p3.x - p1.x) == (p3.z - p1.z) * (p2.x - p1.x);
+                                (p2.y - p1.y) * (p3.z - p1.z) == (p3.y - p1.y) * (p2.z - p1.z) &&
+                                (p2.z - p1.z) * (p3.x - p1.x) == (p3.z - p1.z) * (p2.x - p1.x);
                         if (isCollinear) {
                             log.debug("[DEBUG] Degenerate triangle found due to collinear vertices: {}, {}, {}", p1, p2, p3);
                             continue; // Skip degenerate triangle
@@ -95,7 +95,6 @@ public class SceneCleaner {
     }
 
 
-
     private void removeUnusedVertices(GaiaNode node) {
         List<GaiaNode> children = node.getChildren();
         for (GaiaNode child : children) {
@@ -103,7 +102,7 @@ public class SceneCleaner {
         }
 
         List<GaiaMesh> meshes = node.getMeshes();
-        if (meshes == null) return;
+        if (meshes == null) {return;}
         for (GaiaMesh mesh : meshes) {
             removeUnusedVertices(mesh);
         }
@@ -111,16 +110,16 @@ public class SceneCleaner {
 
     private void removeUnusedVertices(GaiaMesh mesh) {
         List<GaiaPrimitive> primitives = mesh.getPrimitives();
-        if (primitives == null) return;
+        if (primitives == null) {return;}
         for (GaiaPrimitive primitive : primitives) {
             List<GaiaVertex> vertices = primitive.getVertices();
             List<GaiaSurface> surfaces = primitive.getSurfaces();
-            if (vertices == null || surfaces == null) continue;
+            if (vertices == null || surfaces == null) {continue;}
 
             boolean[] used = new boolean[vertices.size()];
             for (GaiaSurface surface : surfaces) {
                 List<GaiaFace> faces = surface.getFaces();
-                if (faces == null) continue;
+                if (faces == null) {continue;}
                 for (GaiaFace face : faces) {
                     int[] indices = face.getIndices();
                     for (int index : indices) {
@@ -144,7 +143,7 @@ public class SceneCleaner {
 
             for (GaiaSurface surface : surfaces) {
                 List<GaiaFace> faces = surface.getFaces();
-                if (faces == null) continue;
+                if (faces == null) {continue;}
                 for (GaiaFace face : faces) {
                     int[] indices = face.getIndices();
                     for (int i = 0; i < indices.length; i++) {
@@ -191,7 +190,7 @@ public class SceneCleaner {
 
     private void removeEmptyMeshes(GaiaMesh mesh) {
         List<GaiaPrimitive> primitives = mesh.getPrimitives();
-        if (primitives == null) return;
+        if (primitives == null) {return;}
         for (GaiaPrimitive primitive : primitives) {
             List<GaiaSurface> surfaces = primitive.getSurfaces();
             if (surfaces != null) {

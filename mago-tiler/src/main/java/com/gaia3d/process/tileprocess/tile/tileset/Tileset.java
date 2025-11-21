@@ -25,7 +25,7 @@ public class Tileset {
 
     @JsonIgnore
     public List<ContentInfo> findAllContentInfo() {
-        List <ContentInfo> contentInfos = new ArrayList<>();
+        List<ContentInfo> contentInfos = new ArrayList<>();
         if (root != null) {
             contentInfos = root.findAllContentInfo(contentInfos);
         } else {

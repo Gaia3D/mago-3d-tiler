@@ -10,7 +10,7 @@ public class SunEnergyExperimentalTest {
     @Test
     void sunEnergyTest01() {
         String path = "sun-energy-test";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 //"-rotateXAxis", "90",

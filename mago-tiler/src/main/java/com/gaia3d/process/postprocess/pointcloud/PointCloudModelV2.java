@@ -264,15 +264,13 @@ public class PointCloudModelV2 implements ContentModel {
         PointCloudBinaryWriter writer = new PointCloudBinaryWriter(featureTableJson, batchTableJson, featureTableBytes, batchTableBytes);
         writer.write(outputRoot, contentInfo.getNodeCode());*/
 
-
         return contentInfo;
     }
 
     int srgbToLinearByte(int sRGB) {
         float c = sRGB / 255.0f; // 정규화
         float linear;
-        if (c <= 0.04045f) linear = c / 12.92f;
-        else linear = (float) Math.pow((c + 0.055f) / 1.055f, 2.4);
+        if (c <= 0.04045f) {linear = c / 12.92f;} else {linear = (float) Math.pow((c + 0.055f) / 1.055f, 2.4);}
         int linearByte = Math.round(linear * 255.0f);
         // 0~255 범위를 벗어나지 않도록 클램프
         return Math.max(0, Math.min(255, linearByte));

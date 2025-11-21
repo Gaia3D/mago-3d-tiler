@@ -38,7 +38,18 @@ public class DefaultKmlReader implements AttributeReader {
             List<Element> elements = getAllElements(root);
             Vector3d position = new Vector3d(Double.parseDouble(findContent(elements, "longitude")), Double.parseDouble(findContent(elements, "latitude")), Double.parseDouble(findContent(elements, "altitude")));
 
-            tileTransformInfo = TileTransformInfo.builder().name(findContent(elements, "name")).position(position).altitudeMode(findContent(elements, "altitudeMode")).heading(Double.parseDouble(findContent(elements, "heading"))).tilt(Double.parseDouble(findContent(elements, "tilt"))).roll(Double.parseDouble(findContent(elements, "roll"))).href(findContent(elements, "href")).scaleX(Double.parseDouble(findContent(elements, "x"))).scaleY(Double.parseDouble(findContent(elements, "y"))).scaleZ(Double.parseDouble(findContent(elements, "z"))).build();
+            tileTransformInfo = TileTransformInfo.builder()
+                    .name(findContent(elements, "name"))
+                    .position(position)
+                    .altitudeMode(findContent(elements, "altitudeMode"))
+                    .heading(Double.parseDouble(findContent(elements, "heading")))
+                    .tilt(Double.parseDouble(findContent(elements, "tilt")))
+                    .roll(Double.parseDouble(findContent(elements, "roll")))
+                    .href(findContent(elements, "href"))
+                    .scaleX(Double.parseDouble(findContent(elements, "x")))
+                    .scaleY(Double.parseDouble(findContent(elements, "y")))
+                    .scaleZ(Double.parseDouble(findContent(elements, "z")))
+                    .build();
             document = null;
             builder = null;
             factory = null;
