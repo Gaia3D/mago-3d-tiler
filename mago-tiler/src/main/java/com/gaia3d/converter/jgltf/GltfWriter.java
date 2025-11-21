@@ -231,8 +231,8 @@ public class GltfWriter {
         short[] unsignedShortsTexcoords = null;
         if (globalOptions.isUseShortTexCoord() && texcoords != null) {
             unsignedShortsTexcoords = new short[texcoords.length];
-            for (int i = 0; i < unsignedShortsTexcoords.length; i++) {
-                int intValue = unsignedShortsTexcoords[i] * 65535;
+            for (int i = 0; i < texcoords.length; i++) {
+                int intValue = (int) (texcoords[i] * 65535);
 
                 boolean overFlow = intValue < 0 || intValue > 65535;
                 if (overFlow) {
