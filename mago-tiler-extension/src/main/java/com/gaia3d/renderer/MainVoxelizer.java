@@ -633,7 +633,7 @@ public class MainVoxelizer implements IAppLogic {
 
             try {
                 // render the scene
-                log.info("Rendering the scene : " + i + " of scenesCount : " + scenesCount + " LOD : " + lod);
+                log.info("Rendering the scene : " + i + " / " + scenesCount + ". LOD : " + lod);
 
                 // for each gaiaScene, set the available faceIds, to use for colorCoded rendering
                 List<GaiaFace> gaiaFaces = gaiaScene.extractGaiaFaces(null);

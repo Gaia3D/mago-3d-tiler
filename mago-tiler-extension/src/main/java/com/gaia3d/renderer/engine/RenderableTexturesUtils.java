@@ -50,14 +50,16 @@ public class RenderableTexturesUtils {
             log.info("Original image size: {}x{}", width, height);
             int resizeWidth = width;
             int resizeHeight = height;
-            resizeWidth = ImageUtils.getNearestPowerOfTwoHigher(resizeWidth);
-            resizeHeight = ImageUtils.getNearestPowerOfTwoHigher(resizeHeight);
+            resizeWidth = ImageUtils.getNearestPowerOfTwo(resizeWidth);
+            resizeHeight = ImageUtils.getNearestPowerOfTwo(resizeHeight);
 
-            width = resizeWidth;
-            height = resizeHeight;
-            ImageResizer imageResizer = new ImageResizer();
-            bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight, true);
-            log.info("Resized image size: {}x{}", resizeWidth, resizeHeight);
+            if (resizeWidth != width || resizeHeight != height) {
+                width = resizeWidth;
+                height = resizeHeight;
+                ImageResizer imageResizer = new ImageResizer();
+                bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight, true);
+                log.info("Resized image size: {}x{}", resizeWidth, resizeHeight);
+            }
         }
         int format = bufferedImage.getType();
         // end resize image to nearest power of two

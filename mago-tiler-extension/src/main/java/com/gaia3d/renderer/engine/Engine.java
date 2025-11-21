@@ -548,6 +548,7 @@ public class Engine {
                     mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor, integralBox,
                     colorFbo_XPOS_ZNEG, colorCodedFbo_XPOS_ZNEG);
 
+
             // delete the renderableScene-colorCoded
             renderableGaiaSceneColorCoded.deleteGLBuffers();
         }
@@ -708,6 +709,58 @@ public class Engine {
                     texturesAtlasDataXPosZNeg.setCameraDirectionType(CameraDirectionType.CAMERA_DIRECTION_XPOS_ZNEG);
                     texturesAtlasDataXPosZNeg.setTextureImage(imageXPosZNeg);
                     texturesAtlasDataList.add(texturesAtlasDataXPosZNeg);
+                }
+
+                // XPOS_YPOS_ZNEG texture
+                cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_XPOS_YPOS_ZNEG;
+                BufferedImage imageXPosYPosZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
+                        mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor);
+                imageXPosYPosZNeg = eliminateBackGroundColor(imageXPosYPosZNeg, backgroundColor);
+                if (imageXPosYPosZNeg != null) {
+                    TexturesAtlasData texturesAtlasDataXPosYPosZNeg = new TexturesAtlasData();
+                    texturesAtlasDataXPosYPosZNeg.setClassifyId(classificationId);
+                    texturesAtlasDataXPosYPosZNeg.setCameraDirectionType(CameraDirectionType.CAMERA_DIRECTION_XPOS_YPOS_ZNEG);
+                    texturesAtlasDataXPosYPosZNeg.setTextureImage(imageXPosYPosZNeg);
+                    texturesAtlasDataList.add(texturesAtlasDataXPosYPosZNeg);
+                }
+
+                // XNEG_YPOS_ZNEG texture
+                cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_XNEG_YPOS_ZNEG;
+                BufferedImage imageXNegYPosZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
+                        mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor);
+                imageXNegYPosZNeg = eliminateBackGroundColor(imageXNegYPosZNeg, backgroundColor);
+                if (imageXNegYPosZNeg != null) {
+                    TexturesAtlasData texturesAtlasDataXNegYPosZNeg = new TexturesAtlasData();
+                    texturesAtlasDataXNegYPosZNeg.setClassifyId(classificationId);
+                    texturesAtlasDataXNegYPosZNeg.setCameraDirectionType(CameraDirectionType.CAMERA_DIRECTION_XNEG_YPOS_ZNEG);
+                    texturesAtlasDataXNegYPosZNeg.setTextureImage(imageXNegYPosZNeg);
+                    texturesAtlasDataList.add(texturesAtlasDataXNegYPosZNeg);
+                }
+
+                // XPOS_YNEG_ZNEG texture
+                cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_XPOS_YNEG_ZNEG;
+                BufferedImage imageXPosYNegZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
+                        mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor);
+                imageXPosYNegZNeg = eliminateBackGroundColor(imageXPosYNegZNeg, backgroundColor);
+                if (imageXPosYNegZNeg != null) {
+                    TexturesAtlasData texturesAtlasDataXPosYNegZNeg = new TexturesAtlasData();
+                    texturesAtlasDataXPosYNegZNeg.setClassifyId(classificationId);
+                    texturesAtlasDataXPosYNegZNeg.setCameraDirectionType(CameraDirectionType.CAMERA_DIRECTION_XPOS_YNEG_ZNEG);
+                    texturesAtlasDataXPosYNegZNeg.setTextureImage(imageXPosYNegZNeg);
+                    texturesAtlasDataList.add(texturesAtlasDataXPosYNegZNeg);
+                }
+
+                // XNEG_YNEG_ZNEG texture
+                cameraDirectionType = CameraDirectionType.CAMERA_DIRECTION_XNEG_YNEG_ZNEG;
+                BufferedImage imageXNegYNegZNeg = makeColorCodeTextureByCameraDirection(gaiaSceneFromFaces, renderableGaiaSceneColorCoded, cameraDirectionType, maxScreenSize,
+                        mapCameraDirectionTypeBBox, mapCameraDirectionTypeModelViewMatrix, screenPixelsForMeter, faceVisibilityDataManager, bufferImageType, backgroundColor);
+                imageXNegYNegZNeg = eliminateBackGroundColor(imageXNegYNegZNeg, backgroundColor);
+                if (imageXNegYNegZNeg != null) {
+                    TexturesAtlasData texturesAtlasDataXNegYNegZNeg = new TexturesAtlasData();
+                    texturesAtlasDataXNegYNegZNeg.setClassifyId(classificationId);
+                    texturesAtlasDataXNegYNegZNeg.setCameraDirectionType(CameraDirectionType.CAMERA_DIRECTION_XNEG_YNEG_ZNEG);
+                    texturesAtlasDataXNegYNegZNeg.setTextureImage(imageXNegYNegZNeg);
+                    texturesAtlasDataList.add(texturesAtlasDataXNegYNegZNeg);
                 }
             }
 

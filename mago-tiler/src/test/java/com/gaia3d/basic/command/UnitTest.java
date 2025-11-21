@@ -587,7 +587,8 @@ class UnitTest {
                 "-crs", "32648",
                 "-xOffset", "268943",
                 "-yOffset", "1818915",
-                "-pg"
+                "-pg",
+                "--quantize"
         };
         Mago3DTilerMain.main(args);
     }
@@ -604,6 +605,7 @@ class UnitTest {
                 "-crs", "5187",
                 "-pg",
                 "-rx", "90",
+                "--quantize"
         };
         Mago3DTilerMain.main(args);
     }
@@ -620,6 +622,7 @@ class UnitTest {
                 "-crs", "5187",
                 "-pg",
                 "-rx", "90",
+                "--quantize"
         };
         Mago3DTilerMain.main(args);
     }
@@ -636,6 +639,7 @@ class UnitTest {
                 "-crs", "5187",
                 "-pg",
                 "-rx", "90",
+                "--quantize",
                 "-leaveTemp"
         };
         Mago3DTilerMain.main(args);
@@ -652,7 +656,8 @@ class UnitTest {
                 "-o", outputPath,
                 "-crs", "5187",
                 "-rx", "90",
-                "-pg"
+                "-pg",
+                "--quantize"
         };
         Mago3DTilerMain.main(args);
     }
@@ -673,7 +678,8 @@ class UnitTest {
                 "-o", outputPath,
                 "-pg",
                 "-rx", "90",
-                "-crs", "5186"
+                "-crs", "5186",
+                "--quantize"
         };
         Mago3DTilerMain.main(args);
     }
@@ -690,13 +696,14 @@ class UnitTest {
                 "-o", outputPath,
                 "-proj", "+proj=tmerc +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=127.9296192 +lat_0=37.3702212",
                 "-pg",
-                "-rx", "90"
+                "-rx", "90",
+                "--quantize"
         };
         Mago3DTilerMain.main(args);
     }
 
     @Test
-    void test_JoGonHee() {
+    void test_JoGonHee_Incheon() {
         // someTiles
         String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\Incheon_CheongNa_JoGeonhee\\Production_6\\L22_4000Buildings\\";
         String outputPath = "C:\\data\\mago-server\\output\\Incheon_P6_L22_4000Buildings\\";
@@ -708,6 +715,49 @@ class UnitTest {
                 "-o", outputPath,
                 "-lon", "126.63887",
                 "-lat", "37.53292",
+                "--quantize",
+                "-pg"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void test_JoGonHee_SangAm() {
+        // someTiles
+        String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\SangAm_JoGoNi\\Production_2\\L22\\";
+        String outputPath = "C:\\data\\mago-server\\output\\SangAm_JoGoNi\\";
+        //String outputPath = "E:\\temp\\";
+
+        String[] args = new String[]{
+                "-i", inputPath,
+                "-inputType", "obj",
+                "-o", outputPath,
+                "-crs", "32652",
+                "-xOffset", "314050",
+                "-yOffset", "4160814",
+                "--quantize",
+                "-pg"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void test_JoGonHee_SangAm_someBuilding
+            () {
+        // someTiles
+//        "-lon", "126.638872",
+//                "-lat", "37.5329178",
+        String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\SangAm_JoGoNi\\Production_2\\L22_56buildings\\";
+        String outputPath = "C:\\data\\mago-server\\output\\SangAm_JoGoNi_L22_56buildings\\";
+        //String outputPath = "E:\\temp\\";
+
+        String[] args = new String[]{
+                "-i", inputPath,
+                "-inputType", "obj",
+                "-o", outputPath,
+                "-crs", "32652",
+                "-xOffset", "314050",
+                "-yOffset", "4160814",
                 "--quantize",
                 "-pg"
         };

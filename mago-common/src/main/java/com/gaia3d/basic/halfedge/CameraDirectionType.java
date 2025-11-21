@@ -3,7 +3,29 @@ package com.gaia3d.basic.halfedge;
 import org.joml.Vector3d;
 
 public enum CameraDirectionType {
-    CAMERA_DIRECTION_UNKNOWN, CAMERA_DIRECTION_XPOS, CAMERA_DIRECTION_XNEG, CAMERA_DIRECTION_ZPOS, CAMERA_DIRECTION_ZNEG, CAMERA_DIRECTION_YPOS, CAMERA_DIRECTION_YNEG, CAMERA_DIRECTION_XPOS_ZNEG, CAMERA_DIRECTION_XNEG_ZNEG, CAMERA_DIRECTION_XNEG_ZPOS, CAMERA_DIRECTION_XPOS_ZPOS, CAMERA_DIRECTION_YPOS_ZNEG, CAMERA_DIRECTION_YPOS_ZPOS, CAMERA_DIRECTION_YNEG_ZNEG, CAMERA_DIRECTION_YNEG_ZPOS;
+    CAMERA_DIRECTION_UNKNOWN,
+    CAMERA_DIRECTION_XPOS,
+    CAMERA_DIRECTION_XNEG,
+    CAMERA_DIRECTION_ZPOS,
+    CAMERA_DIRECTION_ZNEG,
+    CAMERA_DIRECTION_YPOS,
+    CAMERA_DIRECTION_YNEG,
+    CAMERA_DIRECTION_XPOS_ZNEG,
+    CAMERA_DIRECTION_XNEG_ZNEG,
+    CAMERA_DIRECTION_XNEG_ZPOS,
+    CAMERA_DIRECTION_XPOS_ZPOS,
+    CAMERA_DIRECTION_YPOS_ZNEG,
+    CAMERA_DIRECTION_YPOS_ZPOS,
+    CAMERA_DIRECTION_YNEG_ZNEG,
+    CAMERA_DIRECTION_YNEG_ZPOS,
+    CAMERA_DIRECTION_XPOS_YPOS_ZNEG,
+    CAMERA_DIRECTION_XPOS_YNEG_ZNEG,
+    CAMERA_DIRECTION_XNEG_YPOS_ZNEG,
+    CAMERA_DIRECTION_XNEG_YNEG_ZNEG,
+    CAMERA_DIRECTION_XPOS_YPOS_ZPOS,
+    CAMERA_DIRECTION_XPOS_YNEG_ZPOS,
+    CAMERA_DIRECTION_XNEG_YPOS_ZPOS,
+    CAMERA_DIRECTION_XNEG_YNEG_ZPOS;
 
     public static Vector3d getCameraDirection(CameraDirectionType cameraDirectionType) {
         Vector3d result = new Vector3d();
@@ -49,6 +71,30 @@ public enum CameraDirectionType {
                 result.set(0, -1, -z);
                 break;
             case CAMERA_DIRECTION_YNEG_ZPOS:
+                result.set(0, -1, z);
+                break;
+            case CAMERA_DIRECTION_XPOS_YPOS_ZNEG:
+                result.set(1, 1, -z);
+                break;
+            case CAMERA_DIRECTION_XPOS_YNEG_ZNEG:
+                result.set(1, -1, -z);
+                break;
+            case CAMERA_DIRECTION_XNEG_YPOS_ZNEG:
+                result.set(-1, 1, -z);
+                break;
+            case CAMERA_DIRECTION_XNEG_YNEG_ZNEG:
+                result.set(-1, -1, -z);
+                break;
+            case CAMERA_DIRECTION_XPOS_YPOS_ZPOS:
+                result.set(1, 1, z);
+                break;
+            case CAMERA_DIRECTION_XPOS_YNEG_ZPOS:
+                result.set(1, -1, z);
+                break;
+            case CAMERA_DIRECTION_XNEG_YPOS_ZPOS:
+                result.set(-1, 1, z);
+                break;
+            case CAMERA_DIRECTION_XNEG_YNEG_ZPOS:
                 result.set(0, -1, z);
                 break;
             default:

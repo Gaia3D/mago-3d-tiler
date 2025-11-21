@@ -437,6 +437,26 @@ public class HalfEdgeSurface implements Serializable {
         double smallHedgeSize = decimateParameters.getSmallHedgeSize();
 
         while (!finished && iteration < maxIterations) {
+//            double maxDiffAngDegByIteration = decimateParameters.getMaxDiffAngDegreesByIteration(iteration);
+//            if (maxDiffAngDegByIteration > 0.0) {
+//                maxDiffAngDeg = maxDiffAngDegByIteration;
+//            }
+//            double hedgeMinLengthByIteration = decimateParameters.getHedgeMinLengthByIteration(iteration);
+//            if (hedgeMinLengthByIteration > 0.0) {
+//                hedgeMinLengthCurrent = hedgeMinLengthByIteration;
+//            }
+//            double frontierMaxDiffAngDegByIteration = decimateParameters.getFrontierMaxDiffAngDegByIteration(iteration);
+//            if (frontierMaxDiffAngDegByIteration > 0.0) {
+//                frontierMaxDiffAngDeg = frontierMaxDiffAngDegByIteration;
+//            }
+//            double maxAspectRatioByIteration = decimateParameters.getMaxAspectRatioByIteration(iteration);
+//            if (maxAspectRatioByIteration > 0.0) {
+//                maxAspectRatio = maxAspectRatioByIteration;
+//            }
+//            double smallHedgeSizeByIteration = decimateParameters.getSmallHedgeSizeByIteration(iteration);
+//            if (smallHedgeSizeByIteration > 0.0) {
+//                smallHedgeSize = smallHedgeSizeByIteration;
+//            }
 
             resultHalfEdgesSortedByLength.clear();
             resultHalfEdgesSortedByLength = this.getHalfEdgesSortedByLength(resultHalfEdgesSortedByLength);
@@ -838,7 +858,8 @@ public class HalfEdgeSurface implements Serializable {
         }
     }
 
-    public boolean collapseFrontierHalfEdge(HalfEdge halfEdge, int iteration, Map<HalfEdgeVertex, List<HalfEdge>> vertexAllOutingEdgesMap, Map<HalfEdge, Vector3d> mapHalfEdgeToInitialDirection, Map<HalfEdgeVertex, List<HalfEdgeVertex>> mapVertexToSamePosVertices, double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength, double maxAspectRatio, double smallHedgeSize, boolean testDebug) {
+    public boolean collapseFrontierHalfEdge(HalfEdge halfEdge,
+                                            int iteration, Map<HalfEdgeVertex, List<HalfEdge>> vertexAllOutingEdgesMap, Map<HalfEdge, Vector3d> mapHalfEdgeToInitialDirection, Map<HalfEdgeVertex, List<HalfEdgeVertex>> mapVertexToSamePosVertices, double maxDiffAngDeg, double frontierMaxDiffAngDeg, double hedgeMinLength, double maxAspectRatio, double smallHedgeSize, boolean testDebug) {
 
         HalfEdgeVertex startVertex = halfEdge.getStartVertex();
         HalfEdgeVertex endVertex = halfEdge.getEndVertex();
@@ -1004,9 +1025,16 @@ public class HalfEdgeSurface implements Serializable {
         return null;
     }
 
-    public boolean collapseHalfEdge(HalfEdge halfEdge, int iteration, Map<HalfEdgeVertex, List<HalfEdge>> vertexAllOutingEdgesMap,
-                                    Map<HalfEdgeVertex, List<HalfEdgeVertex>> mapVertexToSamePosVertices, double maxDiffAngDeg,
-                                    double frontierMaxDiffAngDeg, double hedgeMinLength, double maxAspectRatio, double smallHedgeSize, boolean testDebug) {
+    public boolean collapseHalfEdge(HalfEdge halfEdge,
+                                    int iteration,
+                                    Map<HalfEdgeVertex, List<HalfEdge>> vertexAllOutingEdgesMap,
+                                    Map<HalfEdgeVertex, List<HalfEdgeVertex>> mapVertexToSamePosVertices,
+                                    double maxDiffAngDeg,
+                                    double frontierMaxDiffAngDeg,
+                                    double hedgeMinLength,
+                                    double maxAspectRatio,
+                                    double smallHedgeSize,
+                                    boolean testDebug) {
         // When collapse a halfEdge, we delete the face, the twin's face, the twin & the startVertex
         // When deleting a face, must delete all halfEdges of the face
         // must find all halfEdges that startVertex is the deletingVertex, and set as startVertex the endVertex of the deletingHalfEdge
@@ -1180,6 +1208,13 @@ public class HalfEdgeSurface implements Serializable {
                 normalNullsCount++;
                 continue;
             }
+
+//            // Test.*************************************************************
+//            double dot = normalA.dot(normalB);
+//            if (Math.abs(dot) < 0.342) {
+//                return false;
+//            }
+//            // End test.*********************************************************
 
             double aspectRatio = HalfEdgeUtils.calculateAspectRatioAsTriangle(verticesB.get(0), verticesB.get(1), verticesB.get(2));
             if (aspectRatio > maxAspectRatio) {
