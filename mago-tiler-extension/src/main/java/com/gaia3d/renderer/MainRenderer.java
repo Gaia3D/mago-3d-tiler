@@ -129,12 +129,10 @@ public class MainRenderer implements IAppLogic {
             GaiaBoundingBox bbox = cutHalfEdgeScene.getBoundingBox();
             double bboxMaxSize = bbox.getMaxSize();
             // now, cut the halfEdgeScene and make cube-textures by rendering
-            double gridSpacing = bboxMaxSize / 3.0;
-            if (lod == 1) {
-                gridSpacing = bboxMaxSize / 5.0;
-            }
+            //double gridSpacing = bboxMaxSize / 3.0;
             HalfEdgeOctreeFaces resultOctree = new HalfEdgeOctreeFaces(null, bbox.clone());
-            HalfEdgeScene cuttedScene = HalfEdgeCutter.cutHalfEdgeSceneGridXYZ(cutHalfEdgeScene, gridSpacing, resultOctree); // original
+            //HalfEdgeScene cuttedScene = HalfEdgeCutter.cutHalfEdgeSceneGridXYZ(cutHalfEdgeScene, gridSpacing, resultOctree); // original
+            HalfEdgeScene cuttedScene = cutHalfEdgeScene; // test
 
             if (makeHorizontalSkirt) {
                 cuttedScene.makeHorizontalSkirt();
