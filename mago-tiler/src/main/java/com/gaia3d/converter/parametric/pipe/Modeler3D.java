@@ -335,21 +335,6 @@ public class Modeler3D {
         return concatenated;
     }
 
-    /*public void concatenateGaiaPipeLines(List<GaiaPipeLineString> pipeLines) {
-        boolean finished = false;
-        int pipeLinesCount = pipeLines.size();
-        int i = 0;
-        while (!finished && i < pipeLinesCount) {
-            GaiaPipeLineString pipeLine = pipeLines.get(i);
-            boolean concatenated = concatenatePipeLineWithPipeLines(pipeLine, pipeLines);
-            if (concatenated) {
-                i = 0;
-                pipeLinesCount = pipeLines.size();
-            }
-            i++;
-        }
-    }*/
-
     public GaiaPrimitive getExtrudedPrimitive(List<Vector3d> positions, Vector3d extrusionVector, boolean bottomCap, boolean topCap, boolean isClosed, boolean isLateralSurfaceSmooth) {
         GaiaPrimitive primitive = new GaiaPrimitive();
 
@@ -468,16 +453,6 @@ public class Modeler3D {
             // return rotated in xAxis 180 degrees.
             matrix.set(new double[]{1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 1.0});
         } else {
-            // Direct calculation
-//            // calculate the rotation angle.
-//            double rotationAngle = Math.acos(zDir.z);
-//
-//            // calculate the rotation axis.
-//            Vector3d rotationAxis = new Vector3d(-zDir.y, zDir.x, 0.0);
-//            rotationAxis.normalize();
-//
-//            matrix.rotation(rotationAngle, rotationAxis);
-            // ----------------------------------------------------------------------------
 
             // calculate zRot & xRot.
             Vector2d projectedY = new Vector2d(zDir.x, zDir.y);
@@ -503,10 +478,7 @@ public class Modeler3D {
 
             matrix.mul(headingMat);
             matrix.mul(pitchMat);
-
-
         }
-
         return matrix;
     }
 

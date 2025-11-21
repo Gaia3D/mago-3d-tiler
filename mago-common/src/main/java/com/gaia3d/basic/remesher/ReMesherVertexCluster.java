@@ -161,17 +161,6 @@ public class ReMesherVertexCluster {
             }
         }
 
-//        // after reMesh, calculate bbox again
-//        GaiaBoundingBox newBBox = gaiaScene.updateBoundingBox();
-//
-//        double xSizeDiff = Math.abs((originalBBox.getMaxX() - originalBBox.getMinX()) - (newBBox.getMaxX() - newBBox.getMinX()));
-//        double ySizeDiff = Math.abs((originalBBox.getMaxY() - originalBBox.getMinY()) - (newBBox.getMaxY() - newBBox.getMinY()));
-//        double zSizeDiff = Math.abs((originalBBox.getMaxZ() - originalBBox.getMinZ()) - (newBBox.getMaxZ() - newBBox.getMinZ()));
-//        double maxDiffAllowed = 1.0; // 1 meter
-//        if (xSizeDiff > maxDiffAllowed || ySizeDiff > maxDiffAllowed || zSizeDiff > maxDiffAllowed) {
-//            log.warn("ReMesh process: bbox size changed significantly after reMesh. Original BBox: {}, New BBox: {}", originalBBox, newBBox);
-//        }
-
         vertexToIndexMap.clear();
         mapVertexToFaces.clear();
 

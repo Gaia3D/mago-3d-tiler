@@ -112,14 +112,6 @@ public class HalfEdgePrimitive implements Serializable {
     }
 
     public void writeFile(ObjectOutputStream outputStream) {
-        /*
-        private Integer accessorIndices = -1;
-        private Integer materialIndex = -1;
-        private List<HalfEdgeSurface> surfaces = new ArrayList<>();
-        private List<HalfEdgeVertex> vertices = new ArrayList<>(); // vertices of all surfaces
-        private GaiaBoundingBox boundingBox = null;
-         */
-
         try {
             // accessorIndices
             outputStream.writeInt(accessorIndices);

@@ -21,11 +21,6 @@ public class ExtensionInstanceFeatures {
         ExtensionInstanceFeatures instanceFeatures = new ExtensionInstanceFeatures();
 
         int count = featureTable.getInstancesLength();
-
-        /*int count = batchTableMap.values().stream()
-                .mapToInt(List::size)
-                .min().orElse(0);*/
-
         List<FeatureId> featureIds = new ArrayList<>();
 
         FeatureId featureId = new FeatureId();

@@ -60,12 +60,7 @@ public class GeoJsonSurfaceConverter extends AbstractGeometryConverter implement
         GlobalOptions globalOptions = GlobalOptions.getInstance();
 
         List<AttributeFilter> attributeFilters = globalOptions.getAttributeFilters();
-        //boolean isDefaultCrs = globalOptions.getCrs().equals(GlobalOptions.DEFAULT_CRS);
         boolean flipCoordinate = globalOptions.isFlipCoordinate();
-        //String heightColumnName = globalOptions.getHeightColumn();
-        //String altitudeColumnName = globalOptions.getAltitudeColumn();
-        //String diameterColumnName = globalOptions.getDiameterColumn();
-        //String scaleColumnName = globalOptions.getScaleColumn();
         List<List<GaiaSurfaceModel>> buildingSurfacesList = new ArrayList<>();
         try {
             FeatureJSON gjson = new FeatureJSON();

@@ -54,11 +54,6 @@ public class BigEndianDataInputStream extends DataInputStream implements DataInp
         return floats;
     }
 
-    /*@Override
-    public String readLine() throws IOException {
-        return readUTF();
-    }*/
-
     public String readText() throws IOException {
         return readUTF();
     }

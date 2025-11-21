@@ -229,18 +229,10 @@ public class BoundingVolume implements Serializable {
     public List<TileInfo> getVolumeIncludeScenes(List<TileInfo> tileInfos, GaiaBoundingBox volume) {
         List<TileInfo> result = new ArrayList<>();
         if (BoundingVolumeType.REGION == type) {
-            double minX = region[0];
-            double minY = region[1];
-            double maxX = region[2];
-            double maxY = region[3];
-            double midX = (minX + maxX) / 2;
-            double midY = (minY + maxY) / 2;
             for (TileInfo tileInfo : tileInfos) {
                 GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();
                 TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
                 localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(tileTransformInfo.getPosition());
-                /*BoundingVolume localBoundingVolume = new BoundingVolume(localBoundingBox, BoundingVolume.BoundingVolumeType.REGION);
-                Vector3d center = localBoundingVolume.calcCenter();*/
                 Vector3d center = localBoundingBox.getCenter();
 
                 boolean isInX = volume.getMinX() <= center.x() && center.x() <= volume.getMaxX();

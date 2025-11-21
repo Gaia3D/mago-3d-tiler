@@ -159,8 +159,6 @@ public class HalfEdgeRenderer {
             // use glDrawArrays.
             GL20.glEnable(GL20.GL_POLYGON_OFFSET_FILL);
             GL20.glPolygonOffset(1.0f, 1.0f);
-//            uniformsMap.setUniform1i("uColorMode", 0);
-//            uniformsMap.setUniform4fv("uOneColor", new Vector4f(0.0f, 0.0f, 0.0f, 1.0f));
             GL20.glDrawArrays(GL_LINE_STRIP, 0, 16);
             return;
         }
@@ -227,20 +225,6 @@ public class HalfEdgeRenderer {
                 }
             }
 
-//            if (positionType == PositionType.INTERIOR)
-//            {
-//                colors[i * 4] = (byte) (0.9 * 255.0);
-//                colors[i * 4 + 1] = (byte) (0.3 * 255.0);
-//                colors[i * 4 + 2] = (byte) (0.6 * 255.0);
-//                colors[i * 4 + 3] = (byte) 255;
-//            }
-//            else if (positionType == PositionType.BOUNDARY_EDGE)
-//            {
-//                colors[i * 4] = (byte) (0.3 * 255.0);
-//                colors[i * 4 + 1] = (byte) (0.6 * 255.0);
-//                colors[i * 4 + 2] = (byte) (0.9 * 255.0);
-//                colors[i * 4 + 3] = (byte) 255;
-//            }
             HalfEdge outingEdge = vertex.getOutingHalfEdge();
             int classifyId = outingEdge.getFace().getClassifyId();
             PlaneType planeType = outingEdge.getFace().getBestPlaneToProject();
@@ -252,8 +236,6 @@ public class HalfEdgeRenderer {
             colors[i * 4 + 3] = (byte) 255;
 
         }
-
-        // 0.9f, 0.3f, 0.6f
 
         // make vertex buffer
         Map<AttributeType, HalfEdgeRenderableBuffer> mapAttribTypeRenderableBuffer = halfEdgeSurface.getMapAttribTypeRenderableBuffer();

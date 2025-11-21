@@ -87,9 +87,6 @@ public class TransformBaker {
         if (position != null) {
             Vector3d localizedPosition = productTransformMatrix.transformPosition(position, new Vector3d());
             vertex.setPosition(localizedPosition);
-
-            //Vector3d localizedPosition = position.mulPosition(productTransformMatrix, new Vector3d());
-            //vertex.setPosition(localizedPosition);
         }
 
         // If there are normals, transform them as well
@@ -97,9 +94,6 @@ public class TransformBaker {
         if (normal != null) {
             Vector3d localizedNormal = productRotationMatrix.transform(normal, new Vector3d());
             localizedNormal.normalize(); // Normalize the transformed normal
-
-            //Vector3d localizedNormal = normal.mulDirection(productRotationMatrix, new Vector3d());
-            //localizedNormal.normalize(); // Normalize the transformed normal
             vertex.setNormal(localizedNormal);
         }
     }

@@ -79,9 +79,6 @@ public class HalfEdgeCutter {
             halfEdgeScene.cutByPlane(plane.getPlaneType(), plane.getPoint(), error);
         }
 
-        //halfEdgeScene.deleteDegeneratedFaces();
-        //halfEdgeScene.updateFacesList();
-
         resultOctree.getContents().clear();
         List<HalfEdgeSurface> surfaces = halfEdgeScene.extractSurfaces(null);
         for (HalfEdgeSurface surface : surfaces) {
@@ -96,7 +93,6 @@ public class HalfEdgeCutter {
 
         resultOctree.distributeFacesToTargetDepth(resultOctree.getLimitDepth());
         List<GaiaOctree<HalfEdgeFace>> octreesWithContents = resultOctree.extractOctreesWithContents();
-        //resultOctree.extractOctreesWithFaces(octreesWithContents);
 
         // now, separate the surface by the octrees
         List<HalfEdgeScene> resultScenes = new ArrayList<>();

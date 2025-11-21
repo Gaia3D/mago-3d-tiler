@@ -472,10 +472,6 @@ public class GltfWriter {
         Node rootNode = new Node();
         rootNode.setName("RootNode");
 
-        //Matrix4d matrix4d = new Matrix4d();
-        //matrix4d.identity();
-        //rootNode.setMatrix(matrix4d.get(new float[16]));
-
         return rootNode;
     }
 

@@ -1004,52 +1004,6 @@ public class HalfEdgeUtils {
             resultHalfEdgeScenes.add(halfEdgeScene2);
         }
 
-
-//        List<HalfEdgeNode> halfEdgeNodes = halfEdgeScene.getNodes();
-//        int nodesCount = halfEdgeNodes.size();
-//        for (int j=0; j<nodesCount; j++)
-//        {
-//            HalfEdgeNode rootNode = halfEdgeNodes.get(j);
-//            Map<Integer,HalfEdgeNode> mapClassifyIdToNode = getMapHalfEdgeNodeByFaceClassifyId(rootNode, null);
-//            for (Integer key : mapClassifyIdToNode.keySet())
-//            {
-//                int faceClassifyId = key;
-//                HalfEdgeNode halfEdgeNode = mapClassifyIdToNode.get(faceClassifyId);
-//                HalfEdgeScene halfEdgeSceneCopy = mapClassifyIdToHalfEdgeScene.get(faceClassifyId);
-//                if (halfEdgeSceneCopy == null)
-//                {
-//                    halfEdgeSceneCopy = new HalfEdgeScene();
-//
-//                    // copy original path
-//                    halfEdgeSceneCopy.setOriginalPath(halfEdgeScene.getOriginalPath());
-//
-//                    // copy gaiaAttributes
-//                    GaiaAttribute newGaiaAttribute = gaiaAttribute.getCopy();
-//                    halfEdgeSceneCopy.setAttribute(newGaiaAttribute);
-//
-//                    mapClassifyIdToHalfEdgeScene.put(faceClassifyId, halfEdgeSceneCopy);
-//                }
-//                halfEdgeSceneCopy.getNodes().add(halfEdgeNode);
-//            }
-//
-//        }
-//
-//        for (Integer key : mapClassifyIdToHalfEdgeScene.keySet())
-//        {
-//            HalfEdgeScene halfEdgeSceneCopy = mapClassifyIdToHalfEdgeScene.get(key);
-//
-//            // copy materials
-//            List<GaiaMaterial> gaiaMaterials = halfEdgeScene.getMaterials();
-//            int materialsCount = gaiaMaterials.size();
-//            for (int i=0; i<materialsCount; i++)
-//            {
-//                GaiaMaterial gaiaMaterial = gaiaMaterials.get(i);
-//                GaiaMaterial newGaiaMaterial = gaiaMaterial.clone();
-//                halfEdgeSceneCopy.getMaterials().add(newGaiaMaterial);
-//            }
-//            resultHalfEdgeScenes.add(halfEdgeSceneCopy);
-//        }
-
         return resultHalfEdgeScenes;
     }
 
@@ -1366,16 +1320,11 @@ public class HalfEdgeUtils {
         GaiaBoundingBox cubeBoundingBox = boundingBox.createCubeFromMinPosition();
         GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null, cubeBoundingBox);
         octreeVertices.addContents(gaiaVertices);
-//        octreeVertices.getVertices().addAll(gaiaVertices);
-//        octreeVertices.calculateSize();
-//        octreeVertices.setAsCube();
         octreeVertices.setLimitDepth(10);
         octreeVertices.setLimitBoxSize(1.0); // 1m
-
         octreeVertices.makeTreeByMinVertexCount(50);
 
         List<GaiaOctree<GaiaVertex>> octreesWithContents = octreeVertices.extractOctreesWithContents();
-        //octreeVertices.extractOctreesWithContents(octreesWithContents);
 
         Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster = new HashMap<>();
 

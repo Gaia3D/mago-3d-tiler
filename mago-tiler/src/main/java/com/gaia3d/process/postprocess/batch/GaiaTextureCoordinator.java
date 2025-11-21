@@ -405,12 +405,6 @@ public class GaiaTextureCoordinator {
             int minimumSize = GlobalConstants.REALISTIC_MIN_TEXTURE_SIZE;
 
             double scaleFactor = lod.getRealisticScale();
-            /*if (lodLevel > 0) {
-                imageHeight = (int) (imageHeight * scaleFactor);
-                imageWidth = (int) (imageWidth * scaleFactor);
-                imageHeight = ImageUtils.getNearestPowerOfTwo(imageHeight);
-                imageWidth = ImageUtils.getNearestPowerOfTwo(imageWidth);
-            }*/
 
             if (lodLevel == 0) {
                 if (imageWidth > lod0size) {
@@ -440,9 +434,7 @@ public class GaiaTextureCoordinator {
             //BufferedImage clamped = ImageUtils.clampBackGroundColor(this.atlasImage, CLAMP_COLOR, 1, 20);
 
             BufferedImage clamped = this.atlasImage;
-            //Color grayColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
             clamped = ImageUtils.changeBackgroundColor(clamped, CLAMP_COLOR, BACKGROUND_COLOR);
-            //clamped = ImageUtils.changeBackgroundColor(clamped, CLAMP_COLOR, grayColor);
             Graphics2D graphics2D = this.atlasImage.createGraphics();
             graphics2D.drawImage(clamped, 0, 0, null);
             graphics2D.dispose();

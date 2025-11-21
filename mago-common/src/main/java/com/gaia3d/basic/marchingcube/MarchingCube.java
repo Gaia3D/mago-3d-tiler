@@ -772,11 +772,6 @@ public class MarchingCube {
             double currIsoValue = isoValuesArray[i];
             if (totalMaxValue > currIsoValue) {
 
-                // now, quantize the isoValue into rgba byte values.
-                //float quantizedIsoValue = (float) ((currIsoValue - totalMinValue) / (totalMaxValue - totalMinValue));
-                //byte[] encodedColor4 = new byte[4];
-                //GeometryUtils.encodeFloat(quantizedIsoValue, encodedColor4);
-
                 GaiaScene gaiaScene = MarchingCube.makeGaiaScene(voxelCPGrid3D, currIsoValue);
                 if (gaiaScene == null) {
                     continue;

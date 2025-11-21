@@ -339,9 +339,6 @@ public class BatchedModelGltfWriter extends GltfWriter {
             if (globalOptions.isUseByteNormal()) {
                 byte[] normalBytes = convertNormals(normals);
                 normalsBuffer.put(normalBytes);
-                /*for (byte normalByte : normalBytes) {
-                    normalsBuffer.put(normalByte);
-                }*/
             } else {
                 for (Float normal : normals) {
                     normalsBuffer.putFloat(normal);

@@ -1103,48 +1103,6 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
                 AbstractReliefComponent reliefComponent = reliefComponentProperty.getObject();
                 List<MultiSurfaceProperty> multiSurfaceProperties = extractMultiSurfaceProperty(reliefComponent);
                 multiSurfaces.addAll(multiSurfaceProperties);
-
-                /*List<Double> positions = new ArrayList<>();
-
-                DirectPositionList directPositionList = new DirectPositionList();
-                directPositionList.setSrsDimension(3);
-                directPositionList.setValue(positions);
-                //directPositionList.setSrsName("urn:ogc:def:crs:EPSG::4326");
-
-                GeometricPositionList geometricPositionList = new GeometricPositionList();
-                geometricPositionList.setPosList(directPositionList);
-
-                LinearRing linearRing = new LinearRing();
-                linearRing.setControlPoints(geometricPositionList);
-
-                LinearRingProperty linearRingProperty = new LinearRingProperty();
-                linearRingProperty.setObject(linearRing);
-
-                Polygon polygon = new Polygon();
-
-                AbstractRingPropertyAdapter ringPropertyAdapter = new AbstractRingPropertyAdapter();
-                try {
-                    AbstractRingProperty ringProperty = ringPropertyAdapter.createObject(new QName("temp"), polygon);
-                    ringProperty.setObject(linearRing);
-                    polygon.setExterior(ringProperty);
-                } catch (ObjectBuildException e) {
-                    throw new RuntimeException(e);
-                }
-
-                List<SurfaceProperty> surfaceProperties = new ArrayList<>();
-                SurfaceProperty surfaceProperty = new SurfaceProperty();
-                surfaceProperty.setInlineObject(polygon);
-                surfaceProperties.add(surfaceProperty);
-
-                MultiSurface multiSurface = new MultiSurface();
-                multiSurface.setSurfaceMember(surfaceProperties);
-
-                MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
-                multiSurfaceProperty.setInlineObject(multiSurface);
-                //multiSurfaceProperty.set
-
-                List<MultiSurfaceProperty> multiSurfaceProperties = extractMultiSurfaceProperty(reliefComponent);
-                multiSurfaces.addAll(multiSurfaceProperties);*/
             }
         }
 
@@ -1152,30 +1110,14 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
     }
 
     private MultiSurfaceProperty createMultiSurfaceProperties(List<SurfaceProperty> surfaceProperties) {
-        //SurfaceArrayProperty surfaceArrayProperty = new SurfaceArrayProperty();
-        //surfaceArrayProperty.setObjects(surfaceProperties);
-
         MultiSurface multiSurface = new MultiSurface();
         multiSurface.setSurfaceMember(surfaceProperties);
-        //multiSurface.setSurfaceMembers(surfaceArrayProperty);
         MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
         multiSurfaceProperty.setInlineObject(multiSurface);
         return multiSurfaceProperty;
     }
 
     private SurfaceProperty createSurfaceProperty(LinearRing linearRing) {
-       /* List<Double> positions = new ArrayList<>();
-        DirectPositionList directPositionList = new DirectPositionList();
-        directPositionList.setSrsDimension(3);
-        directPositionList.setValue(positions);
-        //directPositionList.setSrsName("urn:ogc:def:crs:EPSG::4326");
-
-        GeometricPositionList geometricPositionList = new GeometricPositionList();
-        geometricPositionList.setPosList(directPositionList);*/
-
-        //LinearRing linearRing = new LinearRing();
-        //linearRing.setControlPoints(geometricPositionList);
-
         LinearRingProperty linearRingProperty = new LinearRingProperty();
         linearRingProperty.setObject(linearRing);
 
@@ -1220,7 +1162,6 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
         } else if (abstractSpaceBoundary instanceof ReliefFeature) {
             return Classification.GROUND;
         } else {
-            //return Classification.UNKNOWN;
             return Classification.WALL;
         }
     }
@@ -1285,6 +1226,5 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
         }
         log.info("Unsupported city object type: {}", cityObject.getClass().getSimpleName());
         return Classification.WALL;
-        //return Classification.UNKNOWN;
     }
 }

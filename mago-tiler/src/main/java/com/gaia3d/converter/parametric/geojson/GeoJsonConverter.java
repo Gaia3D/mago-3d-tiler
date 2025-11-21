@@ -655,9 +655,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                 log.debug("Invalid Scene : {}", rootNode.getName());
                 continue;
             }
-            //resultScenes.add(scene);
 
-            //resultScenes.add(scene);
             scenes.add(scene);
             if (scenes.size() >= sceneCount) {
                 String tempName = UUID.randomUUID() + input.getName();

@@ -48,13 +48,7 @@ public class GlobeUtils {
     }
 
     public static double radiusAtLatitudeRad(double latRad) {
-        double cosLat = Math.cos(latRad);
         double sinLat = Math.sin(latRad);
-        /*
-        double numerator = Math.pow(EARTH_RADIUS_EQUATOR * cosLat, 2) + Math.pow(EARTH_RADIUS_POLAR * sinLat, 2);
-        double denominator = Math.pow(EARTH_RADIUS_EQUATOR * cosLat, 2) + Math.pow(EARTH_RADIUS_POLAR * sinLat, 2);
-        return Math.sqrt(numerator / denominator);
-         */
         return EQUATORIAL_RADIUS / Math.sqrt(1.0 - FIRST_ECCENTRICITY_SQUARED * sinLat * sinLat);
     }
 

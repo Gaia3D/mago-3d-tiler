@@ -6,16 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TextureAtlasPacker {
-    private int width;
-    private int height;
     private final List<GaiaRectangle> freeRectangles = new ArrayList<>();
     private final List<TexturesAtlasData> placedRectangles = new ArrayList<>();
     private GaiaRectangle currentBoundary;
-    private double candidateArea = 0.0;
 
-    TextureAtlasPacker() {
-        this.width = 0;
-        this.height = 0;
+    public TextureAtlasPacker() {
         //freeRectangles.add(new GaiaRectangle(0, 0, 0, 0));
         currentBoundary = new GaiaRectangle(0, 0, 0, 0);
     }
@@ -61,11 +56,6 @@ public class TextureAtlasPacker {
                         bestRect = freeRect;
                         break;
                     } else {
-//                        if (areaFit < bestAreaFit) {
-//                            bestAreaFit = areaFit;
-//                            bestIndex = i;
-//                            bestRect = freeRect;
-//                        }
                         if (currTotalArea < currentCandidateArea) {
                             currentCandidateArea = currTotalArea;
                             bestIndex = i;
@@ -93,7 +83,6 @@ public class TextureAtlasPacker {
         texScissorData.setBatchedBoundary(new GaiaRectangle(bestRect.getMinX(), bestRect.getMinY(), bestRect.getMinX() + rectWidth, bestRect.getMinY() + rectHeight));
         placedRectangles.add(texScissorData);
         currentBoundary.addBoundingRectangle(texScissorData.getBatchedBoundary());
-        candidateArea = currentBoundary.getArea();
 
         // split the free rect
         splitFreeRects(bestRect, texScissorData.getBatchedBoundary());

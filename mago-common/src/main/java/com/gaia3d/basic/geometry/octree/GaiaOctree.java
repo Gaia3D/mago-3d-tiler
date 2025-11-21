@@ -160,21 +160,11 @@ public class GaiaOctree<E> {
         } else {
             GaiaOctreeCoordinate parentCoord = this.parent.getCoordinate();
             GaiaOctreeCoordinate coord = new GaiaOctreeCoordinate();
-            // now set children coords
+
             int L = parentCoord.getDepth();
             int X = parentCoord.getX();
             int Y = parentCoord.getY();
             int Z = parentCoord.getZ();
-
-            //        UNDEFINED(-1),
-//                LEFT_FRONT_BOTTOM(0),
-//                RIGHT_FRONT_BOTTOM(1),
-//                RIGHT_REAR_BOTTOM(2),
-//                LEFT_REAR_BOTTOM(3),
-//                LEFT_FRONT_TOP(4),
-//                RIGHT_FRONT_TOP(5),
-//                RIGHT_REAR_TOP(6),
-//                LEFT_REAR_TOP(7);
 
             if (this.index == GaiaOctreeIndex.LEFT_FRONT_BOTTOM) {
                 coord.setDepthAndCoord(L + 1, X * 2, Y * 2, Z * 2);

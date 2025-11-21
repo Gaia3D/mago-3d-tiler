@@ -228,8 +228,6 @@ public class PointCloudGltfWriter extends GltfWriter {
         short[] normals = pointCloudBuffer.getNormals();
         byte[] colors = pointCloudBuffer.getColorBytes();
         float[] batchIds = pointCloudBuffer.getBatchIds();
-        //short[] classifications = pointCloudBuffer.getClassifications();
-        //char[] intensities = pointCloudBuffer.getIntensities();
 
         GltfNodeBuffer nodeBuffer = initNodeBuffer(pointCloudBuffer);
         createBuffer(gltf, nodeBuffer);
@@ -302,15 +300,7 @@ public class PointCloudGltfWriter extends GltfWriter {
         int bufferLength = buffer.getByteLength() == null ? 0 : buffer.getByteLength();
         int bufferId = 0;
         int bufferOffset = 0;
-        /*if (nodeBuffer.getIndicesBuffer() != null) {
-            ByteBuffer indicesBuffer = nodeBuffer.getIndicesBuffer();
-            int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, indicesBuffer.capacity(), -1, GL20.GL_ELEMENT_ARRAY_BUFFER);
-            nodeBuffer.setIndicesBufferViewId(bufferViewId);
-            BufferView bufferView = gltf.getBufferViews()
-                    .get(bufferViewId);
-            bufferView.setName("indices");
-            bufferOffset += indicesBuffer.capacity();
-        }*/
+
         if (nodeBuffer.getPositionsBuffer() != null) {
             ByteBuffer positionsBuffer = nodeBuffer.getPositionsBuffer();
             int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, positionsBuffer.capacity(), 8, GL20.GL_ARRAY_BUFFER);
@@ -319,15 +309,6 @@ public class PointCloudGltfWriter extends GltfWriter {
             bufferView.setName("positions");
             bufferOffset += positionsBuffer.capacity();
         }
-        /*if (nodeBuffer.getNormalsBuffer() != null) {
-            ByteBuffer normalsBuffer = nodeBuffer.getNormalsBuffer();
-            int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, normalsBuffer.capacity(), 12, GL20.GL_ARRAY_BUFFER);
-            nodeBuffer.setNormalsBufferViewId(bufferViewId);
-            BufferView bufferView = gltf.getBufferViews()
-                    .get(bufferViewId);
-            bufferView.setName("normals");
-            bufferOffset += normalsBuffer.capacity();
-        }*/
         if (nodeBuffer.getColorsBuffer() != null) {
             ByteBuffer colorsBuffer = nodeBuffer.getColorsBuffer();
             int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, colorsBuffer.capacity(), 4, GL20.GL_ARRAY_BUFFER);
@@ -336,15 +317,6 @@ public class PointCloudGltfWriter extends GltfWriter {
             bufferView.setName("colors");
             bufferOffset += colorsBuffer.capacity();
         }
-        /*if (nodeBuffer.getTexcoordsBuffer() != null) {
-            ByteBuffer texcoordsBuffer = nodeBuffer.getTexcoordsBuffer();
-            int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, texcoordsBuffer.capacity(), 8, GL20.GL_ARRAY_BUFFER);
-            nodeBuffer.setTexcoordsBufferViewId(bufferViewId);
-            BufferView bufferView = gltf.getBufferViews()
-                    .get(bufferViewId);
-            bufferView.setName("texcoords");
-            bufferOffset += texcoordsBuffer.capacity();
-        }*/
         if (nodeBuffer.getBatchIdBuffer() != null) {
             ByteBuffer batchIdBuffer = nodeBuffer.getBatchIdBuffer();
             int bufferViewId = createBufferView(gltf, bufferId, bufferLength + bufferOffset, batchIdBuffer.capacity(), 4, GL20.GL_ARRAY_BUFFER);
@@ -359,63 +331,28 @@ public class PointCloudGltfWriter extends GltfWriter {
     protected GltfNodeBuffer initNodeBuffer(PointCloudBuffer pointCloudBuffer) {
         GltfNodeBuffer nodeBuffer = new GltfNodeBuffer();
         int SHORT_SIZE = 2;
-        int INT_SIZE = 4;
-        int FLOAT_SIZE = 4;
-
-        int vertexCount = pointCloudBuffer.getPositions().length / 3;
-
         int paddedPositionsCount = pointCloudBuffer.getPositions().length / 3 * 4;
         int positionsCapacity = paddedPositionsCount * SHORT_SIZE;
-        //int normalsCapacity = gaiaMesh.getPositionsCount() * FLOAT_SIZE;
         int colorsCapacity = pointCloudBuffer.getColors().length;
-        //int batchIdCapacity = pointCloudBuffer.getBatchIds().length * FLOAT_SIZE;
 
-        //indicesCapacity = padMultiple4(indicesCapacity);
         positionsCapacity = padMultiple4(positionsCapacity);
-        //normalsCapacity = padMultiple4(normalsCapacity);
         colorsCapacity = padMultiple4(colorsCapacity);
-        //texcoordCapacity = padMultiple4(texcoordCapacity);
-        //batchIdCapacity = padMultiple4(batchIdCapacity);
 
         int bodyLength = 0;
-        //bodyLength += indicesCapacity;
         bodyLength += positionsCapacity;
-        //bodyLength += normalsCapacity;
         bodyLength += colorsCapacity;
-        //bodyLength += texcoordCapacity;
-        //bodyLength += batchIdCapacity;
 
         nodeBuffer.setTotalByteBufferLength(bodyLength);
-        /*if (indicesCapacity > 0) {
-            ByteBuffer indicesBuffer = ByteBuffer.allocate(indicesCapacity);
-            indicesBuffer.order(ByteOrder.LITTLE_ENDIAN);
-            nodeBuffer.setIndicesBuffer(indicesBuffer);
-        }*/
         if (positionsCapacity > 0) {
             ByteBuffer positionsBuffer = ByteBuffer.allocate(positionsCapacity);
             positionsBuffer.order(ByteOrder.LITTLE_ENDIAN);
             nodeBuffer.setPositionsBuffer(positionsBuffer);
         }
-        /*if (normalsCapacity > 0) {
-            ByteBuffer normalsBuffer = ByteBuffer.allocate(normalsCapacity);
-            normalsBuffer.order(ByteOrder.LITTLE_ENDIAN);
-            nodeBuffer.setNormalsBuffer(normalsBuffer);
-        }*/
         if (colorsCapacity > 0) {
             ByteBuffer colorsBuffer = ByteBuffer.allocate(colorsCapacity);
             colorsBuffer.order(ByteOrder.LITTLE_ENDIAN);
             nodeBuffer.setColorsBuffer(colorsBuffer);
         }
-        /*if (texcoordCapacity > 0) {
-            ByteBuffer texcoordsBuffer = ByteBuffer.allocate(texcoordCapacity);
-            texcoordsBuffer.order(ByteOrder.LITTLE_ENDIAN);
-            nodeBuffer.setTexcoordsBuffer(texcoordsBuffer);
-        }*/
-        /*if (batchIdCapacity > 0) {
-            ByteBuffer batchIdBuffer = ByteBuffer.allocate(batchIdCapacity);
-            batchIdBuffer.order(ByteOrder.LITTLE_ENDIAN);
-            nodeBuffer.setBatchIdBuffer(batchIdBuffer);
-        }*/
         return nodeBuffer;
     }
 

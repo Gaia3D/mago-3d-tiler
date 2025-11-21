@@ -25,8 +25,6 @@ import java.util.stream.IntStream;
 @Slf4j
 public abstract class AbstractGeometryConverter {
 
-    private final String ROOT_NODE_NAME = "Extruded Root Node";
-
     protected abstract List<GaiaScene> convert(File file);
 
     protected GaiaScene initScene(File file) {
@@ -36,6 +34,7 @@ public abstract class AbstractGeometryConverter {
         GaiaAttribute attribute = new GaiaAttribute();
         attribute.setIdentifier(UUID.randomUUID());
         attribute.setFileName(file.getName());
+        String ROOT_NODE_NAME = "Extruded Root Node";
         attribute.setNodeName(ROOT_NODE_NAME);
         scene.setAttribute(attribute);
 

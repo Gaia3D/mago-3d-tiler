@@ -32,7 +32,6 @@ public class GaiaTextureScissorData {
             return false;
         }
 
-        //currentBoundary.addBoundingRectangle(other.currentBoundary);
         texCoordBoundary.addBoundingRectangle(other.texCoordBoundary);
         faces.addAll(other.faces);
         other.faces.clear(); // clear the faces of the other.
@@ -41,24 +40,6 @@ public class GaiaTextureScissorData {
     }
 
     public boolean isMergeable(GaiaTextureScissorData other) {
-//        if (currentBoundary == null || other.currentBoundary == null) {
-//            return false;
-//        }
-//        if (texCoordBoundary == null || other.texCoordBoundary == null) {
-//            return false;
-//        }
-//        if (faces == null || other.faces == null) {
-//            return false;
-//        }
-//
-//        // check the current boundary.
-//        double thisArea = currentBoundary.getArea();
-//        double otherArea = other.currentBoundary.getArea();
-//        GaiaRectangle mergedBoundary = new GaiaRectangle(currentBoundary);
-//        mergedBoundary.addBoundingRectangle(other.currentBoundary);
-//        double mergedArea = mergedBoundary.getArea();
-//
-//        return !(mergedArea > thisArea + otherArea);
         if (texCoordBoundary == null || other.texCoordBoundary == null) {
             return false;
         }

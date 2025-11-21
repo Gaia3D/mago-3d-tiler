@@ -17,12 +17,6 @@ class TreeCreatorTest {
         treeBillBoardParameters.setVerticalRectanglesCount(2);
         treeBillBoardParameters.setHorizontalRectanglesCount(1);
 
-        //treeBillBoardParameters.setVerticalRectanglesCount(4);
-        //treeBillBoardParameters.setHorizontalRectanglesCount(4);
-
-        //treeBillBoardParameters.setVerticalRectanglesCount(4);
-        //treeBillBoardParameters.setHorizontalRectanglesCount(5);
-
         treeBillBoardParameters.setVerticalRectanglesCount(4);
         treeBillBoardParameters.setHorizontalRectanglesCount(3);
 

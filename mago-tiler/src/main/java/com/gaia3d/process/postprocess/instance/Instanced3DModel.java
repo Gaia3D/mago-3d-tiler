@@ -249,8 +249,6 @@ public class Instanced3DModel implements ContentModel {
     }
 
     private synchronized void createInstance(File file, ContentInfo contentInfo, TileInfo tileInfo) {
-        //boolean isVoxelLod = GlobalOptions.getInstance().isVoxelLod();
-
         try {
             if (!file.exists()) {
                 log.info("[Create][Instance] Create instance file : {}", file.getName());
@@ -268,28 +266,6 @@ public class Instanced3DModel implements ContentModel {
                 GaiaScene resultGaiaScene = new GaiaScene(gaiaSet);
 
                 GaiaBoundingBox boundingBox = resultGaiaScene.updateBoundingBox();
-                float minSize = (float) boundingBox.getMinSize();
-
-                /*if (isVoxelLod) {
-                    int lod = contentInfo.getLod().getLevel();
-                    if (lod > 0) {
-                        float octreeMinSize = minSize;
-                        if (lod == 1) {
-                            octreeMinSize = minSize / 8.0f;
-                        } else if (lod == 2) {
-                            octreeMinSize = minSize / 4.0f;
-                        } else if (lod == 3) {
-                            octreeMinSize = minSize / 2.0f;
-                        } else if (lod == 4) {
-                            octreeMinSize = minSize;
-                        }
-                        resultGaiaScene = GeometryUtils.getGaiaSceneLego(resultGaiaScene, octreeMinSize);
-                    }
-                }*/
-
-                //Matrix4d transformMatrix = resultGaiaScene.getNodes().get(0).getTransformMatrix();
-                //transformMatrix.rotateX(Math.toRadians(-90));
-
                 gltfWriter.writeGlb(resultGaiaScene, file);
             }
         } catch (Exception e) {

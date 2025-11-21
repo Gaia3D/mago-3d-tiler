@@ -38,8 +38,6 @@ public class GaiaFace extends FaceStructure implements Serializable {
             GaiaVertex vertex3 = vertices.get(indices3);
             this.faceNormal = calcNormal(vertex1, vertex2, vertex3);
         }
-//        Vector3d firstNormal = vertices.get(0).getNormal();
-//        this.faceNormal = new Vector3d(firstNormal);
     }
 
     public GaiaBoundingBox getBoundingBox(List<GaiaVertex> vertices, GaiaBoundingBox resultBoundingBox) {

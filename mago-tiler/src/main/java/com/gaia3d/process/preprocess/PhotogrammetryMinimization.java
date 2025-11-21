@@ -26,14 +26,6 @@ public class PhotogrammetryMinimization implements PreProcess {
             scene.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
             scene.deleteDegeneratedFaces();
 
-            // test render*************************************************************
-            /*TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
-            List<GaiaScene> gaiaSceneList = new ArrayList<>();
-            gaiaSceneList.add(scene);
-            List<GaiaScene> resultScenes = new ArrayList<>();
-            tilerExtensionModule.renderPyramidDeformation(gaiaSceneList, resultScenes);*/
-            // End test.-----------------------------------------------------------------
-
             log.info("[Pre][Photogrammetry] Minimize GaiaScene LOD 0 , Path : {}", tileInfo.getTempPath());
 
             GaiaSet tempSetLod0 = GaiaSet.fromGaiaScene(scene);
