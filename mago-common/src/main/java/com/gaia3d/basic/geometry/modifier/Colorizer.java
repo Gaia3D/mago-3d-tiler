@@ -1,4 +1,4 @@
-package com.gaia3d.process.preprocess.sub;
+package com.gaia3d.basic.geometry.modifier;
 
 import com.gaia3d.basic.model.*;
 import lombok.RequiredArgsConstructor;

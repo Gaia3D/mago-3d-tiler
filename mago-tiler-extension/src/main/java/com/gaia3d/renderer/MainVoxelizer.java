@@ -602,7 +602,7 @@ public class MainVoxelizer implements IAppLogic {
             Vector3d scenePosRelToCellGridNegative = new Vector3d(-scenePositionRelToCellGrid.x, -scenePositionRelToCellGrid.y, -scenePositionRelToCellGrid.z);
 
             gaiaScene.makeTriangularFaces();
-            gaiaScene.spendTranformMatrix();
+            gaiaScene.spendTransformMatrix();
             gaiaScene.joinAllSurfaces();
             gaiaScene.weldVertices(weldError, false, false, false, false);
             gaiaScene.deleteDegeneratedFaces();
@@ -626,7 +626,7 @@ public class MainVoxelizer implements IAppLogic {
             GaiaNode gaiaNode = gaiaScene.getNodes().get(0);
             gaiaNode.setTransformMatrix(new Matrix4d(sceneTMatLC));
             gaiaNode.setPreMultipliedTransformMatrix(new Matrix4d(sceneTMatLC));
-            gaiaScene.spendTranformMatrix();
+            gaiaScene.spendTransformMatrix();
             gaiaScene.joinAllSurfaces();
             gaiaScene.weldVertices(weldError, false, false, false, false);
             gaiaScene.deleteDegeneratedFaces();
@@ -1131,7 +1131,7 @@ public class MainVoxelizer implements IAppLogic {
             // Note: to reMesh or decimate the scene, 1- it must spend its transform matrix, 2- join all surfaces, 3- and weld vertices.
             //**************************************************************************************************************************
             gaiaScene.makeTriangularFaces();
-            gaiaScene.spendTranformMatrix();
+            gaiaScene.spendTransformMatrix();
             gaiaScene.joinAllSurfaces();
             gaiaScene.weldVertices(weldError, false, false, false, false);
             gaiaScene.deleteDegeneratedFaces();

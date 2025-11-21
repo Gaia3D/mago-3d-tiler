@@ -197,9 +197,9 @@ public class GaiaScene extends SceneStructure implements Serializable {
         }
     }
 
-    public void spendTranformMatrix() {
+    public void spendTransformMatrix() {
         for (GaiaNode node : this.nodes) {
-            node.spendTranformMatrix();
+            node.spendTransformMatrix();
         }
     }
 

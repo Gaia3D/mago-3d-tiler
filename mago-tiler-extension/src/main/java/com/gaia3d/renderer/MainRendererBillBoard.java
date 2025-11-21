@@ -65,14 +65,14 @@ public class MainRendererBillBoard implements IAppLogic {
         GaiaScene scene = scenes.get(0); // there are only one scene
 
         // do 90 degrees rotation in X axis
-        scene.spendTranformMatrix();
+        scene.spendTransformMatrix();
         GaiaNode rootNode = scene.getNodes().get(0);
         Matrix4d rootTransformMatrix = rootNode.getTransformMatrix();
-        scene.spendTranformMatrix();
+        scene.spendTransformMatrix();
 
         Matrix4d rotationMatrix = new Matrix4d().rotateX(Math.PI / 2);
         rootTransformMatrix.mul(rotationMatrix);
-        scene.spendTranformMatrix();
+        scene.spendTransformMatrix();
         // end do 90 degrees rotation in X axis
 
         GaiaBoundingBox bbox = scene.updateBoundingBox();

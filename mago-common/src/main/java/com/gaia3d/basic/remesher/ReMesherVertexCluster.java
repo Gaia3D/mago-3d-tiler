@@ -231,7 +231,7 @@ public class ReMesherVertexCluster {
             GaiaNode gaiaNode = gaiaScene.getNodes().get(0);
             gaiaNode.setTransformMatrix(new Matrix4d(sceneTMatLC));
             gaiaNode.setPreMultipliedTransformMatrix(new Matrix4d(sceneTMatLC));
-            gaiaScene.spendTranformMatrix();
+            gaiaScene.spendTransformMatrix();
             gaiaScene.joinAllSurfaces();
             double weldError = 1e-6; // 1e-6 is a good value for remeshing
             gaiaScene.weldVertices(weldError, false, false, false, false);

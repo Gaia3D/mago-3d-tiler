@@ -370,7 +370,7 @@ public class GaiaNode extends NodeStructure implements Serializable {
         return finalMatrix;
     }
 
-    public void spendTranformMatrix() {
+    public void spendTransformMatrix() {
         Matrix4d finalMatrix = getFinalTransformMatrix();
         Matrix4d identity = new Matrix4d();
         identity.identity();
@@ -383,7 +383,7 @@ public class GaiaNode extends NodeStructure implements Serializable {
 
         for (GaiaNode child : children) {
             child.setParent(this);
-            child.spendTranformMatrix();
+            child.spendTransformMatrix();
         }
 
         // Clear the transform matrix.

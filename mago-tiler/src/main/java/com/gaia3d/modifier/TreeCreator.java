@@ -10,7 +10,7 @@ import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.assimp.AssimpConverterOptions;
 import com.gaia3d.converter.jgltf.GltfWriter;
-import com.gaia3d.process.preprocess.sub.FlipYTexCoordinate;
+import com.gaia3d.basic.geometry.modifier.FlipYTexCoordinate;
 import com.gaia3d.util.ImageResizer;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -52,7 +52,7 @@ public class TreeCreator {
         for (GaiaScene gaiaScene : resultGaiaScenes) {
             GaiaNode rootNode = gaiaScene.getNodes().get(0);
             rootNode.getTransformMatrix().rotateX(Math.toRadians(-90));
-            gaiaScene.spendTranformMatrix();
+            gaiaScene.spendTransformMatrix();
         }
 
         int lodCount = 6;

@@ -1,4 +1,4 @@
-package com.gaia3d.process.preprocess.sub;
+package com.gaia3d.basic.geometry.modifier;
 
 import com.gaia3d.basic.model.*;
 import lombok.extern.slf4j.Slf4j;
@@ -82,18 +82,16 @@ public class TransformBaker {
     private void bakeVertex(Matrix4d productTransformMatrix, GaiaVertex vertex) {
         Matrix3d productRotationMatrix = new Matrix3d(productTransformMatrix);
 
-        // Transform the vertex position using the productTransformMatrix
         Vector3d position = vertex.getPosition();
         if (position != null) {
             Vector3d localizedPosition = productTransformMatrix.transformPosition(position, new Vector3d());
             vertex.setPosition(localizedPosition);
         }
 
-        // If there are normals, transform them as well
         Vector3d normal = vertex.getNormal();
         if (normal != null) {
             Vector3d localizedNormal = productRotationMatrix.transform(normal, new Vector3d());
-            localizedNormal.normalize(); // Normalize the transformed normal
+            localizedNormal.normalize();
             vertex.setNormal(localizedNormal);
         }
     }
