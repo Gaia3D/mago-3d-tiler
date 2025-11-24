@@ -1,11 +1,11 @@
 package com.gaia3d.process.postprocess.instance;
 
 import com.gaia3d.basic.exchangable.GaiaSet;
-import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.jgltf.tiles.InstancedModelGltfWriter;
+import com.gaia3d.converter.gltf.GltfWriterOptions;
+import com.gaia3d.converter.gltf.tiles.InstancedModelGltfWriter;
 import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.process.postprocess.ContentModel;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTableMap;
@@ -36,7 +36,16 @@ public class Instanced3DModelV2 implements ContentModel {
     private final InstancedModelGltfWriter gltfWriter;
 
     public Instanced3DModelV2() {
-        this.gltfWriter = new InstancedModelGltfWriter();
+        GltfWriterOptions gltfOptions = GltfWriterOptions.builder()
+                .build();
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        if (globalOptions.getTilesVersion().equals("1.0")) {
+            gltfOptions.setUriImage(true);
+        }
+        if (globalOptions.isUseQuantization()) {
+            gltfOptions.setUseQuantization(true);
+        }
+        this.gltfWriter = new InstancedModelGltfWriter(gltfOptions);
     }
 
     @Override

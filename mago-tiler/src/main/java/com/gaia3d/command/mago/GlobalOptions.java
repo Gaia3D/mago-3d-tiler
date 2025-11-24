@@ -2,6 +2,7 @@ package com.gaia3d.command.mago;
 
 import com.gaia3d.TilerExtensionModule;
 import com.gaia3d.basic.types.FormatType;
+import com.gaia3d.converter.AttributeFilter;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

@@ -9,8 +9,9 @@ import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.assimp.AssimpConverterOptions;
-import com.gaia3d.converter.jgltf.GltfWriter;
+import com.gaia3d.converter.gltf.GltfWriter;
 import com.gaia3d.basic.geometry.modifier.texcoord.FlipYTexCoordinate;
+import com.gaia3d.converter.gltf.GltfWriterOptions;
 import com.gaia3d.util.ImageResizer;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -86,7 +87,10 @@ public class TreeCreator {
             GlobalOptions globalOptions = GlobalOptions.getInstance();
             globalOptions.setTilesVersion("1.1");
             GaiaScene gaiaScene = resultGaiaScenes.get(0);
-            GltfWriter gltfWriter = new GltfWriter();
+
+            GltfWriterOptions gltfWriterOptions = GltfWriterOptions.builder()
+                    .build();
+            GltfWriter gltfWriter = new GltfWriter(gltfWriterOptions);
             //String outputFilePath = outputPath + File.separator + "tree_billboard_v" + verticalPlanesCount + "h" + horizontalPlanesCount + "_L" + i + ".glb";
             String outputFilePath = outputPath + File.separator + "instance-" + i + ".glb";
             gltfWriter.writeGlb(gaiaScene, outputFilePath);

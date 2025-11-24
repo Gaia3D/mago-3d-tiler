@@ -1,5 +1,6 @@
 package com.gaia3d.converter.parametric;
 
+import com.gaia3d.converter.InnerRingRemover;
 import org.joml.Vector2d;
 import org.junit.jupiter.api.Test;
 

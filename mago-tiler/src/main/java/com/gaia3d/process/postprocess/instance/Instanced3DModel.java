@@ -9,7 +9,8 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.jgltf.GltfWriter;
+import com.gaia3d.converter.gltf.GltfWriter;
+import com.gaia3d.converter.gltf.GltfWriterOptions;
 import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.io.LittleEndianDataOutputStream;
 import com.gaia3d.process.postprocess.ContentModel;
@@ -41,7 +42,17 @@ public class Instanced3DModel implements ContentModel {
     private final GltfWriter gltfWriter;
 
     public Instanced3DModel() {
-        this.gltfWriter = new GltfWriter();
+        GltfWriterOptions gltfOptions = GltfWriterOptions.builder()
+                .build();
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        if (globalOptions.isUseQuantization()) {
+            gltfOptions.setUseQuantization(true);
+        }
+        if (globalOptions.getTilesVersion().equals("1.0")) {
+            gltfOptions.setUriImage(true);
+        }
+
+        this.gltfWriter = new GltfWriter(gltfOptions);
     }
 
     @Override

@@ -4,7 +4,8 @@ import com.gaia3d.command.Configuration;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.assimp.AssimpConverterOptions;
-import com.gaia3d.converter.jgltf.GltfWriter;
+import com.gaia3d.converter.gltf.GltfWriter;
+import com.gaia3d.converter.gltf.GltfWriterOptions;
 import com.gaia3d.process.postprocess.batch.GaiaBatcher;
 import org.junit.jupiter.api.Test;
 
@@ -25,10 +26,18 @@ class AssimpGltfExporterTest {
         AssimpConverterOptions options = AssimpConverterOptions.builder().isGenerateNormals(true).isSplitByNode(false).build();
         AssimpConverter converter = new AssimpConverter(options);
         GaiaBatcher gaiaBatcher = new GaiaBatcher();
-        GltfWriter gltfWriter = new GltfWriter();
 
+        GltfWriterOptions gltfOptions = GltfWriterOptions.builder()
+                .isUseQuantization(true)
+                .isDoubleSided(true)
+                .build();
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         globalOptions.setTilesVersion("1.0");
+        if (globalOptions.getTilesVersion().equals("1.0")) {
+            gltfOptions.setUriImage(true);
+        }
+        GltfWriter gltfWriter = new GltfWriter(gltfOptions);
+
         //globalOptions.setTilesVersion("1.1");
 
         AssimpGltfExporter exporter = new AssimpGltfExporter(converter, gltfWriter);

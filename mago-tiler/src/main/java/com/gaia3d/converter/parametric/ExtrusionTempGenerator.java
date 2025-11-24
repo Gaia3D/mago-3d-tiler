@@ -1,5 +1,6 @@
 package com.gaia3d.converter.parametric;
 
+import com.gaia3d.basic.temp.GaiaSceneTempGroup;
 import com.gaia3d.basic.types.FormatType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;

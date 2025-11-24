@@ -8,7 +8,8 @@ import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.jgltf.GltfWriter;
+import com.gaia3d.converter.gltf.GltfWriter;
+import com.gaia3d.converter.gltf.GltfWriterOptions;
 import com.gaia3d.io.LittleEndianDataInputStream;
 import com.gaia3d.io.LittleEndianDataOutputStream;
 import com.gaia3d.process.postprocess.ContentModel;
@@ -38,7 +39,22 @@ public class Batched3DModel implements ContentModel {
     private final GltfWriter gltfWriter;
 
     public Batched3DModel() {
-        this.gltfWriter = new GltfWriter();
+        GltfWriterOptions gltfOptions = GltfWriterOptions.builder()
+                .build();
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        if (globalOptions.getTilesVersion().equals("1.0")) {
+            gltfOptions.setUriImage(true);
+        }
+        if (globalOptions.isUseQuantization()) {
+            gltfOptions.setUseQuantization(true);
+        }
+        if (globalOptions.isPhotogrammetry()) {
+            gltfOptions.setForceJpeg(true);
+            gltfOptions.setUseQuantization(true);
+            gltfOptions.setUseShortTexCoord(true);
+            gltfOptions.setUseByteNormal(true);
+        }
+        this.gltfWriter = new GltfWriter(gltfOptions);
     }
 
     @Override

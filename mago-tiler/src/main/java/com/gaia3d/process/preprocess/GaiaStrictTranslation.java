@@ -17,9 +17,7 @@ import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
-import org.xmlobjects.gml.model.geometry.DirectPosition;
 
-import java.awt.geom.Point2D;
 import java.util.List;
 
 @Slf4j

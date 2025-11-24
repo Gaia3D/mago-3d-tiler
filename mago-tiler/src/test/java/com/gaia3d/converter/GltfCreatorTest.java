@@ -4,7 +4,7 @@ import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.Configuration;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.jgltf.GltfWriter;
+import com.gaia3d.converter.gltf.GltfWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.api.data.DataStore;
 import org.geotools.api.data.Query;
@@ -64,8 +64,8 @@ public class GltfCreatorTest {
             GaiaScene gaiaScene = defaultSceneFactory.createScene(file);
             GaiaNode rootNode = gaiaScene.getNodes().get(0);
 
-            GaiaNode gridNode = defaultSceneFactory.createGridNode(gridSize, gridSize);
-            rootNode.getChildren().add(gridNode);
+            //GaiaNode gridNode = defaultSceneFactory.createGridNode(gridSize, gridSize);
+            //rootNode.getChildren().add(gridNode);
 
             GltfWriter gltfWriter = new GltfWriter();
             gltfWriter.writeGlb(gaiaScene, file);

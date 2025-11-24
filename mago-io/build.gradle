@@ -10,14 +10,28 @@ repositories {
 }
 
 dependencies {
+    implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
+    implementation "org.lwjgl:lwjgl"
+    implementation "org.lwjgl:lwjgl-assimp"
+    implementation "org.lwjgl:lwjgl-opengl"
+    implementation "org.lwjgl:lwjgl-stb"
 
+    implementation "de.javagl:jgltf-model:2.0.4"
+    implementation "de.javagl:jgltf-validator:2.0.4"
+    implementation "de.javagl:jgltf-impl-v1:2.0.4"
+    implementation "de.javagl:jgltf-impl-v2:2.0.4"
+
+    implementation "org.citygml4j:citygml4j-xml:3.0.0"
+    implementation "org.citygml4j:citygml4j-cityjson:3.0.0"
+    implementation "com.github.mreutegg:laszip4j:0.17"
+    implementation files("libs/Indoor4J.jar")
 }
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
-            artifactId = 'mago-common'
+            artifactId = 'mago-io'
         }
     }
     repositories {

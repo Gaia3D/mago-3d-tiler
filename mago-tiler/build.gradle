@@ -8,8 +8,8 @@ dependencies {
     implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
     implementation "org.lwjgl:lwjgl"
     implementation "org.lwjgl:lwjgl-assimp"
-    implementation "org.lwjgl:lwjgl-stb"
     implementation "org.lwjgl:lwjgl-opengl"
+    implementation "org.lwjgl:lwjgl-stb"
     implementation "org.lwjgl:lwjgl-ktx"
 
     implementation "org.jdom:jdom2:2.0.6.1"
@@ -23,22 +23,19 @@ dependencies {
     implementation "org.citygml4j:citygml4j-xml:3.0.0"
     implementation "org.citygml4j:citygml4j-cityjson:3.0.0"
     implementation "com.github.mreutegg:laszip4j:0.17"
-    implementation files("libs/Indoor4J.jar")
 
     runtimeOnly "org.lwjgl:lwjgl::natives-linux"
-    runtimeOnly "org.lwjgl:lwjgl-opengl::natives-linux"
-    runtimeOnly "org.lwjgl:lwjgl-glfw::natives-linux"
     runtimeOnly "org.lwjgl:lwjgl-assimp::natives-linux"
-    runtimeOnly "org.lwjgl:lwjgl-openal::natives-linux"
+    runtimeOnly "org.lwjgl:lwjgl-opengl::natives-linux"
     runtimeOnly "org.lwjgl:lwjgl-stb::natives-linux"
+    runtimeOnly "org.lwjgl:lwjgl-glfw::natives-linux"
     runtimeOnly "org.lwjgl:lwjgl-ktx::natives-linux"
 
     runtimeOnly "org.lwjgl:lwjgl::natives-windows"
-    runtimeOnly "org.lwjgl:lwjgl-opengl::natives-windows"
-    runtimeOnly "org.lwjgl:lwjgl-glfw::natives-windows"
     runtimeOnly "org.lwjgl:lwjgl-assimp::natives-windows"
-    runtimeOnly "org.lwjgl:lwjgl-openal::natives-windows"
+    runtimeOnly "org.lwjgl:lwjgl-opengl::natives-windows"
     runtimeOnly "org.lwjgl:lwjgl-stb::natives-windows"
+    runtimeOnly "org.lwjgl:lwjgl-glfw::natives-windows"
     runtimeOnly "org.lwjgl:lwjgl-ktx::natives-windows"
 }
 
@@ -114,7 +111,15 @@ jib {
     }
     to {
         image = "gaia3d/mago-3d-tiler"
-        tags = ["latest", project.version] as List<String>
+        /*tags = ["latest", project.version] as List<String>*/
+
+        def isStableRelease = project.hasProperty("stable") || project.hasProperty("release")
+        def tagList = [project.version.toString()]
+        if (isStableRelease) {
+            tagList += "latest"
+        }
+        tags = tagList as List<String>
+
         if (findProperty("jib.to.auth.username") || System.getenv("JIB_TO_AUTH_USERNAME")) {
             auth {
                 username = findProperty("jib.to.auth.username") ?: System.getenv("JIB_TO_AUTH_USERNAME")

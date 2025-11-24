@@ -10,7 +10,6 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.geometry.Position2D;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.joml.Vector3d;
-import org.xmlobjects.gml.model.geometry.DirectPosition;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
