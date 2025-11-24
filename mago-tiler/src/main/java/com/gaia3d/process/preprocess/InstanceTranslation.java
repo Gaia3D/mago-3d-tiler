@@ -5,11 +5,12 @@ import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.geotools.api.geometry.Position;
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.geometry.DirectPosition2D;
+import org.geotools.geometry.Position2D;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.joml.Vector3d;
-import org.opengis.geometry.DirectPosition;
+import org.xmlobjects.gml.model.geometry.DirectPosition;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -42,11 +43,11 @@ public class InstanceTranslation implements PreProcess {
             if (!coverages.isEmpty()) {
                 altitude.set(0.0d);
                 coverages.forEach((coverage) -> {
-                    DirectPosition worldPosition = new DirectPosition2D(DefaultGeographicCRS.WGS84, center.x, center.y);
+                    Position position2d = new Position2D(DefaultGeographicCRS.WGS84, center.x, center.y);
                     double[] altitudeArray = new double[1];
                     altitudeArray[0] = 0.0d;
                     try {
-                        coverage.evaluate(worldPosition, altitudeArray);
+                        coverage.evaluate(position2d, altitudeArray);
                     } catch (Exception e) {
                         log.debug("[DEBUG] Failed to load terrain height. Out of range");
                     }

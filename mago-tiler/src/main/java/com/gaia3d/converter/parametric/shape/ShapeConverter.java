@@ -15,7 +15,11 @@ import com.gaia3d.converter.parametric.pipe.PipeType;
 import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.geotools.data.Query;
+import org.geotools.api.data.Query;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.type.FeatureType;
+import org.geotools.api.feature.type.PropertyDescriptor;
+import org.geotools.api.filter.Filter;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.files.ShpFiles;
 import org.geotools.data.shapefile.shp.ShapefileReader;
@@ -27,10 +31,6 @@ import org.joml.Vector3d;
 import org.locationtech.jts.geom.*;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.type.FeatureType;
-import org.opengis.feature.type.PropertyDescriptor;
-import org.opengis.filter.Filter;
 
 import java.io.File;
 import java.io.IOException;
@@ -99,8 +99,12 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
             var coordinateReferenceSystem = features.getSchema().getCoordinateReferenceSystem();
             if (isDefaultCrs && coordinateReferenceSystem != null) {
                 CoordinateReferenceSystem crs = GlobeUtils.convertProj4jCrsFromGeotoolsCrs(coordinateReferenceSystem);
-                log.info(" - Coordinate Reference System : {}", crs.getName());
-                options.setSourceCrs(crs);
+                if (crs == null) {
+                    log.warn(" - Unable to convert Coordinate Reference System from Geotools to Proj4j.");
+                } else {
+                    log.info(" - Coordinate Reference System : {}", crs.getName());
+                    options.setSourceCrs(crs);
+                }
             }
 
             while (iterator.hasNext()) {

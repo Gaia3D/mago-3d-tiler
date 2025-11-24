@@ -1,6 +1,10 @@
 package com.gaia3d.util;
 
 import lombok.extern.slf4j.Slf4j;
+import org.geotools.api.referencing.FactoryException;
+import org.geotools.api.referencing.ReferenceIdentifier;
+import org.geotools.api.referencing.operation.MathTransform;
+import org.geotools.api.referencing.operation.TransformException;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.joml.Matrix4d;
@@ -10,10 +14,6 @@ import org.locationtech.proj4j.BasicCoordinateTransform;
 import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.ReferenceIdentifier;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
 
 import java.util.List;
 
@@ -217,9 +217,9 @@ public class GlobeUtils {
         return new Vector3d(dstCoord.x, dstCoord.y, dstCoord.z);
     }
 
-    public static Coordinate transformOnGeotools(org.opengis.referencing.crs.CoordinateReferenceSystem source, Coordinate coordinate) {
+    public static Coordinate transformOnGeotools(org.geotools.api.referencing.crs.CoordinateReferenceSystem source, Coordinate coordinate) {
         try {
-            org.opengis.referencing.crs.CoordinateReferenceSystem wgs84 = CRS.decode("EPSG:4326");
+            org.geotools.api.referencing.crs.CoordinateReferenceSystem wgs84 = CRS.decode("EPSG:4326");
 
             MathTransform transform = CRS.findMathTransform(source, wgs84, false);
             return JTS.transform(coordinate, coordinate, transform);
@@ -236,7 +236,7 @@ public class GlobeUtils {
         return EQUATORIAL_RADIUS / Math.sqrt(1.0 - e2 * sinLat * sinLat);
     }
 
-    public static org.opengis.referencing.crs.CoordinateReferenceSystem convertWkt(String wkt) {
+    public static org.geotools.api.referencing.crs.CoordinateReferenceSystem convertWkt(String wkt) {
         try {
             return CRS.parseWKT(wkt);
         } catch (FactoryException e) {
@@ -263,7 +263,7 @@ public class GlobeUtils {
         }
     }
 
-    public static CoordinateReferenceSystem convertProj4jCrsFromGeotoolsCrs(org.opengis.referencing.crs.CoordinateReferenceSystem crs) {
+    public static CoordinateReferenceSystem convertProj4jCrsFromGeotoolsCrs(org.geotools.api.referencing.crs.CoordinateReferenceSystem crs) {
         String epsg = null;
         List<ReferenceIdentifier> identifiers =  crs.getIdentifiers().stream().toList();
         if (!identifiers.isEmpty()) {
@@ -293,12 +293,18 @@ public class GlobeUtils {
             return null;
         } else {
             String epsgCode = "EPSG:" + epsg;
-            CoordinateReferenceSystem crsWgs84 = factory.createFromName(epsgCode);
-            if (crsWgs84 == null) {
-                log.error("[ERROR] Failed to create CRS from EPSG code: {}", epsgCode);
+            CoordinateReferenceSystem testCrs;
+            try {
+                testCrs = factory.createFromName(epsgCode);
+                if (testCrs == null) {
+                    log.error("[ERROR] Failed to create CRS from EPSG code: {}", epsgCode);
+                    return null;
+                }
+            } catch (RuntimeException e) {
+                log.error("[ERROR] Failed to create CRS from EPSG code: {}", epsgCode, e);
                 return null;
             }
-            return crsWgs84;
+            return testCrs;
         }
     }
 }

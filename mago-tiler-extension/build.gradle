@@ -13,12 +13,6 @@ dependencies {
     implementation "org.lwjgl:lwjgl-opengl"
     implementation "org.lwjgl:lwjgl-glfw"
 
-    implementation "org.locationtech.proj4j:proj4j:1.2.3"
-    implementation "org.locationtech.proj4j:proj4j-epsg:1.2.3"
-
-    implementation 'org.geotools:gt-geojson:26.5'
-    implementation 'org.geotools:gt-geojsondatastore:26.5'
-
     runtimeOnly "org.lwjgl:lwjgl::natives-linux"
     runtimeOnly "org.lwjgl:lwjgl-opengl::natives-linux"
     runtimeOnly "org.lwjgl:lwjgl-glfw::natives-linux"
@@ -34,7 +28,7 @@ dependencies {
 
 javadoc {
     enabled = false
-    options.addStringOption("locale", "ko_KR")
+    options.addStringOption("locale", "en_US")
     options.addStringOption("encoding", "UTF-8")
     options.addStringOption("charset", "UTF-8")
     options.addStringOption("docencoding", "UTF-8")

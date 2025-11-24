@@ -1,9 +1,10 @@
 📒 mago-common
----
+===
+
 This repository is a common library for Gaia3D's mago-io and mago-common.
 It contains shared code and resources that are used across multiple projects, ensuring consistency and reducing duplication.
 This library is designed to be used as a subtree in other repositories, allowing for easy integration and updates.
----
+
 ## How to use git subtree
 
 ### [remote]

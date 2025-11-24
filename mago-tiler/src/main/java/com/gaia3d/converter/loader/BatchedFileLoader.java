@@ -11,12 +11,12 @@ import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.eclipse.imagen.Interpolation;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.Interpolator2D;
 import org.geotools.coverage.processing.Operations;
 import org.geotools.gce.geotiff.GeoTiffReader;
 
-import javax.media.jai.Interpolation;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;

@@ -280,7 +280,7 @@ public class BatchedModelGltfWriter extends GltfWriter {
 
                 boolean overFlow = intValue < 0 || intValue > 65535;
                 if (overFlow) {
-                    log.warn("[WARN] The short texCoord value is out of range (0 ~ 65535): {}", intValue);
+                    log.debug("[WARN] The short texCoord value is out of range (0 ~ 65535): {}", intValue);
                     intValue = Math.max(0, Math.min(65535, intValue));
                 }
 

@@ -13,10 +13,10 @@ import com.gaia3d.converter.parametric.pipe.PipeElbow;
 import com.gaia3d.converter.parametric.pipe.PipeType;
 import com.gaia3d.util.GeometryUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
-import org.opengis.feature.simple.SimpleFeature;
 
 import java.io.File;
 import java.util.*;
