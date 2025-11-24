@@ -2758,6 +2758,9 @@ public class HalfEdgeSurface implements Serializable {
             int batchedH = batchedBoundary.getHeightInt();
             int batchedMinX = (int) batchedBoundary.getMinX();
             int batchedMinY = (int) batchedBoundary.getMinY();
+            if (!g2d.drawImage(expandedSubImage, (int) batchedBoundary.getMinX(), (int) batchedBoundary.getMinY(), null)) {
+               log.info("[WARN] HalfEdgeSurface.scissorTextures() : g2d.drawImage() returned false.");
+            }
         }
         g2d.dispose();
 
