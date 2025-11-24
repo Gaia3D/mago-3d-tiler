@@ -123,10 +123,10 @@ public class MainVoxelizer implements IAppLogic {
 
         gaiaScenesContainer.setRenderableGaiaScenes(renderableGaiaScenes);
 
-        // Create the voxel grid.***
+        // Create the voxel grid
         VoxelGrid3D voxelGrid3D = new VoxelGrid3D(gridsCountX, gridsCountY, gridsCountZ, bboxAllScenes.clone());
 
-        // Voxelizing XY plane.***
+        // Voxelizing XY plane
         log.info("starting voxelizing XY...");
         this.voxelizeXY(gridsCountX, gridsCountY, gridsCountZ, bboxAllScenes, voxelGrid3D);
         log.info("starting voxelizing XZ...");
@@ -134,19 +134,19 @@ public class MainVoxelizer implements IAppLogic {
         log.info("starting voxelizing YZ...");
         this.voxelizeYZ(gridsCountX, gridsCountY, gridsCountZ, bboxAllScenes, voxelGrid3D);
 
-        // make gaiaPrimitive by marchingCubes.***
+        // make gaiaPrimitive by marchingCubes
         GaiaScene originalScene = scenes.get(0); // take the first scene as original scene
 
-        voxelGrid3D.expand(1); // expand the voxel grid to avoid the artifacts.***
-        float isoValue = 0.01f; // original.***
-        isoValue = 0.8f; // for DC_Library scale 0.01 settings.***
+        voxelGrid3D.expand(1); // expand the voxel grid to avoid the artifacts
+        float isoValue = 0.01f; // original
+        isoValue = 0.8f; // for DC_Library scale 0.01 settings
         GaiaScene gaiaScene = MarchingCube.makeGaiaScene(voxelGrid3D, isoValue);
         log.info("MarchingCube process finished.");
         GaiaAttribute gaiaAttribute = new GaiaAttribute();
         gaiaScene.setAttribute(gaiaAttribute);
         gaiaScene.setOriginalPath(originalScene.getOriginalPath());
 
-        // now, make textures by oblique camera.***
+        // now, make textures by oblique camera
         HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaScene);
         GaiaBoundingBox bboxHedgeScene = halfEdgeScene.getBoundingBox();
 
@@ -162,10 +162,10 @@ public class MainVoxelizer implements IAppLogic {
         engine.makeBoxTexturesByObliqueCamera(halfEdgeScene, texturePixelsForMeter, bufferImageType);
         GaiaScene gaiaSceneWithTextures = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeScene);
 
-        // delete the gaiaScene to free the memory.***
+        // delete the gaiaScene to free the memory
         gaiaScene.clear();
 
-        // now transfer the bufferedImage to gaiaSceneMaterial.***
+        // now transfer the bufferedImage to gaiaSceneMaterial
         List<GaiaMaterial> halfEdgeMaterials = halfEdgeScene.getMaterials();
         List<GaiaMaterial> gaiaMaterials = gaiaSceneWithTextures.getMaterials();
         int materialsCount = halfEdgeMaterials.size();
@@ -193,12 +193,12 @@ public class MainVoxelizer implements IAppLogic {
         halfEdgeScene.deleteObjects();
         resultGaiaScenes.add(gaiaSceneWithTextures);
 
-        // return gl default values.***
+        // return gl default values
         glEnable(GL_CULL_FACE);
     }
 
     private void voxelizeYZ(int gridsCountX, int gridsCountY, int gridsCountZ, GaiaBoundingBox bboxAllScenes, VoxelGrid3D voxelGrid3D) {
-        // Voxelizing YZ plane.***
+        // Voxelizing YZ plane
         Vector3d bboxCenter = bboxAllScenes.getCenter();
         float xLength = (float) bboxAllScenes.getSizeX();
         float yLength = (float) bboxAllScenes.getSizeY();
@@ -236,7 +236,7 @@ public class MainVoxelizer implements IAppLogic {
         for (int i = 0; i < gridsCountX; i++) {
             // set the camera position
             Vector3d cameraPosition = new Vector3d(bboxCenter);
-            cameraPosition.add(-xLength * 0.5f + i * zRange + zRange * 0.5f, 0, 0); // The last one is the center of the voxel.***
+            cameraPosition.add(-xLength * 0.5f + i * zRange + zRange * 0.5f, 0, 0); // The last one is the center of the voxel
             camera.setPosition(cameraPosition);
 
             colorFbo.bind();
@@ -258,33 +258,11 @@ public class MainVoxelizer implements IAppLogic {
             colorFbo.unbind();
 
             voxelGrid3D.setVoxelsByAlphaYZ(i, bufferArray);
-
-            // test : save the image of fbo.*************************************************************
-//            int colorBufferedImageType = BufferedImage.TYPE_INT_ARGB;
-//            colorFbo.bind();
-//            BufferedImage colorImageTest = colorFbo.getBufferedImage(colorBufferedImageType);
-//            colorFbo.unbind();
-//
-//            // test save images
-//            try {
-//                String path = "D:\\Result_mago3dTiler";
-//                String fileName = "sliceYZ_" + i;
-//                String extension = ".png";
-//                String imagePath = path + "\\" + fileName + extension;
-//                File imageFile = new File(imagePath);
-//                ImageIO.write(colorImageTest, "png", imageFile);
-//            } catch (IOException e) {
-//                log.debug("Error writing image: {}", e);
-//            }
-//
-//            // delete the image.***
-//            colorImageTest.flush();
-//            colorImageTest = null;
         }
     }
 
     private void voxelizeXZ(int gridsCountX, int gridsCountY, int gridsCountZ, GaiaBoundingBox bboxAllScenes, VoxelGrid3D voxelGrid3D) {
-        // Voxelizing XZ plane.***
+        // Voxelizing XZ plane
         Vector3d bboxCenter = bboxAllScenes.getCenter();
         float xLength = (float) bboxAllScenes.getSizeX();
         float yLength = (float) bboxAllScenes.getSizeY();
@@ -349,30 +327,12 @@ public class MainVoxelizer implements IAppLogic {
             colorFbo.unbind();
 
             voxelGrid3D.setVoxelsByAlphaXZ(i, bufferArray);
-
-            // test : save the image of fbo.*************************************************************
-//            int colorBufferedImageType = BufferedImage.TYPE_INT_ARGB;
-//            colorFbo.bind();
-//            BufferedImage colorImageTest = colorFbo.getBufferedImage(colorBufferedImageType);
-//            colorFbo.unbind();
-//
-//            // test save images
-//            try {
-//                String path = "D:\\Result_mago3dTiler";
-//                String fileName = "sliceXZ_" + i;
-//                String extension = ".png";
-//                String imagePath = path + "\\" + fileName + extension;
-//                File imageFile = new File(imagePath);
-//                ImageIO.write(colorImageTest, "png", imageFile);
-//            } catch (IOException e) {
-//                log.debug("Error writing image: {}", e);
-//            }
         }
 
     }
 
     private void voxelizeXY(int gridsCountX, int gridsCountY, int gridsCountZ, GaiaBoundingBox bboxAllScenes, VoxelGrid3D voxelGrid3D) {
-        // Voxelizing XY plane.***
+        // Voxelizing XY plane
         Vector3d bboxCenter = bboxAllScenes.getCenter();
         float xLength = (float) bboxAllScenes.getSizeX();
         float yLength = (float) bboxAllScenes.getSizeY();
@@ -414,7 +374,7 @@ public class MainVoxelizer implements IAppLogic {
         for (int i = 0; i < gridsCountZ; i++) {
             // set the camera position
             Vector3d cameraPosition = new Vector3d(bboxCenter);
-            cameraPosition.add(0, 0, -zLength * 0.5f + i * zRange + zRange * 0.5f); // The last one is the center of the voxel.***
+            cameraPosition.add(0, 0, -zLength * 0.5f + i * zRange + zRange * 0.5f); // The last one is the center of the voxel
             camera.setPosition(cameraPosition);
 
             colorFbo.bind();
@@ -437,28 +397,6 @@ public class MainVoxelizer implements IAppLogic {
             colorFbo.unbind();
 
             voxelGrid3D.setVoxelsByAlphaXY(i, bufferArray);
-
-            // test : save the image of fbo.*************************************************************
-//            int colorBufferedImageType = BufferedImage.TYPE_INT_ARGB;
-//            colorFbo.bind();
-//            BufferedImage colorImageTest = colorFbo.getBufferedImage(colorBufferedImageType);
-//            colorFbo.unbind();
-//
-//            // test save images
-//            try {
-//                String path = "D:\\Result_mago3dTiler";
-//                String fileName = "sliceXY_" + i;
-//                String extension = ".png";
-//                String imagePath = path + "\\" + fileName + extension;
-//                File imageFile = new File(imagePath);
-//                ImageIO.write(colorImageTest, "png", imageFile);
-//            } catch (IOException e) {
-//                log.debug("Error writing image: {}", e);
-//            }
-//
-//            // delete the image.***
-//            colorImageTest.flush();
-//            colorImageTest = null;
         }
     }
 
@@ -598,7 +536,7 @@ public class MainVoxelizer implements IAppLogic {
             gaiaScenesContainer.setRenderableGaiaScenes(renderableGaiaScenes);
 
             //**********************************************************************************************************
-            // reMesh the scene.****************************************************************************************
+            // reMesh the scene*************************************************************************************
             Vector3d scenePositionRelToCellGrid = sceneInfo.getScenePosLC();
             Vector3d scenePosRelToCellGridNegative = new Vector3d(-scenePositionRelToCellGrid.x, -scenePositionRelToCellGrid.y, -scenePositionRelToCellGrid.z);
 
@@ -633,10 +571,10 @@ public class MainVoxelizer implements IAppLogic {
             ReMesherVertexCluster.reMeshScene(gaiaScene, reMeshParams, vertexClusters);
             translateScene(gaiaScene, scenePosRelToCellGridNegative); // translate the scene back to the original position
             vertexClusters.clear();
-            // end of reMeshing the scene.******************************************************************************
+            // end of reMeshing the scene***************************************************************************
             //**********************************************************************************************************
 
-            // now must translate to the relative position in the node.***
+            // now must translate to the relative position in the node
             GaiaNode gaiaNode = gaiaScene.getNodes().get(0);
             gaiaNode.setTransformMatrix(new Matrix4d(sceneTMatLC));
             gaiaNode.setPreMultipliedTransformMatrix(new Matrix4d(sceneTMatLC));
@@ -661,7 +599,7 @@ public class MainVoxelizer implements IAppLogic {
                 engine.makeIntegralBoxTexturesByObliqueCamera(halfEdgeScene, reMeshParams.getTexturePixelsForMeter(), bufferedImageType, nodeBBox, integralReMeshParameters,
                         mapClassifyIdToGaiaFaceToHalfEdgeFace, mapClassifyIdToGaiaFaceToCameraDirectionTypeInfo, mapClassificationCamDirTypeBBox,
                         mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeFacesList, faceVisibilityDataManager);
-                // end of making oblique camera textures.***
+                // end of making oblique camera textures
 
             } catch (Exception e) {
                 log.error("[ERROR] initializing the engine: ", e);
@@ -696,9 +634,6 @@ public class MainVoxelizer implements IAppLogic {
             }
         }
 
-
-        //TEST_SaveImagesOfIntegralReMeshFBOs(integralReMeshParameters, "integral");
-
         // Join all surfaces and weld vertices of the gaiaSceneMaster.
         gaiaSceneMaster.joinAllSurfaces();
         GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
@@ -723,13 +658,13 @@ public class MainVoxelizer implements IAppLogic {
 
         HalfEdgeScene halfEdgeSceneMaster = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaSceneMaster);
 
-        // Atlas texture.***********************************************************************************************
+        // Atlas texture********************************************************************************************
         // Here scissor the atlas textures.
         atlasTextureForIntegralReMesh(integralReMeshParameters, halfEdgeSceneMaster, mapClassifyIdToGaiaFaceToHalfEdgeFace,
                 mapClassifyIdToGaiaFaceToCameraDirectionTypeInfo, mapClassificationCamDirTypeBBox,
                 mapClassificationCamDirTypeModelViewMatrix, mapClassificationCamDirTypeFacesList,
                 outputPathString, nodeName);
-        // end of atlas texture.****************************************************************************************
+        // end of atlas texture*************************************************************************************
 
         //if (makeHorizontalSkirt) {
         halfEdgeSceneMaster.makeHorizontalSkirt();
@@ -858,7 +793,7 @@ public class MainVoxelizer implements IAppLogic {
             halfEdgeFace.setCameraDirectionType(CameraDirectionType.CAMERA_DIRECTION_ZNEG);
         }
 
-        // check visibility data manager.*******************************************************************************
+        // check visibility data manager****************************************************************************
         FaceVisibilityDataManager faceVisibilityDataManager = new FaceVisibilityDataManager();
 
         Map<String, Fbo> colorCodeFboMap = integralReMeshParameters.getColorCodeFboMap();
@@ -872,7 +807,7 @@ public class MainVoxelizer implements IAppLogic {
         updateFaceVisibilityData(CameraDirectionType.CAMERA_DIRECTION_XPOS_ZNEG, fboColorCodeXPosZNeg, faceVisibilityDataManager);
         Fbo fboColorCodeXNegZNeg = colorCodeFboMap.get("XNEG_ZNEG");
         updateFaceVisibilityData(CameraDirectionType.CAMERA_DIRECTION_XNEG_ZNEG, fboColorCodeXNegZNeg, faceVisibilityDataManager);
-        // end of checking visibility data manager.********************************************************************
+        // end of checking visibility data manager*****************************************************************
 
         // now assign face to each cameraDirectionType
         Map<GaiaFace, HalfEdgeFace> mapGaiaFaceToHalfEdgeFace = mapClassifyIdToGaiaFaceToHalfEdgeFace.computeIfAbsent(classificationId, k -> new HashMap<>());
@@ -994,7 +929,7 @@ public class MainVoxelizer implements IAppLogic {
             }
         }
 
-        // save atlas texture data.*************************************************************************************
+        // save atlas texture data**********************************************************************************
         String netTempPathString = outputPathString + File.separator + "temp" + File.separator + "reMeshTemp";
         Path netTempPath = Paths.get(netTempPathString);
         // create dirs if not exists
@@ -1042,7 +977,6 @@ public class MainVoxelizer implements IAppLogic {
         }
 
         BufferedImage atlasImage = atlasTexture.getBufferedImage();
-        //TEST_SaveBufferedImage(atlasImage, "integral_atlasTexture");
 
         // delete texturesAtlasDataList
         for (TexturesAtlasData texturesAtlasData : texturesAtlasDataList) {
@@ -1071,15 +1005,13 @@ public class MainVoxelizer implements IAppLogic {
             primitive.setMaterialId(materialsCount);
         }
 
-        // Scissoring the atlas texture.*******************************************************************
+        // Scissoring the atlas texture****************************************************************
         halfEdgeSceneMaster.scissorTextures();
         material = halfEdgeSceneMaster.getMaterials().get(materialsCount);
         textures = material.getTextures();
         atlasTextures = textures.get(TextureType.DIFFUSE);
         GaiaTexture atlasScissoredTexture = atlasTextures.get(0);
         atlasScissoredTexture.setParentPath(netSetImagesFolderPath.toString());
-
-        //TEST_SaveBufferedImage(atlasScissoredTexture.getBufferedImage(), "diffuse_atlasTexture");
 
         // save the atlas image to disk
         try {
@@ -1089,9 +1021,6 @@ public class MainVoxelizer implements IAppLogic {
         } catch (IOException e) {
             log.debug("Error writing image: {}", e);
         }
-
-
-        int hola = 0;
     }
 
     private void updateFaceVisibilityData(CameraDirectionType cameraDirectionType, Fbo colorCodeFbo, FaceVisibilityDataManager faceVisibilityDataManager) {
@@ -1203,11 +1132,11 @@ public class MainVoxelizer implements IAppLogic {
         // take the halfEdgeScene and decimate and cut it
         HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(resultGaiaScenes.get(0)); // only one scene
 
-        // Decimate the halfEdgeScene.**********************************************************************************************
+        // Decimate the halfEdgeScene*******************************************************************************************
 //        DecimateParameters decimateParameters = new DecimateParameters();
 //        decimateParameters.setBasicValues(1.0, 0.01, 0.01, 12.0, 1000000, 1, 0.1);
 //        halfEdgeScene.decimate(decimateParameters);
-        // End of decimating the halfEdgeScene.*************************************************************************************
+        // End of decimating the halfEdgeScene**********************************************************************************
 
         boolean scissorTextures = false;
         //List<HalfEdgeScene> resultCutHalfEdgeScenes = new ArrayList<>();

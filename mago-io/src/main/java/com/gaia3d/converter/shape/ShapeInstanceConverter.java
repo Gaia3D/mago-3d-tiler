@@ -122,7 +122,7 @@ public class ShapeInstanceConverter implements AttributeReader {
                             int calculatePointCount = calculatePointCount(polygon, coordinateReferenceSystem, density, scale);
                             points.addAll(getRandomPointsWithDensity(polygon, calculatePointCount));
                         } catch (FactoryException | TransformException e) {
-                            log.error("Error transforming geometry: {}", e.getMessage());
+                            log.error("Error transforming geometry:", e);
                             throw new RuntimeException(e);
                         }
                     }
@@ -131,7 +131,7 @@ public class ShapeInstanceConverter implements AttributeReader {
                         int calculatePointCount = calculatePointCount(polygon, coordinateReferenceSystem, density, scale);
                         points.addAll(getRandomPointsWithDensity(polygon, calculatePointCount));
                     } catch (FactoryException | TransformException e) {
-                        log.error("Error transforming geometry: {}", e.getMessage());
+                        log.error("Error transforming geometry: ", e);
                         throw new RuntimeException(e);
                     }
                 } else if (geom instanceof MultiPoint) {

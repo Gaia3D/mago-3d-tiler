@@ -122,7 +122,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         Map<Node, List<TileInfo>> nodeTileInfoMap = new HashMap<>();
 
         List<TileInfo> cuttedTileInfos = new ArrayList<>();
-        cuttingAndScissorProcessST(tileInfosCopy, lod, root, cuttedTileInfos, projectMaxDepthIdx); // original.***
+        cuttingAndScissorProcessST(tileInfosCopy, lod, root, cuttedTileInfos, projectMaxDepthIdx); // original
 
         // distribute contents to node in the correspondent depth
         // After a process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes
@@ -224,7 +224,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 //            }
 
             cuttedTileInfos.clear();
-            cuttingAndScissorProcessST(tileInfosCopy, lod, root, cuttedTileInfos, projectMaxDepthIdx); // original.***
+            cuttingAndScissorProcessST(tileInfosCopy, lod, root, cuttedTileInfos, projectMaxDepthIdx); // original
             if (integralReMeshScenesV2(cuttedTileInfos, lod, currDepth, root, projectMaxDepthIdx, decimateParameters, pixelsForMeter, screenPixelsForMeter, reMeshParams)) {
                 break;
             }
@@ -416,44 +416,41 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         octreeFaces.setLimitDepth(6);
         octreeFaces.setContentsCanBeInMultipleChildren(true);
 
-        GaiaScene scene = scenes.get(0);
+        GaiaScene scene = scenes.getFirst();
         GaiaOctreeUtils.getFaceDataListOfScene(scene, octreeFaces.getContents());
-
-        int hola = 0;
     }
 
     private void voxelizeScenes(List<TileInfo> tileInfos, int lod, Node rootNode, Map<Node, List<TileInfo>> nodeTileInfoMap, int maxDepth) {
-        // Test function.***
+        // Test function
         log.info("ReMeshing and cutting scenes for lod : " + lod);
         TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
         List<GaiaScene> gaiaSceneList = new ArrayList<>();
         List<HalfEdgeScene> resultReMeshedScenes = new ArrayList<>();
-
         List<TileInfo> newTileInfos = new ArrayList<>();
 
         double voxelSizeMeter = 1.0;
         double texturePixelSize = 1.0;
         double texturePixelsForMeter = 4.0;
 
-        // dcLibrary scale 0.01 settings.***
+        // dcLibrary scale 0.01 settings
         GaiaBoundingBox nodeBBoxLC = rootNode.calculateLocalBoundingBox();
         Matrix4d rootTransformMatrix = getNodeTransformMatrix(rootNode);
         Matrix4d rootTransformMatrixInverse = new Matrix4d(rootTransformMatrix);
         rootTransformMatrixInverse.invert();
 
         double maxSize = nodeBBoxLC.getMaxSize();
-        // the maxSize is for rootNode that has maxDepth.***
+        // the maxSize is for rootNode that has maxDepth
         // so, the maxSize rof lod is maxSize / Math.pow(2, maxDepth - lod);
         if (lod > 0) {
             maxSize = maxSize / Math.pow(2, maxDepth - lod);
         }
 
-        // ifc round bridge settings.***
+        // ifc round bridge settings
         voxelSizeMeter = maxSize / 40.0;
         texturePixelSize = maxSize / 512.0;
         texturePixelsForMeter = 1.0 / texturePixelSize;
 
-        // Re mesh by vertex clustering.***************************************************************************
+        // Re mesh by vertex clustering************************************************************************
         Vector3d cellGridOrigin = new Vector3d();
         double cellSize = voxelSizeMeter;
         CellGrid3D cellGrid = new CellGrid3D(cellGridOrigin, cellSize);
@@ -475,7 +472,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 continue;
             }
 
-            //Vector3d geoCoordCenter = tileInfo.getKmlInfo().getPosition(); // original.***
+            //Vector3d geoCoordCenter = tileInfo.getKmlInfo().getPosition(); // original
             Vector3d geoCoordCenter = tileInfo.getTileTransformInfo().getPosition(); // use TileTransformInfo position instead of KmlInfo position
             Vector3d scenePosWC = GlobeUtils.geographicToCartesianWgs84(geoCoordCenter);
             Vector4d scenePosLC4d = new Vector4d(scenePosWC.x, scenePosWC.y, scenePosWC.z, 1.0);
@@ -637,27 +634,27 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         double texturePixelSize = 1.0;
         double texturePixelsForMeter = 4.0;
 
-        // dcLibrary scale 0.01 settings.***
+        // dcLibrary scale 0.01 settings
         GaiaBoundingBox nodeBBoxLC = rootNode.calculateLocalBoundingBox();
         Matrix4d rootTransformMatrix = getNodeTransformMatrix(rootNode);
         Matrix4d rootTransformMatrixInverse = new Matrix4d(rootTransformMatrix);
         rootTransformMatrixInverse.invert();
 
         double maxSize = nodeBBoxLC.getMaxSize();
-        // the maxSize is for rootNode that has maxDepth.***
+        // the maxSize is for rootNode that has maxDepth
         // so, the maxSize rof lod is maxSize / Math.pow(2, maxDepth - lod);
         if (lod > 0) {
             maxSize = maxSize / Math.pow(2, maxDepth - lod);
         }
 
-        // ifc round bridge settings.***
+        // ifc round bridge settings
         voxelSizeMeter = maxSize / 30.0;
         texturePixelSize = maxSize / 512.0;
         texturePixelsForMeter = 1.0 / texturePixelSize;
 
         int tileInfosCount = tileInfos.size();
 
-        // 1rst, calculate the average bbox minSize among tileInfos.***
+        // 1rst, calculate the average bbox minSize among tileInfos
 //        double bboxMinSize = Double.MAX_VALUE;
 //        double averageBBoxMinSize = 0.0;
 //        for (int i = 0; i < tileInfosCount; i++) {
@@ -678,7 +675,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 //
 //        averageBBoxMinSize = averageBBoxMinSize / (double) tileInfosCount;
 
-        // Re mesh by vertex clustering.***************************************************************************
+        // Re mesh by vertex clustering************************************************************************
         Vector3d cellGridOrigin = new Vector3d();
         double cellSize = voxelSizeMeter;
 //        if (cellSize > averageBBoxMinSize * 0.5) {
@@ -704,7 +701,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 continue;
             }
 
-            //Vector3d geoCoordCenter = tileInfo.getKmlInfo().getPosition(); // original.***
+            //Vector3d geoCoordCenter = tileInfo.getKmlInfo().getPosition(); // original
             Vector3d geoCoordCenter = tileInfo.getTileTransformInfo().getPosition(); // use TileTransformInfo position instead of KmlInfo position
             Vector3d scenePosWC = GlobeUtils.geographicToCartesianWgs84(geoCoordCenter);
             Vector4d scenePosLC4d = new Vector4d(scenePosWC.x, scenePosWC.y, scenePosWC.z, 1.0);
@@ -861,7 +858,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         boolean makeVerticalSkirt = true;
         boolean cellSizeGreaterThanTileInfosBBox = false;
 
-        // ReMeshParameters.***
+        // ReMeshParameters
         GaiaBoundingBox rootNodeBBoxLC = rootNode.calculateLocalBoundingBox();
         Matrix4d rootTransformMatrix = getNodeTransformMatrix(rootNode);
         Matrix4d rootTransformMatrixInverse = new Matrix4d(rootTransformMatrix);
@@ -877,7 +874,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 
             intersectedNodes.clear();
             //*************************************************************************************************************************************
-            // in integral-reMesh, the intersection between node and tileInfo must be between node and the cartographicCenterDegree of tileInfo.***
+            // in integral-reMesh, the intersection between node and tileInfo must be between node and the cartographicCenterDegree of tileInfo
             Vector3d cartographicCenterDegree = cartographicBBox.getCenter();
             rootNode.getIntersectedNodesAsOctree(cartographicCenterDegree, nodeDepth, intersectedNodes);
             //*************************************************************************************************************************************
@@ -891,7 +888,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             }
         }
 
-        // 1rst, calculate the average bbox minSize among tileInfos.***
+        // 1rst, calculate the average bbox minSize among tileInfos
         double bboxMinSize = Double.MAX_VALUE;
         double averageBBoxMinSize = 0.0;
         int tileInfosCount = tileInfos.size();
@@ -912,15 +909,15 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 
         averageBBoxMinSize = averageBBoxMinSize / (double) tileInfosCount;
 
-        // Re mesh by vertex clustering.***************************************************************************
+        // Re mesh by vertex clustering************************************************************************
         double maxSize = rootNodeBBoxLC.getMaxSize();
-        // the maxSize is for rootNode that has maxDepth.***
+        // the maxSize is for rootNode that has maxDepth
         // so, the maxSize rof lod is maxSize / Math.pow(2, maxDepth - lod);
         if (lod > 0) {
             maxSize = maxSize / Math.pow(2, maxDepth - lod);
         }
 
-        // ifc round bridge settings.***
+        // ifc round bridge settings
         double voxelSizeMeter = maxSize / 30.0;
         double texturePixelSize = maxSize / 512.0;
         double texturePixelsForMeter = 1.0 / texturePixelSize;
@@ -932,7 +929,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             cellSize = averageBBoxMinSize * factor;
             log.info("Cell Size is adjusted to bboxMinSize * 0.9 : " + cellSize);
 
-            // delete cellAveragePositions of reMeshParams because the new cellSize is not the half of the old cellSize.***
+            // delete cellAveragePositions of reMeshParams because the new cellSize is not the half of the old cellSize
             Map<Vector3i, Vector3d> cellAveragePositions = reMeshParams.getCellAveragePositions();
             if (cellAveragePositions != null) {
                 cellAveragePositions.clear();
@@ -944,7 +941,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         CellGrid3D cellGrid = new CellGrid3D(cellGridOrigin, cellSize);
         reMeshParams.setTexturePixelsForMeter(texturePixelsForMeter);
         reMeshParams.setCellGrid(cellGrid);
-        // End reMeshParameters.***
+        // End reMeshParameters
 
         nodes = new ArrayList<>(nodeTileInfosMap.keySet());
 
@@ -972,7 +969,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(posWC);
                 sceneInfo.setTransformMatrix(transformMatrix);
 
-                // for remeshParams.******************************************************************************************
+                // for remeshParams***************************************************************************************
                 Vector3d geoCoordCenter = tileInfo.getTileTransformInfo().getPosition(); // use TileTransformInfo position instead of KmlInfo position
                 Vector3d scenePosWC = GlobeUtils.geographicToCartesianWgs84(geoCoordCenter);
                 Vector4d scenePosLC4d = new Vector4d(scenePosWC.x, scenePosWC.y, scenePosWC.z, 1.0);
@@ -1069,7 +1066,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             }
             content.setContentInfo(contentInfo);
             if (node.getContent() != null) {
-                log.info("Error : node.getContent() is not null. NetSurfaces lod 5 or more******************************");
+                log.info("Error : node.getContent() is not null. NetSurfaces lod 5 or more");
             }
             node.setContent(content);
 
@@ -1077,19 +1074,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             halfEdgeScene.deleteObjects();
             gaiaScene.clear();
             gaiaSet.clear();
-
-//            // test save resultImages
-//            String sceneName = "mosaicRenderTest_" + i + "_color";
-//            String sceneRawName = sceneName;
-//            String imageExtension = "jpg";
-//            String outputFolderPath = globalOptions.getOutputPath();
-//            try {
-//                File outputFile = new File(outputFolderPath, sceneRawName + "." + imageExtension);
-//                log.info("[Write Image] : {}", outputFile.getAbsoluteFile());
-//                ImageIO.write(bufferedImageColor, "jpg", outputFile);
-//            } catch (Exception e) {
-//                log.error("[ERROR] :", e);
-//            }
         }
 
         return cellSizeGreaterThanTileInfosBBox;
@@ -1390,7 +1374,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 continue;
             }
 
-            halfEdgeScene.decimate(decimateParameters); // new.***
+            halfEdgeScene.decimate(decimateParameters); // new
 
             if (halfEdgeScene.getTrianglesCount() == 0) {continue;}
 
@@ -1469,29 +1453,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             halfEdgeScene.deleteObjects();
             gaiaScene.clear();
             gaiaSet.clear();
-
-//            // test save resultImages
-//            String sceneName = "mosaicRenderTest_" + i + "_color";
-//            String sceneRawName = sceneName;
-//            imageExtension = "png";
-//            String outputFolderPath = globalOptions.getOutputPath();
-//            try {
-//                File outputFile = new File(outputFolderPath, sceneRawName + "." + imageExtension);
-//                log.info("[Write Image] : {}", outputFile.getAbsoluteFile());
-//                ImageIO.write(bufferedImageColor, "png", outputFile);
-//            } catch (Exception e) {
-//                log.error("[ERROR] :", e);
-//            }
-//
-//            try {
-//                sceneName = "mosaicRenderTest_" + i + "_depth";
-//                imageExtension = "png";
-//                File outputFile = new File(outputFolderPath, sceneName + "." + imageExtension);
-//                log.info("[Write Image] : {}", outputFile.getAbsoluteFile());
-//                ImageIO.write(bufferedImageDepth, "png", outputFile);
-//            } catch (Exception e) {
-//                log.error("[ERROR] :", e);
-//            }
         }
     }
 

@@ -150,7 +150,6 @@ public class MainRendererBillBoard implements IAppLogic {
 
             treeMesh.getPrimitives().add(primitive);
             classifyId++;
-            int hola = 0;
         }
 
         float trunkHeight = 0.0f;
@@ -198,7 +197,6 @@ public class MainRendererBillBoard implements IAppLogic {
 
             treeMesh.getPrimitives().add(primitive);
             classifyId++;
-            int hola = 0;
         }
 
         TextureAtlasManager textureAtlasManager = new TextureAtlasManager();

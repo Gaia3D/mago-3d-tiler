@@ -205,13 +205,6 @@ public class GaiaBoundingBox implements Serializable {
                 return false; // No intersection with the triangle plane.
             }
 
-//            double dist1 = trianglePlane.distanceToPoint(aaSegment.getStartPoint());
-//            double dist2 = trianglePlane.distanceToPoint(aaSegment.getEndPoint());
-//            if(dist1>0 && dist2>0 || dist1<0 && dist2<0) {
-//                intersectionPoint = trianglePlane.intersectionAASegment(aaSegment, axis);
-//                int hola = 0;
-//            }
-
             Vector3d[] trianglePoints = triangle.getPoints();
 
             Vector2d p = null;

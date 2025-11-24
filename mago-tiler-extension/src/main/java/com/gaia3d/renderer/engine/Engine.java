@@ -559,24 +559,6 @@ public class Engine {
         }
     }
 
-//    private void TEST_SaveImages(Fbo fbo, CameraDirectionType cameraDirectionType, String fileName) {
-//        // test save images.
-//        try {
-//            String randomId = cameraDirectionType.name();
-//            String path = "D:\\Result_mago3dTiler";
-//            String fileNameFinal = fileName + "_" + randomId;
-//            String extension = ".png";
-//            String imagePath = path + "\\" + fileNameFinal + extension;
-//            File imageFile = new File(imagePath);
-//            fbo.bind();
-//            BufferedImage image = fbo.getBufferedImage(BufferedImage.TYPE_INT_ARGB);
-//            fbo.unbind();
-//            ImageIO.write(image, "png", imageFile);
-//        } catch (IOException e) {
-//            log.debug("Error writing image: {}", e);
-//        }
-//    }
-
     public void makeBoxTexturesByObliqueCamera(HalfEdgeScene halfEdgeScene, double screenPixelsForMeter, int bufferImageType) {
         // Must know all faces classification ids
         // 1rst, extract all surfaces
@@ -618,7 +600,7 @@ public class Engine {
 
             GaiaScene gaiaSceneFromFaces = HalfEdgeUtils.gaiaSceneFromHalfEdgeFaces(facesList, mapGaiaFaceToHalfEdgeFace);
 
-            // set face ids for colorCode rendering.***
+            // set face ids for colorCode rendering
             GaiaExtractor extractor = new GaiaExtractor();
             List<GaiaFace> gaiaFaces = extractor.extractAllFaces(gaiaSceneFromFaces);
             int gaiaFacesCount = gaiaFaces.size();
@@ -779,7 +761,6 @@ public class Engine {
             }
 
             // now assign face to each cameraDirectionType
-            GaiaExtractor extractor = new GaiaExtractor();
             List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(gaiaSceneFromFaces);
             for (GaiaPrimitive gaiaPrimitive : primitives) {
                 List<GaiaSurface> gaiaSurfaces = gaiaPrimitive.getSurfaces();
@@ -904,7 +885,7 @@ public class Engine {
         String originalProjectName = originalPath.substring(originalPath.lastIndexOf(File.separator) + 1);
         String rawProjectName = originalProjectName.substring(0, originalProjectName.lastIndexOf("."));
 
-        //make tempFolder if no exists.***
+        //make tempFolder if no exists
         /*String tempFolderPath = this.getTempFolderPath();
         File tempFolder = new File(tempFolderPath);
         if (!tempFolder.exists()) {
@@ -1344,7 +1325,7 @@ public class Engine {
         face2.setIndices(indices2);
         resultSurface.getFaces().add(face2);*/
 
-        // now do render : albedo + normal.*****************************************************************************
+        // now do render : albedo + normal**************************************************************************
         float near = (float) -maxZ;
         float far = (float) -minZ;
 
@@ -1400,32 +1381,6 @@ public class Engine {
         BufferedImage colorImage = fboMRT.getBufferedImage(0, bufferImageType);
         BufferedImage normalImage = fboMRT.getBufferedImage(1, bufferImageType);
         fboMRT.unbind();
-
-        // test save images
-//        try {
-//            String randomId = String.valueOf(idxTest);
-//            String path = "D:\\Result_mago3dTiler";
-//            String fileName = "albedo_" + randomId;
-//            String extension = ".png";
-//            String imagePath = path + "\\" + fileName + extension;
-//            File imageFile = new File(imagePath);
-//            ImageIO.write(colorImage, "png", imageFile);
-//        } catch (IOException e) {
-//            log.debug("Error writing image: {}", e);
-//        }
-//
-//        // test save images
-//        try {
-//            String randomId = String.valueOf(idxTest);
-//            String path = "D:\\Result_mago3dTiler";
-//            String fileName = "normal_" + randomId;
-//            String extension = ".png";
-//            String imagePath = path + "\\" + fileName + extension;
-//            File imageFile = new File(imagePath);
-//            ImageIO.write(normalImage, "png", imageFile);
-//        } catch (IOException e) {
-//            log.debug("Error writing image: {}", e);
-//        }
 
         fboManager.deleteFboMRT("mrtRender");
 
@@ -1591,7 +1546,7 @@ public class Engine {
         face2.setIndices(indices2);
         resultSurface.getFaces().add(face2);
 
-        // now do render : albedo + normal.*****************************************************************************
+        // now do render : albedo + normal**************************************************************************
         float near = (float) -maxZ;
         float far = (float) -minZ;
 
@@ -1648,33 +1603,6 @@ public class Engine {
         BufferedImage colorImage = fboMRT.getBufferedImage(0, bufferImageType);
         BufferedImage normalImage = fboMRT.getBufferedImage(1, bufferImageType);
         fboMRT.unbind();
-
-        // test save images
-//        try {
-//            String randomId = String.valueOf(idxTest);
-//            String path = "D:\\Result_mago3dTiler";
-//            String fileName = "albedo_" + randomId;
-//            String extension = ".png";
-//            String imagePath = path + "\\" + fileName + extension;
-//            File imageFile = new File(imagePath);
-//            ImageIO.write(colorImage, "png", imageFile);
-//        } catch (IOException e) {
-//            log.debug("Error writing image: {}", e);
-//        }
-//
-//        // test save images
-//        try {
-//            String randomId = String.valueOf(idxTest);
-//            String path = "D:\\Result_mago3dTiler";
-//            String fileName = "normal_" + randomId;
-//            String extension = ".png";
-//            String imagePath = path + "\\" + fileName + extension;
-//            File imageFile = new File(imagePath);
-//            ImageIO.write(normalImage, "png", imageFile);
-//        } catch (IOException e) {
-//            log.debug("Error writing image: {}", e);
-//        }
-
         fboManager.deleteFboMRT("mrtRender");
 
         resultBufferedImages.add(colorImage);
@@ -1819,32 +1747,6 @@ public class Engine {
         // restore the current renderableScene
         gaiaScenesContainer.getRenderableGaiaScenes().clear();
         gaiaScenesContainer.getRenderableGaiaScenes().add(renderableSceneCurrent);
-
-//        // test save images
-//        try {
-//            String randomId = cameraDirectionType.name();
-//            String path = "D:\\Result_mago3dTiler";
-//            String fileName = "albedo_" + randomId;
-//            String extension = ".png";
-//            String imagePath = path + "\\" + fileName + extension;
-//            File imageFile = new File(imagePath);
-//            ImageIO.write(image, "png", imageFile);
-//        } catch (IOException e) {
-//            log.debug("Error writing image: {}", e);
-//        }
-//
-//        // test save images
-//        try {
-//            String randomId = cameraDirectionType.name();
-//            String path = "D:\\Result_mago3dTiler";
-//            String fileName = "colorCoded_" + randomId;
-//            String extension = ".png";
-//            String imagePath = path + "\\" + fileName + extension;
-//            File imageFile = new File(imagePath);
-//            ImageIO.write(imageColorCode, "png", imageFile);
-//        } catch (IOException e) {
-//            log.debug("Error writing image: {}", e);
-//        }
 
         // check the colorCoded image
         colorCodeFbo.bind();
@@ -2027,32 +1929,6 @@ public class Engine {
         // restore the current renderableScene
         gaiaScenesContainer.getRenderableGaiaScenes().clear();
         gaiaScenesContainer.getRenderableGaiaScenes().add(renderableSceneCurrent);
-
-        // test save images
-//        try {
-//            String randomId = String.valueOf(UUID.randomUUID());
-//            String path = "D:\\Result_mago3dTiler";
-//            String fileName = "albedo_" + randomId;
-//            String extension = ".png";
-//            String imagePath = path + "\\" + fileName + extension;
-//            File imageFile = new File(imagePath);
-//            ImageIO.write(image, "png", imageFile);
-//        } catch (IOException e) {
-//            log.debug("Error writing image: {}", e);
-//        }
-
-        // test save images
-//        try {
-//            String randomId = String.valueOf(UUID.randomUUID());
-//            String path = "D:\\Result_mago3dTiler";
-//            String fileName = "colorCoded_" + randomId;
-//            String extension = ".png";
-//            String imagePath = path + "\\" + fileName + extension;
-//            File imageFile = new File(imagePath);
-//            ImageIO.write(imageColorCode, "png", imageFile);
-//        } catch (IOException e) {
-//            log.debug("Error writing image: {}", e);
-//        }
 
         // check the colorCoded image
         colorCodeFbo.bind();

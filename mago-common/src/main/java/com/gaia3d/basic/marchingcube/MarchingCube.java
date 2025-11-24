@@ -730,7 +730,7 @@ public class MarchingCube {
                     }
                 }
 
-                // set random color to material.***
+                // set random color to material
                 byte[] randomColor = new byte[4];
                 float randomRed = (float) Math.random();
                 randomColor[0] = (byte) (randomRed * 255.0f);
@@ -798,7 +798,7 @@ public class MarchingCube {
                 VertexNormalCalculator vertexNormalCalculator = new VertexNormalCalculator();
                 vertexNormalCalculator.apply(gaiaScene);
 
-                // set color by legendColors.***
+                // set color by legendColors
                 GaiaColor gaiaColor = legendColors.getColorLinearInterpolation(currIsoValue);
                 byte[] color4 = gaiaColor.getColorBytesArray();
                 float redFloat = gaiaColor.getRed();

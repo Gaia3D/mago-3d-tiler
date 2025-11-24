@@ -221,7 +221,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
             rgbaByteArray = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
             rgbaByteArray2 = ((DataBufferByte) comparebufferedImage.getRaster().getDataBuffer()).getData();
         } catch (Exception e) {
-            log.error("[ERROR] Unable to get byte array from buffered image: {}", e.getMessage());
+            log.error("[ERROR] Unable to get byte array from buffered image:", e);
             return false;
         }
 

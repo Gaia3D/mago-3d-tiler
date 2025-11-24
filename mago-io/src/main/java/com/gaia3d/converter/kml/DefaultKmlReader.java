@@ -54,7 +54,7 @@ public class DefaultKmlReader implements AttributeReader {
             log.error("[ERROR] :", e);
             throw new RuntimeException(e);
         } catch (SAXException | ParserConfigurationException e) {
-            log.error("[ERROR] SAXException: {}", e.getMessage());
+            log.error("[ERROR] SAXException:", e);
         }
         return tileTransformInfo;
     }

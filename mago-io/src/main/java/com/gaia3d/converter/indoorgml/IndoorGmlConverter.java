@@ -164,8 +164,8 @@ public class IndoorGmlConverter extends AbstractGeometryConverter implements Con
             degreeTranslation.set(center);
             scenes.add(scene);
         } catch (Exception e) {
-            log.info("Failed to load IndoorGML file: {}", file.getAbsolutePath());
-            log.error(e.getMessage(), e);
+            log.info("Failed to load IndoorGML file: ", file.getAbsolutePath());
+            log.error("Error:", e);
         }
         return scenes;
     }

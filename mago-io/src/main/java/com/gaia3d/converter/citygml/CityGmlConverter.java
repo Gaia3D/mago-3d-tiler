@@ -532,22 +532,22 @@ public class CityGmlConverter extends AbstractGeometryConverter implements Conve
         } else {
             log.debug("Unsupported city object type: {}", cityObject.getClass().getSimpleName());
         }
-        int TEST_solidCount = 0;
+        int solidCount = 0;
 
         if (lod1Solid != null) {
             solids.add(lod1Solid);
-            TEST_solidCount++;
+            solidCount++;
         }
         if (lod2Solid != null) {
             solids.add(lod2Solid);
-            TEST_solidCount++;
+            solidCount++;
         }
         if (lod3Solid != null) {
             solids.add(lod3Solid);
-            TEST_solidCount++;
+            solidCount++;
         }
 
-        if (TEST_solidCount > 1) {
+        if (solidCount > 1) {
             log.warn("[WARN] Multiple solids found for city object: {}", cityObject.getId());
         }
 

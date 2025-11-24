@@ -555,7 +555,7 @@ public class HalfEdgeScene implements Serializable {
             return -Double.compare(p1.x, p2.x); // right to left
         });
 
-        // create a new surface.***
+        // create a new surface
         HalfEdgeNode rootNode = this.getNodes().get(0);
         HalfEdgeNode node = new HalfEdgeNode();
         rootNode.getChildren().add(node);
@@ -566,7 +566,7 @@ public class HalfEdgeScene implements Serializable {
         HalfEdgeSurface surface = new HalfEdgeSurface();
         primitive.getSurfaces().add(surface);
 
-        // west.***
+        // west
         List<HalfEdgeVertex> westVerticesBottom = new ArrayList<>();
         for (int i = 0; i < westVertices.size(); i++) {
             HalfEdgeVertex v1 = westVertices.get(i);
@@ -582,7 +582,7 @@ public class HalfEdgeScene implements Serializable {
             HalfEdgeVertex v1Down = westVerticesBottom.get(i);
             HalfEdgeVertex v2Down = westVerticesBottom.get(i + 1);
 
-            // make hafEdges.***
+            // make hafEdges
             HalfEdge he1 = new HalfEdge();
             HalfEdge he2 = new HalfEdge();
             HalfEdge he3 = new HalfEdge();

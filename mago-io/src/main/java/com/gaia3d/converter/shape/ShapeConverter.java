@@ -446,8 +446,6 @@ public class ShapeConverter extends AbstractGeometryConverter implements Convert
 
             // set the positions in the pipeLineString
             pipeLineString.setPositions(localPositions);
-
-            //pipeLineString.TEST_Check();
             if (localPositions.size() > 2) {
                 pipeLineString.deleteDuplicatedPoints();
             }

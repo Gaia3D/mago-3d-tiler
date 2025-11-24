@@ -24,7 +24,7 @@ class DecimalUtilsTest {
         try {
             double result = Double.parseDouble(decimalFormat.format(original));
         } catch (NumberFormatException e) {
-            log.error("[ERROR] Fail Case: {}", e.getMessage());
+            log.error("[ERROR] Fail Case: ", e);
         }
 
         decimalFormat.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ENGLISH));

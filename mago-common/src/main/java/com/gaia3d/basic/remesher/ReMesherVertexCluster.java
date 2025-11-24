@@ -46,8 +46,8 @@ public class ReMesherVertexCluster {
 
     public static void reMeshScene(GaiaScene gaiaScene, ReMeshParameters reMeshParams, Map<Vector3i, List<GaiaVertex>> vertexClusters) {
         //************************************************************************************
-        // Note: the gaiaScene must spend its transform matrix before calling this method.****
-        // Note: the gaiaScene must join all surfaces before calling this method.*************
+        // Note: the gaiaScene must spend its transform matrix before calling this method*
+        // Note: the gaiaScene must join all surfaces before calling this method**********
         //************************************************************************************
         Map<GaiaVertex, List<GaiaFace>> mapVertexToFaces = makeMapVertexToFaces(gaiaScene);
         Map<GaiaVertex, Integer> vertexToIndexMap = new HashMap<>();
@@ -126,7 +126,7 @@ public class ReMesherVertexCluster {
             }
 
             // check if exists the average position for the cell
-            Vector3d averagePosition = cellAveragePositions.get(cellIndex); // original.***
+            Vector3d averagePosition = cellAveragePositions.get(cellIndex); // original
             if (averagePosition == null) {
                 // Calculate the average position of the cluster
                 averagePosition = new Vector3d();
@@ -181,7 +181,7 @@ public class ReMesherVertexCluster {
             reMeshParams.deleteCellAveragePositionInsideBox(sceneMinCellIndex, sceneMaxCellIndex);
         }
 
-        // now delete degenerate faces.***
+        // now delete degenerate faces
         GaiaPrimitive primitive = primitives.get(0);
         primitive.deleteDegeneratedFaces(); // here deletes no used vertices either.
     }

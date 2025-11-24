@@ -278,7 +278,7 @@ public class HalfEdgeSurface implements Serializable {
 //        octree.setMinBoxSize(1.0);
 //        octree.makeTreeByMinVertexCount(20);
 
-        // new.**********************
+        // new*******************
         GaiaBoundingBox bbox = new GaiaBoundingBox();
         for (HalfEdgeVertex vertex : vertices) {
             Vector3d position = vertex.getPosition();
@@ -291,7 +291,7 @@ public class HalfEdgeSurface implements Serializable {
         octreeVertices.setLimitVertexCount(20);
         octreeVertices.makeTree();
         List<GaiaOctree<HalfEdgeVertex>> nodesWithContents = octreeVertices.extractOctreesWithContents();
-        // end new.**********************
+        // end new*******************
 
 //        List<HalfEdgeOctreeFaces> nodesWithContents2 = new ArrayList<>();
 //        octree.extractOctreesWithContents(nodesWithContents2);
@@ -1209,12 +1209,12 @@ public class HalfEdgeSurface implements Serializable {
                 continue;
             }
 
-//            // Test.*************************************************************
+//            // Test**********************************************************
 //            double dot = normalA.dot(normalB);
 //            if (Math.abs(dot) < 0.342) {
 //                return false;
 //            }
-//            // End test.*********************************************************
+//            // End test******************************************************
 
             double aspectRatio = HalfEdgeUtils.calculateAspectRatioAsTriangle(verticesB.get(0), verticesB.get(1), verticesB.get(2));
             if (aspectRatio > maxAspectRatio) {
@@ -1428,7 +1428,6 @@ public class HalfEdgeSurface implements Serializable {
     private void splitHalfEdge(HalfEdge halfEdge, HalfEdgeVertex intersectionVertex) {
         // When split a halfEdge, must split the face too
         // If exist twin, must split the twin and twin's face too
-        //TEST_checkHalfEdgeLength();
         HalfEdge twin = halfEdge.getTwin();
 
         HalfEdgeVertex startVertex = halfEdge.getStartVertex();
@@ -2744,8 +2743,8 @@ public class HalfEdgeSurface implements Serializable {
             BufferedImage reducedSubImage = null;
             try {
                 reducedSubImage = image.getSubimage(reducedSubImageMinX, reducedSubImageMinY, reducedSubImageW, reducedSubImageH);
-            } catch (Exception ex) {
-                log.error("[ERROR] HalfEdgeSurface.scissorTextures() : Exception in image.getSubimage(). ex = " + ex.getMessage());
+            } catch (Exception e) {
+                log.error("[ERROR] HalfEdgeSurface.scissorTextures() : Exception in image.getSubimage().", e);
                 continue;
             }
 
@@ -2759,15 +2758,6 @@ public class HalfEdgeSurface implements Serializable {
             int batchedH = batchedBoundary.getHeightInt();
             int batchedMinX = (int) batchedBoundary.getMinX();
             int batchedMinY = (int) batchedBoundary.getMinY();
-            if (batchedBoundary.getWidthInt() > atlasWidth || batchedBoundary.getHeightInt() > atlasHeight) {
-                int hola = 0;
-            }
-            if (batchedMinX + batchedBoundary.getWidthInt() > atlasWidth || batchedMinY + batchedBoundary.getHeightInt() > atlasHeight) {
-                int hola = 0;
-            }
-            if (!g2d.drawImage(expandedSubImage, (int) batchedBoundary.getMinX(), (int) batchedBoundary.getMinY(), null)) {
-                int hola = 0;
-            }
         }
         g2d.dispose();
 
@@ -3134,8 +3124,8 @@ public class HalfEdgeSurface implements Serializable {
             BufferedImage reducedSubImage = null;
             try {
                 reducedSubImage = image.getSubimage(reducedSubImageMinX, reducedSubImageMinY, reducedSubImageW, reducedSubImageH);
-            } catch (Exception ex) {
-                log.error("[ERROR] HalfEdgeSurface.scissorTextures() : Exception in image.getSubimage(). ex = " + ex.getMessage());
+            } catch (Exception e) {
+                log.error("[ERROR] HalfEdgeSurface.scissorTextures() : Exception in image.getSubimage()", e);
                 continue;
             }
 

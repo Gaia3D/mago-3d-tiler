@@ -475,13 +475,13 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
             for (GaiaSurfaceModel buildingSurface : surfaces) {
                 GaiaMaterial material = scene.getMaterials().get(0);
 
-                // Has holes.***
+                // Has holes
                 List<Vector3d> ExteriorPolygon = buildingSurface.getExteriorPositions();
                 Collections.reverse(ExteriorPolygon);
 
                 List<List<Vector3d>> interiorPolygons = buildingSurface.getInteriorPositions();
 
-                // convert points to local coordinates.***
+                // convert points to local coordinates
                 List<Vector3d> ExteriorPolygonLocal = new ArrayList<>();
                 for (Vector3d position : ExteriorPolygon) {
                     Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(position);
@@ -489,7 +489,7 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
                     ExteriorPolygonLocal.add(localPosition);
                 }
 
-                // interior points.***
+                // interior points
                 List<List<Vector3d>> interiorPolygonsLocal = new ArrayList<>();
                 for (List<Vector3d> interiorPolygon : interiorPolygons) {
                     List<Vector3d> interiorPolygonLocal = new ArrayList<>();
@@ -616,8 +616,6 @@ public class GeoJsonConverter extends AbstractGeometryConverter implements Conve
 
             // set the positions in the pipeLineString
             pipeLineString.setPositions(localPositions);
-
-            //pipeLineString.TEST_Check();
             if (localPositions.size() > 2) {
                 pipeLineString.deleteDuplicatedPoints();
             }
