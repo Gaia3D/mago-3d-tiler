@@ -15,7 +15,7 @@ public class GaiaTransformBaker implements PreProcess {
     @Override
     public TileInfo run(TileInfo tileInfo) {
         GaiaScene scene = tileInfo.getScene();
-        backer.bake(scene);
+        backer.apply(scene);
         tileInfo.updateSceneInfo();
         return tileInfo;
     }

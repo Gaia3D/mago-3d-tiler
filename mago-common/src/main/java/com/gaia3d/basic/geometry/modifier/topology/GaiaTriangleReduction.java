@@ -13,6 +13,7 @@ import java.util.List;
 @Setter
 @Getter
 public class GaiaTriangleReduction {
+
     public GaiaScene reduceScene(GaiaScene scene) {
         GaiaScene resultReducedScene = new GaiaScene();
         for (GaiaNode node : scene.getNodes()) {

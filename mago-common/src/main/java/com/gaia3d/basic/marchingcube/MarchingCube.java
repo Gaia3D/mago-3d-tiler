@@ -1,5 +1,9 @@
 package com.gaia3d.basic.marchingcube;
 
+import com.gaia3d.basic.geometry.modifier.topology.GaiaExtractor;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaWelder;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaWeldOptions;
+import com.gaia3d.basic.geometry.modifier.topology.VertexNormalCalculator;
 import com.gaia3d.basic.geometry.voxel.VoxelCPGrid3D;
 import com.gaia3d.basic.geometry.voxel.VoxelGrid3D;
 import com.gaia3d.basic.legend.GaiaColor;
@@ -702,17 +706,26 @@ public class MarchingCube {
                     continue;
                 }
 
-                gaiaScene.weldVertices(0.1, false, false, false, false);
-                gaiaScene.calculateVertexNormals();
+                GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
+                        .error(0.1)
+                        .checkTexCoord(false)
+                        .checkNormal(false)
+                        .checkColor(false)
+                        .checkBatchId(false)
+                        .build();
+                GaiaWelder weld = new GaiaWelder(weldOptions);
+                weld.apply(gaiaScene);
+                //gaiaScene.weldVertices(0.1, false, false, false, false);
 
-                List<GaiaPrimitive> gaiaPrimitives = gaiaScene.extractPrimitives(null);
-                for (int j = 0; j < gaiaPrimitives.size(); j++) {
-                    GaiaPrimitive gaiaPrimitive = gaiaPrimitives.get(j);
+                VertexNormalCalculator vertexNormalCalculator = new VertexNormalCalculator();
+                vertexNormalCalculator.apply(gaiaScene);
+
+                GaiaExtractor extractor = new GaiaExtractor();
+                List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(gaiaScene);
+                for (GaiaPrimitive gaiaPrimitive : primitives) {
                     gaiaPrimitive.setMaterialIndex(0);
-                    // set color to vertices.***
                     List<GaiaVertex> gaiaVertices = gaiaPrimitive.getVertices();
-                    for (int k = 0; k < gaiaVertices.size(); k++) {
-                        GaiaVertex gaiaVertex = gaiaVertices.get(k);
+                    for (GaiaVertex gaiaVertex : gaiaVertices) {
                         gaiaVertex.setColor(encodedColor4);
                     }
                 }
@@ -735,8 +748,7 @@ public class MarchingCube {
                     gaiaMaterial.setBlend(true);
                     gaiaMaterials.add(gaiaMaterial);
                 }
-                for (int j = 0; j < gaiaMaterials.size(); j++) {
-                    GaiaMaterial gaiaMaterial = gaiaMaterials.get(j);
+                for (GaiaMaterial gaiaMaterial : gaiaMaterials) {
                     gaiaMaterial.setDiffuseColor(new Vector4d(randomRed, randomGreen, randomBlue, alpha));
                     gaiaMaterial.setBlend(true);
                 }
@@ -749,13 +761,10 @@ public class MarchingCube {
                     GaiaMesh meshMaster = childNodeMaster.getMeshes().get(0);
                     GaiaPrimitive gaiaPrimitiveMaster = meshMaster.getPrimitives().get(0);
 
-                    for (int j = 0; j < gaiaPrimitives.size(); j++) {
-                        GaiaPrimitive gaiaPrimitive = gaiaPrimitives.get(j);
+                    for (GaiaPrimitive gaiaPrimitive : primitives) {
                         gaiaPrimitiveMaster.addPrimitive(gaiaPrimitive);
                     }
                 }
-
-                int hola = 0;
             }
         }
 
@@ -777,8 +786,17 @@ public class MarchingCube {
                     continue;
                 }
 
-                gaiaScene.weldVertices(0.1, false, false, false, false);
-                gaiaScene.calculateVertexNormals();
+                GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
+                        .error(0.1)
+                        .checkTexCoord(false)
+                        .checkNormal(false)
+                        .checkColor(false)
+                        .checkBatchId(false)
+                        .build();
+                GaiaWelder weld = new GaiaWelder(weldOptions);
+                weld.apply(gaiaScene);
+                VertexNormalCalculator vertexNormalCalculator = new VertexNormalCalculator();
+                vertexNormalCalculator.apply(gaiaScene);
 
                 // set color by legendColors.***
                 GaiaColor gaiaColor = legendColors.getColorLinearInterpolation(currIsoValue);
@@ -788,15 +806,12 @@ public class MarchingCube {
                 float blueFloat = gaiaColor.getBlue();
                 float alpha = gaiaColor.getAlpha();
 
-                List<GaiaPrimitive> gaiaPrimitives = gaiaScene.extractPrimitives(null);
-                for (int j = 0; j < gaiaPrimitives.size(); j++) {
-                    GaiaPrimitive gaiaPrimitive = gaiaPrimitives.get(j);
+                GaiaExtractor extractor = new GaiaExtractor();
+                List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(gaiaScene);
+                for (GaiaPrimitive gaiaPrimitive : primitives) {
                     gaiaPrimitive.setMaterialIndex(0);
-                    // set color to vertices.***
                     List<GaiaVertex> gaiaVertices = gaiaPrimitive.getVertices();
-                    for (int k = 0; k < gaiaVertices.size(); k++) {
-                        GaiaVertex gaiaVertex = gaiaVertices.get(k);
-                        //gaiaVertex.setColor(encodedColor4);
+                    for (GaiaVertex gaiaVertex : gaiaVertices) {
                         gaiaVertex.setColor(color4);
                     }
                 }
@@ -810,8 +825,7 @@ public class MarchingCube {
                     gaiaMaterial.setBlend(true);
                     gaiaMaterials.add(gaiaMaterial);
                 }
-                for (int j = 0; j < gaiaMaterials.size(); j++) {
-                    GaiaMaterial gaiaMaterial = gaiaMaterials.get(j);
+                for (GaiaMaterial gaiaMaterial : gaiaMaterials) {
                     gaiaMaterial.setDiffuseColor(new Vector4d(redFloat, greenFloat, blueFloat, alpha));
                     gaiaMaterial.setBlend(true);
                 }
@@ -819,13 +833,12 @@ public class MarchingCube {
                 if (gaiaSceneMaster == null) {
                     gaiaSceneMaster = gaiaScene;
                 } else {
-                    GaiaNode rootNodeMaster = gaiaSceneMaster.getNodes().get(0);
-                    GaiaNode childNodeMaster = rootNodeMaster.getChildren().get(0);
-                    GaiaMesh meshMaster = childNodeMaster.getMeshes().get(0);
-                    GaiaPrimitive gaiaPrimitiveMaster = meshMaster.getPrimitives().get(0);
+                    GaiaNode rootNodeMaster = gaiaSceneMaster.getNodes().getFirst();
+                    GaiaNode childNodeMaster = rootNodeMaster.getChildren().getFirst();
+                    GaiaMesh meshMaster = childNodeMaster.getMeshes().getFirst();
+                    GaiaPrimitive gaiaPrimitiveMaster = meshMaster.getPrimitives().getFirst();
 
-                    for (int j = 0; j < gaiaPrimitives.size(); j++) {
-                        GaiaPrimitive gaiaPrimitive = gaiaPrimitives.get(j);
+                    for (GaiaPrimitive gaiaPrimitive : primitives) {
                         gaiaPrimitiveMaster.addPrimitive(gaiaPrimitive);
                     }
                 }

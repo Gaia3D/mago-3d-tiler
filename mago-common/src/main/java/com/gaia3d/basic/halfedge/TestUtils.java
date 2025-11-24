@@ -1,6 +1,7 @@
 package com.gaia3d.basic.halfedge;
 
 import com.gaia3d.basic.geometry.GaiaRectangle;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaExtractor;
 import com.gaia3d.basic.model.*;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
@@ -28,7 +29,9 @@ public class TestUtils {
 
     public static double getMaxEdgeLength(GaiaScene scene) {
         double maxEdgeLength = -1;
-        List<GaiaPrimitive> primitives = scene.extractPrimitives(null);
+
+        GaiaExtractor extractor = new GaiaExtractor();
+        List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(scene);
         for (GaiaPrimitive primitive : primitives) {
             List<GaiaSurface> surfaces = primitive.getSurfaces();
             for (GaiaSurface surface : surfaces) {
@@ -57,7 +60,8 @@ public class TestUtils {
     }
 
     public static void translateGaiaScene(GaiaScene scene, double x, double y, double z) {
-        List<GaiaPrimitive> primitives = scene.extractPrimitives(null);
+        GaiaExtractor extractor = new GaiaExtractor();
+        List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(scene);
         for (GaiaPrimitive primitive : primitives) {
             List<GaiaVertex> vertices = primitive.getVertices();
             for (GaiaVertex vertex : vertices) {
@@ -168,7 +172,8 @@ public class TestUtils {
     }
 
     public static boolean checkGaiaScene(GaiaScene scene) {
-        List<GaiaPrimitive> primitives = scene.extractPrimitives(null);
+        GaiaExtractor extractor = new GaiaExtractor();
+        List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(scene);
         for (GaiaPrimitive primitive : primitives) {
             TestUtils.checkGaiaPrimitive(primitive);
         }

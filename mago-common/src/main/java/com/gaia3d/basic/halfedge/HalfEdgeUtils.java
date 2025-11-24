@@ -643,8 +643,8 @@ public class HalfEdgeUtils {
         HalfEdgeMesh halfEdgeMesh = new HalfEdgeMesh();
 
         // primitives
-        List<GaiaPrimitive> gaiaPrimitives = gaiaMesh.getPrimitives();
-        for (GaiaPrimitive gaiaPrimitive : gaiaPrimitives) {
+        List<GaiaPrimitive> primitives = gaiaMesh.getPrimitives();
+        for (GaiaPrimitive gaiaPrimitive : primitives) {
             if (gaiaPrimitive == null) {
                 log.error("[ERROR] gaiaPrimitive == null");
                 continue;

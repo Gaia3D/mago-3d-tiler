@@ -1,6 +1,7 @@
 package com.gaia3d.modifier;
 
 import com.gaia3d.TilerExtensionModule;
+import com.gaia3d.basic.geometry.modifier.transform.GaiaBaker;
 import com.gaia3d.basic.model.GaiaMaterial;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
@@ -53,7 +54,8 @@ public class TreeCreator {
         for (GaiaScene gaiaScene : resultGaiaScenes) {
             GaiaNode rootNode = gaiaScene.getNodes().get(0);
             rootNode.getTransformMatrix().rotateX(Math.toRadians(-90));
-            gaiaScene.spendTransformMatrix();
+            GaiaBaker baker = new GaiaBaker();
+            baker.apply(gaiaScene);
         }
 
         int lodCount = 6;

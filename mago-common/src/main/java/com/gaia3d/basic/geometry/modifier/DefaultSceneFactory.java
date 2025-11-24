@@ -1,4 +1,4 @@
-package com.gaia3d.converter;
+package com.gaia3d.basic.geometry.modifier;
 
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.Classification;
@@ -21,6 +21,11 @@ import java.util.UUID;
 public class DefaultSceneFactory {
     private static final String ROOT_NODE_NAME = "root";
     private static final String DEFAULT_MATERIAL_NAME = "default-material";
+
+    public GaiaScene createScene() {
+        GaiaScene gaiaScene = createScene(new File("temp"));
+        return gaiaScene;
+    }
 
     public GaiaScene createScene(File file) {
         GaiaScene scene = new GaiaScene();

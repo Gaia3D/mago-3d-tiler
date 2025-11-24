@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
+@Deprecated
 public class SceneCleaner {
 
     public void clean(GaiaScene scene) {

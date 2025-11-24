@@ -3,6 +3,11 @@ package com.gaia3d.basic.remesher;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.exchangable.SceneInfo;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaExtractor;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaTriangulator;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaWelder;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaWeldOptions;
+import com.gaia3d.basic.geometry.modifier.transform.GaiaBaker;
 import com.gaia3d.basic.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
@@ -19,7 +24,8 @@ import java.util.Map;
 public class ReMesherVertexCluster {
     private static Map<GaiaVertex, List<GaiaFace>> makeMapVertexToFaces(GaiaScene gaiaScene) {
         Map<GaiaVertex, List<GaiaFace>> mapVertexToFaces = new HashMap<>();
-        List<GaiaPrimitive> primitives = gaiaScene.extractPrimitives(null);
+        GaiaExtractor extractor = new GaiaExtractor();
+        List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(gaiaScene);
         for (GaiaPrimitive primitive : primitives) {
             List<GaiaVertex> vertices = primitive.getVertices();
             List<GaiaSurface> surfaces = primitive.getSurfaces();
@@ -48,7 +54,8 @@ public class ReMesherVertexCluster {
 
         //GaiaBoundingBox originalBBox = gaiaScene.updateBoundingBox();
 
-        List<GaiaPrimitive> primitives = gaiaScene.extractPrimitives(null);
+        GaiaExtractor extractor = new GaiaExtractor();
+        List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(gaiaScene);
         // There are only 1 primitive in the gaiaScene, so we can use it directly.
         List<GaiaVertex> vertices = primitives.get(0).getVertices();
 
@@ -227,14 +234,24 @@ public class ReMesherVertexCluster {
             //**************************************************************************************************************************
 
             gaiaScene = new GaiaScene(gaiaSet);
-            gaiaScene.makeTriangularFaces();
+            GaiaTriangulator triangulator = new GaiaTriangulator();
+            triangulator.apply(gaiaScene);
             GaiaNode gaiaNode = gaiaScene.getNodes().get(0);
             gaiaNode.setTransformMatrix(new Matrix4d(sceneTMatLC));
             gaiaNode.setPreMultipliedTransformMatrix(new Matrix4d(sceneTMatLC));
-            gaiaScene.spendTransformMatrix();
+            GaiaBaker baker = new GaiaBaker();
+            baker.apply(gaiaScene);
             gaiaScene.joinAllSurfaces();
             double weldError = 1e-6; // 1e-6 is a good value for remeshing
-            gaiaScene.weldVertices(weldError, false, false, false, false);
+            GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
+                    .error(weldError)
+                    .checkTexCoord(false)
+                    .checkNormal(false)
+                    .checkColor(false)
+                    .checkBatchId(false)
+                    .build();
+            GaiaWelder weld = new GaiaWelder(weldOptions);
+            weld.apply(gaiaScene);
 
             vertexClusters.clear();
             reMeshScene(gaiaScene, reMeshParameters, vertexClusters);

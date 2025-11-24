@@ -2,6 +2,7 @@ package com.gaia3d.basic.geometry.modifier;
 
 import com.gaia3d.basic.model.*;
 
+@Deprecated
 public interface SceneElementVisitor {
 
     default void visitScene(GaiaScene scene, TraversalContext ctx) {}

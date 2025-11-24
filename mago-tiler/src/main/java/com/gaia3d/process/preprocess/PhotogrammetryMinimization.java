@@ -1,6 +1,9 @@
 package com.gaia3d.process.preprocess;
 
 import com.gaia3d.basic.exchangable.GaiaSet;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaSceneCleaner;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaWelder;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaWeldOptions;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -17,14 +20,22 @@ public class PhotogrammetryMinimization implements PreProcess {
         if (scene != null) {
             scene.deleteNormals();
             // 1rst, must weld vertices
-            boolean checkTexCoord = true;
-            boolean checkNormal = false;
-            boolean checkColor = false;
-            boolean checkBatchId = false;
             double error = 1e-4;
             log.info("[Pre][Photogrammetry] Welding vertices in GaiaScene : {}", tileInfo.getTempPath());
-            scene.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
-            scene.deleteDegeneratedFaces();
+
+            GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
+                    .error(error)
+                    .checkTexCoord(true)
+                    .checkNormal(false)
+                    .checkColor(false)
+                    .checkBatchId(false)
+                    .build();
+            GaiaWelder weld = new GaiaWelder(weldOptions);
+            weld.apply(scene);
+
+            GaiaSceneCleaner cleaner = new GaiaSceneCleaner();
+            cleaner.apply(scene);
+            //scene.deleteDegeneratedFaces();
 
             log.info("[Pre][Photogrammetry] Minimize GaiaScene LOD 0 , Path : {}", tileInfo.getTempPath());
 

@@ -3,6 +3,7 @@ package com.gaia3d.basic.model;
 import com.gaia3d.basic.exchangable.GaiaBufferDataSet;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaExtractor;
 import com.gaia3d.basic.model.structure.SceneStructure;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -70,6 +71,13 @@ public class GaiaScene extends SceneStructure implements Serializable {
         return newBoundingBox;
     }
 
+    public GaiaNode getRootNode() {
+        if (this.nodes.isEmpty()) {
+            return null;
+        }
+        return this.nodes.getFirst();
+    }
+
     public void clear() {
         this.nodes.forEach(GaiaNode::clear);
         this.materials.forEach(GaiaMaterial::clear);
@@ -93,7 +101,6 @@ public class GaiaScene extends SceneStructure implements Serializable {
         clone.setOriginalPath(this.originalPath);
         clone.setGaiaBoundingBox(this.gaiaBoundingBox);
 
-        // attribute is a reference type.
         GaiaAttribute attribute = this.attribute.getCopy();
         clone.setAttribute(attribute);
         return clone;
@@ -107,27 +114,6 @@ public class GaiaScene extends SceneStructure implements Serializable {
         return triangleCount;
     }
 
-    @Deprecated
-    public void makeTriangleFaces() {
-        for (GaiaNode node : this.nodes) {
-            node.makeTriangleFaces();
-        }
-    }
-
-    @Deprecated
-    public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
-        for (GaiaNode node : this.nodes) {
-            node.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
-        }
-    }
-
-    @Deprecated
-    public void unWeldVertices() {
-        for (GaiaNode node : this.nodes) {
-            node.unWeldVertices();
-        }
-    }
-
     public List<GaiaFace> extractGaiaFaces(List<GaiaFace> resultFaces) {
         if (resultFaces == null) {
             resultFaces = new ArrayList<>();
@@ -139,7 +125,7 @@ public class GaiaScene extends SceneStructure implements Serializable {
     }
 
     public void joinAllSurfaces() {
-        GaiaNode rootNode = this.nodes.get(0);
+        GaiaNode rootNode = this.nodes.getFirst();
 
         GaiaMesh meshMaster = new GaiaMesh();
         GaiaPrimitive primitiveMaster = new GaiaPrimitive();
@@ -147,7 +133,8 @@ public class GaiaScene extends SceneStructure implements Serializable {
         primitiveMaster.getSurfaces().add(surfaceMaster);
         meshMaster.getPrimitives().add(primitiveMaster);
 
-        List<GaiaPrimitive> allPrimitives = this.extractPrimitives(null);
+        GaiaExtractor extractor = new GaiaExtractor();
+        List<GaiaPrimitive> allPrimitives = extractor.extractAllPrimitives(this);
         for (GaiaPrimitive primitive : allPrimitives) {
             primitiveMaster.addPrimitive(primitive);
         }
@@ -165,22 +152,6 @@ public class GaiaScene extends SceneStructure implements Serializable {
         children.add(node);
     }
 
-    public void getFinalVerticesCopy(List<GaiaVertex> finalVertices) {
-        // final vertices are the vertices multiplied by the transform matrix of the nodes
-        for (GaiaNode node : this.nodes) {
-            node.getFinalVerticesCopy(null, finalVertices);
-        }
-    }
-
-    public List<GaiaPrimitive> extractPrimitives(List<GaiaPrimitive> resultPrimitives) {
-        if (resultPrimitives == null) {
-            resultPrimitives = new ArrayList<>();
-        }
-        for (GaiaNode node : this.nodes) {
-            node.extractPrimitives(resultPrimitives);
-        }
-        return resultPrimitives;
-    }
 
     public void doNormalLengthUnitary() {
         for (GaiaNode node : this.nodes) {
@@ -194,44 +165,11 @@ public class GaiaScene extends SceneStructure implements Serializable {
         }
     }
 
-    @Deprecated
-    public void deleteDegeneratedFaces() {
-        for (GaiaNode node : this.nodes) {
-            node.deleteDegeneratedFaces();
-        }
-    }
-
-    @Deprecated
-    public void spendTransformMatrix() {
-        for (GaiaNode node : this.nodes) {
-            node.spendTransformMatrix();
-        }
-    }
-
-    @Deprecated
-    public void makeTriangularFaces() {
-        for (GaiaNode node : this.nodes) {
-            node.makeTriangularFaces();
-        }
-    }
-
     public int getFacesCount() {
         int facesCount = 0;
         for (GaiaNode node : this.nodes) {
             facesCount += node.getFacesCount();
         }
         return facesCount;
-    }
-
-    public void calculateNormal() {
-        for (GaiaNode node : this.nodes) {
-            node.calculateNormal();
-        }
-    }
-
-    public void calculateVertexNormals() {
-        for (GaiaNode node : this.nodes) {
-            node.calculateVertexNormals();
-        }
     }
 }

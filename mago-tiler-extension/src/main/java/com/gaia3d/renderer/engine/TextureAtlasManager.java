@@ -1,6 +1,7 @@
 package com.gaia3d.renderer.engine;
 
 import com.gaia3d.basic.geometry.GaiaRectangle;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaExtractor;
 import com.gaia3d.basic.halfedge.CameraDirectionType;
 import com.gaia3d.basic.halfedge.HalfEdgeFace;
 import com.gaia3d.basic.halfedge.HalfEdgeScene;
@@ -305,9 +306,9 @@ public class TextureAtlasManager {
         //visitedVertexMapMemSave.clear();
 
         List<GaiaVertex> faceVerticesMemSave = new ArrayList<>();
-        List<GaiaFace> faces = new ArrayList<>();
-        gaiaScene.extractGaiaFaces(faces);
 
+        GaiaExtractor extractor = new GaiaExtractor();
+        List<GaiaFace> faces = extractor.extractAllFaces(gaiaScene);
         Map<Integer, List<GaiaFace>> mapClassificationFacesList = new HashMap<>();
         for (GaiaFace face : faces) {
             int classificationId = face.getClassifyId();
@@ -315,12 +316,10 @@ public class TextureAtlasManager {
             faceList.add(face);
         }
 
-        int texAtlasDatasCount = texAtlasDatasList.size();
-        for (int i = 0; i < texAtlasDatasCount; i++) {
+        int texAtlasDataCount = texAtlasDatasList.size();
+        for (int i = 0; i < texAtlasDataCount; i++) {
             TexturesAtlasData texAtlasData = texAtlasDatasList.get(i);
             int classifyId = texAtlasData.getClassifyId();
-//            CameraDirectionType cameraDirectionType = texAtlasData.getCameraDirectionType();
-//            List<HalfEdgeFace> faceGroup = mapClassificationCamDirTypeFacesList.get(classifyId).get(cameraDirectionType);
 
             List<GaiaFace> faceGroup = mapClassificationFacesList.get(classifyId);
             if (faceGroup == null) {
@@ -389,13 +388,10 @@ public class TextureAtlasManager {
         }
 
         Map<HalfEdgeVertex, HalfEdgeVertex> groupVertexMapMemSave = new HashMap<>();
-        Map<HalfEdgeVertex, HalfEdgeVertex> visitedVertexMapMemSave = new HashMap<>();
-        visitedVertexMapMemSave.clear();
-
         List<HalfEdgeVertex> faceVerticesMemSave = new ArrayList<>();
 
-        int texAtlasDatasCount = texAtlasDatasList.size();
-        for (int i = 0; i < texAtlasDatasCount; i++) {
+        int texAtlasDataCount = texAtlasDatasList.size();
+        for (int i = 0; i < texAtlasDataCount; i++) {
             TexturesAtlasData texAtlasData = texAtlasDatasList.get(i);
             int classifyId = texAtlasData.getClassifyId();
             //PlaneType planeType = texAtlasData.getPlaneType(); // old old old old old old

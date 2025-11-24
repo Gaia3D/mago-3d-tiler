@@ -1,6 +1,7 @@
 package com.gaia3d.converter.shape;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.modifier.DefaultSceneFactory;
 import com.gaia3d.basic.geometry.parametric.GaiaExtrusionModel;
 import com.gaia3d.basic.geometry.tessellator.GaiaExtruder;
 import com.gaia3d.basic.geometry.tessellator.GaiaExtrusionSurface;

@@ -1,8 +1,10 @@
 package com.gaia3d.basic.geometry.modifier;
 
 import com.gaia3d.basic.model.*;
+import jdk.jfr.Experimental;
 import org.joml.Matrix4d;
 
+@Deprecated
 public final class SceneTraverser {
 
     public void traverse(GaiaScene scene, SceneElementVisitor visitor) {
@@ -17,7 +19,7 @@ public final class SceneTraverser {
 
     private void traverseNode(GaiaNode node, TraversalContext parentCtx, SceneElementVisitor visitor) {
         Matrix4d nodeWorld = new Matrix4d(parentCtx.worldMatrix())
-                .mul(node.getTransformMatrix()); 
+                .mul(node.getTransformMatrix());
         TraversalContext nodeCtx = parentCtx.withWorld(nodeWorld);
 
         visitor.visitNode(node, parentCtx);

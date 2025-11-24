@@ -9,6 +9,9 @@ import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.exchangable.SceneInfo;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaTriangulator;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaWelder;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaWeldOptions;
 import com.gaia3d.basic.geometry.octree.GaiaOctree;
 import com.gaia3d.basic.geometry.octree.GaiaOctreeFaces;
 import com.gaia3d.basic.geometry.octree.HalfEdgeOctreeFaces;
@@ -494,7 +497,9 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             }
             GaiaScene scene = new GaiaScene(gaiaSet);
             scene.setOriginalPath(tileInfo.getTempPath());
-            scene.makeTriangleFaces();
+
+            GaiaTriangulator triangulator = new GaiaTriangulator();
+            triangulator.apply(scene);
 
             gaiaSceneList.clear();
             gaiaSceneList.add(scene);
@@ -721,7 +726,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             }
             GaiaScene scene = new GaiaScene(gaiaSet);
             scene.setOriginalPath(tileInfo.getTempPath());
-            scene.makeTriangleFaces();
+            GaiaTriangulator triangulator = new GaiaTriangulator();
+            triangulator.apply(scene);
 
             gaiaSceneList.clear();
             gaiaSceneList.add(scene);
@@ -1129,7 +1135,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             }
             GaiaScene scene = new GaiaScene(gaiaSet);
             scene.setOriginalPath(tileInfo.getTempPath());
-            scene.makeTriangleFaces();
+            GaiaTriangulator triangulator = new GaiaTriangulator();
+            triangulator.apply(scene);
 
             gaiaSceneList.clear();
             resultDecimatedScenes.clear();
@@ -1767,12 +1774,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             log.error("[ERROR] setBBox is null.");
         }
         TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
-        Vector3d geoCoordPosition = tileTransformInfo.getPosition();
-
-        boolean checkTexCoord = true;
-        boolean checkNormal = false;
-        boolean checkColor = false;
-        boolean checkBatchId = false;
         double errorWeld = 1e-4;
 
         List<GaiaAAPlane> allPlanes = new ArrayList<>();
@@ -1784,8 +1785,18 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         GaiaScene scene = new GaiaScene(gaiaSet);
 
         scene.deleteNormals();
-        scene.makeTriangleFaces();
-        scene.weldVertices(errorWeld, checkTexCoord, checkNormal, checkColor, checkBatchId);
+
+        GaiaTriangulator triangulator = new GaiaTriangulator();
+        triangulator.apply(scene);
+        GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
+                .error(errorWeld)
+                .checkTexCoord(true)
+                .checkNormal(false)
+                .checkColor(false)
+                .checkBatchId(false)
+                .build();
+        GaiaWelder weld = new GaiaWelder(weldOptions);
+        weld.apply(scene);
         HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 
         Matrix4d transformMatrix = new Matrix4d();

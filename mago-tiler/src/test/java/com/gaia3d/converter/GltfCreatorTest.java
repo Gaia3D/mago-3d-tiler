@@ -1,5 +1,6 @@
 package com.gaia3d.converter;
 
+import com.gaia3d.basic.geometry.modifier.DefaultSceneFactory;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.Configuration;

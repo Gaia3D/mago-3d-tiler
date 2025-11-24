@@ -2,6 +2,7 @@ package com.gaia3d.basic.geometry.modifier;
 
 import org.joml.Matrix4d;
 
+@Deprecated
 public class TraversalContext {
     private final Matrix4d worldMatrix;
 

@@ -4,6 +4,8 @@ import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.exchangable.SceneInfo;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
+import com.gaia3d.basic.geometry.modifier.topology.*;
+import com.gaia3d.basic.geometry.modifier.transform.GaiaBaker;
 import com.gaia3d.basic.geometry.octree.HalfEdgeOctreeFaces;
 import com.gaia3d.basic.geometry.voxel.VoxelGrid3D;
 import com.gaia3d.basic.geometry.voxel.VoxelizeParameters;
@@ -461,9 +463,8 @@ public class MainVoxelizer implements IAppLogic {
     }
 
     private void translateScene(GaiaScene gaiaScene, Vector3d translation) {
-        List<GaiaPrimitive> primitives = new ArrayList<>();
-        gaiaScene.extractPrimitives(primitives);
-
+        GaiaExtractor extractor = new GaiaExtractor();
+        List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(gaiaScene);
         for (GaiaPrimitive primitive : primitives) {
             List<GaiaVertex> vertices = primitive.getVertices();
             for (GaiaVertex vertex : vertices) {
@@ -601,11 +602,24 @@ public class MainVoxelizer implements IAppLogic {
             Vector3d scenePositionRelToCellGrid = sceneInfo.getScenePosLC();
             Vector3d scenePosRelToCellGridNegative = new Vector3d(-scenePositionRelToCellGrid.x, -scenePositionRelToCellGrid.y, -scenePositionRelToCellGrid.z);
 
-            gaiaScene.makeTriangularFaces();
-            gaiaScene.spendTransformMatrix();
+            GaiaTriangulator triangulator = new GaiaTriangulator();
+            triangulator.apply(gaiaScene);
+            GaiaBaker baker = new GaiaBaker();
+            baker.apply(gaiaScene);
             gaiaScene.joinAllSurfaces();
-            gaiaScene.weldVertices(weldError, false, false, false, false);
-            gaiaScene.deleteDegeneratedFaces();
+
+            GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
+                    .error(weldError)
+                    .checkTexCoord(false)
+                    .checkNormal(false)
+                    .checkColor(false)
+                    .checkBatchId(false)
+                    .build();
+            GaiaWelder weld = new GaiaWelder(weldOptions);
+            weld.apply(gaiaScene);
+
+            GaiaSceneCleaner cleaner = new GaiaSceneCleaner();
+            cleaner.apply(gaiaScene);
             List<GaiaMaterial> materials = gaiaScene.getMaterials();
 
             // delete materials.
@@ -626,17 +640,18 @@ public class MainVoxelizer implements IAppLogic {
             GaiaNode gaiaNode = gaiaScene.getNodes().get(0);
             gaiaNode.setTransformMatrix(new Matrix4d(sceneTMatLC));
             gaiaNode.setPreMultipliedTransformMatrix(new Matrix4d(sceneTMatLC));
-            gaiaScene.spendTransformMatrix();
+            baker.apply(gaiaScene);
             gaiaScene.joinAllSurfaces();
-            gaiaScene.weldVertices(weldError, false, false, false, false);
-            gaiaScene.deleteDegeneratedFaces();
+            weld.apply(gaiaScene);
+            cleaner.apply(gaiaScene);
 
             try {
                 // render the scene
                 log.info("Rendering the scene : " + i + " / " + scenesCount + ". LOD : " + lod);
 
                 // for each gaiaScene, set the available faceIds, to use for colorCoded rendering
-                List<GaiaFace> gaiaFaces = gaiaScene.extractGaiaFaces(null);
+                GaiaExtractor extractor = new GaiaExtractor();
+                List<GaiaFace> gaiaFaces = extractor.extractAllFaces(gaiaScene);
                 for (GaiaFace gaiaFace : gaiaFaces) {
                     gaiaFace.setId(faceIdAvailable);
                     faceIdAvailable++;
@@ -661,7 +676,8 @@ public class MainVoxelizer implements IAppLogic {
             if (gaiaSceneMaster == null) {
                 gaiaSceneMaster = gaiaScene;
             } else {
-                List<GaiaPrimitive> primitives = gaiaScene.extractPrimitives(null);
+                GaiaExtractor extractor = new GaiaExtractor();
+                List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(gaiaScene);
                 GaiaNode rootNodeMaster = gaiaSceneMaster.getNodes().get(0);
                 GaiaNode nodeMaster = rootNodeMaster.getChildren().get(0);
                 GaiaMesh meshMaster = nodeMaster.getMeshes().get(0);
@@ -685,10 +701,21 @@ public class MainVoxelizer implements IAppLogic {
 
         // Join all surfaces and weld vertices of the gaiaSceneMaster.
         gaiaSceneMaster.joinAllSurfaces();
-        gaiaSceneMaster.weldVertices(weldError, false, false, false, false);
-        gaiaSceneMaster.deleteDegeneratedFaces();
+        GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
+                .error(weldError)
+                .checkTexCoord(false)
+                .checkNormal(false)
+                .checkColor(false)
+                .checkBatchId(false)
+                .build();
+        GaiaWelder weld = new GaiaWelder(weldOptions);
+        weld.apply(gaiaSceneMaster);
 
-        List<GaiaFace> gaiaFacesMaster = gaiaSceneMaster.extractGaiaFaces(null);
+        GaiaSceneCleaner cleaner = new GaiaSceneCleaner();
+        cleaner.apply(gaiaSceneMaster);
+
+        GaiaExtractor extractor = new GaiaExtractor();
+        List<GaiaFace> gaiaFacesMaster = extractor.extractAllFaces(gaiaSceneMaster);
         if (gaiaFacesMaster.isEmpty()) {
             log.info("[ERROR] gaiaFacesMaster is empty");
             return;
@@ -852,7 +879,8 @@ public class MainVoxelizer implements IAppLogic {
         Map<GaiaFace, CameraDirectionTypeInfo> mapGaiaFaceToCameraDirectionTypeInfo = mapClassifyIdToGaiaFaceToCameraDirectionTypeInfo.computeIfAbsent(classificationId, k -> new HashMap<>());
 
         GaiaScene gaiaSceneFromFaces = HalfEdgeUtils.gaiaSceneFromHalfEdgeFaces(facesList, mapGaiaFaceToHalfEdgeFace);
-        List<GaiaPrimitive> gaiaPrimitives = gaiaSceneFromFaces.extractPrimitives(null);
+        GaiaExtractor extractor = new GaiaExtractor();
+        List<GaiaPrimitive> gaiaPrimitives = extractor.extractAllPrimitives(gaiaSceneFromFaces);
         for (GaiaPrimitive gaiaPrimitive : gaiaPrimitives) {
             List<GaiaSurface> gaiaSurfaces = gaiaPrimitive.getSurfaces();
             for (GaiaSurface surface : gaiaSurfaces) {
@@ -862,8 +890,6 @@ public class MainVoxelizer implements IAppLogic {
                     CameraDirectionType bestCamDirType = faceVisibilityDataManager.getBestCameraDirectionTypeOfFace(faceId);
                     if (bestCamDirType == null) {
                         bestCamDirType = CameraDirectionType.CAMERA_DIRECTION_ZNEG;
-                    } else {
-                        int hola = 0;
                     }
 
                     // put it into map
@@ -1130,11 +1156,24 @@ public class MainVoxelizer implements IAppLogic {
             //**************************************************************************************************************************
             // Note: to reMesh or decimate the scene, 1- it must spend its transform matrix, 2- join all surfaces, 3- and weld vertices.
             //**************************************************************************************************************************
-            gaiaScene.makeTriangularFaces();
-            gaiaScene.spendTransformMatrix();
+            GaiaTriangulator triangulator = new GaiaTriangulator();
+            triangulator.apply(gaiaScene);
+            GaiaBaker baker = new GaiaBaker();
+            baker.apply(gaiaScene);
             gaiaScene.joinAllSurfaces();
-            gaiaScene.weldVertices(weldError, false, false, false, false);
-            gaiaScene.deleteDegeneratedFaces();
+
+            GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
+                    .error(weldError)
+                    .checkTexCoord(false)
+                    .checkNormal(false)
+                    .checkColor(false)
+                    .checkBatchId(false)
+                    .build();
+            GaiaWelder weld = new GaiaWelder(weldOptions);
+            weld.apply(gaiaScene);
+
+            GaiaSceneCleaner cleaner = new GaiaSceneCleaner();
+            cleaner.apply(gaiaScene);
             List<GaiaMaterial> materials = gaiaScene.getMaterials();
 
             // delete materials.
@@ -1152,8 +1191,15 @@ public class MainVoxelizer implements IAppLogic {
         }
 
 
-        resultGaiaScenes.get(0).weldVertices(weldError, false, false, false, false);
-
+        GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
+                .error(weldError)
+                .checkTexCoord(false)
+                .checkNormal(false)
+                .checkColor(false)
+                .checkBatchId(false)
+                .build();
+        GaiaWelder weld = new GaiaWelder(weldOptions);
+        weld.apply(resultGaiaScenes.getFirst());
         // take the halfEdgeScene and decimate and cut it
         HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(resultGaiaScenes.get(0)); // only one scene
 

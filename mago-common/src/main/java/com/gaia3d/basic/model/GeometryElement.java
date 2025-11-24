@@ -1,4 +1,4 @@
-package com.gaia3d.basic.geometry.modifier.topology;
+package com.gaia3d.basic.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
