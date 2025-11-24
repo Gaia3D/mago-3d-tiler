@@ -43,6 +43,7 @@ subprojects {
         implementation "org.geotools:gt-process"
         implementation "org.geotools:gt-process-raster"
         implementation "org.geotools:gt-process-feature"
+        implementation "org.geotools:gt-epsg-hsql"
         implementation "com.github.jai-imageio:jai-imageio-core:1.4.0"
         implementation "org.jdom:jdom2:2.0.6.1"
 
