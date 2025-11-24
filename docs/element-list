@@ -3,6 +3,12 @@ com.gaia3d.basic.exception
 com.gaia3d.basic.exchangable
 com.gaia3d.basic.geometry
 com.gaia3d.basic.geometry.entities
+com.gaia3d.basic.geometry.modifier
+com.gaia3d.basic.geometry.modifier.debug
+com.gaia3d.basic.geometry.modifier.projector
+com.gaia3d.basic.geometry.modifier.texcoord
+com.gaia3d.basic.geometry.modifier.topology
+com.gaia3d.basic.geometry.modifier.transform
 com.gaia3d.basic.geometry.network.modeler
 com.gaia3d.basic.geometry.octree
 com.gaia3d.basic.geometry.tessellator
@@ -45,7 +51,6 @@ com.gaia3d.process.postprocess.batch
 com.gaia3d.process.postprocess.instance
 com.gaia3d.process.postprocess.pointcloud
 com.gaia3d.process.preprocess
-com.gaia3d.process.preprocess.sub
 com.gaia3d.process.scanner
 com.gaia3d.process.tileprocess
 com.gaia3d.process.tileprocess.tile
