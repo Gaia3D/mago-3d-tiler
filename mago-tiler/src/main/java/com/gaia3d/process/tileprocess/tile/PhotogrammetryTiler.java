@@ -1794,7 +1794,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         halfEdgeScene.deleteObjects();
         gaiaSet.clear();
         scene.clear();
-        System.gc();
     }
 
     public List<TileInfo> cutHalfEdgeSceneByGaiaAAPlanesAndSaveTileInfos(HalfEdgeScene halfEdgeScene, List<GaiaAAPlane> planes, HalfEdgeOctreeFaces resultOctree,

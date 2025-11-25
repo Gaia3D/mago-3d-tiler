@@ -263,7 +263,6 @@ public class ReMesherVertexCluster {
 
             counter++;
             if (counter > 20) {
-                //System.gc();
                 counter = 0;
             }
         } // for each scene

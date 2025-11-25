@@ -629,7 +629,6 @@ public class MainVoxelizer implements IAppLogic {
 
             counter++;
             if (counter > 20) {
-                //System.gc();
                 counter = 0;
             }
         }
