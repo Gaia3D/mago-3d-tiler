@@ -1,6 +1,6 @@
 package com.gaia3d.converter;
 
-import com.gaia3d.command.Configuration;
+import com.gaia3d.command.LoggingConfiguration;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.assimp.AssimpConverterOptions;
@@ -14,7 +14,7 @@ import java.io.File;
 class AssimpGltfExporterTest {
 
     static {
-        Configuration.initConsoleLogger();
+        LoggingConfiguration.initConsoleLogger();
     }
 
     @Test

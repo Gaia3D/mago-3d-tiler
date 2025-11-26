@@ -1,7 +1,7 @@
 package com.gaia3d.converter.gltf;
 
 import com.gaia3d.basic.model.GaiaScene;
-import com.gaia3d.command.Configuration;
+import com.gaia3d.command.LoggingConfiguration;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.assimp.AssimpConverterOptions;
@@ -19,8 +19,8 @@ class GltfWriterTest {
     @Disabled
     @Test
     void testQuantization() {
-        Configuration.initConsoleLogger();
-        Configuration.setLevel(Level.DEBUG);
+        LoggingConfiguration.initConsoleLogger();
+        LoggingConfiguration.setLevel(Level.DEBUG);
 
         String inputPath = "D:/data/mago-3d-tiler/release-sample/sample-tree";
         String outputPath = "E:/data/mago-server/output/QUANTIZATION";

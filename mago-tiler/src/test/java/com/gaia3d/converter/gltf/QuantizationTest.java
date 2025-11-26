@@ -1,6 +1,6 @@
 package com.gaia3d.converter.gltf;
 
-import com.gaia3d.command.Configuration;
+import com.gaia3d.command.LoggingConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.junit.jupiter.api.Test;
@@ -13,7 +13,7 @@ class QuantizationTest {
 
     @Test
     void computeQuantizationMatrix() {
-        Configuration.initConsoleLogger();
+        LoggingConfiguration.initConsoleLogger();
 
         // cube sample
         float[] positions = new float[]{
@@ -46,7 +46,7 @@ class QuantizationTest {
 
     @Test
     void paddedLength() {
-        Configuration.initConsoleLogger();
+        LoggingConfiguration.initConsoleLogger();
 
         int xyzArrayLength = 3;
         int vertexCount = 5;
@@ -73,7 +73,7 @@ class QuantizationTest {
 
     @Test
     void convertSignedShortFromUnsignedShort() {
-        Configuration.initConsoleLogger();
+        LoggingConfiguration.initConsoleLogger();
 
         short signedShort = Quantization.convertSignedShortFromUnsignedShort(65535);
         assertEquals(-1, signedShort);
@@ -96,7 +96,7 @@ class QuantizationTest {
 
     @Test
     void quantizeUnsignedShorts() {
-        Configuration.initConsoleLogger();
+        LoggingConfiguration.initConsoleLogger();
 
         // cube sample
         float[] positions = new float[]{

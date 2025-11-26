@@ -1,6 +1,6 @@
 package com.gaia3d.local.release;
 
-import com.gaia3d.command.Configuration;
+import com.gaia3d.command.LoggingConfiguration;
 import com.gaia3d.local.MagoTestConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 @Slf4j
 class I3dmReleaseTest {
     static {
-        Configuration.initConsoleLogger();
+        LoggingConfiguration.initConsoleLogger();
     }
 
     @Test

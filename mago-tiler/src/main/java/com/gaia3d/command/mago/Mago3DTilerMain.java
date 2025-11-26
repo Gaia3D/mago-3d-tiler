@@ -1,12 +1,11 @@
 package com.gaia3d.command.mago;
 
-import com.gaia3d.command.Configuration;
+import com.gaia3d.command.LoggingConfiguration;
 import com.gaia3d.util.DecimalUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
 import org.apache.logging.log4j.Level;
 
-import java.io.File;
 import java.io.IOException;
 
 /**
@@ -19,7 +18,7 @@ public class Mago3DTilerMain {
 
     public static void main(String[] args) {
         try {
-            Options options = Configuration.createOptions();
+            Options options = LoggingConfiguration.createOptions();
             CommandLineParser parser = new DefaultParser();
             CommandLine command = parser.parse(options, args);
 
@@ -31,19 +30,20 @@ public class Mago3DTilerMain {
 
             // Logging configuration
             if (isQuiet) {
-                Configuration.setLevel(Level.OFF);
+                LoggingConfiguration.setLevel(Level.OFF);
             } else if (isDebug) {
-                Configuration.initConsoleLogger("[%p][%d{HH:mm:ss}][%C{2}(%M:%L)]::%message%n");
+                LoggingConfiguration.useAsyncAppended = false;
+                LoggingConfiguration.initConsoleLogger("[%p][%d{HH:mm:ss}][%C{2}(%M:%L)]::%message%n");
                 if (hasLogPath) {
-                    Configuration.initFileLogger("[%p][%d{HH:mm:ss}][%C{2}(%M:%L)]::%message%n", command.getOptionValue(ProcessOptions.LOG_PATH.getLongName()));
+                    LoggingConfiguration.initFileLogger("[%p][%d{HH:mm:ss}][%C{2}(%M:%L)]::%message%n", command.getOptionValue(ProcessOptions.LOG_PATH.getLongName()));
                 }
-                Configuration.setLevel(Level.DEBUG);
+                LoggingConfiguration.setLevel(Level.DEBUG);
             } else {
-                Configuration.initConsoleLogger();
+                LoggingConfiguration.initConsoleLogger();
                 if (hasLogPath) {
-                    Configuration.initFileLogger(null, command.getOptionValue(ProcessOptions.LOG_PATH.getLongName()));
+                    LoggingConfiguration.initFileLogger(null, command.getOptionValue(ProcessOptions.LOG_PATH.getLongName()));
                 }
-                Configuration.setLevel(Level.INFO);
+                LoggingConfiguration.setLevel(Level.INFO);
             }
 
             printStart();
@@ -78,7 +78,7 @@ public class Mago3DTilerMain {
             throw new RuntimeException("Failed to run main process.", e);
         }
         printEnd();
-        Configuration.destroyLogger();
+        LoggingConfiguration.destroyLogger();
     }
 
     /**

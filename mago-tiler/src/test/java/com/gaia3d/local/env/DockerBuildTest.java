@@ -1,6 +1,6 @@
 package com.gaia3d.local.env;
 
-import com.gaia3d.command.Configuration;
+import com.gaia3d.command.LoggingConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +15,7 @@ import java.util.List;
 class DockerBuildTest {
 
     static {
-        Configuration.initConsoleLogger();
+        LoggingConfiguration.initConsoleLogger();
     }
 
     @Test

@@ -74,7 +74,6 @@ class PntsReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
-                "-debug",
         };
         MagoTestConfig.execute(args);
     }

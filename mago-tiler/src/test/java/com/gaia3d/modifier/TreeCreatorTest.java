@@ -1,6 +1,6 @@
 package com.gaia3d.modifier;
 
-import com.gaia3d.command.Configuration;
+import com.gaia3d.command.LoggingConfiguration;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -8,7 +8,7 @@ import java.io.File;
 class TreeCreatorTest {
 
     static {
-        Configuration.initConsoleLogger();
+        LoggingConfiguration.initConsoleLogger();
     }
 
     @Test
