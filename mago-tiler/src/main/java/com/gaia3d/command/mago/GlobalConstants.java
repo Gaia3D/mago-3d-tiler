@@ -44,6 +44,8 @@ public class GlobalConstants {
     public static final double DEFAULT_ALTITUDE = 0.0d;
     public static final double DEFAULT_SCALE = 1.0d;
     public static final double DEFAULT_DENSITY = 1.0d;
+    public static final double DEFAULT_DIAMETER = 1.0d;
+    public static final double DEFAULT_HEADING = 0.0d;
 
     public static final boolean DEFAULT_USE_QUANTIZATION = false;
     public static final int REALISTIC_LOD0_MAX_TEXTURE_SIZE = 1024;

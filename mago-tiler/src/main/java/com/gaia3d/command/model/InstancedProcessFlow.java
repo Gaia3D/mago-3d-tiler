@@ -1,6 +1,7 @@
 package com.gaia3d.command.model;
 
 import com.gaia3d.basic.types.FormatType;
+import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.assimp.AssimpConverter;
@@ -86,6 +87,11 @@ public class InstancedProcessFlow implements ProcessFlow {
                 .minimumHeightValue(globalOptions.getMinimumHeight())
                 .skirtHeight(globalOptions.getSkirtHeight())
                 .flipCoordinate(globalOptions.isFlipCoordinate())
+                .defaultDensity(GlobalConstants.DEFAULT_DENSITY)
+                .defaultDiameter(GlobalConstants.DEFAULT_DIAMETER)
+                .defaultHeight(GlobalConstants.DEFAULT_HEIGHT)
+                .defaultScale(GlobalConstants.DEFAULT_SCALE)
+                .defaultHeading(GlobalConstants.DEFAULT_HEADING)
                 .build();
 
         AttributeReader reader = null;
