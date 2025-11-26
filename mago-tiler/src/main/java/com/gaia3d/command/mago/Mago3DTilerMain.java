@@ -100,7 +100,7 @@ public class Mago3DTilerMain {
         drawLine();
         log.info("[Process Summary]");
         log.info("Total tile contents count : {}", globalOptions.getTileCount());
-        log.info("Total 'tileset.json' File Size : {}", DecimalUtils.byteCountToDisplaySize(globalOptions.getTilesetSize()));
+        log.info("Total tileset.json File Size : {}", DecimalUtils.byteCountToDisplaySize(globalOptions.getTilesetSize()));
         drawLine();
     }
 

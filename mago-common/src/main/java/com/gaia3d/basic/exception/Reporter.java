@@ -19,9 +19,10 @@ import java.util.List;
 @Slf4j
 @Getter
 @Setter
+@Deprecated
 public class Reporter {
     private final String REPORT_FILE_NAME = "report";
-    private final String REPORT_FILE_EXTENSION = ".txt";
+    private final String REPORT_FILE_EXTENSION = ".log";
     private final String REPORT_FILE_ENCODING = "UTF-8";
     private List<Report> reportList = new ArrayList<>();
     private LocalDateTime startTime;

@@ -6,7 +6,7 @@ import com.gaia3d.basic.model.GaiaTextureScissorData;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GillotinePacker {
+public class GuillotinePacker {
     private final int width;
     private final int height;
     private final List<GaiaRectangle> freeRectangles = new ArrayList<>();
@@ -14,7 +14,7 @@ public class GillotinePacker {
     private final GaiaRectangle currentBoundary;
     private double candidateArea = 0.0;
 
-    public GillotinePacker() {
+    public GuillotinePacker() {
         this.width = 0;
         this.height = 0;
         //freeRectangles.add(new GaiaRectangle(0, 0, 0, 0));

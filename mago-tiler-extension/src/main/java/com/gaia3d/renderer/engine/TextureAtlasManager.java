@@ -24,12 +24,12 @@ public class TextureAtlasManager {
         int textureScissorDatasCount = texAtlasDatasList.size();
         log.info("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : textureScissorDatasCount = " + textureScissorDatasCount);
 
-        TextureAtlasPacker gillotinePacker = new TextureAtlasPacker();
+        TextureAtlasPacker guillotinePacker = new TextureAtlasPacker();
 
         for (int i = 0; i < textureScissorDatasCount; i++) {
             TexturesAtlasData textureScissorData = texAtlasDatasList.get(i);
-            if (!gillotinePacker.insert(textureScissorData)) {
-                log.info("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : gillotinePacker.insert() failed.");
+            if (!guillotinePacker.insert(textureScissorData)) {
+                log.info("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : guillotinePacker.insert() failed.");
             }
         }
     }

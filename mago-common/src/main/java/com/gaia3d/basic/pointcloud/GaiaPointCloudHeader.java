@@ -51,7 +51,7 @@ public class GaiaPointCloudHeader {
 
         // Check if the point is outside the bounding box
         if (gridX < 0 || gridX >= gridXLength || gridY < 0 || gridY >= gridYLength) {
-            log.warn("[WARN] Point is outside the bounding box: [[{}/{}], [{}/{}]]", gridX, gridXLength - 1, gridY, gridYLength - 1);
+            log.debug("[WARN] Point is outside the bounding box: [[{}/{}], [{}/{}]]", gridX, gridXLength - 1, gridY, gridYLength - 1);
             return null;
         }
         return tempGrid[gridX][gridY];

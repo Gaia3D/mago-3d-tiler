@@ -22,7 +22,7 @@ class RealisticReleaseTest {
                 "-pg",
                 "-c", "5187",
                 "-rotateX", "90",
-                "-leaveTemp",
+                //"-leaveTemp",
                 //"-glb",
                 //"-debug",
         };

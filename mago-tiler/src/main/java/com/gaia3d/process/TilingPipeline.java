@@ -65,9 +65,9 @@ public class TilingPipeline implements Pipeline {
     }
 
     private void readAllFiles(FileLoader fileLoader) {
-        log.info("[Load] Loading all files.");
+        log.info("[Load] Start loading all files.");
         fileList = fileLoader.loadFiles();
-        log.info("[Load] Finished loading all files");
+        log.info("[Load] Finished loading {} files.", fileList.size());
     }
 
     private void executePreProcesses(FileLoader fileLoader) throws InterruptedException {

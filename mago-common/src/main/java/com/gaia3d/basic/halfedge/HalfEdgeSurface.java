@@ -3243,12 +3243,12 @@ public class HalfEdgeSurface implements Serializable {
         int textureScissorDatasCount = textureScissorDates.size();
         log.info("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : textureScissorDatasCount = " + textureScissorDatasCount);
 
-        GillotinePacker gillotinePacker = new GillotinePacker();
+        GuillotinePacker guillotinePacker = new GuillotinePacker();
 
         for (int i = 0; i < textureScissorDatasCount; i++) {
             GaiaTextureScissorData textureScissorData = textureScissorDates.get(i);
-            if (!gillotinePacker.insert(textureScissorData)) {
-                log.info("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : gillotinePacker.insert() failed.");
+            if (!guillotinePacker.insert(textureScissorData)) {
+                log.info("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : guillotinePacker.insert() failed.");
             }
         }
     }
@@ -3371,7 +3371,7 @@ public class HalfEdgeSurface implements Serializable {
 
         int scissorDatesCountPre = textureScissorDatas.size();
         this.mergeScissorDates(textureScissorDatas);
-        log.info("getWeldedFacesGroups : scissorDates mergedCount = " + (scissorDatesCountPre - textureScissorDatas.size()));
+        log.debug("getWeldedFacesGroups : scissorDates mergedCount = " + (scissorDatesCountPre - textureScissorDatas.size()));
 
         resultWeldedFacesGroups.clear();
         weldedFacesGroupsCount = textureScissorDatas.size();
