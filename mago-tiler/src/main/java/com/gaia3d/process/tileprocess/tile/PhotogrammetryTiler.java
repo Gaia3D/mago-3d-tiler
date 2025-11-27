@@ -145,7 +145,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 decimateParameters.setBasicValues(9.0, 0.4, 0.9, 40.0, 1000000, 5, 1.0);
                 screenPixelsForMeter = screenPixelsForMeterLod1;
             } else if (d == 2) {
-                decimateParameters.setBasicValues(15.0, 0.5, 0.9, 40.0, 1000000, 5, 1.5);
+                decimateParameters.setBasicValues(12.0, 0.5, 0.9, 40.0, 1000000, 5, 1.5);
                 screenPixelsForMeter = screenPixelsForMeterLod1 / 2.0;
             } else {
                 decimateParameters.setBasicValues(20.0, 0.8, 1.0, 36.0, 1000000, 5, 2.0);
@@ -416,7 +416,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         octreeFaces.setLimitDepth(6);
         octreeFaces.setContentsCanBeInMultipleChildren(true);
 
-        GaiaScene scene = scenes.getFirst();
+        GaiaScene scene = scenes.get(0);
         GaiaOctreeUtils.getFaceDataListOfScene(scene, octreeFaces.getContents());
     }
 
@@ -621,231 +621,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         tileInfos.addAll(newTileInfos);
     }
 
-    public void reMeshAndCutScenes(List<TileInfo> tileInfos, int lod, Node rootNode, int maxDepth, DecimateParameters decimateParameters,
-                                   double pixelsForMeter, double screenPixelsForMeter) {
-        log.info("ReMeshing and cutting scenes for lod : " + lod);
-        TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
-        List<GaiaScene> gaiaSceneList = new ArrayList<>();
-        List<HalfEdgeScene> resultReMeshedScenes = new ArrayList<>();
-
-        List<TileInfo> newTileInfos = new ArrayList<>();
-
-        double voxelSizeMeter = 1.0;
-        double texturePixelSize = 1.0;
-        double texturePixelsForMeter = 4.0;
-
-        // dcLibrary scale 0.01 settings
-        GaiaBoundingBox nodeBBoxLC = rootNode.calculateLocalBoundingBox();
-        Matrix4d rootTransformMatrix = getNodeTransformMatrix(rootNode);
-        Matrix4d rootTransformMatrixInverse = new Matrix4d(rootTransformMatrix);
-        rootTransformMatrixInverse.invert();
-
-        double maxSize = nodeBBoxLC.getMaxSize();
-        // the maxSize is for rootNode that has maxDepth
-        // so, the maxSize rof lod is maxSize / Math.pow(2, maxDepth - lod);
-        if (lod > 0) {
-            maxSize = maxSize / Math.pow(2, maxDepth - lod);
-        }
-
-        // ifc round bridge settings
-        voxelSizeMeter = maxSize / 30.0;
-        texturePixelSize = maxSize / 512.0;
-        texturePixelsForMeter = 1.0 / texturePixelSize;
-
-        int tileInfosCount = tileInfos.size();
-
-        // 1rst, calculate the average bbox minSize among tileInfos
-//        double bboxMinSize = Double.MAX_VALUE;
-//        double averageBBoxMinSize = 0.0;
-//        for (int i = 0; i < tileInfosCount; i++) {
-//            TileInfo tileInfo = tileInfos.get(i);
-//            GaiaBoundingBox bbox = tileInfo.getBoundingBox();
-//            double tileMinSizeX = bbox.getSizeX();
-//            double tileMinSizeY = bbox.getSizeY();
-//            if (tileMinSizeX < bboxMinSize) {
-//                bboxMinSize = tileMinSizeX;
-//            }
-//
-//            if (tileMinSizeY < bboxMinSize) {
-//                bboxMinSize = tileMinSizeY;
-//            }
-//
-//            averageBBoxMinSize += bboxMinSize;
-//        }
-//
-//        averageBBoxMinSize = averageBBoxMinSize / (double) tileInfosCount;
-
-        // Re mesh by vertex clustering************************************************************************
-        Vector3d cellGridOrigin = new Vector3d();
-        double cellSize = voxelSizeMeter;
-//        if (cellSize > averageBBoxMinSize * 0.5) {
-//            cellSize = averageBBoxMinSize * 0.5;
-//            log.info("Cell Size is adjusted to bboxMinSize / 1.5 : " + cellSize);
-//        }
-        CellGrid3D cellGrid = new CellGrid3D(cellGridOrigin, cellSize);
-        ReMeshParameters reMeshParams = new ReMeshParameters();
-        reMeshParams.setTexturePixelsForMeter(texturePixelsForMeter);
-        reMeshParams.setCellGrid(cellGrid);
-
-        int totalTexturesSaved = 0;
-
-        tileInfosCount = tileInfos.size();
-        for (int i = 0; i < tileInfosCount; i++) {
-            log.info("ReMeshing and cutting scene : " + i + " of " + tileInfosCount + " for lod : " + lod);
-            TileInfo tileInfo = tileInfos.get(i);
-            Path tempPath = tileInfo.getTempPath();
-            Path tempFolder = tempPath.getParent();
-            GaiaBoundingBox cartographicBBox = tileInfo.getCartographicBBox();
-            if (cartographicBBox == null) {
-                log.error("[ERROR] cartographicBBox is null.");
-                continue;
-            }
-
-            //Vector3d geoCoordCenter = tileInfo.getKmlInfo().getPosition(); // original
-            Vector3d geoCoordCenter = tileInfo.getTileTransformInfo().getPosition(); // use TileTransformInfo position instead of KmlInfo position
-            Vector3d scenePosWC = GlobeUtils.geographicToCartesianWgs84(geoCoordCenter);
-            Vector4d scenePosLC4d = new Vector4d(scenePosWC.x, scenePosWC.y, scenePosWC.z, 1.0);
-            scenePosLC4d = rootTransformMatrixInverse.transform(scenePosLC4d);
-            Vector3d scenePosLC = new Vector3d(scenePosLC4d.x, scenePosLC4d.y, scenePosLC4d.z);
-            reMeshParams.setScenePositionRelToCellGrid(scenePosLC);
-
-            // load the file
-            GaiaSet gaiaSet;
-            try {
-                gaiaSet = GaiaSet.readFile(tempPath);
-                if (gaiaSet == null) {
-                    log.error("[ERROR] gaiaSet is null. path : " + tempPath);
-                    continue;
-                }
-            } catch (IOException e) {
-                log.error("[ERROR] :", e);
-                throw new RuntimeException(e);
-            }
-            GaiaScene scene = new GaiaScene(gaiaSet);
-            scene.setOriginalPath(tileInfo.getTempPath());
-            GaiaTriangulator triangulator = new GaiaTriangulator();
-            triangulator.apply(scene);
-
-            gaiaSceneList.clear();
-            gaiaSceneList.add(scene);
-            resultReMeshedScenes.clear();
-
-            List<GaiaAAPlane> cuttingPlanes = new ArrayList<>();
-            Matrix4d transformMatrix = new Matrix4d();
-
-            GaiaBoundingBox localBoundingBox = null;
-            try {
-                BoundingVolume rootNodeBoundingVolume = rootNode.getBoundingVolume();
-                localBoundingBox = this.getCuttingPlanesAndLocalBoundingBox(tileInfo, lod, rootNodeBoundingVolume, maxDepth, cuttingPlanes, transformMatrix);
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-
-            double localBBoxXSize = localBoundingBox.getSizeX();
-            double localBBoxYSize = localBoundingBox.getSizeY();
-            double localBBoxZSize = localBoundingBox.getSizeZ();
-
-            GaiaBoundingBox motherBBoxLC = new GaiaBoundingBox();
-            GaiaBoundingBox motherCartographicBoundingBox = this.calculateCartographicBoundingBox(scene, transformMatrix, motherBBoxLC);
-
-            boolean makeSkirt = GlobalConstants.MAKE_SKIRT;
-            HalfEdgeOctreeFaces halfEdgeOctreeFaces = new HalfEdgeOctreeFaces(null, localBoundingBox);
-            int currDepth = maxDepth - lod;
-            halfEdgeOctreeFaces.setLimitDepth(currDepth);
-            tilerExtensionModule.reMeshAndCutByObliqueCamera(gaiaSceneList, resultReMeshedScenes, reMeshParams, halfEdgeOctreeFaces, cuttingPlanes,
-                    pixelsForMeter, screenPixelsForMeter, makeSkirt);
-
-            if (resultReMeshedScenes.isEmpty()) {
-                log.error("[ERROR] resultReMeshedScenes is empty." + tempPath);
-                continue;
-            }
-
-            // create tileInfos for the cut scenes
-            String outputPathString = globalOptions.getOutputPath();
-            String cutTempPathString = outputPathString + File.separator + "temp" + File.separator + "cutTemp";
-            Path cutTempPath = Paths.get(cutTempPathString);
-            // create directory if not exists
-            if (!cutTempPath.toFile().exists() && cutTempPath.toFile().mkdirs()) {
-                log.debug("cutTemp folder created.");
-            }
-
-            Path cutTempLodPath = cutTempPath.resolve("lod" + lod);
-            if (!cutTempLodPath.toFile().exists() && cutTempLodPath.toFile().mkdirs()) {
-                log.debug("cutTempLod folder created.");
-            }
-
-            int resultDecimatedScenesCount = resultReMeshedScenes.size();
-            for (int j = 0; j < resultDecimatedScenesCount; j++) {
-                HalfEdgeScene halfEdgeSceneLod = resultReMeshedScenes.get(j);
-                GaiaBoundingBox boundingBoxCutLC = new GaiaBoundingBox();
-                GaiaScene gaiaSceneCut = HalfEdgeUtils.gaiaSceneFromHalfEdgeScene(halfEdgeSceneLod);
-                GaiaBoundingBox cartographicBoundingBox = this.calculateCartographicBoundingBox(gaiaSceneCut, transformMatrix, boundingBoxCutLC);
-
-                if (motherCartographicBoundingBox.getMaxZ() < cartographicBoundingBox.getMaxZ()) {
-                    log.error("[ERROR] motherCartographicBoundingBox does not intersect with cartographicBoundingBox.");
-                }
-
-                GaiaSet gaiaSetCut = GaiaSet.fromGaiaScene(gaiaSceneCut);
-
-                LevelOfDetail levelOfDetail = LevelOfDetail.getByLevel(lod);
-                float scale = levelOfDetail.getTextureScale();
-
-                Path cutScenePath = Paths.get("");
-                gaiaSceneCut.setOriginalPath(cutScenePath);
-
-                UUID identifier = UUID.randomUUID();
-                Path gaiaSetCutFolderPath = cutTempLodPath.resolve(identifier.toString());
-                if (!gaiaSetCutFolderPath.toFile().exists() && gaiaSetCutFolderPath.toFile().mkdirs()) {
-                    log.debug("gaiaSetCut folder created.");
-                }
-                boolean copyTexturesToNewPath = false;
-                Path tempPathLod = gaiaSetCut.writeFileForPR(gaiaSetCutFolderPath, copyTexturesToNewPath);
-
-                // save material atlas textures
-                Path parentPath = gaiaSetCutFolderPath;
-                Path imagesPath = parentPath.resolve("images");
-                // make directories if not exists
-                File imagesFolder = imagesPath.toFile();
-                if (!imagesFolder.exists() && imagesFolder.mkdirs()) {
-                    log.debug("images folder created.");
-                }
-                List<GaiaMaterial> materials = halfEdgeSceneLod.getMaterials();
-                for (GaiaMaterial material : materials) {
-                    List<GaiaTexture> textures = material.getTextures().get(TextureType.DIFFUSE);
-                    for (GaiaTexture texture : textures) {
-                        // check if exist bufferedImage of the texture
-                        texture.setParentPath(imagesPath.toString());
-                        texture.saveImage(texture.getFullPath());
-                        totalTexturesSaved++;
-                    }
-                }
-
-                // now can delete the halfEdgeScene
-                halfEdgeSceneLod.deleteObjects();
-
-                // delete the contents of the gaiaSceneCut*********************************************
-                gaiaSceneCut.getNodes().forEach(GaiaNode::clear);
-                // end delete the contents of the gaiaSceneCut.--------------------------------------------
-
-                TileInfo newTileInfo = TileInfo.builder().scene(gaiaSceneCut).outputPath(tempPathLod).build();
-                newTileInfo.setTransformMatrix(new Matrix4d(transformMatrix));
-                newTileInfo.setBoundingBox(boundingBoxCutLC);
-                newTileInfo.setCartographicBBox(cartographicBoundingBox);
-
-                TileTransformInfo kmlInfoCut = TileTransformInfo.builder().position(tileInfo.getTileTransformInfo().getPosition()).build();
-                newTileInfo.setTileTransformInfo(kmlInfoCut);
-
-                newTileInfo.setTempPath(tempPathLod);
-                newTileInfos.add(newTileInfo);
-            }
-        }
-
-        log.info("Total textures saved: " + totalTexturesSaved);
-
-        tileInfos.clear();
-        tileInfos.addAll(newTileInfos);
-    }
-
     public boolean integralReMeshScenesV2(List<TileInfo> tileInfos, int lod, int nodeDepth, Node rootNode, int maxDepth, DecimateParameters decimateParameters,
                                           double pixelsForMeter, double screenPixelsForMeter, ReMeshParameters reMeshParams) {
         // 1rst, find all tileInfos that intersects with the node
@@ -882,7 +657,9 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             int intersectedNodesCount = intersectedNodes.size();
             for (int i = 0; i < intersectedNodesCount; i++) {
                 Node node = intersectedNodes.get(i);
-                if (node.getDepth() != nodeDepth) {continue;}
+                if (node.getDepth() != nodeDepth) {
+                    continue;
+                }
                 List<TileInfo> tileInfosOfNodeList = nodeTileInfosMap.computeIfAbsent(node, k -> new ArrayList<>());
                 tileInfosOfNodeList.add(tileInfo);
             }
@@ -953,7 +730,9 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             tileInfosOfNode = nodeTileInfosMap.get(node);
 
             int tileInfosOfNodeCount = tileInfosOfNode.size();
-            if (tileInfosOfNodeCount == 0) {continue;}
+            if (tileInfosOfNodeCount == 0) {
+                continue;
+            }
 
             node.setRefine(Node.RefineType.REPLACE);
 
@@ -1265,7 +1044,9 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             int intersectedNodesCount = intersectedNodes.size();
             for (int i = 0; i < intersectedNodesCount; i++) {
                 Node node = intersectedNodes.get(i);
-                if (node.getDepth() != nodeDepth) {continue;}
+                if (node.getDepth() != nodeDepth) {
+                    continue;
+                }
                 List<TileInfo> tileInfosOfNodeList = nodeTileInfosMap.computeIfAbsent(node, k -> new ArrayList<>());
                 tileInfosOfNodeList.add(tileInfo);
             }
@@ -1280,7 +1061,9 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             tileInfosOfNode = nodeTileInfosMap.get(node);
 
             int tileInfosOfNodeCount = tileInfosOfNode.size();
-            if (tileInfosOfNodeCount == 0) {continue;}
+            if (tileInfosOfNodeCount == 0) {
+                continue;
+            }
 
             node.setRefine(Node.RefineType.REPLACE);
 
@@ -1376,7 +1159,9 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 
             halfEdgeScene.decimate(decimateParameters); // new
 
-            if (halfEdgeScene.getTrianglesCount() == 0) {continue;}
+            if (halfEdgeScene.getTrianglesCount() == 0) {
+                continue;
+            }
 
             // now, create material for the halfEdgeScene
             List<GaiaMaterial> materials = new ArrayList<>();
@@ -1620,8 +1405,12 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             transformMatrixInv.transformPosition(samplePointWC, samplePointLC);
 
             // check local min max X
-            if (samplePointLC.x < localMinX) {localMinX = samplePointLC.x;}
-            if (samplePointLC.x > localMaxX) {localMaxX = samplePointLC.x;}
+            if (samplePointLC.x < localMinX) {
+                localMinX = samplePointLC.x;
+            }
+            if (samplePointLC.x > localMaxX) {
+                localMaxX = samplePointLC.x;
+            }
 
             // check if the planeLC cuts the setBBox
             if (samplePointLC.x > setBBox.getMinX() && samplePointLC.x < setBBox.getMaxX()) {
@@ -1639,8 +1428,12 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             transformMatrixInv.transformPosition(samplePointWC, samplePointLC);
 
             // check local min max Y
-            if (samplePointLC.y < localMinY) {localMinY = samplePointLC.y;}
-            if (samplePointLC.y > localMaxY) {localMaxY = samplePointLC.y;}
+            if (samplePointLC.y < localMinY) {
+                localMinY = samplePointLC.y;
+            }
+            if (samplePointLC.y > localMaxY) {
+                localMaxY = samplePointLC.y;
+            }
 
             // check if the planeLC cuts the setBBox
             if (samplePointLC.y > setBBox.getMinY() && samplePointLC.y < setBBox.getMaxY()) {
@@ -1658,8 +1451,12 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             transformMatrixInv.transformPosition(samplePointWC, samplePointLC);
 
             // check local min max Z
-            if (samplePointLC.z < localMinZ) {localMinZ = samplePointLC.z;}
-            if (samplePointLC.z > localMaxZ) {localMaxZ = samplePointLC.z;}
+            if (samplePointLC.z < localMinZ) {
+                localMinZ = samplePointLC.z;
+            }
+            if (samplePointLC.z > localMaxZ) {
+                localMaxZ = samplePointLC.z;
+            }
 
             // check if the planeLC cuts the setBBox
             if (samplePointLC.z > setBBox.getMinZ() && samplePointLC.z < setBBox.getMaxZ()) {
@@ -1741,7 +1538,9 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 
         // load the file
         GaiaSet gaiaSet = GaiaSet.readFile(path);
-        if (gaiaSet == null) {return;}
+        if (gaiaSet == null) {
+            return;
+        }
 
         GaiaScene scene = new GaiaScene(gaiaSet);
 

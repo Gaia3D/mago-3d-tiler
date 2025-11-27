@@ -662,6 +662,23 @@ class UnitTest {
     }
 
     @Test
+    void test_RealisticMesh_LeeDongHun_Data_GILCHEON() {
+        String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\leeDongHun_Data\\obj\\GILCHEON\\";
+        String outputPath = "C:\\data\\mago-server\\output\\GILCHEON\\";
+
+        String[] args = new String[]{
+                "-i", inputPath,
+                "-it", "obj",
+                "-o", outputPath,
+                "-crs", "5187",
+                "-rx", "90",
+                "-pg",
+                "--quantize"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
     void test_IFC_roundBridge() {
         // 세종금강대교_noTerrain
         // 세종금강대교_1building_가교
@@ -757,6 +774,29 @@ class UnitTest {
                 "-crs", "32652",
                 "-xOffset", "314050",
                 "-yOffset", "4160814",
+                "--quantize",
+                "-pg"
+        };
+        Mago3DTilerMain.main(args);
+    }
+
+    @Test
+    void test_zhuangZhang_userData
+            () {
+        // someTiles
+//        "-lon", "126.638872",
+//                "-lat", "37.5329178",
+        String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\zhuangZhang_userData\\objE\\";
+        String outputPath = "C:\\data\\mago-server\\output\\zhuangZhang_userData_objE\\";
+        //String outputPath = "E:\\temp\\";
+
+        String[] args = new String[]{
+                "-i", inputPath,
+                "-inputType", "obj",
+                "-o", outputPath,
+                "-lon", "-98.9505624780138",
+                "-lat", "24.680944366323203",
+                "-zOffset", "20",
                 "--quantize",
                 "-pg"
         };

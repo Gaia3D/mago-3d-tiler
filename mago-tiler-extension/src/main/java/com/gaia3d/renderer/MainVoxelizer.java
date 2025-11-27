@@ -12,6 +12,7 @@ import com.gaia3d.basic.geometry.voxel.VoxelizeParameters;
 import com.gaia3d.basic.halfedge.*;
 import com.gaia3d.basic.marchingcube.MarchingCube;
 import com.gaia3d.basic.model.*;
+import com.gaia3d.basic.remesher.CellGrid3D;
 import com.gaia3d.basic.remesher.ReMeshParameters;
 import com.gaia3d.basic.remesher.ReMesherVertexCluster;
 import com.gaia3d.basic.types.TextureType;
@@ -467,7 +468,6 @@ public class MainVoxelizer implements IAppLogic {
         nodeMatrixInv.invert();
 
         Map<Vector3i, List<GaiaVertex>> vertexClusters = new HashMap<>();
-        List<GaiaScene> resultGaiaScenes = new ArrayList<>();
         GaiaScene gaiaSceneMaster = null;
         double weldError = 1e-5; // 1e-6 is a good value for remeshing
 
@@ -490,6 +490,9 @@ public class MainVoxelizer implements IAppLogic {
         Map<Integer, Map<CameraDirectionType, List<HalfEdgeFace>>> mapClassificationCamDirTypeFacesList = new HashMap<>();
 
         FaceVisibilityDataManager faceVisibilityDataManager = new FaceVisibilityDataManager();
+
+        Vector3i nodeMinCellIndex = new Vector3i(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
+        Vector3i nodeMaxCellIndex = new Vector3i(Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE);
 
         for (int i = 0; i < scenesCount; i++) {
             // load and render, one by one
@@ -535,9 +538,10 @@ public class MainVoxelizer implements IAppLogic {
 
             gaiaScenesContainer.setRenderableGaiaScenes(renderableGaiaScenes);
 
-            //**********************************************************************************************************
-            // reMesh the scene*************************************************************************************
-            Vector3d scenePositionRelToCellGrid = sceneInfo.getScenePosLC();
+            // reMesh the scene.****************************************************************************************
+            // The "scenePositionRelToCellGrid" is the relative position of the scene respect the center of RootNode (Depth = 0). All scenes must be synchronized to the RootNode.
+            Vector3d scenePositionRelToCellGrid = sceneInfo.getScenePosLC(); // relative position of the scene respect the center of RootNode (Depth = 0).
+
             Vector3d scenePosRelToCellGridNegative = new Vector3d(-scenePositionRelToCellGrid.x, -scenePositionRelToCellGrid.y, -scenePositionRelToCellGrid.z);
 
             GaiaTriangulator triangulator = new GaiaTriangulator();
@@ -566,12 +570,35 @@ public class MainVoxelizer implements IAppLogic {
             }
             gaiaScene.getMaterials().clear();
 
+            Vector3i sceneMinCellIndex = new Vector3i();
+            Vector3i sceneMaxCellIndex = new Vector3i();
             vertexClusters.clear();
             translateScene(gaiaScene, scenePositionRelToCellGrid); // translate the scene to the cell grid position
-            ReMesherVertexCluster.reMeshScene(gaiaScene, reMeshParams, vertexClusters);
+            ReMesherVertexCluster.reMeshScene(gaiaScene, reMeshParams, vertexClusters, sceneMinCellIndex, sceneMaxCellIndex);
             translateScene(gaiaScene, scenePosRelToCellGridNegative); // translate the scene back to the original position
             vertexClusters.clear();
-            // end of reMeshing the scene***************************************************************************
+
+            // update the node cell index bbox
+            if (sceneMinCellIndex.x < nodeMinCellIndex.x) {
+                nodeMinCellIndex.x = sceneMinCellIndex.x;
+            }
+            if (sceneMinCellIndex.y < nodeMinCellIndex.y) {
+                nodeMinCellIndex.y = sceneMinCellIndex.y;
+            }
+            if (sceneMinCellIndex.z < nodeMinCellIndex.z) {
+                nodeMinCellIndex.z = sceneMinCellIndex.z;
+            }
+            if (sceneMaxCellIndex.x > nodeMaxCellIndex.x) {
+                nodeMaxCellIndex.x = sceneMaxCellIndex.x;
+            }
+            if (sceneMaxCellIndex.y > nodeMaxCellIndex.y) {
+                nodeMaxCellIndex.y = sceneMaxCellIndex.y;
+            }
+            if (sceneMaxCellIndex.z > nodeMaxCellIndex.z) {
+                nodeMaxCellIndex.z = sceneMaxCellIndex.z;
+            }
+            // end of reMeshing the scene.******************************************************************************
+
             //**********************************************************************************************************
 
             // now must translate to the relative position in the node
@@ -657,7 +684,6 @@ public class MainVoxelizer implements IAppLogic {
 
         HalfEdgeScene halfEdgeSceneMaster = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(gaiaSceneMaster);
 
-        // Atlas texture********************************************************************************************
         // Here scissor the atlas textures.
         atlasTextureForIntegralReMesh(integralReMeshParameters, halfEdgeSceneMaster, mapClassifyIdToGaiaFaceToHalfEdgeFace,
                 mapClassifyIdToGaiaFaceToCameraDirectionTypeInfo, mapClassificationCamDirTypeBBox,
@@ -666,8 +692,17 @@ public class MainVoxelizer implements IAppLogic {
         // end of atlas texture*************************************************************************************
 
         //if (makeHorizontalSkirt) {
-        halfEdgeSceneMaster.makeHorizontalSkirt();
+        //halfEdgeSceneMaster.makeHorizontalSkirt();
         //}
+
+        // vertical skirt.********************************************************************************************
+        GaiaBoundingBox hedgeSceneBBox = halfEdgeSceneMaster.getBoundingBox();
+        double skirtHeight = hedgeSceneBBox.getMaxSize() * 0.04;
+        makeVerticalSkirtForIntegralReMesh(halfEdgeSceneMaster, reMeshParams, skirtHeight);
+        // end of vertical skirt.*************************************************************************************
+
+        int hola = 0;
+
 
         resultHalfEdgeScenes.add(halfEdgeSceneMaster);
 
@@ -680,6 +715,90 @@ public class MainVoxelizer implements IAppLogic {
         engine.deleteObjects();
         engine.getGaiaScenesContainer().deleteObjects();
         integralReMeshParameters.deleteFBOs(fboManager);
+    }
+
+    private void makeVerticalSkirtForIntegralReMesh(HalfEdgeScene halfEdgeSceneMaster, ReMeshParameters reMeshParameters, double skirtHeight) {
+        //*******************************************************
+        // note: the halfEdgeSceneMaster has only one surface.***
+        //*******************************************************
+        List<HalfEdgeSurface> surfaces = halfEdgeSceneMaster.extractSurfaces(null);
+        if (surfaces.isEmpty()) {
+            return;
+        }
+
+        CellGrid3D cellGrid3D = reMeshParameters.getCellGrid();
+
+        Vector3i localMinCellIndex = new Vector3i(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
+        Vector3i localMaxCellIndex = new Vector3i(Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE);
+
+        HalfEdgeSurface surface = surfaces.get(0);
+        List<HalfEdgeVertex> vertices = surface.getVertices();
+        int verticesCount = vertices.size();
+        List<HalfEdge> halfEdges = surface.getHalfEdges();
+        int halfEdgesCount = halfEdges.size();
+        for (int i = 0; i < verticesCount; i++) {
+            HalfEdgeVertex startVertex = vertices.get(i);
+            Vector3d startVertexPos = startVertex.getPosition();
+            Vector3i startVertexCellIndex = cellGrid3D.getCellIndex(startVertexPos);
+
+            if (startVertexCellIndex.x < localMinCellIndex.x) {
+                localMinCellIndex.x = startVertexCellIndex.x;
+            }
+            if (startVertexCellIndex.y < localMinCellIndex.y) {
+                localMinCellIndex.y = startVertexCellIndex.y;
+            }
+            if (startVertexCellIndex.z < localMinCellIndex.z) {
+                localMinCellIndex.z = startVertexCellIndex.z;
+            }
+
+            if (startVertexCellIndex.x > localMaxCellIndex.x) {
+                localMaxCellIndex.x = startVertexCellIndex.x;
+            }
+            if (startVertexCellIndex.y > localMaxCellIndex.y) {
+                localMaxCellIndex.y = startVertexCellIndex.y;
+            }
+            if (startVertexCellIndex.z > localMaxCellIndex.z) {
+                localMaxCellIndex.z = startVertexCellIndex.z;
+            }
+        }
+
+        for (int i = 0; i < halfEdgesCount; i++) {
+            HalfEdge halfEdge = halfEdges.get(i);
+            if (halfEdge.hasTwin()) {
+                continue; // only process boundary half-edges
+            }
+            HalfEdgeVertex startVertex = halfEdge.getStartVertex();
+            Vector3d startVertexPos = startVertex.getPosition();
+            HalfEdgeVertex endVertex = halfEdge.getEndVertex();
+            Vector3d endVertexPos = endVertex.getPosition();
+            Vector3i startVertexCellIndex = cellGrid3D.getCellIndex(startVertexPos);
+            Vector3i endVertexCellIndex = cellGrid3D.getCellIndex(endVertexPos);
+
+            // classify the boundary half-edge in south, north, west, east.***
+            halfEdge.setClassifyId(-1); // default value for inner edges
+            // south.***
+            if (startVertexCellIndex.y == localMinCellIndex.y && endVertexCellIndex.y == localMinCellIndex.y) {
+                halfEdge.setClassifyId(20); // 20 is the classifyId for south edges
+                continue;
+            }
+            // north.***
+            if (startVertexCellIndex.y == localMaxCellIndex.y && endVertexCellIndex.y == localMaxCellIndex.y) {
+                halfEdge.setClassifyId(21); // 21 is the classifyId for north edges
+                continue;
+            }
+            // west.***
+            if (startVertexCellIndex.x == localMinCellIndex.x && endVertexCellIndex.x == localMinCellIndex.x) {
+                halfEdge.setClassifyId(22); // 22 is the classifyId for west edges
+                continue;
+            }
+            // east.***
+            if (startVertexCellIndex.x == localMaxCellIndex.x && endVertexCellIndex.x == localMaxCellIndex.x) {
+                halfEdge.setClassifyId(23); // 23 is the classifyId for east edges
+                continue;
+            }
+        }
+
+        HalfEdgeSkirtMaker.makeVerticalSkirtByClassifyId(halfEdgeSceneMaster, skirtHeight);
     }
 
     private void atlasTextureForIntegralReMesh(IntegralReMeshParameters integralReMeshParameters, HalfEdgeScene halfEdgeSceneMaster,
@@ -1048,127 +1167,5 @@ public class MainVoxelizer implements IAppLogic {
 
         // delete pixels
         pixels.clear();
-    }
-
-    public void reMeshAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, ReMeshParameters reMeshParams,
-                                            HalfEdgeOctreeFaces octree, List<GaiaAAPlane> cuttingPlanes, double depthTexPixelsForMeter, double screenPixelsForMeter,
-                                            boolean makeHorizontalSkirt) {
-        // Note: There are only one scene in the scene list
-        // Must init gl
-        try {
-            engine.init();
-        } catch (Exception e) {
-            log.error("[ERROR] initializing the engine: ", e);
-        }
-
-        int scenesCount = scenes.size();
-
-        Map<Vector3i, List<GaiaVertex>> vertexClusters = new HashMap<>();
-        List<GaiaScene> resultGaiaScenes = new ArrayList<>();
-        Vector3d scenePositionRelToCellGrid = reMeshParams.getScenePositionRelToCellGrid();
-        Vector3d scenePosRelToCellGridNegative = new Vector3d(-scenePositionRelToCellGrid.x, -scenePositionRelToCellGrid.y, -scenePositionRelToCellGrid.z);
-        double cellSizeOriginal = reMeshParams.getCellGrid().getCellSize();
-
-        double weldError = 1e-5; // 1e-6 is a good value for remeshing
-
-        for (int i = 0; i < scenesCount; i++) {
-            GaiaScene gaiaScene = scenes.get(i);
-
-            // copy the gaiaScene
-            GaiaScene gaiaSceneCopy = gaiaScene.clone();
-
-            // 1rst, make the renderableGaiaScene
-            RenderableGaiaScene renderableScene = InternDataConverter.getRenderableGaiaScene(gaiaSceneCopy);
-            engine.getGaiaScenesContainer().addRenderableGaiaScene(renderableScene);
-
-            //**************************************************************************************************************************
-            // Note: to reMesh or decimate the scene, 1- it must spend its transform matrix, 2- join all surfaces, 3- and weld vertices.
-            //**************************************************************************************************************************
-            GaiaTriangulator triangulator = new GaiaTriangulator();
-            triangulator.apply(gaiaScene);
-            GaiaBaker baker = new GaiaBaker();
-            baker.apply(gaiaScene);
-            gaiaScene.joinAllSurfaces();
-
-            GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
-                    .error(weldError)
-                    .checkTexCoord(false)
-                    .checkNormal(false)
-                    .checkColor(false)
-                    .checkBatchId(false)
-                    .build();
-            GaiaWelder weld = new GaiaWelder(weldOptions);
-            weld.apply(gaiaScene);
-
-            GaiaSceneCleaner cleaner = new GaiaSceneCleaner();
-            cleaner.apply(gaiaScene);
-            List<GaiaMaterial> materials = gaiaScene.getMaterials();
-
-            // delete materials.
-            for (GaiaMaterial material : materials) {
-                material.clear();
-            }
-            gaiaScene.getMaterials().clear();
-
-            vertexClusters.clear();
-            translateScene(gaiaScene, scenePositionRelToCellGrid); // translate the scene to the cell grid position
-            ReMesherVertexCluster.reMeshScene(gaiaScene, reMeshParams, vertexClusters);
-            translateScene(gaiaScene, scenePosRelToCellGridNegative); // translate the scene back to the original position
-            resultGaiaScenes.add(gaiaScene);
-            vertexClusters.clear();
-        }
-
-
-        GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
-                .error(weldError)
-                .checkTexCoord(false)
-                .checkNormal(false)
-                .checkColor(false)
-                .checkBatchId(false)
-                .build();
-        GaiaWelder weld = new GaiaWelder(weldOptions);
-        weld.apply(resultGaiaScenes.getFirst());
-        // take the halfEdgeScene and decimate and cut it
-        HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(resultGaiaScenes.get(0)); // only one scene
-
-        // Decimate the halfEdgeScene*******************************************************************************************
-//        DecimateParameters decimateParameters = new DecimateParameters();
-//        decimateParameters.setBasicValues(1.0, 0.01, 0.01, 12.0, 1000000, 1, 0.1);
-//        halfEdgeScene.decimate(decimateParameters);
-        // End of decimating the halfEdgeScene**********************************************************************************
-
-        boolean scissorTextures = false;
-        //List<HalfEdgeScene> resultCutHalfEdgeScenes = new ArrayList<>();
-        List<HalfEdgeScene> resultCutHalfEdgeScenes = HalfEdgeCutter.cutHalfEdgeSceneByGaiaAAPlanes(halfEdgeScene, cuttingPlanes, octree, scissorTextures, false);
-        resultCutHalfEdgeScenes.add(halfEdgeScene);
-
-        int cutScenesCount = resultCutHalfEdgeScenes.size();
-        int i = 0;
-        int bufferImageType = BufferedImage.TYPE_INT_RGB;
-        for (HalfEdgeScene cutHalfEdgeScene : resultCutHalfEdgeScenes) {
-            log.info("makeBoxTexturesByObliqueCamera. cutScene : " + (i + 1) + " / " + cutScenesCount);
-            GaiaBoundingBox bbox = cutHalfEdgeScene.getBoundingBox();
-            double bboxMaxSize = bbox.getMaxSize();
-            // now, cut the halfEdgeScene and make cube-textures by rendering
-            double gridSpacing = bboxMaxSize / 3.0;
-            //HalfEdgeOctreeFaces resultOctree = new HalfEdgeOctreeFaces(null, bbox.clone());
-            //HalfEdgeScene cuttedScene = HalfEdgeCutter.cutHalfEdgeSceneGridXYZ(cutHalfEdgeScene, gridSpacing, resultOctree);
-
-            HalfEdgeScene cuttedScene = cutHalfEdgeScene;
-
-            if (makeHorizontalSkirt) {
-                cuttedScene.makeHorizontalSkirt();
-            }
-
-            // now make box textures for the cutScene
-            engine.makeBoxTexturesByObliqueCamera(cuttedScene, screenPixelsForMeter, bufferImageType);
-            cuttedScene.scissorTextures();
-            resultHalfEdgeScenes.add(cuttedScene);
-
-            i++;
-        }
-
-        engine.deleteObjects();
-        engine.getGaiaScenesContainer().deleteObjects();
     }
 }
