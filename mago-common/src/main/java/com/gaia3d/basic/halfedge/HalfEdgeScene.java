@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.joml.Vector2d;
 import org.joml.Vector3d;
 
 import java.io.*;
@@ -522,86 +523,6 @@ public class HalfEdgeScene implements Serializable {
         }
     }
 
-    public void makeVerticalSkirt(double skirtHeight) {
-        //***************************
-        // Function NO finished yet.
-        //***************************
-        GaiaBoundingBox bbox = getBoundingBox();
-        if (bbox == null) {
-            log.info("Making skirt : Error: bbox is null");
-            return;
-        }
-
-        double error = 0.01; // 0.001
-        List<HalfEdgeVertex> westVertices = new ArrayList<>();
-        List<HalfEdgeVertex> eastVertices = new ArrayList<>();
-        List<HalfEdgeVertex> southVertices = new ArrayList<>();
-        List<HalfEdgeVertex> northVertices = new ArrayList<>();
-        for (HalfEdgeNode node : nodes) {
-            node.getWestEastSouthNorthVertices(bbox, westVertices, eastVertices, southVertices, northVertices, error);
-        }
-
-        // revert west vertices
-        westVertices.sort((v1, v2) -> {
-            Vector3d p1 = v1.getPosition();
-            Vector3d p2 = v2.getPosition();
-            return -Double.compare(p1.y, p2.y); // up to down
-        });
-        eastVertices.sort((v1, v2) -> {
-            Vector3d p1 = v1.getPosition();
-            Vector3d p2 = v2.getPosition();
-            return Double.compare(p1.y, p2.y); // down to up
-        });
-        southVertices.sort((v1, v2) -> {
-            Vector3d p1 = v1.getPosition();
-            Vector3d p2 = v2.getPosition();
-            return Double.compare(p1.x, p2.x); // left to right
-        });
-        northVertices.sort((v1, v2) -> {
-            Vector3d p1 = v1.getPosition();
-            Vector3d p2 = v2.getPosition();
-            return -Double.compare(p1.x, p2.x); // right to left
-        });
-
-        // create a new surface.***
-        HalfEdgeNode rootNode = this.getNodes().get(0);
-        HalfEdgeNode node = new HalfEdgeNode();
-        rootNode.getChildren().add(node);
-        HalfEdgeMesh mesh = new HalfEdgeMesh();
-        node.getMeshes().add(mesh);
-        HalfEdgePrimitive primitive = new HalfEdgePrimitive();
-        mesh.getPrimitives().add(primitive);
-        HalfEdgeSurface surface = new HalfEdgeSurface();
-        primitive.getSurfaces().add(surface);
-
-        // west.***
-        List<HalfEdgeVertex> westVerticesBottom = new ArrayList<>();
-        for (int i = 0; i < westVertices.size(); i++) {
-            HalfEdgeVertex v1 = westVertices.get(i);
-            HalfEdgeVertex v1Copy = new HalfEdgeVertex();
-            v1Copy.copyFrom(v1);
-            Vector3d position = v1Copy.getPosition();
-            position.z -= skirtHeight;
-            westVerticesBottom.add(v1Copy);
-        }
-        for (int i = 0; i < westVertices.size() - 1; i++) {
-            HalfEdgeVertex v1Up = westVertices.get(i);
-            HalfEdgeVertex v2Up = westVertices.get(i + 1);
-            HalfEdgeVertex v1Down = westVerticesBottom.get(i);
-            HalfEdgeVertex v2Down = westVerticesBottom.get(i + 1);
-
-            // make hafEdges.***
-            HalfEdge he1 = new HalfEdge();
-            HalfEdge he2 = new HalfEdge();
-            HalfEdge he3 = new HalfEdge();
-            HalfEdge he4 = new HalfEdge();
-            HalfEdge he5 = new HalfEdge();
-            HalfEdge he6 = new HalfEdge();
-
-
-        }
-    }
-    
     public void makeHorizontalSkirt() {
         GaiaBoundingBox bbox = getBoundingBox();
         if (bbox == null) {

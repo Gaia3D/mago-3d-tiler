@@ -53,11 +53,6 @@ public class TilerExtensionModule implements ExtensionModuleFrame {
     }
 
     @Override
-    public void reMeshAndCutByObliqueCamera(List<GaiaScene> scenes, List<HalfEdgeScene> resultHalfEdgeScenes, ReMeshParameters reMeshParams, HalfEdgeOctreeFaces octree,
-                                            List<GaiaAAPlane> cuttingPlanes, double depthTexPixelsForMeter, double screenPixelsForMeter, boolean makeHorizontalSkirt) {
-    }
-
-    @Override
     public void integralReMeshByObliqueCameraV2(List<SceneInfo> sceneInfos, List<HalfEdgeScene> resultHalfEdgeScenes, ReMeshParameters reMeshParams, GaiaBoundingBox nodeBBox,
                                                 Matrix4d nodeTMatrix, int maxScreenSize, String outputPathString, String nodeName, int lod) {
     }

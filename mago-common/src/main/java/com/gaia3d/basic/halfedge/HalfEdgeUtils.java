@@ -11,10 +11,7 @@ import org.joml.Vector2d;
 import org.joml.Vector3d;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 public class HalfEdgeUtils {
@@ -174,7 +171,9 @@ public class HalfEdgeUtils {
         return gaiaPrimitive;
     }
 
-    public static GaiaSurface gaiaSurfaceFromHalfEdgeSurface(HalfEdgeSurface halfEdgeSurface, Map<HalfEdgeVertex, GaiaVertex> mapHalfEdgeVertexToGaiaVertex, Map<GaiaVertex, Integer> mapGaiaVertexToIndex) {
+    public static GaiaSurface gaiaSurfaceFromHalfEdgeSurface(HalfEdgeSurface halfEdgeSurface,
+                                                             Map<HalfEdgeVertex, GaiaVertex> mapHalfEdgeVertexToGaiaVertex,
+                                                             Map<GaiaVertex, Integer> mapGaiaVertexToIndex) {
         GaiaSurface gaiaSurface = new GaiaSurface();
 
         // faces
@@ -200,7 +199,7 @@ public class HalfEdgeUtils {
         }
 
         if (halfEdgeFace.isDegenerated()) {
-            halfEdgeFace.isDegenerated();
+            //halfEdgeFace.isDegenerated();
             return null;
         }
 
@@ -1603,5 +1602,6 @@ public class HalfEdgeUtils {
         }
         return gaiaFaces;
     }
+
 
 }

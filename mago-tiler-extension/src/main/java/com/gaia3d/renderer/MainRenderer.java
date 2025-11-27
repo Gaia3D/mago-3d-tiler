@@ -144,6 +144,11 @@ public class MainRenderer implements IAppLogic {
             // now make box textures for the cuttedScene
             engine.makeBoxTexturesByObliqueCamera(cuttedScene, screenPixelsForMeter, bufferImageType);
 
+            // make vertical skirt
+            GaiaBoundingBox bboxCutted = cuttedScene.getBoundingBox();
+            double skirtHeight = bboxCutted.getMaxSize() * 0.05;
+            //cuttedScene.makeVerticalSkirt(skirtHeight);
+
             cuttedScene.scissorTextures();
             resultHalfEdgeScenes.add(cuttedScene);
 

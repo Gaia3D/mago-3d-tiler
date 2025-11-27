@@ -2325,7 +2325,14 @@ public class HalfEdgeSurface implements Serializable {
 
             // twin
             HalfEdge twin = halfEdge.getTwin();
+            if (twin == null) {
+                continue;
+            }
             HalfEdge cloneTwin = mapOriginalToCloneHalfEdge.get(twin);
+            if (cloneTwin == null) {
+                // the twin is not in the cloneSurface, so cloneHalfEdge is frontier
+                cloneHalfEdge.setClassifyId(10);
+            }
             cloneHalfEdge.setTwin(cloneTwin);
         }
 
