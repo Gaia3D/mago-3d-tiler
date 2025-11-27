@@ -1,5 +1,7 @@
 plugins {
     id 'java'
+    id 'java-library'
+    id 'maven-publish'
 }
 
 repositories {
@@ -8,15 +10,31 @@ repositories {
 }
 
 dependencies {
-    implementation "org.locationtech.proj4j:proj4j:1.2.3"
-    implementation "org.locationtech.proj4j:proj4j-epsg:1.2.3"
-    implementation 'org.geotools:gt-geojson:26.5'
-    implementation 'org.geotools:gt-geojsondatastore:26.5'
+
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifactId = 'mago-common'
+        }
+    }
+    repositories {
+        maven {
+            name = "github"
+            url = uri("https://maven.pkg.github.com/gaia3d/mago-3d-tiler")
+            credentials {
+                username = findProperty("gpr.user") ?: System.getenv("GITHUB_ACTOR")
+                password = findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
 }
 
 javadoc {
     enabled = false
-    options.addStringOption("locale", "ko_KR")
+    options.addStringOption("locale", "en_US")
     options.addStringOption("encoding", "UTF-8")
     options.addStringOption("charset", "UTF-8")
     options.addStringOption("docencoding", "UTF-8")

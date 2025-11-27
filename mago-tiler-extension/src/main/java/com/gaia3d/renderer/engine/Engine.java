@@ -3,6 +3,8 @@ package com.gaia3d.renderer.engine;
 import com.gaia3d.basic.exchangable.GaiaBufferDataSet;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaExtractor;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaUnWelder;
 import com.gaia3d.basic.halfedge.*;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.TextureType;
@@ -346,14 +348,16 @@ public class Engine {
 
     private RenderableGaiaScene getColorCodedRenderableScene(GaiaScene gaiaScene) {
         // 1rst, unWeld the vertices
-        gaiaScene.unWeldVertices();
+        GaiaUnWelder unweld = new GaiaUnWelder();
+        unweld.apply(gaiaScene);
 
         // now, make a map<GaiaFace, Integer> for the faces
-        List<GaiaPrimitive> primitives = gaiaScene.extractPrimitives(null);
+        GaiaExtractor extractor = new GaiaExtractor();
+        List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(gaiaScene);
         int primitivesCount = primitives.size();
         for (int i = 0; i < primitivesCount; i++) {
             GaiaPrimitive primitive = primitives.get(i);
-            List<GaiaFace> primitiveFaces = primitive.extractGaiaFaces(null);
+            List<GaiaFace> primitiveFaces = primitive.extractGaiaAllFaces(null);
             for (GaiaFace face : primitiveFaces) {
                 int faceId = face.getId();
                 if (faceId < 0) {
@@ -555,24 +559,6 @@ public class Engine {
         }
     }
 
-//    private void TEST_SaveImages(Fbo fbo, CameraDirectionType cameraDirectionType, String fileName) {
-//        // test save images.
-//        try {
-//            String randomId = cameraDirectionType.name();
-//            String path = "D:\\Result_mago3dTiler";
-//            String fileNameFinal = fileName + "_" + randomId;
-//            String extension = ".png";
-//            String imagePath = path + "\\" + fileNameFinal + extension;
-//            File imageFile = new File(imagePath);
-//            fbo.bind();
-//            BufferedImage image = fbo.getBufferedImage(BufferedImage.TYPE_INT_ARGB);
-//            fbo.unbind();
-//            ImageIO.write(image, "png", imageFile);
-//        } catch (IOException e) {
-//            log.debug("Error writing image: {}", e);
-//        }
-//    }
-
     public void makeBoxTexturesByObliqueCamera(HalfEdgeScene halfEdgeScene, double screenPixelsForMeter, int bufferImageType) {
         // Must know all faces classification ids
         // 1rst, extract all surfaces
@@ -614,8 +600,9 @@ public class Engine {
 
             GaiaScene gaiaSceneFromFaces = HalfEdgeUtils.gaiaSceneFromHalfEdgeFaces(facesList, mapGaiaFaceToHalfEdgeFace);
 
-            // set face ids for colorCode rendering.***
-            List<GaiaFace> gaiaFaces = gaiaSceneFromFaces.extractGaiaFaces(null);
+            // set face ids for colorCode rendering
+            GaiaExtractor extractor = new GaiaExtractor();
+            List<GaiaFace> gaiaFaces = extractor.extractAllFaces(gaiaSceneFromFaces);
             int gaiaFacesCount = gaiaFaces.size();
             for (int i = 0; i < gaiaFacesCount; i++) {
                 GaiaFace gaiaFace = gaiaFaces.get(i);
@@ -774,8 +761,8 @@ public class Engine {
             }
 
             // now assign face to each cameraDirectionType
-            List<GaiaPrimitive> gaiaPrimitives = gaiaSceneFromFaces.extractPrimitives(null);
-            for (GaiaPrimitive gaiaPrimitive : gaiaPrimitives) {
+            List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(gaiaSceneFromFaces);
+            for (GaiaPrimitive gaiaPrimitive : primitives) {
                 List<GaiaSurface> gaiaSurfaces = gaiaPrimitive.getSurfaces();
                 for (GaiaSurface surface : gaiaSurfaces) {
                     List<GaiaFace> faces = surface.getFaces();
@@ -898,7 +885,7 @@ public class Engine {
         String originalProjectName = originalPath.substring(originalPath.lastIndexOf(File.separator) + 1);
         String rawProjectName = originalProjectName.substring(0, originalProjectName.lastIndexOf("."));
 
-        //make tempFolder if no exists.***
+        //make tempFolder if no exists
         /*String tempFolderPath = this.getTempFolderPath();
         File tempFolder = new File(tempFolderPath);
         if (!tempFolder.exists()) {
@@ -1102,17 +1089,18 @@ public class Engine {
 
         //******************************************************************************************************************
         // If the scene was spend the node's transform, you can use the following code to get the transformed vertices
-        List<GaiaPrimitive> gaiaPrimitives = gaiaScene.extractPrimitives(null);
+        GaiaExtractor extractor = new GaiaExtractor();
+        List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(gaiaScene);
         List<GaiaVertex> gaiaVertices = new ArrayList<>();
 
         // check if exists optionalDelimiterBBox to select only the vertices inside it
         if (optionalDelimiterBBox == null) {
-            for (GaiaPrimitive gaiaPrimitive : gaiaPrimitives) {
+            for (GaiaPrimitive gaiaPrimitive : primitives) {
                 gaiaVertices.addAll(gaiaPrimitive.getVertices());
             }
         } else {
             // get only the vertices inside the optionalDelimiterBBox
-            for (GaiaPrimitive gaiaPrimitive : gaiaPrimitives) {
+            for (GaiaPrimitive gaiaPrimitive : primitives) {
                 List<GaiaVertex> primitiveVertices = gaiaPrimitive.getVertices();
                 for (GaiaVertex vertex : primitiveVertices) {
                     Vector3d vertexPos = vertex.getPosition();
@@ -1337,7 +1325,7 @@ public class Engine {
         face2.setIndices(indices2);
         resultSurface.getFaces().add(face2);*/
 
-        // now do render : albedo + normal.*****************************************************************************
+        // now do render : albedo + normal**************************************************************************
         float near = (float) -maxZ;
         float far = (float) -minZ;
 
@@ -1394,32 +1382,6 @@ public class Engine {
         BufferedImage normalImage = fboMRT.getBufferedImage(1, bufferImageType);
         fboMRT.unbind();
 
-        // test save images
-//        try {
-//            String randomId = String.valueOf(idxTest);
-//            String path = "D:\\Result_mago3dTiler";
-//            String fileName = "albedo_" + randomId;
-//            String extension = ".png";
-//            String imagePath = path + "\\" + fileName + extension;
-//            File imageFile = new File(imagePath);
-//            ImageIO.write(colorImage, "png", imageFile);
-//        } catch (IOException e) {
-//            log.debug("Error writing image: {}", e);
-//        }
-//
-//        // test save images
-//        try {
-//            String randomId = String.valueOf(idxTest);
-//            String path = "D:\\Result_mago3dTiler";
-//            String fileName = "normal_" + randomId;
-//            String extension = ".png";
-//            String imagePath = path + "\\" + fileName + extension;
-//            File imageFile = new File(imagePath);
-//            ImageIO.write(normalImage, "png", imageFile);
-//        } catch (IOException e) {
-//            log.debug("Error writing image: {}", e);
-//        }
-
         fboManager.deleteFboMRT("mrtRender");
 
         resultBufferedImages.add(colorImage);
@@ -1454,9 +1416,10 @@ public class Engine {
 
         //******************************************************************************************************************
         // If the scene was spend the node's transform, you can use the following code to get the transformed vertices
-        List<GaiaPrimitive> gaiaPrimitives = gaiaScene.extractPrimitives(null);
+        GaiaExtractor extractor = new GaiaExtractor();
+        List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(gaiaScene);
         List<GaiaVertex> gaiaVertices = new ArrayList<>();
-        for (GaiaPrimitive gaiaPrimitive : gaiaPrimitives) {
+        for (GaiaPrimitive gaiaPrimitive : primitives) {
             gaiaVertices.addAll(gaiaPrimitive.getVertices());
         }
         for (GaiaVertex vertex : gaiaVertices) {
@@ -1583,7 +1546,7 @@ public class Engine {
         face2.setIndices(indices2);
         resultSurface.getFaces().add(face2);
 
-        // now do render : albedo + normal.*****************************************************************************
+        // now do render : albedo + normal**************************************************************************
         float near = (float) -maxZ;
         float far = (float) -minZ;
 
@@ -1640,33 +1603,6 @@ public class Engine {
         BufferedImage colorImage = fboMRT.getBufferedImage(0, bufferImageType);
         BufferedImage normalImage = fboMRT.getBufferedImage(1, bufferImageType);
         fboMRT.unbind();
-
-        // test save images
-//        try {
-//            String randomId = String.valueOf(idxTest);
-//            String path = "D:\\Result_mago3dTiler";
-//            String fileName = "albedo_" + randomId;
-//            String extension = ".png";
-//            String imagePath = path + "\\" + fileName + extension;
-//            File imageFile = new File(imagePath);
-//            ImageIO.write(colorImage, "png", imageFile);
-//        } catch (IOException e) {
-//            log.debug("Error writing image: {}", e);
-//        }
-//
-//        // test save images
-//        try {
-//            String randomId = String.valueOf(idxTest);
-//            String path = "D:\\Result_mago3dTiler";
-//            String fileName = "normal_" + randomId;
-//            String extension = ".png";
-//            String imagePath = path + "\\" + fileName + extension;
-//            File imageFile = new File(imagePath);
-//            ImageIO.write(normalImage, "png", imageFile);
-//        } catch (IOException e) {
-//            log.debug("Error writing image: {}", e);
-//        }
-
         fboManager.deleteFboMRT("mrtRender");
 
         resultBufferedImages.add(colorImage);
@@ -1812,32 +1748,6 @@ public class Engine {
         gaiaScenesContainer.getRenderableGaiaScenes().clear();
         gaiaScenesContainer.getRenderableGaiaScenes().add(renderableSceneCurrent);
 
-//        // test save images
-//        try {
-//            String randomId = cameraDirectionType.name();
-//            String path = "D:\\Result_mago3dTiler";
-//            String fileName = "albedo_" + randomId;
-//            String extension = ".png";
-//            String imagePath = path + "\\" + fileName + extension;
-//            File imageFile = new File(imagePath);
-//            ImageIO.write(image, "png", imageFile);
-//        } catch (IOException e) {
-//            log.debug("Error writing image: {}", e);
-//        }
-//
-//        // test save images
-//        try {
-//            String randomId = cameraDirectionType.name();
-//            String path = "D:\\Result_mago3dTiler";
-//            String fileName = "colorCoded_" + randomId;
-//            String extension = ".png";
-//            String imagePath = path + "\\" + fileName + extension;
-//            File imageFile = new File(imagePath);
-//            ImageIO.write(imageColorCode, "png", imageFile);
-//        } catch (IOException e) {
-//            log.debug("Error writing image: {}", e);
-//        }
-
         // check the colorCoded image
         colorCodeFbo.bind();
 
@@ -1877,9 +1787,10 @@ public class Engine {
 
         //******************************************************************************************************************
         // If the scene was spend the node's transform, you can use the following code to get the transformed vertices
-        List<GaiaPrimitive> gaiaPrimitives = gaiaScene.extractPrimitives(null);
+        GaiaExtractor extractor = new GaiaExtractor();
+        List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(gaiaScene);
         List<GaiaVertex> gaiaVertices = new ArrayList<>();
-        for (GaiaPrimitive gaiaPrimitive : gaiaPrimitives) {
+        for (GaiaPrimitive gaiaPrimitive : primitives) {
             gaiaVertices.addAll(gaiaPrimitive.getVertices());
         }
         for (GaiaVertex vertex : gaiaVertices) {
@@ -2019,32 +1930,6 @@ public class Engine {
         gaiaScenesContainer.getRenderableGaiaScenes().clear();
         gaiaScenesContainer.getRenderableGaiaScenes().add(renderableSceneCurrent);
 
-        // test save images
-//        try {
-//            String randomId = String.valueOf(UUID.randomUUID());
-//            String path = "D:\\Result_mago3dTiler";
-//            String fileName = "albedo_" + randomId;
-//            String extension = ".png";
-//            String imagePath = path + "\\" + fileName + extension;
-//            File imageFile = new File(imagePath);
-//            ImageIO.write(image, "png", imageFile);
-//        } catch (IOException e) {
-//            log.debug("Error writing image: {}", e);
-//        }
-
-        // test save images
-//        try {
-//            String randomId = String.valueOf(UUID.randomUUID());
-//            String path = "D:\\Result_mago3dTiler";
-//            String fileName = "colorCoded_" + randomId;
-//            String extension = ".png";
-//            String imagePath = path + "\\" + fileName + extension;
-//            File imageFile = new File(imagePath);
-//            ImageIO.write(imageColorCode, "png", imageFile);
-//        } catch (IOException e) {
-//            log.debug("Error writing image: {}", e);
-//        }
-
         // check the colorCoded image
         colorCodeFbo.bind();
 
@@ -2103,13 +1988,13 @@ public class Engine {
         // create a scene shader program
         String vertexShaderText = readResource("shaders/sceneV330.vert");
         String fragmentShaderText = readResource("shaders/sceneV330.frag");
-        java.util.List<ShaderProgram.ShaderModuleData> shaderModuleDataList = new ArrayList<>();
+        List<ShaderProgram.ShaderModuleData> shaderModuleDataList = new ArrayList<>();
         shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(vertexShaderText, GL20.GL_VERTEX_SHADER));
         shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(fragmentShaderText, GL20.GL_FRAGMENT_SHADER));
         ShaderProgram sceneShaderProgram = shaderManager.createShaderProgram("scene", shaderModuleDataList);
 
 
-        java.util.List<String> uniformNames = new ArrayList<>();
+        List<String> uniformNames = new ArrayList<>();
         uniformNames.add("uProjectionMatrix");
         uniformNames.add("uModelViewMatrix");
         uniformNames.add("uObjectMatrix");
@@ -2295,7 +2180,7 @@ public class Engine {
         Matrix4f projectionOrthoMatrix = new Matrix4f().ortho(-semiMaxLength, semiMaxLength, -semiMaxLength, semiMaxLength, -semiMaxLength * 10.0f, semiMaxLength * 10.0f);
 
         // make colorRenderableMap
-        java.util.List<RenderablePrimitive> allRenderablePrimitives = new ArrayList<>();
+        List<RenderablePrimitive> allRenderablePrimitives = new ArrayList<>();
         renderableGaiaScene.extractRenderablePrimitives(allRenderablePrimitives);
         int renderablePrimitivesCount = allRenderablePrimitives.size();
         for (int i = 0; i < renderablePrimitivesCount; i++) {
@@ -2371,7 +2256,7 @@ public class Engine {
     public Map<GaiaPrimitive, Integer> getExteriorAndInteriorGaiaPrimitivesMap(GaiaScene gaiaScene, Map<GaiaPrimitive, Integer> mapPrimitiveStatus) {
         RenderableGaiaScene renderableGaiaScene = processExteriorInterior(gaiaScene);
 
-        java.util.List<RenderablePrimitive> allRenderablePrimitives = new ArrayList<>();
+        List<RenderablePrimitive> allRenderablePrimitives = new ArrayList<>();
         renderableGaiaScene.extractRenderablePrimitives(allRenderablePrimitives);
         int renderablePrimitivesCount = allRenderablePrimitives.size();
 
@@ -2396,11 +2281,11 @@ public class Engine {
     }
 
     private void deletePrimitivesByStatus(GaiaNode gaiaNode, int statusToDelete, Map<GaiaPrimitive, Integer> mapPrimitiveStatus) {
-        java.util.List<GaiaMesh> gaiaMeshes = gaiaNode.getMeshes();
+        List<GaiaMesh> gaiaMeshes = gaiaNode.getMeshes();
         int meshesCount = gaiaMeshes.size();
         for (int i = 0; i < meshesCount; i++) {
             GaiaMesh gaiaMesh = gaiaMeshes.get(i);
-            java.util.List<GaiaPrimitive> gaiaPrimitives = gaiaMesh.getPrimitives();
+            List<GaiaPrimitive> gaiaPrimitives = gaiaMesh.getPrimitives();
             int primitivesCount = gaiaPrimitives.size();
             for (int j = 0; j < primitivesCount; j++) {
                 GaiaPrimitive gaiaPrimitive = gaiaPrimitives.get(j);
@@ -2420,7 +2305,7 @@ public class Engine {
             }
         }
 
-        java.util.List<GaiaNode> children = gaiaNode.getChildren();
+        List<GaiaNode> children = gaiaNode.getChildren();
         int childrenCount = children.size();
         for (int i = 0; i < childrenCount; i++) {
             GaiaNode child = children.get(i);
@@ -2429,7 +2314,7 @@ public class Engine {
     }
 
 
-    public void getExteriorAndInteriorGaiaScenes(GaiaScene gaiaScene, java.util.List<GaiaScene> resultExteriorGaiaScenes, java.util.List<GaiaScene> resultInteriorGaiaScenes) {
+    public void getExteriorAndInteriorGaiaScenes(GaiaScene gaiaScene, List<GaiaScene> resultExteriorGaiaScenes, List<GaiaScene> resultInteriorGaiaScenes) {
         Map<GaiaPrimitive, Integer> mapPrimitiveStatus = getExteriorAndInteriorGaiaPrimitivesMap(gaiaScene, null);
 
         // finally make exteriorGaiaSet & interiorGaiaSet
@@ -2439,14 +2324,14 @@ public class Engine {
         resultInteriorGaiaScenes.add(interiorGaiaScene);
 
         // delete interior primitives from exteriorGaiaScene, and delete exterior primitives from interiorGaiaScene
-        java.util.List<GaiaNode> exteriorNodes = exteriorGaiaScene.getNodes();
+        List<GaiaNode> exteriorNodes = exteriorGaiaScene.getNodes();
         int extNodesCount = exteriorNodes.size();
         for (int i = 0; i < extNodesCount; i++) {
             GaiaNode gaiaNode = exteriorNodes.get(i);
             deletePrimitivesByStatus(gaiaNode, 0, mapPrimitiveStatus);
         }
 
-        java.util.List<GaiaNode> interiorNodes = interiorGaiaScene.getNodes();
+        List<GaiaNode> interiorNodes = interiorGaiaScene.getNodes();
         int intNodesCount = interiorNodes.size();
         for (int i = 0; i < intNodesCount; i++) {
             GaiaNode gaiaNode = interiorNodes.get(i);
@@ -2454,10 +2339,10 @@ public class Engine {
         }
     }
 
-    public void getExteriorAndInteriorGaiaSets(GaiaScene gaiaScene, java.util.List<GaiaSet> resultExteriorGaiaSets, java.util.List<GaiaSet> resultInteriorGaiaSets) {
+    public void getExteriorAndInteriorGaiaSets(GaiaScene gaiaScene, List<GaiaSet> resultExteriorGaiaSets, List<GaiaSet> resultInteriorGaiaSets) {
         RenderableGaiaScene renderableGaiaScene = processExteriorInterior(gaiaScene);
 
-        java.util.List<RenderablePrimitive> allRenderablePrimitives = new ArrayList<>();
+        List<RenderablePrimitive> allRenderablePrimitives = new ArrayList<>();
         renderableGaiaScene.extractRenderablePrimitives(allRenderablePrimitives);
         int renderablePrimitivesCount = allRenderablePrimitives.size();
 
@@ -2466,7 +2351,7 @@ public class Engine {
         GaiaSet interiorGaiaSet = new GaiaSet();
         resultExteriorGaiaSets.add(exteriorGaiaSet);
         resultInteriorGaiaSets.add(interiorGaiaSet);
-        java.util.List<GaiaBufferDataSet> exteriorBufferDatas = new ArrayList<>();
+        List<GaiaBufferDataSet> exteriorBufferDatas = new ArrayList<>();
         List<GaiaBufferDataSet> interiorBufferDatas = new ArrayList<>();
         exteriorGaiaSet.setBufferDataList(exteriorBufferDatas);
         interiorGaiaSet.setBufferDataList(interiorBufferDatas);

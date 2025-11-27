@@ -5,7 +5,8 @@ import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.jgltf.tiles.BatchedModelGltfWriter;
+import com.gaia3d.converter.gltf.GltfWriterOptions;
+import com.gaia3d.converter.gltf.tiles.BatchedModelGltfWriter;
 import com.gaia3d.process.postprocess.ContentModel;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
 import com.gaia3d.process.tileprocess.tile.ContentInfo;
@@ -31,7 +32,22 @@ public class Batched3DModelV2 implements ContentModel {
     private final BatchedModelGltfWriter gltfWriter;
 
     public Batched3DModelV2() {
-        this.gltfWriter = new BatchedModelGltfWriter();
+        GltfWriterOptions gltfOptions = GltfWriterOptions.builder()
+                .build();
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        if (globalOptions.getTilesVersion().equals("1.0")) {
+            gltfOptions.setUriImage(true);
+        }
+        if (globalOptions.isUseQuantization()) {
+            gltfOptions.setUseQuantization(true);
+        }
+        if (globalOptions.isPhotogrammetry()) {
+            gltfOptions.setForceJpeg(true);
+            gltfOptions.setUseQuantization(true);
+            gltfOptions.setUseShortTexCoord(true);
+            gltfOptions.setUseByteNormal(true);
+        }
+        this.gltfWriter = new BatchedModelGltfWriter(gltfOptions);
     }
 
     @Override

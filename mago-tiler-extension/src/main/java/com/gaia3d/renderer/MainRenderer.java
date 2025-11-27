@@ -4,6 +4,9 @@ import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.exchangable.SceneInfo;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaSceneCleaner;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaWelder;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaWeldOptions;
 import com.gaia3d.basic.geometry.octree.HalfEdgeOctreeFaces;
 import com.gaia3d.basic.halfedge.DecimateParameters;
 import com.gaia3d.basic.halfedge.HalfEdgeCutter;
@@ -77,10 +80,6 @@ public class MainRenderer implements IAppLogic {
         int scenesCount = scenes.size();
         List<RenderableGaiaScene> renderableGaiaScenes = new ArrayList<>();
 
-        boolean checkTexCoord = false;
-        boolean checkNormal = false;
-        boolean checkColor = false;
-        boolean checkBatchId = false;
         double error = 1e-5; // weldError
 
         log.info("MainRenderer : Decimating the scene...");
@@ -96,8 +95,18 @@ public class MainRenderer implements IAppLogic {
 
             // 2nd, make the halfEdgeScene
             gaiaSceneCopy.joinAllSurfaces();
-            gaiaSceneCopy.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
-            gaiaSceneCopy.deleteDegeneratedFaces();
+            GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
+                    .error(error)
+                    .checkTexCoord(false)
+                    .checkNormal(false)
+                    .checkColor(false)
+                    .checkBatchId(false)
+                    .build();
+            GaiaWelder weld = new GaiaWelder(weldOptions);
+            weld.apply(gaiaSceneCopy);
+
+            GaiaSceneCleaner cleaner = new GaiaSceneCleaner();
+            cleaner.apply(gaiaSceneCopy);
 
             // Must delete materials because we joined all surfaces into one surface
             int materialsCount = gaiaSceneCopy.getMaterials().size();
@@ -540,7 +549,6 @@ public class MainRenderer implements IAppLogic {
 
             counter++;
             if (counter > 20) {
-                //System.gc();
                 counter = 0;
             }
         }

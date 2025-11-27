@@ -1,6 +1,6 @@
 package com.gaia3d.basic.command;
 
-import com.gaia3d.command.Configuration;
+import com.gaia3d.command.LoggingConfiguration;
 import com.gaia3d.command.mago.Mago3DTilerMain;
 import com.gaia3d.modifier.TreeBillBoardParameters;
 import com.gaia3d.modifier.TreeCreator;
@@ -852,7 +852,7 @@ class UnitTest {
 
     @Test
     void test_changeBackGroundColor() {
-        Configuration.initConsoleLogger();
+        LoggingConfiguration.initConsoleLogger();
         String inputPath = "D:\\data\\mago-server\\output\\pinkTest.png";
         String outputPath = "D:\\data\\mago-server\\output\\pinkTest_result.jpg";
 

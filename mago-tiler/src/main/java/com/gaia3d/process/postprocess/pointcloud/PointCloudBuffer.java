@@ -45,19 +45,6 @@ public class PointCloudBuffer {
         return positionsBytes;
     }
 
-    /*public byte[] getPositionBytes() {
-        byte[] positionsBytes = new byte[positions.length * 4];
-        // Convert double array to byte array(Little Endian)
-        for (int i = 0; i < positions.length; i++) {
-            int intBits = Float.floatToIntBits(positions[i]);
-            positionsBytes[i * 4] = (byte) (intBits & 0xff);
-            positionsBytes[i * 4 + 1] = (byte) ((intBits >> 8) & 0xff);
-            positionsBytes[i * 4 + 2] = (byte) ((intBits >> 16) & 0xff);
-            positionsBytes[i * 4 + 3] = (byte) ((intBits >> 24) & 0xff);
-        }
-        return positionsBytes;
-    }*/
-
     public byte[] getBatchIdBytes() {
         byte[] batchIdBytes = new byte[batchIds.length * 4];
         // Convert float array to byte array(Little Endian)
@@ -70,30 +57,6 @@ public class PointCloudBuffer {
         }
         return batchIdBytes;
     }
-
-    /*public byte[] getBatchIdBytes() {
-        byte[] batchIdBytes = new byte[batchIds.length * 2];
-        // Convert short array to byte array(Little Endian)
-        for (int i = 0; i < batchIds.length; i++) {
-            int shortBits = batchIds[i];
-            batchIdBytes[i * 2] = (byte) (shortBits & 0xff);
-            batchIdBytes[i * 2 + 1] = (byte) ((shortBits >> 8) & 0xff);
-        }
-        return batchIdBytes;
-    }*/
-
-    /*public byte[] getBatchIdBytes() {
-        byte[] batchIdsBytes = new byte[batchIds.length * 4];
-        // Convert float array to byte array(Little Endian)
-        for (int i = 0; i < batchIds.length; i++) {
-            int intBits = Float.floatToIntBits(batchIds[i]);
-            batchIdsBytes[i * 4] = (byte) (intBits & 0xff);
-            batchIdsBytes[i * 4 + 1] = (byte) ((intBits >> 8) & 0xff);
-            batchIdsBytes[i * 4 + 2] = (byte) ((intBits >> 16) & 0xff);
-            batchIdsBytes[i * 4 + 3] = (byte) ((intBits >> 24) & 0xff);
-        }
-        return batchIdsBytes;
-    }*/
 
     public byte[] getColorBytes() {
         return colors;

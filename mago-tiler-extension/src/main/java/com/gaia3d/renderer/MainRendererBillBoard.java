@@ -2,6 +2,11 @@ package com.gaia3d.renderer;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaExtractor;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaSceneCleaner;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaWelder;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaWeldOptions;
+import com.gaia3d.basic.geometry.modifier.transform.GaiaBaker;
 import com.gaia3d.basic.geometry.octree.HalfEdgeOctreeFaces;
 import com.gaia3d.basic.halfedge.DecimateParameters;
 import com.gaia3d.basic.halfedge.HalfEdgeCutter;
@@ -65,14 +70,15 @@ public class MainRendererBillBoard implements IAppLogic {
         GaiaScene scene = scenes.get(0); // there are only one scene
 
         // do 90 degrees rotation in X axis
-        scene.spendTranformMatrix();
+        GaiaBaker baker = new GaiaBaker();
+        baker.apply(scene);
         GaiaNode rootNode = scene.getNodes().get(0);
         Matrix4d rootTransformMatrix = rootNode.getTransformMatrix();
-        scene.spendTranformMatrix();
+        baker.apply(scene);
 
         Matrix4d rotationMatrix = new Matrix4d().rotateX(Math.PI / 2);
         rootTransformMatrix.mul(rotationMatrix);
-        scene.spendTranformMatrix();
+        baker.apply(scene);
         // end do 90 degrees rotation in X axis
 
         GaiaBoundingBox bbox = scene.updateBoundingBox();
@@ -124,7 +130,7 @@ public class MainRendererBillBoard implements IAppLogic {
             resultBufferedImages.clear();
             GaiaPrimitive primitive = engine.makeRectangleTextureByCameraDirection4Tree(scene, camDir, resultBufferedImages, bufferImageType, classifyId);
             faces.clear();
-            primitive.extractGaiaFaces(faces);
+            primitive.extractGaiaAllFaces(faces);
             for (int j = 0; j < faces.size(); j++) {
                 GaiaFace face = faces.get(j);
                 face.setClassifyId(classifyId);
@@ -144,7 +150,6 @@ public class MainRendererBillBoard implements IAppLogic {
 
             treeMesh.getPrimitives().add(primitive);
             classifyId++;
-            int hola = 0;
         }
 
         float trunkHeight = 0.0f;
@@ -172,7 +177,7 @@ public class MainRendererBillBoard implements IAppLogic {
 
             GaiaPrimitive primitive = engine.makeRectangleTextureByCameraDirectionTreeBillboradTopDown4Tree(scene, camDir, resultBufferedImages, bufferImageType, delimiterBBox, classifyId);
             faces.clear();
-            primitive.extractGaiaFaces(faces);
+            primitive.extractGaiaAllFaces(faces);
             for (int j = 0; j < faces.size(); j++) {
                 GaiaFace face = faces.get(j);
                 face.setClassifyId(classifyId);
@@ -192,7 +197,6 @@ public class MainRendererBillBoard implements IAppLogic {
 
             treeMesh.getPrimitives().add(primitive);
             classifyId++;
-            int hola = 0;
         }
 
         TextureAtlasManager textureAtlasManager = new TextureAtlasManager();
@@ -238,8 +242,9 @@ public class MainRendererBillBoard implements IAppLogic {
         material.setBlend(false);
         material.setShininess(1.0f);
 
-        List<GaiaPrimitive> primitives = new ArrayList<>();
-        treeScene.extractPrimitives(primitives);
+        GaiaExtractor extractor = new GaiaExtractor();
+        List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(treeScene);
+
         int primitiveCount = primitives.size();
         for (int i = 0; i < primitiveCount; i++) {
             GaiaPrimitive primitive = primitives.get(i);
@@ -281,8 +286,18 @@ public class MainRendererBillBoard implements IAppLogic {
 
             // 2nd, make the halfEdgeScene
             gaiaSceneCopy.joinAllSurfaces();
-            gaiaSceneCopy.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
-            gaiaSceneCopy.deleteDegeneratedFaces();
+            GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
+                    .error(error)
+                    .checkTexCoord(false)
+                    .checkNormal(false)
+                    .checkColor(false)
+                    .checkBatchId(false)
+                    .build();
+            GaiaWelder weld = new GaiaWelder(weldOptions);
+            weld.apply(gaiaSceneCopy);
+
+            GaiaSceneCleaner cleaner = new GaiaSceneCleaner();
+            cleaner.apply(gaiaSceneCopy);
 
             // Must delete materials because we joined all surfaces into one surface
             int materialsCount = gaiaSceneCopy.getMaterials().size();
@@ -629,7 +644,6 @@ public class MainRendererBillBoard implements IAppLogic {
 
             counter++;
             if (counter > 20) {
-                //System.gc();
                 counter = 0;
             }
         }

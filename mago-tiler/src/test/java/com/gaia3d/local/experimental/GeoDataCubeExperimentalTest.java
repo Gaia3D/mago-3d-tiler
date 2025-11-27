@@ -105,7 +105,7 @@ public class GeoDataCubeExperimentalTest {
     @Test
     void ws2VoxelTerrain() {
         String path = "ws2-voxel-terrain";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 //"-rotateXAxis", "90",
@@ -118,7 +118,7 @@ public class GeoDataCubeExperimentalTest {
     @Test
     void ws2VoxelBuildings() {
         String path = "ws2-voxel-buildings";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 //"-rotateXAxis", "90",
@@ -131,7 +131,7 @@ public class GeoDataCubeExperimentalTest {
     @Test
     void ws2VoxelFullset() {
         String path = "ws2-voxel-fullset";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 //"-rotateXAxis", "90",
@@ -144,7 +144,7 @@ public class GeoDataCubeExperimentalTest {
     @Test
     void voxelMini() {
         String path = "voxel-mini";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-rotateXAxis", "90",
@@ -157,7 +157,7 @@ public class GeoDataCubeExperimentalTest {
     @Test
     void optimizedVoxel15() {
         String path = "ydp-voxel-optimized";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-rotateXAxis", "90",
@@ -170,7 +170,7 @@ public class GeoDataCubeExperimentalTest {
     @Test
     void optimizedVoxel14() {
         String path = "ydp-voxel-optimized-14";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-rotateXAxis", "90",
@@ -183,7 +183,7 @@ public class GeoDataCubeExperimentalTest {
     @Test
     void optimizedVoxel13() {
         String path = "ydp-voxel-optimized-13";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-rotateXAxis", "90",
@@ -196,7 +196,7 @@ public class GeoDataCubeExperimentalTest {
     @Test
     void optimizedVoxel12() {
         String path = "ydp-voxel-optimized-12";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-rotateXAxis", "90",
@@ -209,7 +209,7 @@ public class GeoDataCubeExperimentalTest {
     @Test
     void optimizedVoxel11() {
         String path = "ydp-voxel-optimized-11";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-rotateXAxis", "90",
@@ -222,7 +222,7 @@ public class GeoDataCubeExperimentalTest {
     @Test
     void optimizedVoxel10() {
         String path = "ydp-voxel-optimized-10";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-rotateXAxis", "90",
@@ -235,7 +235,7 @@ public class GeoDataCubeExperimentalTest {
     @Test
     void optimizedVoxel9() {
         String path = "ydp-voxel-optimized-9";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-rotateXAxis", "90",
@@ -248,7 +248,7 @@ public class GeoDataCubeExperimentalTest {
     @Test
     void optimizedVoxel8() {
         String path = "ydp-voxel-optimized-8";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-rotateXAxis", "90",
@@ -261,7 +261,7 @@ public class GeoDataCubeExperimentalTest {
     @Test
     void voxel15() {
         String path = "ydp-voxel";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-rotateXAxis", "90",
@@ -274,7 +274,7 @@ public class GeoDataCubeExperimentalTest {
     @Test
     void voxelTerrainSample() {
         String path = "voxel-terrain-sample";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-rotateXAxis", "90",
@@ -287,7 +287,7 @@ public class GeoDataCubeExperimentalTest {
     @Test
     void voxelTerrainSampleSingle() {
         String path = "voxel-terrain-sample-single";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-rotateXAxis", "90",
@@ -300,7 +300,7 @@ public class GeoDataCubeExperimentalTest {
     @Test
     void voxelBuildingsSample() {
         String path = "voxel-buildings-sample";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-rotateXAxis", "90",
@@ -313,7 +313,7 @@ public class GeoDataCubeExperimentalTest {
     @Test
     void voxelBuildingsSingle() {
         String path = "voxel-buildings-sample-single";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-rotateXAxis", "90",
@@ -326,7 +326,7 @@ public class GeoDataCubeExperimentalTest {
     @Test
     void voxelSampleAll() {
         String path = "voxel-buildings-sample-all";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-rotateXAxis", "90",

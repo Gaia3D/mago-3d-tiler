@@ -254,15 +254,6 @@ public class HalfEdge implements Serializable {
             return false;
         }
 
-//        // check if the halfEdge is parallel to the plane
-//        Vector3d hedgeDir = this.getVector(null);
-//        hedgeDir.normalize();
-//        Vector3d planeNormal = new Vector3d(0, 0, 1);
-//        double dot = hedgeDir.dot(planeNormal);
-//        double angDeg = Math.toDegrees(Math.acos(dot));
-//        if (angDeg > 70.0) {
-//            return false;
-//        }
         if (Math.abs(startVertexPosition.z - endVertexPosition.z) < error) {
             return false;
         }
@@ -337,14 +328,6 @@ public class HalfEdge implements Serializable {
         }
 
         // check if the halfEdge is parallel to the plane
-//        Vector3d hedgeDir = this.getVector(null);
-//        hedgeDir.normalize();
-//        Vector3d planeNormal = new Vector3d(1, 0, 0);
-//        double dot = hedgeDir.dot(planeNormal);
-//        double angDeg = Math.toDegrees(Math.acos(dot));
-//        if (angDeg > 70.0) {
-//            return false;
-//        }
         if (Math.abs(startVertexPosition.x - endVertexPosition.x) < error) {
             return false;
         }
@@ -421,14 +404,6 @@ public class HalfEdge implements Serializable {
         }
 
 //        // check if the halfEdge is parallel to the plane
-//        Vector3d hedgeDir = this.getVector(null);
-//        hedgeDir.normalize();
-//        Vector3d planeNormal = new Vector3d(0, 1, 0);
-//        double dot = hedgeDir.dot(planeNormal);
-//        double angDeg = Math.toDegrees(Math.acos(dot));
-//        if (angDeg > 70.0) {
-//            return false;
-//        }
         if (Math.abs(startVertexPosition.y - endVertexPosition.y) < error) {
             return false;
         }
@@ -484,20 +459,6 @@ public class HalfEdge implements Serializable {
     }
 
     public void writeFile(ObjectOutputStream outputStream) {
-        /*
-        public String note = null;
-        private HalfEdge twin = null;
-        private HalfEdge next = null;
-        private HalfEdgeVertex startVertex = null;
-        private HalfEdgeFace face = null;
-        private ObjectStatus status = ObjectStatus.ACTIVE;
-        private int id = -1;
-        private int twinId = -1;
-        private int nextId = -1;
-        private int startVertexId = -1;
-        private int faceId = -1;
-         */
-
         try {
             // twinId
             int twinId = twin == null ? -1 : twin.id;

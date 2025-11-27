@@ -1,11 +1,11 @@
 package com.gaia3d.process.postprocess.instance;
 
 import com.gaia3d.basic.exchangable.GaiaSet;
-import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.jgltf.tiles.InstancedModelGltfWriter;
+import com.gaia3d.converter.gltf.GltfWriterOptions;
+import com.gaia3d.converter.gltf.tiles.InstancedModelGltfWriter;
 import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.process.postprocess.ContentModel;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTableMap;
@@ -36,7 +36,16 @@ public class Instanced3DModelV2 implements ContentModel {
     private final InstancedModelGltfWriter gltfWriter;
 
     public Instanced3DModelV2() {
-        this.gltfWriter = new InstancedModelGltfWriter();
+        GltfWriterOptions gltfOptions = GltfWriterOptions.builder()
+                .build();
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        if (globalOptions.getTilesVersion().equals("1.0")) {
+            gltfOptions.setUriImage(true);
+        }
+        if (globalOptions.isUseQuantization()) {
+            gltfOptions.setUseQuantization(true);
+        }
+        this.gltfWriter = new InstancedModelGltfWriter(gltfOptions);
     }
 
     @Override
@@ -52,8 +61,6 @@ public class Instanced3DModelV2 implements ContentModel {
         float[] rotations = new float[instanceLength * 4]; // Not used in this implementation, but can be used for rotation quaternions
         float[] scales = new float[instanceLength * 3]; // Assuming uniform scale for simplicity
 
-        //float[] normalUps = new float[instanceLength * 3];
-        //float[] normalRights = new float[instanceLength * 3];
         float[] batchId = new float[instanceLength];
 
         Vector3d center = contentInfo.getBoundingBox().getCenter();
@@ -71,12 +78,6 @@ public class Instanced3DModelV2 implements ContentModel {
         AtomicInteger scaleIndex = new AtomicInteger();
         AtomicInteger batchIdIndex = new AtomicInteger();
         for (TileInfo tileInfo : tileInfos) {
-            //y-up
-            //Vector3d normalRight = new Vector3d(1, 0, 0);
-            //Vector3d normalUp = new Vector3d(0, 1, 0);
-            Vector3d normalRight = new Vector3d(1, 0, 0);
-            Vector3d normalUp = new Vector3d(0, 0, -1);
-
             // GPS Coordinates
             TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
             Vector3d position = tileTransformInfo.getPosition();
@@ -85,24 +86,6 @@ public class Instanced3DModelV2 implements ContentModel {
 
             Vector3d localPositionYUp = new Vector3d(localPosition.x, localPosition.y, localPosition.z);
             Matrix3d worldRotationMatrix3d = transformMatrix.get3x3(new Matrix3d());
-            Matrix3d inverseWorldRotationMatrix3d = inverseTransformMatrix.get3x3(new Matrix3d());
-            //worldRotationMatrix3d.rotateX(Math.toRadians(-90));
-
-
-            // rotate
-            double headingValue = Math.toRadians(tileTransformInfo.getHeading());
-            double pitchValue = Math.toRadians(tileTransformInfo.getTilt());
-            double rollValue = Math.toRadians(tileTransformInfo.getRoll());
-
-            /*Matrix3d rotationMatrix = new Matrix3d();
-            //rotationMatrix.rotateZ(-headingValue);
-            //rotationMatrix.rotateX(-pitchValue);
-            //rotationMatrix.rotateY(-rollValue);
-            worldRotationMatrix3d.mul(rotationMatrix, worldRotationMatrix3d);*/
-
-//            normalUp = worldRotationMatrix3d.transform(normalUp);
-//            normalRight = worldRotationMatrix3d.transform(normalRight);
-
             // scale
             double scaleX = tileTransformInfo.getScaleX();
             double scaleY = tileTransformInfo.getScaleY();
@@ -111,14 +94,6 @@ public class Instanced3DModelV2 implements ContentModel {
             positions[positionIndex.getAndIncrement()] = (float) localPositionYUp.x;
             positions[positionIndex.getAndIncrement()] = (float) localPositionYUp.z;
             positions[positionIndex.getAndIncrement()] = (float) -localPositionYUp.y;
-
-//            normalUps[normalUpIndex.getAndIncrement()] = (float) normalUp.x;
-//            normalUps[normalUpIndex.getAndIncrement()] = (float) normalUp.y;
-//            normalUps[normalUpIndex.getAndIncrement()] = (float) normalUp.z;
-//
-//            normalRights[normalRightIndex.getAndIncrement()] = (float) normalRight.x;
-//            normalRights[normalRightIndex.getAndIncrement()] = (float) normalRight.y;
-//            normalRights[normalRightIndex.getAndIncrement()] = (float) normalRight.z;
 
             scales[scaleIndex.getAndIncrement()] = (float) scaleX;
             scales[scaleIndex.getAndIncrement()] = (float) scaleY;
@@ -132,7 +107,6 @@ public class Instanced3DModelV2 implements ContentModel {
                     .scale(scaleX, scaleY, scaleZ);
             transformMatrices.add(instanceTransformMatrix);
 
-
             Matrix3d xRotationMatrix3d = new Matrix3d();
             xRotationMatrix3d.identity();
             xRotationMatrix3d.rotateX(Math.toRadians(90));
@@ -143,12 +117,6 @@ public class Instanced3DModelV2 implements ContentModel {
             rotations[rotationIndex.getAndIncrement()] = (float) quaternion.y;
             rotations[rotationIndex.getAndIncrement()] = (float) quaternion.z;
             rotations[rotationIndex.getAndIncrement()] = (float) quaternion.w;
-
-            /*Quaterniond quaternion = instanceTransformMatrix.getNormalizedRotation(new Quaterniond());
-            rotations[rotationIndex.getAndIncrement()] = (float) quaternion.x;
-            rotations[rotationIndex.getAndIncrement()] = (float) quaternion.z;
-            rotations[rotationIndex.getAndIncrement()] = (float) quaternion.y;
-            rotations[rotationIndex.getAndIncrement()] = (float) quaternion.w;*/
         }
 
         Instanced3DModelBinary instanced3DModelBinary = new Instanced3DModelBinary();
@@ -156,8 +124,6 @@ public class Instanced3DModelV2 implements ContentModel {
         instanced3DModelBinary.setRotations(rotations);
         instanced3DModelBinary.setScales(scales);
         instanced3DModelBinary.setFeatureIds(batchId);
-        //instanced3DModelBinary.setNormalUps(normalUps);
-        //instanced3DModelBinary.setNormalRights(normalRights);
 
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         File outputFile = new File(globalOptions.getOutputPath());
@@ -168,16 +134,6 @@ public class Instanced3DModelV2 implements ContentModel {
                 .mkdir()) {
             log.debug("[Create][data] Created output data directory, {}", outputRoot);
         }
-
-        /*byte[] positionBytes = instanced3DModelBinary.getPositionBytes();
-        byte[] normalUpBytes = instanced3DModelBinary.getNormalUpBytes();
-        byte[] normalRightBytes = instanced3DModelBinary.getNormalRightBytes();
-        byte[] scaleBytes = instanced3DModelBinary.getScaleBytes();
-        byte[] featureTableBytes = new byte[positionBytes.length + normalUpBytes.length + normalRightBytes.length + scaleBytes.length];
-        System.arraycopy(positionBytes, 0, featureTableBytes, 0, positionBytes.length);
-        System.arraycopy(normalUpBytes, 0, featureTableBytes, positionBytes.length, normalUpBytes.length);
-        System.arraycopy(normalRightBytes, 0, featureTableBytes, positionBytes.length + normalUpBytes.length, normalRightBytes.length);
-        System.arraycopy(scaleBytes, 0, featureTableBytes, positionBytes.length + normalUpBytes.length + normalRightBytes.length, scaleBytes.length)*/;
 
         GaiaFeatureTable featureTable = new GaiaFeatureTable();
 
@@ -193,12 +149,6 @@ public class Instanced3DModelV2 implements ContentModel {
         }
 
         featureTable.setInstancesLength(instanceLength);
-        /*featureTable.setEastNorthUp(false);
-        featureTable.setPosition(new ByteAddress(0));
-        featureTable.setNormalUp(new ByteAddress(positionBytes.length));
-        featureTable.setNormalRight(new ByteAddress(positionBytes.length + normalUpBytes.length));
-        featureTable.setScale(new ByteAddress(positionBytes.length + normalUpBytes.length + normalRightBytes.length));*/
-
         int lod = contentInfo.getLod().getLevel();
 
         GaiaBatchTableMap<String, List<String>> batchTableMap = new GaiaBatchTableMap<>();
@@ -230,13 +180,11 @@ public class Instanced3DModelV2 implements ContentModel {
             batchTableMap.computeIfAbsent("LOD", k -> new ArrayList<>());
             batchTableMap.get("LOD").add(String.valueOf(lod));
 
-
             if (attributes != null) {
                 attributes.forEach((key, value) -> {
                     String utf8Value = StringUtils.convertUTF8(value);
                     batchTableMap.computeIfAbsent(key, k -> new ArrayList<>());
-                    batchTableMap.get(key)
-                            .add(utf8Value);
+                    batchTableMap.get(key).add(utf8Value);
                 });
             }
         });
@@ -248,8 +196,6 @@ public class Instanced3DModelV2 implements ContentModel {
     }
 
     private void createInstance(File file, ContentInfo contentInfo, TileInfo tileInfo, GaiaFeatureTable featureTable, GaiaBatchTableMap<String, List<String>> batchTableMap) {
-        //boolean isVoxelLod = GlobalOptions.getInstance().isVoxelLod();
-
         try {
             GaiaScene firstGaiaScene = tileInfo.getScene();
             firstGaiaScene = firstGaiaScene.clone();
@@ -263,26 +209,6 @@ public class Instanced3DModelV2 implements ContentModel {
             GaiaBatcher gaiaBatcher = new GaiaBatcher();
             GaiaSet gaiaSet = gaiaBatcher.runBatching(batchTileInfos, contentInfo.getNodeCode(), contentInfo.getLod());
             GaiaScene resultGaiaScene = new GaiaScene(gaiaSet);
-            GaiaBoundingBox boundingBox = resultGaiaScene.updateBoundingBox();
-            float minSize = (float) boundingBox.getMinSize();
-
-            /*if (isVoxelLod) {
-                int lod = contentInfo.getLod()
-                        .getLevel();
-                if (lod > 0) {
-                    float octreeMinSize = minSize;
-                    if (lod == 1) {
-                        octreeMinSize = minSize / 8.0f;
-                    } else if (lod == 2) {
-                        octreeMinSize = minSize / 4.0f;
-                    } else if (lod == 3) {
-                        octreeMinSize = minSize / 2.0f;
-                    } else if (lod == 4) {
-                        octreeMinSize = minSize;
-                    }
-                    resultGaiaScene = GeometryUtils.getGaiaSceneLego(resultGaiaScene, octreeMinSize);
-                }
-            }*/
             gltfWriter.writeGlb(resultGaiaScene, file, featureTable, batchTableMap);
         } catch (Exception e) {
             log.error("[ERROR] :", e);

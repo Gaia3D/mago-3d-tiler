@@ -15,8 +15,7 @@ public class TileInfoGenerator implements PreProcess {
     @Override
     public TileInfo run(TileInfo tileInfo) {
         GaiaScene scene = tileInfo.getScene();
-        GaiaNode rootNode = scene.getNodes()
-                .get(0);
+        GaiaNode rootNode = scene.getNodes().getFirst();
         tileInfo.setName(rootNode.getName());
         tileInfo.setTransformMatrix(rootNode.getTransformMatrix());
 

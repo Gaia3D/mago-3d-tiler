@@ -1,17 +1,15 @@
 ![mago-3d-tiler](https://github.com/user-attachments/assets/e7f8086d-ab5e-4848-9f51-99d444691f91)
 ===
 
-## Overview
-
 ### The Premier OGC 3D Tiles Solution!
 mago 3DTiler is an open source-based OGC 3DTiles generator.   
 It converts various spatial information data into OGC 3D Tiles, the basis of the Digital Twin service.   
 Based on Java, mago 3DTiler is highly portable, flexible, and fast.
 
 ![Static Badge](https://img.shields.io/badge/Gaia3D%2C%20Inc-blue?style=flat-square)
-![Static Badge](https://img.shields.io/badge/3DTiles-green?style=flat-square&logo=Cesium)
-![Static Badge](https://img.shields.io/badge/Jdk17-red?style=flat-square&logo=openjdk)
-![Static Badge](https://img.shields.io/badge/Gradle-darkorange?style=flat-square&logo=gradle)
+![Static Badge](https://img.shields.io/badge/3DTiles1.1-green?style=flat-square&logo=Cesium)
+![Static Badge](https://img.shields.io/badge/JDK21-red?style=flat-square&logo=openjdk)
+![Static Badge](https://img.shields.io/badge/Gradle9-darkorange?style=flat-square&logo=gradle)
 ![Static Badge](https://img.shields.io/badge/Docker%20Image-blue?style=flat-square&logo=docker)
 
 ![tiler-images](https://github.com/user-attachments/assets/1c496ac5-053a-42c0-a6a7-e2c3b1de219e)
@@ -37,7 +35,7 @@ gradlew jar
 
 ## Example help command
 ```
-java -jar mago-3d-tiler-x.x.x-natives-windows.jar -help
+java -jar mago-3d-tiler-x.x.x.jar -help
 ```
 console output:
 ```
@@ -49,15 +47,15 @@ Usage: command options
  -q, --quiet                      Quiet mode/Silent mode
  -lt, --leaveTemp                 Leave temporary files
  -m, --merge                      Merge tileset.json files
- -i, --input <arg>                Input directory path
- -o, --output <arg>               Output directory file path
+ -i, --input <arg>                [Required] Input directory path
+ -o, --output <arg>               [Required] Output directory path
  -it, --inputType <arg>           Input files type [kml, 3ds, fbx, obj, gltf/glb, las/laz, citygml, indoorgml, shp, geojson, gpkg]
  -ot, --outputType <arg>          Output 3DTiles Type [b3dm, i3dm, pnts]
  -l, --log <arg>                  Output log file path.
  -r, --recursive                  Tree directory deep navigation.
  -te, --terrain <arg>             GeoTiff Terrain file path, 3D Object applied as clampToGround (Supports geotiff format)
  -if, --instance <arg>            Instance file path for I3DM (Default: {OUTPUT}/instance.dae)
- -qt, --quantize                  Quantize mesh to reduce glb size via "KHR_mesh_quantization" Extension
+ -qt, --quantize                  Quantize glTF 3DMesh via "KHR_mesh_quantization" Extension
  -c, --crs <arg>                  Coordinate Reference Systems, EPSG Code(4326, 3857, 32652, 5186...)
  -p, --proj <arg>                 Proj4 parameters (ex: +proj=tmerc +la...)
  -xo, --xOffset <arg>             X Offset value for coordinate transformation
@@ -66,30 +64,32 @@ Usage: command options
  -lon, --longitude <arg>          Longitude value for coordinate transformation. (The lon lat option must be used together).
  -lat, --latitude <arg>           Latitude value for coordinate transformation. (The lon lat option must be used together).
  -rx, --rotateXAxis <arg>         Rotate the X-Axis in degrees
- -ra, --refineAdd                 Set 3D Tiles Refine 'ADD' mode
- -mx, --maxCount <arg>            Maximum number of triangles per node.
- -nl, --minLod <arg>              min level of detail
- -xl, --maxLod <arg>              Max Level of detail
- -ng, --minGeometricError <arg>   Minimum geometric error
- -mg, --maxGeometricError <arg>   Maximum geometric error
- -mp, --maxPoints <arg>           Maximum number of points per a tile
- -pcr, --pointRatio <arg>         Percentage of points from original data
- -sp, --sourcePrecision           Create pointscloud tile with original precision.
- -f4, --force4ByteRGB             Force 4Byte RGB for pointscloud tile.
- -fc, --flipCoordinate            Flip x, y coordinate for 2D Original Data.
- -af, --attributeFilter <arg>     Attribute filter setting for extrusion model ex) "classification=window,door;type=building"
- -nc, --nameColumn <arg>          Name column setting for extrusion model
- -hc, --heightColumn <arg>        Height column setting for extrusion model
- -ac, --altitudeColumn <arg>      Altitude Column setting for extrusion model
- -hd, --headingColumn <arg>       Heading column setting for I3DM converting
- -scl, --scaleColumn <arg>        Scale column setting for I3DM converting
- -den, --densityColumn <arg>      Density column setting for I3DM polygon converting
- -dc, --diameterColumn <arg>      Diameter column setting for pipe extrusion model, Specify a length unit for Diameter in millimeters(mm) (Default Column: diameter)
- -mh, --minimumHeight <arg>       Minimum height value for extrusion model
- -aa, --absoluteAltitude <arg>    Absolute altitude value for extrusion model
- -sh, --skirtHeight <arg>         Building Skirt height setting for extrusion model
- -tv, --tilesVersion <arg>        [Experimental] 3DTiles Version [Default: 1.1][1.0, 1.1]
+ -ra, --refineAdd                 [Tileset] Set 3D Tiles Refine 'ADD' mode
+ -mx, --maxCount <arg>            [Tileset] Maximum number of triangles per node.
+ -nl, --minLod <arg>              [Tileset] min level of detail
+ -xl, --maxLod <arg>              [Tileset] Max Level of detail
+ -ng, --minGeometricError <arg>   [Tileset] Minimum geometric error
+ -mg, --maxGeometricError <arg>   [Tileset] Maximum geometric error
+ -mp, --maxPoints <arg>           [Tileset] Maximum number of points per a tile
+ -pcr, --pointRatio <arg>         [PointCloud] Percentage of points from original data
+ -sp, --sourcePrecision           [PointCloud] Create pointscloud tile with original precision.
+ -f4, --force4ByteRGB             [PointCloud] Force 4Byte RGB for pointscloud tile.
+ -fc, --flipCoordinate            [GISVector] Flip x, y coordinate for 2D Original Data.
+ -af, --attributeFilter <arg>     [GISVector] Attribute filter setting for extrusion model ex) "classification=window,door;type=building"
+ -nc, --nameColumn <arg>          [GISVector] Name column setting for extrusion model
+ -hc, --heightColumn <arg>        [GISVector] Height column setting for extrusion model
+ -ac, --altitudeColumn <arg>      [GISVector] Altitude Column setting for extrusion model
+ -hd, --headingColumn <arg>       [GISVector] Heading column setting for I3DM converting
+ -scl, --scaleColumn <arg>        [GISVector] Scale column setting for I3DM converting
+ -den, --densityColumn <arg>      [GISVector] Density column setting for I3DM polygon converting
+ -dc, --diameterColumn <arg>      [GISVector] Diameter column setting for pipe extrusion model, Specify a length unit for Diameter in millimeters(mm) (Default Column: diameter)
+ -mh, --minimumHeight <arg>       [GISVector] Minimum height value for extrusion model
+ -aa, --absoluteAltitude <arg>    [GISVector] Absolute altitude value for extrusion model
+ -sh, --skirtHeight <arg>         [GISVector] Building Skirt height setting for extrusion model
+ -tv, --tilesVersion <arg>        [Experimental] 3DTiles Version [1.0, 1.1][Default: 1.1]
  -pg, --photogrammetry            [Experimental] generate b3dm for photogrammetry model with GPU
+ -sbn, --splitByNode              [Experimental] Split tiles by nodes of scene.
+ -cc, --curvatureCorrection       [Experimental] Apply curvature correction for ellipsoid surface.
  -mc, --multiThreadCount <arg>    [Deprecated] set thread count
  -glb, --glb                      [Deprecated] Create glb file with B3DM.
  -igtx, --ignoreTextures          [Deprecated] Ignore diffuse textures.
@@ -97,11 +97,11 @@ Usage: command options
 ```
 This is a simple kml/collada -> 3dTiles conversion code with the mandatory argument values.    
 ```
-java -jar mago-3d-tiler-x.x.x-natives-windows.jar -input C:\data\kml-input-dir -inputType kml -output C:\data\kml-output-dir
+java -jar mago-3d-tiler-x.x.x.jar -input C:\data\kml-input-dir -inputType kml -output C:\data\kml-output-dir
 ```
 or
 ```
-java -jar mago-3d-tiler-x.x.x-natives-windows.jar -i C:\data\kml-input-dir -o C:\data\kml-output-dir
+java -jar mago-3d-tiler-x.x.x.jar -i C:\data\kml-input-dir -o C:\data\kml-output-dir
 ```
 
 ## Using Docker Image
@@ -122,7 +122,7 @@ For detailed documentation, including installation and usage instructions, pleas
 - Manual : [github.com/Gaia3D/mago-3d-tiler](https://github.com/Gaia3D/mago-3d-tiler/blob/main/MANUAL.md)
 
 ## Supported Java versions:
-Supports long-term support (LTS) versions of the JDK, including ***JDK17*** and ***JDK21***.
+Supports long-term support (LTS) versions of the JDK21.
 
 ## Experience the mago 3DTiler:
 ![image](https://github.com/Gaia3D/mago-3d-tiler/assets/87691347/c778f7e1-771c-4df6-8d4c-b46412c80c19)   

@@ -2,7 +2,7 @@ package com.gaia3d.converter.assimp;
 
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.model.GaiaScene;
-import com.gaia3d.command.Configuration;
+import com.gaia3d.command.LoggingConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Level;
@@ -32,8 +32,8 @@ class AssimpConverterTest {
     @Test
     @Disabled
     void loadStressTest() {
-        Configuration.initConsoleLogger("%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n");
-        Configuration.setLevel(Level.DEBUG);
+        LoggingConfiguration.initConsoleLogger("%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n");
+        LoggingConfiguration.setLevel(Level.DEBUG);
 
         log.debug("Start loading files");
 
@@ -60,7 +60,7 @@ class AssimpConverterTest {
 
     @Test
     void load() {
-        Configuration.initConsoleLogger();
+        LoggingConfiguration.initConsoleLogger();
         ClassLoader classLoader = getClass().getClassLoader();
         File inputFolder = new File(classLoader.getResource("./sample-3ds").getFile());
         File inputFile = new File(inputFolder, "a_bd001.3ds");

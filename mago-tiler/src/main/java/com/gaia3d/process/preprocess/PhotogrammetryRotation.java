@@ -33,14 +33,6 @@ public class PhotogrammetryRotation implements PreProcess {
 
         rotateX(transform, rotateX);
 
-        /*KmlInfo kml = tileInfo.getKmlInfo();
-        if (kml != null) {
-            double heading = -kml.getHeading();
-            double tilt = -kml.getTilt();
-            double roll = -kml.getRoll();
-            rotateXYZ(transform, heading, tilt, roll);
-        }*/
-
         /* set the transform matrix */
         rootNode.setTransformMatrix(transform);
         tileInfo.setTransformMatrix(transform);
@@ -79,7 +71,7 @@ public class PhotogrammetryRotation implements PreProcess {
         return transformMatrix;
     }
 
-    private Matrix4d rotateX(Matrix4d transformMatrix , double degree) {
+    private Matrix4d rotateX(Matrix4d transformMatrix, double degree) {
         Matrix4d xRotMatrix = new Matrix4d();
         xRotMatrix.rotateX(Math.toRadians(degree));
         xRotMatrix.mul(transformMatrix, transformMatrix);

@@ -1,6 +1,6 @@
 package com.gaia3d.util;
 
-import com.gaia3d.command.Configuration;
+import com.gaia3d.command.LoggingConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +15,7 @@ class DecimalUtilsTest {
 
     @Test
     void testGermanyDecimalSeparator() {
-        Configuration.initConsoleLogger();
+        LoggingConfiguration.initConsoleLogger();
 
         double original = 1234.12345678;
         DecimalFormat decimalFormat = new DecimalFormat("0.000");
@@ -24,7 +24,7 @@ class DecimalUtilsTest {
         try {
             double result = Double.parseDouble(decimalFormat.format(original));
         } catch (NumberFormatException e) {
-            log.error("[ERROR] Fail Case: {}", e.getMessage());
+            log.error("[ERROR] Fail Case: ", e);
         }
 
         decimalFormat.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ENGLISH));

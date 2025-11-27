@@ -21,7 +21,7 @@ public class VectorReleaseTest {
     }
 
     private void testByFormat(String format) {
-        String[] epsg = new String[] {
+        String[] epsg = new String[]{
                 //"4326",
                 "3857",
                 "5179",
@@ -31,7 +31,7 @@ public class VectorReleaseTest {
 
         for (String code : epsg) {
             String path = "vector-release-sample/EPSG" + code;
-            String[] args = new String[] {
+            String[] args = new String[]{
                     "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                     "-o", MagoTestConfig.getOutputPath(path + format).getAbsolutePath(),
                     "-c", code,

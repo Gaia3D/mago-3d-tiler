@@ -9,6 +9,9 @@ import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.exchangable.SceneInfo;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.geometry.entities.GaiaAAPlane;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaTriangulator;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaWelder;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaWeldOptions;
 import com.gaia3d.basic.geometry.octree.GaiaOctree;
 import com.gaia3d.basic.geometry.octree.GaiaOctreeFaces;
 import com.gaia3d.basic.geometry.octree.HalfEdgeOctreeFaces;
@@ -119,7 +122,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         Map<Node, List<TileInfo>> nodeTileInfoMap = new HashMap<>();
 
         List<TileInfo> cuttedTileInfos = new ArrayList<>();
-        cuttingAndScissorProcessST(tileInfosCopy, lod, root, cuttedTileInfos, projectMaxDepthIdx); // original.***
+        cuttingAndScissorProcessST(tileInfosCopy, lod, root, cuttedTileInfos, projectMaxDepthIdx); // original
 
         // distribute contents to node in the correspondent depth
         // After a process "cutRectangleCake", in tileInfosCopy there are tileInfos that are cut by the boundary planes of the nodes
@@ -221,7 +224,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 //            }
 
             cuttedTileInfos.clear();
-            cuttingAndScissorProcessST(tileInfosCopy, lod, root, cuttedTileInfos, projectMaxDepthIdx); // original.***
+            cuttingAndScissorProcessST(tileInfosCopy, lod, root, cuttedTileInfos, projectMaxDepthIdx); // original
             if (integralReMeshScenesV2(cuttedTileInfos, lod, currDepth, root, projectMaxDepthIdx, decimateParameters, pixelsForMeter, screenPixelsForMeter, reMeshParams)) {
                 break;
             }
@@ -415,42 +418,39 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 
         GaiaScene scene = scenes.get(0);
         GaiaOctreeUtils.getFaceDataListOfScene(scene, octreeFaces.getContents());
-
-        int hola = 0;
     }
 
     private void voxelizeScenes(List<TileInfo> tileInfos, int lod, Node rootNode, Map<Node, List<TileInfo>> nodeTileInfoMap, int maxDepth) {
-        // Test function.***
+        // Test function
         log.info("ReMeshing and cutting scenes for lod : " + lod);
         TilerExtensionModule tilerExtensionModule = new TilerExtensionModule();
         List<GaiaScene> gaiaSceneList = new ArrayList<>();
         List<HalfEdgeScene> resultReMeshedScenes = new ArrayList<>();
-
         List<TileInfo> newTileInfos = new ArrayList<>();
 
         double voxelSizeMeter = 1.0;
         double texturePixelSize = 1.0;
         double texturePixelsForMeter = 4.0;
 
-        // dcLibrary scale 0.01 settings.***
+        // dcLibrary scale 0.01 settings
         GaiaBoundingBox nodeBBoxLC = rootNode.calculateLocalBoundingBox();
         Matrix4d rootTransformMatrix = getNodeTransformMatrix(rootNode);
         Matrix4d rootTransformMatrixInverse = new Matrix4d(rootTransformMatrix);
         rootTransformMatrixInverse.invert();
 
         double maxSize = nodeBBoxLC.getMaxSize();
-        // the maxSize is for rootNode that has maxDepth.***
+        // the maxSize is for rootNode that has maxDepth
         // so, the maxSize rof lod is maxSize / Math.pow(2, maxDepth - lod);
         if (lod > 0) {
             maxSize = maxSize / Math.pow(2, maxDepth - lod);
         }
 
-        // ifc round bridge settings.***
+        // ifc round bridge settings
         voxelSizeMeter = maxSize / 40.0;
         texturePixelSize = maxSize / 512.0;
         texturePixelsForMeter = 1.0 / texturePixelSize;
 
-        // Re mesh by vertex clustering.***************************************************************************
+        // Re mesh by vertex clustering************************************************************************
         Vector3d cellGridOrigin = new Vector3d();
         double cellSize = voxelSizeMeter;
         CellGrid3D cellGrid = new CellGrid3D(cellGridOrigin, cellSize);
@@ -472,7 +472,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 continue;
             }
 
-            //Vector3d geoCoordCenter = tileInfo.getKmlInfo().getPosition(); // original.***
+            //Vector3d geoCoordCenter = tileInfo.getKmlInfo().getPosition(); // original
             Vector3d geoCoordCenter = tileInfo.getTileTransformInfo().getPosition(); // use TileTransformInfo position instead of KmlInfo position
             Vector3d scenePosWC = GlobeUtils.geographicToCartesianWgs84(geoCoordCenter);
             Vector4d scenePosLC4d = new Vector4d(scenePosWC.x, scenePosWC.y, scenePosWC.z, 1.0);
@@ -494,7 +494,9 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             }
             GaiaScene scene = new GaiaScene(gaiaSet);
             scene.setOriginalPath(tileInfo.getTempPath());
-            scene.makeTriangleFaces();
+
+            GaiaTriangulator triangulator = new GaiaTriangulator();
+            triangulator.apply(scene);
 
             gaiaSceneList.clear();
             gaiaSceneList.add(scene);
@@ -631,7 +633,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         boolean makeVerticalSkirt = true;
         boolean cellSizeGreaterThanTileInfosBBox = false;
 
-        // ReMeshParameters.***
+        // ReMeshParameters
         GaiaBoundingBox rootNodeBBoxLC = rootNode.calculateLocalBoundingBox();
         Matrix4d rootTransformMatrix = getNodeTransformMatrix(rootNode);
         Matrix4d rootTransformMatrixInverse = new Matrix4d(rootTransformMatrix);
@@ -647,7 +649,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 
             intersectedNodes.clear();
             //*************************************************************************************************************************************
-            // in integral-reMesh, the intersection between node and tileInfo must be between node and the cartographicCenterDegree of tileInfo.***
+            // in integral-reMesh, the intersection between node and tileInfo must be between node and the cartographicCenterDegree of tileInfo
             Vector3d cartographicCenterDegree = cartographicBBox.getCenter();
             rootNode.getIntersectedNodesAsOctree(cartographicCenterDegree, nodeDepth, intersectedNodes);
             //*************************************************************************************************************************************
@@ -655,13 +657,15 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             int intersectedNodesCount = intersectedNodes.size();
             for (int i = 0; i < intersectedNodesCount; i++) {
                 Node node = intersectedNodes.get(i);
-                if (node.getDepth() != nodeDepth) continue;
+                if (node.getDepth() != nodeDepth) {
+                    continue;
+                }
                 List<TileInfo> tileInfosOfNodeList = nodeTileInfosMap.computeIfAbsent(node, k -> new ArrayList<>());
                 tileInfosOfNodeList.add(tileInfo);
             }
         }
 
-        // 1rst, calculate the average bbox minSize among tileInfos.***
+        // 1rst, calculate the average bbox minSize among tileInfos
         double bboxMinSize = Double.MAX_VALUE;
         double averageBBoxMinSize = 0.0;
         int tileInfosCount = tileInfos.size();
@@ -682,19 +686,18 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
 
         averageBBoxMinSize = averageBBoxMinSize / (double) tileInfosCount;
 
-        // Re mesh by vertex clustering.***************************************************************************
+        // Re mesh by vertex clustering************************************************************************
         double maxSize = rootNodeBBoxLC.getMaxSize();
-        // the maxSize is for rootNode that has maxDepth.***
+        // the maxSize is for rootNode that has maxDepth
         // so, the maxSize rof lod is maxSize / Math.pow(2, maxDepth - lod);
         if (lod > 0) {
             maxSize = maxSize / Math.pow(2, maxDepth - lod);
         }
 
-        // ifc round bridge settings.***
+        // ifc round bridge settings
         double voxelSizeMeter = maxSize / 30.0;
         double texturePixelSize = maxSize / 512.0;
         double texturePixelsForMeter = 1.0 / texturePixelSize;
-
 
         Vector3d cellGridOrigin = new Vector3d(0.0, 0.0, 0.0);
         double cellSize = voxelSizeMeter;
@@ -703,7 +706,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             cellSize = averageBBoxMinSize * factor;
             log.info("Cell Size is adjusted to bboxMinSize * 0.9 : " + cellSize);
 
-            // delete cellAveragePositions of reMeshParams because the new cellSize is not the half of the old cellSize.***
+            // delete cellAveragePositions of reMeshParams because the new cellSize is not the half of the old cellSize
             Map<Vector3i, Vector3d> cellAveragePositions = reMeshParams.getCellAveragePositions();
             if (cellAveragePositions != null) {
                 cellAveragePositions.clear();
@@ -715,7 +718,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         CellGrid3D cellGrid = new CellGrid3D(cellGridOrigin, cellSize);
         reMeshParams.setTexturePixelsForMeter(texturePixelsForMeter);
         reMeshParams.setCellGrid(cellGrid);
-        // End reMeshParameters.***
+        // End reMeshParameters
 
         nodes = new ArrayList<>(nodeTileInfosMap.keySet());
 
@@ -727,7 +730,9 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             tileInfosOfNode = nodeTileInfosMap.get(node);
 
             int tileInfosOfNodeCount = tileInfosOfNode.size();
-            if (tileInfosOfNodeCount == 0) continue;
+            if (tileInfosOfNodeCount == 0) {
+                continue;
+            }
 
             node.setRefine(Node.RefineType.REPLACE);
 
@@ -743,7 +748,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(posWC);
                 sceneInfo.setTransformMatrix(transformMatrix);
 
-                // for remeshParams.******************************************************************************************
+                // for remeshParams***************************************************************************************
                 Vector3d geoCoordCenter = tileInfo.getTileTransformInfo().getPosition(); // use TileTransformInfo position instead of KmlInfo position
                 Vector3d scenePosWC = GlobeUtils.geographicToCartesianWgs84(geoCoordCenter);
                 Vector4d scenePosLC4d = new Vector4d(scenePosWC.x, scenePosWC.y, scenePosWC.z, 1.0);
@@ -840,7 +845,7 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             }
             content.setContentInfo(contentInfo);
             if (node.getContent() != null) {
-                log.info("Error : node.getContent() is not null. NetSurfaces lod 5 or more******************************");
+                log.info("Error : node.getContent() is not null. NetSurfaces lod 5 or more");
             }
             node.setContent(content);
 
@@ -848,19 +853,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             halfEdgeScene.deleteObjects();
             gaiaScene.clear();
             gaiaSet.clear();
-
-//            // test save resultImages
-//            String sceneName = "mosaicRenderTest_" + i + "_color";
-//            String sceneRawName = sceneName;
-//            String imageExtension = "jpg";
-//            String outputFolderPath = globalOptions.getOutputPath();
-//            try {
-//                File outputFile = new File(outputFolderPath, sceneRawName + "." + imageExtension);
-//                log.info("[Write Image] : {}", outputFile.getAbsoluteFile());
-//                ImageIO.write(bufferedImageColor, "jpg", outputFile);
-//            } catch (Exception e) {
-//                log.error("[ERROR] :", e);
-//            }
         }
 
         return cellSizeGreaterThanTileInfosBBox;
@@ -906,7 +898,8 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             }
             GaiaScene scene = new GaiaScene(gaiaSet);
             scene.setOriginalPath(tileInfo.getTempPath());
-            scene.makeTriangleFaces();
+            GaiaTriangulator triangulator = new GaiaTriangulator();
+            triangulator.apply(scene);
 
             gaiaSceneList.clear();
             resultDecimatedScenes.clear();
@@ -1051,7 +1044,9 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             int intersectedNodesCount = intersectedNodes.size();
             for (int i = 0; i < intersectedNodesCount; i++) {
                 Node node = intersectedNodes.get(i);
-                if (node.getDepth() != nodeDepth) continue;
+                if (node.getDepth() != nodeDepth) {
+                    continue;
+                }
                 List<TileInfo> tileInfosOfNodeList = nodeTileInfosMap.computeIfAbsent(node, k -> new ArrayList<>());
                 tileInfosOfNodeList.add(tileInfo);
             }
@@ -1066,7 +1061,9 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             tileInfosOfNode = nodeTileInfosMap.get(node);
 
             int tileInfosOfNodeCount = tileInfosOfNode.size();
-            if (tileInfosOfNodeCount == 0) continue;
+            if (tileInfosOfNodeCount == 0) {
+                continue;
+            }
 
             node.setRefine(Node.RefineType.REPLACE);
 
@@ -1160,9 +1157,11 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                 continue;
             }
 
-            halfEdgeScene.decimate(decimateParameters); // new.***
+            halfEdgeScene.decimate(decimateParameters); // new
 
-            if (halfEdgeScene.getTrianglesCount() == 0) continue;
+            if (halfEdgeScene.getTrianglesCount() == 0) {
+                continue;
+            }
 
             // now, create material for the halfEdgeScene
             List<GaiaMaterial> materials = new ArrayList<>();
@@ -1239,29 +1238,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             halfEdgeScene.deleteObjects();
             gaiaScene.clear();
             gaiaSet.clear();
-
-//            // test save resultImages
-//            String sceneName = "mosaicRenderTest_" + i + "_color";
-//            String sceneRawName = sceneName;
-//            imageExtension = "png";
-//            String outputFolderPath = globalOptions.getOutputPath();
-//            try {
-//                File outputFile = new File(outputFolderPath, sceneRawName + "." + imageExtension);
-//                log.info("[Write Image] : {}", outputFile.getAbsoluteFile());
-//                ImageIO.write(bufferedImageColor, "png", outputFile);
-//            } catch (Exception e) {
-//                log.error("[ERROR] :", e);
-//            }
-//
-//            try {
-//                sceneName = "mosaicRenderTest_" + i + "_depth";
-//                imageExtension = "png";
-//                File outputFile = new File(outputFolderPath, sceneName + "." + imageExtension);
-//                log.info("[Write Image] : {}", outputFile.getAbsoluteFile());
-//                ImageIO.write(bufferedImageDepth, "png", outputFile);
-//            } catch (Exception e) {
-//                log.error("[ERROR] :", e);
-//            }
         }
     }
 
@@ -1429,8 +1405,12 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             transformMatrixInv.transformPosition(samplePointWC, samplePointLC);
 
             // check local min max X
-            if (samplePointLC.x < localMinX) localMinX = samplePointLC.x;
-            if (samplePointLC.x > localMaxX) localMaxX = samplePointLC.x;
+            if (samplePointLC.x < localMinX) {
+                localMinX = samplePointLC.x;
+            }
+            if (samplePointLC.x > localMaxX) {
+                localMaxX = samplePointLC.x;
+            }
 
             // check if the planeLC cuts the setBBox
             if (samplePointLC.x > setBBox.getMinX() && samplePointLC.x < setBBox.getMaxX()) {
@@ -1448,8 +1428,12 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             transformMatrixInv.transformPosition(samplePointWC, samplePointLC);
 
             // check local min max Y
-            if (samplePointLC.y < localMinY) localMinY = samplePointLC.y;
-            if (samplePointLC.y > localMaxY) localMaxY = samplePointLC.y;
+            if (samplePointLC.y < localMinY) {
+                localMinY = samplePointLC.y;
+            }
+            if (samplePointLC.y > localMaxY) {
+                localMaxY = samplePointLC.y;
+            }
 
             // check if the planeLC cuts the setBBox
             if (samplePointLC.y > setBBox.getMinY() && samplePointLC.y < setBBox.getMaxY()) {
@@ -1467,8 +1451,12 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             transformMatrixInv.transformPosition(samplePointWC, samplePointLC);
 
             // check local min max Z
-            if (samplePointLC.z < localMinZ) localMinZ = samplePointLC.z;
-            if (samplePointLC.z > localMaxZ) localMaxZ = samplePointLC.z;
+            if (samplePointLC.z < localMinZ) {
+                localMinZ = samplePointLC.z;
+            }
+            if (samplePointLC.z > localMaxZ) {
+                localMaxZ = samplePointLC.z;
+            }
 
             // check if the planeLC cuts the setBBox
             if (samplePointLC.z > setBBox.getMinZ() && samplePointLC.z < setBBox.getMaxZ()) {
@@ -1544,25 +1532,31 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
             log.error("[ERROR] setBBox is null.");
         }
         TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
-        Vector3d geoCoordPosition = tileTransformInfo.getPosition();
-
-        boolean checkTexCoord = true;
-        boolean checkNormal = false;
-        boolean checkColor = false;
-        boolean checkBatchId = false;
         double errorWeld = 1e-4;
 
         List<GaiaAAPlane> allPlanes = new ArrayList<>();
 
         // load the file
         GaiaSet gaiaSet = GaiaSet.readFile(path);
-        if (gaiaSet == null) return;
+        if (gaiaSet == null) {
+            return;
+        }
 
         GaiaScene scene = new GaiaScene(gaiaSet);
 
         scene.deleteNormals();
-        scene.makeTriangleFaces();
-        scene.weldVertices(errorWeld, checkTexCoord, checkNormal, checkColor, checkBatchId);
+
+        GaiaTriangulator triangulator = new GaiaTriangulator();
+        triangulator.apply(scene);
+        GaiaWeldOptions weldOptions = GaiaWeldOptions.builder()
+                .error(errorWeld)
+                .checkTexCoord(true)
+                .checkNormal(false)
+                .checkColor(false)
+                .checkBatchId(false)
+                .build();
+        GaiaWelder weld = new GaiaWelder(weldOptions);
+        weld.apply(scene);
         HalfEdgeScene halfEdgeScene = HalfEdgeUtils.halfEdgeSceneFromGaiaScene(scene);
 
         Matrix4d transformMatrix = new Matrix4d();
@@ -1599,7 +1593,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
         halfEdgeScene.deleteObjects();
         gaiaSet.clear();
         scene.clear();
-        System.gc();
     }
 
     public List<TileInfo> cutHalfEdgeSceneByGaiaAAPlanesAndSaveTileInfos(HalfEdgeScene halfEdgeScene, List<GaiaAAPlane> planes, HalfEdgeOctreeFaces resultOctree,

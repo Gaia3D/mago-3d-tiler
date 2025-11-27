@@ -141,10 +141,8 @@ public class TileMerger {
             Node newChildNode = new Node();
             newChildNode.setRefine(Node.RefineType.REPLACE);
             newChildNode.setGeometricError(tilesetGeometricError);
-            if (tilesetRoot.getTransform() != null)
-                newChildNode.setTransform(tilesetRoot.getTransform());
-            if (tilesetRoot.getBoundingVolume() != null)
-                newChildNode.setBoundingVolume(tilesetRoot.getBoundingVolume());
+            if (tilesetRoot.getTransform() != null) {newChildNode.setTransform(tilesetRoot.getTransform());}
+            if (tilesetRoot.getBoundingVolume() != null) {newChildNode.setBoundingVolume(tilesetRoot.getBoundingVolume());}
 
             BoundingVolume boundingVolume = tilesetRoot.getBoundingVolume();
             //BoundingVolume.BoundingVolumeType boundingVolumeType = boundingVolume.getType();
@@ -173,7 +171,6 @@ public class TileMerger {
             children.add(newChildNode);
             //root.setChildren(children);
         }
-
 
         List<Node> dividedChildren = divideQuadTree(children, null, geometricError, globalBoundingRegion, 0);
         root.setChildren(dividedChildren);
@@ -311,9 +308,6 @@ public class TileMerger {
         if (globalOptions.isRecursive()) {
             maxDepth = MAXIMUM_DEPTH;
         }
-
-
-
 
         List<File> files = (List<File>) FileUtils.listFiles(inputPath, new String[]{"json"}, true);
         files.removeIf(file -> !file.getName().equals("tileset.json"));

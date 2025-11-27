@@ -85,11 +85,6 @@ public class HalfEdgeMesh implements Serializable {
     }
 
     public void writeFile(ObjectOutputStream outputStream) {
-        /*
-        private List<HalfEdgePrimitive> primitives = new ArrayList<>();
-        private GaiaBoundingBox boundingBox = null;
-         */
-
         try {
             outputStream.writeInt(primitives.size());
             for (HalfEdgePrimitive primitive : primitives) {

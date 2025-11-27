@@ -1,99 +1,73 @@
 plugins {
     id "java"
     id "com.google.cloud.tools.jib" version "3.4.0"
-    id 'com.github.johnrengelman.shadow' version '8.1.0'
+    id "com.gradleup.shadow" version "9.0.1"
 }
 
 dependencies {
     implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
     implementation "org.lwjgl:lwjgl"
     implementation "org.lwjgl:lwjgl-assimp"
-    implementation "org.lwjgl:lwjgl-stb"
     implementation "org.lwjgl:lwjgl-opengl"
+    implementation "org.lwjgl:lwjgl-stb"
     implementation "org.lwjgl:lwjgl-ktx"
 
-    implementation "org.joml:joml:1.10.5"
-
-    implementation "org.locationtech.proj4j:proj4j:1.2.3"
-    implementation "org.locationtech.proj4j:proj4j-epsg:1.2.3"
-
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
-    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.2'
-
-    implementation "org.geotools:gt-geotiff:26.5"
-    implementation 'org.geotools:gt-shapefile:26.5'
-    implementation "org.geotools:gt-geopkg:26.5"
-    implementation 'org.geotools:gt-geojson:26.5'
-    implementation 'org.geotools:gt-geojsondatastore:26.5'
-    implementation "org.geotools:gt-coverage:26.5"
-    implementation "org.geotools:gt-main:26.5"
-    implementation "org.geotools:gt-image:26.5"
-    implementation "org.geotools:gt-grid:26.5"
-    implementation "org.geotools:gt-process:26.5"
-    implementation "org.geotools:gt-process-raster:26.5"
-    implementation "org.geotools:gt-process-feature:26.5"
-
-    implementation "javax.media:jai_core:1.1.3"
-    implementation "javax.media:jai_imageio:1.1"
-    implementation "javax.media:jai_codec:1.1.3"
-
-    implementation 'org.jdom:jdom2:2.0.6.1'
+    implementation "org.jdom:jdom2:2.0.6.1"
 
     implementation "de.javagl:jgltf-obj:2.0.4"
     implementation "de.javagl:jgltf-model:2.0.4"
     implementation "de.javagl:jgltf-validator:2.0.4"
-    implementation 'de.javagl:jgltf-impl-v1:2.0.4'
-    implementation 'de.javagl:jgltf-impl-v2:2.0.4'
+    implementation "de.javagl:jgltf-impl-v1:2.0.4"
+    implementation "de.javagl:jgltf-impl-v2:2.0.4"
 
-    implementation 'org.citygml4j:citygml4j-xml:3.0.0'
-    implementation 'org.citygml4j:citygml4j-cityjson:3.0.0'
-    implementation 'com.github.mreutegg:laszip4j:0.17'
-    implementation files("libs/Indoor4J.jar")
+    implementation "org.citygml4j:citygml4j-xml:3.0.0"
+    implementation "org.citygml4j:citygml4j-cityjson:3.0.0"
+    implementation "com.github.mreutegg:laszip4j:0.17"
 
     runtimeOnly "org.lwjgl:lwjgl::natives-linux"
-    runtimeOnly "org.lwjgl:lwjgl-opengl::natives-linux"
-    runtimeOnly "org.lwjgl:lwjgl-glfw::natives-linux"
     runtimeOnly "org.lwjgl:lwjgl-assimp::natives-linux"
-    runtimeOnly "org.lwjgl:lwjgl-openal::natives-linux"
+    runtimeOnly "org.lwjgl:lwjgl-opengl::natives-linux"
     runtimeOnly "org.lwjgl:lwjgl-stb::natives-linux"
+    runtimeOnly "org.lwjgl:lwjgl-glfw::natives-linux"
     runtimeOnly "org.lwjgl:lwjgl-ktx::natives-linux"
 
     runtimeOnly "org.lwjgl:lwjgl::natives-windows"
-    runtimeOnly "org.lwjgl:lwjgl-opengl::natives-windows"
-    runtimeOnly "org.lwjgl:lwjgl-glfw::natives-windows"
     runtimeOnly "org.lwjgl:lwjgl-assimp::natives-windows"
-    runtimeOnly "org.lwjgl:lwjgl-openal::natives-windows"
+    runtimeOnly "org.lwjgl:lwjgl-opengl::natives-windows"
     runtimeOnly "org.lwjgl:lwjgl-stb::natives-windows"
+    runtimeOnly "org.lwjgl:lwjgl-glfw::natives-windows"
     runtimeOnly "org.lwjgl:lwjgl-ktx::natives-windows"
 }
 
 test {
     useJUnitPlatform {
-        includeTags 'default'
+        includeTags "default"
     }
 }
 
 java {
-    //withJavadocJar()
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
 }
 
 javadoc {
-    options.addStringOption("locale", "ko_KR")
+    options.addStringOption("locale", "en_US")
     options.addStringOption("encoding", "UTF-8")
     options.addStringOption("charset", "UTF-8")
     options.addStringOption("docencoding", "UTF-8")
 }
 
 jar {
-    dependsOn 'test'
+    dependsOn "test"
     finalizedBy shadowJar
     manifest {
         attributes "Main-Class": "com.gaia3d.command.mago.Mago3DTilerMain"
         attributes "Implementation-Version": project.version
-        attributes 'Implementation-Title': 'mago-3d-tiler'
-        attributes 'Implementation-Vendor': 'Gaia3d, Inc.'
-        attributes 'Implementation-Vendor-Id': 'com.gaia3d'
-        attributes 'Implementation-URL': 'http://java.sun.com/products/java-media/jai/forDevelopers/jai-imageio/'
+        attributes "Implementation-Title": "mago-3d-tiler"
+        attributes "Implementation-Vendor": "Gaia3d, Inc."
+        attributes "Implementation-Vendor-Id": "com.gaia3d"
+        attributes "Implementation-URL": "http://java.sun.com/products/java-media/jai/forDevelopers/jai-imageio/"
     }
     from {
         configurations.runtimeClasspath.collect {
@@ -106,14 +80,14 @@ jar {
 shadowJar {
     mergeServiceFiles()
     manifest {
-        attributes 'Main-Class': 'com.gaia3d.command.mago.Mago3DTilerMain'
-        attributes 'Implementation-Version': project.version
-        attributes 'Implementation-Title': 'mago-3d-tiler'
-        attributes 'Implementation-Vendor': 'Gaia3d, Inc.'
-        attributes 'Implementation-Vendor-Id': 'com.gaia3d'
-        attributes 'Implementation-URL': 'http://java.sun.com/products/java-media/jai/forDevelopers/jai-imageio/'
+        attributes "Main-Class": "com.gaia3d.command.mago.Mago3DTilerMain"
+        attributes "Implementation-Version": project.version
+        attributes "Implementation-Title": "mago-3d-tiler"
+        attributes "Implementation-Vendor": "Gaia3d, Inc."
+        attributes "Implementation-Vendor-Id": "com.gaia3d"
+        attributes "Implementation-URL": "http://java.sun.com/products/java-media/jai/forDevelopers/jai-imageio/"
     }
-    relocate 'org.slf4j', 'shadow.slf4j'
+    relocate "org.slf4j", "shadow.slf4j"
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from sourceSets.main.runtimeClasspath
     configurations = [project.configurations.runtimeClasspath]
@@ -123,7 +97,7 @@ shadowJar {
 
 jib {
     from {
-        image = "eclipse-temurin:17-jre"
+        image = "eclipse-temurin:21-jre"
         platforms {
             platform {
                 architecture = "amd64"
@@ -137,7 +111,15 @@ jib {
     }
     to {
         image = "gaia3d/mago-3d-tiler"
-        tags = ["latest", project.version] as List<String>
+        /*tags = ["latest", project.version] as List<String>*/
+
+        def isStableRelease = project.hasProperty("stable") || project.hasProperty("release")
+        def tagList = [project.version.toString()]
+        if (isStableRelease) {
+            tagList += "latest"
+        }
+        tags = tagList as List<String>
+
         if (findProperty("jib.to.auth.username") || System.getenv("JIB_TO_AUTH_USERNAME")) {
             auth {
                 username = findProperty("jib.to.auth.username") ?: System.getenv("JIB_TO_AUTH_USERNAME")
@@ -172,10 +154,10 @@ clean {
 }
 
 compileJava {
-    options.encoding = 'UTF-8'
+    options.encoding = "UTF-8"
 }
 
-tasks.named('jib') {
+tasks.named("jib") {
     dependsOn(shadowJar)
     onlyIf {
         def jarFile = layout.buildDirectory.file("../dist/mago-3d-tiler-${project.version}.jar").get().asFile

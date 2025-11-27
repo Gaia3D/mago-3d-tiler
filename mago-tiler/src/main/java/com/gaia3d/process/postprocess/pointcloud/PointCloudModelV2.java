@@ -4,7 +4,8 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaVertex;
 import com.gaia3d.basic.pointcloud.GaiaPointCloud;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.jgltf.tiles.PointCloudGltfWriter;
+import com.gaia3d.converter.gltf.GltfWriterOptions;
+import com.gaia3d.converter.gltf.tiles.PointCloudGltfWriter;
 import com.gaia3d.process.postprocess.ContentModel;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTable;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
@@ -123,9 +124,6 @@ public class PointCloudModelV2 implements ContentModel {
                 float x = (float) localPosition.x;
                 float y = (float) localPosition.y;
                 float z = (float) localPosition.z;
-                //float y = (float) -localPosition.z;
-                //float z = (float) localPosition.y;
-                //quantizedVolume.addPoint(new Vector3d(x, y, z));
 
                 positions[positionIndex.getAndIncrement()] = x;
                 positions[positionIndex.getAndIncrement()] = y;
@@ -146,66 +144,6 @@ public class PointCloudModelV2 implements ContentModel {
             pointCloud.minimizeTemp();
         });
 
-        // quantization
-        /*Vector3d quantizationScale = calcQuantizedVolumeScale(quantizedVolume);
-        Vector3d quantizationOffset = calcQuantizedVolumeOffset(quantizedVolume);
-        for (int i = 0; i < positions.length; i += 3) {
-            double x = positions[i];
-            double y = positions[i + 1];
-            double z = positions[i + 2];
-            double xQuantized = (x - quantizationOffset.x) / quantizationScale.x;
-            double yQuantized = (y - quantizationOffset.y) / quantizationScale.y;
-            double zQuantized = (z - quantizationOffset.z) / quantizationScale.z;
-
-            quantizedPositions[i] = (int) (xQuantized * 65535);
-            quantizedPositions[i + 1] = (int) (yQuantized * 65535);
-            quantizedPositions[i + 2] = (int) (zQuantized * 65535);
-
-            // Clamp to 16-bit unsigned integer range
-            if (quantizedPositions[i] < 0) {
-                quantizedPositions[i] = 0;
-                log.error("[ERROR] Quantized position x is less than 0");
-            } else if (quantizedPositions[i] > 65535) {
-                quantizedPositions[i] = 65535;
-                log.error("[ERROR] Quantized position x is greater than 65535");
-            }
-
-            if (quantizedPositions[i + 1] < 0) {
-                quantizedPositions[i + 1] = 0;
-                log.error("[ERROR] Quantized position y is less than 0");
-            } else if (quantizedPositions[i + 1] > 65535) {
-                quantizedPositions[i + 1] = 65535;
-                log.error("[ERROR] Quantized position y is greater than 65535");
-            }
-
-            if (quantizedPositions[i + 2] < 0) {
-                quantizedPositions[i + 2] = 0;
-                log.error("[ERROR] Quantized position z is less than 0");
-            } else if (quantizedPositions[i + 2] > 65535) {
-                quantizedPositions[i + 2] = 65535;
-                log.error("[ERROR] Quantized position z is greater than 65535");
-            }
-        }*/
-
-        // check quantizationScale, quantizationOffset is NaN or Infinity
-        /*if (Double.isNaN(quantizationScale.x) || Double.isNaN(quantizationScale.y) || Double.isNaN(quantizationScale.z)) {
-            log.error("[ERROR] Quantization scale is NaN");
-            log.error("[ERROR] Quantization scale : {}", quantizationScale);
-            log.error("[ERROR] Quantized volume : {}", quantizedVolume);
-        } else if (Double.isInfinite(quantizationScale.x) || Double.isInfinite(quantizationScale.y) || Double.isInfinite(quantizationScale.z)) {
-            log.error("[ERROR] Quantization scale is Infinite");
-            log.error("[ERROR] Quantization scale : {}", quantizationScale);
-            log.error("[ERROR] Quantized volume : {}", quantizedVolume);
-        } else if (Double.isNaN(quantizationOffset.x) || Double.isNaN(quantizationOffset.y) || Double.isNaN(quantizationOffset.z)) {
-            log.error("[ERROR] Quantization offset is NaN");
-            log.error("[ERROR] Quantization offset : {}", quantizationOffset);
-            log.error("[ERROR] Quantized volume : {}", quantizedVolume);
-        } else if (Double.isInfinite(quantizationOffset.x) || Double.isInfinite(quantizationOffset.y) || Double.isInfinite(quantizationOffset.z)) {
-            log.error("[ERROR] Quantization offset is Infinite");
-            log.error("[ERROR] Quantization offset : {}", quantizationOffset);
-            log.error("[ERROR] Quantized volume : {}", quantizedVolume);
-        }*/
-
         PointCloudBuffer pointCloudBuffer = new PointCloudBuffer();
         pointCloudBuffer.setPositions(positions);
         pointCloudBuffer.setColors(colors);
@@ -213,25 +151,8 @@ public class PointCloudModelV2 implements ContentModel {
         pointCloudBuffer.setClassifications(classification);
         pointCloudBuffer.setBatchIds(batchIds);
 
-        /*byte[] positionBytes = pointCloudBinary.getQuantizedPositionBytes();
-        byte[] colorBytes = pointCloudBinary.getColorBytes();
-        byte[] intensityBytes = pointCloudBinary.getIntensityBytes();
-        byte[] classificationBytes = pointCloudBinary.getClassificationBytes();
-
-        byte[] featureTableBytes = new byte[positionBytes.length + colorBytes.length];
-        System.arraycopy(positionBytes, 0, featureTableBytes, 0, positionBytes.length);
-        System.arraycopy(colorBytes, 0, featureTableBytes, positionBytes.length, colorBytes.length);
-
-        byte[] batchTableBytes = new byte[intensityBytes.length + classificationBytes.length];
-        System.arraycopy(intensityBytes, 0, batchTableBytes, 0, intensityBytes.length);
-        System.arraycopy(classificationBytes, 0, batchTableBytes, intensityBytes.length, classificationBytes.length);*/
-
         GaiaFeatureTable featureTable = new GaiaFeatureTable();
         featureTable.setPointsLength(vertexLength);
-        //featureTable.setQuantizedVolumeOffset(new float[]{(float) quantizationOffset.x, (float) quantizationOffset.y, (float) quantizationOffset.z});
-        //featureTable.setQuantizedVolumeScale(new float[]{(float) quantizationScale.x, (float) quantizationScale.y, (float) quantizationScale.z});
-        //featureTable.setPositionQuantized(new ByteAddress(0, ComponentType.UNSIGNED_SHORT, DataType.VEC3));
-        //featureTable.setColor(new ByteAddress(positionBytes.length, ComponentType.UNSIGNED_BYTE, DataType.VEC3));
 
         if (!globalOptions.isClassicTransformMatrix()) {
             double[] rtcCenter = new double[3];
@@ -242,44 +163,23 @@ public class PointCloudModelV2 implements ContentModel {
         }
 
         GaiaBatchTable batchTable = new GaiaBatchTable();
-        //batchTable.setIntensity(new ByteAddress(0, ComponentType.UNSIGNED_SHORT, DataType.SCALAR));
-        //atchTable.setClassification(new ByteAddress(intensityBytes.length, ComponentType.UNSIGNED_SHORT, DataType.SCALAR));
-
         String nodeCode = contentInfo.getNodeCode();
         String glbFileName = nodeCode + "." + MAGIC;
         File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
         this.gltfWriter.writeGlb(pointCloudBuffer, featureTable, batchTable, glbOutputFile);
 
-
-        /*ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
-
-        try {
-            featureTableJson = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(featureTable));
-            batchTableJson = StringUtils.doPadding8Bytes(objectMapper.writeValueAsString(batchTable));
-        } catch (JsonProcessingException e) {
-            log.error("[ERROR] :", e);
-            throw new RuntimeException(e);
-        }
-        PointCloudBinaryWriter writer = new PointCloudBinaryWriter(featureTableJson, batchTableJson, featureTableBytes, batchTableBytes);
-        writer.write(outputRoot, contentInfo.getNodeCode());*/
-
-
         return contentInfo;
     }
 
-    int srgbToLinearByte(int sRGB) {
-        float c = sRGB / 255.0f; // 정규화
+    private int srgbToLinearByte(int sRGB) {
+        float c = sRGB / 255.0f;
         float linear;
-        if (c <= 0.04045f) linear = c / 12.92f;
-        else linear = (float) Math.pow((c + 0.055f) / 1.055f, 2.4);
+        if (c <= 0.04045f) {linear = c / 12.92f;} else {linear = (float) Math.pow((c + 0.055f) / 1.055f, 2.4);}
         int linearByte = Math.round(linear * 255.0f);
-        // 0~255 범위를 벗어나지 않도록 클램프
         return Math.max(0, Math.min(255, linearByte));
     }
 
-    int signedByteToUnsignedByte(int signedByte) {
-        // Java의 byte는 -128 ~ 127 범위이므로, 이를 0 ~ 255 범위로 변환
+    private int signedByteToUnsignedByte(int signedByte) {
         return signedByte < 0 ? signedByte + 256 : signedByte;
     }
 }

@@ -8,5 +8,6 @@ import java.util.List;
 
 public interface TilingProcess {
     Tileset run(List<TileInfo> tileInfo) throws FileNotFoundException;
+
     void writeTileset(Tileset tileset);
 }

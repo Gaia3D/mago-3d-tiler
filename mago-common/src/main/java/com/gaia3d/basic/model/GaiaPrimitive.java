@@ -369,7 +369,7 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         return mapVertexToFace;
     }
 
-    public List<GaiaFace> extractGaiaFaces(List<GaiaFace> resultFaces) {
+    public List<GaiaFace> extractGaiaAllFaces(List<GaiaFace> resultFaces) {
         if (resultFaces == null) {
             resultFaces = new ArrayList<>();
         }
@@ -380,9 +380,10 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         return resultFaces;
     }
 
+    @Deprecated
     public void unWeldVertices() {
         List<GaiaVertex> newVertices = new ArrayList<>();
-        List<GaiaFace> faces = this.extractGaiaFaces(null);
+        List<GaiaFace> faces = this.extractGaiaAllFaces(null);
         for (GaiaFace face : faces) {
             int[] indices = face.getIndices();
             int[] newIndices = new int[indices.length];
@@ -403,8 +404,8 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         this.vertices = newVertices;
     }
 
+    @Deprecated
     public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
-        // Weld the vertices.
         GaiaBoundingBox boundingBox = this.getBoundingBox(null);
         if (boundingBox == null) {
             return;
@@ -413,8 +414,7 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null, cubeBoundingBox);
         octreeVertices.addContents(this.vertices);
         octreeVertices.setLimitDepth(10);
-        octreeVertices.setLimitBoxSize(1.0); // 1m
-
+        octreeVertices.setLimitBoxSize(1.0);
         octreeVertices.makeTreeByMinVertexCount(50);
 
         List<GaiaOctree<GaiaVertex>> octreesWithContents = octreeVertices.extractOctreesWithContents();
@@ -486,6 +486,7 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         this.vertices = newVerticesArray;
     }
 
+    @Deprecated
     private void getWeldableVertexMap(Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster, List<GaiaVertex> vertices, double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
         Map<GaiaVertex, GaiaVertex> visitedMap = new HashMap<>();
         int verticesCount = vertices.size();
@@ -512,7 +513,8 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
         }
     }
 
-    public boolean deleteNoUsedVertices() {
+    @Deprecated
+    public void deleteNoUsedVertices() {
         // Sometimes, there are no used vertices
         // The no used vertices must be deleted (vertex indices of the faces will be modified!)
         Map<GaiaVertex, Integer> vertexIdxMap = new HashMap<>();
@@ -568,8 +570,6 @@ public class GaiaPrimitive extends PrimitiveStructure implements Serializable {
             this.getVertices().clear();
             this.setVertices(usedVertices);
         }
-
-        return false;
     }
 
     public void deleteObjects() {

@@ -11,7 +11,7 @@ public class ExperimentalTest {
     @Test
     void pointcloudIntersection00() {
         String path = "geostory-intersection-las";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "32652",
@@ -23,7 +23,7 @@ public class ExperimentalTest {
     @Test
     void multiPolygonZGeoJSONSmall() {
         String path = "multi-polygon-z-geojson-small";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
@@ -36,7 +36,7 @@ public class ExperimentalTest {
     @Test
     void multiPolygonZGeoJSON() {
         String path = "multi-polygon-z-geojson";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
@@ -49,7 +49,7 @@ public class ExperimentalTest {
     @Test
     void multiPolygonZShape() {
         String path = "multi-polygon-z-shape";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
@@ -61,7 +61,7 @@ public class ExperimentalTest {
     @Test
     void citygmlSNBJ20250908() {
         String path = "20250908-SNBJ-GML";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 //"-c", "5186",
@@ -73,7 +73,7 @@ public class ExperimentalTest {
     @Test
     void ldIfc24Extract20250827() {
         String path = "20250827-ld-IFC24-extract";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
@@ -85,7 +85,7 @@ public class ExperimentalTest {
     @Test
     void ldIfc4Extract20250827() {
         String path = "20250827-ld-IFC4-extract";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
@@ -97,7 +97,7 @@ public class ExperimentalTest {
     @Test
     void isosurface00() {
         String path = "iso-surface-0";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "4978",
@@ -108,7 +108,7 @@ public class ExperimentalTest {
     @Test
     void isosurface01() {
         String path = "iso-surface-1";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "4978",
@@ -119,7 +119,7 @@ public class ExperimentalTest {
     @Test
     void isosurface02() {
         String path = "iso-surface-2";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "4978",
@@ -130,7 +130,7 @@ public class ExperimentalTest {
     @Test
     void isosurface03() {
         String path = "iso-surface-3";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "4978",
@@ -141,7 +141,7 @@ public class ExperimentalTest {
     @Test
     void dracoSamples() {
         String path = "draco-samples";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
         };
@@ -151,7 +151,7 @@ public class ExperimentalTest {
     @Test
     void flughafen() {
         String path = "LoD2-Flughafen";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "25832",
@@ -162,7 +162,7 @@ public class ExperimentalTest {
     @Test
     void flughafen4978() {
         String path = "LoD2-Flughafen";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-4978",
                 "-c", "4978",
@@ -173,7 +173,7 @@ public class ExperimentalTest {
     @Test
     void pointcloudLD20250807() {
         String path = "ld-20250807";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5179",
@@ -185,7 +185,7 @@ public class ExperimentalTest {
     @Test
     void pointcloudLD20250808() {
         String path = "ld-20250808";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "32652",
@@ -201,7 +201,7 @@ public class ExperimentalTest {
     @Test
     void sunEnergyIncheon() {
         String path = "sun-energy-incheon-output";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-splitByNode",
@@ -215,7 +215,7 @@ public class ExperimentalTest {
     @Test
     void sunEnergy25cm() {
         String path = "sun-energy-25cm-output";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-splitByNode",
@@ -229,7 +229,7 @@ public class ExperimentalTest {
     @Test
     void incheon() {
         String path = "incheon";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-rotateXAxis", "90",
@@ -243,7 +243,7 @@ public class ExperimentalTest {
     @Test
     void lottemartV3() {
         String path = "lottemartV3.gltf";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-rotateXAxis", "90",
@@ -257,7 +257,7 @@ public class ExperimentalTest {
     @Test
     void incheon_mini() {
         String path = "incheon_mini";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-rotateXAxis", "90",
@@ -273,7 +273,7 @@ public class ExperimentalTest {
     @Test
     void energyManual() {
         String path = "energy_manual";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-rotateXAxis", "90",
@@ -286,7 +286,7 @@ public class ExperimentalTest {
     @Test
     void d6_4326() {
         String path = "d6_4326.geojson";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-debug",
@@ -298,7 +298,7 @@ public class ExperimentalTest {
     @Test
     void d6_4326_3D() {
         String path = "d6_4326_3D.geojson";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-debug",
@@ -310,7 +310,7 @@ public class ExperimentalTest {
     @Test
     void ecefRedCube() {
         String path = "ecef_red_cube.glb";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "4978",
@@ -321,7 +321,7 @@ public class ExperimentalTest {
     @Test
     void ecefVoxel888() {
         String path = "ecef_voxel_8x8x8.glb";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "4978",
@@ -332,7 +332,7 @@ public class ExperimentalTest {
     @Test
     void ecefVoxel888V2() {
         String path = "ecef_voxel_8x8x8_simple.glb";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "4978",
@@ -346,7 +346,7 @@ public class ExperimentalTest {
     @Test
     void batched100() {
         String path = "B100-cartesian-sample";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-crs", "4978",
@@ -358,7 +358,7 @@ public class ExperimentalTest {
     @Test
     void instance10() {
         String path = "I10-forest-purdue";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-ot", "i3dm",
@@ -373,7 +373,7 @@ public class ExperimentalTest {
     @Test
     void instance10A() {
         String path = "I10-forest-purdue-original-geojson";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-crs", "4326",
@@ -389,7 +389,7 @@ public class ExperimentalTest {
     @Test
     void instance10B() {
         String path = "I10-forest-purdue-original-gpkg";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-crs", "4326",
@@ -405,7 +405,7 @@ public class ExperimentalTest {
     @Test
     void instance10C() {
         String path = "I10-forest-purdue-original-gpkg2";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-crs", "4326",
@@ -422,7 +422,7 @@ public class ExperimentalTest {
     @Test
     void instance10D() {
         String path = "I10-forest-purdue-original-gpkg3";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-crs", "4326",
@@ -439,7 +439,7 @@ public class ExperimentalTest {
     @Test
     void instance10E() {
         String path = "I10-forest-purdue-original-gpkg4";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-crs", "4326",
@@ -456,7 +456,7 @@ public class ExperimentalTest {
     @Test
     void instanced08() {
         String path = "I08-transmission-geojson";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5179",
@@ -472,7 +472,7 @@ public class ExperimentalTest {
     @Test
     void instanced09() {
         String path = "I09-transmission-line-geojson";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5179",
@@ -485,7 +485,7 @@ public class ExperimentalTest {
     @Test
     void PNT_CL2_LINZ() {
         String path = "CL2_BA32_2024_1000_3805";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "2193",
@@ -496,7 +496,7 @@ public class ExperimentalTest {
     @Test
     void deck4251118() {
         String path = "deck4_251118";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-rotateXAxis", "90",
@@ -509,7 +509,7 @@ public class ExperimentalTest {
     @Test
     void deck1251118() {
         String path = "deck1_251118";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-rotateXAxis", "90",
@@ -522,7 +522,7 @@ public class ExperimentalTest {
     @Test
     void tuvFnft2019() {
         String path = "TuvFnft2019";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 //"-c", "32760",

@@ -12,7 +12,7 @@ class TransformReleaseTest {
     @Test
     void batched00Original() {
         String path = "B00-up-axis-glb";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
@@ -23,7 +23,7 @@ class TransformReleaseTest {
     @Test
     void batched00RotateX90() {
         String path = "B00-up-axis-glb";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-rotateX90(manual)",
                 "-c", "5186",
@@ -35,7 +35,7 @@ class TransformReleaseTest {
     @Test
     void batched00DegreeZ() {
         String path = "B00-up-axis-glb";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-127-37-manual-0-0-0",
                 //"-c", "5186",
@@ -52,7 +52,7 @@ class TransformReleaseTest {
     @Test
     void batched00DegreeA() {
         String path = "B00-up-axis-glb";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-127-37-manual-10-0-0",
                 //"-c", "5186",
@@ -69,7 +69,7 @@ class TransformReleaseTest {
     @Test
     void batched00DegreeB() {
         String path = "B00-up-axis-glb";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-127-37-manual-0-10-0",
                 //"-c", "5186",
@@ -86,7 +86,7 @@ class TransformReleaseTest {
     @Test
     void batched00DegreeC() {
         String path = "B00-up-axis-glb";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-127-37-manual-0-0-10",
                 //"-c", "5186",
@@ -104,7 +104,7 @@ class TransformReleaseTest {
     @Test
     void batched00DegreeZWithTerrain() {
         String path = "B00-up-axis-glb";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-127-37-manual-0-0-0-terrain",
                 //"-c", "5186",
@@ -122,7 +122,7 @@ class TransformReleaseTest {
     @Test
     void batched00DegreeAWithTerrain() {
         String path = "B00-up-axis-glb";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-127-37-manual-10-0-0-terrain",
                 //"-c", "5186",
@@ -140,7 +140,7 @@ class TransformReleaseTest {
     @Test
     void batched00DegreeBWithTerrain() {
         String path = "B00-up-axis-glb";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-127-37-manual-0-10-0-terrain",
                 //"-c", "5186",
@@ -158,7 +158,7 @@ class TransformReleaseTest {
     @Test
     void batched00DegreeCWithTerrain() {
         String path = "B00-up-axis-glb";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-127-37-manual-0-0-10-terrain",
                 //"-c", "5186",

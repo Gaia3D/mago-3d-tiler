@@ -133,6 +133,24 @@ public class GaiaNode extends NodeStructure implements Serializable {
         this.meshes.add(mesh);
     }
 
+    public void addChild(GaiaNode child) {
+        this.children.add(child);
+        child.setParent(this);
+    }
+
+    public void removeChild(GaiaNode child) {
+        this.children.remove(child);
+        child.setParent(null);
+    }
+
+    public void addMesh(GaiaMesh mesh) {
+        this.meshes.add(mesh);
+    }
+
+    public void removeMesh(GaiaMesh mesh) {
+        this.meshes.remove(mesh);
+    }
+
     public GaiaBoundingBox getBoundingBox(Matrix4d parentTransformMatrix) {
         GaiaBoundingBox boundingBox = null;
         Matrix4d transformMatrix = new Matrix4d(this.transformMatrix);
@@ -252,24 +270,6 @@ public class GaiaNode extends NodeStructure implements Serializable {
         }
     }
 
-    public void weldVertices(double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
-        for (GaiaMesh mesh : this.getMeshes()) {
-            mesh.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
-        }
-        for (GaiaNode child : this.getChildren()) {
-            child.weldVertices(error, checkTexCoord, checkNormal, checkColor, checkBatchId);
-        }
-    }
-
-    public void unWeldVertices() {
-        for (GaiaMesh mesh : this.getMeshes()) {
-            mesh.unWeldVertices();
-        }
-        for (GaiaNode child : this.getChildren()) {
-            child.unWeldVertices();
-        }
-    }
-
     public List<GaiaFace> extractGaiaFaces(List<GaiaFace> resultFaces) {
         for (GaiaMesh mesh : this.getMeshes()) {
             mesh.extractGaiaFaces(resultFaces);
@@ -319,84 +319,12 @@ public class GaiaNode extends NodeStructure implements Serializable {
         }
     }
 
-    public void getFinalVerticesCopy(Matrix4d parentTMat, List<GaiaVertex> finalVertices) {
-        Matrix4d thisTMatrix = new Matrix4d(this.transformMatrix);
-        if (parentTMat != null) {
-            parentTMat.mul(thisTMatrix, thisTMatrix);
-        }
-        for (GaiaMesh mesh : this.getMeshes()) {
-            for (GaiaPrimitive primitive : mesh.getPrimitives()) {
-                List<GaiaVertex> vertices = primitive.getVertices();
-                for (GaiaVertex vertex : vertices) {
-                    GaiaVertex finalVertex = vertex.clone();
-                    Vector3d position = vertex.getPosition();
-                    Vector3d transformedPosition = new Vector3d();
-                    thisTMatrix.transformPosition(position, transformedPosition);
-                    finalVertex.setPosition(transformedPosition);
-                    finalVertices.add(finalVertex);
-                }
-            }
-        }
-
-        for (GaiaNode child : this.getChildren()) {
-            child.getFinalVerticesCopy(thisTMatrix, finalVertices);
-        }
-    }
-
     public void extractPrimitives(List<GaiaPrimitive> resultPrimitives) {
         for (GaiaMesh mesh : this.getMeshes()) {
             mesh.extractPrimitives(resultPrimitives);
         }
         for (GaiaNode child : this.getChildren()) {
             child.extractPrimitives(resultPrimitives);
-        }
-    }
-
-    public void makeTriangleFaces() {
-        for (GaiaMesh mesh : this.getMeshes()) {
-            mesh.makeTriangleFaces();
-        }
-        for (GaiaNode child : this.getChildren()) {
-            child.makeTriangleFaces();
-        }
-    }
-
-    public Matrix4d getFinalTransformMatrix() {
-        Matrix4d finalMatrix = new Matrix4d();
-        finalMatrix.set(transformMatrix);
-        if (parent != null) {
-            finalMatrix.mul(parent.getFinalTransformMatrix());
-        }
-        return finalMatrix;
-    }
-
-    public void spendTranformMatrix() {
-        Matrix4d finalMatrix = getFinalTransformMatrix();
-        Matrix4d identity = new Matrix4d();
-        identity.identity();
-
-        if (!finalMatrix.equals(identity)) {
-            for (GaiaMesh mesh : meshes) {
-                mesh.transformPoints(finalMatrix);
-            }
-        }
-
-        for (GaiaNode child : children) {
-            child.setParent(this);
-            child.spendTranformMatrix();
-        }
-
-        // Clear the transform matrix.
-        transformMatrix.identity();
-        preMultipliedTransformMatrix.identity();
-    }
-
-    public void makeTriangularFaces() {
-        for (GaiaMesh mesh : meshes) {
-            mesh.makeTriangularFaces();
-        }
-        for (GaiaNode child : children) {
-            child.makeTriangularFaces();
         }
     }
 
@@ -409,23 +337,5 @@ public class GaiaNode extends NodeStructure implements Serializable {
             count += child.getFacesCount();
         }
         return count;
-    }
-
-    public void calculateNormal() {
-        for (GaiaMesh mesh : meshes) {
-            mesh.calculateNormal();
-        }
-        for (GaiaNode child : children) {
-            child.calculateNormal();
-        }
-    }
-
-    public void calculateVertexNormals() {
-        for (GaiaMesh mesh : meshes) {
-            mesh.calculateVertexNormals();
-        }
-        for (GaiaNode child : children) {
-            child.calculateVertexNormals();
-        }
     }
 }

@@ -281,19 +281,6 @@ public class HalfEdgeVertex implements Serializable {
     }
 
     public void writeFile(ObjectOutputStream outputStream) {
-        /*
-        public String note = null;
-        private Vector2d texcoords;
-        private Vector3d position;
-        private Vector3d normal;
-        private byte[] color;
-        private float batchId;
-        private HalfEdge outingHalfEdge = null;
-        private ObjectStatus status = ObjectStatus.ACTIVE;
-        private PositionType positionType = null;
-        private int id = -1;
-        private int outingHalfEdgeId = -1;
-         */
 
         try {
             // position

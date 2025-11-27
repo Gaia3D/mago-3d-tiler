@@ -1,6 +1,7 @@
 package com.gaia3d.modifier;
 
 import com.gaia3d.TilerExtensionModule;
+import com.gaia3d.basic.geometry.modifier.transform.GaiaBaker;
 import com.gaia3d.basic.model.GaiaMaterial;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
@@ -9,8 +10,9 @@ import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.assimp.AssimpConverter;
 import com.gaia3d.converter.assimp.AssimpConverterOptions;
-import com.gaia3d.converter.jgltf.GltfWriter;
-import com.gaia3d.process.preprocess.sub.FlipYTexCoordinate;
+import com.gaia3d.converter.gltf.GltfWriter;
+import com.gaia3d.basic.geometry.modifier.texcoord.FlipYTexCoordinate;
+import com.gaia3d.converter.gltf.GltfWriterOptions;
 import com.gaia3d.util.ImageResizer;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -52,7 +54,8 @@ public class TreeCreator {
         for (GaiaScene gaiaScene : resultGaiaScenes) {
             GaiaNode rootNode = gaiaScene.getNodes().get(0);
             rootNode.getTransformMatrix().rotateX(Math.toRadians(-90));
-            gaiaScene.spendTranformMatrix();
+            GaiaBaker baker = new GaiaBaker();
+            baker.apply(gaiaScene);
         }
 
         int lodCount = 6;
@@ -86,7 +89,10 @@ public class TreeCreator {
             GlobalOptions globalOptions = GlobalOptions.getInstance();
             globalOptions.setTilesVersion("1.1");
             GaiaScene gaiaScene = resultGaiaScenes.get(0);
-            GltfWriter gltfWriter = new GltfWriter();
+
+            GltfWriterOptions gltfWriterOptions = GltfWriterOptions.builder()
+                    .build();
+            GltfWriter gltfWriter = new GltfWriter(gltfWriterOptions);
             //String outputFilePath = outputPath + File.separator + "tree_billboard_v" + verticalPlanesCount + "h" + horizontalPlanesCount + "_L" + i + ".glb";
             String outputFilePath = outputPath + File.separator + "instance-" + i + ".glb";
             gltfWriter.writeGlb(gaiaScene, outputFilePath);

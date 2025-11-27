@@ -1,16 +1,24 @@
 package com.gaia3d.converter;
 
+import com.gaia3d.basic.geometry.modifier.DefaultSceneFactory;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
-import com.gaia3d.command.Configuration;
+import com.gaia3d.command.LoggingConfiguration;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.jgltf.GltfWriter;
+import com.gaia3d.converter.gltf.GltfWriter;
 import lombok.extern.slf4j.Slf4j;
+import org.geotools.api.data.DataStore;
+import org.geotools.api.data.Query;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.filter.Filter;
+import org.geotools.api.parameter.GeneralParameterValue;
+import org.geotools.api.parameter.ParameterValue;
+import org.geotools.api.referencing.FactoryException;
+import org.geotools.api.referencing.NoSuchAuthorityCodeException;
+import org.geotools.api.util.ProgressListener;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridCoverageFactory;
 import org.geotools.coverage.grid.io.imageio.GeoToolsWriteParams;
-import org.geotools.data.DataStore;
-import org.geotools.data.Query;
 import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.files.ShpFiles;
@@ -30,14 +38,7 @@ import org.geotools.referencing.CRS;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.filter.Filter;
-import org.opengis.parameter.GeneralParameterValue;
-import org.opengis.parameter.ParameterValue;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.util.ProgressListener;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -52,11 +53,11 @@ public class GltfCreatorTest {
 
     @Test
     public void createGrid() {
-        Configuration.initConsoleLogger();
+        LoggingConfiguration.initConsoleLogger();
 
         GlobalOptions globalOptions = GlobalOptions.getInstance();
 
-        int[] gridSizes = new int[] {8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192};
+        int[] gridSizes = new int[]{8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192};
         for (int gridSize : gridSizes) {
             File file = new File("E:/workspace/", gridSize + "x" + gridSize + ".glb");
             log.info("Creating gltf file: {}", file.getAbsolutePath());
@@ -64,8 +65,8 @@ public class GltfCreatorTest {
             GaiaScene gaiaScene = defaultSceneFactory.createScene(file);
             GaiaNode rootNode = gaiaScene.getNodes().get(0);
 
-            GaiaNode gridNode = defaultSceneFactory.createGridNode(gridSize, gridSize);
-            rootNode.getChildren().add(gridNode);
+            //GaiaNode gridNode = defaultSceneFactory.createGridNode(gridSize, gridSize);
+            //rootNode.getChildren().add(gridNode);
 
             GltfWriter gltfWriter = new GltfWriter();
             gltfWriter.writeGlb(gaiaScene, file);
@@ -149,7 +150,6 @@ public class GltfCreatorTest {
 
             ReferencedEnvelope envelope2 = new ReferencedEnvelope(minLat, maxLat, minLon, maxLon, sourceCRS);
             gridCoverage2D = new GridCoverageFactory().create("one", imageWorker.getRenderedImage(), envelope2);
-
 
             log.info("End converting vector to raster");
 

@@ -1,5 +1,7 @@
 plugins {
     id 'java'
+    id 'java-library'
+    id 'maven-publish'
 }
 
 repositories {
@@ -8,14 +10,40 @@ repositories {
 }
 
 dependencies {
-    implementation "org.locationtech.proj4j:proj4j:1.2.3"
-    implementation "org.locationtech.proj4j:proj4j-epsg:1.2.3"
+    implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
+    implementation "org.lwjgl:lwjgl"
+    implementation "org.lwjgl:lwjgl-assimp"
+    implementation "org.lwjgl:lwjgl-opengl"
+    implementation "org.lwjgl:lwjgl-stb"
 
-    /* Math library */
-    implementation "org.joml:joml:1.10.5"
+    implementation "de.javagl:jgltf-model:2.0.4"
+    implementation "de.javagl:jgltf-validator:2.0.4"
+    implementation "de.javagl:jgltf-impl-v1:2.0.4"
+    implementation "de.javagl:jgltf-impl-v2:2.0.4"
 
-    implementation 'org.geotools:gt-geojson:26.5'
-    implementation 'org.geotools:gt-geojsondatastore:26.5'
+    implementation "org.citygml4j:citygml4j-xml:3.0.0"
+    implementation "org.citygml4j:citygml4j-cityjson:3.0.0"
+    implementation "com.github.mreutegg:laszip4j:0.17"
+    implementation files("libs/Indoor4J.jar")
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifactId = 'mago-io'
+        }
+    }
+    repositories {
+        maven {
+            name = "github"
+            url = uri("https://maven.pkg.github.com/gaia3d/mago-3d-tiler")
+            credentials {
+                username = findProperty("gpr.user") ?: System.getenv("GITHUB_ACTOR")
+                password = findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
 }
 
 javadoc {

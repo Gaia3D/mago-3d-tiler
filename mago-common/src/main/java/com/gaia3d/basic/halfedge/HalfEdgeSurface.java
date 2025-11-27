@@ -278,7 +278,7 @@ public class HalfEdgeSurface implements Serializable {
 //        octree.setMinBoxSize(1.0);
 //        octree.makeTreeByMinVertexCount(20);
 
-        // new.**********************
+        // new*******************
         GaiaBoundingBox bbox = new GaiaBoundingBox();
         for (HalfEdgeVertex vertex : vertices) {
             Vector3d position = vertex.getPosition();
@@ -291,7 +291,7 @@ public class HalfEdgeSurface implements Serializable {
         octreeVertices.setLimitVertexCount(20);
         octreeVertices.makeTree();
         List<GaiaOctree<HalfEdgeVertex>> nodesWithContents = octreeVertices.extractOctreesWithContents();
-        // end new.**********************
+        // end new*******************
 
 //        List<HalfEdgeOctreeFaces> nodesWithContents2 = new ArrayList<>();
 //        octree.extractOctreesWithContents(nodesWithContents2);
@@ -1209,12 +1209,12 @@ public class HalfEdgeSurface implements Serializable {
                 continue;
             }
 
-//            // Test.*************************************************************
+//            // Test**********************************************************
 //            double dot = normalA.dot(normalB);
 //            if (Math.abs(dot) < 0.342) {
 //                return false;
 //            }
-//            // End test.*********************************************************
+//            // End test******************************************************
 
             double aspectRatio = HalfEdgeUtils.calculateAspectRatioAsTriangle(verticesB.get(0), verticesB.get(1), verticesB.get(2));
             if (aspectRatio > maxAspectRatio) {
@@ -1428,7 +1428,6 @@ public class HalfEdgeSurface implements Serializable {
     private void splitHalfEdge(HalfEdge halfEdge, HalfEdgeVertex intersectionVertex) {
         // When split a halfEdge, must split the face too
         // If exist twin, must split the twin and twin's face too
-        //TEST_checkHalfEdgeLength();
         HalfEdge twin = halfEdge.getTwin();
 
         HalfEdgeVertex startVertex = halfEdge.getStartVertex();
@@ -2609,7 +2608,7 @@ public class HalfEdgeSurface implements Serializable {
         int textureScissorDatasCount = textureScissorDatas.size();
         for (int i = 0; i < textureScissorDatasCount; i++) {
             GaiaTextureScissorData textureScissorData = textureScissorDatas.get(i);
-            if (!textureScissorData.TEST_Check()) {
+            if (!textureScissorData.validate()) {
                 log.error("[ERROR] HalfEdgeSurface.scissorTextures() : textureScissorData.TEST_Check() == false.");
             }
             List<HalfEdgeFace> faceGroup = textureScissorData.getFaces();
@@ -2726,7 +2725,7 @@ public class HalfEdgeSurface implements Serializable {
             GaiaRectangle noExpandedBoundary = textureScissorData.getNoExpandedBoundary();
             int expandedPixels = textureScissorData.getExpandedPixel();
 
-            if (!textureScissorData.TEST_Check()) {
+            if (!textureScissorData.validate()) {
                 log.error("[ERROR] HalfEdgeSurface.scissorTextures() : textureScissorData.TEST_Check() == false.");
             }
 
@@ -2751,8 +2750,8 @@ public class HalfEdgeSurface implements Serializable {
             BufferedImage reducedSubImage = null;
             try {
                 reducedSubImage = image.getSubimage(reducedSubImageMinX, reducedSubImageMinY, reducedSubImageW, reducedSubImageH);
-            } catch (Exception ex) {
-                log.error("[ERROR] HalfEdgeSurface.scissorTextures() : Exception in image.getSubimage(). ex = " + ex.getMessage());
+            } catch (Exception e) {
+                log.error("[ERROR] HalfEdgeSurface.scissorTextures() : Exception in image.getSubimage().", e);
                 continue;
             }
 
@@ -2766,14 +2765,8 @@ public class HalfEdgeSurface implements Serializable {
             int batchedH = batchedBoundary.getHeightInt();
             int batchedMinX = (int) batchedBoundary.getMinX();
             int batchedMinY = (int) batchedBoundary.getMinY();
-            if (batchedBoundary.getWidthInt() > atlasWidth || batchedBoundary.getHeightInt() > atlasHeight) {
-                int hola = 0;
-            }
-            if (batchedMinX + batchedBoundary.getWidthInt() > atlasWidth || batchedMinY + batchedBoundary.getHeightInt() > atlasHeight) {
-                int hola = 0;
-            }
             if (!g2d.drawImage(expandedSubImage, (int) batchedBoundary.getMinX(), (int) batchedBoundary.getMinY(), null)) {
-                int hola = 0;
+               log.info("[WARN] HalfEdgeSurface.scissorTextures() : g2d.drawImage() returned false.");
             }
         }
         g2d.dispose();
@@ -3141,8 +3134,8 @@ public class HalfEdgeSurface implements Serializable {
             BufferedImage reducedSubImage = null;
             try {
                 reducedSubImage = image.getSubimage(reducedSubImageMinX, reducedSubImageMinY, reducedSubImageW, reducedSubImageH);
-            } catch (Exception ex) {
-                log.error("[ERROR] HalfEdgeSurface.scissorTextures() : Exception in image.getSubimage(). ex = " + ex.getMessage());
+            } catch (Exception e) {
+                log.error("[ERROR] HalfEdgeSurface.scissorTextures() : Exception in image.getSubimage()", e);
                 continue;
             }
 
@@ -3257,12 +3250,12 @@ public class HalfEdgeSurface implements Serializable {
         int textureScissorDatasCount = textureScissorDates.size();
         log.info("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : textureScissorDatasCount = " + textureScissorDatasCount);
 
-        GillotinePacker gillotinePacker = new GillotinePacker();
+        GuillotinePacker guillotinePacker = new GuillotinePacker();
 
         for (int i = 0; i < textureScissorDatasCount; i++) {
             GaiaTextureScissorData textureScissorData = textureScissorDates.get(i);
-            if (!gillotinePacker.insert(textureScissorData)) {
-                log.info("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : gillotinePacker.insert() failed.");
+            if (!guillotinePacker.insert(textureScissorData)) {
+                log.info("[Tile][Photogrammetry][Atlas] doTextureAtlasProcess() : guillotinePacker.insert() failed.");
             }
         }
     }
@@ -3385,7 +3378,7 @@ public class HalfEdgeSurface implements Serializable {
 
         int scissorDatesCountPre = textureScissorDatas.size();
         this.mergeScissorDates(textureScissorDatas);
-        log.info("getWeldedFacesGroups : scissorDates mergedCount = " + (scissorDatesCountPre - textureScissorDatas.size()));
+        log.debug("getWeldedFacesGroups : scissorDates mergedCount = " + (scissorDatesCountPre - textureScissorDatas.size()));
 
         resultWeldedFacesGroups.clear();
         weldedFacesGroupsCount = textureScissorDatas.size();

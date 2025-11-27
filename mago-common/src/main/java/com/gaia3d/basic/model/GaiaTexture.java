@@ -165,6 +165,10 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         this.height = height;
     }
 
+    public BufferedImage getPureBufferedImage() {
+        return this.bufferedImage;
+    }
+
     public BufferedImage getBufferedImage() {
         if (this.bufferedImage == null) {
             if (this.parentPath != null && this.path != null) {
@@ -217,7 +221,7 @@ public class GaiaTexture extends TextureStructure implements Serializable {
             rgbaByteArray = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
             rgbaByteArray2 = ((DataBufferByte) comparebufferedImage.getRaster().getDataBuffer()).getData();
         } catch (Exception e) {
-            log.error("[ERROR] Unable to get byte array from buffered image: {}", e.getMessage());
+            log.error("[ERROR] Unable to get byte array from buffered image:", e);
             return false;
         }
 
@@ -245,7 +249,34 @@ public class GaiaTexture extends TextureStructure implements Serializable {
         return differenceRatio < tolerance;
     }
 
+    public boolean compareFileBytes(GaiaTexture a, GaiaTexture b) {
+        if (a.getByteLength() != b.getByteLength()) {
+            return false;
+        }
+        ByteBuffer byteBufferA = a.getByteBuffer();
+        ByteBuffer byteBufferB = b.getByteBuffer();
+
+        if (byteBufferA == null || byteBufferB == null) {
+            return false;
+        }
+        for (int i = 0; i < a.getByteLength(); i++) {
+            if (byteBufferA.get(i) != byteBufferB.get(i)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public boolean isEqualTexture(GaiaTexture compareTexture, float scaleFactor) {
+        /*boolean hasBufferedImage = compareTexture.getPureBufferedImage() != null && this.getPureBufferedImage() != null;
+        if (!hasBufferedImage) {
+            return compareFileBytes(this, compareTexture);
+        } else {
+            getBufferedImage(scaleFactor);
+            compareTexture.getBufferedImage(scaleFactor);
+            return isEqualTexture(compareTexture);
+        }*/
+
         getBufferedImage(scaleFactor);
         compareTexture.getBufferedImage(scaleFactor);
         return isEqualTexture(compareTexture);

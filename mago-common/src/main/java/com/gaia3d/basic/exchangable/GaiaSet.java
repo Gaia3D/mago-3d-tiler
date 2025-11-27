@@ -84,29 +84,6 @@ public class GaiaSet implements Serializable {
         return null;
     }
 
-    public static GaiaSet readFileForPR(Path path) throws FileNotFoundException {
-        File input = path.toFile();
-        Path imagesPath = path.getParent().resolve("images");
-        try (ObjectInputStream inputStream = new ObjectInputStream(new BufferedInputStream(new FileInputStream(input)))) {
-            GaiaSet gaiaSet = (GaiaSet) inputStream.readObject();
-//            for (GaiaMaterial material : gaiaSet.getMaterials()) {
-//                material.getTextures().forEach((textureType, textures) -> {
-//                    for (GaiaTexture texture : textures) {
-//                        String texturePath = texture.getPath();
-//                        File file = new File(texturePath);
-//                        String fileName = file.getName();
-//                        texture.setParentPath(imagesPath.toString());
-//                        texture.setPath(fileName);
-//                    }
-//                });
-//            }
-            return gaiaSet;
-        } catch (Exception e) {
-            log.error("[ERROR] GaiaSet Read Error : ", e);
-        }
-        return null;
-    }
-
     public GaiaBoundingBox getBoundingBox() {
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         for (GaiaBufferDataSet bufferDataSet : bufferDataList) {

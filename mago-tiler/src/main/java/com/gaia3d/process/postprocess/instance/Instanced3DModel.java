@@ -9,7 +9,8 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.converter.jgltf.GltfWriter;
+import com.gaia3d.converter.gltf.GltfWriter;
+import com.gaia3d.converter.gltf.GltfWriterOptions;
 import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.io.LittleEndianDataOutputStream;
 import com.gaia3d.process.postprocess.ContentModel;
@@ -41,7 +42,17 @@ public class Instanced3DModel implements ContentModel {
     private final GltfWriter gltfWriter;
 
     public Instanced3DModel() {
-        this.gltfWriter = new GltfWriter();
+        GltfWriterOptions gltfOptions = GltfWriterOptions.builder()
+                .build();
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
+        if (globalOptions.isUseQuantization()) {
+            gltfOptions.setUseQuantization(true);
+        }
+        if (globalOptions.getTilesVersion().equals("1.0")) {
+            gltfOptions.setUriImage(true);
+        }
+
+        this.gltfWriter = new GltfWriter(gltfOptions);
     }
 
     @Override
@@ -249,8 +260,6 @@ public class Instanced3DModel implements ContentModel {
     }
 
     private synchronized void createInstance(File file, ContentInfo contentInfo, TileInfo tileInfo) {
-        //boolean isVoxelLod = GlobalOptions.getInstance().isVoxelLod();
-
         try {
             if (!file.exists()) {
                 log.info("[Create][Instance] Create instance file : {}", file.getName());
@@ -268,28 +277,6 @@ public class Instanced3DModel implements ContentModel {
                 GaiaScene resultGaiaScene = new GaiaScene(gaiaSet);
 
                 GaiaBoundingBox boundingBox = resultGaiaScene.updateBoundingBox();
-                float minSize = (float) boundingBox.getMinSize();
-
-                /*if (isVoxelLod) {
-                    int lod = contentInfo.getLod().getLevel();
-                    if (lod > 0) {
-                        float octreeMinSize = minSize;
-                        if (lod == 1) {
-                            octreeMinSize = minSize / 8.0f;
-                        } else if (lod == 2) {
-                            octreeMinSize = minSize / 4.0f;
-                        } else if (lod == 3) {
-                            octreeMinSize = minSize / 2.0f;
-                        } else if (lod == 4) {
-                            octreeMinSize = minSize;
-                        }
-                        resultGaiaScene = GeometryUtils.getGaiaSceneLego(resultGaiaScene, octreeMinSize);
-                    }
-                }*/
-
-                //Matrix4d transformMatrix = resultGaiaScene.getNodes().get(0).getTransformMatrix();
-                //transformMatrix.rotateX(Math.toRadians(-90));
-
                 gltfWriter.writeGlb(resultGaiaScene, file);
             }
         } catch (Exception e) {

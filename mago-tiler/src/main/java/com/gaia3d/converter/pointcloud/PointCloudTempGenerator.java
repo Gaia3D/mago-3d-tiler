@@ -25,8 +25,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 @RequiredArgsConstructor
 public class PointCloudTempGenerator {
-    /*private final float HORIZONTAL_GRID_SIZE = 500.0f; // in meters
-    private final float VERTICAL_GRID_SIZE = 50.0f; // in meters*/
     private final LasConverter converter;
     private GaiaPointCloudHeader combinedHeader;
 
@@ -159,40 +157,6 @@ public class PointCloudTempGenerator {
         }
     }
 
-    /*private List<File> shuffleTempFiles(List<File> tempFiles) {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
-        List<File> shuffledTempFiles = new ArrayList<>();
-        int fileLength = tempFiles.size();
-        AtomicInteger tempCount = new AtomicInteger(0);
-
-        double width = globalOptions.POINTSCLOUD_HORIZONTAL_GRID;
-        double height = globalOptions.POINTSCLOUD_HORIZONTAL_GRID;
-        double depth = globalOptions.POINTSCLOUD_VERTICAL_GRID;
-        depth = 1.0;
-        int volume = (int) Math.ceil(width * height * depth);
-
-        int limitSize;
-        if (globalOptions.isSourcePrecision()) {
-            limitSize = -1;
-        } else {
-            limitSize = volume;
-        }
-        limitSize = globalOptions.getPointLimit() * 5;
-        limitSize = -1;
-        log.info("[Pre] Shuffling temp files with limit size: {}", limitSize);
-
-        int finalLimitSize = limitSize;
-        tempFiles.forEach((tempFile) -> {
-            int count = tempCount.incrementAndGet();
-            log.info("[Pre][{}/{}] Shuffling temp file: {}", count, fileLength, tempFile.getName());
-            GaiaPointCloudTemp temp = new GaiaPointCloudTemp(tempFile);
-            temp.shuffleTemp(finalLimitSize);
-            shuffledTempFiles.add(temp.getTempFile());
-        });
-        log.info("[Pre] Shuffled temp files");
-        return shuffledTempFiles;
-    }*/
-
     private List<File> shuffleTempFilesOnThread(List<File> tempFiles) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         List<File> shuffledTempFiles = new ArrayList<>();
@@ -201,17 +165,6 @@ public class PointCloudTempGenerator {
         AtomicInteger tempCount = new AtomicInteger(0);
         int fileLength = tempFiles.size();
 
-        /*int depth = 1 + 4 + 16 + 64 + 256;
-        int limitSize;
-        if (globalOptions.isSourcePrecision()) {
-            limitSize = -1;
-        } else {
-            limitSize = globalOptions.getMaximumPointPerTile() * depth;
-        }
-
-        log.info("[Pre] Shuffling temp files with limit size: {}", limitSize);*/
-
-        //int finalLimitSize = limitSize;
         tempFiles.forEach((tempFile) -> {
             Runnable callableTask = () -> {
                 int count = tempCount.incrementAndGet();

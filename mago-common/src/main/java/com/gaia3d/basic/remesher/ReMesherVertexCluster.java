@@ -3,6 +3,11 @@ package com.gaia3d.basic.remesher;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.exchangable.SceneInfo;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaExtractor;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaTriangulator;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaWelder;
+import com.gaia3d.basic.geometry.modifier.topology.GaiaWeldOptions;
+import com.gaia3d.basic.geometry.modifier.transform.GaiaBaker;
 import com.gaia3d.basic.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
@@ -19,14 +24,15 @@ import java.util.Map;
 public class ReMesherVertexCluster {
     private static Map<GaiaVertex, List<GaiaFace>> makeMapVertexToFaces(GaiaScene gaiaScene) {
         Map<GaiaVertex, List<GaiaFace>> mapVertexToFaces = new HashMap<>();
-        List<GaiaPrimitive> primitives = gaiaScene.extractPrimitives(null);
+        GaiaExtractor extractor = new GaiaExtractor();
+        List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(gaiaScene);
         for (GaiaPrimitive primitive : primitives) {
             List<GaiaVertex> vertices = primitive.getVertices();
             List<GaiaSurface> surfaces = primitive.getSurfaces();
             for (GaiaSurface surface : surfaces) {
                 List<GaiaFace> faces = surface.getFaces();
                 for (GaiaFace face : faces) {
-                    int indices[] = face.getIndices();
+                    int[] indices = face.getIndices();
                     for (int index : indices) {
                         GaiaVertex vertex = vertices.get(index);
                         List<GaiaFace> faceList = mapVertexToFaces.computeIfAbsent(vertex, k -> new java.util.ArrayList<>());
@@ -71,15 +77,16 @@ public class ReMesherVertexCluster {
     public static void reMeshScene(GaiaScene gaiaScene, ReMeshParameters reMeshParams, Map<Vector3i, List<GaiaVertex>> vertexClusters,
                                    Vector3i sceneMinCellIndex, Vector3i sceneMaxCellIndex) {
         //************************************************************************************
-        // Note: the gaiaScene must spend its transform matrix before calling this method.****
-        // Note: the gaiaScene must join all surfaces before calling this method.*************
+        // Note: the gaiaScene must spend its transform matrix before calling this method*
+        // Note: the gaiaScene must join all surfaces before calling this method**********
         //************************************************************************************
         Map<GaiaVertex, List<GaiaFace>> mapVertexToFaces = makeMapVertexToFaces(gaiaScene);
         Map<GaiaVertex, Integer> vertexToIndexMap = new HashMap<>();
 
         //GaiaBoundingBox originalBBox = gaiaScene.updateBoundingBox();
 
-        List<GaiaPrimitive> primitives = gaiaScene.extractPrimitives(null);
+        GaiaExtractor extractor = new GaiaExtractor();
+        List<GaiaPrimitive> primitives = extractor.extractAllPrimitives(gaiaScene);
         // There are only 1 primitive in the gaiaScene, so we can use it directly.
         List<GaiaVertex> vertices = primitives.get(0).getVertices();
 
@@ -153,7 +160,7 @@ public class ReMesherVertexCluster {
             }
 
             // check if exists the average position for the cell
-            Vector3d averagePosition = cellAveragePositions.get(cellIndex); // original.***
+            Vector3d averagePosition = cellAveragePositions.get(cellIndex); // original
             if (averagePosition == null) {
                 // Calculate the average position of the cluster
                 averagePosition = new Vector3d();
@@ -195,17 +202,6 @@ public class ReMesherVertexCluster {
             }
         }
 
-//        // after reMesh, calculate bbox again
-//        GaiaBoundingBox newBBox = gaiaScene.updateBoundingBox();
-//
-//        double xSizeDiff = Math.abs((originalBBox.getMaxX() - originalBBox.getMinX()) - (newBBox.getMaxX() - newBBox.getMinX()));
-//        double ySizeDiff = Math.abs((originalBBox.getMaxY() - originalBBox.getMinY()) - (newBBox.getMaxY() - newBBox.getMinY()));
-//        double zSizeDiff = Math.abs((originalBBox.getMaxZ() - originalBBox.getMinZ()) - (newBBox.getMaxZ() - newBBox.getMinZ()));
-//        double maxDiffAllowed = 1.0; // 1 meter
-//        if (xSizeDiff > maxDiffAllowed || ySizeDiff > maxDiffAllowed || zSizeDiff > maxDiffAllowed) {
-//            log.warn("ReMesh process: bbox size changed significantly after reMesh. Original BBox: {}, New BBox: {}", originalBBox, newBBox);
-//        }
-
         vertexToIndexMap.clear();
         mapVertexToFaces.clear();
 
@@ -219,7 +215,7 @@ public class ReMesherVertexCluster {
             reMeshParams.deleteCellAveragePositionInsideBox(sceneMinCellIndex, sceneMaxCellIndex);
         }
 
-        // now delete degenerate faces.***
+        // now delete degenerate faces
         GaiaPrimitive primitive = primitives.get(0);
         primitive.deleteDegeneratedFaces(); // here deletes no used vertices either.
     }

@@ -82,6 +82,7 @@ public class GaiaPrimitiveUtils {
         return primitive;
     }
 
+    @Deprecated
     public static void getWeldableVertexMap(Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster, List<GaiaVertex> vertices, double error, boolean checkTexCoord, boolean checkNormal, boolean checkColor, boolean checkBatchId) {
         Map<GaiaVertex, GaiaVertex> visitedMap = new HashMap<>();
         int verticesCount = vertices.size();
@@ -108,7 +109,7 @@ public class GaiaPrimitiveUtils {
         }
     }
 
-
+    @Deprecated
     public static int calculateConvexity(GaiaVertex vertex, Vector3d normal, List<GaiaVertex> neighborVertices, double error) {
         int convexity = 1;
         Vector3d vertexPosition = vertex.getPosition();

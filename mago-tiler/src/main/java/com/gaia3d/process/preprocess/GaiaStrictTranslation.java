@@ -9,14 +9,14 @@ import com.gaia3d.process.tileprocess.tile.TileInfo;
 import com.gaia3d.util.GlobeUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.geotools.api.geometry.Position;
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.geometry.DirectPosition2D;
+import org.geotools.geometry.Position2D;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
-import org.opengis.geometry.DirectPosition;
 
 import java.util.List;
 
@@ -46,11 +46,11 @@ public class GaiaStrictTranslation implements PreProcess {
         if (!coverages.isEmpty()) {
             centerGeoCoord.z = 0.0d;
             coverages.forEach((coverage) -> {
-                DirectPosition worldPosition = new DirectPosition2D(DefaultGeographicCRS.WGS84, centerGeoCoord.x, centerGeoCoord.y);
+                Position position2D = new Position2D(DefaultGeographicCRS.WGS84, centerGeoCoord.x, centerGeoCoord.y);
                 double[] altitudeArray = new double[1];
                 altitudeArray[0] = 0.0d;
                 try {
-                    coverage.evaluate(worldPosition, altitudeArray);
+                    coverage.evaluate(position2D, altitudeArray);
                 } catch (Exception e) {
                     log.debug("[DEBUG] Failed to load terrain height. Out of range");
                 }

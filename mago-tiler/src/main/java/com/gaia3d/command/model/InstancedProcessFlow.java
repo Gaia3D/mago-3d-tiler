@@ -1,6 +1,7 @@
 package com.gaia3d.command.model;
 
 import com.gaia3d.basic.types.FormatType;
+import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.Converter;
 import com.gaia3d.converter.assimp.AssimpConverter;
@@ -9,10 +10,10 @@ import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.JacksonKmlReader;
 import com.gaia3d.converter.loader.FileLoader;
 import com.gaia3d.converter.loader.InstancedFileLoader;
-import com.gaia3d.converter.parametric.Parametric3DOptions;
-import com.gaia3d.converter.parametric.geojson.GeoJsonInstanceConverter;
-import com.gaia3d.converter.parametric.geopackage.GeoPackageInstanceConverter;
-import com.gaia3d.converter.parametric.shape.ShapeInstanceConverter;
+import com.gaia3d.converter.Parametric3DOptions;
+import com.gaia3d.converter.geojson.GeoJsonInstanceConverter;
+import com.gaia3d.converter.geopackage.GeoPackageInstanceConverter;
+import com.gaia3d.converter.shape.ShapeInstanceConverter;
 import com.gaia3d.process.TilingPipeline;
 import com.gaia3d.process.postprocess.PostProcess;
 import com.gaia3d.process.postprocess.instance.Instanced3DModel;
@@ -86,6 +87,11 @@ public class InstancedProcessFlow implements ProcessFlow {
                 .minimumHeightValue(globalOptions.getMinimumHeight())
                 .skirtHeight(globalOptions.getSkirtHeight())
                 .flipCoordinate(globalOptions.isFlipCoordinate())
+                .defaultDensity(GlobalConstants.DEFAULT_DENSITY)
+                .defaultDiameter(GlobalConstants.DEFAULT_DIAMETER)
+                .defaultHeight(GlobalConstants.DEFAULT_HEIGHT)
+                .defaultScale(GlobalConstants.DEFAULT_SCALE)
+                .defaultHeading(GlobalConstants.DEFAULT_HEADING)
                 .build();
 
         AttributeReader reader = null;
@@ -114,7 +120,7 @@ public class InstancedProcessFlow implements ProcessFlow {
     }
 
     private boolean getYUpAxis(FormatType formatType, boolean isYUpAxis) {
-        if (formatType == FormatType.CITYGML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON  || formatType == FormatType.GEO_PACKAGE) {
+        if (formatType == FormatType.CITYGML || formatType == FormatType.SHP || formatType == FormatType.GEOJSON || formatType == FormatType.GEO_PACKAGE) {
             isYUpAxis = true;
         }
         return isYUpAxis;

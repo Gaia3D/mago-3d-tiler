@@ -175,7 +175,6 @@ public class BoundingVolume implements Serializable {
             double halfY3 = box[8];
             double halfZ3 = box[11];
 
-
             Vector3d halfVector1 = new Vector3d(halfX1, halfY1, halfZ1);
             Vector3d halfVector2 = new Vector3d(halfX2, halfY2, halfZ2);
             Vector3d halfVector3 = new Vector3d(halfX3, halfY3, halfZ3);
@@ -186,8 +185,6 @@ public class BoundingVolume implements Serializable {
                     .rotateX(Math.toRadians(-90))
                     .scale(halfVector2.x(), halfVector2.y(), halfVector2.z())
                     .scale(halfVector3.x(), halfVector3.y(), halfVector3.z());
-
-
 
             GaiaBoundingBox boundingBox = new GaiaBoundingBox();
             boundingBox.addPoint(centerX - halfX1, centerY - halfY1, centerZ - halfZ1);
@@ -232,18 +229,10 @@ public class BoundingVolume implements Serializable {
     public List<TileInfo> getVolumeIncludeScenes(List<TileInfo> tileInfos, GaiaBoundingBox volume) {
         List<TileInfo> result = new ArrayList<>();
         if (BoundingVolumeType.REGION == type) {
-            double minX = region[0];
-            double minY = region[1];
-            double maxX = region[2];
-            double maxY = region[3];
-            double midX = (minX + maxX) / 2;
-            double midY = (minY + maxY) / 2;
             for (TileInfo tileInfo : tileInfos) {
                 GaiaBoundingBox localBoundingBox = tileInfo.getBoundingBox();
                 TileTransformInfo tileTransformInfo = tileInfo.getTileTransformInfo();
                 localBoundingBox = localBoundingBox.convertLocalToLonlatBoundingBox(tileTransformInfo.getPosition());
-                /*BoundingVolume localBoundingVolume = new BoundingVolume(localBoundingBox, BoundingVolume.BoundingVolumeType.REGION);
-                Vector3d center = localBoundingVolume.calcCenter();*/
                 Vector3d center = localBoundingBox.getCenter();
 
                 boolean isInX = volume.getMinX() <= center.x() && center.x() <= volume.getMaxX();
@@ -303,20 +292,14 @@ public class BoundingVolume implements Serializable {
             double halfX1 = box[3];
             double halfY1 = box[6];
             double halfZ1 = box[9];
-            double halfX2 = box[4];
-            double halfY2 = box[7];
-            double halfZ2 = box[10];
-            double halfX3 = box[5];
-            double halfY3 = box[8];
-            double halfZ3 = box[11];
 
             double maxLength = Math.max(Math.max(halfX1, halfY1), halfZ1);
             BoundingVolume boundingVolume = new BoundingVolume(BoundingVolumeType.BOX);
             boundingVolume.setBox(new double[]{
-                centerX, centerY, centerZ,
-                maxLength, 0, 0,
-                0, maxLength, 0,
-                0, 0, maxLength
+                    centerX, centerY, centerZ,
+                    maxLength, 0, 0,
+                    0, maxLength, 0,
+                    0, 0, maxLength
             });
             return boundingVolume;
         } else {

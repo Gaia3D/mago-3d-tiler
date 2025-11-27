@@ -11,7 +11,7 @@ class FormatReleaseTest {
     @Test
     void format00() {
         String path = "A00-Thonker-glb";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
         };
@@ -21,7 +21,7 @@ class FormatReleaseTest {
     @Test
     void format01() {
         String path = "A01-Thonker-gltf";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
         };
@@ -31,7 +31,7 @@ class FormatReleaseTest {
     @Test
     void format02() {
         String path = "A02-Thonker-obj";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
         };
@@ -41,7 +41,7 @@ class FormatReleaseTest {
     @Test
     void format03() {
         String path = "A03-Thonker-3mf";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
         };
@@ -51,7 +51,7 @@ class FormatReleaseTest {
     @Test
     void format04() {
         String path = "A04-Thonker-ply";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
         };
@@ -61,7 +61,7 @@ class FormatReleaseTest {
     @Test
     void format05() {
         String path = "A05-Thonker-fbx";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
         };
@@ -71,7 +71,7 @@ class FormatReleaseTest {
     @Test
     void format06() {
         String path = "A06-Thonker-dae";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
         };
@@ -81,7 +81,7 @@ class FormatReleaseTest {
     @Test
     void format07() {
         String path = "A07-Thonker-x3d";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
         };
@@ -91,7 +91,7 @@ class FormatReleaseTest {
     @Test
     void format08() {
         String path = "A08-Thonker-stl";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
         };
@@ -102,7 +102,7 @@ class FormatReleaseTest {
     void format09() {
         try {
             String path = "A09-Thonker-blend";
-            String[] args = new String[] {
+            String[] args = new String[]{
                     "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                     "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
             };

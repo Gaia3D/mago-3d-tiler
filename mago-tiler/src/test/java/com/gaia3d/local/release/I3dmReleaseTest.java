@@ -1,6 +1,6 @@
 package com.gaia3d.local.release;
 
-import com.gaia3d.command.Configuration;
+import com.gaia3d.command.LoggingConfiguration;
 import com.gaia3d.local.MagoTestConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
@@ -11,13 +11,13 @@ import org.junit.jupiter.api.Test;
 @Slf4j
 class I3dmReleaseTest {
     static {
-        Configuration.initConsoleLogger();
+        LoggingConfiguration.initConsoleLogger();
     }
 
     @Test
     void instanced00() {
         String path = "I00-forest-kml";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-tilesVersion", "1.0",
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
@@ -30,7 +30,7 @@ class I3dmReleaseTest {
     @Test
     void instanced01() {
         String path = "I01-seoul-forest-shp";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-tilesVersion", "1.0",
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
@@ -46,7 +46,7 @@ class I3dmReleaseTest {
     @Test
     void instanced02() {
         String path = "I02-seoul-forest-geojson";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-tilesVersion", "1.0",
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
@@ -62,7 +62,7 @@ class I3dmReleaseTest {
     @Test
     void instanced03() {
         String path = "I03-seoul-yeouido-gpkg";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-tilesVersion", "1.0",
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
@@ -80,7 +80,7 @@ class I3dmReleaseTest {
     @Test
     void instanced04() {
         String path = "I04-forest-shp";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-tilesVersion", "1.0",
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
@@ -95,7 +95,7 @@ class I3dmReleaseTest {
     @Test
     void instanced06A() {
         String path = "I04-forest-shp";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath("ESD/" + path).getAbsolutePath() + "-A",
                 "-c", "5179",
@@ -113,7 +113,7 @@ class I3dmReleaseTest {
     @Test
     void instanced06B() {
         String path = "I04-forest-shp";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath("ESD/" + path).getAbsolutePath() + "-B",
                 "-c", "5179",
@@ -131,7 +131,7 @@ class I3dmReleaseTest {
     @Test
     void instanced06C() {
         String path = "I04-forest-shp";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath("ESD/" + path).getAbsolutePath() + "-C",
                 "-c", "5179",
@@ -149,7 +149,7 @@ class I3dmReleaseTest {
     @Test
     void instanced06D() {
         String path = "I04-forest-shp";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath("ESD/" + path).getAbsolutePath() + "-D",
                 "-c", "5179",
@@ -167,7 +167,7 @@ class I3dmReleaseTest {
     @Test
     void instanced06Merger() {
         String path = "ESD";
-        String[] args = new String[] {
+        String[] args = new String[]{
                 "-i", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-merge",

@@ -119,10 +119,6 @@ public class GaiaBoundingBox implements Serializable {
 
         // Check if some edges of the bounding box intersect the triangle.
         if (intersectsAASegmentsToTriangle(triangle)) {
-//            if (!this.intersects(triangleBbox)) {
-//                intersectsAASegmentsToTriangle(triangle);
-//                int hola = 0;
-//            }
             return true; // At least one axis-aligned segment intersects the triangle.
         }
 
@@ -208,13 +204,6 @@ public class GaiaBoundingBox implements Serializable {
             if (intersectionPoint == null) {
                 return false; // No intersection with the triangle plane.
             }
-
-//            double dist1 = trianglePlane.distanceToPoint(aaSegment.getStartPoint());
-//            double dist2 = trianglePlane.distanceToPoint(aaSegment.getEndPoint());
-//            if(dist1>0 && dist2>0 || dist1<0 && dist2<0) {
-//                intersectionPoint = trianglePlane.intersectionAASegment(aaSegment, axis);
-//                int hola = 0;
-//            }
 
             Vector3d[] trianglePoints = triangle.getPoints();
 

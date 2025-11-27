@@ -10,6 +10,7 @@ import lombok.Setter;
 public class Range {
     private double maximum;
     private double minimum;
+
     public Range(double min, double max) {
         minimum = min;
         maximum = max;

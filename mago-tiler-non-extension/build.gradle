@@ -13,7 +13,7 @@ dependencies {
 
 javadoc {
     enabled = false
-    options.addStringOption("locale", "ko_KR")
+    options.addStringOption("locale", "en_US")
     options.addStringOption("encoding", "UTF-8")
     options.addStringOption("charset", "UTF-8")
     options.addStringOption("docencoding", "UTF-8")

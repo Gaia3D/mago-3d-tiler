@@ -288,7 +288,7 @@ public class HalfEdgeUtils {
                 if (isSkirt) {
                     halfEdgeVertex.setPosition(new Vector3d(x, y, skirtZ));
                 } else {
-                    // the real net vertex.***
+                    // the real net vertex
                     halfEdgeVertex.setPosition(new Vector3d(x, y, z));
                 }
 
@@ -320,7 +320,7 @@ public class HalfEdgeUtils {
 
                 if (c == 0 || c == withSkirtCols - 1 || r == 0 || r == withSkirtRows - 1 ||
                         cNext == withSkirtCols - 1 || rNext == withSkirtRows - 1) {
-                    // this is skirt face.***
+                    // this is skirt face
                     faceA.setFaceType(FaceType.SKIRT);
                     faceB.setFaceType(FaceType.SKIRT);
                 } else {
@@ -642,8 +642,8 @@ public class HalfEdgeUtils {
         HalfEdgeMesh halfEdgeMesh = new HalfEdgeMesh();
 
         // primitives
-        List<GaiaPrimitive> gaiaPrimitives = gaiaMesh.getPrimitives();
-        for (GaiaPrimitive gaiaPrimitive : gaiaPrimitives) {
+        List<GaiaPrimitive> primitives = gaiaMesh.getPrimitives();
+        for (GaiaPrimitive gaiaPrimitive : primitives) {
             if (gaiaPrimitive == null) {
                 log.error("[ERROR] gaiaPrimitive == null");
                 continue;
@@ -723,15 +723,12 @@ public class HalfEdgeUtils {
         return resultWeldedFacesGroups;
     }
 
-    public static boolean getWeldedFacesWithFace(HalfEdgeFace face, List<HalfEdgeFace> resultWeldedFaces, Map<HalfEdgeFace, HalfEdgeFace> mapVisitedFaces) {
+    public static void getWeldedFacesWithFace(HalfEdgeFace face, List<HalfEdgeFace> resultWeldedFaces, Map<HalfEdgeFace, HalfEdgeFace> mapVisitedFaces) {
         List<HalfEdgeFace> weldedFacesAux = new ArrayList<>();
         List<HalfEdgeFace> faces = new ArrayList<>();
         faces.add(face);
-        //mapVisitedFaces.put(face, face);
         boolean finished = false;
-        int counter = 0;
-        while (!finished)// && counter < 10000000)
-        {
+        while (!finished) {
             List<HalfEdgeFace> newAddedfaces = new ArrayList<>();
             int facesCount = faces.size();
             for (int i = 0; i < facesCount; i++) {
@@ -757,12 +754,7 @@ public class HalfEdgeUtils {
                 faces.clear();
                 faces.addAll(newAddedfaces);
             }
-
-            counter++;
         }
-
-
-        return true;
     }
 
     public static List<HalfEdgeVertex> getVerticesOfFaces(List<HalfEdgeFace> faces, List<HalfEdgeVertex> resultVertices) {
@@ -837,7 +829,6 @@ public class HalfEdgeUtils {
         // set twins
         halfEdgeSurface.setTwins();
         halfEdgeSurface.checkSandClockFaces();
-        //halfEdgeSurface.TEST_checkEqualHEdges();
 
         return halfEdgeSurface;
     }
@@ -1002,52 +993,6 @@ public class HalfEdgeUtils {
         if (halfEdgeScene2.getTrianglesCount() > 0) {
             resultHalfEdgeScenes.add(halfEdgeScene2);
         }
-
-
-//        List<HalfEdgeNode> halfEdgeNodes = halfEdgeScene.getNodes();
-//        int nodesCount = halfEdgeNodes.size();
-//        for (int j=0; j<nodesCount; j++)
-//        {
-//            HalfEdgeNode rootNode = halfEdgeNodes.get(j);
-//            Map<Integer,HalfEdgeNode> mapClassifyIdToNode = getMapHalfEdgeNodeByFaceClassifyId(rootNode, null);
-//            for (Integer key : mapClassifyIdToNode.keySet())
-//            {
-//                int faceClassifyId = key;
-//                HalfEdgeNode halfEdgeNode = mapClassifyIdToNode.get(faceClassifyId);
-//                HalfEdgeScene halfEdgeSceneCopy = mapClassifyIdToHalfEdgeScene.get(faceClassifyId);
-//                if (halfEdgeSceneCopy == null)
-//                {
-//                    halfEdgeSceneCopy = new HalfEdgeScene();
-//
-//                    // copy original path
-//                    halfEdgeSceneCopy.setOriginalPath(halfEdgeScene.getOriginalPath());
-//
-//                    // copy gaiaAttributes
-//                    GaiaAttribute newGaiaAttribute = gaiaAttribute.getCopy();
-//                    halfEdgeSceneCopy.setAttribute(newGaiaAttribute);
-//
-//                    mapClassifyIdToHalfEdgeScene.put(faceClassifyId, halfEdgeSceneCopy);
-//                }
-//                halfEdgeSceneCopy.getNodes().add(halfEdgeNode);
-//            }
-//
-//        }
-//
-//        for (Integer key : mapClassifyIdToHalfEdgeScene.keySet())
-//        {
-//            HalfEdgeScene halfEdgeSceneCopy = mapClassifyIdToHalfEdgeScene.get(key);
-//
-//            // copy materials
-//            List<GaiaMaterial> gaiaMaterials = halfEdgeScene.getMaterials();
-//            int materialsCount = gaiaMaterials.size();
-//            for (int i=0; i<materialsCount; i++)
-//            {
-//                GaiaMaterial gaiaMaterial = gaiaMaterials.get(i);
-//                GaiaMaterial newGaiaMaterial = gaiaMaterial.clone();
-//                halfEdgeSceneCopy.getMaterials().add(newGaiaMaterial);
-//            }
-//            resultHalfEdgeScenes.add(halfEdgeSceneCopy);
-//        }
 
         return resultHalfEdgeScenes;
     }
@@ -1361,20 +1306,15 @@ public class HalfEdgeUtils {
             boundingBox.addPoint(gaiaVertex.getPosition());
         });
 
-        // make bbox as cube.***
+        // make bbox as cube
         GaiaBoundingBox cubeBoundingBox = boundingBox.createCubeFromMinPosition();
         GaiaOctreeVertices octreeVertices = new GaiaOctreeVertices(null, cubeBoundingBox);
         octreeVertices.addContents(gaiaVertices);
-//        octreeVertices.getVertices().addAll(gaiaVertices);
-//        octreeVertices.calculateSize();
-//        octreeVertices.setAsCube();
         octreeVertices.setLimitDepth(10);
         octreeVertices.setLimitBoxSize(1.0); // 1m
-
         octreeVertices.makeTreeByMinVertexCount(50);
 
         List<GaiaOctree<GaiaVertex>> octreesWithContents = octreeVertices.extractOctreesWithContents();
-        //octreeVertices.extractOctreesWithContents(octreesWithContents);
 
         Map<GaiaVertex, GaiaVertex> mapVertexToVertexMaster = new HashMap<>();
 

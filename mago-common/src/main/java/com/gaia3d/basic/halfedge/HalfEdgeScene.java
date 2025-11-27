@@ -319,14 +319,6 @@ public class HalfEdgeScene implements Serializable {
             FileOutputStream fileOutputStream = new FileOutputStream(file);
             BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
             ObjectOutputStream outputStream = new ObjectOutputStream(bufferedOutputStream);
-            /*
-            private Path originalPath;
-            private GaiaBoundingBox gaiaBoundingBox;
-            private GaiaAttribute attribute;
-            private List<HalfEdgeNode> nodes = new ArrayList<>();
-            private List<GaiaMaterial> materials = new ArrayList<>();
-            private GaiaBoundingBox boundingBox = null;
-             */
 
             // write originalPath, gaiaBoundingBox, attribute
             String originalPath = this.originalPath.toString();
@@ -522,7 +514,7 @@ public class HalfEdgeScene implements Serializable {
             node.updateFacesList();
         }
     }
-
+    
     public void makeHorizontalSkirt() {
         GaiaBoundingBox bbox = getBoundingBox();
         if (bbox == null) {
@@ -551,10 +543,6 @@ public class HalfEdgeScene implements Serializable {
         if (westVertices.size() > 1) {
             for (HalfEdgeVertex vertex : westVertices) {
                 Vector3d normal = vertex.calculateNormal();
-
-//                Vector3d position = vertex.getPosition();
-//                position.x -= expandDistance * normal.z;
-//                position.z += expandDistance * normal.x;
 
                 if (Math.abs(normal.dot(-1, 0, 0)) < dotLimit) {
                     Vector3d position = vertex.getPosition();

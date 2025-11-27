@@ -1,6 +1,6 @@
 subprojects {
     group "com.gaia3d"
-    version "1.14.0-release"
+    version "1.14.1-beta"
     apply plugin: 'java'
     project.ext.lwjglVersion = "3.3.6"
 
@@ -20,8 +20,32 @@ subprojects {
         implementation 'org.apache.logging.log4j:log4j-api:2.20.0'
         implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.20.0'
 
+        /* Jackson for JSON and XML processing */
+        implementation "com.fasterxml.jackson.core:jackson-core:2.15.2"
+        implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.2"
+
         /* Math library */
-        implementation "org.joml:joml:1.10.5"
+        implementation "org.joml:joml:1.10.8"
+
+        /* Geospatial libraries */
+        implementation "org.locationtech.proj4j:proj4j:1.4.1"
+        implementation "org.locationtech.proj4j:proj4j-epsg:1.4.1"
+
+        implementation platform("org.geotools:gt-bom:34.0")
+        implementation "org.geotools:gt-shapefile"
+        implementation "org.geotools:gt-geotiff"
+        implementation "org.geotools:gt-geopkg"
+        implementation "org.geotools:gt-geojson"
+        implementation "org.geotools:gt-coverage"
+        implementation "org.geotools:gt-main"
+        implementation "org.geotools:gt-image"
+        implementation "org.geotools:gt-grid"
+        implementation "org.geotools:gt-process"
+        implementation "org.geotools:gt-process-raster"
+        implementation "org.geotools:gt-process-feature"
+        implementation "org.geotools:gt-epsg-hsql"
+        implementation "com.github.jai-imageio:jai-imageio-core:1.4.0"
+        implementation "org.jdom:jdom2:2.0.6.1"
 
         /* Apache commons */
         implementation 'commons-logging:commons-logging:1.2'
@@ -36,10 +60,22 @@ subprojects {
         testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.0"
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.0"
     }
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
 }
 
 project(':mago-common') {
     // Common module
+}
+
+project(':mago-io') {
+    dependencies {
+        implementation project(':mago-common')
+    }
 }
 
 project(':mago-tiler') {
@@ -85,5 +121,5 @@ tasks.register('javadoc', Javadoc) {
     destinationDir = file("/docs/")
     options.encoding = 'UTF-8'
     options.memberLevel = JavadocMemberLevel.PUBLIC
-    options.addStringOption('Xdoclint:none', '-quiet') // 경고 무시
+    options.addStringOption('Xdoclint:none', '-quiet')
 }

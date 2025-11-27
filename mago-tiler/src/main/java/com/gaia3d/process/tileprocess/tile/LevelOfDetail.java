@@ -6,8 +6,8 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum LevelOfDetail {
-    NONE(-1,0, 0, 1.0f, 1.0f, new float[]{1.0f, 1.0f, 1.0f}),
-    LOD0(0,0,0, 1.0f, 1.0f, new float[]{1.0f, 0.4f, 0.4f}),
+    NONE(-1, 0, 0, 1.0f, 1.0f, new float[]{1.0f, 1.0f, 1.0f}),
+    LOD0(0, 0, 0, 1.0f, 1.0f, new float[]{1.0f, 0.4f, 0.4f}),
     LOD1(1, 2, 8, 0.5f, 0.8f, new float[]{0.4f, 1.0f, 0.4f}),
     LOD2(2, 4, 50, 0.25f, 0.6f, new float[]{0.4f, 0.4f, 1.0f}),
     LOD3(3, 8, 120, 0.125f, 0.4f, new float[]{1.0f, 1.0f, 0.4f}),
