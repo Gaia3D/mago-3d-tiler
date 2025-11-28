@@ -1,6 +1,8 @@
 package com.gaia3d.basic.geometry.octree;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -11,6 +13,8 @@ import java.util.List;
 @Slf4j
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class GaiaOctreeCoordinate {
     private int depth = 0;
     private int x = 0;

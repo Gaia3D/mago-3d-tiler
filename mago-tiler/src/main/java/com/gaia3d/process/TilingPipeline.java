@@ -147,6 +147,7 @@ public class TilingPipeline implements Pipeline {
                                     .transformMatrix(childTileInfo.getTransformMatrix())
                                     .boundingBox(childTileInfo.getBoundingBox())
                                     .pointCloud(childTileInfo.getPointCloud())
+                                    .pointCloudOld(childTileInfo.getPointCloudOld())
                                     .build())
                             .collect(Collectors.toList());
                     contentInfo.setTileInfos(tileInfosClone);

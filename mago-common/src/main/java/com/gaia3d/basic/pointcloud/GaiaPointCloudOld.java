@@ -20,7 +20,7 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Setter
-public class GaiaPointCloud implements Serializable {
+public class GaiaPointCloudOld implements Serializable {
     GaiaPointCloudTemp pointCloudTemp = null;
     private String code = "A";
     private Path originalPath;
@@ -143,7 +143,7 @@ public class GaiaPointCloud implements Serializable {
     }
 
 
-    public List<GaiaPointCloud> distribute() {
+    public List<GaiaPointCloudOld> distribute() {
         double minX = gaiaBoundingBox.getMinX();
         double minY = gaiaBoundingBox.getMinY();
         double minZ = gaiaBoundingBox.getMinZ();
@@ -172,18 +172,18 @@ public class GaiaPointCloud implements Serializable {
     }
 
     // Quarter based on the bounding box
-    public List<GaiaPointCloud> distributeHalf(boolean isX) {
-        List<GaiaPointCloud> pointClouds = new ArrayList<>();
+    public List<GaiaPointCloudOld> distributeHalf(boolean isX) {
+        List<GaiaPointCloudOld> pointClouds = new ArrayList<>();
 
         GaiaBoundingBox gaiaBoundingBoxA = new GaiaBoundingBox();
-        GaiaPointCloud gaiaPointCloudA = new GaiaPointCloud();
+        GaiaPointCloudOld gaiaPointCloudA = new GaiaPointCloudOld();
         gaiaPointCloudA.setCode("A");
         gaiaPointCloudA.setOriginalPath(originalPath);
         gaiaPointCloudA.setGaiaBoundingBox(gaiaBoundingBoxA);
         List<GaiaVertex> verticesA = gaiaPointCloudA.getVertices();
 
         GaiaBoundingBox gaiaBoundingBoxB = new GaiaBoundingBox();
-        GaiaPointCloud gaiaPointCloudB = new GaiaPointCloud();
+        GaiaPointCloudOld gaiaPointCloudB = new GaiaPointCloudOld();
         gaiaPointCloudB.setCode("B");
         gaiaPointCloudB.setOriginalPath(originalPath);
         gaiaPointCloudB.setGaiaBoundingBox(gaiaBoundingBoxB);
@@ -223,32 +223,32 @@ public class GaiaPointCloud implements Serializable {
     }
 
     // Quarter based on the bounding box
-    public List<GaiaPointCloud> distributeQuad() {
-        List<GaiaPointCloud> pointClouds = new ArrayList<>();
+    public List<GaiaPointCloudOld> distributeQuad() {
+        List<GaiaPointCloudOld> pointClouds = new ArrayList<>();
 
         GaiaBoundingBox gaiaBoundingBoxA = new GaiaBoundingBox();
-        GaiaPointCloud gaiaPointCloudA = new GaiaPointCloud();
+        GaiaPointCloudOld gaiaPointCloudA = new GaiaPointCloudOld();
         gaiaPointCloudA.setCode("A");
         gaiaPointCloudA.setOriginalPath(originalPath);
         gaiaPointCloudA.setGaiaBoundingBox(gaiaBoundingBoxA);
         List<GaiaVertex> verticesA = gaiaPointCloudA.getVertices();
 
         GaiaBoundingBox gaiaBoundingBoxB = new GaiaBoundingBox();
-        GaiaPointCloud gaiaPointCloudB = new GaiaPointCloud();
+        GaiaPointCloudOld gaiaPointCloudB = new GaiaPointCloudOld();
         gaiaPointCloudB.setCode("B");
         gaiaPointCloudB.setOriginalPath(originalPath);
         gaiaPointCloudB.setGaiaBoundingBox(gaiaBoundingBoxB);
         List<GaiaVertex> verticesB = gaiaPointCloudB.getVertices();
 
         GaiaBoundingBox gaiaBoundingBoxC = new GaiaBoundingBox();
-        GaiaPointCloud gaiaPointCloudC = new GaiaPointCloud();
+        GaiaPointCloudOld gaiaPointCloudC = new GaiaPointCloudOld();
         gaiaPointCloudC.setCode("C");
         gaiaPointCloudC.setOriginalPath(originalPath);
         gaiaPointCloudC.setGaiaBoundingBox(gaiaBoundingBoxC);
         List<GaiaVertex> verticesC = gaiaPointCloudC.getVertices();
 
         GaiaBoundingBox gaiaBoundingBoxD = new GaiaBoundingBox();
-        GaiaPointCloud gaiaPointCloudD = new GaiaPointCloud();
+        GaiaPointCloudOld gaiaPointCloudD = new GaiaPointCloudOld();
         gaiaPointCloudD.setCode("D");
         gaiaPointCloudD.setOriginalPath(originalPath);
         gaiaPointCloudD.setGaiaBoundingBox(gaiaBoundingBoxD);
@@ -290,11 +290,11 @@ public class GaiaPointCloud implements Serializable {
     }
 
     // Octree based on the bounding box
-    public List<GaiaPointCloud> distributeOct() {
-        List<GaiaPointCloud> pointClouds = new ArrayList<>();
+    public List<GaiaPointCloudOld> distributeOct() {
+        List<GaiaPointCloudOld> pointClouds = new ArrayList<>();
 
         GaiaBoundingBox gaiaBoundingBoxA = new GaiaBoundingBox();
-        GaiaPointCloud gaiaPointCloudA = new GaiaPointCloud();
+        GaiaPointCloudOld gaiaPointCloudA = new GaiaPointCloudOld();
         gaiaPointCloudA.setCode("A");
         gaiaPointCloudA.setOriginalPath(originalPath);
         gaiaPointCloudA.setGaiaBoundingBox(gaiaBoundingBoxA);
@@ -302,7 +302,7 @@ public class GaiaPointCloud implements Serializable {
         List<GaiaVertex> verticesA = gaiaPointCloudA.getVertices();
 
         GaiaBoundingBox gaiaBoundingBoxB = new GaiaBoundingBox();
-        GaiaPointCloud gaiaPointCloudB = new GaiaPointCloud();
+        GaiaPointCloudOld gaiaPointCloudB = new GaiaPointCloudOld();
         gaiaPointCloudB.setCode("B");
         gaiaPointCloudB.setOriginalPath(originalPath);
         gaiaPointCloudB.setGaiaBoundingBox(gaiaBoundingBoxB);
@@ -310,7 +310,7 @@ public class GaiaPointCloud implements Serializable {
         List<GaiaVertex> verticesB = gaiaPointCloudB.getVertices();
 
         GaiaBoundingBox gaiaBoundingBoxC = new GaiaBoundingBox();
-        GaiaPointCloud gaiaPointCloudC = new GaiaPointCloud();
+        GaiaPointCloudOld gaiaPointCloudC = new GaiaPointCloudOld();
         gaiaPointCloudC.setCode("C");
         gaiaPointCloudC.setOriginalPath(originalPath);
         gaiaPointCloudC.setGaiaBoundingBox(gaiaBoundingBoxC);
@@ -318,7 +318,7 @@ public class GaiaPointCloud implements Serializable {
         List<GaiaVertex> verticesC = gaiaPointCloudC.getVertices();
 
         GaiaBoundingBox gaiaBoundingBoxD = new GaiaBoundingBox();
-        GaiaPointCloud gaiaPointCloudD = new GaiaPointCloud();
+        GaiaPointCloudOld gaiaPointCloudD = new GaiaPointCloudOld();
         gaiaPointCloudD.setCode("D");
         gaiaPointCloudD.setOriginalPath(originalPath);
         gaiaPointCloudD.setGaiaBoundingBox(gaiaBoundingBoxD);
@@ -326,7 +326,7 @@ public class GaiaPointCloud implements Serializable {
         List<GaiaVertex> verticesD = gaiaPointCloudD.getVertices();
 
         GaiaBoundingBox gaiaBoundingBoxE = new GaiaBoundingBox();
-        GaiaPointCloud gaiaPointCloudE = new GaiaPointCloud();
+        GaiaPointCloudOld gaiaPointCloudE = new GaiaPointCloudOld();
         gaiaPointCloudE.setCode("E");
         gaiaPointCloudE.setOriginalPath(originalPath);
         gaiaPointCloudE.setGaiaBoundingBox(gaiaBoundingBoxE);
@@ -334,7 +334,7 @@ public class GaiaPointCloud implements Serializable {
         List<GaiaVertex> verticesE = gaiaPointCloudE.getVertices();
 
         GaiaBoundingBox gaiaBoundingBoxF = new GaiaBoundingBox();
-        GaiaPointCloud gaiaPointCloudF = new GaiaPointCloud();
+        GaiaPointCloudOld gaiaPointCloudF = new GaiaPointCloudOld();
         gaiaPointCloudF.setCode("F");
         gaiaPointCloudF.setOriginalPath(originalPath);
         gaiaPointCloudF.setGaiaBoundingBox(gaiaBoundingBoxF);
@@ -342,7 +342,7 @@ public class GaiaPointCloud implements Serializable {
         List<GaiaVertex> verticesF = gaiaPointCloudF.getVertices();
 
         GaiaBoundingBox gaiaBoundingBoxG = new GaiaBoundingBox();
-        GaiaPointCloud gaiaPointCloudG = new GaiaPointCloud();
+        GaiaPointCloudOld gaiaPointCloudG = new GaiaPointCloudOld();
         gaiaPointCloudG.setCode("G");
         gaiaPointCloudG.setOriginalPath(originalPath);
         gaiaPointCloudG.setGaiaBoundingBox(gaiaBoundingBoxG);
@@ -350,7 +350,7 @@ public class GaiaPointCloud implements Serializable {
         List<GaiaVertex> verticesG = gaiaPointCloudG.getVertices();
 
         GaiaBoundingBox gaiaBoundingBoxH = new GaiaBoundingBox();
-        GaiaPointCloud gaiaPointCloudH = new GaiaPointCloud();
+        GaiaPointCloudOld gaiaPointCloudH = new GaiaPointCloudOld();
         gaiaPointCloudH.setCode("H");
         gaiaPointCloudH.setOriginalPath(originalPath);
         gaiaPointCloudH.setGaiaBoundingBox(gaiaBoundingBoxH);
@@ -420,15 +420,15 @@ public class GaiaPointCloud implements Serializable {
         return pointClouds;
     }
 
-    public List<GaiaPointCloud> divideChunkSize(int chunkSize) {
-        List<GaiaPointCloud> pointClouds = new ArrayList<>();
+    public List<GaiaPointCloudOld> divideChunkSize(int chunkSize) {
+        List<GaiaPointCloudOld> pointClouds = new ArrayList<>();
 
-        GaiaPointCloud chunkPointCloud = new GaiaPointCloud();
+        GaiaPointCloudOld chunkPointCloud = new GaiaPointCloudOld();
         chunkPointCloud.setOriginalPath(originalPath);
         chunkPointCloud.setGaiaBoundingBox(gaiaBoundingBox);
         chunkPointCloud.setGaiaAttribute(gaiaAttribute);
 
-        GaiaPointCloud remainderPointCloud = new GaiaPointCloud();
+        GaiaPointCloudOld remainderPointCloud = new GaiaPointCloudOld();
         remainderPointCloud.setOriginalPath(originalPath);
         remainderPointCloud.setGaiaBoundingBox(gaiaBoundingBox);
         remainderPointCloud.setGaiaAttribute(gaiaAttribute);

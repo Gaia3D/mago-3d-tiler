@@ -10,6 +10,7 @@ public class GlobalConstants {
     public static final String DEFAULT_TILES_VERSION = "1.1";
     public static final String DEFAULT_INPUT_FORMAT = "kml";
     public static final String DEFAULT_INSTANCE_FILE = "instance.dae";
+    public static final String DEFAULT_TEMP_FOLDER = "temp";
     public static final int DEFAULT_MIN_LOD = 0;
     public static final int DEFAULT_MAX_LOD = 3;
     public static final int DEFAULT_MIN_GEOMETRIC_ERROR = 16;

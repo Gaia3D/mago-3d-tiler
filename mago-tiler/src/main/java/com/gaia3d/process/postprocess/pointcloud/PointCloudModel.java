@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaVertex;
-import com.gaia3d.basic.pointcloud.GaiaPointCloud;
+import com.gaia3d.basic.pointcloud.GaiaPointCloudOld;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.process.postprocess.ComponentType;
 import com.gaia3d.process.postprocess.ContentModel;
@@ -51,7 +51,7 @@ public class PointCloudModel implements ContentModel {
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         AtomicInteger vertexCount = new AtomicInteger();
         tileInfos.forEach((tileInfo) -> {
-            GaiaPointCloud pointCloud = tileInfo.getPointCloud();
+            GaiaPointCloudOld pointCloud = tileInfo.getPointCloudOld();
             vertexCount.addAndGet(pointCloud.getVertexCount());
             boundingBox.addBoundingBox(pointCloud.getGaiaBoundingBox());
         });
@@ -93,7 +93,7 @@ public class PointCloudModel implements ContentModel {
         AtomicInteger positionIndex = new AtomicInteger();
         AtomicInteger colorIndex = new AtomicInteger();
         tileInfos.forEach((tileInfo) -> {
-            GaiaPointCloud pointCloud = tileInfo.getPointCloud();
+            GaiaPointCloudOld pointCloud = tileInfo.getPointCloudOld();
             pointCloud.maximize();
             List<GaiaVertex> gaiaVertex = pointCloud.getVertices();
             gaiaVertex.forEach((vertex) -> {

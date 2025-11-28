@@ -47,6 +47,7 @@ public class GlobalOptions {
     private String logPath;
     private String terrainPath;
     private String instancePath;
+    private String tempPath;
 
     private FormatType inputFormat;
     private FormatType outputFormat;
@@ -156,6 +157,17 @@ public class GlobalOptions {
             throw new IllegalArgumentException("Please enter the value of the output argument.");
         }
 
+        if (command.hasOption(ProcessOptions.TEMP_PATH.getLongName())) {
+            instance.setTempPath(command.getOptionValue(ProcessOptions.TEMP_PATH.getLongName()));
+            File tempPath = new File(instance.getTempPath());
+            OptionsCorrector.checkExistOutput(tempPath);
+        } else {
+            File tempDir = new File(outputPath, GlobalConstants.DEFAULT_TEMP_FOLDER);
+            String tempPath = tempDir.getAbsolutePath();
+            instance.setTempPath(tempPath);
+            OptionsCorrector.checkExistOutput(tempDir);
+        }
+
         if (command.hasOption(ProcessOptions.TILES_VERSION.getLongName())) {
             String tilesVersion = command.getOptionValue(ProcessOptions.TILES_VERSION.getLongName());
             instance.setTilesVersion(tilesVersion);
@@ -253,6 +265,10 @@ public class GlobalOptions {
             if (proj != null && !proj.isEmpty()) {
                 sourceCrs = factory.createFromParameters("CUSTOM_CRS_PROJ", proj);
             } else if (crsString != null && !crsString.isEmpty()) {
+                if (crsString.toUpperCase().startsWith("EPSG:")) {
+                    crsString = crsString.substring(5);
+                    log.warn("[WARN] 'EPSG:' prefix is not required for CRS option. Use only the EPSG code number.");
+                }
                 sourceCrs = factory.createFromName("EPSG:" + crsString);
             } else {
                 sourceCrs = GlobalConstants.DEFAULT_SOURCE_CRS;
@@ -408,6 +424,7 @@ public class GlobalOptions {
         log.info("Output Path: {}", outputPath);
         log.info("Input Format: {}", inputFormat);
         log.info("Output Format: {}", outputFormat);
+        log.info("Temp path: {}", tempPath);
         log.info("Terrain File Path: {}", terrainPath);
         log.info("Instance File Path: {}", instancePath);
         log.info("Log File Path: {}", logPath);

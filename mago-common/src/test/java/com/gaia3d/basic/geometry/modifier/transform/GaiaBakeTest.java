@@ -24,9 +24,9 @@ class GaiaBakeTest {
         GaiaNode sampleNode = sceneFactory.createGridNode(256, 256);
         rootNode.addChild(sampleNode);
 
-        SceneElementVisitor baker = new Baker();
-        SceneTraverser traverser = new SceneTraverser();
-        traverser.traverse(scene, baker);
+        //SceneElementVisitor baker = new Baker();
+        //SceneTraverser traverser = new SceneTraverser();
+        //traverser.traverse(scene, baker);
         //GaiaBaker baker = new GaiaBaker();
         //baker.bake(scene);
 

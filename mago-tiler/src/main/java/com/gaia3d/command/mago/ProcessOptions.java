@@ -15,6 +15,7 @@ public enum ProcessOptions {
     /* Path Options */
     INPUT_PATH("input", "i", true, true, "[Required] Input directory path"),
     OUTPUT_PATH("output", "o", true, true, "[Required] Output directory path"),
+    TEMP_PATH("temp", "t", true, false, "Temporary directory path (Default: {OUTPUT}/temp)"),
     INPUT_TYPE("inputType", "it", true, false, "Input files type [kml, 3ds, fbx, obj, gltf/glb, las/laz, citygml, indoorgml, shp, geojson, gpkg]"),
     OUTPUT_TYPE("outputType", "ot", true, false, "Output 3DTiles Type [b3dm, i3dm, pnts]"),
     LOG_PATH("log", "l", true, false, "Output log file path."),

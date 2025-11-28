@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 @RequiredArgsConstructor
 public class PointCloudTempGenerator {
-    private final LasConverter converter;
+    private final OldLasConverter converter;
     private GaiaPointCloudHeader combinedHeader;
 
     public List<File> generate(File tempPath, List<File> fileList) {

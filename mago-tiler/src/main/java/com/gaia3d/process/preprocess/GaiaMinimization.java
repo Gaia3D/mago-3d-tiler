@@ -3,7 +3,7 @@ package com.gaia3d.process.preprocess;
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.model.GaiaAttribute;
 import com.gaia3d.basic.model.GaiaScene;
-import com.gaia3d.basic.pointcloud.GaiaPointCloud;
+import com.gaia3d.basic.pointcloud.GaiaPointCloudOld;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,7 @@ public class GaiaMinimization implements PreProcess {
         }
     }
 
-    private void minimizeGaiaPointCloud(TileInfo tileInfo, GaiaPointCloud pointCloud) {
+    private void minimizeGaiaPointCloud(TileInfo tileInfo, GaiaPointCloudOld pointCloud) {
         if (pointCloud != null) {
             //Path tempPath = tempSet.writeFile(tileInfo.getTempPath(), tileInfo.getSerial(), tempSet.getAttribute());
             tileInfo.setTempPath(tileInfo.getOutputPath().resolve("temp"));

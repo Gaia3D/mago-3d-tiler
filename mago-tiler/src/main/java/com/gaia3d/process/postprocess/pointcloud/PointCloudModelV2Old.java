@@ -2,10 +2,9 @@ package com.gaia3d.process.postprocess.pointcloud;
 
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaVertex;
+import com.gaia3d.basic.pointcloud.GaiaPointCloudOld;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.gltf.tiles.PointCloudGltfWriter;
-import com.gaia3d.converter.pointcloud.GaiaLasPoint;
-import com.gaia3d.converter.pointcloud.GaiaPointCloud;
 import com.gaia3d.process.postprocess.ContentModel;
 import com.gaia3d.process.postprocess.batch.GaiaBatchTable;
 import com.gaia3d.process.postprocess.instance.GaiaFeatureTable;
@@ -29,11 +28,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @RequiredArgsConstructor
-public class PointCloudModelV2 implements ContentModel {
+public class PointCloudModelV2Old implements ContentModel {
     private static final String MAGIC = "glb";
     private final PointCloudGltfWriter gltfWriter;
 
-    public PointCloudModelV2() {
+    public PointCloudModelV2Old() {
         this.gltfWriter = new PointCloudGltfWriter();
     }
 
@@ -52,10 +51,23 @@ public class PointCloudModelV2 implements ContentModel {
         GaiaBoundingBox boundingBox = new GaiaBoundingBox();
         AtomicInteger vertexCount = new AtomicInteger();
         tileInfos.forEach((tileInfo) -> {
-            GaiaPointCloud pointCloud = tileInfo.getPointCloud();
-            vertexCount.addAndGet((int) pointCloud.getPointCount());
+            GaiaPointCloudOld pointCloud = tileInfo.getPointCloudOld();
+            vertexCount.addAndGet(pointCloud.getVertexCount());
             boundingBox.addBoundingBox(pointCloud.getGaiaBoundingBox());
         });
+
+        Vector3d originalMinPosition = boundingBox.getMinPosition();
+        Vector3d originalMaxPosition = boundingBox.getMaxPosition();
+        CoordinateReferenceSystem source = globalOptions.getSourceCrs();
+        BasicCoordinateTransform transformer = new BasicCoordinateTransform(source, GlobeUtils.wgs84);
+
+        ProjCoordinate transformedMinCoordinate = transformer.transform(new ProjCoordinate(originalMinPosition.x, originalMinPosition.y, originalMinPosition.z), new ProjCoordinate());
+        Vector3d minPosition = new Vector3d(transformedMinCoordinate.x, transformedMinCoordinate.y, originalMinPosition.z);
+        ProjCoordinate transformedMaxCoordinate = transformer.transform(new ProjCoordinate(originalMaxPosition.x, originalMaxPosition.y, originalMaxPosition.z), new ProjCoordinate());
+        Vector3d maxPosition = new Vector3d(transformedMaxCoordinate.x, transformedMaxCoordinate.y, originalMaxPosition.z);
+        GaiaBoundingBox wgs84BoundingBox = new GaiaBoundingBox();
+        wgs84BoundingBox.addPoint(minPosition);
+        wgs84BoundingBox.addPoint(maxPosition);
 
         int vertexLength = vertexCount.get();
         float[] batchIds = new float[vertexLength];
@@ -65,7 +77,7 @@ public class PointCloudModelV2 implements ContentModel {
         char[] intensity = new char[vertexLength];
         short[] classification = new short[vertexLength];
 
-        Vector3d center = boundingBox.getCenter();
+        Vector3d center = wgs84BoundingBox.getCenter();
         Vector3d centerWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(center);
         Matrix4d transformMatrix = GlobeUtils.transformMatrixAtCartesianPointWgs84(centerWorldCoordinate);
         Matrix4d transformMatrixInv = new Matrix4d(transformMatrix).invert();
@@ -82,11 +94,12 @@ public class PointCloudModelV2 implements ContentModel {
         AtomicInteger positionIndex = new AtomicInteger();
         AtomicInteger colorIndex = new AtomicInteger();
 
+        ProjCoordinate originalCoordinate = new ProjCoordinate();
+        ProjCoordinate resultCoordinate = new ProjCoordinate();
         tileInfos.forEach((tileInfo) -> {
-            GaiaPointCloud pointCloud = tileInfo.getPointCloud();
-            pointCloud.maximize(true);
-
-            List<GaiaLasPoint> gaiaVertex = pointCloud.getLasPoints();
+            GaiaPointCloudOld pointCloud = tileInfo.getPointCloudOld();
+            pointCloud.maximize();
+            List<GaiaVertex> gaiaVertex = pointCloud.getVertices();
             gaiaVertex.forEach((vertex) -> {
                 int index = mainIndex.getAndIncrement();
                 if (index > vertexLength) {
@@ -96,7 +109,17 @@ public class PointCloudModelV2 implements ContentModel {
 
                 batchIds[index] = index;
 
-                Vector3d wgs84Position = vertex.getVec3Position();
+                Vector3d position = vertex.getPosition();
+                Vector3d wgs84Position = new Vector3d();
+                try {
+                    originalCoordinate.setValue(position.x, position.y, position.z);
+
+                    ProjCoordinate transformedCoordinate = transformer.transform(originalCoordinate, resultCoordinate);
+                    wgs84Position = new Vector3d(transformedCoordinate.x, transformedCoordinate.y, position.z);
+                } catch (InvalidValueException e) {
+                    log.debug("Invalid value exception", e);
+                }
+
                 Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(wgs84Position);
                 Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv, new Vector3d());
                 localPosition.mulPosition(rotationMatrix4d, localPosition);
@@ -109,7 +132,7 @@ public class PointCloudModelV2 implements ContentModel {
                 positions[positionIndex.getAndIncrement()] = y;
                 positions[positionIndex.getAndIncrement()] = z;
 
-                byte[] color = vertex.getRgb();
+                byte[] color = vertex.getColor();
                 color[0] = (byte) srgbToLinearByte(signedByteToUnsignedByte(color[0]));
                 color[1] = (byte) srgbToLinearByte(signedByteToUnsignedByte(color[1]));
                 color[2] = (byte) srgbToLinearByte(signedByteToUnsignedByte(color[2]));
@@ -121,7 +144,7 @@ public class PointCloudModelV2 implements ContentModel {
                 intensity[index] = vertex.getIntensity();
                 classification[index] = vertex.getClassification();
             });
-            pointCloud.clearPoints();
+            pointCloud.minimizeTemp();
         });
 
         PointCloudBuffer pointCloudBuffer = new PointCloudBuffer();
