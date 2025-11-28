@@ -235,6 +235,16 @@ public class HalfEdgeSkirtMaker {
 
             direction.normalize();
 
+            if (direction.length() < 1e-8) {
+                log.error("Making skirt: zero length skirt direction.");
+                continue;
+            }
+
+            if (Double.isNaN(direction.x) || Double.isNaN(direction.y) || Double.isNaN(direction.z)) {
+                log.error("Making skirt: NaN in skirt direction.");
+                continue;
+            }
+
             direction.mul(skirtHeight);
 
             // copy startVertex and endVertex
@@ -368,7 +378,7 @@ public class HalfEdgeSkirtMaker {
 
         List<HalfEdgeSurface> surfaces = new ArrayList<>();
         scene.extractSurfaces(surfaces); // surfaces size must be 1
-        HalfEdgeSurface surfaceMaster = surfaces.get(0);
+        HalfEdgeSurface surfaceMaster = surfaces.getFirst();
 
         List<HalfEdge> borderHalfEdgesSouth = new ArrayList<>();
         List<HalfEdge> borderHalfEdgesNorth = new ArrayList<>();

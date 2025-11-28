@@ -576,8 +576,8 @@ class UnitTest {
 
     @Test
     void test_RealisticMesh_Thailand_Data_N_buildings() {
-        String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\RealisticMesh_Thailand_multiTiles\\OBJ25sqkm\\Data\\";
-        String outputPath = "C:\\data\\mago-server\\output\\thailand_All\\";
+        String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\RealisticMesh_Thailand_multiTiles\\OBJ25sqkm\\Data_36buildings\\";
+        String outputPath = "C:\\data\\mago-server\\output\\thailand_36buildings\\";
 
         String[] args = new String[]{
                 "-i", inputPath,
@@ -763,8 +763,8 @@ class UnitTest {
         // someTiles
 //        "-lon", "126.638872",
 //                "-lat", "37.5329178",
-        String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\SangAm_JoGoNi\\Production_2\\L22_56buildings\\";
-        String outputPath = "C:\\data\\mago-server\\output\\SangAm_JoGoNi_L22_56buildings\\";
+        String inputPath = "E:\\data\\mago3dtiler_TESTDATA\\SangAm_JoGoNi\\Production_2\\L22_9buildings\\";
+        String outputPath = "C:\\data\\mago-server\\output\\SangAm_JoGoNi_L22_9buildings\\";
         //String outputPath = "E:\\temp\\";
 
         String[] args = new String[]{
