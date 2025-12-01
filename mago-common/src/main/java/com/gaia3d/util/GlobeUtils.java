@@ -60,6 +60,18 @@ public class GlobeUtils {
         return avgRadius * (maxLatRad - minLatRad);
     }
 
+    public static double[] distanceBetweenDegrees(double[] minDegrees, double[] maxDegrees) {
+        double minLatRad = minDegrees[1] * DEGREE_TO_RADIAN_FACTOR;
+        double maxLatRad = maxDegrees[1] * DEGREE_TO_RADIAN_FACTOR;
+        double minLonRad = minDegrees[0] * DEGREE_TO_RADIAN_FACTOR;
+        double maxLonRad = maxDegrees[0] * DEGREE_TO_RADIAN_FACTOR;
+
+        double latDistance = distanceBetweenLatitudesRad(minLatRad, maxLatRad);
+        double lonDistance = distanceBetweenLongitudesRad((minLatRad + maxLatRad) / 2.0, minLonRad, maxLonRad);
+
+        return new double[] { lonDistance, latDistance };
+    }
+
     public static double distanceBetweenLongitudesRad(double latRad, double minLonRad, double maxLonRad) {
         double radius = radiusAtLatitudeRad(latRad);
         return radius * Math.cos(latRad) * (maxLonRad - minLonRad);
@@ -112,6 +124,7 @@ public class GlobeUtils {
         transformMatrix.set(transform);
         return transformMatrix;
     }
+
 
     public static Vector3d normalAtCartesianPointWgs84(Vector3d cartesian) {
         return normalAtCartesianPointWgs84(cartesian.x, cartesian.y, cartesian.z);

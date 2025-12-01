@@ -158,9 +158,11 @@ public class GlobalOptions {
         }
 
         if (command.hasOption(ProcessOptions.TEMP_PATH.getLongName())) {
-            instance.setTempPath(command.getOptionValue(ProcessOptions.TEMP_PATH.getLongName()));
-            File tempPath = new File(instance.getTempPath());
-            OptionsCorrector.checkExistOutput(tempPath);
+            String tempPath = command.getOptionValue(ProcessOptions.TEMP_PATH.getLongName());
+            String sufix = java.util.UUID.randomUUID().toString();
+            File tempFullPath = new File(tempPath, sufix);
+            OptionsCorrector.checkExistOutput(tempFullPath);
+            instance.setTempPath(tempFullPath.getAbsolutePath());
         } else {
             File tempDir = new File(outputPath, GlobalConstants.DEFAULT_TEMP_FOLDER);
             String tempPath = tempDir.getAbsolutePath();

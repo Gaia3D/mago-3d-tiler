@@ -26,9 +26,12 @@ public class PointCloudFileLoader implements FileLoader {
 
     public List<File> loadTemp(File tempPath, List<File> files) {
         for (File file : files) {
+            log.info("[Pre] Loading point cloud file: {}", file.getAbsolutePath());
             converter.convert(file);
+            log.info("[Pre] Finished loading point cloud file: {}", file.getAbsolutePath());
         }
         converter.close();
+
         converter.createShuffle();
         return converter.getBucketFiles();
     }
@@ -68,6 +71,7 @@ public class PointCloudFileLoader implements FileLoader {
         pointCloud.setPointCount(points.size());
         pointCloud.computeBoundingBox();
         pointCloud.minimize(tempFile);
+        points.clear();
 
         if (points == null) {
             log.error("[ERROR] :Failed to load scene: {}", file.getAbsolutePath());

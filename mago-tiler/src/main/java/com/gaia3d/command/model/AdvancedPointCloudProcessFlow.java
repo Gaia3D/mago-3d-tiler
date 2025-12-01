@@ -33,7 +33,11 @@ public class AdvancedPointCloudProcessFlow implements ProcessFlow {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         String tempDir = globalOptions.getTempPath();
         Path tempPath = Path.of(tempDir);
-        LasConverterOptions options = LasConverterOptions.builder().sourceCrs(globalOptions.getSourceCrs()).tempDirectory(tempPath).build();
+        LasConverterOptions options = LasConverterOptions.builder()
+                .sourceCrs(globalOptions.getSourceCrs())
+                .tempDirectory(tempPath)
+                .force4ByteRgb(globalOptions.isForce4ByteRGB())
+                .build();
         LasConverter converter = new LasConverter(options);
         PointCloudFileLoader fileLoader = new PointCloudFileLoader(converter);
 

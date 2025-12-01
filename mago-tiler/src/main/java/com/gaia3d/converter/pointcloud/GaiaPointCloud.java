@@ -57,6 +57,7 @@ public class GaiaPointCloud {
                 byte[] pointBytes = point.toBytes();
                 bos.write(pointBytes);
             }
+            this.lasPoints.clear();
             this.lasPoints = null;
         } catch (IOException e) {
             log.error("Failed to minimize point cloud to file: {}", minimizedFile.getAbsolutePath(), e);
@@ -102,24 +103,24 @@ public class GaiaPointCloud {
     }
 
     public List<GaiaPointCloud> distribute() {
-        Vector3d volume = gaiaBoundingBox.getVolume();
-        double offsetX = volume.x;
+        /*double offsetX = volume.x;
         double offsetY = volume.y;
         double offsetZ = volume.z;
-
         double halfX = offsetX / 2;
         double halfY = offsetY / 2;
         double halfZ = offsetZ / 2;
-
         if (halfX > offsetY) {
             return distributeHalf(true);
         } else if (halfY > offsetX) {
             return distributeHalf(false);
-        } else if (offsetZ < offsetX || offsetZ < offsetY) {
+        } *//*else if (offsetZ < offsetX || offsetZ < offsetY) {
             return distributeQuad();
-        } else {
+        }*//* else if (offsetZ > 100.0) {
             return distributeOct();
-        }
+        } else {
+            return distributeQuad();
+        }*/
+        return distributeOct();
     }
 
     // Quarter based on the bounding box
@@ -161,12 +162,58 @@ public class GaiaPointCloud {
         }
 
         pointClouds.add(gaiaPointCloudA);
-        gaiaPointCloudA.computeBoundingBox();
+        //gaiaPointCloudA.computeBoundingBox();
         gaiaPointCloudA.setPointCount(gaiaPointCloudA.getLasPoints().size());
 
         pointClouds.add(gaiaPointCloudB);
-        gaiaPointCloudB.computeBoundingBox();
+        //gaiaPointCloudB.computeBoundingBox();
         gaiaPointCloudB.setPointCount(gaiaPointCloudB.getLasPoints().size());
+
+        if (isX) {
+            gaiaPointCloudA.setCode("L");
+            gaiaPointCloudB.setCode("R");
+
+            GaiaBoundingBox adjustedBoxA = new GaiaBoundingBox();
+            adjustedBoxA.setMinX(minX);
+            adjustedBoxA.setMinY(minY);
+            adjustedBoxA.setMinZ(gaiaBoundingBox.getMinZ());
+            adjustedBoxA.setMaxX(midX);
+            adjustedBoxA.setMaxY(maxY);
+            adjustedBoxA.setMaxZ(gaiaBoundingBox.getMaxZ());
+            gaiaPointCloudA.setGaiaBoundingBox(adjustedBoxA);
+
+            GaiaBoundingBox adjustedBoxB = new GaiaBoundingBox();
+            adjustedBoxB.setMinX(midX);
+            adjustedBoxB.setMinY(minY);
+            adjustedBoxB.setMinZ(gaiaBoundingBox.getMinZ());
+            adjustedBoxB.setMaxX(maxX);
+            adjustedBoxB.setMaxY(maxY);
+            adjustedBoxB.setMaxZ(gaiaBoundingBox.getMaxZ());
+            gaiaPointCloudB.setGaiaBoundingBox(adjustedBoxB);
+
+
+        } else {
+            gaiaPointCloudA.setCode("B");
+            gaiaPointCloudB.setCode("F");
+
+            GaiaBoundingBox adjustedBoxA = new GaiaBoundingBox();
+            adjustedBoxA.setMinX(minX);
+            adjustedBoxA.setMinY(minY);
+            adjustedBoxA.setMinZ(gaiaBoundingBox.getMinZ());
+            adjustedBoxA.setMaxX(maxX);
+            adjustedBoxA.setMaxY(midY);
+            adjustedBoxA.setMaxZ(gaiaBoundingBox.getMaxZ());
+            gaiaPointCloudA.setGaiaBoundingBox(adjustedBoxA);
+
+            GaiaBoundingBox adjustedBoxB = new GaiaBoundingBox();
+            adjustedBoxB.setMinX(minX);
+            adjustedBoxB.setMinY(midY);
+            adjustedBoxB.setMinZ(gaiaBoundingBox.getMinZ());
+            adjustedBoxB.setMaxX(maxX);
+            adjustedBoxB.setMaxY(maxY);
+            adjustedBoxB.setMaxZ(gaiaBoundingBox.getMaxZ());
+            gaiaPointCloudB.setGaiaBoundingBox(adjustedBoxB);
+        }
         return pointClouds;
     }
 
@@ -219,19 +266,51 @@ public class GaiaPointCloud {
         }
 
         pointClouds.add(gaiaPointCloudA);
-        gaiaPointCloudA.computeBoundingBox();
+        //gaiaPointCloudA.computeBoundingBox();
+        GaiaBoundingBox adjustedBoxA = new GaiaBoundingBox();
+        adjustedBoxA.setMinX(minX);
+        adjustedBoxA.setMinY(minY);
+        adjustedBoxA.setMinZ(gaiaBoundingBox.getMinZ());
+        adjustedBoxA.setMaxX(midX);
+        adjustedBoxA.setMaxY(midY);
+        adjustedBoxA.setMaxZ(gaiaBoundingBox.getMaxZ());
+        gaiaPointCloudA.setGaiaBoundingBox(adjustedBoxA);
         gaiaPointCloudA.setPointCount(gaiaPointCloudA.getLasPoints().size());
 
         pointClouds.add(gaiaPointCloudB);
-        gaiaPointCloudB.computeBoundingBox();
+        //gaiaPointCloudB.computeBoundingBox();
+        GaiaBoundingBox adjustedBoxB = new GaiaBoundingBox();
+        adjustedBoxB.setMinX(midX);
+        adjustedBoxB.setMinY(minY);
+        adjustedBoxB.setMinZ(gaiaBoundingBox.getMinZ());
+        adjustedBoxB.setMaxX(maxX);
+        adjustedBoxB.setMaxY(midY);
+        adjustedBoxB.setMaxZ(gaiaBoundingBox.getMaxZ());
+        gaiaPointCloudB.setGaiaBoundingBox(adjustedBoxB);
         gaiaPointCloudB.setPointCount(gaiaPointCloudB.getLasPoints().size());
 
         pointClouds.add(gaiaPointCloudC);
-        gaiaPointCloudC.computeBoundingBox();
+        //gaiaPointCloudC.computeBoundingBox();
+        GaiaBoundingBox adjustedBoxC = new GaiaBoundingBox();
+        adjustedBoxC.setMinX(minX);
+        adjustedBoxC.setMinY(midY);
+        adjustedBoxC.setMinZ(gaiaBoundingBox.getMinZ());
+        adjustedBoxC.setMaxX(midX);
+        adjustedBoxC.setMaxY(maxY);
+        adjustedBoxC.setMaxZ(gaiaBoundingBox.getMaxZ());
+        gaiaPointCloudC.setGaiaBoundingBox(adjustedBoxC);
         gaiaPointCloudC.setPointCount(gaiaPointCloudC.getLasPoints().size());
 
         pointClouds.add(gaiaPointCloudD);
-        gaiaPointCloudD.computeBoundingBox();
+        //gaiaPointCloudD.computeBoundingBox();
+        GaiaBoundingBox adjustedBoxD = new GaiaBoundingBox();
+        adjustedBoxD.setMinX(midX);
+        adjustedBoxD.setMinY(midY);
+        adjustedBoxD.setMinZ(gaiaBoundingBox.getMinZ());
+        adjustedBoxD.setMaxX(maxX);
+        adjustedBoxD.setMaxY(maxY);
+        adjustedBoxD.setMaxZ(gaiaBoundingBox.getMaxZ());
+        gaiaPointCloudD.setGaiaBoundingBox(adjustedBoxD);
         gaiaPointCloudD.setPointCount(gaiaPointCloudD.getLasPoints().size());
         return pointClouds;
     }
@@ -292,69 +371,197 @@ public class GaiaPointCloud {
         double midZ = (minZ + maxZ) / 2;
 
         for (GaiaLasPoint vertex : this.getLasPoints()) {
-            Vector3d center = vertex.getVec3Position();
-            if (midZ < center.z()) {
-                if (midX < center.x()) {
-                    if (midY < center.y()) {
+            Vector3d position = vertex.getVec3Position();
+
+            /*if (midX < position.x()) {
+                if (midY < position.y()) {
+                    verticesD.add(vertex);
+                } else {
+                    verticesB.add(vertex);
+                }
+            } else {
+                if (midY < position.y()) {
+                    verticesC.add(vertex);
+                } else {
+                    verticesA.add(vertex);
+                }
+            }*/
+
+            if (midZ < position.z()) {
+                if (midX < position.x()) {
+                    if (midY < position.y()) {
+                        verticesH.add(vertex);
+                    } else {
+                        verticesF.add(vertex);
+                    }
+                } else {
+                    if (midY < position.y()) {
+                        verticesG.add(vertex);
+                    } else {
+                        verticesE.add(vertex);
+                    }
+                }
+            } else {
+                if (midX < position.x()) {
+                    if (midY < position.y()) {
+                        verticesD.add(vertex);
+                    } else {
+                        verticesB.add(vertex);
+                    }
+                } else {
+                    if (midY < position.y()) {
+                        verticesC.add(vertex);
+                    } else {
+                        verticesA.add(vertex);
+                    }
+                }
+            }
+
+
+
+
+            /*if (position.z() < midZ) {
+                if (midX < position.x()) {
+                    if (midY < position.y()) {
                         verticesC.add(vertex);
                     } else {
                         verticesB.add(vertex);
                     }
                 } else {
-                    if (midY < center.y()) {
+                    if (midY < position.y()) {
                         verticesD.add(vertex);
                     } else {
                         verticesA.add(vertex);
                     }
                 }
             } else {
-                if (midX < center.x()) {
-                    if (midY < center.y()) {
+                if (midX < position.x()) {
+                    if (midY < position.y()) {
                         verticesG.add(vertex);
                     } else {
                         verticesF.add(vertex);
                     }
                 } else {
-                    if (midY < center.y()) {
+                    if (midY < position.y()) {
                         verticesH.add(vertex);
                     } else {
                         verticesE.add(vertex);
                     }
                 }
-            }
+            }*/
         }
 
-        pointClouds.add(gaiaPointCloudA);
-        gaiaPointCloudA.computeBoundingBox();
+        //gaiaPointCloudA.computeBoundingBox();
+        GaiaBoundingBox adjustedBoxA = new GaiaBoundingBox();
+        adjustedBoxA.setMinX(gaiaBoundingBox.getMinX());
+        adjustedBoxA.setMinY(gaiaBoundingBox.getMinY());
+        adjustedBoxA.setMinZ(gaiaBoundingBox.getMinZ());
+        adjustedBoxA.setMaxX(midX);
+        adjustedBoxA.setMaxY(midY);
+        adjustedBoxA.setMaxZ(midZ);
+        gaiaPointCloudA.setGaiaBoundingBox(adjustedBoxA);
         gaiaPointCloudA.setPointCount(gaiaPointCloudA.getLasPoints().size());
+        if (!gaiaPointCloudA.getLasPoints().isEmpty()) {
+            pointClouds.add(gaiaPointCloudA);
+        }
 
-        pointClouds.add(gaiaPointCloudB);
-        gaiaPointCloudB.computeBoundingBox();
+        //gaiaPointCloudB.computeBoundingBox();
+        GaiaBoundingBox adjustedBoxB = new GaiaBoundingBox();
+        adjustedBoxB.setMinX(midX);
+        adjustedBoxB.setMinY(gaiaBoundingBox.getMinY());
+        adjustedBoxB.setMinZ(gaiaBoundingBox.getMinZ());
+        adjustedBoxB.setMaxX(gaiaBoundingBox.getMaxX());
+        adjustedBoxB.setMaxY(midY);
+        adjustedBoxB.setMaxZ(midZ);
+        gaiaPointCloudB.setGaiaBoundingBox(adjustedBoxB);
         gaiaPointCloudB.setPointCount(gaiaPointCloudB.getLasPoints().size());
+        if (!gaiaPointCloudB.getLasPoints().isEmpty()) {
+            pointClouds.add(gaiaPointCloudB);
+        }
 
-        pointClouds.add(gaiaPointCloudC);
-        gaiaPointCloudC.computeBoundingBox();
+        //gaiaPointCloudC.computeBoundingBox();
+        GaiaBoundingBox adjustedBoxC = new GaiaBoundingBox();
+        adjustedBoxC.setMinX(gaiaBoundingBox.getMinX());
+        adjustedBoxC.setMinY(midY);
+        adjustedBoxC.setMinZ(gaiaBoundingBox.getMinZ());
+        adjustedBoxC.setMaxX(midX);
+        adjustedBoxC.setMaxY(gaiaBoundingBox.getMaxY());
+        adjustedBoxC.setMaxZ(midZ);
+        gaiaPointCloudC.setGaiaBoundingBox(adjustedBoxC);
         gaiaPointCloudC.setPointCount(gaiaPointCloudC.getLasPoints().size());
+        if (!gaiaPointCloudC.getLasPoints().isEmpty()) {
+            pointClouds.add(gaiaPointCloudC);
+        }
 
-        pointClouds.add(gaiaPointCloudD);
-        gaiaPointCloudD.computeBoundingBox();
+        //gaiaPointCloudD.computeBoundingBox();
+        GaiaBoundingBox adjustedBoxD = new GaiaBoundingBox();
+        adjustedBoxD.setMinX(midX);
+        adjustedBoxD.setMinY(midY);
+        adjustedBoxD.setMinZ(gaiaBoundingBox.getMinZ());
+        adjustedBoxD.setMaxX(gaiaBoundingBox.getMaxX());
+        adjustedBoxD.setMaxY(gaiaBoundingBox.getMaxY());
+        adjustedBoxD.setMaxZ(midZ);
+        gaiaPointCloudD.setGaiaBoundingBox(adjustedBoxD);
         gaiaPointCloudD.setPointCount(gaiaPointCloudD.getLasPoints().size());
+        if (!gaiaPointCloudD.getLasPoints().isEmpty()) {
+            pointClouds.add(gaiaPointCloudD);
+        }
 
-        pointClouds.add(gaiaPointCloudE);
-        gaiaPointCloudE.computeBoundingBox();
+        //gaiaPointCloudE.computeBoundingBox();
+        GaiaBoundingBox adjustedBoxE = new GaiaBoundingBox();
+        adjustedBoxE.setMinX(gaiaBoundingBox.getMinX());
+        adjustedBoxE.setMinY(gaiaBoundingBox.getMinY());
+        adjustedBoxE.setMinZ(midZ);
+        adjustedBoxE.setMaxX(midX);
+        adjustedBoxE.setMaxY(midY);
+        adjustedBoxE.setMaxZ(gaiaBoundingBox.getMaxZ());
+        gaiaPointCloudE.setGaiaBoundingBox(adjustedBoxE);
         gaiaPointCloudE.setPointCount(gaiaPointCloudE.getLasPoints().size());
+        if (!gaiaPointCloudE.getLasPoints().isEmpty()) {
+            pointClouds.add(gaiaPointCloudE);
+        }
 
-        pointClouds.add(gaiaPointCloudF);
-        gaiaPointCloudF.computeBoundingBox();
+        //gaiaPointCloudF.computeBoundingBox();
+        GaiaBoundingBox adjustedBoxF = new GaiaBoundingBox();
+        adjustedBoxF.setMinX(midX);
+        adjustedBoxF.setMinY(gaiaBoundingBox.getMinY());
+        adjustedBoxF.setMinZ(midZ);
+        adjustedBoxF.setMaxX(gaiaBoundingBox.getMaxX());
+        adjustedBoxF.setMaxY(midY);
+        adjustedBoxF.setMaxZ(gaiaBoundingBox.getMaxZ());
+        gaiaPointCloudF.setGaiaBoundingBox(adjustedBoxF);
         gaiaPointCloudF.setPointCount(gaiaPointCloudF.getLasPoints().size());
+        if (!gaiaPointCloudF.getLasPoints().isEmpty()) {
+            pointClouds.add(gaiaPointCloudF);
+        }
 
-        pointClouds.add(gaiaPointCloudG);
-        gaiaPointCloudG.computeBoundingBox();
+        //gaiaPointCloudG.computeBoundingBox();
+        GaiaBoundingBox adjustedBoxG = new GaiaBoundingBox();
+        adjustedBoxG.setMinX(gaiaBoundingBox.getMinX());
+        adjustedBoxG.setMinY(midY);
+        adjustedBoxG.setMinZ(midZ);
+        adjustedBoxG.setMaxX(midX);
+        adjustedBoxG.setMaxY(gaiaBoundingBox.getMaxY());
+        adjustedBoxG.setMaxZ(gaiaBoundingBox.getMaxZ());
+        gaiaPointCloudG.setGaiaBoundingBox(adjustedBoxG);
         gaiaPointCloudG.setPointCount(gaiaPointCloudG.getLasPoints().size());
+        if (!gaiaPointCloudG.getLasPoints().isEmpty()) {
+            pointClouds.add(gaiaPointCloudG);
+        }
 
-        pointClouds.add(gaiaPointCloudH);
-        gaiaPointCloudH.computeBoundingBox();
+        //gaiaPointCloudH.computeBoundingBox();
+        GaiaBoundingBox adjustedBoxH = new GaiaBoundingBox();
+        adjustedBoxH.setMinX(midX);
+        adjustedBoxH.setMinY(midY);
+        adjustedBoxH.setMinZ(midZ);
+        adjustedBoxH.setMaxX(gaiaBoundingBox.getMaxX());
+        adjustedBoxH.setMaxY(gaiaBoundingBox.getMaxY());
+        adjustedBoxH.setMaxZ(gaiaBoundingBox.getMaxZ());
+        gaiaPointCloudH.setGaiaBoundingBox(adjustedBoxH);
         gaiaPointCloudH.setPointCount(gaiaPointCloudH.getLasPoints().size());
+        if (!gaiaPointCloudH.getLasPoints().isEmpty()) {
+            pointClouds.add(gaiaPointCloudH);
+        }
         return pointClouds;
     }
 
@@ -376,8 +583,8 @@ public class GaiaPointCloud {
             chunkPointCloud.setLasPoints(new ArrayList<>(lasPoints.subList(0, lasPoints.size())));
         }
 
-        chunkPointCloud.computeBoundingBox();
-        remainderPointCloud.computeBoundingBox();
+        //chunkPointCloud.computeBoundingBox();
+        //remainderPointCloud.computeBoundingBox();
         chunkPointCloud.setPointCount(chunkPointCloud.getLasPoints().size());
         remainderPointCloud.setPointCount(remainderPointCloud.getLasPoints().size());
         pointClouds.add(chunkPointCloud);

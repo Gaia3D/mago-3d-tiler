@@ -16,11 +16,11 @@ public class NewCardShuffler implements Shuffler {
 
     @Override
     public void shuffle(File sourceFile, File targetFile, int blockSize) {
-        shuffle(sourceFile, targetFile, blockSize, 4);
+        shuffle(sourceFile, targetFile, blockSize, 5);
     }
 
     /**
-     * 예시:
+     * Multi-pass global shuffle
      * blockSize = 18
      * minSectionBytes = 160_000
      * maxSectionBytes = 320_000
@@ -70,11 +70,8 @@ public class NewCardShuffler implements Shuffler {
                 }
 
                 int sectionBytes = chooseSectionBytes(blockSize, MIN_CHUNK_BYTES, MAX_CHUNK_BYTES, pass);
-
-                log.info("=== Global section shuffle pass {}/{} : {} -> {} (sectionBytes={}) ===", pass + 1, passes, currentIn.getAbsolutePath(), currentOut.getAbsolutePath(), sectionBytes);
-
+                log.debug("=== Global section shuffle pass {}/{} : {} -> {} (sectionBytes={}) ===", pass + 1, passes, currentIn.getAbsolutePath(), currentOut.getAbsolutePath(), sectionBytes);
                 shuffleOnce(currentIn, currentOut, blockSize, sectionBytes, pass);
-
                 currentIn = currentOut;
             }
 
@@ -91,10 +88,6 @@ public class NewCardShuffler implements Shuffler {
         }
     }
 
-    /**
-     * 각 pass마다 섹션 크기를 min~max 범위에서 랜덤하게 고른다.
-     * blockSize의 배수로 맞춰줌.
-     */
     private int chooseSectionBytes(int blockSize, int minSectionBytes, int maxSectionBytes, int passIndex) {
 
         // blockSize 배수로 범위 정리
@@ -106,7 +99,7 @@ public class NewCardShuffler implements Shuffler {
         int chosenBlocks = minBlocks + random.nextInt(rangeBlocks);
 
         int sectionBytes = chosenBlocks * blockSize;
-        log.info("[Pass {}] chosen sectionBytes={} ({} blocks)", passIndex + 1, sectionBytes, chosenBlocks);
+        log.debug("[Pass {}] chosen sectionBytes={} ({} blocks)", passIndex + 1, sectionBytes, chosenBlocks);
         return sectionBytes;
     }
 
@@ -132,10 +125,8 @@ public class NewCardShuffler implements Shuffler {
         long sectionCountLong = (fullBlocks + blocksPerSection - 1) / blocksPerSection;
         int sectionCount = (int) sectionCountLong;
 
-        log.info("[Pass {}] fileSize={} bytes, blockSize={} bytes, tailBytes={}", passIndex + 1, fileSize, blockSize, tailBytes);
-        log.info("[Pass {}] fullBlocks={}, blocksPerSection={}, sectionCount={}", passIndex + 1, fullBlocks, blocksPerSection, sectionCount);
-
-        // 섹션 인덱스 리스트 0..sectionCount-1 생성 후 셔플
+        log.debug("[Pass {}] fileSize={} bytes, blockSize={} bytes, tailBytes={}", passIndex + 1, fileSize, blockSize, tailBytes);
+        log.debug("[Pass {}] fullBlocks={}, blocksPerSection={}, sectionCount={}", passIndex + 1, fullBlocks, blocksPerSection, sectionCount);
         List<Integer> sectionOrder = new ArrayList<>(sectionCount);
         for (int i = 0; i < sectionCount; i++) {
             sectionOrder.add(i);
@@ -143,8 +134,6 @@ public class NewCardShuffler implements Shuffler {
         Collections.shuffle(sectionOrder, new Random(RANDOM_SEED + 31L * passIndex));
 
         try (RandomAccessFile raf = new RandomAccessFile(sourceFile, "r"); DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(targetFile, false), 8192 * 8))) {
-
-            // 최대 섹션 크기만큼 버퍼를 한 번만 만들어 재사용
             int maxSectionBytes = blocksPerSection * blockSize;
             byte[] sectionBuffer = new byte[maxSectionBytes];
 
@@ -161,7 +150,7 @@ public class NewCardShuffler implements Shuffler {
 
                 long sectionStartPointer = startBlockIndex * (long) blockSize;
 
-                log.info("[Pass {}] Section {}/{} (index={}, blocks={}, bytes={})", passIndex + 1, orderIdx + 1, sectionCount, sectionIndex, blocksInThisSection, sectionByteLength);
+                log.debug("[Pass {}] Section {}/{} (index={}, blocks={}, bytes={})", passIndex + 1, orderIdx + 1, sectionCount, sectionIndex, blocksInThisSection, sectionByteLength);
 
                 // 이 섹션 영역을 한 번에 읽어오기
                 raf.seek(sectionStartPointer);
@@ -216,9 +205,6 @@ public class NewCardShuffler implements Shuffler {
         }
     }
 
-    /**
-     * 단순 복사
-     */
     private void copyAsIs(File source, File target) {
         try (InputStream in = new BufferedInputStream(new FileInputStream(source)); OutputStream out = new BufferedOutputStream(new FileOutputStream(target, false))) {
             byte[] buf = new byte[8192];

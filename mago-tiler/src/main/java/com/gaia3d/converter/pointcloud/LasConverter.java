@@ -162,6 +162,7 @@ public class LasConverter {
         LasRecordFormat recordFormat = LasRecordFormat.fromFormatNumber(recordFormatValue);
         boolean hasRgbColor = recordFormat != null && recordFormat.hasColor;
 
+        log.info("=== LAS File Header Information ===");
         log.info("Version: {}", version);
         log.info("System ID: {}", systemId);
         log.info("Software ID: {}", softwareId);
@@ -254,9 +255,10 @@ public class LasConverter {
     public void createShuffle() {
         Shuffler shuffler = new NewCardShuffler();
         List<File> bucketFiles = getBucketFiles();
-        for (File bucketFile : bucketFiles) {
+        log.info("[Pre] Starting shuffling of {} bucket files...", bucketFiles.size());
+        bucketFiles.stream().parallel().forEach(bucketFile -> {
             File shuffledFile = new File(bucketFile.getParent(), "shuffled_" + bucketFile.getName());
-            log.info("Shuffling bucket file: {} to {}", bucketFile.getAbsolutePath(), shuffledFile.getAbsolutePath());
+            log.info("[Pre] Shuffling bucket file: {} to {}", bucketFile.getAbsolutePath(), shuffledFile.getAbsolutePath());
             shuffler.shuffle(bucketFile, shuffledFile, POINT_BLOCK_SIZE);
 
             boolean isSameSize = bucketFile.length() == shuffledFile.length();
@@ -276,7 +278,8 @@ public class LasConverter {
                     throw new RuntimeException(e);
                 }
             }
-        }
+        });
+        log.info("[Pre] Completed shuffling of bucket files.");
     }
 
     public List<GaiaLasPoint> readTempFile(File temppFile) {

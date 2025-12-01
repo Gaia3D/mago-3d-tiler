@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class BucketWriter implements Closeable {
-    private static final int COARSE_LEVEL = 13;
+    private static final int COARSE_LEVEL = 14;
     private static final int POINT_BLOCK_SIZE = 32;
     private static final int BUFFER_SIZE = 4 * 1024 * 1024; // 4MB
 

@@ -146,8 +146,12 @@ public class PointCloudModelV2 implements ContentModel {
         String nodeCode = contentInfo.getNodeCode();
         String glbFileName = nodeCode + "." + MAGIC;
         File glbOutputFile = outputRoot.resolve(glbFileName).toFile();
-        this.gltfWriter.writeGlb(pointCloudBuffer, featureTable, batchTable, glbOutputFile);
 
+        if (pointCloudBuffer.getPositions().length == 0) {
+            log.warn("[WARN] Point cloud has no position data. Skip writing glb file for node : {}", nodeCode);
+            return contentInfo;
+        }
+        this.gltfWriter.writeGlb(pointCloudBuffer, featureTable, batchTable, glbOutputFile);
         return contentInfo;
     }
 

@@ -185,6 +185,11 @@ public class TilingPipeline implements Pipeline {
         if (tempFile.exists() && tempFile.isDirectory()) {
             FileUtils.deleteDirectory(tempFile);
         }
+
+        File userTempFile = new File(globalOptions.getTempPath());
+        if (userTempFile.exists() && userTempFile.isDirectory()) {
+            FileUtils.deleteDirectory(userTempFile);
+        }
     }
 
     private void executeThread(ExecutorService executorService, List<Runnable> tasks) throws InterruptedException {
