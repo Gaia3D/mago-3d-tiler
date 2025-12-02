@@ -52,19 +52,19 @@ public class TileInfo {
     @Builder.Default
     private boolean isI3dm = false;
 
+    @Deprecated
     private void init() {
-        GaiaNode rootNode = this.scene.getNodes().get(0);
+        /*GaiaNode rootNode = this.scene.getNodes().get(0);
         this.name = rootNode.getName();
         this.transformMatrix = rootNode.getTransformMatrix();
         this.boundingBox = this.scene.getGaiaBoundingBox();
         this.scenePath = this.scene.getOriginalPath();
-
         this.outputPath = this.outputPath.resolve(this.name).resolve("temp");
         this.tempPath = this.outputPath.resolve("temp");
         File tempFile = this.tempPath.toFile();
         if (!tempFile.exists() && tempFile.mkdir()) {
             log.info("[Pre] Created temp directory in {}", this.tempPath);
-        }
+        }*/
     }
 
     /**

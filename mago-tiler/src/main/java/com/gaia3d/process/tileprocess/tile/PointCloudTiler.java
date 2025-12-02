@@ -21,9 +21,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
-import org.locationtech.proj4j.BasicCoordinateTransform;
-import org.locationtech.proj4j.CoordinateReferenceSystem;
-import org.locationtech.proj4j.ProjCoordinate;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -33,7 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -46,25 +42,12 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
     public Tileset run(List<TileInfo> tileInfos) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         GaiaBoundingBox globalBoundingBox = calcCartographicBoundingBox(tileInfos);
-        //globalBoundingBox = toCube(globalBoundingBox);
         GaiaBoundingBox cubeGlobalBoundingBox = toCube(globalBoundingBox);
         Matrix4d transformMatrix = getTransformMatrixFromCartographic(globalBoundingBox);
         rotateX90(transformMatrix);
 
-        //double geometricError = calcGeometricErrorFromWgs84(cubeGlobalBoundingBox);
-        double geographicError = calcGeometricErrorFromWgs84New(cubeGlobalBoundingBox);
-        log.info("[Tile][Tileset] Geometric Error Calculation - From Cartesian: {}, From Geographic: {}", geographicError, geographicError);
-
-
-        /*double minimumGeometricError = 64.0;
-        double maximumGeometricError = 1000.0;
-        if (geometricError < minimumGeometricError) {
-            geometricError = minimumGeometricError;
-        } else if (geometricError > maximumGeometricError) {
-            geometricError = maximumGeometricError;
-        }*/
-
-        geographicError = geographicError / 2;
+        double geographicError = calcGeometricErrorFromDegreeBoundingBox(cubeGlobalBoundingBox) / 2;
+        log.info("[Tile][Tileset] Global Geographic Geometric Error: {}", geographicError);
         rootGeometricError = geographicError;
 
         Node root = createRoot();
@@ -151,7 +134,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         return minTransformed.distance(maxTransformed);
     }
 
-    private double calcGeometricErrorFromWgs84New(GaiaBoundingBox boundingBox) {
+    private double calcGeometricErrorFromDegreeBoundingBox(GaiaBoundingBox boundingBox) {
         Vector3d minPosition = boundingBox.getMinPosition();
         Vector3d maxPosition = boundingBox.getMaxPosition();
         double[] minLatLon = new double[]{minPosition.x, minPosition.y};
@@ -215,16 +198,25 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
 
         GaiaBoundingBox cubeBoundingBox = pointCloud.getGaiaBoundingBox();
         GaiaBoundingBox fitBoundingBox = new GaiaBoundingBox();
+        long allPointsCount = pointCloud.getLasPoints().size();
         pointCloud.getLasPoints().forEach(point -> {
             Vector3d position = point.getVec3Position();
             fitBoundingBox.addPoint(position);
         });
 
         Vector3d fitVolumeSize = fitBoundingBox.getSize();
+        if (allPointsCount == 0) {
+            log.warn("[Tile][{}/{}][Depth:{}] No points in the point cloud, skipping node creation.", index, maximumIndex, depth);
+            return;
+        } else if (allPointsCount == 1 || (fitVolumeSize.x == 0 && fitVolumeSize.y == 0 && fitVolumeSize.z == 0)) {
+            log.warn("[Tile][{}/{}][Depth:{}] Single point or zero volume size detected, adjusting fit volume size to (1,1,1).", index, maximumIndex, depth);
+            fitVolumeSize = new Vector3d(1, 1, 1);
+        }
+
         Vector3d cubeVolumeSize = cubeBoundingBox.getSize();
         double dimensionRatio = (fitVolumeSize.x * fitVolumeSize.y) / (cubeVolumeSize.x * cubeVolumeSize.y);
         int chunkPointLimit = (int) (pointLimit * dimensionRatio);
-        log.info("[Tile][{}/{}][Depth:{}] Child Bounding Box Dimension Ratio: {} ({} x {} / {} x {}) => Chunk Point Limit: {}", index, maximumIndex, depth, dimensionRatio,
+        log.debug("[Tile][{}/{}][Depth:{}] Child Bounding Box Dimension Ratio: {} ({} x {} / {} x {}) => Chunk Point Limit: {}", index, maximumIndex, depth, dimensionRatio,
                 String.format("%.2f", fitVolumeSize.x), String.format("%.2f", fitVolumeSize.y),
                 String.format("%.2f", cubeVolumeSize.x), String.format("%.2f", cubeVolumeSize.y),
                 chunkPointLimit);
@@ -233,74 +225,22 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         List<GaiaPointCloud> divided = pointCloud.divideChunkSize(chunkPointLimit);
         GaiaPointCloud selfPointCloud = divided.get(0);
         GaiaPointCloud remainPointCloud = divided.get(1);
-        //GaiaBoundingBox childBoundingBox = selfPointCloud.getGaiaBoundingBox();
 
         Matrix4d transformMatrix = getTransformMatrixFromCartographic(fitBoundingBox);
         rotateX90(transformMatrix);
         BoundingVolume boundingVolume = new BoundingVolume(fitBoundingBox, BoundingVolume.BoundingVolumeType.REGION);
 
-        /*int attenuation;
-        if (depth < 2) {
-            attenuation = 16;
-        } else if (depth < 3) {
-            attenuation = 20;
-        } else if (depth < 4) {
-            attenuation = 24;
-        } else {
-            attenuation = 28;
-        }*/
-        //double calcValue = (1000 / rootGeometricError) * attenuation;
+        double geographicError = calcGeometricErrorFromDegreeBoundingBox(cubeBoundingBox) / 2;
+        double pointsFactor = pointLimit < 1000 ? 1 : ((double) 1000 / pointLimit);
+        double calculatedGeometricError = geographicError * pointsFactor;
 
-        //TODO geometric error calculation review
-        double maximumGeometricError = 64.0;
-        //double geometricErrorCalc = calcGeometricErrorFromWgs84(childBoundingBox);
-        double geographicError = calcGeometricErrorFromWgs84New(cubeBoundingBox);
-
-        int targetPointsPerTile = pointLimit;
-        int pointsCount = (int) selfPointCloud.getPointCount();
-
-         //* ( targetPointsPerTile / pointsCount )
-
-
-        double calculatedGeometricError = (geographicError / 2) * ( 1000 / (double) pointsCount);
         if (calculatedGeometricError < 0.01) {
             calculatedGeometricError = 0.01;
         } else if (calculatedGeometricError < 0.1) {
             calculatedGeometricError = 0.1;
-        } else if (calculatedGeometricError < 1.0) {
+        } else if (calculatedGeometricError > 0.5 && geographicError < 1.0) {
             calculatedGeometricError = 1.0;
         }
-
-
-        /*double calculatedGeometricError;
-        if (depth < 2) {
-            calculatedGeometricError= Math.sqrt(geometricErrorCalc);
-        } else {
-            calculatedGeometricError = Math.sqrt(geometricErrorCalc) / (depth - 1);
-        }*/
-
-        /*double calculatedGeometricError = geometricErrorCalc / calcValue;
-        if (calculatedGeometricError > maximumGeometricError) {
-            calculatedGeometricError = maximumGeometricError;
-        } else {
-            calculatedGeometricError = Math.floor(calculatedGeometricError);
-        }*/
-
-        /*if (geometricErrorCalc < maximumGeometricError && calculatedGeometricError < 0.1) {
-            calculatedGeometricError = 0.1;
-        } else if (calculatedGeometricError < 1.0) {
-            calculatedGeometricError = 1.0;
-        }*/
-
-        /*if (depth == 1) {
-            calculatedGeometricError = 24;
-        } else if (depth == 2) {
-            calculatedGeometricError = 6.0;
-        } else if (depth == 3) {
-            calculatedGeometricError = 2.0;
-        } else {
-            calculatedGeometricError = 1.0;
-        }*/
 
         Node childNode = new Node();
         childNode.setParent(parentNode);
@@ -338,7 +278,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         childNode.setContent(content);
 
         parentNode.getChildren().add(childNode);
-        log.info("[Tile][{}/{}][ContentNode][{}]", index, maximumIndex, childNode.getNodeCode());
+        log.info("[Tile][{}/{}][ContentNode][{}] Octree Tiling", index, maximumIndex, childNode.getNodeCode());
 
         if (remainPointCloud.getPointCount() > 0) {
             List<GaiaPointCloud> distributes = remainPointCloud.distribute();
@@ -346,10 +286,10 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
                     .mapToLong(GaiaPointCloud::getPointCount)
                     .sum();
 
-            log.info("- [Tile][{}/{}][Distribute][Depth:{}][Distributes:{}]", index, maximumIndex, depth, distributes.size());
-            log.info("- [Tile][{}/{}][Distribute][Depth:{}][OriginalPoints:{}]", index, maximumIndex, depth, vertexLength);
-            log.info("- [Tile][{}/{}][Distribute][Depth:{}][selfPoints:{}]", index, maximumIndex, depth, selfPointCloud.getPointCount());
-            log.info("- [Tile][{}/{}][Distribute][Depth:{}][RemainPoints:{}]", index, maximumIndex, depth, remainPointCloud.getPointCount());
+            log.debug("[Tile][{}/{}][Distribute][Depth:{}][Distributes:{}]", index, maximumIndex, depth, distributes.size());
+            log.debug("[Tile][{}/{}][Distribute][Depth:{}][OriginalPoints:{}]", index, maximumIndex, depth, vertexLength);
+            log.debug("[Tile][{}/{}][Distribute][Depth:{}][selfPoints:{}]", index, maximumIndex, depth, selfPointCloud.getPointCount());
+            log.debug("[Tile][{}/{}][Distribute][Depth:{}][RemainPoints:{}]", index, maximumIndex, depth, remainPointCloud.getPointCount());
 
             if (vertexLength != selfPointCloud.getPointCount() + distributeCount) {
                 log.warn("- [Tile][{}/{}][Distribute][Depth:{}] Point count mismatch! {} != {} + {}", index, maximumIndex, depth, vertexLength, selfPointCloud.getPointCount(), remainPointCloud.getPointCount());
@@ -400,15 +340,9 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         double xOffset = maxDelta - deltaX;
         double yOffset = maxDelta - deltaY;
         double zOffset = maxDelta - deltaZ;
-        double halfXOffset = xOffset * 0.5;
-        double halfYOffset = yOffset * 0.5;
 
         Vector3d newMin = new Vector3d(minPosition.x, minPosition.y, minPosition.z);
         Vector3d newMax = new Vector3d(maxPosition.x + xOffset, maxPosition.y + yOffset, maxPosition.z + zOffset);
-
-        /*Vector3d newMin = new Vector3d(center.x - halfSize, center.y - halfSize, center.z - halfSize);
-        Vector3d newMax = new Vector3d(center.x + halfSize, center.y + halfSize, center.z + halfSize);*/
-
 
         box = new GaiaBoundingBox();
         // world coordinate -> degree
@@ -426,16 +360,15 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
 
     private void minimizeAllPointCloud(int index, int maximumIndex, List<GaiaPointCloud> allPointClouds) {
         int size = allPointClouds.size();
-        AtomicInteger atomicInteger = new AtomicInteger(1);
-        printJvmMemory();
 
+        //printJvmMemory();
         long totalPoints = allPointClouds.stream()
                 .mapToLong(GaiaPointCloud::getPointCount)
                 .sum();
         log.info("[Tile][{}/{}][Minimize][TotalPointClouds:{}][TotalPoints:{}]", index, maximumIndex, size, totalPoints);
-
+        AtomicInteger atomicInteger = new AtomicInteger(1);
         allPointClouds.forEach(pointCloud -> {
-            File tempPath = new File(GlobalOptions.getInstance().getOutputPath(), "temp");
+            File tempPath = new File(GlobalOptions.getInstance().getTempPath());
             File tempFile = new File(tempPath, UUID.randomUUID().toString());
             pointCloud.minimize(tempFile);
             log.info("[Tile][{}/{}][Minimize][{}/{}] Write temp file : {}", index, maximumIndex, atomicInteger.getAndIncrement(), size, tempFile.getName());
@@ -448,7 +381,6 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         long totalMem = Runtime.getRuntime().totalMemory() / 1024 / 1024;
         long freeMem = Runtime.getRuntime().freeMemory() / 1024 / 1024;
         long usedMem = totalMem - freeMem;
-        // 퍼센트
         double pct = usedMem * 100.0 / maxMem;
         log.info("[Tile] Java Heap Size: {} / MaxMem: {}MB / TotalMem: {}MB / FreeMem: {}MB / UsedMem: {}MB / Pct: {}%", javaHeapSize, maxMem, totalMem, freeMem, usedMem, pct);
     }

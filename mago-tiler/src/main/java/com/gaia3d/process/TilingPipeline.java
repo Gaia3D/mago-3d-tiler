@@ -168,7 +168,7 @@ public class TilingPipeline implements Pipeline {
 
     private void createTemp(FileLoader fileLoader) {
         /* create temp directory */
-        File tempFile = new File(globalOptions.getOutputPath(), "temp");
+        File tempFile = new File(globalOptions.getTempPath());
         if (!tempFile.exists() && tempFile.mkdirs()) {
             log.info("[Pre] Created temp directory in {}", tempFile.getAbsolutePath());
         }
@@ -181,10 +181,10 @@ public class TilingPipeline implements Pipeline {
         }
 
         /* delete temp directory */
-        File tempFile = new File(globalOptions.getOutputPath(), "temp");
+        /*File tempFile = new File(globalOptions.getOutputPath(), "temp");
         if (tempFile.exists() && tempFile.isDirectory()) {
             FileUtils.deleteDirectory(tempFile);
-        }
+        }*/
 
         File userTempFile = new File(globalOptions.getTempPath());
         if (userTempFile.exists() && userTempFile.isDirectory()) {

@@ -3,16 +3,32 @@ package com.gaia3d.converter.pointcloud.shuffler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Random;
 
 @Slf4j
-public class NewCardShuffler implements Shuffler {
+public class OptimizedCardShuffler implements Shuffler {
     private static final int RANDOM_SEED = 8291;
-    private static final int MIN_CHUNK_BYTES = 256 * 1024 * 1024; // 256MB
-    private static final int MAX_CHUNK_BYTES = 1024 * 1024 * 1024; // 1024MB
+    private static final int MIN_CHUNK_BYTES = 512 * 1024 * 1024;
+    private static int[] localOrder = null;
+
+    public synchronized int[] getLocalOrder(int size, Random random) {
+        if (localOrder == null || localOrder.length < size) {
+            localOrder = new int[size];
+        } else {
+            return localOrder;
+        }
+        for (int i = 0; i < size; i++) {
+            localOrder[i] = i;
+        }
+        // Shuffle only the required portion
+        for (int i = size - 1; i > 0; i--) {
+            int j = random.nextInt(i + 1);
+            int tmp = localOrder[i];
+            localOrder[i] = localOrder[j];
+            localOrder[j] = tmp;
+        }
+        return localOrder;
+    }
 
     @Override
     public void shuffle(File sourceFile, File targetFile, int blockSize) {
@@ -34,7 +50,7 @@ public class NewCardShuffler implements Shuffler {
 
         // Single pass shuffle
         if (passes == 1) {
-            int sectionBytes = chooseSectionBytes(blockSize, MIN_CHUNK_BYTES, MAX_CHUNK_BYTES, 0);
+            int sectionBytes = chooseSectionBytes(blockSize, MIN_CHUNK_BYTES, 0);
             shuffleOnce(sourceFile, targetFile, blockSize, sectionBytes, 0);
             return;
         }
@@ -69,7 +85,7 @@ public class NewCardShuffler implements Shuffler {
                     currentOut = (pass % 2 == 1) ? tmp2 : tmp1;
                 }
 
-                int sectionBytes = chooseSectionBytes(blockSize, MIN_CHUNK_BYTES, MAX_CHUNK_BYTES, pass);
+                int sectionBytes = chooseSectionBytes(blockSize, MIN_CHUNK_BYTES, pass);
                 log.debug("=== Global section shuffle pass {}/{} : {} -> {} (sectionBytes={}) ===", pass + 1, passes, currentIn.getAbsolutePath(), currentOut.getAbsolutePath(), sectionBytes);
                 shuffleOnce(currentIn, currentOut, blockSize, sectionBytes, pass);
                 currentIn = currentOut;
@@ -88,14 +104,8 @@ public class NewCardShuffler implements Shuffler {
         }
     }
 
-    private int chooseSectionBytes(int blockSize, int minSectionBytes, int maxSectionBytes, int passIndex) {
-        int minBlocks = Math.max(1, minSectionBytes / blockSize);
-        int maxBlocks = Math.max(minBlocks, maxSectionBytes / blockSize);
-
-        Random random = new Random(RANDOM_SEED + 97L * passIndex);
-        int rangeBlocks = maxBlocks - minBlocks + 1;
-        int chosenBlocks = minBlocks + random.nextInt(rangeBlocks);
-
+    private int chooseSectionBytes(int blockSize, int sectionBytesLimit, int passIndex) {
+        int chosenBlocks = Math.max(1, sectionBytesLimit / blockSize);
         int sectionBytes = chosenBlocks * blockSize;
         log.debug("[Pass {}] chosen sectionBytes={} ({} blocks)", passIndex + 1, sectionBytes, chosenBlocks);
         return sectionBytes;
@@ -135,7 +145,6 @@ public class NewCardShuffler implements Shuffler {
         }
         shuffleArray(sectionOrder, new Random(RANDOM_SEED));
 
-        int[] localOrder = null;
         try (RandomAccessFile raf = new RandomAccessFile(sourceFile, "r"); DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(targetFile, false), 8192 * 8))) {
             int maxSectionBytes = blocksPerSection * blockSize;
             byte[] sectionBuffer = new byte[maxSectionBytes];
@@ -159,19 +168,12 @@ public class NewCardShuffler implements Shuffler {
                 raf.seek(sectionStartPointer);
                 readFully(raf, sectionBuffer, 0, sectionByteLength);
 
-                if (localOrder == null || localOrder.length != blocksInThisSection) {
-                    localOrder = new int[blocksInThisSection];
-                    for (int i = 0; i < blocksInThisSection; i++) {
-                        localOrder[i] = i;
-                    }
-                    shuffleArray(localOrder, new Random(RANDOM_SEED));
-                }
-
                 /*int[] localOrder = new int[blocksInThisSection];
                 for (int i = 0; i < blocksInThisSection; i++) {
                     localOrder[i] = i;
                 }
                 shuffleArray(localOrder, new Random(RANDOM_SEED + 131L * passIndex + sectionIndex));*/
+                int[] localOrder = getLocalOrder(blocksInThisSection, new Random(RANDOM_SEED + 131L * passIndex + sectionIndex));
 
                 for (int i = 0; i < blocksInThisSection; i++) {
                     int blk = localOrder[i];

@@ -59,7 +59,7 @@ public class GlobalOptions {
 
     private boolean isSourcePrecision = false;
     private int maximumPointPerTile = 0; // Maximum number of points per a tile
-    private int pointRatio = 0; // Percentage of points from original data
+    private float pointRatio = 0; // Percentage of points from original data
     private boolean force4ByteRGB = false; // Force 4Byte RGB for pointscloud tile
 
     // Use quantization via KHR_mesh_quantization
@@ -313,7 +313,7 @@ public class GlobalOptions {
 
         /* Point Cloud Options */
         instance.setMaximumPointPerTile(command.hasOption(ProcessOptions.MAX_POINTS.getLongName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.MAX_POINTS.getLongName())) : GlobalConstants.DEFAULT_POINT_PER_TILE);
-        instance.setPointRatio(command.hasOption(ProcessOptions.POINT_RATIO.getLongName()) ? Integer.parseInt(command.getOptionValue(ProcessOptions.POINT_RATIO.getLongName())) : GlobalConstants.DEFAULT_POINT_RATIO);
+        instance.setPointRatio(command.hasOption(ProcessOptions.POINT_RATIO.getLongName()) ? Float.parseFloat(command.getOptionValue(ProcessOptions.POINT_RATIO.getLongName())) : GlobalConstants.DEFAULT_POINT_RATIO);
         instance.setForce4ByteRGB(command.hasOption(ProcessOptions.POINT_FORCE_4BYTE_RGB.getLongName()));
 
         /* 2D Data Column Options */
@@ -372,15 +372,16 @@ public class GlobalOptions {
 
         if (command.hasOption(ProcessOptions.MULTI_THREAD_COUNT.getLongName())) {
             instance.setMultiThreadCount(Byte.parseByte(command.getOptionValue(ProcessOptions.MULTI_THREAD_COUNT.getLongName())));
+            System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", String.valueOf(instance.getMultiThreadCount()));
         } else {
             int processorCount = Runtime.getRuntime().availableProcessors();
             int threadCount = processorCount > 1 ? processorCount / 2 : 1;
-
-            // Limit to maximum 4 threads for I/O overload prevention
-            if (threadCount > 4) {
-                threadCount = 4;
+            // Limit to maximum 2 threads for I/O overload prevention
+            if (threadCount > 2) {
+                threadCount = 2;
             }
             instance.setMultiThreadCount((byte) threadCount);
+            System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", String.valueOf(instance.getMultiThreadCount()));
         }
 
         instance.printDebugOptions();
@@ -424,9 +425,9 @@ public class GlobalOptions {
         log.info("3DTiles Version: {}", tilesVersion);
         log.info("Input Path: {}", inputPath);
         log.info("Output Path: {}", outputPath);
+        log.info("Temp path: {}", tempPath);
         log.info("Input Format: {}", inputFormat);
         log.info("Output Format: {}", outputFormat);
-        log.info("Temp path: {}", tempPath);
         log.info("Terrain File Path: {}", terrainPath);
         log.info("Instance File Path: {}", instancePath);
         log.info("Log File Path: {}", logPath);

@@ -19,7 +19,6 @@ import java.util.List;
 @Setter
 @Builder
 public class GaiaPointCloud {
-    private static final int BYTE_SIZE = 32; // Size of GaiaLasPoint in bytes
     private String code = "A";
     private Path originalPath;
     private GaiaBoundingBox gaiaBoundingBox = new GaiaBoundingBox();

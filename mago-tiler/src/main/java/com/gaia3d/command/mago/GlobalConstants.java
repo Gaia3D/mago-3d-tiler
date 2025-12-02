@@ -21,7 +21,7 @@ public class GlobalConstants {
     public static final int DEFAULT_MAX_I3DM_FEATURE_COUNT = 1024;
     public static final int DEFAULT_MIN_I3DM_FEATURE_COUNT = 128;
     public static final int DEFAULT_POINT_PER_TILE = 200000;
-    public static final int DEFAULT_POINT_RATIO = 100;
+    public static final float DEFAULT_POINT_RATIO = 100;
     public static final float POINTSCLOUD_HORIZONTAL_GRID = 500.0f; // in meters
     public static final float POINTSCLOUD_VERTICAL_GRID = 500.0f; // in meters
     public static final float POINTSCLOUD_HORIZONTAL_ARC = (1.0f / 60.0f / 60.0f) * 20.0f;

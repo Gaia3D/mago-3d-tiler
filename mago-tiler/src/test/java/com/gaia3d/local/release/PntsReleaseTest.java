@@ -15,7 +15,8 @@ class PntsReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "32652",
-                "-tilesVersion", "1.0",
+                "--temp", "C:\\temp\\",
+                /*"-tilesVersion", "1.0",*/
         };
         MagoTestConfig.execute(args);
     }
@@ -73,7 +74,21 @@ class PntsReleaseTest {
         String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-c", "5186",
+                "-c", "5187",
+                "--temp", "C:\\temp\\",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void pointcloud02Big() {
+        String path = "P02-busan-big-jingu-las";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-c", "5187",
+                /*"--pointRatio", "10",*/
+                "--temp", "C:\\temp\\",
         };
         MagoTestConfig.execute(args);
     }
@@ -144,26 +159,13 @@ class PntsReleaseTest {
     }
 
     @Test
-    void pointcloud09() {
-        String path = "BP00-sangji-university";
-        String[] args = new String[]{
-                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-crs", "5186",
-                "--temp", "C:\\temp\\",
-                "--force4ByteRGB"
-        };
-        MagoTestConfig.execute(args);
-    }
-
-    @Test
     void pointcloud10() {
         String path = "P10-jeonju";
         String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-crs", "5186",
-                "--temp", "C:\\temp\\jeonju\\",
+                "--temp", "C:\\temp\\",
         };
         MagoTestConfig.execute(args);
     }
@@ -175,7 +177,21 @@ class PntsReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-crs", "5174",
-                "--temp", "C:\\temp\\gwangju\\",
+                "--temp", "C:\\temp\\",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void pointcloud12() {
+        String path = "P12-sangji-university";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-crs", "5186",
+                "--temp", "C:\\temp\\",
+                "--pointRatio", "10",
+                "--force4ByteRGB"
         };
         MagoTestConfig.execute(args);
     }

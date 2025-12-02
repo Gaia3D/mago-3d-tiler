@@ -23,8 +23,7 @@ public class DefaultSceneFactory {
     private static final String DEFAULT_MATERIAL_NAME = "default-material";
 
     public GaiaScene createScene() {
-        GaiaScene gaiaScene = createScene(new File("temp"));
-        return gaiaScene;
+        return createScene(new File("temp"));
     }
 
     public GaiaScene createScene(File file) {

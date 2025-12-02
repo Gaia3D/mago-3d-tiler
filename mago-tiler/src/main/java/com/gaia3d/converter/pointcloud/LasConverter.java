@@ -14,13 +14,15 @@ import org.locationtech.proj4j.ProjCoordinate;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 public class LasConverter {
-    // positions(24) + rgb(4) + intensity(2) + classification(2) = 32 bytes
-    private final int POINT_BLOCK_SIZE = 32;
+    /* positions(24) + rgb(4) + intensity(2) + classification(2) = 32 bytes */
+    public static final int COARSE_LEVEL = 14;
+    public static final int POINT_BLOCK_SIZE = 32;
     private final LasConverterOptions options;
     private final BucketWriter bucketWriter;
     private final BucketReader bucketReader;
@@ -63,41 +65,20 @@ public class LasConverter {
         ProjCoordinate sourceCoord = new ProjCoordinate();
         ProjCoordinate targetCoord = new ProjCoordinate();
 
-        /*long pointCount = 0;
-        log.info("Starting point conversion...");
-        GaiaBoundingBox degreeBoundingBox = new GaiaBoundingBox();
-        GaiaBoundingBox ecefBoundingBox = new GaiaBoundingBox();
-
-        for (LASPoint point : pointIterable) {
-            double x = point.getX() * xScaleFactor + xOffset;
-            double y = point.getY() * yScaleFactor + yOffset;
-            double z = point.getZ() * zScaleFactor + zOffset;
-            if (canTransform) {
-                sourceCoord.x = x;
-                sourceCoord.y = y;
-                sourceCoord.z = z;
-                transformer.transform(sourceCoord, targetCoord);
-                x = targetCoord.x;
-                y = targetCoord.y;
-                z = targetCoord.z;
-            }
-
-            // convert WGS84 to ECEF
-            double[] ecef = GlobeUtils.geographicToCartesianWgs84(x, y, z);
-
-            degreeBoundingBox.addPoint(x, y, z);
-            ecefBoundingBox.addPoint(ecef[0], ecef[1], ecef[2]);
-            pointCount++;
+        float percentage = options.getPointPercentage();
+        if (percentage < 1) {
+            percentage = 1;
+        } else if (percentage > 100) {
+            percentage = 100;
         }
-        float spacing = (float) Math.sqrt(((ecefBoundingBox.getMaxX() - ecefBoundingBox.getMinX()) * (ecefBoundingBox.getMaxY() - ecefBoundingBox.getMinY())) / pointCount);
-        spacing = Math.round(spacing * 1000.0f) / 1000.0f;
-        log.info("Estimated point spacing: {} meters", spacing);
-        log.info("Point conversion completed. Total points: {}", pointCount);
-        log.info("Bounding Box - MinX: {}, MinY: {}, MinZ: {}, MaxX: {}, MaxY: {}, MaxZ: {}",
-                ecefBoundingBox.getMinX(), ecefBoundingBox.getMinY(), ecefBoundingBox.getMinZ(),
-                ecefBoundingBox.getMaxX(), ecefBoundingBox.getMaxY(), ecefBoundingBox.getMaxZ());*/
+        int volumeFilter = (int) Math.ceil(100.0 / percentage);
 
+        long index = 0;
         for (LASPoint point : pointIterable) {
+            if (index % volumeFilter != 0) {
+                index++;
+                continue;
+            }
             double x = point.getX() * xScaleFactor + xOffset;
             double y = point.getY() * yScaleFactor + yOffset;
             double z = point.getZ() * zScaleFactor + zOffset;
@@ -110,10 +91,6 @@ public class LasConverter {
                 x = targetCoord.x;
                 y = targetCoord.y;
                 z = targetCoord.z;
-                /*double[] ecef = GlobeUtils.geographicToCartesianWgs84(targetCoord.x, targetCoord.y, targetCoord.z);
-                x = ecef[0];
-                y = ecef[1];
-                z = ecef[2];*/
             }
 
             byte[] rgb = getRgbColor(point, hasRgbColor, isForce4ByteRGB);
@@ -130,6 +107,7 @@ public class LasConverter {
                 log.error("[ERROR] Failed to write point to bucket.", e);
                 throw new RuntimeException(e);
             }
+            index++;
         }
     }
 
@@ -162,15 +140,15 @@ public class LasConverter {
         LasRecordFormat recordFormat = LasRecordFormat.fromFormatNumber(recordFormatValue);
         boolean hasRgbColor = recordFormat != null && recordFormat.hasColor;
 
-        log.info("=== LAS File Header Information ===");
-        log.info("Version: {}", version);
-        log.info("System ID: {}", systemId);
-        log.info("Software ID: {}", softwareId);
-        log.info("File Creation Date: {}", fileCreationDate);
-        log.info("Header Size: {}", headerSize);
-        log.info("Number of Point Records: {}", pointRecords);
-        log.info("Legacy Number of Point Records: {}", legacyPointRecords);
-        log.info("Total Number of Point Records: {}", totalPointsSize);
+        log.debug("=== LAS File Header Information ===");
+        log.debug("Version: {}", version);
+        log.debug("System ID: {}", systemId);
+        log.debug("Software ID: {}", softwareId);
+        log.debug("File Creation Date: {}", fileCreationDate);
+        log.debug("Header Size: {}", headerSize);
+        log.debug("Number of Point Records: {}", pointRecords);
+        log.debug("Legacy Number of Point Records: {}", legacyPointRecords);
+        log.debug("Total Number of Point Records: {}", totalPointsSize);
     }
 
     private CoordinateReferenceSystem getProjCRS(LASHeader header) {
@@ -201,10 +179,9 @@ public class LasConverter {
             } catch (Exception e) {
                 log.debug("[ERROR] Failed to read LAS header.", e);
             }
+            log.info(" - Coordinate Reference System : {}", atomicCrs.get());
         }
-        CoordinateReferenceSystem crs = atomicCrs.get();
-        log.info(" - Coordinate Reference System : {}", crs);
-        return crs;
+        return atomicCrs.get();
     }
 
     public void close() {
@@ -229,11 +206,10 @@ public class LasConverter {
                 GaiaBoundingBox boundingBox = new GaiaBoundingBox();
                 List<GaiaLasPoint> lasPoints = bucketReader.readFile(bucketFile.toPath());
                 // Convert geographic to ECEF
-                lasPoints = lasPoints.stream().parallel().map(point -> {
+                lasPoints = lasPoints.stream().parallel().peek(point -> {
                     double[] pos = point.getPosition();
                     double[] ecef = GlobeUtils.geographicToCartesianWgs84(pos[0], pos[1], pos[2]);
                     point.setPosition(ecef);
-                    return point;
                 }).toList();
                 for (GaiaLasPoint point : lasPoints) {
                     double[] pos = point.getPosition();
@@ -256,9 +232,12 @@ public class LasConverter {
         Shuffler shuffler = new NewCardShuffler();
         List<File> bucketFiles = getBucketFiles();
         log.info("[Pre] Starting shuffling of {} bucket files...", bucketFiles.size());
-        bucketFiles.stream().parallel().forEach(bucketFile -> {
+        // bucketFiles.stream().parallel().forEach(bucketFile -> {
+        int fileCount = bucketFiles.size();
+        int index = 0;
+        for (File bucketFile : bucketFiles) {
             File shuffledFile = new File(bucketFile.getParent(), "shuffled_" + bucketFile.getName());
-            log.info("[Pre] Shuffling bucket file: {} to {}", bucketFile.getAbsolutePath(), shuffledFile.getAbsolutePath());
+            log.info("[Pre][Shuffle][{}/{}] Shuffling bucket file: {}", ++index, fileCount, bucketFile.getName());
             shuffler.shuffle(bucketFile, shuffledFile, POINT_BLOCK_SIZE);
 
             boolean isSameSize = bucketFile.length() == shuffledFile.length();
@@ -266,7 +245,6 @@ public class LasConverter {
                 log.warn("Shuffled file size does not match original! Original: {}, Shuffled: {}", bucketFile.length(), shuffledFile.length());
                 throw new RuntimeException("Shuffled file size mismatch.");
             } else {
-                log.info("Shuffling completed successfully for file: {}", bucketFile.getName());
                 try {
                     FileUtils.delete(bucketFile);
                 } catch (IOException e) {
@@ -278,7 +256,8 @@ public class LasConverter {
                     throw new RuntimeException(e);
                 }
             }
-        });
+            log.info("[Pre][Shuffle][{}/{}] Completed shuffling bucket file: {}", index, fileCount, bucketFile.getName());
+        }
         log.info("[Pre] Completed shuffling of bucket files.");
     }
 
@@ -289,6 +268,12 @@ public class LasConverter {
             log.error("[ERROR] Failed to read shuffled file: {}", temppFile.getAbsolutePath(), e);
             throw new RuntimeException(e);
         }
+    }
+
+    private float calculateSpacing(GaiaBoundingBox bbox, long pointCount) {
+        float spacing = (float) Math.sqrt(((bbox.getMaxX() - bbox.getMinX()) * (bbox.getMaxY() - bbox.getMinY())) / pointCount);
+        spacing = Math.round(spacing * 1000.0f) / 1000.0f;
+        return spacing;
     }
 
     /**

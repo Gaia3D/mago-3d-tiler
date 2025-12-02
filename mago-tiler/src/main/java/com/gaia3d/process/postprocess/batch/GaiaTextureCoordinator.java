@@ -476,16 +476,15 @@ public class GaiaTextureCoordinator {
     }
 
     private void writeBatchedImage(String imageName, String imageExtension) {
-        String outputPathString = globalOptions.getOutputPath();
-        File file = new File(outputPathString, "temp" + File.separator + "altras");
-        if (!file.exists()) {
-            if (!file.mkdirs()) {
+        File tempPath = new File(globalOptions.getTempPath(), "altras");
+        if (!tempPath.exists()) {
+            if (!tempPath.mkdirs()) {
                 log.error("[ERROR] Failed to create directory");
             }
         }
 
-        Path outputPath = file.toPath();
-        Path output = file.toPath().resolve(imageName + "." + imageExtension);
+        Path outputPath = tempPath.toPath();
+        Path output = tempPath.toPath().resolve(imageName + "." + imageExtension);
         if (!outputPath.toFile().exists()) {
             if (!outputPath.toFile().mkdir()) {
                 log.error("[ERROR] Failed to create directory");

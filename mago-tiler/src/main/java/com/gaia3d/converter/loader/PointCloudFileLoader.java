@@ -25,10 +25,12 @@ public class PointCloudFileLoader implements FileLoader {
     private final LasConverter converter;
 
     public List<File> loadTemp(File tempPath, List<File> files) {
+        int fileCount = files.size();
+        int index = 0;
         for (File file : files) {
-            log.info("[Pre] Loading point cloud file: {}", file.getAbsolutePath());
+            log.info("[Load][{}/{}] Loading point cloud file: {}", ++index, fileCount, file.getAbsolutePath());
             converter.convert(file);
-            log.info("[Pre] Finished loading point cloud file: {}", file.getAbsolutePath());
+            log.info("[Load][{}/{}] Finished loading point cloud file: {}", index, fileCount, file.getAbsolutePath());
         }
         converter.close();
 

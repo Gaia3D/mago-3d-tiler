@@ -52,7 +52,7 @@ public class Mago3DTiler {
                 processFlow = new BatchedModelProcessFlow();
             }
         } else if (FormatType.PNTS == outputFormat) {
-            processFlow = new AdvancedPointCloudProcessFlow();
+            processFlow = new PointCloudProcessFlow();
         } else {
             throw new IllegalArgumentException("Unsupported output format: " + outputFormat);
         }

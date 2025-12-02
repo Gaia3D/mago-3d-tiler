@@ -3,11 +3,14 @@ package com.gaia3d.process.preprocess;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
+import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector3d;
+
+import java.nio.file.Path;
 
 @Slf4j
 @AllArgsConstructor
@@ -42,13 +45,11 @@ public class TileInfoGenerator implements PreProcess {
             tileInfo.setTileTransformInfo(tileTransformInfo);
         }
 
+        GlobalOptions globalOptions = GlobalOptions.getInstance();
         tileInfo.setBoundingBox(boundingBox);
-        tileInfo.setScenePath(tileInfo.getScene()
-                .getOriginalPath());
-        tileInfo.setTempPath(tileInfo.getOutputPath()
-                .resolve("temp"));
-        tileInfo.setTriangleCount(tileInfo.getScene()
-                .calcTriangleCount());
+        tileInfo.setScenePath(tileInfo.getScene().getOriginalPath());
+        tileInfo.setTempPath(Path.of(globalOptions.getTempPath()));
+        tileInfo.setTriangleCount(tileInfo.getScene().calcTriangleCount());
         return tileInfo;
     }
 }

@@ -11,9 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class BucketWriter implements Closeable {
-    private static final int COARSE_LEVEL = 14;
-    private static final int POINT_BLOCK_SIZE = 32;
-    private static final int BUFFER_SIZE = 4 * 1024 * 1024; // 4MB
+    private static final int BUFFER_SIZE = 16 * 1024 * 1024;
 
     private static class BucketBuffer {
         byte[] buf = new byte[BUFFER_SIZE];
@@ -23,11 +21,10 @@ public class BucketWriter implements Closeable {
     private final GeographicTilingScheme scheme = new GeographicTilingScheme();
     private final Map<Integer, BucketBuffer> buffers = new HashMap<>();
 
-    // 버킷별로 파일 핸들을 관리하는 풀 (LRU로 close/open 관리)
     private final FileHandlePool fileHandlePool;
 
     public BucketWriter(Path tempRootDir) throws IOException {
-        this.fileHandlePool = new FileHandlePool(tempRootDir, 128); // 동시에 128개까지만
+        this.fileHandlePool = new FileHandlePool(tempRootDir, 128);
     }
 
     public void addPoint(GaiaLasPoint point) throws IOException {
@@ -41,30 +38,27 @@ public class BucketWriter implements Closeable {
         byte[] rgb = point.getRgb();
         byte[] intensity = BigEndianByteUtils.fromChar(point.getIntensity());
         byte[] classification = BigEndianByteUtils.fromShort(point.getClassification());
-        byte[] totalByte = new byte[POINT_BLOCK_SIZE];
+        byte[] totalByte = new byte[LasConverter.POINT_BLOCK_SIZE];
         System.arraycopy(pointBytes, 0, totalByte, 0, pointBytes.length);
         System.arraycopy(rgb, 0, totalByte, pointBytes.length, rgb.length);
         System.arraycopy(intensity, 0, totalByte, pointBytes.length + rgb.length, intensity.length);
         System.arraycopy(classification, 0, totalByte, pointBytes.length + rgb.length + intensity.length, classification.length);
 
-        // 레코드 쓰기 (예: lon, lat, height만)
-        if (buffer.offset + POINT_BLOCK_SIZE > buffer.buf.length) {
+        if (buffer.offset + LasConverter.POINT_BLOCK_SIZE > buffer.buf.length) {
             flushBuffer(bucketId, buffer);
         }
-
         writeBytes(buffer, totalByte);
     }
 
     private int computeBucketId(double lon, double lat) {
-        TileCoordinate tile = scheme.positionToTile(COARSE_LEVEL, lat, lon);
-        // 간단히 x,y를 16bit씩 packing
+        TileCoordinate tile = scheme.positionToTile(LasConverter.COARSE_LEVEL, lat, lon);
         return (tile.x & 0xFFFF) | ((tile.y & 0xFFFF) << 16);
     }
 
     private TileCoordinate bucketIdToTileCoordinate(int bucketId) {
         int x = bucketId & 0xFFFF;
         int y = (bucketId >> 16) & 0xFFFF;
-        return new TileCoordinate(COARSE_LEVEL, x, y);
+        return new TileCoordinate(LasConverter.COARSE_LEVEL, x, y);
     }
 
     private void flushBuffer(int bucketId, BucketBuffer buffer) throws IOException {
@@ -82,7 +76,6 @@ public class BucketWriter implements Closeable {
 
     @Override
     public void close() throws IOException {
-        // 모든 버퍼 flush
         for (Map.Entry<Integer, BucketBuffer> entry : buffers.entrySet()) {
             flushBuffer(entry.getKey(), entry.getValue());
         }

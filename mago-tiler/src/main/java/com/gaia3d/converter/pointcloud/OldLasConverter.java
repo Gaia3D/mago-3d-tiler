@@ -149,7 +149,7 @@ public class OldLasConverter {
             log.debug("[ERROR] Failed to read LAS header.", e);
         }
 
-        int percentage = globalOptions.getPointRatio();
+        float percentage = globalOptions.getPointRatio();
         if (percentage < 1) {
             percentage = 1;
         } else if (percentage > 100) {

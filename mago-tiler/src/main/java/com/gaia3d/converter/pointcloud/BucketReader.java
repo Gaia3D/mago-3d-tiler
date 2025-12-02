@@ -13,8 +13,6 @@ import java.util.Map;
 
 @Slf4j
 public class BucketReader {
-    private static final int COARSE_LEVEL = 12;
-    private static final int POINT_BLOCK_SIZE = 32;
     private static final int BUFFER_SIZE = 4 * 1024 * 1024; // 4MB
 
     private final GeographicTilingScheme scheme = new GeographicTilingScheme();
@@ -24,11 +22,11 @@ public class BucketReader {
 
         File file = filePath.toFile();
         long fileSize = file.length();
-        long totalPoints = fileSize / POINT_BLOCK_SIZE;
+        long totalPoints = fileSize / LasConverter.POINT_BLOCK_SIZE;
 
         try (DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(file), BUFFER_SIZE))) {
             for (long i = 0; i < totalPoints; i++) {
-                byte[] pointBytes = new byte[POINT_BLOCK_SIZE];
+                byte[] pointBytes = new byte[LasConverter.POINT_BLOCK_SIZE];
                 dis.readFully(pointBytes);
                 GaiaLasPoint point = parsePoint(pointBytes);
                 points.add(point);
@@ -38,26 +36,6 @@ public class BucketReader {
             throw e;
         }
 
-        // Implement reading logic here
-        /*byte[] buffer = new byte[BUFFER_SIZE];
-        try (FileInputStream fis = new FileInputStream(filePath.toFile())) {
-            int bytesRead;
-            while ((bytesRead = fis.read(buffer)) != -1) {
-                for (int offset = 0; offset < bytesRead; offset += POINT_BLOCK_SIZE) {
-                    if (offset + POINT_BLOCK_SIZE <= bytesRead) {
-                        byte[] pointBytes = new byte[POINT_BLOCK_SIZE];
-                        System.arraycopy(buffer, offset, pointBytes, 0, POINT_BLOCK_SIZE);
-
-                        // Parse the pointBytes to create a GaiaLasPoint
-                        GaiaLasPoint point = parsePoint(pointBytes);
-                        points.add(point);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            log.error("[ERROR] Failed to read bucket file: {}", filePath, e);
-            throw e;
-        }*/
         return points;
     }
 
