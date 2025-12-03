@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @Slf4j
 public class LasConverter {
     /* positions(24) + rgb(4) + intensity(2) + classification(2) = 32 bytes */
-    public static final int COARSE_LEVEL = 14;
+    public static final int COARSE_LEVEL = 12;
     public static final int POINT_BLOCK_SIZE = 32;
     private final LasConverterOptions options;
     private final BucketWriter bucketWriter;
@@ -237,7 +237,7 @@ public class LasConverter {
         int index = 0;
         for (File bucketFile : bucketFiles) {
             File shuffledFile = new File(bucketFile.getParent(), "shuffled_" + bucketFile.getName());
-            log.info("[Pre][Shuffle][{}/{}] Shuffling bucket file: {}", ++index, fileCount, bucketFile.getName());
+            log.info("[Pre][Shuffle][{}/{}] Shuffling bucket file: {}", ++index, fileCount, bucketFile.getAbsoluteFile());
             shuffler.shuffle(bucketFile, shuffledFile, POINT_BLOCK_SIZE);
 
             boolean isSameSize = bucketFile.length() == shuffledFile.length();
@@ -256,16 +256,25 @@ public class LasConverter {
                     throw new RuntimeException(e);
                 }
             }
-            log.info("[Pre][Shuffle][{}/{}] Completed shuffling bucket file: {}", index, fileCount, bucketFile.getName());
+            log.info("[Pre][Shuffle][{}/{}] Completed shuffling bucket file: {}", index, fileCount, bucketFile.getAbsoluteFile());
         }
         log.info("[Pre] Completed shuffling of bucket files.");
     }
 
-    public List<GaiaLasPoint> readTempFile(File temppFile) {
+    public GaiaPointCloud readTempFileToGaiaPointCloud(File sourceFile, File targetFile) {
         try {
-            return bucketReader.readFile(temppFile.toPath());
+            return bucketReader.readFileToGaiaPointCloud(sourceFile, targetFile);
         } catch (IOException e) {
-            log.error("[ERROR] Failed to read shuffled file: {}", temppFile.getAbsolutePath(), e);
+            log.error("[ERROR] Failed to read shuffled file: {}", sourceFile.getAbsolutePath(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<GaiaLasPoint> readTempFile(File tempFile) {
+        try {
+            return bucketReader.readFile(tempFile.toPath());
+        } catch (IOException e) {
+            log.error("[ERROR] Failed to read shuffled file: {}", tempFile.getAbsolutePath(), e);
             throw new RuntimeException(e);
         }
     }

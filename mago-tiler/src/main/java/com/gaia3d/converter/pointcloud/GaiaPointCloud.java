@@ -4,7 +4,6 @@ import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.hsqldb.lib.FileUtil;
 import org.joml.Vector3d;
 
 import java.io.*;
@@ -19,12 +18,18 @@ import java.util.List;
 @Setter
 @Builder
 public class GaiaPointCloud {
+    public final int CHUNK_SIZE = GaiaLasPoint.BYTES_SIZE * 1000000;
+
     private String code = "A";
     private Path originalPath;
     private GaiaBoundingBox gaiaBoundingBox = new GaiaBoundingBox();
     private List<GaiaLasPoint> lasPoints = new ArrayList<>();
     private long pointCount = 0;
     private File minimizedFile = null;
+
+    private long limitPointCount = -1;
+    private GaiaPointCloud parent = null;
+    private List<GaiaPointCloud> children = new ArrayList<>();
 
     public void clearPoints() {
         if (lasPoints != null) {
@@ -38,6 +43,52 @@ public class GaiaPointCloud {
             pointCount = lasPoints.size();
         }
         return pointCount;
+    }
+
+    public long getAllPointCount() {
+        long total = getPointCount();
+        if (children != null) {
+            for (GaiaPointCloud child : children) {
+                total += child.getAllPointCount();
+            }
+        }
+        return total;
+    }
+
+    public int getMaxDepth() {
+        int maxDepth = 0;
+        if (children != null) {
+            for (GaiaPointCloud child : children) {
+                int childDepth = child.getMaxDepth();
+                if (childDepth > maxDepth) {
+                    maxDepth = childDepth;
+                }
+            }
+        }
+        return maxDepth + 1;
+    }
+
+    public int getNodeCount() {
+        int count = 1; // Count this node
+        if (children != null) {
+            for (GaiaPointCloud child : children) {
+                count += child.getNodeCount();
+            }
+        }
+        return count;
+    }
+
+    public List<GaiaPointCloud> getAllLeaves() {
+        List<GaiaPointCloud> leaves = new ArrayList<>();
+        if (lasPoints != null && !lasPoints.isEmpty()) {
+            leaves.add(this);
+        }
+        if (children != null) {
+            for (GaiaPointCloud child : children) {
+                leaves.addAll(child.getAllLeaves());
+            }
+        }
+        return leaves;
     }
 
     public void setLasPoints(List<GaiaLasPoint> lasPoints) {
@@ -61,6 +112,69 @@ public class GaiaPointCloud {
         } catch (IOException e) {
             log.error("Failed to minimize point cloud to file: {}", minimizedFile.getAbsolutePath(), e);
         }
+    }
+
+    public int getChunkCount(int chunkSize) {
+        if (this.minimizedFile == null) {
+            log.warn("No minimized file to get chunk count from.");
+            return 0;
+        }
+
+        long originalFileLength = this.minimizedFile.length();
+        int chunkCount = (int) (originalFileLength / chunkSize);
+        if (originalFileLength % chunkSize != 0) {
+            chunkCount++;
+        }
+        return chunkCount;
+    }
+
+    public GaiaPointCloud readChunk(long chunkSize, long offset) {
+        if (this.minimizedFile == null) {
+            log.warn("No minimized file to read chunk from.");
+            return null;
+        }
+
+        long originalFileLength = this.minimizedFile.length();
+        if (offset >= originalFileLength) {
+            log.warn("Offset {} is beyond the end of the minimized file.", offset);
+            return null;
+        }
+        if (originalFileLength < offset + chunkSize) {
+            log.info("Adjusting chunk size from {} to {} due to file length.", chunkSize, originalFileLength - offset);
+            chunkSize = originalFileLength - offset;
+        }
+
+        long chunkPointCount = chunkSize / GaiaLasPoint.BYTES_SIZE;
+
+        GaiaPointCloud chunkPointCloud = new GaiaPointCloud();
+        chunkPointCloud.setOriginalPath(this.originalPath);
+        chunkPointCloud.setGaiaBoundingBox(this.gaiaBoundingBox);
+        chunkPointCloud.setMinimizedFile(this.minimizedFile);
+        chunkPointCloud.setCode("R");
+        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(this.minimizedFile))) {
+            long totalPoints = this.pointCount;
+            bis.skip(offset);
+            List<GaiaLasPoint> points = new ArrayList<>();
+            for (long i = 0; i < chunkPointCount && (i + offset / GaiaLasPoint.BYTES_SIZE) < totalPoints; i++) {
+                byte[] pointBytes = new byte[GaiaLasPoint.BYTES_SIZE];
+                int bytesRead = bis.read(pointBytes);
+                if (bytesRead != GaiaLasPoint.BYTES_SIZE) {
+                    log.error("Unexpected end of file while reading point cloud chunk.");
+                    break;
+                }
+                GaiaLasPoint point = GaiaLasPoint.fromBytes(pointBytes);
+                points.add(point);
+            }
+            chunkPointCloud.setLasPoints(points);
+            chunkPointCloud.setPointCount(points.size());
+
+            if (points.size() != chunkPointCount) {
+                log.warn("Expected to read {} points, but only read {} points.", chunkPointCount, points.size());
+            }
+        } catch (IOException e) {
+            log.error("Failed to read point cloud chunk from file: {}", this.minimizedFile.getAbsolutePath(), e);
+        }
+        return chunkPointCloud;
     }
 
     public void maximize(boolean deleteAfterMaximize) {
@@ -321,41 +435,49 @@ public class GaiaPointCloud {
         GaiaPointCloud gaiaPointCloudA = new GaiaPointCloud();
         gaiaPointCloudA.setCode("A");
         gaiaPointCloudA.setOriginalPath(originalPath);
+        gaiaPointCloudA.setParent(this);
         List<GaiaLasPoint> verticesA = gaiaPointCloudA.getLasPoints();
 
         GaiaPointCloud gaiaPointCloudB = new GaiaPointCloud();
         gaiaPointCloudB.setCode("B");
         gaiaPointCloudB.setOriginalPath(originalPath);
+        gaiaPointCloudB.setParent(this);
         List<GaiaLasPoint> verticesB = gaiaPointCloudB.getLasPoints();
 
         GaiaPointCloud gaiaPointCloudC = new GaiaPointCloud();
         gaiaPointCloudC.setCode("C");
         gaiaPointCloudC.setOriginalPath(originalPath);
+        gaiaPointCloudC.setParent(this);
         List<GaiaLasPoint> verticesC = gaiaPointCloudC.getLasPoints();
 
         GaiaPointCloud gaiaPointCloudD = new GaiaPointCloud();
         gaiaPointCloudD.setCode("D");
         gaiaPointCloudD.setOriginalPath(originalPath);
+        gaiaPointCloudD.setParent(this);
         List<GaiaLasPoint> verticesD = gaiaPointCloudD.getLasPoints();
 
         GaiaPointCloud gaiaPointCloudE = new GaiaPointCloud();
         gaiaPointCloudE.setCode("E");
         gaiaPointCloudE.setOriginalPath(originalPath);
+        gaiaPointCloudE.setParent(this);
         List<GaiaLasPoint> verticesE = gaiaPointCloudE.getLasPoints();
 
         GaiaPointCloud gaiaPointCloudF = new GaiaPointCloud();
         gaiaPointCloudF.setCode("F");
         gaiaPointCloudF.setOriginalPath(originalPath);
+        gaiaPointCloudF.setParent(this);
         List<GaiaLasPoint> verticesF = gaiaPointCloudF.getLasPoints();
 
         GaiaPointCloud gaiaPointCloudG = new GaiaPointCloud();
         gaiaPointCloudG.setCode("G");
         gaiaPointCloudG.setOriginalPath(originalPath);
+        gaiaPointCloudG.setParent(this);
         List<GaiaLasPoint> verticesG = gaiaPointCloudG.getLasPoints();
 
         GaiaPointCloud gaiaPointCloudH = new GaiaPointCloud();
         gaiaPointCloudH.setCode("H");
         gaiaPointCloudH.setOriginalPath(originalPath);
+        gaiaPointCloudH.setParent(this);
         List<GaiaLasPoint> verticesH = gaiaPointCloudH.getLasPoints();
 
         double minX = gaiaBoundingBox.getMinX();
@@ -371,20 +493,6 @@ public class GaiaPointCloud {
 
         for (GaiaLasPoint vertex : this.getLasPoints()) {
             Vector3d position = vertex.getVec3Position();
-
-            /*if (midX < position.x()) {
-                if (midY < position.y()) {
-                    verticesD.add(vertex);
-                } else {
-                    verticesB.add(vertex);
-                }
-            } else {
-                if (midY < position.y()) {
-                    verticesC.add(vertex);
-                } else {
-                    verticesA.add(vertex);
-                }
-            }*/
 
             if (midZ < position.z()) {
                 if (midX < position.x()) {
@@ -415,39 +523,6 @@ public class GaiaPointCloud {
                     }
                 }
             }
-
-
-
-
-            /*if (position.z() < midZ) {
-                if (midX < position.x()) {
-                    if (midY < position.y()) {
-                        verticesC.add(vertex);
-                    } else {
-                        verticesB.add(vertex);
-                    }
-                } else {
-                    if (midY < position.y()) {
-                        verticesD.add(vertex);
-                    } else {
-                        verticesA.add(vertex);
-                    }
-                }
-            } else {
-                if (midX < position.x()) {
-                    if (midY < position.y()) {
-                        verticesG.add(vertex);
-                    } else {
-                        verticesF.add(vertex);
-                    }
-                } else {
-                    if (midY < position.y()) {
-                        verticesH.add(vertex);
-                    } else {
-                        verticesE.add(vertex);
-                    }
-                }
-            }*/
         }
 
         //gaiaPointCloudA.computeBoundingBox();
@@ -568,10 +643,13 @@ public class GaiaPointCloud {
         List<GaiaPointCloud> pointClouds = new ArrayList<>();
 
         GaiaPointCloud chunkPointCloud = new GaiaPointCloud();
+        chunkPointCloud.setCode(code);
         chunkPointCloud.setOriginalPath(originalPath);
         chunkPointCloud.setGaiaBoundingBox(gaiaBoundingBox);
+        chunkPointCloud.setLimitPointCount(limitPointCount);
 
         GaiaPointCloud remainderPointCloud = new GaiaPointCloud();
+        remainderPointCloud.setCode(code);
         remainderPointCloud.setOriginalPath(originalPath);
         remainderPointCloud.setGaiaBoundingBox(gaiaBoundingBox);
 
@@ -589,5 +667,25 @@ public class GaiaPointCloud {
         pointClouds.add(chunkPointCloud);
         pointClouds.add(remainderPointCloud);
         return pointClouds;
+    }
+
+    public void addChild(GaiaPointCloud child) {
+        if (children == null) {
+            children = new ArrayList<>();
+        }
+        children.add(child);
+    }
+
+    public void combine(GaiaPointCloud other) {
+        if (other == null || other.getLasPoints() == null) {
+            return;
+        }
+        if (this.lasPoints == null) {
+            this.lasPoints = new ArrayList<>();
+        }
+        this.lasPoints.addAll(other.getLasPoints());
+        this.pointCount = this.lasPoints.size();
+        GaiaBoundingBox otherBox = other.getGaiaBoundingBox();
+        this.gaiaBoundingBox.addBoundingBox(otherBox);
     }
 }

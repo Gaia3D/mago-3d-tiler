@@ -136,7 +136,7 @@ public class TilingPipeline implements Pipeline {
         for (ContentInfo contentInfo : contentInfos) {
             Runnable callableTask = () -> {
                 try {
-                    log.info("[Post][{}/{}] post-process in progress. : {}", count.getAndIncrement(), contentCount, contentInfo.getName());
+                    log.info("[Post][{}/{}] post-process in progress : {}", count.getAndIncrement(), contentCount, contentInfo.getName());
                     List<TileInfo> tileInfos = contentInfo.getTileInfos();
                     List<TileInfo> tileInfosClone = tileInfos.stream()
                             .map((childTileInfo) -> TileInfo.builder()
@@ -147,7 +147,7 @@ public class TilingPipeline implements Pipeline {
                                     .transformMatrix(childTileInfo.getTransformMatrix())
                                     .boundingBox(childTileInfo.getBoundingBox())
                                     .pointCloud(childTileInfo.getPointCloud())
-                                    .pointCloudOld(childTileInfo.getPointCloudOld())
+                                    /*.pointCloudOld(childTileInfo.getPointCloudOld())*/
                                     .build())
                             .collect(Collectors.toList());
                     contentInfo.setTileInfos(tileInfosClone);

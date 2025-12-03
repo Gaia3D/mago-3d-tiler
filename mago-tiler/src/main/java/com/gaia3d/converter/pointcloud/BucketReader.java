@@ -1,8 +1,11 @@
 package com.gaia3d.converter.pointcloud;
 
+import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.util.geographic.GeographicTilingScheme;
 import com.gaia3d.util.geographic.TileCoordinate;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.joml.Vector3d;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -16,6 +19,41 @@ public class BucketReader {
     private static final int BUFFER_SIZE = 4 * 1024 * 1024; // 4MB
 
     private final GeographicTilingScheme scheme = new GeographicTilingScheme();
+
+    public GaiaPointCloud readFileToGaiaPointCloud(File sourceFile, File targetFile) throws IOException {
+        GaiaPointCloud pointCloud = new GaiaPointCloud();
+        long fileSize = sourceFile.length();
+        long totalPoints = fileSize / LasConverter.POINT_BLOCK_SIZE;
+
+        GaiaBoundingBox boundingBox = new GaiaBoundingBox();
+        pointCloud.setGaiaBoundingBox(boundingBox);
+        pointCloud.setPointCount(totalPoints);
+        pointCloud.setMinimizedFile(targetFile);
+
+        //long pointCount = 0;
+        try (DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(sourceFile), BUFFER_SIZE))) {
+            log.info("[Pre] Reading bucket file: {} ({} points)", sourceFile.getAbsolutePath(), totalPoints);
+            for (long i = 0; i < totalPoints; i++) {
+                byte[] pointBytes = new byte[LasConverter.POINT_BLOCK_SIZE];
+                dis.readFully(pointBytes);
+                GaiaLasPoint point = parsePoint(pointBytes);
+                Vector3d position = point.getVec3Position();
+                boundingBox.addPoint(position);
+
+                position = null;
+                point = null;
+            }
+            dis.close();
+            log.info("[Pre] Finished reading bucket file: {} ({} points)", sourceFile, totalPoints);
+            log.info("[Pre] Minimizing point cloud and writing to temp file: {}", targetFile);
+            FileUtils.moveFile(sourceFile, targetFile);
+            log.info("[Pre] Finished writing to temp file: {}", targetFile);
+        } catch (IOException e) {
+            log.error("[ERROR] Failed to read bucket file: {}", sourceFile, e);
+            throw e;
+        }
+        return pointCloud;
+    }
 
     public List<GaiaLasPoint> readFile(Path filePath) throws IOException {
         List<GaiaLasPoint> points = new ArrayList<>();
@@ -35,7 +73,6 @@ public class BucketReader {
             log.error("[ERROR] Failed to read bucket file: {}", filePath, e);
             throw e;
         }
-
         return points;
     }
 

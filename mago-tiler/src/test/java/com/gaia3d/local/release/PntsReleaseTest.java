@@ -15,8 +15,8 @@ class PntsReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "32652",
+                "-tilesVersion", "1.0",
                 "--temp", "C:\\temp\\",
-                /*"-tilesVersion", "1.0",*/
         };
         MagoTestConfig.execute(args);
     }
@@ -29,6 +29,7 @@ class PntsReleaseTest {
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-V2",
                 "-c", "32652",
                 "-tilesVersion", "1.1",
+                "--temp", "C:\\temp\\",
         };
         MagoTestConfig.execute(args);
     }
@@ -121,6 +122,7 @@ class PntsReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "32652",
+                "--temp", "C:\\temp\\",
                 "-debug",
         };
         MagoTestConfig.execute(args);
@@ -154,6 +156,7 @@ class PntsReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-crs", "5186",
+                "--temp", "C:\\temp\\",
         };
         MagoTestConfig.execute(args);
     }
@@ -190,8 +193,21 @@ class PntsReleaseTest {
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-crs", "5186",
                 "--temp", "C:\\temp\\",
-                "--pointRatio", "10",
+                "--pointRatio", "50",
                 "--force4ByteRGB"
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void pointcloud13() {
+        String path = "P13-Khonkaen";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-crs", "32648",
+                "--temp", "H:\\temp\\",
+                //"--pointRatio", "1",
         };
         MagoTestConfig.execute(args);
     }

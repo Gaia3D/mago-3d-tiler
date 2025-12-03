@@ -38,6 +38,10 @@ public class PointCloudFileLoader implements FileLoader {
         return converter.getBucketFiles();
     }
 
+    public GaiaPointCloud createGaiaPointCloud(File input, File tempFile) {
+        return converter.readTempFileToGaiaPointCloud(input, tempFile);
+    }
+
     public List<GaiaLasPoint> loadPointCloud(File input) {
         return converter.readTempFile(input);
     }
@@ -67,15 +71,18 @@ public class PointCloudFileLoader implements FileLoader {
         }
 
         File tempFile = new File(tempDir, UUID.randomUUID() + ".tmp");
-        List<GaiaLasPoint> points = loadPointCloud(file);
+
+        GaiaPointCloud pointCloud = createGaiaPointCloud(file, tempFile);
+
+        /*List<GaiaLasPoint> points = loadPointCloud(file);
         GaiaPointCloud pointCloud = new GaiaPointCloud();
         pointCloud.setLasPoints(points);
         pointCloud.setPointCount(points.size());
         pointCloud.computeBoundingBox();
         pointCloud.minimize(tempFile);
-        points.clear();
+        points.clear();*/
 
-        if (points == null) {
+        if (pointCloud.getPointCount() < 1) {
             log.error("[ERROR] :Failed to load scene: {}", file.getAbsolutePath());
             return null;
         } else {
