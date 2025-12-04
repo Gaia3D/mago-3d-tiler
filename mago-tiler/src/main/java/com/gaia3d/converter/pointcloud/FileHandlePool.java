@@ -14,7 +14,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class FileHandlePool implements Closeable {
-    private static final int COARSE_LEVEL = 13;
     private final Path rootDir;
     private final int maxOpenFiles;
     private final int bufferSize;
@@ -99,7 +98,7 @@ public class FileHandlePool implements Closeable {
     private TileCoordinate bucketIdToTileCoordinate(int bucketId) {
         int x = bucketId & 0xFFFF;
         int y = (bucketId >> 16) & 0xFFFF;
-        return new TileCoordinate(COARSE_LEVEL, x, y);
+        return new TileCoordinate(LasConverter.COARSE_LEVEL, x, y);
     }
 
     private Path bucketPath(int bucketId) {

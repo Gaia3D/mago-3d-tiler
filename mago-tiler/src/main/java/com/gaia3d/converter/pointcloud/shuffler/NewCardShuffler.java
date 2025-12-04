@@ -9,8 +9,8 @@ import java.util.Random;
 @Slf4j
 public class NewCardShuffler implements Shuffler {
     private static final int RANDOM_SEED = 8291;
-    private static final int MIN_CHUNK_BYTES = 256 * 1024 * 1024; // 256MB
-    private static final int MAX_CHUNK_BYTES = 1024 * 1024 * 1024; // 1024MB
+    private static final int MIN_CHUNK_BYTES = 512 * 1024 * 1024; // 512MB
+    private static final int MAX_CHUNK_BYTES = 2028 * 1024 * 1024; // 2048MB
 
     @Override
     public void shuffle(File sourceFile, File targetFile, int blockSize) {

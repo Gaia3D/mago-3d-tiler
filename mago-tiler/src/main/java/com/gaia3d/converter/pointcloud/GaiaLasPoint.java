@@ -42,7 +42,7 @@ public class GaiaLasPoint {
         int index = 0;
         byte[] positionBytes = new byte[24];
         System.arraycopy(bytes, index, positionBytes, 0, positionBytes.length);
-        double[] position = BigEndianByteUtils.toDoubles(positionBytes);
+        double[] position = BigEndianByteUtils.toDoublesNew(positionBytes);
         index += positionBytes.length;
         byte[] rgb = new byte[4];
         System.arraycopy(bytes, index, rgb, 0, rgb.length);

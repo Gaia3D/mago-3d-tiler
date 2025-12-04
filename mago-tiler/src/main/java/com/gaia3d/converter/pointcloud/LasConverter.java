@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @Slf4j
 public class LasConverter {
     /* positions(24) + rgb(4) + intensity(2) + classification(2) = 32 bytes */
-    public static final int COARSE_LEVEL = 12;
+    public static final int COARSE_LEVEL = 13;
     public static final int POINT_BLOCK_SIZE = 32;
     private final LasConverterOptions options;
     private final BucketWriter bucketWriter;

@@ -161,6 +161,38 @@ public class BigEndianByteUtils {
         return bytes;
     }
 
+    public static double toDoubleNew(byte[] bytes, int offset) {
+        long longTemp =
+                ((long) (bytes[offset]     & 0xFF) << 56) |
+                ((long) (bytes[offset + 1] & 0xFF) << 48) |
+                ((long) (bytes[offset + 2] & 0xFF) << 40) |
+                ((long) (bytes[offset + 3] & 0xFF) << 32) |
+                ((long) (bytes[offset + 4] & 0xFF) << 24) |
+                ((long) (bytes[offset + 5] & 0xFF) << 16) |
+                ((long) (bytes[offset + 6] & 0xFF) << 8)  |
+                ((long) (bytes[offset + 7] & 0xFF));
+        return Double.longBitsToDouble(longTemp);
+    }
+
+    public static double[] toDoublesNew(byte[] bytes) {
+        int count = (bytes.length / 8);
+        double[] result = new double[count];
+        for (int i = 0; i < count; i++) {
+            int offset = i * 8;
+            long longTemp =
+                    ((long) (bytes[offset]     & 0xFF) << 56) |
+                    ((long) (bytes[offset + 1] & 0xFF) << 48) |
+                    ((long) (bytes[offset + 2] & 0xFF) << 40) |
+                    ((long) (bytes[offset + 3] & 0xFF) << 32) |
+                    ((long) (bytes[offset + 4] & 0xFF) << 24) |
+                    ((long) (bytes[offset + 5] & 0xFF) << 16) |
+                    ((long) (bytes[offset + 6] & 0xFF) << 8)  |
+                    ((long) (bytes[offset + 7] & 0xFF));
+            result[i] = Double.longBitsToDouble(longTemp);
+        }
+        return result;
+    }
+
     public static double toDouble(byte[] bytes, int offset) {
         ByteBuffer buffer = ByteBuffer.wrap(bytes, offset, 8);
         buffer.order(ByteOrder.BIG_ENDIAN);

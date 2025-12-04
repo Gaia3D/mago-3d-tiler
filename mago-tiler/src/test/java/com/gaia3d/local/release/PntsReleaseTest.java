@@ -193,7 +193,7 @@ class PntsReleaseTest {
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-crs", "5186",
                 "--temp", "C:\\temp\\",
-                "--pointRatio", "25",
+                //"--pointRatio", "100",
                 "--force4ByteRGB"
         };
         MagoTestConfig.execute(args);
@@ -206,8 +206,34 @@ class PntsReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-crs", "32648",
-                "--temp", "H:\\temp\\",
+                /*"--temp", "C:\\temp\\",*/
                 //"--pointRatio", "1",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void pointcloud14A() {
+        String path = "P14-KyungSan-A";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-crs", "5187",
+                "--temp", "C:\\temp\\",
+                /*"--pointRatio", "1",*/
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void pointcloud14B() {
+        String path = "P14-KyungSan-B";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-crs", "5187",
+                "--temp", "C:\\temp\\",
+                /*"--pointRatio", "1",*/
         };
         MagoTestConfig.execute(args);
     }

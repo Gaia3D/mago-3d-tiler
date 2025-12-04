@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
+@Deprecated
 public class PointCloudTilerOld extends DefaultTiler implements Tiler {
 
     private double rootGeometricError = 0.0d;

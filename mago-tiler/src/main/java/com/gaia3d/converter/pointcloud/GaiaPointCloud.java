@@ -156,7 +156,6 @@ public class GaiaPointCloud {
             return null;
         }
         if (originalFileLength < offset + chunkSize) {
-            log.info("Adjusting chunk size from {} to {} due to file length.", chunkSize, originalFileLength - offset);
             chunkSize = originalFileLength - offset;
         }
 
