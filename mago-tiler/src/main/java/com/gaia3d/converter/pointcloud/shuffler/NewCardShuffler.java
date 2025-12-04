@@ -1,11 +1,9 @@
 package com.gaia3d.converter.pointcloud.shuffler;
 
+import com.gaia3d.converter.pointcloud.LasConverter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Random;
 
 @Slf4j
@@ -16,7 +14,17 @@ public class NewCardShuffler implements Shuffler {
 
     @Override
     public void shuffle(File sourceFile, File targetFile, int blockSize) {
-        shuffle(sourceFile, targetFile, blockSize, 5);
+        long sourceFileSize = sourceFile.length();
+        long blockCount = sourceFileSize / blockSize;
+        int passes = (int) (blockCount / 25_000_000L);
+        if (passes < 3) {
+            passes = 3;
+        } else if (passes > 10) {
+            passes = 10;
+        }
+
+        log.info("[Pre][Shuffle] File size: {} bytes, Point count: {} bytes, passes: {}", sourceFileSize, blockCount, passes);
+        shuffle(sourceFile, targetFile, blockSize, passes);
     }
 
     /**
@@ -57,6 +65,7 @@ public class NewCardShuffler implements Shuffler {
             File currentOut;
 
             for (int pass = 0; pass < passes; pass++) {
+                log.info("[Pre][Shuffle][{}/{}] Shuffling...", pass + 1, passes);
                 boolean lastPass = (pass == passes - 1);
 
                 if (lastPass) {

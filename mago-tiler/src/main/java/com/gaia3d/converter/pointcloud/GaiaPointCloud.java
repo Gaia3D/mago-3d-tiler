@@ -18,7 +18,7 @@ import java.util.List;
 @Setter
 @Builder
 public class GaiaPointCloud {
-    public final int CHUNK_SIZE = GaiaLasPoint.BYTES_SIZE * 1000000;
+    public final int CHUNK_SIZE = GaiaLasPoint.BYTES_SIZE * 25_000_000;
 
     private String code = "A";
     private Path originalPath;
@@ -78,9 +78,25 @@ public class GaiaPointCloud {
         return count;
     }
 
+    public List<GaiaPointCloud> getFullLeaves() {
+        List<GaiaPointCloud> leaves = new ArrayList<>();
+        boolean hasPoints = (lasPoints != null && !lasPoints.isEmpty());
+        boolean isFull = this.pointCount == this.limitPointCount;
+        if (hasPoints && isFull) {
+            leaves.add(this);
+        }
+        if (children != null) {
+            for (GaiaPointCloud child : children) {
+                leaves.addAll(child.getFullLeaves());
+            }
+        }
+        return leaves;
+    }
+
     public List<GaiaPointCloud> getAllLeaves() {
         List<GaiaPointCloud> leaves = new ArrayList<>();
-        if (lasPoints != null && !lasPoints.isEmpty()) {
+        boolean hasPoints = (lasPoints != null && !lasPoints.isEmpty());
+        if (hasPoints) {
             leaves.add(this);
         }
         if (children != null) {
@@ -99,7 +115,7 @@ public class GaiaPointCloud {
     public void minimize(File minimizedFile) {
         this.minimizedFile = minimizedFile;
         this.pointCount = lasPoints.size();
-        this.computeBoundingBox();
+        //this.computeBoundingBox();
 
         try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(minimizedFile))) {
             List<GaiaLasPoint> points = this.getLasPoints();
