@@ -77,8 +77,17 @@ jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
+import com.github.jengelman.gradle.plugins.shadow.transformers.AppendingTransformer
+
 shadowJar {
     mergeServiceFiles()
+    transform(AppendingTransformer) {
+        resource = "META-INF/registryFile.jai"
+    }
+    transform(AppendingTransformer) {
+        resource = "META-INF/registryFile.jaiext"
+    }
+
     manifest {
         attributes "Main-Class": "com.gaia3d.command.mago.Mago3DTilerMain"
         attributes "Implementation-Version": project.version
@@ -88,11 +97,11 @@ shadowJar {
         attributes "Implementation-URL": "http://java.sun.com/products/java-media/jai/forDevelopers/jai-imageio/"
     }
     relocate "org.slf4j", "shadow.slf4j"
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from sourceSets.main.runtimeClasspath
     configurations = [project.configurations.runtimeClasspath]
     archiveFileName = "mago-3d-tiler-${project.version}.jar"
     destinationDirectory.set(file("${projectDir}/dist"))
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 jib {
