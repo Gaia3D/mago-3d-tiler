@@ -1,6 +1,6 @@
 subprojects {
     group "com.gaia3d"
-    version "1.15.0-beta"
+    version "1.15.1-beta"
     apply plugin: 'java'
     project.ext.lwjglVersion = "3.3.6"
 
@@ -57,8 +57,11 @@ subprojects {
         /* Development libraries */
         testCompileOnly "org.projectlombok:lombok:1.18.30"
         testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
-        testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.0"
-        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.0"
+
+        testImplementation platform("org.junit:junit-bom:5.10.0")
+        testImplementation "org.junit.jupiter:junit-jupiter-api"
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+        testRuntimeOnly  "org.junit.platform:junit-platform-launcher"
     }
 
     java {
