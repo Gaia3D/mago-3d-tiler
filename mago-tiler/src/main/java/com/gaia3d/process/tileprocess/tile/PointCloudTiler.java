@@ -7,6 +7,7 @@ import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.pointcloud.GaiaPointCloudOld;
 import com.gaia3d.command.mago.GlobalOptions;
+import com.gaia3d.converter.pointcloud.GaiaLasPoint;
 import com.gaia3d.converter.pointcloud.GaiaPointCloud;
 import com.gaia3d.process.tileprocess.Tiler;
 import com.gaia3d.process.tileprocess.tile.tileset.Tileset;
@@ -382,7 +383,12 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
             content.setUri("data/" + childNode.getNodeCode() + ".glb");
         }
         content.setContentInfo(contentInfo);
-        childNode.setContent(content);
+
+        if (pointCloud.getPointCount() < 1) {
+            log.debug("[warn] PointCloud point count is less than 1 for node: {}", childNode.getNodeCode());
+        } else {
+            childNode.setContent(content);
+        }
 
         return childNode;
     }
@@ -403,6 +409,33 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
             position.set(point.getPosition());
             fitBoundingBox.addPoint(position);
         });
+        return fitBoundingBox;
+    }
+
+    private GaiaBoundingBox calcApproximateFitBoundingBox(GaiaPointCloud pointCloud) {
+        //TODO: I Think, We can improve this method later.
+        // it solves performance issue when point cloud has too many points.
+        // if recalculating full bounding box is faster, we can use calcFitBoundingBox method directly.
+
+        // approximate fitting box
+        int approximatePointCount = 10;
+        GaiaBoundingBox fitBoundingBox = new GaiaBoundingBox();
+        long totalPoints = pointCloud.getPointCount();
+        Vector3d position = new Vector3d();
+        if (totalPoints <= approximatePointCount) {
+            pointCloud.getLasPoints().forEach(point -> {
+                position.set(point.getPosition());
+                fitBoundingBox.addPoint(position);
+            });
+            return fitBoundingBox;
+        }
+        long step = Math.max(1, totalPoints / approximatePointCount);
+        for (long i = 0; i < totalPoints; i += step) {
+            List<GaiaLasPoint> lasPoints = pointCloud.getLasPoints();
+            GaiaLasPoint point = lasPoints.get((int)i);
+            position.set(point.getPosition());
+            fitBoundingBox.addPoint(position);
+        }
 
         return fitBoundingBox;
     }

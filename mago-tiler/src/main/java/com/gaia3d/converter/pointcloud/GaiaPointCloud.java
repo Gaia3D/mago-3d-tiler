@@ -231,269 +231,70 @@ public class GaiaPointCloud {
     }
 
     public List<GaiaPointCloud> distribute() {
-        /*double offsetX = volume.x;
-        double offsetY = volume.y;
-        double offsetZ = volume.z;
-        double halfX = offsetX / 2;
-        double halfY = offsetY / 2;
-        double halfZ = offsetZ / 2;
-        if (halfX > offsetY) {
-            return distributeHalf(true);
-        } else if (halfY > offsetX) {
-            return distributeHalf(false);
-        } *//*else if (offsetZ < offsetX || offsetZ < offsetY) {
-            return distributeQuad();
-        }*//* else if (offsetZ > 100.0) {
-            return distributeOct();
-        } else {
-            return distributeQuad();
-        }*/
         return distributeOct();
-    }
-
-    // Quarter based on the bounding box
-    public List<GaiaPointCloud> distributeHalf(boolean isX) {
-        List<GaiaPointCloud> pointClouds = new ArrayList<>();
-
-        GaiaPointCloud gaiaPointCloudA = new GaiaPointCloud();
-        gaiaPointCloudA.setCode("A");
-        gaiaPointCloudA.setOriginalPath(originalPath);
-        List<GaiaLasPoint> verticesA = gaiaPointCloudA.getLasPoints();
-
-        GaiaPointCloud gaiaPointCloudB = new GaiaPointCloud();
-        gaiaPointCloudB.setCode("B");
-        gaiaPointCloudB.setOriginalPath(originalPath);
-        List<GaiaLasPoint> verticesB = gaiaPointCloudA.getLasPoints();
-
-        double minX = gaiaBoundingBox.getMinX();
-        double minY = gaiaBoundingBox.getMinY();
-        double maxX = gaiaBoundingBox.getMaxX();
-        double maxY = gaiaBoundingBox.getMaxY();
-        double midX = (minX + maxX) / 2;
-        double midY = (minY + maxY) / 2;
-
-        for (GaiaLasPoint vertex : this.getLasPoints()) {
-            Vector3d center = vertex.getVec3Position();
-            if (isX) {
-                if (midX < center.x()) {
-                    verticesB.add(vertex);
-                } else {
-                    verticesA.add(vertex);
-                }
-            } else {
-                if (midY < center.y()) {
-                    verticesB.add(vertex);
-                } else {
-                    verticesA.add(vertex);
-                }
-            }
-        }
-
-        pointClouds.add(gaiaPointCloudA);
-        //gaiaPointCloudA.computeBoundingBox();
-        gaiaPointCloudA.setPointCount(gaiaPointCloudA.getLasPoints().size());
-
-        pointClouds.add(gaiaPointCloudB);
-        //gaiaPointCloudB.computeBoundingBox();
-        gaiaPointCloudB.setPointCount(gaiaPointCloudB.getLasPoints().size());
-
-        if (isX) {
-            gaiaPointCloudA.setCode("L");
-            gaiaPointCloudB.setCode("R");
-
-            GaiaBoundingBox adjustedBoxA = new GaiaBoundingBox();
-            adjustedBoxA.setMinX(minX);
-            adjustedBoxA.setMinY(minY);
-            adjustedBoxA.setMinZ(gaiaBoundingBox.getMinZ());
-            adjustedBoxA.setMaxX(midX);
-            adjustedBoxA.setMaxY(maxY);
-            adjustedBoxA.setMaxZ(gaiaBoundingBox.getMaxZ());
-            gaiaPointCloudA.setGaiaBoundingBox(adjustedBoxA);
-
-            GaiaBoundingBox adjustedBoxB = new GaiaBoundingBox();
-            adjustedBoxB.setMinX(midX);
-            adjustedBoxB.setMinY(minY);
-            adjustedBoxB.setMinZ(gaiaBoundingBox.getMinZ());
-            adjustedBoxB.setMaxX(maxX);
-            adjustedBoxB.setMaxY(maxY);
-            adjustedBoxB.setMaxZ(gaiaBoundingBox.getMaxZ());
-            gaiaPointCloudB.setGaiaBoundingBox(adjustedBoxB);
-
-
-        } else {
-            gaiaPointCloudA.setCode("B");
-            gaiaPointCloudB.setCode("F");
-
-            GaiaBoundingBox adjustedBoxA = new GaiaBoundingBox();
-            adjustedBoxA.setMinX(minX);
-            adjustedBoxA.setMinY(minY);
-            adjustedBoxA.setMinZ(gaiaBoundingBox.getMinZ());
-            adjustedBoxA.setMaxX(maxX);
-            adjustedBoxA.setMaxY(midY);
-            adjustedBoxA.setMaxZ(gaiaBoundingBox.getMaxZ());
-            gaiaPointCloudA.setGaiaBoundingBox(adjustedBoxA);
-
-            GaiaBoundingBox adjustedBoxB = new GaiaBoundingBox();
-            adjustedBoxB.setMinX(minX);
-            adjustedBoxB.setMinY(midY);
-            adjustedBoxB.setMinZ(gaiaBoundingBox.getMinZ());
-            adjustedBoxB.setMaxX(maxX);
-            adjustedBoxB.setMaxY(maxY);
-            adjustedBoxB.setMaxZ(gaiaBoundingBox.getMaxZ());
-            gaiaPointCloudB.setGaiaBoundingBox(adjustedBoxB);
-        }
-        return pointClouds;
-    }
-
-    // Quarter based on the bounding box
-    public List<GaiaPointCloud> distributeQuad() {
-        List<GaiaPointCloud> pointClouds = new ArrayList<>();
-
-        GaiaPointCloud gaiaPointCloudA = new GaiaPointCloud();
-        gaiaPointCloudA.setCode("A");
-        gaiaPointCloudA.setOriginalPath(originalPath);
-        List<GaiaLasPoint> verticesA = gaiaPointCloudA.getLasPoints();
-
-        GaiaPointCloud gaiaPointCloudB = new GaiaPointCloud();
-        gaiaPointCloudB.setCode("B");
-        gaiaPointCloudB.setOriginalPath(originalPath);
-        List<GaiaLasPoint> verticesB = gaiaPointCloudB.getLasPoints();
-
-        GaiaPointCloud gaiaPointCloudC = new GaiaPointCloud();
-        gaiaPointCloudC.setCode("C");
-        gaiaPointCloudC.setOriginalPath(originalPath);
-        List<GaiaLasPoint> verticesC = gaiaPointCloudC.getLasPoints();
-
-        GaiaPointCloud gaiaPointCloudD = new GaiaPointCloud();
-        gaiaPointCloudD.setCode("D");
-        gaiaPointCloudD.setOriginalPath(originalPath);
-        List<GaiaLasPoint> verticesD = gaiaPointCloudD.getLasPoints();
-
-        double minX = gaiaBoundingBox.getMinX();
-        double minY = gaiaBoundingBox.getMinY();
-        double maxX = gaiaBoundingBox.getMaxX();
-        double maxY = gaiaBoundingBox.getMaxY();
-        double midX = (minX + maxX) / 2;
-        double midY = (minY + maxY) / 2;
-
-        for (GaiaLasPoint vertex : this.getLasPoints()) {
-            Vector3d center = vertex.getVec3Position();
-            if (midX < center.x()) {
-                if (midY < center.y()) {
-                    verticesC.add(vertex);
-                } else {
-                    verticesB.add(vertex);
-                }
-            } else {
-                if (midY < center.y()) {
-                    verticesD.add(vertex);
-                } else {
-                    verticesA.add(vertex);
-                }
-            }
-        }
-
-        pointClouds.add(gaiaPointCloudA);
-        //gaiaPointCloudA.computeBoundingBox();
-        GaiaBoundingBox adjustedBoxA = new GaiaBoundingBox();
-        adjustedBoxA.setMinX(minX);
-        adjustedBoxA.setMinY(minY);
-        adjustedBoxA.setMinZ(gaiaBoundingBox.getMinZ());
-        adjustedBoxA.setMaxX(midX);
-        adjustedBoxA.setMaxY(midY);
-        adjustedBoxA.setMaxZ(gaiaBoundingBox.getMaxZ());
-        gaiaPointCloudA.setGaiaBoundingBox(adjustedBoxA);
-        gaiaPointCloudA.setPointCount(gaiaPointCloudA.getLasPoints().size());
-
-        pointClouds.add(gaiaPointCloudB);
-        //gaiaPointCloudB.computeBoundingBox();
-        GaiaBoundingBox adjustedBoxB = new GaiaBoundingBox();
-        adjustedBoxB.setMinX(midX);
-        adjustedBoxB.setMinY(minY);
-        adjustedBoxB.setMinZ(gaiaBoundingBox.getMinZ());
-        adjustedBoxB.setMaxX(maxX);
-        adjustedBoxB.setMaxY(midY);
-        adjustedBoxB.setMaxZ(gaiaBoundingBox.getMaxZ());
-        gaiaPointCloudB.setGaiaBoundingBox(adjustedBoxB);
-        gaiaPointCloudB.setPointCount(gaiaPointCloudB.getLasPoints().size());
-
-        pointClouds.add(gaiaPointCloudC);
-        //gaiaPointCloudC.computeBoundingBox();
-        GaiaBoundingBox adjustedBoxC = new GaiaBoundingBox();
-        adjustedBoxC.setMinX(minX);
-        adjustedBoxC.setMinY(midY);
-        adjustedBoxC.setMinZ(gaiaBoundingBox.getMinZ());
-        adjustedBoxC.setMaxX(midX);
-        adjustedBoxC.setMaxY(maxY);
-        adjustedBoxC.setMaxZ(gaiaBoundingBox.getMaxZ());
-        gaiaPointCloudC.setGaiaBoundingBox(adjustedBoxC);
-        gaiaPointCloudC.setPointCount(gaiaPointCloudC.getLasPoints().size());
-
-        pointClouds.add(gaiaPointCloudD);
-        //gaiaPointCloudD.computeBoundingBox();
-        GaiaBoundingBox adjustedBoxD = new GaiaBoundingBox();
-        adjustedBoxD.setMinX(midX);
-        adjustedBoxD.setMinY(midY);
-        adjustedBoxD.setMinZ(gaiaBoundingBox.getMinZ());
-        adjustedBoxD.setMaxX(maxX);
-        adjustedBoxD.setMaxY(maxY);
-        adjustedBoxD.setMaxZ(gaiaBoundingBox.getMaxZ());
-        gaiaPointCloudD.setGaiaBoundingBox(adjustedBoxD);
-        gaiaPointCloudD.setPointCount(gaiaPointCloudD.getLasPoints().size());
-        return pointClouds;
     }
 
     // Octree based on the bounding box
     public List<GaiaPointCloud> distributeOct() {
         List<GaiaPointCloud> pointClouds = new ArrayList<>();
 
+        long estimatedPerChild = this.getPointCount() / 8;
+
         GaiaPointCloud gaiaPointCloudA = new GaiaPointCloud();
         gaiaPointCloudA.setCode("A");
         gaiaPointCloudA.setOriginalPath(originalPath);
         gaiaPointCloudA.setParent(this);
-        List<GaiaLasPoint> verticesA = gaiaPointCloudA.getLasPoints();
+        ArrayList<GaiaLasPoint> verticesA = (ArrayList<GaiaLasPoint>) gaiaPointCloudA.getLasPoints();
+        verticesA.ensureCapacity((int) estimatedPerChild);
 
         GaiaPointCloud gaiaPointCloudB = new GaiaPointCloud();
         gaiaPointCloudB.setCode("B");
         gaiaPointCloudB.setOriginalPath(originalPath);
         gaiaPointCloudB.setParent(this);
-        List<GaiaLasPoint> verticesB = gaiaPointCloudB.getLasPoints();
+        ArrayList<GaiaLasPoint> verticesB = (ArrayList<GaiaLasPoint>) gaiaPointCloudB.getLasPoints();
+        verticesB.ensureCapacity((int) estimatedPerChild);
 
         GaiaPointCloud gaiaPointCloudC = new GaiaPointCloud();
         gaiaPointCloudC.setCode("C");
         gaiaPointCloudC.setOriginalPath(originalPath);
         gaiaPointCloudC.setParent(this);
-        List<GaiaLasPoint> verticesC = gaiaPointCloudC.getLasPoints();
+        ArrayList<GaiaLasPoint> verticesC = (ArrayList<GaiaLasPoint>) gaiaPointCloudC.getLasPoints();
+        verticesC.ensureCapacity((int) estimatedPerChild);
 
         GaiaPointCloud gaiaPointCloudD = new GaiaPointCloud();
         gaiaPointCloudD.setCode("D");
         gaiaPointCloudD.setOriginalPath(originalPath);
         gaiaPointCloudD.setParent(this);
-        List<GaiaLasPoint> verticesD = gaiaPointCloudD.getLasPoints();
+        ArrayList<GaiaLasPoint> verticesD = (ArrayList<GaiaLasPoint>) gaiaPointCloudD.getLasPoints();
+        verticesD.ensureCapacity((int) estimatedPerChild);
 
         GaiaPointCloud gaiaPointCloudE = new GaiaPointCloud();
         gaiaPointCloudE.setCode("E");
         gaiaPointCloudE.setOriginalPath(originalPath);
         gaiaPointCloudE.setParent(this);
-        List<GaiaLasPoint> verticesE = gaiaPointCloudE.getLasPoints();
+        ArrayList<GaiaLasPoint> verticesE = (ArrayList<GaiaLasPoint>) gaiaPointCloudE.getLasPoints();
+        verticesE.ensureCapacity((int) estimatedPerChild);
 
         GaiaPointCloud gaiaPointCloudF = new GaiaPointCloud();
         gaiaPointCloudF.setCode("F");
         gaiaPointCloudF.setOriginalPath(originalPath);
         gaiaPointCloudF.setParent(this);
-        List<GaiaLasPoint> verticesF = gaiaPointCloudF.getLasPoints();
+        ArrayList<GaiaLasPoint> verticesF = (ArrayList<GaiaLasPoint>) gaiaPointCloudF.getLasPoints();
+        verticesF.ensureCapacity((int) estimatedPerChild);
 
         GaiaPointCloud gaiaPointCloudG = new GaiaPointCloud();
         gaiaPointCloudG.setCode("G");
         gaiaPointCloudG.setOriginalPath(originalPath);
         gaiaPointCloudG.setParent(this);
-        List<GaiaLasPoint> verticesG = gaiaPointCloudG.getLasPoints();
+        ArrayList<GaiaLasPoint> verticesG = (ArrayList<GaiaLasPoint>) gaiaPointCloudG.getLasPoints();
+        verticesG.ensureCapacity((int) estimatedPerChild);
 
         GaiaPointCloud gaiaPointCloudH = new GaiaPointCloud();
         gaiaPointCloudH.setCode("H");
         gaiaPointCloudH.setOriginalPath(originalPath);
         gaiaPointCloudH.setParent(this);
-        List<GaiaLasPoint> verticesH = gaiaPointCloudH.getLasPoints();
+        ArrayList<GaiaLasPoint> verticesH = (ArrayList<GaiaLasPoint>) gaiaPointCloudH.getLasPoints();
+        verticesH.ensureCapacity((int) estimatedPerChild);
 
         double minX = gaiaBoundingBox.getMinX();
         double minY = gaiaBoundingBox.getMinY();
@@ -540,7 +341,6 @@ public class GaiaPointCloud {
             }
         }
 
-        //gaiaPointCloudA.computeBoundingBox();
         GaiaBoundingBox adjustedBoxA = new GaiaBoundingBox();
         adjustedBoxA.setMinX(gaiaBoundingBox.getMinX());
         adjustedBoxA.setMinY(gaiaBoundingBox.getMinY());
@@ -552,9 +352,9 @@ public class GaiaPointCloud {
         gaiaPointCloudA.setPointCount(gaiaPointCloudA.getLasPoints().size());
         if (!gaiaPointCloudA.getLasPoints().isEmpty()) {
             pointClouds.add(gaiaPointCloudA);
+            verticesA.trimToSize();
         }
 
-        //gaiaPointCloudB.computeBoundingBox();
         GaiaBoundingBox adjustedBoxB = new GaiaBoundingBox();
         adjustedBoxB.setMinX(midX);
         adjustedBoxB.setMinY(gaiaBoundingBox.getMinY());
@@ -566,9 +366,9 @@ public class GaiaPointCloud {
         gaiaPointCloudB.setPointCount(gaiaPointCloudB.getLasPoints().size());
         if (!gaiaPointCloudB.getLasPoints().isEmpty()) {
             pointClouds.add(gaiaPointCloudB);
+            verticesB.trimToSize();
         }
 
-        //gaiaPointCloudC.computeBoundingBox();
         GaiaBoundingBox adjustedBoxC = new GaiaBoundingBox();
         adjustedBoxC.setMinX(gaiaBoundingBox.getMinX());
         adjustedBoxC.setMinY(midY);
@@ -580,9 +380,9 @@ public class GaiaPointCloud {
         gaiaPointCloudC.setPointCount(gaiaPointCloudC.getLasPoints().size());
         if (!gaiaPointCloudC.getLasPoints().isEmpty()) {
             pointClouds.add(gaiaPointCloudC);
+            verticesC.trimToSize();
         }
 
-        //gaiaPointCloudD.computeBoundingBox();
         GaiaBoundingBox adjustedBoxD = new GaiaBoundingBox();
         adjustedBoxD.setMinX(midX);
         adjustedBoxD.setMinY(midY);
@@ -594,9 +394,9 @@ public class GaiaPointCloud {
         gaiaPointCloudD.setPointCount(gaiaPointCloudD.getLasPoints().size());
         if (!gaiaPointCloudD.getLasPoints().isEmpty()) {
             pointClouds.add(gaiaPointCloudD);
+            verticesD.trimToSize();
         }
 
-        //gaiaPointCloudE.computeBoundingBox();
         GaiaBoundingBox adjustedBoxE = new GaiaBoundingBox();
         adjustedBoxE.setMinX(gaiaBoundingBox.getMinX());
         adjustedBoxE.setMinY(gaiaBoundingBox.getMinY());
@@ -608,9 +408,9 @@ public class GaiaPointCloud {
         gaiaPointCloudE.setPointCount(gaiaPointCloudE.getLasPoints().size());
         if (!gaiaPointCloudE.getLasPoints().isEmpty()) {
             pointClouds.add(gaiaPointCloudE);
+            verticesE.trimToSize();
         }
 
-        //gaiaPointCloudF.computeBoundingBox();
         GaiaBoundingBox adjustedBoxF = new GaiaBoundingBox();
         adjustedBoxF.setMinX(midX);
         adjustedBoxF.setMinY(gaiaBoundingBox.getMinY());
@@ -622,9 +422,9 @@ public class GaiaPointCloud {
         gaiaPointCloudF.setPointCount(gaiaPointCloudF.getLasPoints().size());
         if (!gaiaPointCloudF.getLasPoints().isEmpty()) {
             pointClouds.add(gaiaPointCloudF);
+            verticesF.trimToSize();
         }
 
-        //gaiaPointCloudG.computeBoundingBox();
         GaiaBoundingBox adjustedBoxG = new GaiaBoundingBox();
         adjustedBoxG.setMinX(gaiaBoundingBox.getMinX());
         adjustedBoxG.setMinY(midY);
@@ -636,9 +436,9 @@ public class GaiaPointCloud {
         gaiaPointCloudG.setPointCount(gaiaPointCloudG.getLasPoints().size());
         if (!gaiaPointCloudG.getLasPoints().isEmpty()) {
             pointClouds.add(gaiaPointCloudG);
+            verticesG.trimToSize();
         }
 
-        //gaiaPointCloudH.computeBoundingBox();
         GaiaBoundingBox adjustedBoxH = new GaiaBoundingBox();
         adjustedBoxH.setMinX(midX);
         adjustedBoxH.setMinY(midY);
@@ -650,6 +450,7 @@ public class GaiaPointCloud {
         gaiaPointCloudH.setPointCount(gaiaPointCloudH.getLasPoints().size());
         if (!gaiaPointCloudH.getLasPoints().isEmpty()) {
             pointClouds.add(gaiaPointCloudH);
+            verticesH.trimToSize();
         }
         return pointClouds;
     }
