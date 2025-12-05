@@ -364,8 +364,40 @@ public class GaiaBoundingBox implements Serializable {
         this.isInit = true;
     }
 
+    public void addPoint(double[] xyz) {
+        addPoint(xyz[0], xyz[1], xyz[2]);
+    }
+
     public void addPoint(double x, double y, double z) {
-        addPoint(new Vector3d(x, y, z));
+        /*addPoint(new Vector3d(x, y, z));*/
+        if (isInit) {
+            if (x < minX) {
+                minX = x;
+            }
+            if (y < minY) {
+                minY = y;
+            }
+            if (z < minZ) {
+                minZ = z;
+            }
+            if (x > maxX) {
+                maxX = x;
+            }
+            if (y > maxY) {
+                maxY = y;
+            }
+            if (z > maxZ) {
+                maxZ = z;
+            }
+        } else {
+            isInit = true;
+            minX = x;
+            minY = y;
+            minZ = z;
+            maxX = x;
+            maxY = y;
+            maxZ = z;
+        }
     }
 
     public void addPoint(Vector3d vector3d) {

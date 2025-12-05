@@ -404,10 +404,8 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
 
     private GaiaBoundingBox calcFitBoundingBox(GaiaPointCloud pointCloud) {
         GaiaBoundingBox fitBoundingBox = new GaiaBoundingBox();
-        Vector3d position = new Vector3d();
         pointCloud.getLasPoints().forEach(point -> {
-            position.set(point.getPosition());
-            fitBoundingBox.addPoint(position);
+            fitBoundingBox.addPoint(point.getPosition());
         });
         return fitBoundingBox;
     }
