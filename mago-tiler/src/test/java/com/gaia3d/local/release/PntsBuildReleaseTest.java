@@ -32,6 +32,32 @@ class PntsBuildReleaseTest {
     }
 
     @Test
+    void pointcloud12() {
+        String path = "P12-sangji-university";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-crs", "5186",
+                "--temp", "C:\\temp\\",
+                //"--pointRatio", "100",
+                "--force4ByteRGB"
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void pointcloud08() {
+        String path = "P08-honam-expressway-las";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-crs", "5186",
+                "--temp", "C:\\temp\\",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
     void pointcloud13() {
         String path = "P13-Khonkaen";
         String[] args = new String[]{

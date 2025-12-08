@@ -36,11 +36,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RequiredArgsConstructor
 public class PointCloudTiler extends DefaultTiler implements Tiler {
     private final int MAXIMUM_DEPTH = 20;
+    private final float POINT_EXPANSION_FACTOR = 1.75f;
+    private GaiaBoundingBox globalFitBoundingBox = null;
 
     @Override
     public Tileset run(List<TileInfo> tileInfos) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         GaiaBoundingBox globalBoundingBox = calcCartographicBoundingBox(tileInfos);
+        globalFitBoundingBox = globalBoundingBox;
         GaiaBoundingBox cubeGlobalBoundingBox = toCube(globalBoundingBox);
         Matrix4d transformMatrix = getTransformMatrixFromCartographic(globalBoundingBox);
         rotateX90(transformMatrix);
@@ -120,6 +123,11 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
     private double calcChildrenGeometricError(GaiaBoundingBox boundingBox, int pointLimit) {
         double geographicError = calcGeometricErrorFromDegreeBoundingBox(boundingBox) / 2;
         double pointsFactor = pointLimit < 1000 ? 1 : ((double) 1000 / pointLimit);
+        if (pointsFactor > 1.0) {
+            pointsFactor = 1.0;
+        } else if (pointsFactor < 0.01) {
+            pointsFactor = 0.01;
+        }
         double calculatedGeometricError = geographicError * pointsFactor;
 
         if (calculatedGeometricError < 0.01) {
@@ -165,6 +173,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         return boundingBox;
     }
 
+    // Invariant: sum of point counts must always equal original point count
     private void createRootNode(Node parentNode, List<TileInfo> tileInfos) throws IOException {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         List<GaiaPointCloud> pointClouds = tileInfos.stream()
@@ -199,6 +208,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
                     log.info("[Tile][{}/{}][{}/{}][Chunk {}/{}] Expanding Nodes", index, maximumIndex, index, maximumIndex, (i + 1), chunkCount);
                     expandNode(index, firstChildNode, rootTile, chunk, rootPointLimit, 0);
                 }
+
                 //log.info("[Tile][{}/{}][{}/{}][Chunk {}/{}]", index, maximumIndex, index, maximumIndex, (i + 1), chunkCount);
                 //printDebugAllNodeCount(rootTile, "", 0);
                 List<GaiaPointCloud> childrenPointClouds = rootTile.getAllLeaves();
@@ -261,7 +271,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
                     continue;
                 }
 
-                int newPointLimit = (int) (pointLimit * 2.0f);
+                int newPointLimit = (int) (pointLimit * POINT_EXPANSION_FACTOR);
                 if (newPointLimit > globalOptions.getMaximumPointPerTile()) {
                     newPointLimit = globalOptions.getMaximumPointPerTile();
                 }
@@ -283,7 +293,8 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         boolean hasMatchedNodeAndPointCloud = currentNode != null;
         if (hasMatchedNodeAndPointCloud) {
             GaiaBoundingBox cubeBoundingBox = currentPointCloud.getGaiaBoundingBox();
-            GaiaBoundingBox fitBoundingBox = calcFitBoundingBox(target);
+            //GaiaBoundingBox fitBoundingBox = calcFitBoundingBox(target);
+            GaiaBoundingBox fitBoundingBox = calcFitBoundingBox(cubeBoundingBox);
             double dimensionRatio = calcDimensionRatio(fitBoundingBox, cubeBoundingBox);
             int chunkPointLimit = (int) (pointLimit * dimensionRatio);
             if (chunkPointLimit < 1) {
@@ -332,7 +343,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
                         continue;
                     }
 
-                    int newPointLimit = (int) (pointLimit * 2.0f);
+                    int newPointLimit = (int) (pointLimit * POINT_EXPANSION_FACTOR);
                     if (newPointLimit > globalOptions.getMaximumPointPerTile()) {
                         newPointLimit = globalOptions.getMaximumPointPerTile();
                     }
@@ -353,7 +364,8 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
     private GaiaPointCloud createNode(int index, Node parentNode, GaiaPointCloud parent, GaiaPointCloud pointCloud, int pointLimit, int depth) {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         GaiaBoundingBox cubeBoundingBox = pointCloud.getGaiaBoundingBox();
-        GaiaBoundingBox fitBoundingBox = calcFitBoundingBox(pointCloud);
+        //GaiaBoundingBox fitBoundingBox = calcFitBoundingBox(pointCloud);
+        GaiaBoundingBox fitBoundingBox = calcFitBoundingBox(cubeBoundingBox);
         double dimensionRatio = calcDimensionRatio(fitBoundingBox, cubeBoundingBox);
         int chunkPointLimit = (int) (pointLimit * dimensionRatio);
         if (chunkPointLimit < 1) {
@@ -463,12 +475,16 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         return (fitVolumeSize.x * fitVolumeSize.y) / (cubeVolumeSize.x * cubeVolumeSize.y);
     }
 
-    private GaiaBoundingBox calcFitBoundingBox(GaiaPointCloud pointCloud) {
+    /*private GaiaBoundingBox calcFitBoundingBox(GaiaPointCloud pointCloud) {
         GaiaBoundingBox fitBoundingBox = new GaiaBoundingBox();
         pointCloud.getLasPoints().forEach(point -> {
             fitBoundingBox.addPoint(point.getPosition());
         });
         return fitBoundingBox;
+    }*/
+
+    private GaiaBoundingBox calcFitBoundingBox(GaiaBoundingBox cubeBoundingBox) {
+        return globalFitBoundingBox.createIntersection(cubeBoundingBox);
     }
 
     private GaiaBoundingBox calcApproximateFitBoundingBox(GaiaPointCloud pointCloud) {

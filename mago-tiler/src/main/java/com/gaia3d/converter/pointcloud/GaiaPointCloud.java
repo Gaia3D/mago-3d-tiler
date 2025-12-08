@@ -476,8 +476,6 @@ public class GaiaPointCloud {
             chunkPointCloud.setLasPoints(new ArrayList<>(lasPoints.subList(0, lasPoints.size())));
         }
 
-        //chunkPointCloud.computeBoundingBox();
-        //remainderPointCloud.computeBoundingBox();
         chunkPointCloud.setPointCount(chunkPointCloud.getLasPoints().size());
         remainderPointCloud.setPointCount(remainderPointCloud.getLasPoints().size());
         pointClouds.add(chunkPointCloud);

@@ -11,16 +11,14 @@ import java.util.Random;
 @Slf4j
 public class BasicShuffler implements Shuffler {
 
-    private static List<Integer> SHUFFLE_INDEXES = null;
     private static final int RANDOM_SEED = 8291;
+    private static List<Integer> SHUFFLE_INDEXES = null;
 
     /**
      * Shuffles the temp file
      */
     public void shuffle(File sourceFile, File targetFile, int blockSize) {
-        try (RandomAccessFile randomAccessFile = new RandomAccessFile(sourceFile, "r");
-             DataOutputStream dataOutputStream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(targetFile, false), 8192 * 8));
-        ){
+        try (RandomAccessFile randomAccessFile = new RandomAccessFile(sourceFile, "r"); DataOutputStream dataOutputStream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(targetFile, false), 8192 * 8))) {
             long loopSize = ((randomAccessFile.length()) / blockSize);
 
             int shuffleBufferSize = 65536 * 8;
@@ -38,7 +36,7 @@ public class BasicShuffler implements Shuffler {
             byte[] bytes = new byte[blockSize];
             long fileSize = randomAccessFile.length();
             //for (Integer integer : indexes) {
-            for (int index = 0; index < indexes.size();  index++) {
+            for (int index = 0; index < indexes.size(); index++) {
                 Integer integer = indexes.get(index);
                 for (int count = 0; count < shuffleCount; count++) {
                     if (index % 1000 == 0 && count == 0) {
@@ -49,7 +47,6 @@ public class BasicShuffler implements Shuffler {
                     if ((pointer) <= fileSize) {
                         randomAccessFile.seek(pointer);
                         if ((pointer + blockSize) > fileSize) {
-                            // 마지막 블록인 경우
                             int lastBlockSize = (int) (fileSize - pointer);
                             byte[] lastBytes = new byte[lastBlockSize];
                             randomAccessFile.read(lastBytes);
@@ -68,6 +65,11 @@ public class BasicShuffler implements Shuffler {
             log.error("[ERROR] Failed to shuffle temp file", e);
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void clear() {
+
     }
 
     private List<Integer> createShuffleIndexes(int loop) {

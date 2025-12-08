@@ -55,6 +55,31 @@ public class GaiaBoundingBox implements Serializable {
         return new Vector3d(maxX - minX, maxY - minY, maxZ - minZ);
     }
 
+    public GaiaBoundingBox(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
+        this.minX = minX;
+        this.minY = minY;
+        this.minZ = minZ;
+        this.maxX = maxX;
+        this.maxY = maxY;
+        this.maxZ = maxZ;
+        this.isInit = true;
+    }
+
+    public boolean isValid() {
+        boolean isInvalid = Double.isNaN(minX) || Double.isNaN(minY) || Double.isNaN(minZ) || Double.isNaN(maxX) || Double.isNaN(maxY) || Double.isNaN(maxZ);
+        boolean isInverted = minX > maxX || minY > maxY || minZ > maxZ;
+        boolean isZeroVolume = (minX == maxX) || (minY == maxY) || (minZ == maxZ);
+
+        if (isInvalid) {
+            log.debug("Bounding box is invalid (NaN values).");
+        } else if (isInverted) {
+            log.debug("Bounding box is inverted (min values greater than max values).");
+        } else if (isZeroVolume) {
+            log.debug("Bounding box has zero volume (one or more dimensions are zero).");
+        }
+        return !isInvalid && !isInverted && !isZeroVolume;
+    }
+
     public double getMaxRadius() {
         Vector3d center = getCenter();
         Vector3d minPosition = getMinPosition();
@@ -62,6 +87,22 @@ public class GaiaBoundingBox implements Serializable {
         double radiusY = Math.abs(center.y - minPosition.y);
         double radiusZ = Math.abs(center.z - minPosition.z);
         return Math.sqrt(radiusX * radiusX + radiusY * radiusY + radiusZ * radiusZ);
+    }
+
+    public GaiaBoundingBox createIntersection(GaiaBoundingBox other) {
+        double ixMin = Math.max(this.minX, other.minX);
+        double iyMin = Math.max(this.minY, other.minY);
+        double izMin = Math.max(this.minZ, other.minZ);
+
+        double ixMax = Math.min(this.maxX, other.maxX);
+        double iyMax = Math.min(this.maxY, other.maxY);
+        double izMax = Math.min(this.maxZ, other.maxZ);
+
+        if (ixMin >= ixMax || iyMin >= iyMax || izMin >= izMax) {
+            return null; // No intersection
+        }
+
+        return new GaiaBoundingBox(ixMin, iyMin, izMin, ixMax, iyMax, izMax);
     }
 
     public boolean intersectsPoint(Vector3d point) {

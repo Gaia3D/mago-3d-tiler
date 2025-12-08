@@ -1,6 +1,5 @@
 package com.gaia3d.converter.pointcloud.shuffler;
 
-import com.gaia3d.converter.pointcloud.LasConverter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
@@ -25,6 +24,11 @@ public class NewCardShuffler implements Shuffler {
 
         log.info("[Pre][Shuffle] File size: {} bytes, Point count: {} bytes, passes: {}", sourceFileSize, blockCount, passes);
         shuffle(sourceFile, targetFile, blockSize, passes);
+    }
+
+    @Override
+    public void clear() {
+
     }
 
     /**
@@ -130,14 +134,6 @@ public class NewCardShuffler implements Shuffler {
         long sectionCountLong = (fullBlocks + blocksPerSection - 1) / blocksPerSection;
         int sectionCount = (int) sectionCountLong;
 
-        //log.debug("[Pass {}] fileSize={} bytes, blockSize={} bytes, tailBytes={}", passIndex + 1, fileSize, blockSize, tailBytes);
-        //log.debug("[Pass {}] fullBlocks={}, blocksPerSection={}, sectionCount={}", passIndex + 1, fullBlocks, blocksPerSection, sectionCount);
-        /*List<Integer> sectionOrder = new ArrayList<>(sectionCount);
-        for (int i = 0; i < sectionCount; i++) {
-            sectionOrder.add(i);
-        }
-        Collections.shuffle(sectionOrder, new Random(RANDOM_SEED + 31L * passIndex));*/
-
         int[] sectionOrder = new int[sectionCount];
         for (int i = 0; i < sectionCount; i++) {
             sectionOrder[i] = i;
@@ -145,7 +141,7 @@ public class NewCardShuffler implements Shuffler {
         shuffleArray(sectionOrder, new Random(RANDOM_SEED));
 
         int[] localOrder = null;
-        try (RandomAccessFile raf = new RandomAccessFile(sourceFile, "r"); DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(targetFile, false), 8192 * 8))) {
+        try (RandomAccessFile raf = new RandomAccessFile(sourceFile, "r"); DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(targetFile, false), 8192 * 64))) {
             int maxSectionBytes = blocksPerSection * blockSize;
             byte[] sectionBuffer = new byte[maxSectionBytes];
 
@@ -175,12 +171,6 @@ public class NewCardShuffler implements Shuffler {
                     }
                     shuffleArray(localOrder, new Random(RANDOM_SEED));
                 }
-
-                /*int[] localOrder = new int[blocksInThisSection];
-                for (int i = 0; i < blocksInThisSection; i++) {
-                    localOrder[i] = i;
-                }
-                shuffleArray(localOrder, new Random(RANDOM_SEED + 131L * passIndex + sectionIndex));*/
 
                 for (int i = 0; i < blocksInThisSection; i++) {
                     int blk = localOrder[i];

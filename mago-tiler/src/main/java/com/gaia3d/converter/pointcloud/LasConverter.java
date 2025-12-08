@@ -229,7 +229,7 @@ public class LasConverter {
     }
 
     public void createShuffle() {
-        Shuffler shuffler = new NewCardShuffler();
+        Shuffler shuffler = new OptimizedCardShuffler();
         List<File> bucketFiles = getBucketFiles();
         log.info("[Pre] Starting shuffling of {} bucket files...", bucketFiles.size());
         // bucketFiles.stream().parallel().forEach(bucketFile -> {
@@ -258,6 +258,7 @@ public class LasConverter {
             }
             log.info("[Pre][Shuffle][{}/{}] Completed shuffling bucket file: {}", index, fileCount, bucketFile.getAbsoluteFile());
         }
+        shuffler.clear();
         log.info("[Pre] Completed shuffling of bucket files.");
     }
 
