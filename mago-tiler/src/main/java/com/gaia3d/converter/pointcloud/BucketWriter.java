@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class BucketWriter implements Closeable {
-    private static final int BUFFER_SIZE = 16 * 1024 * 1024;
+    private static final int BUFFER_SIZE = 2 * 1024 * 1024;
 
     private static class BucketBuffer {
         byte[] buf = new byte[BUFFER_SIZE];

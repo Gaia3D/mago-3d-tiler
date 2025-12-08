@@ -96,7 +96,7 @@ class PntsReleaseTest {
 
     @Test
     void pointcloud03() {
-        String path = "P03-thai-khonkaen-las";
+        String path = "P03-khonkaen-mini";
         String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
