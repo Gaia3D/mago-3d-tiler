@@ -36,6 +36,7 @@ public class PointCloudProcessFlow implements ProcessFlow {
                 .sourceCrs(globalOptions.getSourceCrs())
                 .tempDirectory(tempPath)
                 .force4ByteRgb(globalOptions.isForce4ByteRGB())
+                .translation(globalOptions.getTranslateOffset())
                 .build();
         LasConverter converter = new LasConverter(options);
         PointCloudFileLoader fileLoader = new PointCloudFileLoader(converter);

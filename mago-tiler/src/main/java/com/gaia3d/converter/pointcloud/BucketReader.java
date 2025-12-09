@@ -86,8 +86,13 @@ public class BucketReader {
         short classification = BigEndianByteUtils.toShort(pointBytes, 29);
 
         GaiaLasPoint point = GaiaLasPoint.builder()
-                .position(new double[]{lon, lat, height})
-                .rgb(rgb)
+                .x(lon)
+                .y(lat)
+                .z(height)
+                .r(rgb[0])
+                .g(rgb[1])
+                .b(rgb[2])
+                .a((byte)255)
                 .intensity(intensity)
                 .classification(classification)
                 .build();

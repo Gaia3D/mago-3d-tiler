@@ -28,7 +28,6 @@ class PntsReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-V2",
                 "-c", "32652",
-                "-tilesVersion", "1.1",
                 "--temp", "C:\\temp\\",
         };
         MagoTestConfig.execute(args);
@@ -40,6 +39,7 @@ class PntsReleaseTest {
         String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-offset-100-100-100",
+                "-c", "32652",
                 "-zOffset", "100.0",
                 "-xOffset", "100.0",
                 "-yOffset", "100.0",
@@ -53,6 +53,7 @@ class PntsReleaseTest {
         String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-offset-100-100-0",
+                "-c", "32652",
                 "-xOffset", "100.0",
                 "-yOffset", "100.0",
         };
@@ -65,6 +66,7 @@ class PntsReleaseTest {
         String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-c", "5186",
         };
         MagoTestConfig.execute(args);
     }
@@ -192,7 +194,7 @@ class PntsReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-crs", "5186",
-                "--temp", "C:\\temp\\",
+                //"--temp", "C:\\temp\\",
                 //"--pointRatio", "100",
                 "--force4ByteRGB"
         };

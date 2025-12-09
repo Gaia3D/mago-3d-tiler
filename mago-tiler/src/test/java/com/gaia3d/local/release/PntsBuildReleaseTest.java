@@ -38,7 +38,6 @@ class PntsBuildReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-crs", "5186",
-                "--temp", "C:\\temp\\",
                 //"--pointRatio", "100",
                 "--force4ByteRGB"
         };
@@ -52,7 +51,6 @@ class PntsBuildReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-crs", "5186",
-                "--temp", "C:\\temp\\",
         };
         MagoTestConfig.execute(args);
     }

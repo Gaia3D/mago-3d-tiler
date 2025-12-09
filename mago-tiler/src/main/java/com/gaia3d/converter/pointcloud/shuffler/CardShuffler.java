@@ -6,11 +6,12 @@ import java.io.*;
 import java.util.Random;
 
 @Slf4j
-public class NewCardShuffler implements Shuffler {
+public class CardShuffler extends Shuffler {
     private static final int RANDOM_SEED = 8291;
     private static final int MIN_CHUNK_BYTES = 512 * 1024 * 1024; // 512MB
     private static final int MAX_CHUNK_BYTES = 2028 * 1024 * 1024; // 2048MB
-
+    /*private int processCount = 0;
+    private int totalProcessCount = 1;*/
     @Override
     public void shuffle(File sourceFile, File targetFile, int blockSize) {
         long sourceFileSize = sourceFile.length();
@@ -22,7 +23,7 @@ public class NewCardShuffler implements Shuffler {
             passes = 10;
         }
 
-        log.info("[Pre][Shuffle] File size: {} bytes, Point count: {} bytes, passes: {}", sourceFileSize, blockCount, passes);
+        log.info("[Pre][Shuffle][{}/{}] File size: {} bytes, Point count: {} bytes, passes: {}", processCount, totalProcessCount, sourceFileSize, blockCount, passes);
         shuffle(sourceFile, targetFile, blockSize, passes);
     }
 
@@ -69,7 +70,7 @@ public class NewCardShuffler implements Shuffler {
             File currentOut;
 
             for (int pass = 0; pass < passes; pass++) {
-                log.info("[Pre][Shuffle][{}/{}] Shuffling...", pass + 1, passes);
+                log.info("[Pre][Shuffle][{}/{}][{}/{}] Point Cloud Shuffling...", processCount, totalProcessCount, pass + 1, passes);
                 boolean lastPass = (pass == passes - 1);
 
                 if (lastPass) {

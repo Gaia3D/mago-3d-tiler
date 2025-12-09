@@ -4,6 +4,8 @@ import com.gaia3d.util.GlobeUtils;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.joml.Vector2d;
+import org.joml.Vector3d;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 
 import java.nio.file.Path;
@@ -23,4 +25,6 @@ public class LasConverterOptions {
     //@Builder.Default
     //private float pointSpacing = 0.0f;
     private Path tempDirectory;
+    @Builder.Default
+    private Vector3d translation = new Vector3d(0.0, 0.0, 0.0);
 }

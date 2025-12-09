@@ -1,8 +1,11 @@
 package com.gaia3d.converter.pointcloud.shuffler;
 
-import java.io.File;
+import lombok.Getter;
+import lombok.Setter;
 
-public interface Shuffler {
-    void shuffle(File sourceFile, File targetFile, int blockSize);
-    void clear();
+@Setter
+@Getter
+public abstract class Shuffler implements Shufflable {
+    protected int processCount = 0;
+    protected int totalProcessCount = 0;
 }

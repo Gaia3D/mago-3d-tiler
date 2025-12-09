@@ -18,7 +18,7 @@ import java.util.List;
 @Setter
 @Builder
 public class GaiaPointCloud {
-    public final int CHUNK_SIZE = GaiaLasPoint.BYTES_SIZE * 25_000_000;
+    public final int CHUNK_SIZE = GaiaLasPoint.BYTES_SIZE * 20_000_000;
 
     private String code = "A";
     private Path originalPath;
@@ -31,10 +31,44 @@ public class GaiaPointCloud {
     private GaiaPointCloud parent = null;
     private List<GaiaPointCloud> children = new ArrayList<>();
 
+    public String getFullCode() {
+        StringBuilder sb = new StringBuilder();
+        return getFullCode(sb);
+    }
+
+    public String createFullCodePath() {
+        // RABCCABEF -> R/A/B/C/C/A/B/E/F
+        String fullCode = getFullCode();
+        StringBuilder sb = new StringBuilder();
+        int maxDepth = 4;
+        for (int i = 0; i < fullCode.length() && i < maxDepth; i++) {
+            sb.append(fullCode.charAt(i));
+            if (i < fullCode.length() - 1) {
+                sb.append(File.separator);
+            }
+        }
+        return sb.toString();
+    }
+
+    private String getFullCode(StringBuilder sb) {
+        if (parent != null) {
+            parent.getFullCode(sb);
+        }
+        sb.append(code);
+        return sb.toString();
+    }
+
     public void clearPoints() {
         if (lasPoints != null) {
             lasPoints.clear();
             lasPoints = null;
+        }
+    }
+
+    public void removeMinimizedFile() {
+        if (minimizedFile != null && minimizedFile.exists()) {
+            FileUtils.deleteQuietly(minimizedFile);
+            minimizedFile = null;
         }
     }
 
@@ -113,16 +147,69 @@ public class GaiaPointCloud {
     }
 
     public void minimize(File minimizedFile) {
+        if (lasPoints == null || lasPoints.isEmpty()) {
+            // 비어 있으면 그냥 빈 파일 하나 만들어두고 끝내도 됨
+            try {
+                if (!minimizedFile.exists()) {
+                    minimizedFile.getParentFile().mkdirs();
+                    minimizedFile.createNewFile();
+                }
+            } catch (IOException e) {
+                log.error("Failed to create empty minimized file: {}", minimizedFile.getAbsolutePath(), e);
+            }
+            this.minimizedFile = minimizedFile;
+            this.pointCount = 0;
+            return;
+        }
+
         this.minimizedFile = minimizedFile;
         this.pointCount = lasPoints.size();
-        //this.computeBoundingBox();
 
-        try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(minimizedFile))) {
+        // 한 번에 몇 개 포인트를 버퍼링할지 (튜닝 가능)
+        final int pointsPerBatch = 4096; // 예: 4096 * 32B ≈ 128KB
+        final int pointSize = GaiaLasPoint.BYTES_SIZE;
+        final int batchBufferSize = pointsPerBatch * pointSize;
+
+        byte[] batchBuffer = new byte[batchBufferSize];
+        int bufferOffset = 0; // batchBuffer 내 현재 위치
+
+        try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(minimizedFile), 1024 * 1024)) {
+            for (GaiaLasPoint point : lasPoints) {
+                byte[] pointBytes = point.toBytes();
+                if (bufferOffset + pointSize > batchBufferSize) {
+                    bos.write(batchBuffer, 0, bufferOffset);
+                    bufferOffset = 0;
+                }
+                System.arraycopy(pointBytes, 0, batchBuffer, bufferOffset, pointSize);
+                bufferOffset += pointSize;
+            }
+
+            if (bufferOffset > 0) {
+                bos.write(batchBuffer, 0, bufferOffset);
+            }
+
+            bos.flush();
+        } catch (IOException e) {
+            log.error("Failed to minimize point cloud to file: {}", minimizedFile.getAbsolutePath(), e);
+        } finally {
+            if (this.lasPoints != null) {
+                this.lasPoints.clear();
+                this.lasPoints = null;
+            }
+        }
+    }
+
+    @Deprecated
+    public void minimizeOld(File minimizedFile) {
+        this.minimizedFile = minimizedFile;
+        this.pointCount = lasPoints.size();
+        try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(minimizedFile), 8192 * 8)) {
             List<GaiaLasPoint> points = this.getLasPoints();
             for (GaiaLasPoint point : points) {
                 byte[] pointBytes = point.toBytes();
                 bos.write(pointBytes);
             }
+            bos.flush();
             this.lasPoints.clear();
             this.lasPoints = null;
         } catch (IOException e) {
@@ -166,7 +253,7 @@ public class GaiaPointCloud {
         chunkPointCloud.setGaiaBoundingBox(this.gaiaBoundingBox);
         chunkPointCloud.setMinimizedFile(this.minimizedFile);
         chunkPointCloud.setCode("R");
-        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(this.minimizedFile))) {
+        /*try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(this.minimizedFile))) {
             long totalPoints = this.pointCount;
             bis.skip(offset);
             List<GaiaLasPoint> points = new ArrayList<>();
@@ -188,11 +275,87 @@ public class GaiaPointCloud {
             }
         } catch (IOException e) {
             log.error("Failed to read point cloud chunk from file: {}", this.minimizedFile.getAbsolutePath(), e);
+        }*/
+        try (RandomAccessFile raf = new RandomAccessFile(this.minimizedFile, "r")) {
+            raf.seek(offset);
+            List<GaiaLasPoint> points = new ArrayList<>();
+            for (long i = 0; i < chunkPointCount && (i + offset / GaiaLasPoint.BYTES_SIZE) < (originalFileLength / GaiaLasPoint.BYTES_SIZE); i++) {
+                byte[] pointBytes = new byte[GaiaLasPoint.BYTES_SIZE];
+                int bytesRead = raf.read(pointBytes);
+                if (bytesRead != GaiaLasPoint.BYTES_SIZE) {
+                    log.error("Unexpected end of file while reading point cloud chunk.");
+                    break;
+                }
+                GaiaLasPoint point = GaiaLasPoint.fromBytes(pointBytes);
+                points.add(point);
+            }
+            chunkPointCloud.setLasPoints(points);
+            chunkPointCloud.setPointCount(points.size());
+
+            if (points.size() != chunkPointCount) {
+                log.warn("Expected to read {} points, but only read {} points.", chunkPointCount, points.size());
+            }
+        } catch (IOException e) {
+            log.error("Failed to read point cloud chunk from file: {}", this.minimizedFile.getAbsolutePath(), e);
         }
         return chunkPointCloud;
     }
 
     public void maximize(boolean deleteAfterMaximize) {
+        if (this.minimizedFile == null) {
+            log.warn("No minimized file to maximize.");
+            return;
+        }
+
+        File file = this.minimizedFile;
+        long fileLength = file.length();
+        long totalPointsLong = fileLength / GaiaLasPoint.BYTES_SIZE;
+
+        if (totalPointsLong > Integer.MAX_VALUE) {
+            throw new IllegalStateException("Too many points to load into memory: " + totalPointsLong);
+        }
+
+        int totalPoints = (int) totalPointsLong;
+        final int pointSize = GaiaLasPoint.BYTES_SIZE;
+
+        List<GaiaLasPoint> points = new ArrayList<>(totalPoints > 0 ? totalPoints : 16);
+        byte[] pointBytes = new byte[pointSize];
+        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file), 1024 * 1024)) { // 1MB 버퍼
+
+            for (int i = 0; i < totalPoints; i++) {
+                int readTotal = 0;
+                while (readTotal < pointSize) {
+                    int r = bis.read(pointBytes, readTotal, pointSize - readTotal);
+                    if (r == -1) {
+                        log.error("Unexpected end of file while reading point cloud. readTotal={}, expected={}", readTotal, pointSize);
+                        break;
+                    }
+                    readTotal += r;
+                }
+                if (readTotal != pointSize) {
+                    // 파일이 손상 된 경우 - 일단 여기까지 읽은 포인트만 사용
+                    break;
+                }
+
+                GaiaLasPoint point = GaiaLasPoint.fromBytes(pointBytes);
+                points.add(point);
+            }
+
+            this.lasPoints = points;
+            this.pointCount = points.size();
+
+            if (deleteAfterMaximize) {
+                FileUtils.deleteQuietly(file);
+            }
+            this.minimizedFile = null;
+
+        } catch (IOException e) {
+            log.error("Failed to maximize point cloud from file: {}", file.getAbsolutePath(), e);
+        }
+    }
+
+    @Deprecated
+    public void maximizeOld(boolean deleteAfterMaximize) {
         if (this.minimizedFile == null) {
             log.warn("No minimized file to maximize.");
             return;
@@ -308,31 +471,34 @@ public class GaiaPointCloud {
         double midZ = (minZ + maxZ) / 2;
 
         for (GaiaLasPoint vertex : this.getLasPoints()) {
-            Vector3d position = vertex.getVec3Position();
+            //Vector3d position = vertex.getVec3Position();
+            double x = vertex.getX();
+            double y = vertex.getY();
+            double z = vertex.getZ();
 
-            if (midZ < position.z()) {
-                if (midX < position.x()) {
-                    if (midY < position.y()) {
+            if (midZ < z) {
+                if (midX < x) {
+                    if (midY < y) {
                         verticesH.add(vertex);
                     } else {
                         verticesF.add(vertex);
                     }
                 } else {
-                    if (midY < position.y()) {
+                    if (midY < y) {
                         verticesG.add(vertex);
                     } else {
                         verticesE.add(vertex);
                     }
                 }
             } else {
-                if (midX < position.x()) {
-                    if (midY < position.y()) {
+                if (midX < x) {
+                    if (midY < y) {
                         verticesD.add(vertex);
                     } else {
                         verticesB.add(vertex);
                     }
                 } else {
-                    if (midY < position.y()) {
+                    if (midY < y) {
                         verticesC.add(vertex);
                     } else {
                         verticesA.add(vertex);

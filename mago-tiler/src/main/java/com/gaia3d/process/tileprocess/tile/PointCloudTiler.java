@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RequiredArgsConstructor
 public class PointCloudTiler extends DefaultTiler implements Tiler {
     private final int MAXIMUM_DEPTH = 20;
-    private final float POINT_EXPANSION_FACTOR = 1.75f;
+    private final float POINT_EXPANSION_FACTOR = 3.0f;
     private GaiaBoundingBox globalFitBoundingBox = null;
 
     @Override
@@ -191,21 +191,21 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
             pointCloud.setCode((index++) + "");
             int chunkSize = pointCloud.CHUNK_SIZE;
             int chunkCount = pointCloud.getChunkCount(chunkSize);
-            log.info("[Tile][{}/{}][{}/{}] Chunk Size : {} / Chunk Count : {}", index, maximumIndex, index, maximumIndex, chunkSize, chunkCount);
+            log.info("[Tile][{}/{}] Chunk Size : {} / Chunk Count : {}", index, maximumIndex, chunkSize, chunkCount);
             long offset = 0;
 
             GaiaPointCloud rootTile = null;
             for (int i = 0; i < chunkCount; i++) {
                 GaiaPointCloud chunk = pointCloud.readChunk(chunkSize, offset);
                 offset += chunkSize;
-                log.info("[Tile][{}/{}][{}/{}][Chunk {}/{}] Point Count : {}", index, maximumIndex, index, maximumIndex, (i + 1), chunkCount, chunk.getPointCount());
+                log.info("[Tile][{}/{}][Chunk {}/{}] Point Count : {}", index, maximumIndex, (i + 1), chunkCount, chunk.getPointCount());
 
                 if (rootTile == null) {
-                    log.info("[Tile][{}/{}][{}/{}][Chunk {}/{}] Creating Root Tile", index, maximumIndex, index, maximumIndex, (i + 1), chunkCount);
+                    log.info("[Tile][{}/{}][Chunk {}/{}] Creating Root Tile", index, maximumIndex, (i + 1), chunkCount);
                     rootTile = createNode(index, parentNode, null, chunk, rootPointLimit, 0);
                 } else {
                     Node firstChildNode = parentNode.getChildren().getLast();
-                    log.info("[Tile][{}/{}][{}/{}][Chunk {}/{}] Expanding Nodes", index, maximumIndex, index, maximumIndex, (i + 1), chunkCount);
+                    log.info("[Tile][{}/{}][Chunk {}/{}] Expanding Nodes", index, maximumIndex, (i + 1), chunkCount);
                     expandNode(index, firstChildNode, rootTile, chunk, rootPointLimit, 0);
                 }
 
@@ -222,6 +222,8 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
             }
 
             log.info("[Tile][{}/{}] completed.", index, maximumIndex);
+            pointCloud.clearPoints();
+            pointCloud.removeMinimizedFile();
         }
     }
 
@@ -293,7 +295,6 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         boolean hasMatchedNodeAndPointCloud = currentNode != null;
         if (hasMatchedNodeAndPointCloud) {
             GaiaBoundingBox cubeBoundingBox = currentPointCloud.getGaiaBoundingBox();
-            //GaiaBoundingBox fitBoundingBox = calcFitBoundingBox(target);
             GaiaBoundingBox fitBoundingBox = calcFitBoundingBox(cubeBoundingBox);
             double dimensionRatio = calcDimensionRatio(fitBoundingBox, cubeBoundingBox);
             int chunkPointLimit = (int) (pointLimit * dimensionRatio);
@@ -306,9 +307,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
             GaiaPointCloud remainPointCloud = null;
             if (remainPointCount > 0) {
                 divided = target.divideChunkSize((int) remainPointCount);
-
                 currentPointCloud.maximize(false);
-
                 long currentPointCount = currentPointCloud.getPointCount();
 
                 GaiaPointCloud newSelfPointCloud = divided.getFirst();
@@ -318,11 +317,18 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
                     throw new TileProcessingException("Point count mismatch after combining point clouds.");
                 }
 
-                if (currentPointCloud.getPointCount() == currentPointCloud.getLimitPointCount()) {
-                    File tempPath = new File(GlobalOptions.getInstance().getTempPath());
-                    File tempFile = new File(tempPath, UUID.randomUUID().toString());
-                    currentPointCloud.minimize(tempFile);
+                //File tempPath = new File(GlobalOptions.getInstance().getTempPath());
+                String tempSubPath = currentPointCloud.createFullCodePath();
+                File tempPath = new File(GlobalOptions.getInstance().getTempPath(), tempSubPath);
+                if (!tempPath.exists()) {
+                    boolean created = tempPath.mkdirs();
+                    if (!created) {
+                        log.error("[ERROR] :Failed to create temp directory: {}", tempPath.getAbsolutePath());
+                        throw new TileProcessingException("Failed to create temp directory: " + tempPath.getAbsolutePath());
+                    }
                 }
+                File tempFile = new File(tempPath, UUID.randomUUID().toString());
+                currentPointCloud.minimize(tempFile);
                 remainPointCloud = divided.getLast();
             } else {
                 remainPointCloud = target;
@@ -475,7 +481,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         return (fitVolumeSize.x * fitVolumeSize.y) / (cubeVolumeSize.x * cubeVolumeSize.y);
     }
 
-    /*private GaiaBoundingBox calcFitBoundingBox(GaiaPointCloud pointCloud) {
+    /*private GaiaBoundingBox calcRealFitBoundingBox(GaiaPointCloud pointCloud) {
         GaiaBoundingBox fitBoundingBox = new GaiaBoundingBox();
         pointCloud.getLasPoints().forEach(point -> {
             fitBoundingBox.addPoint(point.getPosition());
@@ -485,34 +491,6 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
 
     private GaiaBoundingBox calcFitBoundingBox(GaiaBoundingBox cubeBoundingBox) {
         return globalFitBoundingBox.createIntersection(cubeBoundingBox);
-    }
-
-    private GaiaBoundingBox calcApproximateFitBoundingBox(GaiaPointCloud pointCloud) {
-        //TODO: I Think, We can improve this method later.
-        // it solves performance issue when point cloud has too many points.
-        // if recalculating full bounding box is faster, we can use calcFitBoundingBox method directly.
-
-        // approximate fitting box
-        int approximatePointCount = 10;
-        GaiaBoundingBox fitBoundingBox = new GaiaBoundingBox();
-        long totalPoints = pointCloud.getPointCount();
-        Vector3d position = new Vector3d();
-        if (totalPoints <= approximatePointCount) {
-            pointCloud.getLasPoints().forEach(point -> {
-                position.set(point.getPosition());
-                fitBoundingBox.addPoint(position);
-            });
-            return fitBoundingBox;
-        }
-        long step = Math.max(1, totalPoints / approximatePointCount);
-        for (long i = 0; i < totalPoints; i += step) {
-            List<GaiaLasPoint> lasPoints = pointCloud.getLasPoints();
-            GaiaLasPoint point = lasPoints.get((int)i);
-            position.set(point.getPosition());
-            fitBoundingBox.addPoint(position);
-        }
-
-        return fitBoundingBox;
     }
 
     private static GaiaBoundingBox toCube(GaiaBoundingBox box) {
@@ -567,7 +545,15 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
                 .sum();
         log.debug("[Tile][{}/{}][Minimize][TotalPointClouds:{}][TotalPoints:{}]", index, maximumIndex, size, totalPoints);
         allPointClouds.forEach(pointCloud -> {
-            File tempPath = new File(GlobalOptions.getInstance().getTempPath());
+            String tempSubPath = pointCloud.createFullCodePath();
+            File tempPath = new File(GlobalOptions.getInstance().getTempPath(), tempSubPath);
+            if (!tempPath.exists()) {
+                boolean created = tempPath.mkdirs();
+                if (!created) {
+                    log.error("[ERROR] :Failed to create temp directory: {}", tempPath.getAbsolutePath());
+                    throw new TileProcessingException("Failed to create temp directory: " + tempPath.getAbsolutePath());
+                }
+            }
             File tempFile = new File(tempPath, UUID.randomUUID().toString());
             pointCloud.minimize(tempFile);
         });

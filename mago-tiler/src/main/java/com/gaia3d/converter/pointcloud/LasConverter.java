@@ -6,6 +6,7 @@ import com.gaia3d.util.GlobeUtils;
 import com.github.mreutegg.laszip4j.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.joml.Vector3d;
 import org.locationtech.proj4j.BasicCoordinateTransform;
 import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
@@ -14,7 +15,6 @@ import org.locationtech.proj4j.ProjCoordinate;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -65,6 +65,9 @@ public class LasConverter {
         ProjCoordinate sourceCoord = new ProjCoordinate();
         ProjCoordinate targetCoord = new ProjCoordinate();
 
+        Vector3d translation = options.getTranslation();
+        boolean applyTranslation = translation.x != 0.0 || translation.y != 0.0 || translation.z != 0.0;
+
         float percentage = options.getPointPercentage();
         if (percentage < 1) {
             percentage = 1;
@@ -73,15 +76,31 @@ public class LasConverter {
         }
         int volumeFilter = (int) Math.ceil(100.0 / percentage);
 
+        boolean showProgress = totalPointsSize >= 1000000;
+        int progressInterval = (int) (totalPointsSize / 100);
+        if (progressInterval == 0) {
+            progressInterval = 1;
+        }
+
         long index = 0;
         for (LASPoint point : pointIterable) {
             if (index % volumeFilter != 0) {
                 index++;
                 continue;
             }
+            if (showProgress && index % progressInterval == 0) {
+                int progress = (int) ((index * 100) / totalPointsSize);
+                log.info("[Load] - Processing point {}/{} ({}%)", index, totalPointsSize, progress);
+            }
             double x = point.getX() * xScaleFactor + xOffset;
             double y = point.getY() * yScaleFactor + yOffset;
             double z = point.getZ() * zScaleFactor + zOffset;
+
+            if (applyTranslation) {
+                x += translation.x;
+                y += translation.y;
+                z += translation.z;
+            }
 
             if (canTransform) {
                 sourceCoord.x = x;
@@ -95,12 +114,16 @@ public class LasConverter {
 
             byte[] rgb = getRgbColor(point, hasRgbColor, isForce4ByteRGB);
             GaiaLasPoint gaiaLasPoint = GaiaLasPoint.builder()
-                    .position(new double[]{x, y, z})
-                    .rgb(rgb)
+                    .x(x)
+                    .y(y)
+                    .z(z)
+                    .r(rgb[0])
+                    .g(rgb[1])
+                    .b(rgb[2])
+                    .a((byte) 255)
                     .intensity(point.getIntensity())
                     .classification(point.getClassification())
                     .build();
-
             try {
                 bucketWriter.addPoint(gaiaLasPoint);
             } catch (IOException e) {
@@ -230,16 +253,18 @@ public class LasConverter {
 
     public void createShuffle() {
         Shuffler shuffler = new OptimizedCardShuffler();
+
         List<File> bucketFiles = getBucketFiles();
         log.info("[Pre] Starting shuffling of {} bucket files...", bucketFiles.size());
         // bucketFiles.stream().parallel().forEach(bucketFile -> {
         int fileCount = bucketFiles.size();
         int index = 0;
+        shuffler.setTotalProcessCount(fileCount);
         for (File bucketFile : bucketFiles) {
             File shuffledFile = new File(bucketFile.getParent(), "shuffled_" + bucketFile.getName());
             log.info("[Pre][Shuffle][{}/{}] Shuffling bucket file: {}", ++index, fileCount, bucketFile.getAbsoluteFile());
+            shuffler.setProcessCount(index);
             shuffler.shuffle(bucketFile, shuffledFile, POINT_BLOCK_SIZE);
-
             boolean isSameSize = bucketFile.length() == shuffledFile.length();
             if (!isSameSize) {
                 log.warn("Shuffled file size does not match original! Original: {}, Shuffled: {}", bucketFile.length(), shuffledFile.length());

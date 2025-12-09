@@ -9,8 +9,7 @@ import java.util.List;
 import java.util.Random;
 
 @Slf4j
-public class BasicShuffler implements Shuffler {
-
+public class BasicShuffler extends Shuffler {
     private static final int RANDOM_SEED = 8291;
     private static List<Integer> SHUFFLE_INDEXES = null;
 
