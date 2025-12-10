@@ -133,6 +133,8 @@ public class TilingPipeline implements Pipeline {
         int contentCount = contentInfos.size();
         globalOptions.setTileCount(contentCount);
 
+        // Sort contentInfos by node code length to ensure parent nodes are processed before child nodes
+        contentInfos.sort((c1, c2) -> c1.getNodeCode().length() - c2.getNodeCode().length());
         for (ContentInfo contentInfo : contentInfos) {
             Runnable callableTask = () -> {
                 try {
