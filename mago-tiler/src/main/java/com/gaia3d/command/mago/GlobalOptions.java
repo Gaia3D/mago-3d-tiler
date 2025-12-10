@@ -392,12 +392,11 @@ public class GlobalOptions {
         } else {
             int processorCount = Runtime.getRuntime().availableProcessors();
             int threadCount = processorCount > 1 ? processorCount / 2 : 1;
-            // Limit to maximum 2 threads for I/O overload prevention
-            if (threadCount > 2) {
-                threadCount = 2;
+            if (threadCount > 3) {
+                threadCount = 3;
             }
             instance.setMultiThreadCount((byte) threadCount);
-            System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", String.valueOf(instance.getMultiThreadCount()));
+            System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", String.valueOf(threadCount));
         }
 
         instance.printDebugOptions();
@@ -491,5 +490,4 @@ public class GlobalOptions {
         log.info("Skirt Height: {}", skirtHeight);
         Mago3DTilerMain.drawLine();
     }
-
 }
