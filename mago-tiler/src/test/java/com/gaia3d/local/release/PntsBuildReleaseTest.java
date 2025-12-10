@@ -10,6 +10,28 @@ import org.junit.jupiter.api.Test;
 class PntsBuildReleaseTest {
 
     @Test
+    void pointcloud02Big() {
+        String path = "P02-busan-big-jingu-las";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-c", "5187",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void pointcloud03() {
+        String path = "P03-khonkaen-mini";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-c", "32648",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
     void pointcloud14A() {
         String path = "P14-KyungSan-A";
         String[] args = new String[]{
@@ -38,7 +60,6 @@ class PntsBuildReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-crs", "5186",
-                //"--pointRatio", "100",
                 "--force4ByteRGB"
         };
         MagoTestConfig.execute(args);
@@ -62,6 +83,30 @@ class PntsBuildReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-crs", "32648",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void pointcloud10() {
+        String path = "P10-jeonju";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-crs", "5186",
+                "--temp", "C:\\temp\\",
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
+    void pointcloud11() {
+        String path = "P11-gwangju";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "-crs", "5174",
+                "--temp", "C:\\temp\\",
         };
         MagoTestConfig.execute(args);
     }

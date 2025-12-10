@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joml.Vector3d;
 import org.locationtech.proj4j.CRSFactory;
@@ -17,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Global options for Gaia3D Tiler.
@@ -52,6 +54,7 @@ public class GlobalOptions {
     private FormatType inputFormat;
     private FormatType outputFormat;
 
+    private boolean forceCrs = false;
     private CoordinateReferenceSystem sourceCrs;
     private CoordinateReferenceSystem targetCrs;
     private String proj;
@@ -157,6 +160,7 @@ public class GlobalOptions {
             throw new IllegalArgumentException("Please enter the value of the output argument.");
         }
 
+        instance.setLeaveTemp(command.hasOption(ProcessOptions.LEAVE_TEMP.getLongName()));
         if (command.hasOption(ProcessOptions.TEMP_PATH.getLongName())) {
             String tempPath = command.getOptionValue(ProcessOptions.TEMP_PATH.getLongName());
             String sufix = java.util.UUID.randomUUID().toString();
@@ -168,6 +172,15 @@ public class GlobalOptions {
             String tempPath = tempDir.getAbsolutePath();
             instance.setTempPath(tempPath);
             OptionsCorrector.checkExistOutput(tempDir);
+        }
+        if (!instance.isLeaveTemp()) {
+            // Delete temp directory if exists
+            File tempDir = new File(instance.getTempPath());
+            String[] children = tempDir.list();
+            if (tempDir.exists() && tempDir.isDirectory() && children != null && children.length > 0) {
+                log.info("[INFO] Deleting existing temp directory: {}", tempDir.getAbsolutePath());
+                FileUtils.deleteDirectory(tempDir);
+            }
         }
 
         if (command.hasOption(ProcessOptions.TILES_VERSION.getLongName())) {
@@ -244,6 +257,7 @@ public class GlobalOptions {
                 sourceCrs = new CRSFactory().createFromParameters("CUSTOM_CRS_PROJ", instance.getProj());
             }
             instance.setSourceCrs(sourceCrs);
+            instance.setForceCrs(true);
         }
 
         Vector3d translation = new Vector3d(0, 0, 0);
@@ -266,12 +280,14 @@ public class GlobalOptions {
 
             if (proj != null && !proj.isEmpty()) {
                 sourceCrs = factory.createFromParameters("CUSTOM_CRS_PROJ", proj);
+                instance.setForceCrs(true);
             } else if (crsString != null && !crsString.isEmpty()) {
                 if (crsString.toUpperCase().startsWith("EPSG:")) {
                     crsString = crsString.substring(5);
                     log.warn("[WARN] 'EPSG:' prefix is not required for CRS option. Use only the EPSG code number.");
                 }
                 sourceCrs = factory.createFromName("EPSG:" + crsString);
+                instance.setForceCrs(true);
             } else {
                 sourceCrs = GlobalConstants.DEFAULT_SOURCE_CRS;
             }
@@ -288,6 +304,7 @@ public class GlobalOptions {
             instance.setProj(proj);
             CoordinateReferenceSystem sourceCrs = factory.createFromParameters("CUSTOM_CRS_PROJ", proj);
             instance.setSourceCrs(sourceCrs);
+            instance.setForceCrs(true);
             log.info("Custom CRS: {}", proj);
         } else {
             CoordinateReferenceSystem sourceCrs = GlobalConstants.DEFAULT_SOURCE_CRS;
@@ -308,7 +325,6 @@ public class GlobalOptions {
         instance.setMaxInstance(GlobalConstants.DEFAULT_MAX_INSTANCE);
         instance.setMaxNodeDepth(GlobalConstants.DEFAULT_MAX_NODE_DEPTH);
         instance.setPhotogrammetry(command.hasOption(ProcessOptions.PHOTOGRAMMETRY.getLongName()));
-        instance.setLeaveTemp(command.hasOption(ProcessOptions.LEAVE_TEMP.getLongName()));
         instance.setUseQuantization(command.hasOption(ProcessOptions.MESH_QUANTIZATION.getLongName()) || GlobalConstants.DEFAULT_USE_QUANTIZATION);
 
         /* Point Cloud Options */

@@ -189,23 +189,24 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
 
             log.info("[Tile][{}/{}] original Point Count : {}", (index + 1), maximumIndex, pointCloud.getPointCount());
             pointCloud.setCode((index++) + "");
-            int chunkSize = pointCloud.CHUNK_SIZE;
+            long chunkSize = pointCloud.CHUNK_SIZE;
+            long chunkPointCount = chunkSize / GaiaLasPoint.BYTES_SIZE;
             int chunkCount = pointCloud.getChunkCount(chunkSize);
-            log.info("[Tile][{}/{}] Chunk Size : {} / Chunk Count : {}", index, maximumIndex, chunkSize, chunkCount);
+            log.info("[Tile][{}/{}] Chunk Size : {} bytes, Chunk Capacity : {}, Chunk Total Count : {}", index, maximumIndex, chunkSize, chunkPointCount, chunkCount);
             long offset = 0;
 
             GaiaPointCloud rootTile = null;
             for (int i = 0; i < chunkCount; i++) {
+                log.info("[Tile][{}/{}][Chunk {}/{}] Reading Chunk at Offset : {}", index, maximumIndex, (i + 1), chunkCount, offset);
                 GaiaPointCloud chunk = pointCloud.readChunk(chunkSize, offset);
                 offset += chunkSize;
-                log.info("[Tile][{}/{}][Chunk {}/{}] Point Count : {}", index, maximumIndex, (i + 1), chunkCount, chunk.getPointCount());
 
                 if (rootTile == null) {
-                    log.info("[Tile][{}/{}][Chunk {}/{}] Creating Root Tile", index, maximumIndex, (i + 1), chunkCount);
+                    log.info("[Tile][{}/{}][Chunk {}/{}] Creating Root Node", index, maximumIndex, (i + 1), chunkCount);
                     rootTile = createNode(index, parentNode, null, chunk, rootPointLimit, 0);
                 } else {
                     Node firstChildNode = parentNode.getChildren().getLast();
-                    log.info("[Tile][{}/{}][Chunk {}/{}] Expanding Nodes", index, maximumIndex, (i + 1), chunkCount);
+                    log.info("[Tile][{}/{}][Chunk {}/{}] Expanding Root Node", index, maximumIndex, (i + 1), chunkCount);
                     expandNode(index, firstChildNode, rootTile, chunk, rootPointLimit, 0);
                 }
 
@@ -307,7 +308,9 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
             GaiaPointCloud remainPointCloud = null;
             if (remainPointCount > 0) {
                 divided = target.divideChunkSize((int) remainPointCount);
-                currentPointCloud.maximize(false);
+                if (currentPointCloud.getLasPoints() == null || currentPointCloud.getLasPoints().isEmpty()) {
+                    currentPointCloud.maximize(false);
+                }
                 long currentPointCount = currentPointCloud.getPointCount();
 
                 GaiaPointCloud newSelfPointCloud = divided.getFirst();
@@ -317,7 +320,6 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
                     throw new TileProcessingException("Point count mismatch after combining point clouds.");
                 }
 
-                //File tempPath = new File(GlobalOptions.getInstance().getTempPath());
                 String tempSubPath = currentPointCloud.createFullCodePath();
                 File tempPath = new File(GlobalOptions.getInstance().getTempPath(), tempSubPath);
                 if (!tempPath.exists()) {
@@ -334,7 +336,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
                 remainPointCloud = target;
             }
 
-            if (remainPointCloud.getPointCount() > 0) {
+            if (remainPointCloud != null && remainPointCloud.getPointCount() > 0) {
                 List<GaiaPointCloud> distributes = remainPointCloud.distribute();
 
                 long totalDistributedPoints = distributes.stream()

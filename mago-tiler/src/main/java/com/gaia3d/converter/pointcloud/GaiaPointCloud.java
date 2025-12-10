@@ -18,7 +18,8 @@ import java.util.List;
 @Setter
 @Builder
 public class GaiaPointCloud {
-    public final int CHUNK_SIZE = GaiaLasPoint.BYTES_SIZE * 20_000_000;
+    //public final int CHUNK_SIZE = GaiaLasPoint.BYTES_SIZE * 20_000_000;
+    public final long CHUNK_SIZE = GaiaLasPoint.BYTES_SIZE * 40_000_000L;
 
     private String code = "A";
     private Path originalPath;
@@ -217,7 +218,7 @@ public class GaiaPointCloud {
         }
     }
 
-    public int getChunkCount(int chunkSize) {
+    public int getChunkCount(long chunkSize) {
         if (this.minimizedFile == null) {
             log.warn("No minimized file to get chunk count from.");
             return 0;
@@ -470,7 +471,33 @@ public class GaiaPointCloud {
         double midY = (minY + maxY) / 2;
         double midZ = (minZ + maxZ) / 2;
 
+        // bit-mask octree indexing
+        @SuppressWarnings("unchecked")
+        List<GaiaLasPoint>[] bucketLists = new List[] {
+                verticesA, // 000
+                verticesC, // 001 (y)
+                verticesB, // 010 (x)
+                verticesD, // 011 (x|y)
+                verticesE, // 100 (z)
+                verticesG, // 101 (z|y)
+                verticesF, // 110 (z|x)
+                verticesH  // 111 (z|x|y)
+        };
+
         for (GaiaLasPoint vertex : this.getLasPoints()) {
+            double x = vertex.getX();
+            double y = vertex.getY();
+            double z = vertex.getZ();
+
+            int idx = 0;
+            if (z > midZ) idx |= 4;
+            if (x > midX) idx |= 2;
+            if (y > midY) idx |= 1;
+
+            bucketLists[idx].add(vertex);
+        }
+
+        /*for (GaiaLasPoint vertex : this.getLasPoints()) {
             //Vector3d position = vertex.getVec3Position();
             double x = vertex.getX();
             double y = vertex.getY();
@@ -505,7 +532,7 @@ public class GaiaPointCloud {
                     }
                 }
             }
-        }
+        }*/
 
         GaiaBoundingBox adjustedBoxA = new GaiaBoundingBox();
         adjustedBoxA.setMinX(gaiaBoundingBox.getMinX());

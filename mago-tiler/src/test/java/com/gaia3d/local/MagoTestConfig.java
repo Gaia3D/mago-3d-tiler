@@ -6,7 +6,8 @@ import com.gaia3d.command.mago.Mago3DTilerMain;
 import java.io.File;
 
 public class MagoTestConfig {
-    public static final String OUTPUT_PATH = "E:/data/mago-server/output";
+    //public static final String OUTPUT_PATH = "E:/data/mago-server/output";
+    public static final String OUTPUT_PATH = "H:/workspace/mago-server/output";
     public static final String SSD_INPUT_PATH = "C:/Workspace/mago-3d-tiler/";
     public static final String INPUT_PATH = "D:/data/mago-3d-tiler/release-sample";
     public static final String TEMP_PATH = "D:/data/mago-3d-tiler/temp-sample";

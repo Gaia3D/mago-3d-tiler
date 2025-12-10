@@ -33,6 +33,7 @@ public class PointCloudProcessFlow implements ProcessFlow {
         Path tempPath = Path.of(tempDir);
         LasConverterOptions options = LasConverterOptions.builder()
                 .pointPercentage(globalOptions.getPointRatio())
+                .forceCrs(globalOptions.isForceCrs())
                 .sourceCrs(globalOptions.getSourceCrs())
                 .tempDirectory(tempPath)
                 .force4ByteRgb(globalOptions.isForce4ByteRGB())

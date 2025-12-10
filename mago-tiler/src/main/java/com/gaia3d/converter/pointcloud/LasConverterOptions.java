@@ -19,6 +19,8 @@ public class LasConverterOptions {
     @Builder.Default
     private boolean force4ByteRgb = false;
     @Builder.Default
+    private boolean forceCrs = false;
+    @Builder.Default
     private CoordinateReferenceSystem sourceCrs = GlobeUtils.wgs84;
     @Builder.Default
     private float pointPercentage = 1.0f; // 1.0 means 100%

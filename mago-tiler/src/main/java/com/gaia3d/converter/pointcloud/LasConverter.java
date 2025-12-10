@@ -58,10 +58,11 @@ public class LasConverter {
         printHeaderInfo(header);
 
         boolean isForce4ByteRGB = options.isForce4ByteRgb();
-        CoordinateReferenceSystem sourceCrs = getProjCRS(header);
+        boolean isForceCrs = options.isForceCrs();
+        CoordinateReferenceSystem sourceCrs = getProjCRS(header, isForceCrs);
         CoordinateReferenceSystem targetCrs = GlobeUtils.wgs84;
         BasicCoordinateTransform transformer = new BasicCoordinateTransform(sourceCrs, targetCrs);
-        boolean canTransform = sourceCrs != null && !sourceCrs.equals(GlobeUtils.wgs84);
+        boolean needTransform = sourceCrs != null && !sourceCrs.equals(GlobeUtils.wgs84);
         ProjCoordinate sourceCoord = new ProjCoordinate();
         ProjCoordinate targetCoord = new ProjCoordinate();
 
@@ -102,7 +103,7 @@ public class LasConverter {
                 z += translation.z;
             }
 
-            if (canTransform) {
+            if (needTransform) {
                 sourceCoord.x = x;
                 sourceCoord.y = y;
                 sourceCoord.z = z;
@@ -174,10 +175,10 @@ public class LasConverter {
         log.debug("Total Number of Point Records: {}", totalPointsSize);
     }
 
-    private CoordinateReferenceSystem getProjCRS(LASHeader header) {
+    private CoordinateReferenceSystem getProjCRS(LASHeader header, boolean isForceCrs) {
         AtomicReference<CoordinateReferenceSystem> atomicCrs = new AtomicReference<>(options.getSourceCrs());
         boolean isDefaultCrs = options.getSourceCrs().equals(GlobeUtils.wgs84);
-        if (isDefaultCrs) {
+        if (!isForceCrs && isDefaultCrs) {
             try {
                 Iterable<LASVariableLengthRecord> records = header.getVariableLengthRecords();
                 if (records != null) {

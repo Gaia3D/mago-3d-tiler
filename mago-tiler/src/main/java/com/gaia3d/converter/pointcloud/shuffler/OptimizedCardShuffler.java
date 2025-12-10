@@ -8,16 +8,17 @@ import java.util.Random;
 @Slf4j
 public class OptimizedCardShuffler extends Shuffler {
     private static final int RANDOM_SEED = 8291;
-    private static final int FIXED_SECTION_BYTES = 1024 * (1024 * 1024);
-    private int[] localOrder;
+    private static final int FIXED_SECTION_BYTES = 2024 * (1024 * 1024);
+    private int[] maximumLocalOrder;
+    private int[] tailTempLocalOrder = null;
 
     @Override
     public void shuffle(File sourceFile, File targetFile, int blockSize) {
         long sourceFileSize = sourceFile.length();
         long blockCount = sourceFileSize / blockSize;
-        int passes = (int) (blockCount / 25_000_000L);
-        if (passes < 3) {
-            passes = 3;
+        int passes = (int) (blockCount / 30_000_000L);
+        if (passes < 4) {
+            passes = 4;
         } else if (passes > 8) {
             passes = 8;
         }
@@ -28,7 +29,7 @@ public class OptimizedCardShuffler extends Shuffler {
 
     @Override
     public void clear() {
-        localOrder = null;
+        maximumLocalOrder = null;
     }
 
     public void shuffle(File sourceFile, File targetFile, int blockSize, int passes) {
@@ -40,6 +41,7 @@ public class OptimizedCardShuffler extends Shuffler {
         if (passes == 1) {
             int sectionBytes = chooseSectionBytes(blockSize);
             shuffleOnce(sourceFile, targetFile, blockSize, sectionBytes, 0);
+            tailTempLocalOrder = null;
             return;
         }
 
@@ -80,7 +82,7 @@ public class OptimizedCardShuffler extends Shuffler {
                 shuffleOnce(currentIn, currentOut, blockSize, sectionBytes, pass);
                 currentIn = currentOut;
             }
-
+            tailTempLocalOrder = null;
         } catch (IOException e) {
             log.error("[ERROR] Failed to prepare temp files for multi-pass shuffle", e);
             throw new RuntimeException(e);
@@ -137,16 +139,6 @@ public class OptimizedCardShuffler extends Shuffler {
             sectionOrder[i] = i;
         }
         shuffleArray(sectionOrder, new Random(RANDOM_SEED + 13L * passIndex));
-
-        if (localOrder == null || localOrder.length != blocksPerSection) {
-            log.info("[Pre][Shuffle] Preparing Local Block Order for sections with {} blocks...", blocksPerSection);
-            localOrder = new int[blocksPerSection];
-            for (int i = 0; i < blocksPerSection; i++) {
-                localOrder[i] = i;
-            }
-            shuffleArray(localOrder, new Random(RANDOM_SEED * 31L + blocksPerSection));
-        }
-
         try (RandomAccessFile raf = new RandomAccessFile(sourceFile, "r");
              DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(targetFile, false), 8192 * 64))) {
 
@@ -177,27 +169,45 @@ public class OptimizedCardShuffler extends Shuffler {
                     readFully(raf, sectionBuffer, part1Bytes, part2Bytes);
                 }
 
+                int tempSectionBytes = logicalLen * blockSize;
+                byte[] shuffledSection = new byte[tempSectionBytes];
+
                 if (logicalLen == blocksPerSection) {
+                    if (maximumLocalOrder == null || maximumLocalOrder.length != blocksPerSection) {
+                        log.info("[Pre][Shuffle] Preparing Local Block Order for sections with {} blocks...", blocksPerSection);
+                        maximumLocalOrder = new int[blocksPerSection];
+                        for (int i = 0; i < blocksPerSection; i++) {
+                            maximumLocalOrder[i] = i;
+                        }
+                        shuffleArray(maximumLocalOrder, new Random(RANDOM_SEED * 31L + blocksPerSection));
+                    }
+
                     for (int i = 0; i < logicalLen; i++) {
-                        int blk = localOrder[i]; // 0..blocksPerSection-1
-                        int offset = blk * blockSize;
-                        out.write(sectionBuffer, offset, blockSize);
+                        int blk = maximumLocalOrder[i];
+                        int srcOffset = blk * blockSize;
+                        int dstOffset = i * blockSize;
+                        System.arraycopy(sectionBuffer, srcOffset, shuffledSection, dstOffset, blockSize);
                     }
                 } else {
-                    // tail section with fewer blocks than blocksPerSection
-                    int[] tailLocalOrder = new int[logicalLen];
-                    for (int i = 0; i < logicalLen; i++) {
-                        tailLocalOrder[i] = i;
+                    int[] tailLocalOrder = tailTempLocalOrder;
+                    if (tailLocalOrder == null || tailLocalOrder.length != logicalLen) {
+                        log.info("[Pre][Shuffle] Preparing Tail Local Block Order for {} blocks...", logicalLen);
+                        tailLocalOrder = new int[logicalLen];
+                        for (int i = 0; i < logicalLen; i++) {
+                            tailLocalOrder[i] = i;
+                        }
+                        shuffleArray(tailLocalOrder, new Random(RANDOM_SEED * 31L + logicalLen));
+                        tailTempLocalOrder = tailLocalOrder;
                     }
-                    shuffleArray(tailLocalOrder, new Random(RANDOM_SEED * 31L + logicalLen));
+
                     for (int i = 0; i < logicalLen; i++) {
-                        /*int offset = blk * blockSize;
-                        out.write(sectionBuffer, offset, blockSize);*/
                         int blk = tailLocalOrder[i];
-                        int offset = blk * blockSize;
-                        out.write(sectionBuffer, offset, blockSize);
+                        int srcOffset = blk * blockSize;
+                        int dstOffset = i * blockSize;
+                        System.arraycopy(sectionBuffer, srcOffset, shuffledSection, dstOffset, blockSize);
                     }
                 }
+                out.write(shuffledSection, 0, tempSectionBytes);
             }
 
             if (tailBytes > 0) {
@@ -207,13 +217,12 @@ public class OptimizedCardShuffler extends Shuffler {
                 readFully(raf, tail, 0, tailBytes);
                 out.write(tail);
             }
-
             out.flush();
-
         } catch (IOException e) {
             log.error("[ERROR] Failed to shuffle once (offset-based)", e);
             throw new RuntimeException(e);
         }
+        tailTempLocalOrder = null;
     }
 
     private void readFully(RandomAccessFile raf, byte[] buf, int off, int len) throws IOException {
