@@ -171,24 +171,15 @@ implements <a href="../Tiler.html" title="interface in com.gaia3d.process.tilepr
  double&nbsp;screenPixelsForMeter,
  <a href="../../../basic/remesher/ReMeshParameters.html" title="class in com.gaia3d.basic.remesher">ReMeshParameters</a>&nbsp;reMeshParams)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="tileset/Tileset.html" title="class in com.gaia3d.process.tileprocess.tile.tileset">Tileset</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#run(java.util.List)" class="member-name-link">run</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="TileInfo.html" title="class in com.gaia3d.process.tileprocess.tile">TileInfo</a>&gt;&nbsp;tileInfos)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>float</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#unpackDepth32(float%5B%5D)" class="member-name-link">unpackDepth32</a><wbr>(float[]&nbsp;packedDepth)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#reMeshAndCutScenes(java.util.List,int,com.gaia3d.process.tileprocess.tile.tileset.node.Node,int,com.gaia3d.basic.halfedge.DecimateParameters,double,double)" class="member-name-link">reMeshAndCutScenes</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="TileInfo.html" title="class in com.gaia3d.process.tileprocess.tile">TileInfo</a>&gt;&nbsp;tileInfos,
- int&nbsp;lod,
- <a href="tileset/node/Node.html" title="class in com.gaia3d.process.tileprocess.tile.tileset.node">Node</a>&nbsp;rootNode,
- int&nbsp;maxDepth,
- <a href="../../../basic/halfedge/DecimateParameters.html" title="class in com.gaia3d.basic.halfedge">DecimateParameters</a>&nbsp;decimateParameters,
- double&nbsp;pixelsForMeter,
- double&nbsp;screenPixelsForMeter)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#writeTileset(com.gaia3d.process.tileprocess.tile.tileset.Tileset)" class="member-name-link">writeTileset</a><wbr>(<a href="tileset/Tileset.html" title="class in com.gaia3d.process.tileprocess.tile.tileset">Tileset</a>&nbsp;tileset)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="tileset/Tileset.html" title="class in com.gaia3d.process.tileprocess.tile.tileset">Tileset</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#run(java.util.List)" class="member-name-link">run</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="TileInfo.html" title="class in com.gaia3d.process.tileprocess.tile">TileInfo</a>&gt;&nbsp;tileInfos)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>float</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#unpackDepth32(float%5B%5D)" class="member-name-link">unpackDepth32</a><wbr>(float[]&nbsp;packedDepth)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#writeTileset(com.gaia3d.process.tileprocess.tile.tileset.Tileset)" class="member-name-link">writeTileset</a><wbr>(<a href="tileset/Tileset.html" title="class in com.gaia3d.process.tileprocess.tile.tileset">Tileset</a>&nbsp;tileset)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -245,18 +236,6 @@ implements <a href="../Tiler.html" title="interface in com.gaia3d.process.tilepr
 <dt>Throws:</dt>
 <dd><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/FileNotFoundException.html" title="class or interface in java.io" class="external-link">FileNotFoundException</a></code></dd>
 </dl>
-</section>
-</li>
-<li>
-<section class="detail" id="reMeshAndCutScenes(java.util.List,int,com.gaia3d.process.tileprocess.tile.tileset.node.Node,int,com.gaia3d.basic.halfedge.DecimateParameters,double,double)">
-<h3>reMeshAndCutScenes</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">reMeshAndCutScenes</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="TileInfo.html" title="class in com.gaia3d.process.tileprocess.tile">TileInfo</a>&gt;&nbsp;tileInfos,
- int&nbsp;lod,
- <a href="tileset/node/Node.html" title="class in com.gaia3d.process.tileprocess.tile.tileset.node">Node</a>&nbsp;rootNode,
- int&nbsp;maxDepth,
- <a href="../../../basic/halfedge/DecimateParameters.html" title="class in com.gaia3d.basic.halfedge">DecimateParameters</a>&nbsp;decimateParameters,
- double&nbsp;pixelsForMeter,
- double&nbsp;screenPixelsForMeter)</span></div>
 </section>
 </li>
 <li>

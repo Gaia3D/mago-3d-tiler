@@ -1,6 +1,6 @@
 subprojects {
     group "com.gaia3d"
-    version "1.15.2-beta"
+    version "1.15.3-beta"
     apply plugin: 'java'
     project.ext.lwjglVersion = "3.3.6"
 
@@ -34,6 +34,7 @@ subprojects {
         implementation platform("org.geotools:gt-bom:34.0")
         implementation "org.geotools:gt-shapefile"
         implementation "org.geotools:gt-geotiff"
+        implementation "org.geotools:gt-geoparquet"
         implementation "org.geotools:gt-geopkg"
         implementation "org.geotools:gt-geojson"
         implementation "org.geotools:gt-coverage"

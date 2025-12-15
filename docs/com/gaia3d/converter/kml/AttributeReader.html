@@ -88,7 +88,7 @@ loadScripts(document, 'script');</script>
 <section class="class-description" id="class-description">
 <dl class="notes">
 <dt>All Known Implementing Classes:</dt>
-<dd><code><a href="DefaultKmlReader.html" title="class in com.gaia3d.converter.kml">DefaultKmlReader</a></code>, <code><a href="FastKmlReader.html" title="class in com.gaia3d.converter.kml">FastKmlReader</a></code>, <code><a href="../parametric/geojson/GeoJsonInstanceConverter.html" title="class in com.gaia3d.converter.parametric.geojson">GeoJsonInstanceConverter</a></code>, <code><a href="../parametric/geopackage/GeoPackageInstanceConverter.html" title="class in com.gaia3d.converter.parametric.geopackage">GeoPackageInstanceConverter</a></code>, <code><a href="JacksonKmlReader.html" title="class in com.gaia3d.converter.kml">JacksonKmlReader</a></code>, <code><a href="../parametric/shape/ShapeInstanceConverter.html" title="class in com.gaia3d.converter.parametric.shape">ShapeInstanceConverter</a></code></dd>
+<dd><code><a href="DefaultKmlReader.html" title="class in com.gaia3d.converter.kml">DefaultKmlReader</a></code>, <code><a href="FastKmlReader.html" title="class in com.gaia3d.converter.kml">FastKmlReader</a></code>, <code><a href="../geojson/GeoJsonInstanceConverter.html" title="class in com.gaia3d.converter.geojson">GeoJsonInstanceConverter</a></code>, <code><a href="../geopackage/GeoPackageInstanceConverter.html" title="class in com.gaia3d.converter.geopackage">GeoPackageInstanceConverter</a></code>, <code><a href="JacksonKmlReader.html" title="class in com.gaia3d.converter.kml">JacksonKmlReader</a></code>, <code><a href="../shape/ShapeInstanceConverter.html" title="class in com.gaia3d.converter.shape">ShapeInstanceConverter</a></code></dd>
 </dl>
 <hr>
 <div class="type-signature"><span class="modifiers">public interface </span><span class="element-name type-name-label">AttributeReader</span></div>
@@ -107,8 +107,8 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#calculatePointCount(org.locationtech.jts.geom.Geometry,org.opengis.referencing.crs.CoordinateReferenceSystem,double,double)" class="member-name-link">calculatePointCount</a><wbr>(org.locationtech.jts.geom.Geometry&nbsp;polygon,
- org.opengis.referencing.crs.CoordinateReferenceSystem&nbsp;sourceCRS,
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#calculatePointCount(org.locationtech.jts.geom.Geometry,org.geotools.api.referencing.crs.CoordinateReferenceSystem,double,double)" class="member-name-link">calculatePointCount</a><wbr>(org.locationtech.jts.geom.Geometry&nbsp;polygon,
+ org.geotools.api.referencing.crs.CoordinateReferenceSystem&nbsp;sourceCRS,
  double&nbsp;proportion,
  double&nbsp;diameter)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">&nbsp;</div>
@@ -138,8 +138,8 @@ loadScripts(document, 'script');</script>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#readAll(java.io.File)" class="member-name-link">readAll</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a>&nbsp;file)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default org.locationtech.jts.geom.Geometry</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#transformGeometry(org.locationtech.jts.geom.Geometry,org.opengis.referencing.crs.CoordinateReferenceSystem)" class="member-name-link">transformGeometry</a><wbr>(org.locationtech.jts.geom.Geometry&nbsp;polygon,
- org.opengis.referencing.crs.CoordinateReferenceSystem&nbsp;sourceCRS)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#transformGeometry(org.locationtech.jts.geom.Geometry,org.geotools.api.referencing.crs.CoordinateReferenceSystem)" class="member-name-link">transformGeometry</a><wbr>(org.locationtech.jts.geom.Geometry&nbsp;polygon,
+ org.geotools.api.referencing.crs.CoordinateReferenceSystem&nbsp;sourceCRS)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">&nbsp;</div>
 </div>
 </div>
@@ -168,32 +168,32 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="transformGeometry(org.locationtech.jts.geom.Geometry,org.opengis.referencing.crs.CoordinateReferenceSystem)">
+<section class="detail" id="transformGeometry(org.locationtech.jts.geom.Geometry,org.geotools.api.referencing.crs.CoordinateReferenceSystem)">
 <h3>transformGeometry</h3>
 <div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type">org.locationtech.jts.geom.Geometry</span>&nbsp;<span class="element-name">transformGeometry</span><wbr><span class="parameters">(org.locationtech.jts.geom.Geometry&nbsp;polygon,
- org.opengis.referencing.crs.CoordinateReferenceSystem&nbsp;sourceCRS)</span>
-                                                      throws <span class="exceptions">org.opengis.referencing.FactoryException,
-org.opengis.referencing.operation.TransformException</span></div>
+ org.geotools.api.referencing.crs.CoordinateReferenceSystem&nbsp;sourceCRS)</span>
+                                                      throws <span class="exceptions">org.geotools.api.referencing.FactoryException,
+org.geotools.api.referencing.operation.TransformException</span></div>
 <dl class="notes">
 <dt>Throws:</dt>
-<dd><code>org.opengis.referencing.FactoryException</code></dd>
-<dd><code>org.opengis.referencing.operation.TransformException</code></dd>
+<dd><code>org.geotools.api.referencing.FactoryException</code></dd>
+<dd><code>org.geotools.api.referencing.operation.TransformException</code></dd>
 </dl>
 </section>
 </li>
 <li>
-<section class="detail" id="calculatePointCount(org.locationtech.jts.geom.Geometry,org.opengis.referencing.crs.CoordinateReferenceSystem,double,double)">
+<section class="detail" id="calculatePointCount(org.locationtech.jts.geom.Geometry,org.geotools.api.referencing.crs.CoordinateReferenceSystem,double,double)">
 <h3>calculatePointCount</h3>
 <div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">calculatePointCount</span><wbr><span class="parameters">(org.locationtech.jts.geom.Geometry&nbsp;polygon,
- org.opengis.referencing.crs.CoordinateReferenceSystem&nbsp;sourceCRS,
+ org.geotools.api.referencing.crs.CoordinateReferenceSystem&nbsp;sourceCRS,
  double&nbsp;proportion,
  double&nbsp;diameter)</span>
-                         throws <span class="exceptions">org.opengis.referencing.FactoryException,
-org.opengis.referencing.operation.TransformException</span></div>
+                         throws <span class="exceptions">org.geotools.api.referencing.FactoryException,
+org.geotools.api.referencing.operation.TransformException</span></div>
 <dl class="notes">
 <dt>Throws:</dt>
-<dd><code>org.opengis.referencing.FactoryException</code></dd>
-<dd><code>org.opengis.referencing.operation.TransformException</code></dd>
+<dd><code>org.geotools.api.referencing.FactoryException</code></dd>
+<dd><code>org.geotools.api.referencing.operation.TransformException</code></dd>
 </dl>
 </section>
 </li>

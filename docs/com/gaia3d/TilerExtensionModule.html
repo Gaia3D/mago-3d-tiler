@@ -183,21 +183,11 @@ implements <a href="ExtensionModuleFrame.html" title="interface in com.gaia3d">E
  int&nbsp;horizontalPlanesCount)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#reMeshAndCutByObliqueCamera(java.util.List,java.util.List,com.gaia3d.basic.remesher.ReMeshParameters,com.gaia3d.basic.geometry.octree.HalfEdgeOctreeFaces,java.util.List,double,double,boolean)" class="member-name-link">reMeshAndCutByObliqueCamera</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="basic/model/GaiaScene.html" title="class in com.gaia3d.basic.model">GaiaScene</a>&gt;&nbsp;scenes,
- <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="basic/halfedge/HalfEdgeScene.html" title="class in com.gaia3d.basic.halfedge">HalfEdgeScene</a>&gt;&nbsp;resultHalfEdgeScenes,
- <a href="basic/remesher/ReMeshParameters.html" title="class in com.gaia3d.basic.remesher">ReMeshParameters</a>&nbsp;reMeshParams,
- <a href="basic/geometry/octree/HalfEdgeOctreeFaces.html" title="class in com.gaia3d.basic.geometry.octree">HalfEdgeOctreeFaces</a>&nbsp;octree,
- <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="basic/geometry/entities/GaiaAAPlane.html" title="class in com.gaia3d.basic.geometry.entities">GaiaAAPlane</a>&gt;&nbsp;cuttingPlanes,
- double&nbsp;depthTexPixelsForMeter,
- double&nbsp;screenPixelsForMeter,
- boolean&nbsp;makeHorizontalSkirt)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#voxelize(java.util.List,java.util.List,java.util.List,com.gaia3d.basic.geometry.voxel.VoxelizeParameters)" class="member-name-link">voxelize</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="basic/model/GaiaScene.html" title="class in com.gaia3d.basic.model">GaiaScene</a>&gt;&nbsp;scenes,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#voxelize(java.util.List,java.util.List,java.util.List,com.gaia3d.basic.geometry.voxel.VoxelizeParameters)" class="member-name-link">voxelize</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="basic/model/GaiaScene.html" title="class in com.gaia3d.basic.model">GaiaScene</a>&gt;&nbsp;scenes,
  <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="basic/geometry/voxel/VoxelGrid3D.html" title="class in com.gaia3d.basic.geometry.voxel">VoxelGrid3D</a>&gt;&nbsp;resultVoxelGrids,
  <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="basic/model/GaiaScene.html" title="class in com.gaia3d.basic.model">GaiaScene</a>&gt;&nbsp;resultGaiaScenes,
  <a href="basic/geometry/voxel/VoxelizeParameters.html" title="class in com.gaia3d.basic.geometry.voxel">VoxelizeParameters</a>&nbsp;voxelizeParameters)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -306,23 +296,6 @@ implements <a href="ExtensionModuleFrame.html" title="interface in com.gaia3d">E
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="ExtensionModuleFrame.html#decimateNetSurfaceAndCutByObliqueCamera(java.util.List,java.util.List,com.gaia3d.basic.halfedge.DecimateParameters,com.gaia3d.basic.geometry.octree.HalfEdgeOctreeFaces,java.util.List,double,double,boolean)">decimateNetSurfaceAndCutByObliqueCamera</a></code>&nbsp;in interface&nbsp;<code><a href="ExtensionModuleFrame.html" title="interface in com.gaia3d">ExtensionModuleFrame</a></code></dd>
-</dl>
-</section>
-</li>
-<li>
-<section class="detail" id="reMeshAndCutByObliqueCamera(java.util.List,java.util.List,com.gaia3d.basic.remesher.ReMeshParameters,com.gaia3d.basic.geometry.octree.HalfEdgeOctreeFaces,java.util.List,double,double,boolean)">
-<h3>reMeshAndCutByObliqueCamera</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">reMeshAndCutByObliqueCamera</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="basic/model/GaiaScene.html" title="class in com.gaia3d.basic.model">GaiaScene</a>&gt;&nbsp;scenes,
- <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="basic/halfedge/HalfEdgeScene.html" title="class in com.gaia3d.basic.halfedge">HalfEdgeScene</a>&gt;&nbsp;resultHalfEdgeScenes,
- <a href="basic/remesher/ReMeshParameters.html" title="class in com.gaia3d.basic.remesher">ReMeshParameters</a>&nbsp;reMeshParams,
- <a href="basic/geometry/octree/HalfEdgeOctreeFaces.html" title="class in com.gaia3d.basic.geometry.octree">HalfEdgeOctreeFaces</a>&nbsp;octree,
- <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="basic/geometry/entities/GaiaAAPlane.html" title="class in com.gaia3d.basic.geometry.entities">GaiaAAPlane</a>&gt;&nbsp;cuttingPlanes,
- double&nbsp;depthTexPixelsForMeter,
- double&nbsp;screenPixelsForMeter,
- boolean&nbsp;makeHorizontalSkirt)</span></div>
-<dl class="notes">
-<dt>Specified by:</dt>
-<dd><code><a href="ExtensionModuleFrame.html#reMeshAndCutByObliqueCamera(java.util.List,java.util.List,com.gaia3d.basic.remesher.ReMeshParameters,com.gaia3d.basic.geometry.octree.HalfEdgeOctreeFaces,java.util.List,double,double,boolean)">reMeshAndCutByObliqueCamera</a></code>&nbsp;in interface&nbsp;<code><a href="ExtensionModuleFrame.html" title="interface in com.gaia3d">ExtensionModuleFrame</a></code></dd>
 </dl>
 </section>
 </li>

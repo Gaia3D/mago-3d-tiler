@@ -52,8 +52,22 @@ loadScripts(document, 'script');</script>
 </div>
 <h2 title="Contents">Contents</h2>
 <ul class="contents-list">
+<li id="contents-interface"><a href="#interface">Interfaces</a></li>
 <li id="contents-class"><a href="#class">Classes</a></li>
 <li id="contents-method"><a href="#method">Methods</a></li>
+</ul>
+<ul class="block-list">
+<li>
+<div id="interface">
+<div class="caption"><span>Deprecated Interfaces</span></div>
+<div class="summary-table two-column-summary">
+<div class="table-header col-first">Interface</div>
+<div class="table-header col-last">Description</div>
+<div class="col-summary-item-name even-row-color"><a href="com/gaia3d/basic/geometry/modifier/SceneElementVisitor.html" title="interface in com.gaia3d.basic.geometry.modifier">com.gaia3d.basic.geometry.modifier.SceneElementVisitor</a></div>
+<div class="col-last even-row-color"></div>
+</div>
+</div>
+</li>
 </ul>
 <ul class="block-list">
 <li>
@@ -62,11 +76,19 @@ loadScripts(document, 'script');</script>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Class</div>
 <div class="table-header col-last">Description</div>
-<div class="col-summary-item-name even-row-color"><a href="com/gaia3d/converter/parametric/geojson/GeoJsonSurfaceConverter.html" title="class in com.gaia3d.converter.parametric.geojson">com.gaia3d.converter.parametric.geojson.GeoJsonSurfaceConverter</a></div>
+<div class="col-summary-item-name even-row-color"><a href="com/gaia3d/basic/exception/Reporter.html" title="class in com.gaia3d.basic.exception">com.gaia3d.basic.exception.Reporter</a></div>
 <div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/gaia3d/process/postprocess/pointcloud/Position.html" title="class in com.gaia3d.process.postprocess.pointcloud">com.gaia3d.process.postprocess.pointcloud.Position</a></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/gaia3d/basic/geometry/modifier/SceneTraverser.html" title="class in com.gaia3d.basic.geometry.modifier">com.gaia3d.basic.geometry.modifier.SceneTraverser</a></div>
 <div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/gaia3d/process/preprocess/GaiaStrictCoordinateExtractor.html" title="class in com.gaia3d.process.preprocess">com.gaia3d.process.preprocess.GaiaStrictCoordinateExtractor</a></div>
+<div class="col-summary-item-name even-row-color"><a href="com/gaia3d/basic/geometry/modifier/topology/SceneCleaner.html" title="class in com.gaia3d.basic.geometry.modifier.topology">com.gaia3d.basic.geometry.modifier.topology.SceneCleaner</a></div>
+<div class="col-last even-row-color"></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/gaia3d/basic/geometry/modifier/TraversalContext.html" title="class in com.gaia3d.basic.geometry.modifier">com.gaia3d.basic.geometry.modifier.TraversalContext</a></div>
+<div class="col-last odd-row-color"></div>
+<div class="col-summary-item-name even-row-color"><a href="com/gaia3d/process/postprocess/pointcloud/Position.html" title="class in com.gaia3d.process.postprocess.pointcloud">com.gaia3d.process.postprocess.pointcloud.Position</a></div>
+<div class="col-last even-row-color"></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/gaia3d/process/preprocess/GaiaStrictCoordinateExtractor.html" title="class in com.gaia3d.process.preprocess">com.gaia3d.process.preprocess.GaiaStrictCoordinateExtractor</a></div>
+<div class="col-last odd-row-color"></div>
+<div class="col-summary-item-name even-row-color"><a href="com/gaia3d/process/tileprocess/tile/PointCloudTilerOld.html" title="class in com.gaia3d.process.tileprocess.tile">com.gaia3d.process.tileprocess.tile.PointCloudTilerOld</a></div>
 <div class="col-last even-row-color"></div>
 </div>
 </div>
@@ -79,18 +101,24 @@ loadScripts(document, 'script');</script>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-summary-item-name even-row-color"><a href="com/gaia3d/basic/model/GaiaScene.html#deleteDegeneratedFaces()">com.gaia3d.basic.model.GaiaScene.deleteDegeneratedFaces()</a></div>
+<div class="col-summary-item-name even-row-color"><a href="com/gaia3d/basic/model/GaiaPrimitive.html#deleteNoUsedVertices()">com.gaia3d.basic.model.GaiaPrimitive.deleteNoUsedVertices()</a></div>
 <div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/gaia3d/basic/model/GaiaScene.html#makeTriangleFaces()">com.gaia3d.basic.model.GaiaScene.makeTriangleFaces()</a></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/gaia3d/basic/model/GaiaPrimitive.html#unWeldVertices()">com.gaia3d.basic.model.GaiaPrimitive.unWeldVertices()</a></div>
 <div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/gaia3d/basic/model/GaiaScene.html#makeTriangularFaces()">com.gaia3d.basic.model.GaiaScene.makeTriangularFaces()</a></div>
+<div class="col-summary-item-name even-row-color"><a href="com/gaia3d/basic/model/GaiaPrimitive.html#weldVertices(double,boolean,boolean,boolean,boolean)">com.gaia3d.basic.model.GaiaPrimitive.weldVertices<wbr>(double, boolean, boolean, boolean, boolean)</a></div>
 <div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/gaia3d/basic/model/GaiaScene.html#spendTransformMatrix()">com.gaia3d.basic.model.GaiaScene.spendTransformMatrix()</a></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/gaia3d/converter/pointcloud/GaiaLasPoint.html#fromBytesOld(byte%5B%5D)">com.gaia3d.converter.pointcloud.GaiaLasPoint.fromBytesOld<wbr>(byte[])</a></div>
 <div class="col-last odd-row-color"></div>
-<div class="col-summary-item-name even-row-color"><a href="com/gaia3d/basic/model/GaiaScene.html#unWeldVertices()">com.gaia3d.basic.model.GaiaScene.unWeldVertices()</a></div>
+<div class="col-summary-item-name even-row-color"><a href="com/gaia3d/converter/pointcloud/GaiaLasPoint.html#toBytesOld()">com.gaia3d.converter.pointcloud.GaiaLasPoint.toBytesOld()</a></div>
 <div class="col-last even-row-color"></div>
-<div class="col-summary-item-name odd-row-color"><a href="com/gaia3d/basic/model/GaiaScene.html#weldVertices(double,boolean,boolean,boolean,boolean)">com.gaia3d.basic.model.GaiaScene.weldVertices<wbr>(double, boolean, boolean, boolean, boolean)</a></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/gaia3d/converter/pointcloud/GaiaPointCloud.html#maximizeOld(boolean)">com.gaia3d.converter.pointcloud.GaiaPointCloud.maximizeOld<wbr>(boolean)</a></div>
 <div class="col-last odd-row-color"></div>
+<div class="col-summary-item-name even-row-color"><a href="com/gaia3d/converter/pointcloud/GaiaPointCloud.html#minimizeOld(java.io.File)">com.gaia3d.converter.pointcloud.GaiaPointCloud.minimizeOld<wbr>(File)</a></div>
+<div class="col-last even-row-color"></div>
+<div class="col-summary-item-name odd-row-color"><a href="com/gaia3d/util/GaiaPrimitiveUtils.html#calculateConvexity(com.gaia3d.basic.model.GaiaVertex,org.joml.Vector3d,java.util.List,double)">com.gaia3d.util.GaiaPrimitiveUtils.calculateConvexity<wbr>(GaiaVertex, Vector3d, List&lt;GaiaVertex&gt;, double)</a></div>
+<div class="col-last odd-row-color"></div>
+<div class="col-summary-item-name even-row-color"><a href="com/gaia3d/util/GaiaPrimitiveUtils.html#getWeldableVertexMap(java.util.Map,java.util.List,double,boolean,boolean,boolean,boolean)">com.gaia3d.util.GaiaPrimitiveUtils.getWeldableVertexMap<wbr>(Map&lt;GaiaVertex, GaiaVertex&gt;, List&lt;GaiaVertex&gt;, double, boolean, boolean, boolean, boolean)</a></div>
+<div class="col-last even-row-color"></div>
 </div>
 </div>
 </li>

@@ -120,16 +120,16 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#reMesh(java.util.List,com.gaia3d.basic.remesher.ReMeshParameters,com.gaia3d.basic.geometry.GaiaBoundingBox,org.joml.Matrix4d,java.util.List)" class="member-name-link">reMesh</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../exchangable/SceneInfo.html" title="class in com.gaia3d.basic.exchangable">SceneInfo</a>&gt;&nbsp;sceneInfos,
- <a href="ReMeshParameters.html" title="class in com.gaia3d.basic.remesher">ReMeshParameters</a>&nbsp;reMeshParameters,
- <a href="../geometry/GaiaBoundingBox.html" title="class in com.gaia3d.basic.geometry">GaiaBoundingBox</a>&nbsp;nodeBBox,
- org.joml.Matrix4d&nbsp;nodeTMatrix,
- <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../model/GaiaScene.html" title="class in com.gaia3d.basic.model">GaiaScene</a>&gt;&nbsp;resultGaiaScenes)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getVertexClusterBoundingBox(java.util.Map,org.joml.Vector3i,org.joml.Vector3i)" class="member-name-link">getVertexClusterBoundingBox</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Map.html" title="class or interface in java.util" class="external-link">Map</a>&lt;org.joml.Vector3i,<wbr><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../model/GaiaVertex.html" title="class in com.gaia3d.basic.model">GaiaVertex</a>&gt;&gt;&nbsp;vertexClusters,
+ org.joml.Vector3i&nbsp;resultMinCellIndex,
+ org.joml.Vector3i&nbsp;resultMaxCellIndex)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#reMeshScene(com.gaia3d.basic.model.GaiaScene,com.gaia3d.basic.remesher.ReMeshParameters,java.util.Map)" class="member-name-link">reMeshScene</a><wbr>(<a href="../model/GaiaScene.html" title="class in com.gaia3d.basic.model">GaiaScene</a>&nbsp;gaiaScene,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#reMeshScene(com.gaia3d.basic.model.GaiaScene,com.gaia3d.basic.remesher.ReMeshParameters,java.util.Map,org.joml.Vector3i,org.joml.Vector3i)" class="member-name-link">reMeshScene</a><wbr>(<a href="../model/GaiaScene.html" title="class in com.gaia3d.basic.model">GaiaScene</a>&nbsp;gaiaScene,
  <a href="ReMeshParameters.html" title="class in com.gaia3d.basic.remesher">ReMeshParameters</a>&nbsp;reMeshParams,
- <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Map.html" title="class or interface in java.util" class="external-link">Map</a>&lt;org.joml.Vector3i,<wbr><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../model/GaiaVertex.html" title="class in com.gaia3d.basic.model">GaiaVertex</a>&gt;&gt;&nbsp;vertexClusters)</code></div>
+ <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Map.html" title="class or interface in java.util" class="external-link">Map</a>&lt;org.joml.Vector3i,<wbr><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../model/GaiaVertex.html" title="class in com.gaia3d.basic.model">GaiaVertex</a>&gt;&gt;&nbsp;vertexClusters,
+ org.joml.Vector3i&nbsp;sceneMinCellIndex,
+ org.joml.Vector3i&nbsp;sceneMaxCellIndex)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
@@ -163,21 +163,21 @@ loadScripts(document, 'script');</script>
 <h2>Method Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="reMeshScene(com.gaia3d.basic.model.GaiaScene,com.gaia3d.basic.remesher.ReMeshParameters,java.util.Map)">
-<h3>reMeshScene</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">reMeshScene</span><wbr><span class="parameters">(<a href="../model/GaiaScene.html" title="class in com.gaia3d.basic.model">GaiaScene</a>&nbsp;gaiaScene,
- <a href="ReMeshParameters.html" title="class in com.gaia3d.basic.remesher">ReMeshParameters</a>&nbsp;reMeshParams,
- <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Map.html" title="class or interface in java.util" class="external-link">Map</a>&lt;org.joml.Vector3i,<wbr><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../model/GaiaVertex.html" title="class in com.gaia3d.basic.model">GaiaVertex</a>&gt;&gt;&nbsp;vertexClusters)</span></div>
+<section class="detail" id="getVertexClusterBoundingBox(java.util.Map,org.joml.Vector3i,org.joml.Vector3i)">
+<h3>getVertexClusterBoundingBox</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">getVertexClusterBoundingBox</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Map.html" title="class or interface in java.util" class="external-link">Map</a>&lt;org.joml.Vector3i,<wbr><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../model/GaiaVertex.html" title="class in com.gaia3d.basic.model">GaiaVertex</a>&gt;&gt;&nbsp;vertexClusters,
+ org.joml.Vector3i&nbsp;resultMinCellIndex,
+ org.joml.Vector3i&nbsp;resultMaxCellIndex)</span></div>
 </section>
 </li>
 <li>
-<section class="detail" id="reMesh(java.util.List,com.gaia3d.basic.remesher.ReMeshParameters,com.gaia3d.basic.geometry.GaiaBoundingBox,org.joml.Matrix4d,java.util.List)">
-<h3>reMesh</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">reMesh</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../exchangable/SceneInfo.html" title="class in com.gaia3d.basic.exchangable">SceneInfo</a>&gt;&nbsp;sceneInfos,
- <a href="ReMeshParameters.html" title="class in com.gaia3d.basic.remesher">ReMeshParameters</a>&nbsp;reMeshParameters,
- <a href="../geometry/GaiaBoundingBox.html" title="class in com.gaia3d.basic.geometry">GaiaBoundingBox</a>&nbsp;nodeBBox,
- org.joml.Matrix4d&nbsp;nodeTMatrix,
- <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../model/GaiaScene.html" title="class in com.gaia3d.basic.model">GaiaScene</a>&gt;&nbsp;resultGaiaScenes)</span></div>
+<section class="detail" id="reMeshScene(com.gaia3d.basic.model.GaiaScene,com.gaia3d.basic.remesher.ReMeshParameters,java.util.Map,org.joml.Vector3i,org.joml.Vector3i)">
+<h3>reMeshScene</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">reMeshScene</span><wbr><span class="parameters">(<a href="../model/GaiaScene.html" title="class in com.gaia3d.basic.model">GaiaScene</a>&nbsp;gaiaScene,
+ <a href="ReMeshParameters.html" title="class in com.gaia3d.basic.remesher">ReMeshParameters</a>&nbsp;reMeshParams,
+ <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Map.html" title="class or interface in java.util" class="external-link">Map</a>&lt;org.joml.Vector3i,<wbr><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../model/GaiaVertex.html" title="class in com.gaia3d.basic.model">GaiaVertex</a>&gt;&gt;&nbsp;vertexClusters,
+ org.joml.Vector3i&nbsp;sceneMinCellIndex,
+ org.joml.Vector3i&nbsp;sceneMaxCellIndex)</span></div>
 </section>
 </li>
 </ul>

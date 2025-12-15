@@ -120,7 +120,12 @@ implements <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E()" class="member-name-link">GaiaBoundingBox</a>()</code></div>
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(double,double,double,double,double,double)" class="member-name-link">GaiaBoundingBox</a><wbr>(double&nbsp;minX,
+ double&nbsp;minY,
+ double&nbsp;minZ,
+ double&nbsp;maxX,
+ double&nbsp;maxY,
+ double&nbsp;maxZ)</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 </div>
 </section>
@@ -140,24 +145,30 @@ implements <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#addBoundingBox(com.gaia3d.basic.geometry.GaiaBoundingBox)" class="member-name-link">addBoundingBox</a><wbr>(<a href="GaiaBoundingBox.html" title="class in com.gaia3d.basic.geometry">GaiaBoundingBox</a>&nbsp;boundingBox)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#addPoint(double,double,double)" class="member-name-link">addPoint</a><wbr>(double&nbsp;x,
- double&nbsp;y,
- double&nbsp;z)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#addPoint(double%5B%5D)" class="member-name-link">addPoint</a><wbr>(double[]&nbsp;xyz)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#addPoint(org.joml.Vector3d)" class="member-name-link">addPoint</a><wbr>(org.joml.Vector3d&nbsp;vector3d)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#addPoint(double,double,double)" class="member-name-link">addPoint</a><wbr>(double&nbsp;x,
+ double&nbsp;y,
+ double&nbsp;z)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="GaiaBoundingBox.html" title="class in com.gaia3d.basic.geometry">GaiaBoundingBox</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#clone()" class="member-name-link">clone</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#contains(com.gaia3d.basic.geometry.GaiaBoundingBox)" class="member-name-link">contains</a><wbr>(<a href="GaiaBoundingBox.html" title="class in com.gaia3d.basic.geometry">GaiaBoundingBox</a>&nbsp;boundingBox)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="GaiaBoundingBox.html" title="class in com.gaia3d.basic.geometry">GaiaBoundingBox</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#convertLocalToLonlatBoundingBox(org.joml.Vector3d)" class="member-name-link">convertLocalToLonlatBoundingBox</a><wbr>(org.joml.Vector3d&nbsp;center)</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#addPoint(org.joml.Vector3d)" class="member-name-link">addPoint</a><wbr>(org.joml.Vector3d&nbsp;vector3d)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="GaiaBoundingBox.html" title="class in com.gaia3d.basic.geometry">GaiaBoundingBox</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#createCubeFromMinPosition()" class="member-name-link">createCubeFromMinPosition</a>()</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#clone()" class="member-name-link">clone</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#contains(com.gaia3d.basic.geometry.GaiaBoundingBox)" class="member-name-link">contains</a><wbr>(<a href="GaiaBoundingBox.html" title="class in com.gaia3d.basic.geometry">GaiaBoundingBox</a>&nbsp;boundingBox)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="GaiaBoundingBox.html" title="class in com.gaia3d.basic.geometry">GaiaBoundingBox</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#convertLocalToLonlatBoundingBox(org.joml.Vector3d)" class="member-name-link">convertLocalToLonlatBoundingBox</a><wbr>(org.joml.Vector3d&nbsp;center)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="GaiaBoundingBox.html" title="class in com.gaia3d.basic.geometry">GaiaBoundingBox</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#createCubeFromMinPosition()" class="member-name-link">createCubeFromMinPosition</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="GaiaBoundingBox.html" title="class in com.gaia3d.basic.geometry">GaiaBoundingBox</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#createIntersection(com.gaia3d.basic.geometry.GaiaBoundingBox)" class="member-name-link">createIntersection</a><wbr>(<a href="GaiaBoundingBox.html" title="class in com.gaia3d.basic.geometry">GaiaBoundingBox</a>&nbsp;other)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#expand(double)" class="member-name-link">expand</a><wbr>(double&nbsp;value)</code></div>
@@ -256,27 +267,30 @@ implements <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isBoxInside(com.gaia3d.basic.geometry.GaiaBoundingBox)" class="member-name-link">isBoxInside</a><wbr>(<a href="GaiaBoundingBox.html" title="class in com.gaia3d.basic.geometry">GaiaBoundingBox</a>&nbsp;box)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="GaiaBoundingBox.html" title="class in com.gaia3d.basic.geometry">GaiaBoundingBox</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#multiplyMatrix4d(org.joml.Matrix4d)" class="member-name-link">multiplyMatrix4d</a><wbr>(org.joml.Matrix4d&nbsp;matrix)</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isValid()" class="member-name-link">isValid</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="GaiaBoundingBox.html" title="class in com.gaia3d.basic.geometry">GaiaBoundingBox</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#multiplyMatrix4d(org.joml.Matrix4d,com.gaia3d.basic.geometry.GaiaBoundingBox)" class="member-name-link">multiplyMatrix4d</a><wbr>(org.joml.Matrix4d&nbsp;matrix,
- <a href="GaiaBoundingBox.html" title="class in com.gaia3d.basic.geometry">GaiaBoundingBox</a>&nbsp;boundingBox)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#multiplyMatrix4d(org.joml.Matrix4d)" class="member-name-link">multiplyMatrix4d</a><wbr>(org.joml.Matrix4d&nbsp;matrix)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#set(double,double,double,double,double,double)" class="member-name-link">set</a><wbr>(double&nbsp;minX,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="GaiaBoundingBox.html" title="class in com.gaia3d.basic.geometry">GaiaBoundingBox</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#multiplyMatrix4d(org.joml.Matrix4d,com.gaia3d.basic.geometry.GaiaBoundingBox)" class="member-name-link">multiplyMatrix4d</a><wbr>(org.joml.Matrix4d&nbsp;matrix,
+ <a href="GaiaBoundingBox.html" title="class in com.gaia3d.basic.geometry">GaiaBoundingBox</a>&nbsp;boundingBox)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#set(double,double,double,double,double,double)" class="member-name-link">set</a><wbr>(double&nbsp;minX,
  double&nbsp;minY,
  double&nbsp;minZ,
  double&nbsp;maxX,
  double&nbsp;maxY,
  double&nbsp;maxZ)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#set(com.gaia3d.basic.geometry.GaiaBoundingBox)" class="member-name-link">set</a><wbr>(<a href="GaiaBoundingBox.html" title="class in com.gaia3d.basic.geometry">GaiaBoundingBox</a>&nbsp;bbox)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setFromPoints(java.util.List)" class="member-name-link">setFromPoints</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;org.joml.Vector3d&gt;&nbsp;transformedVertices)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#set(com.gaia3d.basic.geometry.GaiaBoundingBox)" class="member-name-link">set</a><wbr>(<a href="GaiaBoundingBox.html" title="class in com.gaia3d.basic.geometry">GaiaBoundingBox</a>&nbsp;bbox)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setFromPoints(java.util.List)" class="member-name-link">setFromPoints</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;org.joml.Vector3d&gt;&nbsp;transformedVertices)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -295,9 +309,14 @@ implements <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="&lt;init&gt;()">
+<section class="detail" id="&lt;init&gt;(double,double,double,double,double,double)">
 <h3>GaiaBoundingBox</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">GaiaBoundingBox</span>()</div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">GaiaBoundingBox</span><wbr><span class="parameters">(double&nbsp;minX,
+ double&nbsp;minY,
+ double&nbsp;minZ,
+ double&nbsp;maxX,
+ double&nbsp;maxY,
+ double&nbsp;maxZ)</span></div>
 </section>
 </li>
 </ul>
@@ -339,9 +358,21 @@ implements <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base
 </section>
 </li>
 <li>
+<section class="detail" id="isValid()">
+<h3>isValid</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isValid</span>()</div>
+</section>
+</li>
+<li>
 <section class="detail" id="getMaxRadius()">
 <h3>getMaxRadius</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">double</span>&nbsp;<span class="element-name">getMaxRadius</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="createIntersection(com.gaia3d.basic.geometry.GaiaBoundingBox)">
+<h3>createIntersection</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="GaiaBoundingBox.html" title="class in com.gaia3d.basic.geometry">GaiaBoundingBox</a></span>&nbsp;<span class="element-name">createIntersection</span><wbr><span class="parameters">(<a href="GaiaBoundingBox.html" title="class in com.gaia3d.basic.geometry">GaiaBoundingBox</a>&nbsp;other)</span></div>
 </section>
 </li>
 <li>
@@ -377,6 +408,12 @@ implements <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base
  double&nbsp;maxX,
  double&nbsp;maxY,
  double&nbsp;maxZ)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="addPoint(double[])">
+<h3>addPoint</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">addPoint</span><wbr><span class="parameters">(double[]&nbsp;xyz)</span></div>
 </section>
 </li>
 <li>

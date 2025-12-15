@@ -139,10 +139,10 @@ implements <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#calculateNormal()" class="member-name-link">calculateNormal</a>()</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#addChild(com.gaia3d.basic.model.GaiaNode)" class="member-name-link">addChild</a><wbr>(<a href="GaiaNode.html" title="class in com.gaia3d.basic.model">GaiaNode</a>&nbsp;child)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#calculateVertexNormals()" class="member-name-link">calculateVertexNormals</a>()</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#addMesh(com.gaia3d.basic.model.GaiaMesh)" class="member-name-link">addMesh</a><wbr>(<a href="GaiaMesh.html" title="class in com.gaia3d.basic.model">GaiaMesh</a>&nbsp;mesh)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#clear()" class="member-name-link">clear</a>()</code></div>
@@ -180,21 +180,8 @@ implements <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getFacesCount()" class="member-name-link">getFacesCount</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>org.joml.Matrix4d</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getFinalTransformMatrix()" class="member-name-link">getFinalTransformMatrix</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getFinalVerticesCopy(org.joml.Matrix4d,java.util.List)" class="member-name-link">getFinalVerticesCopy</a><wbr>(org.joml.Matrix4d&nbsp;parentTMat,
- <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="GaiaVertex.html" title="class in com.gaia3d.basic.model">GaiaVertex</a>&gt;&nbsp;finalVertices)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>long</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getTriangleCount()" class="member-name-link">getTriangleCount</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#makeTriangleFaces()" class="member-name-link">makeTriangleFaces</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#makeTriangularFaces()" class="member-name-link">makeTriangularFaces</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#recalculateTransform()" class="member-name-link">recalculateTransform</a>()</code></div>
@@ -202,25 +189,18 @@ implements <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base
 <div class="block">recalculate transform</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#spendTransformMatrix()" class="member-name-link">spendTransformMatrix</a>()</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#removeChild(com.gaia3d.basic.model.GaiaNode)" class="member-name-link">removeChild</a><wbr>(<a href="GaiaNode.html" title="class in com.gaia3d.basic.model">GaiaNode</a>&nbsp;child)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#toGaiaBufferSets(java.util.List,org.joml.Matrix4d)" class="member-name-link">toGaiaBufferSets</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../exchangable/GaiaBufferDataSet.html" title="class in com.gaia3d.basic.exchangable">GaiaBufferDataSet</a>&gt;&nbsp;bufferSets,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#removeMesh(com.gaia3d.basic.model.GaiaMesh)" class="member-name-link">removeMesh</a><wbr>(<a href="GaiaMesh.html" title="class in com.gaia3d.basic.model">GaiaMesh</a>&nbsp;mesh)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#toGaiaBufferSets(java.util.List,org.joml.Matrix4d)" class="member-name-link">toGaiaBufferSets</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../exchangable/GaiaBufferDataSet.html" title="class in com.gaia3d.basic.exchangable">GaiaBufferDataSet</a>&gt;&nbsp;bufferSets,
  org.joml.Matrix4d&nbsp;parentTransformMatrix)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#translate(org.joml.Vector3d)" class="member-name-link">translate</a><wbr>(org.joml.Vector3d&nbsp;translation)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#unWeldVertices()" class="member-name-link">unWeldVertices</a>()</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#translate(org.joml.Vector3d)" class="member-name-link">translate</a><wbr>(org.joml.Vector3d&nbsp;translation)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#weldVertices(double,boolean,boolean,boolean,boolean)" class="member-name-link">weldVertices</a><wbr>(double&nbsp;error,
- boolean&nbsp;checkTexCoord,
- boolean&nbsp;checkNormal,
- boolean&nbsp;checkColor,
- boolean&nbsp;checkBatchId)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -252,6 +232,30 @@ implements <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base
 <section class="method-details" id="method-detail">
 <h2>Method Details</h2>
 <ul class="member-list">
+<li>
+<section class="detail" id="addChild(com.gaia3d.basic.model.GaiaNode)">
+<h3>addChild</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">addChild</span><wbr><span class="parameters">(<a href="GaiaNode.html" title="class in com.gaia3d.basic.model">GaiaNode</a>&nbsp;child)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="removeChild(com.gaia3d.basic.model.GaiaNode)">
+<h3>removeChild</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">removeChild</span><wbr><span class="parameters">(<a href="GaiaNode.html" title="class in com.gaia3d.basic.model">GaiaNode</a>&nbsp;child)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="addMesh(com.gaia3d.basic.model.GaiaMesh)">
+<h3>addMesh</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">addMesh</span><wbr><span class="parameters">(<a href="GaiaMesh.html" title="class in com.gaia3d.basic.model">GaiaMesh</a>&nbsp;mesh)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="removeMesh(com.gaia3d.basic.model.GaiaMesh)">
+<h3>removeMesh</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">removeMesh</span><wbr><span class="parameters">(<a href="GaiaMesh.html" title="class in com.gaia3d.basic.model">GaiaMesh</a>&nbsp;mesh)</span></div>
+</section>
+</li>
 <li>
 <section class="detail" id="getBoundingBox(org.joml.Matrix4d)">
 <h3>getBoundingBox</h3>
@@ -309,22 +313,6 @@ implements <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base
 </section>
 </li>
 <li>
-<section class="detail" id="weldVertices(double,boolean,boolean,boolean,boolean)">
-<h3>weldVertices</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">weldVertices</span><wbr><span class="parameters">(double&nbsp;error,
- boolean&nbsp;checkTexCoord,
- boolean&nbsp;checkNormal,
- boolean&nbsp;checkColor,
- boolean&nbsp;checkBatchId)</span></div>
-</section>
-</li>
-<li>
-<section class="detail" id="unWeldVertices()">
-<h3>unWeldVertices</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">unWeldVertices</span>()</div>
-</section>
-</li>
-<li>
 <section class="detail" id="extractGaiaFaces(java.util.List)">
 <h3>extractGaiaFaces</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="GaiaFace.html" title="class in com.gaia3d.basic.model">GaiaFace</a>&gt;</span>&nbsp;<span class="element-name">extractGaiaFaces</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="GaiaFace.html" title="class in com.gaia3d.basic.model">GaiaFace</a>&gt;&nbsp;resultFaces)</span></div>
@@ -355,58 +343,15 @@ implements <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base
 </section>
 </li>
 <li>
-<section class="detail" id="getFinalVerticesCopy(org.joml.Matrix4d,java.util.List)">
-<h3>getFinalVerticesCopy</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">getFinalVerticesCopy</span><wbr><span class="parameters">(org.joml.Matrix4d&nbsp;parentTMat,
- <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="GaiaVertex.html" title="class in com.gaia3d.basic.model">GaiaVertex</a>&gt;&nbsp;finalVertices)</span></div>
-</section>
-</li>
-<li>
 <section class="detail" id="extractPrimitives(java.util.List)">
 <h3>extractPrimitives</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">extractPrimitives</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="GaiaPrimitive.html" title="class in com.gaia3d.basic.model">GaiaPrimitive</a>&gt;&nbsp;resultPrimitives)</span></div>
 </section>
 </li>
 <li>
-<section class="detail" id="makeTriangleFaces()">
-<h3>makeTriangleFaces</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">makeTriangleFaces</span>()</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getFinalTransformMatrix()">
-<h3>getFinalTransformMatrix</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">org.joml.Matrix4d</span>&nbsp;<span class="element-name">getFinalTransformMatrix</span>()</div>
-</section>
-</li>
-<li>
-<section class="detail" id="spendTransformMatrix()">
-<h3>spendTransformMatrix</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">spendTransformMatrix</span>()</div>
-</section>
-</li>
-<li>
-<section class="detail" id="makeTriangularFaces()">
-<h3>makeTriangularFaces</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">makeTriangularFaces</span>()</div>
-</section>
-</li>
-<li>
 <section class="detail" id="getFacesCount()">
 <h3>getFacesCount</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getFacesCount</span>()</div>
-</section>
-</li>
-<li>
-<section class="detail" id="calculateNormal()">
-<h3>calculateNormal</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">calculateNormal</span>()</div>
-</section>
-</li>
-<li>
-<section class="detail" id="calculateVertexNormals()">
-<h3>calculateVertexNormals</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">calculateVertexNormals</span>()</div>
 </section>
 </li>
 </ul>

@@ -86,12 +86,14 @@ loadScripts(document, 'script');</script>
 <h1 title="Class GaiaBaker" class="title">Class GaiaBaker</h1>
 </div>
 <div class="inheritance" title="Inheritance Tree"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">java.lang.Object</a>
+<div class="inheritance"><a href="../Modifier.html" title="class in com.gaia3d.basic.geometry.modifier">com.gaia3d.basic.geometry.modifier.Modifier</a>
 <div class="inheritance">com.gaia3d.basic.geometry.modifier.transform.GaiaBaker</div>
+</div>
 </div>
 <section class="class-description" id="class-description">
 <hr>
 <div class="type-signature"><span class="modifiers">public class </span><span class="element-name type-name-label">GaiaBaker</span>
-<span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></span></div>
+<span class="extends-implements">extends <a href="../Modifier.html" title="class in com.gaia3d.basic.geometry.modifier">Modifier</a></span></div>
 <div class="block">TransformBaker is responsible for baking the transformation matrices of a GaiaScene.
  This process is typically used to optimize the scene for rendering or further processing.
  It involves applying the transformations to the vertices of the scene's nodes and meshes,\
@@ -124,12 +126,12 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#bake(com.gaia3d.basic.model.GaiaNode)" class="member-name-link">bake</a><wbr>(<a href="../../../model/GaiaNode.html" title="class in com.gaia3d.basic.model">GaiaNode</a>&nbsp;node)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#apply(com.gaia3d.basic.model.GaiaNode)" class="member-name-link">apply</a><wbr>(<a href="../../../model/GaiaNode.html" title="class in com.gaia3d.basic.model">GaiaNode</a>&nbsp;node)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Bakes the transformation of aGaiaNode.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#bake(com.gaia3d.basic.model.GaiaScene)" class="member-name-link">bake</a><wbr>(<a href="../../../model/GaiaScene.html" title="class in com.gaia3d.basic.model">GaiaScene</a>&nbsp;scene)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#apply(com.gaia3d.basic.model.GaiaScene)" class="member-name-link">apply</a><wbr>(<a href="../../../model/GaiaScene.html" title="class in com.gaia3d.basic.model">GaiaScene</a>&nbsp;scene)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Bakes the transformation of a GaiaScene.</div>
 </div>
@@ -165,20 +167,22 @@ loadScripts(document, 'script');</script>
 <h2>Method Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="bake(com.gaia3d.basic.model.GaiaScene)">
-<h3>bake</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">bake</span><wbr><span class="parameters">(<a href="../../../model/GaiaScene.html" title="class in com.gaia3d.basic.model">GaiaScene</a>&nbsp;scene)</span></div>
+<section class="detail" id="apply(com.gaia3d.basic.model.GaiaScene)">
+<h3>apply</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">apply</span><wbr><span class="parameters">(<a href="../../../model/GaiaScene.html" title="class in com.gaia3d.basic.model">GaiaScene</a>&nbsp;scene)</span></div>
 <div class="block">Bakes the transformation of a GaiaScene.</div>
 <dl class="notes">
+<dt>Overrides:</dt>
+<dd><code><a href="../Modifier.html#apply(com.gaia3d.basic.model.GaiaScene)">apply</a></code>&nbsp;in class&nbsp;<code><a href="../Modifier.html" title="class in com.gaia3d.basic.geometry.modifier">Modifier</a></code></dd>
 <dt>Parameters:</dt>
 <dd><code>scene</code> - the GaiaScene to bake</dd>
 </dl>
 </section>
 </li>
 <li>
-<section class="detail" id="bake(com.gaia3d.basic.model.GaiaNode)">
-<h3>bake</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">bake</span><wbr><span class="parameters">(<a href="../../../model/GaiaNode.html" title="class in com.gaia3d.basic.model">GaiaNode</a>&nbsp;node)</span></div>
+<section class="detail" id="apply(com.gaia3d.basic.model.GaiaNode)">
+<h3>apply</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">apply</span><wbr><span class="parameters">(<a href="../../../model/GaiaNode.html" title="class in com.gaia3d.basic.model">GaiaNode</a>&nbsp;node)</span></div>
 <div class="block">Bakes the transformation of aGaiaNode.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
