@@ -182,12 +182,6 @@ public class TilingPipeline implements Pipeline {
             return;
         }
 
-        /* delete temp directory */
-        /*File tempFile = new File(globalOptions.getOutputPath(), "temp");
-        if (tempFile.exists() && tempFile.isDirectory()) {
-            FileUtils.deleteDirectory(tempFile);
-        }*/
-
         File userTempFile = new File(globalOptions.getTempPath());
         if (userTempFile.exists() && userTempFile.isDirectory()) {
             FileUtils.deleteDirectory(userTempFile);

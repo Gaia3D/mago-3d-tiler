@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Global options for Gaia3D Tiler.
@@ -32,92 +31,94 @@ public class GlobalOptions {
 
     private boolean isParametric = false;
 
+    /* 0.1 Analysis Info */
     private String tilesVersion;
     private String version;
     private String javaVersionInfo;
     private String programInfo;
-
     private long fileCount = 0;
     private long tileCount = 0;
     private long tilesetSize = 0;
 
-    /* Required Options */
+    /* 0.2 System Info */
+    private long availableProcessors = Runtime.getRuntime().availableProcessors();
+    private long maxHeapMemory = Runtime.getRuntime().maxMemory();
+    //private long freeMemory = Runtime.getRuntime().freeMemory();
+    //private long totalMemory = Runtime.getRuntime().totalMemory();
+    //private long usedMemory = totalMemory - freeMemory;
+    private long startTime = System.currentTimeMillis();
+    private long endTime = 0;
+
+    /* 1.1 Required Path Options */
     private String inputPath;
     private String outputPath;
-
-    /* Optional Options */
+    /* 1.2 Optional Path Options */
     private String logPath;
     private String terrainPath;
     private String instancePath;
     private String tempPath;
 
+    /* 2.1 Format Options */
     private FormatType inputFormat;
+    private boolean isAutoDetectInputFormat = false;
     private FormatType outputFormat;
-
+    /* 2.2 Coordinate Reference System Options */
     private boolean forceCrs = false;
     private CoordinateReferenceSystem sourceCrs;
     private CoordinateReferenceSystem targetCrs;
     private String proj;
     private Vector3d translateOffset;
 
+    /* 3.1 Tiling Options */
+    // 3.1 Basic Tiling Options
+    private int minLod;
+    private int maxLod;
+    private int minGeometricError;
+    private int maxGeometricError;
+    private boolean classicTransformMatrix = false;
+    // 3.2 Tile Options
+    private int maxTriangles;
+    private int maxInstance;
+    private int maxNodeDepth;
+
+    /* 3.3 Point Cloud Options */
     private boolean isSourcePrecision = false;
     private int maximumPointPerTile = 0; // Maximum number of points per a tile
     private float pointRatio = 0; // Percentage of points from original data
     private boolean force4ByteRGB = false; // Force 4Byte RGB for pointscloud tile
 
-    // Use quantization via KHR_mesh_quantization
-    private boolean useQuantization;
+    /* 3.4 3D Data Options */
+    private boolean useQuantization = false;
     private boolean useByteNormal = false;
     private boolean useShortTexCoord = false;
-
-    /* Tiling Options */
-    // Level of Detail
-    private int minLod;
-    private int maxLod;
-    // Geometric Error
-    private int minGeometricError;
-    private int maxGeometricError;
-    // Tile Options
-    private int maxTriangles;
-    private int maxInstance;
-    private int maxNodeDepth;
-
-    // Debug Mode
-    private boolean debug = false;
-    private boolean debugLod = false;
-    private boolean isLeaveTemp = false;
-
-    private boolean doubleSided = true;
-    private boolean glb = false;
-    private boolean classicTransformMatrix = false;
-    private byte multiThreadCount = 1;
-
-    /* 3D Data Options */
     private boolean recursive = false;
     private double rotateX = 0; // degrees
-
+    private boolean doubleSided = true;
+    private boolean glb = false;
     private boolean refineAdd = false; // 3dTiles refine option ADD fix flag
     private boolean flipCoordinate = false; // flip coordinate flag for 2D Data
     private boolean ignoreTextures = false; // ignore textures flag
-
-    // [Experimental] 3D Data Options
     private boolean isPhotogrammetry = false; // [Experimental] isPhotogrammetry mode flag
     private boolean isSplitByNode = false; // [Experimental] split by node flag
     private boolean isCurvatureCorrection = false; // [Experimental] curvature correction flag
 
-    /* 2D Data Column Options */
+    /* 3.5 2D Data Column Options */
     private String heightColumn = null;
     private String altitudeColumn = null;
     private String headingColumn = null;
     private String diameterColumn = null;
     private String scaleColumn = null;
     private String densityColumn = null;
-
     private double absoluteAltitude = 0.0d;
     private double minimumHeight = 0.0d;
     private double skirtHeight = 0.0d;
-
     private List<AttributeFilter> attributeFilters = new ArrayList<>();
+
+    /* 4.1 Debug Mode */
+    private boolean debug = false;
+    private boolean debugLod = false;
+    private boolean isLeaveTemp = false;
+    private byte multiThreadCount = 3;
 
     public static void recreateInstance() {
         log.info("[INFO] Recreating GlobalOptions instance.");
@@ -239,7 +240,6 @@ public class GlobalOptions {
             OptionsCorrector.checkExistInputPath(new File(instance.getTerrainPath()));
         } else {
             instance.setTerrainPath(null);
-            log.info("[Info] Terrain path is not set. No terrain data will be used.");
         }
 
         if (command.hasOption(ProcessOptions.INSTANCE_PATH.getLongName())) {
@@ -343,10 +343,8 @@ public class GlobalOptions {
         instance.setAbsoluteAltitude(command.hasOption(ProcessOptions.ABSOLUTE_ALTITUDE.getLongName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.ABSOLUTE_ALTITUDE.getLongName())) : GlobalConstants.DEFAULT_ABSOLUTE_ALTITUDE);
         instance.setMinimumHeight(command.hasOption(ProcessOptions.MINIMUM_HEIGHT.getLongName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.MINIMUM_HEIGHT.getLongName())) : GlobalConstants.DEFAULT_MINIMUM_HEIGHT);
         instance.setSkirtHeight(command.hasOption(ProcessOptions.SKIRT_HEIGHT.getLongName()) ? Double.parseDouble(command.getOptionValue(ProcessOptions.SKIRT_HEIGHT.getLongName())) : GlobalConstants.DEFAULT_SKIRT_HEIGHT);
-
         instance.setSplitByNode(command.hasOption(ProcessOptions.SPLIT_BY_NODE.getLongName()));
 
-        // Attribute Filter ex) "classification=window,door;type=building"
         if (command.hasOption(ProcessOptions.ATTRIBUTE_FILTER.getLongName())) {
             List<AttributeFilter> attributeFilters = instance.getAttributeFilters();
             String[] filters = command.getOptionValue(ProcessOptions.ATTRIBUTE_FILTER.getLongName()).split(";");
@@ -406,8 +404,8 @@ public class GlobalOptions {
         if (instance.isPhotogrammetry()) {
             instance.setUseQuantization(true);
             if (!extensionModule.isSupported()) {
-                log.error("[ERROR] *** Photogrammetry is not supported ***");
-                throw new IllegalArgumentException("Photogrammetry is not supported.");
+                log.error("[ERROR] *** Extension is not supported ***");
+                throw new IllegalArgumentException("Extension is not supported.");
             }
         }
 
@@ -417,7 +415,6 @@ public class GlobalOptions {
             instance.setUseByteNormal(true);
             instance.setUseShortTexCoord(true);
         }
-
     }
 
     private static void initVersionInfo() {
@@ -433,9 +430,16 @@ public class GlobalOptions {
         String programInfo = title + "(" + version + ") by " + vendor;
         instance.setProgramInfo(programInfo);
         instance.setJavaVersionInfo(javaVersionInfo);
+        instance.setAvailableProcessors(Runtime.getRuntime().availableProcessors());
+        instance.setMaxHeapMemory(Runtime.getRuntime().maxMemory());
     }
 
     public void printDebugOptions() {
+        Mago3DTilerMain.drawLine();
+        log.info("Java Version Info: {}", javaVersionInfo);
+        log.info("Program Info: {}", programInfo);
+        log.info("Available Processors: {}", availableProcessors);
+        log.info("Max Heap Memory: {} MB", maxHeapMemory / (1024 * 1024));
         Mago3DTilerMain.drawLine();
         log.info("3DTiles Version: {}", tilesVersion);
         log.info("Input Path: {}", inputPath);
@@ -443,10 +447,17 @@ public class GlobalOptions {
         log.info("Temp path: {}", tempPath);
         log.info("Input Format: {}", inputFormat);
         log.info("Output Format: {}", outputFormat);
+        if (FormatType.I3DM.equals(outputFormat)) {
+            log.info("Instance File Path: {}", instancePath);
+        }
         log.info("Terrain File Path: {}", terrainPath);
-        log.info("Instance File Path: {}", instancePath);
         log.info("Log File Path: {}", logPath);
         log.info("Recursive Path Search: {}", recursive);
+        if (!forceCrs) {
+            log.info("Source Coordinate Reference System: Auto Detect");
+        } else {
+            log.info("Source Coordinate Reference System: Forced");
+        }
         log.info("Source Coordinate Reference System: {}", sourceCrs);
         log.info("Proj4 Code: {}", proj);
         log.info("Debug Mode: {}", debug);

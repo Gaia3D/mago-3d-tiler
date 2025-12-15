@@ -36,19 +36,4 @@ public class GaiaMinimization implements PreProcess {
             scene = null;
         }
     }
-
-    private void minimizeGaiaPointCloud(TileInfo tileInfo, GaiaPointCloudOld pointCloud) {
-        if (pointCloud != null) {
-            //Path tempPath = tempSet.writeFile(tileInfo.getTempPath(), tileInfo.getSerial(), tempSet.getAttribute());
-            tileInfo.setTempPath(tileInfo.getOutputPath().resolve("temp"));
-
-            GaiaAttribute attribute = pointCloud.getGaiaAttribute();
-            String id = attribute.getIdentifier().toString();
-
-            File tempFile = new File(tileInfo.getTempPath().toString(), id);
-            pointCloud.minimize(tempFile);
-
-            log.info("Minimized point cloud: {}", tempFile.getAbsolutePath());
-        }
-    }
 }
