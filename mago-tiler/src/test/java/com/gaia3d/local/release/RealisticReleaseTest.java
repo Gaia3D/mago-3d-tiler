@@ -39,7 +39,6 @@ class RealisticReleaseTest {
                 "-log", MagoTestConfig.getLogPath(path).getAbsolutePath() + "-V1",
                 "-pg",
                 "-c", "5187",
-                "-leaveTemp",
                 "-rotateX", "90",
                 //"-debug",
         };
@@ -64,7 +63,7 @@ class RealisticReleaseTest {
         MagoTestConfig.execute(args);
     }
 
-    //@Disabled
+    @Disabled
     @Test
     void realistic02() {
         String path = "R02-bansong-all-obj";

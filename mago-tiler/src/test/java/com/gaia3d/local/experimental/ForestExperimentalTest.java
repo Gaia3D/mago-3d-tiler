@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 @Tag("experimental")
 @Slf4j
-public class WildfireExperimentalTest {
+public class ForestExperimentalTest {
 
     @Test
     void koreaForestService() {

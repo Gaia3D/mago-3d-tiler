@@ -37,7 +37,7 @@ class PntsReleaseTest {
         MagoTestConfig.execute(args);
     }
 
-    @Disabled
+    /*@Disabled
     @Test
     void pointcloud00SSD() {
         String[] args = new String[]{
@@ -48,7 +48,7 @@ class PntsReleaseTest {
                 "--quiet",
         };
         MagoTestConfig.execute(args);
-    }
+    }*/
 
     @Test
     void pointcloud00V2WrongCRS() {
@@ -87,6 +87,7 @@ class PntsReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5186",
+                "--temp", "C:\\temp\\",
         };
         MagoTestConfig.execute(args);
     }
@@ -110,6 +111,7 @@ class PntsReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "32648",
+                "--temp", "C:\\temp\\",
         };
         MagoTestConfig.execute(args);
     }
@@ -120,6 +122,7 @@ class PntsReleaseTest {
         String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "--temp", "C:\\temp\\",
         };
         MagoTestConfig.execute(args);
     }
@@ -132,7 +135,6 @@ class PntsReleaseTest {
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "32652",
                 "--temp", "C:\\temp\\",
-                "-debug",
         };
         MagoTestConfig.execute(args);
     }
@@ -143,6 +145,7 @@ class PntsReleaseTest {
         String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "--temp", "C:\\temp\\",
         };
         MagoTestConfig.execute(args);
     }
@@ -153,6 +156,7 @@ class PntsReleaseTest {
         String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                "--temp", "C:\\temp\\",
                 "-crs", "5186",
         };
         MagoTestConfig.execute(args);

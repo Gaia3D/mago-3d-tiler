@@ -81,7 +81,6 @@ class I3dmReleaseTest {
     void instanced04() {
         String path = "I04-forest-shp";
         String[] args = new String[]{
-                "-tilesVersion", "1.0",
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "5179",

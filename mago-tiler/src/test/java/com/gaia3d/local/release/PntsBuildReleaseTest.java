@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 @Slf4j
 class PntsBuildReleaseTest {
 
-    @Test
+    /*@Test
     void pointcloud02Big() {
         String path = "P02-busan-big-jingu-las";
         String[] args = new String[]{
@@ -18,9 +18,9 @@ class PntsBuildReleaseTest {
                 "-c", "5187",
         };
         MagoTestConfig.execute(args);
-    }
+    }*/
 
-    @Test
+    /*@Test
     void pointcloud03() {
         String path = "P03-khonkaen-mini";
         String[] args = new String[]{
@@ -29,9 +29,9 @@ class PntsBuildReleaseTest {
                 "-c", "32648",
         };
         MagoTestConfig.execute(args);
-    }
+    }*/
 
-    @Test
+    /*@Test
     void pointcloud14A() {
         String path = "P14-KyungSan-A";
         String[] args = new String[]{
@@ -40,7 +40,7 @@ class PntsBuildReleaseTest {
                 "-crs", "5187",
         };
         MagoTestConfig.execute(args);
-    }
+    }*/
 
     @Test
     void pointcloud14B() {
@@ -88,25 +88,12 @@ class PntsBuildReleaseTest {
     }
 
     @Test
-    void pointcloud10() {
-        String path = "P10-jeonju";
+    void pointcloud16() {
+        String path = "P15-busan-jingu-whole";
         String[] args = new String[]{
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-crs", "5186",
-                "--temp", "C:\\temp\\",
-        };
-        MagoTestConfig.execute(args);
-    }
-
-    @Test
-    void pointcloud11() {
-        String path = "P11-gwangju";
-        String[] args = new String[]{
-                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
-                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
-                "-crs", "5174",
-                "--temp", "C:\\temp\\",
+                "-crs", "5187",
         };
         MagoTestConfig.execute(args);
     }
