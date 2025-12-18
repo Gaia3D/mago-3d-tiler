@@ -54,9 +54,8 @@ public class BatchedFileLoader implements FileLoader {
         return coverage;
     }
 
-    public List<GridCoverage2D> loadGridCoverages(List<GridCoverage2D> coverages) {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
-        File geoTiffPath = new File(globalOptions.getTerrainPath());
+    @Override
+    public List<GridCoverage2D> loadGridCoverages(File geoTiffPath, List<GridCoverage2D> coverages) {
         if (geoTiffPath.isFile()) {
             log.info("GeoTiff path is file. Loading only the GeoTiff file.");
             log.info(" - Loading GeoTiff file: {}", geoTiffPath.getAbsolutePath());

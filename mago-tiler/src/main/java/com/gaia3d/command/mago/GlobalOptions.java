@@ -39,6 +39,8 @@ public class GlobalOptions {
     private long fileCount = 0;
     private long tileCount = 0;
     private long tilesetSize = 0;
+    private long startTimeMillis = System.currentTimeMillis();
+    private long endTimeMillis = 0;
 
     /* 0.2 System Info */
     private long availableProcessors = Runtime.getRuntime().availableProcessors();
@@ -55,6 +57,7 @@ public class GlobalOptions {
     /* 1.2 Optional Path Options */
     private String logPath;
     private String terrainPath;
+    private String geoidPath;
     private String instancePath;
     private String tempPath;
 
@@ -242,6 +245,13 @@ public class GlobalOptions {
             instance.setTerrainPath(null);
         }
 
+        if (command.hasOption(ProcessOptions.GEOID_PATH.getLongName())) {
+            instance.setGeoidPath(command.getOptionValue(ProcessOptions.GEOID_PATH.getLongName()));
+            OptionsCorrector.checkExistInputPath(new File(instance.getGeoidPath()));
+        } else {
+            instance.setGeoidPath(null);
+        }
+
         if (command.hasOption(ProcessOptions.INSTANCE_PATH.getLongName())) {
             instance.setInstancePath(command.getOptionValue(ProcessOptions.INSTANCE_PATH.getLongName()));
             OptionsCorrector.checkExistInputPath(new File(instance.getInstancePath()));
@@ -374,6 +384,10 @@ public class GlobalOptions {
         boolean isParametric = inputFormat.equals(FormatType.GEOJSON) || inputFormat.equals(FormatType.SHP) || inputFormat.equals(FormatType.CITYGML) || inputFormat.equals(FormatType.INDOORGML) || inputFormat.equals(FormatType.GEO_PACKAGE);
         instance.setParametric(isParametric);
 
+        if (outputFormat.equals(FormatType.FOREST)) {
+            isRefineAdd = true;
+            instance.setTilesVersion("1.0");
+        }
         if (isParametric) {
             if (outputFormat.equals(FormatType.B3DM)) {
                 isRefineAdd = true;
@@ -434,8 +448,13 @@ public class GlobalOptions {
         instance.setMaxHeapMemory(Runtime.getRuntime().maxMemory());
     }
 
+    public long getProcessTimeMillis() {
+        long endTimeMillis = System.currentTimeMillis();
+        long processTimeMillis = endTimeMillis - startTimeMillis;
+        return processTimeMillis;
+    }
+
     public void printDebugOptions() {
-        Mago3DTilerMain.drawLine();
         log.info("Java Version Info: {}", javaVersionInfo);
         log.info("Program Info: {}", programInfo);
         log.info("Available Processors: {}", availableProcessors);
@@ -451,6 +470,7 @@ public class GlobalOptions {
             log.info("Instance File Path: {}", instancePath);
         }
         log.info("Terrain File Path: {}", terrainPath);
+        log.info("Geoid File Path: {}", geoidPath);
         log.info("Log File Path: {}", logPath);
         log.info("Recursive Path Search: {}", recursive);
         if (!forceCrs) {
@@ -466,6 +486,7 @@ public class GlobalOptions {
             return;
         }
         log.info("Leave Temp Files: {}", isLeaveTemp);
+        log.info("RefineAdd: {}", refineAdd);
         log.info("Minimum LOD: {}", minLod);
         log.info("Maximum LOD: {}", maxLod);
         log.info("Minimum GeometricError: {}", minGeometricError);
@@ -479,7 +500,6 @@ public class GlobalOptions {
         Mago3DTilerMain.drawLine();
         log.info("Mesh Quantization: {}", useQuantization);
         log.info("Rotate X-Axis: {}", rotateX);
-        log.info("RefineAdd: {}", refineAdd);
         log.info("Flip Coordinate: {}", flipCoordinate);
         log.info("Ignore Textures: {}", ignoreTextures);
         log.info("Max Triangles: {}", maxTriangles);

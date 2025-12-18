@@ -22,6 +22,7 @@ public enum ProcessOptions {
     RECURSIVE("recursive", "r", false, false, "Tree directory deep navigation."),
 
     TERRAIN_PATH("terrain", "te", true, false, "GeoTiff Terrain file path, 3D Object applied as clampToGround (Supports geotiff format)"),
+    GEOID_PATH("geoid", "ge", true, false, "Geoid file path for height correction (Supports geotiff format)"),
     INSTANCE_PATH("instance", "if", true, false, "Instance file path for I3DM (Default: {OUTPUT}/instance.dae)"),
 
     MESH_QUANTIZATION("quantize", "qt", false, false, "Quantize glTF 3DMesh via \"KHR_mesh_quantization\" Extension"),

@@ -90,11 +90,20 @@ public class TilingPipeline implements Pipeline {
                         return;
                     }
                     int infoLength = loadedTileInfos.size();
+                    boolean manyTiles = infoLength > 100000;
+                    int percentageStep = infoLength / 100;
                     nodeCount.addAndGet(infoLength);
                     for (int index = 0; index < infoLength; index++) {
                         TileInfo tileInfo = loadedTileInfos.get(index);
                         if (tileInfo != null) {
-                            log.info("[Pre][{}/{}][{}/{}] Loading tiles from file.", finalCount + 1, fileCount, index + 1, infoLength);
+                            if (manyTiles) {
+                                if (index % percentageStep == 0 || index == infoLength - 1) {
+                                    int percent = (index / percentageStep);
+                                    log.info("[Pre][{}/{}][{}/{}] Processing tile info. {}%", finalCount + 1, fileCount, index + 1, infoLength, percent);
+                                }
+                            } else {
+                                log.info("[Pre][{}/{}][{}/{}] Processing tile info.", finalCount + 1, fileCount, index + 1, infoLength);
+                            }
                             tileInfo.setSerial(index + 1);
                             for (PreProcess preProcessors : preProcesses) {
                                 preProcessors.run(tileInfo);
@@ -177,14 +186,18 @@ public class TilingPipeline implements Pipeline {
         fileList = fileLoader.loadTemp(tempFile, fileList);
     }
 
-    private void deleteTemp() throws IOException {
+    private void deleteTemp() {
         if (globalOptions.isLeaveTemp()) {
             return;
         }
 
         File userTempFile = new File(globalOptions.getTempPath());
         if (userTempFile.exists() && userTempFile.isDirectory()) {
-            FileUtils.deleteDirectory(userTempFile);
+            try {
+                FileUtils.deleteDirectory(userTempFile);
+            } catch (Exception e) {
+                log.error("[WARN] Failed to delete temp directory in {}", userTempFile.getAbsolutePath(), e);
+            }
         }
     }
 

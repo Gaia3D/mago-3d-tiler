@@ -16,15 +16,22 @@ public interface FileLoader {
 
     List<File> loadFiles();
 
-    List<GridCoverage2D> loadGridCoverages(List<GridCoverage2D> coverages);
+    List<GridCoverage2D> loadGridCoverages(File geoTiffPath, List<GridCoverage2D> coverages);
 
     default List<File> loadFileDefault() {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         File inputFile = new File(globalOptions.getInputPath());
-        boolean recursive = globalOptions.isRecursive();
-        FormatType formatType = globalOptions.getInputFormat();
-        String[] extensions = getExtensions(formatType);
-        return (List<File>) FileUtils.listFiles(inputFile, extensions, recursive);
+
+        if (inputFile.isFile()) {
+            return List.of(inputFile);
+        } else if (inputFile.isDirectory()) {
+            boolean recursive = globalOptions.isRecursive();
+            FormatType formatType = globalOptions.getInputFormat();
+            String[] extensions = getExtensions(formatType);
+            return (List<File>) FileUtils.listFiles(inputFile, extensions, recursive);
+        } else {
+            throw new IllegalArgumentException("Input path is neither a file nor a directory: " + globalOptions.getInputPath());
+        }
     }
 
     default String[] getExtensions(FormatType formatType) {

@@ -10,5 +10,6 @@ services:
       - D:/data/mago-3d-tiler/release-sample:/input
       - E:/data/mago-server/output:/output
     command: >
-      -input /input/B03-wangsuk2-geojson
-      -output /output/B03-wangsuk2-geojson
+      --input /input/B03-wangsuk2-geojson
+      --output /output/B03-wangsuk2-geojson
+      --temp /work/temp

@@ -69,6 +69,15 @@ public enum FormatType {
         if (extension == null || extension.isEmpty()) {
             return null;
         }
+
+        if (extension.equalsIgnoreCase(FormatType.INSTANCE.getExtension())) {
+            return FormatType.I3DM;
+        } else if (extension.equalsIgnoreCase(FormatType.BATCH.getExtension())) {
+            return FormatType.B3DM;
+        } else if (extension.equalsIgnoreCase(FormatType.POINTCLOUD.getExtension())) {
+            return FormatType.PNTS;
+        }
+
         return Arrays.stream(FormatType.values())
                 .filter((type) -> {
                     boolean compareName = type.name().equalsIgnoreCase(extension);

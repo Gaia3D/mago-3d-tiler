@@ -28,7 +28,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class InstancedFileLoader implements FileLoader {
     private final Converter converter;
-    private final AttributeReader kmlReader;
+    private final AttributeReader attributeReader;
 
     /* For instanced model */
     private File instanceFile = null;
@@ -56,9 +56,8 @@ public class InstancedFileLoader implements FileLoader {
         return coverage;
     }
 
-    public List<GridCoverage2D> loadGridCoverages(List<GridCoverage2D> coverages) {
-        GlobalOptions globalOptions = GlobalOptions.getInstance();
-        File geoTiffPath = new File(globalOptions.getTerrainPath());
+    @Override
+    public List<GridCoverage2D> loadGridCoverages(File geoTiffPath, List<GridCoverage2D> coverages) {
         if (geoTiffPath.isFile()) {
             log.info("GeoTiff path is file. Loading only the GeoTiff file.");
             log.info(" - Loading GeoTiff file: {}", geoTiffPath.getAbsolutePath());
@@ -95,7 +94,7 @@ public class InstancedFileLoader implements FileLoader {
         List<TileInfo> tileInfos = new ArrayList<>();
 
         if (FormatType.KML == formatType) {
-            List<TileTransformInfo> tileTransformInfos = kmlReader.readAll(file);
+            List<TileTransformInfo> tileTransformInfos = attributeReader.readAll(file);
             if (tileTransformInfos != null) {
                 for (TileTransformInfo tileTransformInfo : tileTransformInfos) {
                     if (instanceFile == null || instanceScene == null) {
@@ -125,7 +124,7 @@ public class InstancedFileLoader implements FileLoader {
                 }
             }
             // geojson, shape type
-            List<TileTransformInfo> tileTransformInfos = kmlReader.readAll(file);
+            List<TileTransformInfo> tileTransformInfos = attributeReader.readAll(file);
             if (tileTransformInfos != null) {
                 for (TileTransformInfo tileTransformInfo : tileTransformInfos) {
                     TileInfo tileInfo = TileInfo.builder()

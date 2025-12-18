@@ -9,6 +9,9 @@ import java.util.Random;
 public class OptimizedCardShuffler extends Shuffler {
     private static final int RANDOM_SEED = 8291;
     private static final int FIXED_SECTION_BYTES = 2024 * (1024 * 1024);
+    private static final int minimumPasses = 4;
+    private static final int maximumPasses = 12;
+
     private int[] maximumLocalOrder;
     private int[] tailTempLocalOrder = null;
 
@@ -16,11 +19,11 @@ public class OptimizedCardShuffler extends Shuffler {
     public void shuffle(File sourceFile, File targetFile, int blockSize) {
         long sourceFileSize = sourceFile.length();
         long blockCount = sourceFileSize / blockSize;
-        int passes = (int) (blockCount / 30_000_000L);
-        if (passes < 4) {
-            passes = 4;
-        } else if (passes > 8) {
-            passes = 8;
+        int passes = (int) (blockCount / 20_000_000L);
+        if (passes < minimumPasses) {
+            passes = minimumPasses;
+        } else if (passes > maximumPasses) {
+            passes = maximumPasses;
         }
 
         log.info("[Pre][Shuffle][{}/{}] File size: {} bytes, Point count: {} bytes, passes: {}", processCount, totalProcessCount, sourceFileSize, blockCount, passes);

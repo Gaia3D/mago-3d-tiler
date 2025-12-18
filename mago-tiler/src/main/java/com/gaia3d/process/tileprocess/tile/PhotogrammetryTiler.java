@@ -22,6 +22,7 @@ import com.gaia3d.basic.model.GaiaScene;
 import com.gaia3d.basic.model.GaiaTexture;
 import com.gaia3d.basic.remesher.CellGrid3D;
 import com.gaia3d.basic.remesher.ReMeshParameters;
+import com.gaia3d.basic.types.LevelOfDetail;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
@@ -988,11 +989,6 @@ public class PhotogrammetryTiler extends DefaultTiler implements Tiler {
                     List<GaiaTexture> textures = material.getTextures().get(TextureType.DIFFUSE);
                     for (GaiaTexture texture : textures) {
                         // check if exist bufferedImage of the texture
-
-                        if (texture.getBufferedImage() == null) {
-
-                        }
-
                         texture.setParentPath(imagesPath.toString());
                         texture.saveImage(texture.getFullPath());
                     }

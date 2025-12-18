@@ -13,7 +13,9 @@ import com.gaia3d.process.tileprocess.Pipeline;
 import com.gaia3d.process.tileprocess.TilingProcess;
 import com.gaia3d.process.tileprocess.tile.PointCloudTiler;
 import lombok.extern.slf4j.Slf4j;
+import org.geotools.coverage.grid.GridCoverage2D;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -31,6 +33,9 @@ public class PointCloudProcessFlow implements ProcessFlow {
         GlobalOptions globalOptions = GlobalOptions.getInstance();
         String tempDir = globalOptions.getTempPath();
         Path tempPath = Path.of(tempDir);
+
+        List<GridCoverage2D> geoTiffs = new ArrayList<>();
+        List<GridCoverage2D> geoidTiffs = new ArrayList<>();
         LasConverterOptions options = LasConverterOptions.builder()
                 .pointPercentage(globalOptions.getPointRatio())
                 .forceCrs(globalOptions.isForceCrs())
@@ -38,9 +43,20 @@ public class PointCloudProcessFlow implements ProcessFlow {
                 .tempDirectory(tempPath)
                 .force4ByteRgb(globalOptions.isForce4ByteRGB())
                 .translation(globalOptions.getTranslateOffset())
+                .geoTiffs(geoTiffs)
+                .geoidTiffs(geoidTiffs)
                 .build();
         LasConverter converter = new LasConverter(options);
         PointCloudFileLoader fileLoader = new PointCloudFileLoader(converter);
+
+        if (globalOptions.getTerrainPath() != null) {
+            File terrainPath = new File(globalOptions.getTerrainPath());
+            geoTiffs = fileLoader.loadGridCoverages(terrainPath, geoTiffs);
+        }
+        if (globalOptions.getGeoidPath() != null) {
+            File geoidPath = new File(globalOptions.getGeoidPath());
+            geoidTiffs = fileLoader.loadGridCoverages(geoidPath, geoidTiffs);
+        }
 
         /* Pre-process */
         List<PreProcess> preProcessors = new ArrayList<>();

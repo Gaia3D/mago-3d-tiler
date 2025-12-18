@@ -41,8 +41,10 @@ public class Mago3DTiler {
     private ProcessFlow getProcessModel(FormatType inputFormat, FormatType outputFormat) {
         ProcessFlow processFlow;
         if (FormatType.I3DM == outputFormat) {
-            processFlow = new InstancedProcessFlow();
-        } else if (FormatType.PHOTOGRAMMETRY == outputFormat) {
+            processFlow = new InstancedProcessFlow(false);
+        } else if (FormatType.FOREST == outputFormat) {
+            processFlow = new InstancedProcessFlow(true);
+        }  else if (FormatType.PHOTOGRAMMETRY == outputFormat) {
             processFlow = new PhotogrammetryProcessFlow();
         } else if (FormatType.B3DM == outputFormat) {
             boolean isPhotogrammetry = GlobalOptions.getInstance().isPhotogrammetry();

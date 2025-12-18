@@ -20,7 +20,8 @@ import java.util.List;
 @Slf4j
 @AllArgsConstructor
 public class GaiaTranslator implements PreProcess {
-    private final List<GridCoverage2D> coverages;
+    private final List<GridCoverage2D> terrains;
+    private final List<GridCoverage2D> geoids;
 
     @Override
     public TileInfo run(TileInfo tileInfo) {
@@ -54,9 +55,10 @@ public class GaiaTranslator implements PreProcess {
 
     private double getTerrainHeightFromCartographic(Vector3d cartographic) {
         Vector3d center = new Vector3d(cartographic.x, cartographic.y, 0.0);
-        if (coverages != null && !coverages.isEmpty()) {
-            for (GridCoverage2D coverage : coverages) {
-                Position position = new Position2D(DefaultGeographicCRS.WGS84, center.x, center.y);
+        Position position = new Position2D(DefaultGeographicCRS.WGS84, center.x, center.y);
+        double resultHeight = 0.0d;
+        if (terrains != null && !terrains.isEmpty()) {
+            for (GridCoverage2D coverage : terrains) {
                 double[] altitude = new double[1];
                 altitude[0] = 0.0d;
 
@@ -71,10 +73,31 @@ public class GaiaTranslator implements PreProcess {
                 } else if (Double.isNaN(altitude[0])) {
                     log.debug("[DEBUG] Failed to load terrain height. NaN value encountered");
                 } else {
-                    return altitude[0];
+                    resultHeight += altitude[0];
                 }
             }
         }
-        return 0.0d;
+
+        if (geoids != null && !geoids.isEmpty()) {
+            for (GridCoverage2D coverage : geoids) {
+                double[] geoidHeight = new double[1];
+                geoidHeight[0] = 0.0d;
+
+                try {
+                    coverage.evaluate(position, geoidHeight);
+                } catch (Exception e) {
+                    log.debug("[DEBUG] Failed to load geoid height. Out of range");
+                }
+
+                if (Double.isInfinite(geoidHeight[0])) {
+                    log.debug("[DEBUG] Failed to load geoid height. Infinite value encountered");
+                } else if (Double.isNaN(geoidHeight[0])) {
+                    log.debug("[DEBUG] Failed to load geoid height. NaN value encountered");
+                } else {
+                    resultHeight += geoidHeight[0];
+                }
+            }
+        }
+        return resultHeight;
     }
 }

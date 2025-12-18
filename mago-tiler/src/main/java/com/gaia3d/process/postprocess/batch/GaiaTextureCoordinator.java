@@ -9,7 +9,7 @@ import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalConstants;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.process.tileprocess.tile.LevelOfDetail;
+import com.gaia3d.basic.types.LevelOfDetail;
 import com.gaia3d.util.ImageResizer;
 import com.gaia3d.util.ImageUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -213,8 +213,8 @@ public class GaiaTextureCoordinator {
         // 2- List<GaiaBufferDataSet> this.bufferDataSets;
         boolean isPhotorealistic = globalOptions.isPhotogrammetry();
 
-        // 1rst, make a list of GaiaBatchImage (splittedImage).
-        List<GaiaBatchImage> splittedImages = new ArrayList<>();
+        // 1rst, make a list of GaiaBatchImage (splitImage).
+        List<GaiaBatchImage> splitImages = new ArrayList<>();
         boolean existPngTextures = false;
         for (GaiaMaterial material : materials) {
             Map<TextureType, List<GaiaTexture>> textureMap = material.getTextures();
@@ -232,8 +232,7 @@ public class GaiaTextureCoordinator {
                     texture.setBufferedImage(null);
                     bufferedImage = texture.getBufferedImage();
                 } else {
-                    float scaleFactor = lod.getTextureScale();
-                    bufferedImage = texture.getBufferedImage(scaleFactor);
+                    bufferedImage = texture.getBufferedImage(lod);
                 }
             } else {
                 bufferedImage = createShamImage();
@@ -242,36 +241,36 @@ public class GaiaTextureCoordinator {
             Vector2d minPoint = new Vector2d(0, 0);
             Vector2d maxPoint = new Vector2d(bufferedImage.getWidth(), bufferedImage.getHeight());
 
-            GaiaBatchImage splittedImage = new GaiaBatchImage();
-            splittedImage.setOriginBoundary(new GaiaRectangle(minPoint, maxPoint));
-            splittedImage.setMaterialId(material.getId());
-            splittedImages.add(splittedImage);
+            GaiaBatchImage splitImage = new GaiaBatchImage();
+            splitImage.setOriginBoundary(new GaiaRectangle(minPoint, maxPoint));
+            splitImage.setMaterialId(material.getId());
+            splitImages.add(splitImage);
         }
 
-        splittedImages = splittedImages.stream().sorted(Comparator.comparing(splitImage -> splitImage.getOriginBoundary().getArea())).collect(Collectors.toList());
-        Collections.reverse(splittedImages);
+        splitImages = splitImages.stream().sorted(Comparator.comparing(splitImage -> splitImage.getOriginBoundary().getArea())).collect(Collectors.toList());
+        Collections.reverse(splitImages);
 
         // do the atlasing process
         List<GaiaBatchImage> listProcessSplitDatas = new ArrayList<>();
-        for (int i = 0; i < splittedImages.size(); i++) {
-            GaiaBatchImage splittedImage = splittedImages.get(i);
-            GaiaRectangle originBoundary = splittedImage.getOriginBoundary();
+        for (int i = 0; i < splitImages.size(); i++) {
+            GaiaBatchImage splitImage = splitImages.get(i);
+            GaiaRectangle originBoundary = splitImage.getOriginBoundary();
 
             if (i == 0) {
-                splittedImage.setBatchedBoundary(originBoundary);
+                splitImage.setBatchedBoundary(originBoundary);
             } else {
                 // 1rst, find the best position for image into atlas
-                Vector2d bestPosition = this.getBestPositionMosaicInAtlas(listProcessSplitDatas, splittedImage);
-                splittedImage.batchedBoundary.setMinX(bestPosition.x);
-                splittedImage.batchedBoundary.setMinY(bestPosition.y);
-                splittedImage.batchedBoundary.setMaxX(bestPosition.x + originBoundary.getWidth());
-                splittedImage.batchedBoundary.setMaxY(bestPosition.y + originBoundary.getHeight());
+                Vector2d bestPosition = this.getBestPositionMosaicInAtlas(listProcessSplitDatas, splitImage);
+                splitImage.batchedBoundary.setMinX(bestPosition.x);
+                splitImage.batchedBoundary.setMinY(bestPosition.y);
+                splitImage.batchedBoundary.setMaxX(bestPosition.x + originBoundary.getWidth());
+                splitImage.batchedBoundary.setMaxY(bestPosition.y + originBoundary.getHeight());
             }
-            listProcessSplitDatas.add(splittedImage);
+            listProcessSplitDatas.add(splitImage);
         }
 
-        int maxWidth = getMaxWidth(splittedImages);
-        int maxHeight = getMaxHeight(splittedImages);
+        int maxWidth = getMaxWidth(splitImages);
+        int maxHeight = getMaxHeight(splitImages);
         int imageType = existPngTextures ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
         // existPngTextures
         initBatchImage(maxWidth, maxHeight, imageType);
@@ -282,7 +281,7 @@ public class GaiaTextureCoordinator {
 
         Graphics graphics = this.atlasImage.getGraphics();
 
-        for (GaiaBatchImage splitImage : splittedImages) {
+        for (GaiaBatchImage splitImage : splitImages) {
             GaiaRectangle splitRectangle = splitImage.getBatchedBoundary();
             GaiaMaterial material = findMaterial(splitImage.getMaterialId());
 
@@ -292,11 +291,11 @@ public class GaiaTextureCoordinator {
                 GaiaTexture texture = textures.get(0);
                 BufferedImage source = texture.getBufferedImage();
                 graphics.drawImage(source, (int) splitRectangle.getMinX(), (int) splitRectangle.getMinY(), null); // original code
-                //graphics.drawImage(randomColoredImage, (int) splittedRectangle.getMinX(), (int) splittedRectangle.getMinY(), null); // test code
+                //graphics.drawImage(randomColoredImage, (int) splitRectangle.getMinX(), (int) splitRectangle.getMinY(), null); // test code
             }
         }
 
-        for (GaiaBatchImage target : splittedImages) {
+        for (GaiaBatchImage target : splitImages) {
             GaiaRectangle splitRectangle = target.getBatchedBoundary();
 
             int width = (int) splitRectangle.getMaxX() - (int) splitRectangle.getMinX();
@@ -443,7 +442,7 @@ public class GaiaTextureCoordinator {
             if (sizeChanged) {
                 log.debug("=== Batching textures is done ===");
                 log.debug(" - atlasImage name : {}", (ATLAS_IMAGE + "_L" + lod.getLevel()));
-                log.debug(" - splitImages count : {}", splittedImages.size());
+                log.debug(" - splitImages count : {}", splitImages.size());
                 log.debug(" - originalWidth : {}", this.atlasImage.getWidth());
                 log.debug(" - originalHeight : {}", this.atlasImage.getHeight());
                 log.debug(" - resizeWidth : {}", imageWidth);
@@ -506,11 +505,11 @@ public class GaiaTextureCoordinator {
     }
 
     private int getMaxWidth(List<GaiaBatchImage> compareImages) {
-        return compareImages.stream().mapToInt(splittedImage -> (int) splittedImage.getBatchedBoundary().getMaxX()).max().orElse(0);
+        return compareImages.stream().mapToInt(splitImage -> (int) splitImage.getBatchedBoundary().getMaxX()).max().orElse(0);
     }
 
     private int getMaxHeight(List<GaiaBatchImage> compareImages) {
-        return compareImages.stream().mapToInt(splittedImage -> (int) splittedImage.getBatchedBoundary().getMaxY()).max().orElse(0);
+        return compareImages.stream().mapToInt(splitImage -> (int) splitImage.getBatchedBoundary().getMaxY()).max().orElse(0);
     }
 }
 

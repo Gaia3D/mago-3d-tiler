@@ -19,7 +19,6 @@ class PntsReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "32652",
-                "--temp", "C:\\temp\\",
         };
         MagoTestConfig.execute(args);
     }

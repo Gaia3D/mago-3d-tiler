@@ -345,11 +345,11 @@ public class GaiaPointCloud {
             this.lasPoints = points;
             this.pointCount = points.size();
 
+            bis.close();
             if (deleteAfterMaximize) {
                 FileUtils.deleteQuietly(file);
             }
             this.minimizedFile = null;
-
         } catch (IOException e) {
             log.error("Failed to maximize point cloud from file: {}", file.getAbsolutePath(), e);
         }

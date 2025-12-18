@@ -11,6 +11,19 @@ import java.io.File;
 public class ExperimentalTest {
 
     @Test
+    void ifcBug() {
+        String path = "AC20-FZK-Haus.glb";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getTempPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
+                //"-c", "32652",
+                //"-r",
+                "-debug"
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
     void pointcloudIntersection00() {
         String path = "geostory-intersection-las";
         String[] args = new String[]{

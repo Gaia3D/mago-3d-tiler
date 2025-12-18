@@ -22,8 +22,9 @@ import java.util.List;
 
 @Slf4j
 @AllArgsConstructor
-public class GaiaStrictTranslation implements PreProcess {
-    private final List<GridCoverage2D> coverages;
+public class GaiaTranslationForPhotogrammetry implements PreProcess {
+    private final List<GridCoverage2D> terrains;
+    private final List<GridCoverage2D> geoids;
 
     @Override
     public TileInfo run(TileInfo tileInfo) {
@@ -41,24 +42,7 @@ public class GaiaStrictTranslation implements PreProcess {
 
         GaiaBoundingBox bboxLC = new GaiaBoundingBox();
         this.transformSceneVertexPositionsToLocalCoords(gaiaScene, centerGeoCoord, bboxLC);
-
-        // set position terrain height
-        if (!coverages.isEmpty()) {
-            centerGeoCoord.z = 0.0d;
-            coverages.forEach((coverage) -> {
-                Position position2D = new Position2D(DefaultGeographicCRS.WGS84, centerGeoCoord.x, centerGeoCoord.y);
-                double[] altitudeArray = new double[1];
-                altitudeArray[0] = 0.0d;
-                try {
-                    coverage.evaluate(position2D, altitudeArray);
-                } catch (Exception e) {
-                    log.debug("[DEBUG] Failed to load terrain height. Out of range");
-                }
-                if (altitudeArray[0] != 0.0d && !Double.isNaN(altitudeArray[0])) {
-                    centerGeoCoord.z = altitudeArray[0];
-                }
-            });
-        }
+        centerGeoCoord.z = getTerrainHeightFromCartographic(centerGeoCoord);
 
         // calculate cartographic bounding box
         double[] centerCartesianWC = GlobeUtils.geographicToCartesianWgs84(centerGeoCoord.x, centerGeoCoord.y, centerGeoCoord.z);
@@ -241,5 +225,53 @@ public class GaiaStrictTranslation implements PreProcess {
             tileTransformInfo.setPosition(position);
         }
         return tileTransformInfo;
+    }
+
+    private double getTerrainHeightFromCartographic(Vector3d cartographic) {
+        Vector3d center = new Vector3d(cartographic.x, cartographic.y, 0.0);
+        Position position = new Position2D(DefaultGeographicCRS.WGS84, center.x, center.y);
+        double resultHeight = 0.0d;
+        if (terrains != null && !terrains.isEmpty()) {
+            for (GridCoverage2D coverage : terrains) {
+                double[] altitude = new double[1];
+                altitude[0] = 0.0d;
+
+                try {
+                    coverage.evaluate(position, altitude);
+                } catch (Exception e) {
+                    log.debug("[DEBUG] Failed to load terrain height. Out of range");
+                }
+
+                if (Double.isInfinite(altitude[0])) {
+                    log.debug("[DEBUG] Failed to load terrain height. Infinite value encountered");
+                } else if (Double.isNaN(altitude[0])) {
+                    log.debug("[DEBUG] Failed to load terrain height. NaN value encountered");
+                } else {
+                    resultHeight += altitude[0];
+                }
+            }
+        }
+
+        if (geoids != null && !geoids.isEmpty()) {
+            for (GridCoverage2D coverage : geoids) {
+                double[] geoidHeight = new double[1];
+                geoidHeight[0] = 0.0d;
+
+                try {
+                    coverage.evaluate(position, geoidHeight);
+                } catch (Exception e) {
+                    log.debug("[DEBUG] Failed to load geoid height. Out of range");
+                }
+
+                if (Double.isInfinite(geoidHeight[0])) {
+                    log.debug("[DEBUG] Failed to load geoid height. Infinite value encountered");
+                } else if (Double.isNaN(geoidHeight[0])) {
+                    log.debug("[DEBUG] Failed to load geoid height. NaN value encountered");
+                } else {
+                    resultHeight += geoidHeight[0];
+                }
+            }
+        }
+        return resultHeight;
     }
 }

@@ -4,8 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.model.GaiaVertex;
-import com.gaia3d.basic.pointcloud.GaiaPointCloudOld;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.pointcloud.GaiaLasPoint;
 import com.gaia3d.converter.pointcloud.GaiaPointCloud;
@@ -25,7 +23,6 @@ import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.locationtech.proj4j.BasicCoordinateTransform;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
-import org.locationtech.proj4j.InvalidValueException;
 import org.locationtech.proj4j.ProjCoordinate;
 
 import java.io.File;
@@ -110,18 +107,6 @@ public class PointCloudModel implements ContentModel {
                 Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(wgs84Position);
                 Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv, new Vector3d());
                 localPosition.mulPosition(rotationMatrix4d, localPosition);
-
-                /*Vector3d position = vertex.getVec3Position();
-                Vector3d wgs84Position = new Vector3d();
-                try {
-                    ProjCoordinate transformedCoordinate = transformer.transform(new ProjCoordinate(position.x, position.y, position.z), new ProjCoordinate());
-                    wgs84Position = new Vector3d(transformedCoordinate.x, transformedCoordinate.y, position.z);
-                } catch (InvalidValueException e) {
-                    log.debug("Invalid value exception", e);
-                }
-                Vector3d positionWorldCoordinate = GlobeUtils.geographicToCartesianWgs84(wgs84Position);
-                Vector3d localPosition = positionWorldCoordinate.mulPosition(transformMatrixInv, new Vector3d());
-                localPosition.mulPosition(rotationMatrix4d, localPosition);*/
 
                 float x = (float) localPosition.x;
                 float y = (float) -localPosition.z;

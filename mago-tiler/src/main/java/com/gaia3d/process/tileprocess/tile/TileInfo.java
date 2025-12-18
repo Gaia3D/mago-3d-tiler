@@ -4,7 +4,6 @@ import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
 import com.gaia3d.basic.model.GaiaNode;
 import com.gaia3d.basic.model.GaiaScene;
-import com.gaia3d.basic.pointcloud.GaiaPointCloudOld;
 import com.gaia3d.converter.kml.TileTransformInfo;
 import com.gaia3d.converter.pointcloud.GaiaPointCloud;
 import lombok.Builder;
@@ -30,10 +29,6 @@ public class TileInfo {
 
     private GaiaScene scene;
     private GaiaSet set;
-
-    @Deprecated
-    private GaiaPointCloudOld pointCloudOld;
-
     private GaiaPointCloud pointCloud;
 
     private TileTransformInfo tileTransformInfo;
@@ -82,7 +77,6 @@ public class TileInfo {
     public void clear() {
         this.scene = null;
         this.set = null;
-        pointCloudOld = null;
         tileTransformInfo = null;
         transformMatrix = null;
         boundingBox = null;
@@ -91,7 +85,6 @@ public class TileInfo {
         tempPath = null;
         tempPathLod = null;
         cartographicBBox = null;
-
     }
 
     public void deleteTemp() throws IOException {
@@ -118,7 +111,6 @@ public class TileInfo {
                 .serial(this.serial)
                 .scene(this.scene)
                 .set(this.set)
-                .pointCloudOld(this.pointCloudOld)
                 .name(this.name)
                 .tileTransformInfo(this.tileTransformInfo)
                 .transformMatrix(this.transformMatrix)

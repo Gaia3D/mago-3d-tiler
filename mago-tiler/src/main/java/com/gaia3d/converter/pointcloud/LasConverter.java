@@ -6,6 +6,10 @@ import com.gaia3d.util.GlobeUtils;
 import com.github.mreutegg.laszip4j.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.geotools.api.geometry.Position;
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.geometry.Position2D;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.joml.Vector3d;
 import org.locationtech.proj4j.BasicCoordinateTransform;
 import org.locationtech.proj4j.CRSFactory;
@@ -83,6 +87,10 @@ public class LasConverter {
             progressInterval = 1;
         }
 
+        List<GridCoverage2D> geoTiffs = options.getGeoTiffs();
+        List<GridCoverage2D> geoidTiffs = options.getGeoidTiffs();
+        boolean hasTerrain = geoTiffs != null && !geoTiffs.isEmpty();
+        boolean hasGeoid = geoidTiffs != null && !geoidTiffs.isEmpty();
         long index = 0;
         for (LASPoint point : pointIterable) {
             if (index % volumeFilter != 0) {
@@ -111,6 +119,12 @@ public class LasConverter {
                 x = targetCoord.x;
                 y = targetCoord.y;
                 z = targetCoord.z;
+            }
+
+            if (hasTerrain || hasGeoid) {
+                Vector3d cartographic = GlobeUtils.cartesianToGeographicWgs84(x, y, z);
+                double terrainHeight = getTerrainHeightFromCartographic(geoTiffs, geoidTiffs, cartographic);
+                z += terrainHeight;
             }
 
             byte[] rgb = getRgbColor(point, hasRgbColor, isForce4ByteRGB);
@@ -340,5 +354,53 @@ public class LasConverter {
         rgb[1] = (byte) point.getGreen();
         rgb[2] = (byte) point.getBlue();
         return rgb;
+    }
+
+    private double getTerrainHeightFromCartographic(List<GridCoverage2D> terrains, List<GridCoverage2D> geoids, Vector3d cartographic) {
+        Vector3d center = new Vector3d(cartographic.x, cartographic.y, 0.0);
+        Position position = new Position2D(DefaultGeographicCRS.WGS84, center.x, center.y);
+        double resultHeight = 0.0d;
+        if (terrains != null && !terrains.isEmpty()) {
+            for (GridCoverage2D coverage : terrains) {
+                double[] altitude = new double[1];
+                altitude[0] = 0.0d;
+
+                try {
+                    coverage.evaluate(position, altitude);
+                } catch (Exception e) {
+                    log.debug("[DEBUG] Failed to load terrain height. Out of range");
+                }
+
+                if (Double.isInfinite(altitude[0])) {
+                    log.debug("[DEBUG] Failed to load terrain height. Infinite value encountered");
+                } else if (Double.isNaN(altitude[0])) {
+                    log.debug("[DEBUG] Failed to load terrain height. NaN value encountered");
+                } else {
+                    resultHeight += altitude[0];
+                }
+            }
+        }
+
+        if (geoids != null && !geoids.isEmpty()) {
+            for (GridCoverage2D coverage : geoids) {
+                double[] geoidHeight = new double[1];
+                geoidHeight[0] = 0.0d;
+
+                try {
+                    coverage.evaluate(position, geoidHeight);
+                } catch (Exception e) {
+                    log.debug("[DEBUG] Failed to load geoid height. Out of range");
+                }
+
+                if (Double.isInfinite(geoidHeight[0])) {
+                    log.debug("[DEBUG] Failed to load geoid height. Infinite value encountered");
+                } else if (Double.isNaN(geoidHeight[0])) {
+                    log.debug("[DEBUG] Failed to load geoid height. NaN value encountered");
+                } else {
+                    resultHeight += geoidHeight[0];
+                }
+            }
+        }
+        return resultHeight;
     }
 }

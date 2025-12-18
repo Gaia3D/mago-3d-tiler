@@ -22,6 +22,7 @@ import com.gaia3d.process.tileprocess.tile.PhotogrammetryTiler;
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.coverage.grid.GridCoverage2D;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +43,13 @@ public class PhotogrammetryProcessFlow implements ProcessFlow {
 
         List<GridCoverage2D> geoTiffs = new ArrayList<>();
         if (globalOptions.getTerrainPath() != null) {
-            geoTiffs = fileLoader.loadGridCoverages(geoTiffs);
+            File terrainPath = new File(globalOptions.getTerrainPath());
+            geoTiffs = fileLoader.loadGridCoverages(terrainPath, geoTiffs);
+        }
+        List<GridCoverage2D> geoidTiffs = new ArrayList<>();
+        if (globalOptions.getGeoidPath() != null) {
+            File geoidPath = new File(globalOptions.getGeoidPath());
+            geoidTiffs = fileLoader.loadGridCoverages(geoidPath, geoidTiffs);
         }
 
         // preProcess
@@ -52,7 +59,7 @@ public class PhotogrammetryProcessFlow implements ProcessFlow {
         preProcessors.add(new GaiaScaler());
 
         preProcessors.add(new PhotogrammetryRotation());
-        preProcessors.add(new GaiaStrictTranslation(geoTiffs));
+        preProcessors.add(new GaiaTranslationForPhotogrammetry(geoTiffs, geoidTiffs));
         PhotogrammetryMinimization gaiaMinimizer = new PhotogrammetryMinimization();
         preProcessors.add(gaiaMinimizer);
 

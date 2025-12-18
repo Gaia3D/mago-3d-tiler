@@ -5,6 +5,7 @@ import com.gaia3d.basic.geometry.GaiaRectangle;
 import com.gaia3d.basic.model.*;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.FormatType;
+import com.gaia3d.basic.types.LevelOfDetail;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.util.ImageResizer;
 import com.gaia3d.util.ImageUtils;
@@ -107,7 +108,6 @@ public class GaiaSet implements Serializable {
                     copyTextures(material, tempDir);
                 }
             }
-
         } catch (Exception e) {
             log.error("[ERROR] GaiaSet Write Error : ", e);
             tempFile.delete();
@@ -134,7 +134,7 @@ public class GaiaSet implements Serializable {
         return file.toPath();
     }
 
-    public Path writeFile(Path path, int serial, GaiaAttribute gaiaAttribute) {
+    public Path writeFile(Path path, int serial) {
         int dividedNumber = serial / 10000;
 
         String tempFileName = this.attribute.getIdentifier().toString() + "." + FormatType.TEMP.getExtension();
@@ -146,6 +146,8 @@ public class GaiaSet implements Serializable {
         File tempFile = tempDir.resolve(tempFileName).toFile();
         try (ObjectOutputStream outputStream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(tempFile)))) {
             outputStream.writeObject(this);
+            outputStream.flush();
+            outputStream.close();
 
             // Copy images to the temp directory
             for (GaiaMaterial material : materials) {
@@ -158,7 +160,7 @@ public class GaiaSet implements Serializable {
         return tempFile.toPath();
     }
 
-    public Path writeFile(Path path, int serial, GaiaAttribute gaiaAttribute, float scale) {
+    public Path writeFileWithLod(Path path, int serial, List<LevelOfDetail> lods) {
         int dividedNumber = serial / 10000;
 
         String tempFileName = this.attribute.getIdentifier().toString() + "." + FormatType.TEMP.getExtension();
@@ -173,11 +175,11 @@ public class GaiaSet implements Serializable {
 
             // Copy images to the temp directory
             for (GaiaMaterial material : materials) {
-                copyTextures(material, tempDir, scale);
+                copyTextures(material, tempDir, lods);
             }
         } catch (Exception e) {
             log.error("[ERROR] GaiaSet Write Error : ", e);
-            tempFile.delete();
+            FileUtils.deleteQuietly(tempFile);
         }
         return tempFile.toPath();
     }
@@ -218,7 +220,7 @@ public class GaiaSet implements Serializable {
     /**
      * Copy textures to the output directory with scaling.
      */
-    private void copyTextures(GaiaMaterial material, Path copyDirectory, float scale) throws IOException {
+    private void copyTextures(GaiaMaterial material, Path copyDirectory, List<LevelOfDetail> lods) throws IOException {
         Map<TextureType, List<GaiaTexture>> materialTextures = material.getTextures();
         List<GaiaTexture> diffuseTextures = materialTextures.get(TextureType.DIFFUSE);
         if (diffuseTextures != null && !diffuseTextures.isEmpty()) {
@@ -229,30 +231,53 @@ public class GaiaSet implements Serializable {
             File diffuseFile = new File(diffusePath);
 
             File imageFile = ImageUtils.correctPath(parentFile, diffuseFile);
-
             Path imagesFolderPath = copyDirectory.resolve("images");
             if (imagesFolderPath.toFile().mkdirs()) {
                 log.debug("Images Directory created: {}", imagesFolderPath);
             }
+            String fileFormat = FilenameUtils.getExtension(imageFile.getName()).toLowerCase();
 
-            Path outputImagePath = imagesFolderPath.resolve(imageFile.getName());
-            File outputImageFile = outputImagePath.toFile();
-
-            // check if the source and destination are the same
-            if (imageFile.getAbsolutePath().equals(outputImageFile.getAbsolutePath())) {
-                return;
-            }
             texture.setPath(imageFile.getName());
             if (!imageFile.exists()) {
                 log.error("[ERROR] Texture Input Image Path is not exists. {}", diffusePath);
             } else {
-                //FileUtils.copyFile(imageFile, outputImageFile);
                 ImageResizer imageResizer = new ImageResizer();
-                BufferedImage bufferedImage = ImageIO.read(imageFile);
-                int resizeWidth = (int) (bufferedImage.getWidth() * scale);
-                int resizeHeight = (int) (bufferedImage.getHeight() * scale);
-                bufferedImage = imageResizer.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight);
-                ImageIO.write(bufferedImage, "png", outputImageFile);
+                BufferedImage bufferedImage;
+                try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(imageFile))) {
+                    bufferedImage = ImageIO.read(bis);
+                } catch (IOException e) {
+                    log.error("[ERROR] Reading image failed: {}", imageFile.getAbsolutePath(), e);
+                    return;
+                }
+
+                for (LevelOfDetail lod : lods) {
+                    int level = lod.getLevel();
+                    double scale = lod.getTextureScale();
+
+                    // Generate file name based on LOD level, Level 0 uses original name
+                    boolean isOriginalLevel = level == 0;
+                    String fileName = !isOriginalLevel ? level + "_" + imageFile.getName() : imageFile.getName();
+                    Path outputImagePath = imagesFolderPath.resolve(fileName);
+                    File outputImageFile = outputImagePath.toFile();
+                    if (outputImageFile.exists()) {
+                        log.debug("File already exists, skipping: {}", outputImageFile.getAbsolutePath());
+                        continue;
+                    }
+                    if (isOriginalLevel && scale == 1.0) {
+                        // No resizing needed, copy original file
+                        FileUtils.copyFile(imageFile, outputImageFile);
+                        continue;
+                    }
+                    int resizeWidth = Math.max(1, (int)Math.round(bufferedImage.getWidth() * scale));
+                    int resizeHeight = Math.max(1, (int)Math.round(bufferedImage.getHeight() * scale));
+                    BufferedImage resizedImage = imageResizer.resizeImageGraphic2D(bufferedImage, resizeWidth, resizeHeight);
+                    //ImageIO.write(resizedImage, fileFormat, outputImageFile);
+                    if (fileFormat.equals("jpg") || fileFormat.equals("jpeg")) {
+                        writeOnlyJpeg(resizedImage, outputImageFile, 0.8f);
+                    } else if (fileFormat.equals("png")) {
+                        writeOnlyPng(resizedImage, outputImageFile, 0.1f);
+                    }
+                }
             }
         }
     }
@@ -334,6 +359,70 @@ public class GaiaSet implements Serializable {
             material.clear();
         }
         this.materials.clear();
+    }
+
+    private void writeOnlyJpeg(BufferedImage bufferedImage, File outputPath, float quality) {
+        ImageOutputStream ios = null;
+        try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(outputPath))) {
+            ios = ImageIO.createImageOutputStream(bos);
+
+            // Image compression
+            Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpg");
+            ImageWriter writer = writers.next();
+            writer.setOutput(ios);
+            ImageWriteParam param = writer.getDefaultWriteParam();
+            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            param.setCompressionQuality(quality);
+
+            writer.write(null, new IIOImage(bufferedImage, null, null), param); // 5
+            bufferedImage.flush();
+
+            bos.flush();
+            bos.close();
+            ios.close();
+        } catch (IOException e) {
+            log.error("[ERROR] :", e);
+            log.error("[ERROR] Error writing jpeg image");
+            if (ios != null) {
+                try {
+                    ios.close();
+                } catch (IOException ex) {
+                    log.error("[ERROR] :", ex);
+                }
+            }
+        }
+    }
+
+    private void writeOnlyPng(BufferedImage bufferedImage, File outputPath, float quality) {
+        ImageOutputStream ios = null;
+        try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(outputPath))) {
+            ios = ImageIO.createImageOutputStream(bos);
+
+            // Image compression
+            Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("png");
+            ImageWriter writer = writers.next();
+            writer.setOutput(ios);
+            ImageWriteParam param = writer.getDefaultWriteParam();
+            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            param.setCompressionQuality(quality);
+
+            writer.write(null, new IIOImage(bufferedImage, null, null), param);
+            bufferedImage.flush();
+
+            bos.flush();
+            bos.close();
+            ios.close();
+        } catch (IOException e) {
+            log.error("[ERROR] :", e);
+            log.error("[ERROR] Error writing jpeg image");
+            if (ios != null) {
+                try {
+                    ios.close();
+                } catch (IOException ex) {
+                    log.error("[ERROR] :", ex);
+                }
+            }
+        }
     }
 
     private byte[] writeJpeg(BufferedImage bufferedImage, float quality) {

@@ -9,7 +9,7 @@ import com.gaia3d.basic.model.GaiaTexture;
 import com.gaia3d.basic.types.AttributeType;
 import com.gaia3d.basic.types.TextureType;
 import com.gaia3d.command.mago.GlobalOptions;
-import com.gaia3d.process.tileprocess.tile.LevelOfDetail;
+import com.gaia3d.basic.types.LevelOfDetail;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +30,9 @@ public class GaiaBatcher {
     private final GlobalOptions globalOptions = GlobalOptions.getInstance();
     private final List<GaiaBufferDataSet> batchedDataSets = new ArrayList<>();
     private final List<GaiaMaterial> batchedMaterials = new ArrayList<>();
+
+    private final List<String> textureList = new ArrayList<>();
+    private final Map<String, List<String>> duplicateTextureGroup = new HashMap<>();
 
     private void reassignMaterialsToGaiaBufferDataSetWithSameMaterial(List<GaiaBufferDataSet> dataSets, LevelOfDetail lod) {
         int datasetsCount = dataSets.size();
@@ -57,7 +60,7 @@ public class GaiaBatcher {
                     visitedMap.put(dataSet2, true); // set visited
                     continue;
                 }
-                if (areEqualMaterials(material2, material, lod.getTextureScale())) {
+                if (areEqualMaterials(material2, material, lod)) {
                     dataSet2.setMaterialId(material.getId());
                     visitedMap.put(dataSet2, true); // set visited
                 }
@@ -68,7 +71,7 @@ public class GaiaBatcher {
     /**
      * compare two materials
      */
-    private boolean areEqualMaterials(GaiaMaterial materialA, GaiaMaterial materialB, float scaleFactor) {
+    private boolean areEqualMaterials(GaiaMaterial materialA, GaiaMaterial materialB, LevelOfDetail lod) {
         // This function determines if two materials are equal.
         if (materialA == null && materialB == null) {
             return true;
@@ -114,7 +117,7 @@ public class GaiaBatcher {
                 String fullPathB = textureB.getFullPath();
                 if (fullPathA.equals(fullPathB)) {
                     hasTextureAreEquals = true;
-                } else if (!textureA.isEqualTexture(textureB, scaleFactor)) {
+                } else if (!textureA.isEqualTexture(textureB, lod)) {
                     hasTextureAreEquals = false;
                 }
             }
@@ -289,17 +292,17 @@ public class GaiaBatcher {
         List<GaiaMaterial> resultMaterials = new ArrayList<>();
         if (!clampDataSets.isEmpty() && !clampMaterials.isEmpty()) {
             BufferedImage bufferedImage = atlasTextures(lod, nodeCode, clampDataSets, clampMaterials);
-            List<List<GaiaBufferDataSet>> splitedDataSets = divisionByMaxVerticesCount(clampDataSets);
-            List<GaiaBufferDataSet> batchedClampDataSets = batchClampMaterial(splitedDataSets);
+            List<List<GaiaBufferDataSet>> splitDataSets = divisionByMaxVerticesCount(clampDataSets);
+            List<GaiaBufferDataSet> batchedClampDataSets = batchClampMaterial(splitDataSets);
             clampMaterials.removeIf((clampMaterial) -> {
                 return clampMaterial.getId() > 0;
             });
 
-            GaiaMaterial atlasMaterial = clampMaterials.get(0);
+            GaiaMaterial atlasMaterial = clampMaterials.getFirst();
             atlasMaterial.setName("ATLAS");
             Map<TextureType, List<GaiaTexture>> textures = atlasMaterial.getTextures();
             List<GaiaTexture> textureList = textures.get(TextureType.DIFFUSE);
-            GaiaTexture texture = textureList.get(0);
+            GaiaTexture texture = textureList.getFirst();
             texture.setBufferedImage(bufferedImage);
 
             resultMaterials.addAll(clampMaterials);
@@ -457,9 +460,9 @@ public class GaiaBatcher {
         }
         // make batched buffer data.
         dataSetsMap.forEach((material, bufferDataSetDataList) -> {
-            List<List<GaiaBufferDataSet>> splitedDataSets = divisionByMaxVerticesCount(bufferDataSetDataList);
-            splitedDataSets.forEach((splitedDataSet) -> {
-                GaiaBufferDataSet batchedBufferData = batchVertices(splitedDataSet);
+            List<List<GaiaBufferDataSet>> splitDataSets = divisionByMaxVerticesCount(bufferDataSetDataList);
+            splitDataSets.forEach((splitDataSet) -> {
+                GaiaBufferDataSet batchedBufferData = batchVertices(splitDataSet);
                 batchedBufferData.setMaterialId(material.getId());
                 filterdBufferDataList.add(batchedBufferData);
             });
@@ -482,9 +485,9 @@ public class GaiaBatcher {
         }
     }
 
-    private List<GaiaBufferDataSet> batchClampMaterial(List<List<GaiaBufferDataSet>> splitedDataSets) {
-        return splitedDataSets.stream().map((splitedIndicesLimit) -> {
-            GaiaBufferDataSet batchedBufferData = batchVertices(splitedIndicesLimit);
+    private List<GaiaBufferDataSet> batchClampMaterial(List<List<GaiaBufferDataSet>> splitDataSets) {
+        return splitDataSets.stream().map((splitIndicesLimit) -> {
+            GaiaBufferDataSet batchedBufferData = batchVertices(splitIndicesLimit);
             batchedBufferData.setMaterialId(0);
             return batchedBufferData;
         }).collect(Collectors.toList());

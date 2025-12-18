@@ -1,4 +1,4 @@
-📕 mago-3d-tiler manual
+📖 mago-3d-tiler Manual
 ===
 updated at 2025-12-15 by znkim
 

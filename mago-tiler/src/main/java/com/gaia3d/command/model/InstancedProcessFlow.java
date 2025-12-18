@@ -22,9 +22,12 @@ import com.gaia3d.process.preprocess.*;
 import com.gaia3d.process.tileprocess.Pipeline;
 import com.gaia3d.process.tileprocess.TilingProcess;
 import com.gaia3d.process.tileprocess.tile.Instanced3DModelTiler;
+import com.gaia3d.process.tileprocess.tile.TreeInstanceTiler;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.coverage.grid.GridCoverage2D;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,9 +36,11 @@ import java.util.List;
  * InstancedProcessModel
  */
 @Slf4j
+@RequiredArgsConstructor
 public class InstancedProcessFlow implements ProcessFlow {
     private static final String MODEL_NAME = "InstancedProcessFlow";
     private final GlobalOptions globalOptions = GlobalOptions.getInstance();
+    private final boolean isForest;
 
     @Override
     public void run() throws IOException {
@@ -46,7 +51,13 @@ public class InstancedProcessFlow implements ProcessFlow {
 
         List<GridCoverage2D> geoTiffs = new ArrayList<>();
         if (globalOptions.getTerrainPath() != null) {
-            geoTiffs = fileLoader.loadGridCoverages(geoTiffs);
+            File terrainPath = new File(globalOptions.getTerrainPath());
+            geoTiffs = fileLoader.loadGridCoverages(terrainPath, geoTiffs);
+        }
+        List<GridCoverage2D> geoidTiffs = new ArrayList<>();
+        if (globalOptions.getGeoidPath() != null) {
+            File geoidPath = new File(globalOptions.getGeoidPath());
+            geoidTiffs = fileLoader.loadGridCoverages(geoidPath, geoidTiffs);
         }
 
         /* Pre-process */
@@ -57,8 +68,12 @@ public class InstancedProcessFlow implements ProcessFlow {
         preProcessors.add(new InstanceTranslation(geoTiffs));
 
         /* Main-process */
-        TilingProcess tilingProcess = new Instanced3DModelTiler();
-        //TilingProcess tilingProcess = new Instanced3DModelTiler4Trees();
+        TilingProcess tilingProcess;
+        if (isForest)  {
+            tilingProcess = new TreeInstanceTiler();
+        } else {
+            tilingProcess = new Instanced3DModelTiler();
+        }
 
         /* Post-process */
         List<PostProcess> postProcessors = new ArrayList<>();

@@ -2,6 +2,7 @@ package com.gaia3d.process.tileprocess.tile;
 
 import com.gaia3d.basic.exchangable.GaiaSet;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
+import com.gaia3d.basic.types.LevelOfDetail;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

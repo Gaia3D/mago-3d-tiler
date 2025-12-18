@@ -1,30 +1,38 @@
 package com.gaia3d.converter.geopackage;
 
 import com.gaia3d.converter.AttributeFilter;
+import com.gaia3d.converter.Parametric3DOptions;
 import com.gaia3d.converter.kml.AttributeReader;
 import com.gaia3d.converter.kml.TileTransformInfo;
-import com.gaia3d.converter.Parametric3DOptions;
 import com.gaia3d.util.GlobeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.geotools.api.data.SimpleFeatureReader;
-import org.geotools.api.data.Transaction;
+import org.geotools.api.data.*;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.type.FeatureType;
 import org.geotools.api.feature.type.PropertyDescriptor;
 import org.geotools.api.filter.Filter;
+import org.geotools.api.filter.FilterFactory;
 import org.geotools.api.referencing.FactoryException;
 import org.geotools.api.referencing.operation.TransformException;
+import org.geotools.factory.CommonFactoryFinder;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geopkg.FeatureEntry;
 import org.geotools.geopkg.GeoPackage;
+import org.geotools.referencing.CRS;
 import org.joml.Vector3d;
 import org.locationtech.jts.geom.*;
 import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.ProjCoordinate;
 
+import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -52,6 +60,7 @@ public class GeoPackageInstanceConverter implements AttributeReader {
         boolean isDefaultCrs = parametricOptions.getSourceCrs().equals(new CRSFactory().createFromName("EPSG:3857"));
         String altitudeColumnName = parametricOptions.getAltitudeColumnName();
         String headingColumnName = parametricOptions.getHeadingColumnName();
+        String heightColumnName = parametricOptions.getHeightColumnName();
         String scaleColumnName = parametricOptions.getScaleColumnName();
         String densityColumnName = parametricOptions.getDensityColumnName();
 
@@ -68,10 +77,60 @@ public class GeoPackageInstanceConverter implements AttributeReader {
                     parametricOptions.setSourceCrs(crs);
                 }
 
-                Filter filter = Filter.INCLUDE;
+                Filter filter;
                 Transaction transaction = Transaction.AUTO_COMMIT;
+
+                Map<String, Object> params = new HashMap<>();
+                params.put("dbtype", "geopkg");
+                params.put("database", file.getAbsolutePath());
+                DataStore dataStore = DataStoreFinder.getDataStore(params);
+                SimpleFeatureSource featureSource = dataStore.getFeatureSource(featureEntry.getTableName());
+
+                long totalFeaturesCount;
+                boolean hasEnvelope = true;
+                if (hasEnvelope) {
+                    double minX = 128.4546;
+                    double minY = 37.3259;
+                    double maxX = 128.5076;
+                    double maxY = 37.3792;
+                    org.geotools.api.referencing.crs.CoordinateReferenceSystem queryCrs = null;
+                    org.geotools.api.referencing.crs.CoordinateReferenceSystem dataCrs = featureEntry.getBounds().getCoordinateReferenceSystem();
+                    try {
+                        queryCrs = CRS.decode("EPSG:4326", true);
+                    } catch (FactoryException e) {
+                        throw new RuntimeException(e);
+                    }
+                    ReferencedEnvelope queryEnv = new ReferencedEnvelope(minX, maxX, minY, maxY, queryCrs);
+
+                    ReferencedEnvelope dataEnv;
+                    try {
+                        dataEnv = queryEnv.transform(dataCrs, true);
+                    } catch (TransformException | FactoryException e) {
+                        log.error("Error transforming envelope:", e);
+                        throw new RuntimeException(e);
+                    }
+                    FilterFactory ff = CommonFactoryFinder.getFilterFactory();
+                    String geomField = featureSource.getFeatures().getSchema().getGeometryDescriptor().getLocalName();
+                    filter = ff.bbox(ff.property(geomField), dataEnv);
+                } else {
+                    filter = Filter.INCLUDE;
+                }
+                totalFeaturesCount = featureSource.getCount(new Query(featureEntry.getTableName(), filter));
+                log.info(" - Total Features Count: {}", totalFeaturesCount);
+                boolean showProgress = totalFeaturesCount >= 10000;
+                int progressInterval = (int) (totalFeaturesCount / 100);
+                if (progressInterval == 0) {
+                    progressInterval = 1;
+                }
+
+                long featureIndex = 0;
                 SimpleFeatureReader simpleFeatureReader = geoPackage.reader(featureEntry, filter, transaction);
                 while (simpleFeatureReader.hasNext()) {
+                    featureIndex++;
+                    if (showProgress && featureIndex % progressInterval == 0) {
+                        log.info(" - Processing feature {}/{} ({}%)", featureIndex, totalFeaturesCount, (double) featureIndex / (double) totalFeaturesCount * 100.0d);
+                    }
+
                     SimpleFeature feature = simpleFeatureReader.next();
                     Geometry geom = (Geometry) feature.getDefaultGeometry();
 
@@ -79,6 +138,7 @@ public class GeoPackageInstanceConverter implements AttributeReader {
                     double altitude = getNumberAttribute(feature, altitudeColumnName, parametricOptions.getAbsoluteAltitudeValue());
                     double scale = getNumberAttribute(feature, scaleColumnName, parametricOptions.getDefaultScale());
                     double density = getNumberAttribute(feature, densityColumnName, parametricOptions.getDefaultDensity());
+                    //double height = getNumberAttribute(feature, heightColumnName, parametricOptions.getMinimumHeightValue());
 
                     if (!attributeFilters.isEmpty()) {
                         boolean filterFlag = false;
@@ -129,20 +189,20 @@ public class GeoPackageInstanceConverter implements AttributeReader {
                         continue;
                     }
 
-                    for (Point point : points) {
-                        Map<String, String> attributes = new HashMap<>();
-                        FeatureType featureType = feature.getFeatureType();
-                        Collection<PropertyDescriptor> featureDescriptors = featureType.getDescriptors();
-                        AtomicInteger index = new AtomicInteger(0);
-                        featureDescriptors.forEach(attributeDescriptor -> {
-                            Object attribute = feature.getAttribute(index.getAndIncrement());
-                            if (attribute instanceof Geometry) {
-                                return;
-                            }
-                            String attributeString = castStringFromObject(attribute, "null");
-                            attributes.put(attributeDescriptor.getName().getLocalPart(), attributeString);
-                        });
+                    Map<String, String> attributes = new HashMap<>();
+                    FeatureType featureType = feature.getFeatureType();
+                    Collection<PropertyDescriptor> featureDescriptors = featureType.getDescriptors();
+                    AtomicInteger index = new AtomicInteger(0);
+                    featureDescriptors.forEach(attributeDescriptor -> {
+                        Object attribute = feature.getAttribute(index.getAndIncrement());
+                        if (attribute instanceof Geometry) {
+                            return;
+                        }
+                        String attributeString = castStringFromObject(attribute, "null");
+                        attributes.put(attributeDescriptor.getName().getLocalPart(), attributeString);
+                    });
 
+                    for (Point point : points) {
                         double x = point.getX();
                         double y = point.getY();
 
@@ -156,7 +216,16 @@ public class GeoPackageInstanceConverter implements AttributeReader {
                             position = new Vector3d(x, y, altitude);
                         }
 
-                        TileTransformInfo tileTransformInfo = TileTransformInfo.builder().name("I3dmFromGeoPackage").position(position).heading(heading).tilt(0.0d).roll(0.0d).scaleX(scale).scaleY(scale).scaleZ(scale).properties(attributes).build();
+                        TileTransformInfo tileTransformInfo = TileTransformInfo.builder().name("i3dm")
+                                .position(position)
+                                .heading(heading)
+                                .tilt(0.0d)
+                                .roll(0.0d)
+                                .scaleX(scale)
+                                .scaleY(scale)
+                                .scaleZ(scale)
+                                .properties(attributes)
+                                .build();
                         result.add(tileTransformInfo);
                     }
                 }

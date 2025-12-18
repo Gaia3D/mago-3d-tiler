@@ -28,6 +28,7 @@ import com.gaia3d.process.tileprocess.tile.Batched3DModelTiler;
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.coverage.grid.GridCoverage2D;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +52,13 @@ public class BatchedModelProcessFlow implements ProcessFlow {
 
         List<GridCoverage2D> geoTiffs = new ArrayList<>();
         if (globalOptions.getTerrainPath() != null) {
-            geoTiffs = fileLoader.loadGridCoverages(geoTiffs);
+            File terrainPath = new File(globalOptions.getTerrainPath());
+            geoTiffs = fileLoader.loadGridCoverages(terrainPath, geoTiffs);
+        }
+        List<GridCoverage2D> geoidTiffs = new ArrayList<>();
+        if (globalOptions.getGeoidPath() != null) {
+            File geoidPath = new File(globalOptions.getGeoidPath());
+            geoidTiffs = fileLoader.loadGridCoverages(geoidPath, geoidTiffs);
         }
 
         /* Pre-process */
@@ -64,7 +71,7 @@ public class BatchedModelProcessFlow implements ProcessFlow {
         preProcessors.add(new GaiaTransformBaker());
 
         preProcessors.add(new GaiaCoordinateExtractor());
-        preProcessors.add(new GaiaTranslator(geoTiffs));
+        preProcessors.add(new GaiaTranslator(geoTiffs, geoidTiffs));
         preProcessors.add(new GaiaTexCoordCorrection());
         preProcessors.add(new GaiaTransformBaker());
 

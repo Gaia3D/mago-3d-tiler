@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaia3d.basic.exception.TileProcessingException;
 import com.gaia3d.basic.geometry.GaiaBoundingBox;
-import com.gaia3d.basic.pointcloud.GaiaPointCloudOld;
+import com.gaia3d.basic.types.LevelOfDetail;
 import com.gaia3d.command.mago.GlobalOptions;
 import com.gaia3d.converter.pointcloud.GaiaLasPoint;
 import com.gaia3d.converter.pointcloud.GaiaPointCloud;
@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -148,11 +147,6 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
         double[] distanced = GlobeUtils.distanceBetweenDegrees(minLatLon, maxLatLon);
         double verticalDistance = Math.abs(maxPosition.z - minPosition.z);
         return Math.sqrt(distanced[0] * distanced[0] + distanced[1] * distanced[1] + verticalDistance * verticalDistance);
-    }
-
-    private double calcGeometricError(GaiaPointCloudOld pointCloud) {
-        GaiaBoundingBox boundingBox = pointCloud.getGaiaBoundingBox();
-        return boundingBox.getLongestDistance();
     }
 
     @Override
@@ -309,7 +303,7 @@ public class PointCloudTiler extends DefaultTiler implements Tiler {
             if (remainPointCount > 0) {
                 divided = target.divideChunkSize((int) remainPointCount);
                 if (currentPointCloud.getLasPoints() == null || currentPointCloud.getLasPoints().isEmpty()) {
-                    currentPointCloud.maximize(false);
+                    currentPointCloud.maximize(true);
                 }
                 long currentPointCount = currentPointCloud.getPointCount();
 

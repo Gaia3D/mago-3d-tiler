@@ -40,7 +40,7 @@ public class PhotogrammetryMinimization implements PreProcess {
             log.info("[Pre][Photogrammetry] Minimize GaiaScene LOD 0 , Path : {}", tileInfo.getTempPath());
 
             GaiaSet tempSetLod0 = GaiaSet.fromGaiaScene(scene);
-            Path tempPathLod0 = tempSetLod0.writeFile(tileInfo.getTempPath(), tileInfo.getSerial(), tempSetLod0.getAttribute());
+            Path tempPathLod0 = tempSetLod0.writeFile(tileInfo.getTempPath(), tileInfo.getSerial());
             tileInfo.setTempPath(tempPathLod0);
             tempSetLod0.clear();
             tempSetLod0 = null;

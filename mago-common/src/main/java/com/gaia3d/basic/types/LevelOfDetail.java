@@ -1,4 +1,4 @@
-package com.gaia3d.process.tileprocess.tile;
+package com.gaia3d.basic.types;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

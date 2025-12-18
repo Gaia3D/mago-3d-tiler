@@ -7,7 +7,12 @@ import com.gaia3d.converter.pointcloud.LasConverter;
 import com.gaia3d.process.tileprocess.tile.TileInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.eclipse.imagen.Interpolation;
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.Interpolator2D;
+import org.geotools.coverage.processing.Operations;
+import org.geotools.gce.geotiff.GeoTiffReader;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -32,7 +37,6 @@ public class PointCloudFileLoader implements FileLoader {
             log.info("[Load][{}/{}] Finished loading point cloud file: {}", index, fileCount, file.getAbsolutePath());
         }
         converter.close();
-
         converter.createShuffle();
         return converter.getBucketFiles();
     }
@@ -49,9 +53,43 @@ public class PointCloudFileLoader implements FileLoader {
         return loadFileDefault();
     }
 
+    private GridCoverage2D loadGeoTiff(File file) {
+        GridCoverage2D coverage = null;
+        try {
+            GeoTiffReader reader = new GeoTiffReader(file);
+            Interpolation interpolation = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
+            coverage = (GridCoverage2D) Operations.DEFAULT.interpolate(reader.read(null), interpolation);
+            reader.dispose();
+        } catch (Exception e) {
+            log.debug("Failed to load GeoTiff file: {}", file.getAbsolutePath());
+            throw new RuntimeException(e);
+        }
+        return coverage;
+    }
+
     @Override
-    public List<GridCoverage2D> loadGridCoverages(List<GridCoverage2D> coverages) {
-        return null;
+    public List<GridCoverage2D> loadGridCoverages(File geoTiffPath, List<GridCoverage2D> coverages) {
+        if (geoTiffPath.isFile()) {
+            log.info("GeoTiff path is file. Loading only the GeoTiff file.");
+            log.info(" - Loading GeoTiff file: {}", geoTiffPath.getAbsolutePath());
+            GridCoverage2D coverage = loadGeoTiff(geoTiffPath);
+            Interpolation interpolation = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
+            GridCoverage2D interpolatedCoverage = Interpolator2D.create(coverage, interpolation);
+            coverages.add(interpolatedCoverage);
+        } else if (geoTiffPath.isDirectory()) {
+            log.info("GeoTiff path is directory. Loading all GeoTiff files in the directory.");
+            File[] files = FileUtils.listFiles(geoTiffPath, new String[]{"tif", "tiff"}, true).toArray(new File[0]);
+            for (File file : files) {
+                log.info(" - Loading GeoTiff file: {}", file.getAbsolutePath());
+                GridCoverage2D coverage = loadGeoTiff(file);
+                Interpolation interpolation = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
+                GridCoverage2D interpolatedCoverage = Interpolator2D.create(coverage, interpolation);
+                coverages.add(interpolatedCoverage);
+            }
+        } else {
+            throw new RuntimeException("GeoTiff path is neither a file nor a directory.");
+        }
+        return coverages;
     }
 
     public List<TileInfo> loadTileInfo(File file) {
@@ -72,15 +110,6 @@ public class PointCloudFileLoader implements FileLoader {
         File tempFile = new File(tempDir, UUID.randomUUID() + ".tmp");
 
         GaiaPointCloud pointCloud = createGaiaPointCloud(file, tempFile);
-
-        /*List<GaiaLasPoint> points = loadPointCloud(file);
-        GaiaPointCloud pointCloud = new GaiaPointCloud();
-        pointCloud.setLasPoints(points);
-        pointCloud.setPointCount(points.size());
-        pointCloud.computeBoundingBox();
-        pointCloud.minimize(tempFile);
-        points.clear();*/
-
         if (pointCloud.getPointCount() < 1) {
             log.error("[ERROR] :Failed to load scene: {}", file.getAbsolutePath());
             return null;

@@ -1,13 +1,12 @@
 package com.gaia3d.local.env;
 
 import com.gaia3d.command.LoggingConfiguration;
+import com.gaia3d.local.DockerRun;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +25,7 @@ class DockerBuildTest {
         argList.add("image");
         argList.add("pull");
         argList.add(dockerImage);
-        runCommand(argList);
+        DockerRun.run(argList);
     }
 
     @Test
@@ -37,7 +36,7 @@ class DockerBuildTest {
         argList.add("image");
         argList.add("inspect");
         argList.add(dockerImage);
-        runCommand(argList);
+        DockerRun.run(argList);
     }
 
     @Test
@@ -59,7 +58,7 @@ class DockerBuildTest {
         argList.add("/workspace/sample-3ds");
         argList.add("--output");
         argList.add("/workspace/sample-output");
-        runCommand(argList);
+        DockerRun.run(argList);
     }
 
     @Test
@@ -83,7 +82,7 @@ class DockerBuildTest {
         argList.add("/workspace/sample-3ds");
         argList.add("--output");
         argList.add("/workspace/sample-output");
-        runCommand(argList);
+        DockerRun.run(argList);
     }
 
     @Test
@@ -107,31 +106,6 @@ class DockerBuildTest {
         argList.add("/workspace/sample-3ds");
         argList.add("--output");
         argList.add("/workspace/sample-output");
-        runCommand(argList);
-    }
-
-    private void runCommand(List<String> argList) throws IOException {
-        String[] args = argList.toArray(new String[0]);
-
-        ProcessBuilder processBuilder = new ProcessBuilder(args);
-        processBuilder.redirectErrorStream(true);
-        StringBuilder stringBuilder = new StringBuilder();
-        for (String arg : args) {
-            stringBuilder.append(arg).append(" ");
-        }
-        String command = stringBuilder.toString();
-        Process process = processBuilder.start();
-        BufferedReader inputReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-
-        log.info("Executing command: {}", command);
-        log.info("***Starting command execution***");
-        for (String str; (str = inputReader.readLine()) != null; ) {
-            log.info(str);
-        }
-        for (String str; (str = errorReader.readLine()) != null; ) {
-            log.error(str);
-        }
-        log.info("***Command executed successfully***");
+        DockerRun.run(argList);
     }
 }
