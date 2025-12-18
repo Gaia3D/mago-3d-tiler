@@ -13,3 +13,4 @@ services:
       --input /input/B03-wangsuk2-geojson
       --output /output/B03-wangsuk2-geojson
       --temp /work/temp
+      --geoid EGM96

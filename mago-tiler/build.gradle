@@ -100,6 +100,13 @@ shadowJar {
     from sourceSets.main.runtimeClasspath
     configurations = [project.configurations.runtimeClasspath]
     archiveFileName = "mago-3d-tiler-${project.version}.jar"
+    doFirst {
+        def distDir = file("${projectDir}/dist")
+        if (distDir.exists()) {
+            distDir.deleteDir()
+        }
+        distDir.mkdirs()
+    }
     destinationDirectory.set(file("${projectDir}/dist"))
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }

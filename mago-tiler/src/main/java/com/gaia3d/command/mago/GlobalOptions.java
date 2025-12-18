@@ -16,6 +16,12 @@ import org.locationtech.proj4j.CoordinateReferenceSystem;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -251,19 +257,31 @@ public class GlobalOptions {
                 instance.setGeoidPath(null);
             } else if (geoidPath.equalsIgnoreCase("EGM96")) {
                 log.info("Using built-in geoid model: EGM96");
-                // Classpath resource EGM96
+
+                String resourcePath = "geoid/egm96_15.tif";
                 ClassLoader classLoader = GlobalOptions.class.getClassLoader();
-                try {
+                try (InputStream in = classLoader.getResourceAsStream(resourcePath)) {
+                    if (in == null) {
+                        throw new IllegalArgumentException("EGM96 geoid model not found in resources: " + resourcePath);
+                    }
+                    Path tmp = Files.createTempFile("egm96_15-", ".tif");
+                    Files.copy(in, tmp, StandardCopyOption.REPLACE_EXISTING);
+                    tmp.toFile().deleteOnExit();
+                    instance.setGeoidPath(tmp.toAbsolutePath().toString());
+                } catch (IOException e) {
+                    throw new IllegalStateException("Failed to extract EGM96 geoid model from classpath", e);
+                }
+                /*try {
                     File egm96File = new File(classLoader.getResource("./geoid/egm96_15.tif").getFile());
                     instance.setGeoidPath(egm96File.getAbsolutePath());
                 } catch (NullPointerException e) {
                     log.error("[ERROR] EGM96 geoid model file not found in classpath resources.");
                     throw new IllegalArgumentException("EGM96 geoid model file not found in classpath resources.");
-                }
+                }*/
             } else {
                 instance.setGeoidPath(geoidPath);
             }
-                OptionsCorrector.checkExistInputPath(new File(instance.getGeoidPath()));
+            OptionsCorrector.checkExistInputPath(new File(instance.getGeoidPath()));
         } else {
             instance.setGeoidPath(null);
         }

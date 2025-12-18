@@ -166,7 +166,7 @@ implements <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getBufferedImage()" class="member-name-link">getBufferedImage</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/java/awt/image/BufferedImage.html" title="class or interface in java.awt.image" class="external-link">BufferedImage</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getBufferedImage(float)" class="member-name-link">getBufferedImage</a><wbr>(float&nbsp;scaleFactor)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getBufferedImage(com.gaia3d.basic.types.LevelOfDetail)" class="member-name-link">getBufferedImage</a><wbr>(<a href="../types/LevelOfDetail.html" title="enum class in com.gaia3d.basic.types">LevelOfDetail</a>&nbsp;lod)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getFullPath()" class="member-name-link">getFullPath</a>()</code></div>
@@ -180,14 +180,14 @@ implements <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base
 <div class="block">It's a slow comparison of two textures, but it's accurate.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isEqualTexture(com.gaia3d.basic.model.GaiaTexture,float)" class="member-name-link">isEqualTexture</a><wbr>(<a href="GaiaTexture.html" title="class in com.gaia3d.basic.model">GaiaTexture</a>&nbsp;compareTexture,
- float&nbsp;scaleFactor)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isEqualTexture(com.gaia3d.basic.model.GaiaTexture,com.gaia3d.basic.types.LevelOfDetail)" class="member-name-link">isEqualTexture</a><wbr>(<a href="GaiaTexture.html" title="class in com.gaia3d.basic.model">GaiaTexture</a>&nbsp;compareTexture,
+ <a href="../types/LevelOfDetail.html" title="enum class in com.gaia3d.basic.types">LevelOfDetail</a>&nbsp;lod)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#loadImage()" class="member-name-link">loadImage</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#loadImage(float)" class="member-name-link">loadImage</a><wbr>(float&nbsp;scaleFactor)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#loadImage(com.gaia3d.basic.types.LevelOfDetail)" class="member-name-link">loadImage</a><wbr>(<a href="../types/LevelOfDetail.html" title="enum class in com.gaia3d.basic.types">LevelOfDetail</a>&nbsp;lod)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#resizeImage(int,int)" class="member-name-link">resizeImage</a><wbr>(int&nbsp;width,
@@ -266,9 +266,9 @@ implements <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base
 </section>
 </li>
 <li>
-<section class="detail" id="loadImage(float)">
+<section class="detail" id="loadImage(com.gaia3d.basic.types.LevelOfDetail)">
 <h3>loadImage</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">loadImage</span><wbr><span class="parameters">(float&nbsp;scaleFactor)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">loadImage</span><wbr><span class="parameters">(<a href="../types/LevelOfDetail.html" title="enum class in com.gaia3d.basic.types">LevelOfDetail</a>&nbsp;lod)</span></div>
 </section>
 </li>
 <li>
@@ -291,9 +291,9 @@ implements <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base
 </section>
 </li>
 <li>
-<section class="detail" id="getBufferedImage(float)">
+<section class="detail" id="getBufferedImage(com.gaia3d.basic.types.LevelOfDetail)">
 <h3>getBufferedImage</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/java/awt/image/BufferedImage.html" title="class or interface in java.awt.image" class="external-link">BufferedImage</a></span>&nbsp;<span class="element-name">getBufferedImage</span><wbr><span class="parameters">(float&nbsp;scaleFactor)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/java/awt/image/BufferedImage.html" title="class or interface in java.awt.image" class="external-link">BufferedImage</a></span>&nbsp;<span class="element-name">getBufferedImage</span><wbr><span class="parameters">(<a href="../types/LevelOfDetail.html" title="enum class in com.gaia3d.basic.types">LevelOfDetail</a>&nbsp;lod)</span></div>
 </section>
 </li>
 <li>
@@ -317,10 +317,10 @@ implements <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base
 </section>
 </li>
 <li>
-<section class="detail" id="isEqualTexture(com.gaia3d.basic.model.GaiaTexture,float)">
+<section class="detail" id="isEqualTexture(com.gaia3d.basic.model.GaiaTexture,com.gaia3d.basic.types.LevelOfDetail)">
 <h3>isEqualTexture</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isEqualTexture</span><wbr><span class="parameters">(<a href="GaiaTexture.html" title="class in com.gaia3d.basic.model">GaiaTexture</a>&nbsp;compareTexture,
- float&nbsp;scaleFactor)</span></div>
+ <a href="../types/LevelOfDetail.html" title="enum class in com.gaia3d.basic.types">LevelOfDetail</a>&nbsp;lod)</span></div>
 </section>
 </li>
 <li>

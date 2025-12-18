@@ -18,7 +18,7 @@ public class ExperimentalTest {
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 //"-c", "32652",
                 //"-r",
-                "-debug"
+                //"-debug"
         };
         MagoTestConfig.execute(args);
     }
