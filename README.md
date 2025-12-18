@@ -78,11 +78,13 @@ Usage: command options
  -m, --merge                      Merge tileset.json files
  -i, --input <arg>                [Required] Input directory path
  -o, --output <arg>               [Required] Output directory path
+ -t, --temp <arg>                 Temporary directory path (Default: {OUTPUT}/temp)
  -it, --inputType <arg>           Input files type [kml, 3ds, fbx, obj, gltf/glb, las/laz, citygml, indoorgml, shp, geojson, gpkg]
  -ot, --outputType <arg>          Output 3DTiles Type [b3dm, i3dm, pnts]
  -l, --log <arg>                  Output log file path.
  -r, --recursive                  Tree directory deep navigation.
- -te, --terrain <arg>             GeoTiff Terrain file path, 3D Object applied as clampToGround (Supports geotiff format)
+ -te, --terrain <arg>             GeoTiff Terrain file path, 3D Object applied as clampToGround (Supports GeoTIFF format)
+ -ge, --geoid <arg>               Geoid file path for height correction, (Default: Ellipsoid)("Ellipsoid", "EGM96" or GeoTIFF File Path)
  -if, --instance <arg>            Instance file path for I3DM (Default: {OUTPUT}/instance.dae)
  -qt, --quantize                  Quantize glTF 3DMesh via "KHR_mesh_quantization" Extension
  -c, --crs <arg>                  Coordinate Reference Systems, EPSG Code(4326, 3857, 32652, 5186...)
