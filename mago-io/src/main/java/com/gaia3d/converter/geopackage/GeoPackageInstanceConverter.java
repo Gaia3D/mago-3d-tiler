@@ -87,7 +87,7 @@ public class GeoPackageInstanceConverter implements AttributeReader {
                 SimpleFeatureSource featureSource = dataStore.getFeatureSource(featureEntry.getTableName());
 
                 long totalFeaturesCount;
-                boolean hasEnvelope = true;
+                boolean hasEnvelope = false;
                 if (hasEnvelope) {
                     double minX = 128.4546;
                     double minY = 37.3259;

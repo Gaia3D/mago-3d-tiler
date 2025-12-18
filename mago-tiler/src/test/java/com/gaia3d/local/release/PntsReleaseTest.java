@@ -19,6 +19,7 @@ class PntsReleaseTest {
                 "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
                 "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath(),
                 "-c", "32652",
+                "--geoid", "EGM96",
         };
         MagoTestConfig.execute(args);
     }

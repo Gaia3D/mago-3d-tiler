@@ -246,8 +246,24 @@ public class GlobalOptions {
         }
 
         if (command.hasOption(ProcessOptions.GEOID_PATH.getLongName())) {
-            instance.setGeoidPath(command.getOptionValue(ProcessOptions.GEOID_PATH.getLongName()));
-            OptionsCorrector.checkExistInputPath(new File(instance.getGeoidPath()));
+            String geoidPath = command.getOptionValue(ProcessOptions.GEOID_PATH.getLongName());
+            if (geoidPath == null || geoidPath.isEmpty() || geoidPath.equalsIgnoreCase("Ellipsoid")) {
+                instance.setGeoidPath(null);
+            } else if (geoidPath.equalsIgnoreCase("EGM96")) {
+                log.info("Using built-in geoid model: EGM96");
+                // Classpath resource EGM96
+                ClassLoader classLoader = GlobalOptions.class.getClassLoader();
+                try {
+                    File egm96File = new File(classLoader.getResource("./geoid/egm96_15.tif").getFile());
+                    instance.setGeoidPath(egm96File.getAbsolutePath());
+                } catch (NullPointerException e) {
+                    log.error("[ERROR] EGM96 geoid model file not found in classpath resources.");
+                    throw new IllegalArgumentException("EGM96 geoid model file not found in classpath resources.");
+                }
+            } else {
+                instance.setGeoidPath(geoidPath);
+            }
+                OptionsCorrector.checkExistInputPath(new File(instance.getGeoidPath()));
         } else {
             instance.setGeoidPath(null);
         }
@@ -470,15 +486,20 @@ public class GlobalOptions {
             log.info("Instance File Path: {}", instancePath);
         }
         log.info("Terrain File Path: {}", terrainPath);
-        log.info("Geoid File Path: {}", geoidPath);
+        if (geoidPath == null) {
+            log.info("Geoid Model(Height Reference): Ellipsoid");
+        } else if (geoidPath.contains("egm96")) {
+            log.info("Geoid Model(Height Reference): EGM96");
+        } else {
+            log.info("Geoid Model(Height Reference): Custom -, {}, ", geoidPath);
+        }
         log.info("Log File Path: {}", logPath);
         log.info("Recursive Path Search: {}", recursive);
         if (!forceCrs) {
-            log.info("Source Coordinate Reference System: Auto Detect");
+            log.info("Source Coordinate Reference System: Auto Detection");
         } else {
-            log.info("Source Coordinate Reference System: Forced");
+            log.info("Source Coordinate Reference System: Forced {}", sourceCrs);
         }
-        log.info("Source Coordinate Reference System: {}", sourceCrs);
         log.info("Proj4 Code: {}", proj);
         log.info("Debug Mode: {}", debug);
         Mago3DTilerMain.drawLine();

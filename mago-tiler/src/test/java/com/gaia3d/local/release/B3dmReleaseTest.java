@@ -77,6 +77,19 @@ class B3dmReleaseTest {
     }
 
     @Test
+    void batched06MeanSea() {
+        String path = "B06-seoul-yeouido-shp";
+        String[] args = new String[]{
+                "-i", MagoTestConfig.getInputPath(path).getAbsolutePath(),
+                "-o", MagoTestConfig.getOutputPath(path).getAbsolutePath() + "-MeanSea",
+                "--terrain", MagoTestConfig.getInputPath(path).getAbsolutePath() + "/seoul.tif",
+                "--geoid", "EGM96",
+                "-c", "5186"
+        };
+        MagoTestConfig.execute(args);
+    }
+
+    @Test
     void batched07() {
         String path = "B07-sejong-pipe-geojson";
         String[] args = new String[]{

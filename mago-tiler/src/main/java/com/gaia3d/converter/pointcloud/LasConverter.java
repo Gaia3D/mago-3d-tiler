@@ -122,7 +122,7 @@ public class LasConverter {
             }
 
             if (hasTerrain || hasGeoid) {
-                Vector3d cartographic = GlobeUtils.cartesianToGeographicWgs84(x, y, z);
+                Vector3d cartographic = new Vector3d(x, y, z);
                 double terrainHeight = getTerrainHeightFromCartographic(geoTiffs, geoidTiffs, cartographic);
                 z += terrainHeight;
             }
